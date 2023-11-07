@@ -161,13 +161,13 @@ namespace ts {
         //! Read from memory (8 bytes).
         //! @param [in] a Address of an 8-byte binary DVB SimulCrypt date.
         //!
-        void getBinary(const void* a) { ::memcpy(_data, a, SIZE); }
+        void getBinary(const void* a) { std::memcpy(_data, a, SIZE); }
 
         //!
         //! Write to memory (8 bytes).
         //! @param [out] a Address of an 8-byte buffer for the binary DVB SimulCrypt date.
         //!
-        void putBinary(void* a) const { ::memcpy(a, _data, SIZE); }
+        void putBinary(void* a) const { std::memcpy(a, _data, SIZE); }
 
         //!
         //! Put into a DVB SimulCrypt TLV messages.
@@ -197,7 +197,7 @@ namespace ts {
         //!
         bool operator==(const SimulCryptDate& t) const
         {
-            return ::memcmp(_data, t._data, SIZE) == 0;
+            return std::memcmp(_data, t._data, SIZE) == 0;
         }
         TS_UNEQUAL_OPERATOR(SimulCryptDate)
 
@@ -208,7 +208,7 @@ namespace ts {
         //!
         bool operator<(const SimulCryptDate& t) const
         {
-            return ::memcmp(_data, t._data, SIZE) < 0;
+            return std::memcmp(_data, t._data, SIZE) < 0;
         }
 
         //!
@@ -218,7 +218,7 @@ namespace ts {
         //!
         bool operator<=(const SimulCryptDate& t) const
         {
-            return ::memcmp(_data, t._data, SIZE) <= 0;
+            return std::memcmp(_data, t._data, SIZE) <= 0;
         }
 
         //!
@@ -228,7 +228,7 @@ namespace ts {
         //!
         bool operator>(const SimulCryptDate& t) const
         {
-            return ::memcmp(_data, t._data, SIZE) > 0;
+            return std::memcmp(_data, t._data, SIZE) > 0;
         }
 
         //!
@@ -238,7 +238,7 @@ namespace ts {
         //!
         bool operator>=(const SimulCryptDate& t) const
         {
-            return ::memcmp(_data, t._data, SIZE) >= 0;
+            return std::memcmp(_data, t._data, SIZE) >= 0;
         }
 
         //!

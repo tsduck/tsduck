@@ -292,7 +292,7 @@ tsunit::TestRepository* tsunit::TestRepository::instance()
     // Non thread-safe, pointless in the context of the unitary tests.
     if (_instance == nullptr) {
         _instance = new TestRepository();
-        ::atexit(TestRepository::cleanupInstance);
+        std::atexit(TestRepository::cleanupInstance);
     }
     return _instance;
 }

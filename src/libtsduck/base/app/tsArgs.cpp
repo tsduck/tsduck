@@ -671,7 +671,7 @@ void ts::Args::writeLog(int severity, const UString& message)
 
     // Immediately abort application is severity == Severity::Fatal.
     if (severity == Severity::Fatal) {
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 }
 
@@ -683,7 +683,7 @@ void ts::Args::writeLog(int severity, const UString& message)
 void ts::Args::exitOnError(bool force)
 {
     if (!_is_valid && (force || (_flags & NO_EXIT_ON_ERROR) == 0)) {
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 }
 
@@ -1451,7 +1451,7 @@ void ts::Args::processHelp()
 
     // Exit application, unless specified otherwise.
     if ((_flags & NO_EXIT_ON_HELP) == 0) {
-        ::exit(EXIT_SUCCESS);
+        std::exit(EXIT_SUCCESS);
     }
 }
 
@@ -1467,7 +1467,7 @@ void ts::Args::processVersion()
 
     // Exit application, unless specified otherwise.
     if ((_flags & NO_EXIT_ON_VERSION) == 0) {
-        ::exit(EXIT_SUCCESS);
+        std::exit(EXIT_SUCCESS);
     }
 }
 

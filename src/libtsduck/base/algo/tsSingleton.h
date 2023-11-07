@@ -71,7 +71,7 @@
         if (_instance == nullptr) {                              \
             std::call_once(_once_flag, []() {                    \
                 _instance = new fullclassname;                   \
-                ::atexit(fullclassname::CleanupSingleton);       \
+                std::atexit(fullclassname::CleanupSingleton);    \
           });                                                    \
         }                                                        \
         return *_instance;                                       \
@@ -139,7 +139,7 @@
             if (_instance == nullptr) {                                  \
                 std::call_once(_once_flag, []() {                        \
                     _instance = new ObjectClass ObjectArgs;              \
-                    ::atexit(StaticInstanceClass::CleanupSingleton);     \
+                    std::atexit(StaticInstanceClass::CleanupSingleton);  \
                 });                                                      \
             }                                                            \
             return *_instance;                                           \

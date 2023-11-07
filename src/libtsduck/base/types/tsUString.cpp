@@ -432,7 +432,7 @@ ts::UString& ts::UString::assignFromWChar(const wchar_t* wstr, size_type count)
 #elif TS_WCHAR_SIZE == 2
         // Already in UTF-16, direct binary copy.
         resize(count);
-        ::memcpy(&(*this)[0], wstr, 2 * count);
+        std::memcpy(&(*this)[0], wstr, 2 * count);
 #else
         // Assume that wchar_t is a full Unicode code point.
         while (count-- > 0) {

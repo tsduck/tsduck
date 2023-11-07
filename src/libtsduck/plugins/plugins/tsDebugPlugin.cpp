@@ -63,7 +63,7 @@ ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPack
         *_null = 0;
     }
     if (_exit) {
-        ::exit(_exit_code);
+        std::exit(_exit_code);
     }
     tsp->verbose(u"%sPID: 0x%0X, labels: %s, timestamp: %s, packets in plugin: %'d, in thread: %'d", {
                  _tag, pkt.getPID(),

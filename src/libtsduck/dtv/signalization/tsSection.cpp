@@ -143,7 +143,7 @@ void ts::Section::reload(TID tid, bool is_private_section, const void* payload, 
         ByteBlockPtr data(new ByteBlock(SHORT_SECTION_HEADER_SIZE + payload_size));
         PutUInt8(data->data(), tid);
         PutUInt16(data->data() + 1, (is_private_section ? 0x4000 : 0x0000) | 0x3000 | uint16_t (payload_size & 0x0FFF));
-        ::memcpy(data->data() + 3, payload, payload_size);
+        std::memcpy(data->data() + 3, payload, payload_size);
         reload(data, source_pid, CRC32::COMPUTE);
     }
 }
@@ -177,7 +177,7 @@ void ts::Section::reload(TID tid,
         PutUInt8(data->data() + 5, 0xC0 | uint8_t((version & 0x1F) << 1) | (is_current ? 0x01 : 0x00));
         PutUInt8(data->data() + 6, section_number);
         PutUInt8(data->data() + 7, last_section_number);
-        ::memcpy(data->data() + 8, payload, payload_size);  // Flawfinder: ignore: memcpy()
+        std::memcpy(data->data() + 8, payload, payload_size);  // Flawfinder: ignore: memcpy()
         reload(data, source_pid, CRC32::COMPUTE);
     }
 }
@@ -556,7 +556,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         secsize += GetUInt16(header + 1) & 0x0FFF;
         secdata = new ByteBlock(secsize);
         CheckNonNull(secdata.pointer());
-        ::memcpy(secdata->data(), header, 3);  // Flawfinder: ignore: memcpy()
+        std::memcpy(secdata->data(), header, 3);  // Flawfinder: ignore: memcpy()
         strm.read(reinterpret_cast <char*>(secdata->data() + 3), std::streamsize(secsize - 3));
         insize += size_t(strm.gcount());
     }

@@ -22,7 +22,7 @@ void ts::FatalError(const char* message, size_t length)
 #else
     TS_UNUSED ssize_t n = ::write(STDERR_FILENO, message, length);
 #endif
-    ::exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
 }
 
 

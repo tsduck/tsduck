@@ -205,7 +205,7 @@ size_t ts::DVBCharTable::encodeTableCode(uint8_t*& buffer, size_t& size) const
     if (codeSize > size) {
         codeSize = size;
     }
-    ::memcpy(buffer, buf, codeSize);
+    std::memcpy(buffer, buf, codeSize);
     buffer += codeSize;
     size -= codeSize;
     return codeSize;

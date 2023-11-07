@@ -126,7 +126,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
         if (header_size > 0) {
             // memmove() can move overlapping areas.
             char* data = reinterpret_cast<char*>(buffer);
-            ::memmove(data, data + header_size, PKT_SIZE - header_size);
+            std::memmove(data, data + header_size, PKT_SIZE - header_size);
             if (!_reader->readStreamComplete(data + PKT_SIZE - header_size, header_size, read_size, report) || read_size < header_size) {
                 return 0; // less than one packet in that file
             }
@@ -173,7 +173,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 // Bulk read in TS format.
                 // Make sure that the trailer buffer from first packet is used in second packet.
                 uint8_t* const cbuffer = reinterpret_cast<uint8_t*>(buffer);
-                ::memmove(cbuffer, _trail, _trail_size);
+                std::memmove(cbuffer, _trail, _trail_size);
                 success = _reader->readStreamComplete(cbuffer + _trail_size, max_packets * PKT_SIZE - _trail_size, read_size, report);
                 read_size += _trail_size;
                 _trail_size = 0;
@@ -192,7 +192,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             case TSPacketFormat::RS204: {
                 // Read packet. Make sure that the trailer buffer from first packet is used in second packet.
                 uint8_t* const cbuffer = reinterpret_cast<uint8_t*>(buffer);
-                ::memmove(cbuffer, _trail, _trail_size);
+                std::memmove(cbuffer, _trail, _trail_size);
                 success = _reader->readStreamComplete(cbuffer + _trail_size, PKT_SIZE - _trail_size, read_size, report);
                 read_size += _trail_size;
                 _trail_size = 0;

@@ -114,8 +114,8 @@ bool ts::CTS3<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
     if (!this->algo->encrypt(pt, this->block_size, this->work.data(), this->block_size)) {
         return false;
     }
-    ::memcpy(ct + this->block_size, this->work.data(), residue_size);  // Flawfinder: ignore: memcpy()
-    ::memcpy(this->work.data(), pt + this->block_size, residue_size);  // Flawfinder: ignore: memcpy()
+    std::memcpy(ct + this->block_size, this->work.data(), residue_size);  // Flawfinder: ignore: memcpy()
+    std::memcpy(this->work.data(), pt + this->block_size, residue_size);  // Flawfinder: ignore: memcpy()
     if (!this->algo->encrypt(this->work.data(), this->block_size, ct, this->block_size)) {
         return false;
     }
@@ -162,8 +162,8 @@ bool ts::CTS3<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
     if (!this->algo->decrypt(ct, this->block_size, this->work.data(), this->block_size)) {
         return false;
     }
-    ::memcpy(pt + this->block_size, this->work.data(), residue_size);  // Flawfinder: ignore: memcpy()
-    ::memcpy(this->work.data(), ct + this->block_size, residue_size);  // Flawfinder: ignore: memcpy()
+    std::memcpy(pt + this->block_size, this->work.data(), residue_size);  // Flawfinder: ignore: memcpy()
+    std::memcpy(this->work.data(), ct + this->block_size, residue_size);  // Flawfinder: ignore: memcpy()
     if (!this->algo->decrypt(this->work.data(), this->block_size, pt, this->block_size)) {
         return false;
     }

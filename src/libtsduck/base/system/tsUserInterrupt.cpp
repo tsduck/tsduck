@@ -56,7 +56,7 @@ void ts::UserInterrupt::sysHandler(int sig)
 
     if (::sem_post(SEM_PARAM(ui)) < 0) {
         ::perror("sem_post error in SIGINT handler");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 }
 #endif
@@ -74,7 +74,7 @@ void ts::UserInterrupt::main()
         // Wait for the semaphore to be signaled
         if (::sem_wait(SEM_PARAM(this)) < 0 && errno != EINTR) {
             ::perror("sem_wait");
-            ::exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE);
         }
         if (_got_sigint != 0) {
             _got_sigint = 0;
@@ -208,12 +208,12 @@ void ts::UserInterrupt::activate()
     _sem_address = ::sem_open(_sem_name.c_str(), O_CREAT, 0700, 0);
     if (_sem_address == SEM_FAILED || _sem_address == nullptr) {
         ::perror("Error initializing SIGINT semaphore");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 #else
     if (::sem_init(&_sem_instance, 0, 0) < 0) {
         ::perror("Error initializing SIGINT semaphore");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 #endif
 
@@ -229,7 +229,7 @@ void ts::UserInterrupt::activate()
     // Catch SIGINT (user ctlr-C), SIGQUIT (quit) and SIGTERM (terminate, kill command).
     if (::sigaction(SIGINT, &act, nullptr) < 0 || ::sigaction(SIGQUIT, &act, nullptr) < 0 || ::sigaction(SIGTERM, &act, nullptr) < 0) {
         ::perror("Error setting interrupt signal handler");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 
     // Start the monitor thread
@@ -285,14 +285,14 @@ void ts::UserInterrupt::deactivate()
 
     if (::sigaction(SIGINT, &act, nullptr) < 0 || ::sigaction(SIGQUIT, &act, nullptr) < 0 || ::sigaction(SIGTERM, &act, nullptr) < 0) {
         ::perror("Error resetting interrupt signal handler");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 
     // Signal the semaphore to unlock the monitor thread
     _terminate = 1;
     if (::sem_post(SEM_PARAM(this)) < 0) {
         ::perror("sem_post error in SIGINT handler");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 
     // Wait for the monitor thread to terminate
@@ -302,16 +302,16 @@ void ts::UserInterrupt::deactivate()
 #if defined(TS_MAC)
     if (::sem_close(_sem_address) < 0) {
         ::perror("sem_close error on SIGINT semaphore");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
     if (::sem_unlink(_sem_name.c_str()) < 0) {
         ::perror("sem_unlink error on SIGINT semaphore");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 #else
     if (::sem_destroy(&_sem_instance) < 0) {
         ::perror("Error destroying SIGINT semaphore");
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 #endif
 #endif

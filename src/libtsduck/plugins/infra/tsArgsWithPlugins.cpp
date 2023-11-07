@@ -358,6 +358,6 @@ void ts::ArgsWithPlugins::processListPlugins()
 
     // Exit application, unless specified otherwise.
     if ((getFlags() & NO_EXIT_ON_HELP) == 0) {
-        ::exit(EXIT_SUCCESS);
+        std::exit(EXIT_SUCCESS);
     }
 }

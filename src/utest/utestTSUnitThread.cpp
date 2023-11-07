@@ -45,13 +45,13 @@ void utest::TSUnitThread::main()
                   << "*** " << e.what() << std::endl
                   << std::endl;
         // Exit application.
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
     catch (...) {
         std::cerr << std::endl
                   << "*** Unknown kind of exception in a thread, aborting" << std::endl
                   << std::endl;
         // Exit application.
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
 }

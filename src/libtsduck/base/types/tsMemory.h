@@ -32,7 +32,7 @@ namespace ts {
 #if defined(TS_WINDOWS)
         ::SecureZeroMemory(addr, size);
 #else
-        ::memset(addr, 0, size);
+        std::memset(addr, 0, size);
 #endif
     }
 

@@ -124,7 +124,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     while (remain_in_packet > 0) {
         // Copy a part of the current section in the packet
         size_t length = remain_in_section < remain_in_packet ? remain_in_section : remain_in_packet;
-        ::memcpy(data, _section->content() + _next_byte, length);  // Flawfinder: ignore: memcpy()
+        std::memcpy(data, _section->content() + _next_byte, length);  // Flawfinder: ignore: memcpy()
         // Advance pointers
         data += length;
         remain_in_packet -= length;
@@ -175,7 +175,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     // The test fixes this GCC error. However, it has not yet been tested if the behaviour
     // of the compiled code is correct with this version of GCC.
     if (remain_in_packet > 0) {
-        ::memset(data, 0xFF, remain_in_packet);
+        std::memset(data, 0xFF, remain_in_packet);
     }
     return true;
 }

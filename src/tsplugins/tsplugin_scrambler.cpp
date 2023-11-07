@@ -972,7 +972,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
     else {
         // ECMG returns ECM in packet format
         _ecm.resize(response.ECM_datagram.size() / PKT_SIZE);
-        ::memcpy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());  // Flawfinder: ignore: memcpy()
+        std::memcpy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());  // Flawfinder: ignore: memcpy()
     }
 
     _plugin->tsp->debug(u"got ECM for crypto-period %d, %d packets", {_cp_number, _ecm.size()});

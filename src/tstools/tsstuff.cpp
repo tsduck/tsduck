@@ -234,7 +234,7 @@ Stuffer::~Stuffer()
 void Stuffer::fatalError()
 {
     // Maybe something more clever some day...
-    ::exit(EXIT_FAILURE);
+    std::exit(EXIT_FAILURE);
 }
 
 

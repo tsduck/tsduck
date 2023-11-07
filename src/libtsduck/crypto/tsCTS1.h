@@ -133,7 +133,7 @@ bool ts::CTS1<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
     // padded = last partial block, zero-padded
     uint8_t* const padded = this->work.data() + this->block_size;
     Zero(padded, this->block_size);
-    ::memcpy(padded, pt, plain_length);  // Flawfinder: ignore: memcpy()
+    std::memcpy(padded, pt, plain_length);  // Flawfinder: ignore: memcpy()
     // work = previous-cipher XOR padded
     for (size_t i = 0; i < this->block_size; ++i) {
         this->work[i] = previous[i] ^ padded[i];
@@ -143,8 +143,8 @@ bool ts::CTS1<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
         return false;
     }
     // Swap last two blocks and truncate last one
-    ::memcpy(ct, previous, plain_length);          // Flawfinder: ignore: memcpy()
-    ::memcpy(previous, padded, this->block_size);  // Flawfinder: ignore: memcpy()
+    std::memcpy(ct, previous, plain_length);          // Flawfinder: ignore: memcpy()
+    std::memcpy(previous, padded, this->block_size);  // Flawfinder: ignore: memcpy()
     return true;
 }
 
@@ -209,7 +209,7 @@ bool ts::CTS1<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
     size_t last_size = cipher_length - this->block_size;
     // Get Cn-1(truncated) unpadded in padded
     uint8_t* const padded = this->work.data() + this->block_size;
-    ::memcpy(padded, ct + this->block_size, last_size);  // Flawfinder: ignore: memcpy()
+    std::memcpy(padded, ct + this->block_size, last_size);  // Flawfinder: ignore: memcpy()
     // Decrypt Cn -> get work = Cn-1 xor Pn(zero-padded)
     if (!this->algo->decrypt(ct, this->block_size, this->work.data(), this->block_size)) {
         return false;
@@ -222,7 +222,7 @@ bool ts::CTS1<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
     // Build complete Cn-1 in padded:
     // First part already in padded, last part comes from work
     if (last_size < this->block_size) {
-        ::memcpy(padded + last_size, this->work.data() + last_size, this->block_size - last_size);  // Flawfinder: ignore: memcpy()
+        std::memcpy(padded + last_size, this->work.data() + last_size, this->block_size - last_size);  // Flawfinder: ignore: memcpy()
     }
     // Decrypt Cn-1 -> get curblock = Cn-2 xor Pn-1
     if (!this->algo->decrypt(padded, this->block_size, pt, this->block_size)) {

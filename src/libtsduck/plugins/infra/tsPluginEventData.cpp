@@ -43,7 +43,7 @@ bool ts::PluginEventData::append(const void* data_addr, size_t data_size)
         return false;
     }
     else {
-        ::memcpy(_data + _cur_size, data_addr, data_size);
+        std::memcpy(_data + _cur_size, data_addr, data_size);
         _cur_size += data_size;
         return true;
     }

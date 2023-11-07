@@ -429,7 +429,7 @@ size_t ts::SectionFile::saveBuffer(void* buffer, size_t buffer_size) const
                 if (size > buffer_size) {
                     break;
                 }
-                ::memcpy(data, _sections[i]->content(), size);
+                std::memcpy(data, _sections[i]->content(), size);
                 data += size;
                 total += size;
                 buffer_size -= size;

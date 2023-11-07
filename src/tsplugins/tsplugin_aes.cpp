@@ -415,7 +415,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
             return TSP_END;
         }
     }
-    ::memcpy(pl, tmp, pl_size);
+    std::memcpy(pl, tmp, pl_size);
 
     // Mark "even key" (there is only one key but we must set something).
     pkt.setScrambling(uint8_t(_descramble ? SC_CLEAR : SC_EVEN_KEY));

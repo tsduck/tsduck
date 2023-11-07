@@ -173,7 +173,7 @@ Options::Options(int argc, char *argv[]) :
                 }
             }
         }
-        ::exit(feature ? EXIT_SUCCESS : EXIT_FAILURE);
+        std::exit(feature ? EXIT_SUCCESS : EXIT_FAILURE);
     }
 
 #if !defined(TS_NO_GITHUB)

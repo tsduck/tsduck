@@ -486,7 +486,7 @@ bool ts::MPEPacket::setUDPMessage(const uint8_t* data, size_t size)
         assert(udpSize == size);
 
         // Replace UDP payload.
-        ::memcpy(udpAddress, data, size);
+        std::memcpy(udpAddress, data, size);
         return true;
     }
 }

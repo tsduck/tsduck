@@ -294,7 +294,7 @@ bool ts::ZapPlugin::start()
 
     // All PIDs are dropped by default.
     // Selected PIDs will be added when discovered.
-    ::memset(_pid_state, TSPID_DROP, sizeof(_pid_state));
+    std::memset(_pid_state, TSPID_DROP, sizeof(_pid_state));
 
     // The TOT and TDT are always passed (same PID).
     _pid_state[PID_TOT] = TSPID_PASS;

@@ -25,7 +25,7 @@ TSDUCKPY void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_siz
     if (buffer != nullptr && buffer_size != nullptr) {
         const ts::UString str(ts::Severity::Header(severity));
         *buffer_size = 2 * std::min(*buffer_size / 2, str.size());
-        ::memcpy(buffer, str.data(), *buffer_size);
+        std::memcpy(buffer, str.data(), *buffer_size);
     }
 }
 

@@ -20,7 +20,7 @@ constexpr uint32_t ts::DTVProperties::UNKNOWN;
 ts::DTVProperties::DTVProperties() :
     _prop_head({ 0, _prop_buffer})
 {
-    ::memset(_prop_buffer, 0xFF, sizeof(_prop_buffer));
+    std::memset(_prop_buffer, 0xFF, sizeof(_prop_buffer));
 }
 
 

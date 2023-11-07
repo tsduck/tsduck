@@ -383,7 +383,7 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
     }
     else {
         // EIT p/f: no segment, always use last section of table.
-        ::memset(segment_last_section_number, last_section, SEGMENTS_PER_TABLE);
+        std::memset(segment_last_section_number, last_section, SEGMENTS_PER_TABLE);
     }
 
     // Search meaningful content for empty payload and other parameters.
@@ -392,7 +392,7 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
         if (!sec.isNull() && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {
             // Get a copy of a valid empty payload from the first valid section.
             if (!got_empty_payload) {
-                ::memcpy(empty_payload, sec->payload(), EIT_PAYLOAD_FIXED_SIZE);
+                std::memcpy(empty_payload, sec->payload(), EIT_PAYLOAD_FIXED_SIZE);
                 got_empty_payload = true;
                 is_private = sec->isPrivateSection();
                 is_current = sec->isCurrent();

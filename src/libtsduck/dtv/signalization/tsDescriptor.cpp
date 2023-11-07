@@ -36,7 +36,7 @@ ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
     if (!_data.isNull()) {
         (*_data)[0] = tag;
         (*_data)[1] = uint8_t(size);
-        ::memcpy(_data->data() + 2, data, size);
+        std::memcpy(_data->data() + 2, data, size);
     }
 }
 
