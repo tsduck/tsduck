@@ -102,7 +102,7 @@ void BCDTest::testEncodeString()
     uint8_t buf[16];
 
 #define TEST(expr,...) \
-    static const uint8_t TS_UNIQUE_NAME(REF)[]={ __VA_ARGS__}; expr; TSUNIT_EQUAL(0, ::memcmp(TS_UNIQUE_NAME(REF),buf,sizeof(TS_UNIQUE_NAME(REF))))
+    static const uint8_t TS_UNIQUE_NAME(REF)[]={ __VA_ARGS__}; expr; TSUNIT_EQUAL(0, std::memcmp(TS_UNIQUE_NAME(REF),buf,sizeof(TS_UNIQUE_NAME(REF))))
 
     TEST(ts::EncodeBCD(buf, 4, 1234), 0x12, 0x34);
     TEST(ts::EncodeBCD(buf, 5, 1234), 0x01, 0x23, 0x40);

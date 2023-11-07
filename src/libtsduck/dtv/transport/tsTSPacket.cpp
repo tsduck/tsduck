@@ -103,14 +103,14 @@ void ts::TSPacket::SanityCheck()
 void  ts::TSPacket::copyFrom(const void* source)
 {
     assert(source != nullptr);
-    ::memcpy(b, source, PKT_SIZE);
+    std::memcpy(b, source, PKT_SIZE);
 }
 
 // Copy this packet content to a memory area.
 void ts::TSPacket::copyTo(void* dest) const
 {
     assert(dest != nullptr);
-    ::memcpy(dest, b, PKT_SIZE);
+    std::memcpy(dest, b, PKT_SIZE);
 }
 
 // Static method to copy contiguous TS packets.
@@ -118,7 +118,7 @@ void ts::TSPacket::Copy(TSPacket* dest, const TSPacket* source, size_t count)
 {
     assert(dest != nullptr);
     assert(source != nullptr);
-    ::memcpy(dest->b, source->b, count * PKT_SIZE);
+    std::memcpy(dest->b, source->b, count * PKT_SIZE);
 }
 
 // Static method to copy contiguous TS packets from raw memory.
@@ -126,7 +126,7 @@ void ts::TSPacket::Copy(TSPacket* dest, const uint8_t* source, size_t count)
 {
     assert(dest != nullptr);
     assert(source != nullptr);
-    ::memcpy(dest->b, source, count * PKT_SIZE);
+    std::memcpy(dest->b, source, count * PKT_SIZE);
 }
 
 // Static method to copy contiguous TS packets into raw memory.
@@ -134,7 +134,7 @@ void ts::TSPacket::Copy(uint8_t* dest, const TSPacket* source, size_t count)
 {
     assert(dest != nullptr);
     assert(source != nullptr);
-    ::memcpy(dest, source->b, count * PKT_SIZE);
+    std::memcpy(dest, source->b, count * PKT_SIZE);
 }
 
 //----------------------------------------------------------------------------
@@ -147,7 +147,7 @@ void ts::TSPacket::init(PID pid, uint8_t cc, uint8_t data)
     b[1] = uint8_t(pid >> 8) & 0x1F;
     b[2] = uint8_t(pid);
     b[3] = 0x10 | (cc & 0x0F); // no adaptation field, payload only.
-    ::memset(b + 4, data, PKT_SIZE - 4);
+    std::memset(b + 4, data, PKT_SIZE - 4);
 }
 
 //----------------------------------------------------------------------------
@@ -212,7 +212,7 @@ bool ts::TSPacket::setPayloadSize(size_t size, bool shift_payload, uint8_t pad)
         // It is always possible to shrink the payload.
         if (shift_payload) {
             // Move the payload forward.
-            ::memmove(b + PKT_SIZE - size, b + PKT_SIZE - plSize, size);
+            std::memmove(b + PKT_SIZE - size, b + PKT_SIZE - plSize, size);
         }
         if ((b[3] & 0x20) == 0) {
             // No previous adaptation field, create one.
@@ -231,7 +231,7 @@ bool ts::TSPacket::setPayloadSize(size_t size, bool shift_payload, uint8_t pad)
             --plSize; // payload has shrunk by one byte
         }
         // Fill the stuffing extension with pad byte.
-        ::memset(b + 5 + b[4], pad, plSize - size);
+        std::memset(b + 5 + b[4], pad, plSize - size);
         // Adjust AF size.
         b[4] += uint8_t(plSize - size);
         return true;
@@ -245,9 +245,9 @@ bool ts::TSPacket::setPayloadSize(size_t size, bool shift_payload, uint8_t pad)
         const size_t add = size - plSize;
         if (shift_payload) {
             // Move the payload backward.
-            ::memmove(b + PKT_SIZE - size, b + PKT_SIZE - plSize, plSize);
+            std::memmove(b + PKT_SIZE - size, b + PKT_SIZE - plSize, plSize);
             // Fill the top part of the payload with the pad byte.
-            ::memset(b + PKT_SIZE - add , pad, add);
+            std::memset(b + PKT_SIZE - add , pad, add);
         }
         b[4] -= uint8_t(add);
         return true;
@@ -563,7 +563,7 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
         }
         // Shift rest of AF upward.
         endAF = 5 + b[4];
-        ::memmove(b + endNewData, b + offset, endAF - endNewData);
+        std::memmove(b + endNewData, b + offset, endAF - endNewData);
     }
     else {
         const size_t endPreviousData = offset + 1 + b[offset];
@@ -572,9 +572,9 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
             // Move rest of AF downward.
             endAF = 5 + b[4];
             const size_t remove = endPreviousData - endNewData;
-            ::memmove(b + endNewData, b + endPreviousData, endAF - endPreviousData);
+            std::memmove(b + endNewData, b + endPreviousData, endAF - endPreviousData);
             // Erase freeed space (now stuffing).
-            ::memset(b + endAF - remove, 0xFF, remove);
+            std::memset(b + endAF - remove, 0xFF, remove);
         }
         else if (endNewData > endPreviousData) {
             // New private data are larger.
@@ -584,14 +584,14 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
             }
             // Move rest of AF upward.
             endAF = 5 + b[4];
-            ::memmove(b + endNewData, b + endPreviousData, endAF - endNewData);
+            std::memmove(b + endNewData, b + endPreviousData, endAF - endNewData);
         }
     }
 
     // Finally write private data.
     b[5] |= 0x02;
     b[offset] = uint8_t(size);
-    ::memcpy(b + 1 + offset, data, size);
+    std::memcpy(b + 1 + offset, data, size);
     return true;
 }
 
@@ -631,9 +631,9 @@ void ts::TSPacket::deleteFieldFromAF(size_t offset, size_t size, uint32_t flag)
         // Clear the field presence flag:
         b[5] &= ~flag;
         // Shift the adaptation field down. With memmove(), the memory regions may overlap.
-        ::memmove(b + offset, b + offset + size, 4 + afSize - offset - size);
+        std::memmove(b + offset, b + offset + size, 4 + afSize - offset - size);
         // Overwrite the last part of the AF, becoming AF stuffing.
-        ::memset(b + 4 + afSize - size, 0xFF, size);
+        std::memset(b + 4 + afSize - size, 0xFF, size);
     }
 }
 
@@ -655,7 +655,7 @@ bool ts::TSPacket::setSpliceCountdown(int8_t count, bool shift_payload)
         // Compute splicing point countdown offset.
         offset = 6 + (hasPCR() ? PCR_BYTES : 0) + (hasOPCR() ? PCR_BYTES : 0);
         // Shift the existing AF 1 byte ahead to make room for the splicing point countdown value.
-        ::memmove(b + offset + 1, b + offset, 4 + getAFSize() - offset - 1);
+        std::memmove(b + offset + 1, b + offset, 4 + getAFSize() - offset - 1);
     }
 
     // Finally write the splicing point countdown value.
@@ -736,7 +736,7 @@ bool ts::TSPacket::setPCR(const uint64_t &pcr, bool shift_payload)
         b[5] |= 0x10;  // set PCR flag
         offset = 6;    // PCR offset in packet
         // Shift the existing AF 6 bytes ahead to make room for the PCR value.
-        ::memmove(b + offset + PCR_BYTES, b + offset, 4 + getAFSize() - offset - PCR_BYTES);
+        std::memmove(b + offset + PCR_BYTES, b + offset, 4 + getAFSize() - offset - PCR_BYTES);
     }
 
     // Finally write the PCR value.
@@ -762,7 +762,7 @@ bool ts::TSPacket::setOPCR(const uint64_t &opcr, bool shift_payload)
         // Compute OPCR offset.
         offset = 6 + (hasPCR() ? PCR_BYTES : 0);
         // Shift the existing AF 6 bytes ahead to make room for the PCR value.
-        ::memmove(b + offset + PCR_BYTES, b + offset, 4 + getAFSize() - offset - PCR_BYTES);
+        std::memmove(b + offset + PCR_BYTES, b + offset, 4 + getAFSize() - offset - PCR_BYTES);
     }
 
     // Finally write the OPCR value.
@@ -857,7 +857,7 @@ bool ts::TSPacket::samePayload(const TSPacket& other) const
     }
     else {
         const size_t plsize = getPayloadSize();
-        return other.getPayloadSize() == plsize && ::memcmp(getPayload(), other.getPayload(), plsize) == 0;
+        return other.getPayloadSize() == plsize && std::memcmp(getPayload(), other.getPayload(), plsize) == 0;
     }
 }
 
@@ -883,8 +883,8 @@ bool ts::TSPacket::isDuplicate(const TSPacket& other) const
     const size_t offset = hasPCR() ? 12 : 6;
     return hasPayload() &&
         getPID() != PID_NULL &&
-        ::memcmp(b, other.b, 6) == 0 &&
-        ::memcmp(b + offset, other.b + offset, PKT_SIZE - offset) == 0;
+        std::memcmp(b, other.b, 6) == 0 &&
+        std::memcmp(b + offset, other.b + offset, PKT_SIZE - offset) == 0;
 }
 
 

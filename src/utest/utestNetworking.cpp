@@ -587,7 +587,7 @@ namespace {
             }
             CERR.debug(u"TCPSocketTest: client thread: end of data stream");
             TSUNIT_ASSERT(totalSize == sizeof(message));
-            TSUNIT_ASSERT(::memcmp(message, buffer, totalSize) == 0);
+            TSUNIT_ASSERT(std::memcmp(message, buffer, totalSize) == 0);
 
             // Fully disconnect the session
             session.disconnect(CERR);
@@ -697,7 +697,7 @@ namespace {
             TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
             CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
             TSUNIT_ASSERT(size == sizeof(message));
-            TSUNIT_ASSERT(::memcmp(message, buffer, size) == 0);
+            TSUNIT_ASSERT(std::memcmp(message, buffer, size) == 0);
             TSUNIT_ASSERT(ts::IPv4Address(sender) == ts::IPv4Address::LocalHost);
             TSUNIT_ASSERT(sender.port() == _portNumber);
 
@@ -753,7 +753,7 @@ void NetworkingTest::testIPHeader()
     TSUNIT_ASSERT(ts::IPv4Packet::VerifyIPHeaderChecksum(reference_header, sizeof(reference_header)));
 
     uint8_t header[sizeof(reference_header)];
-    ::memcpy(header, reference_header, sizeof(header));
+    std::memcpy(header, reference_header, sizeof(header));
 
     TSUNIT_ASSERT(ts::IPv4Packet::VerifyIPHeaderChecksum(header, sizeof(header)));
     header[ts::IPv4_CHECKSUM_OFFSET] = 0x00;

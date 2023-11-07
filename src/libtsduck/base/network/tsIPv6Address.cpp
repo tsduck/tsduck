@@ -29,7 +29,7 @@ void ts::IPv6Address::clearAddress()
 
 bool ts::IPv6Address::hasAddress() const
 {
-    return ::memcmp(_bytes, AnyAddress._bytes, sizeof(_bytes)) != 0;
+    return std::memcmp(_bytes, AnyAddress._bytes, sizeof(_bytes)) != 0;
 }
 
 bool ts::IPv6Address::isMulticast() const
@@ -43,7 +43,7 @@ size_t ts::IPv6Address::getAddress(void* addr, size_t size) const
         return 0;
     }
     else {
-        ::memcpy(addr, _bytes, BYTES);
+        std::memcpy(addr, _bytes, BYTES);
         return BYTES;
     }
 }
@@ -56,13 +56,13 @@ bool ts::IPv6Address::setAddress(const void *addr, size_t size)
     }
     else if (size >= BYTES) {
         // Ignore extra bytes, if any.
-        ::memcpy(_bytes, addr, BYTES);
+        std::memcpy(_bytes, addr, BYTES);
         return true;
     }
     else {
         // Truncated address, pad MSB with zeroes.
         TS_ZERO(_bytes);
-        ::memcpy(_bytes + BYTES - size, addr, size);
+        std::memcpy(_bytes + BYTES - size, addr, size);
         return false;
     }
 }
@@ -203,7 +203,7 @@ bool ts::IPv6Address::resolve(const UString& name, Report& report)
                 const size_t zCount = 8 + first - last;
                 ok = zCount > 0;
                 if (ok) {
-                    ::memset(_bytes + bytesIndex, 0, 2 * zCount);
+                    std::memset(_bytes + bytesIndex, 0, 2 * zCount);
                     bytesIndex += 2 * zCount;
                 }
             }

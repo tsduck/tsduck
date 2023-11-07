@@ -95,7 +95,7 @@ ts::Time ts::TOT::localTime(const Region& reg) const
 
 ts::UString ts::TOT::timeOffsetFormat(int minutes)
 {
-    return UString::Format(u"%s%02d:%02d", {minutes < 0 ? u"-" : u"", ::abs(minutes) / 60, ::abs(minutes) % 60});
+    return UString::Format(u"%s%02d:%02d", {minutes < 0 ? u"-" : u"", std::abs(minutes) / 60, std::abs(minutes) % 60});
 }
 
 

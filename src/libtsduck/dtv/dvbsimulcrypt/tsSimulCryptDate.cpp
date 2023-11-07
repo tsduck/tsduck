@@ -54,7 +54,7 @@ void ts::SimulCryptDate::get(const tlv::MessageFactory& mf, tlv::TAG tag)
     }
 
     // Now get binary content
-    ::memcpy(_data, p.addr, sizeof(_data));  // Flawfinder: ignore: memcpy()
+    std::memcpy(_data, p.addr, sizeof(_data));  // Flawfinder: ignore: memcpy()
 }
 
 

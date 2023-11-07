@@ -519,7 +519,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         const size_t start = _search_payload ? pkt.getHeaderSize() : 0;
         if (start + _search_offset + _pattern.size() <= PKT_SIZE) {
             if (_use_search_offset) {
-                ok = ::memcmp(pkt.b + start + _search_offset, _pattern.data(), _pattern.size()) == 0;
+                ok = std::memcmp(pkt.b + start + _search_offset, _pattern.data(), _pattern.size()) == 0;
             }
             else {
                 ok = LocatePattern(pkt.b + start, PKT_SIZE - start, _pattern.data(), _pattern.size()) != nullptr;

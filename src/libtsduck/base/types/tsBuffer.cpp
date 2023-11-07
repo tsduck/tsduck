@@ -225,7 +225,7 @@ ts::Buffer::Buffer(const Buffer& other) :
         // Private internal buffer, copy resources.
         _buffer = new uint8_t[_buffer_size];
         CheckNonNull(_buffer);
-        ::memcpy(_buffer, other._buffer, _buffer_size);
+        std::memcpy(_buffer, other._buffer, _buffer_size);
     }
 }
 
@@ -283,7 +283,7 @@ ts::Buffer& ts::Buffer::operator=(const Buffer& other)
             // Private internal buffer, copy resources.
             _buffer = new uint8_t[_buffer_size];
             CheckNonNull(_buffer);
-            ::memcpy(_buffer, other._buffer, _buffer_size);
+            std::memcpy(_buffer, other._buffer, _buffer_size);
         }
     }
     return *this;
@@ -556,7 +556,7 @@ bool ts::Buffer::resize(size_t size, bool reallocate)
 
         // Copy previous buffer and deallocate it.
         if (_buffer != nullptr) {
-            ::memcpy(new_buffer, _buffer, std::min(_buffer_size, new_size));
+            std::memcpy(new_buffer, _buffer, std::min(_buffer_size, new_size));
             delete[] _buffer;
         }
 
@@ -728,7 +728,7 @@ bool ts::Buffer::writeSeek(size_t byte, size_t bit, uint8_t stuffing)
             setBits(prev.wbyte, prev.wbit, 8, stuffing);
             prev.wbyte++;
         }
-        ::memset(_buffer + prev.wbyte, stuffing, _state.wbyte - prev.wbyte);
+        std::memset(_buffer + prev.wbyte, stuffing, _state.wbyte - prev.wbyte);
         setBits(_state.wbyte, 0, _state.wbit, stuffing);
     }
 
@@ -961,7 +961,7 @@ void ts::Buffer::readBytesInternal(uint8_t* data, size_t bytes)
 
     if (_state.rbit == 0) {
         // Read pointer is byte aligned, bulk copy.
-        ::memcpy(data, _buffer + _state.rbyte, bytes);
+        std::memcpy(data, _buffer + _state.rbyte, bytes);
         _state.rbyte += bytes;
     }
     else {
@@ -1051,7 +1051,7 @@ size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)
     // Write bytes.
     if (_state.wbit == 0) {
         // Write pointer is byte aligned, bulk copy.
-        ::memcpy(_buffer + _state.wbyte, buffer, bytes);
+        std::memcpy(_buffer + _state.wbyte, buffer, bytes);
         _state.wbyte += bytes;
     }
     else {
@@ -1389,7 +1389,7 @@ size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count
         // Fixed-size serialization, pad if necessary and return "true".
         if (utf8) {
             // Pad with 8-bit values.
-            ::memset(out, pad, out_end - out);
+            std::memset(out, pad, out_end - out);
             _state.wbyte = out_end - cbuffer;
         }
         else {
@@ -1462,7 +1462,7 @@ size_t ts::Buffer::putUTFWithLengthInternal(const UString& str, size_t start, si
         // Warning: UChar pointer arithmetics uses 2-byte unit.
         // Always copy an even number of bytes (& ~1).
         const size_t size = std::min(2 * (in_end - in), out_end - out) & ~1;
-        ::memcpy(out, in, size);
+        std::memcpy(out, in, size);
         in += size / 2;
         out += size;
     }

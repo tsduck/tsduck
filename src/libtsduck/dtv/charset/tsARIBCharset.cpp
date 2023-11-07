@@ -813,7 +813,7 @@ bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, ui
     }
     if (seq_size > 0) {
         assert(seq_size < sizeof(seq));
-        ::memcpy(out, seq, seq_size);
+        std::memcpy(out, seq, seq_size);
         out += seq_size;
         out_size -= seq_size;
     }

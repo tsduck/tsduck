@@ -173,7 +173,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeExit(const UString& command, Ar
 {
     if (args.present(u"abort")) {
         // Immediate exit.
-        ::exit(EXIT_FAILURE);
+        std::exit(EXIT_FAILURE);
     }
     else {
         _log.info(u"exit requested by remote tspcontrol command");

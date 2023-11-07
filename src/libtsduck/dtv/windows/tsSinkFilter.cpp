@@ -202,7 +202,7 @@ STDMETHODIMP ts::SinkFilter::QueryFilterInfo(::FILTER_INFO* pInfo)
     }
     // Name should be the one specified by JoinFilterGraph
     assert(sizeof(pInfo->achName) >= sizeof(FILTER_NAME));
-    ::memcpy(pInfo->achName, FILTER_NAME, sizeof(FILTER_NAME));  // Flawfinder: ignore: memcpy()
+    std::memcpy(pInfo->achName, FILTER_NAME, sizeof(FILTER_NAME));  // Flawfinder: ignore: memcpy()
     pInfo->pGraph = _graph;
     if (_graph != NULL) {
         _graph->AddRef();
@@ -370,7 +370,7 @@ void ts::SinkFilter::FillBuffer(char*& buffer, size_t& buffer_size)
             _sample_buffer[_sample_offset + _stride.dwOffset + _stride.dwStride] == SYNC_BYTE)
         {
             // Current position contains a valid delimited packet.
-            ::memcpy(buffer, _sample_buffer.data() + _sample_offset + _stride.dwOffset, PKT_SIZE);  // Flawfinder: ignore: memcpy()
+            std::memcpy(buffer, _sample_buffer.data() + _sample_offset + _stride.dwOffset, PKT_SIZE);  // Flawfinder: ignore: memcpy()
             buffer += PKT_SIZE;
             buffer_size -= PKT_SIZE;
             _sample_offset += _stride.dwStride;
@@ -514,7 +514,7 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA
     if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != NULL) {
         assert(pmt->cbFormat >= sizeof(::MPEG2_TRANSPORT_STRIDE)); // already checked in QueryAccept
         // This is a transport stride with specific data
-        ::memcpy(&_filter->_stride, pmt->pbFormat, sizeof(_filter->_stride));  // Flawfinder: ignore: memcpy()
+        std::memcpy(&_filter->_stride, pmt->pbFormat, sizeof(_filter->_stride));  // Flawfinder: ignore: memcpy()
         _report.debug(u"new connection transport stride: offset = %d, packet length = %d, stride = %d",
                       {_filter->_stride.dwOffset,
                        _filter->_stride.dwPacketLength = PKT_SIZE,
@@ -598,7 +598,7 @@ STDMETHODIMP ts::SinkPin::QueryPinInfo(::PIN_INFO* pInfo)
         _filter->AddRef();
     }
     assert(sizeof(pInfo->achName) >= sizeof(PIN_NAME));
-    ::memcpy(pInfo->achName, PIN_NAME, sizeof(PIN_NAME));  // Flawfinder: ignore: memcpy()
+    std::memcpy(pInfo->achName, PIN_NAME, sizeof(PIN_NAME));  // Flawfinder: ignore: memcpy()
     return S_OK;
 }
 
@@ -624,7 +624,7 @@ STDMETHODIMP ts::SinkPin::QueryId(::LPWSTR* Id)
         return E_OUTOFMEMORY;
     }
     else {
-        ::memcpy(*Id, PIN_ID, sizeof(PIN_ID));  // Flawfinder: ignore: memcpy()
+        std::memcpy(*Id, PIN_ID, sizeof(PIN_ID));  // Flawfinder: ignore: memcpy()
         return S_OK;
     }
 }

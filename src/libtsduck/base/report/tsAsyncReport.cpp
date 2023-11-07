@@ -93,7 +93,7 @@ void ts::AsyncReport::main()
 
         // Abort application on fatal error
         if (msg->severity == Severity::Fatal) {
-            ::exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE);
         }
     }
 

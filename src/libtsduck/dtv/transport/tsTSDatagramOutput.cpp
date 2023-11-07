@@ -416,13 +416,13 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
             // Copy TS packets one by one with RS204 zero trailer. Since the default initial value
             // of the buffer vector is zero, there is no need to explicitly set the trailers.
             for (size_t i = 0; i < packet_count; ++i) {
-                ::memcpy(buf, pkt++, PKT_SIZE);
+                std::memcpy(buf, pkt++, PKT_SIZE);
                 buf += PKT_SIZE + RS_SIZE;
             }
         }
         else {
             // Directly copy the TS packets and shrink the buffer (no RS204 trailers).
-            ::memcpy(buf, pkt, packet_count * PKT_SIZE);
+            std::memcpy(buf, pkt, packet_count * PKT_SIZE);
             buffer.resize(RTP_HEADER_SIZE + packet_count * PKT_SIZE);
         }
         status = _output->sendDatagram(buffer.data(), buffer.size(), report);
@@ -433,7 +433,7 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
         ByteBlock buffer(packet_count * PKT_RS_SIZE);
         uint8_t* buf = buffer.data();
         for (size_t i = 0; i < packet_count; ++i) {
-            ::memcpy(buf, pkt++, PKT_SIZE);
+            std::memcpy(buf, pkt++, PKT_SIZE);
             buf += PKT_SIZE + RS_SIZE;
         }
         status = _output->sendDatagram(buffer.data(), buffer.size(), report);

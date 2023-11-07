@@ -1279,7 +1279,7 @@ void ts::DES::cookey(const uint32_t* raw1, uint32_t* keyout)
     }
 
     // Flawfinder: ignore: memcpy()
-    ::memcpy(keyout, dough, sizeof(dough));
+    std::memcpy(keyout, dough, sizeof(dough));
 }
 
 

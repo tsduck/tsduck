@@ -139,8 +139,8 @@ bool ts::RISTPluginData::loadArgs(DuckContext& duck, Args& args)
                 _report.error(u"invalid shared secret, maximum length is %d characters", {sizeof(peer->secret) - 1});
                 return false;
             }
-            ::memset(peer->secret, 0, sizeof(peer->secret));
-            ::memcpy(peer->secret, secret8.data(), secret8.size());
+            std::memset(peer->secret, 0, sizeof(peer->secret));
+            std::memcpy(peer->secret, secret8.data(), secret8.size());
         }
         if (peer->secret[0] != '\0' && peer->key_size == 0) {
             // Override 'aes-type=' if unspecified and a secret is specified (AES-128 by default).

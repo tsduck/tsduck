@@ -171,7 +171,7 @@ bool ts::CTR<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* 
     }
 
     // work[0] = iv
-    ::memcpy(this->work.data(), this->iv.data(), this->block_size);
+    std::memcpy(this->work.data(), this->iv.data(), this->block_size);
 
     // Loop on all blocks, including last truncated one.
 

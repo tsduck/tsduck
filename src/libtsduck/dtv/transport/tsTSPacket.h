@@ -53,7 +53,7 @@ namespace ts {
         //!
         bool operator==(const TSPacket& p) const
         {
-            return ::memcmp(b, p.b, PKT_SIZE) == 0;
+            return std::memcmp(b, p.b, PKT_SIZE) == 0;
         }
         TS_UNEQUAL_OPERATOR(TSPacket)
 

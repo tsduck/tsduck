@@ -223,7 +223,7 @@ int MainCode(int argc, char *argv[])
                 std::cout << "UHF channel: " << channel << ", offset: " << offset << std::endl;
                 uint64_t exact_freq = uhf->frequency(channel, offset);
                 int diff = int(int64_t(opt.frequency) - int64_t(exact_freq));
-                if (::abs(diff) > 1) {
+                if (std::abs(diff) > 1) {
                     std::cout << "Warning: exact frequency for channel "
                               << channel << ", offset " << offset << " is "
                               << ts::UString::Decimal(exact_freq) << " Hz, differ by "
@@ -242,7 +242,7 @@ int MainCode(int argc, char *argv[])
                 std::cout << "VHF channel: " << channel << ", offset: " << offset << std::endl;
                 uint64_t exact_freq = vhf->frequency(channel, offset);
                 int diff = int(int64_t(opt.frequency) - int64_t(exact_freq));
-                if (::abs(diff) > 1) {
+                if (std::abs(diff) > 1) {
                     std::cout << "Warning: exact frequency for channel "
                               << channel << ", offset " << offset << " is "
                               << ts::UString::Decimal(exact_freq) << " Hz, differ by "

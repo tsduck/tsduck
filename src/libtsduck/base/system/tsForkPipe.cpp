@@ -242,7 +242,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         }
         case EXIT_PROCESS: {
             // Exit parent process.
-            ::exit(EXIT_SUCCESS);
+            std::exit(EXIT_SUCCESS);
             break;
         }
         default: {
@@ -309,7 +309,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             // Then create the grand-child process.
             if (::fork() != 0) {
                 // In the intermediate process, die immediately.
-                ::exit(EXIT_SUCCESS);
+                std::exit(EXIT_SUCCESS);
             }
             // We are here in the grand-child process...
         }
@@ -438,7 +438,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             // In a created process, the application is still running elsewhere.
             errno = error;
             ::perror(message);
-            ::exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE);
             assert(false); // should never get there
         }
     }

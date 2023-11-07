@@ -215,7 +215,7 @@ size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t max
 
         // Save residue in partial packet.
         if (_partialSize > 0) {
-            ::memcpy(_partial.b, buffer[packetCount].b, _partialSize);
+            std::memcpy(_partial.b, buffer[packetCount].b, _partialSize);
         }
 
     } while (packetCount == 0 && receiveSize != 0);

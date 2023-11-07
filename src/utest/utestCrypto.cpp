@@ -184,7 +184,7 @@ void CryptoTest::testCipher(utest::TSUnitBenchmark& bench,
     TSUNIT_ASSERT(encrypt_ok);
     TSUNIT_EQUAL(cipher_size, retsize);
 
-    if (::memcmp(cipher, &tmp[0], cipher_size) != 0) {
+    if (std::memcmp(cipher, &tmp[0], cipher_size) != 0) {
         debug()
             << "CryptoTest: " << name << ": encryption failed" << std::endl
             << "  Expected cipher: " << ts::UString::Dump(cipher, cipher_size, ts::UString::SINGLE_LINE) << std::endl
@@ -201,7 +201,7 @@ void CryptoTest::testCipher(utest::TSUnitBenchmark& bench,
     TSUNIT_ASSERT(decrypt_ok);
     TSUNIT_EQUAL(plain_size, retsize);
 
-    if (::memcmp(plain, &tmp[0], plain_size) != 0) {
+    if (std::memcmp(plain, &tmp[0], plain_size) != 0) {
         debug()
             << "CryptoTest: " << name << ": decryption failed" << std::endl
             << "  Expected plain: " << ts::UString::Dump(plain, plain_size, ts::UString::SINGLE_LINE) << std::endl
@@ -209,12 +209,12 @@ void CryptoTest::testCipher(utest::TSUnitBenchmark& bench,
         TSUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": decryption failed");
     }
 
-    ::memcpy(&tmp[0], plain, plain_size);
+    std::memcpy(&tmp[0], plain, plain_size);
     retsize = tmp.size();
     TSUNIT_ASSERT(algo.encryptInPlace(&tmp[0], plain_size, &retsize));
     TSUNIT_EQUAL(cipher_size, retsize);
 
-    if (::memcmp(cipher, &tmp[0], cipher_size) != 0) {
+    if (std::memcmp(cipher, &tmp[0], cipher_size) != 0) {
         debug()
             << "CryptoTest: " << name << ": encryptInPlace failed" << std::endl
             << "  Expected cipher: " << ts::UString::Dump(cipher, cipher_size, ts::UString::SINGLE_LINE) << std::endl
@@ -222,12 +222,12 @@ void CryptoTest::testCipher(utest::TSUnitBenchmark& bench,
         TSUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": encryptInPlace failed");
     }
 
-    ::memcpy(&tmp[0], cipher, cipher_size);
+    std::memcpy(&tmp[0], cipher, cipher_size);
     retsize = tmp.size();
     TSUNIT_ASSERT(algo.decryptInPlace(&tmp[0], cipher_size, &retsize));
     TSUNIT_EQUAL(plain_size, retsize);
 
-    if (::memcmp(plain, &tmp[0], plain_size) != 0) {
+    if (std::memcmp(plain, &tmp[0], plain_size) != 0) {
         debug()
             << "CryptoTest: " << name << ": decryptInPlace failed" << std::endl
             << "  Expected plain: " << ts::UString::Dump(plain, plain_size, ts::UString::SINGLE_LINE) << std::endl
@@ -283,7 +283,7 @@ void CryptoTest::testChainingSizes(ts::CipherChaining& algo, int sizes, ...)
         TSUNIT_ASSERT(algo.decrypt(&cipher[0], retsize, &decipher[0], decipher.size(), &retsize));
         TSUNIT_EQUAL(cipher.size(), retsize);
 
-        if (::memcmp(&plain[0], &decipher[0], size) != 0) {
+        if (std::memcmp(&plain[0], &decipher[0], size) != 0) {
             debug()
                 << "CryptoTest: " << name << " failed" << std::endl
                 << "  Initial plain: " << ts::UString::Dump(&plain[0], size, ts::UString::SINGLE_LINE) << std::endl
@@ -314,7 +314,7 @@ void CryptoTest::testHash(utest::TSUnitBenchmark& bench,
     TSUNIT_ASSERT(algo.getHash(&tmp[0], tmp.size(), &retsize));
     TSUNIT_EQUAL(hash_size, retsize);
 
-    if (::memcmp(hash, &tmp[0], hash_size) != 0) {
+    if (std::memcmp(hash, &tmp[0], hash_size) != 0) {
         debug()
             << "CryptoTest: " << name << " failed" << std::endl
             << "  Expected hash: " << ts::UString::Dump(hash, hash_size, ts::UString::SINGLE_LINE) << std::endl

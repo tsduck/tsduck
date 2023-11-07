@@ -233,7 +233,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
     assert(pktIndex <= PKT_SIZE);
     assert(_nextIndex <= PKT_SIZE);
     size_t size = std::min(PKT_SIZE - pktIndex, PKT_SIZE - _nextIndex);
-    ::memcpy(_nextPacket.b + _nextIndex, pkt.b + pktIndex, size);
+    std::memcpy(_nextPacket.b + _nextIndex, pkt.b + pktIndex, size);
     pktIndex += size;
     _nextIndex += size;
 
@@ -243,7 +243,7 @@ bool ts::PacketDecapsulation::processPacket(ts::TSPacket& pkt)
         pkt = _nextPacket;
         // Copy start of next packet.
         size = PKT_SIZE - pktIndex;
-        ::memcpy(_nextPacket.b + 1, tmp.b + pktIndex, size);
+        std::memcpy(_nextPacket.b + 1, tmp.b + pktIndex, size);
         _nextIndex = 1 + size;
     }
     else {

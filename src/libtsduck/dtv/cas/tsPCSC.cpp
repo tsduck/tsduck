@@ -98,7 +98,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
         c_states[i].dwCurrentState = states[i].current_state;
         c_states[i].cbAtr = ::DWORD(std::min(sizeof(c_states[i].rgbAtr), states[i].atr.size()));
         // Flawfinder: ignore: memcpy()
-        ::memcpy(c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
+        std::memcpy(c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
     }
 
     // Check status of all smartcard readers

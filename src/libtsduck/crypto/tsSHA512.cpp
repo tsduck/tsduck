@@ -196,7 +196,7 @@ bool ts::SHA512::add(const void* data, size_t size)
         else {
             // Partial block, Accumulate input data in internal buffer.
             size_t n = std::min(size, (BLOCK_SIZE - _curlen));
-            ::memcpy(_buf + _curlen, in, n);
+            std::memcpy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
             size -= n;

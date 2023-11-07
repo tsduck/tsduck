@@ -128,7 +128,7 @@ ts::ProcessorPlugin::Status ts::BoostPIDPlugin::processPacket(TSPacket& pkt, TSP
         assert(_add_count > 0);
         _add_count--;
 
-        ::memset(pkt.b, 0xFF, sizeof(pkt.b));
+        std::memset(pkt.b, 0xFF, sizeof(pkt.b));
 
         pkt.b[0] = 0x47;       // sync byte
         PutUInt16(pkt.b + 1, _pid); // PID, no PUSI, no error, no priority
