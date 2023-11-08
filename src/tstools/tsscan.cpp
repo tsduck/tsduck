@@ -23,6 +23,7 @@
 #include "tsTransportStreamId.h"
 #include "tsDescriptorList.h"
 #include "tsFileUtils.h"
+#include "tsOptional.h"
 TS_MAIN(MainCode);
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms
@@ -252,13 +253,13 @@ private:
     ScanOptions&       _opt;
     ts::Tuner&         _tuner;
     const uint32_t     _channel;
-    bool               _signal_found;
-    int32_t            _best_offset;
-    int32_t            _lowest_offset;
-    int32_t            _highest_offset;
-    int64_t            _best_strength;
-    int32_t            _best_strength_offset;
-    ts::ModulationArgs _best_params;
+    bool               _signal_found = false;
+    int32_t            _best_offset = 0;
+    int32_t            _lowest_offset = 0;
+    int32_t            _highest_offset = 0;
+    int64_t            _best_strength = 0;
+    int32_t            _best_strength_offset = 0;
+    ts::ModulationArgs _best_params {};
 
     // Build tuning parameters for a channel.
     void buildTuningParameters(ts::ModulationArgs& params, int32_t offset);
@@ -279,14 +280,7 @@ private:
 OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channel) :
     _opt(opt),
     _tuner(tuner),
-    _channel(channel),
-    _signal_found(false),
-    _best_offset(0),
-    _lowest_offset(0),
-    _highest_offset(0),
-    _best_strength(0),
-    _best_strength_offset(0),
-    _best_params()
+    _channel(channel)
 {
     _opt.verbose(u"scanning channel %'d, %'d Hz", {_channel, _opt.hfband->frequency(_channel)});
 
@@ -388,7 +382,7 @@ bool OffsetScanner::tryOffset(int32_t offset)
 
         _opt.verbose(u"%s, %s", {_opt.hfband->description(_channel, offset), state});
 
-        if (state.signal_strength.set()) {
+        if (state.signal_strength.has_value()) {
             const int64_t strength = state.signal_strength.value().value;
             if (strength <= _opt.min_strength) {
                 // Strength is supported but too low
@@ -478,13 +472,13 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
 
     // Get tuning parameters again, as TSScanner waits for a lock.
     // Also keep the original frequency and polarity since satellite tuners can only report the intermediate frequency.
-    const ts::Variable<uint64_t> saved_frequency(tparams.frequency);
-    const ts::Variable<ts::Polarization> saved_polarity(tparams.polarity);
+    const std::optional<uint64_t> saved_frequency(tparams.frequency);
+    const std::optional<ts::Polarization> saved_polarity(tparams.polarity);
     info.getTunerParameters(tparams);
-    if (!tparams.frequency.set() || tparams.frequency.value() == 0) {
+    if (!tparams.frequency.has_value() || tparams.frequency.value() == 0) {
         tparams.frequency = saved_frequency;
     }
-    if (!tparams.polarity.set()) {
+    if (!tparams.polarity.has_value()) {
         tparams.polarity = saved_polarity;
     }
 
@@ -510,7 +504,7 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
     // Reset TS description in channels file.
     ts::ChannelFile::TransportStreamPtr ts_info;
     if (!_opt.channel_file.empty()) {
-        ts::ChannelFile::NetworkPtr net_info(_channels.networkGetOrCreate(net_id, ts::TunerTypeOf(tparams.delivery_system.value(ts::DS_UNDEFINED))));
+        ts::ChannelFile::NetworkPtr net_info(_channels.networkGetOrCreate(net_id, ts::TunerTypeOf(tparams.delivery_system.value_or(ts::DS_UNDEFINED))));
         ts_info = net_info->tsGetOrCreate(ts_id);
         ts_info->clear(); // reset all services in TS.
         ts_info->onid = sdt.isNull() ? 0 : sdt->onetw_id;

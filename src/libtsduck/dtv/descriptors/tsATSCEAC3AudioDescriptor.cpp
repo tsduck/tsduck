@@ -44,13 +44,13 @@ void ts::ATSCEAC3AudioDescriptor::clearContent()
     full_service = false;
     audio_service_type = 0;
     number_of_channels = 0;
-    bsid.clear();
-    priority.clear();
-    mainid.clear();
-    asvc.clear();
-    substream1.clear();
-    substream2.clear();
-    substream3.clear();
+    bsid.reset();
+    priority.reset();
+    mainid.reset();
+    asvc.reset();
+    substream1.reset();
+    substream2.reset();
+    substream3.reset();
     language.clear();
     language_2.clear();
     substream1_lang.clear();
@@ -67,13 +67,13 @@ void ts::ATSCEAC3AudioDescriptor::clearContent()
 void ts::ATSCEAC3AudioDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBit(1);
-    buf.putBit(bsid.set());
-    buf.putBit(mainid.set() && priority.set());
-    buf.putBit(asvc.set());
+    buf.putBit(bsid.has_value());
+    buf.putBit(mainid.has_value() && priority.has_value());
+    buf.putBit(asvc.has_value());
     buf.putBit(mixinfoexists);
-    buf.putBit(substream1.set());
-    buf.putBit(substream2.set());
-    buf.putBit(substream3.set());
+    buf.putBit(substream1.has_value());
+    buf.putBit(substream2.has_value());
+    buf.putBit(substream3.has_value());
     buf.putBit(1);
     buf.putBit(full_service);
     buf.putBits(audio_service_type, 3);
@@ -81,22 +81,22 @@ void ts::ATSCEAC3AudioDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(!language.empty());
     buf.putBit(!language_2.empty());
     buf.putBit(1);
-    buf.putBits(bsid.value(0x00), 5);
-    if (mainid.set() && priority.set()) {
+    buf.putBits(bsid.value_or(0x00), 5);
+    if (mainid.has_value() && priority.has_value()) {
         buf.putBits(0xFF, 3);
         buf.putBits(priority.value(), 2);
         buf.putBits(mainid.value(), 3);
     }
-    if (asvc.set()) {
+    if (asvc.has_value()) {
         buf.putUInt8(asvc.value());
     }
-    if (substream1.set()) {
+    if (substream1.has_value()) {
         buf.putUInt8(substream1.value());
     }
-    if (substream2.set()) {
+    if (substream2.has_value()) {
         buf.putUInt8(substream2.value());
     }
-    if (substream3.set()) {
+    if (substream3.has_value()) {
         buf.putUInt8(substream3.value());
     }
     if (!language.empty()) {
@@ -105,13 +105,13 @@ void ts::ATSCEAC3AudioDescriptor::serializePayload(PSIBuffer& buf) const
     if (!language_2.empty()) {
         buf.putLanguageCode(language_2);
     }
-    if (substream1.set()) {
+    if (substream1.has_value()) {
         buf.putLanguageCode(substream1_lang);
     }
-    if (substream2.set()) {
+    if (substream2.has_value()) {
         buf.putLanguageCode(substream2_lang);
     }
-    if (substream3.set()) {
+    if (substream3.has_value()) {
         buf.putLanguageCode(substream3_lang);
     }
     buf.putBytes(additional_info);

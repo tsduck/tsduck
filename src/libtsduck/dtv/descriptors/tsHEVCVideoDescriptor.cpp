@@ -47,8 +47,8 @@ void ts::HEVCVideoDescriptor::clearContent()
     HEVC_24hr_picture_present = false;
     sub_pic_hrd_params_not_present = true;
     HDR_WCG_idc = 3;
-    temporal_id_min.clear();
-    temporal_id_max.clear();
+    temporal_id_min.reset();
+    temporal_id_max.reset();
 }
 
 ts::HEVCVideoDescriptor::HEVCVideoDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -74,7 +74,7 @@ void ts::HEVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(frame_only_constraint);
     buf.putBits(copied_44bits, 44);
     buf.putUInt8(level_idc);
-    const bool temporal = temporal_id_min.set() && temporal_id_max.set();
+    const bool temporal = temporal_id_min.has_value() && temporal_id_max.has_value();
     buf.putBit(temporal);
     buf.putBit(HEVC_still_present);
     buf.putBit(HEVC_24hr_picture_present);
@@ -206,7 +206,7 @@ bool ts::HEVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0x00, 0x07) &&
         element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0x00, 0x07);
 
-    if (ok && temporal_id_min.set() + temporal_id_max.set() == 1) {
+    if (ok && temporal_id_min.has_value() + temporal_id_max.has_value() == 1) {
         element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), element->name()});
         ok = false;
     }

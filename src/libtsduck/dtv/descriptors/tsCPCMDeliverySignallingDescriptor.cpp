@@ -61,12 +61,12 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::clearContent()
     disable_analogue_hd_export = false;
     disable_analogue_hd_consumption = false;
     image_constraint = false;
-    view_window_start.clear();
-    view_window_end.clear();
-    view_period_from_first_playback.clear();
-    simultaneous_view_count.clear();
-    remote_access_delay.clear();
-    remote_access_date.clear();
+    view_window_start.reset();
+    view_window_end.reset();
+    view_period_from_first_playback.reset();
+    simultaneous_view_count.reset();
+    remote_access_delay.reset();
+    remote_access_date.reset();
     cps_vector.clear();
 }
 
@@ -90,15 +90,15 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
     buf.putBits(copy_control, 3);
     buf.putBit(do_not_cpcm_scramble);
     buf.putBit(viewable);
-    buf.putBit(view_window_start.set() || view_window_end.set());
-    buf.putBit(view_period_from_first_playback.set());
-    buf.putBit(simultaneous_view_count.set());
+    buf.putBit(view_window_start.has_value() || view_window_end.has_value());
+    buf.putBit(view_period_from_first_playback.has_value());
+    buf.putBit(simultaneous_view_count.has_value());
     buf.putBit(move_local);
     buf.putBit(view_local);
     buf.putBits(move_and_copy_propagation_information, 2);
     buf.putBits(view_propagation_information, 2);
-    buf.putBit(remote_access_delay.set());
-    buf.putBit(remote_access_date.set());
+    buf.putBit(remote_access_delay.has_value());
+    buf.putBit(remote_access_date.has_value());
     buf.putBit(remote_access_record_flag);
     buf.putBit(!cps_vector.empty());
     buf.putBit(export_beyond_trust);
@@ -107,20 +107,20 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
     buf.putBit(disable_analogue_hd_export);
     buf.putBit(disable_analogue_hd_consumption);
     buf.putBit(image_constraint);
-    if (view_window_start.set() || view_window_end.set()) {
+    if (view_window_start.has_value() || view_window_end.has_value()) {
         buf.putMJD(view_window_start.value(), 5);
         buf.putMJD(view_window_end.value(), 5);
     }
-    if (view_period_from_first_playback.set()) {
+    if (view_period_from_first_playback.has_value()) {
         buf.putUInt16(view_period_from_first_playback.value());
     }
-    if (simultaneous_view_count.set()) {
+    if (simultaneous_view_count.has_value()) {
         buf.putUInt8(simultaneous_view_count.value());
     }
-    if (remote_access_delay.set()) {
+    if (remote_access_delay.has_value()) {
         buf.putUInt16(remote_access_delay.value());
     }
-    if (remote_access_date.set()) {
+    if (remote_access_date.has_value()) {
         buf.putMJD(remote_access_date.value(), 5);
     }
     if (!cps_vector.empty()) {
@@ -314,16 +314,16 @@ void ts::CPCMDeliverySignallingDescriptor::buildXML(DuckContext& duck, xml::Elem
         v1->setBoolAttribute(u"disable_analogue_hd_consumption", cpcm_v1_delivery_signalling.disable_analogue_hd_consumption);
         v1->setBoolAttribute(u"image_constraint", cpcm_v1_delivery_signalling.image_constraint);
 
-        if (cpcm_v1_delivery_signalling.view_window_start.set()) {
+        if (cpcm_v1_delivery_signalling.view_window_start.has_value()) {
             v1->setDateTimeAttribute(u"view_window_start", cpcm_v1_delivery_signalling.view_window_start.value());
         }
-        if (cpcm_v1_delivery_signalling.view_window_end.set()) {
+        if (cpcm_v1_delivery_signalling.view_window_end.has_value()) {
             v1->setDateTimeAttribute(u"view_window_end", cpcm_v1_delivery_signalling.view_window_end.value());
         }
         v1->setOptionalIntAttribute(u"view_period_from_first_playback", cpcm_v1_delivery_signalling.view_period_from_first_playback);
         v1->setOptionalIntAttribute(u"simultaneous_view_count", cpcm_v1_delivery_signalling.simultaneous_view_count);
         v1->setOptionalIntAttribute(u"remote_access_delay", cpcm_v1_delivery_signalling.remote_access_delay);
-        if (cpcm_v1_delivery_signalling.remote_access_date.set()) {
+        if (cpcm_v1_delivery_signalling.remote_access_date.has_value()) {
             v1->setDateTimeAttribute(u"remote_access_date", cpcm_v1_delivery_signalling.remote_access_date.value());
         }
         for (auto it : cpcm_v1_delivery_signalling.cps_vector) {

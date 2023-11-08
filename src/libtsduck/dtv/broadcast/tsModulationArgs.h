@@ -15,7 +15,7 @@
 #include "tsObject.h"
 #include "tsDeliverySystem.h"
 #include "tsDisplayInterface.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsModulation.h"
 #include "tsBitRate.h"
 #include "tsLNB.h"
@@ -46,17 +46,17 @@ namespace ts {
         //! Delivery system (DS_DVB_*).
         //! Applies to all tuners. When unset, the default delivery system for that tuner is used.
         //!
-        Variable<DeliverySystem> delivery_system {};
+        std::optional<DeliverySystem> delivery_system {};
         //!
         //! Frequency in Hz.
         //! Applies to all tuners. This is a mandatory parameter.
         //!
-        Variable<uint64_t> frequency {};
+        std::optional<uint64_t> frequency {};
         //!
         //! Polarity.
         //! Applies to: DVB-S/S2, ISDB-S.
         //!
-        Variable<Polarization> polarity {};
+        std::optional<Polarization> polarity {};
         //!
         //! Default value for polarity.
         //!
@@ -65,12 +65,12 @@ namespace ts {
         //! Local dish LNB for frequency adjustment.
         //! Applies to: DVB-S/S2, ISDB-S.
         //!
-        Variable<LNB> lnb {};
+        std::optional<LNB> lnb {};
         //!
         //! Spectral inversion.
         //! Applies to: DVB-T/T2, DVB-S/S2, DVB-C (A,B,C), ATSC, ISDB-T, ISDB-S.
         //!
-        Variable<SpectralInversion> inversion {};
+        std::optional<SpectralInversion> inversion {};
         //!
         //! Default value for inversion.
         //!
@@ -79,7 +79,7 @@ namespace ts {
         //! Symbol rate in symbols / second.
         //! Applies to: DVB-S/S2, DVB-C (A,C), ISDB-S.
         //!
-        Variable<uint32_t> symbol_rate {};
+        std::optional<uint32_t> symbol_rate {};
         //!
         //! Default value for symbol_rate on DVB-S.
         //!
@@ -96,7 +96,7 @@ namespace ts {
         //! Error correction.
         //! Applies to: DVB-S/S2, DVB-C (A,C), ISDB-S.
         //!
-        Variable<InnerFEC> inner_fec {};
+        std::optional<InnerFEC> inner_fec {};
         //!
         //! Default value for inner_fec.
         //!
@@ -105,7 +105,7 @@ namespace ts {
         //! Satellite index for DiSeqC switches.
         //! Applies to: DVB-S/S2, ISDB-S.
         //!
-        Variable<size_t> satellite_number {};
+        std::optional<size_t> satellite_number {};
         //!
         //! Default value for satellite_number.
         //!
@@ -114,7 +114,7 @@ namespace ts {
         //! Constellation or modulation type.
         //! Applies to: DVB-T/T2, DVB-S2/Turbo, DVB-C (A,B,C), ATSC.
         //!
-        Variable<Modulation> modulation {};
+        std::optional<Modulation> modulation {};
         //!
         //! Default value for modulation on satellite.
         //!
@@ -135,7 +135,7 @@ namespace ts {
         //! Bandwidth in Hz.
         //! Applies to: DVB-T/T2, ISDB-T.
         //!
-        Variable<BandWidth> bandwidth {};
+        std::optional<BandWidth> bandwidth {};
         //!
         //! Default value for bandwidth on DVB-T.
         //!
@@ -148,7 +148,7 @@ namespace ts {
         //! High priority stream code rate.
         //! Applies to: DVB-T/T2.
         //!
-        Variable<InnerFEC> fec_hp {};
+        std::optional<InnerFEC> fec_hp {};
         //!
         //! Default value for fec_hp.
         //!
@@ -157,7 +157,7 @@ namespace ts {
         //! Low priority stream code rate.
         //! Applies to: DVB-T/T2.
         //!
-        Variable<InnerFEC> fec_lp {};
+        std::optional<InnerFEC> fec_lp {};
         //!
         //! Default value for fec_lp.
         //!
@@ -166,7 +166,7 @@ namespace ts {
         //! Transmission mode.
         //! Applies to: DVB-T/T2, ISDB-T.
         //!
-        Variable<TransmissionMode> transmission_mode {};
+        std::optional<TransmissionMode> transmission_mode {};
         //!
         //! Default value for transmission_mode on DVB-T.
         //!
@@ -179,7 +179,7 @@ namespace ts {
         //! Guard interval.
         //! Applies to: DVB-T/T2, ISDB-T.
         //!
-        Variable<GuardInterval> guard_interval {};
+        std::optional<GuardInterval> guard_interval {};
         //!
         //! Default value for guard_interval on DVB-T.
         //!
@@ -192,7 +192,7 @@ namespace ts {
         //! Hierarchy.
         //! Applies to: DVB-T/T2.
         //!
-        Variable<Hierarchy> hierarchy {};
+        std::optional<Hierarchy> hierarchy {};
         //!
         //! Default value for hierarchy.
         //!
@@ -201,7 +201,7 @@ namespace ts {
         //! Presence of pilots.
         //! Applies to: DVB-S2.
         //!
-        Variable<Pilot> pilots {};
+        std::optional<Pilot> pilots {};
         //!
         //! Default value for pilots.
         //!
@@ -210,7 +210,7 @@ namespace ts {
         //! Roll-off factor.
         //! Applies to: DVB-S2.
         //!
-        Variable<RollOff> roll_off {};
+        std::optional<RollOff> roll_off {};
         //!
         //! Default value for roll_off.
         //! Implied value in DVB-S, default for DVB-S2.
@@ -220,7 +220,7 @@ namespace ts {
         //! Physical Layer Pipe (PLP) identification.
         //! Applies to: DVB-T2.
         //!
-        Variable<uint32_t> plp {};
+        std::optional<uint32_t> plp {};
         //!
         //! Default value for PLP id.
         //!
@@ -229,7 +229,7 @@ namespace ts {
         //! Input Stream Id (ISI).
         //! Applies to: DVB-S2.
         //!
-        Variable<uint32_t> isi {};
+        std::optional<uint32_t> isi {};
         //!
         //! Default value for input stream id.
         //!
@@ -238,7 +238,7 @@ namespace ts {
         //! Physical Layer Scrambling (PLS) code.
         //! Applies to: DVB-S2.
         //!
-        Variable<uint32_t> pls_code {};
+        std::optional<uint32_t> pls_code {};
         //!
         //! Default value for PLS code.
         //!
@@ -247,7 +247,7 @@ namespace ts {
         //! Physical Layer Scrambling (PLS) mode.
         //! Applies to: DVB-S2.
         //!
-        Variable<PLSMode> pls_mode {};
+        std::optional<PLSMode> pls_mode {};
         //!
         //! Default value for PLS mode.
         //!
@@ -257,14 +257,14 @@ namespace ts {
         //! When specified to true, the reception is an ISDB-Tsb channel instead of an ISDB-T one.
         //! Applies to: ISDB-T.
         //!
-        Variable<bool> sound_broadcasting {};
+        std::optional<bool> sound_broadcasting {};
         //!
         //! Sound broadcasting sub-channel id.
         //! When @a sound_broadcasting is specified to true, specify the sub-channel ID of the
         //! segment to be demodulated in the ISDB-Tsb channel. Possible values: 0 to 41.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> sb_subchannel_id {};
+        std::optional<int> sb_subchannel_id {};
         //!
         //! Default value for ISDB-Tsb sub-channel id.
         //!
@@ -275,7 +275,7 @@ namespace ts {
         //! Possible values: 1 to 13.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> sb_segment_count {};
+        std::optional<int> sb_segment_count {};
         //!
         //! Default value for ISDB-Tsb segment count.
         //!
@@ -287,7 +287,7 @@ namespace ts {
         //! Possible values: 0 to sb_segment_count - 1.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> sb_segment_index {};
+        std::optional<int> sb_segment_index {};
         //!
         //! Default value for ISDB-Tsb segment index.
         //!
@@ -303,7 +303,7 @@ namespace ts {
         //! shall be used.
         //! Applies to: ISDB-T.
         //!
-        Variable<UString> isdbt_layers {};
+        std::optional<UString> isdbt_layers {};
         //!
         //! Default value for ISDB-T layers (all layers: "ABC").
         //!
@@ -319,7 +319,7 @@ namespace ts {
         //! When specified to true, the reception of the ISDB-T channel is in partial reception mode.
         //! Applies to: ISDB-T.
         //!
-        Variable<bool> isdbt_partial_reception {};
+        std::optional<bool> isdbt_partial_reception {};
         //!
         //! Maximum value for ISDB-T segment count.
         //!
@@ -329,78 +329,78 @@ namespace ts {
         //! Must be one of FEC_AUTO, FEC_1_2, FEC_2_3, FEC_3_4, FEC_5_6, FEC_7_8. The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<InnerFEC> layer_a_fec {};
+        std::optional<InnerFEC> layer_a_fec {};
         //!
         //! Layer A modulation.
         //! Must be one of QAM_AUTO, QPSK, QAM_16, QAM_64, DQPSK. The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<Modulation> layer_a_modulation {};
+        std::optional<Modulation> layer_a_modulation {};
         //!
         //! Layer A segment count.
         //! Possible values: 0 to 13 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> layer_a_segment_count {};
+        std::optional<int> layer_a_segment_count {};
         //!
         //! Layer A time interleaving.
         //! Possible values: 0, 1, 2, 4 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> layer_a_time_interleaving {};
+        std::optional<int> layer_a_time_interleaving {};
         //!
         //! Layer B code rate.
         //! Must be one of FEC_AUTO, FEC_1_2, FEC_2_3, FEC_3_4, FEC_5_6, FEC_7_8. The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<InnerFEC> layer_b_fec {};
+        std::optional<InnerFEC> layer_b_fec {};
         //!
         //! Layer B modulation.
         //! Must be one of QAM_AUTO, QPSK, QAM_16, QAM_64, DQPSK. The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<Modulation> layer_b_modulation {};
+        std::optional<Modulation> layer_b_modulation {};
         //!
         //! Layer B segment count.
         //! Possible values: 0 to 13 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> layer_b_segment_count {};
+        std::optional<int> layer_b_segment_count {};
         //!
         //! Layer B time interleaving.
         //! Possible values: 0, 1, 2, 4 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> layer_b_time_interleaving {};
+        std::optional<int> layer_b_time_interleaving {};
         //!
         //! Layer C code rate.
         //! Must be one of FEC_AUTO, FEC_1_2, FEC_2_3, FEC_3_4, FEC_5_6, FEC_7_8. The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<InnerFEC> layer_c_fec {};
+        std::optional<InnerFEC> layer_c_fec {};
         //!
         //! Layer C modulation.
         //! Must be one of QAM_AUTO, QPSK, QAM_16, QAM_64, DQPSK. The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<Modulation> layer_c_modulation {};
+        std::optional<Modulation> layer_c_modulation {};
         //!
         //! Layer C segment count.
         //! Possible values: 0 to 13 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> layer_c_segment_count {};
+        std::optional<int> layer_c_segment_count {};
         //!
         //! Layer C time interleaving.
         //! Possible values: 0, 1, 2, 4 or -1 (auto). The default is automatically detected.
         //! Applies to: ISDB-T.
         //!
-        Variable<int> layer_c_time_interleaving {};
+        std::optional<int> layer_c_time_interleaving {};
         //!
         //! Inner stream id (same as inner transport stream id).
         //! Applies to: ISDB-S (multi-stream).
         //!
-        Variable<uint32_t> stream_id {};
+        std::optional<uint32_t> stream_id {};
         //!
         //! Default value for inner stream id.
         //!

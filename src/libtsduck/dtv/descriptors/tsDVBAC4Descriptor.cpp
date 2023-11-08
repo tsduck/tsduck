@@ -35,8 +35,8 @@ ts::DVBAC4Descriptor::DVBAC4Descriptor() :
 
 void ts::DVBAC4Descriptor::clearContent()
 {
-    ac4_dialog_enhancement_enabled.clear();
-    ac4_channel_mode.clear();
+    ac4_dialog_enhancement_enabled.reset();
+    ac4_channel_mode.reset();
     ac4_dsi_toc.clear();
     additional_info.clear();
 }
@@ -64,10 +64,10 @@ ts::DID ts::DVBAC4Descriptor::extendedTag() const
 
 void ts::DVBAC4Descriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBit(ac4_dialog_enhancement_enabled.set() && ac4_channel_mode.set());
+    buf.putBit(ac4_dialog_enhancement_enabled.has_value() && ac4_channel_mode.has_value());
     buf.putBit(!ac4_dsi_toc.empty());
     buf.putBits(0, 6); // reserved bits are zero here
-    if (ac4_dialog_enhancement_enabled.set() && ac4_channel_mode.set()) {
+    if (ac4_dialog_enhancement_enabled.has_value() && ac4_channel_mode.has_value()) {
         buf.putBit(ac4_dialog_enhancement_enabled.value());
         buf.putBits(ac4_channel_mode.value(), 2);
         buf.putBits(0, 5); // reserved bits are zero here

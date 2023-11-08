@@ -1484,7 +1484,7 @@ void ts::Buffer::getBits(Variable<INT>& value, size_t bits)
 {
     if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
         _read_error = true;
-        value.clear();
+        value.reset();
     }
     else {
         value = getBits<INT>(bits);

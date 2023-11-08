@@ -354,7 +354,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                 if (_save_channel_file || _update_channel_file) {
                     // Get or create network description in channel database.
                     // Use tuner type from delivery descriptor.
-                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, TunerTypeOf(tp.delivery_system.value(DS_UNDEFINED))));
+                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, TunerTypeOf(tp.delivery_system.value_or(DS_UNDEFINED))));
                     // Get or create TS description in channel database.
                     ChannelFile::TransportStreamPtr ts(net->tsGetOrCreate(tsid.transport_stream_id));
                     // Do not reset services in TS, keep existing if any, just update tuning info.

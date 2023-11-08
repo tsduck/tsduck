@@ -36,7 +36,7 @@ void ts::DigitalCopyControlDescriptor::clearContent()
 {
     digital_recording_control_data = 0;
     user_defined = 0;
-    maximum_bitrate.clear();
+    maximum_bitrate.reset();
     components.clear();
 }
 
@@ -54,10 +54,10 @@ ts::DigitalCopyControlDescriptor::DigitalCopyControlDescriptor(DuckContext& duck
 void ts::DigitalCopyControlDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(digital_recording_control_data, 2);
-    buf.putBit(maximum_bitrate.set());
+    buf.putBit(maximum_bitrate.has_value());
     buf.putBit(!components.empty());
     buf.putBits(user_defined, 4);
-    if (maximum_bitrate.set()) {
+    if (maximum_bitrate.has_value()) {
         buf.putUInt8(maximum_bitrate.value());
     }
     if (!components.empty()) {
@@ -65,10 +65,10 @@ void ts::DigitalCopyControlDescriptor::serializePayload(PSIBuffer& buf) const
         for (const auto& it : components) {
             buf.putUInt8(it.component_tag);
             buf.putBits(it.digital_recording_control_data, 2);
-            buf.putBit(it.maximum_bitrate.set());
+            buf.putBit(it.maximum_bitrate.has_value());
             buf.putBit(1);
             buf.putBits(it.user_defined, 4);
-            if (it.maximum_bitrate.set()) {
+            if (it.maximum_bitrate.has_value()) {
                 buf.putUInt8(it.maximum_bitrate.value());
             }
         }

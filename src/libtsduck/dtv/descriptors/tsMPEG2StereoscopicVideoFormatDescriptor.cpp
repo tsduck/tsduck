@@ -33,7 +33,7 @@ ts::MPEG2StereoscopicVideoFormatDescriptor::MPEG2StereoscopicVideoFormatDescript
 
 void ts::MPEG2StereoscopicVideoFormatDescriptor::clearContent()
 {
-    arrangement_type.clear();
+    arrangement_type.reset();
 }
 
 ts::MPEG2StereoscopicVideoFormatDescriptor::MPEG2StereoscopicVideoFormatDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -49,8 +49,8 @@ ts::MPEG2StereoscopicVideoFormatDescriptor::MPEG2StereoscopicVideoFormatDescript
 
 void ts::MPEG2StereoscopicVideoFormatDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBit(arrangement_type.set());
-    buf.putBits(arrangement_type.set() ? arrangement_type.value() : 0xFF, 7);
+    buf.putBit(arrangement_type.has_value());
+    buf.putBits(arrangement_type.has_value() ? arrangement_type.value() : 0xFF, 7);
 }
 
 void ts::MPEG2StereoscopicVideoFormatDescriptor::deserializePayload(PSIBuffer& buf)

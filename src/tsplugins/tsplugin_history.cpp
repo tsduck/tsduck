@@ -16,7 +16,7 @@
 #include "tsSectionDemux.h"
 #include "tsCASFamily.h"
 #include "tsNames.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsTime.h"
 #include "tsPES.h"
 #include "tsPAT.h"
@@ -48,14 +48,14 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
-            PIDContext() = default;                 // Constructor
-            PacketCounter     pkt_count = 0;        // Number of packets on this PID
-            PacketCounter     first_pkt = 0;        // First packet in TS
-            PacketCounter     last_pkt = 0;         // Last packet in TS
-            uint16_t          service_id = 0;       // One service the PID belongs to
-            uint8_t           scrambling = 0;       // Last scrambling control value
-            TID               last_tid = TID_NULL;  // Last table on this PID
-            Variable<uint8_t> pes_strid {};         // PES stream id
+            PIDContext() = default;               // Constructor
+            PacketCounter pkt_count = 0;          // Number of packets on this PID
+            PacketCounter first_pkt = 0;          // First packet in TS
+            PacketCounter last_pkt = 0;           // Last packet in TS
+            uint16_t      service_id = 0;         // One service the PID belongs to
+            uint8_t       scrambling = 0;         // Last scrambling control value
+            TID           last_tid = TID_NULL;    // Last table on this PID
+            std::optional<uint8_t> pes_strid {};  // PES stream id
         };
 
         // Command line options
@@ -459,7 +459,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     }
 
     if (has_pes_start) {
-        if (!cpid.pes_strid.set()) {
+        if (!cpid.pes_strid.has_value()) {
             // Found first PES stream id in the PID.
             report(u"PID %d (0x%<X), PES stream_id is %s", {pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST)});
         }

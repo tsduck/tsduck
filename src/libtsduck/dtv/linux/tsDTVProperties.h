@@ -14,6 +14,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsSingleton.h"
 
 #include "tsBeforeStandardHeaders.h"
@@ -75,7 +76,20 @@ namespace ts {
         template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
         void addVar(uint32_t cmd, const Variable<ENUM>& data)
         {
-            if (data.set()) {
+            if (data.has_value()) {
+                add(cmd, uint32_t(data.value()));
+            }
+        }
+
+        //!
+        //! Add a new property if a variable is set.
+        //! @param [in] cmd Command code.
+        //! @param [in] data Optional command data.
+        //!
+        template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
+        void addVar(uint32_t cmd, const std::optional<ENUM>& data)
+        {
+            if (data.has_value()) {
                 add(cmd, uint32_t(data.value()));
             }
         }

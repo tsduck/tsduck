@@ -45,7 +45,7 @@ void ts::AV1VideoDescriptor::clearContent()
     chroma_subsampling_y = false;
     chroma_sample_position = 0;
     HDR_WCG_idc = 0;
-    initial_presentation_delay_minus_one.clear();
+    initial_presentation_delay_minus_one.reset();
 }
 
 ts::AV1VideoDescriptor::AV1VideoDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -74,8 +74,8 @@ void ts::AV1VideoDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(chroma_sample_position, 2);
     buf.putBits(HDR_WCG_idc, 2);
     buf.putBit(0);
-    buf.putBit(initial_presentation_delay_minus_one.set());
-    if (initial_presentation_delay_minus_one.set()) {
+    buf.putBit(initial_presentation_delay_minus_one.has_value());
+    if (initial_presentation_delay_minus_one.has_value()) {
         buf.putBits(initial_presentation_delay_minus_one.value(), 4);
     }
     else {

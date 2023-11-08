@@ -150,7 +150,7 @@ bool ts::EITPlugin::start()
     _eits_act_count = 0;
     _eits_oth_count = 0;
     _services.clear();
-    _ts_id.clear();
+    _ts_id.reset();
     _demux.reset();
     _demux.addPID(PID_PAT);
     _demux.addPID(PID_SDT);
@@ -172,7 +172,7 @@ bool ts::EITPlugin::stop()
     // Global summary
     out << "Summary" << std::endl
         << "-------" << std::endl;
-    if (_ts_id.set()) {
+    if (_ts_id.has_value()) {
         out << UString::Format(u"TS id:         %d (0x%04X)", {_ts_id.value(), _ts_id.value()}) << std::endl;
     }
     if (_last_utc != Time::Epoch) {
@@ -197,7 +197,7 @@ bool ts::EITPlugin::stop()
     for (const auto& it : _services) {
         const ServiceDesc& serv(it.second);
         name_width = std::max(name_width, serv.getName().width());
-        if (_ts_id.set() && serv.hasTSId (_ts_id.value())) {
+        if (_ts_id.has_value() && serv.hasTSId (_ts_id.value())) {
             // Actual TS
             scount_act++;
             if (serv.eitpf_count != 0) {
@@ -233,7 +233,7 @@ bool ts::EITPlugin::stop()
         << UString::Format(u"---  ------  ------  %s  ------  ----  --------", {UString(name_width, u'-')}) << std::endl;
     for (const auto& it : _services) {
         const ServiceDesc& serv(it.second);
-        const bool actual = _ts_id.set() && serv.hasTSId(_ts_id.value());
+        const bool actual = _ts_id.has_value() && serv.hasTSId(_ts_id.value());
         out << UString::Format(u"%s  0x%04X  0x%04X  %-*s  %-6s  %-4s  %8d",
                                {actual ? u"Act" : u"Oth",
                                 serv.getTSId(), serv.getId(),
@@ -347,7 +347,7 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
     const bool pf = tid == TID_EIT_PF_ACT || tid == TID_EIT_PF_OTH;
 
     // Check other/actual TS
-    if (_ts_id.set()) {
+    if (_ts_id.has_value()) {
         if (actual && !serv.hasTSId (_ts_id.value())) {
             tsp->verbose(u"EIT-Actual has wrong TS id %d (0x%X)", {serv.getTSId(), serv.getTSId()});
         }

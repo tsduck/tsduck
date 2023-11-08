@@ -117,7 +117,7 @@ void ts::PSIMerger::reset(Options options)
     _eit_pzer.setPID(PID_EIT);
 
     // Make sure that all input tables are invalid.
-    _main_tsid.clear();
+    _main_tsid.reset();
     _main_pat.invalidate();
     _merge_pat.invalidate();
     _main_cat.invalidate();
@@ -369,7 +369,7 @@ void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
             // Not an EIT-Actual from the merge stream, pass section without modification.
             _eits.push_back(sp);
         }
-        else if (sp->payloadSize() >= 2 && _main_tsid.set()) {
+        else if (sp->payloadSize() >= 2 && _main_tsid.has_value()) {
             // This is an EIT-Actual from merged stream and we know the main TS id.
             // Patch the EIT with new TS id before enqueueing.
             // The TSid is in the first two bytes of the EIT payload.

@@ -117,7 +117,7 @@ namespace {
     // Dump a timestamp.
     ts::UString DumpTimestamp(size_t indent, const ts::Variable<ts::SimulCryptDate>& timestamp)
     {
-        if (timestamp.set()) {
+        if (timestamp.has_value()) {
             return ts::UString::Format(u"%*sTimestamp = %s\n", {indent, u"", ts::UString(timestamp.value())});
         }
         else {
@@ -173,10 +173,10 @@ ts::duck::LogSection::LogSection(const tlv::MessageFactory& fact) :
 
 void ts::duck::LogSection::serializeParameters(tlv::Serializer& fact) const
 {
-    if (pid.set()) {
+    if (pid.has_value()) {
         fact.put(Tags::PRM_PID, pid.value());
     }
-    if (timestamp.set()) {
+    if (timestamp.has_value()) {
         timestamp.value().put(fact, Tags::PRM_TIMESTAMP);
     }
     if (!section.isNull()) {
@@ -217,10 +217,10 @@ ts::duck::LogTable::LogTable(const tlv::MessageFactory& fact) :
 
 void ts::duck::LogTable::serializeParameters(tlv::Serializer& fact) const
 {
-    if (pid.set()) {
+    if (pid.has_value()) {
         fact.put(Tags::PRM_PID, pid.value());
     }
-    if (timestamp.set()) {
+    if (timestamp.has_value()) {
         timestamp.value().put(fact, Tags::PRM_TIMESTAMP);
     }
     for (size_t i = 0; i < sections.size(); ++i) {

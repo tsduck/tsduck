@@ -20,6 +20,7 @@
 #include "tsSpliceInformationTable.h"
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsForkPipe.h"
+#include "tsOptional.h"
 #include "tsjsonObject.h"
 #include "tsjsonOutputArgs.h"
 #include "tsjsonRunningDocument.h"
@@ -404,7 +405,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
     bool known_event = evt != ctx.splice_events.end();
 
     // Time to event in ms. Negative if event is in the past.
-    Variable<MilliSecond> time_to_event;
+    std::optional<MilliSecond> time_to_event;
     if (ctx.last_pts != INVALID_PTS) {
         // Compute "current" PTS. We use the latest PTS found and adjust it by the distance to its packet.
         uint64_t current_pts = ctx.last_pts;
@@ -466,7 +467,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
         if (_json_args.useJSON()) {
             json::Object obj;
             init(obj, splice_pid, event_id, u"pending", ctx, &evt->second);
-            if (time_to_event.set()) {
+            if (time_to_event.has_value()) {
                 obj.add(u"time-to-event-ms", time_to_event.value());
             }
             _json_args.report(obj, _json_doc, *tsp);
@@ -474,7 +475,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
         else {
             // Format time to event.
             UString time;
-            if (time_to_event.set()) {
+            if (time_to_event.has_value()) {
                 if (time_to_event.value() < 0) {
                     time.format(u", event is in the past by %'d ms", {-time_to_event.value()});
                 }
@@ -501,7 +502,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         return;
     }
 
-    if (sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.set()) {
+    if (sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.has_value()) {
         sit.adjustPTS();
         for (size_t di = 0; di < sit.descs.count(); ++di) {
             if (sit.descs[di]->tag() == DID_SPLICE_SEGMENT) {

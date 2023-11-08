@@ -35,9 +35,9 @@ ts::EVCTimingAndHRDDescriptor::EVCTimingAndHRDDescriptor() :
 void ts::EVCTimingAndHRDDescriptor::clearContent()
 {
     hrd_management_valid = false;
-    N_90khz.clear();
-    K_90khz.clear();
-    num_units_in_tick.clear();
+    N_90khz.reset();
+    K_90khz.reset();
+    num_units_in_tick.reset();
 }
 
 ts::EVCTimingAndHRDDescriptor::EVCTimingAndHRDDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -63,8 +63,8 @@ ts::DID ts::EVCTimingAndHRDDescriptor::extendedTag() const
 
 void ts::EVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    const bool has_90kHz = N_90khz.set() && K_90khz.set();
-    const bool info_present = num_units_in_tick.set();
+    const bool has_90kHz = N_90khz.has_value() && K_90khz.has_value();
+    const bool info_present = num_units_in_tick.has_value();
     buf.putBit(hrd_management_valid);
     buf.putBits(0xFF, 6);
     buf.putBit(info_present);

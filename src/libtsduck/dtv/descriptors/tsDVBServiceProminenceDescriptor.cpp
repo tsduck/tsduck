@@ -65,30 +65,30 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
     for (const auto& _sogi : SOGI_list) {
         buf.putBit(_sogi.SOGI_flag);            // SOGI_flag
         buf.putBit(!_sogi.regions.empty());     // target_region_flag
-        buf.putBit(_sogi.service_id.set());     // service_flag
+        buf.putBit(_sogi.service_id.has_value());     // service_flag
         buf.putReserved(1);                     // reserved_future_use
         buf.putBits(_sogi.SOGI_priority, 12);   // SOGI_priority
-        if (_sogi.service_id.set()) {
+        if (_sogi.service_id.has_value()) {
             buf.putUInt16(_sogi.service_id.value());    // service_id
         }
         if (!_sogi.regions.empty()) {
             buf.pushWriteSequenceWithLeadingLength(8);  // will write target_region_loop_length here
             for (const auto& _region : _sogi.regions) {
                 buf.putReserved(5);
-                buf.putBit(_region.country_code.set());
+                buf.putBit(_region.country_code.has_value());
                 const uint8_t region_depth =
-                    _region.primary_region_code.set() +
-                    (_region.primary_region_code.set() && _region.secondary_region_code.set()) +
-                    (_region.primary_region_code.set() && _region.secondary_region_code.set() && _region.tertiary_region_code.set());
+                    _region.primary_region_code.has_value() +
+                    (_region.primary_region_code.has_value() && _region.secondary_region_code.has_value()) +
+                    (_region.primary_region_code.has_value() && _region.secondary_region_code.has_value() && _region.tertiary_region_code.has_value());
                 buf.putBits(region_depth, 2);
-                if (_region.country_code.set()) {
+                if (_region.country_code.has_value()) {
                     buf.putLanguageCode(_region.country_code.value());
                 }
-                if (_region.primary_region_code.set()) {
+                if (_region.primary_region_code.has_value()) {
                     buf.putUInt8(_region.primary_region_code.value());
-                    if (_region.secondary_region_code.set()) {
+                    if (_region.secondary_region_code.has_value()) {
                         buf.putUInt8(_region.secondary_region_code.value());
-                        if (_region.tertiary_region_code.set()) {
+                        if (_region.tertiary_region_code.has_value()) {
                             buf.putUInt16(_region.tertiary_region_code.value());
                         }
                     }
@@ -234,7 +234,7 @@ void ts::DVBServiceProminenceDescriptor::buildXML(DuckContext& duck, xml::Elemen
         s->setOptionalIntAttribute(u"service_id", _sogi.service_id);
         for (const auto& _region : _sogi.regions) {
             ts::xml::Element* r = s->addElement(u"target_region");
-            if (_region.country_code.set()) {
+            if (_region.country_code.has_value()) {
                 r->setAttribute(u"country_code", _region.country_code.value());
             }
             r->setOptionalIntAttribute(u"primary_region_code", _region.primary_region_code);
@@ -273,15 +273,15 @@ bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml
                  rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF) &&
                  rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF) &&
                  rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
-            if (ok && !r.country_code.set() && !r.primary_region_code.set()) {
+            if (ok && !r.country_code.has_value() && !r.primary_region_code.has_value()) {
                 rgn->report().error(u"country_code and/or primary_region_code must be present in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
                 ok = false;
             }
-            if (ok && !r.primary_region_code.set() && r.secondary_region_code.set()) {
+            if (ok && !r.primary_region_code.has_value() && r.secondary_region_code.has_value()) {
                 rgn->report().error(u"secondary_region_code cannot be used without primary_region_code in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
                 ok = false;
             }
-            if (ok && !r.secondary_region_code.set() && r.tertiary_region_code.set()) {
+            if (ok && !r.secondary_region_code.has_value() && r.tertiary_region_code.has_value()) {
                 rgn->report().error(u"tertiary_region_code cannot be used without secondary_region_code in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
                 ok = false;
             }

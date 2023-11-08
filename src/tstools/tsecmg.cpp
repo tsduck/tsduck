@@ -22,7 +22,7 @@
 #include "tsTCPServer.h"
 #include "tstlvConnection.h"
 #include "tsDuckProtocol.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsOneShotPacketizer.h"
 TS_MAIN(MainCode);
 
@@ -290,7 +290,7 @@ private:
     ECMGSharedData*             _shared = nullptr;
     ECMGConnectionPtr           _conn {};
     ts::UString                 _peer {};
-    ts::Variable<uint16_t>      _channel {};    // Current channel id.
+    std::optional<uint16_t>     _channel {};    // Current channel id.
     std::map<uint16_t,uint16_t> _streams {};    // Map of current stream id => ECM id.
 
     // Handle the various ECMG client messages.
@@ -394,9 +394,9 @@ void ECMGClientHandler::main()
     _conn->close(_shared->report());
 
     // Make sure to release the channel if not done by the clients.
-    if (_channel.set()) {
+    if (_channel.has_value()) {
         _shared->closeChannel(_channel.value());
-        _channel.clear();
+        _channel.reset();
     }
 
     _shared->report().verbose(u"%s: session completed", {_peer});
@@ -448,7 +448,7 @@ bool ECMGClientHandler::sendErrorResponse(const ts::tlv::Message* msg, uint16_t 
 bool ECMGClientHandler::handleChannelSetup(ts::ecmgscs::ChannelSetup* msg)
 {
     assert(msg != nullptr);
-    if (_channel.set()) {
+    if (_channel.has_value()) {
         // Channel already set in this session.
         return sendErrorResponse(msg, ts::ecmgscs::Errors::inv_channel_id);
     }
@@ -493,7 +493,7 @@ bool ECMGClientHandler::handleChannelClose(ts::ecmgscs::ChannelClose* msg)
     else {
         // Channel ok, close everything, no response expected.
         _shared->closeChannel(msg->channel_id);
-        _channel.clear();
+        _channel.reset();
         _streams.clear();
         return true;
     }

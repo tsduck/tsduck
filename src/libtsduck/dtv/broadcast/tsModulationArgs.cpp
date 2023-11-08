@@ -60,46 +60,46 @@ constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
 
 void ts::ModulationArgs::clear()
 {
-    delivery_system.clear();
-    frequency.clear();
-    polarity.clear();
-    lnb.clear();
-    inversion.clear();
-    symbol_rate.clear();
-    inner_fec.clear();
-    satellite_number.clear();
-    modulation.clear();
-    bandwidth.clear();
-    fec_hp.clear();
-    fec_lp.clear();
-    transmission_mode.clear();
-    guard_interval.clear();
-    hierarchy.clear();
-    pilots.clear();
-    roll_off.clear();
-    plp.clear();
-    isi.clear();
-    pls_code.clear();
-    pls_mode.clear();
-    sound_broadcasting.clear();
-    sb_subchannel_id.clear();
-    sb_segment_count.clear();
-    sb_segment_index.clear();
-    isdbt_layers.clear();
-    isdbt_partial_reception.clear();
-    layer_a_fec.clear();
-    layer_a_modulation.clear();
-    layer_a_segment_count.clear();
-    layer_a_time_interleaving.clear();
-    layer_b_fec.clear();
-    layer_b_modulation.clear();
-    layer_b_segment_count.clear();
-    layer_b_time_interleaving.clear();
-    layer_c_fec.clear();
-    layer_c_modulation.clear();
-    layer_c_segment_count.clear();
-    layer_c_time_interleaving.clear();
-    stream_id.clear();
+    delivery_system.reset();
+    frequency.reset();
+    polarity.reset();
+    lnb.reset();
+    inversion.reset();
+    symbol_rate.reset();
+    inner_fec.reset();
+    satellite_number.reset();
+    modulation.reset();
+    bandwidth.reset();
+    fec_hp.reset();
+    fec_lp.reset();
+    transmission_mode.reset();
+    guard_interval.reset();
+    hierarchy.reset();
+    pilots.reset();
+    roll_off.reset();
+    plp.reset();
+    isi.reset();
+    pls_code.reset();
+    pls_mode.reset();
+    sound_broadcasting.reset();
+    sb_subchannel_id.reset();
+    sb_segment_count.reset();
+    sb_segment_index.reset();
+    isdbt_layers.reset();
+    isdbt_partial_reception.reset();
+    layer_a_fec.reset();
+    layer_a_modulation.reset();
+    layer_a_segment_count.reset();
+    layer_a_time_interleaving.reset();
+    layer_b_fec.reset();
+    layer_b_modulation.reset();
+    layer_b_segment_count.reset();
+    layer_b_time_interleaving.reset();
+    layer_c_fec.reset();
+    layer_c_modulation.reset();
+    layer_c_segment_count.reset();
+    layer_c_time_interleaving.reset();
+    stream_id.reset();
 }
 
 
@@ -109,16 +109,16 @@ void ts::ModulationArgs::clear()
 
 void ts::ModulationArgs::resetLocalReceptionParameters()
 {
-    lnb.clear();
-    satellite_number.clear();
+    lnb.reset();
+    satellite_number.reset();
 }
 
 void ts::ModulationArgs::copyLocalReceptionParameters(const ModulationArgs& other)
 {
-    if (other.lnb.set()) {
+    if (other.lnb.has_value()) {
         lnb = other.lnb;
     }
-    if (other.satellite_number.set()) {
+    if (other.satellite_number.has_value()) {
         satellite_number = other.satellite_number;
     }
 }
@@ -131,46 +131,46 @@ void ts::ModulationArgs::copyLocalReceptionParameters(const ModulationArgs& othe
 bool ts::ModulationArgs::hasModulationArgs() const
 {
     return
-        delivery_system.set() ||
-        frequency.set() ||
-        polarity.set() ||
-        lnb.set() ||
-        inversion.set() ||
-        symbol_rate.set() ||
-        inner_fec.set() ||
-        satellite_number.set() ||
-        modulation.set() ||
-        bandwidth.set() ||
-        fec_hp.set() ||
-        fec_lp.set() ||
-        transmission_mode.set() ||
-        guard_interval.set() ||
-        hierarchy.set() ||
-        pilots.set() ||
-        roll_off.set() ||
-        plp.set() ||
-        isi.set() ||
-        pls_code.set() ||
-        pls_mode.set() ||
-        sound_broadcasting.set() ||
-        sb_subchannel_id.set() ||
-        sb_segment_count.set() ||
-        sb_segment_index.set() ||
-        isdbt_layers.set() ||
-        isdbt_partial_reception.set() ||
-        layer_a_fec.set() ||
-        layer_a_modulation.set() ||
-        layer_a_segment_count.set() ||
-        layer_a_time_interleaving.set() ||
-        layer_b_fec.set() ||
-        layer_b_modulation.set() ||
-        layer_b_segment_count.set() ||
-        layer_b_time_interleaving.set() ||
-        layer_c_fec.set() ||
-        layer_c_modulation.set() ||
-        layer_c_segment_count.set() ||
-        layer_c_time_interleaving.set() ||
-        stream_id.set();
+        delivery_system.has_value() ||
+        frequency.has_value() ||
+        polarity.has_value() ||
+        lnb.has_value() ||
+        inversion.has_value() ||
+        symbol_rate.has_value() ||
+        inner_fec.has_value() ||
+        satellite_number.has_value() ||
+        modulation.has_value() ||
+        bandwidth.has_value() ||
+        fec_hp.has_value() ||
+        fec_lp.has_value() ||
+        transmission_mode.has_value() ||
+        guard_interval.has_value() ||
+        hierarchy.has_value() ||
+        pilots.has_value() ||
+        roll_off.has_value() ||
+        plp.has_value() ||
+        isi.has_value() ||
+        pls_code.has_value() ||
+        pls_mode.has_value() ||
+        sound_broadcasting.has_value() ||
+        sb_subchannel_id.has_value() ||
+        sb_segment_count.has_value() ||
+        sb_segment_index.has_value() ||
+        isdbt_layers.has_value() ||
+        isdbt_partial_reception.has_value() ||
+        layer_a_fec.has_value() ||
+        layer_a_modulation.has_value() ||
+        layer_a_segment_count.has_value() ||
+        layer_a_time_interleaving.has_value() ||
+        layer_b_fec.has_value() ||
+        layer_b_modulation.has_value() ||
+        layer_b_segment_count.has_value() ||
+        layer_b_time_interleaving.has_value() ||
+        layer_c_fec.has_value() ||
+        layer_c_modulation.has_value() ||
+        layer_c_segment_count.has_value() ||
+        layer_c_time_interleaving.has_value() ||
+        stream_id.has_value();
 }
 
 
@@ -190,80 +190,80 @@ bool ts::ModulationArgs::IsValidISDBTTimeInterleaving(int ti)
 
 void ts::ModulationArgs::setDefaultValues()
 {
-    switch (delivery_system.value(DS_UNDEFINED)) {
+    switch (delivery_system.value_or(DS_UNDEFINED)) {
         case DS_DVB_S2:
             // DVB-S2 specific options.
-            pilots.setDefault(DEFAULT_PILOTS);
-            roll_off.setDefault(DEFAULT_ROLL_OFF);
-            isi.setDefault(DEFAULT_ISI);
-            pls_code.setDefault(DEFAULT_PLS_CODE);
-            pls_mode.setDefault(DEFAULT_PLS_MODE);
+            set_default(pilots, DEFAULT_PILOTS);
+            set_default(roll_off, DEFAULT_ROLL_OFF);
+            set_default(isi, DEFAULT_ISI);
+            set_default(pls_code, DEFAULT_PLS_CODE);
+            set_default(pls_mode, DEFAULT_PLS_MODE);
             TS_FALLTHROUGH
         case DS_DVB_S_TURBO:
         case DS_DVB_S:
             // DVB-S2, DVB-S/Turbo and DVB-S common options.
-            modulation.setDefault(DEFAULT_MODULATION_DVBS);
-            frequency.setDefault(0);
-            inversion.setDefault(DEFAULT_INVERSION);
-            polarity.setDefault(DEFAULT_POLARITY);
-            symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_DVBS);
-            inner_fec.setDefault(DEFAULT_INNER_FEC);
-            lnb.setDefault(LNB(u"", NULLREP));
-            satellite_number.setDefault(DEFAULT_SATELLITE_NUMBER);
+            set_default(modulation, DEFAULT_MODULATION_DVBS);
+            set_default(frequency, 0);
+            set_default(inversion, DEFAULT_INVERSION);
+            set_default(polarity, DEFAULT_POLARITY);
+            set_default(symbol_rate, DEFAULT_SYMBOL_RATE_DVBS);
+            set_default(inner_fec, DEFAULT_INNER_FEC);
+            set_default(lnb, LNB(u"", NULLREP));
+            set_default(satellite_number, DEFAULT_SATELLITE_NUMBER);
             break;
         case DS_DVB_T2:
             // DVB-S2 specific options.
-            plp.setDefault(DEFAULT_PLP);
+            set_default(plp, DEFAULT_PLP);
             TS_FALLTHROUGH
         case DS_DVB_T:
             // DVB-T2 and DVB-T common options.
-            frequency.setDefault(0);
-            inversion.setDefault(DEFAULT_INVERSION);
-            bandwidth.setDefault(DEFAULT_BANDWIDTH_DVBT);
-            fec_hp.setDefault(DEFAULT_FEC_HP);
-            fec_lp.setDefault(DEFAULT_FEC_LP);
-            modulation.setDefault(DEFAULT_MODULATION_DVBT);
-            transmission_mode.setDefault(DEFAULT_TRANSMISSION_MODE_DVBT);
-            guard_interval.setDefault(DEFAULT_GUARD_INTERVAL_DVBT);
-            hierarchy.setDefault(DEFAULT_HIERARCHY);
+            set_default(frequency, 0);
+            set_default(inversion, DEFAULT_INVERSION);
+            set_default(bandwidth, DEFAULT_BANDWIDTH_DVBT);
+            set_default(fec_hp, DEFAULT_FEC_HP);
+            set_default(fec_lp, DEFAULT_FEC_LP);
+            set_default(modulation, DEFAULT_MODULATION_DVBT);
+            set_default(transmission_mode, DEFAULT_TRANSMISSION_MODE_DVBT);
+            set_default(guard_interval, DEFAULT_GUARD_INTERVAL_DVBT);
+            set_default(hierarchy, DEFAULT_HIERARCHY);
             break;
         case DS_DVB_C_ANNEX_A:
         case DS_DVB_C_ANNEX_C:
             // DVB-C annex A,C common options (don't apply to annex B).
-            inner_fec.setDefault(DEFAULT_INNER_FEC);
-            symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_DVBC);
+            set_default(inner_fec, DEFAULT_INNER_FEC);
+            set_default(symbol_rate, DEFAULT_SYMBOL_RATE_DVBC);
             TS_FALLTHROUGH
         case DS_DVB_C_ANNEX_B:
             // DVB-C annex A,B,C common options.
-            frequency.setDefault(0);
-            inversion.setDefault(DEFAULT_INVERSION);
-            modulation.setDefault(DEFAULT_MODULATION_DVBC);
+            set_default(frequency, 0);
+            set_default(inversion, DEFAULT_INVERSION);
+            set_default(modulation, DEFAULT_MODULATION_DVBC);
             break;
         case DS_ATSC:
-            frequency.setDefault(0);
-            inversion.setDefault(DEFAULT_INVERSION);
-            modulation.setDefault(DEFAULT_MODULATION_ATSC);
+            set_default(frequency, 0);
+            set_default(inversion, DEFAULT_INVERSION);
+            set_default(modulation, DEFAULT_MODULATION_ATSC);
             break;
         case DS_ISDB_S:
-            frequency.setDefault(0);
-            polarity.setDefault(DEFAULT_POLARITY);
-            lnb.setDefault(LNB(u"", NULLREP));
-            satellite_number.setDefault(DEFAULT_SATELLITE_NUMBER);
-            inversion.setDefault(DEFAULT_INVERSION);
-            symbol_rate.setDefault(DEFAULT_SYMBOL_RATE_ISDBS);
-            inner_fec.setDefault(DEFAULT_INNER_FEC);
+            set_default(frequency, 0);
+            set_default(polarity, DEFAULT_POLARITY);
+            set_default(lnb, LNB(u"", NULLREP));
+            set_default(satellite_number, DEFAULT_SATELLITE_NUMBER);
+            set_default(inversion, DEFAULT_INVERSION);
+            set_default(symbol_rate, DEFAULT_SYMBOL_RATE_ISDBS);
+            set_default(inner_fec, DEFAULT_INNER_FEC);
             break;
         case DS_ISDB_T:
-            frequency.setDefault(0);
-            inversion.setDefault(DEFAULT_INVERSION);
-            bandwidth.setDefault(DEFAULT_BANDWIDTH_ISDBT);
-            transmission_mode.setDefault(DEFAULT_TRANSMISSION_MODE_ISDBT);
-            guard_interval.setDefault(DEFAULT_GUARD_INTERVAL_ISDBT);
-            sound_broadcasting.setDefault(false);
-            sb_subchannel_id.setDefault(DEFAULT_SB_SUBCHANNEL_ID);
-            sb_segment_count.setDefault(DEFAULT_SB_SEGMENT_COUNT);
-            sb_segment_index.setDefault(DEFAULT_SB_SEGMENT_INDEX);
-            isdbt_layers.setDefault(DEFAULT_ISDBT_LAYERS);
+            set_default(frequency, 0);
+            set_default(inversion, DEFAULT_INVERSION);
+            set_default(bandwidth, DEFAULT_BANDWIDTH_ISDBT);
+            set_default(transmission_mode, DEFAULT_TRANSMISSION_MODE_ISDBT);
+            set_default(guard_interval, DEFAULT_GUARD_INTERVAL_ISDBT);
+            set_default(sound_broadcasting, false);
+            set_default(sb_subchannel_id, DEFAULT_SB_SUBCHANNEL_ID);
+            set_default(sb_segment_count, DEFAULT_SB_SEGMENT_COUNT);
+            set_default(sb_segment_index, DEFAULT_SB_SEGMENT_INDEX);
+            set_default(isdbt_layers, DEFAULT_ISDBT_LAYERS);
             break;
         case DS_ISDB_C:
         case DS_DVB_C2:
@@ -280,8 +280,8 @@ void ts::ModulationArgs::setDefaultValues()
     }
 
     // Erase unused values.
-    if (delivery_system.set() && delivery_system.value() != DS_DVB_S2) {
-        roll_off.clear();
+    if (delivery_system.has_value() && delivery_system.value() != DS_DVB_S2) {
+        roll_off.reset();
     }
 }
 
@@ -292,7 +292,7 @@ void ts::ModulationArgs::setDefaultValues()
 
 bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems, Report& report)
 {
-    if (delivery_system.set()) {
+    if (delivery_system.has_value()) {
         if (!Contains(systems, delivery_system.value())) {
             report.error(u"delivery system %s is not supported by this tuner", {DeliverySystemEnum.name(delivery_system.value())});
             return false;
@@ -341,12 +341,12 @@ ts::BitRate ts::ModulationArgs::TheoreticalBitrateForModulation(Modulation modul
 ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
 {
     BitRate bitrate = 0;
-    const DeliverySystem delsys = delivery_system.value(DS_UNDEFINED);
+    const DeliverySystem delsys = delivery_system.value_or(DS_UNDEFINED);
 
     switch (delsys) {
         case DS_ATSC: {
             // Only two modulation values are available for ATSC.
-            const Modulation mod = modulation.value(DEFAULT_MODULATION_ATSC);
+            const Modulation mod = modulation.value_or(DEFAULT_MODULATION_ATSC);
             if (mod == VSB_8) {
                 bitrate = 19392658;
             }
@@ -358,13 +358,13 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
         case DS_DVB_C_ANNEX_A:
         case DS_DVB_C_ANNEX_C: {
             // Applies only to annex A and C, not B.
-            bitrate = TheoreticalBitrateForModulation(modulation.value(DEFAULT_MODULATION_DVBC), inner_fec.value(DEFAULT_INNER_FEC), symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBC));
+            bitrate = TheoreticalBitrateForModulation(modulation.value_or(DEFAULT_MODULATION_DVBC), inner_fec.value_or(DEFAULT_INNER_FEC), symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBC));
             break;
         }
         case DS_DVB_S:
         case DS_DVB_S_TURBO:
         case DS_DVB_S2: {
-            const uint32_t symrate = symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS);
+            const uint32_t symrate = symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS);
             // Let the Dektec API compute the TS rate if we have a Dektec library.
             #if !defined(TS_NO_DTAPI)
                 int mod = 0, param0 = 0, param1 = 0, param2 = 0, irate = 0;
@@ -384,21 +384,21 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
             #endif
             // Otherwise, don't know how to compute DVB-S2 bitrate...
             if (bitrate == 0 && delsys == DS_DVB_S) {
-                bitrate = TheoreticalBitrateForModulation(modulation.value(DEFAULT_MODULATION_DVBS), inner_fec.value(DEFAULT_INNER_FEC), symrate);
+                bitrate = TheoreticalBitrateForModulation(modulation.value_or(DEFAULT_MODULATION_DVBS), inner_fec.value_or(DEFAULT_INNER_FEC), symrate);
             }
             break;
         }
         case DS_DVB_T:
         case DS_DVB_T2: {
             // DVB-T2 and DVB-T common options.
-            const uint64_t bitpersym = BitsPerSymbol(modulation.value(DEFAULT_MODULATION_DVBT));
-            const uint64_t fec_mul = FECMultiplier(fec_hp.value(DEFAULT_FEC_HP));
-            const uint64_t fec_div = FECDivider(fec_hp.value(DEFAULT_FEC_HP));
-            const uint64_t guard_mul = GuardIntervalMultiplier(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT));
-            const uint64_t guard_div = GuardIntervalDivider(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT));
-            const uint64_t bw = bandwidth.value(DEFAULT_BANDWIDTH_DVBT);
+            const uint64_t bitpersym = BitsPerSymbol(modulation.value_or(DEFAULT_MODULATION_DVBT));
+            const uint64_t fec_mul = FECMultiplier(fec_hp.value_or(DEFAULT_FEC_HP));
+            const uint64_t fec_div = FECDivider(fec_hp.value_or(DEFAULT_FEC_HP));
+            const uint64_t guard_mul = GuardIntervalMultiplier(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT));
+            const uint64_t guard_div = GuardIntervalDivider(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT));
+            const uint64_t bw = bandwidth.value_or(DEFAULT_BANDWIDTH_DVBT);
 
-            if (hierarchy.value(DEFAULT_HIERARCHY) != HIERARCHY_NONE || fec_div == 0 || guard_div == 0) {
+            if (hierarchy.value_or(DEFAULT_HIERARCHY) != HIERARCHY_NONE || fec_div == 0 || guard_div == 0) {
                 return 0; // unknown bitrate
             }
 
@@ -443,7 +443,7 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
         case DS_ISDB_S: {
             // ISDB-S uses the Trellis coded 8-phase shift keying modulation.
             // For the sake of bitrate computation, this is the same as 8PSK.
-            bitrate = TheoreticalBitrateForModulation(PSK_8, inner_fec.value(DEFAULT_INNER_FEC), symbol_rate.value(DEFAULT_SYMBOL_RATE_ISDBS));
+            bitrate = TheoreticalBitrateForModulation(PSK_8, inner_fec.value_or(DEFAULT_INNER_FEC), symbol_rate.value_or(DEFAULT_SYMBOL_RATE_ISDBS));
             break;
         }
         case DS_ISDB_T:
@@ -485,7 +485,7 @@ bool ts::ModulationArgs::getDektecModulationType(int& type) const
 
     // Determine modulation type.
     bool supported = true;
-    switch (delivery_system.value(DS_UNDEFINED)) {
+    switch (delivery_system.value_or(DS_UNDEFINED)) {
         case DS_DVB_S:   type = DTAPI_MOD_DVBS_QPSK; break;
         case DS_DVB_T:   type = DTAPI_MOD_DVBT; break;
         case DS_DVB_T2:  type = DTAPI_MOD_DVBT2; break;
@@ -497,7 +497,7 @@ bool ts::ModulationArgs::getDektecModulationType(int& type) const
         case DS_DAB:     type = DTAPI_MOD_DAB; break;
         case DS_CMMB:    type = DTAPI_MOD_CMMB; break;
         case DS_DVB_S2:
-            switch (modulation.value(DEFAULT_MODULATION_DVBS)) {
+            switch (modulation.value_or(DEFAULT_MODULATION_DVBS)) {
                 case QPSK:    type = DTAPI_MOD_DVBS2_QPSK; break;
                 case PSK_8:   type = DTAPI_MOD_DVBS2_8PSK; break;
                 case APSK_16: type = DTAPI_MOD_DVBS2_16APSK; break;
@@ -508,7 +508,7 @@ bool ts::ModulationArgs::getDektecModulationType(int& type) const
         case DS_DVB_C_ANNEX_A:
         case DS_DVB_C_ANNEX_B:
         case DS_DVB_C_ANNEX_C:
-            switch (modulation.value(QAM_AUTO)) {
+            switch (modulation.value_or(QAM_AUTO)) {
                 case QAM_16:  type = DTAPI_MOD_QAM16;  break;
                 case QAM_32:  type = DTAPI_MOD_QAM32;  break;
                 case QAM_64:  type = DTAPI_MOD_QAM64;  break;
@@ -534,7 +534,7 @@ bool ts::ModulationArgs::getDektecModulationType(int& type) const
 
 bool ts::ModulationArgs::getDektecCodeRate(int& fec) const
 {
-    return ToDektecCodeRate(fec, inner_fec.value(DEFAULT_INNER_FEC));
+    return ToDektecCodeRate(fec, inner_fec.value_or(DEFAULT_INNER_FEC));
 }
 
 bool ts::ModulationArgs::ToDektecCodeRate(int& fec, InnerFEC in_enum)
@@ -591,11 +591,11 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
     // Additional parameters param1 and param2
     param1 = param2 = 0;
     if (delivery_system == DS_DVB_S2) {
-        param1 = pilots.value(DEFAULT_PILOTS) == PILOT_ON ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
+        param1 = pilots.value_or(DEFAULT_PILOTS) == PILOT_ON ? DTAPI_MOD_S2_PILOTS : DTAPI_MOD_S2_NOPILOTS;
         // Assume long FEC frame for broadcast service (should be updated by caller if necessary).
         param1 |= DTAPI_MOD_S2_LONGFRM;
         // Roll-off
-        switch (roll_off.value(DEFAULT_ROLL_OFF)) {
+        switch (roll_off.value_or(DEFAULT_ROLL_OFF)) {
             case ROLLOFF_AUTO: param1 |= DTAPI_MOD_ROLLOFF_AUTO; break;
             case ROLLOFF_20:   param1 |= DTAPI_MOD_ROLLOFF_20; break;
             case ROLLOFF_25:   param1 |= DTAPI_MOD_ROLLOFF_25; break;
@@ -603,7 +603,7 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
             default: break;
         }
         // Physical layer scrambling initialization sequence
-        param2 = int(pls_code.value(DEFAULT_PLS_CODE));
+        param2 = int(pls_code.value_or(DEFAULT_PLS_CODE));
     }
 
     return true;
@@ -676,7 +676,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                     switch ((data[6] >> 2) & 0x01) {
                         case 0:
                             delivery_system = DS_DVB_S;
-                            roll_off.clear();
+                            roll_off.reset();
                             break;
                         case 1:
                             delivery_system = DS_DVB_S2;
@@ -696,7 +696,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                 else {
                     // ISDB variant.
                     delivery_system = DS_ISDB_S;
-                    roll_off.clear();
+                    roll_off.reset();
                     // The TS id is used in ISDB-S multi-stream encapsulation.
                     stream_id = ts_id;
                     // Inner FEC.
@@ -722,7 +722,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                         // 9  = 2.6GHz band digital satellite sound broadcasting
                         // 10 = Advanced narrow-band CS digital broadcasting
                         // Don't really know how to translate this...
-                        default: modulation.clear(); break;
+                        default: modulation.reset(); break;
                     }
                 }
             }
@@ -868,7 +868,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
 ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
 {
     // Don't know what to describe without delivery system or frequency.
-    if (!delivery_system.set() || !frequency.set()) {
+    if (!delivery_system.has_value() || !frequency.has_value()) {
         return UString();
     }
 
@@ -917,7 +917,7 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
         case TT_ISDB_S: {
             // Display frequency and polarity.
             desc = UString::Format(u"%'d Hz", {frequency.value()});
-            if (polarity.set()) {
+            if (polarity.has_value()) {
                 switch (polarity.value()) {
                     case POL_HORIZONTAL:
                         desc += u" H";
@@ -968,165 +968,165 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
 {
     const bool verbose = level >= Severity::Verbose;
 
-    if (frequency.set() && frequency != 0) {
+    if (frequency.has_value() && frequency != 0) {
         strm << margin << "Carrier frequency: " << UString::Decimal(frequency.value()) << " Hz" << std::endl;
     }
-    if (inversion.set() && inversion != SPINV_AUTO) {
+    if (inversion.has_value() && inversion != SPINV_AUTO) {
         strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
     }
-    if (modulation.set() && modulation != QAM_AUTO) {
+    if (modulation.has_value() && modulation != QAM_AUTO) {
         strm << margin << "Modulation: " << ModulationEnum.name(modulation.value()) << std::endl;
     }
 
-    switch (TunerTypeOf(delivery_system.value(DS_UNDEFINED))) {
+    switch (TunerTypeOf(delivery_system.value_or(DS_UNDEFINED))) {
         case TT_DVB_C: {
-            if (symbol_rate.set() && symbol_rate != 0) {
+            if (symbol_rate.has_value() && symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
             }
-            if (inner_fec.set() && inner_fec != FEC_AUTO) {
+            if (inner_fec.has_value() && inner_fec != FEC_AUTO) {
                 strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
             }
             break;
         }
         case TT_DVB_T: {
-            if (fec_hp.set() && fec_hp != FEC_AUTO) {
+            if (fec_hp.has_value() && fec_hp != FEC_AUTO) {
                 strm << margin << "HP streams FEC: " << InnerFECEnum.name(fec_hp.value()) << std::endl;
             }
-            if (fec_lp.set() && fec_lp != FEC_AUTO) {
+            if (fec_lp.has_value() && fec_lp != FEC_AUTO) {
                 strm << margin << "LP streams FEC: " << InnerFECEnum.name(fec_lp.value()) << std::endl;
             }
-            if (guard_interval.set() && guard_interval != GUARD_AUTO) {
+            if (guard_interval.has_value() && guard_interval != GUARD_AUTO) {
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
-            if (bandwidth.set() && bandwidth != 0) {
+            if (bandwidth.has_value() && bandwidth != 0) {
                 strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << " Hz" << std::endl;
             }
-            if (transmission_mode.set() && transmission_mode != TM_AUTO) {
+            if (transmission_mode.has_value() && transmission_mode != TM_AUTO) {
                 strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;
             }
-            if (hierarchy.set() && hierarchy != HIERARCHY_AUTO) {
+            if (hierarchy.has_value() && hierarchy != HIERARCHY_AUTO) {
                 strm << margin << "Hierarchy: " << HierarchyEnum.name(hierarchy.value()) << std::endl;
             }
             break;
         }
         case TT_DVB_S: {
-            if (polarity.set() && polarity != POL_AUTO) {
+            if (polarity.has_value() && polarity != POL_AUTO) {
                 strm << margin << "Polarity: " << PolarizationEnum.name(polarity.value()) << std::endl;
             }
-            if (inversion.set() && inversion != SPINV_AUTO) {
+            if (inversion.has_value() && inversion != SPINV_AUTO) {
                 strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
             }
-            if (symbol_rate.set() && symbol_rate != 0) {
+            if (symbol_rate.has_value() && symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
             }
-            if (inner_fec.set() && inner_fec != ts::FEC_AUTO) {
+            if (inner_fec.has_value() && inner_fec != ts::FEC_AUTO) {
                 strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
             }
-            if (isi.set() && isi != ISI_DISABLE) {
+            if (isi.has_value() && isi != ISI_DISABLE) {
                 strm << margin << "Input stream id: " << isi.value() << std::endl
-                     << margin << "PLS code: " << pls_code.value(DEFAULT_PLS_CODE) << std::endl
-                     << margin << "PLS mode: "<< PLSModeEnum.name(pls_mode.value(DEFAULT_PLS_MODE)) << std::endl;
+                     << margin << "PLS code: " << pls_code.value_or(DEFAULT_PLS_CODE) << std::endl
+                     << margin << "PLS mode: "<< PLSModeEnum.name(pls_mode.value_or(DEFAULT_PLS_MODE)) << std::endl;
             }
-            if ((verbose || delivery_system != DS_DVB_S) && pilots.set() && pilots != PILOT_AUTO) {
+            if ((verbose || delivery_system != DS_DVB_S) && pilots.has_value() && pilots != PILOT_AUTO) {
                 strm << margin << "Pilots: " << PilotEnum.name(pilots.value()) << std::endl;
             }
-            if ((verbose || delivery_system != DS_DVB_S) && roll_off.set() && roll_off != ROLLOFF_AUTO) {
+            if ((verbose || delivery_system != DS_DVB_S) && roll_off.has_value() && roll_off != ROLLOFF_AUTO) {
                 strm << margin << "Roll-off: " << RollOffEnum.name(roll_off.value()) << std::endl;
             }
-            if (verbose && lnb.set()) {
+            if (verbose && lnb.has_value()) {
                 strm << margin << "LNB: " << lnb.value() << std::endl;
             }
             if (verbose) {
-                strm << margin << "Satellite number: " << satellite_number.value(DEFAULT_SATELLITE_NUMBER) << std::endl;
+                strm << margin << "Satellite number: " << satellite_number.value_or(DEFAULT_SATELLITE_NUMBER) << std::endl;
             }
             break;
         }
         case TT_ISDB_S: {
-            if (polarity.set() && polarity != POL_AUTO) {
+            if (polarity.has_value() && polarity != POL_AUTO) {
                 strm << margin << "Polarity: " << PolarizationEnum.name(polarity.value()) << std::endl;
             }
-            if (inversion.set() && inversion != SPINV_AUTO) {
+            if (inversion.has_value() && inversion != SPINV_AUTO) {
                 strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
             }
-            if (symbol_rate.set() && symbol_rate != 0) {
+            if (symbol_rate.has_value() && symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
             }
-            if (stream_id.set()) {
+            if (stream_id.has_value()) {
                 strm << margin << "Innert transport stream id: " << stream_id.value() << std::endl;
             }
-            if (inner_fec.set() && inner_fec != ts::FEC_AUTO) {
+            if (inner_fec.has_value() && inner_fec != ts::FEC_AUTO) {
                 strm << margin << "FEC inner: " << InnerFECEnum.name(inner_fec.value()) << std::endl;
             }
-            if (verbose && lnb.set()) {
+            if (verbose && lnb.has_value()) {
                 strm << margin << "LNB: " << lnb.value() << std::endl;
             }
             if (verbose) {
-                strm << margin << "Satellite number: " << satellite_number.value(DEFAULT_SATELLITE_NUMBER) << std::endl;
+                strm << margin << "Satellite number: " << satellite_number.value_or(DEFAULT_SATELLITE_NUMBER) << std::endl;
             }
             break;
         }
         case TT_ISDB_T: {
-            if (guard_interval.set() && guard_interval != GUARD_AUTO) {
+            if (guard_interval.has_value() && guard_interval != GUARD_AUTO) {
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
-            if (bandwidth.set() && bandwidth != 0) {
+            if (bandwidth.has_value() && bandwidth != 0) {
                 strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << " Hz" << std::endl;
             }
-            if (transmission_mode.set() && transmission_mode != TM_AUTO) {
+            if (transmission_mode.has_value() && transmission_mode != TM_AUTO) {
                 strm << margin << "Transmission mode: " << TransmissionModeEnum.name(transmission_mode.value()) << std::endl;
             }
             if (sound_broadcasting == true) {
                 strm << margin << "Sound broadcasting: on" << std::endl;
-                if (sb_subchannel_id.set()) {
+                if (sb_subchannel_id.has_value()) {
                     strm << margin << "- Sub-channel id: " << sb_subchannel_id.value() << std::endl;
                 }
-                if (sb_segment_count.set()) {
+                if (sb_segment_count.has_value()) {
                     strm << margin << "- Segment count: " << sb_segment_count.value() << std::endl;
                 }
-                if (sb_segment_index.set()) {
+                if (sb_segment_index.has_value()) {
                     strm << margin << "- Segment index: " << sb_segment_index.value() << std::endl;
                 }
             }
-            if (isdbt_layers.set()) {
+            if (isdbt_layers.has_value()) {
                 strm << margin << "Layers: " << (isdbt_layers.value().empty() ? u"none" : isdbt_layers.value()) << std::endl;
             }
-            if (isdbt_partial_reception.set()) {
+            if (isdbt_partial_reception.has_value()) {
                 strm << margin << "Partial reception: " << UString::OnOff(isdbt_partial_reception.value()) << std::endl;
             }
-            if (layer_a_fec.set() && layer_a_fec != FEC_AUTO) {
+            if (layer_a_fec.has_value() && layer_a_fec != FEC_AUTO) {
                 strm << margin << "Layer A FEC: " << InnerFECEnum.name(layer_a_fec.value()) << std::endl;
             }
-            if (layer_a_modulation.set() && layer_a_modulation != QAM_AUTO) {
+            if (layer_a_modulation.has_value() && layer_a_modulation != QAM_AUTO) {
                 strm << margin << "Layer A modulation: " << ModulationEnum.name(layer_a_modulation.value()) << std::endl;
             }
-            if (layer_a_segment_count.set() && layer_a_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
+            if (layer_a_segment_count.has_value() && layer_a_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
                 strm << margin << "Layer A segment count: " << layer_a_segment_count.value() << std::endl;
             }
-            if (layer_a_time_interleaving.set() && IsValidISDBTTimeInterleaving(layer_a_time_interleaving.value())) {
+            if (layer_a_time_interleaving.has_value() && IsValidISDBTTimeInterleaving(layer_a_time_interleaving.value())) {
                 strm << margin << "Layer A time interleaving: " << layer_a_time_interleaving.value() << std::endl;
             }
-            if (layer_b_fec.set() && layer_b_fec != FEC_AUTO) {
+            if (layer_b_fec.has_value() && layer_b_fec != FEC_AUTO) {
                 strm << margin << "Layer B FEC: " << InnerFECEnum.name(layer_b_fec.value()) << std::endl;
             }
-            if (layer_b_modulation.set() && layer_b_modulation != QAM_AUTO) {
+            if (layer_b_modulation.has_value() && layer_b_modulation != QAM_AUTO) {
                 strm << margin << "Layer B modulation: " << ModulationEnum.name(layer_b_modulation.value()) << std::endl;
             }
-            if (layer_b_segment_count.set() && layer_b_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
+            if (layer_b_segment_count.has_value() && layer_b_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
                 strm << margin << "Layer B segment count: " << layer_b_segment_count.value() << std::endl;
             }
-            if (layer_b_time_interleaving.set() && IsValidISDBTTimeInterleaving(layer_b_time_interleaving.value())) {
+            if (layer_b_time_interleaving.has_value() && IsValidISDBTTimeInterleaving(layer_b_time_interleaving.value())) {
                 strm << margin << "Layer B time interleaving: " << layer_b_time_interleaving.value() << std::endl;
             }
-            if (layer_c_fec.set() && layer_c_fec != FEC_AUTO) {
+            if (layer_c_fec.has_value() && layer_c_fec != FEC_AUTO) {
                 strm << margin << "Layer C FEC: " << InnerFECEnum.name(layer_c_fec.value()) << std::endl;
             }
-            if (layer_c_modulation.set() && layer_c_modulation != QAM_AUTO) {
+            if (layer_c_modulation.has_value() && layer_c_modulation != QAM_AUTO) {
                 strm << margin << "Layer C modulation: " << ModulationEnum.name(layer_c_modulation.value()) << std::endl;
             }
-            if (layer_c_segment_count.set() && layer_c_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
+            if (layer_c_segment_count.has_value() && layer_c_segment_count.value() <= MAX_ISDBT_SEGMENT_COUNT) {
                 strm << margin << "Layer C segment count: " << layer_c_segment_count.value() << std::endl;
             }
-            if (layer_c_time_interleaving.set() && IsValidISDBTTimeInterleaving(layer_c_time_interleaving.value())) {
+            if (layer_c_time_interleaving.has_value() && IsValidISDBTTimeInterleaving(layer_c_time_interleaving.value())) {
                 strm << margin << "Layer C time interleaving: " << layer_c_time_interleaving.value() << std::endl;
             }
             break;
@@ -1149,7 +1149,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
 ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
 {
     // Don't know what to describe without delivery system or frequency.
-    if (!delivery_system.set() || !frequency.set()) {
+    if (!delivery_system.has_value() || !frequency.has_value()) {
         return UString();
     }
 
@@ -1159,14 +1159,14 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
     // All other options depend on the tuner type.
     switch (TunerTypeOf(delivery_system.value())) {
         case TT_ATSC: {
-            opt += UString::Format(u" --modulation %s", {ModulationEnum.name(modulation.value(DEFAULT_MODULATION_ATSC))});
+            opt += UString::Format(u" --modulation %s", {ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_ATSC))});
             break;
         }
         case TT_DVB_C: {
             opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --modulation %s", {
-                                   symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBC),
-                                   InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
-                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBC))});
+                                   symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBC),
+                                   InnerFECEnum.name(inner_fec.value_or(DEFAULT_INNER_FEC)),
+                                   ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBC))});
             break;
         }
         case TT_DVB_T: {
@@ -1177,14 +1177,14 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                    u" --transmission-mode %s"
                                    u" --guard-interval %s"
                                    u" --hierarchy %s", {
-                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBT)),
-                                   InnerFECEnum.name(fec_hp.value(DEFAULT_FEC_HP)),
-                                   InnerFECEnum.name(fec_lp.value(DEFAULT_FEC_LP)),
-                                   bandwidth.value(DEFAULT_BANDWIDTH_DVBT),
-                                   TransmissionModeEnum.name(transmission_mode.value(DEFAULT_TRANSMISSION_MODE_DVBT)),
-                                   GuardIntervalEnum.name(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT)),
-                                   HierarchyEnum.name(hierarchy.value(DEFAULT_HIERARCHY))});
-            if (plp.set() && plp != PLP_DISABLE) {
+                                   ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBT)),
+                                   InnerFECEnum.name(fec_hp.value_or(DEFAULT_FEC_HP)),
+                                   InnerFECEnum.name(fec_lp.value_or(DEFAULT_FEC_LP)),
+                                   bandwidth.value_or(DEFAULT_BANDWIDTH_DVBT),
+                                   TransmissionModeEnum.name(transmission_mode.value_or(DEFAULT_TRANSMISSION_MODE_DVBT)),
+                                   GuardIntervalEnum.name(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT)),
+                                   HierarchyEnum.name(hierarchy.value_or(DEFAULT_HIERARCHY))});
+            if (plp.has_value() && plp != PLP_DISABLE) {
                 opt += UString::Format(u" --plp %d", {plp.value()});
             }
             break;
@@ -1194,99 +1194,99 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                    u" --fec-inner %s"
                                    u" --polarity %s"
                                    u" --modulation %s", {
-                                   symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS),
-                                   InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
-                                   PolarizationEnum.name(polarity.value(DEFAULT_POLARITY)),
-                                   ModulationEnum.name(modulation.value(DEFAULT_MODULATION_DVBS))});
+                                   symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS),
+                                   InnerFECEnum.name(inner_fec.value_or(DEFAULT_INNER_FEC)),
+                                   PolarizationEnum.name(polarity.value_or(DEFAULT_POLARITY)),
+                                   ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBS))});
             if (delivery_system == DS_DVB_S2) {
                 opt += UString::Format(u" --pilots %s --roll-off %s", {
-                                       PilotEnum.name(pilots.value(DEFAULT_PILOTS)),
-                                       RollOffEnum.name(roll_off.value(DEFAULT_ROLL_OFF))});
+                                       PilotEnum.name(pilots.value_or(DEFAULT_PILOTS)),
+                                       RollOffEnum.name(roll_off.value_or(DEFAULT_ROLL_OFF))});
             }
-            if (isi.set() && isi != DEFAULT_ISI) {
+            if (isi.has_value() && isi != DEFAULT_ISI) {
                 opt += UString::Format(u" --isi %d", {isi.value()});
             }
-            if (pls_code.set() && pls_code != DEFAULT_PLS_CODE) {
+            if (pls_code.has_value() && pls_code != DEFAULT_PLS_CODE) {
                 opt += UString::Format(u" --pls-code %d", {pls_code.value()});
             }
-            if (pls_mode.set() && pls_mode != DEFAULT_PLS_MODE) {
+            if (pls_mode.has_value() && pls_mode != DEFAULT_PLS_MODE) {
                 opt += UString::Format(u" --pls-mode %s", {PLSModeEnum.name(pls_mode.value())});
             }
-            if (!no_local && lnb.set()) {
+            if (!no_local && lnb.has_value()) {
                 opt += UString::Format(u" --lnb %s", {lnb.value()});
             }
-            if (!no_local && satellite_number.set()) {
+            if (!no_local && satellite_number.has_value()) {
                 opt += UString::Format(u" --satellite-number %d", {satellite_number.value()});
             }
             break;
         }
         case TT_ISDB_S: {
             opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --polarity %s", {
-                                   symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS),
-                                   InnerFECEnum.name(inner_fec.value(DEFAULT_INNER_FEC)),
-                                   PolarizationEnum.name(polarity.value(DEFAULT_POLARITY))});
-            if (stream_id.set() && stream_id != DEFAULT_STREAM_ID) {
+                                   symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS),
+                                   InnerFECEnum.name(inner_fec.value_or(DEFAULT_INNER_FEC)),
+                                   PolarizationEnum.name(polarity.value_or(DEFAULT_POLARITY))});
+            if (stream_id.has_value() && stream_id != DEFAULT_STREAM_ID) {
                 opt += UString::Format(u" --stream-id %d", {stream_id.value()});
             }
-            if (!no_local && lnb.set()) {
+            if (!no_local && lnb.has_value()) {
                 opt += UString::Format(u" --lnb %s", {lnb.value()});
             }
-            if (!no_local && satellite_number.set()) {
+            if (!no_local && satellite_number.has_value()) {
                 opt += UString::Format(u" --satellite-number %d", {satellite_number.value()});
             }
             break;
         }
         case TT_ISDB_T: {
             opt += UString::Format(u" --bandwidth %'d --transmission-mode %s --guard-interval %s", {
-                                   bandwidth.value(DEFAULT_BANDWIDTH_ISDBT),
-                                   TransmissionModeEnum.name(transmission_mode.value(DEFAULT_TRANSMISSION_MODE_DVBT)),
-                                   GuardIntervalEnum.name(guard_interval.value(DEFAULT_GUARD_INTERVAL_DVBT))});
+                                   bandwidth.value_or(DEFAULT_BANDWIDTH_ISDBT),
+                                   TransmissionModeEnum.name(transmission_mode.value_or(DEFAULT_TRANSMISSION_MODE_DVBT)),
+                                   GuardIntervalEnum.name(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT))});
             if (sound_broadcasting == true) {
                 opt += UString::Format(u" --sound-broadcasting --sb-subchannel-id %d --sb-segment-count %d --sb-segment-index %d", {
-                                       sb_subchannel_id.value(DEFAULT_SB_SUBCHANNEL_ID),
-                                       sb_segment_count.value(DEFAULT_SB_SEGMENT_COUNT),
-                                       sb_segment_index.value(DEFAULT_SB_SEGMENT_INDEX)});
+                                       sb_subchannel_id.value_or(DEFAULT_SB_SUBCHANNEL_ID),
+                                       sb_segment_count.value_or(DEFAULT_SB_SEGMENT_COUNT),
+                                       sb_segment_index.value_or(DEFAULT_SB_SEGMENT_INDEX)});
             }
             if (isdbt_partial_reception == true) {
                 opt += u" --isdbt-partial-reception";
             }
-            if (!isdbt_layers.set() || !isdbt_layers.value().empty()) {
-                opt += UString::Format(u" --isdbt-layers \"%s\"", {isdbt_layers.value(DEFAULT_ISDBT_LAYERS)});
+            if (!isdbt_layers.has_value() || !isdbt_layers.value().empty()) {
+                opt += UString::Format(u" --isdbt-layers \"%s\"", {isdbt_layers.value_or(DEFAULT_ISDBT_LAYERS)});
             }
-            if (layer_a_fec.set() && layer_a_fec != FEC_AUTO) {
+            if (layer_a_fec.has_value() && layer_a_fec != FEC_AUTO) {
                 opt += UString::Format(u" --isdbt-layer-a-fec %s", {InnerFECEnum.name(layer_a_fec.value())});
             }
-            if (layer_a_modulation.set() && layer_a_modulation != QAM_AUTO) {
+            if (layer_a_modulation.has_value() && layer_a_modulation != QAM_AUTO) {
                 opt += UString::Format(u" --isdbt-layer-a-modulation %s", {ModulationEnum.name(layer_a_modulation.value())});
             }
-            if (layer_a_segment_count.set()) {
+            if (layer_a_segment_count.has_value()) {
                 opt += UString::Format(u" --isdbt-layer-a-segment-count %d", {layer_a_segment_count.value()});
             }
-            if (layer_a_time_interleaving.set()) {
+            if (layer_a_time_interleaving.has_value()) {
                 opt += UString::Format(u" --isdbt-layer-a-time-interleaving %d", {layer_a_time_interleaving.value()});
             }
-            if (layer_b_fec.set() && layer_b_fec != FEC_AUTO) {
+            if (layer_b_fec.has_value() && layer_b_fec != FEC_AUTO) {
                 opt += UString::Format(u" --isdbt-layer-b-fec %s", {InnerFECEnum.name(layer_b_fec.value())});
             }
-            if (layer_b_modulation.set() && layer_b_modulation != QAM_AUTO) {
+            if (layer_b_modulation.has_value() && layer_b_modulation != QAM_AUTO) {
                 opt += UString::Format(u" --isdbt-layer-b-modulation %s", {ModulationEnum.name(layer_b_modulation.value())});
             }
-            if (layer_b_segment_count.set()) {
+            if (layer_b_segment_count.has_value()) {
                 opt += UString::Format(u" --isdbt-layer-b-segment-count %d", {layer_b_segment_count.value()});
             }
-            if (layer_b_time_interleaving.set()) {
+            if (layer_b_time_interleaving.has_value()) {
                 opt += UString::Format(u" --isdbt-layer-b-time-interleaving %d", {layer_b_time_interleaving.value()});
             }
-            if (layer_c_fec.set() && layer_c_fec != FEC_AUTO) {
+            if (layer_c_fec.has_value() && layer_c_fec != FEC_AUTO) {
                 opt += UString::Format(u" --isdbt-layer-c-fec %s", {InnerFECEnum.name(layer_c_fec.value())});
             }
-            if (layer_c_modulation.set() && layer_c_modulation != QAM_AUTO) {
+            if (layer_c_modulation.has_value() && layer_c_modulation != QAM_AUTO) {
                 opt += UString::Format(u" --isdbt-layer-c-modulation %s", {ModulationEnum.name(layer_c_modulation.value())});
             }
-            if (layer_c_segment_count.set()) {
+            if (layer_c_segment_count.has_value()) {
                 opt += UString::Format(u" --isdbt-layer-c-segment-count %d", {layer_c_segment_count.value()});
             }
-            if (layer_c_time_interleaving.set()) {
+            if (layer_c_time_interleaving.has_value()) {
                 opt += UString::Format(u" --isdbt-layer-c-time-interleaving %d", {layer_c_time_interleaving.value()});
             }
             break;
@@ -1299,7 +1299,7 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
     }
 
     // Add spectral inversion (common option).
-    if (inversion.set() && inversion != DEFAULT_INVERSION) {
+    if (inversion.has_value() && inversion != DEFAULT_INVERSION) {
         opt += u" --spectral-inversion ";
         opt += SpectralInversionEnum.name(inversion.value());
     }

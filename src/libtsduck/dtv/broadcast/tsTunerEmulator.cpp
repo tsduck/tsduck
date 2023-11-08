@@ -232,8 +232,8 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
     }
 
     // We only look as those parameters:
-    const uint64_t freq = params.frequency.value(0);
-    const DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
+    const uint64_t freq = params.frequency.value_or(0);
+    const DeliverySystem delsys = params.delivery_system.value_or(DS_UNDEFINED);
     if (freq == 0) {
         _duck.report().error(u"frequency unspecified");
         return false;
@@ -257,7 +257,7 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
     params.delivery_system = _channels[index].delivery;
 
     if (IsSatelliteDelivery(params.delivery_system.value())) {
-        if (!params.lnb.set()) {
+        if (!params.lnb.has_value()) {
             _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
         }
         else {

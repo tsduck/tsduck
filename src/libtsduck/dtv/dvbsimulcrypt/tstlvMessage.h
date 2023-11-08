@@ -215,7 +215,7 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpOptionalDecimal(size_t indent, const UString& name, const Variable<INT>& value)
             {
-                return value.set() ? dumpDecimal(indent, name, value.value()) : u"";
+                return value.has_value() ? dumpDecimal(indent, name, value.value()) : u"";
             }
 
             //!
@@ -244,7 +244,7 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpOptionalHexa(size_t indent, const UString& name, const Variable<INT>& value)
             {
-                return value.set() ? dumpHexa(indent, name, value.value()) : u"";
+                return value.has_value() ? dumpHexa(indent, name, value.value()) : u"";
             }
 
             //!
@@ -275,7 +275,7 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpOptionalInteger(size_t indent, const UString& name, const Variable<INT>& value)
             {
-                return value.set() ? dumpInteger(indent, name, value.value()) : u"";
+                return value.has_value() ? dumpInteger(indent, name, value.value()) : u"";
             }
 
             //!

@@ -24,6 +24,8 @@ namespace ts {
     //! The basic requirement on @a T is the availability of a copy constructor and
     //! operators for assignment and equality.
     //!
+    //! Note: this class is being replaced with std::optional and will be deleted when the transition is complete/
+    //!
     template <typename T>
     class Variable
     {
@@ -100,7 +102,7 @@ namespace ts {
         //!
         //! @return True if the variable is initialized, false otherwise.
         //!
-        bool set() const { return _access != nullptr; }
+        bool has_value() const { return _access != nullptr; }
 
         //!
         //! Set a value if the variable is currently unset.
@@ -117,7 +119,7 @@ namespace ts {
         //!
         //! This object becomes uninitialized if it was not already.
         //!
-        void clear();
+        void reset();
 
         //!
         //! Access the constant @a T value inside the variable.
@@ -142,7 +144,7 @@ namespace ts {
         //! @return A copy the @a T value inside the variable if the variable is
         //! initialized, @a def otherwise.
         //!
-        T value(const T& def) const;
+        T value_or(const T& def) const;
 
         //!
         //! Equality operator.
@@ -213,7 +215,7 @@ TS_LLVM_NOWARNING(dtor-name)
 template <typename T>
 ts::Variable<T>::~Variable()
 {
-    clear();
+    reset();
 }
 TS_POP_WARNING()
 
@@ -221,7 +223,7 @@ template <typename T>
 ts::Variable<T>& ts::Variable<T>::operator=(const Variable<T>& other)
 {
     if (&other != this) {
-        clear();
+        reset();
         if (other._access != nullptr) {
             _access = new(_data) T(*(other._access));
         }
@@ -233,7 +235,7 @@ template <typename T>
 ts::Variable<T>& ts::Variable<T>::operator=(Variable<T>&& other)
 {
     if (&other != this) {
-        clear();
+        reset();
         if (other._access != nullptr) {
             _access = new(_data) T(std::move(*(other._access)));
             // Other's data has been moved, we cannot destruct it, just mark it as unset.
@@ -246,7 +248,7 @@ ts::Variable<T>& ts::Variable<T>::operator=(Variable<T>&& other)
 template <typename T>
 ts::Variable<T>& ts::Variable<T>::operator=(const T& obj)
 {
-    clear();
+    reset();
     _access = new(_data) T(obj);
     return *this;
 }
@@ -270,7 +272,7 @@ bool ts::Variable<T>::setDefault(const T& def)
 //----------------------------------------------------------------------------
 
 template <typename T>
-void ts::Variable<T>::clear()
+void ts::Variable<T>::reset()
 {
     if (_access != nullptr) {
         // Safe when the destructor throws an exception
@@ -308,7 +310,7 @@ T& ts::Variable<T>::value()
 }
 
 template <typename T>
-T ts::Variable<T>::value(const T& def) const
+T ts::Variable<T>::value_or(const T& def) const
 {
     return _access != nullptr ? *_access : def;
 }
@@ -324,7 +326,6 @@ bool ts::Variable<T>::identical(const Variable<T>& other) const
     return (_access == nullptr && other._access == nullptr ) ||
            (_access != nullptr && other._access != nullptr && *_access == *other._access);
 }
-
 
 template <typename T>
 bool ts::Variable<T>::operator==(const Variable<T>& other) const

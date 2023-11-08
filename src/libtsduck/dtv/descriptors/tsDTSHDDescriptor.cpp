@@ -40,11 +40,11 @@ ts::DTSHDDescriptor::DTSHDDescriptor(DuckContext& duck, const Descriptor& desc) 
 
 void ts::DTSHDDescriptor::clearContent()
 {
-    substream_core.clear();
-    substream_0.clear();
-    substream_1.clear();
-    substream_2.clear();
-    substream_3.clear();
+    substream_core.reset();
+    substream_0.reset();
+    substream_1.reset();
+    substream_2.reset();
+    substream_3.reset();
     additional_info.clear();
 }
 
@@ -65,11 +65,11 @@ ts::DID ts::DTSHDDescriptor::extendedTag() const
 
 void ts::DTSHDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBit(substream_core.set());
-    buf.putBit(substream_0.set());
-    buf.putBit(substream_1.set());
-    buf.putBit(substream_2.set());
-    buf.putBit(substream_3.set());
+    buf.putBit(substream_core.has_value());
+    buf.putBit(substream_0.has_value());
+    buf.putBit(substream_1.has_value());
+    buf.putBit(substream_2.has_value());
+    buf.putBit(substream_3.has_value());
     buf.putBits(0xFF, 3);
 
     SerializeSubstreamInfo(substream_core, buf);
@@ -82,7 +82,7 @@ void ts::DTSHDDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& info, PSIBuffer& buf)
 {
-    if (info.set()) {
+    if (info.has_value()) {
         const SubstreamInfo& si(info.value());
         buf.pushWriteSequenceWithLeadingLength(8);  // start write sequence
 
@@ -103,14 +103,14 @@ void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& 
                 buf.putBits(ai.asset_construction, 5);
                 buf.putBit(ai.vbr);
                 buf.putBit(ai.post_encode_br_scaling);
-                buf.putBit(ai.component_type.set());
-                buf.putBit(ai.ISO_639_language_code.set());
+                buf.putBit(ai.component_type.has_value());
+                buf.putBit(ai.ISO_639_language_code.has_value());
                 buf.putBits(ai.bit_rate, 13);
                 buf.putBits(0xFF, 2);
-                if (ai.component_type.set()) {
+                if (ai.component_type.has_value()) {
                     buf.putUInt8(ai.component_type.value());
                 }
-                if (ai.ISO_639_language_code.set()) {
+                if (ai.ISO_639_language_code.has_value()) {
                     buf.putLanguageCode(ai.ISO_639_language_code.value());
                 }
             }
@@ -280,7 +280,7 @@ void ts::DTSHDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 void ts::DTSHDDescriptor::SubstreamInfoToXML(const Variable<SubstreamInfo>& info, const UString& name, xml::Element* parent)
 {
-    if (info.set()) {
+    if (info.has_value()) {
         const SubstreamInfo& si(info.value());
         xml::Element* e = parent->addElement(name);
         e->setIntAttribute(u"channel_count", uint8_t(si.channel_count & 0x1F), false);
@@ -295,7 +295,7 @@ void ts::DTSHDDescriptor::SubstreamInfoToXML(const Variable<SubstreamInfo>& info
             xai->setBoolAttribute(u"post_encode_br_scaling", ai.post_encode_br_scaling);
             xai->setIntAttribute(u"bit_rate", uint16_t(ai.bit_rate & 0x1FFF), false);
             xai->setOptionalIntAttribute(u"component_type", ai.component_type, true);
-            xai->setAttribute(u"ISO_639_language_code", ai.ISO_639_language_code.value(u""), true);
+            xai->setAttribute(u"ISO_639_language_code", ai.ISO_639_language_code.value_or(u""), true);
         }
     }
 }
@@ -325,7 +325,7 @@ bool ts::DTSHDDescriptor::SubstreamInfoFromXML(Variable<SubstreamInfo>& info, co
 
     if (children.empty()) {
         // Element not present
-        info.clear();
+        info.reset();
         return true;
     }
     else {

@@ -17,10 +17,10 @@
 void ts::SignalState::clear()
 {
     signal_locked = false;
-    signal_strength.clear();
-    signal_noise_ratio.clear();
-    bit_error_rate.clear();
-    packet_error_rate.clear();
+    signal_strength.reset();
+    signal_noise_ratio.reset();
+    bit_error_rate.reset();
+    packet_error_rate.reset();
 }
 
 
@@ -28,11 +28,11 @@ void ts::SignalState::clear()
 // Set a percentage value from a raw driver value.
 //----------------------------------------------------------------------------
 
-void ts::SignalState::setPercent(Variable<Value> SignalState::* field, int64_t value, int64_t min, int64_t max)
+void ts::SignalState::setPercent(std::optional<Value> SignalState::* field, int64_t value, int64_t min, int64_t max)
 {
     if (max <= min) {
         // Invalid range.
-        (this->*field).clear();
+        (this->*field).reset();
     }
     else {
         this->*field = Value(((value - min) * 100) / (max - min), Unit::PERCENT);
@@ -62,16 +62,16 @@ ts::UString ts::SignalState::toString() const
 {
     UString str;
     str.format(u"locked: %s", {UString::YesNo(signal_locked)});
-    if (signal_strength.set()) {
+    if (signal_strength.has_value()) {
         str.format(u", strength: %s", {signal_strength.value()});
     }
-    if (signal_noise_ratio.set()) {
+    if (signal_noise_ratio.has_value()) {
         str.format(u", SNR: %s", {signal_noise_ratio.value()});
     }
-    if (bit_error_rate.set()) {
+    if (bit_error_rate.has_value()) {
         str.format(u", BER: %s", {bit_error_rate.value()});
     }
-    if (packet_error_rate.set()) {
+    if (packet_error_rate.has_value()) {
         str.format(u", PER: %s", {packet_error_rate.value()});
     }
     return str;
@@ -85,16 +85,16 @@ ts::UString ts::SignalState::toString() const
 std::ostream& ts::SignalState::display(std::ostream& out, const UString& margin, int level) const
 {
     out << margin << "Signal locked: " << UString::YesNo(signal_locked) << std::endl;
-    if (signal_strength.set()) {
+    if (signal_strength.has_value()) {
         out << margin << "Signal strength: " << signal_strength.value() << std::endl;
     }
-    if (signal_noise_ratio.set()) {
+    if (signal_noise_ratio.has_value()) {
         out << margin << "Signal/noise ratio: " << signal_noise_ratio.value() << std::endl;
     }
-    if (bit_error_rate.set()) {
+    if (bit_error_rate.has_value()) {
         out << margin << "Bit error rate: " << bit_error_rate.value() << std::endl;
     }
-    if (packet_error_rate.set()) {
+    if (packet_error_rate.has_value()) {
         out << margin << "Packet error rate: " << packet_error_rate.value() << std::endl;
     }
     return out;

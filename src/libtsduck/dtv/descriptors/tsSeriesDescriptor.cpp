@@ -44,7 +44,7 @@ void ts::SeriesDescriptor::clearContent()
     series_id = 0;
     repeat_label = 0;
     program_pattern = 0;
-    expire_date.clear();
+    expire_date.reset();
     episode_number = 0;
     last_episode_number = 0;
     series_name.clear();
@@ -60,8 +60,8 @@ void ts::SeriesDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt16(series_id);
     buf.putBits(repeat_label, 4);
     buf.putBits(program_pattern, 3);
-    buf.putBit(expire_date.set());
-    if (expire_date.set()) {
+    buf.putBit(expire_date.has_value());
+    if (expire_date.has_value()) {
         buf.putMJD(expire_date.value(), 2);  // 2 bytes, date only
     }
     else {
@@ -123,7 +123,7 @@ void ts::SeriesDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"series_id", series_id, true);
     root->setIntAttribute(u"repeat_label", repeat_label);
     root->setIntAttribute(u"program_pattern", program_pattern);
-    if (expire_date.set()) {
+    if (expire_date.has_value()) {
         root->setDateAttribute(u"expire_date", expire_date.value());
     }
     root->setIntAttribute(u"episode_number", episode_number);

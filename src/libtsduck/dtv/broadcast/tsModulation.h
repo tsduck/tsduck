@@ -15,6 +15,7 @@
 #pragma once
 #include "tsEnumeration.h"
 #include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsReport.h"
 
 #if defined(TS_WINDOWS)
@@ -73,9 +74,9 @@ namespace ts {
     //! @see CheckModEnum()
     //!
     template <typename ENUM, typename std::enable_if<std::is_integral<ENUM>::value || std::is_enum<ENUM>::value>::type* = nullptr>
-    bool CheckModVar(const Variable<ENUM>& value,const UString& name, const Enumeration& conv, Report& report)
+    bool CheckModVar(const std::optional<ENUM>& value, const UString& name, const Enumeration& conv, Report& report)
     {
-        return !value.set() || CheckModEnum(int(value.value()), name, conv, report);
+        return !value.has_value() || CheckModEnum(int(value.value()), name, conv, report);
     }
 
     //!

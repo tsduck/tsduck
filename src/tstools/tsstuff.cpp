@@ -12,7 +12,7 @@
 
 #include "tsMain.h"
 #include "tsTSFileInputBuffered.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 TS_MAIN(MainCode);
 
 
@@ -149,11 +149,12 @@ Options::Options(int argc, char *argv[]) :
 
 struct TimeStamp
 {
-    uint64_t          tstamp;  // Time stamp in PCR units
+    uint64_t tstamp;  // Time stamp in PCR units
     uint64_t packet;  // Packet index in input file
 
     // Constructor
     TimeStamp(uint64_t t = 0, uint64_t p = 0) : tstamp(t), packet(p) {}
+    TS_DEFAULT_COPY_MOVE(TimeStamp);
 };
 
 
@@ -166,23 +167,26 @@ class Stuffer
     TS_NOBUILD_NOCOPY(Stuffer);
 public:
     // Constructor
-    Stuffer(Options&);
-    virtual ~Stuffer();
+    Stuffer(Options& opt) :
+        _opt(opt),
+        _input(opt.buffer_size / ts::PKT_SIZE)
+    {
+    }
 
     // Process the content
     void stuff();
 
 private:
     // Private members
-    Options&                _opt;                     // Command-line options.
-    ts::TSFileInputBuffered _input;                   // Input file, including seek buffer for at least one segment.
-    ts::TSFile              _output;                  // Output file.
-    ts::Variable<TimeStamp> _tstamp1;                 // First time-stamp in current segment.
-    ts::Variable<TimeStamp> _tstamp2;                 // Second time-stamp in current segment.
-    uint64_t                _current_inter_packet;    // Number of null packets to add between all input packets in segment.
-    uint64_t                _current_residue_packets; // Packets to add to inter_packets.
-    uint64_t                _remaining_stuff_count;   // Remaining number of stuffing packets to add before end of segment.
-    uint64_t                _additional_bits;         // Additional bits (less than one packet) to add in next segment.
+    Options&                 _opt;                         // Command-line options.
+    ts::TSFileInputBuffered  _input;                       // Input file, including seek buffer for at least one segment.
+    ts::TSFile               _output {};                   // Output file.
+    std::optional<TimeStamp> _tstamp1 {};                  // First time-stamp in current segment.
+    std::optional<TimeStamp> _tstamp2 {};                  // Second time-stamp in current segment.
+    uint64_t                 _current_inter_packet = 0;    // Number of null packets to add between all input packets in segment.
+    uint64_t                 _current_residue_packets = 0; // Packets to add to inter_packets.
+    uint64_t                 _remaining_stuff_count = 0;   // Remaining number of stuffing packets to add before end of segment.
+    uint64_t                 _additional_bits = 0;         // Additional bits (less than one packet) to add in next segment.
 
     // Abort processing (invoked on fatal error, when message already reported)
     [[noreturn]] void fatalError();
@@ -203,28 +207,6 @@ private:
     // Read input up to end_packet and perform simple inter-packet stuffing.
     void simpleInterPacketStuffing(uint64_t inter_packet, uint64_t end_packet);
 };
-
-
-//-----------------------------------------------------------------------------
-// Stuffer constructors and destructors.
-//-----------------------------------------------------------------------------
-
-Stuffer::Stuffer(Options& opt) :
-    _opt(opt),
-    _input(opt.buffer_size / ts::PKT_SIZE),
-    _output(),
-    _tstamp1(),
-    _tstamp2(),
-    _current_inter_packet(0),
-    _current_residue_packets(0),
-    _remaining_stuff_count(0),
-    _additional_bits(0)
-{
-}
-
-Stuffer::~Stuffer()
-{
-}
 
 
 //-----------------------------------------------------------------------------
@@ -305,11 +287,11 @@ void Stuffer::evaluateNextStuffing()
 
     // Initialize new search. Note that _tstamp1 and _tstamp2 may be unset.
     _tstamp1 = _tstamp2;
-    _tstamp2.clear();
+    _tstamp2.reset();
 
     // Read packets until both _tstamp1 and _tstamp2 are set (or end of file)
     ts::TSPacket pkt;
-    while (!_tstamp2.set() && _input.canSeek(initial_position) && _input.read(&pkt, 1, _opt) == 1) {
+    while (!_tstamp2 && _input.canSeek(initial_position) && _input.read(&pkt, 1, _opt) == 1) {
         uint64_t tstamp = 0;
         if (getTimeStamp(pkt, tstamp)) {
             if (_opt.reference_pid == ts::PID_NULL) {
@@ -322,14 +304,14 @@ void Stuffer::evaluateNextStuffing()
                 continue;
             }
             const TimeStamp time_stamp(tstamp, _input.readPacketsCount());
-            if (!_tstamp1.set() || tstamp < _tstamp1.value().tstamp) {
+            if (!_tstamp1 || tstamp < _tstamp1->tstamp) {
                 // 1) Found the first time stamp in the file.
                 // 2) Or found a time stamp lower than tstamp1, may be because of a
                 //    file rewind or wrapping at 2**42. Use new time stamp as first.
                 _tstamp1 = time_stamp;
                 _opt.debug(u"evaluateNextStuffing: tstamp1 = %'d at %'d", {time_stamp.tstamp, time_stamp.packet});
             }
-            else if (((tstamp - _tstamp1.value().tstamp) * 1000) / ts::SYSTEM_CLOCK_FREQ >= _opt.min_interval_ms) {
+            else if (((tstamp - _tstamp1->tstamp) * 1000) / ts::SYSTEM_CLOCK_FREQ >= _opt.min_interval_ms) {
                 // Found second time stamp (with a sufficiently large interval from first time stamp).
                 _tstamp2 = time_stamp;
                 _opt.debug(u"evaluateNextStuffing: tstamp2 = %'d at %'d", {time_stamp.tstamp, time_stamp.packet});
@@ -338,7 +320,7 @@ void Stuffer::evaluateNextStuffing()
     }
 
     // If _tstamp2 not set in first segment or after buffer full, we cannot perform bitrate evaluation
-    if (!_tstamp2.set() && (initial_position == 0 || !_input.canSeek(initial_position))) {
+    if (!_tstamp2 && (initial_position == 0 || !_input.canSeek(initial_position))) {
         ts::UString msg(u"no " + getTimeStampType() + u" found");
         if (initial_position > 0) {
             msg += ts::UString::Format(u" after packet %'d", {initial_position});
@@ -357,17 +339,17 @@ void Stuffer::evaluateNextStuffing()
         fatalError();
     }
 
-    if (_tstamp2.set()) {
+    if (_tstamp2.has_value()) {
         // The segment is defined by the two time stamps. Compute new settings.
-        assert(_tstamp1.set());
-        assert(_tstamp1.value().tstamp < _tstamp2.value().tstamp);
-        assert(_tstamp1.value().packet < _tstamp2.value().packet);
+        assert(_tstamp1.has_value());
+        assert(_tstamp1->tstamp < _tstamp2->tstamp);
+        assert(_tstamp1->packet < _tstamp2->packet);
 
         // Segment duration in PCR unit:
-        const uint64_t duration = _tstamp2.value().tstamp - _tstamp1.value().tstamp;
+        const uint64_t duration = _tstamp2->tstamp - _tstamp1->tstamp;
 
         // Actual number of input packets in the segment and corresponding bitrate.
-        const uint64_t input_packets = _tstamp2.value().packet - _tstamp1.value().packet;
+        const uint64_t input_packets = _tstamp2->packet - _tstamp1->packet;
         const ts::BitRate input_bitrate = ts::BitRate(input_packets * ts::PKT_SIZE_BITS * ts::SYSTEM_CLOCK_FREQ) / duration;
         _opt.debug(u"segment: %'d ms, %'d packets, %'d b/s", {(duration * 1000) / ts::SYSTEM_CLOCK_FREQ, input_packets, input_bitrate});
 
@@ -422,11 +404,11 @@ void Stuffer::stuff()
     _additional_bits = 0;
 
     // Locate first two time stamps,
-    _tstamp1.clear();
-    _tstamp2.clear();
+    _tstamp1.reset();
+    _tstamp2.reset();
     evaluateNextStuffing();
-    assert(_tstamp1.set());
-    assert(_tstamp2.set());
+    assert(_tstamp1.has_value());
+    assert(_tstamp2.has_value());
 
     // Create output file
     if (!_output.open(_opt.output_file, ts::TSFile::WRITE | ts::TSFile::SHARED, _opt, _opt.output_format)) {
@@ -437,15 +419,15 @@ void Stuffer::stuff()
     writeStuffing(_opt.leading_packets);
 
     // Perform initial stuffing, up to the first time stamp
-    simpleInterPacketStuffing(_opt.dyn_initial_inter_packet ? _current_inter_packet : _opt.initial_inter_packet, _tstamp1.value().packet);
+    simpleInterPacketStuffing(_opt.dyn_initial_inter_packet ? _current_inter_packet : _opt.initial_inter_packet, _tstamp1->packet);
 
     // Perform stuffing, segment after segment
-    while (_tstamp2.set()) {
-        assert(_input.readPacketsCount() < _tstamp2.value().packet);
+    while (_tstamp2.has_value()) {
+        assert(_input.readPacketsCount() < _tstamp2->packet);
 
         // Perform stuffing on current segment, loop on input packets, one by one.
         ts::TSPacket pkt;
-        while (_input.readPacketsCount() < _tstamp2.value().packet && _input.read(&pkt, 1, _opt) == 1) {
+        while (_input.readPacketsCount() < _tstamp2->packet && _input.read(&pkt, 1, _opt) == 1) {
             // Write the input packet.
             if (!_output.writePackets(&pkt, nullptr, 1, _opt)) {
                 fatalError();

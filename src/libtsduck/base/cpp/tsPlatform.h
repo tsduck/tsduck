@@ -68,7 +68,7 @@
     //! and batch file as the @c cl command.
     //!
     #define TS_MSC
-
+    //
 #elif defined(__llvm__) || defined(__clang__)
     #if !defined(TS_LLVM)
         #define TS_LLVM 1
@@ -98,12 +98,23 @@
     //! Undefined when the compiler is not GCC or its version is unknown.
     //!
     #define TS_GCC_VERSION
-
+    //
 #elif defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
     #define TS_GCC_VERSION ((10000 * __GNUC__) + (100 * __GNUC_MINOR__) + (__GNUC_PATCHLEVEL__ % 100))
 #endif
 
 #if defined(DOXYGEN)
+    //!
+    //! Level of C++ language, same as predefined @a __cplusplus, but safe with MSVC.
+    //!
+    //! Microsoft-specific ways of signaling the language level: With Visual Studio 2017,
+    //! there are flags such as /std:c++14 to specify the level of language. However,
+    //! __cplusplus is still set to 199711L. It is unclear if this is a bug or if __cplusplus
+    //! is not set because the C++11/14/17 standards all not super-completely implemented.
+    //! The Microsoft-specific symbol _MSVC_LANG is defined to describe a "good-enough"
+    //! level of standard which is fine for us.
+    //!
+    #define TS_CPLUSPLUS
     //!
     //! Defined when the compiler is compliant with C++11.
     //!
@@ -129,38 +140,33 @@
     //! but not the level of STL.
     //!
     #define TS_CXX11_STRING
+    //
 #else
-    //
-    // Standard ways of signaling the language level.
-    //
-    #if defined(__cplusplus) && __cplusplus >= 201103L && !defined(TS_CXX11)
+    #if !defined(TS_CPLUSPLUS)
+        #if defined(__cplusplus)
+            #define TS_CPLUSPLUS __cplusplus
+        #else
+            #define TS_CPLUSPLUS 0L
+        #endif
+    #endif
+    #if defined(_MSVC_LANG) && _MSVC_LANG > TS_CPLUSPLUS
+        #undef TS_CPLUSPLUS
+        #define TS_CPLUSPLUS _MSVC_LANG
+    #endif
+    #if TS_CPLUSPLUS >= 201103L && !defined(TS_CXX11)
         #define TS_CXX11 1
     #endif
-    #if defined(__cplusplus) && __cplusplus >= 201402L && !defined(TS_CXX14)
+    #if TS_CPLUSPLUS >= 201402L && !defined(TS_CXX14)
         #define TS_CXX14 1
     #endif
-    #if defined(__cplusplus) && __cplusplus >= 201703L && !defined(TS_CXX17)
+    #if TS_CPLUSPLUS >= 201703L && !defined(TS_CXX17)
         #define TS_CXX17 1
     #endif
-    #if defined(__cplusplus) && __cplusplus >= 202002L && !defined(TS_CXX20)
+    #if TS_CPLUSPLUS >= 202002L && !defined(TS_CXX20)
         #define TS_CXX20 1
     #endif
-    //
-    // Microsoft-specific ways of signaling the language level.
-    // With Visual Studio 2017, there are flags such as /std:c++14 to specify the
-    // level of language. However, __cplusplus is still set to 199711L. It is unclear
-    // if this is a bug or if __cplusplus is not set because the C++11/14/17 standards
-    // all not super-completely implemented. The Microsoft-specific symbol _MSVC_LANG
-    // is defined to describe a "good-enough" level of standard which is fine for us.
-    //
-    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201103L && !defined(TS_CXX11)
-        #define TS_CXX11 1
-    #endif
-    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201402L && !defined(TS_CXX14)
-        #define TS_CXX14 1
-    #endif
-    #if defined(_MSVC_LANG) && _MSVC_LANG >= 201403L && !defined(TS_CXX17)
-        #define TS_CXX17 1
+    #if TS_CPLUSPLUS >= 202302L && !defined(TS_CXX23)
+        #define TS_CXX23 1
     #endif
     //
     // Compliance of the STL.

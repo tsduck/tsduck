@@ -40,9 +40,9 @@ void ts::S2SatelliteDeliverySystemDescriptor::clearContent()
 {
     backwards_compatibility_indicator = false;
     TS_GS_mode = 0;
-    scrambling_sequence_index.clear();
-    input_stream_identifier.clear();
-    timeslice_number.clear();
+    scrambling_sequence_index.reset();
+    input_stream_identifier.reset();
+    timeslice_number.reset();
 }
 
 
@@ -52,20 +52,20 @@ void ts::S2SatelliteDeliverySystemDescriptor::clearContent()
 
 void ts::S2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBit(scrambling_sequence_index.set());
-    buf.putBit(input_stream_identifier.set());
+    buf.putBit(scrambling_sequence_index.has_value());
+    buf.putBit(input_stream_identifier.has_value());
     buf.putBit(backwards_compatibility_indicator);
-    buf.putBit(!timeslice_number.set());
+    buf.putBit(!timeslice_number.has_value());
     buf.putBits(0xFF, 2);
     buf.putBits(TS_GS_mode, 2);
-    if (scrambling_sequence_index.set()) {
+    if (scrambling_sequence_index.has_value()) {
         buf.putBits(0xFF, 6);
         buf.putBits(scrambling_sequence_index.value(), 18);
     }
-    if (input_stream_identifier.set()) {
+    if (input_stream_identifier.has_value()) {
         buf.putUInt8(input_stream_identifier.value());
     }
-    if (timeslice_number.set()) {
+    if (timeslice_number.has_value()) {
         buf.putUInt8(timeslice_number.value());
     }
 }

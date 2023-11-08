@@ -42,7 +42,7 @@ void ts::AACDescriptor::clearContent()
 {
     profile_and_level = 0;
     SAOC_DE = false;
-    AAC_type.clear();
+    AAC_type.reset();
     additional_info.clear();
 }
 
@@ -54,11 +54,11 @@ void ts::AACDescriptor::clearContent()
 void ts::AACDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(profile_and_level);
-    if (SAOC_DE || AAC_type.set() || !additional_info.empty()) {
-        buf.putBit(AAC_type.set());
+    if (SAOC_DE || AAC_type.has_value() || !additional_info.empty()) {
+        buf.putBit(AAC_type.has_value());
         buf.putBit(SAOC_DE);
         buf.putBits(0, 6);
-        if (AAC_type.set()) {
+        if (AAC_type.has_value()) {
             buf.putUInt8(AAC_type.value());
         }
         buf.putBytes(additional_info);
@@ -113,7 +113,7 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
 
 ts::UString ts::AACDescriptor::aacTypeString() const
 {
-    return isValid() && AAC_type.set() ? aacTypeString(AAC_type.value()) : UString();
+    return isValid() && AAC_type.has_value() ? aacTypeString(AAC_type.value()) : UString();
 }
 
 ts::UString ts::AACDescriptor::aacTypeString(uint8_t type)

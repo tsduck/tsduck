@@ -62,7 +62,7 @@ void ts::HEVCSubregionDescriptor::serializePayload(PSIBuffer& buf) const
 {
     bool SubstreamMarkingFlag = false;
     for (auto it : SubregionLayouts) {
-        if (it.PreambleSubstreamID.set())
+        if (it.PreambleSubstreamID.has_value())
             SubstreamMarkingFlag = true;
     }
     buf.putBit(SubstreamMarkingFlag);

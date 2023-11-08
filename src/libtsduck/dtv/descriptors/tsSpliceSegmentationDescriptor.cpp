@@ -49,7 +49,7 @@ void ts::SpliceSegmentationDescriptor::clearContent()
     archive_allowed = true;
     device_restrictions = 3;
     pts_offsets.clear();
-    segmentation_duration.clear();
+    segmentation_duration.reset();
     segmentation_upid_type = 0;
     segmentation_upid.clear();
     segmentation_type_id = 0;
@@ -136,7 +136,7 @@ void ts::SpliceSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(0xFF, 7);
     if (!segmentation_event_cancel) {
         buf.putBit(program_segmentation);
-        buf.putBit(segmentation_duration.set());
+        buf.putBit(segmentation_duration.has_value());
         buf.putBit(deliveryNotRestricted());
         buf.putBit(web_delivery_allowed);
         buf.putBit(no_regional_blackout);
@@ -150,7 +150,7 @@ void ts::SpliceSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
                 buf.putBits(it.second, 33); // pts_offset
             }
         }
-        if (segmentation_duration.set()) {
+        if (segmentation_duration.has_value()) {
             buf.putUInt40(segmentation_duration.value());
         }
         buf.putUInt8(segmentation_upid_type);

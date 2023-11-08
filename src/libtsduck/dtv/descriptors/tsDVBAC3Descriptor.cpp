@@ -34,10 +34,10 @@ ts::DVBAC3Descriptor::DVBAC3Descriptor() :
 
 void ts::DVBAC3Descriptor::clearContent()
 {
-    component_type.clear();
-    bsid.clear();
-    mainid.clear();
-    asvc.clear();
+    component_type.reset();
+    bsid.reset();
+    mainid.reset();
+    asvc.reset();
     additional_info.clear();
 }
 
@@ -54,21 +54,21 @@ ts::DVBAC3Descriptor::DVBAC3Descriptor(DuckContext& duck, const Descriptor& desc
 
 void ts::DVBAC3Descriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBit(component_type.set());
-    buf.putBit(bsid.set());
-    buf.putBit(mainid.set());
-    buf.putBit(asvc.set());
+    buf.putBit(component_type.has_value());
+    buf.putBit(bsid.has_value());
+    buf.putBit(mainid.has_value());
+    buf.putBit(asvc.has_value());
     buf.putBits(0, 4); // reserved bits are zero here
-    if (component_type.set()) {
+    if (component_type.has_value()) {
         buf.putUInt8(component_type.value());
     }
-    if (bsid.set()) {
+    if (bsid.has_value()) {
         buf.putUInt8(bsid.value());
     }
-    if (mainid.set()) {
+    if (mainid.has_value()) {
         buf.putUInt8(mainid.value());
     }
-    if (asvc.set()) {
+    if (asvc.has_value()) {
         buf.putUInt8(asvc.value());
     }
     buf.putBytes(additional_info);
@@ -213,16 +213,16 @@ bool ts::DVBAC3Descriptor::merge(const AbstractDescriptor& desc)
         return false;
     }
     else {
-        if (!component_type.set()) {
+        if (!component_type.has_value()) {
             component_type = other->component_type;
         }
-        if (!bsid.set()) {
+        if (!bsid.has_value()) {
             bsid = other->bsid;
         }
-        if (!mainid.set()) {
+        if (!mainid.has_value()) {
             mainid = other->mainid;
         }
-        if (!asvc.set()) {
+        if (!asvc.has_value()) {
             asvc = other->asvc;
         }
         if (additional_info.empty()) {

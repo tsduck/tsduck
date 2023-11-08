@@ -61,14 +61,14 @@ void ts::SpliceInsert::adjustPTS(uint64_t adjustment)
     }
 
     // Adjust program splice time.
-    if (program_splice && program_pts.set() && program_pts.value() <= PTS_DTS_MASK) {
+    if (program_splice && program_pts.has_value() && program_pts.value() <= PTS_DTS_MASK) {
         program_pts = (program_pts.value() + adjustment) & PTS_DTS_MASK;
     }
 
     // Adjust components splice times.
     if (!program_splice) {
         for (auto& it : components_pts) {
-            if (it.second.set() && it.second.value() <= PTS_DTS_MASK) {
+            if (it.second.has_value() && it.second.value() <= PTS_DTS_MASK) {
                 it.second = (it.second.value() + adjustment) & PTS_DTS_MASK;
             }
         }
@@ -85,13 +85,13 @@ uint64_t ts::SpliceInsert::highestPTS() const
     uint64_t result = INVALID_PTS;
     if (!canceled && !immediate) {
         // Check program splice time.
-        if (program_splice && program_pts.set() && program_pts.value() <= PTS_DTS_MASK) {
+        if (program_splice && program_pts.has_value() && program_pts.value() <= PTS_DTS_MASK) {
             result = program_pts.value();
         }
         // Check components splice times.
         if (!program_splice) {
             for (auto& it : components_pts) {
-                if (it.second.set() && it.second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it.second.value() > result)) {
+                if (it.second.has_value() && it.second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it.second.value() > result)) {
                     result = it.second.value();
                 }
             }
@@ -105,13 +105,13 @@ uint64_t ts::SpliceInsert::lowestPTS() const
     uint64_t result = INVALID_PTS;
     if (!canceled && !immediate) {
         // Check program splice time.
-        if (program_splice && program_pts.set() && program_pts.value() <= PTS_DTS_MASK) {
+        if (program_splice && program_pts.has_value() && program_pts.value() <= PTS_DTS_MASK) {
             result = program_pts.value();
         }
         // Check components splice times.
         if (!program_splice) {
             for (auto& it : components_pts) {
-                if (it.second.set() && it.second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it.second.value() < result)) {
+                if (it.second.has_value() && it.second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it.second.value() < result)) {
                     result = it.second.value();
                 }
             }
@@ -303,7 +303,7 @@ void ts::SpliceInsert::buildXML(DuckContext& duck, xml::Element* root) const
         root->setIntAttribute(u"unique_program_id", program_id, true);
         root->setIntAttribute(u"avail_num", avail_num);
         root->setIntAttribute(u"avails_expected", avails_expected);
-        if (program_splice && !immediate && program_pts.set()) {
+        if (program_splice && !immediate && program_pts.has_value()) {
             root->setIntAttribute(u"pts_time", program_pts.value());
         }
         if (use_duration) {
@@ -315,7 +315,7 @@ void ts::SpliceInsert::buildXML(DuckContext& duck, xml::Element* root) const
             for (auto& it : components_pts) {
                 xml::Element* e = root->addElement(u"component");
                 e->setIntAttribute(u"component_tag", it.first);
-                if (!immediate && it.second.set()) {
+                if (!immediate && it.second.has_value()) {
                     e->setIntAttribute(u"pts_time", it.second.value());
                 }
             }
