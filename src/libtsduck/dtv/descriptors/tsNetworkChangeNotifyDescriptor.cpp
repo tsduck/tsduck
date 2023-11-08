@@ -66,7 +66,7 @@ void ts::NetworkChangeNotifyDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putUInt16(it1.cell_id);
         buf.pushWriteSequenceWithLeadingLength(8); // loop_length
         for (const auto& it2 : it1.changes) {
-            const bool invariant_ts_present = it2.invariant_ts_tsid.set() && it2.invariant_ts_onid.set();
+            const bool invariant_ts_present = it2.invariant_ts_tsid.has_value() && it2.invariant_ts_onid.has_value();
             buf.putUInt8(it2.network_change_id);
             buf.putUInt8(it2.network_change_version);
             buf.putMJD(it2.start_time_of_change, MJD_SIZE);

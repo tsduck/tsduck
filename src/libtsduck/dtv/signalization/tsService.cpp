@@ -49,19 +49,19 @@ bool ts::Service::match(const UString& ident, bool exact_match) const
 
     if (ident.toInteger(id, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
         // This is a service id.
-        return _id.set() && id ==_id.value();
+        return _id.has_value() && id ==_id.value();
     }
     else if (ident.scan(u"%d.%d", {&id, &minor})) {
         // Found an ATSC major.minor id.
-        return _major_id_atsc.set() && _minor_id_atsc.set() && id == _major_id_atsc.value() && minor == _minor_id_atsc.value();
+        return _major_id_atsc.has_value() && _minor_id_atsc.has_value() && id == _major_id_atsc.value() && minor == _minor_id_atsc.value();
     }
     else if (exact_match) {
         // This is an exact service name.
-        return _name.set() && ident == _name.value();
+        return _name.has_value() && ident == _name.value();
     }
     else {
         // This is a fuzzy service name.
-        return _name.set() && ident.similar(_name.value());
+        return _name.has_value() && ident.similar(_name.value());
     }
 }
 
@@ -97,49 +97,49 @@ void ts::Service::clear()
 uint32_t ts::Service::getFields() const
 {
     uint32_t fields = 0;
-    if (_id.set()) {
+    if (_id.has_value()) {
         fields |= ID;
     }
-    if (_tsid.set()) {
+    if (_tsid.has_value()) {
         fields |= TSID;
     }
-    if (_onid.set()) {
+    if (_onid.has_value()) {
         fields |= ONID;
     }
-    if (_pmt_pid.set()) {
+    if (_pmt_pid.has_value()) {
         fields |= PMT_PID;
     }
-    if (_lcn.set()) {
+    if (_lcn.has_value()) {
         fields |= LCN;
     }
-    if (_type_dvb.set()) {
+    if (_type_dvb.has_value()) {
         fields |= TYPE_DVB;
     }
-    if (_type_atsc.set()) {
+    if (_type_atsc.has_value()) {
         fields |= TYPE_ATSC;
     }
-    if (_name.set()) {
+    if (_name.has_value()) {
         fields |= NAME;
     }
-    if (_provider.set()) {
+    if (_provider.has_value()) {
         fields |= PROVIDER;
     }
-    if (_eits_present.set()) {
+    if (_eits_present.has_value()) {
         fields |= EITS;
     }
-    if (_eitpf_present.set()) {
+    if (_eitpf_present.has_value()) {
         fields |= EITPF;
     }
-    if (_ca_controlled.set()) {
+    if (_ca_controlled.has_value()) {
         fields |= CA;
     }
-    if (_running_status.set()) {
+    if (_running_status.has_value()) {
         fields |= RUNNING;
     }
-    if (_major_id_atsc.set()) {
+    if (_major_id_atsc.has_value()) {
         fields |= MAJORID_ATSC;
     }
-    if (_minor_id_atsc.set()) {
+    if (_minor_id_atsc.has_value()) {
         fields |= MINORID_ATSC;
     }
     return fields;
@@ -154,22 +154,22 @@ ts::UString ts::Service::toString() const
 {
     UString str;
 
-    if (_name.set()) {
+    if (_name.has_value()) {
         str = u"\"" + _name.value() + u"\"";
     }
-    if (_major_id_atsc.set() && _minor_id_atsc.set()) {
+    if (_major_id_atsc.has_value() && _minor_id_atsc.has_value()) {
         if (!str.empty()) {
             str += u", ";
         }
         str += UString::Format(u"%d.%d", {_major_id_atsc.value(), _minor_id_atsc.value()});
     }
-    if (_id.set()) {
+    if (_id.has_value()) {
         if (!str.empty()) {
             str += u", ";
         }
         str += UString::Format(u"0x%X (%d)", {_id.value(), _id.value()});
     }
-    if (_lcn.set()) {
+    if (_lcn.has_value()) {
         if (!str.empty()) {
             str += u", ";
         }
@@ -188,15 +188,15 @@ ts::UString ts::Service::toString() const
 // sort according to this field. If only one object has this field set,
 // it comes first. If none of the two objects have this field set, move
 // to next criterion.
-#define _SORT_(field)                                                               \
-    if (s1.field.set() && !s2.field.set()) {                                        \
-        return true;                                                                \
-    }                                                                               \
-    if (!s1.field.set() && s2.field.set()) {                                        \
-        return false;                                                               \
-    }                                                                               \
-    if (s1.field.set() && s2.field.set() && s1.field.value() != s2.field.value()) { \
-        return s1.field.value() < s2.field.value();                                 \
+#define _SORT_(field)                                     \
+    if (s1.field.has_value() && !s2.field.has_value()) {  \
+        return true;                                      \
+    }                                                     \
+    if (!s1.field.has_value() && s2.field.has_value()) {  \
+        return false;                                     \
+    }                                                     \
+    if (s1.field.has_value() && s2.field.has_value() && s1.field.value() != s2.field.value()) { \
+        return s1.field.value() < s2.field.value();       \
     }
 
 // Sort1: LCN, ONId, TSId, Id, name, provider, type, PMT PID

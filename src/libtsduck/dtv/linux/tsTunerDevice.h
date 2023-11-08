@@ -110,7 +110,7 @@ namespace ts {
         bool dishControl(const ModulationArgs&, const LNB::Transposition&);
 
         // Extract DTV_STAT_* properties and store it into a SignalState.
-        static void GetStat(SignalState& state, Variable<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd);
-        static void GetStatRatio(SignalState& state, Variable<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd1, uint32_t cmd2);
+        static void GetStat(SignalState& state, std::optional<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd);
+        static void GetStatRatio(SignalState& state, std::optional<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd1, uint32_t cmd2);
     };
 }

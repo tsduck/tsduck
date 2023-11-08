@@ -50,17 +50,17 @@ void ts::TransportProtocolDescriptor::clearContent()
 
 void ts::TransportProtocolDescriptor::Carousel::clear()
 {
-    original_network_id.clear();
-    transport_stream_id.clear();
-    service_id.clear();
+    original_network_id.reset();
+    transport_stream_id.reset();
+    service_id.reset();
     component_tag= 0;
 }
 
 void ts::TransportProtocolDescriptor::MPE::clear()
 {
-    original_network_id.clear();
-    transport_stream_id.clear();
-    service_id.clear();
+    original_network_id.reset();
+    transport_stream_id.reset();
+    service_id.reset();
     alignment_indicator = 0;
     urls.clear();
 }
@@ -77,7 +77,7 @@ void ts::TransportProtocolDescriptor::serializePayload(PSIBuffer& buf) const
     switch (protocol_id) {
         case MHP_PROTO_CAROUSEL: {
             // See ETSI TS 101 812, section 10.8.1.1
-            const bool remote = carousel.original_network_id.set() && carousel.transport_stream_id.set() && carousel.service_id.set();
+            const bool remote = carousel.original_network_id.has_value() && carousel.transport_stream_id.has_value() && carousel.service_id.has_value();
             buf.putBit(remote);
             buf.putBits(0xFF, 7);
             if (remote) {
@@ -90,7 +90,7 @@ void ts::TransportProtocolDescriptor::serializePayload(PSIBuffer& buf) const
         }
         case MHP_PROTO_MPE: {
             // See ETSI TS 101 812, section 10.8.1.2
-            const bool remote = mpe.original_network_id.set() && mpe.transport_stream_id.set() && mpe.service_id.set();
+            const bool remote = mpe.original_network_id.has_value() && mpe.transport_stream_id.has_value() && mpe.service_id.has_value();
             buf.putBit(remote);
             buf.putBits(0xFF, 7);
             if (remote) {

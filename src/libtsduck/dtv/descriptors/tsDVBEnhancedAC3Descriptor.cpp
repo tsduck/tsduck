@@ -41,14 +41,14 @@ ts::DVBEnhancedAC3Descriptor::DVBEnhancedAC3Descriptor(DuckContext& duck, const 
 
 void ts::DVBEnhancedAC3Descriptor::clearContent()
 {
-    component_type.clear();
-    bsid.clear();
-    mainid.clear();
-    asvc.clear();
+    component_type.reset();
+    bsid.reset();
+    mainid.reset();
+    asvc.reset();
     mixinfoexists = false;
-    substream1.clear();
-    substream2.clear();
-    substream3.clear();
+    substream1.reset();
+    substream2.reset();
+    substream3.reset();
     additional_info.clear();
 }
 
@@ -59,33 +59,33 @@ void ts::DVBEnhancedAC3Descriptor::clearContent()
 
 void ts::DVBEnhancedAC3Descriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBit(component_type.set());
-    buf.putBit(bsid.set());
-    buf.putBit(mainid.set());
-    buf.putBit(asvc.set());
+    buf.putBit(component_type.has_value());
+    buf.putBit(bsid.has_value());
+    buf.putBit(mainid.has_value());
+    buf.putBit(asvc.has_value());
     buf.putBit(mixinfoexists);
-    buf.putBit(substream1.set());
-    buf.putBit(substream2.set());
-    buf.putBit(substream3.set());
-    if (component_type.set()) {
+    buf.putBit(substream1.has_value());
+    buf.putBit(substream2.has_value());
+    buf.putBit(substream3.has_value());
+    if (component_type.has_value()) {
         buf.putUInt8(component_type.value());
     }
-    if (bsid.set()) {
+    if (bsid.has_value()) {
         buf.putUInt8(bsid.value());
     }
-    if (mainid.set()) {
+    if (mainid.has_value()) {
         buf.putUInt8(mainid.value());
     }
-    if (asvc.set()) {
+    if (asvc.has_value()) {
         buf.putUInt8(asvc.value());
     }
-    if (substream1.set()) {
+    if (substream1.has_value()) {
         buf.putUInt8(substream1.value());
     }
-    if (substream2.set()) {
+    if (substream2.has_value()) {
         buf.putUInt8(substream2.value());
     }
-    if (substream3.set()) {
+    if (substream3.has_value()) {
         buf.putUInt8(substream3.value());
     }
     buf.putBytes(additional_info);
@@ -229,26 +229,26 @@ bool ts::DVBEnhancedAC3Descriptor::merge(const AbstractDescriptor& desc)
         return false;
     }
     else {
-        if (!component_type.set()) {
+        if (!component_type.has_value()) {
             component_type = other->component_type;
         }
-        if (!bsid.set()) {
+        if (!bsid.has_value()) {
             bsid = other->bsid;
         }
-        if (!mainid.set()) {
+        if (!mainid.has_value()) {
             mainid = other->mainid;
         }
-        if (!asvc.set()) {
+        if (!asvc.has_value()) {
             asvc = other->asvc;
         }
         mixinfoexists = mixinfoexists || other->mixinfoexists;
-        if (!substream1.set()) {
+        if (!substream1.has_value()) {
             substream1 = other->substream1;
         }
-        if (!substream2.set()) {
+        if (!substream2.has_value()) {
             substream2 = other->substream2;
         }
-        if (!substream3.set()) {
+        if (!substream3.has_value()) {
             substream3 = other->substream3;
         }
         if (additional_info.empty()) {

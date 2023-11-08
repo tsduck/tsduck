@@ -6,11 +6,11 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for class ts::Variable
+//  TSUnit test suite for class std::optional
 //
 //----------------------------------------------------------------------------
 
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsunit.h"
 
 
@@ -18,7 +18,7 @@
 // The test fixture
 //----------------------------------------------------------------------------
 
-class VariableTest: public tsunit::Test
+class OptionalTest: public tsunit::Test
 {
 public:
     virtual void beforeTest() override;
@@ -28,14 +28,14 @@ public:
     void testClass();
     [[noreturn]] void testUninitialized();
 
-    TSUNIT_TEST_BEGIN(VariableTest);
+    TSUNIT_TEST_BEGIN(OptionalTest);
     TSUNIT_TEST(testElementaryType);
     TSUNIT_TEST(testClass);
-    TSUNIT_TEST_EXCEPTION(testUninitialized, ts::UninitializedVariable);
+    TSUNIT_TEST_EXCEPTION(testUninitialized, std::bad_optional_access);
     TSUNIT_TEST_END();
 };
 
-TSUNIT_REGISTER(VariableTest);
+TSUNIT_REGISTER(OptionalTest);
 
 
 //----------------------------------------------------------------------------
@@ -43,12 +43,12 @@ TSUNIT_REGISTER(VariableTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void VariableTest::beforeTest()
+void OptionalTest::beforeTest()
 {
 }
 
 // Test suite cleanup method.
-void VariableTest::afterTest()
+void OptionalTest::afterTest()
 {
 }
 
@@ -58,28 +58,38 @@ void VariableTest::afterTest()
 //----------------------------------------------------------------------------
 
 // Test case: usage on elementary types.
-void VariableTest::testElementaryType()
+void OptionalTest::testElementaryType()
 {
-    typedef ts::Variable<int> IntVariable;
+#if defined(TS_OPTIONAL_IMPLEMENTED)
+    debug() << "OptionalTest: std::optional uses TSDuck pre-C++17 implementation" << std::endl;
+#else
+    debug() << "OptionalTest: std::optional uses C++17 standard implementation" << std::endl;
+#endif
 
-    IntVariable v1;
+    std::optional<int> v1;
     TSUNIT_ASSERT(!v1.has_value());
+    TSUNIT_ASSERT(!bool(v1));
 
-    IntVariable v2(v1);
+    std::optional<int> v2(v1);
     TSUNIT_ASSERT(!v2.has_value());
+    TSUNIT_ASSERT(!bool(v2));
 
     v2 = 1;
     TSUNIT_ASSERT(v2.has_value());
+    TSUNIT_ASSERT(bool(v2));
     TSUNIT_EQUAL(1, v2.value());
 
-    IntVariable v3(v2);
+    std::optional<int> v3(v2);
     TSUNIT_ASSERT(v3.has_value());
+    TSUNIT_ASSERT(bool(v3));
 
-    IntVariable v4(2);
+    std::optional<int> v4(2);
     TSUNIT_ASSERT(v4.has_value());
+    TSUNIT_ASSERT(bool(v4));
 
     v4 = v1;
     TSUNIT_ASSERT(!v4.has_value());
+    TSUNIT_ASSERT(!bool(v4));
 
     v4 = v2;
     TSUNIT_ASSERT(v4.has_value());
@@ -102,43 +112,54 @@ void VariableTest::testElementaryType()
     v2 = 1;
     v3 = 3;
     v4.reset();
-    IntVariable v5;
+    std::optional<int> v5;
     TSUNIT_ASSERT(v1.has_value());
     TSUNIT_ASSERT(v2.has_value());
     TSUNIT_ASSERT(v3.has_value());
     TSUNIT_ASSERT(!v4.has_value());
     TSUNIT_ASSERT(!v5.has_value());
+    TSUNIT_ASSERT(v1 == v2);
+    TSUNIT_ASSERT(v1 != v3);
+    TSUNIT_ASSERT(v1 != v4);
+    TSUNIT_ASSERT(v4 == v5);
     TSUNIT_ASSERT(v1 == 1);
     TSUNIT_ASSERT(v1 != 2);
     TSUNIT_ASSERT(v4 != 1);
-
-    v1.reset();
-    TSUNIT_ASSERT(!v1.has_value());
-    TSUNIT_ASSERT(v1.setDefault(1));
-    TSUNIT_ASSERT(v1.has_value());
-    TSUNIT_EQUAL(1, v1.value());
-    TSUNIT_ASSERT(!v1.setDefault(2));
-    TSUNIT_ASSERT(v1.has_value());
-    TSUNIT_EQUAL(1, v1.value());
 }
 
 // A class which identifies each instance by an explicit value.
-// Also count the number of instances in the class.
+// Also count the numbstd::optionaler of instances in the class.
 namespace {
+
+    class TestData;
+    std::ostream& operator<<(std::ostream& stm, const TestData& data);
+
     class TestData
     {
     private:
-        int _value;
+        int _value = 0;
+        bool _moved = false;
         static int _instanceCount;
         void trace(const char* name, const TestData* other = nullptr)
         {
-            tsunit::Test::debug() << "TestData @" << std::hex << (size_t(this) & 0xFFFFFFFF) << ", " << name;
+            tsunit::Test::debug() << "TestData " << *this << ", " << name;
             if (other != nullptr) {
-                tsunit::Test::debug() << " from @" << (size_t(other) & 0xFFFFFFFF);
+                tsunit::Test::debug() << " from " << *other;
             }
-            tsunit::Test::debug() << " (" << std::dec << _value << "), instances: " << _instanceCount << std::endl;
+            tsunit::Test::debug() << ", instances: " << _instanceCount << std::endl;
+        }
+        void move()
+        {
+            if (_moved) {
+                trace("moved twice");
+            }
+            TSUNIT_ASSERT(!_moved);
+            _moved = true;
+            _instanceCount--;
         }
     public:
+        static int InstanceCount() { return _instanceCount; }
+        int v() const { return _value; }
         explicit TestData(int value = 0) : _value(value)
         {
             _instanceCount++;
@@ -146,8 +167,9 @@ namespace {
         }
         TestData(TestData&& other) : _value(std::move(other._value))
         {
-            // move object => don't increment instance count
+            _instanceCount++;
             trace("move constructor", &other);
+            other.move();
         }
         TestData(const TestData& other) : _value(other._value)
         {
@@ -157,8 +179,8 @@ namespace {
         TestData& operator=(TestData&& other)
         {
             _value = std::move(other._value);
-            _instanceCount--; // other is moved => disappear without destructor
             trace("move assignment", &other);
+            other.move();
             return *this;
         }
         TestData& operator=(const TestData& other)
@@ -167,35 +189,48 @@ namespace {
             trace("copy assignment", &other);
             return *this;
         }
-        ~TestData() {
-            _instanceCount--;
-            trace("destructor");
+        ~TestData()
+        {
+            if (_moved) {
+                trace("destructor (moved object)");
+            }
+            else {
+                _instanceCount--;
+                trace("destructor");
+            }
         }
         bool operator==(const TestData& other) const
         {
             return _value == other._value;
         }
-        // Get the object's value
-        int v() const { return _value; }
-
-        // Get the number of instances
-        static int InstanceCount() { return _instanceCount; }
+        std::ostream& display(std::ostream& stm) const
+        {
+            return stm << "@" << std::hex << (size_t(this) & 0xFFFFFFFF) << std::dec << " (" << _value << ")";
+        }
     };
+
+    std::ostream& operator<<(std::ostream& stm, const TestData& data)
+    {
+        return data.display(stm);
+    }
 
     int TestData::_instanceCount = 0;
 
-    typedef ts::Variable<TestData> TestVariable;
+    typedef std::optional<TestData> TestVariable;
 
     TestVariable NewInstance(int value, int expectedCount)
     {
         TestVariable v = TestData(value);
         TSUNIT_EQUAL(expectedCount, TestData::InstanceCount());
+        TSUNIT_ASSERT(v.has_value());
+        TSUNIT_EQUAL(value, v->v());
+        tsunit::Test::debug() << "TestData: in NewInstance before return, v " << *v << ", instances: " << TestData::InstanceCount() << std::endl;
         return v;
     }
 }
 
 // Test case: usage on class types.
-void VariableTest::testClass()
+void OptionalTest::testClass()
 {
     TSUNIT_EQUAL(0, TestData::InstanceCount());
     {
@@ -209,7 +244,7 @@ void VariableTest::testClass()
 
         v2 = TestData(1);
         TSUNIT_ASSERT(v2.has_value());
-        TSUNIT_EQUAL(1, v2.value().v());
+        TSUNIT_EQUAL(1, v2->v());
         TSUNIT_EQUAL(1, TestData::InstanceCount());
 
         TestVariable v3(v2);
@@ -242,7 +277,7 @@ void VariableTest::testClass()
         TSUNIT_EQUAL(2, TestData::InstanceCount());
         TSUNIT_ASSERT(v1.has_value());
         TSUNIT_ASSERT(!v2.has_value());
-        TSUNIT_EQUAL(1, v1.value().v());
+        TSUNIT_EQUAL(1, v1->v());
         TSUNIT_EQUAL(1, v1.value_or(TestData(2)).v());
         TSUNIT_EQUAL(2, v2.value_or(TestData(2)).v());
         TSUNIT_EQUAL(2, TestData::InstanceCount());
@@ -262,16 +297,19 @@ void VariableTest::testClass()
         TSUNIT_ASSERT(v3.has_value());
         TSUNIT_ASSERT(!v4.has_value());
         TSUNIT_ASSERT(!v5.has_value());
+        TSUNIT_ASSERT(v1 == v2);
         TSUNIT_ASSERT(v1 != v3);
         TSUNIT_ASSERT(v1 != v4);
-        TSUNIT_ASSERT(v4 != v5);
-        TSUNIT_EQUAL(1, v1.value().v());
+        TSUNIT_ASSERT(v4 == v5);
+        TSUNIT_EQUAL(1, v1->v());
         TSUNIT_ASSERT(v1 == TestData(1));
         TSUNIT_ASSERT(v1 != TestData(2));
         TSUNIT_ASSERT(v4 != TestData(1));
         TSUNIT_EQUAL(3, TestData::InstanceCount());
 
+        debug() << "TestData: before NewInstance, instances: " << TestData::InstanceCount() << std::endl;
         v5 = NewInstance(5, 4);
+        debug() << "TestData: after NewInstance, instances: " << TestData::InstanceCount() << std::endl;
         TSUNIT_EQUAL(4, TestData::InstanceCount());
         TSUNIT_ASSERT(v5.has_value());
     }
@@ -280,9 +318,9 @@ void VariableTest::testClass()
 }
 
 // Test case: fail on uninitialized variable
-void VariableTest::testUninitialized()
+void OptionalTest::testUninitialized()
 {
-    ts::Variable<int> vi;
+    std::optional<int> vi;
     TS_UNUSED int i = vi.value();
     TSUNIT_FAIL("variable is not initialized, should not get there");
 }

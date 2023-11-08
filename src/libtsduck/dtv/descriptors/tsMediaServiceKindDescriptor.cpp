@@ -61,7 +61,7 @@ ts::DID ts::MediaServiceKindDescriptor::extendedTag() const
 void ts::MediaServiceKindDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (auto msk : media_service_kinds) {
-        bool identifier_flag = msk.ID_length_code.set() && msk.ID_type.set();
+        bool identifier_flag = msk.ID_length_code.has_value() && msk.ID_type.has_value();
         buf.putBits(msk.media_description_flag, 1);
         buf.putBit(identifier_flag);
         buf.putBits(msk.language_media_service_type_pairs.size(), 3);
@@ -225,7 +225,7 @@ void ts::MediaServiceKindDescriptor::buildXML(DuckContext& duck, xml::Element* r
         ts::xml::Element* element = root->addElement(u"media_service_kind");
         element->setEnumAttribute(MediaDescriptionFlag, u"media_description", msk.media_description_flag);
         element->setEnumAttribute(MediaType, u"media_type", msk.media_type_idc);
-        if (msk.ID_length_code.set() && msk.ID_type.set()) {
+        if (msk.ID_length_code.has_value() && msk.ID_type.has_value()) {
             element->setIntAttribute(u"ID_length_code", msk.ID_length_code.value());
             element->setIntAttribute(u"ID_type", msk.ID_type.value(), true);
             if (msk.ID_length_code.value() == 7) {
@@ -271,7 +271,7 @@ bool ts::MediaServiceKindDescriptor::analyzeXML(DuckContext& duck, const xml::El
             newMSK.media_type_idc = uint8_t(mt);
 
             if (ok) {
-                if (newMSK.ID_length_code.set()) {
+                if (newMSK.ID_length_code.has_value()) {
                     switch (newMSK.ID_length_code.value()) {
                         case 0: newMSK.ID_len = 1; break;
                         case 1: newMSK.ID_len = 2; break;

@@ -811,7 +811,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
     // The initial values for the member fields are set for one immediate injection.
     // This must be changed for non-immediate splice_insert() and time_signal() commands.
     if (sit.isValid() &&
-        ((sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.set()) ||
+        ((sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.has_value()) ||
          (sit.splice_command_type == SPLICE_INSERT && !sit.splice_insert.canceled && !sit.splice_insert.immediate)))
     {
         // Compute the splice event PTS value. This will be the last time for
@@ -819,14 +819,14 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
         if (sit.splice_command_type == SPLICE_INSERT) {
             if (sit.splice_insert.program_splice) {
                 // Common PTS value, program-wide.
-                if (sit.splice_insert.program_pts.set()) {
+                if (sit.splice_insert.program_pts.has_value()) {
                     last_pts = sit.splice_insert.program_pts.value();
                 }
             }
             else {
                 // Compute the earliest PTS in all components.
                 for (const auto& it : sit.splice_insert.components_pts) {
-                    if (it.second.set()) {
+                    if (it.second.has_value()) {
                         if (last_pts == INVALID_PTS || SequencedPTS(it.second.value(), last_pts)) {
                             last_pts = it.second.value();
                         }
@@ -898,7 +898,7 @@ ts::UString ts::SpliceInjectPlugin::SpliceCommand::toString() const
         if (sit.splice_command_type == SPLICE_INSERT &&
             !sit.splice_insert.canceled &&
             sit.splice_insert.program_splice &&
-            sit.splice_insert.program_pts.set())
+            sit.splice_insert.program_pts.has_value())
         {
             name.append(UString::Format(u" @0x%09X", {sit.splice_insert.program_pts.value()}));
         }

@@ -16,6 +16,7 @@
 #include "tsException.h"
 #include "tsEnumeration.h"
 #include "tsByteBlock.h"
+#include "tsOptional.h"
 #include "tsVariable.h"
 #include "tsSafePtr.h"
 #include "tsAbstractNumber.h"
@@ -768,6 +769,19 @@ namespace ts {
         void getOptionalValue(Variable<UString>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
+        //! Get the value of an option in the last analyzed command line, only if present.
+        //!
+        //! @param [in,out] value A std::optional string receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] clear_if_absent When the option is not present, the std::optional object
+        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
+        //! is left unmodified.
+        //!
+        void getOptionalValue(std::optional<UString>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
+
+        //!
         //! Get all occurences of an option in a container of strings.
         //!
         //! @param [out] values A container of strings receiving all values of the option or parameter.
@@ -829,6 +843,21 @@ namespace ts {
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
         void getOptionalIntValue(Variable<INT>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
+
+        //!
+        //! Get the value of an integer option in the last analyzed command line, only if present.
+        //!
+        //! @tparam INT An integer or enumeration type for the result.
+        //! @param [in,out] value A std::optional integer receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] clear_if_absent When the option is not present, the std::optional object
+        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
+        //! is left unmodified.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        void getOptionalIntValue(std::optional<INT>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
         //! Get all occurences of an integer option in a vector of integers.
@@ -1158,10 +1187,10 @@ namespace ts {
         class TSDUCKDLL ArgValue
         {
         public:
-            Variable<UString> string {};      // Orginal string value from command line (unset if option is present without value).
-            int64_t           int_base = 0;   // First (or only) integer value.
-            size_t            int_count = 0;  // Number of consecutive integer values.
-            IPv4SocketAddress address {};     // IPv4 address or socket address value.
+            std::optional<UString> string {};      // Orginal string value from command line (unset if option is present without value).
+            int64_t                int_base = 0;   // First (or only) integer value.
+            size_t                 int_count = 0;  // Number of consecutive integer values.
+            IPv4SocketAddress      address {};     // IPv4 address or socket address value.
         };
 
         // List of values
@@ -1270,7 +1299,7 @@ namespace ts {
 
         // Validate the content of an option, add the value,
         // compute integer values when necessary, return false if not valid.
-        bool validateParameter(IOption& opt, const Variable<UString>& val);
+        bool validateParameter(IOption& opt, const std::optional<UString>& val);
 
         // Process --help and --version predefined options.
         void processHelp();
@@ -1364,7 +1393,19 @@ void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool
         value = static_cast<INT>(opt.values[0].int_base);
     }
     else if (clear_if_absent) {
-        value.clear();
+        value.reset();
+    }
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::Args::getOptionalIntValue(std::optional<INT>& value, const UChar* name, bool clear_if_absent) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.type == INTEGER && !opt.values.empty()) {
+        value = static_cast<INT>(opt.values[0].int_base);
+    }
+    else if (clear_if_absent) {
+        value.reset();
     }
 }
 

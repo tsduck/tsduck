@@ -1178,7 +1178,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     if (present(u"bitrate") && present(u"symbol-rate")) {
         return startError(u"options --symbol-rate and --bitrate are mutually exclusive", DTAPI_OK);
     }
-    else if (symbol_rate <= 0 && input != nullptr && input->symbol_rate.set()) {
+    else if (symbol_rate <= 0 && input != nullptr && input->symbol_rate.has_value()) {
         symbol_rate = int(input->symbol_rate.value());
     }
 
@@ -1214,7 +1214,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         frequency = intValue<uint64_t>(u"frequency", 0);
     }
     else if (input != nullptr) {
-        frequency = input->frequency.value(0);
+        frequency = input->frequency.value_or(0);
     }
     if (frequency == 0) {
         return startError(u"unspecified frequency (required for modulator devices)", DTAPI_OK);
@@ -1256,7 +1256,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             if (input != nullptr) {
                 // fec is unmodified if no valid value is found.
                 input->getDektecCodeRate(fec);
-                switch (input->pilots.value(PILOT_AUTO)) {
+                switch (input->pilots.value_or(PILOT_AUTO)) {
                     case PILOT_ON:  pilots = DTAPI_MOD_S2_PILOTS; break;
                     case PILOT_OFF: pilots = DTAPI_MOD_S2_NOPILOTS; break;
                     case PILOT_AUTO: break;
@@ -1330,8 +1330,8 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 }
             }
             if (input != nullptr) {
-                ModulationArgs::ToDektecCodeRate(fec, input->fec_hp.value(FEC_NONE));
-                if (input->bandwidth.set()) {
+                ModulationArgs::ToDektecCodeRate(fec, input->fec_hp.value_or(FEC_NONE));
+                if (input->bandwidth.has_value()) {
                     switch (input->bandwidth.value()) {
                         case 8000000: bw = DTAPI_MOD_DVBT_8MHZ; break;
                         case 7000000: bw = DTAPI_MOD_DVBT_7MHZ; break;
@@ -1340,7 +1340,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                         default: break;
                     }
                 }
-                if (input->modulation.set()) {
+                if (input->modulation.has_value()) {
                     switch (input->modulation.value()) {
                         case QPSK:   constel = DTAPI_MOD_DVBT_QPSK;  break;
                         case QAM_16: constel = DTAPI_MOD_DVBT_QAM16; break;
@@ -1348,7 +1348,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                         default: break;
                     }
                 }
-                if (input->guard_interval.set()) {
+                if (input->guard_interval.has_value()) {
                     switch (input->guard_interval.value()) {
                         case GUARD_1_32: guard = DTAPI_MOD_DVBT_G_1_32; break;
                         case GUARD_1_16: guard = DTAPI_MOD_DVBT_G_1_16; break;
@@ -1357,7 +1357,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                         default: break;
                     }
                 }
-                if (input->transmission_mode.set()) {
+                if (input->transmission_mode.has_value()) {
                     switch (input->transmission_mode.value()) {
                         case TM_2K: tr_mode = DTAPI_MOD_DVBT_2K; break;
                         case TM_4K: tr_mode = DTAPI_MOD_DVBT_4K; break;
@@ -1497,7 +1497,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
         case DTAPI_MOD_ATSC: {
             int constel = DTAPI_MOD_ATSC_VSB8;
-            if (input != nullptr && input->modulation.set()) {
+            if (input != nullptr && input->modulation.has_value()) {
                 switch (input->modulation.value()) {
                     case VSB_8:  constel = DTAPI_MOD_ATSC_VSB8;  break;
                     case VSB_16: constel = DTAPI_MOD_ATSC_VSB16; break;
@@ -1921,7 +1921,7 @@ bool ts::DektecOutputPlugin::ParamsMatchUserOverrides(const ts::BitrateDifferenc
     if (present(u"convolutional-rate")) {
         auto preferred_convolutional_rate = intValue<int>(u"convolutional-rate", 0);
         int calculated_convolutional_rate = 0;
-        ModulationArgs::ToDektecCodeRate(calculated_convolutional_rate, params.tune.fec_hp.value(FEC_NONE));
+        ModulationArgs::ToDektecCodeRate(calculated_convolutional_rate, params.tune.fec_hp.value_or(FEC_NONE));
         if (calculated_convolutional_rate != preferred_convolutional_rate) {
             return false;
         }

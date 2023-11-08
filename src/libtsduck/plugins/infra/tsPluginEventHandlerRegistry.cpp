@@ -92,16 +92,16 @@ void ts::PluginEventHandlerRegistry::callEventHandlers(const PluginEventContext&
         // Loop on all registered handlers.
         for (const auto& it : _handlers) {
             // For each handler, if a criteria is specified and does not match, skip this handler.
-            if (it.second.event_code.set() && it.second.event_code.value() != context.eventCode()) {
+            if (it.second.event_code.has_value() && it.second.event_code.value() != context.eventCode()) {
                 continue;
             }
-            if (it.second.plugin_type.set() && it.second.plugin_type.value() != type) {
+            if (it.second.plugin_type.has_value() && it.second.plugin_type.value() != type) {
                 continue;
             }
-            if (it.second.plugin_index.set() && it.second.plugin_index.value() != context.pluginIndex()) {
+            if (it.second.plugin_index.has_value() && it.second.plugin_index.value() != context.pluginIndex()) {
                 continue;
             }
-            if (it.second.plugin_name.set() && it.second.plugin_name.value() != context.pluginName()) {
+            if (it.second.plugin_name.has_value() && it.second.plugin_name.value() != context.pluginName()) {
                 continue;
             }
             // No negative criteria, call the handler.

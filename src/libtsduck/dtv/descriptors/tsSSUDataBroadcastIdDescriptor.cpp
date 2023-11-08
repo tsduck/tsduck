@@ -102,8 +102,8 @@ void ts::SSUDataBroadcastIdDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBits(0xFF, 4);
         buf.putBits(it.update_type, 4);
         buf.putBits(0xFF, 2);
-        buf.putBit(it.update_version.set());
-        buf.putBits(it.update_version.value(0xFF), 5);
+        buf.putBit(it.update_version.has_value());
+        buf.putBits(it.update_version.value_or(0xFF), 5);
         buf.putUInt8(uint8_t(it.selector.size()));
         buf.putBytes(it.selector);
     }

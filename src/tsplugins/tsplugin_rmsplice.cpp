@@ -353,7 +353,7 @@ void ts::RMSplicePlugin::PIDState::addEvent(const SpliceInsert& cmd, const TagBy
     uint64_t pts = 0;
 
     if (!cmd.immediate) {
-        if (cmd.program_splice && cmd.program_pts.set()) {
+        if (cmd.program_splice && cmd.program_pts.has_value()) {
             // Same PTS value for all components in the service.
             pts = cmd.program_pts.value();
         }
@@ -364,7 +364,7 @@ void ts::RMSplicePlugin::PIDState::addEvent(const SpliceInsert& cmd, const TagBy
                 it1 == tags.end() ?                     // no component tag found for our PID
                 cmd.components_pts.end() :              // so there won't be any PTS
                 cmd.components_pts.find(it1->second);   // search PTS value for the component type
-            if (it2 == cmd.components_pts.end() || !it2->second.set()) {
+            if (it2 == cmd.components_pts.end() || !it2->second.has_value()) {
                 // The SpliceInsert does not specify any PTS for our PID, nothing to do.
                 return;
             }

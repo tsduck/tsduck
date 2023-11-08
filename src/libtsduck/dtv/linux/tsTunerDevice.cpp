@@ -502,7 +502,7 @@ bool ts::TunerDevice::getFrontendStatus(::fe_status_t& status)
 // Extract DTV_STAT_* properties and store it into a SignalState.
 //-----------------------------------------------------------------------------
 
-void ts::TunerDevice::GetStat(SignalState& state, Variable<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd)
+void ts::TunerDevice::GetStat(SignalState& state, std::optional<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd)
 {
     int64_t value = 0;
     ::fecap_scale_params scale = ::FE_SCALE_NOT_AVAILABLE;
@@ -519,16 +519,16 @@ void ts::TunerDevice::GetStat(SignalState& state, Variable<SignalState::Value> S
                 break;
             case ::FE_SCALE_NOT_AVAILABLE:
             default:
-                (state.*field).clear();
+                (state.*field).reset();
                 break;
         }
     }
     else {
-        (state.*field).clear();
+        (state.*field).reset();
     }
 }
 
-void ts::TunerDevice::GetStatRatio(SignalState& state, Variable<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd1, uint32_t cmd2)
+void ts::TunerDevice::GetStatRatio(SignalState& state, std::optional<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd1, uint32_t cmd2)
 {
     int64_t value1 = 0;
     int64_t value2 = 0;
@@ -544,7 +544,7 @@ void ts::TunerDevice::GetStatRatio(SignalState& state, Variable<SignalState::Val
         state.setPercent(field, (100 * value1) / value2, 0, 100);
     }
     else {
-        (state.*field).clear();
+        (state.*field).reset();
     }
 }
 
@@ -658,10 +658,10 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             // returns the intermediate frequency and there is no unique satellite
             // frequency for a given intermediate frequency.
             if (reset_unknown) {
-                params.frequency.clear();
-                params.satellite_number.clear();
-                params.lnb.clear();
-                params.polarity.clear();
+                params.frequency.reset();
+                params.satellite_number.reset();
+                params.lnb.reset();
+                params.polarity.reset();
             }
 
             props.clear();
@@ -781,10 +781,10 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
         case DS_ISDB_S: {
             // Note: same remark about the frequency as DVB-S tuner.
             if (reset_unknown) {
-                params.frequency.clear();
-                params.satellite_number.clear();
-                params.lnb.clear();
-                params.polarity.clear();
+                params.frequency.reset();
+                params.satellite_number.reset();
+                params.lnb.reset();
+                params.polarity.reset();
             }
 
             props.clear();
@@ -803,7 +803,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.inversion = SpectralInversion(props.getByCommand(DTV_INVERSION));
             params.symbol_rate = props.getByCommand(DTV_SYMBOL_RATE);
             params.inner_fec = InnerFEC(props.getByCommand(DTV_INNER_FEC));
-            params.stream_id.clear();
+            params.stream_id.reset();
 #if defined(DTV_STREAM_ID)
             const uint32_t val = props.getByCommand(DTV_STREAM_ID);
             if (val != DTVProperties::UNKNOWN) {
@@ -852,27 +852,27 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.bandwidth = props.getByCommand(DTV_BANDWIDTH_HZ);
             params.transmission_mode = TransmissionMode(props.getByCommand(DTV_TRANSMISSION_MODE));
             params.guard_interval = GuardInterval(props.getByCommand(DTV_GUARD_INTERVAL));
-            params.sound_broadcasting.clear();
+            params.sound_broadcasting.reset();
             if ((val = props.getByCommand(DTV_ISDBT_SOUND_BROADCASTING)) != DTVProperties::UNKNOWN) {
                 params.sound_broadcasting = val != 0;
             }
-            params.sb_subchannel_id.clear();
+            params.sb_subchannel_id.reset();
             if ((val = props.getByCommand(DTV_ISDBT_SB_SUBCHANNEL_ID)) != DTVProperties::UNKNOWN) {
                 params.sb_subchannel_id = int(val);
             }
-            params.sb_segment_count.clear();
+            params.sb_segment_count.reset();
             if ((val = props.getByCommand(DTV_ISDBT_SB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN) {
                 params.sb_segment_count = int(val);
             }
-            params.sb_segment_index.clear();
+            params.sb_segment_index.reset();
             if ((val = props.getByCommand(DTV_ISDBT_SB_SEGMENT_IDX)) != DTVProperties::UNKNOWN) {
                 params.sb_segment_index = int(val);
             }
-            params.isdbt_partial_reception.clear();
+            params.isdbt_partial_reception.reset();
             if ((val = props.getByCommand(DTV_ISDBT_PARTIAL_RECEPTION)) != DTVProperties::UNKNOWN) {
                 params.isdbt_partial_reception = val != 0;
             }
-            params.isdbt_layers.clear();
+            params.isdbt_layers.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYER_ENABLED)) != DTVProperties::UNKNOWN) {
                 params.isdbt_layers = UString();
                 if ((val & 0x01) != 0) {
@@ -885,51 +885,51 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                     params.isdbt_layers.value().append(1, u'C');
                 }
             }
-            params.layer_a_fec.clear();
+            params.layer_a_fec.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_FEC)) != DTVProperties::UNKNOWN) {
                 params.layer_a_fec = InnerFEC(val);
             }
-            params.layer_a_modulation.clear();
+            params.layer_a_modulation.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_MODULATION)) != DTVProperties::UNKNOWN) {
                 params.layer_a_modulation = Modulation(val);
             }
-            params.layer_a_segment_count.clear();
+            params.layer_a_segment_count.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_SEGMENT_COUNT)) != DTVProperties::UNKNOWN && val <= uint32_t(ModulationArgs::MAX_ISDBT_SEGMENT_COUNT)) {
                 params.layer_a_segment_count = int(val);
             }
-            params.layer_a_time_interleaving.clear();
+            params.layer_a_time_interleaving.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERA_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN && ModulationArgs::IsValidISDBTTimeInterleaving(int(val))) {
                 params.layer_a_time_interleaving = int(val);
             }
-            params.layer_b_fec.clear();
+            params.layer_b_fec.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_FEC)) != DTVProperties::UNKNOWN) {
                 params.layer_b_fec = InnerFEC(val);
             }
-            params.layer_b_modulation.clear();
+            params.layer_b_modulation.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_MODULATION)) != DTVProperties::UNKNOWN) {
                 params.layer_b_modulation = Modulation(val);
             }
-            params.layer_b_segment_count.clear();
+            params.layer_b_segment_count.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_SEGMENT_COUNT)) != DTVProperties::UNKNOWN && val <= uint32_t(ModulationArgs::MAX_ISDBT_SEGMENT_COUNT)) {
                 params.layer_b_segment_count = int(val);
             }
-            params.layer_b_time_interleaving.clear();
+            params.layer_b_time_interleaving.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERB_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN && ModulationArgs::IsValidISDBTTimeInterleaving(int(val))) {
                 params.layer_b_time_interleaving = int(val);
             }
-            params.layer_c_fec.clear();
+            params.layer_c_fec.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_FEC)) != DTVProperties::UNKNOWN) {
                 params.layer_c_fec = InnerFEC(val);
             }
-            params.layer_c_modulation.clear();
+            params.layer_c_modulation.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_MODULATION)) != DTVProperties::UNKNOWN) {
                 params.layer_c_modulation = Modulation(val);
             }
-            params.layer_c_segment_count.clear();
+            params.layer_c_segment_count.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_SEGMENT_COUNT)) != DTVProperties::UNKNOWN && val <= uint32_t(ModulationArgs::MAX_ISDBT_SEGMENT_COUNT)) {
                 params.layer_c_segment_count = int(val);
             }
-            params.layer_c_time_interleaving.clear();
+            params.layer_c_time_interleaving.reset();
             if ((val = props.getByCommand(DTV_ISDBT_LAYERC_TIME_INTERLEAVING)) != DTVProperties::UNKNOWN && ModulationArgs::IsValidISDBTTimeInterleaving(int(val))) {
                 params.layer_c_time_interleaving = int(val);
             }
@@ -951,8 +951,8 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
     // Some drivers sometimes return weird values for spectral inversion.
     // Reset it in case of invalid value.
-    if (params.inversion.set() && params.inversion.value() != SPINV_AUTO && params.inversion.value() != SPINV_ON && params.inversion.value() != SPINV_OFF) {
-        params.inversion.clear();
+    if (params.inversion.has_value() && params.inversion.value() != SPINV_AUTO && params.inversion.value() != SPINV_ON && params.inversion.value() != SPINV_OFF) {
+        params.inversion.reset();
     }
 
     return true;
@@ -1134,14 +1134,14 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
 
     // In case of satellite delivery, we need to control the dish.
     if (IsSatelliteDelivery(params.delivery_system.value())) {
-        if (!params.lnb.set()) {
+        if (!params.lnb.has_value()) {
             _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
         }
         else {
             _duck.report().debug(u"using LNB %s", {params.lnb.value()});
             // Compute transposition information from the LNB.
             LNB::Transposition trans;
-            if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), _duck.report())) {
+            if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value_or(POL_NONE), _duck.report())) {
                 return false;
             }
             // For satellite, Linux DVB API uses an intermediate frequency in kHz
@@ -1162,7 +1162,7 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
     }
 
     // The bandwidth, when set, is in Hz.
-    const uint32_t bwhz = params.bandwidth.value(0);
+    const uint32_t bwhz = params.bandwidth.value_or(0);
 
     // Now build a list of tuning parameters.
     // The delivery system and frequency are required everywhere.
@@ -1182,11 +1182,11 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
             props.addVar(DTV_ROLLOFF, params.roll_off);
             props.addVar(DTV_PILOT, params.pilots);
 #if defined(DTV_STREAM_ID)
-            if (params.isi.set() && params.isi.value() != ISI_DISABLE) {
+            if (params.isi.has_value() && params.isi.value() != ISI_DISABLE) {
                 // With the Linux DVB API, all multistream selection info are passed in the "stream id".
                 const uint32_t id =
-                    (uint32_t(params.pls_mode.value(ModulationArgs::DEFAULT_PLS_MODE)) << 26) |
-                    ((params.pls_code.value(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
+                    (uint32_t(params.pls_mode.value_or(ModulationArgs::DEFAULT_PLS_MODE)) << 26) |
+                    ((params.pls_code.value_or(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
                     (params.isi.value() & 0x000000FF);
                 _duck.report().debug(u"using DVB-S2 multi-stream id 0x%X (%<d)", {id});
                 props.add(DTV_STREAM_ID, id);
@@ -1246,7 +1246,7 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
             props.addVar(DTV_ISDBT_SB_SUBCHANNEL_ID, params.sb_subchannel_id);
             props.addVar(DTV_ISDBT_SB_SEGMENT_COUNT, params.sb_segment_count);
             props.addVar(DTV_ISDBT_SB_SEGMENT_IDX, params.sb_segment_index);
-            if (params.isdbt_layers.set()) {
+            if (params.isdbt_layers.has_value()) {
                 const UString& layers(params.isdbt_layers.value());
                 uint32_t val = 0;
                 for (size_t i = 0; i < layers.size(); ++i) {
@@ -1259,19 +1259,19 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
                 }
                 props.add(DTV_ISDBT_LAYER_ENABLED, val);
             }
-            props.add(DTV_ISDBT_PARTIAL_RECEPTION, params.isdbt_partial_reception.set() ? uint32_t(params.isdbt_partial_reception.value()) : uint32_t(-1));
-            props.add(DTV_ISDBT_LAYERA_FEC, params.layer_a_fec.set() ? uint32_t(params.layer_a_fec.value()) : uint32_t(::FEC_AUTO));
-            props.add(DTV_ISDBT_LAYERA_MODULATION, params.layer_a_modulation.set() ? uint32_t(params.layer_a_modulation.value()) : uint32_t(::QAM_AUTO));
-            props.add(DTV_ISDBT_LAYERA_SEGMENT_COUNT, params.layer_a_segment_count.set() ? uint32_t(params.layer_a_segment_count.value()) : uint32_t(-1));
-            props.add(DTV_ISDBT_LAYERA_TIME_INTERLEAVING, params.layer_a_time_interleaving.set() ? uint32_t(params.layer_a_time_interleaving.value()) : uint32_t(-1));
-            props.add(DTV_ISDBT_LAYERB_FEC, params.layer_b_fec.set() ? uint32_t(params.layer_b_fec.value()) : uint32_t(::FEC_AUTO));
-            props.add(DTV_ISDBT_LAYERB_MODULATION, params.layer_b_modulation.set() ? uint32_t(params.layer_b_modulation.value()) : uint32_t(::QAM_AUTO));
-            props.add(DTV_ISDBT_LAYERB_SEGMENT_COUNT, params.layer_b_segment_count.set() ? uint32_t(params.layer_b_segment_count.value()) : uint32_t(-1));
-            props.add(DTV_ISDBT_LAYERB_TIME_INTERLEAVING, params.layer_b_time_interleaving.set() ? uint32_t(params.layer_b_time_interleaving.value()) : uint32_t(-1));
-            props.add(DTV_ISDBT_LAYERC_FEC, params.layer_c_fec.set() ? uint32_t(params.layer_c_fec.value()) : uint32_t(::FEC_AUTO));
-            props.add(DTV_ISDBT_LAYERC_MODULATION, params.layer_c_modulation.set() ? uint32_t(params.layer_c_modulation.value()) : uint32_t(::QAM_AUTO));
-            props.add(DTV_ISDBT_LAYERC_SEGMENT_COUNT, params.layer_c_segment_count.set() ? uint32_t(params.layer_c_segment_count.value()) : uint32_t(-1));
-            props.add(DTV_ISDBT_LAYERC_TIME_INTERLEAVING, params.layer_c_time_interleaving.set() ? uint32_t(params.layer_c_time_interleaving.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_PARTIAL_RECEPTION, params.isdbt_partial_reception.has_value() ? uint32_t(params.isdbt_partial_reception.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERA_FEC, params.layer_a_fec.has_value() ? uint32_t(params.layer_a_fec.value()) : uint32_t(::FEC_AUTO));
+            props.add(DTV_ISDBT_LAYERA_MODULATION, params.layer_a_modulation.has_value() ? uint32_t(params.layer_a_modulation.value()) : uint32_t(::QAM_AUTO));
+            props.add(DTV_ISDBT_LAYERA_SEGMENT_COUNT, params.layer_a_segment_count.has_value() ? uint32_t(params.layer_a_segment_count.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERA_TIME_INTERLEAVING, params.layer_a_time_interleaving.has_value() ? uint32_t(params.layer_a_time_interleaving.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERB_FEC, params.layer_b_fec.has_value() ? uint32_t(params.layer_b_fec.value()) : uint32_t(::FEC_AUTO));
+            props.add(DTV_ISDBT_LAYERB_MODULATION, params.layer_b_modulation.has_value() ? uint32_t(params.layer_b_modulation.value()) : uint32_t(::QAM_AUTO));
+            props.add(DTV_ISDBT_LAYERB_SEGMENT_COUNT, params.layer_b_segment_count.has_value() ? uint32_t(params.layer_b_segment_count.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERB_TIME_INTERLEAVING, params.layer_b_time_interleaving.has_value() ? uint32_t(params.layer_b_time_interleaving.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERC_FEC, params.layer_c_fec.has_value() ? uint32_t(params.layer_c_fec.value()) : uint32_t(::FEC_AUTO));
+            props.add(DTV_ISDBT_LAYERC_MODULATION, params.layer_c_modulation.has_value() ? uint32_t(params.layer_c_modulation.value()) : uint32_t(::QAM_AUTO));
+            props.add(DTV_ISDBT_LAYERC_SEGMENT_COUNT, params.layer_c_segment_count.has_value() ? uint32_t(params.layer_c_segment_count.value()) : uint32_t(-1));
+            props.add(DTV_ISDBT_LAYERC_TIME_INTERLEAVING, params.layer_c_time_interleaving.has_value() ? uint32_t(params.layer_c_time_interleaving.value()) : uint32_t(-1));
             break;
         }
         case DS_ISDB_C:
@@ -1792,7 +1792,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
     getCurrentTuning(params, false);
 
     // Display delivery system.
-    DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
+    DeliverySystem delsys = params.delivery_system.value_or(DS_UNDEFINED);
     if (delsys == DS_UNDEFINED) {
         delsys = _delivery_systems.preferred();
     }
@@ -1800,7 +1800,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
     Display(strm, margin, u"Delivery system", DeliverySystemEnum.name(delsys), u"");
 
     // Display frequency characteristics
-    const uint64_t freq = params.frequency.value(0);
+    const uint64_t freq = params.frequency.value_or(0);
     const uint64_t hz_factor = IsSatelliteDelivery(delsys) ? 1000 : 1;
     strm << margin << "Frequencies:" << std::endl;
     if (freq > 0) {
@@ -1824,7 +1824,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
 
     // Display symbol rate characteristics.
     if (ttype == TT_DVB_S || ttype == TT_DVB_C || ttype == TT_ISDB_S || ttype == TT_ISDB_C) {
-        const uint32_t symrate = params.symbol_rate.value(0);
+        const uint32_t symrate = params.symbol_rate.value_or(0);
         strm << margin << "Symbol rates:" << std::endl;
         if (symrate > 0) {
             Display(strm, margin, u"  Current", UString::Decimal(symrate), u"sym/s");
@@ -1835,34 +1835,34 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
     }
 
     // Frontend-specific information
-    if (params.inversion.set()) {
+    if (params.inversion.has_value()) {
         Display(strm, margin, u"Spectral inversion", SpectralInversionEnum.name(params.inversion.value()), u"");
     }
-    if (params.inner_fec.set()) {
+    if (params.inner_fec.has_value()) {
         Display(strm, margin, u"FEC(inner)", InnerFECEnum.name(params.inner_fec.value()), u"");
     }
-    if (params.modulation.set()) {
+    if (params.modulation.has_value()) {
         Display(strm, margin, u"Modulation", ModulationEnum.name(params.modulation.value()), u"");
     }
-    if (params.bandwidth.set()) {
+    if (params.bandwidth.has_value()) {
         Display(strm, margin, u"Bandwidth", UString::Decimal(params.bandwidth.value()), u"Hz");
     }
-    if (params.fec_hp.set()) {
+    if (params.fec_hp.has_value()) {
         Display(strm, margin, u"FEC(high priority)", InnerFECEnum.name(params.fec_hp.value()), u"");
     }
-    if (params.fec_lp.set()) {
+    if (params.fec_lp.has_value()) {
         Display(strm, margin, u"FEC(low priority)", InnerFECEnum.name(params.fec_lp.value()), u"");
     }
-    if (params.transmission_mode.set()) {
+    if (params.transmission_mode.has_value()) {
         Display(strm, margin, u"Transmission mode", TransmissionModeEnum.name(params.transmission_mode.value()), u"");
     }
-    if (params.guard_interval.set()) {
+    if (params.guard_interval.has_value()) {
         Display(strm, margin, u"Guard interval", GuardIntervalEnum.name(params.guard_interval.value()), u"");
     }
-    if (params.hierarchy.set()) {
+    if (params.hierarchy.has_value()) {
         Display(strm, margin, u"Hierarchy", HierarchyEnum.name(params.hierarchy.value()), u"");
     }
-    if (params.plp.set() && params.plp != PLP_DISABLE) {
+    if (params.plp.has_value() && params.plp != PLP_DISABLE) {
         Display(strm, margin, u"PLP", UString::Decimal(params.plp.value()), u"");
     }
 

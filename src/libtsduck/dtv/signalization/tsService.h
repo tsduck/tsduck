@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsStringifyInterface.h"
 #include "tsTS.h"
 
@@ -88,18 +88,18 @@ namespace ts {
         //! @param fullname Explanatory description of the property.
         //! @hideinitializer
         //!
-#define SERVICE_PROPERTY(type,suffix,field,defvalue,fullname)                         \
-    private:                                                                          \
-        Variable<type> field {};                                                      \
-    public:                                                                           \
-        /** Check if the fullname is present.                   */                    \
-        /** @return True if the fullname is present.            */                    \
-        bool has##suffix() const { return field.set(); }                              \
-        /** Clear the fullname.                                 */                    \
-        void clear##suffix() { _modified = _modified || field.set(); field.clear(); } \
-        /** Get the fullname.                                   */                    \
-        /** @return The fullname or defvalue if unset.          */                    \
-        type get##suffix() const { return field.set() ? field.value() : type(defvalue); }
+#define SERVICE_PROPERTY(type,suffix,field,defvalue,fullname)       \
+    private:                                                        \
+        std::optional<type> field {};                               \
+    public:                                                         \
+        /** Check if the fullname is present.                   */  \
+        /** @return True if the fullname is present.            */  \
+        bool has##suffix() const { return field.has_value(); }      \
+        /** Clear the fullname.                                 */  \
+        void clear##suffix() { _modified = _modified || bool(field); field.reset(); } \
+        /** Get the fullname.                                   */  \
+        /** @return The fullname or defvalue if unset.          */  \
+        type get##suffix() const { return field.value_or(defvalue); }
 
         //!
         //! Define an integer service property accessors, class internal use only.
@@ -110,15 +110,15 @@ namespace ts {
         //! @param fullname Explanatory description of the property.
         //! @hideinitializer
         //!
-#define SERVICE_PROPERTY_INT(type,suffix,field,defvalue,fullname)                                \
-        SERVICE_PROPERTY(type, suffix, field, defvalue, fullname)                                \
-        /** Set the fullname.                                      */                            \
-        /** @param [in] value The fullname.                        */                            \
+#define SERVICE_PROPERTY_INT(type,suffix,field,defvalue,fullname)      \
+        SERVICE_PROPERTY(type, suffix, field, defvalue, fullname)      \
+        /** Set the fullname.                                      */  \
+        /** @param [in] value The fullname.                        */  \
         void set##suffix(type value) { _modified = _modified || field != value; field = value; } \
-        /** Check if the fullname has a given value.               */                            \
-        /** @param [in] value The fullname to check.               */                            \
-        /** @return True if the fullname is equal to @a value.     */                            \
-        bool has##suffix(type value) const { return field.set() && field == value; }
+        /** Check if the fullname has a given value.               */  \
+        /** @param [in] value The fullname to check.               */  \
+        /** @return True if the fullname is equal to @a value.     */  \
+        bool has##suffix(type value) const { return field == value; }
 
         //!
         //! Define a string service property accessors, class internal use only.
@@ -127,16 +127,16 @@ namespace ts {
         //! @param fullname Explanatory description of the property.
         //! @hideinitializer
         //!
-#define SERVICE_PROPERTY_STRING(suffix,field,fullname)                                                     \
-        SERVICE_PROPERTY(UString, suffix, field, UString(), fullname)                                      \
-        /** Set the fullname.                                      */                                      \
-        /** @param [in] value The fullname.                        */                                      \
+#define SERVICE_PROPERTY_STRING(suffix,field,fullname)                 \
+        SERVICE_PROPERTY(UString, suffix, field, UString(), fullname)  \
+        /** Set the fullname.                                      */  \
+        /** @param [in] value The fullname.                        */  \
         void set##suffix(const UString& value) { _modified = _modified || field != value; field = value; } \
-        /** Check if the fullname has a given value.               */                                      \
-        /** @param [in] value The fullname to check.               */                                      \
-        /** @return True if the fullname is similar to @a value,   */                                      \
-        /** case insensitive and ignoring blanks.                  */                                      \
-        bool has##suffix(const UString& value) const { return field.set() && value.similar(field.value()); }
+        /** Check if the fullname has a given value.               */  \
+        /** @param [in] value The fullname to check.               */  \
+        /** @return True if the fullname is similar to @a value,   */  \
+        /** case insensitive and ignoring blanks.                  */  \
+        bool has##suffix(const UString& value) const { return value.similar(field.value_or(UString())); }
 
         SERVICE_PROPERTY_INT(uint16_t, Id,            _id,             0,        Service Id)
         SERVICE_PROPERTY_INT(uint16_t, TSId,          _tsid,           0,        Transport Stream Id)
@@ -306,11 +306,11 @@ std::ostream& ts::Service::Display(std::ostream& strm,
     for (ITERATOR it = begin; it != end; ++it) {
         count++;
         fields |= it->getFields();
-        if (it->_name.set()) {
+        if (it->_name.has_value()) {
             name_width = std::max(name_width, it->_name.value().width());
             fields |= NAME;
         }
-        if (it->_provider.set()) {
+        if (it->_provider.has_value()) {
             provider_width = std::max(provider_width, it->_provider.value().width());
             fields |= PROVIDER;
         }
@@ -380,7 +380,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
     for (ITERATOR it = begin; it != end; ++it) {
         strm << margin;
         if (fields & LCN) {
-            if (it->_lcn.set()) {
+            if (it->_lcn.has_value()) {
                 strm << UString::Format(u"%3d ", {it->_lcn.value()});
             }
             else {
@@ -394,7 +394,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
             strm << it->getProvider().toJustifiedLeft(provider_width + 1);
         }
         if (fields & ID) {
-            if (it->_id.set()) {
+            if (it->_id.has_value()) {
                 strm << UString::Format(u"0x%04X ", {it->_id.value()});
             }
             else {
@@ -402,7 +402,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
             }
         }
         if (fields & TSID) {
-            if (it->_tsid.set()) {
+            if (it->_tsid.has_value()) {
                 strm << UString::Format(u"0x%04X ", {it->_tsid.value()});
             }
             else {
@@ -410,7 +410,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
             }
         }
         if (fields & ONID) {
-            if (it->_onid.set()) {
+            if (it->_onid.has_value()) {
                 strm << UString::Format(u"0x%04X ", {it->_onid.value()});
             }
             else {
@@ -418,10 +418,10 @@ std::ostream& ts::Service::Display(std::ostream& strm,
             }
         }
         if (fields & (TYPE_DVB | TYPE_ATSC)) {
-            if (it->_type_dvb.set()) {
+            if (it->_type_dvb.has_value()) {
                 strm << UString::Format(u"0x%02X ", {it->_type_dvb.value()});
             }
-            else if (it->_type_atsc.set()) {
+            else if (it->_type_atsc.has_value()) {
                 strm << UString::Format(u"0x%02X ", {it->_type_atsc.value()});
             }
             else {
@@ -429,7 +429,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
             }
         }
         if (fields & PMT_PID) {
-            if (it->_pmt_pid.set()) {
+            if (it->_pmt_pid.has_value()) {
                 strm << UString::Format(u"0x%04X ", {it->_pmt_pid.value()});
             }
             else {

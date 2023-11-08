@@ -183,7 +183,7 @@ bool ts::TunerBase::checkTuneParameters(ModulationArgs& params) const
 
     // Get default (preferred) delivery system from tuner when needed.
     const DeliverySystemSet& delivery_systems(deliverySystems());
-    if (params.delivery_system.value(DS_UNDEFINED) == DS_UNDEFINED) {
+    if (params.delivery_system.value_or(DS_UNDEFINED) == DS_UNDEFINED) {
         params.delivery_system = delivery_systems.preferred();
         if (params.delivery_system == DS_UNDEFINED) {
             _duck.report().error(u"no tuning delivery system specified");

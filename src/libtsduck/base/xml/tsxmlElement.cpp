@@ -443,7 +443,7 @@ bool ts::xml::Element::getAttribute(UString& value,
 bool ts::xml::Element::getOptionalAttribute(Variable<UString>& value, const UString& name, size_t minSize, size_t maxSize) const
 {
     // Default: erase value.
-    value.clear();
+    value.reset();
     bool ok = true;
 
     if (hasAttribute(name)) {
@@ -495,7 +495,7 @@ bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool r
 bool ts::xml::Element::getOptionalBoolAttribute(Variable<bool>& value, const UString& name) const
 {
     // Default: erase value.
-    value.clear();
+    value.reset();
     bool ok = true;
 
     if (hasAttribute(name)) {

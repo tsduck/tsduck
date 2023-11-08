@@ -65,7 +65,7 @@ bool ts::GetLegacyBandWidth(Variable<BandWidth>& bandwidth, const xml::Element* 
 
     if (str.empty()) {
         // Attribute not present, ok.
-        bandwidth.clear();
+        bandwidth.reset();
         return true;
     }
     else if (LegacyBandWidthToHz(bw, str)) {
@@ -75,7 +75,32 @@ bool ts::GetLegacyBandWidth(Variable<BandWidth>& bandwidth, const xml::Element* 
     }
     else {
         element->report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, attribute, element->name(), element->lineNumber()});
-        bandwidth.clear();
+        bandwidth.reset();
+        return false;
+    }
+}
+
+bool ts::GetLegacyBandWidth(std::optional<BandWidth>& bandwidth, const xml::Element* element, const UString& attribute)
+{
+    BandWidth bw = 0;
+
+    // Get attibute as a string
+    UString str;
+    element->getAttribute(str, attribute);
+
+    if (str.empty()) {
+        // Attribute not present, ok.
+        bandwidth.reset();
+        return true;
+    }
+    else if (LegacyBandWidthToHz(bw, str)) {
+        // Valid value.
+        bandwidth = bw;
+        return true;
+    }
+    else {
+        element->report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, attribute, element->name(), element->lineNumber()});
+        bandwidth.reset();
         return false;
     }
 }
@@ -133,7 +158,7 @@ bool ts::LoadLegacyBandWidthArg(Variable<BandWidth>& bandwidth, Args& args, cons
     BandWidth bw = 0;
     const UString str(args.value(name));
     if (str.empty()) {
-        bandwidth.clear();
+        bandwidth.reset();
         return true;
     }
     else if (LegacyBandWidthToHz(bw, str)) {
@@ -142,7 +167,26 @@ bool ts::LoadLegacyBandWidthArg(Variable<BandWidth>& bandwidth, Args& args, cons
     }
     else {
         args.error(u"invalid value '%s' for --%s", {str, name});
-        bandwidth.clear();
+        bandwidth.reset();
+        return false;
+    }
+}
+
+bool ts::LoadLegacyBandWidthArg(std::optional<BandWidth>& bandwidth, Args& args, const UChar* name)
+{
+    BandWidth bw = 0;
+    const UString str(args.value(name));
+    if (str.empty()) {
+        bandwidth.reset();
+        return true;
+    }
+    else if (LegacyBandWidthToHz(bw, str)) {
+        bandwidth = bw;
+        return true;
+    }
+    else {
+        args.error(u"invalid value '%s' for --%s", {str, name});
+        bandwidth.reset();
         return false;
     }
 }

@@ -22,7 +22,7 @@ ts::SpliceTime::~SpliceTime()
 // Convert the SpliceTime structure to string.
 ts::UString ts::SpliceTime::toString() const
 {
-    return set() ? PTSToString(value()) : u"unset";
+    return has_value() ? PTSToString(value()) : u"unset";
 }
 
 // Deserialize a SpliceTime structure from binary data.
@@ -32,7 +32,7 @@ int ts::SpliceTime::deserialize(const uint8_t* data, size_t size)
         return -1; // too short.
     }
     else if ((data[0] & 0x80) == 0) {
-        clear();
+        reset();
         return 1;
     }
     else if (size < 5) {
@@ -47,7 +47,7 @@ int ts::SpliceTime::deserialize(const uint8_t* data, size_t size)
 // Serialize the SpliceTime structure.
 void ts::SpliceTime::serialize(ByteBlock& data) const
 {
-    if (set()) {
+    if (has_value()) {
         data.appendUInt8(0xFE | uint8_t(value() >> 32));
         data.appendUInt32(uint32_t(value()));
     }

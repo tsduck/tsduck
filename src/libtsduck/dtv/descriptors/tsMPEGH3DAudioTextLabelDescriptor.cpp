@@ -36,7 +36,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::clearContent()
 {
     _3dAudioSceneInfoID = 0;
     description_languages.clear();
-    numReservedBytes.clear();
+    numReservedBytes.reset();
 }
 
 ts::MPEGH3DAudioTextLabelDescriptor::MPEGH3DAudioTextLabelDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -89,7 +89,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putStringWithByteLength(groupPreset.groupDescriptionPresetData);
         }
     }
-    if (numReservedBytes.set()) {
+    if (numReservedBytes.has_value()) {
         for (size_t i = 0; i < numReservedBytes.value(); i++) {
             buf.putUInt8(0xFF);
         }

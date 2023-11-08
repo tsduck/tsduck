@@ -35,8 +35,8 @@ ts::NodeRelationDescriptor::NodeRelationDescriptor() :
 void ts::NodeRelationDescriptor::clearContent()
 {
     reference_type = 0;
-    information_provider_id.clear();
-    event_relation_id.clear();
+    information_provider_id.reset();
+    event_relation_id.reset();
     reference_node_id = 0;
     reference_number = 0;
 }
@@ -54,7 +54,7 @@ ts::NodeRelationDescriptor::NodeRelationDescriptor(DuckContext& duck, const Desc
 
 void ts::NodeRelationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    const bool has_external = information_provider_id.set() && event_relation_id.set();
+    const bool has_external = information_provider_id.has_value() && event_relation_id.has_value();
     buf.putBits(reference_type, 4);
     buf.putBit(has_external);
     buf.putBits(0xFF, 3);
@@ -142,7 +142,7 @@ bool ts::NodeRelationDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
         element->getIntAttribute(reference_node_id, u"reference_node_id", true) &&
         element->getIntAttribute(reference_number, u"reference_number", true);
 
-    if (ok && (information_provider_id.set() + event_relation_id.set()) == 1) {
+    if (ok && (information_provider_id.has_value() + event_relation_id.has_value()) == 1) {
         element->report().error(u"in <%s> line %d, attributes 'information_provider_id' and 'event_relation_id' must be both present or both absent", {element->name(), element->lineNumber()});
         ok = false;
     }

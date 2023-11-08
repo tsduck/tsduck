@@ -520,7 +520,7 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
 
     // Get tuning parameters with default values.
     ModulationArgs params(in_params);
-    params.delivery_system.setDefault(DS_DVB_T);
+    set_default(params.delivery_system, DS_DVB_T);
     params.setDefaultValues();
     if (params.delivery_system != DS_DVB_T) {
         report.error(u"invalid tuning parameters for HiDes device, not DVB-T parameters");

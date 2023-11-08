@@ -37,7 +37,7 @@ void ts::TTMLSubtitlingDescriptor::clearContent()
     subtitle_purpose = 0;
     TTS_suitability = 0;
     dvb_ttml_profile.clear();
-    qualifier.clear();
+    qualifier.reset();
     font_id.clear();
     service_name.clear();
     reserved_zero_future_use_bytes = 0;
@@ -70,13 +70,13 @@ void ts::TTMLSubtitlingDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(subtitle_purpose, 6);
     buf.putBits(TTS_suitability, 2);
     buf.putBit(!font_id.empty());
-    buf.putBit(qualifier.set());
+    buf.putBit(qualifier.has_value());
     buf.putBits(0x00, 2);
     buf.putBits(dvb_ttml_profile.size(), 4);
     for (auto it : dvb_ttml_profile) {
         buf.putUInt8(it);
     }
-    if (qualifier.set()) {
+    if (qualifier.has_value()) {
         buf.putUInt32(qualifier.value());
     }
     if (!font_id.empty()) {

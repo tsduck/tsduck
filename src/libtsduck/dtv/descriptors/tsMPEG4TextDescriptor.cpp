@@ -60,10 +60,10 @@ void ts::MPEG4TextDescriptor::clearContent()
     text_track_width = 0;
     text_track_height = 0;
     Compatible_3GPPFormat.clear();
-    scene_width.clear();
-    scene_height.clear();
-    horizontal_scene_offset.clear();
-    vertical_scene_offset.clear();
+    scene_width.reset();
+    scene_height.reset();
+    horizontal_scene_offset.reset();
+    vertical_scene_offset.reset();
     Sample_index_and_description.clear();
 }
 
@@ -90,7 +90,7 @@ void ts::MPEG4TextDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(sampleDescriptionFlags, 2);
     const bool SampleDescription_carriage_flag = !Sample_index_and_description.empty();
     buf.putBits(SampleDescription_carriage_flag, 1);
-    const bool positioning_information_flag = scene_width.set() || scene_height.set() || horizontal_scene_offset.set() || vertical_scene_offset.set();
+    const bool positioning_information_flag = scene_width.has_value() || scene_height.has_value() || horizontal_scene_offset.has_value() || vertical_scene_offset.has_value();
     buf.putBits(positioning_information_flag, 1);
     buf.putBits(0xFF, 3);
     buf.putUInt8(layer);
@@ -110,10 +110,10 @@ void ts::MPEG4TextDescriptor::serializePayload(PSIBuffer& buf) const
         }
     }
     if (positioning_information_flag) {
-        buf.putUInt16(scene_width.value(0));
-        buf.putUInt16(scene_height.value(0));
-        buf.putUInt16(horizontal_scene_offset.value(0));
-        buf.putUInt16(vertical_scene_offset.value(0));
+        buf.putUInt16(scene_width.value_or(0));
+        buf.putUInt16(scene_height.value_or(0));
+        buf.putUInt16(horizontal_scene_offset.value_or(0));
+        buf.putUInt16(vertical_scene_offset.value_or(0));
     }
     buf.popState(); // update textConfigLength
 }
@@ -292,7 +292,7 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->report().error(u"line %d: in <%s>, attribute 'profileLevel' has a reserved value (%d)", {element->lineNumber(), element->name(), profileLevel});
         ok = false;
     }
-    const uint8_t num_optionals = scene_width.set() + scene_height.set() + horizontal_scene_offset.set() + vertical_scene_offset.set();
+    const uint8_t num_optionals = scene_width.has_value() + scene_height.has_value() + horizontal_scene_offset.has_value() + vertical_scene_offset.has_value();
     if (ok && (num_optionals > 0 && num_optionals < 4)) {
         element->report().error(u"line %d: in <%s>, attributes 'scene_width', 'scene_height', 'horizontal_scene_offset' and 'vertical_scene_offset' must all be present or all omitted", {element->lineNumber(), element->name()});
         ok = false;

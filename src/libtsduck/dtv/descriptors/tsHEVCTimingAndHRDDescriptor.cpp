@@ -35,10 +35,10 @@ ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor() :
 void ts::HEVCTimingAndHRDDescriptor::clearContent()
 {
     hrd_management_valid = false;
-    target_schedule_idx.clear();
-    N_90khz.clear();
-    K_90khz.clear();
-    num_units_in_tick.clear();
+    target_schedule_idx.reset();
+    N_90khz.reset();
+    K_90khz.reset();
+    num_units_in_tick.reset();
 }
 
 ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -64,11 +64,11 @@ ts::DID ts::HEVCTimingAndHRDDescriptor::extendedTag() const
 
 void ts::HEVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    const bool has_90kHz = N_90khz.set() && K_90khz.set();
-    const bool info_present = num_units_in_tick.set();
+    const bool has_90kHz = N_90khz.has_value() && K_90khz.has_value();
+    const bool info_present = num_units_in_tick.has_value();
     buf.putBit(hrd_management_valid);
-    buf.putBit(!target_schedule_idx.set());
-    buf.putBits(target_schedule_idx.value(0xFF), 5);
+    buf.putBit(!target_schedule_idx.has_value());
+    buf.putBits(target_schedule_idx.value_or(0xFF), 5);
     buf.putBit(info_present);
     if (info_present) {
         buf.putBit(!has_90kHz); // inverted logic, note the '!', see issue #1065

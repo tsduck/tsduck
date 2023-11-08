@@ -83,7 +83,7 @@ void ts::SpliceInformationTable::clearContent()
     splice_command_type = SPLICE_NULL;
     splice_schedule.clear();
     splice_insert.clear();
-    time_signal.clear();
+    time_signal.reset();
     private_command.identifier = 0;
     private_command.private_bytes.clear();
     descs.clear();
@@ -107,7 +107,7 @@ void ts::SpliceInformationTable::adjustPTS()
     }
     else if (splice_command_type == SPLICE_TIME_SIGNAL) {
         // Adjust time signal time.
-        if (time_signal.set() && time_signal.value() <= PTS_DTS_MASK) {
+        if (time_signal.has_value() && time_signal.value() <= PTS_DTS_MASK) {
             time_signal = (time_signal.value() + pts_adjustment) & PTS_DTS_MASK;
         }
     }
@@ -292,7 +292,7 @@ void ts::SpliceInformationTable::buildXML(DuckContext& duck, xml::Element* root)
         }
         case SPLICE_TIME_SIGNAL: {
             xml::Element* cmd = root->addElement(u"time_signal");
-            if (time_signal.set()) {
+            if (time_signal.has_value()) {
                 cmd->setIntAttribute(u"pts_time", time_signal.value(), false);
             }
             break;

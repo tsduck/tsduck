@@ -92,18 +92,18 @@ void ts::HEVCOperationPointDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putBits(it2.ptl_ref_idx, 6);
         }
         buf.putBits(0xFF, 1);
-        buf.putBit(it.avg_bit_rate.set());
-        buf.putBit(it.max_bit_rate.set());
+        buf.putBit(it.avg_bit_rate.has_value());
+        buf.putBit(it.max_bit_rate.has_value());
         buf.putBits(it.constant_frame_rate_info_idc, 2);
         buf.putBits(it.applicable_temporal_id, 3);
         if (it.constant_frame_rate_info_idc > 0) {
             buf.putBits(0xFF, 4);
-            buf.putBits(it.frame_rate_indicator.set() ? it.frame_rate_indicator.value() : 0xFFFF, 12);
+            buf.putBits(it.frame_rate_indicator.has_value() ? it.frame_rate_indicator.value() : 0xFFFF, 12);
         }
-        if (it.avg_bit_rate.set()) {
+        if (it.avg_bit_rate.has_value()) {
             buf.putBits(it.avg_bit_rate.value(), 24);
         }
-        if (it.max_bit_rate.set()) {
+        if (it.max_bit_rate.has_value()) {
             buf.putBits(it.max_bit_rate.value(), 24);
         }
     }
@@ -329,7 +329,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
               _operation_points[i]->getOptionalIntAttribute(op.avg_bit_rate, u"avg_bit_rate", 0, 0xFFFFFF) &&
               _operation_points[i]->getOptionalIntAttribute(op.max_bit_rate, u"max_bit_rate", 0, 0xFFFFFF);
 
-        if (ok && ((op.constant_frame_rate_info_idc > 0) && !op.frame_rate_indicator.set())) {
+        if (ok && ((op.constant_frame_rate_info_idc > 0) && !op.frame_rate_indicator.has_value())) {
             _operation_points[i]->report().error(u"attribute frame_rate_indicator is required when constant_frame_rate_info_idc is not zero. [<%s>, line %d]", { _operation_points[i]->name(), _operation_points[i]->lineNumber() });
         }
 

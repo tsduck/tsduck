@@ -88,13 +88,13 @@ void ts::AudioPreselectionDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(it->dialogue_enhancement);
         buf.putBit(it->interactivity_enabled);
         buf.putBit(!it->ISO_639_language_code.empty());
-        buf.putBit(it->message_id.set());
+        buf.putBit(it->message_id.has_value());
         buf.putBit(!it->aux_component_tags.empty());
         buf.putBit(!it->future_extension.empty());
         if (!it->ISO_639_language_code.empty()) {
             buf.putLanguageCode(it->ISO_639_language_code);
         }
-        if (it->message_id.set()) {
+        if (it->message_id.has_value()) {
             buf.putUInt8(it->message_id.value());
         }
         if (!it->aux_component_tags.empty()) {

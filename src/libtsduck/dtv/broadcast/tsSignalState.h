@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsStringifyInterface.h"
 #include "tsDisplayInterface.h"
 
@@ -68,22 +68,22 @@ namespace ts {
         //!
         //! Signal strength.
         //!
-        Variable<Value> signal_strength {};
+        std::optional<Value> signal_strength {};
 
         //!
         //! Signal to noise ratio (SNR).
         //!
-        Variable<Value> signal_noise_ratio {};
+        std::optional<Value> signal_noise_ratio {};
 
         //!
         //! Bit error rate (BER).
         //!
-        Variable<Value> bit_error_rate {};
+        std::optional<Value> bit_error_rate {};
 
         //!
         //! Packet error rate (PER).
         //!
-        Variable<Value> packet_error_rate {};
+        std::optional<Value> packet_error_rate {};
 
         //!
         //! Constructor.
@@ -108,6 +108,6 @@ namespace ts {
         //! @param [in] min Minimum value corresponding to 0 %.
         //! @param [in] max Maximum value corresponding to 100 %.
         //!
-        void setPercent(Variable<Value> SignalState::* field, int64_t value, int64_t min, int64_t max);
+        void setPercent(std::optional<Value> SignalState::* field, int64_t value, int64_t min, int64_t max);
     };
 }

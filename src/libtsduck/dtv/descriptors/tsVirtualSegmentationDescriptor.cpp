@@ -41,7 +41,7 @@ ts::VirtualSegmentationDescriptor::VirtualSegmentationDescriptor(DuckContext& du
 
 void ts::VirtualSegmentationDescriptor::clearContent()
 {
-    ticks_per_second.clear();
+    ticks_per_second.reset();
     partitions.clear();
 }
 
@@ -65,12 +65,12 @@ void ts::VirtualSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
     if (partitions.size() > MAX_PARTITION) {
         buf.setUserError();
     }
-    else if (ticks_per_second.set() || !partitions.empty()) {
+    else if (ticks_per_second.has_value() || !partitions.empty()) {
         // Compute the maximum size in bits of all maximum_duration fields.
         // This is required to compute maximum_duration_length_minus_1 (MDL).
         size_t mdl_bits = 0;
         for (const auto& it : partitions) {
-            mdl_bits = std::max(mdl_bits, BitSize(it.maximum_duration.value(0)));
+            mdl_bits = std::max(mdl_bits, BitSize(it.maximum_duration.value_or(0)));
         }
 
         // MDL (max duration length) is the number of additional bytes, beyond the first 5 bits, in max_duration.
@@ -79,29 +79,29 @@ void ts::VirtualSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
         const size_t mdl = mdl_bits <= 5 ? 0 : (std::min<size_t>(29, mdl_bits) - 5 + 7) / 8;
 
         // Fixed part.
-        const bool timescale_flag = ticks_per_second.set() || mdl > 0;
+        const bool timescale_flag = ticks_per_second.has_value() || mdl > 0;
         buf.putBits(partitions.size(), 3);
         buf.putBit(timescale_flag);
         buf.putBits(0xFF, 4);
 
         if (timescale_flag) {
-            buf.putBits(ticks_per_second.value(0), 21);
+            buf.putBits(ticks_per_second.value_or(0), 21);
             buf.putBits(mdl, 2);
             buf.putBit(1);
         }
 
         for (const auto& it : partitions) {
-            buf.putBit(!it.boundary_PID.set());
+            buf.putBit(!it.boundary_PID.has_value());
             buf.putBits(it.partition_id, 3);
             buf.putBits(0xFF, 4);
             buf.putBits(it.SAP_type_max, 3);
-            if (it.boundary_PID.set()) {
+            if (it.boundary_PID.has_value()) {
                 buf.putBits(0xFF, 5);
                 buf.putBits(it.boundary_PID.value(), 13);
                 buf.putBits(0xFF, 3);
             }
             else {
-                buf.putBits(it.maximum_duration.value(0), mdl * 8 + 5);
+                buf.putBits(it.maximum_duration.value_or(0), mdl * 8 + 5);
             }
         }
     }
@@ -213,7 +213,7 @@ bool ts::VirtualSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml:
              (*it)->getIntAttribute(part.SAP_type_max, u"SAP_type_max", true, 0, 0, 7) &&
              (*it)->getOptionalIntAttribute<PID>(part.boundary_PID, u"boundary_PID", 0, 0x1FFF) &&
              (*it)->getOptionalIntAttribute(part.maximum_duration, u"maximum_duration", 0, 0x1FFFFFFF);
-        if (part.boundary_PID.set() && part.maximum_duration.set()) {
+        if (part.boundary_PID.has_value() && part.maximum_duration.has_value()) {
             element->report().error(u"attributes 'boundary_PID' and 'maximum_duration' are mutually exclusive in <%s>, line %d", {element->name(), (*it)->lineNumber()});
         }
         partitions.push_back(part);

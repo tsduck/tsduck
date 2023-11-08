@@ -336,8 +336,8 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, con
         (S2X_mode != 3 || getChannelXML(channel_bond_0, duck, xbond[0]));
 
     if (ok) {
-        scrambling_sequence_selector = scrambling.set();
-        scrambling_sequence_index = scrambling.value(0);
+        scrambling_sequence_selector = scrambling.has_value();
+        scrambling_sequence_index = scrambling.value_or(0);
         num_channel_bonds_minus_one = S2X_mode == 3 && xbond.size() > 1;
         if (num_channel_bonds_minus_one) {
             ok = getChannelXML(channel_bond_1, duck, xbond[1]);
@@ -363,8 +363,8 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, D
         element->getOptionalIntAttribute(stream, u"input_stream_identifier");
 
     if (ok) {
-        channel.multiple_input_stream_flag = stream.set();
-        channel.input_stream_identifier = stream.value(0);
+        channel.multiple_input_stream_flag = stream.has_value();
+        channel.input_stream_identifier = stream.value_or(0);
 
         // Expected orbital position is "XX.X" as in "19.2".
         uint16_t o1, o2;

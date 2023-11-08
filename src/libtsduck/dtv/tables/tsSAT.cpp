@@ -229,10 +229,10 @@ void ts::SAT::satellite_position_v2_info_type::serialize(PSIBuffer& buf) const
     buf.putBits(satellite_id, 24);
     buf.putReservedZero(7);
     buf.putBits(position_system, 1);
-    if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.set()) {
+    if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.has_value()) {
         geostationaryPosition.value().serialize(buf);
     }
-    else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.set()) {
+    else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.has_value()) {
         earthOrbiting.value().serialize(buf);
     }
 }
@@ -255,10 +255,10 @@ void ts::SAT::satellite_position_v2_info_type::deserialize(PSIBuffer& buf)
 void ts::SAT::satellite_position_v2_info_type::toXML(xml::Element* root)
 {
     root->setIntAttribute(u"satellite_id", satellite_id, true);
-    if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.set()) {
+    if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.has_value()) {
         geostationaryPosition.value().toXML(root->addElement(u"geostationary"));
     }
-    else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.set()) {
+    else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.has_value()) {
         earthOrbiting.value().toXML(root->addElement(u"earth_orbiting"));
     }
 }
@@ -686,13 +686,13 @@ uint16_t ts::SAT::beam_hopping_time_plan_info_type::plan_length(void) const
 
 uint8_t ts::SAT::beam_hopping_time_plan_info_type::time_plan_mode(void) const
 {
-    if (dwell_duration.set() && on_time.set()) {
+    if (dwell_duration.has_value() && on_time.has_value()) {
         return HOP_1_TRANSMISSION;
     }
-    if (current_slot.set() && !slot_transmission_on.empty()) {
+    if (current_slot.has_value() && !slot_transmission_on.empty()) {
         return HOP_MULTI_TRANSMISSION;
     }
-    if (grid_size.set() && revisit_duration.set() && sleep_time.set() && sleep_duration.set()) {
+    if (grid_size.has_value() && revisit_duration.has_value() && sleep_time.has_value() && sleep_duration.has_value()) {
         return HOP_GRID;
     }
     return 99;

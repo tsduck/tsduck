@@ -49,15 +49,15 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::clearContent()
     frequency = 0;
     symbol_rate = 0;
     input_stream_identifier = 0;
-    scrambling_sequence_index.clear();
+    scrambling_sequence_index.reset();
     timeslice_number = 0;
     num_channel_bonds_minus1 = 0;
     secondary_delivery_system_ids.clear();
     SOSF_WH_sequence_number = 0;
     reference_scrambling_index = 0;
-    SFFI.clear();
+    SFFI.reset();
     payload_scrambling_index = 0;
-    beamhopping_time_plan_id.clear();
+    beamhopping_time_plan_id.reset();
     superframe_pilots_WH_sequence_number = 0;
     reserved_future_use.clear();
 }
@@ -92,7 +92,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
     buf.putBits(NCR_version, 1);
     buf.putBits(channel_bond, 2);
     buf.putBits(polarization, 2);
-    buf.putBit((S2Xv2_mode == 1 || S2Xv2_mode == 2) ? scrambling_sequence_index.set() : 0);
+    buf.putBit((S2Xv2_mode == 1 || S2Xv2_mode == 2) ? scrambling_sequence_index.has_value() : 0);
     buf.putBits(TS_GS_S2X_mode, 2);
     buf.putBits(receiver_profiles, 5);
     buf.putUInt24(satellite_id);
@@ -101,7 +101,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
     if (multiple_input_stream_flag)
         buf.putUInt8(input_stream_identifier);
     if (S2Xv2_mode == 1 || S2Xv2_mode == 2) {
-        if (scrambling_sequence_index.set()) {
+        if (scrambling_sequence_index.has_value()) {
             buf.putBits(0x00, 6);
             buf.putBits(scrambling_sequence_index.value(), 18);
         }
@@ -118,13 +118,13 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
     }
     if (S2Xv2_mode == 4 || S2Xv2_mode == 5) {
         buf.putUInt8(SOSF_WH_sequence_number);
-        buf.putBit(SFFI.set());
-        buf.putBit(beamhopping_time_plan_id.set());
+        buf.putBit(SFFI.has_value());
+        buf.putBit(beamhopping_time_plan_id.has_value());
         buf.putBits(0x00, 2);
         buf.putBits(reference_scrambling_index, 20);
-        buf.putBits(SFFI.set() ? SFFI.value() : 0x00, 4);
+        buf.putBits(SFFI.has_value() ? SFFI.value() : 0x00, 4);
         buf.putBits(payload_scrambling_index, 20);
-        if (beamhopping_time_plan_id.set()) {
+        if (beamhopping_time_plan_id.has_value()) {
             buf.putUInt32(beamhopping_time_plan_id.value());
         }
         buf.putBits(superframe_pilots_WH_sequence_number, 5);

@@ -300,8 +300,8 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
             assert(!pts.isNull());
             // Check if this TS has an acceptable delivery system.
             // If the input delsys is empty, accept any delivery system.
-            if (delsys.empty() || (pts->tune.delivery_system.set() && delsys.contains(pts->tune.delivery_system.value()))) {
-                report.debug(u"searching channel \"%s\" in TS id 0x%X, delivery system %s", {name, pts->id, DeliverySystemEnum.name(pts->tune.delivery_system.value(DS_UNDEFINED))});
+            if (delsys.empty() || (pts->tune.delivery_system.has_value() && delsys.contains(pts->tune.delivery_system.value()))) {
+                report.debug(u"searching channel \"%s\" in TS id 0x%X, delivery system %s", {name, pts->id, DeliverySystemEnum.name(pts->tune.delivery_system.value_or(DS_UNDEFINED))});
                 srv = pts->serviceByName(name, strict);
                 if (!srv.isNull()) {
                     report.debug(u"found channel \"%s\" in TS id 0x%X", {name, pts->id});
@@ -646,7 +646,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
 
 ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element* parent) const
 {
-    const DeliverySystem delsys = mod.delivery_system.value(DS_UNDEFINED);
+    const DeliverySystem delsys = mod.delivery_system.value_or(DS_UNDEFINED);
 
     switch (TunerTypeOf(delsys)) {
         case TT_DVB_S: {

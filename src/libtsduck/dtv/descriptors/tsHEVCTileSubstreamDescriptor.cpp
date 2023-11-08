@@ -33,8 +33,8 @@ void ts::HEVCTileSubstreamDescriptor::clearContent()
 {
     ReferenceFlag = 1;
     SubstreamID = 0;
-    PreambleFlag.clear();
-    PatternReference.clear();
+    PreambleFlag.reset();
+    PatternReference.reset();
     Substreams.clear();
 }
 
@@ -64,7 +64,7 @@ void ts::HEVCTileSubstreamDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(ReferenceFlag, 1);
     buf.putBits(SubstreamID, 7);
 
-    if ((PreambleFlag.set() && PatternReference.set()) || !Substreams.empty()) {
+    if ((PreambleFlag.has_value() && PatternReference.has_value()) || !Substreams.empty()) {
         if (ReferenceFlag == 1) {
             buf.putBits(PreambleFlag.value(), 1);
             buf.putBits(PatternReference.value(), 7);
@@ -152,7 +152,7 @@ void ts::HEVCTileSubstreamDescriptor::buildXML(DuckContext& duck, xml::Element* 
 {
     root->setIntAttribute(u"SubstreamID", SubstreamID);
 
-    if (PreambleFlag.set() && PatternReference.set()) {
+    if (PreambleFlag.has_value() && PatternReference.has_value()) {
         ts::xml::Element* ref = root->addElement(u"Reference");
         ref->setIntAttribute(u"PreambleFlag", PreambleFlag.value());
         ref->setIntAttribute(u"PatternReference", PatternReference.value());

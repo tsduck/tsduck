@@ -39,8 +39,8 @@ ts::MultiplexBufferUtilizationDescriptor::MultiplexBufferUtilizationDescriptor(D
 
 void ts::MultiplexBufferUtilizationDescriptor::clearContent()
 {
-    LTW_offset_lower_bound.clear();
-    LTW_offset_upper_bound.clear();
+    LTW_offset_lower_bound.reset();
+    LTW_offset_upper_bound.reset();
 }
 
 
@@ -50,7 +50,7 @@ void ts::MultiplexBufferUtilizationDescriptor::clearContent()
 
 void ts::MultiplexBufferUtilizationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    if (LTW_offset_lower_bound.set() && LTW_offset_upper_bound.set()) {
+    if (LTW_offset_lower_bound.has_value() && LTW_offset_upper_bound.has_value()) {
         buf.putBit(1);
         buf.putBits(LTW_offset_lower_bound.value(), 15);
         buf.putBit(1);
@@ -121,7 +121,7 @@ bool ts::MultiplexBufferUtilizationDescriptor::analyzeXML(DuckContext& duck, con
         element->getOptionalIntAttribute(LTW_offset_lower_bound, u"LTW_offset_lower_bound", 0x0000, 0x7FFF) &&
         element->getOptionalIntAttribute(LTW_offset_upper_bound, u"LTW_offset_upper_bound", 0x0000, 0x7FFF);
 
-    if (ok && LTW_offset_lower_bound.set() + LTW_offset_upper_bound.set() == 1) {
+    if (ok && LTW_offset_lower_bound.has_value() + LTW_offset_upper_bound.has_value() == 1) {
         ok = false;
         element->report().error(u"attributes LTW_offset_lower_bound and LTW_offset_upper_bound must be both set or both unset in <%s>, line %d",
                                 {element->name(), element->lineNumber()});

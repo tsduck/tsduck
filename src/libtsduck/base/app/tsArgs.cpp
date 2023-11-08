@@ -803,7 +803,7 @@ ts::UString ts::Args::value(const UChar* name, const UChar* defValue, size_t ind
     if (opt.type == INTEGER) {
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
     }
-    return index >= opt.values.size() || !opt.values[index].string.set() ? defValue : opt.values[index].string.value();
+    return index >= opt.values.size() || !opt.values[index].string.has_value() ? defValue : opt.values[index].string.value();
 }
 
 void ts::Args::getValue(UString& value_, const UChar* name, const UChar* defValue, size_t index) const
@@ -817,11 +817,25 @@ void ts::Args::getOptionalValue(Variable<UString>& value, const UChar* name, boo
     if (opt.type == INTEGER) {
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
     }
-    else if (!opt.values.empty() && opt.values[0].string.set()) {
+    else if (!opt.values.empty() && opt.values[0].string.has_value()) {
+        value = opt.values[0].string.value();
+    }
+    else if (clear_if_absent) {
+        value.reset();
+    }
+}
+
+void ts::Args::getOptionalValue(std::optional<UString>& value, const UChar* name, bool clear_if_absent) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.type == INTEGER) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
+    }
+    else if (!opt.values.empty() && opt.values[0].string.has_value()) {
         value = opt.values[0].string;
     }
     else if (clear_if_absent) {
-        value.clear();
+        value.reset();
     }
 }
 
@@ -836,7 +850,7 @@ void ts::Args::getValues(UStringVector& values, const UChar* name) const
     values.clear();
     values.reserve(opt.values.size());
     for (auto& it : opt.values) {
-        if (it.string.set()) {
+        if (it.string.has_value()) {
             values.push_back(it.string.value());
         }
     }
@@ -857,7 +871,7 @@ void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index
         // Option not present, meaning unspecified.
         value = Tristate::Maybe;
     }
-    else if (!opt.values[index].string.set()) {
+    else if (!opt.values[index].string.has_value()) {
         // Option present without value, meaning true.
         value = Tristate::True;
     }
@@ -887,7 +901,7 @@ void ts::Args::getHexaValue(ByteBlock& value, const UChar* name, const ByteBlock
     if (opt.type != STRING && opt.type != HEXADATA) {
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as string or hexa string");
     }
-    if (index >= opt.values.size() || !opt.values[index].string.set()) {
+    if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
         value = def_value;
     }
     else {
@@ -1044,7 +1058,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
     while (_is_valid && (short_opt_arg != NPOS || next_arg < _args.size())) {
 
         IOption* opt = nullptr;
-        Variable<UString> val;
+        std::optional<UString> val;
 
         // Locate option name and value
         if (short_opt_arg != NPOS) {
@@ -1099,7 +1113,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
         if (opt != nullptr) {
             // Get the value string from short option, if present
             if (short_opt_arg != NPOS && opt->type != NONE) {
-                assert(!val.set());
+                assert(!val.has_value());
                 // Get the value from the rest of the short option string
                 val = _args[short_opt_arg].substr(short_opt_index);
                 short_opt_arg = NPOS;
@@ -1107,7 +1121,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
             }
 
             // Check presence of mandatory values in next arg if not already found
-            if (!val.set() && opt->type != NONE && (opt->flags & IOPT_OPTVALUE) == 0 && next_arg < _args.size()) {
+            if (!val.has_value() && opt->type != NONE && (opt->flags & IOPT_OPTVALUE) == 0 && next_arg < _args.size()) {
                 val = _args[next_arg++];
             }
 
@@ -1175,7 +1189,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
 // Validate the content of an option, add the value.
 //----------------------------------------------------------------------------
 
-bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
+bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val)
 {
     int64_t last = 0;
     size_t point = NPOS;
@@ -1186,13 +1200,13 @@ bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
 
     if (opt.type == NONE) {
         // There should be no value, this is a flag without value.
-        if (val.set()) {
+        if (val.has_value()) {
             // In the case --option=value
             error(u"no value allowed for %s", {opt.display()});
             return false;
         }
     }
-    else if (!val.set()) {
+    else if (!val.has_value()) {
         // No value set, must be an optional value.
         if ((opt.flags & IOPT_OPTVALUE) == 0) {
             error(u"missing value for %s", {opt.display()});

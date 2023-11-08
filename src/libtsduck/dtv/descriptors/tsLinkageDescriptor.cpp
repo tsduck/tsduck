@@ -50,8 +50,8 @@ void ts::LinkageDescriptor::ExtendedEventLinkageInfo::clear()
     target_id_type = 0;
     user_defined_id = 0;
     target_transport_stream_id = 0;
-    target_original_network_id.clear();
-    target_service_id.clear();
+    target_original_network_id.reset();
+    target_service_id.reset();
 }
 
 
@@ -125,8 +125,8 @@ void ts::LinkageDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putBit(it.event_simulcast);
             buf.putBits(it.link_type, 2);
             buf.putBits(it.target_id_type, 2);
-            buf.putBit(it.target_original_network_id.set());
-            buf.putBit(it.target_service_id.set());
+            buf.putBit(it.target_original_network_id.has_value());
+            buf.putBit(it.target_service_id.has_value());
             if (it.target_id_type == 3) {
                 buf.putUInt16(it.user_defined_id);
             }
@@ -134,10 +134,10 @@ void ts::LinkageDescriptor::serializePayload(PSIBuffer& buf) const
                 if (it.target_id_type == 1) {
                     buf.putUInt16(it.target_transport_stream_id);
                 }
-                if (it.target_original_network_id.set()) {
+                if (it.target_original_network_id.has_value()) {
                     buf.putUInt16(it.target_original_network_id.value());
                 }
-                if (it.target_service_id.set()) {
+                if (it.target_service_id.has_value()) {
                     buf.putUInt16(it.target_service_id.value());
                 }
             }
@@ -422,10 +422,10 @@ void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
                 if (it.target_id_type == 1) {
                     e->setIntAttribute(u"target_transport_stream_id", it.target_transport_stream_id, true);
                 }
-                if (it.target_original_network_id.set()) {
+                if (it.target_original_network_id.has_value()) {
                     e->setIntAttribute(u"target_original_network_id", it.target_original_network_id.value(), true);
                 }
-                if (it.target_service_id.set()) {
+                if (it.target_service_id.has_value()) {
                     e->setIntAttribute(u"target_service_id", it.target_service_id.value(), true);
                 }
             }

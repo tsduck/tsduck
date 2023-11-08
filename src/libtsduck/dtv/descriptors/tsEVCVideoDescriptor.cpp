@@ -45,8 +45,8 @@ void ts::EVCVideoDescriptor::clearContent()
     EVC_24hr_picture_present = false;
     HDR_WCG_idc = 3;
     video_properties_tag = 0;
-    temporal_id_min.clear();
-    temporal_id_max.clear();
+    temporal_id_min.reset();
+    temporal_id_max.reset();
 }
 
 ts::EVCVideoDescriptor::EVCVideoDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -71,7 +71,7 @@ void ts::EVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(non_packed_constraint);
     buf.putBit(frame_only_constraint);
     buf.putBits(0xFF, 1);
-    const bool temporal_layer_subset_flag = temporal_id_min.set() && temporal_id_max.set();
+    const bool temporal_layer_subset_flag = temporal_id_min.has_value() && temporal_id_max.has_value();
     buf.putBit(temporal_layer_subset_flag);
     buf.putBit(EVC_still_present);
     buf.putBit(EVC_24hr_picture_present);
@@ -196,7 +196,7 @@ bool ts::EVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0, 7) &&
         element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0, 7);
 
-    if (ok && temporal_id_min.set() + temporal_id_max.set() == 1) {
+    if (ok && temporal_id_min.has_value() + temporal_id_max.has_value() == 1) {
         element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), element->name()});
         ok = false;
     }

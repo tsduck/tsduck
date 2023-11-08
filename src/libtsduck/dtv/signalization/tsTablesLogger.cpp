@@ -1001,7 +1001,7 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
     }
 
     // Set the PID in all sections.
-    if (pid.set()) {
+    if (pid.has_value()) {
         for (auto& it : sections) {
             if (!it.isNull()) {
                 it->setSourcePID(pid.value());
@@ -1010,7 +1010,7 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
     }
 
     // Interpret the timestamp.
-    if (scDate.set()) {
+    if (scDate.has_value()) {
         try {
             timestamp = Time(scDate.value());
         }
