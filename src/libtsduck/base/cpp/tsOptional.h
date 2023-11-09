@@ -184,29 +184,7 @@ namespace std {
                 return *_access;
             }
             else {
-                return default_value;
-            }
-        }
-
-        template <class U>
-        T value_or(U&& default_value) const&
-        {
-            if (_access != nullptr) {
-                return *_access;
-            }
-            else {
-                return std::move(default_value);
-            }
-        }
-
-        template <class U>
-        T value_or(U&& default_value) &&
-        {
-            if (_access != nullptr) {
-                return std::move(*_access);
-            }
-            else {
-                return std::move(default_value);
+                return static_cast<T>(default_value);
             }
         }
 

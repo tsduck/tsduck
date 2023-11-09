@@ -430,10 +430,12 @@ ifeq ($(GCC_VERSION_DONE),)
     export LLVM_MAJOR := $(firstword $(subst .,$(SPACE),$(LLVM_VERSION)))
     export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i -e gcc -e g++),true)
     export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i clang),true)
+    export LLVM_10 := $(call F_GE,$(LLVM_MAJOR),10)
     export LLVM_12 := $(call F_GE,$(LLVM_MAJOR),12)
     export LLVM_15 := $(call F_GE,$(LLVM_MAJOR),15)
     export GCC_5 := $(call F_GE,$(GCC_MAJOR),5)
     export GCC_6 := $(call F_GE,$(GCC_MAJOR),6)
+    export GCC_9 := $(call F_GE,$(GCC_MAJOR),9)
 endif
 
 # Forced usage of LLVM (clang).
@@ -487,9 +489,15 @@ else
         $(if $(findstring arm,$(MAIN_ARCH)),-Wno-psabi)
 endif
 
-# Language levels.
+# Language levels. Minimum level is C++11. Use C++17 when available (gcc 9, clang 10).
 
-CXXFLAGS_STANDARD ?= -std=c++11
+ifeq ($(CXXFLAGS_STANDARD),)
+    ifeq ($(USE_LLVM),)
+        CXXFLAGS_STANDARD = $(if $(GCC_9),-std=c++17,-std=c++11)
+    else
+        CXXFLAGS_STANDARD = $(if $(LLVM_10),-std=c++17,-std=c++11)
+    endif
+endif
 
 # Compilation flags for security.
 
