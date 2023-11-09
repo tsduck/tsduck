@@ -80,6 +80,7 @@ namespace ts {
         //! @cond doxygen
         SpliceTime() = default;
         SpliceTime(const SpliceTime&) = default;
+        SpliceTime& operator=(const SpliceTime&) = default;
         SpliceTime(const SuperClass& other) : SuperClass(other) {}
         SpliceTime& operator=(const SuperClass& other) { SuperClass::operator=(other); return *this; }
         SpliceTime& operator=(const uint64_t& other) { SuperClass::operator=(other); return *this; }
