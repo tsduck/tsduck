@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -40,8 +40,8 @@ namespace ts {
         bool      HEVC_24hr_picture_present = false;      //!< Same as HEVC concept.
         bool      sub_pic_hrd_params_not_present = false; //!< Same as HEVC concept.
         uint8_t   HDR_WCG_idc = 0;                        //!< 2 bits, same as HEVC concept.
-        Variable<uint8_t> temporal_id_min {};             //!< 3 bits, optional, specify both min and max or none.
-        Variable<uint8_t> temporal_id_max {};             //!< 3 bits, optional, specify both min and max or none.
+        std::optional<uint8_t> temporal_id_min {};        //!< 3 bits, optional, specify both min and max or none.
+        std::optional<uint8_t> temporal_id_max {};        //!< 3 bits, optional, specify both min and max or none.
 
         //!
         //! Default constructor.

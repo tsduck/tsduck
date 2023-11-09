@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -56,12 +56,12 @@ namespace ts {
             bool                    disable_analogue_hd_export = false;        //!< flag, ETSI TS 102 825-4, clause 5.4.5
             bool                    disable_analogue_hd_consumption = false;   //!< flag, ETSI TS 102 825-4, clause 5.4.5
             bool                    image_constraint = false;                  //!< flag, ETSI TS 102 825-4, clause 5.4.5
-            Variable<Time>          view_window_start {};                      //!< 40 bits, ETSI TS 102 825-4, clause 5.4.5
-            Variable<Time>          view_window_end {};                        //!< 40 bits, ETSI TS 102 825-4, clause 5.4.5
-            Variable<uint16_t>      view_period_from_first_playback {};        //!< 16 bits, ETSI TS 102 825-4, clause 5.4.5
-            Variable<uint8_t>       simultaneous_view_count {};                //!< 8 bits, ETSI TS 102 825-4, clause 5.4.5
-            Variable<uint16_t>      remote_access_delay {};                    //!< 16 bits, ETSI TS 102 825-4, clause 5.4.5
-            Variable<Time>          remote_access_date {};                     //!< 40 bits, ETSI TS 102 825-4, clause 5.4.5
+            std::optional<Time>          view_window_start {};                      //!< 40 bits, ETSI TS 102 825-4, clause 5.4.5
+            std::optional<Time>          view_window_end {};                        //!< 40 bits, ETSI TS 102 825-4, clause 5.4.5
+            std::optional<uint16_t>      view_period_from_first_playback {};        //!< 16 bits, ETSI TS 102 825-4, clause 5.4.5
+            std::optional<uint8_t>       simultaneous_view_count {};                //!< 8 bits, ETSI TS 102 825-4, clause 5.4.5
+            std::optional<uint16_t>      remote_access_delay {};                    //!< 16 bits, ETSI TS 102 825-4, clause 5.4.5
+            std::optional<Time>          remote_access_date {};                     //!< 40 bits, ETSI TS 102 825-4, clause 5.4.5
             std::vector<CPSvector>  cps_vector {};                             //!< ETSI TS 102 825-4, clause 5.4.5
 
             CPCMv1Signalling() = default;                                      //!< Default constructor.

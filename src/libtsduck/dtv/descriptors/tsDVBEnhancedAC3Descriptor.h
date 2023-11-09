@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -26,15 +26,15 @@ namespace ts {
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type {};     //!< See ETSI EN 300 468, D.5.
-        Variable<uint8_t> bsid {};               //!< See ETSI EN 300 468, D.5.
-        Variable<uint8_t> mainid {};             //!< See ETSI EN 300 468, D.5.
-        Variable<uint8_t> asvc {};               //!< See ETSI EN 300 468, D.5.
-        bool              mixinfoexists = false; //!< See ETSI EN 300 468, D.5.
-        Variable<uint8_t> substream1 {};         //!< See ETSI EN 300 468, D.5.
-        Variable<uint8_t> substream2 {};         //!< See ETSI EN 300 468, D.5.
-        Variable<uint8_t> substream3 {};         //!< See ETSI EN 300 468, D.5.
-        ByteBlock         additional_info {};    //!< See ETSI EN 300 468, D.5.
+        std::optional<uint8_t> component_type {};     //!< See ETSI EN 300 468, D.5.
+        std::optional<uint8_t> bsid {};               //!< See ETSI EN 300 468, D.5.
+        std::optional<uint8_t> mainid {};             //!< See ETSI EN 300 468, D.5.
+        std::optional<uint8_t> asvc {};               //!< See ETSI EN 300 468, D.5.
+        bool                   mixinfoexists = false; //!< See ETSI EN 300 468, D.5.
+        std::optional<uint8_t> substream1 {};         //!< See ETSI EN 300 468, D.5.
+        std::optional<uint8_t> substream2 {};         //!< See ETSI EN 300 468, D.5.
+        std::optional<uint8_t> substream3 {};         //!< See ETSI EN 300 468, D.5.
+        ByteBlock              additional_info {};    //!< See ETSI EN 300 468, D.5.
 
         //!
         //! Default constructor.

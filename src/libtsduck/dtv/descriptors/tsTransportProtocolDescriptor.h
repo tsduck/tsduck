@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -35,12 +35,12 @@ namespace ts {
         class Carousel
         {
         public:
-            Carousel() = default;                       //!< Default constructor.
-            void clear();                               //!< Reset content.
-            Variable<uint16_t> original_network_id {};  //!< Optional original network id.
-            Variable<uint16_t> transport_stream_id {};  //!< Optional transport stream id.
-            Variable<uint16_t> service_id {};           //!< Optional service id.
-            uint8_t            component_tag = 0;       //!< Component tag.
+            Carousel() = default;                            //!< Default constructor.
+            void clear();                                    //!< Reset content.
+            std::optional<uint16_t> original_network_id {};  //!< Optional original network id.
+            std::optional<uint16_t> transport_stream_id {};  //!< Optional transport stream id.
+            std::optional<uint16_t> service_id {};           //!< Optional service id.
+            uint8_t                 component_tag = 0;       //!< Component tag.
         };
 
         //!
@@ -49,13 +49,13 @@ namespace ts {
         class MPE
         {
         public:
-            MPE() = default;                                 //!< Default constructor.
-            void clear();                                    //!< Reset content.
-            Variable<uint16_t> original_network_id {};       //!< Optional original network id.
-            Variable<uint16_t> transport_stream_id {};       //!< Optional transport stream id.
-            Variable<uint16_t> service_id {};                //!< Optional service id.
-            bool               alignment_indicator = false;  //!< Alignment indicator.
-            UStringList        urls {};                      //!< List of URL's.
+            MPE() = default;                                      //!< Default constructor.
+            void clear();                                         //!< Reset content.
+            std::optional<uint16_t> original_network_id {};       //!< Optional original network id.
+            std::optional<uint16_t> transport_stream_id {};       //!< Optional transport stream id.
+            std::optional<uint16_t> service_id {};                //!< Optional service id.
+            bool                    alignment_indicator = false;  //!< Alignment indicator.
+            UStringList             urls {};                      //!< List of URL's.
         };
 
         //!

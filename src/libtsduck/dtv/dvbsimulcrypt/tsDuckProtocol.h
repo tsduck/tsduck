@@ -15,7 +15,7 @@
 #pragma once
 #include "tstlvProtocol.h"
 #include "tsTablesPtr.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsSimulCryptDate.h"
 #include "tsTS.h"
 
@@ -179,9 +179,9 @@ namespace ts {
         {
             TS_VERSIONED_TLV_MESSAGE(LogSection, Tags::MSG_LOG_SECTION);
         public:
-            Variable<PID>            pid {};        //!< PID where the section was found.
-            Variable<SimulCryptDate> timestamp {};  //!< Date and time of the extraction.
-            SectionPtr               section {};    //!< Content of the section.
+            std::optional<PID>            pid {};        //!< PID where the section was found.
+            std::optional<SimulCryptDate> timestamp {};  //!< Date and time of the extraction.
+            SectionPtr                    section {};    //!< Content of the section.
         };
 
         //!
@@ -191,9 +191,9 @@ namespace ts {
         {
             TS_VERSIONED_TLV_MESSAGE(LogTable, Tags::MSG_LOG_TABLE);
         public:
-            Variable<PID>            pid {};        //!< PID where the table was found.
-            Variable<SimulCryptDate> timestamp {};  //!< Date and time of the extraction.
-            SectionPtrVector         sections {};   //!< All sections in the table.
+            std::optional<PID>            pid {};        //!< PID where the table was found.
+            std::optional<SimulCryptDate> timestamp {};  //!< Date and time of the extraction.
+            SectionPtrVector              sections {};   //!< All sections in the table.
         };
 
         //!

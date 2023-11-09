@@ -15,7 +15,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -83,18 +83,18 @@ namespace ts {
         class TSDUCKDLL ExtendedEventLinkageInfo
         {
         public:
-            ExtendedEventLinkageInfo() = default;               //!< Default constructor.
-            void clear();                                       //!< Clear object content.
+            ExtendedEventLinkageInfo() = default;      //!< Default constructor.
+            void clear();                              //!< Clear object content.
 
-            uint16_t           target_event_id = 0;             //!< Target event.
-            bool               target_listed = false;           //!< Service is listed in SDT.
-            bool               event_simulcast = false;         //!< Target and source event are simulcast.
-            uint8_t            link_type = 0;                   //!< Link type, 2 bits.
-            uint8_t            target_id_type = 0;              //!< Target type, 2 bits.
-            uint16_t           user_defined_id = 0;             //!< User-defined id when target_id_type == 3
-            uint16_t           target_transport_stream_id = 0;  //!< Target TS when target_id_type == 1
-            Variable<uint16_t> target_original_network_id {};   //!< Optional target original network.
-            Variable<uint16_t> target_service_id {};            //!< Optional target service.
+            uint16_t  target_event_id = 0;             //!< Target event.
+            bool      target_listed = false;           //!< Service is listed in SDT.
+            bool      event_simulcast = false;         //!< Target and source event are simulcast.
+            uint8_t   link_type = 0;                   //!< Link type, 2 bits.
+            uint8_t   target_id_type = 0;              //!< Target type, 2 bits.
+            uint16_t  user_defined_id = 0;             //!< User-defined id when target_id_type == 3
+            uint16_t  target_transport_stream_id = 0;  //!< Target TS when target_id_type == 1
+            std::optional<uint16_t> target_original_network_id {};   //!< Optional target original network.
+            std::optional<uint16_t> target_service_id {};            //!< Optional target service.
         };
 
         //!

@@ -18,6 +18,7 @@
 #include "tsxmlElement.h"
 #include "tsjsonArray.h"
 #include "tsjsonObject.h"
+#include "tsOptional.h"
 #include "tsMJD.h"
 
 
@@ -949,8 +950,8 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
         return false;
     }
 
-    Variable<SimulCryptDate> scDate;
-    Variable<PID> pid;
+    std::optional<SimulCryptDate> scDate;
+    std::optional<PID> pid;
 
     if (no_encapsulation) {
 

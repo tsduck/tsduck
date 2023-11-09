@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -31,10 +31,10 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint32_t          oui = 0;             //!< OUI, 24 bits.
-            uint8_t           update_type = 0;     //!< Update type, 4 bits.
-            Variable<uint8_t> update_version {};   //!< Update version, 5 bits.
-            ByteBlock         selector {};         //!< Selector bytes.
+            uint32_t               oui = 0;             //!< OUI, 24 bits.
+            uint8_t                update_type = 0;     //!< Update type, 4 bits.
+            std::optional<uint8_t> update_version {};   //!< Update version, 5 bits.
+            ByteBlock              selector {};         //!< Selector bytes.
 
             //!
             //! Constructor.

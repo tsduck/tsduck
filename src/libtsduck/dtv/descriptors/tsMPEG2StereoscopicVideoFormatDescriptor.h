@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // MPEG2StereoscopicVideoFormatDescriptor public members:
-        Variable<uint8_t> arrangement_type {};  //!< 7 bits, arrangement type, same as in ISO 13818-2
+        std::optional<uint8_t> arrangement_type {};  //!< 7 bits, arrangement type, same as in ISO 13818-2
 
         //!
         //! Default constructor.

@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -32,11 +32,11 @@ namespace ts {
         //!
         class SOGI_region_type {
         public:
-            SOGI_region_type() = default;                 //!< Constructor.
-            Variable<UString>  country_code {};           //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint8_t>  primary_region_code {};    //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint8_t>  secondary_region_code {};  //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint16_t> tertiary_region_code {};   //!< ETSI EN 300 468, clause 6.4.18.
+            SOGI_region_type() = default;                      //!< Constructor.
+            std::optional<UString>  country_code {};           //!< ETSI EN 300 468, clause 6.4.18.
+            std::optional<uint8_t>  primary_region_code {};    //!< ETSI EN 300 468, clause 6.4.18.
+            std::optional<uint8_t>  secondary_region_code {};  //!< ETSI EN 300 468, clause 6.4.18.
+            std::optional<uint16_t> tertiary_region_code {};   //!< ETSI EN 300 468, clause 6.4.18.
         };
 
         //!
@@ -48,7 +48,7 @@ namespace ts {
             SOGI_type() = default;                            //!< Constructor.
             bool                          SOGI_flag = false;  //!< ETSI EN 300 468, clause 6.4.18.
             uint16_t                      SOGI_priority = 0;  //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint16_t>            service_id {};      //!< ETSI EN 300 468, clause 6.4.18.
+            std::optional<uint16_t>       service_id {};      //!< ETSI EN 300 468, clause 6.4.18.
             std::vector<SOGI_region_type> regions {};         //!< ETSI EN 300 468, clause 6.4.18.
         };
 

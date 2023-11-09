@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsByteBlock.h"
 
 namespace ts {
@@ -57,9 +57,9 @@ namespace ts {
             std::vector<ES_in_OP_type>  ESinOPs {};                        //!< Elementary streams in operation point.
             uint8_t                     constant_frame_rate_info_idc = 0;  //!< 2 bits
             uint8_t                     applicable_temporal_id = 0;        //!< 3 bits
-            Variable<uint16_t>          frame_rate_indicator {};           //!< 12 bits
-            Variable<uint32_t>          avg_bit_rate {};                   //!< 24 bits
-            Variable<uint32_t>          max_bit_rate {};                   //!< 24 bits
+            std::optional<uint16_t>     frame_rate_indicator {};           //!< 12 bits
+            std::optional<uint32_t>     avg_bit_rate {};                   //!< 24 bits
+            std::optional<uint32_t>     max_bit_rate {};                   //!< 24 bits
         };
 
         // public members:

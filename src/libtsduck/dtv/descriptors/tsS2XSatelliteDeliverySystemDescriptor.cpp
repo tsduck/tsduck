@@ -9,13 +9,11 @@
 #include "tsS2XSatelliteDeliverySystemDescriptor.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsVariable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsBCD.h"
 
 #define MY_XML_NAME u"S2X_satellite_delivery_system_descriptor"
 #define MY_CLASS ts::S2XSatelliteDeliverySystemDescriptor
@@ -319,7 +317,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::buildChannelXML(const Channel& ch
 
 bool ts::S2XSatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    Variable<uint32_t> scrambling;
+    std::optional<uint32_t> scrambling;
     xml::ElementVector xmaster;
     xml::ElementVector xbond;
 
@@ -350,7 +348,7 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, con
 bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, DuckContext& duck, const xml::Element* element)
 {
     UString orbit;
-    Variable<uint8_t> stream;
+    std::optional<uint8_t> stream;
 
     bool ok =
         element != nullptr &&

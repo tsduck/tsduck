@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -26,11 +26,11 @@ namespace ts {
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type {};   //!< See ETSI EN 300 468, D.3.
-        Variable<uint8_t> bsid {};             //!< See ETSI EN 300 468, D.3.
-        Variable<uint8_t> mainid {};           //!< See ETSI EN 300 468, D.3.
-        Variable<uint8_t> asvc {};             //!< See ETSI EN 300 468, D.3.
-        ByteBlock         additional_info {};  //!< See ETSI EN 300 468, D.3.
+        std::optional<uint8_t> component_type {};   //!< See ETSI EN 300 468, D.3.
+        std::optional<uint8_t> bsid {};             //!< See ETSI EN 300 468, D.3.
+        std::optional<uint8_t> mainid {};           //!< See ETSI EN 300 468, D.3.
+        std::optional<uint8_t> asvc {};             //!< See ETSI EN 300 468, D.3.
+        ByteBlock              additional_info {};  //!< See ETSI EN 300 468, D.3.
 
         //!
         //! Default constructor.

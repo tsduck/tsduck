@@ -65,15 +65,6 @@ namespace ts {
     //! @param [in] attribute Name of the attribute.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLegacyBandWidth(Variable<BandWidth>& bandwidth, const xml::Element* element, const UString& attribute);
-
-    //!
-    //! Get optional bandwidth parameter from an XML element, accepting legacy values.
-    //! @param [out] bandwidth Returned value of the attribute in Hz. If the attribute is not present, the variable is reset.
-    //! @param [in] element XML element containing the optional bandwidth.
-    //! @param [in] attribute Name of the attribute.
-    //! @return True on success, false on error.
-    //!
     TSDUCKDLL bool GetLegacyBandWidth(std::optional<BandWidth>& bandwidth, const xml::Element* element, const UString& attribute);
 
     //!
@@ -96,16 +87,6 @@ namespace ts {
     //! @return True on success, false on error in argument line.
     //!
     TSDUCKDLL bool LoadLegacyBandWidthArg(BandWidth& bandwidth, Args& args, const UChar* name, BandWidth def_value = 0);
-
-    //!
-    //! Load a bandwidth argument from command line.
-    //! Args error indicator is set in case of incorrect arguments.
-    //! @param [out] bandwidth Returned bandwidth value.
-    //! @param [in,out] args Command line arguments.
-    //! @param [in] name Long name of option.
-    //! @return True on success, false on error in argument line.
-    //!
-    TSDUCKDLL bool LoadLegacyBandWidthArg(Variable<BandWidth>& bandwidth, Args& args, const UChar* name);
 
     //!
     //! Load a bandwidth argument from command line.

@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsVariable.h"
 #include "tsOptional.h"
 #include "tsSingleton.h"
 

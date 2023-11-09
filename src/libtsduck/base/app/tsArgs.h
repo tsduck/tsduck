@@ -17,7 +17,6 @@
 #include "tsEnumeration.h"
 #include "tsByteBlock.h"
 #include "tsOptional.h"
-#include "tsVariable.h"
 #include "tsSafePtr.h"
 #include "tsAbstractNumber.h"
 #include "tsCompactBitSet.h"
@@ -758,19 +757,6 @@ namespace ts {
         //!
         //! Get the value of an option in the last analyzed command line, only if present.
         //!
-        //! @param [in,out] value A variable string receiving the value of the option or parameter.
-        //! @param [in] name The full name of the option. If the parameter is a null pointer or
-        //! an empty string, this specifies a parameter, not an option. If the specified option
-        //! was not declared in the syntax of the command, a fatal error is reported.
-        //! @param [in] clear_if_absent When the option is not present, the Variable object
-        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
-        //! is left unmodified.
-        //!
-        void getOptionalValue(Variable<UString>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
-
-        //!
-        //! Get the value of an option in the last analyzed command line, only if present.
-        //!
         //! @param [in,out] value A std::optional string receiving the value of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
@@ -828,21 +814,6 @@ namespace ts {
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
         INT intValue(const UChar* name = nullptr, const INT def_value = static_cast<INT>(0), size_t index = 0) const;
-
-        //!
-        //! Get the value of an integer option in the last analyzed command line, only if present.
-        //!
-        //! @tparam INT An integer or enumeration type for the result.
-        //! @param [in,out] value A variable integer receiving the value of the option or parameter.
-        //! @param [in] name The full name of the option. If the parameter is a null pointer or
-        //! an empty string, this specifies a parameter, not an option. If the specified option
-        //! was not declared in the syntax of the command, a fatal error is reported.
-        //! @param [in] clear_if_absent When the option is not present, the Variable object
-        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
-        //! is left unmodified.
-        //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
-        void getOptionalIntValue(Variable<INT>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
         //! Get the value of an integer option in the last analyzed command line, only if present.
@@ -1383,18 +1354,6 @@ INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) con
     INT value = def_value;
     getIntValue(value, name, def_value, index);
     return value;
-}
-
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
-void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool clear_if_absent) const
-{
-    const IOption& opt(getIOption(name));
-    if (opt.type == INTEGER && !opt.values.empty()) {
-        value = static_cast<INT>(opt.values[0].int_base);
-    }
-    else if (clear_if_absent) {
-        value.reset();
-    }
 }
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>

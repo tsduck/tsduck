@@ -27,10 +27,10 @@ void ts::PluginEventHandlerRegistry::registerEventHandler(PluginEventHandlerInte
         // Look through the list to find an identical handler with the same criteria.
         for (const auto& it : _handlers) {
             if (it.first == handler &&
-                it.second.plugin_name.identical(criteria.plugin_name) &&
-                it.second.plugin_index.identical(criteria.plugin_index) &&
-                it.second.plugin_type.identical(criteria.plugin_type) &&
-                it.second.event_code.identical(criteria.event_code))
+                it.second.plugin_name == criteria.plugin_name &&
+                it.second.plugin_index == criteria.plugin_index &&
+                it.second.plugin_type == criteria.plugin_type &&
+                it.second.event_code == criteria.event_code)
             {
                 // Already registered, do not duplicate.
                 return;

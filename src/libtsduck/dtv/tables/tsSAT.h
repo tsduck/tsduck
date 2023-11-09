@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractLongTable.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsFloatUtils.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
@@ -142,16 +142,16 @@ namespace ts {
                 virtual void deserialize(PSIBuffer& buf) override;
             };
 
-            uint32_t satellite_id = 0;           //!< 24 bits, A label to identify the satellite that is detailed here.
-            uint8_t  position_system = 0;        /**< 1 bit.The positioning system that is used  for this satellite.
-                                                      The value '0' can be used for a satellite in geostationary orbit and the value '1'
-                                                      can be used for any earth-orbiting satellite. */
+            uint32_t satellite_id = 0;      //!< 24 bits, A label to identify the satellite that is detailed here.
+            uint8_t  position_system = 0;   /**< 1 bit.The positioning system that is used  for this satellite.
+                                                 The value '0' can be used for a satellite in geostationary orbit and the value '1'
+                                                 can be used for any earth-orbiting satellite. */
 
             // for position_system==POS_GEOSTATIONARY
-            Variable<geostationary_position_type> geostationaryPosition {};  //!< attributes of a geostationary satellite.
+            std::optional<geostationary_position_type> geostationaryPosition {};  //!< attributes of a geostationary satellite.
 
             // for positon_system==POS_EARTH_ORBITING
-            Variable<earth_orbiting_satallite_type> earthOrbiting {};        //!< attributes of an earth orbiting satellite
+            std::optional<earth_orbiting_satallite_type> earthOrbiting {};        //!< attributes of an earth orbiting satellite
 
             //!
             //! Default constructor
@@ -296,13 +296,13 @@ namespace ts {
             bool              last_occurence = false;   /**< Indicates that this section is the last section in a sequence of 1 or more sections that
                                                              contain the information for the cell fragment. When this bit is set to 1, it is the
                                                              last section of the sequence. When it is set to 0, it is not the last section. */
-            Variable<int32_t> center_latitude {};       /**< 18 bits - tcimsbf. The current center of the cell fragment on earth in the WGS84 datum
+            std::optional<int32_t> center_latitude {};  /**< 18 bits - tcimsbf. The current center of the cell fragment on earth in the WGS84 datum
                                                              in units of 0.001 degrees. Northern latitudes shall be stated as a positive number,
                                                              southern latitudes as negative. The range is evidently +/- 90 degrees. */
-            Variable<int32_t> center_longitude {};      /**< 19 bits - tcimsbf. The current center of the cell fragment on earth in the WGS84 datum,
+            std::optional<int32_t> center_longitude {}; /**< 19 bits - tcimsbf. The current center of the cell fragment on earth in the WGS84 datum,
                                                              in units of 0.001 degrees. Eastern longitudes shall be stated as a positive number,
                                                              western longitudes as negative. The range is evidently +/- 180 degrees. */
-            Variable<uint32_t> max_distance {};         /**< 24 bits. Indicates the maximum distance on the surface of the earth from the center
+            std::optional<uint32_t> max_distance {};    /**< 24 bits. Indicates the maximum distance on the surface of the earth from the center
                                                              of the cell-fragment in units of 1 meter that is still considered to be part of the cell fragment */
 
             std::vector<uint32_t>                            delivery_system_ids {};                //!< Identifiers of delivery systems currently serving this cell fragment.
@@ -453,20 +453,20 @@ namespace ts {
             NCR_type           cycle_duration {};            //!< Duration in NCR of cycle duration.
 
             // time_plan_mode == HOP_1_TRANSMISSION
-            Variable<NCR_type> dwell_duration {};            //!< Duration in NCR of dwell duration.
-            Variable<NCR_type> on_time {};                   //!< NCR of on time.
+            std::optional<NCR_type> dwell_duration {};       //!< Duration in NCR of dwell duration.
+            std::optional<NCR_type> on_time {};              //!< NCR of on time.
 
             // time_plan_mode == HOP_MULTI_TRANSMISSION
-            Variable<uint16_t> current_slot {};              /**< 15 bits.The slot in which the transmission of this table started.
+            std::optional<uint16_t> current_slot {};         /**< 15 bits.The slot in which the transmission of this table started.
                                                                   32767 (all bits set to '1'), denotes that the current slot is not communicated for this entry. */
             std::vector<slot>  slot_transmission_on {};      //!< Indicates if there is a transmission in the respective timeslot.
 
             // time_plan_mode == HOP_GRID
-            Variable<NCR_type> grid_size {};                 //!< The duration in NCR of grid size.
-            Variable<NCR_type> revisit_duration {};          //!< The maximal duration of time by which a cell is not illuminated, when not in sleep mode.
-            Variable<NCR_type> sleep_time {};                /**< The NCR time when the sleep mode will be entered. Starting from this NCR time for the
+            std::optional<NCR_type> grid_size {};            //!< The duration in NCR of grid size.
+            std::optional<NCR_type> revisit_duration {};     //!< The maximal duration of time by which a cell is not illuminated, when not in sleep mode.
+            std::optional<NCR_type> sleep_time {};           /**< The NCR time when the sleep mode will be entered. Starting from this NCR time for the
                                                                   duration given by sleep_time_duration, receivers can expect not to be illuminated. */
-            Variable<NCR_type> sleep_duration {};            //!< Duration in NCR of sleep duration.
+            std::optional<NCR_type> sleep_duration {};       //!< Duration in NCR of sleep duration.
 
             //!
             //! Default constructor.

@@ -80,7 +80,7 @@ void ts::DTSHDDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBytes(additional_info);
 }
 
-void ts::DTSHDDescriptor::SerializeSubstreamInfo(const Variable<SubstreamInfo>& info, PSIBuffer& buf)
+void ts::DTSHDDescriptor::SerializeSubstreamInfo(const std::optional<SubstreamInfo>& info, PSIBuffer& buf)
 {
     if (info.has_value()) {
         const SubstreamInfo& si(info.value());
@@ -141,7 +141,7 @@ void ts::DTSHDDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBytes(additional_info);
 }
 
-void ts::DTSHDDescriptor::DeserializeSubstreamInfo(Variable<SubstreamInfo>& info, bool present, PSIBuffer& buf)
+void ts::DTSHDDescriptor::DeserializeSubstreamInfo(std::optional<SubstreamInfo>& info, bool present, PSIBuffer& buf)
 {
     if (present) {
         info = SubstreamInfo();
@@ -278,7 +278,7 @@ void ts::DTSHDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     }
 }
 
-void ts::DTSHDDescriptor::SubstreamInfoToXML(const Variable<SubstreamInfo>& info, const UString& name, xml::Element* parent)
+void ts::DTSHDDescriptor::SubstreamInfoToXML(const std::optional<SubstreamInfo>& info, const UString& name, xml::Element* parent)
 {
     if (info.has_value()) {
         const SubstreamInfo& si(info.value());
@@ -315,7 +315,7 @@ bool ts::DTSHDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elem
            element->getHexaTextChild(additional_info, u"additional_info", false);
 }
 
-bool ts::DTSHDDescriptor::SubstreamInfoFromXML(Variable<SubstreamInfo>& info, const UString& name, const xml::Element* parent)
+bool ts::DTSHDDescriptor::SubstreamInfoFromXML(std::optional<SubstreamInfo>& info, const UString& name, const xml::Element* parent)
 {
     // Get at most one element of this name.
     xml::ElementVector children;

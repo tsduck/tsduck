@@ -15,7 +15,6 @@
 #include "tsxmlNode.h"
 #include "tsxmlAttribute.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
 #include "tsOptional.h"
 #include "tsIPv4Address.h"
 #include "tsIPv6Address.h"
@@ -285,7 +284,7 @@ namespace ts {
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
             //!
-            void setOptionalBoolAttribute(const UString& name, const Variable<bool>& value)
+            void setOptionalBoolAttribute(const UString& name, const std::optional<bool>& value)
             {
                 if (value.has_value()) {
                     refAttribute(name).setBool(value.value());
@@ -303,21 +302,6 @@ namespace ts {
             void setIntAttribute(const UString& name, INT value, bool hexa = false)
             {
                 refAttribute(name).setInteger<INT>(value, hexa);
-            }
-
-            //!
-            //! Set an optional attribute with an integer value to a node.
-            //! @tparam INT An integer type.
-            //! @param [in] name Attribute name.
-            //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
-            //! @param [in] hexa If true, use an hexadecimal representation (0x...).
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            void setOptionalIntAttribute(const UString& name, const Variable<INT>& value, bool hexa = false)
-            {
-                if (value.has_value()) {
-                    refAttribute(name).setInteger<INT>(value.value(), hexa);
-                }
             }
 
             //!
@@ -360,23 +344,6 @@ namespace ts {
             //! @param [in] force_sign If true, force a '+' sign for positive values.
             //!
             template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
-            void setOptionalFloatAttribute(const UString& name, const Variable<FLT>& value, size_t width = 0, size_t precision = 6, bool force_sign = false)
-            {
-                if (value.has_value()) {
-                    refAttribute(name).setFloat<FLT>(value.value(), width, precision, force_sign);
-                }
-            }
-
-            //!
-            //! Set an optional attribute with a floating-point value to a node.
-            //! @tparam FLT A floating-point type.
-            //! @param [in] name Attribute name.
-            //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
-            //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
-            //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
-            //! @param [in] force_sign If true, force a '+' sign for positive values.
-            //!
-            template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
             void setOptionalFloatAttribute(const UString& name, const std::optional<FLT>& value, size_t width = 0, size_t precision = 6, bool force_sign = false)
             {
                 if (value.has_value()) {
@@ -393,21 +360,6 @@ namespace ts {
             void setEnumAttribute(const Enumeration& definition, const UString& name, int value)
             {
                 refAttribute(name).setEnum(definition, value);
-            }
-
-            //!
-            //! Set an optional attribute with an enumeration attribute to a node.
-            //! @tparam ENUM An enum type.
-            //! @param [in] definition The definition of enumeration values.
-            //! @param [in] name Attribute name.
-            //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
-            //!
-            template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
-            void setOptionalEnumAttribute(const Enumeration& definition, const UString& name, const Variable<ENUM>& value)
-            {
-                if (value.has_value()) {
-                    refAttribute(name).setEnum(definition, int(value.value()));
-                }
             }
 
             //!
@@ -523,47 +475,10 @@ namespace ts {
             //! @param [in] maxSize Maximum allowed size for the value string.
             //! @return True on success, false on error.
             //!
-            bool getOptionalAttribute(Variable<UString>& value,
-                                      const UString& name,
-                                      size_t minSize = 0,
-                                      size_t maxSize = UNLIMITED) const;
-
-            //!
-            //! Get an optional string attribute of an XML element.
-            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] minSize Minimum allowed size for the value string.
-            //! @param [in] maxSize Maximum allowed size for the value string.
-            //! @return True on success, false on error.
-            //!
             bool getOptionalAttribute(std::optional<UString>& value,
                                       const UString& name,
                                       size_t minSize = 0,
                                       size_t maxSize = UNLIMITED) const;
-
-            //!
-            //! Get an optional attribute of an XML element.
-            //! getVariableAttribute() is different from getOptionalAttribute() in the result.
-            //! With getOptionalAttribute(), if the attribute is missing, the Variable is unset.
-            //! With getVariableAttribute(), if the attribute is missing, the Variable is set with the default value.
-            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] required If true, generate an error if the attribute is not found.
-            //! @param [in] defValue Default value to return if the attribute is not present.
-            //! @param [in] minSize Minimum allowed size for the value string.
-            //! @param [in] maxSize Maximum allowed size for the value string.
-            //! @return True on success, false on error.
-            //!
-            bool getVariableAttribute(Variable<UString>& value,
-                                      const UString& name,
-                                      bool required = false,
-                                      const UString& defValue = UString(),
-                                      size_t minSize = 0,
-                                      size_t maxSize = UNLIMITED) const
-            {
-                value.setDefault(defValue);
-                return getAttribute(value.value(), name, required, defValue, minSize, maxSize);
-            }
 
             //!
             //! Get an optional attribute of an XML element.
@@ -598,14 +513,6 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool getBoolAttribute(bool& value, const UString& name, bool required = false, bool defValue = false) const;
-
-            //!
-            //! Get an optional boolean attribute of an XML element.
-            //! @param [out] value Returned value of the attribute.
-            //! @param [in] name Name of the attribute.
-            //! @return True on success, false on error.
-            //!
-            bool getOptionalBoolAttribute(Variable<bool>& value, const UString& name) const;
 
             //!
             //! Get an optional boolean attribute of an XML element.
@@ -675,58 +582,10 @@ namespace ts {
                       typename INT1 = INT,
                       typename INT2 = INT,
                       typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            bool getOptionalIntAttribute(Variable<INT>& value,
-                                         const UString& name,
-                                         INT1 minValue = std::numeric_limits<INT>::min(),
-                                         INT2 maxValue = std::numeric_limits<INT>::max()) const;
-
-            //!
-            //! Get an optional integer attribute of an XML element.
-            //! @tparam INT An integer type.
-            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] minValue Minimum allowed value for the attribute.
-            //! @param [in] maxValue Maximum allowed value for the attribute.
-            //! @return True on success, false on error.
-            //!
-            template <typename INT,
-                      typename INT1 = INT,
-                      typename INT2 = INT,
-                      typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             bool getOptionalIntAttribute(std::optional<INT>& value,
                                          const UString& name,
                                          INT1 minValue = std::numeric_limits<INT>::min(),
                                          INT2 maxValue = std::numeric_limits<INT>::max()) const;
-
-            //!
-            //! Get an optional integer attribute of an XML element.
-            //! getVariableIntAttribute() is different from getOptionalIntAttribute() in the result.
-            //! With getOptionalIntAttribute(), if the attribute is missing, the Variable is unset.
-            //! With getVariableIntAttribute(), if the attribute is missing, the Variable is set with the default value.
-            //! @tparam INT An integer type.
-            //! @param [out] value Returned value of the attribute.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] required If true, generate an error if the attribute is not found.
-            //! @param [in] defValue Default value to return if the attribute is not present.
-            //! @param [in] minValue Minimum allowed value for the attribute.
-            //! @param [in] maxValue Maximum allowed value for the attribute.
-            //! @return True on success, false on error.
-            //!
-            template <typename INT,
-                      typename INT1 = INT,
-                      typename INT2 = INT,
-                      typename INT3 = INT,
-                      typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            bool getVariableIntAttribute(Variable<INT>& value,
-                                         const UString& name,
-                                         bool required = false,
-                                         INT1 defValue = static_cast<INT>(0),
-                                         INT2 minValue = std::numeric_limits<INT>::min(),
-                                         INT3 maxValue = std::numeric_limits<INT>::max()) const
-            {
-                value.setDefault(defValue);
-                return getIntAttribute(value.value(), name, required, defValue, minValue, maxValue);
-            }
 
             //!
             //! Get an optional integer attribute of an XML element.
@@ -796,42 +655,7 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
-            bool getOptionalIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name) const;
-
-            //!
-            //! Get an optional enumeration attribute of an XML element.
-            //! Integer literals and integer values are accepted in the attribute.
-            //! @tparam INT An integer or enum type.
-            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
-            //! @param [in] definition The definition of enumeration values.
-            //! @param [in] name Name of the attribute.
-            //! @return True on success, false on error.
-            //!
-            template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
             bool getOptionalIntEnumAttribute(std::optional<INT>& value, const Enumeration& definition, const UString& name) const;
-
-            //!
-            //! Get an optional enumeration attribute of an XML element.
-            //! Integer literals and integer values are accepted in the attribute.
-            //! getVariableIntEnumAttribute() is different from getOptionalIntEnumAttribute() in the result.
-            //! With getOptionalIntEnumAttribute(), if the attribute is missing, the Variable is unset.
-            //! With getVariableIntEnumAttribute(), if the attribute is missing, the Variable is set with the default value.
-            //! @tparam INT An integer or enum type.
-            //! @param [out] value Returned value of the attribute.
-            //! @param [in] definition The definition of enumeration values.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] required If true, generate an error if the attribute is not found.
-            //! @param [in] defValue Default value to return if the attribute is not present.
-            //! @return True on success, false on error.
-            //!
-            template <typename INT,
-                      typename INT1 = INT,
-                      typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
-            bool getVariableIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name, bool required = false, INT1 defValue = INT(0)) const
-            {
-                value.setDefault(defValue);
-                return getIntEnumAttribute(value.value(), definition, name, required, defValue);
-            }
 
             //!
             //! Get an optional enumeration attribute of an XML element.
@@ -892,58 +716,10 @@ namespace ts {
                       typename FLT1 = FLT,
                       typename FLT2 = FLT,
                       typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
-            bool getOptionalFloatAttribute(Variable<FLT>& value,
-                                           const UString& name,
-                                           FLT1 minValue = std::numeric_limits<FLT>::lowest(),
-                                           FLT2 maxValue = std::numeric_limits<FLT>::max()) const;
-
-            //!
-            //! Get an optional floating-point attribute of an XML element.
-            //! @tparam FLT A floating-point type.
-            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] minValue Minimum allowed value for the attribute.
-            //! @param [in] maxValue Maximum allowed value for the attribute.
-            //! @return True on success, false on error.
-            //!
-            template <typename FLT,
-                      typename FLT1 = FLT,
-                      typename FLT2 = FLT,
-                      typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
             bool getOptionalFloatAttribute(std::optional<FLT>& value,
                                            const UString& name,
                                            FLT1 minValue = std::numeric_limits<FLT>::lowest(),
                                            FLT2 maxValue = std::numeric_limits<FLT>::max()) const;
-
-            //!
-            //! Get an optional floating-point attribute of an XML element.
-            //! getVariableFloatAttribute() is different from getOptionalFloatAttribute() in the result.
-            //! With getOptionalFloatAttribute(), if the attribute is missing, the Variable is unset.
-            //! With getVariableFloatAttribute(), if the attribute is missing, the Variable is set with the default value.
-            //! @tparam FLT A floating-point type.
-            //! @param [out] value Returned value of the attribute.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] required If true, generate an error if the attribute is not found.
-            //! @param [in] defValue Default value to return if the attribute is not present.
-            //! @param [in] minValue Minimum allowed value for the attribute.
-            //! @param [in] maxValue Maximum allowed value for the attribute.
-            //! @return True on success, false on error.
-            //!
-            template <typename FLT,
-                      typename FLT1 = FLT,
-                      typename FLT2 = FLT,
-                      typename FLT3 = FLT,
-                      typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
-            bool getVariableFloatAttribute(Variable<FLT>& value,
-                                           const UString& name,
-                                           bool required = false,
-                                           FLT1 defValue = static_cast<FLT>(0),
-                                           FLT2 minValue = std::numeric_limits<FLT>::lowest(),
-                                           FLT3 maxValue = std::numeric_limits<FLT>::max()) const
-            {
-                value.setDefault(defValue);
-                return getFloatAttribute(value.value(), name, required, defValue, minValue, maxValue);
-            }
 
             //!
             //! Get an optional floating-point attribute of an XML element.
@@ -1144,27 +920,6 @@ bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool re
 }
 #endif
 
-// Get an optional integer attribute of an XML element.
-template <typename INT, typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT>::value>::type*>
-bool ts::xml::Element::getOptionalIntAttribute(Variable<INT>& value, const UString& name, INT1 minValue, INT2 maxValue) const
-{
-    INT v = INT(0);
-    if (!hasAttribute(name)) {
-        // Attribute not present, ok.
-        value.reset();
-        return true;
-    }
-    else if (getIntAttribute<INT>(v, name, false, INT(0), minValue, maxValue)) {
-        // Attribute present, correct value.
-        value = v;
-        return true;
-    }
-    else {
-        // Attribute present, incorrect value.
-        value.reset();
-        return false;
-    }
-}
 
 // Get an optional integer attribute of an XML element.
 template <typename INT, typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT>::value>::type*>
@@ -1196,28 +951,6 @@ bool ts::xml::Element::getIntEnumAttribute(INT& value, const Enumeration& defini
     const bool ok = getEnumAttribute(v, definition, name, required, int(defValue));
     value = ok ? INT(v) : INT(defValue);
     return ok;
-}
-
-// Get an optional enumeration attribute of an XML element.
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
-bool ts::xml::Element::getOptionalIntEnumAttribute(Variable<INT>& value, const Enumeration& definition, const UString& name) const
-{
-    INT v = INT(0);
-    if (!hasAttribute(name)) {
-        // Attribute not present, ok.
-        value.reset();
-        return true;
-    }
-    else if (getIntEnumAttribute<INT>(v, definition, name, false)) {
-        // Attribute present, correct value.
-        value = v;
-        return true;
-    }
-    else {
-        // Attribute present, incorrect value.
-        value.reset();
-        return false;
-    }
 }
 
 // Get an optional enumeration attribute of an XML element.
@@ -1267,28 +1000,6 @@ bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool r
     else {
         value = val;
         return true;
-    }
-}
-
-// Get an optional floating-point attribute of an XML element.
-template <typename FLT, typename FLT1, typename FLT2, typename std::enable_if<std::is_floating_point<FLT>::value>::type*>
-bool ts::xml::Element::getOptionalFloatAttribute(Variable<FLT>& value, const UString& name, FLT1 minValue, FLT2 maxValue) const
-{
-    FLT v = FLT(0.0);
-    if (!hasAttribute(name)) {
-        // Attribute not present, ok.
-        value.reset();
-        return true;
-    }
-    else if (getFloatAttribute<FLT>(v, name, false, FLT(0.0), minValue, maxValue)) {
-        // Attribute present, correct value.
-        value = v;
-        return true;
-    }
-    else {
-        // Attribute present, incorrect value.
-        value.reset();
-        return false;
     }
 }
 

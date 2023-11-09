@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -26,10 +26,10 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t           profile_and_level = 0;  //!< See ETSI EN 300 468, H.2.1.
-        bool              SAOC_DE = false;        //!< See ETSI EN 300 468, H.2.1.
-        Variable<uint8_t> AAC_type {};            //!< See ETSI EN 300 468, H.2.1.
-        ByteBlock         additional_info {};     //!< See ETSI EN 300 468, H.2.1.
+        uint8_t                profile_and_level = 0;  //!< See ETSI EN 300 468, H.2.1.
+        bool                   SAOC_DE = false;        //!< See ETSI EN 300 468, H.2.1.
+        std::optional<uint8_t> AAC_type {};            //!< See ETSI EN 300 468, H.2.1.
+        ByteBlock              additional_info {};     //!< See ETSI EN 300 468, H.2.1.
 
         //!
         //! Default constructor.
