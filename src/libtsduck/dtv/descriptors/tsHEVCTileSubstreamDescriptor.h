@@ -64,12 +64,12 @@ namespace ts {
         //! is prepended before an access unit carried in this ES.
         //! In case SubstreamMarkingFlag in the HEVC subregion descriptor set to '0', the semantics of this flag is reserved.
         //!
-        Variable<uint8_t> PreambleFlag {};
+        std::optional<uint8_t> PreambleFlag {};
         //!
         //! 7 bits. A number in the range of 1 to PatternCount (as found in the HEVC subregion descriptor) to the HEVC tile substream.
         //! This number is used as an index j to the array SubstreamOffset[k][j][i] when the reassembly process is executed.
         //!
-        Variable<uint8_t> PatternReference {};
+        std::optional<uint8_t> PatternReference {};
         //!
         //! Array of 7 bit fields indicates additional SubstreamIDs that belong to the subregion when the reassembly process according
         //! to "Carriage of HEVC motion-constrained tile sets as separate elementary streams" or "Carriage of HEVC motion-constrained

@@ -811,20 +811,6 @@ void ts::Args::getValue(UString& value_, const UChar* name, const UChar* defValu
     value_ = value(name, defValue, index);
 }
 
-void ts::Args::getOptionalValue(Variable<UString>& value, const UChar* name, bool clear_if_absent) const
-{
-    const IOption& opt(getIOption(name));
-    if (opt.type == INTEGER) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
-    }
-    else if (!opt.values.empty() && opt.values[0].string.has_value()) {
-        value = opt.values[0].string.value();
-    }
-    else if (clear_if_absent) {
-        value.reset();
-    }
-}
-
 void ts::Args::getOptionalValue(std::optional<UString>& value, const UChar* name, bool clear_if_absent) const
 {
     const IOption& opt(getIOption(name));

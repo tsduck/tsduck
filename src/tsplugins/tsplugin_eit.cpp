@@ -69,7 +69,7 @@ namespace ts {
         SectionCounter     _eits_oth_count = 0;
         SectionDemux       _demux {duck, this, this};
         ServiceMap         _services {};
-        Variable<uint16_t> _ts_id {};
+        std::optional<uint16_t> _ts_id {};
 
         // Return a reference to a service description
         ServiceDesc& getServiceDesc(uint16_t ts_id, uint16_t service_id);

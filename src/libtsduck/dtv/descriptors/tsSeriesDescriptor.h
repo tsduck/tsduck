@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -26,13 +26,13 @@ namespace ts {
     {
     public:
         // SeriesDescriptor public members:
-        uint16_t       series_id = 0;            //!< Series id.
-        uint8_t        repeat_label = 0;         //!< 4 bits.
-        uint8_t        program_pattern = 0;      //!< 3 bits.
-        Variable<Time> expire_date {};           //!< Optional expiration date (the time inside the day is ignored).
-        uint16_t       episode_number = 0;       //!< 12 bits.
-        uint16_t       last_episode_number = 0;  //!< 12 bits.
-        UString        series_name {};           //!< Series name.
+        uint16_t            series_id = 0;            //!< Series id.
+        uint8_t             repeat_label = 0;         //!< 4 bits.
+        uint8_t             program_pattern = 0;      //!< 3 bits.
+        std::optional<Time> expire_date {};           //!< Optional expiration date (the time inside the day is ignored).
+        uint16_t            episode_number = 0;       //!< 12 bits.
+        uint16_t            last_episode_number = 0;  //!< 12 bits.
+        UString             series_name {};           //!< Series name.
 
         //!
         //! Default constructor.

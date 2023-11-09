@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -38,8 +38,8 @@ namespace ts {
         bool      EVC_24hr_picture_present = false;  //!< bool.
         uint8_t   HDR_WCG_idc = 0;                   //!< 2 bits.
         uint8_t   video_properties_tag = 0;          //!< 4 bits.
-        Variable<uint8_t> temporal_id_min {};        //!< 3 bits, optional, specify both min and max or neither.
-        Variable<uint8_t> temporal_id_max {};        //!< 3 bits, optional, specify both min and max or neither.
+        std::optional<uint8_t> temporal_id_min {};   //!< 3 bits, optional, specify both min and max or neither.
+        std::optional<uint8_t> temporal_id_max {};   //!< 3 bits, optional, specify both min and max or neither.
 
         //!
         //! Default constructor.

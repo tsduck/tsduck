@@ -440,7 +440,7 @@ bool ts::xml::Element::getAttribute(UString& value,
 // Get an optional string attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getOptionalAttribute(Variable<UString>& value, const UString& name, size_t minSize, size_t maxSize) const
+bool ts::xml::Element::getOptionalAttribute(std::optional<UString>& value, const UString& name, size_t minSize, size_t maxSize) const
 {
     // Default: erase value.
     value.reset();
@@ -492,7 +492,7 @@ bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool r
 // Get an optional boolean attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getOptionalBoolAttribute(Variable<bool>& value, const UString& name) const
+bool ts::xml::Element::getOptionalBoolAttribute(std::optional<bool>& value, const UString& name) const
 {
     // Default: erase value.
     value.reset();

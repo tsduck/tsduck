@@ -16,7 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsFloatUtils.h"
 #include "tsUString.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsIntegerUtils.h"
 
 namespace ts {
@@ -734,11 +734,11 @@ namespace ts {
         //!
         //! Read the next n bits as an integer value and advance the read pointer.
         //! @tparam INT An integer type for the result.
-        //! @param [out] value The value of the next @a bits as a Variable instance. If no integer can be read, the Variable is unset.
+        //! @param [out] value The value of the next @a bits as a std::optional instance. If no integer can be read, the std::optional is unset.
         //! @param [in] bits Number of bits to read.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        void getBits(Variable<INT>& value, size_t bits);
+        void getBits(std::optional<INT>& value, size_t bits);
 
         //!
         //! Put the next n bits from an integer value and advance the write pointer.
@@ -1480,7 +1480,7 @@ INT ts::Buffer::getBits(size_t bits)
 }
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-void ts::Buffer::getBits(Variable<INT>& value, size_t bits)
+void ts::Buffer::getBits(std::optional<INT>& value, size_t bits)
 {
     if (_read_error || currentReadBitOffset() + bits > currentWriteBitOffset()) {
         _read_error = true;

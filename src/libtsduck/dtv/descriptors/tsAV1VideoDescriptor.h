@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -26,18 +26,18 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t             version = 0;                               //!< 7 bits. version of the descriptor - must be 1
-        uint8_t             seq_profile = 0;                           //!< 3 bits. Specifies the features that can be used in the coded video sequence.
-        uint8_t             seq_level_idx_0 = 0;                       //!< 3 bits. Specifies the level that the coded video sequence conforms to when operating point 0 is selected
-        uint8_t             seq_tier_0 = 0;                            //!< 1 bit. Specifies the tier that the coded video sequence conforms to when operating point 0 is selected
-        bool                high_bitdepth = false;                     //!< 1 bit. Together with twelve_bit and seq_profile, determine the bit depth.
-        bool                twelve_bit = false;                        //!< 1 bit. Together with high_bitdepth and seq_profile, determine the bit depth.
-        bool                monochrome = false;                        //!< 1 bit. When true indicates that the video does not contain U and V color planes. When false  indicates that the video contains Y, U, and V color planes.
-        bool                chroma_subsampling_x = false;              //!< 1 bit. Specifies the chroma subsampling format.
-        bool                chroma_subsampling_y = false;              //!< 1 bit. Specifies the chroma subsampling format.
-        uint8_t             chroma_sample_position = 0;                //!< 2 bits. Specifies the sample position for subsampled streams
-        uint8_t             HDR_WCG_idc = 0;                           //!< 2 bits. Indicates the presence or absence of HDR and WCG components in the PID
-        Variable<uint8_t>   initial_presentation_delay_minus_one {};   //!< 4 bits. !!not used in MPEG2-TS!!
+        uint8_t                version = 0;                               //!< 7 bits. version of the descriptor - must be 1
+        uint8_t                seq_profile = 0;                           //!< 3 bits. Specifies the features that can be used in the coded video sequence.
+        uint8_t                seq_level_idx_0 = 0;                       //!< 3 bits. Specifies the level that the coded video sequence conforms to when operating point 0 is selected
+        uint8_t                seq_tier_0 = 0;                            //!< 1 bit. Specifies the tier that the coded video sequence conforms to when operating point 0 is selected
+        bool                   high_bitdepth = false;                     //!< 1 bit. Together with twelve_bit and seq_profile, determine the bit depth.
+        bool                   twelve_bit = false;                        //!< 1 bit. Together with high_bitdepth and seq_profile, determine the bit depth.
+        bool                   monochrome = false;                        //!< 1 bit. When true indicates that the video does not contain U and V color planes. When false  indicates that the video contains Y, U, and V color planes.
+        bool                   chroma_subsampling_x = false;              //!< 1 bit. Specifies the chroma subsampling format.
+        bool                   chroma_subsampling_y = false;              //!< 1 bit. Specifies the chroma subsampling format.
+        uint8_t                chroma_sample_position = 0;                //!< 2 bits. Specifies the sample position for subsampled streams
+        uint8_t                HDR_WCG_idc = 0;                           //!< 2 bits. Indicates the presence or absence of HDR and WCG components in the PID
+        std::optional<uint8_t> initial_presentation_delay_minus_one {};   //!< 4 bits. !!not used in MPEG2-TS!!
 
         //!
         //! Default constructor.

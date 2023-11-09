@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
@@ -43,7 +43,7 @@ namespace ts {
         class subregion_layout_type {
         public:
             subregion_layout_type() = default;                 //!< Constructor
-            Variable<uint8_t>         PreambleSubstreamID {};  //!< 7 bits. Indicates the SubstreamID of the ES to be prepended to the ES to which this descriptor applies
+            std::optional<uint8_t>    PreambleSubstreamID {};  //!< 7 bits. Indicates the SubstreamID of the ES to be prepended to the ES to which this descriptor applies
             uint8_t                   Level = 0;               //!< Value of the profile as specified in ISO/IEC 23008-2 that applies to the subregion layout
             uint16_t                  PictureSizeHor = 0;      //!< Horizontal subregion dimension, measured in pixels
             uint16_t                  PictureSizeVer = 0;      //!< Vertical subregion dimension, measured in pixels

@@ -13,7 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsByteBlock.h"
 
 namespace ts {
@@ -51,10 +51,10 @@ namespace ts {
     //! This is a 33-bit PTS value which can be set or unset.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL SpliceTime : public Variable<uint64_t>
+    class TSDUCKDLL SpliceTime : public std::optional<uint64_t>
     {
     private:
-        typedef Variable<uint64_t> SuperClass;
+        typedef std::optional<uint64_t> SuperClass;
     public:
         //!
         //! Deserialize a SpliceTime structure from binary data.
@@ -82,7 +82,6 @@ namespace ts {
         SpliceTime(const SpliceTime& other) = default;
         SpliceTime& operator=(const SpliceTime& other) { SuperClass::operator=(other); return *this; }
         SpliceTime& operator=(const uint64_t& other) { SuperClass::operator=(other); return *this; }
-        virtual ~SpliceTime() override;
         //! @endcond
     };
 

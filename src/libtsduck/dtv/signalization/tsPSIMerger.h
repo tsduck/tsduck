@@ -14,7 +14,6 @@
 #pragma once
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
-#include "tsVariable.h"
 #include "tsEnumUtils.h"
 #include "tsPAT.h"
 #include "tsCAT.h"
@@ -121,15 +120,15 @@ namespace ts {
         CyclingPacketizer  _nit_pzer {_duck};                        // Packetizer for modified NIT's in main TS.
         CyclingPacketizer  _sdt_bat_pzer {_duck};                    // Packetizer for modified SDT/BAT in main TS.
         Packetizer         _eit_pzer {_duck, PID_EIT, this};         // Packetizer for the mixed EIT's.
-        Variable<uint16_t> _main_tsid {};          // TS id of the main stream.
-        PAT                _main_pat {};           // Last input PAT from main TS (version# is current output version).
-        PAT                _merge_pat {};          // Last input PAT from merged TS.
-        CAT                _main_cat {};           // Last input CAT from main TS (version# is current output version).
-        CAT                _merge_cat {};          // Last input CAT from merged TS.
-        SDT                _main_sdt {};           // Last input SDT Actual from main TS (version# is current output version).
-        SDT                _merge_sdt {};          // Last input SDT Actual from merged TS.
-        NIT                _main_nit {};           // Last input NIT Actual from main TS (version# is current output version).
-        NIT                _merge_nit {};          // Last input NIT Actual from merged TS.
+        std::optional<uint16_t> _main_tsid {};     // TS id of the main stream.
+        PAT                     _main_pat {};      // Last input PAT from main TS (version# is current output version).
+        PAT                     _merge_pat {};     // Last input PAT from merged TS.
+        CAT                     _main_cat {};      // Last input CAT from main TS (version# is current output version).
+        CAT                     _merge_cat {};     // Last input CAT from merged TS.
+        SDT                     _main_sdt {};      // Last input SDT Actual from main TS (version# is current output version).
+        SDT                     _merge_sdt {};     // Last input SDT Actual from merged TS.
+        NIT                     _main_nit {};      // Last input NIT Actual from main TS (version# is current output version).
+        NIT                     _merge_nit {};     // Last input NIT Actual from merged TS.
         std::map<uint16_t, BAT> _main_bats {};     // Map of last input BAT/bouquet_it from main TS (version# is current output version).
         std::map<uint16_t, BAT> _merge_bats {};    // Map of last input BAT/bouquet_it from merged TS.
         std::list<SectionPtr>   _eits {};          // List of EIT sections to insert.

@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -52,13 +52,13 @@ namespace ts {
         //!
         class media_service_kind_type {
         public:
-            media_service_kind_type() = default;            //!< Constructor
-            uint8_t            media_description_flag = 0;  //!< 1 bit
-            uint8_t            media_type_idc = 0;          //!< 2 bits
-            Variable<uint8_t>  ID_length_code {};           //!< 3 bits
-            Variable<uint16_t> ID_type {};                  //!< 13 bits
-            uint8_t            ID_len = 0;                  //!< 8 bits, only used if ID_length_code==0
-            UString            media_ID_field {};           //!< identifier of the data element
+            media_service_kind_type() = default;                 //!< Constructor
+            uint8_t                 media_description_flag = 0;  //!< 1 bit
+            uint8_t                 media_type_idc = 0;          //!< 2 bits
+            std::optional<uint8_t>  ID_length_code {};           //!< 3 bits
+            std::optional<uint16_t> ID_type {};                  //!< 13 bits
+            uint8_t                 ID_len = 0;                  //!< 8 bits, only used if ID_length_code==0
+            UString                 media_ID_field {};           //!< identifier of the data element
             std::vector<language_media_pair_type> language_media_service_type_pairs {};  //!< list of language/service type pairs for this media type
         };
 

@@ -15,7 +15,7 @@
 #include "tstlvSerializer.h"
 #include "tsUString.h"
 #include "tsSafePtr.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     namespace tlv {
@@ -213,7 +213,7 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalDecimal(size_t indent, const UString& name, const Variable<INT>& value)
+            static UString dumpOptionalDecimal(size_t indent, const UString& name, const std::optional<INT>& value)
             {
                 return value.has_value() ? dumpDecimal(indent, name, value.value()) : u"";
             }
@@ -242,7 +242,7 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalHexa(size_t indent, const UString& name, const Variable<INT>& value)
+            static UString dumpOptionalHexa(size_t indent, const UString& name, const std::optional<INT>& value)
             {
                 return value.has_value() ? dumpHexa(indent, name, value.value()) : u"";
             }
@@ -273,7 +273,7 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpOptionalInteger(size_t indent, const UString& name, const Variable<INT>& value)
+            static UString dumpOptionalInteger(size_t indent, const UString& name, const std::optional<INT>& value)
             {
                 return value.has_value() ? dumpInteger(indent, name, value.value()) : u"";
             }

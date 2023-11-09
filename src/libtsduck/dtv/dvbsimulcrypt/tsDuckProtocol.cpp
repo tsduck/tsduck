@@ -115,7 +115,7 @@ void ts::duck::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv
 
 namespace {
     // Dump a timestamp.
-    ts::UString DumpTimestamp(size_t indent, const ts::Variable<ts::SimulCryptDate>& timestamp)
+    ts::UString DumpTimestamp(size_t indent, const std::optional<ts::SimulCryptDate>& timestamp)
     {
         if (timestamp.has_value()) {
             return ts::UString::Format(u"%*sTimestamp = %s\n", {indent, u"", ts::UString(timestamp.value())});

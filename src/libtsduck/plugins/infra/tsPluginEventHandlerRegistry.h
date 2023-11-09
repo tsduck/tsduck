@@ -14,7 +14,7 @@
 #pragma once
 #include "tsPlugin.h"
 #include "tsPluginEventHandlerInterface.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsUString.h"
 #include "tsMutex.h"
 
@@ -45,10 +45,10 @@ namespace ts {
         class TSDUCKDLL Criteria
         {
         public:
-            Variable<UString>    plugin_name {};   //!< When specified, the plugin must match that name.
-            Variable<size_t>     plugin_index {};  //!< When specified, the plugin must be at that index in the chain.
-            Variable<PluginType> plugin_type {};   //!< When specified, the plugin must be of this type.
-            Variable<uint32_t>   event_code {};    //!< When specified, the event must use that code.
+            std::optional<UString>    plugin_name {};   //!< When specified, the plugin must match that name.
+            std::optional<size_t>     plugin_index {};  //!< When specified, the plugin must be at that index in the chain.
+            std::optional<PluginType> plugin_type {};   //!< When specified, the plugin must be of this type.
+            std::optional<uint32_t>   event_code {};    //!< When specified, the event must use that code.
 
             //!
             //! Default constructor.

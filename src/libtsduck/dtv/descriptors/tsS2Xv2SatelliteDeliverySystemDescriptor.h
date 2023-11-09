@@ -39,15 +39,15 @@ namespace ts {
         uint64_t                frequency = 0;                             //!< Frequency in GHz. (%05d.%03d)
         uint64_t                symbol_rate = 0;                           //!< Symbol rate in Msymbols/second. (%04d.%04d)
         uint8_t                 input_stream_identifier = 0;               //!< 8 bits
-        Variable<uint32_t>      scrambling_sequence_index {};              //!< 18 bits
+        std::optional<uint32_t> scrambling_sequence_index {};              //!< 18 bits
         uint8_t                 timeslice_number = 0;                      //!< 8 bits
         uint8_t                 num_channel_bonds_minus1 = 0;              //!< 1 bit
         std::vector<uint32_t>   secondary_delivery_system_ids {};          //!< 32 bits
         uint8_t                 SOSF_WH_sequence_number {};                //!< 8 bits
         uint32_t                reference_scrambling_index = 0;            //!< 20 bits
-        Variable<uint8_t>       SFFI {};                                   //!< 4 bits
+        std::optional<uint8_t>  SFFI {};                                   //!< 4 bits
         uint32_t                payload_scrambling_index = 0;              //!< 20 bits
-        Variable<uint32_t>      beamhopping_time_plan_id {};               //!< 32 bits
+        std::optional<uint32_t> beamhopping_time_plan_id {};               //!< 32 bits
         uint8_t                 superframe_pilots_WH_sequence_number = 0;  //!< 5 bits
         ByteBlock               reserved_future_use {};                    //!< For future modes.
 

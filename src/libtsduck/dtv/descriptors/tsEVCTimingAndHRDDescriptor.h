@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -26,10 +26,10 @@ namespace ts {
     {
     public:
         // Public members:
-        bool               hrd_management_valid = false;  //!< See ISO/IEC 13818-1.
-        Variable<uint32_t> N_90khz {};                    //!< See ISO/IEC 13818-1.
-        Variable<uint32_t> K_90khz {};                    //!< See ISO/IEC 13818-1.
-        Variable<uint32_t> num_units_in_tick {};          //!< See ISO/IEC 13818-1.
+        bool                    hrd_management_valid = false;  //!< See ISO/IEC 13818-1.
+        std::optional<uint32_t> N_90khz {};                    //!< See ISO/IEC 13818-1.
+        std::optional<uint32_t> K_90khz {};                    //!< See ISO/IEC 13818-1.
+        std::optional<uint32_t> num_units_in_tick {};          //!< See ISO/IEC 13818-1.
 
         //!
         //! Default constructor.

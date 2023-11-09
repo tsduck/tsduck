@@ -14,7 +14,6 @@
 
 #pragma once
 #include "tsEnumeration.h"
-#include "tsVariable.h"
 #include "tsOptional.h"
 #include "tsReport.h"
 

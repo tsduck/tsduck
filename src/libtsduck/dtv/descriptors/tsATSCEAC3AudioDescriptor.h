@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -26,23 +26,23 @@ namespace ts {
     {
     public:
         // Public members:
-        bool              mixinfoexists = false;   //!< See A/52, G.3.5.
-        bool              full_service = false;    //!< See A/52, G.3.5.
-        uint8_t           audio_service_type = 0;  //!< 3 bits, see A/52, G.3.5.
-        uint8_t           number_of_channels = 0;  //!< 3 bits, see A/52, G.3.5.
-        Variable<uint8_t> bsid {};                 //!< 5 bits, see A/52, G.3.5.
-        Variable<uint8_t> priority {};             //!< 2 bits, see A/52, G.3.5.
-        Variable<uint8_t> mainid {};               //!< 3 bits, see A/52, G.3.5.
-        Variable<uint8_t> asvc {};                 //!< See A/52, G.3.5.
-        Variable<uint8_t> substream1 {};           //!< See A/52, G.3.5.
-        Variable<uint8_t> substream2 {};           //!< See A/52, G.3.5.
-        Variable<uint8_t> substream3 {};           //!< See A/52, G.3.5.
-        UString           language {};             //!< 3 chars, see A/52, G.3.5.
-        UString           language_2 {};           //!< 3 chars, see A/52, G.3.5.
-        UString           substream1_lang {};      //!< 3 chars, see A/52, G.3.5.
-        UString           substream2_lang {};      //!< 3 chars, see A/52, G.3.5.
-        UString           substream3_lang {};      //!< 3 chars, see A/52, G.3.5.
-        ByteBlock         additional_info {};      //!< See A/52, G.3.5.
+        bool                   mixinfoexists = false;   //!< See A/52, G.3.5.
+        bool                   full_service = false;    //!< See A/52, G.3.5.
+        uint8_t                audio_service_type = 0;  //!< 3 bits, see A/52, G.3.5.
+        uint8_t                number_of_channels = 0;  //!< 3 bits, see A/52, G.3.5.
+        std::optional<uint8_t> bsid {};                 //!< 5 bits, see A/52, G.3.5.
+        std::optional<uint8_t> priority {};             //!< 2 bits, see A/52, G.3.5.
+        std::optional<uint8_t> mainid {};               //!< 3 bits, see A/52, G.3.5.
+        std::optional<uint8_t> asvc {};                 //!< See A/52, G.3.5.
+        std::optional<uint8_t> substream1 {};           //!< See A/52, G.3.5.
+        std::optional<uint8_t> substream2 {};           //!< See A/52, G.3.5.
+        std::optional<uint8_t> substream3 {};           //!< See A/52, G.3.5.
+        UString                language {};             //!< 3 chars, see A/52, G.3.5.
+        UString                language_2 {};           //!< 3 chars, see A/52, G.3.5.
+        UString                substream1_lang {};      //!< 3 chars, see A/52, G.3.5.
+        UString                substream2_lang {};      //!< 3 chars, see A/52, G.3.5.
+        UString                substream3_lang {};      //!< 3 chars, see A/52, G.3.5.
+        ByteBlock              additional_info {};      //!< See A/52, G.3.5.
 
         //!
         //! Default constructor.

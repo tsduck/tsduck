@@ -15,47 +15,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::ChannelFile::ChannelFile() :
-    _networks(),
-    _xmlTweaks(),
-    _fileName()
-{
-}
-
-ts::ChannelFile::Service::Service(uint16_t id_) :
-    id(id_),
-    name(),
-    provider(),
-    lcn(),
-    pmtPID(),
-    type(),
-    cas(),
-    atscType(),
-    atscMajorId(),
-    atscMinorId()
-{
-}
-
-ts::ChannelFile::TransportStream::TransportStream(uint16_t ts, uint16_t on) :
-    id(ts),
-    onid(on),
-    tune(),
-    _services()
-{
-}
-
-ts::ChannelFile::Network::Network(uint16_t net, TunerType typ) :
-    id(net),
-    type(typ),
-    _ts()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Transport stream accessors.
 //----------------------------------------------------------------------------
 

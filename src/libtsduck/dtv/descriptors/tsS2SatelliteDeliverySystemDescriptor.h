@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDeliverySystemDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -25,11 +25,11 @@ namespace ts {
     {
     public:
         // Public members:
-        bool               backwards_compatibility_indicator = false;  //!< Deprecated.
-        uint8_t            TS_GS_mode = 0;                             //!< See ETSI EN 300 468, 6.2.13.3.
-        Variable<uint32_t> scrambling_sequence_index {};               //!< See ETSI EN 300 468, 6.2.13.3, 18-bit value.
-        Variable<uint8_t>  input_stream_identifier {};                 //!< See ETSI EN 300 468, 6.2.13.3.
-        Variable<uint8_t>  timeslice_number {};                        //!< See ETSI EN 300 468, 6.2.13.3.
+        bool                    backwards_compatibility_indicator = false;  //!< Deprecated.
+        uint8_t                 TS_GS_mode = 0;                             //!< See ETSI EN 300 468, 6.2.13.3.
+        std::optional<uint32_t> scrambling_sequence_index {};               //!< See ETSI EN 300 468, 6.2.13.3, 18-bit value.
+        std::optional<uint8_t>  input_stream_identifier {};                 //!< See ETSI EN 300 468, 6.2.13.3.
+        std::optional<uint8_t>  timeslice_number {};                        //!< See ETSI EN 300 468, 6.2.13.3.
 
         //!
         //! Default constructor.

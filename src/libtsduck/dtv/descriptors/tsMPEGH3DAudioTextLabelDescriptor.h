@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -71,7 +71,7 @@ namespace ts {
         // Public members:
         uint8_t                               _3dAudioSceneInfoID = 0;   //!< 8 bits - ISO/IEC 13818-1, 2.6.107.
         std::vector<descriptionLanguage_type> description_languages {};  //!< ISO/IEC 13818-1, 2.6.107.
-        Variable<size_t>                      numReservedBytes {};       //!< Additional bytes.
+        std::optional<size_t>                 numReservedBytes {};       //!< Additional bytes.
 
         //!
         //! Default constructor.

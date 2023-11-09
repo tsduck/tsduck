@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 
 namespace ts {
     //!
@@ -26,10 +26,10 @@ namespace ts {
     {
     public:
         // Public members:
-        Variable<bool>    ac4_dialog_enhancement_enabled {}; //!< See ETSI EN 300 468, D.7.
-        Variable<uint8_t> ac4_channel_mode {};               //!< 2 bits, see ETSI EN 300 468, D.7.
-        ByteBlock         ac4_dsi_toc {};                    //!< See ETSI EN 300 468, D.7.
-        ByteBlock         additional_info {};                //!< See ETSI EN 300 468, D.7.
+        std::optional<bool>    ac4_dialog_enhancement_enabled {}; //!< See ETSI EN 300 468, D.7.
+        std::optional<uint8_t> ac4_channel_mode {};               //!< 2 bits, see ETSI EN 300 468, D.7.
+        ByteBlock              ac4_dsi_toc {};                    //!< See ETSI EN 300 468, D.7.
+        ByteBlock              additional_info {};                //!< See ETSI EN 300 468, D.7.
 
         //!
         //! Default constructor.
