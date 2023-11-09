@@ -18,7 +18,7 @@
 #  - New-TempDirectory
 #  - New-ZipFile [-Path] <String> [[-Root] <String>] [-Input <Object>] [-Force
 #  - Find-MSBuild
-#  - Find-Jva
+#  - Find-Java
 #
 #-----------------------------------------------------------------------------
 

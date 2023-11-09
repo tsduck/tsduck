@@ -968,7 +968,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
 {
     const bool verbose = level >= Severity::Verbose;
 
-    if (frequency.has_value() && frequency != 0) {
+    if (frequency.has_value() && *frequency != 0) {
         strm << margin << "Carrier frequency: " << UString::Decimal(frequency.value()) << " Hz" << std::endl;
     }
     if (inversion.has_value() && inversion != SPINV_AUTO) {
@@ -980,7 +980,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
 
     switch (TunerTypeOf(delivery_system.value_or(DS_UNDEFINED))) {
         case TT_DVB_C: {
-            if (symbol_rate.has_value() && symbol_rate != 0) {
+            if (symbol_rate.has_value() && *symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
             }
             if (inner_fec.has_value() && inner_fec != FEC_AUTO) {
@@ -998,7 +998,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (guard_interval.has_value() && guard_interval != GUARD_AUTO) {
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
-            if (bandwidth.has_value() && bandwidth != 0) {
+            if (bandwidth.has_value() && *bandwidth != 0) {
                 strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << " Hz" << std::endl;
             }
             if (transmission_mode.has_value() && transmission_mode != TM_AUTO) {
@@ -1016,7 +1016,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (inversion.has_value() && inversion != SPINV_AUTO) {
                 strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
             }
-            if (symbol_rate.has_value() && symbol_rate != 0) {
+            if (symbol_rate.has_value() && *symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
             }
             if (inner_fec.has_value() && inner_fec != ts::FEC_AUTO) {
@@ -1048,7 +1048,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (inversion.has_value() && inversion != SPINV_AUTO) {
                 strm << margin << "Spectral inversion: " << SpectralInversionEnum.name(inversion.value()) << std::endl;
             }
-            if (symbol_rate.has_value() && symbol_rate != 0) {
+            if (symbol_rate.has_value() && *symbol_rate != 0) {
                 strm << margin << "Symbol rate: " << UString::Decimal(symbol_rate.value()) << " symb/s" << std::endl;
             }
             if (stream_id.has_value()) {
@@ -1069,7 +1069,7 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (guard_interval.has_value() && guard_interval != GUARD_AUTO) {
                 strm << margin << "Guard interval: " << GuardIntervalEnum.name(guard_interval.value()) << std::endl;
             }
-            if (bandwidth.has_value() && bandwidth != 0) {
+            if (bandwidth.has_value() && *bandwidth != 0) {
                 strm << margin << "Bandwidth: " << UString::Decimal(bandwidth.value()) << " Hz" << std::endl;
             }
             if (transmission_mode.has_value() && transmission_mode != TM_AUTO) {

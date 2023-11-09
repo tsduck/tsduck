@@ -155,7 +155,7 @@ bool ts::HiDesOutputPlugin::start()
         tsp->error(u"specify either HiDes adapter number or device name but not both");
         return false;
     }
-    if (params.frequency == 0) {
+    if (*params.frequency == 0) {
         tsp->error(u"no carrier frequency specified");
         return false;
     }

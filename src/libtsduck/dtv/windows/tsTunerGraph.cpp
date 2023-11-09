@@ -441,7 +441,7 @@ bool ts::TunerGraph::installTIF(const ComPtr<::IBaseFilter>& demux, const ComPtr
 bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& params)
 {
     // Check if we have a corresponding network type.
-    if (!params.delivery_system.set()) {
+    if (!params.delivery_system.has_value()) {
         duck.report().error(u"no delivery system specified");
         return false;
     }

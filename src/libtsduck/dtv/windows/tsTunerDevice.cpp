@@ -216,7 +216,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
     }
 
     // We do not know which delivery system is current. Use default one.
-    if (!params.delivery_system.set() || !_delivery_systems.contains(params.delivery_system.value())) {
+    if (!params.delivery_system.has_value() || !_delivery_systems.contains(params.delivery_system.value())) {
         params.delivery_system = _delivery_systems.preferred();
     }
     const TunerType ttype = TunerTypeOf(params.delivery_system.value());
@@ -231,10 +231,10 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             // returns the intermediate frequency and there is no unique satellite
             // frequency for a given intermediate frequency.
             if (reset_unknown) {
-                params.frequency.clear();
-                params.satellite_number.clear();
-                params.lnb.clear();
-                params.polarity.clear();
+                params.frequency.reset();
+                params.satellite_number.reset();
+                params.lnb.reset();
+                params.polarity.reset();
             }
             // Spectral inversion
             _graph.searchVarProperty<::SpectralInversion>(
@@ -258,11 +258,11 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_MODULATION_TYPE);
             // Delivery system. Found no way to get DVB-S vs. DVB-S2 on Windows.
             // Make a not quite correct assumption, based on modulation type.
-            if (params.modulation.set()) {
+            if (params.modulation.has_value()) {
                 params.delivery_system = params.modulation == QPSK ? DS_DVB_S : DS_DVB_S2;
             }
             else if (reset_unknown) {
-                params.delivery_system.clear();
+                params.delivery_system.reset();
             }
             // DVB-S2 pilot
             _graph.searchVarProperty<::Pilot>(
@@ -280,7 +280,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
         case TT_DVB_C:
         case TT_ISDB_C: {
             if (reset_unknown) {
-                params.frequency.clear();
+                params.frequency.reset();
             }
             // Spectral inversion
             _graph.searchVarProperty<::SpectralInversion>(
@@ -308,7 +308,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
         case TT_DVB_T:
         case TT_ISDB_T: {
             if (reset_unknown) {
-                params.frequency.clear();
+                params.frequency.reset();
             }
             // Spectral inversion
             _graph.searchVarProperty<::SpectralInversion>(
@@ -333,7 +333,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.transmission_mode = ts::TransmissionMode(tm);
             }
             else if (reset_unknown) {
-                params.transmission_mode.clear();
+                params.transmission_mode.reset();
             }
             ::GuardInterval gi = ::BDA_GUARD_NOT_SET;
             found = _graph.searchTunerProperty(gi, TunerGraph::psFIRST, KSPROPSETID_BdaDigitalDemodulator, KSPROPERTY_BDA_GUARD_INTERVAL);
@@ -341,19 +341,19 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.guard_interval = ts::GuardInterval(gi);
             }
             else if (reset_unknown) {
-                params.guard_interval.clear();
+                params.guard_interval.reset();
             }
             // Other DVB-T parameters, not supported at all
-            params.bandwidth.clear();
-            params.hierarchy.clear();
-            params.fec_lp.clear();
-            params.plp.clear();
+            params.bandwidth.reset();
+            params.hierarchy.reset();
+            params.fec_lp.reset();
+            params.plp.reset();
             break;
         }
 
         case TT_ATSC: {
             if (reset_unknown) {
-                params.frequency.clear();
+                params.frequency.reset();
             }
             // Spectral inversion
             _graph.searchVarProperty<::SpectralInversion>(
@@ -377,8 +377,8 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
     // Some drivers sometimes return weird values for spectral inversion.
     // Reset it in case of invalid value.
-    if (params.inversion.set() && params.inversion.value() != SPINV_AUTO && params.inversion.value() != SPINV_ON && params.inversion.value() != SPINV_OFF) {
-        params.inversion.clear();
+    if (params.inversion.has_value() && params.inversion.value() != SPINV_AUTO && params.inversion.value() != SPINV_ON && params.inversion.value() != SPINV_OFF) {
+        params.inversion.reset();
     }
 
     return true;
@@ -536,7 +536,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& 
     SignalState state;
     getSignalState(state);
     strm << margin << "Signal locked:    " << UString::YesNo(state.signal_locked) << std::endl;
-    if (state.signal_strength.set()) {
+    if (state.signal_strength.has_value()) {
         strm << margin << "Signal strength:  " << state.signal_strength.value() << std::endl;
     }
 
