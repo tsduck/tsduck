@@ -39,6 +39,8 @@ namespace std {
     };
     constexpr nullopt_t nullopt{0};
 
+    // On macOS, bad_optional_access is defined before C++17.
+#if !defined(TS_MAC)
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(weak-vtables)
     TS_LLVM_NOWARNING(weak-vtables)
@@ -50,6 +52,7 @@ namespace std {
         const char* what() const noexcept override { return "bad optional access"; }
     };
     TS_POP_WARNING()
+#endif
 
     template <class T>
     class optional

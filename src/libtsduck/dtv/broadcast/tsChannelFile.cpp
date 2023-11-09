@@ -610,7 +610,7 @@ ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element
     switch (TunerTypeOf(delsys)) {
         case TT_DVB_S: {
             xml::Element* e = parent->addElement(u"dvbs");
-            if (*mod.satellite_number != 0) {
+            if (mod.satellite_number.has_value() && *mod.satellite_number != 0) {
                 e->setOptionalIntAttribute(u"satellite", mod.satellite_number, false);
             }
             e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
@@ -714,7 +714,7 @@ ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element
         }
         case TT_ISDB_S: {
             xml::Element* e = parent->addElement(u"isdbs");
-            if (*mod.satellite_number != 0) {
+            if (mod.satellite_number.has_value() && *mod.satellite_number != 0) {
                 e->setOptionalIntAttribute(u"satellite", mod.satellite_number, false);
             }
             e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
