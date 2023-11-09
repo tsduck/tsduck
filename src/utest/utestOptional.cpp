@@ -203,6 +203,7 @@ namespace {
         {
             return _value == other._value;
         }
+        TS_UNEQUAL_OPERATOR(TestData)
         std::ostream& display(std::ostream& stm) const
         {
             return stm << "@" << std::hex << (size_t(this) & 0xFFFFFFFF) << std::dec << " (" << _value << ")";
