@@ -11,6 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsOptional.h"
+#include "tsUString.h"
 #include "tsunit.h"
 
 
@@ -25,11 +26,13 @@ public:
     virtual void afterTest() override;
 
     void testElementaryType();
+    void testString();
     void testClass();
     [[noreturn]] void testUninitialized();
 
     TSUNIT_TEST_BEGIN(OptionalTest);
     TSUNIT_TEST(testElementaryType);
+    TSUNIT_TEST(testString);
     TSUNIT_TEST(testClass);
     TSUNIT_TEST_EXCEPTION(testUninitialized, std::bad_optional_access);
     TSUNIT_TEST_END();
@@ -125,6 +128,53 @@ void OptionalTest::testElementaryType()
     TSUNIT_ASSERT(v1 == 1);
     TSUNIT_ASSERT(v1 != 2);
     TSUNIT_ASSERT(v4 != 1);
+}
+
+void OptionalTest::testString()
+{
+    std::optional<ts::UString> v1;
+    TSUNIT_ASSERT(!v1.has_value());
+    TSUNIT_ASSERT(!bool(v1));
+
+    std::optional<ts::UString> v2(v1);
+    TSUNIT_ASSERT(!v2.has_value());
+    TSUNIT_ASSERT(!bool(v2));
+
+    v2 = u"abcd";
+    TSUNIT_ASSERT(v2.has_value());
+    TSUNIT_ASSERT(bool(v2));
+    TSUNIT_EQUAL(u"abcd", *v2);
+
+    std::optional<ts::UString> v3(v2);
+    TSUNIT_ASSERT(v3.has_value());
+    TSUNIT_ASSERT(bool(v3));
+    TSUNIT_EQUAL(u"abcd", *v3);
+
+    std::optional<ts::UString> v4(u"xyz");
+    TSUNIT_ASSERT(v4.has_value());
+    TSUNIT_ASSERT(bool(v4));
+    TSUNIT_EQUAL(u"xyz", *v4);
+
+    v4 = v1;
+    TSUNIT_ASSERT(!v4.has_value());
+    TSUNIT_ASSERT(!bool(v4));
+
+    v4 = v2;
+    TSUNIT_ASSERT(v4.has_value());
+
+    v4.reset();
+    TSUNIT_ASSERT(!v4.has_value());
+
+    v4.reset();
+    TSUNIT_ASSERT(!v4.has_value());
+
+    v1 = u"efgh";
+    v2.reset();
+    TSUNIT_ASSERT(v1.has_value());
+    TSUNIT_ASSERT(!v2.has_value());
+    TSUNIT_EQUAL(u"efgh", v1.value());
+    TSUNIT_EQUAL(u"efgh", v1.value_or(u"ijkl"));
+    TSUNIT_EQUAL(u"ijkl", v2.value_or(u"ijkl"));
 }
 
 // A class which identifies each instance by an explicit value.

@@ -185,9 +185,10 @@ bool ts::HEVCTileSubstreamDescriptor::analyzeXML(DuckContext& duck, const xml::E
     }
     if (ok && !Reference.empty()) {
         ReferenceFlag = 1;
-        uint8_t _PreambleFlag, _PatternReference;
+        uint8_t _PreambleFlag = 0;
+        uint8_t _PatternReference = 0;
         ok = Reference[0]->getIntAttribute(_PreambleFlag, u"PreambleFlag", true, 0, 0, 1) &&
-            Reference[0]->getIntAttribute(_PatternReference, u"PatternReference", true, 0, 0, 0x7F);
+             Reference[0]->getIntAttribute(_PatternReference, u"PatternReference", true, 0, 0, 0x7F);
         PreambleFlag = _PreambleFlag;
         PatternReference = _PatternReference;
     }
@@ -196,7 +197,7 @@ bool ts::HEVCTileSubstreamDescriptor::analyzeXML(DuckContext& duck, const xml::E
         for (size_t i=0; ok && i<Substream.size(); i++) {
             substream_type newSubStream;
             ok = Substream[i]->getIntAttribute(newSubStream.Flag, u"Flag", true, 0, 0, 1) &&
-                Substream[i]->getIntAttribute(newSubStream.AdditionalSubstreamID, u"AdditionalSubstreamID", true, 0, 0, 0x7F);
+                 Substream[i]->getIntAttribute(newSubStream.AdditionalSubstreamID, u"AdditionalSubstreamID", true, 0, 0, 0x7F);
             if (ok) {
                 Substreams.push_back(newSubStream);
             }

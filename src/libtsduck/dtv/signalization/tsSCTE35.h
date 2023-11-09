@@ -79,8 +79,9 @@ namespace ts {
         // Inherited methods.
         //! @cond doxygen
         SpliceTime() = default;
-        SpliceTime(const SpliceTime& other) = default;
-        SpliceTime& operator=(const SpliceTime& other) { SuperClass::operator=(other); return *this; }
+        SpliceTime(const SpliceTime&) = default;
+        SpliceTime(const SuperClass& other) : SuperClass(other) {}
+        SpliceTime& operator=(const SuperClass& other) { SuperClass::operator=(other); return *this; }
         SpliceTime& operator=(const uint64_t& other) { SuperClass::operator=(other); return *this; }
         //! @endcond
     };

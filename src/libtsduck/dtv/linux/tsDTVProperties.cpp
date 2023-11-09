@@ -7,6 +7,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDTVProperties.h"
+#include "tsUString.h"
 
 #if !defined(TS_CXX17)
 constexpr uint32_t ts::DTVProperties::UNKNOWN;
