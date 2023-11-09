@@ -16,7 +16,7 @@
 #include "tsDirectShowNetworkType.h"
 #include "tsModulationArgs.h"
 #include "tsSinkFilter.h"
-#include "tsVariable.h"
+#include "tsOptional.h"
 #include "tsNullReport.h"
 
 namespace ts {
@@ -150,7 +150,7 @@ namespace ts {
         //!
         template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_same<::IBDA_DigitalDemodulator, FILTER>::value>::type* = nullptr>
         bool searchVarProperty(VALTYPE unset,
-                               Variable<ARGTYPE>& parameter,
+                               std::optional<ARGTYPE>& parameter,
                                PropSearch searchtype,
                                bool reset_unknown,
                                ::HRESULT (__stdcall FILTER::* getmethod)(IVALTYPE*),
@@ -165,7 +165,7 @@ namespace ts {
         // There is one specialization per interface type.
         template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER, typename std::enable_if<std::is_same<::IBDA_DigitalDemodulator2, FILTER>::value>::type* = nullptr>
         bool searchVarProperty(VALTYPE unset,
-                               Variable<ARGTYPE>& parameter,
+                               std::optional<ARGTYPE>& parameter,
                                PropSearch searchtype,
                                bool reset_unknown,
                                ::HRESULT (__stdcall FILTER::* getmethod)(IVALTYPE*),
@@ -281,7 +281,7 @@ namespace ts {
         //!
         template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
         bool searchVarPropertyImpl(VALTYPE unset,
-                                   Variable<ARGTYPE>& parameter,
+                                   std::optional<ARGTYPE>& parameter,
                                    PropSearch searchtype,
                                    bool reset_unknown,
                                    const std::vector<ComPtr<FILTER>>& ivector,
@@ -410,7 +410,7 @@ bool ts::TunerGraph::searchPropertyImpl(VALTYPE& retvalue,
 // Same one with additional handling of unknown return value.
 template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
 bool ts::TunerGraph::searchVarPropertyImpl(VALTYPE unset,
-                                           Variable<ARGTYPE>& parameter,
+                                           std::optional<ARGTYPE>& parameter,
                                            PropSearch searchtype,
                                            bool reset_unknown,
                                            const std::vector<ComPtr<FILTER>>& ivector,
@@ -424,7 +424,7 @@ bool ts::TunerGraph::searchVarPropertyImpl(VALTYPE unset,
         parameter = ARGTYPE(retvalue);
     }
     else if (reset_unknown) {
-        parameter.clear();
+        parameter.reset();
     }
     return found;
 }

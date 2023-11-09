@@ -286,7 +286,7 @@ bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, :
 
 bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params)
 {
-    const DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
+    const DeliverySystem delsys = params.delivery_system.value_or(DS_UNDEFINED);
     const TunerType ttype = TunerTypeOf(delsys);
 
     // Create the locator depending on the type.
@@ -335,7 +335,7 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         !PUT(loc, LPInnerFECRate, ::BinaryConvolutionCodeRate(params.fec_lp.value())) ||
         !PUT(loc, Mode, ::TransmissionMode(params.transmission_mode.value())) ||
         !PUT(loc, HAlpha, ::HierarchyAlpha(params.hierarchy.value())) ||
-        (params.plp.set() && params.plp != PLP_DISABLE && !PUT(loc, PhysicalLayerPipeId, long(params.plp.value()))))
+        (params.plp.has_value() && params.plp != PLP_DISABLE && !PUT(loc, PhysicalLayerPipeId, long(params.plp.value()))))
     {
         return false;
     }
@@ -389,7 +389,7 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     // Specify DiSEqC satellite number.
     // Note however that most drivers ignore it...
     ::LNB_Source source = ::BDA_LNB_SOURCE_NOT_SET;
-    switch (params.satellite_number.value(0)) {
+    switch (params.satellite_number.value_or(0)) {
         case 0:  source = ::BDA_LNB_SOURCE_A; break;
         case 1:  source = ::BDA_LNB_SOURCE_B; break;
         case 2:  source = ::BDA_LNB_SOURCE_C; break;
@@ -491,7 +491,7 @@ bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     // we need to take the frequency and map it to the corresponding HF channel
     // using the global HF band region.
 
-    const uint64_t freq = params.frequency.value(0);
+    const uint64_t freq = params.frequency.value_or(0);
     long physical_channel = 0;
     if (uhf->inBand(freq)) {
         physical_channel = uhf->channelNumber(freq);
