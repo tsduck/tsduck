@@ -1201,6 +1201,13 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.interval", true).add(u"drop-byte", stats.byteRcvDrop);
             root.query(u"receive.interval", true).add(u"undecrypted-byte", stats.byteRcvUndecrypt);
             root.query(u"receive.instant", true).add(u"delivery-delay-ms", stats.msRcvTsbPdDelay);
+            root.query(u"receive.instant", true).add(u"buffer-avail-bytes", stats.byteAvailRcvBuf);
+            root.query(u"receive.instant", true).add(u"buffer-ack-packets", stats.pktRcvBuf);
+            root.query(u"receive.instant", true).add(u"buffer-ack-bytes", stats.pktRcvBuf);
+            root.query(u"receive.instant", true).add(u"buffer-ack-ms", stats.msRcvBuf);
+            root.query(u"receive.instant", true).add(u"reorder-rolerance-packets", stats.pktReorderTolerance);
+            root.query(u"receive.instant", true).add(u"avg-belated-ms", stats.pktRcvAvgBelatedTime);
+            root.query(u"receive.instant", true).add(u"mss-bytes", stats.byteMSS);
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
             root.query(u"send.total", true).add(u"bytes", stats.byteSentTotal);
