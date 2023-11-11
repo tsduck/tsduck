@@ -24,7 +24,7 @@ ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
 # Project specific directories.
 
-INSTALLERDIR = $(ROOTDIR)/installers
+INSTALLERDIR = $(ROOTDIR)/pkg/installers
 SCRIPTSDIR   = $(ROOTDIR)/scripts
 SRCROOT      = $(ROOTDIR)/src
 LIBTSDUCKDIR = $(SRCROOT)/libtsduck

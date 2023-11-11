@@ -144,7 +144,7 @@ Linux distros and BSD systems.
 There is no need to build the TSDuck binaries before building the installers.
 Building the binaries, when necessary, is part of the installer build.
 
-All installation packages are dropped into the subdirectory `installers`.
+All installation packages are dropped into the subdirectory `pkg/installers`.
 The packages are not deleted by the cleanup procedures. They are not pushed
 into the git repository either.
 
@@ -311,7 +311,7 @@ script from a PowerShell window and add the option `-Win32`.
 There is no need to build the TSDuck binaries before building the installers.
 Building the binaries, is part of the installer build.
 
-All installation packages are dropped into the subdirectory `installers`.
+All installation packages are dropped into the subdirectory `pkg/installers`.
 The packages are not deleted by the cleanup procedures. They are not pushed
 into the git repository either.
 
@@ -349,7 +349,7 @@ bin\Debug-Win32\tsp.exe
 # Installer files summary {#instfiles}
 
 The following table summarizes the packages which are built and dropped
-into the `installers` directory, through a few examples, assuming that the
+into the `pkg/installers` directory, through a few examples, assuming that the
 current version of TSDuck is 3.12-745.
 
 | File name                             | Description

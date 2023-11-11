@@ -66,7 +66,7 @@ jobs:
     - name: Test installation (64-bit)
       if: env.REBUILD == 'true'
       run: |
-        Start-Process -Wait -FilePath installers/TSDuck-Win64-${{ env.VERSION }}.exe -ArgumentList @("/S", "/all=true")
+        Start-Process -Wait -FilePath pkg/installers/TSDuck-Win64-${{ env.VERSION }}.exe -ArgumentList @("/S", "/all=true")
         # View installed files.
         Get-ChildItem -Recurse $env:ProgramFiles\TSDuck
         # Propagate environment variables to next steps.
@@ -112,7 +112,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: installer-64
-        path: installers/TSDuck-Win64-${{ env.VERSION }}.exe
+        path: pkg/installers/TSDuck-Win64-${{ env.VERSION }}.exe
         retention-days: 5
 
     - name: Upload 64-bit portable
@@ -120,7 +120,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: portable-64
-        path: installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
+        path: pkg/installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
         retention-days: 5
 
   linux:
@@ -207,7 +207,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: ubuntu-package
-        path: installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
+        path: pkg/installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
         retention-days: 5
         
     - name: Upload Ubuntu dev package
@@ -215,7 +215,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: ubuntu-dev-package
-        path: installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
+        path: pkg/installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
         retention-days: 5
         
   doc:

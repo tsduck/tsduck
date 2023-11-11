@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------------------
 
 SCRIPT=$(basename "$0" .sh)
-ROOTDIR=$(cd $(dirname "$0")/..; pwd)
+ROOTDIR=$(cd $(dirname "$0")/../..; pwd)
 
 info() { echo >&2 "$SCRIPT: $*"; }
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
@@ -36,7 +36,7 @@ VERSION=${TAG/v/}
 info "version: $VERSION"
 
 # URL of the source tarball.
-URL="https://github.com/tsduck/tsduck/archive/$TAG.tar.gz"
+URL="https://github.com/tsduck/tsduck/archive/refs/tags/$TAG.tar.gz"
 info "tarball: $URL"
 
 # Download and verify tarball.

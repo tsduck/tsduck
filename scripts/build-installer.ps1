@@ -77,7 +77,7 @@ $SrcDir     = "${RootDir}\src"
 $BinRoot    = "${RootDir}\bin"
 $BinInclude = "${BinRoot}\include"
 $JarFile    = "${BinRoot}\java\tsduck.jar"
-$InstallerDir = "${RootDir}\installers"
+$InstallerDir = "${RootDir}\pkg\installers"
 
 # Collect files for the installers.
 if (-not $NoInstaller) {

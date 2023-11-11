@@ -36,7 +36,7 @@ Caption "TSDuck Installer"
 
 ; Directories.
 !define RootDir ".."
-!define InstallerDir "${RootDir}\installers"
+!define InstallerDir "${RootDir}\pkg\installers"
 !define PythonDir "${RootDir}\src\libtsduck\python"
 !define BinRoot "${BinDir}\.."
 
