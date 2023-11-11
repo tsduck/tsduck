@@ -1165,14 +1165,20 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
         // Statistics in JSON format.
         json::Object root;
         if ((mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE) {
+            root.query(u"receive.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
             root.query(u"receive.total", true).add(u"bytes", stats.byteRecvTotal);
             root.query(u"receive.total", true).add(u"packets", stats.pktRecvTotal);
             root.query(u"receive.total", true).add(u"lost-packets", stats.pktRcvLossTotal);
             root.query(u"receive.total", true).add(u"dropped-packets", stats.pktRcvDropTotal);
+            root.query(u"receive.total", true).add(u"sent-ack-packets", stats.pktSentACKTotal);
+            root.query(u"receive.total", true).add(u"sent-nack-packets", stats.pktSentNAKTotal);
+            root.query(u"receive.total", true).add(u"undecrypted-packets", stats.pktRcvUndecryptTotal);
+            root.query(u"receive.interval", true).add(u"estimated-bandwidth", stats.mbpsRecvRate);
             root.query(u"receive.interval", true).add(u"bytes", stats.byteRecv);
             root.query(u"receive.interval", true).add(u"packets", stats.pktRecv);
             root.query(u"receive.interval", true).add(u"lost-packets", stats.pktRcvLoss);
             root.query(u"receive.interval", true).add(u"dropped-packets", stats.pktRcvDrop);
+            root.query(u"receive.interval", true).add(u"undecrypted-packets", stats.pktRcvUndecrypt);
             root.query(u"receive.instant", true).add(u"delivery-delay-ms", stats.msRcvTsbPdDelay);
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
