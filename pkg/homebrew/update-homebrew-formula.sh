@@ -81,7 +81,7 @@ else
     info "version: $VERSION"
 
     # URL of the source tarball.
-    URL="https://github.com/tsduck/tsduck/archive/${TAG}.tar.gz"
+    URL="https://github.com/tsduck/tsduck/archive/refs/tags/${TAG}.tar.gz"
     info "tarball: $URL"
 
     # Get checksum of source tarball.

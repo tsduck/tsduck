@@ -1,0 +1,8 @@
+# Building TSDuck binary packages
+
+Free and open-source products are still products. As such, they deserve proper
+packaging for their binaries. A free and open-source product shall be as easy to
+install as any other expensive software product.
+
+This directory contains tools and instructions to build TSDuck binary packages
+and installers on the various platforms.

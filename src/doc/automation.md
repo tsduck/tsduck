@@ -137,7 +137,7 @@ $HOME/tsduck/scripts/build-remote.sh --host vmwindows --parallels Windows --wind
 ~~~
 
 So, building a release is as simple as running that script. After a couple
-of hours, all binaries and build log files are available in the `installers`
+of hours, all binaries and build log files are available in the `pkg/installers`
 subdirectory.
 
 Be sure to check that all binaries are present. Check the log files if

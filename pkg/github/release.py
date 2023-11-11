@@ -95,12 +95,12 @@ def search_installers(version):
     # Get directory where installation packages are located.
     dir = repo.scriptdir
     while True:
-        pkgdir = dir + '/installers'
+        pkgdir = dir + '/pkg/installers'
         if os.path.isdir(pkgdir):
             break
         parent = os.path.dirname(dir)
         if os.path.samefile(dir, parent):
-            repo.error('installers directory not found, starting from %s, upwards' % repo.scriptdir)
+            repo.error('pkg/installers directory not found, starting from %s, upwards' % repo.scriptdir)
             return False
         dir = parent
     # Search expected installer files.

@@ -287,7 +287,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
         # Create a remote timestamp in installers subdirectory.
         # Newer files will be the installers we build.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            "[void](New-Item -Type File '$REMOTE_DIR/installers/timestamp.tmp' -Force)"
+            "[void](New-Item -Type File '$REMOTE_DIR/pkg/installers/timestamp.tmp' -Force)"
 
         # Build installers after updating the repository.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
@@ -295,19 +295,19 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
         # Get all files from installers directory which are newer than the timestamp.
         files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            "Get-ChildItem '$REMOTE_DIR/installers' |
-             Where-Object { \$_.LastWriteTime -gt (Get-Item '$REMOTE_DIR/installers/timestamp.tmp').LastWriteTime } |
+            "Get-ChildItem '$REMOTE_DIR/pkg/installers' |
+             Where-Object { \$_.LastWriteTime -gt (Get-Item '$REMOTE_DIR/pkg/installers/timestamp.tmp').LastWriteTime } |
              ForEach-Object { \$_.Name }" | tr '\r' ' ')
 
         # Copy all installers files.
         for f in $files; do
             echo "Fetching $f"
-            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
+            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
         done
 
         # Delete the temporary timestamp.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            "[void](Remove-Item -Force '$REMOTE_DIR/installers/timestamp.tmp' -ErrorAction Ignore)"
+            "[void](Remove-Item -Force '$REMOTE_DIR/pkg/installers/timestamp.tmp' -ErrorAction Ignore)"
     else
         # Build on Unix.
         # Create a remote timestamp. Newer files will be the installers we build.
@@ -318,23 +318,23 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
             git checkout master '&&' \
             git pull origin master '&&' \
             make distclean ';' \
-            touch "installers/timestamp.tmp" '&&' \
+            touch "pkg/installers/timestamp.tmp" '&&' \
             make installer
 
         # Get all files from installers directory which are newer than the time stamp.
         files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            find "$REMOTE_DIR/installers" -maxdepth 1 -type f -newer "$REMOTE_DIR/installers/timestamp.tmp" -printf "'%f '")
+            find "$REMOTE_DIR/pkg/installers" -maxdepth 1 -type f -newer "$REMOTE_DIR/pkg/installers/timestamp.tmp" -printf "'%f '")
 
         # Copy all files from installers directory which are newer than the time stamp.
         for f in $files; do
             echo "Fetching $f"
-            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/installers/$f" "$ROOTDIR/installers/"
+            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
         done
 
         # Delete the temporary timestamp.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" rm -f "$REMOTE_DIR/installers/timestamp.tmp"
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" rm -f "$REMOTE_DIR/pkg/installers/timestamp.tmp"
     fi
-) &>"$ROOTDIR/installers/build-${HOST_NAME}-$(curdate).log"
+) &>"$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
 
 
 # Shutdown the VM if we booted it.
