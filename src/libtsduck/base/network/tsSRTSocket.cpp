@@ -1165,14 +1165,23 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
         // Statistics in JSON format.
         json::Object root;
         if ((mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE) {
+            //pktRcvRetransTotal to be added when available https://github.com/Haivision/srt/issues/1208
             root.query(u"receive.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
             root.query(u"receive.total", true).add(u"bytes", stats.byteRecvTotal);
             root.query(u"receive.total", true).add(u"packets", stats.pktRecvTotal);
+            root.query(u"receive.total", true).add(u"unique-packets", stats.pktRecvUniqueTotal);
             root.query(u"receive.total", true).add(u"lost-packets", stats.pktRcvLossTotal);
             root.query(u"receive.total", true).add(u"dropped-packets", stats.pktRcvDropTotal);
             root.query(u"receive.total", true).add(u"sent-ack-packets", stats.pktSentACKTotal);
             root.query(u"receive.total", true).add(u"sent-nack-packets", stats.pktSentNAKTotal);
             root.query(u"receive.total", true).add(u"undecrypted-packets", stats.pktRcvUndecryptTotal);
+            root.query(u"receive.total", true).add(u"filter-extra-packets", stats.pktRcvFilterExtraTotal);
+            root.query(u"receive.total", true).add(u"filter-recovered-packets", stats.pktRcvFilterSupplyTotal);
+            root.query(u"receive.total", true).add(u"filter-not-recovered-packets", stats.pktRcvFilterSupplyTotal);
+            root.query(u"receive.total", true).add(u"unique-byte", stats.byteRecvUniqueTotal);
+            root.query(u"receive.total", true).add(u"loss-byte", stats.byteRcvLossTotal);
+            root.query(u"receive.total", true).add(u"drop-byte", stats.byteRcvDropTotal);
+            root.query(u"receive.total", true).add(u"undecrypted-byte", stats.byteRcvUndecryptTotal);
             root.query(u"receive.interval", true).add(u"estimated-bandwidth", stats.mbpsRecvRate);
             root.query(u"receive.interval", true).add(u"bytes", stats.byteRecv);
             root.query(u"receive.interval", true).add(u"packets", stats.pktRecv);
