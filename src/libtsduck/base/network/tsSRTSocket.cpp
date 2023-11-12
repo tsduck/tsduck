@@ -1213,7 +1213,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"send.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
             root.query(u"send.total", true).add(u"bytes", stats.byteSentTotal);
             root.query(u"send.total", true).add(u"packets", stats.pktSentTotal);
-            root.query(u"send.total", true).add(u"unique-packets", stats.pktSentUniqueTotalcd /);
+            root.query(u"send.total", true).add(u"unique-packets", stats.pktSentUniqueTotal);
             root.query(u"send.total", true).add(u"retransmit-packets", stats.pktRetransTotal);
             root.query(u"send.total", true).add(u"lost-packets", stats.pktSndLossTotal);
             root.query(u"send.total", true).add(u"dropped-packets", stats.pktSndDropTotal);
@@ -1231,7 +1231,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"send.interval", true).add(u"dropped-packets", stats.pktSndDrop);
             root.query(u"send.interval", true).add(u"unique-packets", stats.pktSentUnique);
             root.query(u"send.interval", true).add(u"received-ack-packets", stats.pktRecvACK);
-            root.query(u"send.interval", true).add(u"received-nak-packets", stats.pktRecvNAK)
+            root.query(u"send.interval", true).add(u"received-nak-packets", stats.pktRecvNAK);
             root.query(u"send.interval", true).add(u"filter-extra-packets", stats.pktSndFilterExtra);
             root.query(u"send.interval", true).add(u"send-rate-mbps", stats.mbpsSendRate);
             root.query(u"send.interval", true).add(u"send-duration-us", stats.usSndDuration);
