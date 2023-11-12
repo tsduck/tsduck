@@ -1224,14 +1224,32 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"send.total", true).add(u"unique-byte", stats.byteSentUniqueTotal);
             root.query(u"send.total", true).add(u"restrans-byte", stats.byteRetransTotal);
             root.query(u"send.total", true).add(u"drop-byte", stats.byteSndDropTotal);
-
-            
             root.query(u"send.interval", true).add(u"bytes", stats.byteSent);
             root.query(u"send.interval", true).add(u"packets", stats.pktSent);
             root.query(u"send.interval", true).add(u"retransmit-packets", stats.pktRetrans);
             root.query(u"send.interval", true).add(u"lost-packets", stats.pktSndLoss);
             root.query(u"send.interval", true).add(u"dropped-packets", stats.pktSndDrop);
+            root.query(u"send.interval", true).add(u"unique-packets", stats.pktSentUnique);
+            root.query(u"send.interval", true).add(u"received-ack-packets", stats.pktRecvACK);
+            root.query(u"send.interval", true).add(u"received-nak-packets", stats.pktRecvNAK)
+            root.query(u"send.interval", true).add(u"filter-extra-packets", stats.pktSndFilterExtra);
+            root.query(u"send.interval", true).add(u"send-rate-mbps", stats.mbpsSendRate);
+            root.query(u"send.interval", true).add(u"send-duration-us", stats.usSndDuration);
+            root.query(u"send.interval", true).add(u"unique-byte", stats.byteSentUnique);
+            root.query(u"send.interval", true).add(u"drop-byte", stats.byteSndDrop);
+            root.query(u"send.interval", true).add(u"retransmit-byte", stats.byteRetrans);
             root.query(u"send.instant", true).add(u"delivery-delay-ms", stats.msSndTsbPdDelay);
+            root.query(u"send.instant", true).add(u"interval-packets", stats.usPktSndPeriod);
+            root.query(u"send.instant", true).add(u"flow-window-packets", stats.pktFlowWindow);
+            root.query(u"send.instant", true).add(u"congestion-window-packets", stats.pktCongestionWindow);
+            root.query(u"send.instant", true).add(u"in-flight-packets", stats.pktFlightSize);
+            root.query(u"send.instant", true).add(u"estimated-bandwidth-mbps", stats.mbpsBandwidth);
+            root.query(u"send.instant", true).add(u"avail-buffer-byte", stats.byteAvailSndBuf);
+            root.query(u"send.instant", true).add(u"max-bandwidth-mbps", stats.mbpsMaxBW);
+            root.query(u"send.instant", true).add(u"mss-byte", stats.byteMSS);
+            root.query(u"send.instant", true).add(u"snd-buffer-packets", stats.pktSndBuf);
+            root.query(u"send.instant", true).add(u"snd-buffer-byte", stats.byteSndBuf);
+            root.query(u"send.instant", true).add(u"snd-buffer-ms", stats.msSndBuf);
         }
         root.query(u"global.instant", true).add(u"rtt-ms", int64_t(stats.msRTT));
         // Generate one line.
