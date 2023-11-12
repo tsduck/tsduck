@@ -1210,11 +1210,22 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.instant", true).add(u"mss-bytes", stats.byteMSS);
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
+            root.query(u"send.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
             root.query(u"send.total", true).add(u"bytes", stats.byteSentTotal);
             root.query(u"send.total", true).add(u"packets", stats.pktSentTotal);
+            root.query(u"send.total", true).add(u"unique-packets", stats.pktSentUniqueTotalcd /);
             root.query(u"send.total", true).add(u"retransmit-packets", stats.pktRetransTotal);
             root.query(u"send.total", true).add(u"lost-packets", stats.pktSndLossTotal);
             root.query(u"send.total", true).add(u"dropped-packets", stats.pktSndDropTotal);
+            root.query(u"send.total", true).add(u"received-ack-packets", stats.pktRecvACKTotal);
+            root.query(u"send.total", true).add(u"received-nak-packets", stats.pktRecvNAKTotal);
+            root.query(u"send.total", true).add(u"send-duration-us", stats.usSndDurationTotal);
+            root.query(u"send.total", true).add(u"filter-extra-packets", stats.pktSndFilterExtraTotal);
+            root.query(u"send.total", true).add(u"unique-byte", stats.byteSentUniqueTotal);
+            root.query(u"send.total", true).add(u"restrans-byte", stats.byteRetransTotal);
+            root.query(u"send.total", true).add(u"drop-byte", stats.byteSndDropTotal);
+
+            
             root.query(u"send.interval", true).add(u"bytes", stats.byteSent);
             root.query(u"send.interval", true).add(u"packets", stats.pktSent);
             root.query(u"send.interval", true).add(u"retransmit-packets", stats.pktRetrans);
