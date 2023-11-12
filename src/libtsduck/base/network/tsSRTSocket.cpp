@@ -1182,7 +1182,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.total", true).add(u"loss-byte", stats.byteRcvLossTotal);
             root.query(u"receive.total", true).add(u"drop-byte", stats.byteRcvDropTotal);
             root.query(u"receive.total", true).add(u"undecrypted-byte", stats.byteRcvUndecryptTotal);
-            root.query(u"receive.interval", true).add(u"estimated-bandwidth", stats.mbpsRecvRate);
+            root.query(u"receive.interval", true).add(u"rate-mbps", stats.mbpsRecvRate);
             //pktRcvRetrans to be added when available same as pktRcvRetransTotal for interval
             root.query(u"receive.interval", true).add(u"bytes", stats.byteRecv);
             root.query(u"receive.interval", true).add(u"packets", stats.pktRecv);
@@ -1243,7 +1243,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"send.instant", true).add(u"flow-window-packets", stats.pktFlowWindow);
             root.query(u"send.instant", true).add(u"congestion-window-packets", stats.pktCongestionWindow);
             root.query(u"send.instant", true).add(u"in-flight-packets", stats.pktFlightSize);
-            root.query(u"send.instant", true).add(u"estimated-bandwidth-mbps", stats.mbpsBandwidth);
+            root.query(u"send.instant", true).add(u"estimated-link-bandwidth-mbps", stats.mbpsBandwidth);
             root.query(u"send.instant", true).add(u"avail-buffer-byte", stats.byteAvailSndBuf);
             root.query(u"send.instant", true).add(u"max-bandwidth-mbps", stats.mbpsMaxBW);
             root.query(u"send.instant", true).add(u"mss-byte", stats.byteMSS);
