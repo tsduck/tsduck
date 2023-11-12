@@ -8,7 +8,7 @@
 #
 #-----------------------------------------------------------------------------
 
-include Makefile.inc
+include ../../Makefile.inc
 
 VERSION = $(shell $(GET_VERSION))
 DISTRO  = $(shell $(GET_VERSION) --distro)
@@ -18,19 +18,17 @@ TMPROOT = $(INSTALLERDIR)/tmp
 
 PHONY: default installer install-installer tarball
 default: installer
-installer: rpm
 
 tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
-	$(TAR) -C $(ROOTDIR) -cpf - sample/sample-*/japanese-tables.bin \
-	    $(patsubst %,--exclude '%',.git $(shell cat .gitignore)) \
+	cd $(ROOTDIR); \
+	    $(TAR) -cpf - sample/sample-*/japanese-tables.bin \
+	    $(patsubst %,--exclude '%',.git $(shell cat $(ROOTDIR)/.gitignore)) \
 	    . | $(TAR) -C $(TMPROOT)/$(TARNAME) -xpf -
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) clean
 	$(TAR) -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)
-
-# User's RPM build area.
 
 RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
@@ -40,11 +38,10 @@ $(RPMBUILDROOT):
 # The build will take place elsewhere, reuse local Dektec Linux SDK if present.
 
 RPMBUILD ?= rpmbuild
-RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true') $(RPMBUILDFLAGS_EXTRA)
+RPMBUILDFLAGS = -ba --clean $(RPMBUILDFLAGS_EXTRA)
 RPM_ARCH = $(shell uname -m)
 
-.PHONY: rpm rpm32
-rpm: tarball $(RPMBUILDROOT)
+installer: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
 	DTAPI_ORIGIN="$(shell $(SCRIPTSDIR)/dtapi-config.sh --tarball)" \
 	  VATEK_SRC_ORIGIN="$(shell $(SCRIPTSDIR)/vatek-config.sh --src-tarball)" \
@@ -60,12 +57,10 @@ rpm: tarball $(RPMBUILDROOT)
 	      $(if $(NOCURL),-D 'nocurl 1') \
 	      $(if $(NOEDITLINE),-D 'noeditline 1') \
 	      $(if $(NOVATEK),-D 'novatek 1') \
-	      $(SCRIPTSDIR)/tsduck.spec
+	      tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(VERSION)$(DISTRO).src.rpm $(INSTALLERDIR)
-rpm32:
-	$(MAKE) rpm M32=true
 
 install-installer:
 	$(SUDO) rpm -Uvh $(INSTALLERDIR)/tsduck-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm $(INSTALLERDIR)/tsduck-devel-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm
