@@ -6,3 +6,6 @@ install as any other expensive software product.
 
 This directory contains tools and instructions to build TSDuck binary packages
 and installers on the various platforms.
+
+The script `build-remote.sh` builds the TSDuck installers on a remote system,
+either a running physical system or a local VM to start.
