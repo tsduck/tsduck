@@ -35,6 +35,12 @@ int64_t ts::json::String::toInteger(int64_t defaultValue) const
     return _value.toInteger(i) ? i : defaultValue;
 }
 
+double ts::json::String::toFloat(double defaultValue) const
+{
+    double f = 0.0;
+    return _value.toFloat(f) ? f : defaultValue;
+}
+
 bool ts::json::String::toBoolean(bool defaultValue) const
 {
     int i = 0;

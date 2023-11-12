@@ -74,38 +74,43 @@ namespace ts {
             //!
             virtual bool save(const UString& fileName, size_t indent = 2, bool stdOutputIfEmpty = false, Report& report = NULLREP);
             //!
-            //! Check if this instance a is JSON null literal.
-            //! @return True if this instance a is JSON null literal.
+            //! Check if this instance is a JSON null literal.
+            //! @return True if this instance is a JSON null literal.
             //!
             virtual bool isNull() const;
             //!
-            //! Check if this instance a is JSON true literal.
-            //! @return True if this instance a is JSON true literal.
+            //! Check if this instance is a JSON true literal.
+            //! @return True if this instance is a JSON true literal.
             //!
             virtual bool isTrue() const;
             //!
-            //! Check if this instance a is JSON false literal.
-            //! @return True if this instance a is JSON false literal.
+            //! Check if this instance is a JSON false literal.
+            //! @return True if this instance is a JSON false literal.
             //!
             virtual bool isFalse() const;
             //!
-            //! Check if this instance a is JSON number.
-            //! @return True if this instance a is JSON number.
+            //! Check if this instance is a JSON number.
+            //! @return True if this instance is a JSON number.
             //!
             virtual bool isNumber() const;
             //!
-            //! Check if this instance a is JSON string.
-            //! @return True if this instance a is JSON string.
+            //! Check if this instance is a JSON number and an integer value (an integral value).
+            //! @return True if this instance is a JSON number and an integer value.
+            //!
+            virtual bool isInteger() const;
+            //!
+            //! Check if this instance is a JSON string.
+            //! @return True if this instance is a JSON string.
             //!
             virtual bool isString() const;
             //!
-            //! Check if this instance a is JSON object.
-            //! @return True if this instance a is JSON object.
+            //! Check if this instance is a JSON object.
+            //! @return True if this instance is a JSON object.
             //!
             virtual bool isObject() const;
             //!
-            //! Check if this instance a is JSON array.
-            //! @return True if this instance a is JSON array.
+            //! Check if this instance is a JSON array.
+            //! @return True if this instance is a JSON array.
             //!
             virtual bool isArray() const;
             //!
@@ -123,6 +128,13 @@ namespace ts {
             //! Strings containing integers are converted.
             //!
             virtual int64_t toInteger(int64_t defaultValue = 0) const;
+            //!
+            //! Convert this instance to a double-precision float.
+            //! @param [in] defaultValue Default value to return when no conversion is possible.
+            //! @return The floating-point value of this instance or @a defaultValue if no conversion is possible.
+            //! Strings containing floats are converted.
+            //!
+            virtual double toFloat(double defaultValue = 0.0) const;
             //!
             //! Convert this instance to a string.
             //! @param [in] defaultValue Default value to return when no conversion is possible.

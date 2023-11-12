@@ -34,6 +34,7 @@ namespace ts {
             virtual void print(TextFormatter& output) const override;
             virtual bool toBoolean(bool defaultValue = false) const override;
             virtual int64_t toInteger(int64_t defaultValue = 0) const override;
+            virtual double toFloat(double defaultValue = 0.0) const override;
             virtual UString toString(const UString& defaultValue = UString()) const override;
         };
     }

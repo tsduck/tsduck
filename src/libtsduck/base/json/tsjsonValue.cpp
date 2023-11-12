@@ -15,13 +15,14 @@
 // Simple virtual methods
 //----------------------------------------------------------------------------
 
-bool ts::json::Value::isNull()   const { return false; }
-bool ts::json::Value::isTrue()   const { return false; }
-bool ts::json::Value::isFalse()  const { return false; }
-bool ts::json::Value::isNumber() const { return false; }
-bool ts::json::Value::isString() const { return false; }
-bool ts::json::Value::isObject() const { return false; }
-bool ts::json::Value::isArray()  const { return false; }
+bool ts::json::Value::isNull()    const { return false; }
+bool ts::json::Value::isTrue()    const { return false; }
+bool ts::json::Value::isFalse()   const { return false; }
+bool ts::json::Value::isNumber()  const { return false; }
+bool ts::json::Value::isInteger() const { return false; }
+bool ts::json::Value::isString()  const { return false; }
+bool ts::json::Value::isObject()  const { return false; }
+bool ts::json::Value::isArray()   const { return false; }
 
 bool ts::json::Value::toBoolean(bool defaultValue) const
 {
@@ -29,6 +30,11 @@ bool ts::json::Value::toBoolean(bool defaultValue) const
 }
 
 int64_t ts::json::Value::toInteger(int64_t defaultValue) const
+{
+    return defaultValue;
+}
+
+double ts::json::Value::toFloat(double defaultValue) const
 {
     return defaultValue;
 }

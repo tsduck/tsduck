@@ -18,30 +18,38 @@ namespace ts {
     namespace json {
         //!
         //! Implementation of a JSON number.
-        //! Currently, floating-point numbers are not implemented.
-        //! All JSON numbers are integers or null.
         //! @ingroup json
         //!
         class TSDUCKDLL Number : public Value
         {
         public:
             //!
-            //! Constructor.
-            //! @param [in] value Initial integer value.
+            //! Default constructor.
             //!
-            Number(int64_t value = 0) : _value(value) {}
+            Number() = default;
+
+            //!
+            //! Constructor with an integer or floating point value.
+            //! @tparam T An integer or floating point type.
+            //! @param [in] value Initial value.
+            //!
+            template <typename T, typename std::enable_if<std::is_arithmetic<T>::value, int>::type = 0>
+            Number(T value) : _integer(int64_t(value)), _float(double(value)) {}
 
             // Implementation of ts::json::Value.
             virtual Type type() const override;
             virtual bool isNumber() const override;
+            virtual bool isInteger() const override;
             virtual void print(TextFormatter& output) const override;
             virtual bool toBoolean(bool defaultValue = false) const override;
             virtual int64_t toInteger(int64_t defaultValue = 0) const override;
+            virtual double toFloat(double defaultValue = 0.0) const override;
             virtual UString toString(const UString& defaultValue = UString()) const override;
             virtual void clear() override;
 
         private:
-            int64_t _value = 0;
+            int64_t _integer = 0;
+            double _float = 0.0;
         };
     }
 }
