@@ -644,7 +644,28 @@ void JsonTest::testFactory()
     TSUNIT_ASSERT(!jv.isNull());
     TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
     TSUNIT_ASSERT(jv->isNumber());
+    TSUNIT_ASSERT(jv->isInteger());
     TSUNIT_EQUAL(1234, jv->toInteger());
+    TSUNIT_EQUAL(1234.0, jv->toFloat());
+    TSUNIT_EQUAL(u"1234", jv->toString());
+
+    jv = ts::json::Factory(ts::json::Type::Number, u"12.450");
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
+    TSUNIT_ASSERT(jv->isNumber());
+    TSUNIT_ASSERT(!jv->isInteger());
+    TSUNIT_EQUAL(12, jv->toInteger());
+    TSUNIT_EQUAL(12.45, jv->toFloat());
+    TSUNIT_EQUAL(u"12.45", jv->toString());
+
+    jv = ts::json::Factory(ts::json::Type::Number, u"-12.450");
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
+    TSUNIT_ASSERT(jv->isNumber());
+    TSUNIT_ASSERT(!jv->isInteger());
+    TSUNIT_EQUAL(-12, jv->toInteger());
+    TSUNIT_EQUAL(-12.45, jv->toFloat());
+    TSUNIT_EQUAL(u"-12.45", jv->toString());
 }
 
 void JsonTest::testQuery()

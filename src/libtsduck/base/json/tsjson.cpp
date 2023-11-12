@@ -47,8 +47,16 @@ ts::json::ValuePtr ts::json::Factory(Type type, const UString& value)
             return ValuePtr(new String(value));
         case Type::Number: {
             int64_t ivalue = 0;
-            value.toInteger(ivalue, u",");
-            return ValuePtr(new Number(ivalue));
+            double fvalue = 0.0;
+            if (value.toInteger(ivalue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+                return ValuePtr(new Number(ivalue));
+            }
+            else if (value.toFloat(fvalue)) {
+                return ValuePtr(new Number(fvalue));
+            }
+            else {
+                return ValuePtr(new Null);
+            }
         }
         case Type::Object:
             return ValuePtr(new Object);
@@ -124,7 +132,8 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
     value.clear();
 
     UString str;
-    int64_t intVal;
+    int64_t intVal = 0;
+    double floatVal= 0.0;
 
     // Leading spaces are ignored.
     parser.skipWhiteSpace();
@@ -143,8 +152,11 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
         value = new String(str);
     }
     else if (parser.parseNumericLiteral(str, false, true)) {
-        if (str.toInteger(intVal)) {
+        if (str.toInteger(intVal, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
             value = new Number(intVal);
+        }
+        else if (str.toFloat(floatVal)) {
+            value = new Number(floatVal);
         }
         else {
             // Invalid integer,

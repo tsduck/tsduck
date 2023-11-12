@@ -227,7 +227,7 @@ namespace ts {
         //! @param [in] allowFloat It true, floating point values "[-]digits[.digits][e|E[+|-]digits]" are allowed.
         //! @return True on success, false if no string literal was not found.
         //!
-        virtual bool parseNumericLiteral(UString& str, bool allowHexa = false, bool allowFloat = false);
+        virtual bool parseNumericLiteral(UString& str, bool allowHexa = false, bool allowFloat = true);
 
         //!
         //! Parse a string literal.

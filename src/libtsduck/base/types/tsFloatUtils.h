@@ -17,6 +17,22 @@
 
 namespace ts {
     //!
+    //! This template function compares two floating point values for approximated equality.
+    //! @tparam T A floating point type, any size or representation.
+    //! @param a First value to test.
+    //! @param b Second value to test.
+    //! @param epsilon The approximation tolerance.
+    //! @return True if @a a and @a b are approximately equal, false otherwise.
+    //!
+    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
+    inline bool equal_float(T a, T b, T epsilon = 2 * std::numeric_limits<T>::epsilon())
+    {
+        const T aa = std::fabs(a);
+        const T ab = std::fabs(b);
+        return std::fabs(a - b) <= ((aa < ab ? ab : aa) * epsilon);
+    }
+
+    //!
     //! This template function checks if a floating point type matches a given IEEE represenation.
     //! @tparam T An floating point type, any size or representation.
     //! @tparam storage_bits Expected size in bits of the type.

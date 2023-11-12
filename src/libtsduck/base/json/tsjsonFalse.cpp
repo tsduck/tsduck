@@ -39,6 +39,11 @@ int64_t ts::json::False::toInteger(int64_t defaultValue) const
     return 0;
 }
 
+double ts::json::False::toFloat(double defaultValue) const
+{
+    return 0.0;
+}
+
 ts::UString ts::json::False::toString(const UString& defaultValue) const
 {
     return u"false";
