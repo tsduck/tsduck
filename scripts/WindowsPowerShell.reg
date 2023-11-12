@@ -33,16 +33,3 @@ Windows Registry Editor Version 5.00
 @="Open PowerShell Here"
 [HKEY_CLASSES_ROOT\Directory\shell\powershell\command]
 @="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit -ExecutionPolicy RemoteSigned -Command Set-Location -LiteralPath \"%L\""
-
-; Define the PowerShell window properties with similar values as default PowerShell windows.
-
-[HKEY_CURRENT_USER\Console\%SystemRoot%_System32_WindowsPowerShell_v1.0_powershell.exe]
-"FaceName"="Lucida Console"
-"QuickEdit"=dword:00000001
-"HistoryBufferSize"=dword:00000064
-"HistoryNoDup"=dword:00000001
-"ScreenBufferSize"=dword:0bb80078
-"WindowSize"=dword:00320078
-"FontSize"=dword:000c0000
-"FontFamily"=dword:00000036
-"FontWeight"=dword:00000190

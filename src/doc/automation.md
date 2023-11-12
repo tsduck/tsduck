@@ -111,7 +111,7 @@ Binaries must be built for Windows (64 bits only) and a few major Linux distros
 now built for some Arm64 Linux distros.
 
 The idea is to have a central Unix system (Linux or macOS) from which the builds
-are orchestrated. The script `scripts/build-remote.sh` can be used to build
+are orchestrated. The script `pkg/build-remote.sh` can be used to build
 TSDuck binaries on various remote systems and collect the resulting installers.
 
 The remote systems can be physical systems or virtual machines running on the
@@ -128,12 +128,12 @@ repository, which calls `build-remote.sh` on all systems.
 Typical example of such a script, with one physical remote system (a Raspberry Pi)
 and 5 virtual machines on the local host:
 ~~~
-$HOME/tsduck/scripts/build-remote.sh --host raspberry
-$HOME/tsduck/scripts/build-remote.sh --host vmfedora --parallels Fedora
-$HOME/tsduck/scripts/build-remote.sh --host vmredhat --parallels RedHat
-$HOME/tsduck/scripts/build-remote.sh --host vmubuntu --parallels Ubuntu
-$HOME/tsduck/scripts/build-remote.sh --host vmdebian --parallels Debian
-$HOME/tsduck/scripts/build-remote.sh --host vmwindows --parallels Windows --windows --directory Documents/tsduck --timeout 20
+$HOME/tsduck/pkg/build-remote.sh --host raspberry
+$HOME/tsduck/pkg/build-remote.sh --host vmfedora --parallels Fedora
+$HOME/tsduck/pkg/build-remote.sh --host vmredhat --parallels RedHat
+$HOME/tsduck/pkg/build-remote.sh --host vmubuntu --parallels Ubuntu
+$HOME/tsduck/pkg/build-remote.sh --host vmdebian --parallels Debian
+$HOME/tsduck/pkg/build-remote.sh --host vmwindows --parallels Windows --windows --directory Documents/tsduck --timeout 20
 ~~~
 
 So, building a release is as simple as running that script. After a couple
@@ -148,7 +148,7 @@ some of them are missing.
 Once the binary installers are collected, simply run this command to
 create and publish the release on GitHub:
 ~~~
-.github/maintenance/release.py --create
+pkg/github/release.py --create
 ~~~
 
 The current state of the repo on GitHub is used as base for the release.
@@ -167,7 +167,7 @@ request.
 After the creation of the release on GitHub, create the pull request
 for the new TSDuck version in HomeBrew using the following command:
 ~~~
-.homebrew/brew-bump-formula-pr.sh -f
+pkg/homebrew/brew-bump-formula-pr.sh -f
 ~~~
 
 The option `-f` forces the creation of the pull request. Without it,
@@ -204,5 +204,5 @@ be automatically closed.
 
 This is achieved by the workflow `.github/workflows/cleanup-issues.yml`.
 This workflow is scheduled every week on Sunday at 02:00 UTC. It runs the Python
-script `.github/maintenance/close-pending.py` which automatically closes all issues
+script `pkg/github/close-pending.py` which automatically closes all issues
 with label "close pending" and no update within the last 150 days.

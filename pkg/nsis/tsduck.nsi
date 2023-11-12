@@ -35,7 +35,7 @@ Caption "TSDuck Installer"
 !verbose pop
 
 ; Directories.
-!define RootDir ".."
+!define RootDir "..\.."
 !define InstallerDir "${RootDir}\pkg\installers"
 !define PythonDir "${RootDir}\src\libtsduck\python"
 !define BinRoot "${BinDir}\.."
@@ -248,7 +248,7 @@ Section /o "C++ Development" SectionDevelopment
 
     ; Visual Studio property files.
     SetOutPath "$INSTDIR"
-    File "${RootDir}\scripts\tsduck.props"
+    File "${RootDir}\pkg\nsis\tsduck.props"
 
 SectionEnd
 

@@ -809,7 +809,7 @@ ifeq ($(TSPLUGINS),)
     TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))
     TSTOOLS := $(sort $(notdir $(basename $(wildcard $(TSTOOLSDIR)/ts*.cpp))))
     # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
-    # Maintenance: also update scripts/tsduck.nsi (Windows).
+    # Maintenance: also update pkg/nsis/tsduck.nsi (Windows).
     NO_TSPLUGINS := $(addprefix tsplugin_,dektec drop file fork hls http ip null psi rist skip srt table teletext)
     # Build a list of tools and plugins to not build or deinstall from the system tree.
     NO_TSTOOLS :=

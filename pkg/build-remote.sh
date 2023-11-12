@@ -14,10 +14,10 @@
 #  Sample user's script to build TSDuck binaries on four platforms, one
 #  physical Raspberry Pi and three VMWare virtual machines:
 #
-#    $HOME/tsduck/scripts/build-remote.sh --host raspberry
-#    $HOME/tsduck/scripts/build-remote.sh --host vmwindows --vmware $HOME/VM/Windows.vmwarevm/Windows.vmx --windows
-#    $HOME/tsduck/scripts/build-remote.sh --host vmfedora --vmware $HOME/VM/Fedora.vmwarevm/Fedora.vmx
-#    $HOME/tsduck/scripts/build-remote.sh --host vmubuntu --parallels Ubuntu
+#    $HOME/tsduck/pkg/build-remote.sh --host raspberry
+#    $HOME/tsduck/pkg/build-remote.sh --host vmwindows --vmware $HOME/VM/Windows.vmwarevm/Windows.vmx --windows
+#    $HOME/tsduck/pkg/build-remote.sh --host vmfedora --vmware $HOME/VM/Fedora.vmwarevm/Fedora.vmx
+#    $HOME/tsduck/pkg/build-remote.sh --host vmubuntu --parallels Ubuntu
 #
 #-----------------------------------------------------------------------------
 
@@ -291,7 +291,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
         # Build installers after updating the repository.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            ". '$REMOTE_DIR/scripts/build-installer.ps1' -GitPull -NoPause"
+            ". '$REMOTE_DIR/pkg/nsis/build-installer.ps1' -GitPull -NoPause"
 
         # Get all files from installers directory which are newer than the timestamp.
         files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \

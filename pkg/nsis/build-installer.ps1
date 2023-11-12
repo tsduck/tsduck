@@ -63,21 +63,22 @@ param(
     [switch]$Win32 = $false
 )
 
-# PowerShell execution policy.
-Set-StrictMode -Version 3
-if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
-}
-Import-Module -Force -Name "${PSScriptRoot}\tsbuild.psm1"
-
 # Get the project directories.
-$RootDir    = (Split-Path -Parent $PSScriptRoot)
-$MsvcDir    = "${PSScriptRoot}\msvc"
+$RootDir    = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+$ScriptsDir = "${RootDir}\scripts"
+$MsvcDir    = "${ScriptsDir}\msvc"
 $SrcDir     = "${RootDir}\src"
 $BinRoot    = "${RootDir}\bin"
 $BinInclude = "${BinRoot}\include"
 $JarFile    = "${BinRoot}\java\tsduck.jar"
 $InstallerDir = "${RootDir}\pkg\installers"
+
+# PowerShell execution policy.
+Set-StrictMode -Version 3
+if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
+}
+Import-Module -Force -Name "${ScriptsDir}\tsbuild.psm1"
 
 # Collect files for the installers.
 if (-not $NoInstaller) {
@@ -119,7 +120,7 @@ if (-not $NoLowPriority) {
 if (-not $NoBuild) {
     Write-Output "Compiling..."
     Push-Location
-    & "$PSScriptRoot\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority
+    & "${ScriptsDir}\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {
@@ -128,8 +129,8 @@ if (-not $NoBuild) {
 }
 
 # Get version name.
-$Version = (python "${PSScriptRoot}\get-version-from-sources.py")
-$VersionInfo = (python "${PSScriptRoot}\get-version-from-sources.py" --windows)
+$Version = (python "${ScriptsDir}\get-version-from-sources.py")
+$VersionInfo = (python "${ScriptsDir}\get-version-from-sources.py" --windows)
 
 # A function to build a binary installer.
 function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$OtherDevArch, [string]$VCRedist, [string]$HeadersDir)

@@ -303,7 +303,7 @@ execute the PowerShell script `scripts\cleanup.ps1`.
 
 ## Building the installers {#instwindows}
 
-Execute the PowerShell script `scripts\build-installer.ps1`.
+Execute the PowerShell script `pkg\nsis\build-installer.ps1`.
 By default, only the 64-bit installer is built.
 To build the two installers, for 32-bit and 64-bit systems, run the build
 script from a PowerShell window and add the option `-Win32`.

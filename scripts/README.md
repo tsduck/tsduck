@@ -60,14 +60,6 @@ files in XML format).
   automatically rebuilt by the MSBuild project and there is no need to
   explicitly run this script.
 
-- `build-installer.ps1` : This script builds the binary installers for TSDuck.
-  It automatically invokes `build.ps1`. So, to build TSDuck installers from a
-  freshly cloned repository, just run this script.
-
-- `tsduck.props` : This Visual Studio property file is installed with the TSDuck
-  development environment. It is referenced by third-party applications using
-  the TSDuck library.
-
 - `install-prerequisites.ps1` : This script downloads and installs all
   pre-requisite packages to build TSDuck on Windows.
 
@@ -89,9 +81,6 @@ scripts from the Windows explorer:
 - `cleanup.ps1`
 
 ## Project files for Linux and macOS
-
-- `build-remote.sh` : Build the TSDuck installers on a remote system, either a
-  running physical system or a local VM to start.
 
 - `install-prerequisites.sh` : This script downloads and installs all
   pre-requisite packages to build TSDuck on Linux or macOS.
@@ -115,6 +104,3 @@ scripts from the Windows explorer:
 
 - `tsduck-dev.control` : Template for Debian control file, used to create
   `.deb` packages for TSDuck development environment.
-
-- `tsduck.nsi` : Windows NSIS script to build the binary installers of
-  TSDuck. It is used by `build-installer.ps1`.
