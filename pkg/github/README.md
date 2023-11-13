@@ -2,6 +2,8 @@
 
 This directory contains scripts to maintain the TSDuck repository on GitHub.
 
+The script `release.py` is used to create and publish a new TSDuck release on GitHub.
+
 All scripts accept the following common options:
 
 - `--repo owner/name` : Alternate GitHub repo. Default: `tsduck/tsduck`.
