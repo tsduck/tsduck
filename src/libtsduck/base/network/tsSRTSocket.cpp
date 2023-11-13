@@ -1221,7 +1221,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
 #endif
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
-            root.query(u"send.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
+            root.query(u"send.total", true).add(u"elapsed-ms", stats.msTimeStamp);
             root.query(u"send.total", true).add(u"bytes", stats.byteSentTotal);
             root.query(u"send.total", true).add(u"packets", stats.pktSentTotal);
             root.query(u"send.total", true).add(u"retransmit-packets", stats.pktRetransTotal);
