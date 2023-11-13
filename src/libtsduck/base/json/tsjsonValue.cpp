@@ -37,15 +37,15 @@ size_t ts::json::Value::size() const { return 0; }
 void ts::json::Value::getNames(UStringList& names) const { names.clear(); }
 ts::json::ValuePtr ts::json::Value::extract(const UString& name) { return ValuePtr(); }
 
-void ts::json::Value::add(const UString& name, const ValuePtr& value) {}
-void ts::json::Value::add(const UString& name, int64_t value) {}
-void ts::json::Value::add(const UString& name, double value) {}
-void ts::json::Value::add(const UString& name, const UString& value) {}
+void ts::json::Value::addValue(const UString& name, const ValuePtr& value) {}
+void ts::json::Value::addInteger(const UString& name, int64_t value) {}
+void ts::json::Value::addFloat(const UString& name, double value) {}
+void ts::json::Value::addString(const UString& name, const UString& value) {}
 
-size_t ts::json::Value::set(const ValuePtr& value, size_t index) { return 0; }
-size_t ts::json::Value::set(int64_t value, size_t index) { return 0; }
-size_t ts::json::Value::set(double value, size_t index) { return 0; }
-size_t ts::json::Value::set(const UString& value, size_t index) { return 0; }
+size_t ts::json::Value::setValue(const ValuePtr& value, size_t index) { return 0; }
+size_t ts::json::Value::setInteger(int64_t value, size_t index) { return 0; }
+size_t ts::json::Value::setFloat(double value, size_t index) { return 0; }
+size_t ts::json::Value::setString(const UString& value, size_t index) { return 0; }
 
 ts::json::ValuePtr ts::json::Value::extractAt(size_t index) { return ValuePtr(); }
 const ts::json::Value& ts::json::Value::at(size_t index) const { return NullValue; }
