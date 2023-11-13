@@ -97,8 +97,8 @@ bool ts::tsswitch::EventDispatcher::signalNewInput(size_t oldPluginIndex, size_t
     }
     if (_sendUDP) {
         json::Object root;
-        root.addNumber(u"previous-input", oldPluginIndex);
-        root.addNumber(u"new-input", newPluginIndex);
+        root.add(u"previous-input", oldPluginIndex);
+        root.add(u"new-input", newPluginIndex);
         success = sendUDP(u"newinput", root) && success;
     }
     return success;

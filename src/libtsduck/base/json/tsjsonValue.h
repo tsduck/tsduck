@@ -197,13 +197,7 @@ namespace ts {
             //! @param [in] name Field name.
             //! @param [in] value Smart pointer to a JSON value. The pointed object is shared.
             //!
-            virtual void add(const UString& name, const ValuePtr& value);
-            //!
-            //! Add a 64-bit signed integer number field into an object.
-            //! @param [in] name Field name.
-            //! @param [in] value Field value.
-            //!
-            virtual void add(const UString& name, int64_t value);
+            void add(const UString& name, const ValuePtr& value) { addValue(name, value); }
             //!
             //! Add an integer number field into an object.
             //! @tparam T An integer type.
@@ -211,13 +205,7 @@ namespace ts {
             //! @param [in] value Field value.
             //!
             template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
-            void addNumber(const UString& name, T value) { add(name, int64_t(value)); }
-            //!
-            //! Add a double-precision floating-point number field into an object.
-            //! @param [in] name Field name.
-            //! @param [in] value Field value.
-            //!
-            virtual void add(const UString& name, double value);
+            void add(const UString& name, T value) { addInteger(name, int64_t(value)); }
             //!
             //! Add a floating-point number field into an object.
             //! @tparam T A floating-point type.
@@ -225,13 +213,13 @@ namespace ts {
             //! @param [in] value Field value.
             //!
             template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
-            void addNumber(const UString& name, T value) { add(name, double(value)); }
+            void add(const UString& name, T value) { addFloat(name, double(value)); }
             //!
             //! Add a string field into an object.
             //! @param [in] name Field name.
             //! @param [in] value Field value.
             //!
-            virtual void add(const UString& name, const UString& value);
+            void add(const UString& name, const UString& value) { addString(name, value); }
             //!
             //! Get an element of an array (const version).
             //! @param [in] index Index to fetch in the array.
@@ -252,14 +240,7 @@ namespace ts {
             //! @param [in] index Index to fetch in the array. If out of bound, the @a value is added at the end of the array.
             //! @return The actual index of the added value.
             //!
-            virtual size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max());
-            //!
-            //! Set a 64-bit signed integer number element of an array.
-            //! @param [in] value Value to set.
-            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
-            //! @return The actual index of the added value.
-            //!
-            virtual size_t set(int64_t value, size_t index = std::numeric_limits<size_t>::max());
+            size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max()) { return setValue(value, index); }
             //!
             //! Set an integer number element of an array.
             //! @tparam T An integer type.
@@ -268,14 +249,7 @@ namespace ts {
             //! @return The actual index of the added value.
             //!
             template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
-            size_t setNumber(T value, size_t index = std::numeric_limits<size_t>::max()) { return set(int64_t(value), index); }
-            //!
-            //! Set a double-precision floating-point number element of an array.
-            //! @param [in] value Value to set.
-            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
-            //! @return The actual index of the added value.
-            //!
-            virtual size_t set(double value, size_t index = std::numeric_limits<size_t>::max());
+            size_t set(T value, size_t index = std::numeric_limits<size_t>::max()) { return setInteger(int64_t(value), index); }
             //!
             //! Set a floating-point number element of an array.
             //! @tparam T A floating-point type.
@@ -284,14 +258,14 @@ namespace ts {
             //! @return The actual index of the added value.
             //!
             template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
-            size_t setNumber(T value, size_t index = std::numeric_limits<size_t>::max()) { return set(double(value), index); }
+            size_t set(T value, size_t index = std::numeric_limits<size_t>::max()) { return setFloat(double(value), index); }
             //!
             //! Set a string element of an array.
             //! @param [in] value Value to set.
             //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
             //! @return The actual index of the added value.
             //!
-            virtual size_t set(const UString& value, size_t index = std::numeric_limits<size_t>::max());
+            size_t set(const UString& value, size_t index = std::numeric_limits<size_t>::max()) { return setString(value, index); }
             //!
             //! Erase elements from an array.
             //! @param [in] index Index to erase in the array. Ignored if out of bound.
@@ -328,6 +302,60 @@ namespace ts {
             //! not be created, return a reference to a null JSON.
             //!
             virtual Value& query(const UString& path, bool create = false, Type type = Type::Object);
+
+        protected:
+            //!
+            //! Add a field into an object.
+            //! @param [in] name Field name.
+            //! @param [in] value Smart pointer to a JSON value. The pointed object is shared.
+            //!
+            virtual void addValue(const UString& name, const ValuePtr& value);
+            //!
+            //! Add a 64-bit signed integer number field into an object.
+            //! @param [in] name Field name.
+            //! @param [in] value Field value.
+            //!
+            virtual void addInteger(const UString& name, int64_t value);
+            //!
+            //! Add a double-precision floating-point number field into an object.
+            //! @param [in] name Field name.
+            //! @param [in] value Field value.
+            //!
+            virtual void addFloat(const UString& name, double value);
+            //!
+            //! Add a string field into an object.
+            //! @param [in] name Field name.
+            //! @param [in] value Field value.
+            //!
+            virtual void addString(const UString& name, const UString& value);
+            //!
+            //! Set an element of an array.
+            //! @param [in] value Smart pointer to a JSON value. The pointed object is shared.
+            //! @param [in] index Index to fetch in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
+            //!
+            virtual size_t setValue(const ValuePtr& value, size_t index);
+            //!
+            //! Set a 64-bit signed integer number element of an array.
+            //! @param [in] value Value to set.
+            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
+            //!
+            virtual size_t setInteger(int64_t value, size_t index);
+            //!
+            //! Set a double-precision floating-point number element of an array.
+            //! @param [in] value Value to set.
+            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
+            //!
+            virtual size_t setFloat(double value, size_t index);
+            //!
+            //! Set a string element of an array.
+            //! @param [in] value Value to set.
+            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
+            //!
+            virtual size_t setString(const UString& value, size_t index);
         };
     }
 }

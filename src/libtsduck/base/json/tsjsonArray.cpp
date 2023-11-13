@@ -58,7 +58,7 @@ ts::json::Value& ts::json::Array::at(size_t index)
     }
 }
 
-size_t ts::json::Array::set(const ValuePtr& value, size_t index)
+size_t ts::json::Array::setValue(const ValuePtr& value, size_t index)
 {
     // If the pointer is null, explicitly create a "null" value.
     const ValuePtr actualValue(value.isNull() ? ValuePtr(new Null) : value);
@@ -73,19 +73,19 @@ size_t ts::json::Array::set(const ValuePtr& value, size_t index)
     }
 }
 
-size_t ts::json::Array::set(int64_t value, size_t index)
+size_t ts::json::Array::setInteger(int64_t value, size_t index)
 {
-    return set(new Number(value), index);
+    return setValue(new Number(value), index);
 }
 
-size_t ts::json::Array::set(double value, size_t index)
+size_t ts::json::Array::setFloat(double value, size_t index)
 {
-    return set(new Number(value), index);
+    return setValue(new Number(value), index);
 }
 
-size_t ts::json::Array::set(const UString& value, size_t index)
+size_t ts::json::Array::setString(const UString& value, size_t index)
 {
-    return set(new String(value), index);
+    return setValue(new String(value), index);
 }
 
 void ts::json::Array::erase(size_t index, size_t count)

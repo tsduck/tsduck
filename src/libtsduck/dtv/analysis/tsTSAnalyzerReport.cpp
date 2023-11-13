@@ -1087,63 +1087,63 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
 
     // Add transport stream description
     if (_ts_id_valid) {
-        root.query(u"ts", true).addNumber(u"id", _ts_id);
+        root.query(u"ts", true).add(u"id", _ts_id);
     }
-    root.query(u"ts", true).addNumber(u"bytes", PKT_SIZE * _ts_pkt_cnt);
-    root.query(u"ts", true).addNumber(u"bitrate", _ts_bitrate.toInt());
-    root.query(u"ts", true).addNumber(u"bitrate-204", ToBitrate204(_ts_bitrate).toInt());
-    root.query(u"ts", true).addNumber(u"user-bitrate", _ts_user_bitrate.toInt());
-    root.query(u"ts", true).addNumber(u"user-bitrate-204", ToBitrate204(_ts_user_bitrate).toInt());
-    root.query(u"ts", true).addNumber(u"pcr-bitrate", _ts_pcr_bitrate_188.toInt());
-    root.query(u"ts", true).addNumber(u"pcr-bitrate-204", _ts_pcr_bitrate_204.toInt());
-    root.query(u"ts", true).addNumber(u"duration", _duration / 1000);
+    root.query(u"ts", true).add(u"bytes", PKT_SIZE * _ts_pkt_cnt);
+    root.query(u"ts", true).add(u"bitrate", _ts_bitrate.toInt());
+    root.query(u"ts", true).add(u"bitrate-204", ToBitrate204(_ts_bitrate).toInt());
+    root.query(u"ts", true).add(u"user-bitrate", _ts_user_bitrate.toInt());
+    root.query(u"ts", true).add(u"user-bitrate-204", ToBitrate204(_ts_user_bitrate).toInt());
+    root.query(u"ts", true).add(u"pcr-bitrate", _ts_pcr_bitrate_188.toInt());
+    root.query(u"ts", true).add(u"pcr-bitrate-204", _ts_pcr_bitrate_204.toInt());
+    root.query(u"ts", true).add(u"duration", _duration / 1000);
     if (!_country_code.empty()) {
         root.query(u"ts", true).add(u"country", _country_code);
     }
 
-    root.query(u"ts.services", true).addNumber(u"total", _services.size());
-    root.query(u"ts.services", true).addNumber(u"clear", _services.size() - _scrambled_services_cnt);
-    root.query(u"ts.services", true).addNumber(u"scrambled", _scrambled_services_cnt);
+    root.query(u"ts.services", true).add(u"total", _services.size());
+    root.query(u"ts.services", true).add(u"clear", _services.size() - _scrambled_services_cnt);
+    root.query(u"ts.services", true).add(u"scrambled", _scrambled_services_cnt);
 
-    root.query(u"ts.packets", true).addNumber(u"total", _ts_pkt_cnt);
-    root.query(u"ts.packets", true).addNumber(u"invalid-syncs", _invalid_sync);
-    root.query(u"ts.packets", true).addNumber(u"transport-errors", _transport_errors);
-    root.query(u"ts.packets", true).addNumber(u"suspect-ignored", _suspect_ignored);
+    root.query(u"ts.packets", true).add(u"total", _ts_pkt_cnt);
+    root.query(u"ts.packets", true).add(u"invalid-syncs", _invalid_sync);
+    root.query(u"ts.packets", true).add(u"transport-errors", _transport_errors);
+    root.query(u"ts.packets", true).add(u"suspect-ignored", _suspect_ignored);
 
     // Add PID's info.
-    root.query(u"ts.pids", true).addNumber(u"total", _pid_cnt);
-    root.query(u"ts.pids", true).addNumber(u"clear", _pid_cnt - _scrambled_pid_cnt);
-    root.query(u"ts.pids", true).addNumber(u"scrambled", _scrambled_pid_cnt);
-    root.query(u"ts.pids", true).addNumber(u"pcr", _pcr_pid_cnt);
-    root.query(u"ts.pids", true).addNumber(u"unreferenced", _unref_pid_cnt);
+    root.query(u"ts.pids", true).add(u"total", _pid_cnt);
+    root.query(u"ts.pids", true).add(u"clear", _pid_cnt - _scrambled_pid_cnt);
+    root.query(u"ts.pids", true).add(u"scrambled", _scrambled_pid_cnt);
+    root.query(u"ts.pids", true).add(u"pcr", _pcr_pid_cnt);
+    root.query(u"ts.pids", true).add(u"unreferenced", _unref_pid_cnt);
 
     // Global PID's (ie. not attached to a service)
-    root.query(u"ts.pids.global", true).addNumber(u"total", _global_pid_cnt);
-    root.query(u"ts.pids.global", true).addNumber(u"clear", _global_pid_cnt - _global_scr_pids);
-    root.query(u"ts.pids.global", true).addNumber(u"scrambled", _global_scr_pids);
-    root.query(u"ts.pids.global", true).addNumber(u"packets", _global_pkt_cnt);
-    root.query(u"ts.pids.global", true).addNumber(u"bitrate", _global_bitrate.toInt());
-    root.query(u"ts.pids.global", true).addNumber(u"bitrate-204", ToBitrate204(_global_bitrate).toInt());
+    root.query(u"ts.pids.global", true).add(u"total", _global_pid_cnt);
+    root.query(u"ts.pids.global", true).add(u"clear", _global_pid_cnt - _global_scr_pids);
+    root.query(u"ts.pids.global", true).add(u"scrambled", _global_scr_pids);
+    root.query(u"ts.pids.global", true).add(u"packets", _global_pkt_cnt);
+    root.query(u"ts.pids.global", true).add(u"bitrate", _global_bitrate.toInt());
+    root.query(u"ts.pids.global", true).add(u"bitrate-204", ToBitrate204(_global_bitrate).toInt());
     root.query(u"ts.pids.global", true).add(u"is-scrambled", json::Bool(_global_scr_pids > 0));
     for (const auto& it : _pids) {
         const PIDContext& pc(*it.second);
         if (pc.referenced && pc.services.size() == 0 && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
-            root.query(u"ts.pids.global.pids", true, json::Type::Array).setNumber(pc.pid);
+            root.query(u"ts.pids.global.pids", true, json::Type::Array).set(pc.pid);
         }
     }
 
     // Unreferenced PIDs
-    root.query(u"ts.pids.unreferenced", true).addNumber(u"total", _unref_pid_cnt);
-    root.query(u"ts.pids.unreferenced", true).addNumber(u"clear", _unref_pid_cnt - _unref_scr_pids);
-    root.query(u"ts.pids.unreferenced", true).addNumber(u"scrambled", _unref_scr_pids);
-    root.query(u"ts.pids.unreferenced", true).addNumber(u"packets", _unref_pkt_cnt);
-    root.query(u"ts.pids.unreferenced", true).addNumber(u"bitrate", _unref_bitrate.toInt());
-    root.query(u"ts.pids.unreferenced", true).addNumber(u"bitrate-204", ToBitrate204(_unref_bitrate).toInt());
+    root.query(u"ts.pids.unreferenced", true).add(u"total", _unref_pid_cnt);
+    root.query(u"ts.pids.unreferenced", true).add(u"clear", _unref_pid_cnt - _unref_scr_pids);
+    root.query(u"ts.pids.unreferenced", true).add(u"scrambled", _unref_scr_pids);
+    root.query(u"ts.pids.unreferenced", true).add(u"packets", _unref_pkt_cnt);
+    root.query(u"ts.pids.unreferenced", true).add(u"bitrate", _unref_bitrate.toInt());
+    root.query(u"ts.pids.unreferenced", true).add(u"bitrate-204", ToBitrate204(_unref_bitrate).toInt());
     root.query(u"ts.pids.unreferenced", true).add(u"is-scrambled", json::Bool(_unref_scr_pids > 0));
     for (const auto& it : _pids) {
         const PIDContext& pc (*it.second);
         if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
-            root.query(u"ts.pids.unreferenced.pids", true, json::Type::Array).setNumber(pc.pid);
+            root.query(u"ts.pids.unreferenced.pids", true, json::Type::Array).set(pc.pid);
         }
     }
 
@@ -1165,32 +1165,32 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     for (const auto& it : _services) {
         const ServiceContext& sv(*it.second);
         json::Value& jv(root.query(u"services[]", true));
-        jv.addNumber(u"id", sv.service_id);
+        jv.add(u"id", sv.service_id);
         jv.add(u"provider", sv.getProvider());
         jv.add(u"name", sv.getName());
-        jv.addNumber(u"type", sv.service_type);
+        jv.add(u"type", sv.service_type);
         jv.add(u"type-name", names::ServiceType(sv.service_type));
-        jv.addNumber(u"tsid", _ts_id);
-        jv.addNumber(u"original-network-id", sv.orig_netw_id);
+        jv.add(u"tsid", _ts_id);
+        jv.add(u"original-network-id", sv.orig_netw_id);
         jv.add(u"is-scrambled", json::Bool(sv.scrambled_pid_cnt > 0));
-        jv.query(u"components", true).addNumber(u"total", sv.pid_cnt);
-        jv.query(u"components", true).addNumber(u"clear", sv.pid_cnt - sv.scrambled_pid_cnt);
-        jv.query(u"components", true).addNumber(u"scrambled", sv.scrambled_pid_cnt);
-        jv.addNumber(u"packets", sv.ts_pkt_cnt);
-        jv.addNumber(u"bitrate", sv.bitrate.toInt());
-        jv.addNumber(u"bitrate-204", ToBitrate204(sv.bitrate).toInt());
+        jv.query(u"components", true).add(u"total", sv.pid_cnt);
+        jv.query(u"components", true).add(u"clear", sv.pid_cnt - sv.scrambled_pid_cnt);
+        jv.query(u"components", true).add(u"scrambled", sv.scrambled_pid_cnt);
+        jv.add(u"packets", sv.ts_pkt_cnt);
+        jv.add(u"bitrate", sv.bitrate.toInt());
+        jv.add(u"bitrate-204", ToBitrate204(sv.bitrate).toInt());
         jv.add(u"ssu", json::Bool(sv.carry_ssu));
         jv.add(u"t2mi", json::Bool(sv.carry_t2mi));
         if (sv.pmt_pid != 0) {
-            jv.addNumber(u"pmt-pid", sv.pmt_pid);
+            jv.add(u"pmt-pid", sv.pmt_pid);
         }
         if (sv.pcr_pid != 0 && sv.pcr_pid != PID_NULL) {
-            jv.addNumber(u"pcr-pid", sv.pcr_pid);
+            jv.add(u"pcr-pid", sv.pcr_pid);
         }
         for (const auto& it_pid : _pids) {
             if (it_pid.second->services.count(sv.service_id) != 0) {
                 // This PID belongs to the service
-                jv.query(u"pids", true, json::Type::Array).setNumber(it_pid.first);
+                jv.query(u"pids", true, json::Type::Array).set(it_pid.first);
             }
         }
     }
@@ -1202,7 +1202,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
             continue;
         }
         json::Value& jv(root.query(u"pids[]", true));
-        jv.addNumber(u"id", pc.pid);
+        jv.add(u"id", pc.pid);
         jv.add(u"description", pc.fullDescription(true));
         jv.add(u"pmt", json::Bool(pc.is_pmt_pid));
         jv.add(u"audio", json::Bool(pc.carry_audio));
@@ -1210,17 +1210,17 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.add(u"ecm", json::Bool(pc.carry_ecm));
         jv.add(u"emm", json::Bool(pc.carry_emm));
         if (pc.cas_id != 0) {
-            jv.addNumber(u"cas", pc.cas_id);
+            jv.add(u"cas", pc.cas_id);
         }
         for (const auto& it2 : pc.cas_operators) {
-            jv.query(u"operators", true, json::Type::Array).setNumber(it2);
+            jv.query(u"operators", true, json::Type::Array).set(it2);
         }
         jv.add(u"is-scrambled", json::Bool(pc.scrambled));
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {
-            jv.addNumber(u"crypto-period", ((pc.crypto_period * PKT_SIZE_BITS) / _ts_bitrate).toInt());
+            jv.add(u"crypto-period", ((pc.crypto_period * PKT_SIZE_BITS) / _ts_bitrate).toInt());
         }
         if (pc.same_stream_id) {
-            jv.addNumber(u"pes-stream-id", pc.pes_stream_id);
+            jv.add(u"pes-stream-id", pc.pes_stream_id);
         }
         if (!pc.languages.empty()) {
             // First language as a string (legacy compatibility).
@@ -1230,52 +1230,52 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
                 jv.query(u"languages", true, json::Type::Array).set(lang);
             }
         }
-        jv.addNumber(u"service-count", pc.services.size());
+        jv.add(u"service-count", pc.services.size());
         jv.add(u"unreferenced", json::Bool(!pc.referenced));
         jv.add(u"global", json::Bool(pc.services.size() == 0));
         for (const auto& it1 : pc.services) {
-            jv.query(u"services", true, json::Type::Array).setNumber(it1);
+            jv.query(u"services", true, json::Type::Array).set(it1);
         }
         for (const auto& it1 : pc.ssu_oui) {
-            jv.query(u"ssu-oui", true, json::Type::Array).setNumber(it1);
+            jv.query(u"ssu-oui", true, json::Type::Array).set(it1);
         }
         jv.add(u"t2mi", json::Bool(pc.carry_t2mi));
         for (const auto& it1 : pc.t2mi_plp_ts) {
-            jv.query(u"plp", true, json::Type::Array).setNumber(it1.first);
+            jv.query(u"plp", true, json::Type::Array).set(it1.first);
         }
-        jv.addNumber(u"bitrate", pc.bitrate.toInt());
-        jv.addNumber(u"bitrate-204", ToBitrate204(pc.bitrate).toInt());
-        jv.query(u"packets", true).addNumber(u"total", pc.ts_pkt_cnt);
-        jv.query(u"packets", true).addNumber(u"clear", pc.ts_pkt_cnt - pc.ts_sc_cnt - pc.inv_ts_sc_cnt);
-        jv.query(u"packets", true).addNumber(u"scrambled", pc.ts_sc_cnt);
-        jv.query(u"packets", true).addNumber(u"invalid-scrambling", pc.inv_ts_sc_cnt);
-        jv.query(u"packets", true).addNumber(u"af", pc.ts_af_cnt);
-        jv.query(u"packets", true).addNumber(u"pcr", pc.pcr_cnt);
-        jv.query(u"packets", true).addNumber(u"pts", pc.pts_cnt);
-        jv.query(u"packets", true).addNumber(u"dts", pc.dts_cnt);
-        jv.query(u"packets", true).addNumber(u"pcr-leap", pc.pcr_leap_cnt);
-        jv.query(u"packets", true).addNumber(u"pts-leap", pc.pts_leap_cnt);
-        jv.query(u"packets", true).addNumber(u"dts-leap", pc.dts_leap_cnt);
-        jv.query(u"packets", true).addNumber(u"discontinuities", pc.unexp_discont);
-        jv.query(u"packets", true).addNumber(u"duplicated", pc.duplicated);
+        jv.add(u"bitrate", pc.bitrate.toInt());
+        jv.add(u"bitrate-204", ToBitrate204(pc.bitrate).toInt());
+        jv.query(u"packets", true).add(u"total", pc.ts_pkt_cnt);
+        jv.query(u"packets", true).add(u"clear", pc.ts_pkt_cnt - pc.ts_sc_cnt - pc.inv_ts_sc_cnt);
+        jv.query(u"packets", true).add(u"scrambled", pc.ts_sc_cnt);
+        jv.query(u"packets", true).add(u"invalid-scrambling", pc.inv_ts_sc_cnt);
+        jv.query(u"packets", true).add(u"af", pc.ts_af_cnt);
+        jv.query(u"packets", true).add(u"pcr", pc.pcr_cnt);
+        jv.query(u"packets", true).add(u"pts", pc.pts_cnt);
+        jv.query(u"packets", true).add(u"dts", pc.dts_cnt);
+        jv.query(u"packets", true).add(u"pcr-leap", pc.pcr_leap_cnt);
+        jv.query(u"packets", true).add(u"pts-leap", pc.pts_leap_cnt);
+        jv.query(u"packets", true).add(u"dts-leap", pc.dts_leap_cnt);
+        jv.query(u"packets", true).add(u"discontinuities", pc.unexp_discont);
+        jv.query(u"packets", true).add(u"duplicated", pc.duplicated);
         if (pc.carry_pes) {
-            jv.addNumber(u"pes", pc.pl_start_cnt);
-            jv.addNumber(u"invalid-pes-prefix", pc.inv_pes_start);
+            jv.add(u"pes", pc.pl_start_cnt);
+            jv.add(u"invalid-pes-prefix", pc.inv_pes_start);
         }
         else {
-            jv.addNumber(u"unit-start", pc.unit_start_cnt);
+            jv.add(u"unit-start", pc.unit_start_cnt);
         }
         if (pc.first_pcr != INVALID_PCR) {
-            jv.addNumber(u"first-pcr", pc.first_pcr);
-            jv.addNumber(u"last-pcr", pc.last_pcr);
+            jv.add(u"first-pcr", pc.first_pcr);
+            jv.add(u"last-pcr", pc.last_pcr);
         }
         if (pc.first_pts != INVALID_PTS) {
-            jv.addNumber(u"first-pts", pc.first_pts);
-            jv.addNumber(u"last-pts", pc.last_pts);
+            jv.add(u"first-pts", pc.first_pts);
+            jv.add(u"last-pts", pc.last_pts);
         }
         if (pc.first_dts != INVALID_DTS) {
-            jv.addNumber(u"first-dts", pc.first_dts);
-            jv.addNumber(u"last-dts", pc.last_dts);
+            jv.add(u"first-dts", pc.first_dts);
+            jv.add(u"last-dts", pc.last_dts);
         }
     }
 
@@ -1285,27 +1285,27 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         for (const auto& it : pc.sections) {
             const ETIDContext& etc(*it.second);
             json::Value& jv(root.query(u"tables[]", true));
-            jv.addNumber(u"pid", pc.pid);
-            jv.addNumber(u"tid", etc.etid.tid());
+            jv.add(u"pid", pc.pid);
+            jv.add(u"tid", etc.etid.tid());
             if (etc.etid.isLongSection()) {
-                jv.addNumber(u"tid-ext", etc.etid.tidExt());
+                jv.add(u"tid-ext", etc.etid.tidExt());
             }
-            jv.addNumber(u"tables", etc.table_count);
-            jv.addNumber(u"sections", etc.section_count);
-            jv.addNumber(u"repetition-pkt", etc.repetition_ts);
-            jv.addNumber(u"min-repetition-pkt", etc.min_repetition_ts);
-            jv.addNumber(u"max-repetition-pkt", etc.max_repetition_ts);
+            jv.add(u"tables", etc.table_count);
+            jv.add(u"sections", etc.section_count);
+            jv.add(u"repetition-pkt", etc.repetition_ts);
+            jv.add(u"min-repetition-pkt", etc.min_repetition_ts);
+            jv.add(u"max-repetition-pkt", etc.max_repetition_ts);
             if (_ts_bitrate != 0) {
-                jv.addNumber(u"repetition-ms", PacketInterval(_ts_bitrate, etc.repetition_ts));
-                jv.addNumber(u"min-repetition-ms", PacketInterval(_ts_bitrate, etc.min_repetition_ts));
-                jv.addNumber(u"max-repetition-ms", PacketInterval(_ts_bitrate, etc.max_repetition_ts));
+                jv.add(u"repetition-ms", PacketInterval(_ts_bitrate, etc.repetition_ts));
+                jv.add(u"min-repetition-ms", PacketInterval(_ts_bitrate, etc.min_repetition_ts));
+                jv.add(u"max-repetition-ms", PacketInterval(_ts_bitrate, etc.max_repetition_ts));
             }
             if (etc.versions.any()) {
-                jv.addNumber(u"first-version", etc.first_version);
-                jv.addNumber(u"last-version", etc.last_version);
+                jv.add(u"first-version", etc.first_version);
+                jv.add(u"last-version", etc.last_version);
                 for (size_t i = 0; i < etc.versions.size(); ++i) {
                     if (etc.versions.test(i)) {
-                        jv.query(u"versions", true, json::Type::Array).setNumber(i);
+                        jv.query(u"versions", true, json::Type::Array).set(i);
                     }
                 }
             }

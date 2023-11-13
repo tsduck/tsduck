@@ -88,25 +88,25 @@ ts::json::ValuePtr ts::json::Object::extract(const UString& name)
     return result;
 }
 
-void ts::json::Object::add(const UString& name, const ValuePtr& value)
+void ts::json::Object::addValue(const UString& name, const ValuePtr& value)
 {
     // If the pointer is null, explicitly create a "null" value.
     _fields[name] = value.isNull() ? ValuePtr(new Null) : value;
 }
 
-void ts::json::Object::add(const UString& name, int64_t value)
+void ts::json::Object::addInteger(const UString& name, int64_t value)
 {
-    add(name, ValuePtr(new Number(value)));
+    addValue(name, ValuePtr(new Number(value)));
 }
 
-void ts::json::Object::add(const UString& name, double value)
+void ts::json::Object::addFloat(const UString& name, double value)
 {
-    add(name, ValuePtr(new Number(value)));
+    addValue(name, ValuePtr(new Number(value)));
 }
 
-void ts::json::Object::add(const UString& name, const UString& value)
+void ts::json::Object::addString(const UString& name, const UString& value)
 {
-    add(name, ValuePtr(new String(value)));
+    addValue(name, ValuePtr(new String(value)));
 }
 
 void ts::json::Object::getNames(UStringList& names) const
