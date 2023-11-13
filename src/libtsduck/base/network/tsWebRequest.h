@@ -156,6 +156,12 @@ namespace ts {
         void setUserAgent(const UString& name = UString());
 
         //!
+        //! Enable compression.
+        //! Compression is disabled by default.
+        //!
+        void enableCompression();
+
+        //!
         //! Get the current user agent name to use in HTTP headers.
         //! @return A constant reference to the user agent name to use in HTTP headers.
         //!
@@ -351,6 +357,7 @@ namespace ts {
         uint16_t      _proxyPort = 0;
         UString       _proxyUser {};
         UString       _proxyPassword {};
+        bool          _useCompression = false;
         UString       _cookiesFileName {};
         bool          _useCookies = false;
         bool          _deleteCookiesFile = false; // delete the cookies file on close
