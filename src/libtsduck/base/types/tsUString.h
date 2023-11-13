@@ -2938,7 +2938,8 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
         else if (decimalSeparators.contain(*start)) {
             // Found a decimal point. Only one is allowed.
             // A decimal point is allowed only in base 10.
-            if (dec_found || base != 10) {
+            // By default (decimal == 0), no decimal point is allowed.
+            if (dec_found || base != 10 || decimals == 0) {
                 return false;
             }
             dec_found = true;

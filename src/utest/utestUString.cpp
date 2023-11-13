@@ -1070,8 +1070,14 @@ void UStringTest::testToInteger()
     TSUNIT_ASSERT(ts::UString(u"2.345678").toInteger(i, u",", 3));
     TSUNIT_EQUAL(2345, i);
 
+    TSUNIT_ASSERT(!ts::UString(u"2.345678").toInteger(i));
+    TSUNIT_EQUAL(2, i);
+
     TSUNIT_ASSERT(ts::UString(u" -2.345678").toInteger(i, u",", 4));
     TSUNIT_EQUAL(-23456, i);
+
+    TSUNIT_ASSERT(!ts::UString(u" -2.345678").toInteger(i));
+    TSUNIT_EQUAL(-2, i);
 
     TSUNIT_ASSERT(ts::UString(u"-32768").toInteger(i));
     TSUNIT_EQUAL(-32768, i);
@@ -2197,6 +2203,9 @@ void UStringTest::testToFloat()
 
     TSUNIT_ASSERT(!ts::UString(u"1.2").toFloat(val, -1.0, 1.0));
     TSUNIT_EQUAL(1.2, val);
+
+    TSUNIT_ASSERT(ts::UString(u"11").toFloat(val));
+    TSUNIT_EQUAL(11.0, val);
 }
 
 void UStringTest::testSuperCompare()

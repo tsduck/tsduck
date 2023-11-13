@@ -39,6 +39,7 @@ public:
     virtual void afterTest() override;
 
     void testSimple();
+    void testNumbers();
     void testGitHub();
     void testFactory();
     void testQuery();
@@ -47,6 +48,7 @@ public:
 
     TSUNIT_TEST_BEGIN(JsonTest);
     TSUNIT_TEST(testSimple);
+    TSUNIT_TEST(testNumbers);
     TSUNIT_TEST(testGitHub);
     TSUNIT_TEST(testFactory);
     TSUNIT_TEST(testQuery);
@@ -138,6 +140,50 @@ void JsonTest::testSimple()
         u"    \"foo\": \"bar\"\n"
         u"  }\n"
         u"]",
+        jv->printed());
+}
+
+void JsonTest::testNumbers()
+{
+    static const ts::UChar* response = u"{\"a\": 12, \"b\": 1.23, \"c\": 1e-2, \"d\": 1E2}";
+
+    ts::json::ValuePtr jv;
+    TSUNIT_ASSERT(ts::json::Parse(jv, response, CERR));
+    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv->isObject());
+
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->value(u"a").type());
+    TSUNIT_ASSERT(jv->value(u"a").isInteger());
+    TSUNIT_EQUAL(12, jv->value(u"a").toInteger());
+    TSUNIT_EQUAL(12.0, jv->value(u"a").toFloat());
+
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->value(u"a").type());
+    TSUNIT_ASSERT(jv->value(u"a").isInteger());
+    TSUNIT_EQUAL(12, jv->value(u"a").toInteger());
+    TSUNIT_EQUAL(12.0, jv->value(u"a").toFloat());
+
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->value(u"b").type());
+    TSUNIT_ASSERT(!jv->value(u"b").isInteger());
+    TSUNIT_EQUAL(1, jv->value(u"b").toInteger());
+    TSUNIT_EQUAL(1.23, jv->value(u"b").toFloat());
+
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->value(u"c").type());
+    TSUNIT_ASSERT(!jv->value(u"c").isInteger());
+    TSUNIT_EQUAL(0, jv->value(u"c").toInteger());
+    TSUNIT_EQUAL(0.01, jv->value(u"c").toFloat());
+
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->value(u"d").type());
+    TSUNIT_ASSERT(jv->value(u"d").isInteger());
+    TSUNIT_EQUAL(100, jv->value(u"d").toInteger());
+    TSUNIT_EQUAL(100.0, jv->value(u"d").toFloat());
+
+    TSUNIT_EQUAL(
+        u"{\n"
+        u"  \"a\": 12,\n"
+        u"  \"b\": 1.23,\n"
+        u"  \"c\": 0.01,\n"
+        u"  \"d\": 100\n"
+        u"}",
         jv->printed());
 }
 

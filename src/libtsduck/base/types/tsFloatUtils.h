@@ -18,7 +18,7 @@
 namespace ts {
     //!
     //! This template function compares two floating point values for approximated equality.
-    //! @tparam T A floating point type, any size or representation.
+    //! @tparam T A floating point type.
     //! @param a First value to test.
     //! @param b Second value to test.
     //! @param epsilon The approximation tolerance.

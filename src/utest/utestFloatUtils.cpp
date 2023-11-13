@@ -29,6 +29,7 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
+    void testEqualFloat();
     void testFloat32();
     void testFloat64();
     void testGetFloat32LE();
@@ -41,6 +42,7 @@ public:
     void testPutFloat64BE();
 
     TSUNIT_TEST_BEGIN(FloatUtilsTest);
+    TSUNIT_TEST(testEqualFloat);
     TSUNIT_TEST(testFloat32);
     TSUNIT_TEST(testFloat64);
     TSUNIT_TEST(testGetFloat32LE);
@@ -75,6 +77,18 @@ void FloatUtilsTest::afterTest()
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
+
+void FloatUtilsTest::testEqualFloat()
+{
+    double d1 = 1.0;
+    double d2 = d1 + std::numeric_limits<double>::epsilon();
+    double d3 = 1.00001;
+
+    TSUNIT_ASSERT(ts::equal_float(d1, 1.0));
+    TSUNIT_ASSERT(ts::equal_float(d1, d1));
+    TSUNIT_ASSERT(ts::equal_float(d1, d2));
+    TSUNIT_ASSERT(!ts::equal_float(d1, d3));
+}
 
 void FloatUtilsTest::testFloat32()
 {
