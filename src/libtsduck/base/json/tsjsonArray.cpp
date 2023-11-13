@@ -78,6 +78,11 @@ size_t ts::json::Array::set(int64_t value, size_t index)
     return set(new Number(value), index);
 }
 
+size_t ts::json::Array::set(double value, size_t index)
+{
+    return set(new Number(value), index);
+}
+
 size_t ts::json::Array::set(const UString& value, size_t index)
 {
     return set(new String(value), index);

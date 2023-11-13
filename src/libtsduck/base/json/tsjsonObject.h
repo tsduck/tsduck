@@ -38,6 +38,7 @@ namespace ts {
             virtual ValuePtr extract(const UString& name) override;
             virtual void add(const UString& name, const ValuePtr& value) override;
             virtual void add(const UString& name, int64_t value) override;
+            virtual void add(const UString& name, double value) override;
             virtual void add(const UString& name, const UString& value) override;
             virtual void clear() override;
             virtual void getNames(UStringList& names) const override;
