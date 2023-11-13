@@ -1169,7 +1169,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
         // Statistics in JSON format.
         json::Object root;
         if ((mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE) {
-            root.query(u"receive.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
+            root.query(u"receive.total", true).add(u"elapsed-ms", stats.msTimeStamp);
             root.query(u"receive.total", true).add(u"bytes", stats.byteRecvTotal);
             root.query(u"receive.total", true).add(u"packets", stats.pktRecvTotal);
             root.query(u"receive.total", true).add(u"lost-packets", stats.pktRcvLossTotal);
