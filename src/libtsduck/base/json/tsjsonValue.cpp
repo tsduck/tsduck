@@ -12,7 +12,7 @@
 
 
 //----------------------------------------------------------------------------
-// Simple virtual methods
+// Default (empty) implementation of simple virtual methods
 //----------------------------------------------------------------------------
 
 bool ts::json::Value::isNull()    const { return false; }
@@ -24,109 +24,35 @@ bool ts::json::Value::isString()  const { return false; }
 bool ts::json::Value::isObject()  const { return false; }
 bool ts::json::Value::isArray()   const { return false; }
 
-bool ts::json::Value::toBoolean(bool defaultValue) const
-{
-    return defaultValue;
-}
+bool ts::json::Value::toBoolean(bool defaultValue) const { return defaultValue; }
+int64_t ts::json::Value::toInteger(int64_t defaultValue) const { return defaultValue; }
+double ts::json::Value::toFloat(double defaultValue) const { return defaultValue; }
+ts::UString ts::json::Value::toString(const UString& defaultValue) const { return defaultValue; }
 
-int64_t ts::json::Value::toInteger(int64_t defaultValue) const
-{
-    return defaultValue;
-}
+void ts::json::Value::clear() {}
+void ts::json::Value::erase(size_t index, size_t count) {}
+void ts::json::Value::remove(const UString& name) {}
 
-double ts::json::Value::toFloat(double defaultValue) const
-{
-    return defaultValue;
-}
+size_t ts::json::Value::size() const { return 0; }
+void ts::json::Value::getNames(UStringList& names) const { names.clear(); }
+ts::json::ValuePtr ts::json::Value::extract(const UString& name) { return ValuePtr(); }
 
-ts::UString ts::json::Value::toString(const UString& defaultValue) const
-{
-    return defaultValue;
-}
+void ts::json::Value::add(const UString& name, const ValuePtr& value) {}
+void ts::json::Value::add(const UString& name, int64_t value) {}
+void ts::json::Value::add(const UString& name, double value) {}
+void ts::json::Value::add(const UString& name, const UString& value) {}
 
-void ts::json::Value::clear()
-{
-}
+size_t ts::json::Value::set(const ValuePtr& value, size_t index) { return 0; }
+size_t ts::json::Value::set(int64_t value, size_t index) { return 0; }
+size_t ts::json::Value::set(double value, size_t index) { return 0; }
+size_t ts::json::Value::set(const UString& value, size_t index) { return 0; }
 
-size_t ts::json::Value::size() const
-{
-    return 0;
-}
-
-void ts::json::Value::getNames(UStringList& names) const
-{
-    names.clear();
-}
-
-void ts::json::Value::remove(const UString& name)
-{
-}
-
-ts::json::ValuePtr ts::json::Value::extract(const UString& name)
-{
-    return ValuePtr();
-}
-
-void ts::json::Value::add(const UString& name, const ValuePtr& value)
-{
-}
-
-void ts::json::Value::add(const UString& name, int64_t value)
-{
-}
-
-void ts::json::Value::add(const UString& name, const UString& value)
-{
-}
-
-size_t ts::json::Value::set(const ValuePtr& value, size_t index)
-{
-    return 0;
-}
-
-size_t ts::json::Value::set(int64_t value, size_t index)
-{
-    return 0;
-}
-
-size_t ts::json::Value::set(const UString& value, size_t index)
-{
-    return 0;
-}
-
-void ts::json::Value::erase(size_t index, size_t count)
-{
-}
-
-ts::json::ValuePtr ts::json::Value::extractAt(size_t index)
-{
-    return ValuePtr();
-}
-
-const ts::json::Value& ts::json::Value::at(size_t index) const
-{
-    return NullValue;
-}
-
-ts::json::Value& ts::json::Value::at(size_t index)
-{
-    return NullValue;
-}
-
-const ts::json::Value& ts::json::Value::value(const UString& name) const
-{
-    return NullValue;
-}
-
-ts::json::Value& ts::json::Value::value(const UString& name, bool create, Type type)
-{
-    return NullValue;
-}
-
-ts::json::ValuePtr ts::json::Value::valuePtr(const UString& name)
-{
-    return ValuePtr();
-}
+ts::json::ValuePtr ts::json::Value::extractAt(size_t index) { return ValuePtr(); }
+const ts::json::Value& ts::json::Value::at(size_t index) const { return NullValue; }
+ts::json::Value& ts::json::Value::at(size_t index) { return NullValue; }
+const ts::json::Value& ts::json::Value::value(const UString& name) const { return NullValue; }
+ts::json::Value& ts::json::Value::value(const UString& name, bool create, Type type) { return NullValue; }
+ts::json::ValuePtr ts::json::Value::valuePtr(const UString& name) { return ValuePtr(); }
 
 const ts::json::Value& ts::json::Value::query(const UString& path) const
 {

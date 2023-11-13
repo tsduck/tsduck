@@ -621,6 +621,10 @@ bool ts::SRTSocket::close(Report& report)
 
     // Report final statistics if required.
     if (_guts->final_stats) {
+        // Sometimes, final statistics are not available, typically when the peer disconnected.
+        // In that case, the SRT socket is in error state and it is no longer possible to get the stats.
+        // This is an SRT bug since the final statistics should still be available as long as the socket is not closed.
+        // See https://github.com/Haivision/srt/issues/2177
         reportStatistics(_guts->stats_mode, report);
     }
 
@@ -1165,93 +1169,104 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
         // Statistics in JSON format.
         json::Object root;
         if ((mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE) {
-            //pktRcvRetransTotal to be added when available https://github.com/Haivision/srt/issues/1208
-            root.query(u"receive.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
-            root.query(u"receive.total", true).add(u"bytes", stats.byteRecvTotal);
-            root.query(u"receive.total", true).add(u"packets", stats.pktRecvTotal);
-            root.query(u"receive.total", true).add(u"unique-packets", stats.pktRecvUniqueTotal);
-            root.query(u"receive.total", true).add(u"lost-packets", stats.pktRcvLossTotal);
-            root.query(u"receive.total", true).add(u"dropped-packets", stats.pktRcvDropTotal);
-            root.query(u"receive.total", true).add(u"sent-ack-packets", stats.pktSentACKTotal);
-            root.query(u"receive.total", true).add(u"sent-nak-packets", stats.pktSentNAKTotal);
-            root.query(u"receive.total", true).add(u"undecrypted-packets", stats.pktRcvUndecryptTotal);
-            root.query(u"receive.total", true).add(u"filter-extra-packets", stats.pktRcvFilterExtraTotal);
-            root.query(u"receive.total", true).add(u"filter-recovered-packets", stats.pktRcvFilterSupplyTotal);
-            root.query(u"receive.total", true).add(u"filter-not-recovered-packets", stats.pktRcvFilterSupplyTotal);
-            root.query(u"receive.total", true).add(u"unique-byte", stats.byteRecvUniqueTotal);
-            root.query(u"receive.total", true).add(u"loss-byte", stats.byteRcvLossTotal);
-            root.query(u"receive.total", true).add(u"drop-byte", stats.byteRcvDropTotal);
-            root.query(u"receive.total", true).add(u"undecrypted-byte", stats.byteRcvUndecryptTotal);
-            root.query(u"receive.interval", true).add(u"rate-mbps", stats.mbpsRecvRate);
-            //pktRcvRetrans to be added when available same as pktRcvRetransTotal for interval
-            root.query(u"receive.interval", true).add(u"bytes", stats.byteRecv);
-            root.query(u"receive.interval", true).add(u"packets", stats.pktRecv);
-            root.query(u"receive.interval", true).add(u"lost-packets", stats.pktRcvLoss);
-            root.query(u"receive.interval", true).add(u"dropped-packets", stats.pktRcvDrop);
-            root.query(u"receive.interval", true).add(u"sent-ack-packets", stats.pktSentACK);
-            root.query(u"receive.interval", true).add(u"sent-nak-packets", stats.pktSentNAK);
-            root.query(u"receive.interval", true).add(u"filter-extra-packets", stats.pktRcvFilterExtra);
-            root.query(u"receive.interval", true).add(u"filter-recovered-packets", stats.pktRcvFilterSupply);
-            root.query(u"receive.interval", true).add(u"filter-not-recovered-packets", stats.pktRcvFilterLoss);
-            root.query(u"receive.interval", true).add(u"reorder-distance-packets", stats.pktReorderDistance);
-            root.query(u"receive.interval", true).add(u"ignored-late-packets", stats.pktRcvBelated);
-            root.query(u"receive.interval", true).add(u"undecrypted-packets", stats.pktRcvUndecrypt);
-            root.query(u"receive.interval", true).add(u"unique-byte", stats.pktRcvUndecrypt);
-            root.query(u"receive.interval", true).add(u"loss-byte", stats.byteRcvLoss);
-            root.query(u"receive.interval", true).add(u"drop-byte", stats.byteRcvDrop);
-            root.query(u"receive.interval", true).add(u"undecrypted-byte", stats.byteRcvUndecrypt);
-            root.query(u"receive.instant", true).add(u"delivery-delay-ms", stats.msRcvTsbPdDelay);
-            root.query(u"receive.instant", true).add(u"buffer-avail-bytes", stats.byteAvailRcvBuf);
-            root.query(u"receive.instant", true).add(u"buffer-ack-packets", stats.pktRcvBuf);
-            root.query(u"receive.instant", true).add(u"buffer-ack-bytes", stats.pktRcvBuf);
-            root.query(u"receive.instant", true).add(u"buffer-ack-ms", stats.msRcvBuf);
-            root.query(u"receive.instant", true).add(u"reorder-rolerance-packets", stats.pktReorderTolerance);
-            root.query(u"receive.instant", true).add(u"avg-belated-ms", stats.pktRcvAvgBelatedTime);
-            root.query(u"receive.instant", true).add(u"mss-bytes", stats.byteMSS);
+            root.query(u"receive.total", true).addNumber(u"elapsed-ms'", stats.msTimeStamp);
+            root.query(u"receive.total", true).addNumber(u"bytes", stats.byteRecvTotal);
+            root.query(u"receive.total", true).addNumber(u"packets", stats.pktRecvTotal);
+            root.query(u"receive.total", true).addNumber(u"lost-packets", stats.pktRcvLossTotal);
+            root.query(u"receive.total", true).addNumber(u"dropped-packets", stats.pktRcvDropTotal);
+            // pktRcvRetransTotal to be added when available https://github.com/Haivision/srt/issues/1208
+            // root.query(u"receive.total", true).addNumber(u"retransmitted-packets", stats.pktRcvRetransTotal);
+            root.query(u"receive.total", true).addNumber(u"sent-ack-packets", stats.pktSentACKTotal);
+            root.query(u"receive.total", true).addNumber(u"sent-nak-packets", stats.pktSentNAKTotal);
+            root.query(u"receive.total", true).addNumber(u"undecrypted-packets", stats.pktRcvUndecryptTotal);
+            root.query(u"receive.total", true).addNumber(u"loss-byte", stats.byteRcvLossTotal);
+            root.query(u"receive.total", true).addNumber(u"drop-byte", stats.byteRcvDropTotal);
+            root.query(u"receive.total", true).addNumber(u"undecrypted-byte", stats.byteRcvUndecryptTotal);
+            root.query(u"receive.interval", true).addNumber(u"rate-mbps", stats.mbpsRecvRate);
+            root.query(u"receive.interval", true).addNumber(u"bytes", stats.byteRecv);
+            root.query(u"receive.interval", true).addNumber(u"packets", stats.pktRecv);
+            root.query(u"receive.interval", true).addNumber(u"lost-packets", stats.pktRcvLoss);
+            root.query(u"receive.interval", true).addNumber(u"dropped-packets", stats.pktRcvDrop);
+            root.query(u"receive.interval", true).addNumber(u"retransmitted-packets", stats.pktRcvRetrans);
+            root.query(u"receive.interval", true).addNumber(u"sent-ack-packets", stats.pktSentACK);
+            root.query(u"receive.interval", true).addNumber(u"sent-nak-packets", stats.pktSentNAK);
+            root.query(u"receive.interval", true).addNumber(u"reorder-distance-packets", stats.pktReorderDistance);
+            root.query(u"receive.interval", true).addNumber(u"ignored-late-packets", stats.pktRcvBelated);
+            root.query(u"receive.interval", true).addNumber(u"undecrypted-packets", stats.pktRcvUndecrypt);
+            root.query(u"receive.interval", true).addNumber(u"unique-byte", stats.pktRcvUndecrypt);
+            root.query(u"receive.interval", true).addNumber(u"loss-byte", stats.byteRcvLoss);
+            root.query(u"receive.interval", true).addNumber(u"drop-byte", stats.byteRcvDrop);
+            root.query(u"receive.interval", true).addNumber(u"undecrypted-byte", stats.byteRcvUndecrypt);
+            root.query(u"receive.instant", true).addNumber(u"delivery-delay-ms", stats.msRcvTsbPdDelay);
+            root.query(u"receive.instant", true).addNumber(u"buffer-avail-bytes", stats.byteAvailRcvBuf);
+            root.query(u"receive.instant", true).addNumber(u"buffer-ack-packets", stats.pktRcvBuf);
+            root.query(u"receive.instant", true).addNumber(u"buffer-ack-bytes", stats.pktRcvBuf);
+            root.query(u"receive.instant", true).addNumber(u"buffer-ack-ms", stats.msRcvBuf);
+            root.query(u"receive.instant", true).addNumber(u"avg-belated-ms", stats.pktRcvAvgBelatedTime);
+            root.query(u"receive.instant", true).addNumber(u"mss-bytes", stats.byteMSS);
+#if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 0)
+            root.query(u"receive.total", true).addNumber(u"filter-extra-packets", stats.pktRcvFilterExtraTotal);
+            root.query(u"receive.total", true).addNumber(u"filter-recovered-packets", stats.pktRcvFilterSupplyTotal);
+            root.query(u"receive.total", true).addNumber(u"filter-not-recovered-packets", stats.pktRcvFilterLossTotal);
+            root.query(u"receive.interval", true).addNumber(u"filter-extra-packets", stats.pktRcvFilterExtra);
+            root.query(u"receive.interval", true).addNumber(u"filter-recovered-packets", stats.pktRcvFilterSupply);
+            root.query(u"receive.interval", true).addNumber(u"filter-not-recovered-packets", stats.pktRcvFilterLoss);
+#endif
+#if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 1)
+            root.query(u"receive.instant", true).addNumber(u"reorder-tolerance-packets", stats.pktReorderTolerance);
+#endif
+#if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 2)
+            root.query(u"receive.total", true).addNumber(u"unique-packets", stats.pktRecvUniqueTotal);
+            root.query(u"receive.total", true).addNumber(u"unique-byte", stats.byteRecvUniqueTotal);
+#endif
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
-            root.query(u"send.total", true).add(u"elapsed-ms'", stats.msTimeStamp);
-            root.query(u"send.total", true).add(u"bytes", stats.byteSentTotal);
-            root.query(u"send.total", true).add(u"packets", stats.pktSentTotal);
-            root.query(u"send.total", true).add(u"unique-packets", stats.pktSentUniqueTotal);
-            root.query(u"send.total", true).add(u"retransmit-packets", stats.pktRetransTotal);
-            root.query(u"send.total", true).add(u"lost-packets", stats.pktSndLossTotal);
-            root.query(u"send.total", true).add(u"dropped-packets", stats.pktSndDropTotal);
-            root.query(u"send.total", true).add(u"received-ack-packets", stats.pktRecvACKTotal);
-            root.query(u"send.total", true).add(u"received-nak-packets", stats.pktRecvNAKTotal);
-            root.query(u"send.total", true).add(u"send-duration-us", stats.usSndDurationTotal);
-            root.query(u"send.total", true).add(u"filter-extra-packets", stats.pktSndFilterExtraTotal);
-            root.query(u"send.total", true).add(u"unique-byte", stats.byteSentUniqueTotal);
-            root.query(u"send.total", true).add(u"restrans-byte", stats.byteRetransTotal);
-            root.query(u"send.total", true).add(u"drop-byte", stats.byteSndDropTotal);
-            root.query(u"send.interval", true).add(u"bytes", stats.byteSent);
-            root.query(u"send.interval", true).add(u"packets", stats.pktSent);
-            root.query(u"send.interval", true).add(u"retransmit-packets", stats.pktRetrans);
-            root.query(u"send.interval", true).add(u"lost-packets", stats.pktSndLoss);
-            root.query(u"send.interval", true).add(u"dropped-packets", stats.pktSndDrop);
-            root.query(u"send.interval", true).add(u"unique-packets", stats.pktSentUnique);
-            root.query(u"send.interval", true).add(u"received-ack-packets", stats.pktRecvACK);
-            root.query(u"send.interval", true).add(u"received-nak-packets", stats.pktRecvNAK);
-            root.query(u"send.interval", true).add(u"filter-extra-packets", stats.pktSndFilterExtra);
-            root.query(u"send.interval", true).add(u"send-rate-mbps", stats.mbpsSendRate);
-            root.query(u"send.interval", true).add(u"send-duration-us", stats.usSndDuration);
-            root.query(u"send.interval", true).add(u"unique-byte", stats.byteSentUnique);
-            root.query(u"send.interval", true).add(u"drop-byte", stats.byteSndDrop);
-            root.query(u"send.interval", true).add(u"retransmit-byte", stats.byteRetrans);
-            root.query(u"send.instant", true).add(u"delivery-delay-ms", stats.msSndTsbPdDelay);
-            root.query(u"send.instant", true).add(u"interval-packets", stats.usPktSndPeriod);
-            root.query(u"send.instant", true).add(u"flow-window-packets", stats.pktFlowWindow);
-            root.query(u"send.instant", true).add(u"congestion-window-packets", stats.pktCongestionWindow);
-            root.query(u"send.instant", true).add(u"in-flight-packets", stats.pktFlightSize);
-            root.query(u"send.instant", true).add(u"estimated-link-bandwidth-mbps", stats.mbpsBandwidth);
-            root.query(u"send.instant", true).add(u"avail-buffer-byte", stats.byteAvailSndBuf);
-            root.query(u"send.instant", true).add(u"max-bandwidth-mbps", stats.mbpsMaxBW);
-            root.query(u"send.instant", true).add(u"mss-byte", stats.byteMSS);
-            root.query(u"send.instant", true).add(u"snd-buffer-packets", stats.pktSndBuf);
-            root.query(u"send.instant", true).add(u"snd-buffer-byte", stats.byteSndBuf);
-            root.query(u"send.instant", true).add(u"snd-buffer-ms", stats.msSndBuf);
+            root.query(u"send.total", true).addNumber(u"elapsed-ms'", stats.msTimeStamp);
+            root.query(u"send.total", true).addNumber(u"bytes", stats.byteSentTotal);
+            root.query(u"send.total", true).addNumber(u"packets", stats.pktSentTotal);
+            root.query(u"send.total", true).addNumber(u"retransmit-packets", stats.pktRetransTotal);
+            root.query(u"send.total", true).addNumber(u"lost-packets", stats.pktSndLossTotal);
+            root.query(u"send.total", true).addNumber(u"dropped-packets", stats.pktSndDropTotal);
+            root.query(u"send.total", true).addNumber(u"received-ack-packets", stats.pktRecvACKTotal);
+            root.query(u"send.total", true).addNumber(u"received-nak-packets", stats.pktRecvNAKTotal);
+            root.query(u"send.total", true).addNumber(u"send-duration-us", stats.usSndDurationTotal);
+            root.query(u"send.total", true).addNumber(u"restrans-byte", stats.byteRetransTotal);
+            root.query(u"send.total", true).addNumber(u"drop-byte", stats.byteSndDropTotal);
+            root.query(u"send.interval", true).addNumber(u"bytes", stats.byteSent);
+            root.query(u"send.interval", true).addNumber(u"packets", stats.pktSent);
+            root.query(u"send.interval", true).addNumber(u"retransmit-packets", stats.pktRetrans);
+            root.query(u"send.interval", true).addNumber(u"lost-packets", stats.pktSndLoss);
+            root.query(u"send.interval", true).addNumber(u"dropped-packets", stats.pktSndDrop);
+            root.query(u"send.interval", true).addNumber(u"received-ack-packets", stats.pktRecvACK);
+            root.query(u"send.interval", true).addNumber(u"received-nak-packets", stats.pktRecvNAK);
+            root.query(u"send.interval", true).addNumber(u"send-rate-mbps", stats.mbpsSendRate);
+            root.query(u"send.interval", true).addNumber(u"send-duration-us", stats.usSndDuration);
+            root.query(u"send.interval", true).addNumber(u"drop-byte", stats.byteSndDrop);
+            root.query(u"send.interval", true).addNumber(u"retransmit-byte", stats.byteRetrans);
+            root.query(u"send.instant", true).addNumber(u"delivery-delay-ms", stats.msSndTsbPdDelay);
+            root.query(u"send.instant", true).addNumber(u"interval-packets", stats.usPktSndPeriod);
+            root.query(u"send.instant", true).addNumber(u"flow-window-packets", stats.pktFlowWindow);
+            root.query(u"send.instant", true).addNumber(u"congestion-window-packets", stats.pktCongestionWindow);
+            root.query(u"send.instant", true).addNumber(u"in-flight-packets", stats.pktFlightSize);
+            root.query(u"send.instant", true).addNumber(u"estimated-link-bandwidth-mbps", stats.mbpsBandwidth);
+            root.query(u"send.instant", true).addNumber(u"avail-buffer-byte", stats.byteAvailSndBuf);
+            root.query(u"send.instant", true).addNumber(u"max-bandwidth-mbps", stats.mbpsMaxBW);
+            root.query(u"send.instant", true).addNumber(u"mss-byte", stats.byteMSS);
+            root.query(u"send.instant", true).addNumber(u"snd-buffer-packets", stats.pktSndBuf);
+            root.query(u"send.instant", true).addNumber(u"snd-buffer-byte", stats.byteSndBuf);
+            root.query(u"send.instant", true).addNumber(u"snd-buffer-ms", stats.msSndBuf);
+#if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 0)
+            root.query(u"send.total", true).addNumber(u"filter-extra-packets", stats.pktSndFilterExtraTotal);
+            root.query(u"send.interval", true).addNumber(u"filter-extra-packets", stats.pktSndFilterExtra);
+#endif
+#if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 2)
+            root.query(u"send.total", true).addNumber(u"unique-packets", stats.pktSentUniqueTotal);
+            root.query(u"send.total", true).addNumber(u"unique-byte", stats.byteSentUniqueTotal);
+            root.query(u"send.interval", true).addNumber(u"unique-packets", stats.pktSentUnique);
+            root.query(u"send.interval", true).addNumber(u"unique-byte", stats.byteSentUnique);
+#endif
         }
-        root.query(u"global.instant", true).add(u"rtt-ms", int64_t(stats.msRTT));
+        root.query(u"global.instant", true).addNumber(u"rtt-ms", stats.msRTT);
         // Generate one line.
         TextFormatter text(report);
         text.setString();

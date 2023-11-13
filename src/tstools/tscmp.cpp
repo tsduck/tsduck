@@ -638,14 +638,14 @@ void ts::FileComparator::displayFinal()
 {
     if (_opt.json.useJSON()) {
         json::Value& jv0(_jroot.query(u"files[0]"));
-        jv0.add(u"packets", _file0.readPacketsCount());
-        jv0.add(u"missing", _file0.missingPackets());
-        jv0.add(u"holes", _file0.missingChunks());
+        jv0.addNumber(u"packets", _file0.readPacketsCount());
+        jv0.addNumber(u"missing", _file0.missingPackets());
+        jv0.addNumber(u"holes", _file0.missingChunks());
         json::Value& jv1(_jroot.query(u"files[1]"));
-        jv1.add(u"packets", _file1.readPacketsCount());
-        jv1.add(u"missing", _file1.missingPackets());
-        jv1.add(u"holes", _file1.missingChunks());
-        _jroot.query(u"summary", true).add(u"differences", _diff_count);
+        jv1.addNumber(u"packets", _file1.readPacketsCount());
+        jv1.addNumber(u"missing", _file1.missingPackets());
+        jv1.addNumber(u"holes", _file1.missingChunks());
+        _jroot.query(u"summary", true).addNumber(u"differences", _diff_count);
     }
     if (_opt.normalized) {
         std::cout << "file:file=1:filename=" << _file0.fileName()
@@ -695,16 +695,16 @@ void ts::FileComparator::displayOneDifference(const PacketComparator& comp, Pack
     if (_opt.json.useJSON()) {
         json::Value& jv(_jroot.query(u"events[]", true));
         jv.add(u"type", u"difference");
-        jv.add(u"packet", index0);
+        jv.addNumber(u"packet", index0);
         jv.add(u"payload-only", json::Bool(_opt.payload_only));
-        jv.add(u"offset", comp.first_diff);
-        jv.add(u"end-offset", comp.end_diff);
-        jv.add(u"diff-bytes", comp.diff_count);
-        jv.add(u"comp-size", comp.compared_size);
-        jv.add(u"pid0", pid0);
-        jv.add(u"pid1", pid1);
-        jv.add(u"pid0-index", index_in_pid0);
-        jv.add(u"pid1-index", index_in_pid1);
+        jv.addNumber(u"offset", comp.first_diff);
+        jv.addNumber(u"end-offset", comp.end_diff);
+        jv.addNumber(u"diff-bytes", comp.diff_count);
+        jv.addNumber(u"comp-size", comp.compared_size);
+        jv.addNumber(u"pid0", pid0);
+        jv.addNumber(u"pid1", pid1);
+        jv.addNumber(u"pid0-index", index_in_pid0);
+        jv.addNumber(u"pid1-index", index_in_pid1);
         jv.add(u"same-pid", json::Bool(pid0 == pid1));
         jv.add(u"same-index", json::Bool(index_in_pid0 == index_in_pid1));
     }
@@ -761,8 +761,8 @@ void ts::FileComparator::displayTruncated(size_t file_index, const FileToCompare
     if (_opt.json.useJSON()) {
         json::Value& jv(_jroot.query(u"events[]", true));
         jv.add(u"type", u"truncated");
-        jv.add(u"packet", file.readPacketsCount());
-        jv.add(u"file-index", file_index);
+        jv.addNumber(u"packet", file.readPacketsCount());
+        jv.addNumber(u"file-index", file_index);
     }
     if (_opt.normalized) {
         std::cout << "truncated:file=" << file_index << ":packet=" << file.readPacketsCount() << ":filename=" << file.fileName() << ":" << std::endl;
@@ -783,10 +783,10 @@ void ts::FileComparator::displayMissingChunk(size_t ref_file_index, FileToCompar
         if (_opt.json.useJSON()) {
             json::Value& jv(_jroot.query(u"events[]", true));
             jv.add(u"type", u"skipped");
-            jv.add(u"packet", start);
-            jv.add(u"skipped", count);
-            jv.add(u"miss-file-index", miss_file_index);
-            jv.add(u"ref-file-index", ref_file_index);
+            jv.addNumber(u"packet", start);
+            jv.addNumber(u"skipped", count);
+            jv.addNumber(u"miss-file-index", miss_file_index);
+            jv.addNumber(u"ref-file-index", ref_file_index);
         }
         if (_opt.normalized) {
             std::cout << "skip:file=" << miss_file_index << ":packet=" << start << ":skipped=" << count << ":" << std::endl;
@@ -808,9 +808,9 @@ void ts::FileComparator::displayReorder(size_t file0_index, const FileToCompare&
     if (_opt.json.useJSON()) {
         json::Value& jv(_jroot.query(u"events[]", true));
         jv.add(u"type", u"out-of-order");
-        jv.add(u"count", count);
-        jv.add(UString::Format(u"packet%d", {file0_index}), packet_index0);
-        jv.add(UString::Format(u"packet%d", {file1_index}), packet_index1);
+        jv.addNumber(u"count", count);
+        jv.addNumber(UString::Format(u"packet%d", {file0_index}), packet_index0);
+        jv.addNumber(UString::Format(u"packet%d", {file1_index}), packet_index1);
     }
     if (_opt.normalized) {
         std::cout << "outoforder:count=" << count << ":packet" << file0_index << "=" << packet_index0 << ":packet" << file1_index << "=" << packet_index1 << ":" << std::endl;

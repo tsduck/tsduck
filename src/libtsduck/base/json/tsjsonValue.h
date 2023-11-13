@@ -199,11 +199,33 @@ namespace ts {
             //!
             virtual void add(const UString& name, const ValuePtr& value);
             //!
-            //! Add a number field into an object.
+            //! Add a 64-bit signed integer number field into an object.
             //! @param [in] name Field name.
             //! @param [in] value Field value.
             //!
             virtual void add(const UString& name, int64_t value);
+            //!
+            //! Add an integer number field into an object.
+            //! @tparam T An integer type.
+            //! @param [in] name Field name.
+            //! @param [in] value Field value.
+            //!
+            template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+            void addNumber(const UString& name, T value) { add(name, int64_t(value)); }
+            //!
+            //! Add a double-precision floating-point number field into an object.
+            //! @param [in] name Field name.
+            //! @param [in] value Field value.
+            //!
+            virtual void add(const UString& name, double value);
+            //!
+            //! Add a floating-point number field into an object.
+            //! @tparam T A floating-point type.
+            //! @param [in] name Field name.
+            //! @param [in] value Field value.
+            //!
+            template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
+            void addNumber(const UString& name, T value) { add(name, double(value)); }
             //!
             //! Add a string field into an object.
             //! @param [in] name Field name.
@@ -232,12 +254,37 @@ namespace ts {
             //!
             virtual size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max());
             //!
-            //! Set a number element of an array.
+            //! Set a 64-bit signed integer number element of an array.
             //! @param [in] value Value to set.
             //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
             //! @return The actual index of the added value.
             //!
             virtual size_t set(int64_t value, size_t index = std::numeric_limits<size_t>::max());
+            //!
+            //! Set an integer number element of an array.
+            //! @tparam T An integer type.
+            //! @param [in] value Value to set.
+            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
+            //!
+            template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+            size_t setNumber(T value, size_t index = std::numeric_limits<size_t>::max()) { return set(int64_t(value), index); }
+            //!
+            //! Set a double-precision floating-point number element of an array.
+            //! @param [in] value Value to set.
+            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
+            //!
+            virtual size_t set(double value, size_t index = std::numeric_limits<size_t>::max());
+            //!
+            //! Set a floating-point number element of an array.
+            //! @tparam T A floating-point type.
+            //! @param [in] value Value to set.
+            //! @param [in] index Index in the array. If out of bound, the @a value is added at the end of the array.
+            //! @return The actual index of the added value.
+            //!
+            template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
+            size_t setNumber(T value, size_t index = std::numeric_limits<size_t>::max()) { return set(double(value), index); }
             //!
             //! Set a string element of an array.
             //! @param [in] value Value to set.

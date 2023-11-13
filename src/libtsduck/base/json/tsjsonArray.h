@@ -36,6 +36,7 @@ namespace ts {
             virtual Value& at(size_t index) override;
             virtual size_t set(const ValuePtr& value, size_t index = std::numeric_limits<size_t>::max()) override;
             virtual size_t set(int64_t value, size_t index = std::numeric_limits<size_t>::max()) override;
+            virtual size_t set(double value, size_t index = std::numeric_limits<size_t>::max()) override;
             virtual size_t set(const UString& value, size_t index = std::numeric_limits<size_t>::max()) override;
             virtual void erase(size_t index, size_t count = 1) override;
             virtual ValuePtr extractAt(size_t index) override;

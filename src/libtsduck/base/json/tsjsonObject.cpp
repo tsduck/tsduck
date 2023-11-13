@@ -99,6 +99,11 @@ void ts::json::Object::add(const UString& name, int64_t value)
     add(name, ValuePtr(new Number(value)));
 }
 
+void ts::json::Object::add(const UString& name, double value)
+{
+    add(name, ValuePtr(new Number(value)));
+}
+
 void ts::json::Object::add(const UString& name, const UString& value)
 {
     add(name, ValuePtr(new String(value)));
