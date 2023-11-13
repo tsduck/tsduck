@@ -495,9 +495,9 @@ int ts::DektecControl::Guts::listNormalizedDevices(const DektecDeviceVector& dev
 
 void ts::DektecControl::Guts::listCapabilitiesJSON(ts::json::Value& jv, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc &hw)
 {
-    jv.add(u"device", device_index);
-    jv.add(u"channel", channel_index);
-    jv.add(u"port", hw.m_Port);
+    jv.addNumber(u"device", device_index);
+    jv.addNumber(u"channel", channel_index);
+    jv.addNumber(u"port", hw.m_Port);
     jv.add(u"asi", json::Bool((hw.m_Flags & DTAPI_CAP_ASI) != 0));
     jv.add(u"spi", json::Bool((hw.m_Flags & DTAPI_CAP_SPI) != 0));
     jv.add(u"sdi", json::Bool((hw.m_Flags & DTAPI_CAP_SDI) != 0));
@@ -580,31 +580,31 @@ int ts::DektecControl::Guts::listDevicesJSON(const DektecDeviceVector& devices)
         Dtapi::DtDevice dtdev;
         json::Value& jdev(root.query(u"devices[]", true));
 
-        jdev.add(u"index", index);
+        jdev.addNumber(u"index", index);
         jdev.add(u"model", device.model);
 
         switch (device.desc.m_Category) {
             case DTAPI_CAT_PCI:
-                jdev.query(u"pci", true).add(u"bus", device.desc.m_PciBusNumber);
-                jdev.query(u"pci", true).add(u"slot", device.desc.m_SlotNumber);
+                jdev.query(u"pci", true).addNumber(u"bus", device.desc.m_PciBusNumber);
+                jdev.query(u"pci", true).addNumber(u"slot", device.desc.m_SlotNumber);
                 break;
             case DTAPI_CAT_USB:
-                jdev.query(u"usb", true).add(u"address", device.desc.m_UsbAddress);
+                jdev.query(u"usb", true).addNumber(u"address", device.desc.m_UsbAddress);
                 break;
             default:
                 break;
         }
 
-        jdev.add(u"nb-port", device.desc.m_NumPorts);
-        jdev.add(u"nb-input", device.input.size());
-        jdev.add(u"nb-output", device.output.size());
-        jdev.add(u"subsys-id", device.desc.m_SubsystemId);
-        jdev.add(u"subsys-vendor-id", device.desc.m_SubVendorId);
-        jdev.add(u"device-id", device.desc.m_DeviceId);
-        jdev.add(u"vendor-id", device.desc.m_VendorId);
-        jdev.add(u"serial", int64_t(device.desc.m_Serial));
-        jdev.add(u"fw-version", device.desc.m_FirmwareVersion);
-        jdev.add(u"fw-variant", device.desc.m_FirmwareVariant);
+        jdev.addNumber(u"nb-port", device.desc.m_NumPorts);
+        jdev.addNumber(u"nb-input", device.input.size());
+        jdev.addNumber(u"nb-output", device.output.size());
+        jdev.addNumber(u"subsys-id", device.desc.m_SubsystemId);
+        jdev.addNumber(u"subsys-vendor-id", device.desc.m_SubVendorId);
+        jdev.addNumber(u"device-id", device.desc.m_DeviceId);
+        jdev.addNumber(u"vendor-id", device.desc.m_VendorId);
+        jdev.addNumber(u"serial", device.desc.m_Serial);
+        jdev.addNumber(u"fw-version", device.desc.m_FirmwareVersion);
+        jdev.addNumber(u"fw-variant", device.desc.m_FirmwareVariant);
         if (vpd.vpdid[0] != 0) {
             jdev.add(u"vpd-id", UString::FromUTF8(vpd.vpdid));
         }
