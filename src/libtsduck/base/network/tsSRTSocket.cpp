@@ -13,8 +13,6 @@
 #include "tsTextFormatter.h"
 #include "tsTime.h"
 #include "tsMemory.h"
-#include "tsMutex.h"
-#include "tsGuardMutex.h"
 #include "tsNullReport.h"
 #include "tsFatal.h"
 
@@ -357,40 +355,21 @@ namespace {
     {
         TS_DECLARE_SINGLETON(SRTInit);
     public:
-        void start();
-        void stop();
-    private:
-        ts::Mutex _mutex;
-        size_t    _count;
+        ~SRTInit();
     };
 
     TS_DEFINE_SINGLETON(SRTInit);
 
-    // Singleton constructor.
-    SRTInit::SRTInit() :
-        _mutex(),
-        _count(0)
+    // Singleton constructor, initialize SRT once.
+    SRTInit::SRTInit()
     {
+        ::srt_startup();
     }
 
-    // Called each time an SRT socket is opened.
-    void SRTInit::start()
+    // Singleton destructor, cleanup SRT on application exit.
+    SRTInit::~SRTInit()
     {
-        ts::GuardMutex lock(_mutex);
-        if (_count++ == 0) {
-            ::srt_startup();
-        }
-    }
-
-    // Called each time an SRT socket is closed.
-    void SRTInit::stop()
-    {
-        ts::GuardMutex lock(_mutex);
-        if (_count > 0) {
-            if (--_count == 0) {
-                ::srt_cleanup();
-            }
-        }
+        ::srt_cleanup();
     }
 }
 
@@ -552,7 +531,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     _guts->disconnected = false;
 
     // Initialize SRT.
-    SRTInit::Instance().start();
+    SRTInit::Instance();
 
     // Create the SRT socket.
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 1)
@@ -565,7 +544,6 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
 #endif
     if (_guts->sock == SRT_INVALID_SOCK) {
         report.error(u"error creating SRT socket: %s", {::srt_getlasterror_str()});
-        SRTInit::Instance().stop();
         return false;
     }
 
@@ -645,9 +623,6 @@ bool ts::SRTSocket::close(Report& report)
             report.debug(u"calling srt_close() on listener socket");
             ::srt_close(listener);
         }
-
-        // Decrement reference count to SRT library.
-        SRTInit::Instance().stop();
     }
     return true;
 }
@@ -1179,9 +1154,9 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.total", true).add(u"sent-ack-packets", stats.pktSentACKTotal);
             root.query(u"receive.total", true).add(u"sent-nak-packets", stats.pktSentNAKTotal);
             root.query(u"receive.total", true).add(u"undecrypted-packets", stats.pktRcvUndecryptTotal);
-            root.query(u"receive.total", true).add(u"loss-byte", stats.byteRcvLossTotal);
-            root.query(u"receive.total", true).add(u"drop-byte", stats.byteRcvDropTotal);
-            root.query(u"receive.total", true).add(u"undecrypted-byte", stats.byteRcvUndecryptTotal);
+            root.query(u"receive.total", true).add(u"loss-bytes", stats.byteRcvLossTotal);
+            root.query(u"receive.total", true).add(u"drop-bytes", stats.byteRcvDropTotal);
+            root.query(u"receive.total", true).add(u"undecrypted-bytes", stats.byteRcvUndecryptTotal);
             root.query(u"receive.interval", true).add(u"rate-mbps", stats.mbpsRecvRate);
             root.query(u"receive.interval", true).add(u"bytes", stats.byteRecv);
             root.query(u"receive.interval", true).add(u"packets", stats.pktRecv);
@@ -1193,10 +1168,10 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.interval", true).add(u"reorder-distance-packets", stats.pktReorderDistance);
             root.query(u"receive.interval", true).add(u"ignored-late-packets", stats.pktRcvBelated);
             root.query(u"receive.interval", true).add(u"undecrypted-packets", stats.pktRcvUndecrypt);
-            root.query(u"receive.interval", true).add(u"unique-byte", stats.pktRcvUndecrypt);
-            root.query(u"receive.interval", true).add(u"loss-byte", stats.byteRcvLoss);
-            root.query(u"receive.interval", true).add(u"drop-byte", stats.byteRcvDrop);
-            root.query(u"receive.interval", true).add(u"undecrypted-byte", stats.byteRcvUndecrypt);
+            root.query(u"receive.interval", true).add(u"unique-bytes", stats.byteRecvUnique);
+            root.query(u"receive.interval", true).add(u"loss-bytes", stats.byteRcvLoss);
+            root.query(u"receive.interval", true).add(u"drop-bytes", stats.byteRcvDrop);
+            root.query(u"receive.interval", true).add(u"undecrypted-bytes", stats.byteRcvUndecrypt);
             root.query(u"receive.instant", true).add(u"delivery-delay-ms", stats.msRcvTsbPdDelay);
             root.query(u"receive.instant", true).add(u"buffer-avail-bytes", stats.byteAvailRcvBuf);
             root.query(u"receive.instant", true).add(u"buffer-ack-packets", stats.pktRcvBuf);
@@ -1217,7 +1192,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
 #endif
 #if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 2)
             root.query(u"receive.total", true).add(u"unique-packets", stats.pktRecvUniqueTotal);
-            root.query(u"receive.total", true).add(u"unique-byte", stats.byteRecvUniqueTotal);
+            root.query(u"receive.total", true).add(u"unique-bytes", stats.byteRecvUniqueTotal);
 #endif
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
@@ -1230,8 +1205,8 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"send.total", true).add(u"received-ack-packets", stats.pktRecvACKTotal);
             root.query(u"send.total", true).add(u"received-nak-packets", stats.pktRecvNAKTotal);
             root.query(u"send.total", true).add(u"send-duration-us", stats.usSndDurationTotal);
-            root.query(u"send.total", true).add(u"restrans-byte", stats.byteRetransTotal);
-            root.query(u"send.total", true).add(u"drop-byte", stats.byteSndDropTotal);
+            root.query(u"send.total", true).add(u"restrans-bytes", stats.byteRetransTotal);
+            root.query(u"send.total", true).add(u"drop-bytes", stats.byteSndDropTotal);
             root.query(u"send.interval", true).add(u"bytes", stats.byteSent);
             root.query(u"send.interval", true).add(u"packets", stats.pktSent);
             root.query(u"send.interval", true).add(u"retransmit-packets", stats.pktRetrans);
@@ -1241,19 +1216,19 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"send.interval", true).add(u"received-nak-packets", stats.pktRecvNAK);
             root.query(u"send.interval", true).add(u"send-rate-mbps", stats.mbpsSendRate);
             root.query(u"send.interval", true).add(u"send-duration-us", stats.usSndDuration);
-            root.query(u"send.interval", true).add(u"drop-byte", stats.byteSndDrop);
-            root.query(u"send.interval", true).add(u"retransmit-byte", stats.byteRetrans);
+            root.query(u"send.interval", true).add(u"drop-bytes", stats.byteSndDrop);
+            root.query(u"send.interval", true).add(u"retransmit-bytes", stats.byteRetrans);
             root.query(u"send.instant", true).add(u"delivery-delay-ms", stats.msSndTsbPdDelay);
             root.query(u"send.instant", true).add(u"interval-packets", stats.usPktSndPeriod);
             root.query(u"send.instant", true).add(u"flow-window-packets", stats.pktFlowWindow);
             root.query(u"send.instant", true).add(u"congestion-window-packets", stats.pktCongestionWindow);
             root.query(u"send.instant", true).add(u"in-flight-packets", stats.pktFlightSize);
             root.query(u"send.instant", true).add(u"estimated-link-bandwidth-mbps", stats.mbpsBandwidth);
-            root.query(u"send.instant", true).add(u"avail-buffer-byte", stats.byteAvailSndBuf);
+            root.query(u"send.instant", true).add(u"avail-buffer-bytes", stats.byteAvailSndBuf);
             root.query(u"send.instant", true).add(u"max-bandwidth-mbps", stats.mbpsMaxBW);
-            root.query(u"send.instant", true).add(u"mss-byte", stats.byteMSS);
+            root.query(u"send.instant", true).add(u"mss-bytes", stats.byteMSS);
             root.query(u"send.instant", true).add(u"snd-buffer-packets", stats.pktSndBuf);
-            root.query(u"send.instant", true).add(u"snd-buffer-byte", stats.byteSndBuf);
+            root.query(u"send.instant", true).add(u"snd-buffer-bytes", stats.byteSndBuf);
             root.query(u"send.instant", true).add(u"snd-buffer-ms", stats.msSndBuf);
 #if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 0)
             root.query(u"send.total", true).add(u"filter-extra-packets", stats.pktSndFilterExtraTotal);
@@ -1261,9 +1236,9 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
 #endif
 #if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 2)
             root.query(u"send.total", true).add(u"unique-packets", stats.pktSentUniqueTotal);
-            root.query(u"send.total", true).add(u"unique-byte", stats.byteSentUniqueTotal);
+            root.query(u"send.total", true).add(u"unique-bytes", stats.byteSentUniqueTotal);
             root.query(u"send.interval", true).add(u"unique-packets", stats.pktSentUnique);
-            root.query(u"send.interval", true).add(u"unique-byte", stats.byteSentUnique);
+            root.query(u"send.interval", true).add(u"unique-bytes", stats.byteSentUnique);
 #endif
         }
         root.query(u"global.instant", true).add(u"rtt-ms", stats.msRTT);
