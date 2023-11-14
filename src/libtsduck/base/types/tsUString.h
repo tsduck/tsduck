@@ -1695,13 +1695,13 @@ namespace ts {
         //! Format a string containing a floating point value.
         //! @param [in] value The floating point value to format.
         //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
-        //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
+        //! @param [in] precision Precision to use after the decimal point. Default is 6 digits when set to zero.
         //! @param [in] force_sign If true, force a '+' sign for positive values.
         //! @return The formatted string.
         //!
         static UString Float(double value,
                              size_type width = 0,
-                             size_type precision = 6,
+                             size_type precision = 0,
                              bool force_sign = false);
 
         //!

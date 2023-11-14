@@ -75,9 +75,16 @@ ts::UString ts::json::Value::printed(size_t indent, Report& report) const
     out.setIndentSize(indent);
     out.setString();
     print(out);
-    UString str;
-    out.getString(str);
-    return str;
+    return out.toString();
+}
+
+ts::UString ts::json::Value::oneLiner(Report& report) const
+{
+    TextFormatter out(report);
+    out.setString();
+    out.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+    print(out);
+    return out.toString();
 }
 
 

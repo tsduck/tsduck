@@ -15,6 +15,7 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
+#include "tsIntegerUtils.h"
 #include "tsEnumeration.h"
 
 // The UTF-8 Byte Order Mark
@@ -2446,6 +2447,12 @@ bool ts::UString::ArgMixOutContext::processField()
 
 ts::UString ts::UString::Float(double value, size_type width, size_type precision, bool force_sign)
 {
+    // Default precision is 6 decimal digits.
+    const bool no_size = width == 0 && precision == 0;
+    if (precision == 0) {
+        precision = 6;
+    }
+
     // Build formatting string.
     std::string format("%");
     if (force_sign) {
@@ -2453,7 +2460,9 @@ ts::UString ts::UString::Float(double value, size_type width, size_type precisio
     }
     format.append("*.*l");
     const double avalue = std::fabs(value);
-    if (avalue < std::numeric_limits<double>::epsilon() || (avalue > 0.001 && avalue < 100000.0)) {
+    // Use "f" format if value is greater than this, "e" format if lower
+    const double min_f_value = precision > 1 && precision <= MAX_POWER_10 ? 1.0 / double(Power10(precision / 2)) : 0.000001;
+    if (avalue < std::numeric_limits<double>::epsilon() || (avalue >= min_f_value && avalue < 100000.0)) {
         // Use a float representation.
         format.append("f");
     }
@@ -2473,5 +2482,44 @@ ts::UString ts::UString::Float(double value, size_type width, size_type precisio
     std::snprintf(&str[0], str.size(), format.c_str(), int(width), int(precision), value);
     TS_POP_WARNING()
 
-    return FromUTF8(str.c_str());
+    str[str.size() - 1] = '\0';
+    UString result;
+    result.assignFromUTF8(str.c_str());
+
+    // Cleanup extra zeroes when no formatting rule is given.
+    if (no_size) {
+        // Find decimal dot and exponent.
+        const size_type dot = result.find(u'.');
+        const size_type exp = result.find_first_of(u"eE");
+        if (exp == NPOS) {
+            // No exponent, remove trailing fractional zeroes.
+            if (dot != NPOS) {
+                while (!result.empty() && result.back() == u'0') {
+                    result.pop_back();
+                }
+            }
+            // Remove empty fractional part.
+            if (!result.empty() && result.back() == u'.') {
+                result.pop_back();
+            }
+        }
+        else {
+            // Remove leading zeroes in exponent.
+            size_type pos = exp + 1;
+            while (pos < result.size() && !IsDigit(result[pos])) {
+                pos++;
+            }
+            while (pos + 1 < result.size() && result[pos] == u'0') {
+                result.erase(pos, 1);
+            }
+            // Remove trailing zeroes in fractional part, but keep a fractional part.
+            if (dot != NPOS && exp > 0) {
+                for (size_type i = exp - 1; i > dot + 1 && result[i] == u'0'; i--) {
+                    result.erase(i, 1);
+                }
+            }
+        }
+    }
+
+    return result;
 }

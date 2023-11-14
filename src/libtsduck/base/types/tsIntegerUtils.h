@@ -625,6 +625,12 @@ namespace ts {
     //! @endcond
 
     //!
+    //! Largest representable power of 10 in integer types.
+    //! Assuming that no integer type is larger than 64 bits, 10^19 is the largest unsigned power of 10.
+    //!
+    constexpr size_t MAX_POWER_10 = 19;
+
+    //!
     //! Get a power of 10 using a fast lookup table.
     //!
     //! @param [in] pow The requested power of 10.

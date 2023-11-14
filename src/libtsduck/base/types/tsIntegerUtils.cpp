@@ -62,9 +62,7 @@ size_t ts::MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize)
 
 uint64_t ts::Power10(size_t pow)
 {
-    // Assume that not integer type is larger than 64 bits => 10^19 is the largest unsigned value.
-    static constexpr size_t MAX_POW10 = 19;
-    static const uint64_t pow10[MAX_POW10 + 1] = {
+    static const uint64_t pow10[MAX_POWER_10 + 1] = {
         /*  0 */ 1,
         /*  1 */ 10,
         /*  2 */ 100,
@@ -87,5 +85,5 @@ uint64_t ts::Power10(size_t pow)
         /* 19 */ 10000000000000000000ull,
     };
 
-    return pow <= MAX_POW10 ? pow10[pow] : 0;
+    return pow <= MAX_POWER_10 ? pow10[pow] : 0;
 }

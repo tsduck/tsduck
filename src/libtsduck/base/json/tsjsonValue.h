@@ -58,12 +58,18 @@ namespace ts {
             //!
             virtual void print(TextFormatter& output) const = 0;
             //!
-            //! Format the value as JSON text.
+            //! Format the value as structured JSON text.
             //! @param [in] indent Indentation width of each level.
             //! @param [in,out] report Where to report errors.
             //! @return The formatted JSON text.
             //!
             virtual UString printed(size_t indent = 2, Report& report = NULLREP) const;
+            //!
+            //! Format the value as a one-liner JSON text.
+            //! @param [in,out] report Where to report errors.
+            //! @return The formatted one-line JSON text.
+            //!
+            virtual UString oneLiner(Report& report = NULLREP) const;
             //!
             //! Save the value as a JSON file.
             //! @param [in] fileName Name of the JSON file to save.

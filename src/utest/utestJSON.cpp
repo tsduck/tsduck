@@ -21,6 +21,7 @@
 #include "tsjsonArray.h"
 #include "tsjsonRunningDocument.h"
 #include "tsFileUtils.h"
+#include "tsIntegerUtils.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
 #include "tsunit.h"
@@ -45,6 +46,7 @@ public:
     void testQuery();
     void testRunningDocumentEmpty();
     void testRunningDocument();
+    void testIssue1353();
 
     TSUNIT_TEST_BEGIN(JsonTest);
     TSUNIT_TEST(testSimple);
@@ -54,6 +56,7 @@ public:
     TSUNIT_TEST(testQuery);
     TSUNIT_TEST(testRunningDocumentEmpty);
     TSUNIT_TEST(testRunningDocument);
+    TSUNIT_TEST(testIssue1353);
     TSUNIT_TEST_END();
 
 private:
@@ -866,4 +869,41 @@ void JsonTest::testRunningDocument()
                  u"  }\n"
                  u"}",
                  loadTempFile());
+}
+
+void JsonTest::testIssue1353()
+{
+    ts::json::Object root;
+
+    root.add(u"a", 0);
+    root.add(u"b", 0.0);
+    int i = 0;
+    root.add(u"c", i);
+    double f = 0.0;
+    root.add(u"d", f);
+    f = 0.000001;
+    root.add(u"e", f);
+
+    TSUNIT_ASSERT(root.query(u"a").isNumber());
+    TSUNIT_ASSERT(root.query(u"b").isNumber());
+    TSUNIT_ASSERT(root.query(u"c").isNumber());
+    TSUNIT_ASSERT(root.query(u"d").isNumber());
+    TSUNIT_ASSERT(root.query(u"e").isNumber());
+
+    TSUNIT_ASSERT(root.query(u"a").isInteger());
+    TSUNIT_ASSERT(root.query(u"b").isInteger());
+    TSUNIT_ASSERT(root.query(u"c").isInteger());
+    TSUNIT_ASSERT(root.query(u"d").isInteger());
+    TSUNIT_ASSERT(!root.query(u"e").isInteger());
+
+    f = 1.2;
+    for (size_t pow = 0; pow <= 9; pow++) {
+        ts::UString name(ts::UString::Format(u"f%d", {pow}));
+        root.add(name, f / double(ts::Power10(pow)));
+    }
+
+    TSUNIT_EQUAL(u"{ \"a\": 0, \"b\": 0, \"c\": 0, \"d\": 0, \"e\": 1.0e-6, "
+                 u"\"f0\": 1.2, \"f1\": 0.12, \"f2\": 0.012, \"f3\": 0.0012, \"f4\": 1.2e-4, "
+                 "\"f5\": 1.2e-5, \"f6\": 1.2e-6, \"f7\": 1.2e-7, \"f8\": 1.2e-8, \"f9\": 1.2e-9 }",
+                 root.oneLiner(CERR));
 }
