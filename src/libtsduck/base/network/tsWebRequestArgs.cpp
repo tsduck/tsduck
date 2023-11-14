@@ -46,6 +46,11 @@ void ts::WebRequestArgs::defineArgs(Args& args)
     args.option(u"user-agent", 0, Args::STRING);
     args.help(u"user-agent", u"'string'",
               u"Specify the user agent string to send in HTTP requests.");
+
+    args.option(u"compressed",0);
+    args.help(u"compressed",
+              u"Accept compressed HTTP responses. By default, compressed responses are "
+              u"not accepted.");
 }
 
 
@@ -64,5 +69,6 @@ bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)
     args.getValue(proxyUser, u"proxy-user");
     args.getValue(proxyPassword, u"proxy-password");
     args.getValue(userAgent, u"user-agent");
+    useCompression = args.present(u"compressed");
     return true;
 }

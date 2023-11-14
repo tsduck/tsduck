@@ -87,6 +87,16 @@ void ts::WebRequest::setUserAgent(const UString& name)
 
 
 //----------------------------------------------------------------------------
+// Enable compression.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::enableCompression()
+{
+    _useCompression = true;
+}
+
+
+//----------------------------------------------------------------------------
 // Set timeout options.
 //----------------------------------------------------------------------------
 
@@ -215,6 +225,9 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
     }
     if (args.useCookies) {
         enableCookies(args.cookiesFile);
+    }
+    if (args.useCompression) {
+        enableCompression();
     }
 }
 
