@@ -15,10 +15,7 @@
 #include "tsPlatform.h"
 #include "tsSafePtr.h"
 #include "tsMutex.h"
-#include "tsGuardMutex.h"
 #include "tsTime.h"
-#include "tsCondition.h"
-#include "tsGuardCondition.h"
 
 namespace ts {
     //!
@@ -191,18 +188,18 @@ namespace ts {
 
     private:
         // Private members.
-        mutable Mutex     _mutex {};         //!< Protect access to all private members
-        mutable Condition _enqueued {};      //!< Signaled when some message is inserted
-        mutable Condition _dequeued {};      //!< Signaled when some message is removed
-        size_t            _maxMessages = 0;  //!< Max number of messages in the queue
-        MessageList       _queue {};         //!< Actual message queue.
+        mutable std::mutex              _mutex {};         //!< Protect access to all private members
+        mutable std::condition_variable _enqueued {};      //!< Signaled when some message is inserted
+        mutable std::condition_variable _dequeued {};      //!< Signaled when some message is removed
+        size_t      _maxMessages = 0;  //!< Max number of messages in the queue
+        MessageList _queue {};         //!< Actual message queue.
 
         // Enqueue a safe pointer in the list and signal the condition.
         // Must be executed under the protection of the lock.
         void enqueuePtr(const MessagePtr& ptr);
 
         // Wait for free space in the queue using a specific timeout, under the protection of the mutex.
-        bool waitFreeSpace(GuardCondition& lock, MilliSecond timeout);
+        bool waitFreeSpace(std::unique_lock<std::mutex>& lock, MilliSecond timeout);
     };
 }
 
@@ -233,14 +230,14 @@ TS_POP_WARNING()
 template <typename MSG, class MUTEX>
 size_t ts::MessageQueue<MSG, MUTEX>::getMaxMessages() const
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     return _maxMessages;
 }
 
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::setMaxMessages(size_t max)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     _maxMessages = max;
 }
 
@@ -267,7 +264,6 @@ ts::MessageQueue<MSG, MUTEX>::dequeuePlacement(MessageList& list)
 }
 
 
-
 //----------------------------------------------------------------------------
 // Enqueue a safe pointer in the list and signal the condition.
 // Must be executed under the protection of the lock.
@@ -277,7 +273,7 @@ template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::enqueuePtr(const MessagePtr& ptr)
 {
     _queue.insert(enqueuePlacement(ptr, _queue), ptr);
-    _enqueued.signal();
+    _enqueued.notify_all();
 }
 
 
@@ -286,27 +282,23 @@ void ts::MessageQueue<MSG, MUTEX>::enqueuePtr(const MessagePtr& ptr)
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-bool ts::MessageQueue<MSG, MUTEX>::waitFreeSpace(GuardCondition& lock, MilliSecond timeout)
+bool ts::MessageQueue<MSG, MUTEX>::waitFreeSpace(std::unique_lock<std::mutex>& lock, MilliSecond timeout)
 {
-    // If the queue is full, wait for the queue not being full.
+    // If the queue is full, wait for dequeued messages and the queue not being full.
     if (_maxMessages != 0 && timeout > 0) {
         Time start(Time::CurrentUTC());
         while (_queue.size() >= _maxMessages) {
-
-            // Reduce timeout
-            if (timeout != Infinite) {
+            if (timeout == Infinite) {
+                _dequeued.wait(lock);
+            }
+            else {
+                // Reduce timeout
                 const Time now(Time::CurrentUTC());
                 timeout -= now - start;
                 start = now;
-                if (timeout <= 0) {
+                if (timeout <= 0 || _dequeued.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(timeout))) == std::cv_status::timeout) {
                     break; // timeout
                 }
-            }
-
-            // Wait for a message to be dequeued
-            // => temporarily release mutex and wait for dequeued condition.
-            if (!lock.waitCondition(timeout)) {
-                break; // timeout
             }
         }
     }
@@ -327,14 +319,14 @@ bool ts::MessageQueue<MSG, MUTEX>::enqueue(MessagePtr& msg, MilliSecond timeout)
     // Note that we lock the mutex _without_ timeout. Nobody keeps the mutex longer
     // than accessing a field. So the timeout does not apply here. The timeout applies
     // on waiting for space in the queue.
-    GuardCondition lock(_mutex, _dequeued);
+    std::unique_lock<std::mutex> lock(_mutex);
 
     if (waitFreeSpace(lock, timeout)) {
         // Successfully waited for free space in the queue.
         // Transfer ownership of the pointed object inside a code block which guarantees
         // that the new safe pointer will be destructed before releasing the lock.
-        const MessagePtr transfered(msg.release());
-        enqueuePtr(transfered);
+        const MessagePtr transferred(msg.release());
+        enqueuePtr(transferred);
         return true;
     }
     else {
@@ -347,7 +339,7 @@ template <typename MSG, class MUTEX>
 bool ts::MessageQueue<MSG, MUTEX>::enqueue(MSG* msg, MilliSecond timeout)
 {
     // Same code template as above.
-    GuardCondition lock(_mutex, _dequeued);
+    std::unique_lock<std::mutex> lock(_mutex);
 
     if (waitFreeSpace(lock, timeout)) {
         // Create a safe pointer to the pointed object inside a code block which guarantees
@@ -371,7 +363,7 @@ bool ts::MessageQueue<MSG, MUTEX>::enqueue(MSG* msg, MilliSecond timeout)
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MessagePtr& msg)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     {
         // Transfer ownership of the pointed object inside a code block which guarantees
         // that the new safe pointer will be destructed before releasing the lock.
@@ -383,7 +375,7 @@ void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MessagePtr& msg)
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MSG* msg)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     {
         // Create a safe pointer to the pointed object inside a code block which guarantees
         // that the safe pointer will be destructed before releasing the lock.
@@ -404,27 +396,23 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
     // Note that we lock the mutex _without_ timeout. Nobody keeps the mutex longer
     // than accessing a field. So the timeout does not apply here. The timeout applies
     // on waiting for a message from an empty queue.
-    GuardCondition lock(_mutex, _enqueued);
+    std::unique_lock<std::mutex> lock(_mutex);
 
     // If the timeout is non-zero, wait for the queue not being empty.
     if (timeout > 0) {
         Time start(Time::CurrentUTC());
         while (_queue.empty()) {
-
-            // Reduce timeout
-            if (timeout != Infinite) {
+            if (timeout == Infinite) {
+                _enqueued.wait(lock);
+            }
+            else {
+                // Reduce timeout
                 const Time now(Time::CurrentUTC());
                 timeout -= now - start;
                 start = now;
-                if (timeout <= 0) {
+                if (timeout <= 0 || _enqueued.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(timeout))) == std::cv_status::timeout) {
                     break; // timeout
                 }
-            }
-
-            // Wait for a message to be enqueued
-            // => temporarily release mutex and wait for enqueued condition.
-            if (!lock.waitCondition(timeout)) {
-                break; // timeout
             }
         }
     }
@@ -432,7 +420,7 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
     // Now, attempt to dequeue a message.
     const auto it = dequeuePlacement(_queue);
     if (it == _queue.end()) {
-        // Queue empty or nothing to queue, no message
+        // Queue empty or nothing to dequeue, no message
         return false;
     }
     else {
@@ -441,7 +429,7 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
         _queue.erase(it);
 
         // Signal that a message has been dequeued
-        _dequeued.signal();
+        _dequeued.notify_all();
         return true;
     }
 }
@@ -454,7 +442,7 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
 template <typename MSG, class MUTEX>
 typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::peek()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     const auto it = dequeuePlacement(_queue);
     return it == _queue.end() ? MessagePtr() : *it;
 }
@@ -467,10 +455,10 @@ typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::clear()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     if (!_queue.empty()) {
         _queue.clear();
         // Signal that messages have been dequeued (dropped in fact).
-        _dequeued.signal();
+        _dequeued.notify_all();
     }
 }
