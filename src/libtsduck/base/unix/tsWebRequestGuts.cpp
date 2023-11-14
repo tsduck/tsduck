@@ -93,6 +93,11 @@ TS_LLVM_NOWARNING(old-style-cast)
 #define TS_CURL_CALLAGAIN 1
 #endif
 
+// Before 7.21.6, CURLOPT_ACCEPT_ENCODING had a different name.
+#if !defined(CURLOPT_ACCEPT_ENCODING) && defined(CURLOPT_ENCODING)
+#define CURLOPT_ACCEPT_ENCODING CURLOPT_ENCODING
+#endif
+
 // URL of the latest official set of CA certificates from CURL.
 #define FRESH_CACERT_URL u"https://curl.se/ca/cacert.pem"
 
@@ -415,7 +420,11 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
         // Set compression.
         if (status == ::CURLE_OK && _request._useCompression) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_ACCEPT_ENCODING, "gzip, deflate");
+            // From https://curl.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html :
+            // "To aid applications not having to bother about what specific algorithms this particular libcurl build
+            // supports, libcurl allows a zero-length string to be set ("") to ask for an Accept-Encoding: header to
+            // be used that contains all built-in supported encodings."
+            status = ::curl_easy_setopt(_curl, CURLOPT_ACCEPT_ENCODING, "");
         }
 
         // Set the starting URL.

@@ -16,6 +16,11 @@
 
 void ts::WebRequestArgs::defineArgs(Args& args)
 {
+    args.option(u"compressed", 0);
+    args.help(u"compressed",
+              u"Accept compressed HTTP responses. By default, compressed responses are "
+              u"not accepted.");
+
     args.option(u"connection-timeout", 0, Args::POSITIVE);
     args.help(u"connection-timeout",
               u"Specify the connection timeout in milliseconds. By default, let the "
@@ -46,11 +51,6 @@ void ts::WebRequestArgs::defineArgs(Args& args)
     args.option(u"user-agent", 0, Args::STRING);
     args.help(u"user-agent", u"'string'",
               u"Specify the user agent string to send in HTTP requests.");
-
-    args.option(u"compressed",0);
-    args.help(u"compressed",
-              u"Accept compressed HTTP responses. By default, compressed responses are "
-              u"not accepted.");
 }
 
 
