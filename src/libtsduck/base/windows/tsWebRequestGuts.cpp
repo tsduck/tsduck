@@ -212,6 +212,21 @@ bool ts::WebRequest::SystemGuts::init()
         }
     }
 
+    // List of request headers as one string.
+    UString headers;
+
+    // Set compression.
+    if (_request._useCompression) {
+        // We must separately set the Accept-Encoding header and configure automatic decompression.
+        headers = u"Accept-Encoding: deflate, gzip";
+        ::BOOL mode = TRUE;
+        if (!::InternetSetOptionW(_inet, INTERNET_OPTION_HTTP_DECODING, &mode, ::DWORD(sizeof(mode)))) {
+            error(u"error setting compression mode");
+            clear();
+            return false;
+        }
+    }
+
     // Specify the various timeouts.
     if (_request._connectionTimeout > 0) {
         ::DWORD timeout = ::DWORD(_request._connectionTimeout);
@@ -242,9 +257,6 @@ bool ts::WebRequest::SystemGuts::init()
         INTERNET_FLAG_NO_CACHE_WRITE;     // Don't save downloaded data to local disk cache.
 
     // Build the list of request headers.
-    ::WCHAR* headerAddress = 0;
-    ::DWORD headerLength = 0;
-    UString headers;
     if (!_request._requestHeaders.empty()) {
         for (const auto& it : _request._requestHeaders) {
             if (!headers.empty()) {
@@ -254,6 +266,10 @@ bool ts::WebRequest::SystemGuts::init()
             headers.append(u": ");
             headers.append(it.second);
         }
+    }
+    ::WCHAR* headerAddress = 0;
+    ::DWORD  headerLength = 0;
+    if (!headers.empty()) {
         headerAddress = headers.wc_str();
         headerLength = ::DWORD(headers.size());
     }

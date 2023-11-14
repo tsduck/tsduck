@@ -77,41 +77,6 @@ ts::WebRequest::~WebRequest()
 
 
 //----------------------------------------------------------------------------
-// Set the user agent name to use in HTTP headers.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::setUserAgent(const UString& name)
-{
-    _userAgent = name.empty() ? DEFAULT_USER_AGENT : name;
-}
-
-
-//----------------------------------------------------------------------------
-// Enable compression.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::enableCompression()
-{
-    _useCompression = true;
-}
-
-
-//----------------------------------------------------------------------------
-// Set timeout options.
-//----------------------------------------------------------------------------
-
-void ts::WebRequest::setConnectionTimeout(MilliSecond timeout)
-{
-    _connectionTimeout = timeout;
-}
-
-void ts::WebRequest::setReceiveTimeout(MilliSecond timeout)
-{
-    _receiveTimeout = timeout;
-}
-
-
-//----------------------------------------------------------------------------
 // Set/get proxy options.
 //----------------------------------------------------------------------------
 
