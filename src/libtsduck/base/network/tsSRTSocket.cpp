@@ -1193,7 +1193,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.interval", true).add(u"reorder-distance-packets", stats.pktReorderDistance);
             root.query(u"receive.interval", true).add(u"ignored-late-packets", stats.pktRcvBelated);
             root.query(u"receive.interval", true).add(u"undecrypted-packets", stats.pktRcvUndecrypt);
-            root.query(u"receive.interval", true).add(u"unique-byte", stats.pktRcvUndecrypt);
+            root.query(u"receive.interval", true).add(u"unique-byte", stats.byteRecvUnique);
             root.query(u"receive.interval", true).add(u"loss-byte", stats.byteRcvLoss);
             root.query(u"receive.interval", true).add(u"drop-byte", stats.byteRcvDrop);
             root.query(u"receive.interval", true).add(u"undecrypted-byte", stats.byteRcvUndecrypt);
