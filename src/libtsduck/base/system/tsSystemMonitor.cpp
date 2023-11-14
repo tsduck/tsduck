@@ -10,7 +10,6 @@
 #include "tsGuardCondition.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
-#include "tsIntegerUtils.h"
 #include "tsForkPipe.h"
 #include "tsSysUtils.h"
 #include "tsTime.h"
@@ -53,9 +52,9 @@ ts::UString ts::SystemMonitor::MonPrefix(const ts::Time& date)
 
 void ts::SystemMonitor::stop()
 {
-    GuardCondition lock(_mutex, _wake_up);
+    std::lock_guard<std::mutex> lock(_mutex);
     _terminate = true;
-    lock.signal();
+    _wake_up.notify_one();
 }
 
 
@@ -115,9 +114,9 @@ void ts::SystemMonitor::main()
 
         // Wait until due time or termination request
         {
-            GuardCondition lock(_mutex, _wake_up);
+            std::unique_lock<std::mutex> lock(_mutex);
             if (!_terminate) {
-                lock.waitCondition(period->interval);
+                _wake_up.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds(period->interval)));
             }
             if (_terminate) {
                 break;

@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacketQueue.h"
-#include "tsGuardMutex.h"
-#include "tsGuardCondition.h"
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +25,7 @@ ts::TSPacketQueue::TSPacketQueue(size_t size) :
 
 void ts::TSPacketQueue::reset(size_t size)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Resize the buffer if requested.
     if (size != NPOS) {
@@ -50,13 +48,13 @@ void ts::TSPacketQueue::reset(size_t size)
 
 size_t ts::TSPacketQueue::bufferSize() const
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     return _buffer.size();
 }
 
 size_t ts::TSPacketQueue::currentSize() const
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     return _inCount;
 }
 
@@ -67,7 +65,7 @@ size_t ts::TSPacketQueue::currentSize() const
 
 bool ts::TSPacketQueue::lockWriteBuffer(TSPacket*& buffer, size_t& buffer_size, size_t min_size)
 {
-    GuardCondition lock(_mutex, _dequeued);
+    std::unique_lock<std::mutex> lock(_mutex);
 
     // Maximum size we can allocate to the write window.
     assert(_readIndex < _buffer.size());
@@ -80,7 +78,7 @@ bool ts::TSPacketQueue::lockWriteBuffer(TSPacket*& buffer, size_t& buffer_size, 
 
     // Wait until we get enough free space.
     while (!_stopped && _buffer.size() - _inCount < min_size) {
-        lock.waitCondition();
+        _dequeued.wait(lock);
     }
 
     // Return the write window.
@@ -110,7 +108,7 @@ bool ts::TSPacketQueue::lockWriteBuffer(TSPacket*& buffer, size_t& buffer_size, 
 
 void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
 {
-    GuardCondition lock(_mutex, _enqueued);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Verify that the specified size is compatible with the current write window.
     assert(_readIndex < _buffer.size());
@@ -137,7 +135,7 @@ void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
     _writeIndex = (_writeIndex + count) % _buffer.size();
 
     // Signal that packets have been enqueued
-    lock.signal();
+    _enqueued.notify_all();
 }
 
 
@@ -147,7 +145,7 @@ void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
 
 void ts::TSPacketQueue::setBitrate(const BitRate& bitrate)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Remember the bitrate value.
     _bitrate = bitrate;
@@ -165,7 +163,7 @@ void ts::TSPacketQueue::setBitrate(const BitRate& bitrate)
 
 bool ts::TSPacketQueue::eof() const
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     return _eof && _inCount == 0;
 }
 
@@ -176,11 +174,11 @@ bool ts::TSPacketQueue::eof() const
 
 void ts::TSPacketQueue::setEOF()
 {
-    GuardCondition lock(_mutex, _enqueued);
+    std::lock_guard<std::mutex> lock(_mutex);
     _eof = true;
 
     // We did not really enqueue packets but if a reader thread is waiting we need to wake it up.
-    lock.signal();
+    _enqueued.notify_all();
 }
 
 
@@ -208,7 +206,7 @@ ts::BitRate ts::TSPacketQueue::getBitrate() const
 
 bool ts::TSPacketQueue::getPacket(TSPacket& packet, BitRate& bitrate)
 {
-    GuardCondition lock(_mutex, _dequeued);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Get bitrate, either from reader thread or from PCR analysis.
     bitrate = getBitrate();
@@ -225,7 +223,7 @@ bool ts::TSPacketQueue::getPacket(TSPacket& packet, BitRate& bitrate)
         _inCount--;
 
         // Signal the condition that a packet was freed.
-        lock.signal();
+        _dequeued.notify_all();
 
         return true;
     }
@@ -242,9 +240,9 @@ bool ts::TSPacketQueue::waitPackets(TSPacket* buffer, size_t buffer_count, size_
     actual_count = 0;
 
     // Wait until there is some packet in the buffer.
-    GuardCondition lock(_mutex, _enqueued);
+    std::unique_lock<std::mutex> lock(_mutex);
     while (!_eof && !_stopped && _inCount == 0) {
-        lock.waitCondition();
+        _enqueued.wait(lock);
     }
 
     // Return as many packets as we can. Ignore eof for now.
@@ -260,7 +258,7 @@ bool ts::TSPacketQueue::waitPackets(TSPacket* buffer, size_t buffer_count, size_
     bitrate = getBitrate();
 
     // Signal that packets were freed.
-    _dequeued.signal();
+    _dequeued.notify_all();
 
     // Return false when no packet is returned. Do not return false immediately
     // when _eof is true, wait for all enqueued packets to be returned.
@@ -274,12 +272,12 @@ bool ts::TSPacketQueue::waitPackets(TSPacket* buffer, size_t buffer_count, size_
 
 void ts::TSPacketQueue::stop()
 {
-    GuardCondition lock(_mutex, _dequeued);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Report a stop condition.
     _stopped = true;
 
     // Signal the condition that a packet was freed. This is not really freeing
     // a packet but it means that the writer thread should wake up.
-    lock.signal();
+    _dequeued.notify_all();
 }

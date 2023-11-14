@@ -200,8 +200,8 @@ namespace ts {
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
         volatile bool    _wfb_received = false;        // First batch was received.
-        Mutex            _wfb_mutex {};                // Mutex waiting for _wfb_received.
-        Condition        _wfb_condition{};             // Condition waiting for _wfb_received.
+        std::mutex       _wfb_mutex {};                // Mutex waiting for _wfb_received.
+        std::condition_variable _wfb_condition{};      // Condition waiting for _wfb_received.
 
         // Implementation of SignalizationHandlerInterface.
         virtual void handlePMT(const PMT&, PID) override;
@@ -479,12 +479,8 @@ bool ts::SpliceInjectPlugin::start()
     // If --wait-first-batch was specified, suspend until a first batch of commands is queued.
     if (_wait_first_batch) {
         tsp->verbose(u"waiting for first batch of commands");
-        {
-            GuardCondition lock(_wfb_mutex, _wfb_condition);
-            while (!_wfb_received) {
-                lock.waitCondition();
-            }
-        }
+        std::unique_lock<std::mutex> lock(_wfb_mutex);
+        _wfb_condition.wait(lock, [this]() { return _wfb_received; });
         tsp->verbose(u"received first batch of commands");
     }
 
@@ -781,9 +777,9 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
 
     // If --wait-first-batch was specified, signal when the first batch of commands is queued.
     if (_wait_first_batch && !_wfb_received) {
-        GuardCondition lock(_wfb_mutex, _wfb_condition);
+        std::lock_guard<std::mutex> lock(_wfb_mutex);
         _wfb_received = true;
-        lock.signal();
+        _wfb_condition.notify_one();
     }
 }
 

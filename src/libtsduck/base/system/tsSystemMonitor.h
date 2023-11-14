@@ -13,8 +13,6 @@
 
 #pragma once
 #include "tsThread.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
 #include "tsTime.h"
 #include "tsReport.h"
 #include "tsxml.h"
@@ -91,11 +89,11 @@ namespace ts {
 
         // Private members
         Report&    _report;
-        UString    _config_file {};     // XML configuration file name.
-        PeriodList _periods {};         // List of monitoring periods.
-        Mutex      _mutex {};
-        Condition  _wake_up {};         // Accessed under mutex.
-        bool       _terminate = false;  // Accessed under mutex.
+        UString    _config_file {};          // XML configuration file name.
+        PeriodList _periods {};              // List of monitoring periods.
+        std::mutex _mutex {};                // Protect subsequent fields.
+        std::condition_variable _wake_up {}; // Accessed under mutex.
+        bool       _terminate = false;       // Accessed under mutex.
 
         // Inherited from Thread
         virtual void main() override;

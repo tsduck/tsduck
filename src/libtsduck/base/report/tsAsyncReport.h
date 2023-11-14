@@ -118,12 +118,12 @@ namespace ts {
         {
             LogMessage(bool t, int s, const UString& m) : terminate(t), severity(s), message(m) {}
 
-            bool    terminate = false;  // ask the logging thread to terminate
-            int     severity {Severity::Info};
+            bool    terminate = false;  // tell logging thread to terminate
+            int     severity = Severity::Info;
             UString message {};
         };
-        typedef SafePtr <LogMessage, NullMutex> LogMessagePtr;
-        typedef MessageQueue <LogMessage, NullMutex> LogMessageQueue;
+        typedef SafePtr<LogMessage, NullMutex> LogMessagePtr;
+        typedef MessageQueue<LogMessage, NullMutex> LogMessageQueue;
 
         // Private members:
         LogMessageQueue _log_queue {};

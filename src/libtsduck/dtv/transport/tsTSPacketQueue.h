@@ -14,8 +14,6 @@
 #pragma once
 #include "tsTSPacket.h"
 #include "tsPCRAnalyzer.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
 
 namespace ts {
     //!
@@ -149,9 +147,9 @@ namespace ts {
     private:
         volatile bool     _eof = false;      // The writer thread has reported an end of file.
         volatile bool     _stopped = false;  // The read thread has reported a stop condition.
-        mutable Mutex     _mutex {};         // Protect access to shared data.
-        mutable Condition _enqueued {};      // Signaled when packets are inserted.
-        mutable Condition _dequeued {};      // Signaled when packets were freed.
+        mutable std::mutex              _mutex {};     // Protect access to shared data.
+        mutable std::condition_variable _enqueued {};  // Signaled when packets are inserted.
+        mutable std::condition_variable _dequeued {};  // Signaled when packets were freed.
         TSPacketVector    _buffer {};        // The packet buffer.
         PCRAnalyzer       _pcr {1, 12};      // PCR analyzer to get the bitrate.
         size_t            _inCount = 0;      // Number of packets currently inside the buffer.
