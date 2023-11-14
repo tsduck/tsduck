@@ -1,21 +1,39 @@
 The following people are contributing or have contributed to TSDuck:
 
-Thierry Lelégard (original author, current maintainer)
-Jérôme Lévèque
-Frédéric Peignot
+George Adams
+Moritz Barsnick
+Richie Chang
+Amos Cheung
+Ruben O. Chiavone
+Karol Čisarik
 Tristan Claverie
-Harald Jordan
-Chris Hibbert
-Aaron Levinson
 Oliver Collyer
+Michael Cullen
+Maciej Czyżkowski
+Eric De Jong
 Anthony Delannoy
 Martin Frétigné
-Fei Wong
-Maciej Czyzkowski
-Richie Chang
+Thomas Göttgens
+Max Halldén
+Chris Hibbert
 Paul Higgs
-Amos Cheung
-Anders Solberg Pedersen
+Harald Jordan
+Thierry Lelégard (original author, current maintainer)
+Jérôme Lévèque
+Aaron Levinson
 Christophe Massiot
+Athanasios Oikonomou
+Masayuki Nagamachi
+Frédéric Peignot
+Antti Plathan
+Ubaldo Porcheddu
+Stefan Pöschel
+Carson Riker
+Piotr Serafin
+Anders Solberg Pedersen
+Nicolas Stuardo Diaz
+Enrico Vittorini
+Fei Wong
+Marwan Yassin
 
 If you wish to contribute, please see https://tsduck.io/doxy/contributing.html

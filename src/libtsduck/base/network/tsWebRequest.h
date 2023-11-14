@@ -53,13 +53,13 @@ namespace ts {
         //! Set the connection timeout for this request.
         //! @param [in] timeout Connection timeout in milliseconds.
         //!
-        void setConnectionTimeout(MilliSecond timeout);
+        void setConnectionTimeout(MilliSecond timeout) { _connectionTimeout = timeout; }
 
         //!
         //! Set the timeout for each receive operation.
         //! @param [in] timeout Reception timeout in milliseconds.
         //!
-        void setReceiveTimeout(MilliSecond timeout);
+        void setReceiveTimeout(MilliSecond timeout) { _receiveTimeout = timeout; }
 
         //!
         //! Set the optional proxy host and port for this request.
@@ -153,13 +153,14 @@ namespace ts {
         //! Set the user agent name to use in HTTP headers.
         //! @param [in] name The user agent name. If empty, DEFAULT_USER_AGENT is used.
         //!
-        void setUserAgent(const UString& name = UString());
+        void setUserAgent(const UString& name = UString()) { _userAgent = name.empty() ? DEFAULT_USER_AGENT : name; }
 
         //!
         //! Enable compression.
         //! Compression is disabled by default.
+        //! @param [in] on Boolean setting compression on or off.
         //!
-        void enableCompression();
+        void enableCompression(bool on = true) { _useCompression = on; }
 
         //!
         //! Get the current user agent name to use in HTTP headers.
