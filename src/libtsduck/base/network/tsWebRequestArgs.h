@@ -41,6 +41,7 @@ namespace ts {
         UString       userAgent {};          //!< -\-user-agent
         bool          useCookies = true;     //!< Use cookies, no command line options, true by default
         UString       cookiesFile {};        //!< Cookies files (Linux only), no command line options
+        bool          useCompression = false; //!< -\-compressed
 
         //!
         //! Add command line option definitions in an Args.

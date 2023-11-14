@@ -413,6 +413,11 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             status = ::curl_easy_setopt(_curl, CURLOPT_USERAGENT, _request._userAgent.toUTF8().c_str());
         }
 
+        // Set compression.
+        if (status == ::CURLE_OK && _request._useCompression) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_ACCEPT_ENCODING, "gzip, deflate");
+        }
+
         // Set the starting URL.
         if (status == ::CURLE_OK) {
             status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());
