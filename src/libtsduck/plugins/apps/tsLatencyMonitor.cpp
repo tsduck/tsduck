@@ -94,7 +94,7 @@ bool ts::LatencyMonitor::start()
 
 void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacketMetadataVector& metadata, size_t count, size_t pluginIndex)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     TimingDataList& timingDataList = _inputs[pluginIndex].timingDataList;
 
     for (size_t i = 0; i < count; i++) {

@@ -8,7 +8,6 @@
 
 #include "tsTCPServer.h"
 #include "tsIPUtils.h"
-#include "tsGuardMutex.h"
 #include "tsMemory.h"
 
 
@@ -50,7 +49,7 @@ bool ts::TCPServer::accept (TCPConnection& client, IPv4SocketAddress& client_add
     SysSocketType client_sock = ::accept(getSocket(), &sock_addr, &len);
 
     if (client_sock == SYS_SOCKET_INVALID) {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         if (isOpen()) {
             report.error(u"error accepting TCP client: %s", {SysSocketErrorCodeMessage()});
         }

@@ -419,7 +419,7 @@ ts::HFBand::HFBandRepository::HFBandRepository() :
 bool ts::HFBand::HFBandRepository::load(Report& report)
 {
     // Lock access to the repository.
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
 
     // If already loaded, fine.
     if (!_objects.empty()) {
@@ -495,13 +495,13 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
 
 ts::UString ts::HFBand::HFBandRepository::defaultRegion() const
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     return _default_region;
 }
 
 void ts::HFBand::HFBandRepository::setDefaultRegion(const UString& region)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     // If the region is empty, get the one for configuration file.
     _default_region = region.empty() ? DuckConfigFile::Instance().value(u"default.region", u"europe") : region;
 }
@@ -514,7 +514,7 @@ void ts::HFBand::HFBandRepository::setDefaultRegion(const UString& region)
 const ts::HFBand* ts::HFBand::HFBandRepository::get(const UString& band, const UString& region, Report& report) const
 {
     // Lock access to the repository.
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
 
     const HFBandIndex index(band, region.empty() ? _default_region : region);
     const auto it = _objects.find(index);
@@ -535,7 +535,7 @@ const ts::HFBand* ts::HFBand::HFBandRepository::get(const UString& band, const U
 const ts::UStringList ts::HFBand::HFBandRepository::allBands(const UString& region) const
 {
     // Lock access to the repository.
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
 
     // Actual region name to seach, in HFBandIndex format.
     UString reg(region);

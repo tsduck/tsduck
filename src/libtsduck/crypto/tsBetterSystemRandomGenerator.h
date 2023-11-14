@@ -61,15 +61,15 @@ namespace ts {
         virtual bool read(void*, size_t) override;
 
     private:
-        Report*       _report = nullptr;  // Where to report errors.
-        mutable Mutex _mutex {};          // Exclusive access to singleton.
-        bool          _ready = true;      // Fully initialized.
-        UString       _state_file;        // Name of the entropy state file.
-        AES           _aes {};            // AES engine.
-        SHA256        _sha {};            // SHA-256 engine.
-        size_t        _index;             // Next index in _pool.
-        ByteBlock     _state {};          // Entropy state.
-        ByteBlock     _pool;              // Random data pool.
+        mutable std::recursive_mutex _mutex {};
+        Report*   _report = nullptr;  // Where to report errors.
+        bool      _ready = true;      // Fully initialized.
+        UString   _state_file;        // Name of the entropy state file.
+        AES       _aes {};            // AES engine.
+        SHA256    _sha {};            // SHA-256 engine.
+        size_t    _index;             // Next index in _pool.
+        ByteBlock _state {};          // Entropy state.
+        ByteBlock _pool;              // Random data pool.
 
         // Update the content of the random pool with new data.
         bool updatePool();

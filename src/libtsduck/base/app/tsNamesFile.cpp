@@ -10,8 +10,6 @@
 #include "tsFileUtils.h"
 #include "tsCerrReport.h"
 #include "tsFatal.h"
-#include "tsMutex.h"
-#include "tsGuardMutex.h"
 #include "tsSingleton.h"
 
 
@@ -54,7 +52,7 @@ namespace {
         void removeExtensionFile(const ts::UString& fileName);
         void getExtensionFiles(ts::UStringList& fileNames);
     private:
-        ts::Mutex                                   _mutex {};     // Protected access to other fiekds.
+        std::recursive_mutex                        _mutex {};     // Protected access to other fields.
         std::map<ts::UString, const ts::NamesFile*> _files {};     // Loaded instances by name.
         ts::UStringList                             _extFiles {};  // Additional names files.
     };
@@ -85,7 +83,7 @@ AllInstances::~AllInstances()
 // Lookup / load a names file.
 const ts::NamesFile* AllInstances::getFile(const ts::UString& fileName, bool mergeExtensions)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     auto it = _files.find(fileName);
     if (it != _files.end() && it->second != nullptr) {
         return it->second;
@@ -123,7 +121,7 @@ void AllInstances::deleteInstance(const ts::NamesFile* instance)
 // Add an extension file name (check that there is no duplicate).
 void AllInstances::addExtensionFile(const ts::UString& fileName)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     for (const auto& it : _extFiles) {
         if (it == fileName) {
             return;
@@ -135,7 +133,7 @@ void AllInstances::addExtensionFile(const ts::UString& fileName)
 // Remove an extension file name.
 void AllInstances::removeExtensionFile(const ts::UString& fileName)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     for (auto it = _extFiles.begin(); it != _extFiles.end(); ) {
         if (*it == fileName) {
             it = _extFiles.erase(it);
@@ -149,7 +147,7 @@ void AllInstances::removeExtensionFile(const ts::UString& fileName)
 // Get the list of all extension files.
 void AllInstances::getExtensionFiles(ts::UStringList& fileNames)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     fileNames = _extFiles;
 }
 

@@ -13,9 +13,7 @@
 
 #pragma once
 #include "tsLatencyMonitorArgs.h"
-#include "tsMutex.h"
 #include "tsTime.h"
-#include <memory>
 
 namespace ts {
 
@@ -75,14 +73,14 @@ namespace ts {
         };
         typedef std::vector<InputData> InputDataVector;
 
-        Report&            _report;
-        LatencyMonitorArgs _args {};
-        InputDataVector    _inputs {};
-        Mutex              _mutex {};              // Global mutex, protect access to all subsequent fields.
-        double             _max_latency = 0;       // Maximum latency between two inputs
-        Time               _last_output_time {};   // Timestamp to record last output time
-        std::ofstream      _output_stream {};      // Output stream file
-        std::ostream*      _output_file = nullptr; // Reference to actual output stream file
+        Report&              _report;
+        LatencyMonitorArgs   _args {};
+        InputDataVector      _inputs {};
+        std::recursive_mutex _mutex {};              // Global mutex, protect access to all subsequent fields.
+        double               _max_latency = 0;       // Maximum latency between two inputs
+        Time                 _last_output_time {};   // Timestamp to record last output time
+        std::ofstream        _output_stream {};      // Output stream file
+        std::ostream*        _output_file = nullptr; // Reference to actual output stream file
 
         // Generate csv header
         void csvHeader();

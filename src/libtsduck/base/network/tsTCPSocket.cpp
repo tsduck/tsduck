@@ -8,7 +8,6 @@
 
 #include "tsTCPSocket.h"
 #include "tsIPUtils.h"
-#include "tsGuardMutex.h"
 #include "tsNullReport.h"
 
 
@@ -42,7 +41,7 @@ void ts::TCPSocket::handleClosed(Report& report)
 bool ts::TCPSocket::open(Report& report)
 {
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         if (!createSocket(PF_INET, SOCK_STREAM, IPPROTO_TCP, report)) {
             return false;
         }
@@ -59,7 +58,7 @@ bool ts::TCPSocket::open(Report& report)
 void ts::TCPSocket::declareOpened(SysSocketType sock, Report& report)
 {
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         Socket::declareOpened(sock, report);
     }
     handleOpened(report);
@@ -74,7 +73,7 @@ bool ts::TCPSocket::close(Report& report)
 {
     bool ok = true;
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         // Close socket, without proper disconnection
         ok = Socket::close(report);
     }

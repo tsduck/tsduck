@@ -13,7 +13,10 @@
 
 #pragma once
 #include "tsSingleton.h"
-#include "tsMutex.h"
+
+#include "tsBeforeStandardHeaders.h"
+#include <signal.h>
+#include "tsAfterStandardHeaders.h"
 
 namespace ts {
     //!
@@ -40,9 +43,9 @@ namespace ts {
 
     private:
         // Private members:
-        const int         _signal_min;
-        const int         _signal_max;
-        Mutex             _mutex;
-        std::vector<bool> _signals;
+        const int         _signal_min = SIGRTMIN;
+        const int         _signal_max = SIGRTMAX;
+        std::mutex        _mutex {};
+        std::vector<bool> _signals {};
     };
 }

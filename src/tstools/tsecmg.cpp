@@ -228,7 +228,7 @@ public:
 private:
     ts::AsyncReport    _report;       // Asynchronous message report.
     ts::tlv::Logger    _logger;       // Protocol message logger.
-    ts::Mutex          _mutex {};     // Protect shared data.
+    std::mutex         _mutex {};     // Protect shared data.
     std::set<uint16_t> _channels {};  // Active channels.
 };
 
@@ -250,7 +250,7 @@ ECMGSharedData::ECMGSharedData(const ECMGOptions& opt) :
 // Declare a new ECM_channel_id. Return false if already active.
 bool ECMGSharedData::openChannel(uint16_t id)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     const bool ok = _channels.count(id) == 0;
     _channels.insert(id);
     return ok;
@@ -259,7 +259,7 @@ bool ECMGSharedData::openChannel(uint16_t id)
 // Release a ECM_channel_id. Return false if not active.
 bool ECMGSharedData::closeChannel(uint16_t id)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     const bool ok = _channels.count(id) != 0;
     _channels.erase(id);
     return ok;
