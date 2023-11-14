@@ -11,11 +11,6 @@
 //-----------------------------------------------------------------------------
 
 #include "tsSignalAllocator.h"
-#include "tsGuardMutex.h"
-
-#include "tsBeforeStandardHeaders.h"
-#include <signal.h>
-#include "tsAfterStandardHeaders.h"
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::SignalAllocator);
@@ -26,9 +21,6 @@ TS_DEFINE_SINGLETON(ts::SignalAllocator);
 //-----------------------------------------------------------------------------
 
 ts::SignalAllocator::SignalAllocator() :
-    _signal_min(SIGRTMIN),
-    _signal_max(SIGRTMAX),
-    _mutex(),
     _signals(std::max<size_t>(0, _signal_max - _signal_min + 1), false)
 {
 }
@@ -40,7 +32,7 @@ ts::SignalAllocator::SignalAllocator() :
 
 int ts::SignalAllocator::allocate()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     for (size_t n = 0; n < _signals.size(); ++n) {
         if (!_signals[n]) {
             _signals[n] = true;
@@ -58,7 +50,7 @@ int ts::SignalAllocator::allocate()
 void ts::SignalAllocator::release(int sig)
 {
     if (sig >= _signal_min && sig <= _signal_max) {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _signals[size_t(sig - _signal_min)] = false;
     }
 }

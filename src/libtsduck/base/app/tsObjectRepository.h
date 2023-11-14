@@ -14,7 +14,6 @@
 #pragma once
 #include "tsSingleton.h"
 #include "tsObject.h"
-#include "tsMutex.h"
 
 namespace ts {
     //!
@@ -52,7 +51,7 @@ namespace ts {
         void erase(const UString& name);
 
     private:
-        Mutex _mutex {};
+        std::mutex _mutex {};
         std::map<UString, ObjectPtr> _repository {};
     };
 }

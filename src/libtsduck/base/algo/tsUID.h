@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsSingleton.h"
-#include "tsMutex.h"
 
 namespace ts {
     //!
@@ -33,7 +32,7 @@ namespace ts {
         uint64_t newUID();
 
     private:
-        Mutex    _mutex;
-        uint64_t _next_uid;
+        std::mutex _mutex {};
+        uint64_t   _next_uid;
     };
 }

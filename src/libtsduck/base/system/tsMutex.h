@@ -31,6 +31,10 @@ namespace ts {
     //! The implementation of this class is operating system dependent,
     //! just like ts::Thread.
     //!
+    //! Note: With the adoption of C++11 as base requirement for TSDuck, this
+    //! class shall no longer be used for new code. Use the C++11 standard
+    //! concurrency classes.
+    //!
     class TSDUCKDLL Mutex
     {
         TS_NOCOPY(Mutex);

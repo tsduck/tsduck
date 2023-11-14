@@ -121,7 +121,7 @@ namespace ts {
         virtual bool close(Report& report = CERR) override;
 
     protected:
-        Mutex _mutex {}; //!< Mutex protecting this object.
+        std::recursive_mutex _mutex {}; //!< Mutex protecting this object.
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of open.

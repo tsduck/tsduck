@@ -17,7 +17,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsUID.h"
-#include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 #include "tsTime.h"
 
@@ -30,7 +29,6 @@ TS_DEFINE_SINGLETON (ts::UID);
 //----------------------------------------------------------------------------
 
 ts::UID::UID() :
-    _mutex(),
     _next_uid((uint64_t(CurrentProcessId()) << 40) | ((uint64_t(Time::CurrentUTC() - Time::Epoch) & 0x00FFFFFF) << 16))
 {
 }
@@ -42,6 +40,6 @@ ts::UID::UID() :
 
 uint64_t ts::UID::newUID()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     return _next_uid++;
 }

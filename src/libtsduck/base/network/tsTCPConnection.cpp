@@ -8,7 +8,6 @@
 
 #include "tsTCPConnection.h"
 #include "tsIPUtils.h"
-#include "tsGuardMutex.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
 
@@ -34,7 +33,7 @@ void ts::TCPConnection::handleDisconnected(Report& report)
 void ts::TCPConnection::declareConnected(Report& report)
 {
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         if (_is_connected) {
             report.fatal(u"implementation error: TCP socket already connected");
             throw ImplementationError(u"TCP socket already connected");
@@ -52,7 +51,7 @@ void ts::TCPConnection::declareConnected(Report& report)
 void ts::TCPConnection::declareDisconnected(Report& report)
 {
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         if (_is_connected) {
             _is_connected = false;
         }
@@ -168,7 +167,7 @@ bool ts::TCPConnection::receive(void* data,             // Buffers address
         }
 #endif
         else {
-            GuardMutex lock(_mutex);
+            std::lock_guard<std::recursive_mutex> lock(_mutex);
             if (isOpen()) {
                 // Report the error only if the error does not result from a close in another thread.
                 report.error(u"error receiving data from socket: %s", {SysSocketErrorCodeMessage(err_code)});
@@ -243,7 +242,7 @@ bool ts::TCPConnection::shutdownSocket(int how, Report& report)
 {
     if (::shutdown(getSocket(), how) != 0) {
         const SysSocketErrorCode err_code = LastSysSocketErrorCode();
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         // Do not report "not connected" errors since they are normal when the peer disconnects first.
         if (isOpen() && err_code != SYS_SOCKET_ERR_NOTCONN) {
             report.error(u"error shutting down socket: %s", {SysSocketErrorCodeMessage(err_code)});

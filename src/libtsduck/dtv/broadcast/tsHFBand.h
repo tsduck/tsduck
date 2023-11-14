@@ -327,11 +327,11 @@ namespace ts {
             const UStringList allBands(const UString& region) const;
 
         private:
-            mutable Mutex _mutex {};
-            UString       _default_region {};
-            HFBandMap     _objects {};
-            UStringList   _allRegions {};
-            HFBandPtr     _voidBand {};
+            mutable std::recursive_mutex _mutex {};
+            UString     _default_region {};
+            HFBandMap   _objects {};
+            UStringList _allRegions {};
+            HFBandPtr   _voidBand {};
         };
     };
 }

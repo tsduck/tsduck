@@ -9,8 +9,6 @@
 #include "tsSysUtils.h"
 #include "tsFileUtils.h"
 #include "tsSingleton.h"
-#include "tsMutex.h"
-#include "tsGuardMutex.h"
 #include "tsTime.h"
 #include "tsArgs.h"
 
@@ -59,7 +57,7 @@
 #endif
 
 // External calls to environment variables are not reentrant. Use a global mutex.
-TS_STATIC_INSTANCE(ts::Mutex, (), EnvironmentMutex);
+TS_STATIC_INSTANCE(std::mutex, (), EnvironmentMutex);
 
 
 //----------------------------------------------------------------------------
@@ -585,13 +583,12 @@ bool ts::SetBinaryModeStdout(Report& report)
 
 bool ts::EnvironmentExists(const UString& name)
 {
-    GuardMutex lock(EnvironmentMutex::Instance());
+    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     std::array <::WCHAR, 2> unused;
     return ::GetEnvironmentVariableW(name.wc_str(), unused.data(), ::DWORD(unused.size())) != 0;
 #else
-    // Flawfinder: ignore: Environment variables are untrustable input.
     return ::getenv(name.toUTF8().c_str()) != nullptr;
 #endif
 }
@@ -604,7 +601,7 @@ bool ts::EnvironmentExists(const UString& name)
 
 ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 {
-    GuardMutex lock(EnvironmentMutex::Instance());
+    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     std::vector<::WCHAR> value;
@@ -616,7 +613,6 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
     }
     return size <= 0 ? def : UString(value, size);
 #else
-    // Flawfinder: ignore: Environment variables are untrustable input.
     const char* value = ::getenv(name.toUTF8().c_str());
     return value != nullptr ? UString::FromUTF8(value) : def;
 #endif
@@ -629,7 +625,7 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 
 bool ts::SetEnvironment(const UString& name, const UString& value)
 {
-    GuardMutex lock(EnvironmentMutex::Instance());
+    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     return ::SetEnvironmentVariableW(name.wc_str(), value.wc_str()) != 0;
@@ -646,7 +642,7 @@ bool ts::SetEnvironment(const UString& name, const UString& value)
 
 bool ts::DeleteEnvironment(const UString& name)
 {
-    GuardMutex lock(EnvironmentMutex::Instance());
+    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     return ::SetEnvironmentVariableW(name.wc_str(), nullptr) != 0;
@@ -777,7 +773,7 @@ namespace {
 
 void ts::GetEnvironment(Environment& env)
 {
-    GuardMutex lock(EnvironmentMutex::Instance());
+    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
     env.clear();
 
 #if defined(TS_WINDOWS)

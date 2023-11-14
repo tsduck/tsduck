@@ -68,7 +68,7 @@ ts::UString ts::BetterSystemRandomGenerator::name() const
 
 bool ts::BetterSystemRandomGenerator::ready() const
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     return _ready && SystemRandomGenerator::ready();
 }
 
@@ -136,7 +136,7 @@ bool ts::BetterSystemRandomGenerator::updatePool()
 
 bool ts::BetterSystemRandomGenerator::read(void* buffer, size_t size)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
 
     // Filter trivial cases.
     if (!_ready || buffer == nullptr) {
