@@ -52,25 +52,7 @@ bool ts::json::Number::isInteger() const
 
 ts::UString ts::json::Number::toString(const UString& defaultValue) const
 {
-    if (isInteger()) {
-        return UString::Decimal(_integer, 0, true, UString());
-    }
-    else {
-        UString s(UString::Float(_float));
-        const size_t dot = s.find(u'.');
-        if (dot != NPOS) {
-            bool decimal = true;
-            for (size_t i = dot + 1; decimal && i < s.size(); i++) {
-                decimal = IsDigit(s[i]);
-            }
-            if (decimal) {
-                while (s.back() == u'0') {
-                    s.pop_back();
-                }
-            }
-        }
-        return s;
-    }
+    return isInteger() ? UString::Decimal(_integer, 0, true, UString()) : UString::Float(_float);
 }
 
 void ts::json::Number::clear()
