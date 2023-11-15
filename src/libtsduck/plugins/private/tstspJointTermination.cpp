@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstspJointTermination.h"
-#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------
@@ -27,14 +26,12 @@ ts::tsp::JointTermination::JointTermination(const TSProcessorArgs& options,
                                             PluginType type,
                                             const PluginOptions& pl_options,
                                             const ThreadAttributes& attributes,
-                                            Mutex& global_mutex,
+                                            std::recursive_mutex& global_mutex,
                                             Report* report) :
 
     PluginThread(report, options.app_name, type, pl_options, attributes),
     _global_mutex(global_mutex),
-    _options(options),
-    _use_jt(false),
-    _jt_completed(false)
+    _options(options)
 {
 }
 
@@ -63,18 +60,22 @@ void ts::tsp::JointTermination::useJointTermination(bool on)
 {
     if (on && !_use_jt) {
         _use_jt = true;
-        GuardMutex lock (_global_mutex);
-        _jt_users++;
-        _jt_remaining++;
+        {
+            std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+            _jt_users++;
+            _jt_remaining++;
+        }
         debug(u"using \"joint termination\", now %d plugins use it", {_jt_users});
     }
     else if (!on && _use_jt) {
         _use_jt = false;
-        GuardMutex lock (_global_mutex);
-        _jt_users--;
-        _jt_remaining--;
-        assert (_jt_users >= 0);
-        assert (_jt_remaining >= 0);
+        {
+            std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+            _jt_users--;
+            _jt_remaining--;
+            assert (_jt_users >= 0);
+            assert (_jt_remaining >= 0);
+        }
         debug(u"no longer using \"joint termination\", now %d plugins use it", {_jt_users});
     }
 }
@@ -90,9 +91,11 @@ void ts::tsp::JointTermination::jointTerminate()
 {
     if (_use_jt && !_jt_completed) {
         _jt_completed = true;
-        GuardMutex lock(_global_mutex);
-        _jt_remaining--;
-        assert(_jt_remaining >= 0);
+        {
+            std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+            _jt_remaining--;
+            assert(_jt_remaining >= 0);
+        }
         if (totalPacketsInThread() > _jt_hightest_pkt) {
             _jt_hightest_pkt = totalPacketsInThread();
         }
@@ -108,6 +111,6 @@ void ts::tsp::JointTermination::jointTerminate()
 
 ts::PacketCounter ts::tsp::JointTermination::totalPacketsBeforeJointTermination() const
 {
-    GuardMutex lock (_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
     return !_options.ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_hightest_pkt : std::numeric_limits<PacketCounter>::max();
 }

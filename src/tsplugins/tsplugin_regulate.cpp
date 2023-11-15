@@ -118,12 +118,14 @@ bool ts::RegulatePlugin::start()
 {
     // Initialize the appropriate regulator.
     if (_pcr_synchronous) {
+        tsp->debug(u"starting PCR-synchronous regulation");
         _pcr_regulator.reset();
         _pcr_regulator.setBurstPacketCount(_burst);
         _pcr_regulator.setReferencePID(_pid_pcr);
         _pcr_regulator.setMinimimWait(_wait_min * NanoSecPerMilliSec);
     }
     else {
+        tsp->debug(u"starting bitrate-based regulation");
         _bitrate_regulator.setBurstPacketCount(_burst);
         _bitrate_regulator.setFixedBitRate(_bitrate);
         _bitrate_regulator.start();

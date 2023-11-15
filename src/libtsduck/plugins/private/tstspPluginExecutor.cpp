@@ -8,8 +8,6 @@
 
 #include "tstspPluginExecutor.h"
 #include "tsPluginRepository.h"
-#include "tsGuardCondition.h"
-#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------
@@ -21,23 +19,11 @@ ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
                                         PluginType type,
                                         const PluginOptions& pl_options,
                                         const ThreadAttributes& attributes,
-                                        Mutex& global_mutex,
+                                        std::recursive_mutex& global_mutex,
                                         Report* report) :
 
     JointTermination(options, type, pl_options, attributes, global_mutex, report),
-    RingNode(),
-    _buffer(nullptr),
-    _metadata(nullptr),
-    _suspended(false),
-    _handlers(handlers),
-    _to_do(),
-    _pkt_first(0),
-    _pkt_cnt(0),
-    _input_end(false),
-    _bitrate(0),
-    _br_confidence(BitRateConfidence::LOW),
-    _restart(false),
-    _restart_data()
+    _handlers(handlers)
 {
     // Preset common default options.
     if (plugin() != nullptr) {
@@ -79,9 +65,9 @@ void ts::tsp::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* plu
 
 void ts::tsp::PluginExecutor::setAbort()
 {
-    GuardMutex lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
     _tsp_aborting = true;
-    ringPrevious<PluginExecutor>()->_to_do.signal();
+    ringPrevious<PluginExecutor>()->_to_do.notify_one();
 }
 
 
@@ -135,7 +121,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
     log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {count, bitrate, input_end, aborted});
 
     // We access data under the protection of the global mutex.
-    GuardMutex lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
 
     // Update our buffer: we remove the first 'count' packets from the beginning of our slice of the buffer.
     _pkt_first = (_pkt_first + count) % _buffer->count();
@@ -152,7 +138,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
 
     // Wake the next processor when there is some new input data or end of input.
     if (count > 0 || input_end) {
-        next->_to_do.signal();
+        next->_to_do.notify_one();
     }
 
     // Force to abort our processor when the next one is aborting. Already done in waitWork() but force immediately.
@@ -164,7 +150,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
     // Wake the previous processor when we abort (propagate abort conditions backward).
     if (aborted) {
         _tsp_aborting = true; // volatile bool in TSP superclass
-        ringPrevious<PluginExecutor>()->_to_do.signal();
+        ringPrevious<PluginExecutor>()->_to_do.notify_one();
     }
 
     // Return false when the current processor shall stop.
@@ -189,7 +175,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
     }
 
     // We access data under the protection of the global mutex.
-    GuardCondition lock(_global_mutex, _to_do);
+    std::unique_lock<std::recursive_mutex> lock(_global_mutex);
 
     PluginExecutor* next = ringNext<PluginExecutor>();
     timeout = false;
@@ -201,7 +187,13 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
         // '_to_do' and, once we get it, implicitely relock the mutex.
         // We loop on this until packets are actually available.
         // If there is a timeout in the packet reception, call the plugin handler.
-        timeout = !lock.waitCondition(_tsp_timeout) && !plugin()->handlePacketTimeout();
+        if (_tsp_timeout == Infinite) {
+            _to_do.wait(lock);
+        }
+        else {
+            timeout = _to_do.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(_tsp_timeout))) == std::cv_status::timeout
+                      && !plugin()->handlePacketTimeout();
+        }
     }
 
     // The number of returned packets is limited up to the wrap-up point of the circular buffer,
@@ -241,10 +233,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
 ts::tsp::PluginExecutor::RestartData::RestartData(const UStringVector& params, bool same, Report& rep) :
     report(rep),
     same_args(same),
-    args(params),
-    mutex(),
-    condition(),
-    completed(false)
+    args(params)
 {
 }
 
@@ -268,15 +257,15 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
     // Acquire the global mutex to modify global data.
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
     {
-        GuardCondition lock1(_global_mutex, _to_do);
+        std::lock_guard<std::recursive_mutex> lock1(_global_mutex);
 
         // If there was a previous pending restart operation, cancel it.
         if (!_restart_data.isNull()) {
-            GuardCondition lock2(_restart_data->mutex, _restart_data->condition);
+            std::lock_guard<std::recursive_mutex> lock2(_restart_data->mutex);
             _restart_data->completed = true;
             _restart_data->report.error(u"restart interrupted by another concurrent restart");
             // Notify the waiting thread that its restart command is aborted.
-            lock2.signal();
+            _restart_data->condition.notify_one();
         }
 
         // Declare this new restart operation.
@@ -284,14 +273,12 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
         _restart = true;
 
         // Signal the plugin thread that there is something to do.
-        lock1.signal();
+        _to_do.notify_one();
     }
 
     // Now wait for the restart operation to complete.
-    GuardCondition lock3(rd->mutex, rd->condition);
-    while (!rd->completed) {
-        lock3.waitCondition();
-    }
+    std::unique_lock<std::recursive_mutex> lock3(rd->mutex);
+    rd->condition.wait(lock3, [rd]() { return rd->completed; });
 }
 
 
@@ -301,7 +288,7 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
 
 bool ts::tsp::PluginExecutor::pendingRestart()
 {
-    GuardMutex lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
     return _restart && !_restart_data.isNull();
 }
 
@@ -314,7 +301,9 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 {
     // Run under the protection of the global mutex.
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
-    GuardMutex lock1(_global_mutex);
+    // Need improvement: the global mutex remains locked during the complete restart operation.
+    // This is probably too long but some serious investigation is required before fixing this.
+    std::lock_guard<std::recursive_mutex> lock1(_global_mutex);
 
     // If there is no pending restart, immediate success.
     if (!_restart || _restart_data.isNull()) {
@@ -326,7 +315,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     restarted = true;
 
     // Now lock the content of the restart data.
-    GuardCondition lock2(_restart_data->mutex, _restart_data->condition);
+    std::lock_guard<std::recursive_mutex> lock2(_restart_data->mutex);
 
     // Verbose message in the current tsp process and back to the remote tspcontrol.
     verbose(u"restarting due to remote tspcontrol");
@@ -372,7 +361,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 
     // Finally notify the calling thread that the restart is completed.
     _restart_data->completed = true;
-    lock2.signal();
+    _restart_data->condition.notify_one();
 
     // Clear restart trigger.
     _restart = false;

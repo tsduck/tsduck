@@ -17,7 +17,7 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
                                               const PluginEventHandlerRegistry& handlers,
                                               size_t plugin_index,
                                               const ThreadAttributes& attributes,
-                                              Mutex& global_mutex,
+                                              std::recursive_mutex& global_mutex,
                                               Report* report) :
 
     PluginExecutor(options, handlers, PluginType::PROCESSOR, options.plugins[plugin_index], attributes, global_mutex, report),
@@ -97,7 +97,6 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
     bool bitrate_never_modified = true;
     bool input_end = false;
     bool aborted = false;
-    bool restarted = false;
 
     do {
         // Wait for packets to process
@@ -111,15 +110,6 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
         if (bitrate_never_modified) {
             output_bitrate = _tsp_bitrate;
             br_confidence = _tsp_bitrate_confidence;
-        }
-
-        // Process restart requests.
-        if (!processPendingRestart(restarted)) {
-            timeout = true; // restart error
-        }
-        else if (restarted) {
-            // Plugin was restarted, need to recheck --only-label
-            only_labels = _processor->getOnlyLabelOption();
         }
 
         // In case of abort on timeout, notify previous and next plugin, then exit.
@@ -151,6 +141,18 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
             TSPacket* const pkt = _buffer->base() + pkt_first + pkt_done;
             TSPacketMetadata* const pkt_data = _metadata->base() + pkt_first + pkt_done;
             bool got_new_bitrate = false;
+
+            // Process restart requests.
+            bool restarted = false;
+            if (!processPendingRestart(restarted)) {
+                // Restart error.
+                aborted = true;
+                break;
+            }
+            else if (restarted) {
+                // Plugin was restarted, need to recheck --only-label
+                only_labels = _processor->getOnlyLabelOption();
+            }
 
             pkt_done++;
             pkt_flush++;

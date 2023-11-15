@@ -39,7 +39,7 @@ namespace ts {
                            const PluginEventHandlerRegistry& handlers,
                            const PluginOptions& pl_options,
                            const ThreadAttributes& attributes,
-                           Mutex& global_mutex,
+                           std::recursive_mutex& global_mutex,
                            Report* report);
 
             //!
@@ -51,7 +51,7 @@ namespace ts {
             virtual size_t pluginIndex() const override;
 
         private:
-            OutputPlugin* _output;
+            OutputPlugin* _output = nullptr;
 
             // Inherited from Thread
             virtual void main() override;

@@ -23,23 +23,15 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
                                       const PluginEventHandlerRegistry& handlers,
                                       const PluginOptions& pl_options,
                                       const ThreadAttributes& attributes,
-                                      Mutex& global_mutex,
+                                      std::recursive_mutex& global_mutex,
                                       Report* report) :
 
     PluginExecutor(options, handlers, PluginType::INPUT, pl_options, attributes, global_mutex, report),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
-    _in_sync_lost(false),
-    _plugin_completed(false),
     _instuff_start_remain(options.instuff_start),
     _instuff_stop_remain(options.instuff_stop),
-    _instuff_nullpkt_remain(0),
-    _instuff_inpkt_remain(0),
     _pcr_analyzer(MIN_ANALYZE_PID, MIN_ANALYZE_PCR),
-    _dts_analyzer(),
-    _use_dts_analyzer(false),
-    _watchdog(this, options.receive_timeout, 0, *this),
-    _use_watchdog(false),
-    _start_time(true) // initialized with current system time
+    _watchdog(this, options.receive_timeout, 0, *this)
 {
     if (options.log_plugin_index) {
         // Make sure that plugins display their index. Input plugin is always at index 0.

@@ -20,21 +20,15 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, Mutex& global_mutex, InputExecutor* input) :
-    _is_open(false),
-    _terminate(false),
+ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, std::recursive_mutex& global_mutex, InputExecutor* input) :
     _options(options),
     _log(log, u"control commands: "),
-    _reference(_log),
-    _server(),
-    _mutex(global_mutex),
-    _input(input),
-    _output(nullptr),
-    _plugins()
+    _global_mutex(global_mutex),
+    _input(input)
 {
     // Locate output plugin, count packet processor plugins.
     if (_input != nullptr) {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_global_mutex);
 
         // The output plugin "precedes" the input plugin in the ring.
         _output = _input->ringPrevious<OutputExecutor>();
@@ -201,7 +195,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeSetLog(const UString& command, 
     _log.log(level, u"set log level to %s", {Severity::Enums.name(level)});
 
     // Also set the log severity on each individual plugin.
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
     PluginExecutor* proc = _input;
     do {
         proc->setMaxSeverity(level);

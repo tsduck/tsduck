@@ -30,7 +30,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        RingNode();
+        RingNode() = default;
 
         //!
         //! Destructor.
@@ -41,10 +41,7 @@ namespace ts {
         //! Check if the node is alone in its own ring.
         //! @return True if the node is alone in its own ring.
         //!
-        bool ringAlone() const
-        {
-            return _ring_next == this;
-        }
+        bool ringAlone() const { return _ring_next == this; }
 
         //!
         //! Remove the node from the ring it belongs to and creates its own ring.
@@ -77,10 +74,7 @@ namespace ts {
         //! @return Address of the next node in the ring or zero if the next node is not a subclass of @a T.
         //!
         template <typename T>
-        T* ringNext()
-        {
-            return dynamic_cast<T*>(_ring_next);
-        }
+        T* ringNext() { return dynamic_cast<T*>(_ring_next); }
 
         //!
         //! Get the next node in the ring.
@@ -88,10 +82,7 @@ namespace ts {
         //! @return Address of the next node in the ring or zero if the next node is not a subclass of @a T.
         //!
         template <typename T>
-        const T* ringNext() const
-        {
-            return dynamic_cast<const T*>(_ring_next);
-        }
+        const T* ringNext() const { return dynamic_cast<const T*>(_ring_next); }
 
         //!
         //! Get the previous node in the ring.
@@ -99,10 +90,7 @@ namespace ts {
         //! @return Address of the previous node in the ring or zero if the previous node is not a subclass of @a T.
         //!
         template <typename T>
-        T* ringPrevious()
-        {
-            return dynamic_cast<T*>(_ring_previous);
-        }
+        T* ringPrevious() { return dynamic_cast<T*>(_ring_previous); }
 
         //!
         //! Get the previous node in the ring.
@@ -110,10 +98,7 @@ namespace ts {
         //! @return Address of the previous node in the ring or zero if the previous node is not a subclass of @a T.
         //!
         template <typename T>
-        const T* ringPrevious() const
-        {
-            return dynamic_cast<const T*>(_ring_previous);
-        }
+        const T* ringPrevious() const { return dynamic_cast<const T*>(_ring_previous); }
 
         //!
         //! Count the number of element in the ring.
@@ -123,7 +108,7 @@ namespace ts {
         size_t ringSize() const;
 
     private:
-        RingNode* _ring_previous;
-        RingNode* _ring_next;
+        RingNode* _ring_previous = this;
+        RingNode* _ring_next = this;
     };
 }

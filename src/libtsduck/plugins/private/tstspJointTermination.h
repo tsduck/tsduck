@@ -14,7 +14,6 @@
 #pragma once
 #include "tsTSProcessorArgs.h"
 #include "tsPluginThread.h"
-#include "tsMutex.h"
 
 namespace ts {
     namespace tsp {
@@ -41,7 +40,7 @@ namespace ts {
                              PluginType type,
                              const PluginOptions& pl_options,
                              const ThreadAttributes& attributes,
-                             Mutex& global_mutex,
+                             std::recursive_mutex& global_mutex,
                              Report* report);
 
             // Implementation of "joint termination", inherited from TSP.
@@ -51,7 +50,7 @@ namespace ts {
             virtual bool thisJointTerminated() const override;
 
         protected:
-            Mutex& _global_mutex;
+            std::recursive_mutex& _global_mutex;
             const TSProcessorArgs& _options;
 
             //!
@@ -62,8 +61,8 @@ namespace ts {
             PacketCounter totalPacketsBeforeJointTermination() const;
 
         private:
-            bool _use_jt;        // Use "joint termination"
-            bool _jt_completed;  // Completed, for "joint termination"
+            bool _use_jt = false;        // Use "joint termination"
+            bool _jt_completed = false;  // Completed, for "joint termination"
 
             // The following static private data must be accessed exclusively under the protection of the global mutex.
             static int           _jt_users;         // Nb plugins using "joint termination"

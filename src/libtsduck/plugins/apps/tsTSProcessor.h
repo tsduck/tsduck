@@ -15,7 +15,6 @@
 #include "tsPluginEventHandlerRegistry.h"
 #include "tsTSProcessorArgs.h"
 #include "tsTSPacketMetadata.h"
-#include "tsMutex.h"
 
 namespace ts {
 
@@ -89,7 +88,7 @@ namespace ts {
         // as all protected operations are fast (pointer update, simple arithmetic).
 
         Report&               _report;                     // Common log object.
-        Mutex                 _mutex {};                   // Global mutex.
+        std::recursive_mutex  _global_mutex {};            // Global mutex.
         volatile bool         _terminating = false;        // In the process of terminating everything.
         TSProcessorArgs       _args {};                    // Processing options.
         tsp::InputExecutor*   _input = nullptr;            // Input processor execution thread.
