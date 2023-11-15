@@ -463,7 +463,7 @@ namespace {
         const uint16_t       _first_ecm_id;
         const uint16_t       _first_stream_id;
         const uint16_t       _end_stream_id;
-        std::atomic<std::uint8_t>   _cw_per_msg = 0;  // as returned by ECMG, same as std::atomic_uint8_t, missing in old GCC
+        std::atomic<std::uint8_t>   _cw_per_msg {0};  // as returned by ECMG, same as std::atomic_uint8_t, missing in old GCC
         std::recursive_mutex        _mutex {};        // protect subsequent fields
         std::condition_variable_any _completed {};    // signalled by reception thread when all streams are closed.
         std::vector<Stream>         _streams {};
