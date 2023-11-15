@@ -17,7 +17,7 @@ ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
                                         const PluginEventHandlerRegistry& handlers,
                                         const PluginOptions& pl_options,
                                         const ThreadAttributes& attributes,
-                                        Mutex& global_mutex,
+                                        std::recursive_mutex& global_mutex,
                                         Report* report) :
 
     PluginExecutor(options, handlers, PluginType::OUTPUT, pl_options, attributes, global_mutex, report),

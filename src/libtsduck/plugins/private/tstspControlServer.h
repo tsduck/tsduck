@@ -18,7 +18,6 @@
 #include "tstspOutputExecutor.h"
 #include "tsTSPControlCommand.h"
 #include "tsThread.h"
-#include "tsMutex.h"
 #include "tsTCPServer.h"
 #include "tsReportWithPrefix.h"
 
@@ -40,7 +39,7 @@ namespace ts {
             //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
             //! @param [in] input Input plugin executor (start of plugin chain).
             //!
-            ControlServer(TSProcessorArgs& options, Report& log, Mutex& global_mutex, InputExecutor* input);
+            ControlServer(TSProcessorArgs& options, Report& log, std::recursive_mutex& global_mutex, InputExecutor* input);
 
             //!
             //! Destructor.
@@ -59,16 +58,16 @@ namespace ts {
             void close();
 
         private:
-            volatile bool     _is_open;
-            volatile bool     _terminate;
-            TSProcessorArgs&  _options;
-            ReportWithPrefix  _log;
-            TSPControlCommand _reference;
-            TCPServer         _server;
-            Mutex&            _mutex;
-            InputExecutor*    _input;
-            OutputExecutor*   _output;
-            std::vector<ProcessorExecutor*> _plugins;  // Packet processing plugins
+            volatile bool         _is_open = false;
+            volatile bool         _terminate = false;
+            TSProcessorArgs&      _options;
+            ReportWithPrefix      _log;
+            TSPControlCommand     _reference {_log};
+            TCPServer             _server {};
+            std::recursive_mutex& _global_mutex;
+            InputExecutor*        _input = nullptr;
+            OutputExecutor*       _output = nullptr;
+            std::vector<ProcessorExecutor*> _plugins {};  // Packet processing plugins
 
             // Implementation of Thread.
             virtual void main() override;

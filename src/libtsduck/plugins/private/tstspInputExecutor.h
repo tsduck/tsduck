@@ -42,7 +42,7 @@ namespace ts {
                           const PluginEventHandlerRegistry& handlers,
                           const PluginOptions& pl_options,
                           const ThreadAttributes& attributes,
-                          Mutex& global_mutex,
+                          std::recursive_mutex& global_mutex,
                           Report* report);
 
             //!
@@ -70,19 +70,19 @@ namespace ts {
             virtual size_t pluginIndex() const override;
 
         private:
-            InputPlugin* _input;                  // Plugin API
-            bool         _in_sync_lost;           // Input synchronization lost (no 0x47 at start of packet)
-            bool         _plugin_completed;       // Input plugin reported termination.
-            size_t       _instuff_start_remain;
-            size_t       _instuff_stop_remain;
-            size_t       _instuff_nullpkt_remain;
-            size_t       _instuff_inpkt_remain;
-            PCRAnalyzer  _pcr_analyzer;           // Compute input bitrate from PCR's.
-            PCRAnalyzer  _dts_analyzer;           // Compute input bitrate from video DTS's.
-            bool         _use_dts_analyzer;       // Use DTS analyzer, not PCR analyzer.
-            WatchDog     _watchdog;               // Watchdog when plugin does not support receive timeout.
-            bool         _use_watchdog;           // The watchdog shall be used.
-            Monotonic    _start_time;             // Creation time in a monotonic clock.
+            InputPlugin* _input = nullptr;           // Plugin API
+            bool         _in_sync_lost = false;      // Input synchronization lost (no 0x47 at start of packet)
+            bool         _plugin_completed = false;  // Input plugin reported termination.
+            size_t       _instuff_start_remain = 0;
+            size_t       _instuff_stop_remain = 0;
+            size_t       _instuff_nullpkt_remain = 0;
+            size_t       _instuff_inpkt_remain = 0;
+            PCRAnalyzer  _pcr_analyzer {};           // Compute input bitrate from PCR's.
+            PCRAnalyzer  _dts_analyzer {};           // Compute input bitrate from video DTS's.
+            bool         _use_dts_analyzer = false;  // Use DTS analyzer, not PCR analyzer.
+            WatchDog     _watchdog {};               // Watchdog when plugin does not support receive timeout.
+            bool         _use_watchdog = false;      // The watchdog shall be used.
+            Monotonic    _start_time {true};         // Creation time in a monotonic clock, initialized with current system time.
 
             // Inherited from Thread
             virtual void main() override;

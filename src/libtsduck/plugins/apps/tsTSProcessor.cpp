@@ -11,7 +11,6 @@
 #include "tstspOutputExecutor.h"
 #include "tstspProcessorExecutor.h"
 #include "tstspControlServer.h"
-#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------
@@ -85,7 +84,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 {
     // Initial sequence under mutex protection.
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_global_mutex);
 
         // Check if we are already started.
         if (_input != nullptr || _terminating) {
@@ -109,10 +108,10 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // plugin has a hight priority to make room in the buffer, but not as
         // high as the input which must remain the top-most priority?
 
-        _input = new tsp::InputExecutor(_args, *this, _args.input, ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), _mutex, &_report);
+        _input = new tsp::InputExecutor(_args, *this, _args.input, ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), _global_mutex, &_report);
         CheckNonNull(_input);
 
-        _output = new tsp::OutputExecutor(_args, *this, _args.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), _mutex, &_report);
+        _output = new tsp::OutputExecutor(_args, *this, _args.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), _global_mutex, &_report);
         CheckNonNull(_output);
 
         _output->ringInsertAfter(_input);
@@ -121,7 +120,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         bool realtime = _args.realtime == Tristate::True || _input->isRealTime() || _output->isRealTime();
 
         for (size_t i = 0; i < _args.plugins.size(); ++i) {
-            tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_args, *this, i, ThreadAttributes(), _mutex, &_report);
+            tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_args, *this, i, ThreadAttributes(), _global_mutex, &_report);
             CheckNonNull(p);
             p->ringInsertBefore(_output);
             realtime = realtime || p->isRealTime();
@@ -206,7 +205,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
     } while ((proc = proc->ringNext<tsp::PluginExecutor>()) != _input);
 
     // Create a control server thread. Display but ignore errors (not a fatal error).
-    _control = new tsp::ControlServer(_args, _report, _mutex, _input);
+    _control = new tsp::ControlServer(_args, _report, _global_mutex, _input);
     CheckNonNull(_control);
     _control->open();
 
@@ -220,7 +219,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 
 bool ts::TSProcessor::isStarted()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
     return _input != nullptr && !_terminating;
 }
 
@@ -233,7 +232,7 @@ void ts::TSProcessor::abort()
 {
     _report.debug(u"aborting all plugins...");
 
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
 
     if (_input != nullptr) {
         // Place all threads in "aborted" state so that each thread will see its

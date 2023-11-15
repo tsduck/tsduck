@@ -13,12 +13,6 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::RingNode::RingNode() :
-    _ring_previous(this),
-    _ring_next(this)
-{
-}
-
 ts::RingNode::~RingNode()
 {
     ringRemove();
