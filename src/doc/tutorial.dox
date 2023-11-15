@@ -25,7 +25,7 @@ byte and bit manipulation, etc.
 
 C and C++ strings are made of 8-bit characters which are notoriously unable
 to represent international character sets. The usage of `std::string` with the
-TSDuck library is now discouraged in favor of @ref unicodestring "Unicode strings".
+TSDuck library is discouraged in favor of @ref unicodestring "Unicode strings".
 
 ## Unicode strings {#unicodestring}
 
@@ -134,11 +134,7 @@ message queue, use thread-safe smart pointers to these messages. The message que
 copies smart pointers, not objects. To implement message queues, you may use the
 template class ts::MessageQueue.
 
-## Variables, singletons and static data {#singletons}
-
-The template class ts::Variable implements an uninitialized variable
-of a given type (the template parameter). An instance of this type
-can be explicitly marked as uninitialized, set or cleared.
+## Singletons and static data {#singletons}
 
 The _singleton_ design pattern is simple in theory, but not so simple to
 implement correctly in practice. The TSDuck library encapsulates the
@@ -328,6 +324,17 @@ mechanisms to ensure that no dangling lock is lost through the _guard design pat
 It recommended to never explicitly use @e acquire() or @e release() primitives.
 Instead, use the classes ts::GuardMutex for mutexes and ts::GuardCondition for condition
 variables.
+
+Important: The development of TSDuck started before C++11. At that time, C++ had
+no multithreading features and everything had to be manually coded. This is why the
+classes ts::Thread, ts::Mutex, ts::Condition were developed. With the C++11 standard,
+new classes have been introduced: @c std::thread, @c std::mutex, @c std::condition_variable,
+etc. On the long term, these classes shall replace the corresponding TSDuck classes.
+The transition to @c std::mutex and @c std::condition_variable is currently in progress.
+Most references to ts::Mutex and ts::Condition have been removed and these classes will
+be deleted some day. The semantics of @c std::thread is very different from ts::Thread
+and replacement will take time. More probably, ts::Thread will remain but its implementation
+will become fully portable, using @c std::thread internally.
 
 ## Virtual memory {#virtmem}
 

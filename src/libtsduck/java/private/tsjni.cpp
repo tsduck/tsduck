@@ -8,12 +8,11 @@
 
 #include "tsjni.h"
 #include "tsCerrReport.h"
-#include "tsThreadLocalObjects.h"
 
 #if !defined(TS_NO_JAVA)
 
 // The global pointer to the Java virtual machine.
-JavaVM* ts::jni::javaVM = nullptr;
+JavaVM* volatile ts::jni::javaVM = nullptr;
 
 //----------------------------------------------------------------------------
 // Convert between Java string and ts::UString.
@@ -223,29 +222,26 @@ bool ts::jni::GetPluginOptionsVector(JNIEnv* env, jobjectArray strings, PluginOp
 namespace {
 
     // Class declaration, one instance per thread.
-    class LocalThreadJNI : public ts::Object
+    class LocalThreadJNI
     {
+        TS_NOCOPY(LocalThreadJNI);
     public:
         // The constructor attaches to the JVM when necessary.
         LocalThreadJNI();
-        LocalThreadJNI(const LocalThreadJNI&) = default;
-        LocalThreadJNI& operator=(const LocalThreadJNI&) = default;
 
         // The destructor detaches from the JVM when necessary.
-        virtual ~LocalThreadJNI() override;
+        ~LocalThreadJNI();
 
         // Get the JNIEnv point for the curren thread.
         JNIEnv* env() const { return _env; }
 
     private:
-        JNIEnv* _env;         // The JNI environment pointer for this thread.
-        bool    _detach_jvm;  // The current thread shall detach from the JVM before exit.
+        JNIEnv* _env = nullptr;       // The JNI environment pointer for this thread.
+        bool    _detach_jvm = false;  // The current thread shall detach from the JVM before exit.
     };
 
     // The constructor attaches to the JVM when necessary.
-    LocalThreadJNI::LocalThreadJNI() :
-        _env(nullptr),
-        _detach_jvm(false)
+    LocalThreadJNI::LocalThreadJNI()
     {
         if (ts::jni::javaVM != nullptr) {
             void* penv = nullptr;
@@ -281,17 +277,8 @@ namespace {
 
 JNIEnv* ts::jni::JNIEnvForCurrentThead()
 {
-    // Get the thread-specific LocalThreadJNI.
-    ts::ObjectPtr obj(ThreadLocalObjects::Instance().getLocalObject(u"LocalThreadJNI"));
-    LocalThreadJNI* lobj = dynamic_cast<LocalThreadJNI*>(obj.pointer());
-    if (lobj == nullptr) {
-        // First time we use this thread, create the thread-specific LocalThreadJNI.
-        obj = lobj = new LocalThreadJNI;
-        CheckNonNull(lobj);
-        CheckNonNull(lobj->env());
-        ThreadLocalObjects::Instance().setLocalObject(u"LocalThreadJNI", obj);
-    }
-    return lobj->env();
+    thread_local LocalThreadJNI lobj;
+    return lobj.env();
 }
 
 #endif // TS_NO_JAVA

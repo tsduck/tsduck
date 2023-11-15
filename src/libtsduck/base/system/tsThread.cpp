@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsThread.h"
-#include "tsThreadLocalObjects.h"
 #include "tsGuardMutex.h"
 #include "tsMemory.h"
 #include "tsSysUtils.h"
@@ -347,7 +346,6 @@ void ts::Thread::mainWrapper()
     catch (const std::exception& e) {
         std::cerr << "*** Internal error, thread aborted: " << e.what() << std::endl;
     }
-    ThreadLocalObjects::Instance().deleteLocalObjects();
 }
 
 #if defined(TS_WINDOWS)
