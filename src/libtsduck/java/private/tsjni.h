@@ -65,7 +65,7 @@ namespace ts {
         //! A global pointer to the Java virtual machine.
         //! Null pointer if JNI is not properly initialized.
         //!
-        extern JavaVM* javaVM;
+        extern JavaVM* volatile javaVM;
 
         //!
         //! Get the JNIEnv pointer for the current thread.
