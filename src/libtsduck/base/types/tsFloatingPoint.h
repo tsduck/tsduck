@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsAbstractNumber.h"
-#include "tsIntegerUtils.h"
 #include "tsUString.h"
 
 namespace ts {

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsLNB.h"
-#include "tsGuardMutex.h"
 #include "tsAlgorithm.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
@@ -230,7 +229,7 @@ ts::LNB::LNBRepository::LNBRepository()
 const ts::UStringList& ts::LNB::LNBRepository::allNames(Report& report)
 {
     // Lock access to the repository. Load XML file if not already done.
-    GuardMutex lock(_mutex);
+    std::lock_guard lock(_mutex);
     load(report);
 
     // After loading, the _names list won't change, return a constant reference to it.
@@ -258,7 +257,7 @@ ts::UString ts::LNB::LNBRepository::ToIndex(const UString& name)
 const ts::LNB* ts::LNB::LNBRepository::get(const UString& name, Report& report)
 {
     // Lock access to the repository.
-    GuardMutex lock(_mutex);
+    std::lock_guard lock(_mutex);
 
     if (!load(report)) {
         // Error loading XML configuration file.

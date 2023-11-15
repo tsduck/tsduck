@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsWatchDog.h"
-#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------
@@ -18,7 +17,7 @@ ts::WatchDog::WatchDog(ts::WatchDogHandlerInterface* handler, ts::MilliSecond ti
     _log(log),
     _watchDogId(id),
     _handler(handler),
-    _timeout(timeout == 0 ? Infinite : timeout)
+    _timeout(timeout)
 {
 }
 
@@ -27,7 +26,7 @@ ts::WatchDog::~WatchDog()
     // Terminate the thread and wait for actual thread termination.
     // Does nothing if the thread has not been started.
     _terminate = true;
-    _condition.signal();
+    _condition.notify_all();
     waitForTermination();
 }
 
@@ -38,7 +37,7 @@ ts::WatchDog::~WatchDog()
 
 void ts::WatchDog::setWatchDogHandler(WatchDogHandlerInterface* h)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     _handler = h;
 }
 
@@ -47,11 +46,11 @@ void ts::WatchDog::setWatchDogHandler(WatchDogHandlerInterface* h)
 // Activate the watchdog. Must be called with mutex held.
 //----------------------------------------------------------------------------
 
-void ts::WatchDog::activate(GuardCondition& lock)
+void ts::WatchDog::activate()
 {
     if (_started) {
         // Watchdog thread already started, signal the condition.
-        lock.signal();
+        _condition.notify_all();
     }
     else {
         // Start the watchdog thread.
@@ -67,11 +66,11 @@ void ts::WatchDog::activate(GuardCondition& lock)
 
 void ts::WatchDog::setTimeout(MilliSecond timeout, bool autoStart)
 {
-    GuardCondition lock(_mutex, _condition);
-    _timeout = timeout == 0 ? Infinite : timeout;
+    std::lock_guard<std::mutex> lock(_mutex);
+    _timeout = timeout;
     _active = autoStart;
     if (autoStart) {
-        activate(lock);
+        activate();
     }
 }
 
@@ -82,9 +81,9 @@ void ts::WatchDog::setTimeout(MilliSecond timeout, bool autoStart)
 
 void ts::WatchDog::restart()
 {
-    GuardCondition lock(_mutex, _condition);
+    std::lock_guard<std::mutex> lock(_mutex);
     _active = true;
-    activate(lock);
+    activate();
 }
 
 
@@ -94,11 +93,11 @@ void ts::WatchDog::restart()
 
 void ts::WatchDog::suspend()
 {
-    GuardCondition lock(_mutex, _condition);
+    std::lock_guard<std::mutex> lock(_mutex);
     _active = false;
     // Signal the condition if the thread is started.
     // No need to activate the thread if not started.
-    lock.signal();
+    _condition.notify_all();
 }
 
 
@@ -116,8 +115,13 @@ void ts::WatchDog::main()
 
         // Wait for the condition to be signaled. Get protected data while under mutex protection.
         {
-            GuardCondition lock(_mutex, _condition);
-            expired = !lock.waitCondition(_active ? _timeout : Infinite);
+            std::unique_lock<std::mutex> lock(_mutex);
+            if (!_active || _timeout == 0) {
+                _condition.wait(lock);
+            }
+            else {
+                expired = _condition.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(_timeout))) == std::cv_status::timeout;
+            }
             h = _handler;
         }
 
