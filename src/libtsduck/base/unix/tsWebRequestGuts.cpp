@@ -382,7 +382,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         // when we have the ability to wakeup curl_multi from another thread.
         {
 #if defined(TS_CURL_WAKEUP)
-            std::lock_guard lock(_mutex);
+            std::lock_guard<std::mutex> lock(_mutex);
 #endif
             // Initialize curl_multi and curl_easy
             if ((_curlm = ::curl_multi_init()) == nullptr) {
@@ -675,7 +675,7 @@ void ts::WebRequest::SystemGuts::abort()
 {
     // On older versions of curl, without curl_multi_wakeup, there is no safe way to wake it up from another thread.
 #if defined(TS_CURL_WAKEUP)
-    std::lock_guard lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     if (_curlm != nullptr) {
         ::curl_multi_wakeup(_curlm);
     }
@@ -691,7 +691,7 @@ void ts::WebRequest::SystemGuts::clear()
 {
 #if defined(TS_CURL_WAKEUP)
     // Make sure we don't call curl_multi_wakeup() while deallocating.
-    std::lock_guard lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
 #endif
 
     // Deallocate list of headers.
