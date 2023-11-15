@@ -17,14 +17,10 @@
 #include "tsIPv4SocketAddress.h"
 #include "tstlvLogger.h"
 #include "tstlvConnection.h"
+#include "tsMutex.h"
 #include "tsAsyncReport.h"
 #include "tsNullReport.h"
 #include "tsSingleDataStatistics.h"
-#include "tsMutex.h"
-#include "tsGuardMutex.h"
-#include "tsCondition.h"
-#include "tsGuardCondition.h"
-#include <atomic>
 TS_MAIN(MainCode);
 
 
@@ -235,12 +231,12 @@ namespace {
         };
 
         // EventScheduler private fields.
-        const CmdOptions& _opt;
-        ts::Report&       _report;
-        ts::Mutex         _mutex {};
-        ts::Condition     _condition {};
-        std::list<Event>  _events {};
-        size_t            _request_count = 0;
+        const CmdOptions&       _opt;
+        ts::Report&             _report;
+        std::mutex              _mutex {};
+        std::condition_variable _condition {};
+        std::list<Event>        _events {};
+        size_t                  _request_count = 0;
 
         // Enqueue an event.
         void enqueue(const Event& event);
@@ -261,7 +257,7 @@ EventQueue::EventQueue(const CmdOptions& opt, ts::Report& report) :
 // Enqueue an event.
 void EventQueue::enqueue(const Event& event)
 {
-    ts::GuardCondition lock(_mutex, _condition);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Keep an ordered list of events by due time, most future first.
     auto iter = _events.begin();
@@ -273,7 +269,7 @@ void EventQueue::enqueue(const Event& event)
 
     // If event was inserted at end, maybe we need to wake up.
     if (at_end) {
-        lock.signal();
+        _condition.notify_one();
     }
 }
 
@@ -286,12 +282,12 @@ bool EventQueue::waitEvent(uint16_t& channel_id, uint16_t& stream_id)
         return false;
     }
 
-    ts::GuardCondition lock(_mutex, _condition);
+    std::unique_lock<std::mutex> lock(_mutex);
     for (;;) {
         const ts::Time now(ts::Time::CurrentUTC());
         if (_events.empty()) {
             // Wait until explicitly signalled.
-            lock.waitCondition();
+            _condition.wait(lock);
         }
         else if (_events.back().due <= now) {
             // Last event is ready.
@@ -303,7 +299,7 @@ bool EventQueue::waitEvent(uint16_t& channel_id, uint16_t& stream_id)
         }
         else {
             // Wait until last event time (or explicitly signalled).
-            lock.waitCondition(_events.back().due - now);
+            _condition.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(_events.back().due - now)));
         }
     }
 }
@@ -332,17 +328,17 @@ namespace {
         // Terminate the thread.
         void terminate();
 
-      private:
+    private:
         typedef ts::SingleDataStatistics<ts::MilliSecond> ResponseStat;
 
-        const CmdOptions& _opt;
-        ts::Report&       _report;
-        std::atomic<std::uint32_t> _request_count; // same as std::atomic_uint32_t, missing in old GCC
-        volatile bool     _terminate;
-        ts::Mutex         _mutex;     // Exclusive access to subsequent fields.
-        ts::Condition     _condition;
-        ResponseStat      _instant_response;
-        ResponseStat      _global_response;
+        const CmdOptions&          _opt;
+        ts::Report&                _report;
+        std::atomic<std::uint32_t> _request_count {0}; // same as std::atomic_uint32_t, missing in old GCC
+        volatile bool              _terminate = false;
+        std::mutex                 _mutex {};          // Exclusive access to subsequent fields.
+        std::condition_variable    _condition {};
+        ResponseStat               _instant_response {};
+        ResponseStat               _global_response {};
 
         // Report statistics. Must be called with mutex held.
         void reportStatistics(const ResponseStat& stat);
@@ -352,13 +348,7 @@ namespace {
 // Constructor.
 CmdStatistics::CmdStatistics(const CmdOptions& opt, ts::Report& report) :
     _opt(opt),
-    _report(report),
-    _request_count(0),
-    _terminate(false),
-    _mutex(),
-    _condition(),
-    _instant_response(),
-    _global_response()
+    _report(report)
 {
     start();
 }
@@ -372,7 +362,7 @@ CmdStatistics::~CmdStatistics()
 // Provide statistics.
 void CmdStatistics::oneResponse(ts::MilliSecond time)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     _instant_response.feed(time);
     _global_response.feed(time);
 }
@@ -390,15 +380,20 @@ void CmdStatistics::reportStatistics(const ResponseStat& stat)
 void CmdStatistics::main()
 {
     while (!_terminate) {
-        ts::GuardCondition lock(_mutex, _condition);
-        lock.waitCondition(_opt.stat_interval == 0 ? ts::Infinite : _opt.stat_interval * ts::MilliSecPerSec);
+        std::unique_lock<std::mutex> lock(_mutex);
+        if (_opt.stat_interval == 0) {
+            _condition.wait(lock);
+        }
+        else {
+            _condition.wait_for(lock, std::chrono::seconds(std::chrono::seconds::rep(_opt.stat_interval)));
+        }
         if (!_terminate) {
             reportStatistics(_instant_response);
             _instant_response.reset();
         }
     }
     {
-        ts::GuardMutex lock(_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         reportStatistics(_global_response);
     }
 }
@@ -407,9 +402,9 @@ void CmdStatistics::main()
 void CmdStatistics::terminate()
 {
     {
-        ts::GuardCondition lock(_mutex, _condition);
+        std::lock_guard<std::mutex> lock(_mutex);
         _terminate = true;
-        lock.signal();
+        _condition.notify_one();
     }
     waitForTermination();
 }
@@ -450,12 +445,12 @@ namespace {
         class Stream
         {
         public:
-            bool     ready;
-            bool     closing;
-            uint16_t cp_number;
-            ts::Time start_request;
+            bool     ready = false;
+            bool     closing = false;
+            uint16_t cp_number = 0;
+            ts::Time start_request {};
 
-            Stream() : ready(false), closing(false), cp_number(0), start_request() {}
+            Stream() = default;
         };
 
         // ECMGConnection private fields.
@@ -468,10 +463,10 @@ namespace {
         const uint16_t       _first_ecm_id;
         const uint16_t       _first_stream_id;
         const uint16_t       _end_stream_id;
-        std::atomic<std::uint8_t> _cw_per_msg;  // as returned by ECMG, same as std::atomic_uint8_t, missing in old GCC
-        ts::Mutex                 _mutex;       // protect subsequent fields
-        ts::Condition             _completed;   // signalled by reception thread when all streams are closed.
-        std::vector<Stream>       _streams;
+        std::atomic<std::uint8_t>   _cw_per_msg = 0;  // as returned by ECMG, same as std::atomic_uint8_t, missing in old GCC
+        std::recursive_mutex        _mutex {};        // protect subsequent fields
+        std::condition_variable_any _completed {};    // signalled by reception thread when all streams are closed.
+        std::vector<Stream>         _streams {};
 
         // Check the validity of a received message.
         bool checkChannelMessage(const ts::tlv::ChannelMessage* mp, const ts::UChar* message_name);
@@ -493,9 +488,6 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     _first_ecm_id(_opt.first_ecm_id + index * _opt.streams_per_channel),
     _first_stream_id(_opt.first_ecm_stream_id),
     _end_stream_id(_opt.first_ecm_stream_id + _opt.streams_per_channel),
-    _cw_per_msg(0),
-    _mutex(),
-    _completed(),
     _streams(_opt.streams_per_channel)
 {
     // Set logging levels for ECM messages.
@@ -570,7 +562,7 @@ void ECMGConnection::terminate()
 
         // Send a stream_close_request per active stream.
         for (size_t i = 0; i < _streams.size(); ++i) {
-            ts::GuardMutex lock(_mutex);
+            std::lock_guard<std::recursive_mutex> lock(_mutex);
             if (_streams[i].ready) {
                 ts::ecmgscs::StreamCloseRequest msg(_opt.ecmgscs);
                 msg.channel_id = _channel_id;
@@ -583,7 +575,7 @@ void ECMGConnection::terminate()
 
         // Wait for all stream close requests to complete (response from ECMG).
         {
-            ts::GuardCondition lock(_mutex, _completed);
+            std::unique_lock<std::recursive_mutex> lock(_mutex);
             for (;;) {
                 bool completed = true;
                 for (const auto& stream : _streams) {
@@ -595,7 +587,7 @@ void ECMGConnection::terminate()
                 if (completed) {
                     break;
                 }
-                lock.waitCondition();
+                _completed.wait(lock);
             }
         }
 
@@ -621,7 +613,7 @@ void ECMGConnection::abort()
 // Send a stream_setup command.
 bool ECMGConnection::sendStreamSetup(uint16_t stream_id)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     const size_t index = stream_id - _opt.first_ecm_stream_id;
     if (stream_id < _opt.first_ecm_stream_id || index >= _streams.size() || _streams[index].ready) {
         _logger.report().error(u"invalid stream id: %d", {stream_id});
@@ -640,7 +632,7 @@ bool ECMGConnection::sendStreamSetup(uint16_t stream_id)
 // Send an ECM request.
 bool ECMGConnection::sendRequest(uint16_t stream_id)
 {
-    ts::GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     const size_t index = stream_id - _opt.first_ecm_stream_id;
     if (stream_id < _opt.first_ecm_stream_id || index >= _streams.size() || !_streams[index].ready) {
         _logger.report().error(u"invalid stream id: %d", {stream_id});
@@ -713,7 +705,7 @@ void ECMGConnection::main()
             case ts::ecmgscs::Tags::stream_status: {
                 ts::ecmgscs::StreamStatus* const mp = dynamic_cast<ts::ecmgscs::StreamStatus*>(msg.pointer());
                 if (checkStreamMessage(mp, u"stream_status")) {
-                    ts::GuardMutex lock(_mutex);
+                    std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
                     if (!stream.ready) {
                         // This is a response to stream_setup.
@@ -751,7 +743,7 @@ void ECMGConnection::main()
             case ts::ecmgscs::Tags::ECM_response: {
                 ts::ecmgscs::ECMResponse* const mp = dynamic_cast<ts::ecmgscs::ECMResponse*>(msg.pointer());
                 if (checkStreamMessage(mp, u"ECM_response")) {
-                    ts::GuardMutex lock(_mutex);
+                    std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
                     if (!stream.ready || stream.start_request == ts::Time::Epoch) {
                         _logger.report().error(u"unexpected ECM response, channel_id %d, stream id %d", {mp->channel_id, mp->stream_id});
@@ -770,10 +762,10 @@ void ECMGConnection::main()
             case ts::ecmgscs::Tags::stream_close_response: {
                 ts::ecmgscs::StreamCloseResponse* const mp = dynamic_cast<ts::ecmgscs::StreamCloseResponse*>(msg.pointer());
                 if (checkStreamMessage(mp, u"stream_close_response")) {
-                    ts::GuardCondition lock(_mutex, _completed);
+                    std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
                     stream.ready = stream.closing = false;
-                    lock.signal();
+                    _completed.notify_one();
                 }
                 break;
             }

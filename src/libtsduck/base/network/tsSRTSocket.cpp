@@ -413,54 +413,54 @@ public:
      // Socket working data.
      IPv4SocketAddress    local_address {};
      IPv4SocketAddress    remote_address {};
-     SRTSocketMode        mode {SRTSocketMode::DEFAULT};
-     volatile ::SRTSOCKET sock {SRT_INVALID_SOCK};       // SRT socket for data transmission
-     volatile ::SRTSOCKET listener {SRT_INVALID_SOCK};   // Listener SRT socket when srt_listen() is used.
-     size_t               total_sent_bytes {0};
-     size_t               total_received_bytes {0};
+     SRTSocketMode        mode = SRTSocketMode::DEFAULT;
+     volatile ::SRTSOCKET sock = SRT_INVALID_SOCK;       // SRT socket for data transmission
+     volatile ::SRTSOCKET listener  = SRT_INVALID_SOCK;   // Listener SRT socket when srt_listen() is used.
+     size_t               total_sent_bytes = 0;
+     size_t               total_received_bytes = 0;
      Time                 next_stats {};
 
      // Socket options.
-     ::SRT_TRANSTYPE transtype {SRTT_INVALID};
+     ::SRT_TRANSTYPE transtype = SRTT_INVALID;
      std::string packet_filter {};
      std::string passphrase {};
      std::string streamid {};
-     int         polling_time {-1};
-     bool        messageapi {false};
-     bool        nakreport {false};
-     bool        reuse_port {false};
-     int         backlog {0};
-     int         conn_timeout {-1};
-     int         ffs {-1};
+     int         polling_time = -1;
+     bool        messageapi = false;
+     bool        nakreport = false;
+     bool        reuse_port = false;
+     int         backlog = 0;
+     int         conn_timeout = -1;
+     int         ffs = -1;
      ::linger    linger_opt {0, 0};
-     int         lossmaxttl {-1};
-     int         mss {-1};
-     int         ohead_bw {-1};
-     int         payload_size {-1};
-     int         rcvbuf {-1};
-     int         sndbuf {-1};
-     bool        enforce_encryption {false};
-     int32_t     kmrefreshrate {-1};
-     int32_t     kmpreannounce {-1};
-     int         udp_rcvbuf {-1};
-     int         udp_sndbuf {-1};
-     int64_t     input_bw {-1};
-     int64_t     max_bw {-1};
-     int32_t     iptos {-1};
-     int32_t     ipttl {-1};
-     int32_t     latency {-1};
-     int32_t     min_version {-1};
-     int32_t     pbkeylen {-1};
-     int32_t     peer_idle_timeout {-1};
-     int32_t     peer_latency {-1};
-     int32_t     rcv_latency {-1};
-     bool        tlpktdrop {false};
-     bool        disconnected {false};
-     bool        final_stats {false};
-     bool        json_line {false};
+     int         lossmaxttl = -1;
+     int         mss = -1;
+     int         ohead_bw = -1;
+     int         payload_size = -1;
+     int         rcvbuf = -1;
+     int         sndbuf = -1;
+     bool        enforce_encryption = false;
+     int32_t     kmrefreshrate = -1;
+     int32_t     kmpreannounce = -1;
+     int         udp_rcvbuf = -1;
+     int         udp_sndbuf = -1;
+     int64_t     input_bw = -1;
+     int64_t     max_bw = -1;
+     int32_t     iptos = -1;
+     int32_t     ipttl = -1;
+     int32_t     latency = -1;
+     int32_t     min_version = -1;
+     int32_t     pbkeylen = -1;
+     int32_t     peer_idle_timeout = -1;
+     int32_t     peer_latency = -1;
+     int32_t     rcv_latency = -1;
+     bool        tlpktdrop = false;
+     bool        disconnected = false;
+     bool        final_stats = false;
+     bool        json_line = false;
      UString     json_prefix {};
-     MilliSecond stats_interval {0};
-     SRTStatMode stats_mode {SRTStatMode::ALL};
+     MilliSecond stats_interval = 0;
+     SRTStatMode stats_mode = SRTStatMode::ALL;
 private:
      // Callback which is called on any incoming connection.
      static int listenCallback(void* param, SRTSOCKET ns, int hsversion, const ::sockaddr* peeraddr, const char* streamid);

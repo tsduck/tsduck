@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDescrambler.h"
-#include "tsGuardCondition.h"
+#include "tsMemory.h"
 
 // Stack usage required by this module in the ECM deciphering thread.
 #define ECM_THREAD_STACK_OVERHEAD (16  * 1024)
@@ -18,12 +18,7 @@
 //----------------------------------------------------------------------------
 
 ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_, const UString& description, const UString& syntax, size_t stack_usage) :
-    ProcessorPlugin(tsp_, description, syntax),
-    _scrambling(*tsp),
-    _service(duck, this),
-    _stack_usage(stack_usage),
-    _demux(duck, nullptr, this),
-    _ecm_thread(this)
+    ProcessorPlugin(tsp_, description, syntax)
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
@@ -156,9 +151,9 @@ bool ts::AbstractDescrambler::stop()
     // and wait for its actual termination.
     if (_need_ecm && !_synchronous) {
         {
-            GuardCondition lock(_mutex, _ecm_to_do);
+            std::lock_guard<std::mutex> lock(_mutex);
             _stop_thread = true;
-            lock.signal();
+            _ecm_to_do.notify_one();
         }
         _ecm_thread.waitForTermination();
     }
@@ -301,7 +296,7 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
 
     // In asynchronous mode, the CW are accessed under mutex protection.
     if (!_synchronous) {
-        _mutex.acquire();
+        _mutex.lock();
     }
 
     // Copy the ECM into the PID context.
@@ -315,8 +310,8 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
     }
     else {
         // Asynchronous mode: signal the ECM to the ECM processing thread.
-        _ecm_to_do.signal();
-        _mutex.release();
+        _ecm_to_do.notify_one();
+        _mutex.unlock();
     }
 }
 
@@ -339,7 +334,7 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
 
     // In asynchronous mode, release the mutex.
     if (!_synchronous) {
-        _mutex.release();
+        _mutex.unlock();
     }
 
     // Here, we have an ECM to decipher.
@@ -361,7 +356,7 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
 
     // In asynchronous mode, relock the mutex.
     if (!_synchronous) {
-        _mutex.acquire();
+        _mutex.lock();
     }
 
     // Copy the control words in the protected area.
@@ -396,7 +391,7 @@ void ts::AbstractDescrambler::ECMThread::main()
     // The loop executes with the mutex held. The mutex is released
     // while deciphering an ECM and while waiting for the condition
     // variable 'ecm_to_do'.
-    GuardCondition lock(_parent->_mutex, _parent->_ecm_to_do);
+    std::unique_lock<std::mutex> lock(_parent->_mutex);
 
     for (;;) {
 
@@ -405,7 +400,6 @@ void ts::AbstractDescrambler::ECMThread::main()
         // again if at least an ECM was found since the mutex was
         // released during the ECM processing and a new ECM may
         // have been added at the beginning of the list.
-
         bool got_ecm = false;
         bool terminate = false;
 
@@ -438,7 +432,7 @@ void ts::AbstractDescrambler::ECMThread::main()
         // now sure that there is nothing to do. The mutex is implicitely
         // released and we wait for the condition 'ecm_to_do' and, once we
         // get it, implicitely relock the mutex.
-        lock.waitCondition();
+        _parent->_ecm_to_do.wait(lock);
     }
 
     _parent->tsp->debug(u"ECM processing thread terminated");
@@ -511,7 +505,7 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
         // A new CW was deciphered.
         // In asynchronous mode, the CW are accessed under mutex protection.
         if (!_synchronous) {
-            _mutex.acquire();
+            _mutex.lock();
         }
 
         // Store the new CW in the descrambler.
@@ -527,7 +521,7 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
         }
 
         if (!_synchronous) {
-            _mutex.release();
+            _mutex.unlock();
         }
     }
 

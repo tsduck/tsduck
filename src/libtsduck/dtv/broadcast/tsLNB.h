@@ -17,7 +17,6 @@
 #include "tsCerrReport.h"
 #include "tsModulation.h"
 #include "tsReport.h"
-#include "tsMutex.h"
 #include "tsSafePtr.h"
 #include "tsSingleton.h"
 #include "tsxml.h"
@@ -219,7 +218,7 @@ namespace ts {
             const UStringList& allNames(Report& report);
 
         private:
-            mutable Mutex            _mutex {};
+            mutable std::mutex       _mutex {};
             LNBPtr                   _default_lnb {};
             std::map<UString,LNBPtr> _lnbs {};
             UStringList              _names {};

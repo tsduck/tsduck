@@ -16,9 +16,6 @@
 #include "tsPollFiles.h"
 #include "tsFileUtils.h"
 #include "tsThread.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
-#include "tsGuardCondition.h"
 
 namespace {
     // Default interval in milliseconds between two poll operations.
@@ -88,13 +85,13 @@ namespace ts {
         FileListener  _file_listener;
         EITGenerator  _eit_gen;
         volatile bool _check_files = false;    // there are files in _polled_files
-        Mutex         _polled_files_mutex {};  // exclusive access to _polled_files
+        std::mutex    _polled_files_mutex {};  // exclusive access to _polled_files
         UStringList   _polled_files {};        // accessed by two threads, protected by mutex above.
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
         volatile bool _wfb_received = false;   // First batch was received.
-        Mutex         _wfb_mutex {};           // Mutex waiting for _wfb_received.
-        Condition     _wfb_condition {};       // Condition waiting for _wfb_received.
+        std::mutex    _wfb_mutex {};           // Mutex waiting for _wfb_received.
+        std::condition_variable _wfb_cond {};  // Condition waiting for _wfb_received.
 
         // Load files in the context of the plugin thread.
         void loadFiles();
@@ -407,7 +404,7 @@ bool ts::EITInjectPlugin::start()
 
     // Start the file polling.
     {
-        GuardMutex lock(_polled_files_mutex);
+        std::lock_guard<std::mutex> lock(_polled_files_mutex);
         _check_files = false;
         _polled_files.clear();
     }
@@ -420,10 +417,8 @@ bool ts::EITInjectPlugin::start()
         if (_wait_first_batch) {
             tsp->verbose(u"waiting for first batch of events");
             {
-                GuardCondition lock(_wfb_mutex, _wfb_condition);
-                while (!_wfb_received) {
-                    lock.waitCondition();
-                }
+                std::unique_lock<std::mutex> lock(_wfb_mutex);
+                _wfb_cond.wait(lock, [this]() { return _wfb_received; });
             }
             tsp->verbose(u"received first batch of events");
             loadFiles();
@@ -519,7 +514,7 @@ bool ts::EITInjectPlugin::FileListener::handlePolledFiles(const PolledFileList& 
 {
     // Add the polled files to the list to be processed by the plugin thread.
     {
-        GuardMutex lock(_plugin->_polled_files_mutex);
+        std::lock_guard<std::mutex> lock(_plugin->_polled_files_mutex);
         // Insert one by one, avoiding duplicates.
         for (const auto& it : files) {
             // If file was updated (ie. not deleted) and not already present in _polled_files.
@@ -532,9 +527,9 @@ bool ts::EITInjectPlugin::FileListener::handlePolledFiles(const PolledFileList& 
 
     // If --wait-first-batch was specified, signal when the first batch of commands is queued.
     if (_plugin->_wait_first_batch && !_plugin->_wfb_received) {
-        GuardCondition lock(_plugin->_wfb_mutex, _plugin->_wfb_condition);
+        std::lock_guard<std::mutex> lock(_plugin->_wfb_mutex);
         _plugin->_wfb_received = true;
-        lock.signal();
+        _plugin->_wfb_cond.notify_one();
     }
 
     return !_terminate;
@@ -547,7 +542,7 @@ bool ts::EITInjectPlugin::FileListener::handlePolledFiles(const PolledFileList& 
 
 void ts::EITInjectPlugin::loadFiles()
 {
-    GuardMutex lock(_polled_files_mutex);
+    std::lock_guard<std::mutex> lock(_polled_files_mutex);
 
     for (const auto& it : _polled_files) {
 

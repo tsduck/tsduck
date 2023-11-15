@@ -17,10 +17,7 @@
 #include "tsSection.h"
 #include "tsServiceDiscovery.h"
 #include "tsTSScrambling.h"
-#include "tsCondition.h"
-#include "tsMutex.h"
 #include "tsThread.h"
-#include "tsMemory.h"
 
 namespace ts {
 
@@ -239,23 +236,23 @@ namespace ts {
         void analyzeDescriptors(const DescriptorList& dlist, std::set<PID>& ecm_pids, uint8_t& scrambling);
 
         // Abstract descrambler private data.
-        bool               _use_service = false;  // Descramble a service (ie. not a specific list of PID's).
-        bool               _need_ecm = false;     // We need to get control words from ECM's.
-        bool               _abort = false;        // Error, abort asap.
-        bool               _synchronous = false;  // Synchronous ECM deciphering.
-        bool               _swap_cw = false;      // Swap even/odd CW from ECM.
-        TSScrambling       _scrambling;           // Default descrambling (used with fixed control words).
-        PIDSet             _pids {};              // Explicit PID's to descramble.
-        ServiceDiscovery   _service;              // Service to descramble (by name, id or none).
-        size_t             _stack_usage;          // Stack usage for ECM deciphering.
-        SectionDemux       _demux;                // Section demux to extract ECM's.
-        ECMStreamMap       _ecm_streams {};       // ECM streams, indexed by PID.
-        ScrambledStreamMap _scrambled_streams {}; // Scrambled streams, indexed by PID.
-        Mutex              _mutex {};             // Exclusive access to protected areas
-        Condition          _ecm_to_do {};         // Notify thread to process ECM.
-        ECMThread          _ecm_thread;           // Thread which deciphers ECM's.
+        bool                    _use_service = false;         // Descramble a service (ie. not a specific list of PID's).
+        bool                    _need_ecm = false;            // We need to get control words from ECM's.
+        bool                    _abort = false;               // Error, abort asap.
+        bool                    _synchronous = false;         // Synchronous ECM deciphering.
+        bool                    _swap_cw = false;             // Swap even/odd CW from ECM.
+        TSScrambling            _scrambling {*tsp};           // Default descrambling (used with fixed control words).
+        PIDSet                  _pids {};                     // Explicit PID's to descramble.
+        ServiceDiscovery        _service {duck, this};        // Service to descramble (by name, id or none).
+        size_t                  _stack_usage;                 // Stack usage for ECM deciphering.
+        SectionDemux            _demux {duck, nullptr, this}; // Section demux to extract ECM's.
+        ECMStreamMap            _ecm_streams {};              // ECM streams, indexed by PID.
+        ScrambledStreamMap      _scrambled_streams {};        // Scrambled streams, indexed by PID.
+        std::mutex              _mutex {};                    // Exclusive access to protected areas
+        std::condition_variable _ecm_to_do {};                // Notify thread to process ECM.
+        ECMThread               _ecm_thread {this};           // Thread which deciphers ECM's.
         // -- start of protected area --
-        bool               _stop_thread = false;  // Terminate ECM processing thread
+        bool                    _stop_thread = false;         // Terminate ECM processing thread
         // -- end of protected area --
     };
 }

@@ -16,9 +16,6 @@
 #include "tsNullReport.h"
 #include "tsThread.h"
 #include "tsReport.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
-#include "tsGuardCondition.h"
 
 namespace ts {
     //!
@@ -92,18 +89,18 @@ namespace ts {
         int watchDogId() const { return _watchDogId; }
 
     private:
-        Report&                   _log;                 // For debug messages.
-        volatile int              _watchDogId;          // Application-defined watchdog identifier.
-        volatile bool             _terminate = false;   // Terminate the thread.
-        Mutex                     _mutex {};            // Mutex to protect the following fields.
-        Condition                 _condition {};        // Condition to signal when something changed.
-        WatchDogHandlerInterface* _handler;             // Handler for expiration.
-        MilliSecond               _timeout {Infinite};  // Expiration timeout, 0 means no timeout.
-        bool                      _active = false;      // The watchdog is active.
-        bool                      _started = false;     // The thread is started.
+        Report&                   _log;                // For debug messages.
+        volatile int              _watchDogId = 0;     // Application-defined watchdog identifier.
+        volatile bool             _terminate = false;  // Terminate the thread.
+        std::mutex                _mutex {};           // Mutex to protect the following fields.
+        std::condition_variable   _condition {};       // Condition to signal when something changed.
+        WatchDogHandlerInterface* _handler = nullptr;  // Handler for expiration.
+        MilliSecond               _timeout = 0;        // Expiration timeout, 0 means no timeout.
+        bool                      _active = false;     // The watchdog is active.
+        bool                      _started = false;    // The thread is started.
 
         // Activate the watchdog. Must be called with mutex held.
-        void activate(GuardCondition& lock);
+        void activate();
 
         // Implementation of Thread.
         virtual void main() override;

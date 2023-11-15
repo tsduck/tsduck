@@ -119,7 +119,7 @@ namespace ts {
         volatile bool      _stream_established = false;    // Data stream open.
         volatile bool      _req_bitrate_changed = false;   // Requested bitrate has changed.
         // Start of protected area.
-        Mutex              _mutex {};                      // Mutex for access to protected area
+        std::mutex         _mutex {};                      // Mutex for access to protected area
         uint32_t           _client_id = 0;                 // DVB SimilCrypt client id.
         uint16_t           _data_id = 0;                   // DVB SimilCrypt data id.
         bool               _section_mode = false;          // Datagrams are sections.
@@ -303,7 +303,7 @@ bool ts::DataInjectPlugin::start()
 void ts::DataInjectPlugin::clearSession()
 {
     // Work on some protected data
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // No client session is established.
     _channel_established = false;
@@ -363,7 +363,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
         // Try to insert data
         if (_unregulated || _pkt_next_data <= _pkt_current) {
             // Time to insert data packet, if any is available immediately.
-            GuardMutex lock(_mutex);
+            std::lock_guard<std::mutex> lock(_mutex);
 
             // Get next packet to insert.
             bool got_packet = false;
@@ -432,7 +432,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
         return false;
     }
 
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Check that the stream is established.
     if (!_stream_established) {
@@ -471,7 +471,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
         return false;
     }
 
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     // Check that the stream is established.
     if (!_stream_established) {
@@ -611,7 +611,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         assert (m != nullptr);
                         // First, declare the channel as established.
                         {
-                            GuardMutex lock(_plugin->_mutex);
+                            std::lock_guard<std::mutex> lock(_plugin->_mutex);
                             _plugin->_client_id = m->client_id;
                             _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
                             _plugin->_channel_established = true;
@@ -638,7 +638,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                 }
 
                 case emmgmux::Tags::channel_close: {
-                    GuardMutex lock(_plugin->_mutex);
+                    std::lock_guard<std::mutex> lock(_plugin->_mutex);
                     _plugin->_channel_established = false;
                     _plugin->_stream_established = false;
                     break;
@@ -658,7 +658,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         assert(m != nullptr);
                         // First, declare the stream as established.
                         {
-                            GuardMutex lock(_plugin->_mutex);
+                            std::lock_guard<std::mutex> lock(_plugin->_mutex);
                             _plugin->_data_id = m->data_id;
                             _plugin->_stream_established = true;
                         }
@@ -693,7 +693,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                     else {
                         // First, declare the stream as closed.
                         {
-                            GuardMutex lock(_plugin->_mutex);
+                            std::lock_guard<std::mutex> lock(_plugin->_mutex);
                             _plugin->_stream_established = false;
                         }
                         // Send the stream_close_response
