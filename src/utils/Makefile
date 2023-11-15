@@ -36,6 +36,8 @@ endif
 
 .PHONY: install install-tools
 install install-tools:
+	sed -e 's| *{{STDCPP}} *| $(if $(NOPCSTD),,$(CXXFLAGS_STANDARD))|g' \
+	    tsconfig >$(SYSROOT)$(SYSPREFIX)/bin/tsconfig
+	chmod 755 $(SYSROOT)$(SYSPREFIX)/bin/tsconfig
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin $(SYSROOT)$(BASHCOMP_DIR)
-	install -m 755 tsconfig $(SYSROOT)$(SYSPREFIX)/bin
 	install -m 644 tsconfig-completion.bash $(SYSROOT)$(BASHCOMP_DIR)/tsconfig
