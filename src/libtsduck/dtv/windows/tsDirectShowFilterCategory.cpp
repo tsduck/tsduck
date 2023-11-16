@@ -10,19 +10,6 @@
 
 
 //-----------------------------------------------------------------------------
-// Constructor.
-//-----------------------------------------------------------------------------
-
-ts::DirectShowFilterCategory::DirectShowFilterCategory(Report& report) :
-    _report(report),
-    _enum(),
-    _moniker(),
-    _filters()
-{
-}
-
-
-//-----------------------------------------------------------------------------
 // Constructor from a device category.
 //-----------------------------------------------------------------------------
 
@@ -88,7 +75,7 @@ bool ts::DirectShowFilterCategory::getAllFiltersInstance(const ::GUID& category)
         Filter flt;
 
         // Get next filter device.
-        if (_moniker->Next(1, flt.moniker.creator(), NULL) != S_OK) {
+        if (_moniker->Next(1, flt.moniker.creator(), nullptr) != S_OK) {
             break; // no more device
         }
 

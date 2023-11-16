@@ -19,7 +19,7 @@
 
 void ts::DeleteMediaType (::AM_MEDIA_TYPE* pmt)
 {
-    if (pmt != NULL) {
+    if (pmt != nullptr) {
         ts::FreeMediaType (*pmt);
         ::CoTaskMemFree (pmt);
     }
@@ -35,11 +35,11 @@ void ts::FreeMediaType (::AM_MEDIA_TYPE& mt)
     if (mt.cbFormat != 0) {
         ::CoTaskMemFree (mt.pbFormat);
         mt.cbFormat = 0;
-        mt.pbFormat = NULL;
+        mt.pbFormat = nullptr;
     }
-    if (mt.pUnk != NULL) {
+    if (mt.pUnk != nullptr) {
         mt.pUnk->Release();
-        mt.pUnk = NULL;
+        mt.pUnk = nullptr;
     }
 }
 
@@ -53,9 +53,9 @@ void ts::FreeMediaType (::AM_MEDIA_TYPE& mt)
     assert (&src != &dst);
     dst = src;
     if (src.cbFormat != 0) {
-        assert (src.pbFormat != NULL);
+        assert (src.pbFormat != nullptr);
         dst.pbFormat = reinterpret_cast<::BYTE*> (::CoTaskMemAlloc (src.cbFormat));
-        if (dst.pbFormat == NULL) {
+        if (dst.pbFormat == nullptr) {
             dst.cbFormat = 0;
             return E_OUTOFMEMORY;
         }
@@ -63,7 +63,7 @@ void ts::FreeMediaType (::AM_MEDIA_TYPE& mt)
             ::CopyMemory(dst.pbFormat, src.pbFormat, dst.cbFormat);  // Flawfinder: ignore: CopyMemory()
         }
     }
-    if (dst.pUnk != NULL) {
+    if (dst.pUnk != nullptr) {
         dst.pUnk->AddRef();
     }
     return S_OK;
@@ -81,7 +81,7 @@ void ts::InitMediaType (::AM_MEDIA_TYPE& mt)
     mt.bTemporalCompression = 0;
     mt.lSampleSize = 0;
     mt.formattype = GUID_NULL;
-    mt.pUnk = NULL;
+    mt.pUnk = nullptr;
     mt.cbFormat = 0;
-    mt.pbFormat = NULL;
+    mt.pbFormat = nullptr;
 }

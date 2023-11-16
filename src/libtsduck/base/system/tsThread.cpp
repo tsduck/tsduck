@@ -179,8 +179,8 @@ bool ts::Thread::start()
 
     // Windows implementation.
     // Create the thread in suspended state.
-    _handle = ::CreateThread(NULL, _attributes._stackSize, Thread::ThreadProc, this, CREATE_SUSPENDED, &_thread_id);
-    if (_handle == NULL) {
+    _handle = ::CreateThread(nullptr, _attributes._stackSize, Thread::ThreadProc, this, CREATE_SUSPENDED, &_thread_id);
+    if (_handle == nullptr) {
         return false;
     }
 

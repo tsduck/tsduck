@@ -278,7 +278,7 @@ bool ts::DirectShowTest::displayDevicesByCategory(const ::GUID& category, const 
 
             // Loop on all pins
             ComPtr<::IPin> pin;
-            while (enum_pins->Next(1, pin.creator(), NULL) == S_OK) {
+            while (enum_pins->Next(1, pin.creator(), nullptr) == S_OK) {
 
                 // Query direction of this pin
                 ::PIN_DIRECTION dir;
@@ -337,7 +337,7 @@ bool ts::DirectShowTest::getAllTuningSpaces(std::vector<ComPtr<::ITuningSpace>>&
 
     // Loop on all tuning spaces.
     ts::ComPtr<::ITuningSpace> tspace;
-    while (tsEnum->Next(1, tspace.creator(), NULL) == S_OK) {
+    while (tsEnum->Next(1, tspace.creator(), nullptr) == S_OK) {
         spaces.push_back(tspace);
     }
     return true;
@@ -733,7 +733,7 @@ void ts::DirectShowTest::displayEnumerateTuningSpaces(::IEnumTuningSpaces* enum_
     }
 
     ts::ComPtr<::ITuningSpace> tspace;
-    while (enum_tspace->Next(1, tspace.creator(), NULL) == S_OK) {
+    while (enum_tspace->Next(1, tspace.creator(), nullptr) == S_OK) {
         const UString name(GetTuningSpaceDescription(tspace.pointer(), _report));
         if (!name.empty()) {
             _output << margin << "Tuning space " << name << std::endl;

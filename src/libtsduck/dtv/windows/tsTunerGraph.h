@@ -42,7 +42,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        TunerGraph();
+        TunerGraph() = default;
 
         //!
         //! Destructor.
@@ -178,19 +178,19 @@ namespace ts {
 #endif
 
     private:
-        UString                        _user_receiver_name;  // User-specified receiver filter name.
-        UString                        _tuner_name;          // Name of the tuner filter.
-        ComPtr<SinkFilter>             _sink_filter;         // Sink filter to TSDuck
-        ComPtr<::IBaseFilter>          _provider_filter;     // Network provider filter
-        ComPtr<::IBDA_NetworkProvider> _inet_provider;       // ... interface of _provider_filter
-        ComPtr<::ITuner>               _ituner;              // ... interface of _provider_filter
-        ComPtr<::ITunerCap>            _ituner_cap;          // ... interface of _provider_filter
-        std::map<TunerType, DirectShowNetworkType>      _net_types;     // Map of network types for this tuner.
-        ComPtr<::IBaseFilter>                           _tuner_filter;  // Tuner filter
-        std::vector<ComPtr<::IBDA_DigitalDemodulator>>  _demods;        // ... all its demod interfaces
-        std::vector<ComPtr<::IBDA_DigitalDemodulator2>> _demods2;       // ... all its demod (2nd gen) interfaces
-        std::vector<ComPtr<::IBDA_SignalStatistics>>    _sigstats;      // ... all its signal stat interfaces
-        std::vector<ComPtr<::IKsPropertySet>>           _tunprops;      // ... all its property set interfaces
+        UString                                         _user_receiver_name {};  // User-specified receiver filter name.
+        UString                                         _tuner_name {};          // Name of the tuner filter.
+        ComPtr<SinkFilter>                              _sink_filter {};         // Sink filter to TSDuck
+        ComPtr<::IBaseFilter>                           _provider_filter {};     // Network provider filter
+        ComPtr<::IBDA_NetworkProvider>                  _inet_provider {};       // ... interface of _provider_filter
+        ComPtr<::ITuner>                                _ituner {};              // ... interface of _provider_filter
+        ComPtr<::ITunerCap>                             _ituner_cap {};          // ... interface of _provider_filter
+        std::map<TunerType, DirectShowNetworkType>      _net_types {};           // Map of network types for this tuner.
+        ComPtr<::IBaseFilter>                           _tuner_filter {};        // Tuner filter
+        std::vector<ComPtr<::IBDA_DigitalDemodulator>>  _demods {};              // ... all its demod interfaces
+        std::vector<ComPtr<::IBDA_DigitalDemodulator2>> _demods2 {};             // ... all its demod (2nd gen) interfaces
+        std::vector<ComPtr<::IBDA_SignalStatistics>>    _sigstats {};            // ... all its signal stat interfaces
+        std::vector<ComPtr<::IKsPropertySet>>           _tunprops {};            // ... all its property set interfaces
 
         //!
         //! Try to build the part of the graph starting at the tee filter.
@@ -367,7 +367,7 @@ bool ts::TunerGraph::searchTunerProperty(VALTYPE& retvalue, PropSearch searchtyp
     for (size_t i = 0; !terminated && i < _tunprops.size(); ++i) {
         VALTYPE val = VALTYPE(0);
         ::DWORD retsize = sizeof(val);
-        if (SUCCEEDED(_tunprops[i]->Get(propset, propid, NULL, 0, &val, retsize, &retsize))) {
+        if (SUCCEEDED(_tunprops[i]->Get(propset, propid, nullptr, 0, &val, retsize, &retsize))) {
             SelectProperty(terminated, found, retvalue, val, searchtype);
         }
     }
@@ -399,7 +399,7 @@ bool ts::TunerGraph::searchPropertyImpl(VALTYPE& retvalue,
     for (size_t i = 0; !terminated && i < _tunprops.size(); ++i) {
         VALTYPE val;
         ::DWORD retsize = sizeof(val);
-        if (SUCCEEDED(_tunprops[i]->Get(propset, propid, NULL, 0, &val, retsize, &retsize))) {
+        if (SUCCEEDED(_tunprops[i]->Get(propset, propid, nullptr, 0, &val, retsize, &retsize))) {
             SelectProperty<VALTYPE>(terminated, found, retvalue, val, searchtype);
         }
     }

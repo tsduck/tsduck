@@ -60,7 +60,7 @@ void ts::SharedLibrary::load(const UString& filename)
 #if defined(TSDUCK_STATIC)
     _error = u"statically linked application";
 #elif defined(TS_WINDOWS)
-    _module = ::LoadLibraryExW(_filename.wc_str(), NULL, 0);
+    _module = ::LoadLibraryExW(_filename.wc_str(), nullptr, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {
         _error = SysErrorCodeMessage();

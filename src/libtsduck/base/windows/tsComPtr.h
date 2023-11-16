@@ -508,7 +508,7 @@ ts::ComPtr<COMCLASS>& ts::ComPtr<COMCLASS>::createInstance(const ::IID& class_id
 {
     release();
     ::HRESULT hr = ::CoCreateInstance(class_id,               // Class ID for object
-                                      NULL,                   // Not part of an aggregate
+                                      nullptr,                // Not part of an aggregate
                                       ::CLSCTX_INPROC_SERVER, // Object "runs" in same process
                                       interface_id,           // ID of interface we request
                                       (void**)&_ptr);         // Returned pointer to interface

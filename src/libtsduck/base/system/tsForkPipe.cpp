@@ -218,7 +218,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     // Create the process
     ::PROCESS_INFORMATION pi;
-    if (::CreateProcessW(NULL, cmdp, NULL, NULL, true, 0, NULL, NULL, &si, &pi) == 0) {
+    if (::CreateProcessW(nullptr, cmdp, nullptr, nullptr, true, 0, nullptr, nullptr, &si, &pi) == 0) {
         report.error(u"error creating process: %s", {SysErrorCodeMessage()});
         if (_use_pipe) {
             ::CloseHandle(read_handle);
@@ -567,7 +567,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     ::DWORD outsize = 0;
 
     while (remain > 0 && !error) {
-        if (::WriteFile(_handle, data, remain, &outsize, NULL) != 0) {
+        if (::WriteFile(_handle, data, remain, &outsize, nullptr) != 0) {
             // Normal case, some data were written
             assert(outsize <= remain);
             data += outsize;
@@ -661,7 +661,7 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
 #if defined(TS_WINDOWS)
 
     ::DWORD insize = 0;
-    if (::ReadFile(_handle, addr, ::DWORD(max_size), &insize, NULL) != 0) {
+    if (::ReadFile(_handle, addr, ::DWORD(max_size), &insize, nullptr) != 0) {
         // Normal case, some data were read.
         assert(insize <= ::DWORD(max_size));
         insize = std::max(::DWORD(0), insize);  // just in case we got a negative value

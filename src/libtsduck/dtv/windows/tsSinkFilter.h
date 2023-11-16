@@ -15,8 +15,6 @@
 
 #pragma once
 #include "tsByteBlock.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
 #include "tsReport.h"
 #include "tsDirectShow.h"
 
@@ -146,18 +144,18 @@ namespace ts {
 
     private:
         friend class SinkPin;
-        Mutex            _mutex;             // Protect access to all private members
-        Condition        _not_empty;         // Signaled when some message is inserted
-        std::deque <::IMediaSample*> _queue; // Queue of input
-        size_t           _max_messages;
-        ByteBlock        _sample_buffer;     // Collected media samples
-        size_t           _sample_offset;     // Next offset in _sample_buffer
-        Report&          _report;
-        ::LONG volatile  _ref_count;
-        ::FILTER_STATE   _state;
-        ::IFilterGraph*  _graph;
-        SinkPin*         _pin;
-        ::MPEG2_TRANSPORT_STRIDE _stride;    // Description of packet structure
+        std::timed_mutex            _mutex {};          // Protect access to all private members
+        std::condition_variable_any _not_empty {};      // Signaled when some message is inserted
+        std::deque<::IMediaSample*> _queue {};          // Queue of input
+        size_t                      _max_messages = 0;
+        ByteBlock                   _sample_buffer {};  // Collected media samples
+        size_t                      _sample_offset = 0; // Next offset in _sample_buffer
+        Report&                     _report;
+        ::LONG volatile             _ref_count = 1;
+        ::FILTER_STATE              _state = ::State_Stopped;
+        ::IFilterGraph*             _graph = nullptr;
+        SinkPin*                    _pin = nullptr;
+        ::MPEG2_TRANSPORT_STRIDE    _stride {};         // Description of packet structure
 
         //!
         //! Fill the user's buffer with data from media samples in _sample_buffer.
