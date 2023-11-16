@@ -14,9 +14,7 @@
 #pragma once
 #include "tsPlugin.h"
 #include "tsPluginEventHandlerInterface.h"
-#include "tsOptional.h"
 #include "tsUString.h"
-#include "tsMutex.h"
 
 namespace ts {
     //!
@@ -113,8 +111,8 @@ namespace ts {
         typedef std::list<HandlerEntry> HandlerEntryList;
 
         // Accessing the list, including executing an event handler is done under a mutex.
-        mutable Mutex    _mutex {};
-        mutable bool     _calling_handlers = false;
+        mutable std::recursive_mutex _mutex {};
+        mutable bool _calling_handlers = false;
         HandlerEntryList _handlers {};
     };
 }

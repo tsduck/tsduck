@@ -19,8 +19,6 @@
 #include "tsECMGClientHandlerInterface.h"
 #include "tstlvConnection.h"
 #include "tsMessageQueue.h"
-#include "tsCondition.h"
-#include "tsMutex.h"
 #include "tsThread.h"
 
 namespace ts {
@@ -146,16 +144,16 @@ namespace ts {
         typedef std::map <uint16_t, ECMGClientHandlerInterface*> AsyncRequests;
 
         // Private members
-        const ecmgscs::Protocol& _protocol;
-        State                    _state = INITIAL;
-        const AbortInterface*    _abort = nullptr;
-        tlv::Logger              _logger {};
-        tlv::Connection <Mutex>  _connection {_protocol, true, 3}; // connection with ECMG server
-        ecmgscs::ChannelStatus   _channel_status {_protocol};      // initial response to channel_setup
-        ecmgscs::StreamStatus    _stream_status {_protocol};       // initial response to stream_setup
-        Mutex                    _mutex {};          // exclusive access to protected fields
-        Condition                _work_to_do {};     // notify receiver thread to do some work
-        AsyncRequests            _async_requests {};
+        const ecmgscs::Protocol&    _protocol;
+        State                       _state = INITIAL;
+        const AbortInterface*       _abort = nullptr;
+        tlv::Logger                 _logger {};
+        tlv::Connection<>           _connection {_protocol, true, 3}; // connection with ECMG server
+        ecmgscs::ChannelStatus      _channel_status {_protocol};      // initial response to channel_setup
+        ecmgscs::StreamStatus       _stream_status {_protocol};       // initial response to stream_setup
+        std::recursive_mutex        _mutex {};                        // exclusive access to protected fields
+        std::condition_variable_any _work_to_do {};                   // notify receiver thread to do some work
+        AsyncRequests               _async_requests {};
         MessageQueue <tlv::Message, NullMutex> _response_queue {RESPONSE_QUEUE_SIZE};
 
         // Build a CW_provision message.

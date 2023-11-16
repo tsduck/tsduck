@@ -17,8 +17,6 @@
 #include "tsPluginEventHandlerRegistry.h"
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
 
 namespace ts {
     namespace tsmux {
@@ -66,16 +64,16 @@ namespace ts {
             virtual void signalPluginEvent(uint32_t event_code, Object* plugin_data = nullptr) const override;
 
         protected:
-            const MuxerArgs&       _opt;            //!< Command line options.
-            Mutex                  _mutex;          //!< Protects modifications in the buffer.
-            Condition              _got_packets;    //!< Wake-up condition: there are new packets in the buffer.
-            Condition              _got_freespace;  //!< Wake-up condition: there are more free packets in the buffer.
-            volatile bool          _terminate;      //!< Termination request, sometimes accessed outside mutex, goes from false to true only once.
-            size_t                 _packets_first;  //!< Index in the buffer of the first packet.
-            size_t                 _packets_count;  //!< Number of packets to output.
-            const size_t           _buffer_size;    //!< Size of the packet buffer.
-            TSPacketVector         _packets;        //!< Input or output packet circular buffer.
-            TSPacketMetadataVector _metadata;       //!< Input or output metadata circular buffer.
+            const MuxerArgs&       _opt;                     //!< Command line options.
+            std::recursive_mutex   _mutex {};                //!< Protects modifications in the buffer.
+            std::condition_variable_any _got_packets {};     //!< Wake-up condition: there are new packets in the buffer.
+            std::condition_variable_any _got_freespace {};   //!< Wake-up condition: there are more free packets in the buffer.
+            volatile bool          _terminate = false;       //!< Termination request, sometimes accessed outside mutex, goes from false to true only once.
+            size_t                 _packets_first = 0;       //!< Index in the buffer of the first packet.
+            size_t                 _packets_count = 0;       //!< Number of packets to output.
+            const size_t           _buffer_size;             //!< Size of the packet buffer.
+            TSPacketVector         _packets {_buffer_size};  //!< Input or output packet circular buffer.
+            TSPacketMetadataVector _metadata {_buffer_size}; //!< Input or output metadata circular buffer.
 
         private:
             const PluginEventHandlerRegistry& _handlers;  //!< Registry of event handlers.

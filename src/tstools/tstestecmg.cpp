@@ -418,7 +418,7 @@ namespace {
 
     class ECMGConnection;
     typedef ts::SafePtr<ECMGConnection, ts::Mutex> ECMGConnectionPtr;
-    typedef ts::tlv::Connection<ts::Mutex> Connection;
+    typedef ts::tlv::Connection<> Connection;
 
     class ECMGConnection: public ts::Thread
     {

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsECMGClient.h"
-#include "tsGuardCondition.h"
 #include "tsNullReport.h"
 
 #if !defined(TS_CXX17)
@@ -35,7 +34,7 @@ ts::ECMGClient::ECMGClient(const ecmgscs::Protocol& protocol, size_t extra_handl
 ts::ECMGClient::~ECMGClient()
 {
     {
-        GuardCondition lock(_mutex, _work_to_do);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
 
         // Break connection, if not already done
         _abort = nullptr;
@@ -45,7 +44,7 @@ ts::ECMGClient::~ECMGClient()
 
         // Notify receiver thread to terminate
         _state = DESTRUCTING;
-        lock.signal();
+        _work_to_do.notify_one();
     }
     waitForTermination();
 }
@@ -61,11 +60,11 @@ bool ts::ECMGClient::abortConnection(const UString& message)
         _logger.report().error(message);
     }
 
-    GuardCondition lock(_mutex, _work_to_do);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     _state = DISCONNECTED;
     _connection.disconnect(_logger.report());
     _connection.close(_logger.report());
-    lock.signal();
+    _work_to_do.notify_one();
 
     _logger.setReport(&NULLREP);
     return false;
@@ -84,7 +83,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
 {
     // Initial state check
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         // Start receiver thread if first time
         if (_state == INITIAL) {
             _state = DISCONNECTED;
@@ -119,9 +118,9 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
 
     // Tell the receiver thread to start listening for incoming messages
     {
-        GuardCondition lock(_mutex, _work_to_do);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         _state = CONNECTING;
-        lock.signal();
+        _work_to_do.notify_one();
     }
 
     // Wait for a channel_status from the ECMG
@@ -159,7 +158,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
 
     // ECM stream now established
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         _state = CONNECTED;
     }
 
@@ -176,7 +175,7 @@ bool ts::ECMGClient::disconnect()
     // Mark disconnection in progress
     State previous_state;
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         previous_state = _state;
         if (_state == CONNECTING || _state == CONNECTED) {
             _state = DISCONNECTING;
@@ -205,12 +204,12 @@ bool ts::ECMGClient::disconnect()
     }
 
     // TCP disconnection
-    GuardCondition lock(_mutex, _work_to_do);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (previous_state == CONNECTING || previous_state == CONNECTED) {
         _state = DISCONNECTED;
         ok = _connection.disconnect(_logger.report()) && ok;
         ok = _connection.close(_logger.report()) && ok;
-        lock.signal();
+        _work_to_do.notify_one();
     }
 
     return ok;
@@ -312,7 +311,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
 
     // Register an asynchronous request
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         _async_requests.insert(std::make_pair(cp_number, ecm_handler));
     }
 
@@ -321,7 +320,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
 
     // Clear asynchronous request on error
     if (!ok) {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         _async_requests.erase(cp_number);
     }
 
@@ -343,11 +342,11 @@ void ts::ECMGClient::main()
         // Wait for a connection to be managed
         {
             // Lock the mutex, get object state
-            GuardCondition lock(_mutex, _work_to_do);
+            std::unique_lock<std::recursive_mutex> lock(_mutex);
             while (_state == DISCONNECTED) {
                 // Release the mutex and wait for something to do.
                 // Automatically reacquire the mutex when condition is signaled.
-                lock.waitCondition();
+                _work_to_do.wait(lock);
             }
             // Mutex still held, check if thread must terminate
             if (_state == DESTRUCTING) {
@@ -379,7 +378,7 @@ void ts::ECMGClient::main()
                     assert(resp != nullptr);
                     ECMGClientHandlerInterface* handler = nullptr;
                     {
-                        GuardMutex lock(_mutex);
+                        std::lock_guard<std::recursive_mutex> lock(_mutex);
                         auto it = _async_requests.find(resp->CP_number);
                         if (it != _async_requests.end()) {
                             handler = it->second;
@@ -406,7 +405,7 @@ void ts::ECMGClient::main()
 
         // Error while receiving messages, most likely a disconnection
         {
-            GuardMutex lock(_mutex);
+            std::lock_guard<std::recursive_mutex> lock(_mutex);
             if (_state == DESTRUCTING) {
                 return;
             }

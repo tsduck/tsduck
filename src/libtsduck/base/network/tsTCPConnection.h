@@ -89,10 +89,7 @@ namespace ts {
         //! Check if the socket is connected.
         //! @return True if the socket was successfully connected to the peer.
         //!
-        bool isConnected() const
-        {
-            return isOpen() && _is_connected;
-        }
+        bool isConnected() const { return isOpen() && _is_connected; }
 
         //!
         //! Get the connected remote peer.

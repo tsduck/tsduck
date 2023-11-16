@@ -17,8 +17,6 @@
 #include "tstlvMessageFactory.h"
 #include "tstlvMessage.h"
 #include "tstlvLogger.h"
-#include "tsMutex.h"
-#include "tsGuardMutex.h"
 
 namespace ts {
     namespace tlv {
@@ -29,9 +27,9 @@ namespace ts {
         //! @tparam MUTEX Mutex type for synchronization.
         //! Serialization & deserialization need synchronized access.
         //! By default, use thread-safe implementation.
-        //! Instantiate with MUTEX = NullMutex for mono-thread appli.
+        //! Instantiate with MUTEX = ts::null_mutex for mono-thread application.
         //!
-        template <class MUTEX = Mutex>
+        template <class MUTEX = std::mutex>
         class Connection: public ts::TCPConnection
         {
             TS_NOBUILD_NOCOPY(Connection);
@@ -183,7 +181,7 @@ bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Logger& logger)
     Serializer serial(bbp);
     msg.serialize(serial);
 
-    GuardMutex lock(_send_mutex);
+    std::lock_guard<MUTEX> lock(_send_mutex);
     return SuperClass::send(bbp->data(), bbp->size(), logger.report());
 }
 
@@ -209,7 +207,7 @@ bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* 
 
         // Receive complete message
         {
-            GuardMutex lock(_receive_mutex);
+            std::lock_guard<MUTEX> lock(_receive_mutex);
 
             // Read message header
             if (!SuperClass::receive(bb.data(), header_size, abort, logger.report())) {

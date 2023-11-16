@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxOutputExecutor.h"
-#include "tsGuardCondition.h"
-#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------
@@ -48,10 +46,8 @@ bool ts::tsmux::OutputExecutor::send(const TSPacket* pkt, const TSPacketMetadata
     while (!_terminate && count > 0) {
 
         // Loop until there is some free space in the buffer.
-        GuardCondition lock(_mutex, _got_freespace);
-        while (!_terminate && _packets_count >= _buffer_size) {
-            lock.waitCondition();
-        }
+        std::unique_lock<std::recursive_mutex> lock(_mutex);
+        _got_freespace.wait(lock, [this]() { return _terminate || _packets_count < _buffer_size; });
 
         // Fill what can be filled in the buffer. We are still under the mutex protection.
         if (!_terminate) {
@@ -73,7 +69,7 @@ bool ts::tsmux::OutputExecutor::send(const TSPacket* pkt, const TSPacketMetadata
             // Signal that there are some packets to send.
             // The mutex was initially locked for the _got_freespace condition because we needed to wait
             // for that condition but we can also use it to signal the _got_packets condition.
-            _got_packets.signal();
+            _got_packets.notify_one();
         }
     }
     return !_terminate;
@@ -95,10 +91,8 @@ void ts::tsmux::OutputExecutor::main()
         size_t first = 0;
         size_t count = 0;
         {
-            GuardCondition lock(_mutex, _got_packets);
-            while (_packets_count == 0 && !_terminate) {
-                lock.waitCondition();
-            }
+            std::unique_lock<std::recursive_mutex> lock(_mutex);
+            _got_packets.wait(lock, [this]() { return _packets_count > 0 || _terminate; });
             // We can output these packets.
             first = _packets_first;
             count = _packets_count;
@@ -111,13 +105,13 @@ void ts::tsmux::OutputExecutor::main()
             const size_t send_count = std::min(std::min(count, _opt.maxOutputPackets), _buffer_size - _packets_first);
             if (_output->send(&_packets[first], &_metadata[first], send_count)) {
                 // Packets successfully sent.
-                GuardCondition lock(_mutex, _got_freespace);
+                std::lock_guard<std::recursive_mutex> lock(_mutex);
                 _packets_count -= send_count;
                 _packets_first = (_packets_first + send_count) % _buffer_size;
                 count -= send_count;
                 first = (first + send_count) % _buffer_size;
                 // Signal that there are some free space in the buffer.
-                lock.signal();
+                _got_freespace.notify_one();
             }
             else if (_opt.outputOnce) {
                 // Terminates when the output plugin fails.

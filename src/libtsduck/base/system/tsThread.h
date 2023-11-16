@@ -14,7 +14,6 @@
 #pragma once
 #include "tsThreadAttributes.h"
 #include "tsException.h"
-#include "tsMutex.h"
 
 namespace ts {
     //!
@@ -198,8 +197,8 @@ namespace ts {
         void setTypeName(const UString& name = UString());
 
     private:
+        mutable std::recursive_mutex _mutex {};
         ThreadAttributes _attributes {};
-        mutable Mutex    _mutex {};
         UString          _typename {};
         volatile bool    _started = false;
         volatile bool    _waiting = false;
