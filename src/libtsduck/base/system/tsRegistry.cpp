@@ -25,16 +25,16 @@
 const ts::UString ts::Registry::SystemEnvironmentKey;
 const ts::UString ts::Registry::UserEnvironmentKey;
 
-bool ts::Registry::SplitKey(const UString&, Handle&, UString&, Report&) BOOL_ERROR
-bool ts::Registry::SplitKey(const UString&, Handle&, UString&, UString&, Report&) BOOL_ERROR
-ts::UString ts::Registry::GetValue(const UString&, const UString&, Report&) USTRING_ERROR
-bool ts::Registry::SetValue(const UString&, const UString&, const UString&, bool, Report&) BOOL_ERROR
+bool ts::Registry::SplitKey(const UString&, Handle&, UString&, Report& report) BOOL_ERROR
+bool ts::Registry::SplitKey(const UString&, Handle&, UString&, UString&, Report& report) BOOL_ERROR
+ts::UString ts::Registry::GetValue(const UString&, const UString&, Report& report) USTRING_ERROR
+bool ts::Registry::SetValue(const UString&, const UString&, const UString&, bool, Report& report) BOOL_ERROR
 bool ts::Registry::SetValue(const UString&, const UString&, uint32_t, Report& report) BOOL_ERROR
-bool ts::Registry::DeleteValue(const UString&, const UString&, Report&) BOOL_ERROR
-bool ts::Registry::CreateKey(const UString&, bool, Report&) BOOL_ERROR
-bool ts::Registry::DeleteKey(const UString&, Report&) BOOL_ERROR
-bool ts::Registry::NotifySettingChange(Report&) BOOL_ERROR
-bool ts::Registry::NotifyEnvironmentChange(Report&) BOOL_ERROR
+bool ts::Registry::DeleteValue(const UString&, const UString&, Report& report) BOOL_ERROR
+bool ts::Registry::CreateKey(const UString&, bool, Report& report) BOOL_ERROR
+bool ts::Registry::DeleteKey(const UString&, Report& report) BOOL_ERROR
+bool ts::Registry::NotifySettingChange(Report& report) BOOL_ERROR
+bool ts::Registry::NotifyEnvironmentChange(Report& report) BOOL_ERROR
 
 #else
 
