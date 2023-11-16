@@ -8,11 +8,9 @@
 
 #include "tstspControlServer.h"
 #include "tstspPluginExecutor.h"
-#include "tsNullMutex.h"
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
 #include "tsTelnetConnection.h"
-#include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 
 
@@ -117,7 +115,7 @@ void ts::tsp::ControlServer::main()
     _log.debug(u"control command thread started");
 
     // Get accept errors in a buffer since some errors are normal.
-    ReportBuffer<NullMutex> error(_log.maxSeverity());
+    ReportBuffer<ts::null_mutex> error(_log.maxSeverity());
 
     // Client address and connection.
     IPv4SocketAddress source;

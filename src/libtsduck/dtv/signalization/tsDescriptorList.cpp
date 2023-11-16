@@ -11,6 +11,7 @@
 #include "tsAbstractTable.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

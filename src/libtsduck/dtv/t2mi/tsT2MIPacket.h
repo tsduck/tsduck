@@ -23,7 +23,7 @@ namespace ts {
     //!
     //! Safe pointer for T2MIPacket (not thread-safe).
     //!
-    typedef SafePtr<T2MIPacket, NullMutex> T2MIPacketPtr;
+    typedef SafePtr<T2MIPacket, ts::null_mutex> T2MIPacketPtr;
 
     //!
     //! Vector of T2MIPacket safe pointers.

@@ -47,8 +47,8 @@ namespace ts {
 
     private:
         // TS packets or sections are passed from the server thread to the plugin thread using a message queue.
-        typedef MessageQueue<TSPacket, Mutex> PacketQueue;
-        typedef MessageQueue<Section, Mutex> SectionQueue;
+        typedef MessageQueue<TSPacket, std::mutex> PacketQueue;
+        typedef MessageQueue<Section, std::mutex> SectionQueue;
 
         // Message queues enqueue smart pointers to the message type (MT = Multi-Thread).
         typedef PacketQueue::MessagePtr PacketPtrMT;

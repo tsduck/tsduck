@@ -10,6 +10,7 @@
 #include "tsIPUtils.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
+#include "tsException.h"
 
 
 //----------------------------------------------------------------------------

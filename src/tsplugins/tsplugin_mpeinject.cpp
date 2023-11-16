@@ -48,7 +48,7 @@ namespace ts {
 
         // Each receiver thread builds DSM-CC sections from the received UDP datagrams.
         // Sections from all receivers are multiplexed into one single thread-safe queue.
-        typedef MessageQueue<Section, Mutex> SectionQueue;
+        typedef MessageQueue<Section, std::mutex> SectionQueue;
 
         // Command line options.
         PID        _mpe_pid = PID_NULL;     // PID into insert the MPE datagrams.
@@ -336,8 +336,8 @@ void ts::MPEInjectPlugin::provideSection(SectionCounter counter, SectionPtr& sec
     if (_section_queue.dequeue(ptr, 0) && !ptr.isNull() && ptr->isValid()) {
         // Got a valid section. Transfer the section pointer ownership.
         // We need an ownership transfer because SectionQueue::MessagePtr uses
-        // a real Mutex while SectionPtr uses a NullMutex (unsynchronized).
-        section = ptr.changeMutex<NullMutex>();
+        // a real Mutex while SectionPtr uses a ts::null_mutex (unsynchronized).
+        section = ptr.changeMutex<ts::null_mutex>();
     }
     else {
         // No section available. Clear returned pointer, just in case.

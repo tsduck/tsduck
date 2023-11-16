@@ -8,7 +8,6 @@
 
 #include "tsHFBand.h"
 #include "tsDuckConfigFile.h"
-#include "tsGuardMutex.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsAlgorithm.h"

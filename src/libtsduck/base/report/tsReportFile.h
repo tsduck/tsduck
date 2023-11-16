@@ -13,8 +13,7 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsNullMutex.h"
-#include "tsGuardMutex.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -23,13 +22,9 @@ namespace ts {
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!
-    //! @tparam MUTEX A subclass of ts::MutexInterface which is used to
-    //! serialize access to the file. By default, the class ts::NullMutex
-    //! is used, meaning that there is no synchronization on the file.
-    //! Multi-threaded applications must use an appropriate mutex class,
-    //! typically ts::Mutex.
+    //! @tparam MUTEX A mutex class to synchronize access to the object.
     //!
-    template <class MUTEX = NullMutex>
+    template <class MUTEX = ts::null_mutex>
     class ReportFile: public Report
     {
     public:
@@ -104,7 +99,7 @@ TS_LLVM_NOWARNING(dtor-name)
 template <class MUTEX>
 ts::ReportFile<MUTEX>::~ReportFile()
 {
-    TemplateGuardMutex<MUTEX> lock(_mutex);
+    std::lock_guard<MUTEX> lock(_mutex);
     // Close the file if it was explicitly open by constructor
     if (_named_file.is_open()) {
         _named_file.close();
@@ -116,6 +111,6 @@ TS_POP_WARNING()
 template <class MUTEX>
 void ts::ReportFile<MUTEX>::writeLog(int severity, const UString& message)
 {
-    TemplateGuardMutex<MUTEX> lock(_mutex);
+    std::lock_guard<MUTEX> lock(_mutex);
     _file << Severity::Header(severity) << message << std::endl;
 }

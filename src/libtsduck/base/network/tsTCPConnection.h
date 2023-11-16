@@ -210,14 +210,4 @@ namespace ts {
         // Shutdown the socket.
         bool shutdownSocket(int how, Report& report = CERR);
     };
-
-    //!
-    //! Safe pointer to a TCPConnection (not thread-safe).
-    //!
-    typedef SafePtr<TCPConnection,NullMutex> TCPConnectionPtr;
-
-    //!
-    //! Safe pointer to a TCPConnection (thread-safe).
-    //!
-    typedef SafePtr<TCPConnection,Mutex> TCPConnectionPtrMT;
 }

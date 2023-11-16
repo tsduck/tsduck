@@ -13,6 +13,7 @@
 #include "tsSHA1.h"
 #include "tsNames.h"
 #include "tsMemory.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

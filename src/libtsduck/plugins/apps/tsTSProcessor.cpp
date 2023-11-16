@@ -11,6 +11,7 @@
 #include "tstspOutputExecutor.h"
 #include "tstspProcessorExecutor.h"
 #include "tstspControlServer.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

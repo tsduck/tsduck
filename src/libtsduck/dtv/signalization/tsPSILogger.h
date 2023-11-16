@@ -170,5 +170,5 @@ namespace ts {
     //!
     //! Safe pointer for PSILogger (not thread-safe).
     //!
-    typedef SafePtr<PSILogger, NullMutex> PSILoggerPtr;
+    typedef SafePtr<PSILogger, ts::null_mutex> PSILoggerPtr;
 }

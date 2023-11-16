@@ -198,7 +198,7 @@ namespace ts {
 
             // A structure which is used to handle a restart of the plugin.
             class RestartData;
-            typedef SafePtr<RestartData, Mutex> RestartDataPtr;
+            typedef SafePtr<RestartData, std::mutex> RestartDataPtr;
 
             // The following private data must be accessed exclusively under the protection of the global mutex.
             // Implementation details: see the file src/docs/developing-plugins.dox.

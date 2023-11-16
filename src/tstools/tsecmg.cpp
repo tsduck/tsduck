@@ -15,7 +15,6 @@
 #include "tsAsyncReport.h"
 #include "tsNullReport.h"
 #include "tsFatal.h"
-#include "tsMutex.h"
 #include "tsThread.h"
 #include "tsSysUtils.h"
 #include "tsECMGSCS.h"
@@ -40,7 +39,7 @@ namespace {
 
     // Instantiation of a TCP connection in a multi-thread context for TLV messages.
     typedef ts::tlv::Connection<> ECMGConnection;
-    typedef ts::SafePtr<ECMGConnection, ts::Mutex> ECMGConnectionPtr;
+    typedef ts::SafePtr<ECMGConnection, std::mutex> ECMGConnectionPtr;
 }
 
 

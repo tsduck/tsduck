@@ -8,9 +8,9 @@
 
 #include "tstsswitchCommandListener.h"
 #include "tstsswitchCore.h"
-#include "tsNullMutex.h"
 #include "tsReportBuffer.h"
 #include "tsAlgorithm.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ void ts::tsswitch::CommandListener::main()
     IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<NullMutex> error(_log.maxSeverity());
+    ReportBuffer<ts::null_mutex> error(_log.maxSeverity());
 
     // Loop on incoming messages.
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, nullptr, error)) {

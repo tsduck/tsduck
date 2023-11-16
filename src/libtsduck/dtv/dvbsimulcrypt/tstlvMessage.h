@@ -304,12 +304,12 @@ namespace ts {
         //!
         //! Safe pointer for TLV messages (not thread-safe).
         //!
-        typedef SafePtr<Message, NullMutex> MessagePtr;
+        typedef SafePtr<Message, ts::null_mutex> MessagePtr;
 
         //!
         //! Safe pointer for TLV messages (thread-safe).
         //!
-        typedef SafePtr<Message, Mutex> MessagePtrMT;
+        typedef SafePtr<Message, std::mutex> MessagePtrMT;
     }
 }
 

@@ -9,7 +9,6 @@
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsSingleton.h"
 #include "tsFileUtils.h"
-#include "tsGuardMutex.h"
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::BetterSystemRandomGenerator);

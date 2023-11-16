@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsSafePtr.h"
-#include "tsMutex.h"
 
 namespace ts {
 
@@ -22,7 +21,7 @@ namespace ts {
     //!
     //! Safe pointer for Object (thread-safe).
     //!
-    typedef SafePtr<Object, Mutex> ObjectPtr;
+    typedef SafePtr<Object, std::mutex> ObjectPtr;
 
     //!
     //! General-purpose base class for polymophic objects.

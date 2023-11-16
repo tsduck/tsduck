@@ -13,8 +13,7 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsGuardMutex.h"
-#include "tsNullMutex.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -23,9 +22,9 @@ namespace ts {
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!
-    //! @tparam MUTEX A mutex class with acquire() and release() methods.
+    //! @tparam MUTEX A mutex class to synchronize access to the buffer.
     //!
-    template <class MUTEX = NullMutex>
+    template <class MUTEX = ts::null_mutex>
     class ReportBuffer: public Report
     {
     public:
@@ -88,7 +87,7 @@ inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTE
 template <class MUTEX>
 void ts::ReportBuffer<MUTEX>::resetMessages()
 {
-    TemplateGuardMutex<MUTEX> lock(_mutex);
+    std::lock_guard<MUTEX> lock(_mutex);
     _buffer.clear();
 }
 
@@ -96,7 +95,7 @@ void ts::ReportBuffer<MUTEX>::resetMessages()
 template <class MUTEX>
 bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 {
-    TemplateGuardMutex<MUTEX> lock(_mutex);
+    std::lock_guard<MUTEX> lock(_mutex);
     return _buffer.empty();
 }
 
@@ -104,7 +103,7 @@ bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 template <class MUTEX>
 ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
 {
-    TemplateGuardMutex<MUTEX> lock(_mutex);
+    std::lock_guard<MUTEX> lock(_mutex);
     return _buffer;
 }
 
@@ -112,7 +111,7 @@ ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
 template <class MUTEX>
 void ts::ReportBuffer<MUTEX>::writeLog(int severity, const UString& message)
 {
-    TemplateGuardMutex<MUTEX> lock(_mutex);
+    std::lock_guard<MUTEX> lock(_mutex);
     if (!_buffer.empty()) {
         _buffer.append(u'\n');
     }

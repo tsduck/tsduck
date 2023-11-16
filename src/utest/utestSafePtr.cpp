@@ -11,7 +11,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSafePtr.h"
-#include "tsMutex.h"
 #include "tsunit.h"
 
 
@@ -352,11 +351,11 @@ void SafePtrTest::testUpcast()
 void SafePtrTest::testChangeMutex()
 {
     TSUNIT_ASSERT(TestData::InstanceCount() == 0);
-    ts::SafePtr<TestData,ts::NullMutex> pn (new TestData (888));
+    ts::SafePtr<TestData, ts::null_mutex> pn(new TestData (888));
     TSUNIT_ASSERT(TestData::InstanceCount() == 1);
     TSUNIT_ASSERT(!pn.isNull());
 
-    ts::SafePtr<TestData,ts::Mutex> pt (pn.changeMutex<ts::Mutex>());
+    ts::SafePtr<TestData, std::mutex> pt(pn.changeMutex<std::mutex>());
     TSUNIT_ASSERT(!pt.isNull());
     TSUNIT_ASSERT(pn.isNull());
     TSUNIT_ASSERT(TestData::InstanceCount() == 1);

@@ -18,6 +18,7 @@
 #include "tsjsonNull.h"
 #include "tsFileUtils.h"
 #include "tsEIT.h"
+#include "tsFatal.h"
 
 const ts::UChar* const ts::SectionFile::DEFAULT_BINARY_SECTION_FILE_SUFFIX = u".bin";
 const ts::UChar* const ts::SectionFile::DEFAULT_XML_SECTION_FILE_SUFFIX = u".xml";

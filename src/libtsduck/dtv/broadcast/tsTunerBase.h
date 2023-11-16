@@ -27,7 +27,7 @@ namespace ts {
     //!
     //! Safe pointer to a tuner (not thread-safe).
     //!
-    typedef SafePtr<TunerBase, NullMutex> TunerPtr;
+    typedef SafePtr<TunerBase, ts::null_mutex> TunerPtr;
 
     //!
     //! Vector of safe pointers to tuners (not thread-safe).

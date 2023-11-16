@@ -8,16 +8,9 @@
 //
 //  TSUnit test suite for class ts::Thread
 //
-//  This is also a test suite for classes ts::Mutex and ts::Condition
-//  which are difficult to test independently of threads.
-//
 //----------------------------------------------------------------------------
 
 #include "tsThread.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
-#include "tsGuardCondition.h"
-#include "tsGuardMutex.h"
 #include "tsTime.h"
 #include "tsMonotonic.h"
 #include "tsSysUtils.h"
@@ -40,17 +33,13 @@ public:
     void testAttributes();
     void testTermination();
     void testDeleteWhenTerminated();
-    void testMutexRecursion();
     void testMutexTimeout();
-    void testCondition();
 
     TSUNIT_TEST_BEGIN(ThreadTest);
     TSUNIT_TEST(testAttributes);
     TSUNIT_TEST(testTermination);
     TSUNIT_TEST(testDeleteWhenTerminated);
-    TSUNIT_TEST(testMutexRecursion);
     TSUNIT_TEST(testMutexTimeout);
-    TSUNIT_TEST(testCondition);
     TSUNIT_TEST_END();
 private:
     ts::NanoSecond  _nsPrecision;
@@ -232,43 +221,27 @@ void ThreadTest::testDeleteWhenTerminated()
 }
 
 //
-// Test case: Check mutex recursion
-//
-void ThreadTest::testMutexRecursion()
-{
-    ts::Mutex mutex;
-
-    TSUNIT_ASSERT(!mutex.release());
-
-    TSUNIT_ASSERT(mutex.acquire());
-    TSUNIT_ASSERT(mutex.acquire());
-    TSUNIT_ASSERT(mutex.acquire());
-
-    TSUNIT_ASSERT(mutex.release());
-    TSUNIT_ASSERT(mutex.release());
-    TSUNIT_ASSERT(mutex.release());
-
-    TSUNIT_ASSERT(!mutex.release());
-    TSUNIT_ASSERT(!mutex.release());
-}
-
-//
 // Test case: Check mutex timeout
 //
 namespace {
     class TestThreadMutexTimeout: public utest::TSUnitThread
     {
     private:
-        ts::Mutex& _mutex;
-        ts::Mutex& _mutexSig;
-        ts::Condition& _condSig;
+        std::timed_mutex& _mutex;
+        std::mutex& _mutexSig;
+        std::condition_variable& _condSig;
+        bool _gotMutex = false;
     public:
-        TestThreadMutexTimeout(ts::Mutex& mutex, ts::Mutex& mutexSig, ts::Condition& condSig) :
+        TestThreadMutexTimeout(std::timed_mutex& mutex, std::mutex& mutexSig, std::condition_variable& condSig) :
             utest::TSUnitThread(),
             _mutex(mutex),
             _mutexSig(mutexSig),
             _condSig(condSig)
         {
+        }
+        bool gotMutex() const
+        {
+            return _gotMutex;
         }
         virtual ~TestThreadMutexTimeout() override
         {
@@ -276,35 +249,33 @@ namespace {
         }
         virtual void test() override
         {
-            // Acquire the test mutex.
-            ts::GuardMutex lock1(_mutex, 0);
-            TSUNIT_ASSERT(lock1.isLocked());
+            // Acquire the test mutex immediately, should pass.
+            TSUNIT_ASSERT(_mutex.try_lock());
             // Signal that we have acquired it.
             {
-                ts::GuardCondition lock2(_mutexSig, _condSig);
-                TSUNIT_ASSERT(lock2.isLocked());
-                lock2.signal();
+                std::lock_guard<std::mutex> lock(_mutexSig);
+                _gotMutex = true;
+                _condSig.notify_one();
             }
             // And sleep 100 ms.
-            ts::SleepThread(100);
-            // The test mutex is implicitely released.
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            _mutex.unlock();
         }
     };
 }
 
 void ThreadTest::testMutexTimeout()
 {
-    ts::Mutex mutex;
-    ts::Mutex mutexSig;
-    ts::Condition condSig;
+    std::timed_mutex mutex;
+    std::mutex mutexSig;
+    std::condition_variable condSig;
     TestThreadMutexTimeout thread(mutex, mutexSig, condSig);
 
     // Start thread and wait for it to acquire mutex.
     {
-        ts::GuardCondition lock(mutexSig, condSig);
-        TSUNIT_ASSERT(lock.isLocked());
+        std::unique_lock<std::mutex> lock(mutexSig);
         TSUNIT_ASSERT(thread.start());
-        TSUNIT_ASSERT(lock.waitCondition());
+        condSig.wait(lock, [&thread]() { return thread.gotMutex(); });
     }
 
     // Now, the thread holds the mutex for 100 ms.
@@ -314,79 +285,12 @@ void ThreadTest::testMutexTimeout()
 
     // Use assumptions instead of assertions for time-dependent checks.
     // Timing can be very weird on virtual machines which are used for unitary tests.
-    TSUNIT_ASSUME(!mutex.acquire(50));
+    TSUNIT_ASSUME(!mutex.try_lock_for(std::chrono::milliseconds(50)));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
     TSUNIT_ASSUME(ts::Time::CurrentUTC() < dueTime2);
-    TSUNIT_ASSERT(mutex.acquire(1000));
+    TSUNIT_ASSERT(mutex.try_lock_for(std::chrono::milliseconds(1000)));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
-    TSUNIT_ASSERT(mutex.release());
+    mutex.unlock();
 
     debug() << "ThreadTest::testMutexTimeout: type name: \"" << thread.getTypeName() << "\"" << std::endl;
-}
-
-//
-// Test case: Use mutex and condition
-//
-namespace {
-    class TestThreadCondition: public utest::TSUnitThread
-    {
-    private:
-        ts::Mutex& _mutex;
-        ts::Condition& _condition;
-        int& _data;
-    public:
-        TestThreadCondition(ts::Mutex& mutex, ts::Condition& condition, int& data) :
-            utest::TSUnitThread(),
-            _mutex(mutex),
-            _condition(condition),
-            _data(data)
-        {
-        }
-        virtual ~TestThreadCondition() override
-        {
-            waitForTermination();
-        }
-        // Main: decrement data and signal condition every 100 ms
-        virtual void test() override
-        {
-            {
-                ts::GuardMutex lock(_mutex);
-                TSUNIT_ASSERT(_data == 4);
-            }
-            while (_data > 0) {
-                ts::SleepThread(100);
-                {
-                    ts::GuardCondition lock(_mutex, _condition);
-                    _data--;
-                    lock.signal();
-                }
-            }
-        }
-    };
-}
-
-void ThreadTest::testCondition()
-{
-    int data = 4;
-    int previous = data;
-    ts::Mutex mutex;
-    ts::Condition condition;
-    {
-        TestThreadCondition thread(mutex, condition, data);
-        TSUNIT_ASSERT(thread.start());
-        debug() << "ThreadTest::testCondition: type name: \"" << thread.getTypeName() << "\"" << std::endl;
-
-        ts::GuardCondition lock(mutex, condition);
-        ts::Time dueTime(ts::Time::CurrentUTC() + 100 - _msPrecision);
-        while (data > 0) {
-            // Wait until data is decremented (timeout: 10 seconds)
-            while (data == previous) {
-                TSUNIT_ASSERT(lock.waitCondition(10000));
-            }
-            TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime);
-            dueTime += 100;
-            TSUNIT_ASSERT(data == previous - 1);
-            previous = data;
-        }
-    }
 }

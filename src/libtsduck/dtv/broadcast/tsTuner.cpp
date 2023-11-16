@@ -10,6 +10,7 @@
 #include "tsTunerDevice.h"
 #include "tsTunerEmulator.h"
 #include "tsDuckContext.h"
+#include "tsFatal.h"
 
 
 //-----------------------------------------------------------------------------

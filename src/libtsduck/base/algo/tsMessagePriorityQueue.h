@@ -25,11 +25,11 @@ namespace ts {
     //! priority are dequeued in their enqueueing order.
     //!
     //! @tparam MSG The type of the messages to exchange.
-    //! @tparam MUTEX The type of mutex for synchronization (ts::Mutex by default).
+    //! @tparam MUTEX The type of mutex for synchronization (std::mutex by default).
     //! @tparam COMPARE A function object to sort @a MSG instances. By default,
     //! the '<' operator on @a MSG is used.
     //!
-    template <typename MSG, class MUTEX = Mutex, class COMPARE = std::less<MSG>>
+    template <typename MSG, class MUTEX = std::mutex, class COMPARE = std::less<MSG>>
     class MessagePriorityQueue: public MessageQueue<MSG, MUTEX>
     {
         TS_NOCOPY(MessagePriorityQueue);

@@ -18,6 +18,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsFatal.h"
 
 #define MY_XML_NAME u"EIT"
 #define MY_CLASS ts::EIT

@@ -11,6 +11,7 @@
 #include "tsEIT.h"
 #include "tsMJD.h"
 #include "tsBCD.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

@@ -30,7 +30,7 @@ namespace ts {
     //!
     //! Safe pointer for ModulationArgs (thread-safe).
     //!
-    typedef SafePtr<ModulationArgs, Mutex> ModulationArgsPtr;
+    typedef SafePtr<ModulationArgs, std::mutex> ModulationArgsPtr;
 
     //!
     //! Modulation parameters for tuners and their command-line definitions.

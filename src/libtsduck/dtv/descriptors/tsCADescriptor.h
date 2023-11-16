@@ -16,7 +16,6 @@
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
 #include "tsSafePtr.h"
-#include "tsMutex.h"
 #include "tsNullReport.h"
 #include "tsTS.h"
 
@@ -106,5 +105,5 @@ namespace ts {
     //!
     //! Safe pointer to a CADescriptor (thread-safe).
     //!
-    typedef SafePtr<CADescriptor,Mutex> CADescriptorPtr;
+    typedef SafePtr<CADescriptor, std::mutex> CADescriptorPtr;
 }

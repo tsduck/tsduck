@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsEMMGClient.h"
-#include "tsGuardMutex.h"
-#include "tsGuardCondition.h"
 #include "tsOneShotPacketizer.h"
 #include "tstlvSerializer.h"
 #include "tsSection.h"

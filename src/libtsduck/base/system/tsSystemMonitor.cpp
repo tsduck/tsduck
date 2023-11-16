@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSystemMonitor.h"
-#include "tsGuardCondition.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsForkPipe.h"

@@ -15,7 +15,6 @@
 #include "tsReport.h"
 #include "tsAsyncReportArgs.h"
 #include "tsMessageQueue.h"
-#include "tsNullMutex.h"
 #include "tsThread.h"
 
 namespace ts {
@@ -122,8 +121,8 @@ namespace ts {
             int     severity = Severity::Info;
             UString message {};
         };
-        typedef SafePtr<LogMessage, NullMutex> LogMessagePtr;
-        typedef MessageQueue<LogMessage, NullMutex> LogMessageQueue;
+        typedef SafePtr<LogMessage, ts::null_mutex> LogMessagePtr;
+        typedef MessageQueue<LogMessage, ts::null_mutex> LogMessageQueue;
 
         // Private members:
         LogMessageQueue _log_queue {};

@@ -14,6 +14,7 @@ bool tsVatekOutputPluginIsEmpty = true; // Avoid warning about empty module.
 
 #include "tsVatekOutputPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsFatal.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <vatek_sdk_usbstream.h>
