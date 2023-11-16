@@ -15,9 +15,6 @@
 #include "tsSocket.h"
 #include "tsIPv4SocketAddress.h"
 #include "tsCerrReport.h"
-#include "tsSafePtr.h"
-#include "tsNullMutex.h"
-#include "tsMutex.h"
 
 namespace ts {
     //!
@@ -140,14 +137,4 @@ namespace ts {
         // Implementation of Socket interface.
         virtual void declareOpened(SysSocketType sock, Report& report) override;
     };
-
-    //!
-    //! Safe pointer to TCPSocket, single-threaded.
-    //!
-    typedef SafePtr <TCPSocket, NullMutex> TCPSocketPtr;
-
-    //!
-    //! Safe pointer to TCPSocket, multi-threaded.
-    //!
-    typedef SafePtr <TCPSocket, Mutex> TCPSocketPtrMT;
 }

@@ -17,7 +17,6 @@
 #include "tsIPv4SocketAddress.h"
 #include "tstlvLogger.h"
 #include "tstlvConnection.h"
-#include "tsMutex.h"
 #include "tsAsyncReport.h"
 #include "tsNullReport.h"
 #include "tsSingleDataStatistics.h"
@@ -417,7 +416,7 @@ void CmdStatistics::terminate()
 namespace {
 
     class ECMGConnection;
-    typedef ts::SafePtr<ECMGConnection, ts::Mutex> ECMGConnectionPtr;
+    typedef ts::SafePtr<ECMGConnection, std::mutex> ECMGConnectionPtr;
     typedef ts::tlv::Connection<> Connection;
 
     class ECMGConnection: public ts::Thread

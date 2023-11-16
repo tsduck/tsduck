@@ -24,7 +24,7 @@ namespace ts {
     //!
     //! Safe pointer for PESPacket (not thread-safe).
     //!
-    typedef SafePtr<PESPacket, NullMutex> PESPacketPtr;
+    typedef SafePtr<PESPacket, ts::null_mutex> PESPacketPtr;
 
     //!
     //! Vector of PESPacket safe pointers.

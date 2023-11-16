@@ -256,5 +256,5 @@ namespace ts {
     //!
     //! Safe pointer for TablesLogger (not thread-safe).
     //!
-    typedef SafePtr<TablesLogger,NullMutex> TablesLoggerPtr;
+    typedef SafePtr<TablesLogger, ts::null_mutex> TablesLoggerPtr;
 }

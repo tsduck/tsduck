@@ -203,7 +203,7 @@ namespace ts {
 
         // Safe pointer to an LNB object.
         // Not thread-safe since these objects are loaded once and remain constant.
-        typedef SafePtr<LNB,NullMutex> LNBPtr;
+        typedef SafePtr<LNB, ts::null_mutex> LNBPtr;
 
         // The repository of known LNB's.
         class LNBRepository

@@ -12,6 +12,7 @@
 #include "tsDescriptorList.h"
 #include "tsPSIBuffer.h"
 #include "tsNames.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

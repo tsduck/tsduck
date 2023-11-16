@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPv6SocketAddress.h"
+#include "tsUString.h"
 
 // Wildcard socket address, unspecified address and port.
 const ts::IPv6SocketAddress ts::IPv6SocketAddress::AnySocketAddress;

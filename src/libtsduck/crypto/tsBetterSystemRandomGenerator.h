@@ -18,7 +18,6 @@
 #include "tsReport.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
-#include "tsMutex.h"
 #include "tsSHA256.h"
 #include "tsAES.h"
 

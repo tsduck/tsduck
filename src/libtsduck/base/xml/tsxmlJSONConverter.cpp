@@ -14,6 +14,7 @@
 #include "tsjsonNumber.h"
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
+#include "tsFatal.h"
 
 const ts::UString ts::xml::JSONConverter::HashName(u"#name");
 const ts::UString ts::xml::JSONConverter::HashNodes(u"#nodes");

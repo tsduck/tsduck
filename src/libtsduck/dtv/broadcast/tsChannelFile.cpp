@@ -12,6 +12,7 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsFileUtils.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

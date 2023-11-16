@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPv6Address.h"
+#include "tsUString.h"
 
 // Local host address
 const ts::IPv6Address ts::IPv6Address::AnyAddress;

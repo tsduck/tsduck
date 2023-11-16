@@ -11,6 +11,7 @@
 #include "tsTSPacket.h"
 #include "tsAlgorithm.h"
 #include "tsEIT.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

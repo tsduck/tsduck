@@ -11,6 +11,7 @@
 #include "tsT2MIDescriptor.h"
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

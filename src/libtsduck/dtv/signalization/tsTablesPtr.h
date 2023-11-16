@@ -30,7 +30,7 @@ namespace ts {
     //!
     //! Safe pointer for AbstractDescriptor (not thread-safe).
     //!
-    typedef SafePtr<AbstractDescriptor,NullMutex> AbstractDescriptorPtr;
+    typedef SafePtr<AbstractDescriptor, ts::null_mutex> AbstractDescriptorPtr;
 
     //!
     //! Vector of AbstractDescriptor pointers
@@ -40,12 +40,12 @@ namespace ts {
     //!
     //! Safe pointer for AbstractTable (not thread-safe)
     //!
-    typedef SafePtr<AbstractTable,NullMutex> AbstractTablePtr;
+    typedef SafePtr<AbstractTable, ts::null_mutex> AbstractTablePtr;
 
     //!
     //! Safe pointer for Section (not thread-safe).
     //!
-    typedef SafePtr<Section, NullMutex> SectionPtr;
+    typedef SafePtr<Section, ts::null_mutex> SectionPtr;
 
     //!
     //! Vector of Section pointers.
@@ -60,7 +60,7 @@ namespace ts {
     //!
     //! Safe pointer for BinaryTable (not thread-safe)
     //!
-    typedef SafePtr<BinaryTable,NullMutex> BinaryTablePtr;
+    typedef SafePtr<BinaryTable, ts::null_mutex> BinaryTablePtr;
 
     //!
     //! Vector of BinaryTable pointers
@@ -70,7 +70,7 @@ namespace ts {
     //!
     //! Safe pointer for Descriptor (not thread-safe)
     //!
-    typedef SafePtr<Descriptor, NullMutex> DescriptorPtr;
+    typedef SafePtr<Descriptor, ts::null_mutex> DescriptorPtr;
 
     //!
     //! Vector of Descriptor pointers

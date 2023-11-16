@@ -118,12 +118,12 @@ So, just pay attention to them.
 
 Smart pointers can be made thread-safe through a @e mutex class as template parameter.
 
-The default mutex class is ts::NullMutex which does nothing. So, by default, smart
+The default mutex class is ts::null_mutex which does nothing. So, by default, smart
 pointers are not thread-safe. All usages of a given instantiation of ts::SafePtr
 shall take place in the same thread (or must be explicitly synchronized). So, using
 smart pointers is fast by default, without synchronization overhead.
 
-To make an instantiation of ts::SafePtr thread-safe, use the class ts::Mutex as
+To make an instantiation of ts::SafePtr thread-safe, use the class std::mutex as
 template parameter. Smart pointers from this instantiation can be used from
 different threads. Note, however, that the protection does not extend to the
 @e pointed object which must be properly synchronized.
@@ -303,38 +303,19 @@ by the plugin @e regulate for precise timing operations.
 
 ## Multithreading {#multithread}
 
-TSDuck is heavily multi-threaded. Threading and synchronization are implemented
-through classes such as ts::Thread, ts::Mutex, ts::Condition, etc.
-
-The abstract class ts::Thread manages a thread. To define an actual thread, derive
-this class and implement the virtual method @e main().
+TSDuck is heavily multi-threaded. The abstract class ts::Thread manages a thread.
+To define an actual thread, derive this class and implement the virtual method @e main().
 
 The class ts::ThreadAttributes contains all mandatory or optional attributes of
 a thead. An application typically build a ts::ThreadAttributes object and then
 creates threads using these attributes.
 
-The class ts::Mutex implements a recursive mutex to synchronize access to shared
-resources from concurrent threads.
-
-The class ts::Condition implements a POSIX-like condition variable, using @e signal()
-and @e wait() primitives.
+In earlier versions of TSDuck, synchronization primitives used to be implemented
+through specific classes (@c ts::Mutex, @c ts::Condition). They are now removed and the
+new C++11 classes such as @c std::mutex and @c std::condition_variable are used instead.
 
 TSDuck relies on C++ mechanisms to track the usage of resources. The library provides
 mechanisms to ensure that no dangling lock is lost through the _guard design pattern_.
-It recommended to never explicitly use @e acquire() or @e release() primitives.
-Instead, use the classes ts::GuardMutex for mutexes and ts::GuardCondition for condition
-variables.
-
-Important: The development of TSDuck started before C++11. At that time, C++ had
-no multithreading features and everything had to be manually coded. This is why the
-classes ts::Thread, ts::Mutex, ts::Condition were developed. With the C++11 standard,
-new classes have been introduced: @c std::thread, @c std::mutex, @c std::condition_variable,
-etc. On the long term, these classes shall replace the corresponding TSDuck classes.
-The transition to @c std::mutex and @c std::condition_variable is currently in progress.
-Most references to ts::Mutex and ts::Condition have been removed and these classes will
-be deleted some day. The semantics of @c std::thread is very different from ts::Thread
-and replacement will take time. More probably, ts::Thread will remain but its implementation
-will become fully portable, using @c std::thread internally.
 
 ## Virtual memory {#virtmem}
 

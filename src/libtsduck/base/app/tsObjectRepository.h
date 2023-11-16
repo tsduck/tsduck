@@ -14,6 +14,7 @@
 #pragma once
 #include "tsSingleton.h"
 #include "tsObject.h"
+#include "tsUString.h"
 
 namespace ts {
     //!

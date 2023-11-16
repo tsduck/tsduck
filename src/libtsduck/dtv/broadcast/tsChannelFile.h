@@ -18,7 +18,6 @@
 #include "tsxmlTweaks.h"
 #include "tsCerrReport.h"
 #include "tsSafePtr.h"
-#include "tsMutex.h"
 #include "tsOptional.h"
 
 namespace ts {
@@ -136,7 +135,7 @@ namespace ts {
             Service(uint16_t sid = 0) : id(sid) {}
         };
 
-        typedef SafePtr<Service,Mutex>  ServicePtr;     //!< Safe pointer to a Service object (thread-safe).
+        typedef SafePtr<Service, std::mutex>  ServicePtr;     //!< Safe pointer to a Service object (thread-safe).
         typedef std::vector<ServicePtr> ServiceVector;  //!< Vector of safe pointers to Service objects.
 
         //!
@@ -218,7 +217,7 @@ namespace ts {
             ServiceVector _services {};  // Services in the transport stream.
         };
 
-        typedef SafePtr<TransportStream,Mutex>  TransportStreamPtr;     //!< Safe pointer to a TransportStream object (thread-safe).
+        typedef SafePtr<TransportStream, std::mutex>  TransportStreamPtr;     //!< Safe pointer to a TransportStream object (thread-safe).
         typedef std::vector<TransportStreamPtr> TransportStreamVector;  //!< Vector of safe pointers to TransportStream objects.
 
         //!
@@ -273,7 +272,7 @@ namespace ts {
             TransportStreamVector _ts {};  // Transport streams in the network.
         };
 
-        typedef SafePtr<Network,Mutex>  NetworkPtr;     //!< Safe pointer to a Network object (thread-safe).
+        typedef SafePtr<Network, std::mutex>  NetworkPtr;     //!< Safe pointer to a Network object (thread-safe).
         typedef std::vector<NetworkPtr> NetworkVector;  //!< Vector of safe pointers to Network objects.
 
         //!

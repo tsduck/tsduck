@@ -205,7 +205,7 @@ namespace ts {
             // -- end of protected area --
         };
 
-        typedef SafePtr<ECMStream, NullMutex> ECMStreamPtr;
+        typedef SafePtr<ECMStream, ts::null_mutex> ECMStreamPtr;
         typedef std::map<PID, ECMStreamPtr> ECMStreamMap;
 
         // ECM deciphering thread

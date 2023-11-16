@@ -9,6 +9,7 @@
 #include "tsInputSwitcher.h"
 #include "tstsswitchCore.h"
 #include "tstsswitchCommandListener.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------

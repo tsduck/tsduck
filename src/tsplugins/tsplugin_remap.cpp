@@ -37,7 +37,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        typedef SafePtr<CyclingPacketizer, NullMutex> CyclingPacketizerPtr;
+        typedef SafePtr<CyclingPacketizer, ts::null_mutex> CyclingPacketizerPtr;
         typedef std::map<PID, CyclingPacketizerPtr> PacketizerMap;
 
         bool          _update_psi = false;  // Update all PSI

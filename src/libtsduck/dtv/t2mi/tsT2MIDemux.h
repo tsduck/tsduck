@@ -84,7 +84,7 @@ namespace ts {
         };
 
         // Map of safe pointers to PLPContext, indexed by PLP id.
-        typedef SafePtr<PLPContext, NullMutex> PLPContextPtr;
+        typedef SafePtr<PLPContext, ts::null_mutex> PLPContextPtr;
         typedef std::map<uint8_t, PLPContextPtr> PLPContextMap;
 
         // Analysis context for one PID.
@@ -103,7 +103,7 @@ namespace ts {
         };
 
         // Map of safe pointers to PIDContext, indexed by PID.
-        typedef SafePtr<PIDContext, NullMutex> PIDContextPtr;
+        typedef SafePtr<PIDContext, ts::null_mutex> PIDContextPtr;
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         // Inherited methods from TableHandlerInterface.

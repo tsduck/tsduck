@@ -198,7 +198,7 @@ namespace ts {
         //!
         //! Safe pointer to a ServiceContext (not thread-safe).
         //!
-        typedef SafePtr<ServiceContext, NullMutex> ServiceContextPtr;
+        typedef SafePtr<ServiceContext, ts::null_mutex> ServiceContextPtr;
 
         //!
         //! Map of ServiceContext, indexed by service id.
@@ -256,7 +256,7 @@ namespace ts {
         //!
         //! Safe pointer to an ETIDContext (not thread-safe).
         //!
-        typedef SafePtr<ETIDContext, NullMutex> ETIDContextPtr;
+        typedef SafePtr<ETIDContext, ts::null_mutex> ETIDContextPtr;
 
         //!
         //! Map of ETIDContext, indexed by ETID.
@@ -394,7 +394,7 @@ namespace ts {
         //!
         //! Safe pointer to a PIDContext (not thread-safe).
         //!
-        typedef SafePtr<PIDContext, NullMutex> PIDContextPtr;
+        typedef SafePtr<PIDContext, ts::null_mutex> PIDContextPtr;
 
         //!
         //! Map of PIDContext, indexed by PID.

@@ -8,6 +8,7 @@
 
 #include "tsMuxer.h"
 #include "tstsmuxCore.h"
+#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
