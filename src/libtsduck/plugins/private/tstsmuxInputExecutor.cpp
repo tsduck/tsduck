@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxInputExecutor.h"
-#include "tsGuardMutex.h"
-#include "tsGuardCondition.h"
 
 
 //----------------------------------------------------------------------------
@@ -62,9 +60,9 @@ void ts::tsmux::InputExecutor::terminate()
 bool ts::tsmux::InputExecutor::getPackets(TSPacket* pkt, TSPacketMetadata* mdata, size_t max_count, size_t& ret_count, bool blocking)
 {
     // In blocking mode, loop until there is some packet in the buffer.
-    GuardCondition lock(_mutex, _got_packets);
+    std::unique_lock<std::recursive_mutex> lock(_mutex);
     while (!_terminate && blocking && _packets_count == 0) {
-        lock.waitCondition();
+        _got_packets.wait(lock);
     }
 
     // Return error if the input is terminated _and_ there is no more packet to read.
@@ -89,7 +87,7 @@ bool ts::tsmux::InputExecutor::getPackets(TSPacket* pkt, TSPacketMetadata* mdata
         // Signal that there are some free space.
         // The mutex was initially locked for the _got_packets condition because we needed to wait
         // for that condition but we can also use it to signal the _got_freespace condition.
-        _got_freespace.signal();
+        _got_freespace.notify_all();
     }
     return true;
 }
@@ -110,7 +108,7 @@ void ts::tsmux::InputExecutor::main()
         size_t first = 0;
         size_t count = 0;
         {
-            GuardCondition lock(_mutex, _got_freespace);
+            std::unique_lock<std::recursive_mutex> lock(_mutex);
             // In case of lossy input, drop oldest packets when the buffer is full.
             if (_opt.lossyInput && _packets_count >= _buffer_size) {
                 const size_t dropped = std::min(_opt.lossyReclaim, _buffer_size);
@@ -119,7 +117,7 @@ void ts::tsmux::InputExecutor::main()
             }
             // Wait for free space in the buffer.
             while (!_terminate && _packets_count >= _buffer_size) {
-                lock.waitCondition();
+                _got_freespace.wait(lock);
             }
             // We can use this contiguous free area at the end of already received packets.
             first = (_packets_first + _packets_count) % _buffer_size;
@@ -131,10 +129,10 @@ void ts::tsmux::InputExecutor::main()
             count = _input->receive(&_packets[first], &_metadata[first], std::min(count, _opt.maxInputPackets));
             if (count > 0) {
                 // Packets successfully received.
-                GuardCondition lock(_mutex, _got_packets);
+                std::unique_lock<std::recursive_mutex> lock(_mutex);
                 _packets_count += count;
                 // Signal that there are some new packets in the buffer.
-                lock.signal();
+                _got_packets.notify_all();
             }
             else if (_opt.inputOnce) {
                 // Terminates when the input plugin terminates or fails.

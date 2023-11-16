@@ -7,8 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstsswitchCore.h"
-#include "tsGuardMutex.h"
-#include "tsGuardCondition.h"
 #include "tsAlgorithm.h"
 #include "tsFatal.h"
 
@@ -24,13 +22,7 @@ ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerR
     _output(_opt, handlers, *this, _log), // load output plugin and analyze options
     _eventDispatcher(_opt, _log),
     _receiveWatchDog(this, _opt.receiveTimeout, 0, _log),
-    _mutex(),
-    _gotInput(),
-    _curPlugin(_opt.firstInput),
-    _curCycle(0),
-    _terminate(false),
-    _actions(),
-    _events()
+    _curPlugin(_opt.firstInput)
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
@@ -124,9 +116,9 @@ void ts::tsswitch::Core::stop(bool success)
 {
     // Wake up all threads waiting for something on the Switch object.
     {
-        GuardCondition lock(_mutex, _gotInput);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
         _terminate = true;
-        lock.signal();
+        _gotInput.notify_all();
     }
 
     // Tell the output plugin to terminate.
@@ -145,25 +137,25 @@ void ts::tsswitch::Core::stop(bool success)
 
 void ts::tsswitch::Core::setInput(size_t index)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     setInputLocked(index, false);
 }
 
 void ts::tsswitch::Core::nextInput()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     setInputLocked((_curPlugin + 1) % _inputs.size(), false);
 }
 
 void ts::tsswitch::Core::previousInput()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     setInputLocked((_curPlugin > 0 ? _curPlugin : _inputs.size()) - 1, false);
 }
 
 size_t ts::tsswitch::Core::currentInput()
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     return _curPlugin;
 }
 
@@ -239,7 +231,7 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
 
 void ts::tsswitch::Core::handleWatchDogTimeout(WatchDog& watchdog)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     const size_t next = (_curPlugin + 1) % _inputs.size();
     // Verbose message under mutex is not a good idea when option --synchronous-log is set.
     _log.verbose(u"receive timeout, switching to next plugin (#%d to #%d)", {_curPlugin, next});
@@ -430,7 +422,7 @@ bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, TS
     assert(pluginIndex < _inputs.size());
 
     // Loop on _gotInput condition until the current input plugin has something to output.
-    GuardCondition lock(_mutex, _gotInput);
+    std::unique_lock<std::recursive_mutex> lock(_mutex);
     for (;;) {
         if (_terminate) {
             first = nullptr;
@@ -447,7 +439,7 @@ bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, TS
             return !_terminate;
         }
         // Otherwise, sleep on _gotInput condition.
-        lock.waitCondition();
+        _gotInput.wait(lock);
     }
 }
 
@@ -476,7 +468,7 @@ bool ts::tsswitch::Core::outputSent(size_t pluginIndex, size_t count)
 
 bool ts::tsswitch::Core::inputStarted(size_t pluginIndex, bool success)
 {
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
 
     // Execute all commands if waiting on this event.
     execute(Action(WAIT_STARTED, pluginIndex, success));
@@ -497,7 +489,7 @@ bool ts::tsswitch::Core::inputStarted(size_t pluginIndex, bool success)
 
 bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
 {
-    GuardCondition lock(_mutex, _gotInput);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
 
     // Restart the receive timeout, if any, when the current input receives packets.
     if (pluginIndex == _curPlugin) {
@@ -532,7 +524,7 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
 
     if (pluginIndex == _curPlugin) {
         // Wake up output plugin if it is sleeping, waiting for packets to output.
-        lock.signal();
+        _gotInput.notify_all();
     }
 
     // Return false when the application terminates.
@@ -551,7 +543,7 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
 
     // Locked sequence.
     {
-        GuardMutex lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
 
         // Count end of cycle when the last plugin terminates.
         if (pluginIndex == _inputs.size() - 1) {

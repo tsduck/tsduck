@@ -71,7 +71,7 @@ namespace ts {
         private:
             DataInjectPlugin* const _plugin;
             SwitchableReport        _report;
-            tlv::Connection<Mutex>  _client;
+            tlv::Connection<>       _client;
         };
 
         // UDP listener thread.

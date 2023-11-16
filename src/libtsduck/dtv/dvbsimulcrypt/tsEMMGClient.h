@@ -19,8 +19,6 @@
 #include "tstlvConnection.h"
 #include "tsUDPSocket.h"
 #include "tsTablesPtr.h"
-#include "tsCondition.h"
-#include "tsMutex.h"
 #include "tsThread.h"
 
 namespace ts {
@@ -190,17 +188,17 @@ namespace ts {
         uint64_t                 _total_bytes = 0;
         const AbortInterface*    _abort = nullptr;
         tlv::Logger              _logger {};
-        tlv::Connection<Mutex>   _connection {_protocol, true, 3};  // connection with MUX server
+        tlv::Connection<>        _connection {_protocol, true, 3};  // connection with MUX server
         UDPSocket                _udp_socket {};                    // where to send data_provision if UDP is used
         emmgmux::ChannelStatus   _channel_status {_protocol};       // automatic response to channel_test
         emmgmux::StreamStatus    _stream_status {_protocol};        // automatic response to stream_test
-        Mutex                    _mutex {};           // exclusive access to protected fields
-        Condition                _work_to_do {};      // notify receiver thread to do some work
-        Condition                _got_response {};    // notify application thread that a response arrived
-        tlv::TAG                 _last_response = 0;  // tag of last response message
-        uint16_t                 _allocated_bw = 0;   // last allocated bandwidth
-        std::vector<uint16_t>    _error_status {};    // last error status
-        std::vector<uint16_t>    _error_info {};      // last error information
+        std::recursive_mutex     _mutex {};            // exclusive access to protected fields
+        std::condition_variable_any _work_to_do {};    // notify receiver thread to do some work
+        std::condition_variable_any _got_response {};  // notify application thread that a response arrived
+        tlv::TAG                 _last_response = 0;   // tag of last response message
+        uint16_t                 _allocated_bw = 0;    // last allocated bandwidth
+        std::vector<uint16_t>    _error_status {};     // last error status
+        std::vector<uint16_t>    _error_info {};       // last error information
 
         // Receiver thread main code
         virtual void main() override;

@@ -1317,4 +1317,32 @@ namespace ts {
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     Tristate ToTristate(INT i) { return Tristate(std::max<INT>(-1, std::min<INT>(1, i))); }
+
+    //!
+    //! A null_mutex class which can be used to replace @c std::mutex or @c std::recursive_mutex.
+    //! Used to instantiate synchronized template classes in a mono-thread environment.
+    //!
+    class TSDUCKDLL null_mutex
+    {
+    public:
+        //! Lock the null_mutex (does nothing).
+        void lock() noexcept {}
+        //! Unlock the null_mutex (does nothing).
+        void unlock() noexcept {}
+        //! Successfully try to lock the null_mutex.
+        //! @return Always true.
+        bool try_lock() noexcept { return true; }
+    };
 }
+
+// Template specialization on null_mutex of standard lock_guard: reduce overhead to nothing.
+//! @cond nodoxygen
+namespace std {
+    template<> class lock_guard<ts::null_mutex>
+    {
+    public:
+        explicit lock_guard<ts::null_mutex>(ts::null_mutex&) {}
+        lock_guard<ts::null_mutex>(ts::null_mutex&, std::adopt_lock_t) {}
+    };
+}
+//! @endcond

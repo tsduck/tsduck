@@ -25,27 +25,8 @@ ts::tsmux::Core::Core(const MuxerArgs& opt, const PluginEventHandlerRegistry& ha
     _handlers(handlers),
     _log(log),
     _opt(opt),
-    _duck(&log),
-    _terminate(false),
-    _bitrate(0),
-    _output_packets(0),
     _time_input_index(opt.timeInputIndex),
-    _inputs(_opt.inputs.size(), nullptr),
-    _output(_opt, handlers, _log),
-    _terminated_inputs(),
-    _pat_pzer(_duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _cat_pzer(_duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _nit_pzer(_duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _sdt_bat_pzer(_duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _eit_pzer(_duck, PID_EIT, this),
-    _output_pat(),
-    _output_cat(),
-    _output_sdt(),
-    _output_nit(),
-    _max_eits(128), // hard-coded for now
-    _eits(),
-    _pid_origin(),
-    _service_origin()
+    _inputs(_opt.inputs.size(), nullptr)
 {
     // Preset common default options.
     _duck.restoreArgs(_opt.duckArgs);

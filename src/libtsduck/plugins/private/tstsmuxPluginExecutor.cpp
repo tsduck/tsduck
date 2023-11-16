@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxPluginExecutor.h"
-#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------
@@ -23,15 +22,7 @@ ts::tsmux::PluginExecutor::PluginExecutor(const MuxerArgs& opt,
 
     PluginThread(&log, opt.appName, type, pl_options, attributes),
     _opt(opt),
-    _mutex(),
-    _got_packets(),
-    _got_freespace(),
-    _terminate(false),
-    _packets_first(0),
-    _packets_count(0),
     _buffer_size(type == PluginType::INPUT ? _opt.inBufferPackets : _opt.outBufferPackets),
-    _packets(_buffer_size),
-    _metadata(_buffer_size),
     _handlers(handlers)
 {
     // Preset common default options.
@@ -94,8 +85,8 @@ void ts::tsmux::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* p
 void ts::tsmux::PluginExecutor::terminate()
 {
     // Locked the mutex on behalf of the two conditions.
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
     _terminate = true;
-    _got_packets.signal();
-    _got_freespace.signal();
+    _got_packets.notify_all();
+    _got_freespace.notify_all();
 }
