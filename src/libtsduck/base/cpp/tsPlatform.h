@@ -1341,8 +1341,8 @@ namespace std {
     template<> class lock_guard<ts::null_mutex>
     {
     public:
-        explicit lock_guard<ts::null_mutex>(ts::null_mutex&) {}
-        lock_guard<ts::null_mutex>(ts::null_mutex&, std::adopt_lock_t) {}
+        explicit lock_guard(ts::null_mutex&) {}
+        lock_guard(ts::null_mutex&, std::adopt_lock_t) {}
     };
 }
 //! @endcond
