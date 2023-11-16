@@ -24,6 +24,7 @@ bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsModulation.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
+#include "tsFatal.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);
 
