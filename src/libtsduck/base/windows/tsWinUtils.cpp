@@ -70,7 +70,7 @@ ts::UString ts::WinErrorMessage(::DWORD code, const UString& moduleName, ::DWORD
         const ::HMODULE hmod = ::GetModuleHandleW(moduleName.wc_str());
         if (hmod != 0) {
             message.resize(1024);
-            ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE, hmod, code, 0, message.wc_str(), ::DWORD(message.size()), NULL);
+            ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE, hmod, code, 0, message.wc_str(), ::DWORD(message.size()), nullptr);
             message.trimLength(length, true);
         }
     }
@@ -78,7 +78,7 @@ ts::UString ts::WinErrorMessage(::DWORD code, const UString& moduleName, ::DWORD
     // If no message was found from a specific module, search in the system base.
     if (message.empty()) {
         message.resize(1024);
-        ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, message.wc_str(), ::DWORD(message.size()), NULL);
+        ::DWORD length = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, code, 0, message.wc_str(), ::DWORD(message.size()), nullptr);
         message.trimLength(length, true);
     }
 

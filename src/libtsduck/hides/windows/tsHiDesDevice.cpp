@@ -310,8 +310,8 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
 
     // Create an event for overlapped operations.
     report.log(2, u"HiDesDevice: creating event for overlapped");
-    overlapped.hEvent = ::CreateEventW(NULL, true, false, NULL);
-    if (overlapped.hEvent == NULL) {
+    overlapped.hEvent = ::CreateEventW(nullptr, true, false, nullptr);
+    if (overlapped.hEvent == nullptr) {
         report.error(u"CreateEvent error: %s", {WinErrorMessage(::GetLastError())});
         close();
         return false;

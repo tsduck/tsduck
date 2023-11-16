@@ -45,7 +45,7 @@ TSUNIT_REGISTER(DirectShowTest);
 // Test suite initialization method.
 void DirectShowTest::beforeTest()
 {
-    TSUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), u"CoInitializeEx", CERR));
+    TSUNIT_ASSERT(ts::ComSuccess(::CoInitializeEx(nullptr, ::COINIT_MULTITHREADED), u"CoInitializeEx", CERR));
 }
 
 // Test suite cleanup method.

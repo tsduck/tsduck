@@ -29,7 +29,7 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] report Where to report errors.
         //!
-        DirectShowFilterCategory(Report& report);
+        DirectShowFilterCategory(Report& report) : _report(report) {}
 
         //!
         //! Constructor from a device category.
@@ -99,19 +99,19 @@ namespace ts {
         {
             TS_DEFAULT_COPY_MOVE(Filter);
         public:
-            UString               name;     // Device name.
-            ComPtr<::IMoniker>    moniker;  // Moniker to the device object instance.
-            ComPtr<::IBaseFilter> filter;   // Pointer to its IBaseFilter interface.
+            UString               name {};     // Device name.
+            ComPtr<::IMoniker>    moniker {};  // Moniker to the device object instance.
+            ComPtr<::IBaseFilter> filter {};   // Pointer to its IBaseFilter interface.
 
-            void clear();                   // Properly clear all fields.
+            void clear();                      // Properly clear all fields.
 
-            Filter() = default;             // Constructor.
-            ~Filter() { clear(); }          // Destructor.
+            Filter() = default;                // Constructor.
+            ~Filter() { clear(); }             // Destructor.
         };
 
         Report&                  _report;
-        ComPtr<::ICreateDevEnum> _enum;
-        ComPtr<::IEnumMoniker>   _moniker;
-        std::vector<Filter>      _filters;
+        ComPtr<::ICreateDevEnum> _enum {};
+        ComPtr<::IEnumMoniker>   _moniker {};
+        std::vector<Filter>      _filters {};
     };
 }

@@ -48,7 +48,7 @@ namespace ts {
         //! Check if initialization was successful.
         //! @return True if initialization was successful and uninitialize() was not called.
         //!
-        bool isInitialized() const {return _is_init;}
+        bool isInitialized() const { return _is_init; }
 
         //!
         //! Perform an early COM uninitialize (before destructor).

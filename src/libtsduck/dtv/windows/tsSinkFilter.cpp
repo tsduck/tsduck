@@ -11,8 +11,6 @@
 #include "tsMediaTypeUtils.h"
 #include "tsWinUtils.h"
 #include "tsTime.h"
-#include "tsGuardMutex.h"
-#include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
 #include "tsTS.h"
 
@@ -36,16 +34,7 @@ namespace {
 //-----------------------------------------------------------------------------
 
 ts::SinkFilter::SinkFilter(Report& report) :
-    _mutex(),
-    _not_empty(),
-    _queue(),
-    _max_messages(0),
-    _sample_buffer(),
-    _sample_offset(0),
     _report(report),
-    _ref_count(1),
-    _state(::State_Stopped),
-    _graph(NULL),
     _pin(new SinkPin(report, this))
 {
     TRACE(1, u"SinkFilter constructor, ref=%d", {_ref_count});
@@ -74,7 +63,7 @@ STDMETHODIMP ts::SinkFilter::QueryInterface(REFIID riid, void** ppv)
     }
     else {
         TRACE(1, u"SinkFilter::QueryInterface: no interface %s", {NameGUID(riid)});
-        *ppv = NULL;
+        *ppv = nullptr;
         return E_NOINTERFACE;
     }
 }
@@ -101,7 +90,7 @@ STDMETHODIMP_(::ULONG) ts::SinkFilter::Release()
 STDMETHODIMP ts::SinkFilter::GetClassID(::CLSID* pClsID)
 {
     TRACE(1, u"SinkFilter::GetClassID");
-    if (pClsID == NULL) {
+    if (pClsID == nullptr) {
         return E_POINTER;
     }
     else {
@@ -115,7 +104,7 @@ STDMETHODIMP ts::SinkFilter::GetClassID(::CLSID* pClsID)
 STDMETHODIMP ts::SinkFilter::GetState(::DWORD dwMSecs, ::FILTER_STATE* State)
 {
     TRACE(1, u"SinkFilter::GetState");
-    if (State == NULL) {
+    if (State == nullptr) {
         return E_POINTER;
     }
     else {
@@ -134,11 +123,11 @@ STDMETHODIMP ts::SinkFilter::SetSyncSource(::IReferenceClock* pClock)
 STDMETHODIMP ts::SinkFilter::GetSyncSource(::IReferenceClock** pClock)
 {
     TRACE(1, u"SinkFilter::GetSyncSource");
-    if (pClock == NULL) {
+    if (pClock == nullptr) {
         return E_POINTER;
     }
     else {
-        *pClock = NULL;
+        *pClock = nullptr;
         return S_OK;
     }
 }
@@ -170,10 +159,10 @@ STDMETHODIMP ts::SinkFilter::Run(::REFERENCE_TIME tStart)
 STDMETHODIMP ts::SinkFilter::EnumPins(::IEnumPins** ppEnum)
 {
     TRACE(1, u"SinkFilter::EnumPins");
-    if (ppEnum == NULL) {
+    if (ppEnum == nullptr) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumPins(_report, this, NULL)) == NULL) {
+    else if ((*ppEnum = new SinkEnumPins(_report, this, nullptr)) == nullptr) {
         return E_OUTOFMEMORY;
     }
     else {
@@ -184,7 +173,7 @@ STDMETHODIMP ts::SinkFilter::EnumPins(::IEnumPins** ppEnum)
 STDMETHODIMP ts::SinkFilter::FindPin(::LPCWSTR Id, ::IPin** ppPin)
 {
     TRACE(1, u"SinkFilter::FindPin");
-    if (ppPin == NULL) {
+    if (ppPin == nullptr) {
         return E_POINTER;
     }
     else {
@@ -197,14 +186,14 @@ STDMETHODIMP ts::SinkFilter::FindPin(::LPCWSTR Id, ::IPin** ppPin)
 STDMETHODIMP ts::SinkFilter::QueryFilterInfo(::FILTER_INFO* pInfo)
 {
     TRACE(1, u"SinkFilter::QueryFilterInfo");
-    if (pInfo == NULL) {
+    if (pInfo == nullptr) {
         return E_POINTER;
     }
     // Name should be the one specified by JoinFilterGraph
     assert(sizeof(pInfo->achName) >= sizeof(FILTER_NAME));
     std::memcpy(pInfo->achName, FILTER_NAME, sizeof(FILTER_NAME));  // Flawfinder: ignore: memcpy()
     pInfo->pGraph = _graph;
-    if (_graph != NULL) {
+    if (_graph != nullptr) {
         _graph->AddRef();
     }
     return S_OK;
@@ -212,7 +201,7 @@ STDMETHODIMP ts::SinkFilter::QueryFilterInfo(::FILTER_INFO* pInfo)
 
 STDMETHODIMP ts::SinkFilter::JoinFilterGraph(::IFilterGraph* pGraph, ::LPCWSTR pName)
 {
-    TRACE(1, u"SinkFilter::JoinFilterGraph: %s graph", {pGraph != NULL ? u"joining" : u"leaving"});
+    TRACE(1, u"SinkFilter::JoinFilterGraph: %s graph", {pGraph != nullptr ? u"joining" : u"leaving"});
     _graph = pGraph;
     return S_OK;
 }
@@ -220,8 +209,8 @@ STDMETHODIMP ts::SinkFilter::JoinFilterGraph(::IFilterGraph* pGraph, ::LPCWSTR p
 STDMETHODIMP ts::SinkFilter::QueryVendorInfo(::LPWSTR* pVendorInfo)
 {
     TRACE(1, u"SinkFilter::QueryVendorInfo");
-    if (pVendorInfo != NULL) {
-        *pVendorInfo = NULL;
+    if (pVendorInfo != nullptr) {
+        *pVendorInfo = nullptr;
     }
     return E_NOTIMPL;
 }
@@ -249,13 +238,13 @@ void ts::SinkFilter::SetMaxMessages(size_t maxMessages)
 void ts::SinkFilter::Flush()
 {
     TRACE(1, u"SinkFilter::Flush");
-    GuardMutex lock(_mutex);
+    std::lock_guard<std::timed_mutex> lock(_mutex);
     _sample_buffer.clear();
     _sample_offset = 0;
-    while (_queue.size() > 0) {
+    while (!_queue.empty()) {
         ::IMediaSample* ms = _queue.front();
         _queue.pop_front();
-        if (ms != NULL) {
+        if (ms != nullptr) {
             ms->Release();
         }
     }
@@ -270,7 +259,7 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
     size_t remain = buffer_size;
     char* data = reinterpret_cast<char*>(buffer);
 
-    GuardCondition lock(_mutex, _not_empty);
+    std::unique_lock<std::timed_mutex> lock(_mutex);
 
     // First, get data from buffered media samples.
     FillBuffer(data, remain);
@@ -280,16 +269,18 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
 
         // Wait for the queue not being empty
         TRACE(5, u"SinkFilter::Read, waiting for packets, timeout = %d milliseconds", {timeout});
-        const Time start(Time::CurrentUTC());
-        while (_queue.size() == 0 && lock.waitCondition(timeout));
-        if (timeout != Infinite) {
+        if (timeout == Infinite) {
+            _not_empty.wait(lock, [this]() { return !_queue.empty(); });
+        }
+        else {
+            const Time start(Time::CurrentUTC());
+            _not_empty.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(timeout)), [this]() { return !_queue.empty(); });
             timeout -= Time::CurrentUTC() - start;
         }
         TRACE(5, u"SinkFilter::Read, end of waiting for packets, queue size = %d", {_queue.size()});
 
-        // If still nothing in the queue, there was an error
-        // (most likely a timeout in waiting for condition.
-        if (_queue.size() == 0) {
+        // If still nothing in the queue, there was an error, most likely a timeout in waiting for condition.
+        if (_queue.empty()) {
             // Stop filling the buffer, returns what's in it (or zero)
             break;
         }
@@ -299,11 +290,11 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
         _queue.pop_front();
 
         // Null pointer means end of stream
-        if (ms == NULL) {
+        if (ms == nullptr) {
             if (remain < buffer_size) {
                 // Some data were already read for the user, this call will succeed.
                 // Push eof back in queue so that eof will be reported next time.
-                _queue.push_front(NULL);
+                _queue.push_front(nullptr);
             }
             // Stop filling the buffer
             break;
@@ -337,9 +328,9 @@ void ts::SinkFilter::Abort()
 {
     TRACE(2, u"SinkFilter::Abort");
     // Enqueue a NULL pointer. This will unblock any Read() operation and signal an end of stream.
-    GuardCondition lock(_mutex, _not_empty);
-    _queue.push_back(NULL);
-    lock.signal();
+    std::lock_guard<std::timed_mutex> lock(_mutex);
+    _queue.push_back(nullptr);
+    _not_empty.notify_all();
 }
 
 // Fill buffer/buffer_size with data from media samples in _sample_buffer.
@@ -360,7 +351,7 @@ void ts::SinkFilter::FillBuffer(char*& buffer, size_t& buffer_size)
     size_t corrupted_chunks = 0;
     size_t corrupted_bytes = 0;
 
-    assert(buffer != NULL);
+    assert(buffer != nullptr);
     assert(_sample_offset <= _sample_buffer.size());
 
     // Copy packet by packet, detecting and skipping corrupted chunks.
@@ -421,7 +412,7 @@ ts::SinkPin::SinkPin(Report& report, SinkFilter* filter) :
     _report(report),
     _ref_count(1),
     _filter(filter),
-    _partner(NULL)
+    _partner(nullptr)
 {
     TRACE(1, u"SinkPin constructor, ref=%d", {_ref_count});
     InitMediaType(_cur_media_type);
@@ -451,7 +442,7 @@ STDMETHODIMP ts::SinkPin::QueryInterface(REFIID riid, void** ppv)
     }
     else {
         TRACE(1, u"SinkPin::QueryInterface: no interface %s", {NameGUID(riid)});
-        *ppv = NULL;
+        *ppv = nullptr;
         return E_NOINTERFACE;
     }
 }
@@ -481,10 +472,10 @@ STDMETHODIMP ts::SinkPin::Connect(::IPin* pReceivePin, const ::AM_MEDIA_TYPE* pm
     if (_filter->_state != ::State_Stopped) {
         return VFW_E_NOT_STOPPED; // dynamic reconnection not supported
     }
-    if (_partner != NULL) {
+    if (_partner != nullptr) {
         return VFW_E_ALREADY_CONNECTED;
     }
-    if (pmt != NULL && QueryAccept(pmt) != S_OK) {
+    if (pmt != nullptr && QueryAccept(pmt) != S_OK) {
         return VFW_E_TYPE_NOT_ACCEPTED; // unsupported media type
     }
     TRACE(1, u"SinkPin::Connect: OK");
@@ -497,10 +488,10 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA
     if (_filter->_state == ::State_Running) {
         return VFW_E_NOT_STOPPED; // dynamic reconnection not supported
     }
-    if (_partner != NULL) {
+    if (_partner != nullptr) {
         return VFW_E_ALREADY_CONNECTED;
     }
-    if (pConnector == NULL || pmt == NULL) {
+    if (pConnector == nullptr || pmt == nullptr) {
         return E_POINTER;
     }
     if (QueryAccept(pmt) != S_OK) {
@@ -511,7 +502,7 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA
     _input_overflow = false;
 
     // Get transport packet format
-    if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != NULL) {
+    if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != nullptr) {
         assert(pmt->cbFormat >= sizeof(::MPEG2_TRANSPORT_STRIDE)); // already checked in QueryAccept
         // This is a transport stride with specific data
         std::memcpy(&_filter->_stride, pmt->pbFormat, sizeof(_filter->_stride));  // Flawfinder: ignore: memcpy()
@@ -543,7 +534,7 @@ STDMETHODIMP ts::SinkPin::ReceiveConnection(::IPin* pConnector, const ::AM_MEDIA
 STDMETHODIMP ts::SinkPin::Disconnect()
 {
     TRACE(1, u"SinkPin::Disconnect: checking");
-    if (_partner == NULL) {
+    if (_partner == nullptr) {
         return S_FALSE; // not connected
     }
     if (_filter->_state != ::State_Stopped) {
@@ -551,18 +542,18 @@ STDMETHODIMP ts::SinkPin::Disconnect()
     }
     TRACE(1, u"SinkPin::Disconnect: disconnected");
     _partner->Release();
-    _partner = NULL;
+    _partner = nullptr;
     return S_OK;
 }
 
 STDMETHODIMP ts::SinkPin::ConnectedTo(::IPin** pPin)
 {
     TRACE(1, u"SinkPin::ConnectedTo");
-    if (pPin == NULL) {
+    if (pPin == nullptr) {
         return E_POINTER;
     }
-    else if (_partner == NULL) {
-        *pPin = NULL;
+    else if (_partner == nullptr) {
+        *pPin = nullptr;
         return VFW_E_NOT_CONNECTED;
     }
     else {
@@ -575,10 +566,10 @@ STDMETHODIMP ts::SinkPin::ConnectedTo(::IPin** pPin)
 STDMETHODIMP ts::SinkPin::ConnectionMediaType(::AM_MEDIA_TYPE* pmt)
 {
     TRACE(1, u"SinkPin::ConnectionMediaType");
-    if (pmt == NULL) {
+    if (pmt == nullptr) {
         return E_POINTER;
     }
-    else if (_partner == NULL) {
+    else if (_partner == nullptr) {
         return VFW_E_NOT_CONNECTED;
     }
     else {
@@ -589,12 +580,12 @@ STDMETHODIMP ts::SinkPin::ConnectionMediaType(::AM_MEDIA_TYPE* pmt)
 STDMETHODIMP ts::SinkPin::QueryPinInfo(::PIN_INFO* pInfo)
 {
     TRACE(1, u"SinkPin::QueryPinInfo");
-    if (pInfo == NULL) {
+    if (pInfo == nullptr) {
         return E_POINTER;
     }
     pInfo->dir = ::PINDIR_INPUT;
     pInfo->pFilter = _filter;
-    if (_filter != NULL) {
+    if (_filter != nullptr) {
         _filter->AddRef();
     }
     assert(sizeof(pInfo->achName) >= sizeof(PIN_NAME));
@@ -605,7 +596,7 @@ STDMETHODIMP ts::SinkPin::QueryPinInfo(::PIN_INFO* pInfo)
 STDMETHODIMP ts::SinkPin::QueryDirection(::PIN_DIRECTION* pPinDir)
 {
     TRACE(1, u"SinkPin::QueryDirection");
-    if (pPinDir == NULL) {
+    if (pPinDir == nullptr) {
         return E_POINTER;
     }
     else {
@@ -617,10 +608,10 @@ STDMETHODIMP ts::SinkPin::QueryDirection(::PIN_DIRECTION* pPinDir)
 STDMETHODIMP ts::SinkPin::QueryId(::LPWSTR* Id)
 {
     TRACE(1, u"SinkPin::QueryId");
-    if (Id == NULL) {
+    if (Id == nullptr) {
         return E_POINTER;
     }
-    else if ((*Id = reinterpret_cast<::WCHAR*>(::CoTaskMemAlloc(sizeof(PIN_ID)))) == NULL) {
+    else if ((*Id = reinterpret_cast<::WCHAR*>(::CoTaskMemAlloc(sizeof(PIN_ID)))) == nullptr) {
         return E_OUTOFMEMORY;
     }
     else {
@@ -636,7 +627,7 @@ STDMETHODIMP ts::SinkPin::QueryAccept(const ::AM_MEDIA_TYPE* pmt)
            NameGUID(pmt->subtype),
            NameGUID(pmt->formattype),
            pmt->cbFormat,
-           pmt->pbFormat == NULL ? u"none" : UString::Dump(pmt->pbFormat, pmt->cbFormat, UString::SINGLE_LINE)});
+           pmt->pbFormat == nullptr ? u"none" : UString::Dump(pmt->pbFormat, pmt->cbFormat, UString::SINGLE_LINE)});
 
     if (pmt->majortype != ::MEDIATYPE_Stream) {
         return S_FALSE; // unsupported major type
@@ -649,7 +640,7 @@ STDMETHODIMP ts::SinkPin::QueryAccept(const ::AM_MEDIA_TYPE* pmt)
     if (!found) {
         return S_FALSE; // unsupported subtype
     }
-    if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != NULL) {
+    if (pmt->subtype == ::MEDIASUBTYPE_MPEG2_TRANSPORT_STRIDE && pmt->formattype == ::FORMAT_None && pmt->pbFormat != nullptr) {
         if (pmt->cbFormat < sizeof(::MPEG2_TRANSPORT_STRIDE)) {
             return S_FALSE; // format structure too short
         }
@@ -664,10 +655,10 @@ STDMETHODIMP ts::SinkPin::QueryAccept(const ::AM_MEDIA_TYPE* pmt)
 STDMETHODIMP ts::SinkPin::EnumMediaTypes(::IEnumMediaTypes** ppEnum)
 {
     TRACE(1, u"SinkPin::EnumMediaTypes");
-    if (ppEnum == NULL) {
+    if (ppEnum == nullptr) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumMediaTypes(_report, NULL)) == NULL) {
+    else if ((*ppEnum = new SinkEnumMediaTypes(_report, nullptr)) == nullptr) {
         return E_OUTOFMEMORY;
     }
     else {
@@ -685,9 +676,9 @@ STDMETHODIMP ts::SinkPin::EndOfStream()
 {
     TRACE(1, u"SinkPin::EndOfStream");
     // Enqueue a NULL pointer instead of an ::IMediaSample*
-    GuardCondition lock(_filter->_mutex, _filter->_not_empty);
-    _filter->_queue.push_back(NULL);
-    lock.signal();
+    std::lock_guard<std::timed_mutex> lock(_filter->_mutex);
+    _filter->_queue.push_back(nullptr);
+    _filter->_not_empty.notify_all();
     return S_OK;
 }
 
@@ -766,8 +757,9 @@ STDMETHODIMP ts::SinkPin::ReceiveMultiple(::IMediaSample** pSamples, long nSampl
 
     // Enqueue all media samples using one single lock section.
     {
-        GuardCondition lock(_filter->_mutex, _filter->_not_empty, 1000); // timeout = 1000 ms
-        if (!lock.isLocked()) {
+        // Try to get the mutex within 1 second.
+        std::unique_lock<std::timed_mutex> lock(_filter->_mutex, std::chrono::seconds(1));
+        if (!lock.owns_lock()) {
             _report.error(u"cannot enqueue media sample, lock timeout");
             return S_FALSE;
         }
@@ -792,7 +784,7 @@ STDMETHODIMP ts::SinkPin::ReceiveMultiple(::IMediaSample** pSamples, long nSampl
         }
 
         // Notify client application when all samples are enqueued.
-        lock.signal();
+        _filter->_not_empty.notify_all();
     }
 
     // Does reporting outside locked section.
@@ -818,7 +810,7 @@ const ::GUID ts::SinkPin::MEDIA_SUBTYPES [MAX_MEDIA_SUBTYPES] = {
 ts::SinkEnumMediaTypes::SinkEnumMediaTypes(Report& report, const SinkEnumMediaTypes* cloned) :
     _report(report),
     _ref_count(1),
-    _next(cloned == NULL ? 0 : cloned->_next)
+    _next(cloned == nullptr ? 0 : cloned->_next)
 {
     TRACE(2, u"SinkEnumMediaTypes constructor, ref=%d", {_ref_count});
 }
@@ -840,7 +832,7 @@ STDMETHODIMP ts::SinkEnumMediaTypes::QueryInterface(REFIID riid, void** ppv)
     }
     else {
         TRACE(1, u"SinkEnumMediaTypes::QueryInterface: no interface");
-        *ppv = NULL;
+        *ppv = nullptr;
         return E_NOINTERFACE;
     }
 }
@@ -867,13 +859,13 @@ STDMETHODIMP_(::ULONG) ts::SinkEnumMediaTypes::Release()
 STDMETHODIMP ts::SinkEnumMediaTypes::Next(::ULONG cMediaTypes, ::AM_MEDIA_TYPE** ppMediaTypes, ::ULONG* pcFetched)
 {
     TRACE(1, u"SinkEnumMediaTypes::Next");
-    if (ppMediaTypes == NULL || (pcFetched == NULL && cMediaTypes > 1)) {
+    if (ppMediaTypes == nullptr || (pcFetched == nullptr && cMediaTypes > 1)) {
         return E_POINTER;
     }
     ::ULONG copied;
     for (copied = 0; copied < cMediaTypes && _next < SinkPin::MAX_MEDIA_SUBTYPES; copied++) {
         ppMediaTypes[copied] = reinterpret_cast<::AM_MEDIA_TYPE*>(::CoTaskMemAlloc(sizeof(::AM_MEDIA_TYPE)));
-        if (ppMediaTypes[copied] == NULL) {
+        if (ppMediaTypes[copied] == nullptr) {
             return E_OUTOFMEMORY;
         }
         InitMediaType(*ppMediaTypes[copied]);
@@ -882,7 +874,7 @@ STDMETHODIMP ts::SinkEnumMediaTypes::Next(::ULONG cMediaTypes, ::AM_MEDIA_TYPE**
         ppMediaTypes[copied]->formattype = ::FORMAT_None;
         _next++;
     }
-    if (pcFetched != NULL) {
+    if (pcFetched != nullptr) {
         *pcFetched = copied;
     }
     return copied == cMediaTypes ? S_OK : S_FALSE; // both are success
@@ -905,10 +897,10 @@ STDMETHODIMP ts::SinkEnumMediaTypes::Reset()
 STDMETHODIMP ts::SinkEnumMediaTypes::Clone(::IEnumMediaTypes** ppEnum)
 {
     TRACE(1, u"SinkEnumMediaTypes::Clone");
-    if (ppEnum == NULL) {
+    if (ppEnum == nullptr) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumMediaTypes(_report, this)) == NULL) {
+    else if ((*ppEnum = new SinkEnumMediaTypes(_report, this)) == nullptr) {
         return E_OUTOFMEMORY;
     }
     else {
@@ -925,7 +917,7 @@ ts::SinkEnumPins::SinkEnumPins(Report& report, SinkFilter* filter, const SinkEnu
     _report(report),
     _ref_count(1),
     _filter(filter),
-    _done(cloned == NULL ? false : cloned->_done)
+    _done(cloned == nullptr ? false : cloned->_done)
 {
     TRACE(2, u"SinkEnumPins constructor, ref=%d, done=%s", {_ref_count, UString::TrueFalse(_done)});
     _filter->AddRef();
@@ -949,7 +941,7 @@ STDMETHODIMP ts::SinkEnumPins::QueryInterface(REFIID riid, void** ppv)
     }
     else {
         TRACE(1, u"SinkEnumPins::QueryInterface: no interface");
-        *ppv = NULL;
+        *ppv = nullptr;
         return E_NOINTERFACE;
     }
 }
@@ -976,7 +968,7 @@ STDMETHODIMP_(::ULONG) ts::SinkEnumPins::Release()
 STDMETHODIMP ts::SinkEnumPins::Next(::ULONG cPins, ::IPin** ppPins, ::ULONG* pcFetched)
 {
     TRACE(1, u"SinkEnumPins::Next");
-    if (ppPins == NULL || (pcFetched == NULL && cPins > 1)) {
+    if (ppPins == nullptr || (pcFetched == nullptr && cPins > 1)) {
         return E_POINTER;
     }
     ::ULONG copied = 0;
@@ -985,7 +977,7 @@ STDMETHODIMP ts::SinkEnumPins::Next(::ULONG cPins, ::IPin** ppPins, ::ULONG* pcF
         _done = true;
         copied = 1;
     }
-    if (pcFetched != NULL) {
+    if (pcFetched != nullptr) {
         *pcFetched = copied;
     }
     return copied == cPins ? S_OK : S_FALSE; // both are success
@@ -1010,10 +1002,10 @@ STDMETHODIMP ts::SinkEnumPins::Reset()
 STDMETHODIMP ts::SinkEnumPins::Clone(::IEnumPins** ppEnum)
 {
     TRACE(1, u"SinkEnumPins::Clone");
-    if (ppEnum == NULL) {
+    if (ppEnum == nullptr) {
         return E_POINTER;
     }
-    else if ((*ppEnum = new SinkEnumPins(_report, _filter, this)) == NULL) {
+    else if ((*ppEnum = new SinkEnumPins(_report, _filter, this)) == nullptr) {
         return E_OUTOFMEMORY;
     }
     else {

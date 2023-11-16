@@ -293,14 +293,14 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 
     if (!_std_inout) {
         // Actual file name, open it.
-        _handle = ::CreateFileW(_filename.wc_str(), access, shared, NULL, winflags, attrib, NULL);
+        _handle = ::CreateFileW(_filename.wc_str(), access, shared, nullptr, winflags, attrib, nullptr);
         if (_handle == INVALID_HANDLE_VALUE) {
             const SysErrorCode err = LastSysErrorCode();
             report.log(_severity, u"cannot open %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
             return false;
         }
         // Move to end of file if --append
-        if (append_access && ::SetFilePointer(_handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
+        if (append_access && ::SetFilePointer(_handle, 0, nullptr, FILE_END) == INVALID_SET_FILE_POINTER) {
             const SysErrorCode err = LastSysErrorCode();
             report.log(_severity, u"cannot append to %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
             ::CloseHandle(_handle);
@@ -333,7 +333,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     if (_start_offset != 0) {
         // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
         ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&_start_offset));
-        if (::SetFilePointerEx(_handle, offset, NULL, FILE_BEGIN) == 0) {
+        if (::SetFilePointerEx(_handle, offset, nullptr, FILE_BEGIN) == 0) {
             const SysErrorCode err = LastSysErrorCode();
             report.log(_severity, u"error seeking file %s: %s", {_filename, SysErrorCodeMessage(err)});
             if (!_filename.empty()) {
@@ -490,7 +490,7 @@ bool ts::TSFile::seekInternal(uint64_t index, Report& report)
     // In Win32, LARGE_INTEGER is a 64-bit structure, not an integer type
     uint64_t where = _start_offset + index;
     ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&where));
-    if (::SetFilePointerEx(_handle, offset, NULL, FILE_BEGIN) == 0) {
+    if (::SetFilePointerEx(_handle, offset, nullptr, FILE_BEGIN) == 0) {
 #else
     if (::lseek(_fd, off_t(_start_offset + index), SEEK_SET) == off_t(-1)) {
 #endif
@@ -590,7 +590,7 @@ bool ts::TSFile::readStreamPartial(void* buffer, size_t request_size, size_t& re
 
     // Windows implementation
     ::DWORD insize = 0;
-    if (::ReadFile(_handle, buffer, ::DWORD(request_size), &insize, NULL)) {
+    if (::ReadFile(_handle, buffer, ::DWORD(request_size), &insize, nullptr)) {
         // Normal case: some data were read
         assert(size_t(insize) <= request_size);
         read_size = size_t(insize);
@@ -717,7 +717,7 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
 
     // Loop on write until everything is gone
     while (remain > 0) {
-        if (::WriteFile(_handle, data, remain, &outsize, NULL) != 0)  {
+        if (::WriteFile(_handle, data, remain, &outsize, nullptr) != 0)  {
             // Normal case, some data were written
             outsize = std::min(outsize, remain);
             data += outsize;

@@ -52,7 +52,7 @@ bool ts::EnumerateDevicesByClass(const ::CLSID& clsid, std::vector <ComPtr <::IM
 
     // Loop on all enumerated providers.
     ComPtr <::IMoniker> moniker;
-    while (enum_monikers->Next(1, moniker.creator(), NULL) == S_OK) {
+    while (enum_monikers->Next(1, moniker.creator(), nullptr) == S_OK) {
         monikers.push_back(moniker);
     }
 
@@ -71,9 +71,9 @@ namespace {
         if (ts::ComSuccess(hr, message, report)) {
             cname = ts::ToString(name);
         }
-        if (name != NULL) {
+        if (name != nullptr) {
             ::SysFreeString(name);
-            name = NULL;
+            name = nullptr;
         }
         return cname;
     }
@@ -85,7 +85,7 @@ ts::UString ts::GetTuningSpaceFriendlyName(::ITuningSpace* tspace, Report& repor
         return UString();
     }
     else {
-        ::BSTR name = NULL;
+        ::BSTR name = nullptr;
         return ToStringAndFree(tspace->get_FriendlyName(&name), name, u"ITuningSpace::get_FriendlyName", report);
     }
 }
@@ -96,7 +96,7 @@ ts::UString ts::GetTuningSpaceUniqueName(::ITuningSpace* tspace, Report& report)
         return UString();
     }
     else {
-        ::BSTR name = NULL;
+        ::BSTR name = nullptr;
         return ToStringAndFree(tspace->get_UniqueName(&name), name, u"ITuningSpace::get_UniqueName", report);
     }
 }
@@ -107,7 +107,7 @@ ts::UString ts::GetTuningSpaceClass(::ITuningSpace* tspace, Report& report)
         return UString();
     }
     else {
-        ::BSTR name = NULL;
+        ::BSTR name = nullptr;
         return ToStringAndFree(tspace->get_CLSID(&name), name, u"ITuningSpace::get_CLSID", report);
     }
 }
@@ -119,7 +119,7 @@ ts::UString ts::GetTuningSpaceNetworkType(::ITuningSpace* tspace, Report& report
     }
 
     // Get network type as a string.
-    ::BSTR name = NULL;
+    ::BSTR name = nullptr;
     const UString type(ToStringAndFree(tspace->get_NetworkType(&name), name, u"ITuningSpace::get_NetworkType", report));
 
     // If the string looks like a GUID, try to find another way.

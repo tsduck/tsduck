@@ -272,7 +272,7 @@ bool ts::DirectShowGraph::getPin(PinPtrVector& pins, ::IBaseFilter* filter, int 
 
     // Loop on all pins
     ComPtr<::IPin> pin;
-    while (enum_pins->Next(1, pin.creator(), NULL) == S_OK) {
+    while (enum_pins->Next(1, pin.creator(), nullptr) == S_OK) {
         // Query direction of this pin
         ::PIN_DIRECTION dir;
         if (FAILED(pin->QueryDirection(&dir)) ||
@@ -307,7 +307,7 @@ ts::ComPtr<::IBaseFilter> ts::DirectShowGraph::startingFilter(Report& report)
             // Find first filter with no connected in pin.
             ComPtr<::IBaseFilter> filter;
             PinPtrVector pins;
-            while (enum_filters->Next(1, filter.creator(), NULL) == S_OK) {
+            while (enum_filters->Next(1, filter.creator(), nullptr) == S_OK) {
                 if (!getPin(pins, filter.pointer(), xPIN_INPUT | xPIN_CONNECTED, report)) {
                     break;
                 }

@@ -9,29 +9,12 @@
 #include "tsTunerGraph.h"
 #include "tsDuckContext.h"
 #include "tsDirectShowUtils.h"
+#include "tsFatal.h"
 
 
 //-----------------------------------------------------------------------------
 // Constructor / destructor.
 //-----------------------------------------------------------------------------
-
-ts::TunerGraph::TunerGraph() :
-    DirectShowGraph(),
-    _user_receiver_name(),
-    _tuner_name(),
-    _sink_filter(),
-    _provider_filter(),
-    _inet_provider(),
-    _ituner(),
-    _ituner_cap(),
-    _net_types(),
-    _tuner_filter(),
-    _demods(),
-    _demods2(),
-    _sigstats(),
-    _tunprops()
-{
-}
 
 ts::TunerGraph::~TunerGraph()
 {
@@ -250,7 +233,7 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
     if (SUCCEEDED(_tuner_filter->EnumPins(enum_pins.creator()))) {
         // Enumerate all pins in tuner filter
         ComPtr<::IPin> pin;
-        while (enum_pins->Next(1, pin.creator(), NULL) == S_OK) {
+        while (enum_pins->Next(1, pin.creator(), nullptr) == S_OK) {
             // Check if this pin is connected
             ComPtr<::IPin> partner;
             if (SUCCEEDED(pin->ConnectedTo(partner.creator()))) {
@@ -387,7 +370,7 @@ bool ts::TunerGraph::buildGraphAtTIF(const ComPtr <::IBaseFilter>& demux, Report
 
     // Loop on all enumerated TIF
     ComPtr<::IMoniker> tif_moniker;
-    while (enum_tif->Next(1, tif_moniker.creator(), NULL) == S_OK) {
+    while (enum_tif->Next(1, tif_moniker.creator(), nullptr) == S_OK) {
 
         // Get friendly name of this TIF
         UString tif_name(GetStringPropertyBag(tif_moniker.pointer(), L"FriendlyName", report));

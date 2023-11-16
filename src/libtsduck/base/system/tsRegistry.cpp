@@ -18,62 +18,23 @@
 
 #if !defined(TS_WINDOWS)
 
-#define ERROR_MESSAGE    u"not Windows, no registry"
-#define BOOL_ERROR()     report.error(ERROR_MESSAGE); return false
-#define USTRING_ERROR()  report.error(ERROR_MESSAGE); return UString()
+#define ERROR_MESSAGE  u"not Windows, no registry"
+#define BOOL_ERROR     { report.error(ERROR_MESSAGE); return false; }
+#define USTRING_ERROR  { report.error(ERROR_MESSAGE); return UString(); }
 
 const ts::UString ts::Registry::SystemEnvironmentKey;
 const ts::UString ts::Registry::UserEnvironmentKey;
 
-bool ts::Registry::SplitKey(const UString& key, Handle& root_key, UString& subkey, Report& report)
-{
-    BOOL_ERROR();
-}
-
-bool ts::Registry::SplitKey(const UString& key, Handle& root_key, UString& midkey, UString& final_key, Report& report)
-{
-    BOOL_ERROR();
-}
-
-ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name, Report& report)
-{
-    USTRING_ERROR();
-}
-
-bool ts::Registry::SetValue(const UString& key, const UString& value_name, const UString& value, bool expandable, Report& report)
-{
-    BOOL_ERROR();
-}
-
-bool ts::Registry::SetValue(const UString& key, const UString& value_name, uint32_t value, Report& report)
-{
-    BOOL_ERROR();
-}
-
-bool ts::Registry::DeleteValue(const UString& key, const UString& value_name, Report& report)
-{
-    BOOL_ERROR();
-}
-
-bool ts::Registry::CreateKey(const UString& key, bool is_volatile, Report& report)
-{
-    BOOL_ERROR();
-}
-
-bool ts::Registry::DeleteKey(const UString& key, Report& report)
-{
-    BOOL_ERROR();
-}
-
-bool ts::Registry::NotifySettingChange(Report& report)
-{
-    BOOL_ERROR();
-}
-
-bool ts::Registry::NotifyEnvironmentChange(Report& report)
-{
-    BOOL_ERROR();
-}
+bool ts::Registry::SplitKey(const UString&, Handle&, UString&, Report&) BOOL_ERROR
+bool ts::Registry::SplitKey(const UString&, Handle&, UString&, UString&, Report&) BOOL_ERROR
+ts::UString ts::Registry::GetValue(const UString&, const UString&, Report&) USTRING_ERROR
+bool ts::Registry::SetValue(const UString&, const UString&, const UString&, bool, Report&) BOOL_ERROR
+bool ts::Registry::SetValue(const UString&, const UString&, uint32_t, Report& report) BOOL_ERROR
+bool ts::Registry::DeleteValue(const UString&, const UString&, Report&) BOOL_ERROR
+bool ts::Registry::CreateKey(const UString&, bool, Report&) BOOL_ERROR
+bool ts::Registry::DeleteKey(const UString&, Report&) BOOL_ERROR
+bool ts::Registry::NotifySettingChange(Report&) BOOL_ERROR
+bool ts::Registry::NotifyEnvironmentChange(Report&) BOOL_ERROR
 
 #else
 
@@ -127,7 +88,7 @@ bool ts::Registry::SplitKey(const UString& key, Handle& root_key, UString& subke
     }
     else {
         report.error(u"invalid root key \"%s\"", {root});
-        root_key = NULL;
+        root_key = nullptr;
         return false;
     }
     return true;
@@ -182,7 +143,7 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
     // to lpData, RegQueryValueEx simply returns the size of the value.
     ::DWORD type;
     ::DWORD size = 0;
-    ::LONG hr = ::RegQueryValueExW(hkey, value_name.wc_str(), NULL, &type, NULL, &size);
+    ::LONG hr = ::RegQueryValueExW(hkey, value_name.wc_str(), nullptr, &type, nullptr, &size);
     if ((hr != ERROR_SUCCESS && hr != ERROR_MORE_DATA) || size <= 0) {
         report.error(u"error querying %s\\%s: %s", {key, value_name, SysErrorCodeMessage(hr)});
         ::RegCloseKey(hkey);
@@ -193,7 +154,7 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
     ::DWORD bufsize = size + 10;
     ::BYTE* buf = new ::BYTE[size = bufsize];
     CheckNonNull(buf);
-    hr = ::RegQueryValueExW(hkey, value_name.wc_str(), NULL, &type, buf, &size);
+    hr = ::RegQueryValueExW(hkey, value_name.wc_str(), nullptr, &type, buf, &size);
     ::RegCloseKey(hkey);
     if (hr != ERROR_SUCCESS) {
         size = 0;
@@ -328,12 +289,12 @@ bool ts::Registry::CreateKey(const UString& key, bool is_volatile, Report& repor
     const ::LONG hr = ::RegCreateKeyExW(hkey,
                                         newkey.wc_str(),
                                         0,  // reserved
-                                        NULL, // class
+                                        nullptr, // class
                                         is_volatile ? REG_OPTION_VOLATILE : REG_OPTION_NON_VOLATILE,
                                         0, // security: no further access
-                                        NULL, // security attributes
+                                        nullptr, // security attributes
                                         &hnewkey,
-                                        NULL); // disposition
+                                        nullptr); // disposition
 
     const bool success = hr == ERROR_SUCCESS;
     if (success) {
