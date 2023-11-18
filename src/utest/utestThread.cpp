@@ -285,11 +285,11 @@ void ThreadTest::testMutexTimeout()
 
     // Use assumptions instead of assertions for time-dependent checks.
     // Timing can be very weird on virtual machines which are used for unitary tests.
-    bool locked = false;
-    TSUNIT_ASSUME(!(locked = mutex.try_lock_for(std::chrono::milliseconds(50))));
+    const bool locked = mutex.try_lock_for(std::chrono::milliseconds(50));
     if (locked) {
         mutex.unlock();
     }
+    TSUNIT_ASSUME(!locked);
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
     TSUNIT_ASSUME(ts::Time::CurrentUTC() < dueTime2);
     TSUNIT_ASSERT(mutex.try_lock_for(std::chrono::milliseconds(1000)));
