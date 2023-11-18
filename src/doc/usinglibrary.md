@@ -12,7 +12,7 @@ you must install the TSDuck development environment first.
 - On macOS systems, the development environment is always installed with TSDuck using Homebrew.
 - If you build TSDuck from sources, use `make install install-devel`.
 
-# Building applications on Linux, macOS, FreeBSD, OpenBSD, NetBSD, DragonFlyBSD  {#liblinux}
+# Building applications on Linux, macOS and BSD systems
 
 The command `tsconfig` generates the appropriate build options for the
 current operating system. See the TSDuck user's guide for more details.
@@ -31,6 +31,17 @@ Just run `make` to build the application.
 ~~~~
 $ make
 ~~~~
+
+By default, the command `tsconfig --cflags` forces C++17 as level
+of C++ language standard. If your application requires a more recent
+level, define the environment variable `TS_NOSTDCPP` to any non-empty
+value. This disables the C++ standard option in `tsconfig`. The
+application shall then define its own C++ standard in its command line.
+This user-specified C++ standard cannot be lower than C++11.
+
+Alternatively, the command `tsconfig --nostdcpp --cflags` can be used
+to omit the C++ standard from the compilation options without defining
+the environment variable `TS_NOSTDCPP`.
 
 # Building applications on Windows  {#libwindows}
 
@@ -58,3 +69,4 @@ of C++ language standard. If your application requires a more recent
 level, define the environment variable `TS_NOSTDCPP` to any non-empty
 value. This disables the C++ standard option in `tsduck.props`. The
 application shall then define its own C++ standard in its project files.
+This user-specified C++ standard cannot be lower than C++11.
