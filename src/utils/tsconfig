@@ -37,6 +37,7 @@ Syntax: $SCRIPT [options]
   --java        jar file for TSDuck Java bindings, to be added in CLASSPATH
   --python      directory for TSDuck Python bindings, to be added in PYTHONPATH
 
+  --nostdcpp    when present before --cflags, do not impose a C++ standard level
   --help        display this help and exit
   --version     output version information
   --vernum      output the version information as a number
@@ -97,10 +98,16 @@ cmd_lib() {
     dirname $(ls $(cmd_prefix)/lib*/libtsduck$(cmd_so) 2>/dev/null | head -1) 2>/dev/null
 }
 
+cmd_nostdcpp() {
+    TS_NOSTDCPP=true
+}
+
 cmd_cflags() {
     local pcsc=
+    local std="{{STDCPP}}"
     [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-I/usr/include/PCSC"
-    echo "-I$(cmd_include) $pcsc {{STDCPP}}"
+    [[ -n "$TS_NOSTDCPP" ]] && std=""
+    echo "-I$(cmd_include) $pcsc $std"
 }
 
 cmd_so() {
@@ -221,6 +228,7 @@ else
             --java) cmd_java ;;
             --lib) cmd_lib ;;
             --libs) cmd_libs ;;
+            --nostdcpp) cmd_nostdcpp ;;
             --plugin) cmd_plugin ;;
             --prefix) cmd_prefix ;;
             --python) cmd_python ;;

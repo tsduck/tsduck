@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3412
+VERSION 3.36-3431
 
 [NEW] New commands and plugins:
 
@@ -26,6 +26,7 @@ VERSION 3.36-3412
     - Option --http to input plugin "pcap'.
     - Option --output-tcp-stream to "tspcap".
     - Option --compressed in "http" and "hls" input plugins.
+    - Option --nostdcpp in "tsconfig".
 
 [BUG] Bug fixes:
 
