@@ -87,7 +87,7 @@ bool ts::TimeShiftBuffer::open(Report& report)
         // Get the name of a temporary file. If a directory is specified, we will use the base name only.
         UString filename(TempFile());
         if (!_directory.empty()) {
-            if (IsDirectory(_directory)) {
+            if (fs::is_directory(_directory)) {
                 filename = _directory + PathSeparator + BaseName(filename);
             }
             else {

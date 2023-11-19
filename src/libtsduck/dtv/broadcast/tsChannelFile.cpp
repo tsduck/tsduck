@@ -438,7 +438,7 @@ bool ts::ChannelFile::save(const UString& fileName, bool createDirectories, Repo
 {
     if (createDirectories) {
         const UString dir(DirectoryName(fileName));
-        if (!IsDirectory(dir)) {
+        if (!fs::is_directory(dir)) {
             CreateDirectory(dir, true, report);
         }
     }

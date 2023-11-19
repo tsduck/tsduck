@@ -402,7 +402,7 @@ bool ts::CreateDirectory(const UString& path, bool intermediate, Report& report)
     if (intermediate) {
         const UString parent(DirectoryName(path));
         // Create recursively only if does not exist or is not identical to path (meaning root).
-        if (parent != path && !IsDirectory(parent) && !CreateDirectory(parent, true, report)) {
+        if (parent != path && !fs::is_directory(parent) && !CreateDirectory(parent, true, report)) {
             return false;
         }
     }
@@ -424,28 +424,12 @@ bool ts::CreateDirectory(const UString& path, bool intermediate, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Return the name of a directory for temporary files.
-//----------------------------------------------------------------------------
-
-ts::UString ts::TempDirectory()
-{
-#if defined(TS_WINDOWS)
-    std::array<::WCHAR, 2048> buf;
-    ::DWORD status = ::GetTempPathW(::DWORD(buf.size()), buf.data());
-    return status <= 0 ? u"C:\\" : UString(buf);
-#else
-    return u"/tmp";
-#endif
-}
-
-
-//----------------------------------------------------------------------------
 // Return the name of a unique temporary file name.
 //----------------------------------------------------------------------------
 
 ts::UString ts::TempFile(const UString& suffix)
 {
-    return TempDirectory() + PathSeparator + UString::Format(u"tstmp-%X", {UID::Instance().newUID()}) + suffix;
+    return fs::temp_directory_path() + PathSeparator + UString::Format(u"tstmp-%X", {UID::Instance().newUID()}) + suffix;
 }
 
 
@@ -495,28 +479,9 @@ ts::Time ts::GetFileModificationTimeLocal(const UString& path)
 
 bool ts::FileExists(const UString& path)
 {
-#if defined(TS_WINDOWS)
-    return ::GetFileAttributesW(path.wc_str()) != INVALID_FILE_ATTRIBUTES;
-#else
-    // Flawfinder: ignore
-    return ::access(path.toUTF8().c_str(), F_OK) == 0;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Check if a path exists and is a directory
-//----------------------------------------------------------------------------
-
-bool ts::IsDirectory(const UString& path)
-{
-#if defined(TS_WINDOWS)
-    const ::DWORD attr = ::GetFileAttributesW(path.wc_str());
-    return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY) != 0;
-#else
-    struct stat st;
-    return ::stat(path.toUTF8().c_str(), &st) == 0 && S_ISDIR(st.st_mode);
-#endif
+    std::error_code error;
+    const fs::file_status st(fs::status(path, error));
+    return st.type() != fs::file_type::not_found && st.type() != fs::file_type::none;
 }
 
 

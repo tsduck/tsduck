@@ -8,6 +8,10 @@
 //
 //  TSUnit test suite for tsSysUtils.h and tsFileUtils.h
 //
+//  While system-specific classes move to C++11 and C++17 predefined classes,
+//  we also adapt the tests and keep them for a while, to make sure that the
+//  predefined classes are effective replacements.
+//
 //----------------------------------------------------------------------------
 
 #include "tsFileUtils.h"
@@ -62,7 +66,6 @@ public:
     void testAbsoluteFilePath();
     void testCleanupFilePath();
     void testRelativeFilePath();
-    void testStdFileSystem();
 
     TSUNIT_TEST_BEGIN(SysUtilsTest);
     TSUNIT_TEST(testCurrentProcessId);
@@ -91,7 +94,6 @@ public:
     TSUNIT_TEST(testAbsoluteFilePath);
     TSUNIT_TEST(testCleanupFilePath);
     TSUNIT_TEST(testRelativeFilePath);
-    TSUNIT_TEST(testStdFileSystem);
     TSUNIT_TEST_END();
 
 private:
@@ -444,16 +446,16 @@ void SysUtilsTest::testFilePaths()
 
 void SysUtilsTest::testTempFiles()
 {
-    debug() << "SysUtilsTest: TempDirectory() = \"" << ts::TempDirectory() << "\"" << std::endl;
+    debug() << "SysUtilsTest: TempDirectory() = \"" << fs::temp_directory_path() << "\"" << std::endl;
     debug() << "SysUtilsTest: TempFile() = \"" << ts::TempFile() << "\"" << std::endl;
     debug() << "SysUtilsTest: TempFile(\".foo\") = \"" << ts::TempFile(u".foo") << "\"" << std::endl;
 
     // Check that the temporary directory exists
-    TSUNIT_ASSERT(ts::IsDirectory(ts::TempDirectory()));
+    TSUNIT_ASSERT(fs::is_directory(fs::temp_directory_path()));
 
     // Check that temporary files are in this directory
     const ts::UString tmpName(ts::TempFile());
-    TSUNIT_ASSERT(ts::DirectoryName(tmpName) == ts::TempDirectory());
+    TSUNIT_ASSERT(fs::path(ts::DirectoryName(tmpName)) == fs::temp_directory_path());
 
     // Check that we are allowed to create temporary files.
     TSUNIT_ASSERT(!ts::FileExists(tmpName));
@@ -554,29 +556,29 @@ void SysUtilsTest::testDirectory()
     TSUNIT_ASSERT(!ts::FileExists(dirName));
     TSUNIT_ASSERT(ts::CreateDirectory(dirName));
     TSUNIT_ASSERT(ts::FileExists(dirName));
-    TSUNIT_ASSERT(ts::IsDirectory(dirName));
+    TSUNIT_ASSERT(fs::is_directory(dirName));
 
     TSUNIT_ASSERT(_CreateFile(dirName + fileName, 0));
     TSUNIT_ASSERT(ts::FileExists(dirName + fileName));
-    TSUNIT_ASSERT(!ts::IsDirectory(dirName + fileName));
+    TSUNIT_ASSERT(!fs::is_directory(dirName + fileName));
 
     const ts::UString dirName2(ts::TempFile(u""));
     TSUNIT_ASSERT(!ts::FileExists(dirName2));
     TSUNIT_ASSERT(ts::RenameFile(dirName, dirName2));
     TSUNIT_ASSERT(ts::FileExists(dirName2));
-    TSUNIT_ASSERT(ts::IsDirectory(dirName2));
+    TSUNIT_ASSERT(fs::is_directory(dirName2));
     TSUNIT_ASSERT(!ts::FileExists(dirName));
-    TSUNIT_ASSERT(!ts::IsDirectory(dirName));
+    TSUNIT_ASSERT(!fs::is_directory(dirName));
     TSUNIT_ASSERT(ts::FileExists(dirName2 + fileName));
-    TSUNIT_ASSERT(!ts::IsDirectory(dirName2 + fileName));
+    TSUNIT_ASSERT(!fs::is_directory(dirName2 + fileName));
 
     TSUNIT_ASSERT(ts::DeleteFile(dirName2 + fileName));
     TSUNIT_ASSERT(!ts::FileExists(dirName2 + fileName));
-    TSUNIT_ASSERT(ts::IsDirectory(dirName2));
+    TSUNIT_ASSERT(fs::is_directory(dirName2));
 
     TSUNIT_ASSERT(ts::DeleteFile(dirName2));
     TSUNIT_ASSERT(!ts::FileExists(dirName2));
-    TSUNIT_ASSERT(!ts::IsDirectory(dirName2));
+    TSUNIT_ASSERT(!fs::is_directory(dirName2));
 }
 
 void SysUtilsTest::testWildcard()
@@ -587,7 +589,7 @@ void SysUtilsTest::testWildcard()
 
     // Create temporary directory
     TSUNIT_ASSERT(ts::CreateDirectory(dirName));
-    TSUNIT_ASSERT(ts::IsDirectory(dirName));
+    TSUNIT_ASSERT(fs::is_directory(dirName));
 
     // Create one file with unique pattern
     const ts::UString spuriousFileName(dirName + ts::PathSeparator + u"tagada");
@@ -642,7 +644,7 @@ void SysUtilsTest::testHomeDirectory()
 
     TSUNIT_ASSERT(!dir.empty());
     TSUNIT_ASSERT(ts::FileExists(dir));
-    TSUNIT_ASSERT(ts::IsDirectory(dir));
+    TSUNIT_ASSERT(fs::is_directory(dir));
 }
 
 void SysUtilsTest::testProcessMetrics()
@@ -803,7 +805,7 @@ void SysUtilsTest::testCurrentWorkingDirectory()
     debug() << "SysUtilsTest::testCurrentWorkingDirectory: " << ts::CurrentWorkingDirectory() << std::endl;
 
     TSUNIT_ASSERT(!ts::CurrentWorkingDirectory().empty());
-    TSUNIT_ASSERT(ts::IsDirectory(ts::CurrentWorkingDirectory()));
+    TSUNIT_ASSERT(fs::is_directory(ts::CurrentWorkingDirectory()));
 }
 
 
@@ -873,14 +875,4 @@ void SysUtilsTest::testRelativeFilePath()
     TSUNIT_EQUAL(u"../ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/xy"));
     TSUNIT_EQUAL(u"ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/"));
 #endif
-}
-
-void SysUtilsTest::testStdFileSystem()
-{
-    // Testing std::filesystem
-
-    TSUNIT_ASSERT(fs::is_directory(ts::TempDirectory()));
-
-    ts::UString tmp = fs::path(ts::TempDirectory());
-    debug() << "SysUtilsTest::testStdFileSystem: converted fs::path = \"" << tmp << "\"" << std::endl;
 }

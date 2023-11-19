@@ -237,12 +237,6 @@ namespace ts {
     TSDUCKDLL bool CreateDirectory(const UString& path, bool intermediate = false, Report& report = CERR);
 
     //!
-    //! Return the name of a directory for temporary files.
-    //! @return A system-dependent location where temporary files can be created.
-    //!
-    TSDUCKDLL UString TempDirectory();
-
-    //!
     //! Return the name of a unique temporary file.
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
@@ -278,13 +272,6 @@ namespace ts {
     //! @return True if a file or directory exists with that name, false otherwise.
     //!
     TSDUCKDLL bool FileExists(const UString& path);
-
-    //!
-    //! Check if a path exists and is a directory.
-    //! @param [in] path A directory path.
-    //! @return True if a directory exists with that name, false otherwise.
-    //!
-    TSDUCKDLL bool IsDirectory(const UString& path);
 
     //!
     //! Check if a file exists and is executable.
@@ -521,7 +508,7 @@ bool ts::SearchWildcardAndAppend(CONTAINER& container, const UString& root, cons
         UStringList locals;
         ExpandWildcard(locals, root + PathSeparator + u"*");
         for (const auto& loc : locals) {
-            if (IsDirectory(loc) && (!skip_symlinks || !IsSymbolicLink(loc))) {
+            if (fs::is_directory(loc) && (!skip_symlinks || !IsSymbolicLink(loc))) {
                 status = SearchWildcardAndAppend(container, loc, pattern, max_levels - 1) && status;
             }
         }

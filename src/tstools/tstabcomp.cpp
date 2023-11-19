@@ -128,7 +128,7 @@ Options::Options(int argc, char *argv[]) :
     withExtensions = present(u"extensions");
     useStdIn = ts::UString(u"-").isContainedSimilarIn(inFiles);
     useStdOut = outFile == u"-";
-    outIsDir = !useStdOut && !outFile.empty() && ts::IsDirectory(outFile);
+    outIsDir = !useStdOut && !outFile.empty() && fs::is_directory(outFile);
 
     if (useStdOut) {
         outFile.clear();
