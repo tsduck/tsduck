@@ -1168,7 +1168,6 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.interval", true).add(u"reorder-distance-packets", stats.pktReorderDistance);
             root.query(u"receive.interval", true).add(u"ignored-late-packets", stats.pktRcvBelated);
             root.query(u"receive.interval", true).add(u"undecrypted-packets", stats.pktRcvUndecrypt);
-            root.query(u"receive.interval", true).add(u"unique-bytes", stats.byteRecvUnique);
             root.query(u"receive.interval", true).add(u"loss-bytes", stats.byteRcvLoss);
             root.query(u"receive.interval", true).add(u"drop-bytes", stats.byteRcvDrop);
             root.query(u"receive.interval", true).add(u"undecrypted-bytes", stats.byteRcvUndecrypt);
@@ -1193,6 +1192,8 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
 #if defined(SRT_VERSION_VALUE) && SRT_VERSION_VALUE >= SRT_MAKE_VERSION(1, 4, 2)
             root.query(u"receive.total", true).add(u"unique-packets", stats.pktRecvUniqueTotal);
             root.query(u"receive.total", true).add(u"unique-bytes", stats.byteRecvUniqueTotal);
+            root.query(u"receive.interval", true).add(u"unique-packets", stats.pktRecvUnique);
+            root.query(u"receive.interval", true).add(u"unique-bytes", stats.byteRecvUnique);
 #endif
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {

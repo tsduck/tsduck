@@ -28,6 +28,13 @@ namespace ts {
     //! This class implements operating system threads.
     //! Its implementation is operating system dependent.
     //!
+    //! The C++11 standard class std::thread is not used because it does not provide
+    //! any way to set specific thread properties such as stack size. std::thread
+    //! provides a method named native_handle() which may be used to call non-portable
+    //! features. However, native_handle() becomes accessible only after the thread is
+    //! started, too late to set properties such as stack size. This makes std::thread
+    //! unusable outside basic simple tasks without specific requirements.
+    //!
     class TSDUCKDLL Thread
     {
         TS_NOCOPY(Thread);
