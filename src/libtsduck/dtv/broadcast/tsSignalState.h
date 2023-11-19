@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsOptional.h"
 #include "tsStringifyInterface.h"
 #include "tsDisplayInterface.h"
 

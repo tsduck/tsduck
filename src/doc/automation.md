@@ -37,8 +37,7 @@ verify that the project can be built on most supported platforms and
 contains no regression.
 
 - The workflow is run on Linux Ubuntu, macOS, and Windows (64 and 32 bits).
-- The compilation is done using two revisions of the C++ language: C++11
-  (or C++14 on Windows) and C++20.
+- The compilation is done using two revisions of the C++ language: C++17 and C++20.
 - On Linux, the builds are repeated using two compilers, `gcc` and `clang`.
 - In each configuration of platform, compiler and language level:
   - TSDuck is fully built.

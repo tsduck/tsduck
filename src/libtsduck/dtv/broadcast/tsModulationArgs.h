@@ -15,7 +15,6 @@
 #include "tsObject.h"
 #include "tsDeliverySystem.h"
 #include "tsDisplayInterface.h"
-#include "tsOptional.h"
 #include "tsModulation.h"
 #include "tsBitRate.h"
 #include "tsLNB.h"

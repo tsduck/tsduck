@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsOptional.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"

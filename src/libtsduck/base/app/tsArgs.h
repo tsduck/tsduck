@@ -16,7 +16,6 @@
 #include "tsException.h"
 #include "tsEnumeration.h"
 #include "tsByteBlock.h"
-#include "tsOptional.h"
 #include "tsSafePtr.h"
 #include "tsAbstractNumber.h"
 #include "tsCompactBitSet.h"

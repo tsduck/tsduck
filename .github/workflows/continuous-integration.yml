@@ -9,9 +9,9 @@
 #  The workflow is triggered on push or pull request, for master branch only.
 #  Manual dispatch from the GitHub UI is also allowed.
 #
-#  TSDuck is built on Ubuntu, macOS and Windows, using C++11 (or C++14) and
-#  C++20 levels of standards. The doxygen documentation is also generated to
-#  verify that no documentation is missing.
+#  TSDuck is built on Ubuntu, macOS and Windows, using C++17 and C++20 levels
+#  of standards. The doxygen documentation is also generated to verify that
+#  no documentation is missing.
 #
 #  Testing strategy: The low-level unitary tests and the high-level test suite
 #  are run on all builds. The high-level test suite is in a separate repo
@@ -49,7 +49,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
-        std: [11, 20]
+        std: [17, 20]
         include:
         - os: ubuntu-latest
           compiler: clang
@@ -124,7 +124,7 @@ jobs:
       matrix:
         target: [Win64, Win32]
         configuration: [Release]
-        std: [14, 20]
+        std: [17, 20]
         include:
         - target: Win64
           suffix: x64

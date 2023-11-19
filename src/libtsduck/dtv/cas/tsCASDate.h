@@ -195,12 +195,6 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-#if !defined(TS_CXX17)
-template <int YEARBASE> constexpr uint16_t ts::CASDate<YEARBASE>::INVALID_DATE;
-template <int YEARBASE> constexpr int ts::CASDate<YEARBASE>::MIN_YEAR;
-template <int YEARBASE> constexpr int ts::CASDate<YEARBASE>::MAX_YEAR;
-#endif
-
 // Compute the 16-bit value.
 template <int YEARBASE>
 uint16_t ts::CASDate<YEARBASE>::toUInt16(int year, int month, int day) const

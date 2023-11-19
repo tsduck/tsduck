@@ -18,7 +18,6 @@
 #include "tsxmlTweaks.h"
 #include "tsCerrReport.h"
 #include "tsSafePtr.h"
-#include "tsOptional.h"
 
 namespace ts {
     //!

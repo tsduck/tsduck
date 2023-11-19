@@ -15,7 +15,6 @@
 #include "tsxmlNode.h"
 #include "tsxmlAttribute.h"
 #include "tsByteBlock.h"
-#include "tsOptional.h"
 #include "tsIPv4Address.h"
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"

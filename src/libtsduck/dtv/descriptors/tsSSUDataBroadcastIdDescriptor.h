@@ -14,7 +14,6 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsDataBroadcastIdDescriptor.h"
-#include "tsOptional.h"
 
 namespace ts {
     //!

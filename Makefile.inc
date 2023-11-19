@@ -489,15 +489,9 @@ else
         $(if $(findstring arm,$(MAIN_ARCH)),-Wno-psabi)
 endif
 
-# Language levels. Minimum level is C++11. Use C++17 when available (gcc 9, clang 10).
+# Language levels. Minimum level is C++17.
 
-ifeq ($(CXXFLAGS_STANDARD),)
-    ifeq ($(USE_LLVM),)
-        CXXFLAGS_STANDARD = $(if $(GCC_9),-std=c++17,-std=c++11)
-    else
-        CXXFLAGS_STANDARD = $(if $(LLVM_10),-std=c++17,-std=c++11)
-    endif
-endif
+CXXFLAGS_STANDARD ?= -std=c++17
 
 # Compilation flags for security.
 

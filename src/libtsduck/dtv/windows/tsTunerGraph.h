@@ -16,7 +16,6 @@
 #include "tsDirectShowNetworkType.h"
 #include "tsModulationArgs.h"
 #include "tsSinkFilter.h"
-#include "tsOptional.h"
 #include "tsNullReport.h"
 
 namespace ts {

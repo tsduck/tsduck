@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsAbstractLongTable.h"
-#include "tsOptional.h"
 #include "tsFloatUtils.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"

@@ -114,15 +114,9 @@
     //! The Microsoft-specific symbol _MSVC_LANG is defined to describe a "good-enough"
     //! level of standard which is fine for us.
     //!
+    //! The current version of TSDuck requires C++17 at least (GCC 8, clang 5, Visual Studio 2017 15.8).
+    //!
     #define TS_CPLUSPLUS
-    //!
-    //! Defined when the compiler is compliant with C++11.
-    //!
-    #define TS_CXX11
-    //!
-    //! Defined when the compiler is compliant with C++14.
-    //!
-    #define TS_CXX14
     //!
     //! Defined when the compiler is compliant with C++17.
     //!
@@ -132,14 +126,9 @@
     //!
     #define TS_CXX20
     //!
-    //! Defined when the STL @c basic_string is compliant with C++11.
+    //! Defined when the compiler is compliant with C++23.
     //!
-    //! The class @c basic_string from the C++ STL has more features starting
-    //! with C++11. However, GCC does not support them with old versions, even
-    //! if -std=c++11 or 14 is specified. The level of language is increased
-    //! but not the level of STL.
-    //!
-    #define TS_CXX11_STRING
+    #define TS_CXX23
     //
 #else
     #if !defined(TS_CPLUSPLUS)
@@ -153,12 +142,6 @@
         #undef TS_CPLUSPLUS
         #define TS_CPLUSPLUS _MSVC_LANG
     #endif
-    #if TS_CPLUSPLUS >= 201103L && !defined(TS_CXX11)
-        #define TS_CXX11 1
-    #endif
-    #if TS_CPLUSPLUS >= 201402L && !defined(TS_CXX14)
-        #define TS_CXX14 1
-    #endif
     #if TS_CPLUSPLUS >= 201703L && !defined(TS_CXX17)
         #define TS_CXX17 1
     #endif
@@ -167,15 +150,6 @@
     #endif
     #if TS_CPLUSPLUS >= 202302L && !defined(TS_CXX23)
         #define TS_CXX23 1
-    #endif
-    //
-    // Compliance of the STL.
-    // To get C++11 strings, we need C++11. But, with GCC, we need at least GCC 5.x,
-    // even if it pretends to be C++11. Except when the actual compiler is LLVM which
-    // pretends to be compatible with GCC 4.x but supports C++11 string in fact...
-    //
-    #if defined(TS_CXX11) && (defined(TS_LLVM) || !defined(__GNUC__) || __GNUC__ >= 5) && !defined(TS_CXX11_STRING)
-        #define TS_CXX11_STRING 1
     #endif
 #endif
 
@@ -193,20 +167,12 @@
     #define TS_NEED_UNEQUAL_OPERATOR 1
 #endif
 
-// With GCC 5.1 and higher, force the usage of the new C++11 ABI.
-// This is normally the default, but may need to be forced on some GCC versions immedately after 5.1.
-#if defined(TS_GCC_VERSION) && !defined(DOXYGEN)
-    #if TS_GCC_VERSION >= 50100 && defined(TS_CXX11) && !defined(_GLIBCXX_USE_CXX11_ABI)
-        #define _GLIBCXX_USE_CXX11_ABI 1
-    #endif
-#endif
-
-// TSDuck now requests to use C++11 at least.
-#if !defined(TS_CXX11)
+// TSDuck now requests to use C++17 at least.
+#if !defined(TS_CXX17)
     #if defined(TS_MSC)
-        #error "TSDuck requires C++11 at least (C++14 on Windows), use /std:c++14 or higher"
+        #error "TSDuck requires C++17 at least, use /std:c++17 or higher"
     #else
-        #error "TSDuck requires C++11 at least, use -std=c++11 or higher"
+        #error "TSDuck requires C++17 at least, use -std=c++17 or higher"
     #endif
 #endif
 
@@ -818,7 +784,7 @@ TS_LLVM_NOWARNING(sign-conversion)                // Too many occurences since p
 TS_LLVM_NOWARNING(padded)                         // Do not care if padding is required between class fields.
 TS_LLVM_NOWARNING(reserved-id-macro)              // We sometimes use underscores at the beginning of identifiers.
 TS_LLVM_NOWARNING(reserved-identifier)            // Identifier '_Xxx' is reserved because it starts with '_' followed by a capital letter.
-TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Require C++11, no need for C++98 compatibility.
+TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Require C++17, no need for C++98 compatibility.
 TS_LLVM_NOWARNING(c++2a-compat)                   // Compatibility with C++2a is not yet a concern.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
 TS_LLVM_NOWARNING(unsafe-buffer-usage)            // "unsafe pointer arithmetic" (new with clang 16) => we know what we are doing here.
@@ -863,6 +829,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <map>
 #include <set>
 #include <bitset>
+#include <optional>
 #include <memory>
 #include <type_traits>
 #include <algorithm>
@@ -881,6 +848,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
+#include <filesystem>
 #include <typeinfo>
 #include <cassert>
 #include <cstdlib>
@@ -904,6 +872,9 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
     #include <sys/mman.h>
 #endif
 #include "tsAfterStandardHeaders.h"
+
+// Shortcut for standard namespace.
+namespace fs = std::filesystem;
 
 
 //----------------------------------------------------------------------------
@@ -1317,6 +1288,21 @@ namespace ts {
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     Tristate ToTristate(INT i) { return Tristate(std::max<INT>(-1, std::min<INT>(1, i))); }
+
+    //!
+    //! Set a default value in a std::optional object, if there is none.
+    //! @tparam T The type of the optional object.
+    //! @tparam U The type of the default value to set.
+    //! @param [in,out] opt The optinal object to set.
+    //! @param [in] value The value to set in @a obj if it is not initialized.
+    //!
+    template <class T, class U>
+    inline void set_default(std::optional<T>& opt, const U& value)
+    {
+        if (!opt) {
+            opt = value;
+        }
+    }
 
     //!
     //! A null_mutex class which can be used to replace @c std::mutex or @c std::recursive_mutex.

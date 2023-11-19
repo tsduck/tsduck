@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3431
+VERSION 3.36-3434
 
 [NEW] New commands and plugins:
 
@@ -10,6 +10,8 @@ VERSION 3.36-3431
 
 [IMP] Improvements on existing commands and plugins:
 
+  * TSDuck now requires C++17. Building TSDuck consequently requires at least
+    GCC 8, LLVM / clang 5 or Visual Studio 2017 15.8.
   * Improved the precision of plugin "regulate" when based on bitrate.
   * Improved the measurement precision in plugin "bitrate_monitor".
   * New options in existing commands and plugins:

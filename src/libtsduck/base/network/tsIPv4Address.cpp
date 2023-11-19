@@ -12,12 +12,6 @@
 #include "tsSysUtils.h"
 #include "tsIPUtils.h" // Windows
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::IPv4Address::BITS;
-constexpr size_t ts::IPv4Address::BYTES;
-constexpr uint32_t ts::IPv4Address::AnyAddress;
-#endif
-
 const ts::IPv4Address ts::IPv4Address::LocalHost(127, 0, 0, 1);
 
 

@@ -15,7 +15,6 @@
 #pragma once
 #include "tstlvProtocol.h"
 #include "tsTablesPtr.h"
-#include "tsOptional.h"
 #include "tsSimulCryptDate.h"
 #include "tsTS.h"
 

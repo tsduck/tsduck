@@ -12,7 +12,6 @@
 
 #include "tsMain.h"
 #include "tsTSFileInputBuffered.h"
-#include "tsOptional.h"
 TS_MAIN(MainCode);
 
 

@@ -18,7 +18,6 @@
 #include "tsxmlElement.h"
 #include "tsjsonArray.h"
 #include "tsjsonObject.h"
-#include "tsOptional.h"
 #include "tsMJD.h"
 
 

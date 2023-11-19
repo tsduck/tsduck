@@ -9,20 +9,6 @@
 #include "tsMuxerArgs.h"
 #include "tsArgsWithPlugins.h"
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::MuxerArgs::DEFAULT_MAX_INPUT_PACKETS;
-constexpr size_t ts::MuxerArgs::MIN_INPUT_PACKETS;
-constexpr size_t ts::MuxerArgs::DEFAULT_MAX_OUTPUT_PACKETS;
-constexpr size_t ts::MuxerArgs::MIN_OUTPUT_PACKETS;
-constexpr size_t ts::MuxerArgs::DEFAULT_BUFFERED_PACKETS;
-constexpr size_t ts::MuxerArgs::MIN_BUFFERED_PACKETS;
-constexpr size_t ts::MuxerArgs::DEFAULT_LOSSY_INPUT_PACKETS;
-constexpr ts::MilliSecond ts::MuxerArgs::DEFAULT_RESTART_DELAY;
-constexpr ts::MicroSecond ts::MuxerArgs::DEFAULT_CADENCE;
-constexpr ts::BitRate::int_t ts::MuxerArgs::MIN_PSI_BITRATE;
-constexpr ts::BitRate::int_t ts::MuxerArgs::DEFAULT_PSI_BITRATE;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Enforce default or minimum values.

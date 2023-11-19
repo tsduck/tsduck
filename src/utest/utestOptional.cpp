@@ -10,7 +10,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsOptional.h"
 #include "tsUString.h"
 #include "tsunit.h"
 

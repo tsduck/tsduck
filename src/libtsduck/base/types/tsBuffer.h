@@ -16,7 +16,6 @@
 #include "tsByteBlock.h"
 #include "tsFloatUtils.h"
 #include "tsUString.h"
-#include "tsOptional.h"
 #include "tsIntegerUtils.h"
 
 namespace ts {
