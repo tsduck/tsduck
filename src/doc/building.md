@@ -210,14 +210,14 @@ However, `pkgconfig` has its own limitations, specifically regarding the
 configured compilation options.
 
 TSDuck is a C++ library which requires a minimum revision of the language.
-Currently, the minimum revision is C++11. All more recent revisions are supported.
+Currently, the minimum revision is C++17. All more recent revisions are supported.
 By default, most C++ compilers are based on older revisions. Therefore, compiling
-an application using TSDuck with the default options fails. At least, `-std=c++11`
-is required. To avoid compilation problems with most applications, `-std=c++11` is
+an application using TSDuck with the default options fails. At least, `-std=c++17`
+is required. To avoid compilation problems with most applications, `-std=c++17` is
 enforced in `tsduck.pc`.
 
 However, some applications may need to explicitly specify a more recent revision,
-such as `-std=c++14` or `-std=c++20`, which conflicts with `-std=c++11` in `tsduck.pc`.
+such as `-std=c++14` or `-std=c++20`, which conflicts with `-std=c++17` in `tsduck.pc`.
 
 For that use case, you may install TSDuck without reference to the C++ revision
 using the following command:
@@ -226,7 +226,7 @@ make install NOPCSTD=1
 ~~~
 
 The counterpart is that the applications _must_ specify a `-std` option and the
-revision must be C++11 or more recent.
+revision must be C++17 or more recent.
 
 A generic solution would be that each library and the application all provide a
 _minimum_ revision of the C++ language and pkgconfig would provide a synthetic

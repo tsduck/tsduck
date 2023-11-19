@@ -16,7 +16,6 @@
 #include "tsSectionDemux.h"
 #include "tsCASFamily.h"
 #include "tsNames.h"
-#include "tsOptional.h"
 #include "tsTime.h"
 #include "tsPES.h"
 #include "tsPAT.h"

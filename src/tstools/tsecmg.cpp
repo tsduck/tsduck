@@ -21,7 +21,6 @@
 #include "tsTCPServer.h"
 #include "tstlvConnection.h"
 #include "tsDuckProtocol.h"
-#include "tsOptional.h"
 #include "tsOneShotPacketizer.h"
 TS_MAIN(MainCode);
 

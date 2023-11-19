@@ -23,7 +23,6 @@
 #include "tsTransportStreamId.h"
 #include "tsDescriptorList.h"
 #include "tsFileUtils.h"
-#include "tsOptional.h"
 TS_MAIN(MainCode);
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms

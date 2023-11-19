@@ -13,7 +13,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsOptional.h"
 #include "tsByteBlock.h"
 
 namespace ts {

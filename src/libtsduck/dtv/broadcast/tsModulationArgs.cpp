@@ -19,40 +19,6 @@
 
 const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 
-#if !defined(TS_CXX17)
-constexpr ts::SpectralInversion ts::ModulationArgs::DEFAULT_INVERSION;
-constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_INNER_FEC;
-constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBS;
-constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBC;
-constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_ISDBS;
-constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBS;
-constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBT;
-constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_DVBC;
-constexpr ts::Modulation        ts::ModulationArgs::DEFAULT_MODULATION_ATSC;
-constexpr ts::BandWidth         ts::ModulationArgs::DEFAULT_BANDWIDTH_DVBT;
-constexpr ts::BandWidth         ts::ModulationArgs::DEFAULT_BANDWIDTH_ISDBT;
-constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_HP;
-constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_FEC_LP;
-constexpr ts::TransmissionMode  ts::ModulationArgs::DEFAULT_TRANSMISSION_MODE_DVBT;
-constexpr ts::TransmissionMode  ts::ModulationArgs::DEFAULT_TRANSMISSION_MODE_ISDBT;
-constexpr ts::GuardInterval     ts::ModulationArgs::DEFAULT_GUARD_INTERVAL_DVBT;
-constexpr ts::GuardInterval     ts::ModulationArgs::DEFAULT_GUARD_INTERVAL_ISDBT;
-constexpr ts::Hierarchy         ts::ModulationArgs::DEFAULT_HIERARCHY;
-constexpr ts::Polarization      ts::ModulationArgs::DEFAULT_POLARITY;
-constexpr size_t                ts::ModulationArgs::DEFAULT_SATELLITE_NUMBER;
-constexpr ts::Pilot             ts::ModulationArgs::DEFAULT_PILOTS;
-constexpr ts::RollOff           ts::ModulationArgs::DEFAULT_ROLL_OFF;
-constexpr uint32_t              ts::ModulationArgs::DEFAULT_PLP;
-constexpr uint32_t              ts::ModulationArgs::DEFAULT_ISI;
-constexpr uint32_t              ts::ModulationArgs::DEFAULT_PLS_CODE;
-constexpr ts::PLSMode           ts::ModulationArgs::DEFAULT_PLS_MODE;
-constexpr int                   ts::ModulationArgs::DEFAULT_SB_SUBCHANNEL_ID;
-constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_COUNT;
-constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_INDEX;
-constexpr int                   ts::ModulationArgs::MAX_ISDBT_SEGMENT_COUNT;
-constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Reset all values, they become "unset"

@@ -709,29 +709,6 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-#if !defined(TS_CXX17)
-template <typename INT> constexpr INT ts::static_power10<INT,0>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,1>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,2>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,3>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,4>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,5>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,6>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,7>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,8>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,9>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,10>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,11>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,12>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,13>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,14>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,15>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,16>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,17>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,18>::value;
-template <typename INT> constexpr INT ts::static_power10<INT,19>::value;
-#endif
-
 // Not inlined to avoid optimization which breaks the code.
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
 bool ts::add_overflow(INT a, INT b)

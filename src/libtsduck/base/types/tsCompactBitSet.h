@@ -225,9 +225,3 @@ namespace ts {
         int_t _value = 0;
     };
 }
-
-#if !defined(TS_CXX17)
-template <const size_t BITS> constexpr size_t ts::CompactBitSet<BITS>::SIZE;
-template <const size_t BITS> constexpr size_t ts::CompactBitSet<BITS>::MAX;
-template <const size_t BITS> constexpr typename ts::CompactBitSet<BITS>::int_t ts::CompactBitSet<BITS>::ALL;
-#endif

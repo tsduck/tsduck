@@ -19,7 +19,6 @@
 
 #pragma once
 #include "tsModulation.h"
-#include "tsOptional.h"
 #include "tsxml.h"
 
 namespace ts {

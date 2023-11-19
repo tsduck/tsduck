@@ -62,6 +62,7 @@ public:
     void testAbsoluteFilePath();
     void testCleanupFilePath();
     void testRelativeFilePath();
+    void testStdFileSystem();
 
     TSUNIT_TEST_BEGIN(SysUtilsTest);
     TSUNIT_TEST(testCurrentProcessId);
@@ -90,6 +91,7 @@ public:
     TSUNIT_TEST(testAbsoluteFilePath);
     TSUNIT_TEST(testCleanupFilePath);
     TSUNIT_TEST(testRelativeFilePath);
+    TSUNIT_TEST(testStdFileSystem);
     TSUNIT_TEST_END();
 
 private:
@@ -871,4 +873,14 @@ void SysUtilsTest::testRelativeFilePath()
     TSUNIT_EQUAL(u"../ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/xy"));
     TSUNIT_EQUAL(u"ab/cd/ef", ts::RelativeFilePath(u"/ab/cd/ef", u"/"));
 #endif
+}
+
+void SysUtilsTest::testStdFileSystem()
+{
+    // Testing std::filesystem
+
+    TSUNIT_ASSERT(fs::is_directory(ts::TempDirectory()));
+
+    ts::UString tmp = fs::path(ts::TempDirectory());
+    debug() << "SysUtilsTest::testStdFileSystem: converted fs::path = \"" << tmp << "\"" << std::endl;
 }

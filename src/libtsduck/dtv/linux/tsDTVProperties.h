@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsOptional.h"
 #include "tsSingleton.h"
 
 #include "tsBeforeStandardHeaders.h"
@@ -179,7 +178,7 @@ namespace ts {
     private:
         // Private members:
         ::dtv_property   _prop_buffer[DTV_IOCTL_MAX_MSGS];
-        ::dtv_properties _prop_head;
+        ::dtv_properties _prop_head {0, _prop_buffer};
 
         // A singleton holding all DTV_ names.
         class DTVNames

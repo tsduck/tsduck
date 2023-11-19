@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsOptional.h"
 #include "tsStringifyInterface.h"
 #include "tsTS.h"
 

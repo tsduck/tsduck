@@ -8,12 +8,6 @@
 
 #include "tsPcapStream.h"
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::PcapStream::TCP_MAX_FUTURE;
-constexpr size_t ts::PcapStream::ISRC;
-constexpr size_t ts::PcapStream::IDST;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.

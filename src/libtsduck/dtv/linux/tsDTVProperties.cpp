@@ -9,17 +9,12 @@
 #include "tsDTVProperties.h"
 #include "tsUString.h"
 
-#if !defined(TS_CXX17)
-constexpr uint32_t ts::DTVProperties::UNKNOWN;
-#endif
-
 
 //-----------------------------------------------------------------------------
 // Constructor
 //-----------------------------------------------------------------------------
 
-ts::DTVProperties::DTVProperties() :
-    _prop_head({ 0, _prop_buffer})
+ts::DTVProperties::DTVProperties()
 {
     std::memset(_prop_buffer, 0xFF, sizeof(_prop_buffer));
 }

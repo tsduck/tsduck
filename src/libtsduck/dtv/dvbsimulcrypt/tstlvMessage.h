@@ -15,7 +15,6 @@
 #include "tstlvSerializer.h"
 #include "tsUString.h"
 #include "tsSafePtr.h"
-#include "tsOptional.h"
 
 namespace ts {
     namespace tlv {

@@ -37,7 +37,7 @@ of C++ language standard. If your application requires a more recent
 level, define the environment variable `TS_NOSTDCPP` to any non-empty
 value. This disables the C++ standard option in `tsconfig`. The
 application shall then define its own C++ standard in its command line.
-This user-specified C++ standard cannot be lower than C++11.
+This user-specified C++ standard cannot be lower than C++17.
 
 Alternatively, the command `tsconfig --nostdcpp --cflags` can be used
 to omit the C++ standard from the compilation options without defining
@@ -69,4 +69,4 @@ of C++ language standard. If your application requires a more recent
 level, define the environment variable `TS_NOSTDCPP` to any non-empty
 value. This disables the C++ standard option in `tsduck.props`. The
 application shall then define its own C++ standard in its project files.
-This user-specified C++ standard cannot be lower than C++11.
+This user-specified C++ standard cannot be lower than C++17.

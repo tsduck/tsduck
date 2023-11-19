@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsOptional.h"
 #include "tsByteBlock.h"
 
 namespace ts {

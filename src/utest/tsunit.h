@@ -47,7 +47,7 @@
 
 #if defined(__llvm__)
 #pragma clang diagnostic ignored "-Wunknown-warning-option" // Ignore recent warnings when unknown in an older version
-#pragma clang diagnostic ignored "-Wc++98-compat"           // Need C++11, don't care about C++98
+#pragma clang diagnostic ignored "-Wc++98-compat"           // Need C++17, don't care about C++98
 #pragma clang diagnostic ignored "-Wc++98-compat-pedantic"  // Idem
 #pragma clang diagnostic ignored "-Wglobal-constructors"    // We use many global objects for test registration
 #pragma clang diagnostic ignored "-Wexit-time-destructors"  // Idem

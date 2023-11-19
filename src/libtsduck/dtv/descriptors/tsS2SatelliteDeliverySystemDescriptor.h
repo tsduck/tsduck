@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsAbstractDeliverySystemDescriptor.h"
-#include "tsOptional.h"
 
 namespace ts {
     //!

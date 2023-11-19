@@ -9,14 +9,6 @@
 #include "tsTSProcessorArgs.h"
 #include "tsArgsWithPlugins.h"
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE;
-constexpr size_t ts::TSProcessorArgs::MIN_BUFFER_SIZE;
-constexpr ts::MilliSecond ts::TSProcessorArgs::DEFAULT_CONTROL_TIMEOUT;
-constexpr ts::MilliSecond ts::TSProcessorArgs::DEFAULT_BITRATE_INTERVAL;
-constexpr ts::PacketCounter ts::TSProcessorArgs::DEFAULT_INIT_BITRATE_PKT_INTERVAL;
-#endif
-
 #define DEF_MAX_FLUSH_PKT_OFL  10000  // packets
 #define DEF_MAX_FLUSH_PKT_RT    1000  // packets
 #define DEF_MAX_INPUT_PKT_OFL      0  // packets
