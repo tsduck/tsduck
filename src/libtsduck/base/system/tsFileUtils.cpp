@@ -509,7 +509,7 @@ bool ts::IsExecutable(const UString& path)
 bool ts::DeleteFile(const UString& path, Report& report)
 {
 #if defined(TS_WINDOWS)
-    if (IsDirectory(path)) {
+    if (fs::is_directory(path)) {
         if (::RemoveDirectoryW(path.wc_str())) {
             return true;
         }
