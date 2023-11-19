@@ -63,7 +63,7 @@ ts::FileCleanOptions::FileCleanOptions(int argc, char *argv[]) :
 
     getValues(in_files, u"");
     getValue(out_file, u"output");
-    out_dir = IsDirectory(out_file);
+    out_dir = fs::is_directory(out_file);
 
     if (in_files.size() > 1 && !out_dir) {
         error(u"the output name must be a directory when more than one input file is specified");

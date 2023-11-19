@@ -211,7 +211,7 @@ Options::Options(int argc, char *argv[]) :
 
     // Check output directory.
     if (!out_dir.empty()) {
-        if (!ts::IsDirectory(out_dir)) {
+        if (!fs::is_directory(out_dir)) {
             error(u"directory not found: %s", {out_dir});
         }
         else if (!out_dir.endWith(ts::UString(1, ts::PathSeparator))) {

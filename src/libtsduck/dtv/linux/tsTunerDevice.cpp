@@ -220,7 +220,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     // Check if this system uses flat or directory DVB naming.
     // Old flat naming: /dev/dvb0.frontend0
     // New hierarchical naming: /dev/dvb/adapter0/frontend0
-    const bool dvb_directory = IsDirectory(u"/dev/dvb");
+    const bool dvb_directory = fs::is_directory("/dev/dvb");
     const UChar dvb_name_separator = dvb_directory ? u'/' : u'.';
 
     // Analyze device name: /dev/dvb/adapterA[:F[:M[:V]]]
