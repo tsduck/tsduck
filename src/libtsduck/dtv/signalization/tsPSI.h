@@ -378,7 +378,7 @@ namespace ts {
         DID_MPEG2_IPMP          = 0x29, //!< DID for MPEG-2_IPMP_descriptor
         DID_AVC_TIMING_HRD      = 0x2A, //!< DID for AVC_timing_and_HRD_descriptor
         DID_MPEG2_AAC_AUDIO     = 0x2B, //!< DID for MPEG-2 AAC Audio descriptor
-        DID_FLEX_MUX_TIMING     = 0x2C, //!< DID for FlexMuxTiming descriptor
+        DID_M4_MUX_TIMING       = 0x2C, //!< DID for FlexMuxTiming descriptor
         DID_MPEG4_TEXT          = 0x2D, //!< DID for MPEG-4 Text descriptor
         DID_MPEG4_AUDIO_EXT     = 0x2E, //!< DID for MPEG-4 Audio Extension descriptor
         DID_AUX_VIDEO           = 0x2F, //!< DID for Auxiliary Video Stream descriptor
