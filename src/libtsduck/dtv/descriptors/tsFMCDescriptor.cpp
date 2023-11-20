@@ -44,7 +44,7 @@ ts::FMCDescriptor::FMCDescriptor(DuckContext& duck, const Descriptor& desc) :
 
 ts::FMCDescriptor::Entry::Entry(uint16_t id, uint8_t fmc) :
     ES_ID(id),
-    FlexMuxChannel(fmc)
+    M4MuxChannel(fmc)
 {
 }
 
@@ -57,7 +57,7 @@ void ts::FMCDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (const auto& it : entries) {
         buf.putUInt16(it.ES_ID);
-        buf.putUInt8(it.FlexMuxChannel);
+        buf.putUInt8(it.M4MuxChannel);
     }
 }
 
@@ -71,7 +71,7 @@ void ts::FMCDescriptor::deserializePayload(PSIBuffer& buf)
     while (buf.canRead()) {
         Entry e;
         e.ES_ID = buf.getUInt16();
-        e.FlexMuxChannel = buf.getUInt8();
+        e.M4MuxChannel = buf.getUInt8();
         entries.push_back(e);
     }
 }
@@ -85,7 +85,7 @@ void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
 {
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"ES id: 0x%X (%<d)", {buf.getUInt16()});
-        disp << UString::Format(u", FlexMux channel: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << UString::Format(u", M4Mux channel: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
     }
 }
 
@@ -99,7 +99,7 @@ void ts::FMCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"stream");
         e->setIntAttribute(u"ES_ID", it.ES_ID, true);
-        e->setIntAttribute(u"FlexMuxChannel", it.FlexMuxChannel, true);
+        e->setIntAttribute(u"M4MuxChannel", it.M4MuxChannel, true);
     }
 }
 
@@ -116,7 +116,7 @@ bool ts::FMCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elemen
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Entry entry;
         ok = children[i]->getIntAttribute(entry.ES_ID, u"ES_ID", true) &&
-             children[i]->getIntAttribute(entry.FlexMuxChannel, u"FlexMuxChannel", true);
+             children[i]->getIntAttribute(entry.M4MuxChannel, u"M4MuxChannel", true);
         entries.push_back(entry);
     }
     return ok;
