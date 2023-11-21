@@ -368,7 +368,7 @@ namespace ts {
         DID_FMC                 = 0x1F, //!< DID for FMC_descriptor
         DID_EXT_ES_ID           = 0x20, //!< DID for External_ES_id_descriptor
         DID_MUXCODE             = 0x21, //!< DID for MuxCode_descriptor
-        DID_FMX_BUFFER_SIZE     = 0x22, //!< DID for FmxBufferSize_descriptor
+        DID_M4MUX_BUFFER_SIZE   = 0x22, //!< DID for M4MuxBufferSize_descriptor
         DID_MUX_BUFFER          = 0x23, //!< DID for MultiplexBuffer_descriptor
         DID_CONTENT_LABELLING   = 0x24, //!< DID for Content_labelling_descriptor
         DID_METADATA_POINTER    = 0x25, //!< DID for metadata_pointer_descriptor
@@ -378,7 +378,7 @@ namespace ts {
         DID_MPEG2_IPMP          = 0x29, //!< DID for MPEG-2_IPMP_descriptor
         DID_AVC_TIMING_HRD      = 0x2A, //!< DID for AVC_timing_and_HRD_descriptor
         DID_MPEG2_AAC_AUDIO     = 0x2B, //!< DID for MPEG-2 AAC Audio descriptor
-        DID_M4_MUX_TIMING       = 0x2C, //!< DID for FlexMuxTiming descriptor
+        DID_M4_MUX_TIMING       = 0x2C, //!< DID for M4MuxTiming descriptor
         DID_MPEG4_TEXT          = 0x2D, //!< DID for MPEG-4 Text descriptor
         DID_MPEG4_AUDIO_EXT     = 0x2E, //!< DID for MPEG-4 Audio Extension descriptor
         DID_AUX_VIDEO           = 0x2F, //!< DID for Auxiliary Video Stream descriptor
@@ -859,8 +859,8 @@ namespace ts {
         ST_AAC_AUDIO        = 0x0F, //!< Advanced Audio Coding (ISO 13818-7)
         ST_MPEG4_VIDEO      = 0x10, //!< MPEG-4 Video
         ST_MPEG4_AUDIO      = 0x11, //!< MPEG-4 Audio
-        ST_MPEG4_PES        = 0x12, //!< MPEG-4 SL or FlexMux in PES packets
-        ST_MPEG4_SECT       = 0x13, //!< MPEG-4 SL or FlexMux in sections
+        ST_MPEG4_PES        = 0x12, //!< MPEG-4 SL or M4Mux in PES packets
+        ST_MPEG4_SECT       = 0x13, //!< MPEG-4 SL or M4Mux in sections
         ST_DSMCC_DLOAD      = 0x14, //!< DSM-CC Synchronized Download Protocol
         ST_MDATA_PES        = 0x15, //!< MPEG-7 MetaData in PES packets
         ST_MDATA_SECT       = 0x16, //!< MPEG-7 MetaData in sections

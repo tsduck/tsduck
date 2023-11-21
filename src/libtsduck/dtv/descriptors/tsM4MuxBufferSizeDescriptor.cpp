@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"M4MuxBufferSize_descriptor"
 #define MY_CLASS    ts::M4MuxBufferSizeDescriptor
-#define MY_DID ts::DID_FMX_BUFFER_SIZE
+#define MY_DID      ts::DID_M4MUX_BUFFER_SIZE
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
