@@ -156,7 +156,6 @@ size_t ts::DVBCharTableSingleByte::encode(uint8_t*& buffer, size_t& size, const 
             // Encode character.
             *buffer = it->second;
             size--;
-            result++;
             // Reverse letter and diacritical mark when necessary.
             if (buffer > base && *buffer >= 0xA0 && _reversedDiacritical.test(*buffer - 0xA0)) {
                 // Reverse order of letter/mark into mark/letter.
@@ -164,6 +163,7 @@ size_t ts::DVBCharTableSingleByte::encode(uint8_t*& buffer, size_t& size, const 
             }
             buffer++;
         }
+        result++; // include CR characters, not physically encoded, but still taken into account.
         start++;
         count--;
     }

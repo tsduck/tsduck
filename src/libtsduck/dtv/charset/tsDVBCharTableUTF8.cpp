@@ -75,8 +75,8 @@ size_t ts::DVBCharTableUTF8::encode(uint8_t*& buffer, size_t& size, const UStrin
             }
             buffer += len;
             size -= len;
-            result++;
         }
+        result++; // include CR characters, not physically encoded, but still taken into account.
         start++;
         count--;
     }

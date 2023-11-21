@@ -69,8 +69,8 @@ size_t ts::DVBCharTableUTF16::encode(uint8_t*& buffer, size_t& size, const UStri
             PutUInt16(buffer, cp == ts::LINE_FEED ? DVB_CODEPOINT_CRLF : uint16_t(cp));
             buffer += 2;
             size -= 2;
-            result++;
         }
+        result++; // include CR characters, not physically encoded, but still taken into account.
         start++;
         count--;
     }
