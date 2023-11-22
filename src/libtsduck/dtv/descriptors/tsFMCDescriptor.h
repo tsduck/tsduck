@@ -30,12 +30,12 @@ namespace ts {
         {
             // Public members
             uint16_t ES_ID = 0;           //!< Elementary stream id.
-            uint8_t  FlexMuxChannel = 0;  //!< FlexMux channel number.
+            uint8_t  M4MuxChannel = 0;    //!< M4xMux channel number.
 
             //!
             //! Default constructor.
             //! @param [in] id Elementary stream id.
-            //! @param [in] fmc FlexMux channel number.
+            //! @param [in] fmc M4Mux channel number.
             //!
             Entry(uint16_t id = 0, uint8_t fmc = 0);
         };

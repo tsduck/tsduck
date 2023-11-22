@@ -4,7 +4,7 @@
 
     <FMC_descriptor>
       <!-- One per SL_packetized stream -->
-      <stream ES_ID="uint16, required" FlexMuxChannel="uint8, required"/>
+      <stream ES_ID="uint16, required" M4MuxChannel="uint8, required"/>
     </FMC_descriptor>
 
   </_descriptors>

@@ -46,7 +46,7 @@ namespace ts {
         SID_H222_1_E   = 0xF8, //!< Stream id for H.222.1 type E
         SID_ANCILLARY  = 0xF9, //!< Stream id for Ancillary stream
         SID_MP4_SLPACK = 0xFA, //!< Stream id for MPEG-4 SL-packetized stream
-        SID_MP4_FLEXM  = 0xFB, //!< Stream id for MPEG-4 FlexMux stream
+        SID_MP4_M4MUX  = 0xFB, //!< Stream id for MPEG-4 M4Mux stream
         SID_METADATA   = 0xFC, //!< Stream id for MPEG-7 metadata stream
         SID_EXTENDED   = 0xFD, //!< Stream id for Extended stream id
         SID_RESERVED   = 0xFE, //!< Stream id for Reserved value

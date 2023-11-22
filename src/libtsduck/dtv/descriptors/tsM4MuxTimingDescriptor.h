@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a flexmux_timing_descriptor
+//!  Representation of a m4mux_timing_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -16,30 +16,30 @@
 
 namespace ts {
     //!
-    //! Representation of a flexmux_timing_descriptor
+    //! Representation of a m4mux_timing_descriptor
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.54.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL FlexMuxTimingDescriptor : public AbstractDescriptor
+    class TSDUCKDLL M4MuxTimingDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
         uint16_t FCR_ES_ID = 0;      //!< ES_ID associated with this clock reference stream.
         uint32_t FCRResolution = 0;  //!< Resolution of the object time base in cycles per second.
-        uint8_t  FCRLength = 0;      //!< Length of the fmxClockReference field in FlexMux packets with index = 238.
-        uint8_t  FmxRateLength = 0;  //!< Length of the fmxRate field in FlexMux packets with index = 238.
+        uint8_t  FCRLength = 0;      //!< Length of the fmxClockReference field in M4Mux packets with index = 238.
+        uint8_t  FmxRateLength = 0;  //!< Length of the fmxRate field in M4Mux packets with index = 238.
 
         //!
         //! Default constructor.
         //!
-        FlexMuxTimingDescriptor();
+        M4MuxTimingDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        FlexMuxTimingDescriptor(DuckContext& duck, const Descriptor& bin);
+        M4MuxTimingDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();
