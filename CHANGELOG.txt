@@ -14,6 +14,8 @@ VERSION 3.36-3434
     GCC 8, LLVM / clang 5 or Visual Studio 2017 15.8.
   * Improved the precision of plugin "regulate" when based on bitrate.
   * Improved the measurement precision in plugin "bitrate_monitor".
+  * Renamed FlexMux-related descriptors and fields as M4Mux to comply with
+    ISO/IEC 13818-1 9th edition.
   * New options in existing commands and plugins:
     - Option --summary in plugin "bitrate_monitor".
     - Option --buffer-size in output and packet processing plugins "ip"
