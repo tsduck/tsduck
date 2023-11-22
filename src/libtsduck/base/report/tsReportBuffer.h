@@ -39,7 +39,7 @@ namespace ts {
         //!
         //! Reset the content of the internal buffer.
         //!
-        void resetMessages();
+        void clear();
 
         //!
         //! Get the content of the internal buffer.
@@ -48,14 +48,14 @@ namespace ts {
         //! are separated by a newline character ('\n') but there is no
         //! newline after the last line.
         //!
-        UString getMessages() const;
+        UString messages() const;
 
         //!
         //! Check if the content of the internal buffer is empty.
         //!
         //! @return True if no message was logged, false otherwise.
         //!
-        bool emptyMessages() const;
+        bool empty() const;
 
     protected:
         virtual void writeLog(int severity, const UString& message) override;
@@ -75,7 +75,7 @@ namespace ts {
 template <class MUTEX>
 inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTEX>& log)
 {
-    return strm << log.getMessages();
+    return strm << log.messages();
 }
 
 
@@ -85,7 +85,7 @@ inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTE
 
 // Reset the content of the internal buffer.
 template <class MUTEX>
-void ts::ReportBuffer<MUTEX>::resetMessages()
+void ts::ReportBuffer<MUTEX>::clear()
 {
     std::lock_guard<MUTEX> lock(_mutex);
     _buffer.clear();
@@ -93,7 +93,7 @@ void ts::ReportBuffer<MUTEX>::resetMessages()
 
 // Check if the content of the internal buffer is empty.
 template <class MUTEX>
-bool ts::ReportBuffer<MUTEX>::emptyMessages() const
+bool ts::ReportBuffer<MUTEX>::empty() const
 {
     std::lock_guard<MUTEX> lock(_mutex);
     return _buffer.empty();
@@ -101,7 +101,7 @@ bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 
 // Get the content of the internal buffer.
 template <class MUTEX>
-ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
+ts::UString ts::ReportBuffer<MUTEX>::messages() const
 {
     std::lock_guard<MUTEX> lock(_mutex);
     return _buffer;

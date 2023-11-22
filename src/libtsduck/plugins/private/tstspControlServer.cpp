@@ -150,8 +150,8 @@ void ts::tsp::ControlServer::main()
     }
 
     // If termination was requested, receive error is not an error.
-    if (!_terminate && !error.emptyMessages()) {
-        _log.error(error.getMessages());
+    if (!_terminate && !error.empty()) {
+        _log.error(error.messages());
     }
     _log.debug(u"control command thread completed");
 }

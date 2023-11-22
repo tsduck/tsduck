@@ -67,12 +67,6 @@ TS_POP_WARNING()
 #if defined(Yield)
     #undef Yield
 #endif
-#if defined(CreateDirectory)
-    #undef CreateDirectory
-#endif
-#if defined(DeleteFile)
-    #undef DeleteFile
-#endif
 #if defined(ALTERNATE)
     #undef ALTERNATE
 #endif

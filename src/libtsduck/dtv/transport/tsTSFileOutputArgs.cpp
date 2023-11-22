@@ -10,6 +10,7 @@
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
+#include "tsErrCodeReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -242,7 +243,7 @@ bool ts::TSFileOutputArgs::closeAndCleanup(Report& report)
 
         // Delete the file.
         report.verbose(u"deleting obsolete file %s", {name});
-        if (!DeleteFile(name, report) && FileExists(name)) {
+        if (!fs::remove(name, &ErrCodeReport(report, u"error deleting", name)) && FileExists(name)) {
             // Failed to delete, keep it to retry later.
             failed_delete.push_back(name);
         }

@@ -14,6 +14,7 @@
 #include "tsNames.h"
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsDuckContext.h"
 #include "tsCASFamily.h"
 #include "tsMPEG2.h"
@@ -146,13 +147,13 @@ void NamesTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".names");
     }
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void NamesTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 

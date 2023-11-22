@@ -14,7 +14,7 @@
 #include "tsEITGenerator.h"
 #include "tsEIT.h"
 #include "tsPollFiles.h"
-#include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsThread.h"
 
 namespace {
@@ -555,7 +555,7 @@ void ts::EITInjectPlugin::loadFiles()
 
         // Delete file after successful load when required.
         if (_delete_files) {
-            DeleteFile(it, *tsp);
+            fs::remove(it, &ErrCodeReport(*tsp, u"error deleting", it));
         }
     }
 

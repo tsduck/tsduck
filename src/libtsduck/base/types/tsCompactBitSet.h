@@ -92,7 +92,7 @@ namespace ts {
             }
         }
 
-        //! @cond doxygen
+        //! @cond nodoxygen
         // Unsigned version
         template<class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value && std::is_unsigned<typename CONTAINER::value_type>::value, int>::type = 0>
         CompactBitSet(const CONTAINER& values) :

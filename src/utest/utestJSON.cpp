@@ -11,9 +11,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsjson.h"
-#include "tsjsonNull.h"
-#include "tsjsonTrue.h"
-#include "tsjsonFalse.h"
 #include "tsjsonValue.h"
 #include "tsjsonNumber.h"
 #include "tsjsonString.h"
@@ -21,6 +18,7 @@
 #include "tsjsonArray.h"
 #include "tsjsonRunningDocument.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsIntegerUtils.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
@@ -85,13 +83,13 @@ void JsonTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".tmp.json");
     }
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void JsonTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Load the content of a text file.

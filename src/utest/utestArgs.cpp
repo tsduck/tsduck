@@ -14,6 +14,7 @@
 #include "tsReportBuffer.h"
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsFixedPoint.h"
 #include "tsFraction.h"
 #include "tsFloatingPoint.h"
@@ -124,8 +125,8 @@ void ArgsTest::beforeTest()
 // Test suite cleanup method.
 void ArgsTest::afterTest()
 {
-    ts::DeleteFile(_tempFile1, NULLREP);
-    ts::DeleteFile(_tempFile2, NULLREP);
+    fs::remove(_tempFile1, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFile2, &ts::ErrCodeReport(NULLREP));
 }
 
 
@@ -184,10 +185,10 @@ void ArgsTest::testHelpDefault()
                  u"\n"
                  u"  --version\n"
                  u"      Display the TSDuck version number.\n",
-                 log.getMessages());
+                 log.messages());
 
     args.setShell(u"{shell}");
-    log.resetMessages();
+    log.clear();
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
     TSUNIT_EQUAL(u"\n"
                  u"{description}\n"
@@ -210,11 +211,11 @@ void ArgsTest::testHelpDefault()
                  u"\n"
                  u"  --version\n"
                  u"      Display the TSDuck version number.\n",
-                 log.getMessages());
-
-    log.resetMessages();
+                 log.messages());
+    
+    log.clear();
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--version=short"})));
-    const ts::UString version(log.getMessages());
+    const ts::UString version(log.messages());
     debug() << "ArgsTest::testHelpDefault: version = \"" << version << "\"" << std::endl;
     const size_t dash = version.find(u'-');
     TSUNIT_ASSERT(dash != ts::NPOS);
@@ -351,7 +352,7 @@ void ArgsTest::testHelpCustom()
         u"\n"
         u"  --version\n"
         u"      Display the TSDuck version number.\n",
-        log.getMessages());
+                 log.messages());
 }
 
 // Test case: analyze valid command, get option values, use analyze() with variable length argument list
@@ -613,7 +614,7 @@ void ArgsTest::testMissingParameter()
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--opt1"})));
     debug() << "ArgsTest: testMissingParameter: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: missing parameter", log.getMessages());
+    TSUNIT_EQUAL(u"Error: missing parameter", log.messages());
 }
 
 // Test case:
@@ -624,7 +625,7 @@ void ArgsTest::testTooManyParameters()
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"a", u"b", u"c"}));
     debug() << "ArgsTest: testTooManyParameters: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: too many parameter, 2 maximum", log.getMessages());
+    TSUNIT_EQUAL(u"Error: too many parameter, 2 maximum", log.messages());
 }
 
 // Test case:
@@ -635,7 +636,7 @@ void ArgsTest::testAmbiguousOption()
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"a", u"b"}));
     debug() << "ArgsTest: testAmbiguousOption: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: ambiguous option --opt (--opt1, --opt10)", log.getMessages());
+    TSUNIT_EQUAL(u"Error: ambiguous option --opt (--opt1, --opt10)", log.messages());
 }
 
 // Test case:
@@ -646,7 +647,7 @@ void ArgsTest::testInvalidIntegerOption()
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"x", u"a", u"b"}));
     debug() << "ArgsTest: testInvalidIntegerOption: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: invalid integer value x for option --opt3", log.getMessages());
+    TSUNIT_EQUAL(u"Error: invalid integer value x for option --opt3", log.messages());
 }
 
 // Test case:
@@ -657,7 +658,7 @@ void ArgsTest::testIntegerTooLow()
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"-10", u"a", u"b"}));
     debug() << "ArgsTest: testIntegerTooLow: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: value for option --opt3 must be >= -4", log.getMessages());
+    TSUNIT_EQUAL(u"Error: value for option --opt3 must be >= -4", log.messages());
 }
 
 // Test case:
@@ -668,7 +669,7 @@ void ArgsTest::testIntegerTooHigh()
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt3 10 a b"));
     debug() << "ArgsTest: testIntegerTooHigh: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: value for option --opt3 must be <= 7", log.getMessages());
+    TSUNIT_EQUAL(u"Error: value for option --opt3 must be <= 7", log.messages());
 }
 
 // Test case:
@@ -679,7 +680,7 @@ void ArgsTest::testInvalidEnum()
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt9 x a b"));
     debug() << "ArgsTest: testInvalidEnum: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: invalid value x for option --opt9 (-c), use one of \"val1\", \"val2\", \"val3\"", log.getMessages());
+    TSUNIT_EQUAL(u"Error: invalid value x for option --opt9 (-c), use one of \"val1\", \"val2\", \"val3\"", log.messages());
 }
 
 // Test case:
@@ -818,7 +819,7 @@ void ArgsTest::testRanges()
     TSUNIT_EQUAL(-1, args.intValue<int>(u"opt1", -1, 5));
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt2", u"1", u"--opt2", u"10-12"}));
-    TSUNIT_EQUAL(u"Error: too many option --opt2, 3 maximum", log.getMessages());
+    TSUNIT_EQUAL(u"Error: too many option --opt2, 3 maximum", log.messages());
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt2", u"1", u"--opt2", u"10-11"}));
     TSUNIT_EQUAL(3, args.count(u"opt2"));
@@ -934,7 +935,7 @@ void ArgsTest::testInvalidFraction()
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"foo"}));
     debug() << "ArgsTest: testInvalidFraction: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: invalid value foo for option --opt", log.getMessages());
+    TSUNIT_EQUAL(u"Error: invalid value foo for option --opt", log.messages());
 }
 
 // Test case:
@@ -948,5 +949,5 @@ void ArgsTest::testInvalidDouble()
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"2.3"}));
     debug() << "ArgsTest: testInvalidDouble: \"" << log << "\"" << std::endl;
-    TSUNIT_EQUAL(u"Error: value for option --opt must be in range 12 to 15", log.getMessages());
+    TSUNIT_EQUAL(u"Error: value for option --opt must be in range 12 to 15", log.messages());
 }

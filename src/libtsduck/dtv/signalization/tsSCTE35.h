@@ -76,7 +76,7 @@ namespace ts {
         UString toString() const;
 
         // Inherited methods.
-        //! @cond doxygen
+        //! @cond nodoxygen
         SpliceTime() = default;
         SpliceTime(const SpliceTime&) = default;
         SpliceTime& operator=(const SpliceTime&) = default;

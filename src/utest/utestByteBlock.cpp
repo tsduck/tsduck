@@ -12,6 +12,7 @@
 
 #include "tsByteBlock.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsNullReport.h"
 #include "tsunit.h"
 
@@ -61,13 +62,13 @@ void ByteBlockTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".tmp.xml");
     }
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void ByteBlockTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 

@@ -13,6 +13,7 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsIPv4SocketAddress.h"
 #include "tsunit.h"
 
@@ -194,7 +195,7 @@ void UStringTest::afterTest()
     ts::ExpandWildcard(tempFiles, _tempFilePrefix + u"*");
     for (const auto& file : tempFiles) {
         debug() << "UStringTest: deleting temporary file \"" << file << "\"" << std::endl;
-        ts::DeleteFile(file);
+        fs::remove(file, &ts::ErrCodeReport(CERR, u"error deleting", file));
     }
     _nextFileIndex = 0;
 }

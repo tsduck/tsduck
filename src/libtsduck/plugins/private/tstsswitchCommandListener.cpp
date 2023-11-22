@@ -117,8 +117,8 @@ void ts::tsswitch::CommandListener::main()
     }
 
     // If termination was requested, receive error is not an error.
-    if (!_terminate && !error.emptyMessages()) {
-        _log.info(error.getMessages());
+    if (!_terminate && !error.empty()) {
+        _log.info(error.messages());
     }
     _log.debug(u"UDP server thread completed");
 }

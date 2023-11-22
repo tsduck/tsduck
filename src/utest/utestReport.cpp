@@ -13,6 +13,7 @@
 #include "tsReportBuffer.h"
 #include "tsReportFile.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsNullReport.h"
 #include "tsunit.h"
 
@@ -34,6 +35,7 @@ public:
     void testPrintf();
     void testByName();
     void testByStream();
+    void testErrCodeReport();
 
     TSUNIT_TEST_BEGIN(ReportTest);
     TSUNIT_TEST(testSeverity);
@@ -41,6 +43,7 @@ public:
     TSUNIT_TEST(testPrintf);
     TSUNIT_TEST(testByName);
     TSUNIT_TEST(testByStream);
+    TSUNIT_TEST(testErrCodeReport);
     TSUNIT_TEST_END();
 
 private:
@@ -64,15 +67,14 @@ ReportTest::ReportTest() :
 void ReportTest::beforeTest()
 {
     _fileName = ts::TempFile();
-    ts::DeleteFile(_fileName, NULLREP);
+    fs::remove(_fileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void ReportTest::afterTest()
 {
     // Returned value ignored on purpose, end of test, temporary file may not even exists.
-    // coverity[CHECKED_RETURN]
-    ts::DeleteFile(_fileName, NULLREP);
+    fs::remove(_fileName, &ts::ErrCodeReport(NULLREP));
 }
 
 
@@ -118,7 +120,7 @@ namespace {
         const ts::UString str8(u"8");
 
         log.setMaxSeverity(level);
-        log.resetMessages();
+        log.clear();
 
         log.log(ts::Severity::Info, str1);
         log.debug(str2);
@@ -135,10 +137,10 @@ namespace {
 void ReportTest::testString()
 {
     ts::ReportBuffer<> log;
-    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.empty());
 
     _testStringSequence(log, ts::Severity::Debug);
-    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"1\n"
                                   u"Debug: 2\n"
                                   u"Debug: 3\n"
@@ -147,42 +149,42 @@ void ReportTest::testString()
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testStringSequence(log, ts::Severity::Info);
-    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"1\n"
                                   u"Warning: 4\n"
                                   u"5\n"
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testStringSequence(log, ts::Severity::Warning);
-    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"Warning: 4\n"
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testStringSequence(log, ts::Severity::Error);
-    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testStringSequence(log, ts::Severity::Fatal);
-    TSUNIT_ASSERT(!log.emptyMessages());
+    TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7",
-                                  log.getMessages());
+                 log.messages());
 
     _testStringSequence(log, ts::Severity::Fatal - 1);
-    TSUNIT_ASSERT(log.emptyMessages());
-    TSUNIT_EQUAL(u"", log.getMessages());
+    TSUNIT_ASSERT(log.empty());
+    TSUNIT_EQUAL(u"", log.messages());
 }
 
 // Log sequence for testPrintf
@@ -190,7 +192,7 @@ namespace {
     void _testPrintfSequence(ts::ReportBuffer<>& log, int level)
     {
         log.setMaxSeverity(level);
-        log.resetMessages();
+        log.clear();
 
         log.log(ts::Severity::Info, u"%d", {1});
         log.debug(u"%d", {2});
@@ -217,7 +219,7 @@ void ReportTest::testPrintf()
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testPrintfSequence(log, ts::Severity::Info);
     TSUNIT_EQUAL(u"1\n"
@@ -226,29 +228,29 @@ void ReportTest::testPrintf()
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testPrintfSequence(log, ts::Severity::Warning);
     TSUNIT_EQUAL(u"Warning: 4\n"
                                   u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testPrintfSequence(log, ts::Severity::Error);
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7\n"
                                   u"Error: 8",
-                                  log.getMessages());
+                 log.messages());
 
     _testPrintfSequence(log, ts::Severity::Fatal);
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                                   u"FATAL ERROR: 7",
-                                  log.getMessages());
+                 log.messages());
 
     _testPrintfSequence(log, ts::Severity::Fatal - 1);
-    TSUNIT_ASSERT(log.emptyMessages());
-    TSUNIT_EQUAL(u"", log.getMessages());
+    TSUNIT_ASSERT(log.empty());
+    TSUNIT_EQUAL(u"", log.messages());
 }
 
 // Test case: log file by name
@@ -304,4 +306,29 @@ void ReportTest::testByStream()
     ts::UStringVector value;
     ts::UString::Load(value, _fileName);
     TSUNIT_ASSERT(value == ref);
+}
+
+// Test case: std::error_code logging.
+void ReportTest::testErrCodeReport()
+{
+    ts::ReportBuffer<> log;
+
+    // Test existent directory.
+    fs::path dir(fs::temp_directory_path());
+    debug() << "ReportTest::testErrCodeReport: testing \"" << dir.string() << "\"" << std::endl;
+
+    TSUNIT_ASSERT(fs::is_directory(dir, &ts::ErrCodeReport(log, u"isdir", dir)));
+    debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
+    TSUNIT_ASSERT(log.empty());
+
+    // Test non-existent directory.
+    fs::path nodir(dir);
+    nodir /= "nonexistent";
+    debug() << "ReportTest::testErrCodeReport: testing \"" << nodir.string() << "\"" << std::endl;
+
+    log.clear();
+    TSUNIT_ASSERT(!fs::is_directory(nodir, &ts::ErrCodeReport(log, u"isdir", nodir)));
+    debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
+    TSUNIT_ASSERT(!log.empty());
+    TSUNIT_ASSERT(log.messages().startWith(u"Error: isdir " + nodir + u":"));
 }

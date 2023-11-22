@@ -22,7 +22,7 @@
 #include "tsThread.h"
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
-#include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 
 // To avoid long prefixes
 typedef ts::SectionFile::FileType FType;
@@ -975,7 +975,7 @@ bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileLis
 
                 // Delete file after successful load when required.
                 if (_plugin->_delete_files) {
-                    DeleteFile(name, *_tsp);
+                    fs::remove(name, &ErrCodeReport(*_tsp, u"error deleting", name));
                 }
             }
         }
@@ -1033,8 +1033,8 @@ void ts::SpliceInjectPlugin::UDPListener::main()
     }
 
     // If termination was requested, receive error is not an error.
-    if (!_terminate && !error.emptyMessages()) {
-        _tsp->info(error.getMessages());
+    if (!_terminate && !error.empty()) {
+        _tsp->info(error.messages());
     }
 
     _tsp->debug(u"UDP server thread completed");

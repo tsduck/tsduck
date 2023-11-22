@@ -228,15 +228,6 @@ namespace ts {
     TSDUCKDLL UString CurrentWorkingDirectory();
 
     //!
-    //! Create a directory
-    //! @param [in] path A directory path.
-    //! @param [in] intermediate When true, also create intermediate directories.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool CreateDirectory(const UString& path, bool intermediate = false, Report& report = CERR);
-
-    //!
     //! Return the name of a unique temporary file.
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
@@ -279,18 +270,6 @@ namespace ts {
     //! @return True if a file exists with that name and is executable, false otherwise.
     //!
     TSDUCKDLL bool IsExecutable(const UString& path);
-
-    //!
-    //! Delete a file or directory.
-    //!
-    //! If the specified path is a directory, it must be empty.
-    //! Otherwise, an error is returned.
-    //!
-    //! @param [in] path A file or directory path.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool DeleteFile(const UString& path, Report& report = CERR);
 
     //!
     //! Truncate a file to the specified size.

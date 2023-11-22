@@ -393,37 +393,6 @@ ts::UString ts::UserHomeDirectory()
 
 
 //----------------------------------------------------------------------------
-// Create a directory
-//----------------------------------------------------------------------------
-
-bool ts::CreateDirectory(const UString& path, bool intermediate, Report& report)
-{
-    // Create intermediate directories.
-    if (intermediate) {
-        const UString parent(DirectoryName(path));
-        // Create recursively only if does not exist or is not identical to path (meaning root).
-        if (parent != path && !fs::is_directory(parent) && !CreateDirectory(parent, true, report)) {
-            return false;
-        }
-    }
-
-    // Create the final directory.
-#if defined(TS_WINDOWS)
-    if (::CreateDirectoryW(path.wc_str(), nullptr)) {
-        return true;
-    }
-#else
-    if (::mkdir(path.toUTF8().c_str(), 0777) == 0) {
-        return true;
-    }
-#endif
-    const SysErrorCode err = LastSysErrorCode();
-    report.error(u"error creating directory %s: %s", { path, SysErrorCodeMessage(err) });
-    return false;
-}
-
-
-//----------------------------------------------------------------------------
 // Return the name of a unique temporary file name.
 //----------------------------------------------------------------------------
 
@@ -499,34 +468,6 @@ bool ts::IsExecutable(const UString& path)
     struct stat st;
     return ::stat(path.toUTF8().c_str(), &st) == 0 && (st.st_mode & S_IXUSR) != 0;
 #endif
-}
-
-
-//----------------------------------------------------------------------------
-// Delete a file.
-//----------------------------------------------------------------------------
-
-bool ts::DeleteFile(const UString& path, Report& report)
-{
-#if defined(TS_WINDOWS)
-    if (fs::is_directory(path)) {
-        if (::RemoveDirectoryW(path.wc_str())) {
-            return true;
-        }
-    }
-    else {
-        if (::DeleteFileW(path.wc_str())) {
-            return true;
-        }
-    }
-#else
-    if (::remove(path.toUTF8().c_str()) == 0) {
-        return true;
-    }
-#endif
-    const SysErrorCode err = LastSysErrorCode();
-    report.error(u"error deleting %s: %s", {path, SysErrorCodeMessage(err)});
-    return false;
 }
 
 

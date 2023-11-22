@@ -17,6 +17,7 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
+#include "tsErrCodeReport.h"
 #include "tsRegistry.h"
 #include "tsMonotonic.h"
 #include "tsTime.h"
@@ -462,7 +463,7 @@ void SysUtilsTest::testTempFiles()
     TSUNIT_ASSERT(_CreateFile(tmpName, 0));
     TSUNIT_ASSERT(ts::FileExists(tmpName));
     TSUNIT_ASSERT(ts::GetFileSize(tmpName) == 0);
-    TSUNIT_ASSERT(ts::DeleteFile(tmpName));
+    TSUNIT_ASSERT(fs::remove(tmpName, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
     TSUNIT_ASSERT(!ts::FileExists(tmpName));
 }
 
@@ -486,7 +487,7 @@ void SysUtilsTest::testFileSize()
     TSUNIT_ASSERT(!ts::FileExists(tmpName));
     TSUNIT_ASSERT(ts::GetFileSize(tmpName2) == 567);
 
-    TSUNIT_ASSERT(ts::DeleteFile(tmpName2));
+    TSUNIT_ASSERT(fs::remove(tmpName2, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
     TSUNIT_ASSERT(!ts::FileExists(tmpName2));
 }
 
@@ -543,7 +544,7 @@ void SysUtilsTest::testFileTime()
     TSUNIT_ASSERT(fileUtc.UTCToLocal() == fileLocal);
     TSUNIT_ASSERT(fileLocal.localToUTC() == fileUtc);
 
-    TSUNIT_ASSERT(ts::DeleteFile(tmpName));
+    TSUNIT_ASSERT(fs::remove(tmpName, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
     TSUNIT_ASSERT(!ts::FileExists(tmpName));
 }
 
@@ -554,7 +555,7 @@ void SysUtilsTest::testDirectory()
     const ts::UString fileName(sep + u"foo.bar");
 
     TSUNIT_ASSERT(!ts::FileExists(dirName));
-    TSUNIT_ASSERT(ts::CreateDirectory(dirName));
+    TSUNIT_ASSERT(fs::create_directories(dirName));
     TSUNIT_ASSERT(ts::FileExists(dirName));
     TSUNIT_ASSERT(fs::is_directory(dirName));
 
@@ -572,11 +573,11 @@ void SysUtilsTest::testDirectory()
     TSUNIT_ASSERT(ts::FileExists(dirName2 + fileName));
     TSUNIT_ASSERT(!fs::is_directory(dirName2 + fileName));
 
-    TSUNIT_ASSERT(ts::DeleteFile(dirName2 + fileName));
+    TSUNIT_ASSERT(fs::remove(dirName2 + fileName, &ts::ErrCodeReport(CERR, u"error deleting", dirName2 + fileName)));
     TSUNIT_ASSERT(!ts::FileExists(dirName2 + fileName));
     TSUNIT_ASSERT(fs::is_directory(dirName2));
 
-    TSUNIT_ASSERT(ts::DeleteFile(dirName2));
+    TSUNIT_ASSERT(fs::remove(dirName2, &ts::ErrCodeReport(CERR, u"error deleting", dirName2)));
     TSUNIT_ASSERT(!ts::FileExists(dirName2));
     TSUNIT_ASSERT(!fs::is_directory(dirName2));
 }
@@ -588,7 +589,7 @@ void SysUtilsTest::testWildcard()
     const size_t count = 10;
 
     // Create temporary directory
-    TSUNIT_ASSERT(ts::CreateDirectory(dirName));
+    TSUNIT_ASSERT(fs::create_directory(dirName));
     TSUNIT_ASSERT(fs::is_directory(dirName));
 
     // Create one file with unique pattern
@@ -616,12 +617,12 @@ void SysUtilsTest::testWildcard()
 
     // Final cleanup
     for (const auto& file : fileNames) {
-        TSUNIT_ASSERT(ts::DeleteFile(file));
+        TSUNIT_ASSERT(fs::remove(file, &ts::ErrCodeReport(CERR, u"error deleting", file)));
         TSUNIT_ASSERT(!ts::FileExists(file));
     }
-    TSUNIT_ASSERT(ts::DeleteFile(spuriousFileName));
+    TSUNIT_ASSERT(fs::remove(spuriousFileName, &ts::ErrCodeReport(CERR, u"error deleting", spuriousFileName)));
     TSUNIT_ASSERT(!ts::FileExists(spuriousFileName));
-    TSUNIT_ASSERT(ts::DeleteFile(dirName));
+    TSUNIT_ASSERT(fs::remove(dirName, &ts::ErrCodeReport(CERR, u"error deleting", dirName)));
     TSUNIT_ASSERT(!ts::FileExists(dirName));
 }
 
