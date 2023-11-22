@@ -2,17 +2,17 @@
 <tsduck>
   <_descriptors>
 
-    <FmxBufferSize_descriptor>
+    <M4MuxBufferSize_descriptor>
       <!-- always required -->
-      <DefaultFlexMuxBufferDescriptor
-        flexMuxChannel="uint8, required"
+      <DefaultM4MuxBufferDescriptor
+        m4MuxChannel="uint8, required"
         FB_BufferSize="uint24, required"/>
 
       <!-- 0..n -->
-      <FlexMuxBufferDescriptor
-        flexMuxChannel="uint8, required"
+      <M4MuxBufferDescriptor
+        m4MuxChannel="uint8, required"
         FB_BufferSize="uint24, required"/>
-    </FmxBufferSize_descriptor>
+    </M4MuxBufferSize_descriptor>
 
   </_descriptors>
 </tsduck>

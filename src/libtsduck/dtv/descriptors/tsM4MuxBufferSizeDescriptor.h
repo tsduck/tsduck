@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an FMXBufferSize_descriptor
+//!  Representation of an B4MuxBufferSize_descriptor
 //!
 //----------------------------------------------------------------------------
 
@@ -16,46 +16,42 @@
 
 namespace ts {
     //!
-    //! Representation of an MuxCode descriptor.
+    //! Representation of an M4 Mux Buffer Size descriptor.
     //!
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.50.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL FmxBufferSizeDescriptor : public AbstractDescriptor
+    class TSDUCKDLL M4MuxBufferSizeDescriptor : public AbstractDescriptor
     {
     public:
         //!
-        //! One FlexMux description.
+        //! M4Mux description.
+        //! 
+        //! See clasue 7.4.2.4 of ISO/IEC 14496-1:2010
         //!
-        //! Details about the FlexMuxBufferDescriptor() are no longer provided in ISO/IEC 14496-1
-        //! as indicated by ISO/IEC 13818-1.
-        //!
-        //! This syntax can be found in section 7.2 of "The MPEG-4 Book" by Fernando Pereira and
-        //! Touradj Ebrahimi. IMSC Press 2002. ISBN 0130616214
-        //!
-        class TSDUCKDLL FlexMuxBufferDescriptor_type {
+        class TSDUCKDLL M4MuxBufferDescriptor_type {
         public:
-            uint8_t  flexMuxChnnel = 0;  //!< 8 bits
+            uint8_t  m4MuxChnnel = 0;    //!< 8 bits
             uint32_t FB_BufferSize = 0;  //!< 24 bits
 
-            FlexMuxBufferDescriptor_type() = default;  //!< Constructor
+            M4MuxBufferDescriptor_type() = default;  //!< Constructor
         };
 
         // Public members:
-        FlexMuxBufferDescriptor_type              DefaultFlexMuxBufferDescriptor {};  //!< Default FlexMux.
-        std::vector<FlexMuxBufferDescriptor_type> FlexMuxBufferDescriptor {};         //!< Other FlexMux.
+        M4MuxBufferDescriptor_type               DefaultM4MuxBufferDescriptor {};  //!< Default M4Mux.
+        std::vector<M4MuxBufferDescriptor_type>  M4MuxBufferDescriptor {};         //!< Other M4Mux.
 
         //!
         //! Default constructor.
         //!
-        FmxBufferSizeDescriptor();
+        M4MuxBufferSizeDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        FmxBufferSizeDescriptor(DuckContext& duck, const Descriptor& bin);
+        M4MuxBufferSizeDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();

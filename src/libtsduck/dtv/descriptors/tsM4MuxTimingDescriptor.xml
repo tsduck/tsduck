@@ -2,7 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <flexmux_timing_descriptor
+    <m4mux_timing_descriptor
         FCR_ES_ID="uint16, required"
         FCRResolution="uint32, required"
         FCRLength="uint8, required"
