@@ -18,6 +18,7 @@
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsunit.h"
 
 
@@ -74,13 +75,13 @@ void WebRequestTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile();
     }
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void WebRequestTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 ts::Report& WebRequestTest::report()
@@ -224,8 +225,8 @@ void WebRequestTest::testNonExistentHost()
 
     ts::ByteBlock data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"http://non.existent.fake-domain/", data));
-
-    debug() << "WebRequestTest::testNonExistentHost: " << rep.getMessages() << std::endl;
+    
+    debug() << "WebRequestTest::testNonExistentHost: " << rep.messages() << std::endl;
 }
 
 void WebRequestTest::testInvalidURL()
@@ -235,6 +236,6 @@ void WebRequestTest::testInvalidURL()
 
     ts::ByteBlock data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"pouette://tagada/tsoin/tsoin", data));
-
-    debug() << "WebRequestTest::testInvalidURL: " << rep.getMessages() << std::endl;
+    
+    debug() << "WebRequestTest::testInvalidURL: " << rep.messages() << std::endl;
 }

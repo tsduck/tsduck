@@ -10,6 +10,7 @@
 #include "tsVersionString.h"
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
+#include "tsErrCodeReport.h"
 #include "tsVatekUtils.h"
 #include "tsSysInfo.h"
 #include "tsSysUtils.h"
@@ -129,6 +130,7 @@ void ts::VersionInfo::startNewVersionDetection()
     // We create an empty more-or-less-hidden empty file at the same place as the
     // TSDuck configuration file. The creation time of this file is the last check time.
     const UString filename(UserConfigurationFileName(u".tsduck.lastcheck", u"tsduck.lastcheck"));
+    const UString dirname(DirectoryName(filename));
     const Time lasttime(GetFileModificationTimeUTC(filename));
     const Time curtime(Time::CurrentUTC());
     if (lasttime != Time::Epoch && curtime != Time::Epoch && curtime >= lasttime && (curtime - lasttime) < MilliSecPerDay) {
@@ -138,8 +140,8 @@ void ts::VersionInfo::startNewVersionDetection()
     }
 
     // Create the time-stamp file. Delete it first. Create intermediate directory if necessary.
-    DeleteFile(filename, NULLREP);
-    CreateDirectory(DirectoryName(filename), true, _debug);
+    fs::remove(filename, &ErrCodeReport(NULLREP));
+    fs::create_directories(dirname, &ErrCodeReport(_debug, u"error creating directory", dirname));
     if (!UString::Save(UStringVector(), filename)) {
         _debug.error(u"error creating file %s", {filename});
     }

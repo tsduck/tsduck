@@ -17,6 +17,7 @@
 #include "tsTDT.h"
 #include "tsCAIdentifierDescriptor.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsxmlElement.h"
 #include "tsDuckContext.h"
 #include "tsCerrReport.h"
@@ -95,15 +96,15 @@ void SectionFileTest::beforeTest()
         _tempFileNameBin = ts::TempFile(u".tmp.bin");
         _tempFileNameXML = ts::TempFile(u".tmp.xml");
     }
-    ts::DeleteFile(_tempFileNameBin, NULLREP);
-    ts::DeleteFile(_tempFileNameXML, NULLREP);
+    fs::remove(_tempFileNameBin, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileNameXML, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void SectionFileTest::afterTest()
 {
-    ts::DeleteFile(_tempFileNameBin, NULLREP);
-    ts::DeleteFile(_tempFileNameXML, NULLREP);
+    fs::remove(_tempFileNameBin, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileNameXML, &ts::ErrCodeReport(NULLREP));
 }
 
 ts::Report& SectionFileTest::report()

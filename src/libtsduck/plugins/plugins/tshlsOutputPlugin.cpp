@@ -10,6 +10,7 @@
 #include "tsPluginRepository.h"
 #include "tsOneShotPacketizer.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsPESPacket.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
@@ -382,7 +383,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
         // Delete the segment file.
         tsp->verbose(u"deleting obsolete segment file %s", {name});
-        if (!DeleteFile(name, *tsp) && FileExists(name)) {
+        if (!fs::remove(name, &ErrCodeReport(*tsp, u"error deleting", name)) && FileExists(name)) {
             // Failed to delete, keep it to retry later.
             failedDelete.push_back(name);
         }

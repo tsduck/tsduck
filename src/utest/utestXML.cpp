@@ -18,6 +18,7 @@
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsunit.h"
 
 
@@ -87,13 +88,13 @@ void XMLTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".tmp.xml");
     }
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void XMLTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 ts::Report& XMLTest::report()
@@ -192,7 +193,7 @@ void XMLTest::testInvalid()
     ts::ReportBuffer<> rep;
     ts::xml::Document doc(rep);
     TSUNIT_ASSERT(!doc.parse(xmlContent));
-    TSUNIT_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.getMessages());
+    TSUNIT_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.messages());
 }
 
 void XMLTest::testFileBOM()
@@ -234,7 +235,7 @@ void XMLTest::testFileBOM()
     TSUNIT_EQUAL(childText1, elem->text(false));
     TSUNIT_EQUAL(childText2, elem->text(true));
 
-    TSUNIT_ASSERT(ts::DeleteFile(_tempFileName));
+    TSUNIT_ASSERT(fs::remove(_tempFileName, &ts::ErrCodeReport(CERR, u"error deleting", _tempFileName)));
 }
 
 void XMLTest::testValidation()

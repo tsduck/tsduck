@@ -12,6 +12,7 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsFatal.h"
 
 
@@ -438,9 +439,7 @@ bool ts::ChannelFile::save(const UString& fileName, bool createDirectories, Repo
 {
     if (createDirectories) {
         const UString dir(DirectoryName(fileName));
-        if (!fs::is_directory(dir)) {
-            CreateDirectory(dir, true, report);
-        }
+        fs::create_directories(dir, &ErrCodeReport(report, u"error creating directory", dir));
     }
 
     xml::Document doc(report);

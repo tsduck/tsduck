@@ -101,10 +101,10 @@ void ContinuityTest::testAnalyze()
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
 
     pkt.setPID(101); pkt.setCC(3);
-    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.empty());
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(u"foo: packet index: 7, PID: 0x0065, missing 2 packets", log.getMessages());
-    log.resetMessages();
+    TSUNIT_EQUAL(u"foo: packet index: 7, PID: 0x0065, missing 2 packets", log.messages());
+    log.clear();
 
     pkt.setPID(101); pkt.setCC(4);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
@@ -113,10 +113,10 @@ void ContinuityTest::testAnalyze()
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
 
     pkt.setPID(101); pkt.setCC(4);
-    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.empty());
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(u"foo: packet index: 10, PID: 0x0065, 3 duplicate packets", log.getMessages());
-    log.resetMessages();
+    TSUNIT_EQUAL(u"foo: packet index: 10, PID: 0x0065, 3 duplicate packets", log.messages());
+    log.clear();
 
     pkt.setPID(101); pkt.setCC(5);
     TSUNIT_ASSERT(fixer.feedPacket(pkt));
@@ -182,31 +182,31 @@ void ContinuityTest::testFix()
     TSUNIT_EQUAL(0, pkt.getCC());
 
     pkt.setPID(101); pkt.setCC(3);
-    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.empty());
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(u"bar: packet index: 7, PID: 0x0065, missing 2 packets", log.getMessages());
+    TSUNIT_EQUAL(u"bar: packet index: 7, PID: 0x0065, missing 2 packets", log.messages());
     TSUNIT_EQUAL(1, pkt.getCC());
-    log.resetMessages();
+    log.clear();
 
     pkt.setPID(101); pkt.setCC(4);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
     TSUNIT_EQUAL(2, pkt.getCC());
-    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.empty());
 
     pkt.setPID(101); pkt.setCC(4);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
     TSUNIT_EQUAL(2, pkt.getCC());
-    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.empty());
 
     pkt.setPID(101); pkt.setCC(4);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
-    TSUNIT_EQUAL(u"bar: packet index: 10, PID: 0x0065, 3 duplicate packets", log.getMessages());
+    TSUNIT_EQUAL(u"bar: packet index: 10, PID: 0x0065, 3 duplicate packets", log.messages());
     TSUNIT_EQUAL(2, pkt.getCC());
-    log.resetMessages();
+    log.clear();
 
     pkt.setPID(101); pkt.setCC(5);
     TSUNIT_ASSERT(!fixer.feedPacket(pkt));
-    TSUNIT_ASSERT(log.emptyMessages());
+    TSUNIT_ASSERT(log.empty());
     TSUNIT_EQUAL(3, pkt.getCC());
 
     TSUNIT_EQUAL(12, fixer.totalPackets());

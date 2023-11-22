@@ -22,6 +22,7 @@
 #include "tsSDT.h"
 #include "tsTS.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 TS_MAIN(MainCode);
 
 
@@ -275,7 +276,7 @@ void ts::FileCleaner::errorCleanup()
     if (_out_file.isOpen()) {
         const UString filename(_out_file.getFileName());
         _out_file.close(_opt);
-        DeleteFile(filename, _opt);
+        fs::remove(filename, &ErrCodeReport(_opt, u"error deleting", filename));
     }
     _success = false;
 }

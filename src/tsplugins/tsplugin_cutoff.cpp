@@ -239,8 +239,8 @@ void ts::CutoffPlugin::main()
     }
 
     // If termination was requested, receive error is not an error.
-    if (!_terminate && !error.emptyMessages()) {
-        tsp->info(error.getMessages());
+    if (!_terminate && !error.empty()) {
+        tsp->info(error.messages());
     }
 
     tsp->debug(u"server thread completed");

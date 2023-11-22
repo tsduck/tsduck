@@ -15,6 +15,7 @@
 #include "tsFatal.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsSingleton.h"
 #include "tsURL.h"
 
@@ -162,7 +163,7 @@ bool ts::WebRequest::deleteCookiesFile() const
     }
     else {
         _report.debug(u"deleting cookies file %s", {_cookiesFileName});
-        return DeleteFile(_cookiesFileName, _report);
+        return fs::remove(_cookiesFileName, &ErrCodeReport(_report, u"error deleting", _cookiesFileName));
     }
 }
 

@@ -16,6 +16,7 @@
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsunit.h"
 
 
@@ -68,13 +69,13 @@ void TSFileTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".ts");
     }
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 // Test suite cleanup method.
 void TSFileTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName, NULLREP);
+    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
 }
 
 
