@@ -61,8 +61,9 @@ namespace ts {
         //! @param [in] srv_id The service id.
         //! @param [in] ts_id The transport stream id.
         //! @param [in] onet_id The original network id. Use 0xFFFF for "unspecified".
+        //! @param [in] visible The service LCN is visible.
         //!
-        void addLCN(uint16_t lcn, uint16_t srv_id, uint16_t ts_id, uint16_t onet_id);
+        void addLCN(uint16_t lcn, uint16_t srv_id, uint16_t ts_id, uint16_t onet_id, bool visible = true);
 
         //!
         //! Collect all LCN which are declared in a NIT.
@@ -135,14 +136,15 @@ namespace ts {
             uint16_t lcn;      // Logical channel number.
             uint16_t ts_id;    // Transport stream id.
             uint16_t onet_id;  // Original network id, 0xFFFF means unspecified.
-
-            // Constructor.
-            LCN(uint16_t l = 0xFFFF, uint16_t t = 0xFFFF, uint16_t o = 0xFFFF);
+            bool     visible;  // Channel is visible.
         };
 
         // The LCN store is indexed by service id only. This is more efficient than using the DVB triplet as index.
         // This is a multimap since the same sevice id can be used on different TS.
         typedef std::multimap<uint16_t,LCN> LCNMap;
+
+        // Get LCN entry.
+        LCNMap::const_iterator findLCN(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id) const;
 
         // Collect LCN for a generic form of LCN descriptor.
         size_t addFromAbstractLCN(const AbstractLogicalChannelDescriptor& desc, uint16_t ts_id, uint16_t onet_id);

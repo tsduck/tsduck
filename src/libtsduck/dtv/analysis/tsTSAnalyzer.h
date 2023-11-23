@@ -166,6 +166,7 @@ namespace ts {
             size_t         scrambled_pid_cnt = 0; //!< Number of scrambled PID's.
             uint64_t       ts_pkt_cnt = 0;        //!< Number of TS packets.
             BitRate        bitrate = 0;           //!< Average service bitrate in b/s.
+            bool           hidden = false;        //!< Service is hidden from end-user.
             bool           carry_ssu = false;     //!< Carry System Software Update.
             bool           carry_t2mi = false;    //!< Carry T2-MI encasulated data.
 

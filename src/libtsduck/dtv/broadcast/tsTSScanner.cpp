@@ -86,12 +86,12 @@ bool ts::TSScanner::getServices(ServiceList& services) const
     }
 
     // Loop on all services in the PAT
-    for (auto it = _pat->pmts.begin(); it != _pat->pmts.end(); ++it) {
+    for (const auto& srv_it : _pat->pmts) {
 
         // Service id, PMT PID and TS id are extracted from the PAT
         Service srv;
-        srv.setId(it->first);
-        srv.setPMTPID(it->second);
+        srv.setId(srv_it.first);
+        srv.setPMTPID(srv_it.second);
         srv.setTSId(_pat->ts_id);
 
         // Original netw. id, service type, name and provider are extracted from the SDT.
@@ -137,6 +137,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
                 }
                 // Minor channel number 0 is valid (means analog).
                 srv.setMinorIdATSC(sit->second.minor_channel_number);
+                srv.setHidden(sit->second.hidden);
             }
         }
 
