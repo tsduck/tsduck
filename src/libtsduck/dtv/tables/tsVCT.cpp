@@ -87,6 +87,7 @@ void ts::VCT::Channel::updateService(Service& service) const
     service.setMinorIdATSC(minor_channel_number);
     service.setTypeATSC(service_type);
     service.setCAControlled(access_controlled);
+    service.setHidden(hidden);
 }
 
 

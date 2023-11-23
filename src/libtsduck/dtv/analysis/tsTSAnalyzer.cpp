@@ -711,6 +711,7 @@ void ts::TSAnalyzer::analyzeVCT(const VCT& vct)
             if (svp->provider.empty()) {
                 svp->provider = UString::Format(u"ATSC %d.%d", {chan.major_channel_number, chan.minor_channel_number});
             }
+            svp->hidden = chan.hidden;
         }
     }
 }

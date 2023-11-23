@@ -30,7 +30,7 @@ namespace ts {
     //!
     //! @code
     //! if (!std::filesystem::create_directory(dir, &ErrCodeReport(report, "error creating directory", dir))) {
-    //!     // error processing, error message already logged to @c report
+    //!     // error processing, error message already logged to report
     //!     return false;
     //! }
     //! @endcode

@@ -150,6 +150,7 @@ namespace ts {
         SERVICE_PROPERTY_INT(bool,     CAControlled,  _ca_controlled,  false,    CA-controlled (as declared in the SDT))
         SERVICE_PROPERTY_INT(uint16_t, MajorIdATSC,   _major_id_atsc,  0,        ATSC major id (as declared in TVCT or CVCT))
         SERVICE_PROPERTY_INT(uint16_t, MinorIdATSC,   _minor_id_atsc,  0,        ATSC major id (as declared in TVCT or CVCT))
+        SERVICE_PROPERTY_INT(bool,     Hidden,        _hidden,         false,    Service is hidden to end-user)
 
         SERVICE_PROPERTY_STRING(Name,     _name,     Service Name)
         SERVICE_PROPERTY_STRING(Provider, _provider, Provider Name)
@@ -176,8 +177,9 @@ namespace ts {
             CA           = 0x0400,  //!< CA-controlled (as declared in the SDT).
             RUNNING      = 0x0800,  //!< Running status (as declared in the SDT).
             TYPE_ATSC    = 0x1000,  //!< ATSC service type (as defined in TVCT or CVCT).
-            MAJORID_ATSC = 0x2000,  //!< ATSC major id (as declared in TVCT or CVCT)).
-            MINORID_ATSC = 0x4000,  //!< ATSC minor id (as declared in TVCT or CVCT)).
+            MAJORID_ATSC = 0x2000,  //!< ATSC major id (as declared in TVCT or CVCT).
+            MINORID_ATSC = 0x4000,  //!< ATSC minor id (as declared in TVCT or CVCT).
+            HIDDEN       = 0x8000,  //!< Service is hidden to end-user.
         };
 
         //!

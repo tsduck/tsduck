@@ -26,31 +26,25 @@ ts::LogicalChannelNumbers::LogicalChannelNumbers(DuckContext& duck) :
 {
 }
 
-ts::LogicalChannelNumbers::LCN::LCN(uint16_t l, uint16_t t, uint16_t o) :
-    lcn(l),
-    ts_id(t),
-    onet_id(o)
-{
-}
-
 
 //----------------------------------------------------------------------------
 // Add the logical channel number of a service.
 //----------------------------------------------------------------------------
 
-void ts::LogicalChannelNumbers::addLCN(uint16_t lcn, uint16_t srv_id, uint16_t ts_id, uint16_t onet_id)
+void ts::LogicalChannelNumbers::addLCN(uint16_t lcn, uint16_t srv_id, uint16_t ts_id, uint16_t onet_id, bool visible)
 {
     // Loop for similar entry to update.
     for (auto it = _lcn_map.lower_bound(srv_id); it != _lcn_map.end() && it->first == srv_id; ++it) {
         if (it->second.ts_id == ts_id && it->second.onet_id == onet_id) {
             // Update existing entry.
             it->second.lcn = lcn;
+            it->second.visible = visible;
             return;
         }
     }
 
     // No existing entry found, add a new one.
-    _lcn_map.insert(std::make_pair(srv_id, LCN(lcn, ts_id, onet_id)));
+    _lcn_map.insert(std::make_pair(srv_id, LCN{lcn, ts_id, onet_id, visible}));
 }
 
 
@@ -108,7 +102,7 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
                 NorDigLogicalChannelDescriptorV1 desc(_duck, *ptr);
                 if (desc.isValid()) {
                     for (const auto& it : desc.entries) {
-                        addLCN(it.lcn, it.service_id, ts_id, onet_id);
+                        addLCN(it.lcn, it.service_id, ts_id, onet_id, it.visible);
                         count++;
                     }
                 }
@@ -118,7 +112,7 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
                 if (desc.isValid()) {
                     for (const auto& it1 : desc.entries) {
                         for (const auto& it2 : it1.services) {
-                            addLCN(it2.lcn, it2.service_id, ts_id, onet_id);
+                            addLCN(it2.lcn, it2.service_id, ts_id, onet_id, it2.visible);
                             count++;
                         }
                     }
@@ -139,7 +133,7 @@ size_t ts::LogicalChannelNumbers::addFromAbstractLCN(const AbstractLogicalChanne
     size_t count = 0;
     if (desc.isValid()) {
         for (const auto& it : desc.entries) {
-            addLCN(it.lcn, it.service_id, ts_id, onet_id);
+            addLCN(it.lcn, it.service_id, ts_id, onet_id, it.visible);
             count++;
         }
     }
@@ -178,21 +172,26 @@ uint16_t ts::LogicalChannelNumbers::getLCN(const ServiceIdTriplet& srv) const
 
 uint16_t ts::LogicalChannelNumbers::getLCN(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id) const
 {
-    uint16_t lcn = 0xFFFF;
-    for (auto it = _lcn_map.lower_bound(srv_id); it != _lcn_map.end() && it->first == srv_id; ++it) {
+    const auto it = findLCN(srv_id, ts_id, onet_id);
+    return it == _lcn_map.end() ? 0xFFFF : it->second.lcn;
+}
+
+ts::LogicalChannelNumbers::LCNMap::const_iterator ts::LogicalChannelNumbers::findLCN(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id) const
+{
+    LCNMap::const_iterator result = _lcn_map.end();
+    for (LCNMap::const_iterator it = _lcn_map.lower_bound(srv_id); it != _lcn_map.end() && it->first == srv_id; ++it) {
         if (it->second.ts_id == ts_id) {
             if (it->second.onet_id == onet_id) {
                 // Found an exact match, including if both are 0xFFFF, final value.
-                lcn = it->second.lcn;
-                break;
+                return it;
             }
             else if (it->second.onet_id == 0xFFF) {
                 // Possible match, keep it but continue to search an exact match.
-                lcn = it->second.lcn;
+                result = it;
             }
         }
     }
-    return lcn;
+    return result;
 }
 
 
@@ -221,9 +220,10 @@ bool ts::LogicalChannelNumbers::updateService(Service& srv, bool replace) const
 {
     if (srv.hasId() && srv.hasTSId() && (replace || !srv.hasLCN())) {
         const uint16_t onid = srv.hasONId() ? srv.getONId() : 0xFFFF;
-        const uint16_t lcn = getLCN(srv.getId(), srv.getTSId(), onid);
-        if (lcn != 0xFFFF) {
-            srv.setLCN(lcn);
+        const auto it = findLCN(srv.getId(), srv.getTSId(), onid);
+        if (it != _lcn_map.end()) {
+            srv.setLCN(it->second.lcn);
+            srv.setHidden(it->second.visible);
             return true;
         }
     }
@@ -258,6 +258,9 @@ size_t ts::LogicalChannelNumbers::updateServices(ServiceList& srv_list, bool rep
                 if (!srv_it.hasLCN(lcn_it->second.lcn)) {
                     srv_it.setLCN(lcn_it->second.lcn);
                     ++count;
+                }
+                if (!srv_it.hasHidden()) {
+                    srv_it.setHidden(!lcn_it->second.visible);
                 }
             }
         }
