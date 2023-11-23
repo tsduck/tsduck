@@ -559,7 +559,12 @@ template <typename T, class MUTEX>
 int ts::SafePtr<T,MUTEX>::SafePtrShared::count()
 {
     std::lock_guard<MUTEX> lock(_mutex);
+    // Bug in GCC 12 on Arm64: it reports an incorrect "use after free" error here,
+    // quoting the "delete this" in SafePtrShared::detach() -> gcc bug.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(use-after-free)
     return _ref_count;
+    TS_POP_WARNING()
 }
 
 // Check for null pointer on SafePtr object
