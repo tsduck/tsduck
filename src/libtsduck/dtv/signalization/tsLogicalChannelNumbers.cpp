@@ -176,6 +176,17 @@ uint16_t ts::LogicalChannelNumbers::getLCN(uint16_t srv_id, uint16_t ts_id, uint
     return it == _lcn_map.end() ? 0xFFFF : it->second.lcn;
 }
 
+bool ts::LogicalChannelNumbers::getVisible(const ServiceIdTriplet& srv) const
+{
+    return getVisible(srv.service_id, srv.transport_stream_id, srv.original_network_id);
+}
+
+bool ts::LogicalChannelNumbers::getVisible(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id) const
+{
+    const auto it = findLCN(srv_id, ts_id, onet_id);
+    return it == _lcn_map.end() ? true : it->second.visible;
+}
+
 ts::LogicalChannelNumbers::LCNMap::const_iterator ts::LogicalChannelNumbers::findLCN(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id) const
 {
     LCNMap::const_iterator result = _lcn_map.end();

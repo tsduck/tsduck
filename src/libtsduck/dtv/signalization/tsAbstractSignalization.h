@@ -218,7 +218,7 @@ namespace ts {
         virtual bool analyzeXML(DuckContext& duck, const xml::Element* element) = 0;
 
     private:
-        bool               _is_valid;         // This object is valid.
+        bool               _is_valid = true;  // This object is valid.
         const UChar* const _xml_name;         // XML table or descriptor name.
         const UChar* const _xml_legacy_name;  // Optional XML table or descriptor legacy name. Ignored if null pointer.
         const Standards    _standards;        // Defining standards (usually only one).
