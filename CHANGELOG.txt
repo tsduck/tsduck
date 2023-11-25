@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3434
+VERSION 3.36-3445
 
 [NEW] New commands and plugins:
 
@@ -11,7 +11,7 @@ VERSION 3.36-3434
 [IMP] Improvements on existing commands and plugins:
 
   * TSDuck now requires C++17. Building TSDuck consequently requires at least
-    GCC 8, LLVM / clang 5 or Visual Studio 2017 15.8.
+    GCC 11, LLVM / clang 5 or Visual Studio 2017 15.8.
   * Improved the precision of plugin "regulate" when based on bitrate.
   * Improved the measurement precision in plugin "bitrate_monitor".
   * Renamed FlexMux-related descriptors and fields as M4Mux to comply with
