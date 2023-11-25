@@ -52,6 +52,41 @@ updated as part of the system system updates. Note, however, that a new version
 of TSDuck may require additional dependencies. In case of build error, it can
 be wise to run `scripts/install-prerequisites.sh` again and retry.
 
+### C++ compiler requirements
+
+TSDuck now requires a C++17 compliant compiler. GCC is supposed to support
+C++17 from version 8 onwards. Clang needs version 5 at least.
+
+However, building TSDuck with GCC versions 8 to 10 fails because of bugs in
+the compiler. C++17 support in GCC really works starting with version 11.
+
+All recent Linux distros use GCC 11, 12 or 13. Some older distros which come
+with older GCC versions may propose alternative GCC packages with more recent
+versions. For instance, RedHat Entreprise Linux 8.8 comes with GCC 8.5.0.
+However, you can install and use GCC 11 using the following commands:
+
+~~~
+$ sudo dnf install gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel
+$ source /opt/rh/gcc-toolset-11/enable
+$ make ...
+~~~
+
+The first command installs the GCC 11 packages. The second command defines the
+required environment variables in the current process. The last one builds TSDuck.
+
+Note that the GCC 11 packages are available in the AppStream repository.
+Make sure to have activated it first.
+
+Other distros such as Ubuntu, Debian and others have equivalent alternative
+packages for GCC 11, with different names, when they come with an older
+version of GCC.
+
+If your distro is too old and doesn't provide any GCC 11 package, then you
+cannot build TSDcuk version 3.36 and higher. On such systems, the highest
+version which can be built is 3.25. This is the cost of obsolescence...
+
+### Hardware device libraries
+
 Dektec DTAPI : The command `make` at the top level will automatically
 download the LinuxSDK from the Dektec site. There is no manual setup for DTAPI on
 Linux. Note that the Dektec DTAPI is available only for Linux distros on Intel CPU's
@@ -65,6 +100,8 @@ the Vatek API in the standard distros. On Windows and macOS, binary packages are
 and are installed by the `install-prerequisites` scripts. Using Vatek devices on BSD systems
 is currently not supported but should work if necessary (accessing Vatek devices is performed
 through `libusb` and not a specific kernel driver).
+
+### BSD systems
 
 FreeBSD, OpenBSD, NetBSD, DragonFlyBSD : The standard BSD `make` command uses an old syntax.
 The makefiles in the TSDuck project use a GNU Make syntax and are not compatible with the BSD `make` command.
