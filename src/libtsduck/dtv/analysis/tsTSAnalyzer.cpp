@@ -51,8 +51,7 @@ ts::TSAnalyzer::~TSAnalyzer()
 void ts::TSAnalyzer::reset()
 {
     _modified = false;
-    _ts_id = 0;
-    _ts_id_valid = false;
+    _ts_id.reset();
     _ts_pkt_cnt = 0;
     _invalid_sync = 0;
     _transport_errors = 0;
@@ -98,6 +97,8 @@ void ts::TSAnalyzer::reset()
     _preceding_errors = 0;
     _preceding_suspects = 0;
     _pes_demux.reset();
+    _t2mi_demux.reset();
+    _lcn.clear();
 
     resetSectionDemux();
 }
@@ -487,7 +488,6 @@ void ts::TSAnalyzer::analyzePAT(const PAT& pat)
 {
     // Get the transport stream id
     _ts_id = pat.ts_id;
-    _ts_id_valid = true;
 
     // Get all PMT PID's for all services
     for (auto& it : pat.pmts) {
@@ -603,6 +603,9 @@ void ts::TSAnalyzer::analyzeNIT(PID pid, const NIT& nit)
 
     // Format network description as attribute of PID.
     AppendUnique(ps->attributes, UString::Format(u"Network: 0x%X (%<d) %s", {nit.network_id, desc.name}).toTrimmed());
+
+    // Collect information from LCN descriptors of different flavors.
+    _lcn.addFromNIT(nit, _ts_id.value_or(0xFFFF));
 }
 
 
@@ -1696,19 +1699,28 @@ void ts::TSAnalyzer::recomputeStatistics()
     // Complete all service information
     _scrambled_services_cnt = 0;
 
-    for (auto& sci : _services) {
+    for (auto& sv : _services) {
 
         // Count scrambled services
-        if (sci.second->scrambled_pid_cnt > 0) {
+        if (sv.second->scrambled_pid_cnt > 0) {
             _scrambled_services_cnt++;
         }
 
         // Compute average service bitrate
         if (_ts_pkt_cnt == 0) {
-            sci.second->bitrate = 0;
+            sv.second->bitrate = 0;
         }
         else {
-            sci.second->bitrate = (_ts_bitrate * sci.second->ts_pkt_cnt) / _ts_pkt_cnt;
+            sv.second->bitrate = (_ts_bitrate * sv.second->ts_pkt_cnt) / _ts_pkt_cnt;
+        }
+
+        // Collect info from LCN descriptors.
+        const uint16_t lcn = _lcn.getLCN(sv.first, _ts_id.value_or(0xFFFF), sv.second->orig_netw_id.value_or(0xFFFF));
+        if (lcn != 0xFFFF) {
+            sv.second->lcn = lcn;
+        }
+        if (!sv.second->hidden) {
+            sv.second->hidden = !_lcn.getVisible(sv.first, _ts_id.value_or(0xFFFF), sv.second->orig_netw_id.value_or(0xFFFF));
         }
     }
 

@@ -16,6 +16,7 @@
 #include "tsSectionDemux.h"
 #include "tsPESDemux.h"
 #include "tsT2MIDemux.h"
+#include "tsLogicalChannelNumbers.h"
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
@@ -155,20 +156,21 @@ namespace ts {
             TS_NOBUILD_NOCOPY(ServiceContext);
         public:
             // Public members - Synthetic data (do not modify outside ServiceContext methods)
-            const uint16_t service_id;            //!< Service id.
-            uint16_t       orig_netw_id = 0;      //!< Original network id.
-            uint8_t        service_type = 0;      //!< Service type.
-            UString        name {};               //!< Service name.
-            UString        provider {};           //!< Service provider name.
-            PID            pmt_pid = 0;           //!< PID of PMT.
-            PID            pcr_pid = 0;           //!< PID of PCR's (if any).
-            size_t         pid_cnt = 0;           //!< Number of PID's.
-            size_t         scrambled_pid_cnt = 0; //!< Number of scrambled PID's.
-            uint64_t       ts_pkt_cnt = 0;        //!< Number of TS packets.
-            BitRate        bitrate = 0;           //!< Average service bitrate in b/s.
-            bool           hidden = false;        //!< Service is hidden from end-user.
-            bool           carry_ssu = false;     //!< Carry System Software Update.
-            bool           carry_t2mi = false;    //!< Carry T2-MI encasulated data.
+            const uint16_t          service_id;       //!< Service id.
+            std::optional<uint16_t> orig_netw_id {};  //!< Original network id.
+            std::optional<uint16_t> lcn {};           //!< Logical channel number.
+            uint8_t  service_type = 0;                //!< Service type.
+            UString  name {};                         //!< Service name.
+            UString  provider {};                     //!< Service provider name.
+            PID      pmt_pid = 0;                     //!< PID of PMT.
+            PID      pcr_pid = 0;                     //!< PID of PCR's (if any).
+            size_t   pid_cnt = 0;                     //!< Number of PID's.
+            size_t   scrambled_pid_cnt = 0;           //!< Number of scrambled PID's.
+            uint64_t ts_pkt_cnt = 0;                  //!< Number of TS packets.
+            BitRate  bitrate = 0;                     //!< Average service bitrate in b/s.
+            bool     hidden = false;                  //!< Service is hidden from end-user.
+            bool     carry_ssu = false;               //!< Carry System Software Update.
+            bool     carry_t2mi = false;              //!< Carry T2-MI encasulated data.
 
             //!
             //! Constructor.
@@ -433,8 +435,7 @@ namespace ts {
         // Accessible to subclasses, valid after calling recomputeStatistics().
         // Important: subclasses shall not modify these fields, just read them.
         DuckContext&         _duck;                   //!< TSDuck execution context
-        uint16_t             _ts_id = 0;              //!< Transport stream id.
-        bool                 _ts_id_valid = false;    //!< Transport stream id is valid.
+        std::optional<uint16_t> _ts_id {};            //!< Transport stream id.
         uint64_t             _ts_pkt_cnt = 0;         //!< Number of TS packets.
         uint64_t             _invalid_sync = 0;       //!< Number of packets with invalid sync byte (not 0x47).
         uint64_t             _transport_errors = 0;   //!< Number of packets with transport error.
@@ -539,5 +540,6 @@ namespace ts {
         SectionDemux _demux {_duck, this, this};     // PSI tables analysis
         PESDemux     _pes_demux {_duck, this};       // Audio/video analysis
         T2MIDemux    _t2mi_demux {_duck, this};      // T2-MI analysis
+        LogicalChannelNumbers _lcn {_duck};          // Accumulate LCN and visible flags
     };
 }

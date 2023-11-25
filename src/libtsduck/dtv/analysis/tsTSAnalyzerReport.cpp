@@ -202,7 +202,7 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
     grid.section();
 
     grid.setLayout({grid.bothTruncateLeft(42, u'.'), grid.border(), grid.bothTruncateLeft(26, u'.')});
-    grid.putLayout({{u"Transport Stream Id:", _ts_id_valid ? UString::Format(u"%d (0x%X)", {_ts_id, _ts_id}) : u"Unknown"},
+    grid.putLayout({{u"Transport Stream Id:", _ts_id.has_value() ? UString::Format(u"%d (0x%<X)", {*_ts_id}) : u"Unknown"},
                     {u"Services:", UString::Decimal(_services.size())}});
     grid.putLayout({{u"Bytes:", UString::Decimal(PKT_SIZE * _ts_pkt_cnt)},
                     {u"PID's: Total:", UString::Decimal(_pid_cnt)}});
@@ -376,14 +376,18 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
 
         const ServiceContext& sv(*it.second);
         grid.section();
-        grid.putLine(UString::Format(u"Service: 0x%X (%d), TS: 0x%X (%d), Original Netw: 0x%X (%d)", {sv.service_id, sv.service_id, _ts_id, _ts_id, sv.orig_netw_id, sv.orig_netw_id}));
-        grid.putLine(UString::Format(u"Service name: %s, provider: %s", {sv.getName(), sv.getProvider()}));
+        grid.putLine(UString::Format(u"Service: 0x%X (%<d)", {sv.service_id}) +
+                     (_ts_id.has_value() ? UString::Format(u", TS: 0x%X (%<d)", {*_ts_id}) : UString()) +
+                     (sv.orig_netw_id.has_value() ? UString::Format(u", Original Netw: 0x%X (%<d)", {*sv.orig_netw_id}) : UString()));
+        grid.putLine(UString::Format(u"Service name: %s, provider: %s", {sv.getName(), sv.getProvider()}) +
+                     (sv.lcn.has_value() ? UString::Format(u", LCN: %d", {*sv.lcn}) : UString()) +
+                     (sv.hidden ? u" (hidden)" : u""));
         grid.putLine(u"Service type: " + names::ServiceType(sv.service_type, NamesFlags::FIRST));
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {sv.ts_pkt_cnt, sv.pid_cnt, sv.pid_cnt - sv.scrambled_pid_cnt, sv.scrambled_pid_cnt}));
         grid.putLine(u"PMT PID: " +
                      (sv.pmt_pid == 0 || sv.pmt_pid == PID_NULL ? u"Unknown in PAT" : UString::Format(u"0x%X (%d)", {sv.pmt_pid, sv.pmt_pid})) +
                      u", PCR PID: " +
-                     (sv.pcr_pid == 0 || sv.pcr_pid == PID_NULL ? u"None" : UString::Format(u"0x%X (%d)", {sv.pcr_pid, sv.pcr_pid})));
+                     (sv.pcr_pid == 0 || sv.pcr_pid == PID_NULL ? u"None" : UString::Format(u"0x%X (%<d)", {sv.pcr_pid})));
 
         // Display all PID's of this service
         reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, wide);
@@ -653,6 +657,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
 {
     int error_count = 0;
+    const uint16_t tsid = _ts_id.value_or(0xFFFF);
 
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
@@ -662,52 +667,52 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
     if (!title.empty()) {
         stm << "TITLE: " << title << std::endl;
     }
-    if (_ts_id_valid) {
-        stm << UString::Format(u"INFO: Transport Stream Identifier: %d (0x%<X)", {_ts_id}) << std::endl;
+    if (_ts_id.has_value()) {
+        stm << UString::Format(u"INFO: Transport Stream Identifier: %d (0x%<X)", {tsid}) << std::endl;
     }
 
     // Report global errors
     if (_invalid_sync > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: TS packets with invalid sync byte: %d", {_ts_id, _invalid_sync}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: TS packets with invalid sync byte: %d", {tsid, _invalid_sync}) << std::endl;
     }
     if (_transport_errors > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: TS packets with transport error indicator: %d", {_ts_id, _transport_errors}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: TS packets with transport error indicator: %d", {tsid, _transport_errors}) << std::endl;
     }
     if (_suspect_ignored > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: suspect TS packets, ignored: %d", {_ts_id, _suspect_ignored}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: suspect TS packets, ignored: %d", {tsid, _suspect_ignored}) << std::endl;
     }
     if (_unref_pid_cnt > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: Unreferenced PID's: %d", {_ts_id, _unref_pid_cnt}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: Unreferenced PID's: %d", {tsid, _unref_pid_cnt}) << std::endl;
     }
 
     // Report missing standard DVB tables
     if (!_tid_present[TID_PAT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: No PAT", {_ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No PAT", {tsid}) << std::endl;
     }
     if (_scrambled_pid_cnt > 0 && !_tid_present[TID_CAT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: No CAT (%d scrambled PID's)", {_ts_id, _scrambled_pid_cnt}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No CAT (%d scrambled PID's)", {tsid, _scrambled_pid_cnt}) << std::endl;
     }
     if (!_tid_present[TID_SDT_ACT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: No SDT Actual", {_ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No SDT Actual", {tsid}) << std::endl;
     }
     if (!_tid_present[TID_BAT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: No BAT", {_ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No BAT", {tsid}) << std::endl;
     }
     if (!_tid_present[TID_TDT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: No TDT", {_ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No TDT", {tsid}) << std::endl;
     }
     if (!_tid_present[TID_TOT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%<X: No TOT", {_ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No TOT", {tsid}) << std::endl;
     }
 
     // Report error per PID
@@ -798,8 +803,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
 
     // Print one line with transport stream description
     stm << "ts:";
-    if (_ts_id_valid) {
-        stm << "id=" << _ts_id << ":";
+    if (_ts_id.has_value()) {
+        stm << "id=" << *_ts_id << ":";
     }
     stm << "services=" << _services.size() << ":"
         << "clearservices=" << (_services.size() - _scrambled_services_cnt) << ":"
@@ -881,31 +886,40 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
     // Print one line per service
     for (const auto& it : _services) {
         const ServiceContext& sv(*it.second);
-        stm << "service:"
-            << "id=" << sv.service_id << ":"
-            << "tsid=" << _ts_id << ":"
-            << "orignetwid=" << sv.orig_netw_id << ":"
-            << "access=" << (sv.scrambled_pid_cnt > 0 ? "scrambled" : "clear") << ":"
-            << "pids=" << sv.pid_cnt << ":"
-            << "clearpids=" << (sv.pid_cnt - sv.scrambled_pid_cnt) << ":"
-            << "scrambledpids=" << sv.scrambled_pid_cnt << ":"
-            << "packets=" << sv.ts_pkt_cnt << ":"
-            << "bitrate=" << sv.bitrate.toInt() << ":"
-            << "bitrate204=" << ToBitrate204(sv.bitrate).toInt() << ":"
-            << "servtype=" << int(sv.service_type) << ":";
+        stm << "service:id=" << sv.service_id;
+        if (_ts_id.has_value()) {
+            stm << ":tsid=" << *_ts_id;
+        }
+        if (sv.orig_netw_id.has_value()) {
+            stm << ":orignetwid=" << *sv.orig_netw_id;
+        }
+        if (sv.lcn.has_value()) {
+            stm << ":lcn=" << *sv.lcn;
+        }
+        stm << ":access=" << (sv.scrambled_pid_cnt > 0 ? "scrambled" : "clear")
+            << ":pids=" << sv.pid_cnt
+            << ":clearpids=" << (sv.pid_cnt - sv.scrambled_pid_cnt)
+            << ":scrambledpids=" << sv.scrambled_pid_cnt
+            << ":packets=" << sv.ts_pkt_cnt
+            << ":bitrate=" << sv.bitrate.toInt()
+            << ":bitrate204=" << ToBitrate204(sv.bitrate).toInt()
+            << ":servtype=" << int(sv.service_type);
+        if (sv.hidden) {
+            stm << ":hidden";
+        }
         if (sv.carry_ssu) {
-            stm << "ssu:";
+            stm << ":ssu";
         }
         if (sv.carry_t2mi) {
-            stm << "t2mi:";
+            stm << ":t2mi";
         }
         if (sv.pmt_pid != 0) {
-            stm << "pmtpid=" << sv.pmt_pid << ":";
+            stm << ":pmtpid=" << sv.pmt_pid;
         }
         if (sv.pcr_pid != 0 && sv.pcr_pid != PID_NULL) {
-            stm << "pcrpid=" << sv.pcr_pid << ":";
+            stm << ":pcrpid=" << sv.pcr_pid;
         }
-        stm << "pidlist=";
+        stm << ":pidlist=";
         first = true;
         for (const auto& it_pid : _pids) {
             if (it_pid.second->services.count(sv.service_id) != 0) {
@@ -914,10 +928,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
                 first = false;
             }
         }
-        stm << ":"
-            << "provider=" << sv.getProvider() << ":"
-            << "name=" << sv.getName()
-            << std::endl;
+        stm << ":provider=" << sv.getProvider() << ":name=" << sv.getName() << std::endl;
     }
 
     // Print one line per PID
@@ -1086,8 +1097,8 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     }
 
     // Add transport stream description
-    if (_ts_id_valid) {
-        root.query(u"ts", true).add(u"id", _ts_id);
+    if (_ts_id.has_value()) {
+        root.query(u"ts", true).add(u"id", *_ts_id);
     }
     root.query(u"ts", true).add(u"bytes", PKT_SIZE * _ts_pkt_cnt);
     root.query(u"ts", true).add(u"bitrate", _ts_bitrate.toInt());
@@ -1170,8 +1181,15 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.add(u"name", sv.getName());
         jv.add(u"type", sv.service_type);
         jv.add(u"type-name", names::ServiceType(sv.service_type));
-        jv.add(u"tsid", _ts_id);
-        jv.add(u"original-network-id", sv.orig_netw_id);
+        if (_ts_id.has_value()) {
+            jv.add(u"tsid", *_ts_id);
+        }
+        if (sv.orig_netw_id.has_value()) {
+            jv.add(u"original-network-id", *sv.orig_netw_id);
+        }
+        if (sv.lcn.has_value()) {
+            jv.add(u"lcn", *sv.lcn);
+        }
         jv.add(u"is-scrambled", json::Bool(sv.scrambled_pid_cnt > 0));
         jv.query(u"components", true).add(u"total", sv.pid_cnt);
         jv.query(u"components", true).add(u"clear", sv.pid_cnt - sv.scrambled_pid_cnt);
@@ -1179,6 +1197,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.add(u"packets", sv.ts_pkt_cnt);
         jv.add(u"bitrate", sv.bitrate.toInt());
         jv.add(u"bitrate-204", ToBitrate204(sv.bitrate).toInt());
+        jv.add(u"hidden", json::Bool(sv.hidden));
         jv.add(u"ssu", json::Bool(sv.carry_ssu));
         jv.add(u"t2mi", json::Bool(sv.carry_t2mi));
         if (sv.pmt_pid != 0) {

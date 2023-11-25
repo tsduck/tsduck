@@ -110,6 +110,23 @@ namespace ts {
         void getLCNs(std::map<uint16_t,ServiceIdTriplet>& lcns, uint16_t ts_id = 0xFFFF, uint16_t onet_id = 0xFFFF) const;
 
         //!
+        //! Get the visible flag of a service.
+        //! @param [in] srv_id The service id to search.
+        //! @param [in] ts_id The transport stream id of the service.
+        //! @param [in] onet_id The original network id of the service.
+        //! If set to 0xFFFF (the default), the first match service is used.
+        //! @return The visible flag of the service or true if not found.
+        //!
+        bool getVisible(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id = 0xFFFF) const;
+
+        //!
+        //! Get the visible flag of a service.
+        //! @param [in] srv The service id triplet to search.
+        //! @return The visible flag of the service or true if not found.
+        //!
+        bool getVisible(const ServiceIdTriplet& srv) const;
+
+        //!
         //! Update a service description with its LCN.
         //! @param [in,out] srv The service description to update.
         //! The service id and transport stream id must be set. If the original network id is unset,
