@@ -43,7 +43,7 @@ namespace ts {
         uint8_t                 timeslice_number = 0;                      //!< 8 bits
         uint8_t                 num_channel_bonds_minus1 = 0;              //!< 1 bit
         std::vector<uint32_t>   secondary_delivery_system_ids {};          //!< 32 bits
-        uint8_t                 SOSF_WH_sequence_number {};                //!< 8 bits
+        uint8_t                 SOSF_WH_sequence_number = 0;               //!< 8 bits
         uint32_t                reference_scrambling_index = 0;            //!< 20 bits
         std::optional<uint8_t>  SFFI {};                                   //!< 4 bits
         uint32_t                payload_scrambling_index = 0;              //!< 20 bits
