@@ -72,6 +72,16 @@ namespace ts {
         ErrCodeReport(Report& report, const UString& message = UString(), const UString& object = UString()) :
             _report(report), _message(message), _object(object) {}
 
+        //!
+        //! Constructor with error indicator.
+        //! @param [out] success The boolean to set in the destructor to indicate success or error.
+        //! @param [in,out] report The report to which all error messages are logged in the destructor.
+        //! @param [in] message Option message to display before the system error message.
+        //! @param [in] object Optional "object" name, to be displayed after @a message.
+        //!
+        ErrCodeReport(bool& success, Report& report, const UString& message = UString(), const UString& object = UString()) :
+            _success(&success), _report(report), _message(message), _object(object) {}
+
         //! @cond nodoxygen
         //  Alternative constructors to avoid a Microsoft C++ issue, see comments in the declaration of the class.
         ErrCodeReport(Report& report, const UChar* message, const UString& object = UString()) :
@@ -82,6 +92,14 @@ namespace ts {
             _report(report), _message(message), _object(object.string()) {}
         ErrCodeReport(Report& report, const UString& message, const fs::path& object) :
             _report(report), _message(message), _object(object.string()) {}
+        ErrCodeReport(bool& success, Report& report, const UChar* message, const UString& object = UString()) :
+            _success(&success), _report(report), _message(message), _object(object) {}
+        ErrCodeReport(bool& success, Report& report, const UChar* message, const UChar* object) :
+            _success(&success), _report(report), _message(message), _object(object) {}
+        ErrCodeReport(bool& success, Report& report, const UChar* message, const fs::path& object) :
+            _success(&success), _report(report), _message(message), _object(object.string()) {}
+        ErrCodeReport(bool& success, Report& report, const UString& message, const fs::path& object) :
+            _success(&success), _report(report), _message(message), _object(object.string()) {}
         //! @endcond
 
         //!
@@ -99,6 +117,7 @@ namespace ts {
         ~ErrCodeReport();
 
     private:
+        bool*   _success = nullptr;
         Report& _report;
         UString _message {};
         UString _object {};

@@ -62,7 +62,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
             for (auto itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
                 // Full path of executable file.
                 const UString exe(*itDir + PathSeparator + itPager->command + TS_EXECUTABLE_SUFFIX);
-                if (FileExists(exe)) {
+                if (fs::exists(exe)) {
                     // The executable exists.
                     bool useParameters = true;
                     // On Linux, with the BusyBox environment, many commands are redirected to the busybox executable.

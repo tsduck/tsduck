@@ -157,7 +157,7 @@ ts::UString ts::WebRequest::getCookiesFileName() const
 
 bool ts::WebRequest::deleteCookiesFile() const
 {
-    if (_cookiesFileName.empty() || !FileExists(_cookiesFileName)) {
+    if (_cookiesFileName.empty() || !fs::exists(_cookiesFileName)) {
         // No cookies file to delete.
         return true;
     }

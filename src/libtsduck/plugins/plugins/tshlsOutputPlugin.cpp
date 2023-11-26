@@ -383,7 +383,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
         // Delete the segment file.
         tsp->verbose(u"deleting obsolete segment file %s", {name});
-        if (!fs::remove(name, &ErrCodeReport(*tsp, u"error deleting", name)) && FileExists(name)) {
+        if (!fs::remove(name, &ErrCodeReport(*tsp, u"error deleting", name)) && fs::exists(name)) {
             // Failed to delete, keep it to retry later.
             failedDelete.push_back(name);
         }

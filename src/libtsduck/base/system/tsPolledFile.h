@@ -66,23 +66,23 @@ namespace ts {
         //! Get file size in bytes.
         //! @return The file size in bytes.
         //!
-        int64_t getSize() const { return _file_size; }
+        std::uintmax_t getSize() const { return _file_size; }
 
     private:
         friend class PollFiles;
 
-        UString _name {};          // File name
-        Status  _status {ADDED};   // Status since last report
-        int64_t _file_size = 0;    // File size in bytes
-        Time    _file_date {};     // Last file modification date (UTC)
-        bool    _pending = true;   // Not yet notified, waiting for stable state
-        Time    _found_date {};    // First time (UTC) this size/date state was reported
+        UString        _name {};          // File name
+        Status         _status {ADDED};   // Status since last report
+        std::uintmax_t _file_size = 0;    // File size in bytes
+        Time           _file_date {};     // Last file modification date (UTC)
+        bool           _pending = true;   // Not yet notified, waiting for stable state
+        Time           _found_date {};    // First time (UTC) this size/date state was reported
 
         // Constructor
         PolledFile(const UString& name, const int64_t& size, const Time& date, const Time& now);
 
         // Check if file has changed size or date. If yes, return to pending state.
-        void trackChange(const int64_t& size, const Time& date, const Time& now);
+        void trackChange(const std::uintmax_t& size, const Time& date, const Time& now);
     };
 
     //!

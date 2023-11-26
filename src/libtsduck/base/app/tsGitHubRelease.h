@@ -77,11 +77,11 @@ namespace ts {
         struct TSDUCKDLL Asset
         {
             Asset() = default;          //!< Default constructor.
-            UString name {};            //!< File name (without URL or directory).
-            int64_t size = 0;           //!< File size in bytes.
-            UString mimeType {};        //!< MIME type of the file content.
-            UString url {};             //!< URL to download the file.
-            int     downloadCount = 0;  //!< Download count.
+            UString        name {};            //!< File name (without URL or directory).
+            std::uintmax_t size = 0;           //!< File size in bytes.
+            UString        mimeType {};        //!< MIME type of the file content.
+            UString        url {};             //!< URL to download the file.
+            int            downloadCount = 0;  //!< Download count.
         };
 
         //!

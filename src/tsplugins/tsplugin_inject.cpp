@@ -312,7 +312,7 @@ bool ts::InjectPlugin::reloadFiles()
 
     for (auto& it : _infiles) {
         file.clear();
-        if (_poll_files && !FileExists(it.file_name)) {
+        if (_poll_files && !fs::exists(it.file_name)) {
             // With --poll-files, we ignore non-existent files.
             it.retry_count = 0;  // no longer needed to retry
         }

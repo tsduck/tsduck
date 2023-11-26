@@ -52,7 +52,7 @@ updated as part of the system system updates. Note, however, that a new version
 of TSDuck may require additional dependencies. In case of build error, it can
 be wise to run `scripts/install-prerequisites.sh` again and retry.
 
-### C++ compiler requirements
+### C++ compiler requirements {#cpprequnix}
 
 TSDuck now requires a C++17 compliant compiler. GCC is supposed to support
 C++17 from version 8 onwards. Clang needs version 5 at least.
@@ -73,19 +73,18 @@ $ make ...
 
 The first command installs the GCC 11 packages. The second command defines the
 required environment variables in the current process. The last one builds TSDuck.
-
 Note that the GCC 11 packages are available in the AppStream repository.
 Make sure to have activated it first.
 
-Other distros such as Ubuntu, Debian and others have equivalent alternative
-packages for GCC 11, with different names, when they come with an older
+Older versions of other distros such as Ubuntu, Debian and others have equivalent
+alternative packages for GCC 11, with different names, when they come with an older
 version of GCC.
 
 If your distro is too old and doesn't provide any GCC 11 package, then you
-cannot build TSDcuk version 3.36 and higher. On such systems, the highest
-version which can be built is 3.25. This is the cost of obsolescence...
+cannot build TSDuck version 3.36 and higher. On such systems, the highest
+TSDuck version which can be built is 3.35. This is the cost of obsolescence...
 
-### Hardware device libraries
+### Hardware device libraries {#hwlibunix}
 
 Dektec DTAPI : The command `make` at the top level will automatically
 download the LinuxSDK from the Dektec site. There is no manual setup for DTAPI on
@@ -101,9 +100,9 @@ and are installed by the `install-prerequisites` scripts. Using Vatek devices on
 is currently not supported but should work if necessary (accessing Vatek devices is performed
 through `libusb` and not a specific kernel driver).
 
-### BSD systems
+### BSD systems {#bsdreq}
 
-FreeBSD, OpenBSD, NetBSD, DragonFlyBSD : The standard BSD `make` command uses an old syntax.
+On FreeBSD, OpenBSD, NetBSD, DragonFlyBSD, the standard BSD `make` command uses an old syntax.
 The makefiles in the TSDuck project use a GNU Make syntax and are not compatible with the BSD `make` command.
 As part of prerequisites for BSD systems, GNU Make is installed under the name `gmake`.
 In all build commands in this page, when `make` is mentioned, use `gmake` on all BSD systems.
@@ -328,6 +327,9 @@ If you prefer to collect the various installers yourself, follow the links to
 [Python downloads](https://www.python.org/downloads/windows/),
 [Doxygen downloads](http://www.doxygen.org/download.html) and
 [Graphviz downloads](https://graphviz.gitlab.io/_pages/Download/Download_windows.html).
+
+TSDuck now requires a C++17 compliant compiler. C++17 support started
+with Visual Studio 2017 15.8. We recommend to use Visual Studio 2022.
 
 ## Building the binaries without installer {#buildwindows}
 

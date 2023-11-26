@@ -243,7 +243,7 @@ bool ts::TSFileOutputArgs::closeAndCleanup(Report& report)
 
         // Delete the file.
         report.verbose(u"deleting obsolete file %s", {name});
-        if (!fs::remove(name, &ErrCodeReport(report, u"error deleting", name)) && FileExists(name)) {
+        if (!fs::remove(name, &ErrCodeReport(report, u"error deleting", name)) && fs::exists(name)) {
             // Failed to delete, keep it to retry later.
             failed_delete.push_back(name);
         }

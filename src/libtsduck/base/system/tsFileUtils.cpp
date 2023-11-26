@@ -10,6 +10,8 @@
 #include "tsSysUtils.h"
 #include "tsMemory.h"
 #include "tsUID.h"
+#include "tsErrCodeReport.h"
+#include "tsNullReport.h"
 
 #if defined(TS_WINDOWS)
     #include "tsBeforeStandardHeaders.h"
@@ -35,38 +37,6 @@
 #if defined(TS_WINDOWS) && defined(TS_MSC)
     #pragma comment(lib, "userenv.lib")  // GetUserProfileDirectory
 #endif
-
-
-//----------------------------------------------------------------------------
-// Get the current working directory.
-//----------------------------------------------------------------------------
-
-ts::UString ts::CurrentWorkingDirectory()
-{
-#if defined(TS_WINDOWS)
-
-    // Window implementation.
-    std::array<::WCHAR, 2048> name;
-    const ::DWORD length = ::GetCurrentDirectoryW(::DWORD(name.size()), name.data());
-    return UString(name, length);
-
-#else
-
-    // Unix implementation.
-    TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(maybe-uninitialized) // stupid warning, name is uninitialized on purpose
-    std::array<char, 2048> name;
-    if (::getcwd(name.data(), name.size() - 1) == nullptr) {
-        name[0] = '\0'; // error
-    }
-    else {
-        name[name.size() - 1] = '\0'; // enforce null termination.
-    }
-    TS_POP_WARNING()
-    return UString::FromUTF8(name.data());
-
-#endif
-}
 
 
 //----------------------------------------------------------------------------
@@ -189,7 +159,7 @@ ts::UString ts::AbsoluteFilePath(const UString& path, const UString& base)
         return CleanupFilePath(full);
     }
     else {
-        return CleanupFilePath((base.empty() ? CurrentWorkingDirectory() : base) + PathSeparator + full);
+        return CleanupFilePath((base.empty() ? UString(fs::current_path(&ErrCodeReport(NULLREP))) : base) + PathSeparator + full);
     }
 }
 
@@ -204,7 +174,7 @@ ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &bas
     UString target(AbsoluteFilePath(path));
 
     // Build absolute file path of the base directory, with a trailing path separator.
-    UString ref(AbsoluteFilePath(base.empty() ? CurrentWorkingDirectory() : base));
+    UString ref(AbsoluteFilePath(base.empty() ? UString(fs::current_path(&ErrCodeReport(NULLREP))) : base));
     ref.append(PathSeparator);
 
     // See how many leading characters are matching.
@@ -403,23 +373,6 @@ ts::UString ts::TempFile(const UString& suffix)
 
 
 //----------------------------------------------------------------------------
-// Get the size in byte of a file. Return -1 in case of error.
-//----------------------------------------------------------------------------
-
-int64_t ts::GetFileSize(const UString& path)
-{
-#if defined(TS_WINDOWS)
-    ::WIN32_FILE_ATTRIBUTE_DATA info;
-    return ::GetFileAttributesExW(path.wc_str(), ::GetFileExInfoStandard, &info) == 0 ? -1 :
-        (int64_t(info.nFileSizeHigh) << 32) | (int64_t(info.nFileSizeLow) & 0xFFFFFFFFL);
-#else
-    struct stat st;
-    return ::stat(path.toUTF8().c_str(), &st) < 0 ? -1 : int64_t(st.st_size);
-#endif
-}
-
-
-//----------------------------------------------------------------------------
 // Get the time of last modification of a file.
 // Return Time::Epoch in case of error.
 //----------------------------------------------------------------------------
@@ -443,88 +396,14 @@ ts::Time ts::GetFileModificationTimeLocal(const UString& path)
 
 
 //----------------------------------------------------------------------------
-// Check if a file or directory exists
-//----------------------------------------------------------------------------
-
-bool ts::FileExists(const UString& path)
-{
-    std::error_code error;
-    const fs::file_status st(fs::status(path, error));
-    return st.type() != fs::file_type::not_found && st.type() != fs::file_type::none;
-}
-
-
-//----------------------------------------------------------------------------
 // Check if a file exists and is executable.
 //----------------------------------------------------------------------------
 
 bool ts::IsExecutable(const UString& path)
 {
-#if defined(TS_WINDOWS)
-    // On Windows, all files are executable. Just check if this is a file.
-    const ::DWORD attr = ::GetFileAttributesW(path.wc_str());
-    return attr != INVALID_FILE_ATTRIBUTES && (attr & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0;
-#else
-    struct stat st;
-    return ::stat(path.toUTF8().c_str(), &st) == 0 && (st.st_mode & S_IXUSR) != 0;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Truncate a file to the specified size.
-//----------------------------------------------------------------------------
-
-bool ts::TruncateFile(const UString& path, uint64_t size, Report& report)
-{
-    SysErrorCode err = SYS_SUCCESS;
-
-#if defined(TS_WINDOWS)
-
-    ::LONG size_high = ::LONG(size >> 32);
-    ::HANDLE h = ::CreateFileW(path.wc_str(), GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-    if (h == INVALID_HANDLE_VALUE ||
-        ::SetFilePointer(h, ::LONG(size), &size_high, FILE_BEGIN) == INVALID_SET_FILE_POINTER ||
-        ::SetEndOfFile(h) == 0)
-    {
-        err = ::GetLastError();
-    }
-    ::CloseHandle(h);
-
-#else
-
-    err = ::truncate(path.toUTF8().c_str(), off_t(size)) < 0 ? errno : 0;
-
-#endif
-
-    if (err == SYS_SUCCESS) {
-        return true;
-    }
-    else {
-        report.error(u"error truncating %s: %s", {path, SysErrorCodeMessage(err)});
-        return false;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Rename / move a file.
-//----------------------------------------------------------------------------
-
-bool ts::RenameFile(const UString& old_path, const UString& new_path, Report& report)
-{
-#if defined(TS_WINDOWS)
-    if (::MoveFileW(old_path.wc_str(), new_path.wc_str())) {
-        return true;
-    }
-#else
-    if (::rename(old_path.toUTF8().c_str(), new_path.toUTF8().c_str()) == 0) {
-        return true;
-    }
-#endif
-    const SysErrorCode err = LastSysErrorCode();
-    report.error(u"error renaming %s: %s", {old_path, SysErrorCodeMessage(err)});
-    return false;
+    bool success = true;
+    fs::file_status st(fs::status(path, &ErrCodeReport(success, NULLREP)));
+    return success && (st.permissions() & (fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec)) != fs::perms::none;
 }
 
 
@@ -548,7 +427,7 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
     // If there is a path separator, there is a directory specified, don't search.
     if (LastPathSeparator(fileName) != NPOS) {
         // If the file does not exist or is not executable, not suitable.
-        return (FileExists(name) && IsExecutable(name)) ? name : UString();
+        return (fs::exists(name) && IsExecutable(name)) ? name : UString();
     }
 
     // Search in the path.
@@ -556,7 +435,7 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
     GetEnvironmentPath(dirs, pathName);
     for (const auto& dir : dirs) {
         const UString full(dir + PathSeparator + name);
-        if (FileExists(full) && IsExecutable(full)) {
+        if (fs::exists(full) && IsExecutable(full)) {
             return full;
         }
     }
@@ -576,7 +455,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
         // No file specified, no file found...
         return UString();
     }
-    if (FileExists(fileName)) {
+    if (fs::exists(fileName)) {
         // The file exists as is, no need to search.
         return fileName;
     }
@@ -629,7 +508,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     // Search the file.
     for (const auto& dir : dirList) {
         const UString path(dir + PathSeparator + fileName);
-        if (FileExists(path)) {
+        if (fs::exists(path)) {
             return path;
         }
     }
@@ -661,28 +540,6 @@ ts::UString ts::UserConfigurationFileName(const UString& fileName, const UString
 
 
 //----------------------------------------------------------------------------
-// Check if a file path is a symbolic link.
-//----------------------------------------------------------------------------
-
-bool ts::IsSymbolicLink(const UString& path)
-{
-#if defined(TS_UNIX)
-    struct stat st;
-    TS_ZERO(st);
-    if (::lstat(path.toUTF8().c_str(), &st) != 0) {
-        return false; // lstat() error
-    }
-    else {
-        return (st.st_mode & S_IFMT) == S_IFLNK;
-    }
-#else
-    // Non Unix systems, no symbolic links.
-    return false;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
 // Resolve symbolic links.
 //----------------------------------------------------------------------------
 
@@ -697,7 +554,7 @@ ts::UString ts::ResolveSymbolicLinks(const ts::UString &path, ResolveSymbolicLin
     int foolproof = 64; // Avoid endless loops in failing links.
 
     // Loop on nested symbolic links.
-    while (IsSymbolicLink(link)) {
+    while (fs::is_symlink(link, &ErrCodeReport(NULLREP))) {
 
         // Translate the symbolic link.
         const ssize_t length = ::readlink(link.toUTF8().c_str(), name.data(), name.size());

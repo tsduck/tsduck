@@ -11,8 +11,12 @@
 
 ts::ErrCodeReport::~ErrCodeReport()
 {
-    // Check that the portable equivalent code is an error.
-    if (default_error_condition().value() != 0) {
+    // Check if the portable equivalent code is an error.
+    const bool success = default_error_condition().value() == 0;
+    if (_success != nullptr) {
+        *_success = success;
+    }
+    if (!success) {
         UString msg(_message);
         if (!_object.empty()) {
             if (!msg.empty()) {

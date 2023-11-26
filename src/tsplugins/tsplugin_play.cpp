@@ -101,7 +101,7 @@ bool ts::PlayPlugin::searchInPath(UString& result, const UStringVector& path, co
         if (!file.empty()) {
             result = file + PathSeparator + name;
             tsp->debug(u"looking for %s", {result});
-            if (FileExists(result)) {
+            if (fs::exists(result)) {
                 return true;
             }
         }
@@ -209,7 +209,7 @@ bool ts::PlayPlugin::start()
         }
     }
 #if defined(TS_MAC)
-    else if (FileExists(mac_vlc_exec)) {
+    else if (fs::exists(mac_vlc_exec)) {
         exec = mac_vlc_exec;
         opts = vlc_opts;
     }

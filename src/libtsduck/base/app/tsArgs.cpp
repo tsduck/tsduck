@@ -794,21 +794,28 @@ size_t ts::Args::count(const UChar* name) const
 //----------------------------------------------------------------------------
 // Get the value of an option. The index designates the occurence of
 // the option. If the option is not present, or not with this
-// occurence, defValue is returned.
+// occurence, def_value is returned.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Args::value(const UChar* name, const UChar* defValue, size_t index) const
+ts::UString ts::Args::value(const UChar* name, const UChar* def_value, size_t index) const
+{
+    UString v;
+    getValue(v, name, def_value, index);
+    return v;
+}
+
+void ts::Args::getValue(UString& value, const UChar* name, const UChar* def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
     if (opt.type == INTEGER) {
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
     }
-    return index >= opt.values.size() || !opt.values[index].string.has_value() ? defValue : opt.values[index].string.value();
-}
-
-void ts::Args::getValue(UString& value_, const UChar* name, const UChar* defValue, size_t index) const
-{
-    value_ = value(name, defValue, index);
+    else if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
+        value= def_value;
+    }
+    else {
+        value = opt.values[index].string.value();
+    }
 }
 
 void ts::Args::getOptionalValue(std::optional<UString>& value, const UChar* name, bool clear_if_absent) const
@@ -825,20 +832,17 @@ void ts::Args::getOptionalValue(std::optional<UString>& value, const UChar* name
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Return all occurences of this option in a vector
-//----------------------------------------------------------------------------
-
-void ts::Args::getValues(UStringVector& values, const UChar* name) const
+void ts::Args::getPathValue(fs::path& value, const UChar* name, const fs::path& def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
-    values.clear();
-    values.reserve(opt.values.size());
-    for (auto& it : opt.values) {
-        if (it.string.has_value()) {
-            values.push_back(it.string.value());
-        }
+    if (opt.type != FILENAME && opt.type != DIRECTORY) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not a filesystem path");
+    }
+    else if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
+        value= def_value;
+    }
+    else {
+        value = fs::path(opt.values[index].string.value());
     }
 }
 

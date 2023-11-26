@@ -11,8 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsFileUtils.h"
-#include "tsSysUtils.h"
+#include "tsErrCodeReport.h"
 #include "tsTS.h"
 TS_MAIN(MainCode);
 
@@ -28,10 +27,10 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        bool              check_only = false;          // check only, do not truncate
-        size_t            packet_size = ts::PKT_SIZE;  // packet size in bytes
-        ts::PacketCounter trunc_pkt = 0;               // first packet to truncate (0 means eof)
-        ts::UStringVector files {};                    // file names
+        bool           check_only = false;          // check only, do not truncate
+        std::uintmax_t packet_size = ts::PKT_SIZE;  // packet size in bytes
+        std::uintmax_t trunc_pkt = 0;               // first packet to truncate (0 means eof)
+        std::vector<fs::path> files {};             // file names
     };
 }
 
@@ -62,18 +61,17 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    getValues(files);
+    getPathValues(files);
+    getIntValue(packet_size, u"size-of-packet", ts::PKT_SIZE);
+    getIntValue(trunc_pkt, u"packet");
     check_only = present(u"noaction");
-    packet_size = intValue<size_t>(u"size-of-packet", ts::PKT_SIZE);
 
     if (present(u"byte") && present(u"packet")) {
         error(u"--byte and --packet are mutually exclusive");
     }
-    if (present(u"byte")) {
-        trunc_pkt = (intValue<ts::PacketCounter>(u"byte") + packet_size - 1) / packet_size;
-    }
-    else {
-        trunc_pkt = intValue<ts::PacketCounter>(u"packet");
+    else if (present(u"byte")) {
+        getIntValue(trunc_pkt, u"byte");
+        trunc_pkt = (trunc_pkt + packet_size - 1) / packet_size;
     }
     if (check_only) {
         setMaxSeverity(ts::Severity::Verbose);
@@ -89,39 +87,22 @@ Options::Options(int argc, char *argv[]) :
 
 int MainCode(int argc, char *argv[])
 {
-    Options opt (argc, argv);
-    bool success = true;
-    ts::SysErrorCode err;
+    Options opt(argc, argv);
 
     for (const auto& file : opt.files) {
 
         // Get file size
-
-        const int64_t size = ts::GetFileSize(file);
-
-        if (size < 0) {
-            err = ts::LastSysErrorCode();
-            opt.error(u"%s: %s", {file, ts::SysErrorCodeMessage(err)});
-            success = false;
+        const std::uintmax_t file_size = fs::file_size(file, &ts::ErrCodeReport(opt, u"error accessing", file));
+        if (file_size == ts::FS_ERROR) {
             continue;
         }
 
         // Compute number of packets and how many bytes to keep in file.
-
-        const uint64_t file_size = uint64_t(size);
-        const uint64_t pkt_count = file_size / opt.packet_size;
-        const uint64_t extra = file_size % opt.packet_size;
-        uint64_t keep;
-
-        if (opt.trunc_pkt == 0 || opt.trunc_pkt > pkt_count) {
-            keep = pkt_count * opt.packet_size;
-        }
-        else {
-            keep = opt.trunc_pkt * opt.packet_size;
-        }
+        const std::uintmax_t pkt_count = file_size / opt.packet_size;
+        const std::uintmax_t extra = file_size % opt.packet_size;
+        const std::uintmax_t keep = opt.trunc_pkt == 0 || opt.trunc_pkt > pkt_count ? pkt_count * opt.packet_size : opt.trunc_pkt * opt.packet_size;
 
         // Display info in verbose or check mode
-
         if (opt.verbose()) {
             if (opt.files.size() > 1) {
                 std::cout << file << ": ";
@@ -139,11 +120,10 @@ int MainCode(int argc, char *argv[])
         }
 
         // Do the truncation
-
-        if (!opt.check_only && keep < file_size && !TruncateFile(file, keep, opt)) {
-            success = false;
+        if (!opt.check_only && keep < file_size) {
+            fs::resize_file(file, keep, &ts::ErrCodeReport(opt, u"error truncating", file));
         }
     }
 
-    return success ? EXIT_SUCCESS : EXIT_FAILURE;
+    return opt.gotErrors() ? EXIT_FAILURE : EXIT_SUCCESS;
 }

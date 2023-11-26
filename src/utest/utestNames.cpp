@@ -166,31 +166,31 @@ void NamesTest::testConfigFile()
     const ts::NamesFile* const dtv = ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV);
     debug() << "NamesTest: DTV configuration file: " << dtv->configurationFile() << std::endl;
     TSUNIT_ASSERT(!dtv->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(dtv->configurationFile()));
+    TSUNIT_ASSERT(fs::exists(dtv->configurationFile()));
     TSUNIT_EQUAL(0, dtv->errorCount());
 
     const ts::NamesFile* const oui = ts::NamesFile::Instance(ts::NamesFile::Predefined::OUI);
     debug() << "NamesTest: OUI configuration file: " << oui->configurationFile() << std::endl;
     TSUNIT_ASSERT(!oui->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(oui->configurationFile()));
+    TSUNIT_ASSERT(fs::exists(oui->configurationFile()));
     TSUNIT_EQUAL(0, oui->errorCount());
 
     const ts::NamesFile* const ip = ts::NamesFile::Instance(ts::NamesFile::Predefined::IP);
     debug() << "NamesTest: IP configuration file: " << ip->configurationFile() << std::endl;
     TSUNIT_ASSERT(!ip->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(ip->configurationFile()));
+    TSUNIT_ASSERT(fs::exists(ip->configurationFile()));
     TSUNIT_EQUAL(0, ip->errorCount());
 
     const ts::NamesFile* const dektec = ts::NamesFile::Instance(ts::NamesFile::Predefined::DEKTEC);
     debug() << "NamesTest: Dektec configuration file: " << dektec->configurationFile() << std::endl;
     TSUNIT_ASSERT(!dektec->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(dektec->configurationFile()));
+    TSUNIT_ASSERT(fs::exists(dektec->configurationFile()));
     TSUNIT_EQUAL(0, dektec->errorCount());
 
     const ts::NamesFile* const hides = ts::NamesFile::Instance(ts::NamesFile::Predefined::HIDES);
     debug() << "NamesTest: HiDes configuration file: " << hides->configurationFile() << std::endl;
     TSUNIT_ASSERT(!hides->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(hides->configurationFile()));
+    TSUNIT_ASSERT(fs::exists(hides->configurationFile()));
     TSUNIT_EQUAL(0, hides->errorCount());
 }
 

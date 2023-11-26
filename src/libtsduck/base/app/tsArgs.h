@@ -769,12 +769,40 @@ namespace ts {
         //!
         //! Get all occurences of an option in a container of strings.
         //!
+        //! @tparam CONTAINER A container type of UString such as list, vector, etc.
         //! @param [out] values A container of strings receiving all values of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command, a fatal error is reported.
         //!
-        void getValues(UStringVector& values, const UChar* name = nullptr) const;
+        template <class CONTAINER, typename std::enable_if<std::is_base_of<UString, typename CONTAINER::value_type>::value>::type* = nullptr>
+        void getValues(CONTAINER& values, const UChar* name = nullptr) const;
+
+        //!
+        //! Get the value of a filesystem path option in the last analyzed command line.
+        //!
+        //! @param [out] value A path receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] def_value The path to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        void getPathValue(fs::path& value, const UChar* name = nullptr, const fs::path& def_value = fs::path(), size_t index = 0) const;
+
+        //!
+        //! Get all occurences of a filesystem path option in a container of path.
+        //!
+        //! @tparam CONTAINER A container type of fs::path such as list, vector, etc.
+        //! @param [out] values A container of fs::path receiving all values of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //!
+        template <class CONTAINER, typename std::enable_if<std::is_base_of<fs::path, typename CONTAINER::value_type>::value>::type* = nullptr>
+        void getPathValues(CONTAINER& values, const UChar* name = nullptr) const;
 
         //!
         //! Get the value of an integer option in the last analyzed command line.
@@ -1310,6 +1338,38 @@ template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::t
 bool ts::Args::IOption::inRange(INT value) const
 {
     return static_cast<int64_t>(value) >= min_value && static_cast<int64_t>(value) <= max_value;
+}
+
+
+//----------------------------------------------------------------------------
+// Get all occurences of an option in a container of strings.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER, typename std::enable_if<std::is_base_of<ts::UString, typename CONTAINER::value_type>::value>::type*>
+void ts::Args::getValues(CONTAINER& values, const UChar* name) const
+{
+    const IOption& opt(getIOption(name));
+    values.clear();
+    for (const auto& it : opt.values) {
+        if (it.string.has_value()) {
+            values.push_back(it.string.value());
+        }
+    }
+}
+
+template <class CONTAINER, typename std::enable_if<std::is_base_of<fs::path, typename CONTAINER::value_type>::value>::type*>
+void ts::Args::getPathValues(CONTAINER& values, const UChar* name) const
+{
+    const IOption& opt(getIOption(name));
+    values.clear();
+    if (opt.type != FILENAME && opt.type != DIRECTORY) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not a filesystem path");
+    }
+    for (const auto& it : opt.values) {
+        if (it.string.has_value()) {
+            values.push_back(fs::path(it.string.value()));
+        }
+    }
 }
 
 

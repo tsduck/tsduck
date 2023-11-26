@@ -190,7 +190,7 @@ bool ts::NITScanPlugin::start()
 {
     // Pre-load the existing channel file.
     _channels.clear();
-    if (_update_channel_file && !_channel_file.empty() && FileExists(_channel_file) && !_channels.load(_channel_file, *tsp)) {
+    if (_update_channel_file && !_channel_file.empty() && fs::exists(_channel_file) && !_channels.load(_channel_file, *tsp)) {
         return false;
     }
 

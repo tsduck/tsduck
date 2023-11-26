@@ -95,7 +95,7 @@ namespace {
     {
         for (const auto& it : dirs) {
             const ts::UString filename(it + ts::PathSeparator + prefix + name + suffix);
-            if (ts::FileExists(filename)) {
+            if (fs::exists(filename)) {
                 return filename;
             }
         }

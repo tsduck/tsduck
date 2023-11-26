@@ -88,7 +88,7 @@ void TSFileTest::testTS()
     ts::TSFile file;
     ts::TSPacketVector packets(100);
 
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(!file.isOpen());
     TSUNIT_ASSERT(file.open(_tempFileName, ts::TSFile::READ | ts::TSFile::WRITE, CERR));
     TSUNIT_ASSERT(file.isOpen());
@@ -114,8 +114,8 @@ void TSFileTest::testTS()
     TSUNIT_EQUAL(100, file.writePacketsCount());
     TSUNIT_EQUAL(100, file.readPacketsCount());
     TSUNIT_ASSERT(file.close(CERR));
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
-    TSUNIT_EQUAL(18800, ts::GetFileSize(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_EQUAL(18800, fs::file_size(_tempFileName, &ts::ErrCodeReport(CERR)));
     TSUNIT_ASSERT(!file.isOpen());
 }
 
@@ -126,7 +126,7 @@ void TSFileTest::testM2TS()
     ts::TSPacketMetadata mdata;
 
     debug() << "TSFileTest::testM2TS: TS file: " << _tempFileName << std::endl;
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(file.open(_tempFileName, ts::TSFile::WRITE, CERR, ts::TSPacketFormat::M2TS));
 
     packet = ts::NullPacket;
@@ -137,8 +137,8 @@ void TSFileTest::testM2TS()
     }
     TSUNIT_EQUAL(5, file.writePacketsCount());
     TSUNIT_ASSERT(file.close(CERR));
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
-    TSUNIT_EQUAL(960, ts::GetFileSize(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_EQUAL(960, fs::file_size(_tempFileName, &ts::ErrCodeReport(CERR)));
 
     TSUNIT_ASSERT(!file.isOpen());
     TSUNIT_ASSERT(file.openRead(_tempFileName, 2 * (4 + ts::PKT_SIZE), CERR));
@@ -178,7 +178,7 @@ void TSFileTest::testDuck()
     ts::TSPacketMetadata mdata;
 
     debug() << "TSFileTest::testM2TS: TS file: " << _tempFileName << std::endl;
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(file.open(_tempFileName, ts::TSFile::WRITE, CERR, ts::TSPacketFormat::DUCK));
 
     packet = ts::NullPacket;
@@ -197,8 +197,8 @@ void TSFileTest::testDuck()
 
     TSUNIT_EQUAL(2, file.writePacketsCount());
     TSUNIT_ASSERT(file.close(CERR));
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
-    TSUNIT_EQUAL(404, ts::GetFileSize(_tempFileName)); // 2 packets, header size = 14 bytes
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_EQUAL(404, fs::file_size(_tempFileName, &ts::ErrCodeReport(CERR)));  // 2 packets, header size = 14 bytes
 
     TSUNIT_ASSERT(!file.isOpen());
     TSUNIT_ASSERT(file.openRead(_tempFileName, 2, 0, CERR));
@@ -263,7 +263,7 @@ void TSFileTest::testStuffingRead()
     ts::TSPacket pkt;
     ts::TSPacketVector packets(20);
 
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(!file.isOpen());
 
     // Create a file with one packet.
@@ -276,8 +276,8 @@ void TSFileTest::testStuffingRead()
     TSUNIT_EQUAL(0, file.readPacketsCount());
     TSUNIT_ASSERT(!file.isOpen());
 
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
-    TSUNIT_EQUAL(188, ts::GetFileSize(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_EQUAL(188, fs::file_size(_tempFileName, &ts::ErrCodeReport(CERR)));
 
     // Read it with artificial stuffing.
     file.setStuffing(2, 3);
@@ -320,7 +320,7 @@ void TSFileTest::testStuffingWrite()
     ts::TSPacket pkt;
     ts::TSPacketVector packets(20);
 
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(!file.isOpen());
 
     // Create a file with one packet plus stuffing.
@@ -338,8 +338,8 @@ void TSFileTest::testStuffingWrite()
     TSUNIT_EQUAL(0, file.readPacketsCount());
     TSUNIT_ASSERT(!file.isOpen());
 
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
-    TSUNIT_EQUAL(6 * 188, ts::GetFileSize(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
+    TSUNIT_EQUAL(6 * 188, fs::file_size(_tempFileName, &ts::ErrCodeReport(CERR)));
 
     // Read it without artificial stuffing.
     ts::TSFile file2;
