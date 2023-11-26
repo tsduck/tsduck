@@ -62,7 +62,6 @@ public:
     void testIsTerminal();
     void testSysInfo();
     void testSymLinks();
-    void testCurrentWorkingDirectory();
     void testIsAbsoluteFilePath();
     void testAbsoluteFilePath();
     void testCleanupFilePath();
@@ -90,7 +89,6 @@ public:
     TSUNIT_TEST(testIsTerminal);
     TSUNIT_TEST(testSysInfo);
     TSUNIT_TEST(testSymLinks);
-    TSUNIT_TEST(testCurrentWorkingDirectory);
     TSUNIT_TEST(testIsAbsoluteFilePath);
     TSUNIT_TEST(testAbsoluteFilePath);
     TSUNIT_TEST(testCleanupFilePath);
@@ -179,7 +177,7 @@ void SysUtilsTest::testCurrentExecutableFile()
     ts::UString exe(ts::ExecutableFile());
     debug() << "SysUtilsTest: ts::ExecutableFile() = \"" << exe << "\"" << std::endl;
     TSUNIT_ASSERT(!exe.empty());
-    TSUNIT_ASSERT(ts::FileExists(exe));
+    TSUNIT_ASSERT(fs::exists(exe));
 }
 
 void SysUtilsTest::testSleep()
@@ -459,36 +457,39 @@ void SysUtilsTest::testTempFiles()
     TSUNIT_ASSERT(fs::path(ts::DirectoryName(tmpName)) == fs::temp_directory_path());
 
     // Check that we are allowed to create temporary files.
-    TSUNIT_ASSERT(!ts::FileExists(tmpName));
+    TSUNIT_ASSERT(!fs::exists(tmpName));
     TSUNIT_ASSERT(_CreateFile(tmpName, 0));
-    TSUNIT_ASSERT(ts::FileExists(tmpName));
-    TSUNIT_ASSERT(ts::GetFileSize(tmpName) == 0);
+    TSUNIT_ASSERT(fs::exists(tmpName));
+    TSUNIT_EQUAL(0, fs::file_size(tmpName, &ts::ErrCodeReport(CERR)));
     TSUNIT_ASSERT(fs::remove(tmpName, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
-    TSUNIT_ASSERT(!ts::FileExists(tmpName));
+    TSUNIT_ASSERT(!fs::exists(tmpName));
 }
 
 void SysUtilsTest::testFileSize()
 {
     const ts::UString tmpName(ts::TempFile());
-    TSUNIT_ASSERT(!ts::FileExists(tmpName));
+    TSUNIT_ASSERT(!fs::exists(tmpName));
 
     // Create a file
     TSUNIT_ASSERT(_CreateFile(tmpName, 1234));
-    TSUNIT_ASSERT(ts::FileExists(tmpName));
-    TSUNIT_ASSERT(ts::GetFileSize(tmpName) == 1234);
+    TSUNIT_ASSERT(fs::exists(tmpName));
+    TSUNIT_EQUAL(1234, fs::file_size(tmpName, &ts::ErrCodeReport(CERR)));
 
-    TSUNIT_ASSERT(ts::TruncateFile(tmpName, 567));
-    TSUNIT_ASSERT(ts::GetFileSize(tmpName) == 567);
+    bool success = true;
+    fs::resize_file(tmpName, 567, &ts::ErrCodeReport(success, CERR));
+    TSUNIT_ASSERT(success);
+    TSUNIT_EQUAL(567, fs::file_size(tmpName, &ts::ErrCodeReport(CERR)));
 
     const ts::UString tmpName2(ts::TempFile());
-    TSUNIT_ASSERT(!ts::FileExists(tmpName2));
-    TSUNIT_ASSERT(ts::RenameFile(tmpName, tmpName2));
-    TSUNIT_ASSERT(ts::FileExists(tmpName2));
-    TSUNIT_ASSERT(!ts::FileExists(tmpName));
-    TSUNIT_ASSERT(ts::GetFileSize(tmpName2) == 567);
+    TSUNIT_ASSERT(!fs::exists(tmpName2));
+    fs::rename(tmpName, tmpName2, &ts::ErrCodeReport(success, CERR));
+    TSUNIT_ASSERT(success);
+    TSUNIT_ASSERT(fs::exists(tmpName2));
+    TSUNIT_ASSERT(!fs::exists(tmpName));
+    TSUNIT_EQUAL(567, fs::file_size(tmpName2, &ts::ErrCodeReport(CERR)));
 
     TSUNIT_ASSERT(fs::remove(tmpName2, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
-    TSUNIT_ASSERT(!ts::FileExists(tmpName2));
+    TSUNIT_ASSERT(!fs::exists(tmpName2));
 }
 
 void SysUtilsTest::testFileTime()
@@ -524,7 +525,7 @@ void SysUtilsTest::testFileTime()
     ts::Time beforeBase(beforeFields);
     beforeBase -= adjustment;
 
-    TSUNIT_ASSERT(ts::FileExists(tmpName));
+    TSUNIT_ASSERT(fs::exists(tmpName));
     const ts::Time fileUtc(ts::GetFileModificationTimeUTC(tmpName));
     const ts::Time fileLocal(ts::GetFileModificationTimeLocal(tmpName));
 
@@ -545,7 +546,7 @@ void SysUtilsTest::testFileTime()
     TSUNIT_ASSERT(fileLocal.localToUTC() == fileUtc);
 
     TSUNIT_ASSERT(fs::remove(tmpName, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
-    TSUNIT_ASSERT(!ts::FileExists(tmpName));
+    TSUNIT_ASSERT(!fs::exists(tmpName));
 }
 
 void SysUtilsTest::testDirectory()
@@ -554,31 +555,33 @@ void SysUtilsTest::testDirectory()
     const ts::UString sep(1, ts::PathSeparator);
     const ts::UString fileName(sep + u"foo.bar");
 
-    TSUNIT_ASSERT(!ts::FileExists(dirName));
+    TSUNIT_ASSERT(!fs::exists(dirName));
     TSUNIT_ASSERT(fs::create_directories(dirName));
-    TSUNIT_ASSERT(ts::FileExists(dirName));
+    TSUNIT_ASSERT(fs::exists(dirName));
     TSUNIT_ASSERT(fs::is_directory(dirName));
 
     TSUNIT_ASSERT(_CreateFile(dirName + fileName, 0));
-    TSUNIT_ASSERT(ts::FileExists(dirName + fileName));
+    TSUNIT_ASSERT(fs::exists(dirName + fileName));
     TSUNIT_ASSERT(!fs::is_directory(dirName + fileName));
 
+    bool success = true;
     const ts::UString dirName2(ts::TempFile(u""));
-    TSUNIT_ASSERT(!ts::FileExists(dirName2));
-    TSUNIT_ASSERT(ts::RenameFile(dirName, dirName2));
-    TSUNIT_ASSERT(ts::FileExists(dirName2));
+    TSUNIT_ASSERT(!fs::exists(dirName2));
+    fs::rename(dirName, dirName2, &ts::ErrCodeReport(success, CERR));
+    TSUNIT_ASSERT(success);
+    TSUNIT_ASSERT(fs::exists(dirName2));
     TSUNIT_ASSERT(fs::is_directory(dirName2));
-    TSUNIT_ASSERT(!ts::FileExists(dirName));
+    TSUNIT_ASSERT(!fs::exists(dirName));
     TSUNIT_ASSERT(!fs::is_directory(dirName));
-    TSUNIT_ASSERT(ts::FileExists(dirName2 + fileName));
+    TSUNIT_ASSERT(fs::exists(dirName2 + fileName));
     TSUNIT_ASSERT(!fs::is_directory(dirName2 + fileName));
 
     TSUNIT_ASSERT(fs::remove(dirName2 + fileName, &ts::ErrCodeReport(CERR, u"error deleting", dirName2 + fileName)));
-    TSUNIT_ASSERT(!ts::FileExists(dirName2 + fileName));
+    TSUNIT_ASSERT(!fs::exists(dirName2 + fileName));
     TSUNIT_ASSERT(fs::is_directory(dirName2));
 
     TSUNIT_ASSERT(fs::remove(dirName2, &ts::ErrCodeReport(CERR, u"error deleting", dirName2)));
-    TSUNIT_ASSERT(!ts::FileExists(dirName2));
+    TSUNIT_ASSERT(!fs::exists(dirName2));
     TSUNIT_ASSERT(!fs::is_directory(dirName2));
 }
 
@@ -595,7 +598,7 @@ void SysUtilsTest::testWildcard()
     // Create one file with unique pattern
     const ts::UString spuriousFileName(dirName + ts::PathSeparator + u"tagada");
     TSUNIT_ASSERT(_CreateFile(spuriousFileName, 0));
-    TSUNIT_ASSERT(ts::FileExists(spuriousFileName));
+    TSUNIT_ASSERT(fs::exists(spuriousFileName));
 
     // Create many files
     ts::UStringVector fileNames;
@@ -603,7 +606,7 @@ void SysUtilsTest::testWildcard()
     for (size_t i = 0; i < count; ++i) {
         const ts::UString fileName(filePrefix + ts::UString::Format(u"%03d", {i}));
         TSUNIT_ASSERT(_CreateFile(fileName, 0));
-        TSUNIT_ASSERT(ts::FileExists(fileName));
+        TSUNIT_ASSERT(fs::exists(fileName));
         fileNames.push_back(fileName);
     }
     Display(u"created files:", u"file: ", fileNames);
@@ -618,12 +621,12 @@ void SysUtilsTest::testWildcard()
     // Final cleanup
     for (const auto& file : fileNames) {
         TSUNIT_ASSERT(fs::remove(file, &ts::ErrCodeReport(CERR, u"error deleting", file)));
-        TSUNIT_ASSERT(!ts::FileExists(file));
+        TSUNIT_ASSERT(!fs::exists(file));
     }
     TSUNIT_ASSERT(fs::remove(spuriousFileName, &ts::ErrCodeReport(CERR, u"error deleting", spuriousFileName)));
-    TSUNIT_ASSERT(!ts::FileExists(spuriousFileName));
+    TSUNIT_ASSERT(!fs::exists(spuriousFileName));
     TSUNIT_ASSERT(fs::remove(dirName, &ts::ErrCodeReport(CERR, u"error deleting", dirName)));
-    TSUNIT_ASSERT(!ts::FileExists(dirName));
+    TSUNIT_ASSERT(!fs::exists(dirName));
 }
 
 void SysUtilsTest::testSearchWildcard()
@@ -644,7 +647,7 @@ void SysUtilsTest::testHomeDirectory()
     debug() << "SysUtilsTest: UserHomeDirectory() = \"" << dir << "\"" << std::endl;
 
     TSUNIT_ASSERT(!dir.empty());
-    TSUNIT_ASSERT(ts::FileExists(dir));
+    TSUNIT_ASSERT(fs::exists(dir));
     TSUNIT_ASSERT(fs::is_directory(dir));
 }
 
@@ -791,22 +794,14 @@ void SysUtilsTest::testSymLinks()
 
     // Obviously non existent paths should translate to themselves.
     const ts::UString badName(u"khzkfjhzHJKHK35464.foo.BAD.NOT.THERE");
-    TSUNIT_ASSERT(!ts::IsSymbolicLink(badName));
+    TSUNIT_ASSERT(!fs::is_symlink(badName, &ts::ErrCodeReport(NULLREP)));
     TSUNIT_EQUAL(badName, ts::ResolveSymbolicLinks(badName));
 
 #if defined(TS_LINUX)
-    TSUNIT_ASSERT(ts::IsSymbolicLink(u"/proc/self"));
+    TSUNIT_ASSERT(fs::is_symlink(u"/proc/self", &ts::ErrCodeReport(NULLREP)));
     TSUNIT_ASSERT(!ts::ResolveSymbolicLinks(u"/proc/self").empty());
     TSUNIT_ASSERT(ts::ResolveSymbolicLinks(u"/proc/self") != u"/proc/self");
 #endif
-}
-
-void SysUtilsTest::testCurrentWorkingDirectory()
-{
-    debug() << "SysUtilsTest::testCurrentWorkingDirectory: " << ts::CurrentWorkingDirectory() << std::endl;
-
-    TSUNIT_ASSERT(!ts::CurrentWorkingDirectory().empty());
-    TSUNIT_ASSERT(fs::is_directory(ts::CurrentWorkingDirectory()));
 }
 
 

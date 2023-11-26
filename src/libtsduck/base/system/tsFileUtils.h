@@ -17,6 +17,8 @@
 #include "tsEnumUtils.h"
 #include "tsTime.h"
 #include "tsCerrReport.h"
+#include "tsNullReport.h"
+#include "tsErrCodeReport.h"
 
 //!
 //! Executable file suffix.
@@ -196,13 +198,6 @@ namespace ts {
     TSDUCKDLL UString UserHomeDirectory();
 
     //!
-    //! Check if a file path is a symbolic link.
-    //! @param [in] path A file path.
-    //! @return True if @a path is a symbolic link.
-    //!
-    TSDUCKDLL bool IsSymbolicLink(const UString& path);
-
-    //!
     //! Flags for ResolveSymbolicLinks().
     //!
     enum ResolveSymbolicLinksFlags {
@@ -222,25 +217,11 @@ namespace ts {
     TSDUCKDLL UString ResolveSymbolicLinks(const UString& path, ResolveSymbolicLinksFlags flags = LINK_SINGLE);
 
     //!
-    //! Get the current working directory.
-    //! @return The current working directory.
-    //!
-    TSDUCKDLL UString CurrentWorkingDirectory();
-
-    //!
     //! Return the name of a unique temporary file.
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
     //!
     TSDUCKDLL UString TempFile(const UString& suffix = u".tmp");
-
-    //!
-    //! Get the size in bytes of a file.
-    //!
-    //! @param [in] path A file path.
-    //! @return Size in bytes of the file or -1 in case of error.
-    //!
-    TSDUCKDLL int64_t GetFileSize(const UString& path);
 
     //!
     //! Get the local time of the last modification of a file.
@@ -258,44 +239,11 @@ namespace ts {
     TSDUCKDLL Time GetFileModificationTimeUTC(const UString& path);
 
     //!
-    //! Check if a file or directory exists
-    //! @param [in] path A file path.
-    //! @return True if a file or directory exists with that name, false otherwise.
-    //!
-    TSDUCKDLL bool FileExists(const UString& path);
-
-    //!
     //! Check if a file exists and is executable.
     //! @param [in] path A file path.
     //! @return True if a file exists with that name and is executable, false otherwise.
     //!
     TSDUCKDLL bool IsExecutable(const UString& path);
-
-    //!
-    //! Truncate a file to the specified size.
-    //!
-    //! @param [in] path A file path.
-    //! @param [in] size Size in bytes after which the file shall be truncated.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool TruncateFile(const UString& path, uint64_t size, Report& report = CERR);
-
-    //!
-    //! Rename / move a file or directory.
-    //!
-    //! If the path specifies a directory, all files in the directory
-    //! are moved as well.
-    //!
-    //! This method is not guaranteed to work when the new and old names
-    //! are on distinct volumes or file systems.
-    //!
-    //! @param [in] old_path The file path of an existing file or directory.
-    //! @param [in] new_path The new name for the file or directory.
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool RenameFile(const UString& old_path, const UString& new_path, Report& report = CERR);
 
     //!
     //! Get all files matching a specified wildcard pattern and append them into a container.
@@ -487,7 +435,7 @@ bool ts::SearchWildcardAndAppend(CONTAINER& container, const UString& root, cons
         UStringList locals;
         ExpandWildcard(locals, root + PathSeparator + u"*");
         for (const auto& loc : locals) {
-            if (fs::is_directory(loc) && (!skip_symlinks || !IsSymbolicLink(loc))) {
+            if (fs::is_directory(loc) && (!skip_symlinks || !fs::is_symlink(loc, &ErrCodeReport(NULLREP)))) {
                 status = SearchWildcardAndAppend(container, loc, pattern, max_levels - 1) && status;
             }
         }

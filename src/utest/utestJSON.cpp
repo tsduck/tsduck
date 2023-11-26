@@ -781,7 +781,7 @@ void JsonTest::testRunningDocumentEmpty()
 {
     ts::json::RunningDocument doc(CERR);
 
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(doc.open(ts::json::ValuePtr(), _tempFileName));
 
     doc.add(ts::json::String(u"foo"));
@@ -791,7 +791,7 @@ void JsonTest::testRunningDocumentEmpty()
     doc.add(obj1);
     doc.close();
 
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
     TSUNIT_EQUAL(u"[\n"
                  u"  \"foo\",\n"
                  u"  -23,\n"
@@ -816,7 +816,7 @@ void JsonTest::testRunningDocument()
     root->query(u"init_obj2.subobj4", true).add(u"val5", u"zeval5");
     root->query(u"init_obj3.subobj5", true).add(u"val6", u"zeval6");
 
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(doc.open(root, _tempFileName));
 
     doc.add(ts::json::String(u"foo"));
@@ -826,7 +826,7 @@ void JsonTest::testRunningDocument()
     doc.add(obj1);
     doc.close();
 
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
     TSUNIT_EQUAL(u"{\n"
                  u"  \"init_obj1\": {\n"
                  u"    \"subobj1\": {\n"

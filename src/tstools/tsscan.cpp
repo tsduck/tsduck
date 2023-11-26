@@ -631,7 +631,7 @@ void ScanContext::main()
     }
 
     // Pre-load the existing channel file.
-    if (_opt.update_channel_file && !_opt.channel_file.empty() && ts::FileExists(_opt.channel_file) && !_channels.load(_opt.channel_file, _opt)) {
+    if (_opt.update_channel_file && !_opt.channel_file.empty() && fs::exists(_opt.channel_file) && !_channels.load(_opt.channel_file, _opt)) {
         return;
     }
 

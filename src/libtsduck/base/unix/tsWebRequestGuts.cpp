@@ -353,7 +353,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
 
         // Download the CA certificate file from CURL if requested.
-        const bool certFileExists = certState != CERT_NONE && FileExists(_certFile);
+        const bool certFileExists = certState != CERT_NONE && fs::exists(_certFile);
         if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < MilliSecPerDay) {
             // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
             certState = CERT_DOWNLOAD;
@@ -372,7 +372,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             certRequest.setConnectionTimeout(_request._connectionTimeout);
             certRequest._guts->_certFile.clear(); // don't recurse in case of cert issue!
 
-            if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !FileExists(_certFile)) {
+            if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !fs::exists(_certFile)) {
                 _request._report.verbose(u"failed to get a fresh CA list, use default list");
                 certState = CERT_NONE;
             }

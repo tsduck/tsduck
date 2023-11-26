@@ -187,7 +187,7 @@ void SectionFileTest::testConfigurationFile()
 {
     const ts::UString conf(ts::SearchConfigurationFile(ts::SectionFile::XML_TABLES_MODEL));
     debug() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
-    TSUNIT_ASSERT(ts::FileExists(conf));
+    TSUNIT_ASSERT(fs::exists(conf));
 }
 
 void SectionFileTest::testGenericDescriptor()
@@ -436,14 +436,14 @@ void SectionFileTest::testBuildSections()
 
     // Save files.
     debug() << "SectionFileTest::testBuildSections: saving " << _tempFileNameBin << std::endl;
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileNameBin));
+    TSUNIT_ASSERT(!fs::exists(_tempFileNameBin));
     TSUNIT_ASSERT(file.saveBinary(_tempFileNameBin));
-    TSUNIT_ASSERT(ts::FileExists(_tempFileNameBin));
+    TSUNIT_ASSERT(fs::exists(_tempFileNameBin));
 
     debug() << "SectionFileTest::testBuildSections: saving " << _tempFileNameXML << std::endl;
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileNameXML));
+    TSUNIT_ASSERT(!fs::exists(_tempFileNameXML));
     TSUNIT_ASSERT(file.saveXML(_tempFileNameXML));
-    TSUNIT_ASSERT(ts::FileExists(_tempFileNameXML));
+    TSUNIT_ASSERT(fs::exists(_tempFileNameXML));
 
     // Reload files.
     ts::SectionFile binFile(duck);

@@ -47,7 +47,7 @@ namespace {
     const size_t DEFAULT_INJECT_COUNT = 2;
 
     // Default max size for files.
-    const size_t DEFAULT_MAX_FILE_SIZE = 2048;
+    const std::uintmax_t DEFAULT_MAX_FILE_SIZE = 2048;
 
     // Stack size of listener threads.
     const size_t SERVER_THREAD_STACK_SIZE = 128 * 1024;
@@ -74,28 +74,28 @@ namespace ts {
 
     private:
         // Command line options:
-        bool          _use_files = false;         // Use file polling input.
-        bool          _use_udp = false;           // Use UDP input.
-        bool          _delete_files = false;
-        bool          _reuse_port = false;
-        bool          _wait_first_batch = false;  // Option --wait-first-batch (wfb).
-        PID           _inject_pid_opt = PID_NULL; // PID for injection, as specified in cmmand line.
-        PID           _pcr_pid_opt = PID_NULL;    // PID containing PCR's, as specified in cmmand line.
-        PID           _pts_pid_opt = PID_NULL;    // PID containing PTS's, as specified in cmmand line.
-        BitRate       _min_bitrate = 0;
-        PacketCounter _min_inter_packet = 0;
-        UString       _files {};
-        UString       _service_ref {};            // Service name or id.
+        bool           _use_files = false;         // Use file polling input.
+        bool           _use_udp = false;           // Use UDP input.
+        bool           _delete_files = false;
+        bool           _reuse_port = false;
+        bool           _wait_first_batch = false;  // Option --wait-first-batch (wfb).
+        PID            _inject_pid_opt = PID_NULL; // PID for injection, as specified in cmmand line.
+        PID            _pcr_pid_opt = PID_NULL;    // PID containing PCR's, as specified in cmmand line.
+        PID            _pts_pid_opt = PID_NULL;    // PID containing PTS's, as specified in cmmand line.
+        BitRate        _min_bitrate = 0;
+        PacketCounter  _min_inter_packet = 0;
+        UString        _files {};
+        UString        _service_ref {};            // Service name or id.
         IPv4SocketAddress _server_address {};
-        size_t        _sock_buf_size = 0;
-        size_t        _inject_count = 0;
-        MilliSecond   _inject_interval = 0;
-        MilliSecond   _start_delay = 0;
-        MilliSecond   _poll_interval = 0;
-        MilliSecond   _min_stable_delay = 0;
-        int64_t       _max_file_size = 0;
-        size_t        _queue_size = 0;
-        SectionPtr    _null_splice {};            // A null splice section to maintain PID bitrate.
+        size_t         _sock_buf_size = 0;
+        size_t         _inject_count = 0;
+        MilliSecond    _inject_interval = 0;
+        MilliSecond    _start_delay = 0;
+        MilliSecond    _poll_interval = 0;
+        MilliSecond    _min_stable_delay = 0;
+        std::uintmax_t _max_file_size = 0;
+        size_t         _queue_size = 0;
+        SectionPtr     _null_splice {};            // A null splice section to maintain PID bitrate.
 
         // The plugin contains two internal threads in addition to the packet processing thread.
         // One thread polls input files and another thread receives UDP messages.
@@ -965,7 +965,7 @@ bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileLis
             // Process added or modified files.
             const UString name(file.getFileName());
             ByteBlock data;
-            if (file.getSize() > _plugin->_max_file_size) {
+            if (file.getSize() != FS_ERROR && file.getSize() > _plugin->_max_file_size) {
                 _tsp->warning(u"file %s is too large, %'d bytes, ignored", {name, file.getSize()});
             }
             else if (data.loadFromFile(name, size_t(_plugin->_max_file_size), _tsp)) {

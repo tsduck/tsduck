@@ -32,7 +32,7 @@ namespace ts {
         //! @param [in] path A file path or URL as a string.
         //! If this is a file specification, build a "file:" URL with the absolute path.
         //!
-        URL(const UString& path);
+        URL(const UString& path) { setURL(path); }
 
         //!
         //! Constructor from a string and a base string.
@@ -41,14 +41,14 @@ namespace ts {
         //! By default, when @a base is empty, the current working directory is used and a "file:"
         //! URL is built.
         //!
-        URL(const UString& path, const UString& base);
+        URL(const UString& path, const UString& base) { setURL(path, base); }
 
         //!
         //! Constructor from a string and a base URL.
         //! @param [in] path A file path or URL as a string.
         //! @param [in] base The base URL to use if @a path is a relative path.
         //!
-        URL(const UString& path, const URL& base);
+        URL(const UString& path, const URL& base) { setURL(path, base); }
 
         //!
         //! Set URL from a string.

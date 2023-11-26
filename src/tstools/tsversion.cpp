@@ -18,6 +18,8 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
+#include "tsErrCodeReport.h"
+#include "tsNullReport.h"
 #include "tsForkPipe.h"
 #include "tsDuckExtensionRepository.h"
 #if defined(TS_WINDOWS)
@@ -361,13 +363,13 @@ namespace {
 
 #if !defined(TS_NO_GITHUB)
 namespace {
-    bool DownloadFile(Options& opt, const ts::UString& url, const ts::UString& file, int64_t size)
+    bool DownloadFile(Options& opt, const ts::UString& url, const ts::UString& file, std::uintmax_t size)
     {
         // Without --force, don't download when a file exists with same size.
         if (!opt.force) {
             // If the size is unknown, do not download again if the file is not empty, trust the size.
-            const int64_t fileSize = ts::GetFileSize(file);
-            if ((size == 0 && fileSize > 0) || (size > 0 && fileSize == size)) {
+            const std::uintmax_t fileSize = fs::file_size(file, &ts::ErrCodeReport(NULLREP));
+            if ((size == 0 && fileSize != ts::FS_ERROR) || (size > 0 && fileSize == size)) {
                 if (opt.verbose()) {
                     std::cout << "File already downloaded: " << file << std::endl;
                 }

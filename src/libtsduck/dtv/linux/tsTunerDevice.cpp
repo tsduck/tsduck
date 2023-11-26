@@ -272,7 +272,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     // In some adapters, there are less demux than frontends, find the highest existing demux number.
     if (fcount < 3) {
         demux_nb = frontend_nb;
-        while (demux_nb > 0 && !FileExists(UString::Format(u"%s%cdemux%d", {fields[0], dvb_name_separator, demux_nb}))) {
+        while (demux_nb > 0 && !fs::exists(UString::Format(u"%s%cdemux%d", {fields[0], dvb_name_separator, demux_nb}))) {
             demux_nb--;
         }
     }
@@ -281,7 +281,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     // In some adapters, there are less dvr than frontends, find the highest existing dvr number.
     if (fcount < 4) {
         dvr_nb = frontend_nb;
-        while (dvr_nb > 0 && !FileExists(UString::Format(u"%s%cdvr%d", {fields[0], dvb_name_separator, dvr_nb}))) {
+        while (dvr_nb > 0 && !fs::exists(UString::Format(u"%s%cdvr%d", {fields[0], dvb_name_separator, dvr_nb}))) {
             dvr_nb--;
         }
     }

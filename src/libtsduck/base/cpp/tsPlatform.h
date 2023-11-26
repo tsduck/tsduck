@@ -1260,6 +1260,11 @@ namespace ts {
     constexpr MilliSecond MilliSecPerDay = 1000 * 60 * 60 * 24;
 
     //!
+    //! This error code is returned by some functions in std::filesystem.
+    //!
+    constexpr std::uintmax_t FS_ERROR = static_cast<std::uintmax_t>(-1);
+
+    //!
     //! Enumeration type used to indicate if the data referenced by a pointer shall be copied or shared.
     //!
     enum class ShareMode {

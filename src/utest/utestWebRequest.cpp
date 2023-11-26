@@ -145,9 +145,9 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     }
 
     // Test file download
-    TSUNIT_ASSERT(!ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(!fs::exists(_tempFileName));
     TSUNIT_ASSERT(request.downloadFile(url, _tempFileName));
-    TSUNIT_ASSERT(ts::FileExists(_tempFileName));
+    TSUNIT_ASSERT(fs::exists(_tempFileName));
     TSUNIT_EQUAL(url, request.originalURL());
     TSUNIT_ASSERT(!request.finalURL().empty());
     if (expectRedirection) {
@@ -225,7 +225,7 @@ void WebRequestTest::testNonExistentHost()
 
     ts::ByteBlock data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"http://non.existent.fake-domain/", data));
-    
+
     debug() << "WebRequestTest::testNonExistentHost: " << rep.messages() << std::endl;
 }
 
@@ -236,6 +236,6 @@ void WebRequestTest::testInvalidURL()
 
     ts::ByteBlock data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"pouette://tagada/tsoin/tsoin", data));
-    
+
     debug() << "WebRequestTest::testInvalidURL: " << rep.messages() << std::endl;
 }

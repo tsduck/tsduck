@@ -9,6 +9,8 @@
 #include "tsPollFiles.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
+#include "tsNullReport.h"
+#include "tsErrCodeReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -76,7 +78,7 @@ bool ts::PollFiles::pollOnce()
     for (const auto& name : found_files) {
 
         // Get characteristics of next found file
-        const int64_t size(GetFileSize(name));
+        const std::uintmax_t size = fs::file_size(name, &ErrCodeReport(NULLREP));
         const Time date(GetFileModificationTimeUTC(name));
 
         // Remove polled files before the found file

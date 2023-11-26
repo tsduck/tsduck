@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPolledFile.h"
-#include "tsSysUtils.h"
 
 
 //----------------------------------------------------------------------------
@@ -40,7 +39,7 @@ ts::PolledFile::PolledFile(const UString& name, const int64_t& size, const Time&
 // Check if file has changed size or date.
 //----------------------------------------------------------------------------
 
-void ts::PolledFile::trackChange(const int64_t& size, const Time& date, const Time& now)
+void ts::PolledFile::trackChange(const std::uintmax_t& size, const Time& date, const Time& now)
 {
     if (_file_size != size || _file_date != date) {
         _status = MODIFIED;
