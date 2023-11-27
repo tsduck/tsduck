@@ -395,18 +395,6 @@ ts::Time ts::GetFileModificationTimeLocal(const UString& path)
 
 
 //----------------------------------------------------------------------------
-// Check if a file exists and is executable.
-//----------------------------------------------------------------------------
-
-bool ts::IsExecutable(const UString& path)
-{
-    bool success = true;
-    fs::file_status st(fs::status(path, &ErrCodeReport(success)));
-    return success && (st.permissions() & (fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec)) != fs::perms::none;
-}
-
-
-//----------------------------------------------------------------------------
 // Search an executable file.
 //----------------------------------------------------------------------------
 
@@ -423,10 +411,13 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
         name.append(ExecutableFileSuffix);
     }
 
-    // If there is a path separator, there is a directory specified, don't search.
+    // Executable mask at any level.
+    const fs::perms exec = fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec;
+
+    // If there is at least one path separator in the middle, there is a directory specified, don't search.
     if (LastPathSeparator(fileName) != NPOS) {
         // If the file does not exist or is not executable, not suitable.
-        return (fs::exists(name) && IsExecutable(name)) ? name : UString();
+        return fs::exists(name) && (fs::status(name, &ErrCodeReport()).permissions() & exec) != fs::perms::none ? name : UString();
     }
 
     // Search in the path.
@@ -434,7 +425,7 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
     GetEnvironmentPath(dirs, pathName);
     for (const auto& dir : dirs) {
         const UString full(dir + fs::path::preferred_separator + name);
-        if (fs::exists(full) && IsExecutable(full)) {
+        if (fs::exists(full) && (fs::status(full, &ErrCodeReport()).permissions() & exec) != fs::perms::none) {
             return full;
         }
     }
@@ -535,49 +526,4 @@ ts::UString ts::UserConfigurationFileName(const UString& fileName, const UString
 #else
     return UserHomeDirectory() + u"/" + fileName;
 #endif
-}
-
-
-//----------------------------------------------------------------------------
-// Resolve symbolic links.
-//----------------------------------------------------------------------------
-
-ts::UString ts::ResolveSymbolicLinks(const ts::UString &path, ResolveSymbolicLinksFlags flags)
-{
-    UString link((flags & LINK_ABSOLUTE) != 0 ? AbsoluteFilePath(path) : path);
-
-#if defined(TS_UNIX)
-
-    // Only on Unix systems: resolve symbolic links.
-    std::array<char, 2048> name;
-    int foolproof = 64; // Avoid endless loops in failing links.
-
-    // Loop on nested symbolic links.
-    while (fs::is_symlink(link, &ErrCodeReport())) {
-
-        // Translate the symbolic link.
-        const ssize_t length = ::readlink(link.toUTF8().c_str(), name.data(), name.size());
-        if (length <= 0) {
-            // Error, cannot translate the link or empty value, return the path.
-            break;
-        }
-        assert(length <= ssize_t(name.size()));
-
-        // Next step is the translated link.
-        if ((flags & LINK_ABSOLUTE) != 0) {
-            link = AbsoluteFilePath(UString::FromUTF8(name.data(), size_t(length)), DirectoryName(link));
-        }
-        else {
-            link.assignFromUTF8(name.data(), size_t(length));
-        }
-
-        // Without recursion, do not loop.
-        if ((flags & LINK_RECURSE) == 0 || foolproof-- <= 0) {
-            break;
-        }
-    }
-
-#endif
-
-    return link;
 }

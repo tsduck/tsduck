@@ -35,9 +35,7 @@ utest::TSUnitBenchmark::TSUnitBenchmark::TSUnitBenchmark(const ts::UString& env_
 void utest::TSUnitBenchmark::start()
 {
     if (!_started) {
-        ts::ProcessMetrics pm;
-        ts::GetProcessMetrics(pm);
-        _start = pm.cpu_time;
+        _start = ts::GetProcessCpuTime();
         _started = true;
     }
 }
@@ -45,9 +43,7 @@ void utest::TSUnitBenchmark::start()
 void utest::TSUnitBenchmark::stop()
 {
     if (_started) {
-        ts::ProcessMetrics pm;
-        ts::GetProcessMetrics(pm);
-        _accumulated += pm.cpu_time - _start;
+        _accumulated += ts::GetProcessCpuTime() - _start;
         _sequences++;
         _started = false;
     }
