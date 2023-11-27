@@ -9,7 +9,7 @@
 #include "tsEnvironment.h"
 #include "tsSingleton.h"
 
-#if defined(TS_BSD)
+#if defined(TS_MAC) || defined(TS_BSD)
     extern char **environ; // not defined in public headers
 #endif
 
