@@ -23,6 +23,7 @@ on:
 jobs:
   windows:
     name: Windows build
+    if: github.repository == 'tsduck/tsduck'
     runs-on: windows-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,6 +126,7 @@ jobs:
 
   linux:
     name: Linux build
+    if: github.repository == 'tsduck/tsduck'
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -220,6 +222,7 @@ jobs:
         
   doc:
     name: Documentation build
+    if: github.repository == 'tsduck/tsduck'
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
