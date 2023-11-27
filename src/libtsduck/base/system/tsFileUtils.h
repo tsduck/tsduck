@@ -15,7 +15,6 @@
 #pragma once
 #include "tsUString.h"
 #include "tsEnvironment.h"
-#include "tsEnumUtils.h"
 #include "tsTime.h"
 #include "tsErrCodeReport.h"
 
@@ -166,25 +165,6 @@ namespace ts {
     TSDUCKDLL UString UserHomeDirectory();
 
     //!
-    //! Flags for ResolveSymbolicLinks().
-    //!
-    enum ResolveSymbolicLinksFlags {
-        LINK_SINGLE   = 0x0000,  //!< Default: simply single name resolution.
-        LINK_RECURSE  = 0x0001,  //!< Resolve symbolic recursively.
-        LINK_ABSOLUTE = 0x0002,  //!< Rebuild absolute path.
-    };
-
-    //!
-    //! Resolve symbolic links.
-    //! On Unix systems, resolve symbolic links and return the corresponding link.
-    //! On Windows and systems without symbolic links, return @a path.
-    //! @param [in] path A file path.
-    //! @param [in] flags Option flags, bit mask of ResolveSymbolicLinksFlags values.
-    //! @return The fully resolved path.
-    //!
-    TSDUCKDLL UString ResolveSymbolicLinks(const UString& path, ResolveSymbolicLinksFlags flags = LINK_SINGLE);
-
-    //!
     //! Return the name of a unique temporary file.
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
@@ -205,13 +185,6 @@ namespace ts {
     //! @return Last modification time or Time::Epoch in case of error.
     //!
     TSDUCKDLL Time GetFileModificationTimeUTC(const UString& path);
-
-    //!
-    //! Check if a file exists and is executable.
-    //! @param [in] path A file path.
-    //! @return True if a file exists with that name and is executable, false otherwise.
-    //!
-    TSDUCKDLL bool IsExecutable(const UString& path);
 
     //!
     //! Get all files matching a specified wildcard pattern and append them into a container.
@@ -327,8 +300,6 @@ namespace ts {
 //----------------------------------------------------------------------------
 // Template definitions.
 //----------------------------------------------------------------------------
-
-TS_ENABLE_BITMASK_OPERATORS(ts::ResolveSymbolicLinksFlags);
 
 // Get all files matching a specified wildcard pattern and append them into a container.
 template <class CONTAINER>

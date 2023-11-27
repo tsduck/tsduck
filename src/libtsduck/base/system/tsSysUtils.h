@@ -167,25 +167,18 @@ namespace ts {
     TSDUCKDLL bool IsPrivilegedUser();
 
     //!
-    //! This structure contains metrics about a process
-    //!
-    struct TSDUCKDLL ProcessMetrics
-    {
-        MilliSecond cpu_time;    //!< CPU time of the process in milliseconds.
-        size_t      vmem_size;   //!< Virtual memory size in bytes.
-
-        //!
-        //! Default constructor.
-        //!
-        ProcessMetrics() : cpu_time(-1), vmem_size(0) {}
-    };
-
-    //!
-    //! Get metrics for the current process
-    //! @param [out] metrics Receive the current process metrics.
+    //! Get the CPU time of the process in milliseconds.
+    //! @return The CPU time of the process in milliseconds.
     //! @throw ts::Exception on error.
     //!
-    TSDUCKDLL void GetProcessMetrics(ProcessMetrics& metrics);
+    TSDUCKDLL MilliSecond GetProcessCpuTime();
+
+    //!
+    //! Get the virtual memory size of the process in bytes.
+    //! @return The virtual memory size of the process in bytes.
+    //! @throw ts::Exception on error.
+    //!
+    TSDUCKDLL size_t GetProcessVirtualSize();
 
     //!
     //! Ensure that writing to a broken pipe does not kill the current process.
@@ -231,8 +224,8 @@ namespace ts {
     //! This function forces it into binary mode.
     //!
     //! @param [in,out] report Where to report errors.
-    //! If @a report is a subclass of ts::Args, also terminate application.
     //! @return True on success, false on error.
+    //! If @a report is a subclass of ts::Args, terminate the application on error.
     //! @see SetBinaryModeStdout()
     //!
     TSDUCKDLL bool SetBinaryModeStdin(Report& report = CERR);
@@ -247,8 +240,8 @@ namespace ts {
     //! This function forces it into binary mode.
     //!
     //! @param [in,out] report Where to report errors.
-    //! If @a report is a subclass of ts::Args, also terminate application.
     //! @return True on success, false on error.
+    //! If @a report is a subclass of ts::Args, terminate the application on error.
     //! @see SetBinaryModeStdout()
     //!
     TSDUCKDLL bool SetBinaryModeStdout(Report& report = CERR);

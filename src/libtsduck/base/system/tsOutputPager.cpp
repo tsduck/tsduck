@@ -68,7 +68,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
                     // On Linux, with the BusyBox environment, many commands are redirected to the busybox executable.
                     // In that case, the busybox version may not understand some options of the GNU version.
                     #if defined(TS_LINUX)
-                        useParameters = !ResolveSymbolicLinks(exe).contain(u"busybox", CASE_INSENSITIVE);
+                        useParameters = !UString(fs::weakly_canonical(exe, &ErrCodeReport())).contain(u"busybox", CASE_INSENSITIVE);
                     #endif
                     // Same thing with UnxUtils (sometimes spelled UnixUtils) on Windows.
                     #if defined(TS_WINDOWS)

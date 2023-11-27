@@ -338,11 +338,9 @@ to lock physical memory.
 
 ## Processes {#processes}
 
-The class ts::ProcessMetrics and the function ts::GetProcessMetrics are used to fetch
-CPU time and virtual memory usage of the current process. To track potential memory
-leaks and the impact of the application on the system, the class ts::SystemMonitor
-creates a background thread which reports the process metrics of the application
-at regular intervals.
+To track potential memory leaks and the impact of the application on the system,
+the class ts::SystemMonitor creates a background thread which reports the process
+metrics of the application at regular intervals.
 
 The class ts::ForkPipe is a portable and convenient way to create a process
 running a specific command and creates an outgoing pipe from the calling application
