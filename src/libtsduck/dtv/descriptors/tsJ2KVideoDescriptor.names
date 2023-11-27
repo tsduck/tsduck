@@ -1,0 +1,54 @@
+[J2K_video_descriptor.colour_primaries]
+Bits = 8
+# ITU-T H.273, table 2
+1 = ITU-R BT.709.6
+2 = Unknown
+4 = ITU-R BT.470-6 System M
+5 = ITU-R BT.470-6 System B, G
+6 = ITU-R BT.601-7
+7 = SMPTE ST 240
+8 = Generic Film
+9 = ITU-R BT.2020-2/2100-2
+10 = SMPTE ST 428-1
+11 = SMPTE ST 431-2
+12 = SMPTE ST 431-1
+22 = Unspecified
+
+[J2K_video_descriptor.transfer_characteristics]
+Bits = 8
+# ITU-T H.273, table 3
+1 = UTU-R BT.709-6
+2 = Unknown
+4 = ITU-R BT.470-6 System M
+5 = ITU-R BT.470-6 System B, G
+6 = ITU-R BT.601-7
+7 = SMPTE ST 240
+8 = Linear
+9 = Logarithmic (100:1)
+10 = Logarithmic (sqrt)
+11 = IEC 61966-2-4
+12 = ITU-R BT.1361-0 extended
+13 = IEC 61966-2-1 sRGB
+14 = ITU-R BT.2020-2 (10 bit)
+15 = ITU-R BT.2020-2 (12 bit)
+16 = SMPTE ST 2084 
+17 = SMPTE ST 428-1
+18 = ARIB STD-B67
+
+[J2K_video_descriptor.matrix_coefficients]
+Bits = 8
+# ITU-T H.273, table 4
+0 = Indentity
+1 = ITU-R BT.709-6
+2 = Unknown
+4 = US FCC Title 47 [73.682 (a)(20)]
+5 = ITU-R BT.470-6 System B, G
+6 = ITU-R BT.601-7
+7 = SMPTE ST 240
+8 = YCgCo
+9 = ITU-R BT.2020-2 NCL
+10 = ITU-R BT.2020-2 CL
+11 = SMTPTE 2085
+12 = Chromaticity derived NCL
+13 = Chromaticity derived CL
+14 = ITU-R BT.2100-2

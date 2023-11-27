@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <JPEG_XS_video_descriptor
+        descriptor_version="uint8, required"
+        horizontal_size="uint16, required"
+        vertical_size="uint16, required"
+        brat="uint32, required"
+        frat="uint32, required"
+        schar="unint16, required"
+        Ppih="unit16, required"
+        Plev="uint16, required"
+        max_buffer_size="uint32, required"
+        buffer_model_type="uint8, required"
+        colour_primaries="unit8, required"
+        transfer_characteristics="unit8, required"
+        matrix_coefficients="unit8, required"
+        video_full_range_flag="bool, required"
+        still_mode="bool, required">
+
+      <mdm
+        X_c0="uint16, required"
+        Y_c0="uint16, required"
+        X_c1="uint16, required"
+        Y_c1="uint16, required"
+        X_c2="uint16, required"
+        Y_c2="uint16, required"
+        X_wp="uint16, required"
+        Y_wp="uint16, required"
+        L_max="uint32, required"
+        L_min="uint32, required"
+        MaxCLL="uint16, required"
+        MaxFALL="uint16, required"/>
+      
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </JPEG_XS_video_descriptor>
+
+  </_descriptors>
+</tsduck>

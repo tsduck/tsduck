@@ -14,6 +14,7 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
+#include "tsMasteringDisplayMetadata.h"
 
 namespace ts {
     //!
@@ -24,19 +25,82 @@ namespace ts {
     //!
     class TSDUCKDLL J2KVideoDescriptor : public AbstractDescriptor
     {
+        class TSDUCKDLL JPEGXS_Stripe_type {
+            TS_DEFAULT_COPY_MOVE(JPEGXS_Stripe_type);
+        public:
+            uint8_t  strp_max_idx = 0;  //!< Maximum value of the stripe index.
+            uint16_t strp_height = 0;   //!< Default vertical size of a stripe.
+            //!
+            //! Default constructor.
+            //!
+            JPEGXS_Stripe_type();
+            //!
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //!
+            JPEGXS_Stripe_type(PSIBuffer& buf) : JPEGXS_Stripe_type() { deserialize(buf); }
+
+            void clearContent();
+            void serialize(PSIBuffer&) const;
+            void deserialize(PSIBuffer&);
+            void toXML(xml::Element*) const;
+            bool fromXML(const xml::Element*);
+            void display(TablesDisplay&, PSIBuffer&, const UString&);
+        };
+
+        class TSDUCKDLL JPEGXS_Block_type {
+            TS_DEFAULT_COPY_MOVE(JPEGXS_Block_type);
+        public:
+            uint32_t full_horizontal_size = 0;  //!< Horizontal size of the entire video frame.
+            uint32_t full_vertical_size = 0;    //!< Vertical size of the entire video frame.
+            uint16_t blk_width = 0;             //!< Default width of a J2K block.
+            uint16_t blk_height = 0;            //!< Default height of a J2K block.
+            uint8_t  max_blk_idx_h = 0;         //!< Maximum value of the horizontal block index.
+            uint8_t  max_blk_idx_v = 0;         //!< Minimum value of the horizontal block index.
+            uint8_t  blk_idx_h = 0;             //!< Horizontal block index of current block.
+            uint8_t  blk_idx_v = 0;             //!< Vertical block index of current block.
+            //!
+            //! Default constructor.
+            //!
+            JPEGXS_Block_type();
+            //!
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //!
+            JPEGXS_Block_type(PSIBuffer& buf) : JPEGXS_Block_type() { deserialize(buf); }
+
+            void clearContent();
+            void serialize(PSIBuffer&) const;
+            void deserialize(PSIBuffer&);
+            void toXML(xml::Element*) const;
+            bool fromXML(const xml::Element*);
+            void display(TablesDisplay&, PSIBuffer&, const UString&);
+        };
     public:
         // Public members:
-        uint16_t  profile_and_level = 0;     //!< Same as J2K concept.
-        uint32_t  horizontal_size = 0;       //!< Same as J2K concept.
-        uint32_t  vertical_size = 0;         //!< Same as J2K concept.
-        uint32_t  max_bit_rate = 0;          //!< Same as J2K concept.
-        uint32_t  max_buffer_size = 0;       //!< Same as J2K concept.
-        uint16_t  DEN_frame_rate = 0;        //!< Same as J2K concept.
-        uint16_t  NUM_frame_rate = 0;        //!< Same as J2K concept.
-        uint8_t   color_specification = 0;   //!< Same as J2K concept.
-        bool      still_mode = false;        //!< Same as J2K concept.
-        bool      interlaced_video = false;  //!< Same as J2K concept.
-        ByteBlock private_data {};           //!< Private data
+        uint16_t                                       profile_and_level = 0;              //!< Same as J2K concept.
+        uint32_t                                       horizontal_size = 0;                //!< Horizontal size of the frame or field in each access unit.
+        uint32_t                                       vertical_size = 0;                  //!< Vertical size of the frame or field in each access unit.
+        uint32_t                                       max_bit_rate = 0;                   //!< Same as J2K concept.
+        uint32_t                                       max_buffer_size = 0;                //!< Same as J2K concept.
+        uint16_t                                       DEN_frame_rate = 0;                 //!< Same as J2K concept.
+        uint16_t                                       NUM_frame_rate = 0;                 //!< Same as J2K concept.
+        std::optional<uint8_t>                         color_specification {};             //!< Same as J2K concept.
+        bool                                           still_mode = false;                 //!< Same as J2K concept.
+        bool                                           interlaced_video = false;           //!< Same as J2K concept.
+        std::optional<uint8_t>                         colour_primaries {};                //!< 8 bits. According to ISO./IEC 23091-2.
+        std::optional<uint8_t>                         transfer_characteristics {};        //!< 8 bits. According to ISO./IEC 23091-2.
+        std::optional<uint8_t>                         matrix_coefficients {};             //!< 8 bits. According to ISO./IEC 23091-2.
+        std::optional<bool>                            video_full_range_flag {};           //!< bool. 
+
+        std::optional<JPEGXS_Stripe_type>              stripe {};
+        std::optional<JPEGXS_Block_type>               block {};
+        std::optional<Mastering_Display_Metadata_type> mdm {};                             //!< Mastering Display Metadata
+        ByteBlock                                      private_data {};                    //!< Private data
 
         //!
         //! Default constructor.
