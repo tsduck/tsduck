@@ -24,24 +24,24 @@ namespace ts {
     //! Executable file suffix.
     //!
 #if defined(DOXYGEN)
-    const UChar* const ExecutableFileSuffix = platform-specific (".exe", ""); // for doc only
+    constexpr const UChar* ExecutableFileSuffix = platform - specific(".exe", "");  // for doc only
 #elif defined(TS_WINDOWS)
-    TSDUCKDLL const UChar* const ExecutableFileSuffix = u".exe";
+    constexpr const UChar* ExecutableFileSuffix = u".exe";
 #else
-    TSDUCKDLL const UChar* const ExecutableFileSuffix = u"";
+    constexpr const UChar* ExecutableFileSuffix = u"";
 #endif
 
     //!
     //! File name extension of shared library file names (".so" on Linux, '.dylib" on macOS, ".dll" on Windows).
     //!
 #if defined(DOXYGEN)
-    const UChar* const SharedLibrarySuffix = platform-specific (".dll", ".so", ".dylib"); // for doc only
+    constexpr const UChar* SharedLibrarySuffix = platform - specific(".dll", ".so", ".dylib");  // for doc only
 #elif defined(TS_WINDOWS)
-    TSDUCKDLL const UChar* const SharedLibrarySuffix = u".dll";
+    constexpr const UChar* SharedLibrarySuffix = u".dll";
 #elif defined(TS_MAC)
-    TSDUCKDLL const UChar* const SharedLibrarySuffix = u".dylib";
+    constexpr const UChar* SharedLibrarySuffix = u".dylib";
 #else
-    TSDUCKDLL const UChar* const SharedLibrarySuffix = u".so";
+    constexpr const UChar* SharedLibrarySuffix = u".so";
 #endif
 
     //!

@@ -32,7 +32,7 @@ namespace ts {
     //! Default separator in CSV (comma-separated values) format.
     //! CSV files are suitable for analysis using tools such as Microsoft Excel.
     //!
-    TSDUCKDLL const UChar* const DefaultCsvSeparator = u",";
+    constexpr const UChar* DefaultCsvSeparator = u",";
 
     //!
     //! Integer type for operating system error codes.
