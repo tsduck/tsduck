@@ -2119,6 +2119,7 @@ namespace ts {
         UString& append(UChar c) { push_back(c); return *this; }
         UString& append(char c) { push_back(UChar(c)); return *this; }
         UString& append(uint32_t c);
+        UString& append(wchar_t c) { return append(uint32_t(c)); };
         template<class It> UString& append(It first, It last) { SuperClass::append<It>(first, last); return *this; }
         UString& append(std::initializer_list<UChar> ilist) { SuperClass::append(ilist); return *this; }
 
@@ -2126,6 +2127,7 @@ namespace ts {
         UString& operator+=(const UChar* s) { return append(s); }
         UString& operator+=(UChar c) { return append(c); }
         UString& operator+=(char c) { return append(c); }
+        UString& operator+=(wchar_t c) { return append(uint32_t(c)); }
         UString& operator+=(std::initializer_list<UChar> ilist) { return append(ilist); }
 
         UString& operator=(const SuperClass& s) { SuperClass::assign(s); return *this; }

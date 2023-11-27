@@ -20,11 +20,11 @@ namespace ts {
     //! Environment variable containing the command search path.
     //!
 #if defined(DOXYGEN)
-    const UChar* const PathEnvironmentVariable = platform-specific ("PATH", "Path"); // for doc only
+    constexpr const UChar* PathEnvironmentVariable = platform - specific("PATH", "Path");  // for doc only
 #elif defined(TS_WINDOWS)
-    TSDUCKDLL const UChar* const PathEnvironmentVariable = u"Path";
+    constexpr const UChar* PathEnvironmentVariable = u"Path";
 #elif defined(TS_UNIX)
-    TSDUCKDLL const UChar* const PathEnvironmentVariable = u"PATH";
+    constexpr const UChar* PathEnvironmentVariable = u"PATH";
 #else
     #error "Unimplemented operating system"
 #endif
@@ -32,7 +32,7 @@ namespace ts {
     //!
     //! Name of the environment variable which contains a list of paths for plugins.
     //!
-    TSDUCKDLL const UChar* const PluginsPathEnvironmentVariable = u"TSPLUGINS_PATH";
+    constexpr const UChar* PluginsPathEnvironmentVariable = u"TSPLUGINS_PATH";
 
     //!
     //! Separator character in search paths.
