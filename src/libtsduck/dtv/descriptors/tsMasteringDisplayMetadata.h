@@ -14,7 +14,6 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsPSIBuffer.h"
-#include "tsDuckContext.h"
 #include "tsTablesDisplay.h"
 #include "tsxmlElement.h"
 
@@ -22,8 +21,8 @@ namespace ts {
     //!
     //! Representation of Mastering Display Metadata, used by several descriptors.
     //!
-
-    class Mastering_Display_Metadata_type {
+    class TSDUCKDLL Mastering_Display_Metadata_type
+    {
         TS_DEFAULT_COPY_MOVE(Mastering_Display_Metadata_type);
     public:
         uint16_t X_c0 = 0;         //!< 16 bits. Normalized X chromaticity coorinates for green pimary - see SMPTE ST2086:2014
@@ -43,6 +42,7 @@ namespace ts {
         //! Default constructor.
         //!
         Mastering_Display_Metadata_type();
+
         //!
         //! Read-in constructor.
         //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
@@ -51,11 +51,13 @@ namespace ts {
         //!
         Mastering_Display_Metadata_type(PSIBuffer& buf) : Mastering_Display_Metadata_type() { deserialize(buf); }
 
+        //! @cond nodoxygen
         void clearContent();
         void serialize(PSIBuffer&) const;
         void deserialize(PSIBuffer&);
         void toXML(xml::Element*) const;
         bool fromXML(const xml::Element*);
         void display(TablesDisplay&, PSIBuffer&, const UString&);
+        //! @endcond
     };
 }
