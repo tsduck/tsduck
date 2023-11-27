@@ -53,6 +53,7 @@ on:
 jobs:
   update:
     name: Update nightly builds
+    if: github.repository == 'tsduck/tsduck'
     runs-on: ubuntu-latest
     steps:
     - name: Install dependencies
