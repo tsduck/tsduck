@@ -1,0 +1,8 @@
+[JPEG_XS_video_descriptor.colour_primaries]
+Inherit = J2K_video_descriptor.colour_primaries
+
+[JPEG_XS_video_descriptor.transfer_characteristics]
+Inherit = J2K_video_descriptor.transfer_characteristics
+
+[JPEG_XS_video_descriptor.matrix_coefficients]
+Inherit = J2K_video_descriptor.matrix_coefficients
