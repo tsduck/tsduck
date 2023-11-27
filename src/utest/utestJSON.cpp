@@ -83,13 +83,13 @@ void JsonTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".tmp.json");
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void JsonTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 // Load the content of a text file.

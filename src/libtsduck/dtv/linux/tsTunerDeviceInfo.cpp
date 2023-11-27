@@ -152,7 +152,7 @@ void ts::TunerDeviceInfo::SearchFiles(UStringList& files, const UString& root, c
         ExpandWildcard(locals, root + PathSeparator + u"*");
         for (const auto& loc : locals) {
             // Keep only directories which are not symbolic links (could loop).
-            if (fs::is_directory(loc) && !fs::is_symlink(loc, &ErrCodeReport(NULLREP))) {
+            if (fs::is_directory(loc) && !fs::is_symlink(loc, &ErrCodeReport())) {
                 // Filter out names which are known to be dead-ends with many files under.
                 const UString name(BaseName(loc));
                 if (name != u"breakpoint" &&

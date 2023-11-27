@@ -435,7 +435,7 @@ bool ts::SearchWildcardAndAppend(CONTAINER& container, const UString& root, cons
         UStringList locals;
         ExpandWildcard(locals, root + PathSeparator + u"*");
         for (const auto& loc : locals) {
-            if (fs::is_directory(loc) && (!skip_symlinks || !fs::is_symlink(loc, &ErrCodeReport(NULLREP)))) {
+            if (fs::is_directory(loc) && (!skip_symlinks || !fs::is_symlink(loc, &ErrCodeReport()))) {
                 status = SearchWildcardAndAppend(container, loc, pattern, max_levels - 1) && status;
             }
         }
