@@ -14,8 +14,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsFileUtils.h"
 #include "tsSysUtils.h"
+#include "tsFileUtils.h"
+#include "tsEnvironment.h"
 #include "tsSysInfo.h"
 #include "tsErrCodeReport.h"
 #include "tsRegistry.h"
@@ -420,8 +421,8 @@ void SysUtilsTest::testVernacularFilePath()
 void SysUtilsTest::testFilePaths()
 {
     const ts::UString dir(ts::VernacularFilePath(u"/dir/for/this.test"));
-    const ts::UString sep(1, ts::PathSeparator);
-    const ts::UString dirSep(dir + ts::PathSeparator);
+    const ts::UString sep(1, fs::path::preferred_separator);
+    const ts::UString dirSep(dir + fs::path::preferred_separator);
 
     TSUNIT_ASSERT(ts::DirectoryName(dirSep + u"foo.bar") == dir);
     TSUNIT_ASSERT(ts::DirectoryName(u"foo.bar") == u".");
@@ -552,7 +553,7 @@ void SysUtilsTest::testFileTime()
 void SysUtilsTest::testDirectory()
 {
     const ts::UString dirName(ts::TempFile(u""));
-    const ts::UString sep(1, ts::PathSeparator);
+    const ts::UString sep(1, fs::path::preferred_separator);
     const ts::UString fileName(sep + u"foo.bar");
 
     TSUNIT_ASSERT(!fs::exists(dirName));
@@ -588,7 +589,7 @@ void SysUtilsTest::testDirectory()
 void SysUtilsTest::testWildcard()
 {
     const ts::UString dirName(ts::TempFile(u""));
-    const ts::UString filePrefix(dirName + ts::PathSeparator + u"foo.");
+    const ts::UString filePrefix(dirName + fs::path::preferred_separator + u"foo.");
     const size_t count = 10;
 
     // Create temporary directory
@@ -596,7 +597,7 @@ void SysUtilsTest::testWildcard()
     TSUNIT_ASSERT(fs::is_directory(dirName));
 
     // Create one file with unique pattern
-    const ts::UString spuriousFileName(dirName + ts::PathSeparator + u"tagada");
+    const ts::UString spuriousFileName(dirName + fs::path::preferred_separator + u"tagada");
     TSUNIT_ASSERT(_CreateFile(spuriousFileName, 0));
     TSUNIT_ASSERT(fs::exists(spuriousFileName));
 

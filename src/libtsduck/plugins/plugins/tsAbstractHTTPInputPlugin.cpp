@@ -136,7 +136,7 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
     // Create the auto-save file when necessary.
     UString name(BaseName(URL(_request.finalURL()).getPath()));
     if (!_autoSaveDir.empty() && !name.empty()) {
-        name = _autoSaveDir + PathSeparator + name;
+        name = _autoSaveDir + fs::path::preferred_separator + name;
         tsp->verbose(u"saving input TS to %s", {name});
         // Display errors but do not fail, this is just auto save.
         _outSave.open(name, TSFile::WRITE | TSFile::SHARED, *tsp);

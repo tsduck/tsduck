@@ -90,8 +90,8 @@ namespace ts {
             _success(&success) {}
 
         //!
-        //! Default, constructor with and no error reporting.
-        //! Typically used to select the non-throwing variant of std::filesystem call and avoid throwing an exception.
+        //! Default, constructor with no error reporting.
+        //! Typically used to select the non-throwing variant of std::filesystem calls and avoid throwing an exception.
         //!
         ErrCodeReport() = default;
 

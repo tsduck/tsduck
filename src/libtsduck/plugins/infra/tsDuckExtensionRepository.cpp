@@ -42,7 +42,7 @@ ts::DuckExtensionRepository::Loader::Loader()
 
     // Get list of shared library files
     UStringVector files;
-    ApplicationSharedLibrary::GetPluginList(files, u"tslibext_", TS_PLUGINS_PATH);
+    ApplicationSharedLibrary::GetPluginList(files, u"tslibext_", PluginsPathEnvironmentVariable);
     CERR.debug(u"found %d possible extensions", {files.size()});
 
     // Load all plugins shared library.
@@ -52,7 +52,7 @@ ts::DuckExtensionRepository::Loader::Loader()
         const UString& filename(files[i]);
 
         // Get extension name from file name (without tslibext_).
-        const UString name(BaseName(filename, TS_SHARED_LIB_SUFFIX).toRemovedPrefix(u"tslibext_", FileSystemCaseSensitivity));
+        const UString name(BaseName(filename, SharedLibrarySuffix).toRemovedPrefix(u"tslibext_", FileSystemCaseSensitivity));
         if (name.isContainedSimilarIn(ignore)) {
             // This extension is listed in TSLIBEXT_IGNORE.
             CERR.debug(u"ignoring extension \"%s\"", {filename});
@@ -94,7 +94,7 @@ namespace {
     ts::UString SearchFile(const ts::UStringList& dirs, const ts::UString& prefix, const ts::UString& name, const ts::UString& suffix)
     {
         for (const auto& it : dirs) {
-            const ts::UString filename(it + ts::PathSeparator + prefix + name + suffix);
+            const ts::UString filename(it + fs::path::preferred_separator + prefix + name + suffix);
             if (fs::exists(filename)) {
                 return filename;
             }
@@ -119,11 +119,11 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 
     // Search path for plugins.
     UStringList plugins_dirs;
-    ApplicationSharedLibrary::GetSearchPath(plugins_dirs, TS_PLUGINS_PATH);
+    ApplicationSharedLibrary::GetSearchPath(plugins_dirs, PluginsPathEnvironmentVariable);
 
     // Search path for executables.
     UStringList tools_dirs;
-    GetEnvironmentPath(tools_dirs, TS_COMMAND_PATH);
+    GetEnvironmentPath(tools_dirs, PathEnvironmentVariable);
 
     // Build the output text as a string.
     UString out;
@@ -136,10 +136,10 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
             // Display full file names.
             out.format(u"%*s Library: %s\n", {width, u"", ext.file_name});
             for (size_t i = 0; i < ext.plugins.size(); ++i) {
-                out.format(u"%*s Plugin %s: %s\n", {width, u"", ext.plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext.plugins[i], TS_SHARED_LIB_SUFFIX)});
+                out.format(u"%*s Plugin %s: %s\n", {width, u"", ext.plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext.plugins[i], SharedLibrarySuffix)});
             }
             for (size_t i = 0; i < ext.tools.size(); ++i) {
-                out.format(u"%*s Command %s: %s\n", {width, u"", ext.tools[i], SearchFile(tools_dirs, u"", ext.tools[i], TS_EXECUTABLE_SUFFIX)});
+                out.format(u"%*s Command %s: %s\n", {width, u"", ext.tools[i], SearchFile(tools_dirs, u"", ext.tools[i], ExecutableFileSuffix)});
             }
         }
         else {

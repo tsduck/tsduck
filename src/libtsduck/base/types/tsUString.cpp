@@ -14,7 +14,7 @@
 
 #include "tsUString.h"
 #include "tsByteBlock.h"
-#include "tsSysUtils.h"
+#include "tsEnvironment.h"
 #include "tsIntegerUtils.h"
 #include "tsEnumeration.h"
 
@@ -1961,7 +1961,7 @@ ts::UString::ArgMixContext::ArgMixContext(const UChar* fmt, bool output) :
 
 bool ts::UString::ArgMixContext::debugInit()
 {
-    _debugOn = ts::EnvironmentExists(u"TSDUCK_FORMAT_DEBUG");
+    _debugOn = EnvironmentExists(u"TSDUCK_FORMAT_DEBUG");
     _debugValid = true;
     return _debugOn;
 }

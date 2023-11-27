@@ -45,7 +45,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
 
         // Get the path search list.
         UStringList dirs;
-        GetEnvironmentPath(dirs, TS_COMMAND_PATH);
+        GetEnvironmentPath(dirs, PathEnvironmentVariable);
 
         // Predefined list of commands.
         struct PredefinedPager {
@@ -61,7 +61,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
         for (auto itPager = pagers.begin(); itPager != pagers.end() && _pagerCommand.empty(); ++itPager) {
             for (auto itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
                 // Full path of executable file.
-                const UString exe(*itDir + PathSeparator + itPager->command + TS_EXECUTABLE_SUFFIX);
+                const UString exe(*itDir + fs::path::preferred_separator + itPager->command + ExecutableFileSuffix);
                 if (fs::exists(exe)) {
                     // The executable exists.
                     bool useParameters = true;

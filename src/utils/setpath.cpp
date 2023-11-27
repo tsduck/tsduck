@@ -104,7 +104,7 @@ namespace {
     ts::UString CleanupDirectory(const ts::UString& path)
     {
         ts::UString directory(ts::VernacularFilePath(path));
-        while (!directory.empty() && directory[directory.size() - 1] == ts::PathSeparator) {
+        while (!directory.empty() && directory[directory.size() - 1] == fs::path::preferred_separator) {
             directory.resize(directory.size() - 1);
         }
         return directory;

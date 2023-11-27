@@ -9,6 +9,7 @@
 #include "utestTSUnitBenchmark.h"
 #include "tsunit.h"
 #include "tsSysUtils.h"
+#include "tsEnvironment.h"
 
 
 //----------------------------------------------------------------------------
@@ -22,11 +23,7 @@ size_t utest::TSUnitBenchmark::GetIterations(const ts::UString& env_name)
 }
 
 utest::TSUnitBenchmark::TSUnitBenchmark::TSUnitBenchmark(const ts::UString& env_name) :
-    iterations(GetIterations(env_name)),
-    _started(false),
-    _start(0),
-    _accumulated(0),
-    _sequences(0)
+    iterations(GetIterations(env_name))
 {
 }
 

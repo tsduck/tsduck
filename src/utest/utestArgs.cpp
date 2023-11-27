@@ -12,7 +12,7 @@
 
 #include "tsArgs.h"
 #include "tsReportBuffer.h"
-
+#include "tsCerrReport.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsFixedPoint.h"
