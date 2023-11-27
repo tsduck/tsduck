@@ -128,17 +128,16 @@ void ts::Mastering_Display_Metadata_type::toXML(xml::Element* root) const
 
 bool ts::Mastering_Display_Metadata_type::fromXML(const xml::Element* element)
 {
-    return 
-        element->getIntAttribute(X_c0, u"X_c0", true) &&
-        element->getIntAttribute(Y_c0, u"Y_c0", true) &&
-        element->getIntAttribute(X_c1, u"X_c1", true) &&
-        element->getIntAttribute(Y_c1, u"Y_c1", true) &&
-        element->getIntAttribute(X_c2, u"X_c2", true) &&
-        element->getIntAttribute(Y_c2, u"Y_c2", true) &&
-        element->getIntAttribute(X_wp, u"X_wp", true) &&
-        element->getIntAttribute(Y_wp, u"Y_wp", true) &&
-        element->getIntAttribute(L_max, u"L_max", true) &&
-        element->getIntAttribute(L_min, u"L_min", true) &&
-        element->getIntAttribute(MaxCLL, u"MaxCLL", true) &&
-        element->getIntAttribute(MaxFALL, u"MaxFALL", true);
+    return element->getIntAttribute(X_c0, u"X_c0", true) &&
+           element->getIntAttribute(Y_c0, u"Y_c0", true) &&
+           element->getIntAttribute(X_c1, u"X_c1", true) &&
+           element->getIntAttribute(Y_c1, u"Y_c1", true) &&
+           element->getIntAttribute(X_c2, u"X_c2", true) &&
+           element->getIntAttribute(Y_c2, u"Y_c2", true) &&
+           element->getIntAttribute(X_wp, u"X_wp", true) &&
+           element->getIntAttribute(Y_wp, u"Y_wp", true) &&
+           element->getIntAttribute(L_max, u"L_max", true) &&
+           element->getIntAttribute(L_min, u"L_min", true) &&
+           element->getIntAttribute(MaxCLL, u"MaxCLL", true) &&
+           element->getIntAttribute(MaxFALL, u"MaxFALL", true);
 }
