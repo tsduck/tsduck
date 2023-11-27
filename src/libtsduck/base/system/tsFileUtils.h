@@ -14,77 +14,45 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsEnvironment.h"
 #include "tsEnumUtils.h"
 #include "tsTime.h"
-#include "tsCerrReport.h"
-#include "tsNullReport.h"
 #include "tsErrCodeReport.h"
-
-//!
-//! Executable file suffix.
-//!
-#if defined(DOXYGEN)
-    #define TS_EXECUTABLE_SUFFIX platform-specific (".exe", "") // for doc only
-#elif defined(TS_WINDOWS)
-    #define TS_EXECUTABLE_SUFFIX u".exe"
-#else
-    #define TS_EXECUTABLE_SUFFIX u""
-#endif
-
-//!
-//! File name extension of shared library file names (".so" on Linux, '.dylib" on macOS, ".dll" on Windows).
-//!
-#if defined(DOXYGEN)
-#define TS_SHARED_LIB_SUFFIX platform-specific (".dll", ".so", ".dylib") // for doc only
-#elif defined(TS_WINDOWS)
-    #define TS_SHARED_LIB_SUFFIX u".dll"
-#elif defined(TS_MAC)
-    #define TS_SHARED_LIB_SUFFIX u".dylib"
-#else
-    #define TS_SHARED_LIB_SUFFIX u".so"
-#endif
-
-//!
-//! Environment variable containing the command search path.
-//!
-#if defined(DOXYGEN)
-    #define TS_COMMAND_PATH platform-specific ("PATH", "Path") // for doc only
-#elif defined(TS_WINDOWS)
-    #define TS_COMMAND_PATH u"Path"
-#elif defined(TS_UNIX)
-    #define TS_COMMAND_PATH u"PATH"
-#else
-    #error "Unimplemented operating system"
-#endif
-
-//!
-//! Name of the environment variable which contains a list of paths for plugins.
-//!
-#define TS_PLUGINS_PATH u"TSPLUGINS_PATH"
 
 namespace ts {
     //!
-    //! Directory separator character in file paths.
+    //! Executable file suffix.
     //!
 #if defined(DOXYGEN)
-    const UChar PathSeparator = platform-specific ('/', '\\'); // for doc only
+    const UChar* const ExecutableFileSuffix = platform-specific (".exe", ""); // for doc only
 #elif defined(TS_WINDOWS)
-    const UChar PathSeparator = u'\\';
-#elif defined(TS_UNIX)
-    const UChar PathSeparator = u'/';
+    TSDUCKDLL const UChar* const ExecutableFileSuffix = u".exe";
 #else
-    #error "Unimplemented operating system"
+    TSDUCKDLL const UChar* const ExecutableFileSuffix = u"";
+#endif
+
+    //!
+    //! File name extension of shared library file names (".so" on Linux, '.dylib" on macOS, ".dll" on Windows).
+    //!
+#if defined(DOXYGEN)
+    const UChar* const SharedLibrarySuffix = platform-specific (".dll", ".so", ".dylib"); // for doc only
+#elif defined(TS_WINDOWS)
+    TSDUCKDLL const UChar* const SharedLibrarySuffix = u".dll";
+#elif defined(TS_MAC)
+    TSDUCKDLL const UChar* const SharedLibrarySuffix = u".dylib";
+#else
+    TSDUCKDLL const UChar* const SharedLibrarySuffix = u".so";
 #endif
 
     //!
     //! Case-sensitivity of the names in the file system.
     //!
 #if defined(DOXYGEN)
-    const CaseSensitivity FileSystemCaseSensitivity = platform-specific;
+    constexpr CaseSensitivity FileSystemCaseSensitivity = platform-specific;
 #elif defined(TS_WINDOWS)
-    const CaseSensitivity FileSystemCaseSensitivity = CASE_INSENSITIVE;
+    constexpr CaseSensitivity FileSystemCaseSensitivity = CASE_INSENSITIVE;
 #elif defined(TS_UNIX)
-    const CaseSensitivity FileSystemCaseSensitivity = CASE_SENSITIVE;
+    constexpr CaseSensitivity FileSystemCaseSensitivity = CASE_SENSITIVE;
 #else
 #error "Unimplemented operating system"
 #endif
@@ -323,7 +291,7 @@ namespace ts {
     //! @param [in] pathName Name of the seach path environment variable.
     //! @return The path to an existing file or an empty string if not found.
     //!
-    TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = TS_COMMAND_PATH);
+    TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PathEnvironmentVariable);
 
     //!
     //! Search a configuration file.
@@ -370,7 +338,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
 
     // On Win32, FindFirstFile / FindNextFile return the file name without directory.
     // We keep the directory part in the pattern to add it later to all file names.
-    const UString::size_type pos = pattern.rfind(PathSeparator);
+    const UString::size_type pos = pattern.rfind(fs::path::preferred_separator);
     const UString dir(pos == NPOS ? u"" : pattern.substr(0, pos + 1));
 
     ::WIN32_FIND_DATAW fdata;
@@ -427,13 +395,13 @@ template <class CONTAINER>
 bool ts::SearchWildcardAndAppend(CONTAINER& container, const UString& root, const UString& pattern, size_t max_levels, bool skip_symlinks)
 {
     // Append all files directly matching the wildcard in root directory.
-    bool status = ExpandWildcardAndAppend(container, root + PathSeparator + pattern);
+    bool status = ExpandWildcardAndAppend(container, root + fs::path::preferred_separator + pattern);
 
     // If the maximum number of recursion levels is not reached, recurse in all subdirectories.
     if (max_levels > 0) {
         // Search all files under root and will select directories only.
         UStringList locals;
-        ExpandWildcard(locals, root + PathSeparator + u"*");
+        ExpandWildcard(locals, root + fs::path::preferred_separator + u"*");
         for (const auto& loc : locals) {
             if (fs::is_directory(loc) && (!skip_symlinks || !fs::is_symlink(loc, &ErrCodeReport()))) {
                 status = SearchWildcardAndAppend(container, loc, pattern, max_levels - 1) && status;

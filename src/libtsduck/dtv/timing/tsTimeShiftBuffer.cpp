@@ -88,7 +88,7 @@ bool ts::TimeShiftBuffer::open(Report& report)
         UString filename(TempFile());
         if (!_directory.empty()) {
             if (fs::is_directory(_directory)) {
-                filename = _directory + PathSeparator + BaseName(filename);
+                filename = _directory + fs::path::preferred_separator + BaseName(filename);
             }
             else {
                 report.error(u"directory %s does not exist", {_directory});

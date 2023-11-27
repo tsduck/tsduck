@@ -8,6 +8,7 @@
 
 #include "tsPluginThread.h"
 #include "tsPluginRepository.h"
+#include "tsEnvironment.h"
 
 
 //----------------------------------------------------------------------------

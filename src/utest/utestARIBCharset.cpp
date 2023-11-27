@@ -12,7 +12,7 @@
 
 #include "tsARIBCharset.h"
 #include "tsByteBlock.h"
-#include "tsSysUtils.h"
+#include "tsEnvironment.h"
 #include "tsunit.h"
 
 // The ARIB STD-B24 encoder alternates charset switch from GL and GR.

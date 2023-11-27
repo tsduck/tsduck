@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsFatal.h"
-#include "tsSysUtils.h"
+#include "tsEnvironment.h"
 #include "tsunit.h"
 
 

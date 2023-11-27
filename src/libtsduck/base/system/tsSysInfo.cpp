@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSysInfo.h"
-#include "tsSysUtils.h"
+#include "tsEnvironment.h"
 #include "tsMemory.h"
 #include "tsCryptoAcceleration.h"
 

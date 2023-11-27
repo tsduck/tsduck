@@ -20,7 +20,7 @@
 #include "tsTSScanner.h"
 #include "tsService.h"
 #include "tsHFBand.h"
-#include "tsSysUtils.h"
+#include "tsEnvironment.h"
 #include "tsCOM.h"
 #include "tsunit.h"
 #if defined(TS_LINUX)

@@ -73,7 +73,7 @@ ts::UString ts::VernacularFilePath(const UString& path)
     // Normalize path separators.
     for (size_t i = 0; i < vern.length(); ++i) {
         if (vern[i] == u'/' || vern[i] == u'\\') {
-            vern[i] = PathSeparator;
+            vern[i] = fs::path::preferred_separator;
         }
     }
 
@@ -103,12 +103,12 @@ ts::UString ts::CleanupFilePath(const UString& path)
 {
     // Include a trailing slash for subsequent substitutions.
     UString clean(path);
-    clean.append(PathSeparator);
+    clean.append(fs::path::preferred_separator);
 
     // Patterns to clean.
-    const UString parent{PathSeparator, u'.', u'.', PathSeparator};  //  /../
-    const UString current{PathSeparator, u'.', PathSeparator};       //  /./
-    const UString dslash{PathSeparator, PathSeparator};              //  //
+    const UString parent{fs::path::preferred_separator, u'.', u'.', fs::path::preferred_separator};  //  /../
+    const UString current{fs::path::preferred_separator, u'.', fs::path::preferred_separator};       //  /./
+    const UString dslash{fs::path::preferred_separator, fs::path::preferred_separator};              //  //
     size_t pos = NPOS;
     size_t up = NPOS;
 
@@ -126,7 +126,7 @@ ts::UString ts::CleanupFilePath(const UString& path)
             // Path starting with "/../" -> can be removed.
             clean.erase(0, 3);
         }
-        else if ((up = clean.rfind(PathSeparator, pos - 1)) == NPOS) {
+        else if ((up = clean.rfind(fs::path::preferred_separator, pos - 1)) == NPOS) {
             // No "/" before "/../" -> the start of the string is the parent.
             clean.erase(0, pos + 4);
         }
@@ -137,7 +137,7 @@ ts::UString ts::CleanupFilePath(const UString& path)
     }
 
     // Remove trailing slashes.
-    while (!clean.empty() && clean.back() == PathSeparator) {
+    while (!clean.empty() && clean.back() == fs::path::preferred_separator) {
         clean.pop_back();
     }
     return clean;
@@ -158,7 +158,7 @@ ts::UString ts::AbsoluteFilePath(const UString& path, const UString& base)
         return CleanupFilePath(full);
     }
     else {
-        return CleanupFilePath((base.empty() ? UString(fs::current_path(&ErrCodeReport())) : base) + PathSeparator + full);
+        return CleanupFilePath((base.empty() ? UString(fs::current_path(&ErrCodeReport())) : base) + fs::path::preferred_separator + full);
     }
 }
 
@@ -174,14 +174,14 @@ ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &bas
 
     // Build absolute file path of the base directory, with a trailing path separator.
     UString ref(AbsoluteFilePath(base.empty() ? UString(fs::current_path(&ErrCodeReport())) : base));
-    ref.append(PathSeparator);
+    ref.append(fs::path::preferred_separator);
 
     // See how many leading characters are matching.
     size_t same = target.commonPrefixSize(ref, caseSensitivity);
 
     // Move backward right after the previous path separator to
     // get the length of the common directory parts
-    while (same > 0 && target[same - 1] != PathSeparator) {
+    while (same > 0 && target[same - 1] != fs::path::preferred_separator) {
         --same;
     }
 
@@ -196,17 +196,17 @@ ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &bas
         target.erase(0, same);
 
         // For each remaining directory level in reference, insert a "../" in target.
-        const UString up{u'.', u'.', PathSeparator};
+        const UString up{u'.', u'.', fs::path::preferred_separator};
         for (size_t i = same; i < ref.length(); ++i) {
-            if (ref[i] == PathSeparator) {
+            if (ref[i] == fs::path::preferred_separator) {
                 target.insert(0, up);
             }
         }
     }
 
     // Convert portable slashes.
-    if (portableSlashes && PathSeparator != u'/') {
-        target.substitute(PathSeparator, u'/');
+    if (portableSlashes && fs::path::preferred_separator != u'/') {
+        target.substitute(fs::path::preferred_separator, u'/');
     }
 
     return target;
@@ -231,7 +231,7 @@ namespace {
         return ts::NPOS;
 #else
         // Only one possibility.
-        return path.rfind(ts::PathSeparator);
+        return path.rfind(fs::path::preferred_separator);
 #endif
     }
 }
@@ -367,7 +367,7 @@ ts::UString ts::UserHomeDirectory()
 
 ts::UString ts::TempFile(const UString& suffix)
 {
-    return fs::temp_directory_path() + PathSeparator + UString::Format(u"tstmp-%X", {UID::Instance().newUID()}) + suffix;
+    return fs::temp_directory_path() + fs::path::preferred_separator + UString::Format(u"tstmp-%X", {UID::Instance().newUID()}) + suffix;
 }
 
 
@@ -419,8 +419,8 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
 
     // Adjust file name with the executable suffix.
     UString name(fileName);
-    if (!name.endWith(TS_EXECUTABLE_SUFFIX, FileSystemCaseSensitivity)) {
-        name.append(TS_EXECUTABLE_SUFFIX);
+    if (!name.endWith(ExecutableFileSuffix, FileSystemCaseSensitivity)) {
+        name.append(ExecutableFileSuffix);
     }
 
     // If there is a path separator, there is a directory specified, don't search.
@@ -433,7 +433,7 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
     UStringList dirs;
     GetEnvironmentPath(dirs, pathName);
     for (const auto& dir : dirs) {
-        const UString full(dir + PathSeparator + name);
+        const UString full(dir + fs::path::preferred_separator + name);
         if (fs::exists(full) && IsExecutable(full)) {
             return full;
         }
@@ -466,7 +466,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     // At this point, the file name has no directory and is not found in the current directory.
     // Build the list of directories to search. First, start with all directories from $TSPLUGINS_PATH.
     UStringList dirList;
-    GetEnvironmentPathAppend(dirList, TS_PLUGINS_PATH);
+    GetEnvironmentPathAppend(dirList, PluginsPathEnvironmentVariable);
 
     // Then, try in same directory as executable.
     const UString execDir(DirectoryName(ExecutableFile()));
@@ -488,7 +488,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 #endif
 
     // Finally try all directories from $PATH.
-    GetEnvironmentPathAppend(dirList, TS_COMMAND_PATH);
+    GetEnvironmentPathAppend(dirList, PathEnvironmentVariable);
 
     // Add default system locations of the configuration files. This is useful when the
     // application is not a TSDuck one but a third-party application which uses the
@@ -506,7 +506,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 
     // Search the file.
     for (const auto& dir : dirList) {
-        const UString path(dir + PathSeparator + fileName);
+        const UString path(dir + fs::path::preferred_separator + fileName);
         if (fs::exists(path)) {
             return path;
         }

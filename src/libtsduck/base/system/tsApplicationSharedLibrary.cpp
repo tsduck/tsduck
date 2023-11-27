@@ -43,23 +43,23 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
         // Try in each directory.
         for (auto it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
             // First, try name with prefix.
-            load(AddPathSuffix(*it + PathSeparator + prefix + basename, TS_SHARED_LIB_SUFFIX));
+            load(AddPathSuffix(*it + fs::path::preferred_separator + prefix + basename, SharedLibrarySuffix));
 
             // And then try specified name without prefix.
             if (!isLoaded()) {
-                load(AddPathSuffix(*it + PathSeparator + basename, TS_SHARED_LIB_SUFFIX));
+                load(AddPathSuffix(*it + fs::path::preferred_separator + basename, SharedLibrarySuffix));
             }
         }
     }
 
     // Without directory and still not loaded, try the standard system lookup rules with prefix.
     if (!isLoaded() && !has_directory) {
-        load(AddPathSuffix(prefix + filename, TS_SHARED_LIB_SUFFIX));
+        load(AddPathSuffix(prefix + filename, SharedLibrarySuffix));
     }
 
     // With a directory in name or if still not loaded, try the standard system lookup rules with plain name.
     if (!isLoaded()) {
-        load(AddPathSuffix(filename, TS_SHARED_LIB_SUFFIX));
+        load(AddPathSuffix(filename, SharedLibrarySuffix));
     }
 }
 
@@ -122,7 +122,7 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
 
     // On Windows system, try the PATH.
 #if defined(TS_WINDOWS)
-    GetEnvironmentPathAppend(directories, TS_COMMAND_PATH);
+    GetEnvironmentPathAppend(directories, PathEnvironmentVariable);
 #endif
 
     // Make sure that the same directory is not present twice.
@@ -150,11 +150,11 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
 
     // Try in each directory.
     size_t index = 0;
-    CERR.log(2, u"Searching for plugins %s*%s", {prefix, TS_SHARED_LIB_SUFFIX});
+    CERR.log(2, u"Searching for plugins %s*%s", {prefix, SharedLibrarySuffix});
     for (const auto& dir : path_dirs) {
         // Get list of shared library files matching the requested pattern in this directory.
         CERR.log(2, u"Searching in \"%s\"", {dir});
-        ExpandWildcardAndAppend(files, dir + PathSeparator + prefix + u"*" TS_SHARED_LIB_SUFFIX);
+        ExpandWildcardAndAppend(files, dir + fs::path::preferred_separator + prefix + u"*" + SharedLibrarySuffix);
         // Eliminate files with already registered base names.
         while (index < files.size()) {
             const UString base(BaseName(files[index]));
@@ -175,7 +175,7 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
 
     // Debug section when TS_CERR_DEBUG_LEVEL environment variable is 2 or higher.
     if (CERR.maxSeverity() >= 2) {
-        CERR.log(2, u"Results for plugins %s*%s:", {prefix, TS_SHARED_LIB_SUFFIX});
+        CERR.log(2, u"Results for plugins %s*%s:", {prefix, SharedLibrarySuffix});
         for (const auto& it : files) {
             CERR.log(2, u"  \"%s\"", {it});
         }

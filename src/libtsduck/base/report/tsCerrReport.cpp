@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCerrReport.h"
-#include "tsSysUtils.h"
+#include "tsEnvironment.h"
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::CerrReport);

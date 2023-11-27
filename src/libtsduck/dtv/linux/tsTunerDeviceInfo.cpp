@@ -61,7 +61,7 @@ ts::TunerDeviceInfo::TunerDeviceInfo(const UString& devname, Report& report) :
 
 bool ts::TunerDeviceInfo::LoadText(UString& line, const UString& directory, const UString& file, Report& report)
 {
-    const UString name(directory + PathSeparator + file);
+    const UString name(directory + fs::path::preferred_separator + file);
     std::ifstream strm(name.toUTF8().c_str());
     line.clear();
     bool ok = line.getLine(strm);
@@ -143,13 +143,13 @@ void ts::TunerDeviceInfo::LoadAll(std::vector<TunerDeviceInfo>& devices, Report&
 void ts::TunerDeviceInfo::SearchFiles(UStringList& files, const UString& root, const UString& pattern, size_t levels)
 {
     // Append all files directly matching the wildcard in root directory.
-    ExpandWildcardAndAppend(files, root + PathSeparator + pattern);
+    ExpandWildcardAndAppend(files, root + fs::path::preferred_separator + pattern);
 
     // If the maximum number of recursion levels is not reached, recurse in all subdirectories.
     if (levels > 0) {
         // Search all files under root.
         UStringList locals;
-        ExpandWildcard(locals, root + PathSeparator + u"*");
+        ExpandWildcard(locals, root + fs::path::preferred_separator + u"*");
         for (const auto& loc : locals) {
             // Keep only directories which are not symbolic links (could loop).
             if (fs::is_directory(loc) && !fs::is_symlink(loc, &ErrCodeReport())) {

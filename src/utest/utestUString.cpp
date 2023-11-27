@@ -14,6 +14,7 @@
 #include "tsByteBlock.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
+#include "tsCerrReport.h"
 #include "tsIPv4SocketAddress.h"
 #include "tsunit.h"
 

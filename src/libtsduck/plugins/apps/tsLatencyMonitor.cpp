@@ -126,9 +126,9 @@ void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacket
 
 void ts::LatencyMonitor::csvHeader()
 {
-    *_output_file << "PCR1" << TS_DEFAULT_CSV_SEPARATOR
-                  << "PCR2" << TS_DEFAULT_CSV_SEPARATOR
-                  << "Latency (ms)" << TS_DEFAULT_CSV_SEPARATOR
+    *_output_file << "PCR1" << DefaultCsvSeparator
+                  << "PCR2" << DefaultCsvSeparator
+                  << "Latency (ms)" << DefaultCsvSeparator
                   << "Max Latency (ms)"
                   << std::endl;
 }
@@ -178,9 +178,9 @@ void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
                 double latency = double(pcrDelta) / SYSTEM_CLOCK_FREQ * 1000;
                 _max_latency = std::max(_max_latency, latency);
 
-                *_output_file << (refTimingDataList == &timingDataList1 ? refTimingData.pcr : shiftTimingData.pcr) << TS_DEFAULT_CSV_SEPARATOR
-                            << (refTimingDataList == &timingDataList2 ? refTimingData.pcr : shiftTimingData.pcr) << TS_DEFAULT_CSV_SEPARATOR
-                            << latency << TS_DEFAULT_CSV_SEPARATOR
+                *_output_file << (refTimingDataList == &timingDataList1 ? refTimingData.pcr : shiftTimingData.pcr) << DefaultCsvSeparator
+                            << (refTimingDataList == &timingDataList2 ? refTimingData.pcr : shiftTimingData.pcr) << DefaultCsvSeparator
+                            << latency << DefaultCsvSeparator
                             << _max_latency << std::endl;
 
                 return;
@@ -199,8 +199,8 @@ void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
     } while (retry);
 
     // Output the latest PCR from both list with "LOST" if PCR doesn't exist
-    *_output_file << ((timingDataList1.empty()) ? "LOST" : std::to_string(timingDataList1.front().pcr)) << TS_DEFAULT_CSV_SEPARATOR
-                  << ((timingDataList2.empty()) ? "LOST" : std::to_string(timingDataList2.front().pcr)) << TS_DEFAULT_CSV_SEPARATOR
-                  << "N/A" << TS_DEFAULT_CSV_SEPARATOR
+    *_output_file << ((timingDataList1.empty()) ? "LOST" : std::to_string(timingDataList1.front().pcr)) << DefaultCsvSeparator
+                  << ((timingDataList2.empty()) ? "LOST" : std::to_string(timingDataList2.front().pcr)) << DefaultCsvSeparator
+                  << "N/A" << DefaultCsvSeparator
                   << "N/A" << std::endl;
 }

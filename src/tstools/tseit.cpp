@@ -280,7 +280,7 @@ ts::UString ts::EITCommand::fileName(const UString& directory, const UString& na
         return name;
     }
     else {
-        return directory + PathSeparator + name;
+        return directory + fs::path::preferred_separator + name;
     }
 }
 
