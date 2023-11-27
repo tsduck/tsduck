@@ -71,9 +71,13 @@ namespace ts {
 
         //!
         //! Get the @a num_short_term_ref_pic_sets parameter of the list of st_ref_pic_set structures.
+        //! In practice, this is the size of the list of the ShortTermReferencePictureSet.
+        //! The ShortTermReferencePictureSet index 0 to num_short_term_ref_pic_sets - 1 are stored
+        //! in the HEVCSequenceParameterSet. The one with index num_short_term_ref_pic_sets, when
+        //! present, is directly stored in the slice header.
         //! @return The @a num_short_term_ref_pic_sets parameter of the list of st_ref_pic_set structures.
         //!
-        uint32_t num_short_term_ref_pic_sets() const { return list.empty() ? 0 : uint32_t(list.size() - 1); }
+        uint32_t num_short_term_ref_pic_sets() const { return uint32_t(list.size()); }
 
         // Inherited methods
         virtual void clear() override;
