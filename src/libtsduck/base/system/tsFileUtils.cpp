@@ -11,7 +11,6 @@
 #include "tsMemory.h"
 #include "tsUID.h"
 #include "tsErrCodeReport.h"
-#include "tsNullReport.h"
 
 #if defined(TS_WINDOWS)
     #include "tsBeforeStandardHeaders.h"
@@ -159,7 +158,7 @@ ts::UString ts::AbsoluteFilePath(const UString& path, const UString& base)
         return CleanupFilePath(full);
     }
     else {
-        return CleanupFilePath((base.empty() ? UString(fs::current_path(&ErrCodeReport(NULLREP))) : base) + PathSeparator + full);
+        return CleanupFilePath((base.empty() ? UString(fs::current_path(&ErrCodeReport())) : base) + PathSeparator + full);
     }
 }
 
@@ -174,7 +173,7 @@ ts::UString ts::RelativeFilePath(const ts::UString &path, const ts::UString &bas
     UString target(AbsoluteFilePath(path));
 
     // Build absolute file path of the base directory, with a trailing path separator.
-    UString ref(AbsoluteFilePath(base.empty() ? UString(fs::current_path(&ErrCodeReport(NULLREP))) : base));
+    UString ref(AbsoluteFilePath(base.empty() ? UString(fs::current_path(&ErrCodeReport())) : base));
     ref.append(PathSeparator);
 
     // See how many leading characters are matching.
@@ -402,7 +401,7 @@ ts::Time ts::GetFileModificationTimeLocal(const UString& path)
 bool ts::IsExecutable(const UString& path)
 {
     bool success = true;
-    fs::file_status st(fs::status(path, &ErrCodeReport(success, NULLREP)));
+    fs::file_status st(fs::status(path, &ErrCodeReport(success)));
     return success && (st.permissions() & (fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec)) != fs::perms::none;
 }
 
@@ -554,7 +553,7 @@ ts::UString ts::ResolveSymbolicLinks(const ts::UString &path, ResolveSymbolicLin
     int foolproof = 64; // Avoid endless loops in failing links.
 
     // Loop on nested symbolic links.
-    while (fs::is_symlink(link, &ErrCodeReport(NULLREP))) {
+    while (fs::is_symlink(link, &ErrCodeReport())) {
 
         // Translate the symbolic link.
         const ssize_t length = ::readlink(link.toUTF8().c_str(), name.data(), name.size());

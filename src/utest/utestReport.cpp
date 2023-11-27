@@ -14,7 +14,6 @@
 #include "tsReportFile.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
-#include "tsNullReport.h"
 #include "tsunit.h"
 
 
@@ -67,14 +66,14 @@ ReportTest::ReportTest() :
 void ReportTest::beforeTest()
 {
     _fileName = ts::TempFile();
-    fs::remove(_fileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_fileName, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void ReportTest::afterTest()
 {
     // Returned value ignored on purpose, end of test, temporary file may not even exists.
-    fs::remove(_fileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_fileName, &ts::ErrCodeReport());
 }
 
 

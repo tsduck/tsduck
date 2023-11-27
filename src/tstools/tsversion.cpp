@@ -368,7 +368,7 @@ namespace {
         // Without --force, don't download when a file exists with same size.
         if (!opt.force) {
             // If the size is unknown, do not download again if the file is not empty, trust the size.
-            const std::uintmax_t fileSize = fs::file_size(file, &ts::ErrCodeReport(NULLREP));
+            const std::uintmax_t fileSize = fs::file_size(file, &ts::ErrCodeReport());
             if ((size == 0 && fileSize != ts::FS_ERROR) || (size > 0 && fileSize == size)) {
                 if (opt.verbose()) {
                     std::cout << "File already downloaded: " << file << std::endl;

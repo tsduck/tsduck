@@ -140,7 +140,7 @@ void ts::VersionInfo::startNewVersionDetection()
     }
 
     // Create the time-stamp file. Delete it first. Create intermediate directory if necessary.
-    fs::remove(filename, &ErrCodeReport(NULLREP));
+    fs::remove(filename, &ErrCodeReport());
     fs::create_directories(dirname, &ErrCodeReport(_debug, u"error creating directory", dirname));
     if (!UString::Save(UStringVector(), filename)) {
         _debug.error(u"error creating file %s", {filename});

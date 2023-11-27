@@ -14,7 +14,6 @@
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
 #include "tsCerrReport.h"
-#include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsunit.h"
@@ -69,13 +68,13 @@ void TSFileTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".ts");
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void TSFileTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 

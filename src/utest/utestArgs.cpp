@@ -12,7 +12,7 @@
 
 #include "tsArgs.h"
 #include "tsReportBuffer.h"
-#include "tsNullReport.h"
+
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsFixedPoint.h"
@@ -125,8 +125,8 @@ void ArgsTest::beforeTest()
 // Test suite cleanup method.
 void ArgsTest::afterTest()
 {
-    fs::remove(_tempFile1, &ts::ErrCodeReport(NULLREP));
-    fs::remove(_tempFile2, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFile1, &ts::ErrCodeReport());
+    fs::remove(_tempFile2, &ts::ErrCodeReport());
 }
 
 
@@ -212,7 +212,7 @@ void ArgsTest::testHelpDefault()
                  u"  --version\n"
                  u"      Display the TSDuck version number.\n",
                  log.messages());
-    
+
     log.clear();
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--version=short"})));
     const ts::UString version(log.messages());

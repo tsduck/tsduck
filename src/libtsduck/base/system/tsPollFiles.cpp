@@ -78,7 +78,7 @@ bool ts::PollFiles::pollOnce()
     for (const auto& name : found_files) {
 
         // Get characteristics of next found file
-        const std::uintmax_t size = fs::file_size(name, &ErrCodeReport(NULLREP));
+        const std::uintmax_t size = fs::file_size(name, &ErrCodeReport());
         const Time date(GetFileModificationTimeUTC(name));
 
         // Remove polled files before the found file

@@ -794,11 +794,11 @@ void SysUtilsTest::testSymLinks()
 
     // Obviously non existent paths should translate to themselves.
     const ts::UString badName(u"khzkfjhzHJKHK35464.foo.BAD.NOT.THERE");
-    TSUNIT_ASSERT(!fs::is_symlink(badName, &ts::ErrCodeReport(NULLREP)));
+    TSUNIT_ASSERT(!fs::is_symlink(badName, &ts::ErrCodeReport()));
     TSUNIT_EQUAL(badName, ts::ResolveSymbolicLinks(badName));
 
 #if defined(TS_LINUX)
-    TSUNIT_ASSERT(fs::is_symlink(u"/proc/self", &ts::ErrCodeReport(NULLREP)));
+    TSUNIT_ASSERT(fs::is_symlink(u"/proc/self", &ts::ErrCodeReport()));
     TSUNIT_ASSERT(!ts::ResolveSymbolicLinks(u"/proc/self").empty());
     TSUNIT_ASSERT(ts::ResolveSymbolicLinks(u"/proc/self") != u"/proc/self");
 #endif
