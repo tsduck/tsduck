@@ -15,7 +15,6 @@ TSDuck - List of features to be implemented or fixed
     - 2.6.74   auxiliary_video_stream_descriptor
   - With embedded data structures from ISO/IEC 23008-3 (High efficiency 3D audio):
     - 2.6.108  MPEGH_3D_audio_config_descriptor
-    - 2.6.110  MPEGH_3D_audio_scene_descriptor
     - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
     - 2.6.118  MPEGH_3D_audio_command_descriptor
 
