@@ -25,6 +25,7 @@
 
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
+#include "tsEnvironment.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsjsonValue.h"

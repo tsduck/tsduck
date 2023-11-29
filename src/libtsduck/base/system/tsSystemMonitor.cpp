@@ -84,16 +84,17 @@ void ts::SystemMonitor::main()
     Time start_next_period(start_time + period->duration);
 
     // Get initial system metrics.
-    ProcessMetrics start_metrics;
-    GetProcessMetrics(start_metrics);
+    const MilliSecond start_cpu_time = GetProcessCpuTime();
+    const size_t start_vmem_size = GetProcessVirtualSize();
 
     // Time and metrics at the last interval.
     Time last_time(start_time);
-    ProcessMetrics last_metrics(start_metrics);
+    MilliSecond last_cpu_time = start_cpu_time;
+    size_t last_vmem_size = start_vmem_size;
 
     // Time and value of last virtual memory size increase.
     Time vsize_uptime(start_time);
-    size_t vsize_max(start_metrics.vmem_size);
+    size_t vsize_max(start_vmem_size);
 
     _report.info(u"%sresource monitoring started", {MonPrefix(start_time)});
     bool mute_reported = false;
@@ -130,17 +131,17 @@ void ts::SystemMonitor::main()
 
         // Get current process metrics
         Time current_time(Time::CurrentLocalTime());
-        ProcessMetrics metrics;
-        GetProcessMetrics(metrics);
+        const MilliSecond cpu_time = GetProcessCpuTime();
+        const size_t vmem_size = GetProcessVirtualSize();
 
         // Build the monitoring message.
         UString message(MonPrefix(current_time));
 
         // Format virtual memory size status.
-        message.format(u"VM: %s", {UString::HumanSize(metrics.vmem_size)});
-        if (metrics.vmem_size != last_metrics.vmem_size) {
+        message.format(u"VM: %s", {UString::HumanSize(vmem_size)});
+        if (vmem_size != last_vmem_size) {
             // Virtual memory has changed
-            message.format(u" (%s)", {UString::HumanSize(ptrdiff_t(metrics.vmem_size) - ptrdiff_t(last_metrics.vmem_size), u"B", true)});
+            message.format(u" (%s)", {UString::HumanSize(ptrdiff_t(vmem_size) - ptrdiff_t(last_vmem_size), u"B", true)});
         }
         else {
             // VM stable since last time. Check if temporarily stable or safely stable.
@@ -150,18 +151,18 @@ void ts::SystemMonitor::main()
 
         // Format CPU load.
         message += u", CPU:";
-        message += UString::Percentage(metrics.cpu_time - last_metrics.cpu_time, current_time - last_time);
+        message += UString::Percentage(cpu_time - last_cpu_time, current_time - last_time);
         message += u" (average:";
-        message += UString::Percentage(metrics.cpu_time - start_metrics.cpu_time, current_time - start_time);
+        message += UString::Percentage(cpu_time - start_cpu_time, current_time - start_time);
         message += u")";
 
         // Display monitoring message if allowed in this period or if vmem has increased.
-        if (period->log_messages || metrics.vmem_size > vsize_max) {
+        if (period->log_messages || vmem_size > vsize_max) {
             _report.info(message);
         }
 
         // Compute CPU percentage during last period.
-        const int cpu = current_time <= last_time ? 0 : int((100 * (metrics.cpu_time - last_metrics.cpu_time)) / (current_time - last_time));
+        const int cpu = current_time <= last_time ? 0 : int((100 * (cpu_time - last_cpu_time)) / (current_time - last_time));
 
         // Raise an alarm if the CPU usage is above defined limit for this period.
         if (cpu > period->max_cpu) {
@@ -174,25 +175,26 @@ void ts::SystemMonitor::main()
         }
 
         // Raise an alarm if the virtual memory is not stable while it should be.
-        if (period->stable_memory && metrics.vmem_size > last_metrics.vmem_size) {
+        if (period->stable_memory && vmem_size > last_vmem_size) {
             _report.warning(u"%sALARM, VM is not stable: %s in last monitoring interval",
-                            {MonPrefix(current_time), UString::HumanSize(ptrdiff_t(metrics.vmem_size) - ptrdiff_t(last_metrics.vmem_size), u"B", true)});
+                            {MonPrefix(current_time), UString::HumanSize(ptrdiff_t(vmem_size) - ptrdiff_t(last_vmem_size), u"B", true)});
             if (!period->alarm_command.empty()) {
                 UString command;
-                command.format(u"%s \"%s\" memory %d", {period->alarm_command, message, metrics.vmem_size});
+                command.format(u"%s \"%s\" memory %d", {period->alarm_command, message, vmem_size});
                 ForkPipe::Launch(command, _report, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
             }
         }
 
         // Remember points when virtual memory increases.
-        if (metrics.vmem_size > vsize_max) {
-            vsize_max = metrics.vmem_size;
+        if (vmem_size > vsize_max) {
+            vsize_max = vmem_size;
             vsize_uptime = current_time;
         }
 
         // Save current metrics for next interval.
         last_time = current_time;
-        last_metrics = metrics;
+        last_vmem_size = vmem_size;
+        last_cpu_time = cpu_time;
     }
 
     _report.info(u"%sresource monitoring terminated", {MonPrefix(Time::CurrentLocalTime())});

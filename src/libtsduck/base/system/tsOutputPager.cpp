@@ -45,7 +45,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
 
         // Get the path search list.
         UStringList dirs;
-        GetEnvironmentPath(dirs, TS_COMMAND_PATH);
+        GetEnvironmentPath(dirs, PathEnvironmentVariable);
 
         // Predefined list of commands.
         struct PredefinedPager {
@@ -61,14 +61,14 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
         for (auto itPager = pagers.begin(); itPager != pagers.end() && _pagerCommand.empty(); ++itPager) {
             for (auto itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
                 // Full path of executable file.
-                const UString exe(*itDir + PathSeparator + itPager->command + TS_EXECUTABLE_SUFFIX);
+                const UString exe(*itDir + fs::path::preferred_separator + itPager->command + ExecutableFileSuffix);
                 if (fs::exists(exe)) {
                     // The executable exists.
                     bool useParameters = true;
                     // On Linux, with the BusyBox environment, many commands are redirected to the busybox executable.
                     // In that case, the busybox version may not understand some options of the GNU version.
                     #if defined(TS_LINUX)
-                        useParameters = !ResolveSymbolicLinks(exe).contain(u"busybox", CASE_INSENSITIVE);
+                        useParameters = !UString(fs::weakly_canonical(exe, &ErrCodeReport())).contain(u"busybox", CASE_INSENSITIVE);
                     #endif
                     // Same thing with UnxUtils (sometimes spelled UnixUtils) on Windows.
                     #if defined(TS_WINDOWS)

@@ -16,7 +16,7 @@ ts::ErrCodeReport::~ErrCodeReport()
     if (_success != nullptr) {
         *_success = success;
     }
-    if (!success) {
+    if (!success && _report != nullptr) {
         UString msg(_message);
         if (!_object.empty()) {
             if (!msg.empty()) {
@@ -27,6 +27,6 @@ ts::ErrCodeReport::~ErrCodeReport()
         if (!msg.empty()) {
             msg.append(u": ");
         }
-        _report.error(u"%s%s", {msg, message()});
+        _report->error(u"%s%s", {msg, message()});
     }
 }

@@ -157,7 +157,7 @@ std::ostream& ts::HEVCHRDParameters::display(std::ostream& out, const UString& m
         DISP(common_inf_present_flag);
         if (common_inf_present_flag) {
             DISP(nal_hrd_parameters_present_flag);
-            DISP(nal_hrd_parameters_present_flag);
+            DISP(vcl_hrd_parameters_present_flag);
             if (nal_hrd_parameters_present_flag == 1 || vcl_hrd_parameters_present_flag == 1) {
                 DISP(sub_pic_hrd_params_present_flag);
                 if (sub_pic_hrd_params_present_flag == 1) {

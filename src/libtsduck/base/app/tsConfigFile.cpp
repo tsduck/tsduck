@@ -65,10 +65,10 @@ ts::UString ts::ConfigFile::DefaultFileName(FileStyle style, const UString& name
     }
 
     if (style == WINDOWS_STYLE) {
-        return DirectoryName(ExecutableFile()) + PathSeparator + fileName + u".ini";
+        return DirectoryName(ExecutableFile()) + fs::path::preferred_separator + fileName + u".ini";
     }
     else {
-        return (UserHomeDirectory() + PathSeparator) + u'.' + fileName;
+        return (UserHomeDirectory() + fs::path::preferred_separator) + u'.' + fileName;
     }
 }
 

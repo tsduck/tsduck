@@ -14,8 +14,9 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsFileUtils.h"
 #include "tsSysUtils.h"
+#include "tsFileUtils.h"
+#include "tsEnvironment.h"
 #include "tsSysInfo.h"
 #include "tsErrCodeReport.h"
 #include "tsRegistry.h"
@@ -58,10 +59,10 @@ public:
     void testWildcard();
     void testSearchWildcard();
     void testHomeDirectory();
-    void testProcessMetrics();
+    void testProcessCpuTime();
+    void testProcessVirtualSize();
     void testIsTerminal();
     void testSysInfo();
-    void testSymLinks();
     void testIsAbsoluteFilePath();
     void testAbsoluteFilePath();
     void testCleanupFilePath();
@@ -85,10 +86,10 @@ public:
     TSUNIT_TEST(testWildcard);
     TSUNIT_TEST(testSearchWildcard);
     TSUNIT_TEST(testHomeDirectory);
-    TSUNIT_TEST(testProcessMetrics);
+    TSUNIT_TEST(testProcessCpuTime);
+    TSUNIT_TEST(testProcessVirtualSize);
     TSUNIT_TEST(testIsTerminal);
     TSUNIT_TEST(testSysInfo);
-    TSUNIT_TEST(testSymLinks);
     TSUNIT_TEST(testIsAbsoluteFilePath);
     TSUNIT_TEST(testAbsoluteFilePath);
     TSUNIT_TEST(testCleanupFilePath);
@@ -420,8 +421,8 @@ void SysUtilsTest::testVernacularFilePath()
 void SysUtilsTest::testFilePaths()
 {
     const ts::UString dir(ts::VernacularFilePath(u"/dir/for/this.test"));
-    const ts::UString sep(1, ts::PathSeparator);
-    const ts::UString dirSep(dir + ts::PathSeparator);
+    const ts::UString sep(1, fs::path::preferred_separator);
+    const ts::UString dirSep(dir + fs::path::preferred_separator);
 
     TSUNIT_ASSERT(ts::DirectoryName(dirSep + u"foo.bar") == dir);
     TSUNIT_ASSERT(ts::DirectoryName(u"foo.bar") == u".");
@@ -552,7 +553,7 @@ void SysUtilsTest::testFileTime()
 void SysUtilsTest::testDirectory()
 {
     const ts::UString dirName(ts::TempFile(u""));
-    const ts::UString sep(1, ts::PathSeparator);
+    const ts::UString sep(1, fs::path::preferred_separator);
     const ts::UString fileName(sep + u"foo.bar");
 
     TSUNIT_ASSERT(!fs::exists(dirName));
@@ -588,7 +589,7 @@ void SysUtilsTest::testDirectory()
 void SysUtilsTest::testWildcard()
 {
     const ts::UString dirName(ts::TempFile(u""));
-    const ts::UString filePrefix(dirName + ts::PathSeparator + u"foo.");
+    const ts::UString filePrefix(dirName + fs::path::preferred_separator + u"foo.");
     const size_t count = 10;
 
     // Create temporary directory
@@ -596,7 +597,7 @@ void SysUtilsTest::testWildcard()
     TSUNIT_ASSERT(fs::is_directory(dirName));
 
     // Create one file with unique pattern
-    const ts::UString spuriousFileName(dirName + ts::PathSeparator + u"tagada");
+    const ts::UString spuriousFileName(dirName + fs::path::preferred_separator + u"tagada");
     TSUNIT_ASSERT(_CreateFile(spuriousFileName, 0));
     TSUNIT_ASSERT(fs::exists(spuriousFileName));
 
@@ -651,18 +652,11 @@ void SysUtilsTest::testHomeDirectory()
     TSUNIT_ASSERT(fs::is_directory(dir));
 }
 
-void SysUtilsTest::testProcessMetrics()
+void SysUtilsTest::testProcessCpuTime()
 {
-    ts::ProcessMetrics pm1;
-    TSUNIT_ASSERT(pm1.cpu_time == -1);
-    TSUNIT_ASSERT(pm1.vmem_size == 0);
-
-    ts::GetProcessMetrics(pm1);
-    debug() << "ProcessMetricsTest: CPU time (1) = " << pm1.cpu_time << " ms" << std::endl
-            << "ProcessMetricsTest: virtual memory (1) = " << pm1.vmem_size << " bytes" << std::endl;
-
-    TSUNIT_ASSERT(pm1.cpu_time >= 0);
-    TSUNIT_ASSERT(pm1.vmem_size > 0);
+    const ts::MilliSecond t1 = ts::GetProcessCpuTime();
+    debug() << "SysUtilsTest: CPU time (1) = " << t1 << " ms" << std::endl;
+    TSUNIT_ASSERT(t1 >= 0);
 
     // Consume some milliseconds of CPU time
     uint64_t counter = 7;
@@ -670,14 +664,25 @@ void SysUtilsTest::testProcessMetrics()
         counter = counter * counter;
     }
 
-    ts::ProcessMetrics pm2;
-    ts::GetProcessMetrics(pm2);
-    debug() << "ProcessMetricsTest: CPU time (2) = " << pm2.cpu_time << " ms" << std::endl
-            << "ProcessMetricsTest: virtual memory (2) = " << pm2.vmem_size << " bytes" << std::endl;
+    const ts::MilliSecond t2 = ts::GetProcessCpuTime();
+    debug() << "SysUtilsTest: CPU time (2) = " << t2 << " ms" << std::endl;
+    TSUNIT_ASSERT(t2 >= 0);
+    TSUNIT_ASSERT(t2 >= t1);
+}
 
-    TSUNIT_ASSERT(pm2.cpu_time >= 0);
-    TSUNIT_ASSERT(pm2.cpu_time >= pm1.cpu_time);
-    TSUNIT_ASSERT(pm2.vmem_size > 0);
+void SysUtilsTest::testProcessVirtualSize()
+{
+    const size_t m1 = ts::GetProcessVirtualSize();
+    debug() << "SysUtilsTest: virtual memory (1) = " << m1 << " bytes" << std::endl;
+    TSUNIT_ASSERT(m1 > 0);
+
+    // Consume (maybe) some new memory.
+    void* mem = ::malloc(5000000);
+    const size_t m2 = ts::GetProcessVirtualSize();
+    ::free(mem);
+
+    debug() << "SysUtilsTest: virtual memory (2) = " << m2 << " bytes" << std::endl;
+    TSUNIT_ASSERT(m2 > 0);
 }
 
 void SysUtilsTest::testIsTerminal()
@@ -786,24 +791,6 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(ts::SysInfo::Instance().memoryPageSize() > 0);
     TSUNIT_ASSERT(ts::SysInfo::Instance().memoryPageSize() % 256 == 0);
 }
-
-void SysUtilsTest::testSymLinks()
-{
-    debug() << "SysUtilsTest::testSymLinks: " << std::endl
-                 << "    /proc/self -> \"" << ts::ResolveSymbolicLinks(u"/proc/self") << '"' << std::endl;
-
-    // Obviously non existent paths should translate to themselves.
-    const ts::UString badName(u"khzkfjhzHJKHK35464.foo.BAD.NOT.THERE");
-    TSUNIT_ASSERT(!fs::is_symlink(badName, &ts::ErrCodeReport(NULLREP)));
-    TSUNIT_EQUAL(badName, ts::ResolveSymbolicLinks(badName));
-
-#if defined(TS_LINUX)
-    TSUNIT_ASSERT(fs::is_symlink(u"/proc/self", &ts::ErrCodeReport(NULLREP)));
-    TSUNIT_ASSERT(!ts::ResolveSymbolicLinks(u"/proc/self").empty());
-    TSUNIT_ASSERT(ts::ResolveSymbolicLinks(u"/proc/self") != u"/proc/self");
-#endif
-}
-
 
 void SysUtilsTest::testIsAbsoluteFilePath()
 {

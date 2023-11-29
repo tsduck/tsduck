@@ -26,7 +26,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
-    _state_file(UserHomeDirectory() + PathSeparator + u".tsseed"),
+    _state_file(UserHomeDirectory() + fs::path::preferred_separator + u".tsseed"),
     _index(AES::BLOCK_SIZE), // at end of block, will need update
     _pool(AES::BLOCK_SIZE)
 {

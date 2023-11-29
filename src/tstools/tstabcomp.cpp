@@ -161,7 +161,7 @@ namespace {
         ts::UString outName(opt.outFile);
         if (opt.outIsDir) {
             // Specified output is a directory, add default name.
-            outName.push_back(ts::PathSeparator);
+            outName.push_back(fs::path::preferred_separator);
             outName.append(ts::SectionFile::XML_TABLES_MODEL);
         }
         if (!outName.empty()) {
@@ -206,7 +206,7 @@ namespace {
                 outname = ts::SectionFile::BuildFileName(infile, outType);
             }
             else if (opt.outIsDir) {
-                outname += ts::PathSeparator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
+                outname += fs::path::preferred_separator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
             }
         }
 

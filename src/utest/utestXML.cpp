@@ -88,13 +88,13 @@ void XMLTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".tmp.xml");
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void XMLTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 ts::Report& XMLTest::report()

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3446
+VERSION 3.36-3458
 
 [NEW] New commands and plugins:
 
@@ -52,6 +52,8 @@ VERSION 3.36-3446
     "tsanalyze" and plugin "analyze".
   * Fixed issue #1340: Restarting plugin "tables" with option --psi-si failed
     with to collect PMT's again.
+  * Fixed issue #1369: Incorrect display in rare cases of HEVC sequence
+    parameter set.
 
 -------------------------------------------------------------------------------
 

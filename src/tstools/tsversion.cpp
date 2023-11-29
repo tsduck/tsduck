@@ -216,9 +216,9 @@ Options::Options(int argc, char *argv[]) :
         if (!fs::is_directory(out_dir)) {
             error(u"directory not found: %s", {out_dir});
         }
-        else if (!out_dir.endWith(ts::UString(1, ts::PathSeparator))) {
+        else if (!out_dir.endWith(ts::UString(1, fs::path::preferred_separator))) {
             // Make sure we can use out_dir directly with a file name.
-            out_dir.append(ts::PathSeparator);
+            out_dir.append(fs::path::preferred_separator);
         }
     }
 
@@ -368,7 +368,7 @@ namespace {
         // Without --force, don't download when a file exists with same size.
         if (!opt.force) {
             // If the size is unknown, do not download again if the file is not empty, trust the size.
-            const std::uintmax_t fileSize = fs::file_size(file, &ts::ErrCodeReport(NULLREP));
+            const std::uintmax_t fileSize = fs::file_size(file, &ts::ErrCodeReport());
             if ((size == 0 && fileSize != ts::FS_ERROR) || (size > 0 && fileSize == size)) {
                 if (opt.verbose()) {
                     std::cout << "File already downloaded: " << file << std::endl;

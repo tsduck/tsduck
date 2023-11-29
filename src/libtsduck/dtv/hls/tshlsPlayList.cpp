@@ -50,7 +50,7 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
     _version = version;
     _type = type;
     _original = AbsoluteFilePath(filename);
-    _fileBase = DirectoryName(_original) + PathSeparator;
+    _fileBase = DirectoryName(_original) + fs::path::preferred_separator;
     _isURL = false;
     _url.clear();
     _extraTags.clear();
@@ -494,7 +494,7 @@ bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListT
 
     // Keep file name.
     _original = filename;
-    _fileBase = DirectoryName(filename) + PathSeparator;
+    _fileBase = DirectoryName(filename) + fs::path::preferred_separator;
     _isURL = false;
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u.
@@ -931,7 +931,7 @@ bool ts::hls::PlayList::autoSave(Report& report)
         return true;
     }
     else {
-        const UString name(_autoSaveDir + PathSeparator + BaseName(_original));
+        const UString name(_autoSaveDir + fs::path::preferred_separator + BaseName(_original));
         report.verbose(u"saving playlist to %s", {name});
         const bool ok = UString::Save(_loadedContent, name);
         if (!ok) {

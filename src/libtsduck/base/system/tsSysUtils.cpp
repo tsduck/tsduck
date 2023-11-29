@@ -8,7 +8,6 @@
 
 #include "tsSysUtils.h"
 #include "tsFileUtils.h"
-#include "tsSingleton.h"
 #include "tsTime.h"
 #include "tsArgs.h"
 
@@ -21,6 +20,7 @@
     #include "tsAfterStandardHeaders.h"
 #elif defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
+    #include <sys/resource.h>
     #include <dlfcn.h>
     #include "tsAfterStandardHeaders.h"
 #elif defined(TS_MAC)
@@ -33,7 +33,6 @@
     #include <libproc.h>
     #include <dlfcn.h>
     #include "tsAfterStandardHeaders.h"
-    extern char **environ; // not defined in public headers
 #elif defined(TS_BSD)
     #include "tsSysCtl.h"
     #include "tsBeforeStandardHeaders.h"
@@ -48,16 +47,12 @@
         #include <sys/kinfo.h>
     #endif
     #include "tsAfterStandardHeaders.h"
-    extern char **environ; // not defined in public headers
 #endif
 
 // Required link libraries under Windows.
 #if defined(TS_WINDOWS) && defined(TS_MSC)
     #pragma comment(lib, "psapi.lib")  // GetProcessMemoryInfo
 #endif
-
-// External calls to environment variables are not reentrant. Use a global mutex.
-TS_STATIC_INSTANCE(std::mutex, (), EnvironmentMutex);
 
 
 //----------------------------------------------------------------------------
@@ -79,7 +74,7 @@ ts::UString ts::ExecutableFile()
 
     // Linux implementation.
     // /proc/self/exe is a symbolic link to the executable.
-    path = ResolveSymbolicLinks(u"/proc/self/exe");
+    path = fs::weakly_canonical("/proc/self/exe", &ErrCodeReport());
 
 #elif defined(TS_MAC)
 
@@ -284,115 +279,64 @@ ts::UString ts::SysErrorCodeMessage(ts::SysErrorCode code)
 
 
 //----------------------------------------------------------------------------
-// Get metrics for the current process
+// Get the CPU time of the process in milliseconds.
 //----------------------------------------------------------------------------
 
-void ts::GetProcessMetrics(ProcessMetrics& metrics)
+ts::MilliSecond ts::GetProcessCpuTime()
 {
-    metrics.cpu_time = 0;
-    metrics.vmem_size = 0;
-
 #if defined(TS_WINDOWS)
 
-    // Windows implementation
-
-    // Get a handle to the current process
-    const ::HANDLE proc = ::GetCurrentProcess();
-
-    // Get process CPU time
     ::FILETIME creation_time, exit_time, kernel_time, user_time;
-    if (::GetProcessTimes(proc, &creation_time, &exit_time, &kernel_time, &user_time) == 0) {
+    if (::GetProcessTimes(::GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time) == 0) {
         throw ts::Exception(u"GetProcessTimes error", ::GetLastError());
     }
-    metrics.cpu_time = ts::Time::Win32FileTimeToMilliSecond(kernel_time) + ts::Time::Win32FileTimeToMilliSecond(user_time);
+    return ts::Time::Win32FileTimeToMilliSecond(kernel_time) + ts::Time::Win32FileTimeToMilliSecond(user_time);
 
-    // Get virtual memory size
+#else
+
+    ::rusage usage;
+    TS_ZERO(usage);
+    if (::getrusage(RUSAGE_SELF, &usage) < 0) {
+        throw ts::Exception(u"getrusage error", errno);
+    }
+    return MilliSecond(usage.ru_stime.tv_sec) * MilliSecPerSec +
+           MilliSecond(usage.ru_stime.tv_usec) / MicroSecPerMilliSec +
+           MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
+           MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
+
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Get the virtual memory size of the process in bytes.
+//----------------------------------------------------------------------------
+
+size_t ts::GetProcessVirtualSize()
+{
+#if defined(TS_WINDOWS)
+
     ::PROCESS_MEMORY_COUNTERS_EX mem_counters;
-    if (::GetProcessMemoryInfo(proc, (::PROCESS_MEMORY_COUNTERS*)&mem_counters, sizeof(mem_counters)) == 0) {
+    TS_ZERO(mem_counters);
+    if (::GetProcessMemoryInfo(::GetCurrentProcess(), (::PROCESS_MEMORY_COUNTERS*)&mem_counters, sizeof(mem_counters)) == 0) {
         throw ts::Exception(u"GetProcessMemoryInfo error", ::GetLastError());
     }
-    metrics.vmem_size = mem_counters.PrivateUsage;
+    return size_t(mem_counters.PrivateUsage);
 
 #elif defined(TS_LINUX)
 
-    // Linux implementation.
+    // On Linux, the VSIZE in pages is in the first field of /proc/self/statm.
+    size_t vsize = 0;
+    std::ifstream file("/proc/self/statm");
+    file >> vsize;
+    file.close();
 
-    // Definition of data available from /proc/<pid>/stat
-    // See man page for proc(5) for more details.
-    struct ProcessStatus {
-        int           pid;         // The process id.
-        char          state;       // One char from "RSDZTW"
-        int           ppid;        // The PID of the parent.
-        int           pgrp;        // The process group ID of the process.
-        int           session;     // The session ID of the process.
-        int           tty_nr;      // The tty the process uses.
-        int           tpgid;       // Process group ID which owns the tty
-        unsigned long flags;       // The flags of the process.
-        unsigned long minflt;      // Minor faults the process made
-        unsigned long cminflt;     // Minor faults the process's children made
-        unsigned long majflt;      // Major faults the process made
-        unsigned long cmajflt;     // Major faults the process's children made
-        unsigned long utime;       // Number of jiffies in user mode
-        unsigned long stime;       // Number of jiffies in kernel mode
-        long          cutime;      // Jiffies process's children in user mode
-        long          cstime;      // Jiffies process's children in kernel mode
-        long          priority;    // Standard nice value, plus fifteen.
-        long          nice;        // Nice value, from 19 (nicest) to -19 (not nice)
-        long          itrealvalue; // Jiffies before the next SIGALRM
-        unsigned long starttime;   // Jiffies the process started after system boot
-        unsigned long vsize;       // Virtual memory size in bytes.
-        long          rss;         // Resident Set Size
-        unsigned long rlim;        // Current limit in bytes on the rss
-        unsigned long startcode;   // Address above which program text can run.
-        unsigned long endcode;     // Address below which program text can run.
-        unsigned long startstack;  // Address of the start of the stack
-        unsigned long kstkesp;     // Current value of esp (stack pointer)
-        unsigned long kstkeip;     // Current EIP (instruction pointer).
-        unsigned long signal;      // Bitmap of pending signals (usually 0).
-        unsigned long blocked;     // Bitmap of blocked signals
-        unsigned long sigignore;   // Bitmap of ignored signals.
-        unsigned long sigcatch;    // Bitmap of catched signals.
-        unsigned long wchan;       // "Channel" in which the process is waiting
-        unsigned long nswap;       // Number of pages swapped - not maintained.
-        unsigned long cnswap;      // Cumulative nswap for child processes.
-        int           exit_signal; // Signal to be sent to parent when we die.
-        int           processor;   // CPU number last executed on.
-    };
-
-    static const char filename[] = "/proc/self/stat";
-    FILE* fp = fopen(filename, "r");
-    if (fp == nullptr) {
-        throw ts::Exception(UString::Format(u"error opening %s", {filename}), errno);
+    // Get page size in bytes.
+    const long psize = ::sysconf(_SC_PAGESIZE);
+    if (psize < 0) {
+        throw ts::Exception(u"sysconf(_SC_PAGESIZE) error", errno);
     }
-
-    ProcessStatus ps;
-    const int expected = 37;
-    const int count = fscanf(fp,
-        "%d %*s %c %d %d %d %d %d %lu %lu %lu %lu %lu %lu %lu "
-        "%ld %ld %ld %ld %*d %ld %lu %lu %ld %lu %lu %lu %lu "
-        "%lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d",
-        &ps.pid, &ps.state, &ps.ppid, &ps.pgrp, &ps.session,
-        &ps.tty_nr, &ps.tpgid, &ps.flags, &ps.minflt,
-        &ps.cminflt, &ps.majflt, &ps.cmajflt, &ps.utime,
-        &ps.stime, &ps.cutime, &ps.cstime, &ps.priority,
-        &ps.nice, &ps.itrealvalue, &ps.starttime, &ps.vsize,
-        &ps.rss, &ps.rlim, &ps.startcode, &ps.endcode,
-        &ps.startstack, &ps.kstkesp, &ps.kstkeip, &ps.signal,
-        &ps.blocked, &ps.sigignore, &ps.sigcatch, &ps.wchan,
-        &ps.nswap, &ps.cnswap, &ps.exit_signal, &ps.processor);
-    fclose(fp);
-
-    if (count != expected) {
-        throw ts::Exception(UString::Format(u"error reading %s, got %d values, expected %d", {filename, count, expected}));
-    }
-
-    // Get virtual memory size
-    metrics.vmem_size = ps.vsize;
-
-    // Evaluate CPU time
-    unsigned long jps = ::sysconf(_SC_CLK_TCK);   // jiffies per second
-    unsigned long jiffies = ps.utime + ps.stime; // CPU time in jiffies
-    metrics.cpu_time = (MilliSecond(jiffies) * 1000) / jps;
+    return vsize * size_t(psize);
 
 #elif defined(TS_MAC)
 
@@ -406,7 +350,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     if (status1 != KERN_SUCCESS) {
         throw ts::Exception(u"task_info error", errno);
     }
-    metrics.vmem_size = taskinfo.virtual_size;
+    return size_t(taskinfo.virtual_size);
 
 #elif defined(TS_FREEBSD)
 
@@ -423,10 +367,11 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     if (kproc == nullptr || kproc_count == 0) {
         throw ts::Exception(u"procstat_getprocs error", errno);
     }
-    metrics.vmem_size = kproc->ki_size;
+    const size_t size = size_t(kproc->ki_size);
 
     ::procstat_freeprocs(pstat, kproc);
     ::procstat_close(pstat);
+    return size;
 
 #elif defined(TS_OPENBSD)
 
@@ -447,9 +392,10 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     // The virtual memory size is text size + data size + stack size.
     // Cannot use p_vm_map_size, it is always zero.
     const long pagesize = ::sysconf(_SC_PAGESIZE);
-    metrics.vmem_size = kinfo->p_vm_tsize * pagesize + kinfo->p_vm_dsize * pagesize + kinfo->p_vm_ssize * pagesize;
+    const size_t size = size_t((kinfo->p_vm_tsize + kinfo->p_vm_dsize + kinfo->p_vm_ssize) * pagesize);
 
     ::kvm_close(kvm);
+    return size;
 
 #elif defined(TS_DRAGONFLYBSD)
 
@@ -470,9 +416,10 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     }
 
     // The virtual memory size is directly in kp_vm_map_size, in bytes.
-    metrics.vmem_size = kinfo->kp_vm_map_size;
+    const size_t size = size_t(kinfo->kp_vm_map_size);
 
     ::kvm_close(kvm);
+    return size;
 
 #elif defined(TS_NETBSD)
 
@@ -492,30 +439,13 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
     // The virtual memory size is text size + data size + stack size.
     const long pagesize = ::sysconf(_SC_PAGESIZE);
-    metrics.vmem_size = kinfo->p_vm_tsize * pagesize + kinfo->p_vm_dsize * pagesize + kinfo->p_vm_ssize * pagesize;
+    const size_t size = size_t((kinfo->p_vm_tsize + kinfo->p_vm_dsize + kinfo->p_vm_ssize) * pagesize);
 
     ::kvm_close(kvm);
+    return size;
 
 #else
-    #error "ts::GetProcessMetrics not implemented on this system"
-#endif
-
-#if defined(TS_MAC) || defined(TS_BSD)
-
-    // On BSD systems, get CPU time using getrusage().
-    ::rusage usage;
-    const int status2 = ::getrusage(RUSAGE_SELF, &usage);
-    if (status2 < 0) {
-        throw ts::Exception(u"getrusage error", errno);
-    }
-
-    // Add system time and user time, in milliseconds.
-    metrics.cpu_time =
-        MilliSecond(usage.ru_stime.tv_sec) * MilliSecPerSec +
-        MilliSecond(usage.ru_stime.tv_usec) / MicroSecPerMilliSec +
-        MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
-        MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
-
+    #error "ts::GetProcessVirtualSize not implemented on this system"
 #endif
 }
 
@@ -535,13 +465,6 @@ void ts::IgnorePipeSignal()
 
 //----------------------------------------------------------------------------
 // Put standard input / output stream in binary mode.
-// On UNIX systems, this does not make any difference.
-// On Windows systems, however, in a stream which is not open in
-// binary mode, there is automatic translation between LF and CR-LF.
-// The standard input / output are open in text mode (non-binary).
-// These functions force them into binary mode.
-// Return true on success, false on error.
-// If report is a subclass or ts::Args, also terminate application.
 //----------------------------------------------------------------------------
 
 bool ts::SetBinaryModeStdin(Report& report)
@@ -574,245 +497,6 @@ bool ts::SetBinaryModeStdout(Report& report)
     }
 #endif
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Check if an environment variable exists
-//----------------------------------------------------------------------------
-
-bool ts::EnvironmentExists(const UString& name)
-{
-    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
-
-#if defined(TS_WINDOWS)
-    std::array <::WCHAR, 2> unused;
-    return ::GetEnvironmentVariableW(name.wc_str(), unused.data(), ::DWORD(unused.size())) != 0;
-#else
-    return ::getenv(name.toUTF8().c_str()) != nullptr;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Get the value of an environment variable.
-// Return default value if does not exist.
-//----------------------------------------------------------------------------
-
-ts::UString ts::GetEnvironment(const UString& name, const UString& def)
-{
-    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
-
-#if defined(TS_WINDOWS)
-    std::vector<::WCHAR> value;
-    value.resize(512);
-    ::DWORD size = ::GetEnvironmentVariableW(name.wc_str(), value.data(), ::DWORD(value.size()));
-    if (size >= ::DWORD(value.size())) {
-        value.resize(size_t(size + 1));
-        size = ::GetEnvironmentVariableW(name.wc_str(), value.data(), ::DWORD(value.size()));
-    }
-    return size <= 0 ? def : UString(value, size);
-#else
-    const char* value = ::getenv(name.toUTF8().c_str());
-    return value != nullptr ? UString::FromUTF8(value) : def;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Set the value of an environment variable.
-//----------------------------------------------------------------------------
-
-bool ts::SetEnvironment(const UString& name, const UString& value)
-{
-    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
-
-#if defined(TS_WINDOWS)
-    return ::SetEnvironmentVariableW(name.wc_str(), value.wc_str()) != 0;
-#else
-    // In case of error, setenv(3) is documented to return -1 but not setting errno.
-    return ::setenv(name.toUTF8().c_str(), value.toUTF8().c_str(), 1) == 0;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Delete an environment variable.
-//----------------------------------------------------------------------------
-
-bool ts::DeleteEnvironment(const UString& name)
-{
-    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
-
-#if defined(TS_WINDOWS)
-    return ::SetEnvironmentVariableW(name.wc_str(), nullptr) != 0;
-#else
-    // In case of error, unsetenv(3) is documented to return -1 but and set errno.
-    // It is also documented to silently ignore non-existing variables.
-    return ::unsetenv(name.toUTF8().c_str()) == 0;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Expand environment variables inside a file path (or any string).
-// Environment variable references are '$name' or '${name}'.
-// In the first form, 'name' is the longest combination of letters, digits and underscore.
-// A combination \$ is interpreted as a literal $, not an environment variable reference.
-//----------------------------------------------------------------------------
-
-ts::UString ts::ExpandEnvironment(const UString& path)
-{
-    const size_t len = path.length();
-    UString expanded;
-    expanded.reserve(2 * len);
-    size_t index = 0;
-    while (index < len) {
-        if (path[index] == '\\' && index+1 < len && path[index+1] == '$') {
-            // Escaped dollar
-            expanded += '$';
-            index += 2;
-        }
-        else if (path[index] != '$') {
-            // Regular character
-            expanded += path[index++];
-        }
-        else {
-            // Environment variable reference.
-            // First, locate variable name and move index in path.
-            UString varname;
-            if (++index < len) {
-                if (path[index] == '{') {
-                    // '${name}' format
-                    const size_t last = path.find('}', index);
-                    if (last == NPOS) {
-                        varname = path.substr(index + 1);
-                        index = len;
-                    }
-                    else {
-                        varname = path.substr(index + 1, last - index - 1);
-                        index = last + 1;
-                    }
-                }
-                else {
-                    // '$name' format
-                    const size_t last = path.find_first_not_of(u"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", index);
-                    if (last == NPOS) {
-                        varname = path.substr(index);
-                        index = len;
-                    }
-                    else {
-                        varname = path.substr(index, last - index);
-                        index = last;
-                    }
-                }
-            }
-            // Second, replace environment variable
-            expanded += GetEnvironment(varname);
-        }
-    }
-    return expanded;
-}
-
-
-//----------------------------------------------------------------------------
-// Add a "name=value" string to a container.
-// If exact is true, the definition is always valid.
-// Otherwise, cleanup the string and ignore lines without "="
-//----------------------------------------------------------------------------
-
-namespace {
-    void AddNameValue(ts::Environment& env, const ts::UString& line, bool exact)
-    {
-        ts::UString s(line);
-
-        // With loose line, do some initial cleanup.
-        if (!exact) {
-            s.trim();
-            if (s.empty() || s.front() == u'#') {
-                // Empty or comment line
-                return;
-            }
-        }
-
-        // Locate the "=" between name and value.
-        const size_t pos = s.find(u"=");
-
-        if (pos == ts::NPOS) {
-            // With exact line, no "=" means empty value.
-            // With loose line, not a valid definition.
-            if (exact) {
-                env.insert(std::make_pair(s, ts::UString()));
-            }
-        }
-        else {
-            // Isolate name and value.
-            ts::UString name(s.substr(0, pos));
-            ts::UString value(s.substr(pos + 1));
-            // With loose line, do some additional cleanup.
-            if (!exact) {
-                name.trim();
-                value.trim();
-                if (value.size() >= 2 && (value.front() == u'\'' || value.front() == u'"') && value.back() == value.front()) {
-                    // Remove surrounding quotes in the value.
-                    value.pop_back();
-                    value.erase(0, 1);
-                }
-            }
-            if (!name.empty()) {
-                env.insert(std::make_pair(name, value));
-            }
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Get the content of the entire environment (all environment variables).
-//----------------------------------------------------------------------------
-
-void ts::GetEnvironment(Environment& env)
-{
-    std::lock_guard<std::mutex> lock(EnvironmentMutex::Instance());
-    env.clear();
-
-#if defined(TS_WINDOWS)
-
-    const ::LPWCH strings = ::GetEnvironmentStringsW();
-    if (strings != 0) {
-        size_t len;
-        for (const ::WCHAR* p = strings; (len = ::wcslen(p)) != 0; p += len + 1) {
-            assert(sizeof(::WCHAR) == sizeof(UChar));
-            AddNameValue(env, UString(reinterpret_cast<const UChar*>(p), len), true);
-        }
-        ::FreeEnvironmentStringsW(strings);
-    }
-
-#else
-
-    for (char** p = ::environ; *p != nullptr; ++p) {
-        AddNameValue(env, UString::FromUTF8(*p), true);
-    }
-
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Load a text file containing environment variables.
-//----------------------------------------------------------------------------
-
-bool ts::LoadEnvironment(Environment& env, const UString& fileName)
-{
-    env.clear();
-    UStringList lines;
-    const bool ok = UString::Load(lines, fileName);
-    if (ok) {
-        for (const auto& it : lines) {
-            AddNameValue(env, it, false);
-        }
-    }
-    return ok;
 }
 
 

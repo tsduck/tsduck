@@ -9,6 +9,7 @@
 #include "utestTSUnitBenchmark.h"
 #include "tsunit.h"
 #include "tsSysUtils.h"
+#include "tsEnvironment.h"
 
 
 //----------------------------------------------------------------------------
@@ -22,11 +23,7 @@ size_t utest::TSUnitBenchmark::GetIterations(const ts::UString& env_name)
 }
 
 utest::TSUnitBenchmark::TSUnitBenchmark::TSUnitBenchmark(const ts::UString& env_name) :
-    iterations(GetIterations(env_name)),
-    _started(false),
-    _start(0),
-    _accumulated(0),
-    _sequences(0)
+    iterations(GetIterations(env_name))
 {
 }
 
@@ -38,9 +35,7 @@ utest::TSUnitBenchmark::TSUnitBenchmark::TSUnitBenchmark(const ts::UString& env_
 void utest::TSUnitBenchmark::start()
 {
     if (!_started) {
-        ts::ProcessMetrics pm;
-        ts::GetProcessMetrics(pm);
-        _start = pm.cpu_time;
+        _start = ts::GetProcessCpuTime();
         _started = true;
     }
 }
@@ -48,9 +43,7 @@ void utest::TSUnitBenchmark::start()
 void utest::TSUnitBenchmark::stop()
 {
     if (_started) {
-        ts::ProcessMetrics pm;
-        ts::GetProcessMetrics(pm);
-        _accumulated += pm.cpu_time - _start;
+        _accumulated += ts::GetProcessCpuTime() - _start;
         _sequences++;
         _started = false;
     }

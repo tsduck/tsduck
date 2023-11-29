@@ -99,7 +99,7 @@ bool ts::PlayPlugin::searchInPath(UString& result, const UStringVector& path, co
 {
     for (const auto& file : path) {
         if (!file.empty()) {
-            result = file + PathSeparator + name;
+            result = file + fs::path::preferred_separator + name;
             tsp->debug(u"looking for %s", {result});
             if (fs::exists(result)) {
                 return true;
@@ -137,7 +137,7 @@ bool ts::PlayPlugin::start()
 
     // Get environment path
     UStringVector search_path;
-    GetEnvironmentPath(search_path, TS_COMMAND_PATH);
+    GetEnvironmentPath(search_path, PathEnvironmentVariable);
 
     // Look into some registry location
     UString ent = Registry::GetValue(u"HKLM\\SOFTWARE\\VideoLAN\\VLC", u"InstallDir");
@@ -168,7 +168,7 @@ bool ts::PlayPlugin::start()
 
     // Get environment path.
     UStringVector search_path;
-    GetEnvironmentPath(search_path, TS_COMMAND_PATH);
+    GetEnvironmentPath(search_path, PathEnvironmentVariable);
 
     // On macOS, additional applications are installed on /usr/local because of system integrity protection.
 #if defined(TS_MAC)

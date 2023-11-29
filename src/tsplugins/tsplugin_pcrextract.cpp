@@ -209,7 +209,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 
     option(u"separator", 's', STRING);
     help(u"separator", u"string",
-         u"Field separator string in CSV output (default: '" TS_DEFAULT_CSV_SEPARATOR u"').");
+         u"Field separator string in CSV output (default: '" + UString(DefaultCsvSeparator) + u"').");
 }
 
 
@@ -233,10 +233,10 @@ bool ts::PCRExtractPlugin::getOptions()
 {
     // Get command line options.
     getIntValues(_pids, u"pid", true);
+    getValue(_output_name, u"output-file");
+    getValue(_separator, u"separator", DefaultCsvSeparator);
     _all_pids = !present(u"pid");
-    _separator = value(u"separator", TS_DEFAULT_CSV_SEPARATOR);
     _noheader = present(u"noheader");
-    _output_name = value(u"output-file");
     _scte35 = present(u"scte35");
     _good_pts_only = present(u"good-pts-only");
     _get_pts = present(u"pts") || _scte35;

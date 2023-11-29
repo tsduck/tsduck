@@ -15,6 +15,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsUserInterrupt.h"
+#include "tsEnvironment.h"
 #include "tsSysUtils.h"
 #include "tsunit.h"
 
