@@ -197,7 +197,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::serialize(PSIBuffer
     buf.putBit(mae_switchGroupAllowOnOff);
     buf.putBit(mae_switchGroupDefaultOnOff);
     buf.putReserved(3);
-    buf.putBits(mae_switchGroupMemberID.size(), 5);
+    buf.putBits(mae_switchGroupMemberID.size()-1, 5);
     for (auto gm : mae_switchGroupMemberID) {
         buf.putReserved(1);
         buf.putBits(gm, 7);
@@ -213,7 +213,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::serialize(PSIBuffer
     buf.putReserved(3);
     buf.putBits(mae_groupPresetKind, 5);
     buf.putReserved(4);
-    buf.putBits(groupPresetConditions.size(), 4);
+    buf.putBits(groupPresetConditions.size()-1, 4);
     for (auto pg : groupPresetConditions) {
         pg.serialize(buf);
     }
@@ -342,9 +342,9 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::deserialize(PSIBuff
     mae_switchGroupDefaultOnOff = buf.getBool();
     buf.skipBits(3);
     const uint8_t mae_bsSwitchGroupNumMembers = buf.getBits<uint8_t>(5);
-    for (auto i = 0; i < mae_bsSwitchGroupNumMembers; i++) {
+    for (auto i = 0; i < mae_bsSwitchGroupNumMembers + 1; i++) {
         buf.skipBits(1);
-        uint8_t memberID = buf.getBits<uint8_t>(7);
+        const uint8_t memberID = buf.getBits<uint8_t>(7);
         mae_switchGroupMemberID.push_back(memberID);
     }
     buf.skipBits(1);
@@ -359,7 +359,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::deserialize(PSIBuff
     buf.getBits(mae_groupPresetKind, 5);
     buf.skipBits(4);
     const uint8_t mae_numGroupPresetConditions = buf.getBits<uint8_t>(4);
-    for (auto j = 0; j < mae_numGroupPresetConditions; j++) {
+    for (auto j = 0; j < mae_numGroupPresetConditions + 1; j++) {
         GroupPresetConditions_type newConditions(buf);
         groupPresetConditions.push_back(newConditions);
     }
@@ -485,7 +485,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::display(TablesDispl
     buf.skipReservedBits(3);
     const uint8_t mae_bsSwitchGroupNumMembers = buf.getBits<uint8_t>(5);
     std::vector<uint8_t> group_members;
-    for (auto i = 0; i < mae_bsSwitchGroupNumMembers; i++) {
+    for (auto i = 0; i < mae_bsSwitchGroupNumMembers + 1; i++) {
         buf.skipReservedBits(1);
         group_members.push_back(buf.getBits<uint8_t>(7));
     }
@@ -716,7 +716,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::fromXML(const xml::
     bool ok = element->getIntAttribute(mae_switchGroupID, u"switchGroupID", true, 0, 0, 0x1f) &&
               element->getBoolAttribute(mae_switchGroupAllowOnOff, u"switchGroupAllowOnOff", true) &&
               element->getBoolAttribute(mae_switchGroupDefaultOnOff, u"switchGroupDefaultOnOff", true) &&
-              element->getHexaTextChild(group_members, u"SwitchGroupMembers", false, 0, 31) &&
+              element->getHexaTextChild(group_members, u"SwitchGroupMembers", true, 1, 32) &&
               element->getIntAttribute(mae_switchGroupDefaultGroupID, u"switchGroupDefaultGroupID", true, 0, 0, 0x7f);
     if (ok && !group_members.empty()) {
         for (auto member : group_members) {
@@ -737,16 +737,18 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::fromXML(const xml::
     ts::xml::ElementVector preset_conditions;
     bool ok = element->getIntAttribute(mae_groupPresetID, u"groupPresetID", true, 0, 0, 0x1f) &&
               element->getIntAttribute(mae_groupPresetKind, u"groupPresetKind", true, 0, 0, 0x1f) &&
-              element->getChildren(preset_conditions, u"PresetConditions", 0, 15);
+              element->getChildren(preset_conditions, u"PresetConditions", 1, 16);
     
     bool conditions_ok = true;
-    for (size_t i = 0; ok && i < preset_conditions.size(); ++i) {
-        GroupPresetConditions_type newConditions;
-        if (newConditions.fromXML(preset_conditions[i])) {
-            groupPresetConditions.push_back(newConditions);
-        }
-        else {
-            conditions_ok = false;
+    if (ok) {
+        for (size_t i = 0; i < preset_conditions.size(); ++i) {
+            GroupPresetConditions_type newConditions;
+            if (newConditions.fromXML(preset_conditions[i])) {
+                groupPresetConditions.push_back(newConditions);
+            }
+            else {
+                conditions_ok = false;
+            }
         }
     }
     return ok && conditions_ok;

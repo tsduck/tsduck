@@ -34,8 +34,9 @@
         switchGroupDefaultOnOff="bool, required"
         switchGroupDefaultGroupID="uint7, required">
 
+        <!-- required -->
         <SwitchGroupMembers>
-          7bit Hexadecimal content, up to 31 values
+          7bit Hexadecimal content, 1 to 32 values
         </SwitchGroupMembers>
         
       </SwitchGroup>
@@ -45,16 +46,15 @@
         groupPresetID="uint5, required"
         groupPresetKind="uint4, required">
 
-        <!-- up to 15 preset conditions -->
+        <!-- 1 to 16 preset conditions -->
         <PresetConditions
           groupPresetGroupID="uint7, required"
-          groupPresetDisableGainInteractivity="bool, required in groupPresetConditionOnOff group"
-          groupPresetDisablePositionInteractivity="bool, required in groupPresetConditionOnOff group"
-          groupPresetGain="uint8, optional in groupPresetConditionOnOff group"
-          groupPresetAzOffset="uint8, optional in groupPresetConditionOnOff group - must be specified with groupPresetElOffset and groupPresetDistFactor"
-          groupPresetElOffset="uint6, optional in groupPresetConditionOnOff group - must be specified with groupPresetAzOffset and groupPresetDistFactor"
-          groupPresetDistFactor="uint4, optional in groupPresetConditionOnOff group e- must be specified with groupPresetAzOffset and groupPresetElOffset"/>
-        
+          groupPresetDisableGainInteractivity="bool, required in groupPresetConditionOnOff=true group"
+          groupPresetDisablePositionInteractivity="bool, required in groupPresetConditionOnOff=true group"
+          groupPresetGain="uint8, optional in groupPresetConditionOnOff=true group"
+          groupPresetAzOffset="uint8, optional in groupPresetConditionOnOff=true group - must be specified with groupPresetElOffset and groupPresetDistFactor"
+          groupPresetElOffset="uint6, optional in groupPresetConditionOnOff=true group - must be specified with groupPresetAzOffset and groupPresetDistFactor"
+          groupPresetDistFactor="uint4, optional in groupPresetConditionOnOff=true group e- must be specified with groupPresetAzOffset and groupPresetElOffset"/>
       </PresetGroup>
 
       <reserved>
