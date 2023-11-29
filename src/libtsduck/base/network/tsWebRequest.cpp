@@ -195,6 +195,9 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
     if (args.useCompression) {
         enableCompression();
     }
+    for (const auto& it : args.headers) {
+        setRequestHeader(it.first, it.second);
+    }
 }
 
 
@@ -204,6 +207,12 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
 
 void ts::WebRequest::setRequestHeader(const UString& name, const UString& value)
 {
+    // Check for duplicates on key AND value (multiple headers with the same key are permitted)
+    for (const auto& header: _requestHeaders) {
+        if (header.first == name && header.second == value) {
+            return;
+        }
+    }
     _requestHeaders.insert(std::make_pair(name, value));
 }
 
