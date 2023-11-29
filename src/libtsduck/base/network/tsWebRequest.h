@@ -147,7 +147,7 @@ namespace ts {
         //!
         //! Default user agent string ("tsduck").
         //!
-        static const UString DEFAULT_USER_AGENT;
+        static constexpr const UChar* DEFAULT_USER_AGENT = u"tsduck";
 
         //!
         //! Set the user agent name to use in HTTP headers.
