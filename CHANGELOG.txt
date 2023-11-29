@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3465
+VERSION 3.36-3468
 
 [NEW] New commands and plugins:
 
@@ -31,7 +31,7 @@ VERSION 3.36-3465
     - Option --flush-last-unbounded-pes in plugin "pes".
     - Option --http to input plugin "pcap'.
     - Option --output-tcp-stream to "tspcap".
-    - Option --compressed in input plugins "http" and "hls".
+    - Options --compressed, --headers in input plugins "http" and "hls".
     - Option --nostdcpp in "tsconfig".
     - Option --t2mi-file in plugin "t2mi".
 

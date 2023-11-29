@@ -54,7 +54,7 @@ void ts::WebRequestArgs::defineArgs(Args& args)
 
     args.option(u"headers", 0, Args::STRING, 0, ts::Args::UNLIMITED_COUNT);
     args.help(u"headers", u"'string'",
-              u"Custom header, e.g. 'x-header-name:value'.  Can be set multiple times.");
+              u"Custom header, e.g. 'x-header-name: value'. Can be set multiple times.");
 }
 
 
@@ -79,9 +79,10 @@ bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)
     args.getValues(headerStrings, u"headers");
     for (const auto& headerString : headerStrings) {
         auto pos = headerString.find(':');
-        if (pos == UString::npos || pos==0 || pos==headerString.size()-1) {
-            args.warning(u"Ignoring custom header '%s' - not of expected form 'x-header-name:value'", {headerString});
-        } else {
+        if (pos == NPOS || pos == 0 || pos == headerString.size() - 1) {
+            args.warning(u"Ignoring custom header '%s' - not of expected form 'x-header-name: value'", {headerString});
+        }
+        else {
             auto headerKey = headerString.substr(0, pos);
             auto headerValue = headerString.substr(pos + 1);
             headerKey.trim();
