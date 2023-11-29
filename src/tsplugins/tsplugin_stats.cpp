@@ -48,7 +48,7 @@ namespace ts {
         bool       _csv = false;             // Use CSV format for statistics.
         bool       _header = false;          // Display header lines.
         bool       _multiple_output = false; // Don't rewrite output files with --interval.
-        UString    _csv_separator = TS_DEFAULT_CSV_SEPARATOR; // Separator character in CSV lines.
+        UString    _csv_separator {DefaultCsvSeparator}; // Separator character in CSV lines.
         UString    _output_name {};          // Output file name.
         NanoSecond _output_interval = 0;     // Recreate output at this time interval.
         PIDSet     _pids {};                 // List of PID's to track.
@@ -143,7 +143,7 @@ ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
 
     option(u"separator", 's', STRING);
     help(u"separator", u"string",
-         u"Field separator string in CSV output (default: '" TS_DEFAULT_CSV_SEPARATOR u"').");
+         u"Field separator string in CSV output (default: '" + UString(DefaultCsvSeparator) + u"').");
 }
 
 
@@ -158,7 +158,7 @@ bool ts::StatsPlugin::getOptions()
     _header = !present(u"noheader");
     _multiple_output = present(u"multiple-files");
     _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
-    getValue(_csv_separator, u"separator", TS_DEFAULT_CSV_SEPARATOR);
+    getValue(_csv_separator, u"separator", DefaultCsvSeparator);
     getValue(_output_name, u"output-file");
     getIntValues(_pids, u"pid");
     getIntValues(_labels, u"label");

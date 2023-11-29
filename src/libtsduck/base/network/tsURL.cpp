@@ -9,7 +9,6 @@
 #include "tsURL.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
-#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -26,7 +25,7 @@ void ts::URL::setURL(const UString& path)
         _scheme = u"file";
         if (!_path.startWith(u"/")) {
             // Make it an absolute path.
-            UString dir(fs::current_path(&ErrCodeReport(NULLREP)));
+            UString dir(fs::current_path(&ErrCodeReport()));
 #if defined(TS_WINDOWS)
             dir.substitute(u'\\', u'/');
             dir.insert(0, u"/");

@@ -12,7 +12,6 @@
 
 #include "tsNamesFile.h"
 #include "tsNames.h"
-#include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsDuckContext.h"
@@ -147,13 +146,13 @@ void NamesTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".names");
     }
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void NamesTest::afterTest()
 {
-    fs::remove(_tempFileName, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileName, &ts::ErrCodeReport());
 }
 
 

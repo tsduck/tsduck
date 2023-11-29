@@ -36,7 +36,7 @@ void ts::HEVCShortTermReferencePictureSetList::reset(uint32_t num_short_term_ref
 {
     // Make sure that the list is properly cleared first.
     clear();
-    list.resize(size_t(num_short_term_ref_pic_sets) + 1);
+    list.resize(size_t(num_short_term_ref_pic_sets));
     // The global 'valid' of the list becomes true but the individual 'valid' in elements
     // remain false until they are successfully parsed.
     valid = true;
@@ -102,6 +102,10 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
     if (st.valid && st.inter_ref_pic_set_prediction_flag) {
         // This picture is predicted from a reference picture.
         if (stRpsIdx == num_short_term_ref_pic_sets()) {
+            // The ShortTermReferencePictureSet index 0 to num_short_term_ref_pic_sets - 1 are stored
+            // in the HEVCSequenceParameterSet. The one with index num_short_term_ref_pic_sets, when
+            // present, is directly stored in the slice header. So, in practice, this index is
+            // currently never deserialized here.
             st.valid = parser.ue(st.delta_idx_minus1);
         }
 
@@ -131,17 +135,11 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
 
         // See ITU-T Rec. H.265, 7.4.8 (7-61).
         for (int32_t j = int32_t(ref.NumPositivePics) - 1; j >= 0; j--) {
-            if (j < int32_t(ref.DeltaPocS1.size()) &&
-                ref.NumNegativePics + j < st.use_delta_flag.size() &&
-                ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
-            {
+            if (j < int32_t(ref.DeltaPocS1.size()) && ref.NumNegativePics + j < st.use_delta_flag.size()) {
                 const int32_t dPoc = ref.DeltaPocS1[j] + deltaRps;
-                HEVC_TRACE(u"S0, dPoc=%d", dPoc);
-                if (dPoc < 0 &&
-                    ref.NumNegativePics + j < st.use_delta_flag.size() &&
-                    st.use_delta_flag[ref.NumNegativePics + j] &&
-                    ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
-                {
+                HEVC_TRACE(u"S0, dPoc=%d, st.use_delta_flag[ref.NumNegativePics + j]=%d", dPoc, st.use_delta_flag[ref.NumNegativePics + j]);
+                if (dPoc < 0 && st.use_delta_flag[ref.NumNegativePics + j] && ref.NumNegativePics + j < st.used_by_curr_pic_flag.size()) {
+                    HEVC_TRACE(u"=> push negative pic (%d)", 1);
                     st.DeltaPocS0.push_back(dPoc);
                     st.UsedByCurrPicS0.push_back(st.used_by_curr_pic_flag[ref.NumNegativePics + j]);
                 }
@@ -152,14 +150,16 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
             st.use_delta_flag[ref.NumDeltaPocs] &&
             ref.NumDeltaPocs < st.used_by_curr_pic_flag.size())
         {
+            HEVC_TRACE(u"=> push negative pic (%d)", 2);
             st.DeltaPocS0.push_back(deltaRps);
             st.UsedByCurrPicS0.push_back(st.used_by_curr_pic_flag[ref.NumDeltaPocs]);
         }
         for (uint32_t j = 0; j < ref.NumNegativePics; j++) {
-            if (j < ref.DeltaPocS0.size()) {
+            if (j < ref.DeltaPocS0.size() && j < ref.DeltaPocS0.size() && j < st.use_delta_flag.size()) {
                 const int32_t dPoc = ref.DeltaPocS0[j] + deltaRps;
-                HEVC_TRACE(u"S1, dPoc=%d, st.use_delta_flag[j]=%d", dPoc, st.use_delta_flag[j]);
-                if (dPoc < 0 && j < st.use_delta_flag.size() && st.use_delta_flag[j] && j < st.used_by_curr_pic_flag.size()) {
+                HEVC_TRACE(u"S0, dPoc=%d, st.use_delta_flag[j]=%d", dPoc, st.use_delta_flag[j]);
+                if (dPoc < 0 && st.use_delta_flag[j] && j < st.used_by_curr_pic_flag.size()) {
+                    HEVC_TRACE(u"=> push negative pic (%d)", 3);
                     st.DeltaPocS0.push_back(dPoc);
                     st.UsedByCurrPicS0.push_back(st.used_by_curr_pic_flag[j]);
                 }
@@ -170,16 +170,11 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
 
         // See ITU-T Rec. H.265, 7.4.8 (7-62).
         for (int32_t j = int32_t(ref.NumNegativePics) - 1; j >= 0; j--) {
-            if (j < int32_t(ref.DeltaPocS0.size()) &&
-                ref.NumNegativePics + j < st.use_delta_flag.size() &&
-                ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
-            {
+            if (j < int32_t(ref.DeltaPocS0.size()) && j < int32_t(st.use_delta_flag.size())) {
                 const int32_t dPoc = ref.DeltaPocS0[j] + deltaRps;
-                if (dPoc > 0 &&
-                    j < int32_t(st.use_delta_flag.size()) &&
-                    st.use_delta_flag[j] &&
-                    j < int32_t(st.used_by_curr_pic_flag.size()))
-                {
+                HEVC_TRACE(u"S1, dPoc=%d, st.use_delta_flag[j]=%d", dPoc, st.use_delta_flag[j]);
+                if (dPoc > 0 && st.use_delta_flag[j] && j < int32_t(st.used_by_curr_pic_flag.size())) {
+                    HEVC_TRACE(u"=> push positive pic (%d)", 1);
                     st.DeltaPocS1.push_back(dPoc);
                     st.UsedByCurrPicS1.push_back(st.used_by_curr_pic_flag[j]);
                 }
@@ -190,17 +185,16 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
             st.use_delta_flag[ref.NumDeltaPocs] &&
             ref.NumDeltaPocs < st.used_by_curr_pic_flag.size())
         {
+            HEVC_TRACE(u"=> push positive pic (%d)", 2);
             st.DeltaPocS1.push_back(deltaRps);
             st.UsedByCurrPicS1.push_back(st.used_by_curr_pic_flag[ref.NumDeltaPocs]);
         }
         for (uint32_t j = 0; j < ref.NumPositivePics; j++) {
-            if (j < ref.DeltaPocS1.size()) {
+            if (j < ref.DeltaPocS1.size() && ref.NumNegativePics + j < st.use_delta_flag.size()) {
                 const int32_t dPoc = ref.DeltaPocS1[j] + deltaRps;
-                if (dPoc > 0 &&
-                    ref.NumNegativePics + j < st.use_delta_flag.size() &&
-                    st.use_delta_flag[ref.NumNegativePics + j] &&
-                    ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
-                {
+                HEVC_TRACE(u"S1, dPoc=%d, st.use_delta_flag[ref.NumNegativePics + j]=%d", dPoc, st.use_delta_flag[ref.NumNegativePics + j]);
+                if (dPoc > 0 && st.use_delta_flag[ref.NumNegativePics + j] && ref.NumNegativePics + j < st.used_by_curr_pic_flag.size()) {
+                    HEVC_TRACE(u"=> push positive pic (%d)", 3);
                     st.DeltaPocS1.push_back(dPoc);
                     st.UsedByCurrPicS1.push_back(st.used_by_curr_pic_flag[ref.NumNegativePics + j]);
                 }
@@ -238,7 +232,7 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
         }
         st.DeltaPocS1.resize(st.num_positive_pics);
         if (st.num_positive_pics > 0) {
-            st.DeltaPocS1[0] = st.delta_poc_s1_minus1[0] - 1;
+            st.DeltaPocS1[0] = st.delta_poc_s1_minus1[0] + 1;
         }
         for (uint32_t i = 1; i < st.num_positive_pics; ++i) {
             st.DeltaPocS1[i] = st.DeltaPocS1[i-1] + st.delta_poc_s1_minus1[i] + 1;

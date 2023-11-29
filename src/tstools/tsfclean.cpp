@@ -159,7 +159,7 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) 
     UString outfile_name(_opt.out_file);
     if (_opt.out_dir) {
         // Output name is a directory.
-        outfile_name.append(PathSeparator);
+        outfile_name.append(fs::path::preferred_separator);
         outfile_name.append(BaseName(infile_name));
     }
     _opt.verbose(u"cleaning %s -> %s", {infile_name, outfile_name});

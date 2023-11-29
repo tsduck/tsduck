@@ -61,7 +61,7 @@ namespace ts {
     //!
     class TSDUCKDLL ErrCodeReport : public std::error_code
     {
-        TS_NOBUILD_NOCOPY(ErrCodeReport);
+        TS_NOCOPY(ErrCodeReport);
     public:
         //!
         //! Main constructor.
@@ -70,36 +70,49 @@ namespace ts {
         //! @param [in] object Optional "object" name, to be displayed after @a message.
         //!
         ErrCodeReport(Report& report, const UString& message = UString(), const UString& object = UString()) :
-            _report(report), _message(message), _object(object) {}
+            _report(&report), _message(message), _object(object) {}
 
         //!
-        //! Constructor with error indicator.
+        //! Constructor with error indicator and error reporting.
         //! @param [out] success The boolean to set in the destructor to indicate success or error.
         //! @param [in,out] report The report to which all error messages are logged in the destructor.
         //! @param [in] message Option message to display before the system error message.
         //! @param [in] object Optional "object" name, to be displayed after @a message.
         //!
         ErrCodeReport(bool& success, Report& report, const UString& message = UString(), const UString& object = UString()) :
-            _success(&success), _report(report), _message(message), _object(object) {}
+            _success(&success), _report(&report), _message(message), _object(object) {}
+
+        //!
+        //! Constructor with error indicator only and no error reporting.
+        //! @param [out] success The boolean to set in the destructor to indicate success or error.
+        //!
+        ErrCodeReport(bool& success) :
+            _success(&success) {}
+
+        //!
+        //! Default, constructor with no error reporting.
+        //! Typically used to select the non-throwing variant of std::filesystem calls and avoid throwing an exception.
+        //!
+        ErrCodeReport() = default;
 
         //! @cond nodoxygen
         //  Alternative constructors to avoid a Microsoft C++ issue, see comments in the declaration of the class.
         ErrCodeReport(Report& report, const UChar* message, const UString& object = UString()) :
-            _report(report), _message(message), _object(object) {}
+            _report(&report), _message(message), _object(object) {}
         ErrCodeReport(Report& report, const UChar* message, const UChar* object) :
-            _report(report), _message(message), _object(object) {}
+            _report(&report), _message(message), _object(object) {}
         ErrCodeReport(Report& report, const UChar* message, const fs::path& object) :
-            _report(report), _message(message), _object(object.string()) {}
+            _report(&report), _message(message), _object(object.string()) {}
         ErrCodeReport(Report& report, const UString& message, const fs::path& object) :
-            _report(report), _message(message), _object(object.string()) {}
+            _report(&report), _message(message), _object(object.string()) {}
         ErrCodeReport(bool& success, Report& report, const UChar* message, const UString& object = UString()) :
-            _success(&success), _report(report), _message(message), _object(object) {}
+            _success(&success), _report(&report), _message(message), _object(object) {}
         ErrCodeReport(bool& success, Report& report, const UChar* message, const UChar* object) :
-            _success(&success), _report(report), _message(message), _object(object) {}
+            _success(&success), _report(&report), _message(message), _object(object) {}
         ErrCodeReport(bool& success, Report& report, const UChar* message, const fs::path& object) :
-            _success(&success), _report(report), _message(message), _object(object.string()) {}
+            _success(&success), _report(&report), _message(message), _object(object.string()) {}
         ErrCodeReport(bool& success, Report& report, const UString& message, const fs::path& object) :
-            _success(&success), _report(report), _message(message), _object(object.string()) {}
+            _success(&success), _report(&report), _message(message), _object(object.string()) {}
         //! @endcond
 
         //!
@@ -118,7 +131,7 @@ namespace ts {
 
     private:
         bool*   _success = nullptr;
-        Report& _report;
+        Report* _report = nullptr;
         UString _message {};
         UString _object {};
     };

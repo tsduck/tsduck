@@ -96,15 +96,15 @@ void SectionFileTest::beforeTest()
         _tempFileNameBin = ts::TempFile(u".tmp.bin");
         _tempFileNameXML = ts::TempFile(u".tmp.xml");
     }
-    fs::remove(_tempFileNameBin, &ts::ErrCodeReport(NULLREP));
-    fs::remove(_tempFileNameXML, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileNameBin, &ts::ErrCodeReport());
+    fs::remove(_tempFileNameXML, &ts::ErrCodeReport());
 }
 
 // Test suite cleanup method.
 void SectionFileTest::afterTest()
 {
-    fs::remove(_tempFileNameBin, &ts::ErrCodeReport(NULLREP));
-    fs::remove(_tempFileNameXML, &ts::ErrCodeReport(NULLREP));
+    fs::remove(_tempFileNameBin, &ts::ErrCodeReport());
+    fs::remove(_tempFileNameXML, &ts::ErrCodeReport());
 }
 
 ts::Report& SectionFileTest::report()
