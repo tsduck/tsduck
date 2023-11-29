@@ -565,8 +565,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::toXML(xml::El
     }
     if (gainInteractivity.has_value()) {
         gainInteractivity.value().toXML(root->addElement(u"GainInteractivity"));
-    }
-                 
+    }           
 }
 
 void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractivityType::toXML(xml::Element* root) const
@@ -814,7 +813,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
             mae_groupPresetGain = preset_gain;
         }
     }
-
     return ok;
 }
+
 
