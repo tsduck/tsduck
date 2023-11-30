@@ -198,10 +198,10 @@ namespace ts {
         };
     public:
         // MPEGH3DAudioSceneDescriptor public members:
-        uint8_t                                  ThreeDAudioSceneID = 0;  //!< ID for the current audio scene, per mae_audio_SeceneInfoId in ISO/IEC 23008-03.
-        std::vector<MH3D_InteractivityInfo_type> interactivityGroups;
-        std::vector<MH3D_SwitchGroup_type>       switchGroups;
-        std::vector<MH3D_PresetGroup_type>       presetGroups;
+        uint8_t                                  _3dAudioSceneID = 0;  //!< ID for the current audio scene, per mae_audio_SeceneInfoId in ISO/IEC 23008-03.
+        std::vector<MH3D_InteractivityInfo_type> interactivityGroups {};
+        std::vector<MH3D_SwitchGroup_type>       switchGroups {};
+        std::vector<MH3D_PresetGroup_type>       presetGroups {};
         ByteBlock                                reserved {};             //!< Reserved data.
 
         //!
