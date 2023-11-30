@@ -153,29 +153,21 @@ uint32_t ts::Service::getFields() const
 ts::UString ts::Service::toString() const
 {
     UString str;
-
     if (_name.has_value()) {
         str = u"\"" + _name.value() + u"\"";
     }
     if (_major_id_atsc.has_value() && _minor_id_atsc.has_value()) {
-        if (!str.empty()) {
-            str += u", ";
-        }
-        str += UString::Format(u"%d.%d", {_major_id_atsc.value(), _minor_id_atsc.value()});
+        str.format(u"%s%d.%d", {str.empty() ? u"" : u", ", _major_id_atsc.value(), _minor_id_atsc.value()});
     }
     if (_id.has_value()) {
-        if (!str.empty()) {
-            str += u", ";
-        }
-        str += UString::Format(u"0x%X (%d)", {_id.value(), _id.value()});
+        str.format(u"%s0x%X (%d)", {str.empty() ? u"" : u", ", _id.value(), _id.value()});
     }
     if (_lcn.has_value()) {
-        if (!str.empty()) {
-            str += u", ";
-        }
-        str += UString::Format(u"#%d", {_lcn.value()});
+        str.format(u"%s#%d", {str.empty() ? u"" : u", ", _lcn.value()});
     }
-
+    if (_hidden.has_value() && *_hidden) {
+        str.format(u"%s(hidden)", {str.empty() ? u"" : u" "});
+    }
     return str;
 }
 

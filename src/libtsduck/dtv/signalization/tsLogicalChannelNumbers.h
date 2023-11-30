@@ -15,6 +15,7 @@
 #include "tsDuckContext.h"
 #include "tsService.h"
 #include "tsServiceIdTriplet.h"
+#include "tsReplacement.h"
 #include "tsAbstractLogicalChannelDescriptor.h"
 #include "tsNIT.h"
 
@@ -102,14 +103,6 @@ namespace ts {
         uint16_t getLCN(const ServiceIdTriplet& srv) const;
 
         //!
-        //! Get all known services by logical channel number.
-        //! @param [out] lcns A map of all known LCN's, key: LCN, value: service id triplet.
-        //! @param [in] ts_id If not 0xFFFF, get services from that TS id only.
-        //! @param [in] onet_id If not 0xFFFF, get services from that original network id only.
-        //!
-        void getLCNs(std::map<uint16_t,ServiceIdTriplet>& lcns, uint16_t ts_id = 0xFFFF, uint16_t onet_id = 0xFFFF) const;
-
-        //!
         //! Get the visible flag of a service.
         //! @param [in] srv_id The service id to search.
         //! @param [in] ts_id The transport stream id of the service.
@@ -138,12 +131,12 @@ namespace ts {
 
         //!
         //! Update a list of service descriptions with LCN's.
-        //! @param [in,out] services The list of service description to update.
-        //! @param [in] replace If a service already has an LCN and @a replace is false, don't search.
-        //! @param [in] add If true, add in @a services all missing services for which an LCN is known.
-        //! @return Number of updated or added LCN.
+        //! @tparam CONTAINER A container class of @c Services with @c push_back() method.
+        //! @param [in,out] services The container of service description to update.
+        //! @param [in] rep Replacement policy in @a services for new, updated, or absent services.
         //!
-        size_t updateServices(ServiceList& services, bool replace, bool add) const;
+        template <class CONTAINER>
+        void updateServices(CONTAINER& services, Replacement rep) const;
 
     private:
         // Storage of one LCN, except the service id which is used as an index.
@@ -170,4 +163,66 @@ namespace ts {
         DuckContext& _duck;
         LCNMap _lcn_map {};
     };
+}
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Update a list of service descriptions with LCN's.
+template <class CONTAINER>
+void ts::LogicalChannelNumbers::updateServices(CONTAINER& services, Replacement rep) const
+{
+    // Build a copy of the internal LCN map, remove them one by one when used.
+    LCNMap lcns(_lcn_map);
+
+    // Update LCN's in existing services.
+    for (auto lcn_it = lcns.begin(); lcn_it != lcns.end(); ) {
+        bool found = false;
+
+        // Loop on all services and update matching ones.
+        for (auto& srv : services) {
+            // Check if this service match the current LCN (onet id must match or be unspecified).
+            if (srv.hasId(lcn_it->first) &&
+                srv.hasTSId(lcn_it->second.ts_id) &&
+                (lcn_it->second.onet_id == 0xFFFF || !srv.hasONId() || srv.hasONId(lcn_it->second.onet_id)))
+            {
+                found = true;
+                if (!(rep & (Replacement::UPDATE | Replacement::REPLACE))) {
+                    // Without update of the service list, we only need to know if the service is found once.
+                    break;
+                }
+                if (!srv.hasLCN(lcn_it->second.lcn)) {
+                    srv.setLCN(lcn_it->second.lcn);
+                }
+                if (!srv.hasHidden()) {
+                    srv.setHidden(!lcn_it->second.visible);
+                }
+            }
+        }
+
+        // Move to next LCN. Remove current from the list if found in the list of services.
+        if (found) {
+            lcn_it = lcns.erase(lcn_it);
+        }
+        else {
+            ++lcn_it;
+        }
+    }
+
+    // Add remaining LCN's in the list of services.
+    if ((rep & Replacement::ADD) != Replacement::NONE) {
+        for (const auto& lcn_it : lcns) {
+            Service srv;
+            srv.setId(lcn_it.first);
+            srv.setLCN(lcn_it.second.lcn);
+            srv.setTSId(lcn_it.second.ts_id);
+            if (lcn_it.second.onet_id != 0xFFFF) {
+                srv.setONId(lcn_it.second.onet_id);
+            }
+            srv.setHidden(!lcn_it.second.visible);
+            services.push_back(srv);
+        }
+    }
 }
