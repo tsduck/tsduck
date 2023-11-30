@@ -567,7 +567,7 @@ namespace ts {
 
         // Valid in DVB context after PDS_AUSTRALIA private_data_specifier
 
-        DID_AUSTRALIA_LOGICAL_CHAN  = 0x83, //!< DID for Free TV Australia logical_channel_descriptor
+        DID_AUSTRALIA_LOGICAL_CHAN = 0x83, //!< DID for Free TV Australia logical_channel_descriptor
 
         // Valid in DVB context after PDS_CANALPLUS private_data_specifier
 
@@ -656,7 +656,7 @@ namespace ts {
 
         // Valid in DVB context after PDS_AOM private_data_specifier
 
-        DID_AV1_VIDEO           = 0x80, //!< DID  for AV1 video descriptor, as defined in https://aomediacodec.github.io/av1-mpeg2-ts/
+        DID_AV1_VIDEO           = 0x80, //!< DID for AV1 video descriptor, as defined in https://aomediacodec.github.io/av1-mpeg2-ts/
 
         // Valid in ATSC / SCTE context:
 
