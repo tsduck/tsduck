@@ -34,7 +34,7 @@ ts::MPEGH3DAudioSceneDescriptor::MPEGH3DAudioSceneDescriptor() :
 
 void ts::MPEGH3DAudioSceneDescriptor::clearContent()
 {
-    ThreeDAudioSceneID = 0;
+    _3dAudioSceneID = 0;
     interactivityGroups.clear();
     switchGroups.clear();
     presetGroups.clear();
@@ -119,7 +119,7 @@ void ts::MPEGH3DAudioSceneDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(!switchGroups.empty());
     buf.putBit(!presetGroups.empty());
     buf.putReserved(5);
-    buf.putUInt8(ThreeDAudioSceneID);
+    buf.putUInt8(_3dAudioSceneID);
 
     if (!interactivityGroups.empty()) {
         buf.putBit(1);
@@ -258,7 +258,7 @@ void ts::MPEGH3DAudioSceneDescriptor::deserializePayload(PSIBuffer& buf)
     const bool switchGroupDefinitionPresent = buf.getBool();
     const bool presetGroupDefinitionPresent = buf.getBool();
     buf.skipBits(5);
-    ThreeDAudioSceneID = buf.getUInt8(); 
+    _3dAudioSceneID = buf.getUInt8(); 
     if (groupDefinitionPresent) {
         buf.skipBits(1);
         const uint8_t numGroups = buf.getBits<uint8_t>(7);
@@ -538,7 +538,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
 
 void ts::MPEGH3DAudioSceneDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"sceneID", ThreeDAudioSceneID);
+    root->setIntAttribute(u"sceneID", _3dAudioSceneID);
     for (auto ig : interactivityGroups) {
         ig.toXML(root->addElement(u"InteractivityGroup"));
     }
@@ -626,7 +626,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
 bool ts::MPEGH3DAudioSceneDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     ts::xml::ElementVector interactivity_groups, switch_groups, preset_groups;
-    bool ok = element->getIntAttribute(ThreeDAudioSceneID, u"sceneID", true) &&
+    bool ok = element->getIntAttribute(_3dAudioSceneID, u"sceneID", true) &&
               element->getChildren(interactivity_groups, u"InteractivityGroup", 0, 127) &&
               element->getChildren(switch_groups, u"SwitchGroup", 0, 31) &&
               element->getChildren(preset_groups, u"PresetGroup", 0, 31) &&
