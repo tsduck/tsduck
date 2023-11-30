@@ -454,7 +454,7 @@ namespace ts {
                 Service& operator*() const { return _iter->second->service; }
                 iterator& operator++() { ++_iter; return *this; }
                 bool operator==(const iterator& other) const { return _iter == other._iter; }
-                TS_UNEQUAL_OPERATOR(iterator);
+                TS_UNEQUAL_OPERATOR(iterator)
             };
 
             ServiceContextMapView(ServiceContextMap& m, uint16_t tsid, uint16_t onid) : _tsid(tsid), _onid(onid), _svmap(m) {}
