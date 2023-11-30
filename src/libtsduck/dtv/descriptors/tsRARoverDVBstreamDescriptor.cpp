@@ -6,7 +6,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsRNToverDVBstreamDescriptor.h"
+#include "tsRARoverDVBstreamDescriptor.h"
 #include "tsMJD.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
@@ -15,8 +15,8 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
-#define MY_XML_NAME u"RNT_over_DVB_stream_descriptor"
-#define MY_CLASS ts::RNToverDVBstreamDescriptor
+#define MY_XML_NAME u"RAR_over_DVB_stream_descriptor"
+#define MY_CLASS ts::RARoverDVBstreamDescriptor
 #define MY_DID ts::DVB_RNT_RAR_OVER_DVB
 #define MY_TID ts::TID_RNT
 #define MY_STD ts::Standards::MPEG
@@ -28,19 +28,19 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::RNToverDVBstreamDescriptor::RNToverDVBstreamDescriptor() :
+ts::RARoverDVBstreamDescriptor::RARoverDVBstreamDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
-ts::RNToverDVBstreamDescriptor::RNToverDVBstreamDescriptor(DuckContext& duck, const Descriptor& desc) :
-    RNToverDVBstreamDescriptor()
+ts::RARoverDVBstreamDescriptor::RARoverDVBstreamDescriptor(DuckContext& duck, const Descriptor& desc) :
+    RARoverDVBstreamDescriptor()
 {
     deserialize(duck, desc);
 }
 
 
-void ts::RNToverDVBstreamDescriptor::clearContent()
+void ts::RARoverDVBstreamDescriptor::clearContent()
 {
     first_valid_date.clear();
     last_valid_date.clear();
@@ -60,7 +60,7 @@ void ts::RNToverDVBstreamDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RNToverDVBstreamDescriptor::serializePayload(PSIBuffer& buf) const
+void ts::RARoverDVBstreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putMJD(first_valid_date, MJD_SIZE);
     buf.putMJD(last_valid_date, MJD_SIZE);
@@ -84,7 +84,7 @@ void ts::RNToverDVBstreamDescriptor::serializePayload(PSIBuffer& buf) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RNToverDVBstreamDescriptor::deserializePayload(PSIBuffer& buf)
+void ts::RARoverDVBstreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
     first_valid_date = buf.getMJD(MJD_SIZE);
     last_valid_date = buf.getMJD(MJD_SIZE);
@@ -107,7 +107,7 @@ void ts::RNToverDVBstreamDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RNToverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::RARoverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(18)) {
         disp << margin << "First valid date: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
@@ -115,15 +115,15 @@ void ts::RNToverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         disp << margin << "Weighting: " << int(buf.getBits<uint8_t>(6));
         disp << ", complete: " << UString::TrueFalse(buf.getBool()) << std::endl;
         bool scheduled_flag = buf.getBool();
-        disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"  Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         if (scheduled_flag) {
             disp << margin << "Download start time: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
             disp << margin << "Download period duration: " << int(buf.getUInt8() * 6) << " minutes";
             uint8_t ct = buf.getUInt8();
-            disp << ", cycle time:" << int(ct) << " minute" << (ct == 1 ? "" : "s") << std::endl;
+            disp << ", cycle time: " << int(ct) << " minute" << (ct == 1 ? "" : "s") << std::endl;
         }
     }
 }
@@ -133,7 +133,7 @@ void ts::RNToverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RNToverDVBstreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::RARoverDVBstreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setDateTimeAttribute(u"first_valid_date", first_valid_date);
     root->setDateTimeAttribute(u"last_valid_date", last_valid_date);
@@ -154,7 +154,7 @@ void ts::RNToverDVBstreamDescriptor::buildXML(DuckContext& duck, xml::Element* r
 // XML deserialization
 //----------------------------------------------------------------------------
 
-bool ts::RNToverDVBstreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
+bool ts::RARoverDVBstreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     bool ok = element->getDateTimeAttribute(first_valid_date, u"first_valid_date", true) &&
               element->getDateTimeAttribute(last_valid_date, u"last_valid_date", true) &&

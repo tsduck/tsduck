@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
 
-        std::string default_authority;   //!< Default authority for this scope. Fully qualified name of the default authority according to the rules given by RFC 1591
+        std::string default_authority {};  //!< Default authority for this scope. Fully qualified name of the default authority according to the rules given by RFC 1591
 
         //!
         //! Default constructor.

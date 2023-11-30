@@ -6,7 +6,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsRNToverIPDescriptor.h"
+#include "tsRARoverIPDescriptor.h"
 #include "tsMJD.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
@@ -15,8 +15,8 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
-#define MY_XML_NAME u"RNT_over_IP_descriptor"
-#define MY_CLASS ts::RNToverIPDescriptor
+#define MY_XML_NAME u"RAR_over_IP_descriptor"
+#define MY_CLASS ts::RARoverIPDescriptor
 #define MY_DID ts::DVB_RNT_RAR_OVER_IP
 #define MY_TID ts::TID_RNT
 #define MY_STD ts::Standards::MPEG
@@ -28,19 +28,19 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::RNToverIPDescriptor::RNToverIPDescriptor() :
+ts::RARoverIPDescriptor::RARoverIPDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
-ts::RNToverIPDescriptor::RNToverIPDescriptor(DuckContext& duck, const Descriptor& desc) :
-    RNToverIPDescriptor()
+ts::RARoverIPDescriptor::RARoverIPDescriptor(DuckContext& duck, const Descriptor& desc) :
+    RARoverIPDescriptor()
 {
     deserialize(duck, desc);
 }
 
 
-void ts::RNToverIPDescriptor::clearContent()
+void ts::RARoverIPDescriptor::clearContent()
 {
     first_valid_date.clear();
     last_valid_date.clear();
@@ -54,7 +54,7 @@ void ts::RNToverIPDescriptor::clearContent()
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::RNToverIPDescriptor::serializePayload(PSIBuffer& buf) const
+void ts::RARoverIPDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putMJD(first_valid_date, MJD_SIZE);
     buf.putMJD(last_valid_date, MJD_SIZE);
@@ -69,13 +69,13 @@ void ts::RNToverIPDescriptor::serializePayload(PSIBuffer& buf) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::RNToverIPDescriptor::deserializePayload(PSIBuffer& buf)
+void ts::RARoverIPDescriptor::deserializePayload(PSIBuffer& buf)
 {
     first_valid_date = buf.getMJD(MJD_SIZE);
     last_valid_date = buf.getMJD(MJD_SIZE);
     weighting = buf.getBits<uint8_t>(6);
     complete_flag = buf.getBool();
-    buf.skipBit();
+    buf.skipBits(1);
     buf.getStringWithByteLength(url);
 }
 
@@ -84,13 +84,14 @@ void ts::RNToverIPDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RNToverIPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::RARoverIPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(18)) {
         disp << margin << "First valid date: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
         disp << margin << "Last valid date: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
         disp << margin << "Weighting: " << int(buf.getBits<uint8_t>(6));
         disp << ", complete: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        buf.skipReservedBits(1);
         disp << margin << "URL: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
 }
@@ -100,7 +101,7 @@ void ts::RNToverIPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::RNToverIPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::RARoverIPDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setDateTimeAttribute(u"first_valid_date", first_valid_date);
     root->setDateTimeAttribute(u"last_valid_date", last_valid_date);
@@ -114,7 +115,7 @@ void ts::RNToverIPDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 // XML deserialization
 //----------------------------------------------------------------------------
 
-bool ts::RNToverIPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
+bool ts::RARoverIPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getDateTimeAttribute(first_valid_date, u"first_valid_date", true) &&
            element->getDateTimeAttribute(last_valid_date, u"last_valid_date", true) &&

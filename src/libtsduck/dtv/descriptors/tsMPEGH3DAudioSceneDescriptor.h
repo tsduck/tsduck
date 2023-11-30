@@ -43,15 +43,17 @@ namespace ts {
                 PositionInteractivityType();
                 //!
                 //! Constructor from a binary descriptor
-                //! @param [in] bin A binary descriptor to deserialize.
+                //! @param [in] buf A binary descriptor to deserialize.
                 //!
                 PositionInteractivityType(PSIBuffer& buf) : PositionInteractivityType() { deserialize(buf); }
 
+                //! @cond nodoxygen
                 void serialize(PSIBuffer&) const;
                 void deserialize(PSIBuffer&);
                 void toXML(xml::Element*) const;
                 bool fromXML(const xml::Element*);
                 void display(TablesDisplay&, PSIBuffer&, const UString&);
+                //! @endcond
             };
 
             class TSDUCKDLL GainInteractivityType {
@@ -71,11 +73,13 @@ namespace ts {
                 //!
                 GainInteractivityType(PSIBuffer& buf) : GainInteractivityType() { deserialize(buf); }
 
+                //! @cond nodoxygen
                 void serialize(PSIBuffer&) const;
                 void deserialize(PSIBuffer&);
                 void toXML(xml::Element*) const;
                 bool fromXML(const xml::Element*);
                 void display(TablesDisplay&, PSIBuffer&, const UString&);
+                //! @endcond
             };
 
         public:
@@ -93,15 +97,17 @@ namespace ts {
             MH3D_InteractivityInfo_type();
             //!
             //! Constructor from a binary descriptor
-            //! @param [in] bin A binary descriptor to deserialize.
+            //! @param [in] buf A binary descriptor to deserialize.
             //!
             MH3D_InteractivityInfo_type(PSIBuffer& buf) : MH3D_InteractivityInfo_type() { deserialize(buf); }
 
+            //! @cond nodoxygen
             void serialize(PSIBuffer&) const;
             void deserialize(PSIBuffer&);
             void toXML(xml::Element*) const;
             bool fromXML(const xml::Element*);
             void display(TablesDisplay&, PSIBuffer&, const UString&, uint8_t);
+            //! @edncond
         };
 
         class TSDUCKDLL MH3D_SwitchGroup_type {
@@ -120,15 +126,17 @@ namespace ts {
             MH3D_SwitchGroup_type();
             //!
             //! Constructor from a binary descriptor
-            //! @param [in] bin A binary descriptor to deserialize.
+            //! @param [in] buf A binary descriptor to deserialize.
             //!
             MH3D_SwitchGroup_type(PSIBuffer& buf) : MH3D_SwitchGroup_type() { deserialize(buf); }
 
+            //! @cond nodoxygen
             void serialize(PSIBuffer&) const;
             void deserialize(PSIBuffer&);
             void toXML(xml::Element*) const;
             bool fromXML(const xml::Element*);
             void display(TablesDisplay&, PSIBuffer&, const UString&, uint8_t);
+            //! @endcond
         };
         
         class TSDUCKDLL MH3D_PresetGroup_type {
@@ -152,15 +160,17 @@ namespace ts {
                 GroupPresetConditions_type();
                 //!
                 //! Constructor from a binary descriptor
-                //! @param [in] bin A binary descriptor to deserialize.
+                //! @param [in] buf A binary descriptor to deserialize.
                 //!
                 GroupPresetConditions_type(PSIBuffer& buf) : GroupPresetConditions_type() { deserialize(buf); }
 
+                //! @cond nodoxygen
                 void serialize(PSIBuffer&) const;
                 void deserialize(PSIBuffer&);
                 void toXML(xml::Element*) const;
                 bool fromXML(const xml::Element*);
                 void display(TablesDisplay&, PSIBuffer&, const UString&, uint8_t);
+                //! @endcond
             };
 
         public:
@@ -174,15 +184,17 @@ namespace ts {
             MH3D_PresetGroup_type();
             //!
             //! Constructor from a binary descriptor
-            //! @param [in] bin A binary descriptor to deserialize.
+            //! @param [in] buf A binary descriptor to deserialize.
             //!
             MH3D_PresetGroup_type(PSIBuffer& buf) : MH3D_PresetGroup_type() { deserialize(buf); }
 
+            //! @cond nodoxygen
             void serialize(PSIBuffer&) const;
             void deserialize(PSIBuffer&);
             void toXML(xml::Element*) const;
             bool fromXML(const xml::Element*);
             void display(TablesDisplay&, PSIBuffer&, const UString&, uint8_t);
+            //! @endcond
         };
     public:
         // MPEGH3DAudioSceneDescriptor public members:

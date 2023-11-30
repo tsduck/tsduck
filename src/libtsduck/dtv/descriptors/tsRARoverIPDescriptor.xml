@@ -2,7 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <RNT_over_IP_descriptor
+    <RAR_over_IP_descriptor
       first_valid_date="YYYY-MM-DD hh:mm:ss, required"
       last_valid_date="YYYY-MM-DD hh:mm:ss, required"
       weighting="uint6, required"

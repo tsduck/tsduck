@@ -39,6 +39,11 @@ ts::RNTScanDescriptor::RNTScanDescriptor(DuckContext& duck, const Descriptor& de
     deserialize(duck, desc);
 }
 
+ts::RNTScanDescriptor::ScanTriplet::ScanTriplet()
+{
+    clearContent();
+}
+
 
 void ts::RNTScanDescriptor::clearContent()
 {
@@ -105,7 +110,7 @@ void ts::RNTScanDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 void ts::RNTScanDescriptor::ScanTriplet::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     disp << margin << UString::Format(u"Transport stream: 0x%X", {buf.getUInt16()});
-    disp << ", original network: " << buf.getUInt16();
+    disp << "" << UString::Format(u", original network: 0x%X", {buf.getUInt16()});
     disp << ", weighting: " << int(buf.getUInt8()) << std::endl;
 }
 
