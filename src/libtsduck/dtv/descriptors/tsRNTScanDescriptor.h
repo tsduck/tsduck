@@ -51,7 +51,7 @@ namespace ts {
             //! @endcond
         };
 
-        std::vector<ScanTriplet> RNTreferences {};
+        std::vector<ScanTriplet> RNTreferences {};  //!< References to transport streams that carrying RNTs.
 
         //!
         //! Default constructor.

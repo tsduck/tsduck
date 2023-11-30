@@ -19,7 +19,6 @@ TSDuck - List of features to be implemented or fixed
     - 2.6.118  MPEGH_3D_audio_command_descriptor
 
   ETSI TS 102 323 (Carriage and signalling of TV-Anytime information)
-  - 6.3.3   default_authority_descriptor
   - 10.4.2  RCT (Related Content Table)
 
   ARIB STD-B10 (ISDB Service Information)

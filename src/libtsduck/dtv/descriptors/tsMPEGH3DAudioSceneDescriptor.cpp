@@ -720,7 +720,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::fromXML(const xml::
               element->getIntAttribute(mae_switchGroupDefaultGroupID, u"switchGroupDefaultGroupID", true, 0, 0, 0x7f);
     if (ok && !group_members.empty()) {
         for (auto member : group_members) {
-            if (member >= 0 && member <= 127) {
+            if (/* member >= 0 && */ member <= 127) {
                 mae_switchGroupMemberID.push_back(member);
             }
             else {
