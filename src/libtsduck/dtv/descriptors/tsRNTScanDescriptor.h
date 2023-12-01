@@ -37,7 +37,7 @@ namespace ts {
             ScanTriplet();
             //!
             //! Constructor from a binary descriptor
-            //! @param [in] bin A binary descriptor to deserialize.
+            //! @param [in] buf A binary descriptor to deserialize.
             //!
             ScanTriplet(PSIBuffer& buf) : ScanTriplet() { deserialize(buf); }
 
