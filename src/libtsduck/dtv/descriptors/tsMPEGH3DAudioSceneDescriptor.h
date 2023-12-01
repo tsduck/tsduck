@@ -69,7 +69,7 @@ namespace ts {
                 GainInteractivityType();
                 //!
                 //! Constructor from a binary descriptor
-                //! @param [in] bin A binary descriptor to deserialize.
+                //! @param [in] buf A binary descriptor to deserialize.
                 //!
                 GainInteractivityType(PSIBuffer& buf) : GainInteractivityType() { deserialize(buf); }
 
