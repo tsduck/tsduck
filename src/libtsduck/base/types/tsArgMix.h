@@ -250,9 +250,22 @@ namespace ts {
             BIT64     = 0x0100,  //!< 64-bit integer.
             POINTER   = 0x0200,  //!< A pointer to a writeable data (data type is given by other bits).
             STRINGIFY = 0x0400,  //!< A pointer to a StringifyInterface object.
-            DOUBLE    = 0x0800,  //!< Double floating point type.
-            ANUMBER   = 0x1000,  //!< A pointer to an AbstractNumber object.
+            PATH      = 0x0800,  //!< A pointer to a StringifyInterface object.
+            DOUBLE    = 0x1000,  //!< Double floating point type.
+            ANUMBER   = 0x2000,  //!< A pointer to an AbstractNumber object.
         };
+
+        //!
+        //! Size flag for std::filesystem::path, either BIT8 or BIT16.
+        //! 
+        static constexpr TypeFlags BITPATH =
+#if defined(TS_WINDOWS)
+            BIT16;
+        static_assert(sizeof(fs::path::value_type) == 2);
+#else
+            BIT8;
+        static_assert(sizeof(fs::path::value_type) == 1);
+#endif
 
 #if !defined(DOXYGEN)
         //
@@ -270,6 +283,7 @@ namespace ts {
             const std::string*        string;
             const UString*            ustring;
             const StringifyInterface* stringify;
+            const fs::path*           path;
             const AbstractNumber*     anumber;
 
             Value(void* p)              : intptr(p) {}
@@ -283,8 +297,9 @@ namespace ts {
             Value(const UChar* s)       : ucharptr(s) {}
             Value(const std::string& s) : string(&s) {}
             Value(const UString& s)     : ustring(&s) {}
-            Value(const StringifyInterface& s) : stringify(&s) {}
+            Value(const fs::path& s)    : path(&s) {}
             Value(const AbstractNumber& s) : anumber(&s) {}
+            Value(const StringifyInterface& s) : stringify(&s) {}
         };
 #endif // DOXYGEN
 
@@ -431,7 +446,7 @@ namespace ts {
         //! Move constructor.
         //! @param [in,out] other Other instance to move.
         //!
-        ArgMixIn(ArgMixIn&& other) noexcept : ArgMix(other) {}
+        ArgMixIn(ArgMixIn&& other) noexcept : ArgMix(std::move(other)) {}
         //!
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
@@ -457,6 +472,11 @@ namespace ts {
         //! @param [in] s Reference to a stringifiable object.
         //!
         ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s) {}
+        //!
+        //! Constructor from a std::filesystem::path object.
+        //! @param [in] s Reference to a path object.
+        //!
+        ArgMixIn(const fs::path& s) : ArgMix(STRING | BITPATH | CLASS | PATH, 0, s) {}
         //!
         //! Constructor from an AbstractNumber object.
         //! @param [in] s Reference to an AbstractNumber object.
