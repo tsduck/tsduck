@@ -118,7 +118,7 @@ void ts::DefaultAuthorityDescriptor::buildXML(DuckContext& duck, xml::Element* r
 bool ts::DefaultAuthorityDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     UString da;
-    bool ok =  element->getAttribute(da, u"fqdn", true);
+    bool ok = element->getAttribute(da, u"fqdn", true);
     if (ok) {
         default_authority = da.toUTF8();
     }

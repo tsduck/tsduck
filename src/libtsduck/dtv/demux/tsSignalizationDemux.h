@@ -443,6 +443,7 @@ namespace ts {
             ServiceContextMap& _svmap;
         public:
             // An iterator over Service fields.
+            //! @cond nodoxygen (for some reason/bug, doxygen wants this to be documented)
             class iterator
             {
                 TS_DEFAULT_COPY_MOVE(iterator);
@@ -456,6 +457,7 @@ namespace ts {
                 bool operator==(const iterator& other) const { return _iter == other._iter; }
                 TS_UNEQUAL_OPERATOR(iterator)
             };
+            //! @endcond
 
             ServiceContextMapView(ServiceContextMap& m, uint16_t tsid, uint16_t onid) : _tsid(tsid), _onid(onid), _svmap(m) {}
             iterator begin() const { return _svmap.begin(); }

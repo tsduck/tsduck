@@ -18,6 +18,10 @@
 namespace ts {
     //!
     //! Representation of an RAR_over_DVB_stream_descriptor
+    //!
+    //! This descriptor cannot be present in other tables than a RNT
+    //! because its tag reuses a DVB-defined one.
+    //!
     //! @see ETSI TS 102 323 clause 5.3.5.
     //! @ingroup descriptor
     //!

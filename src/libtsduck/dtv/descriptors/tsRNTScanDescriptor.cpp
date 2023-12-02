@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsRNTScanDescriptor.h"
-#include "tsMJD.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIBuffer.h"
