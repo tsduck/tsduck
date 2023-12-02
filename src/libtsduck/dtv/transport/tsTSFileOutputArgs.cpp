@@ -186,7 +186,7 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
         }
 
         // Try to open the file.
-        const UString name(_multiple_files ? _name_gen.newFileName() : _name);
+        const fs::path name(_multiple_files ? _name_gen.newFileName() : _name);
         report.verbose(u"creating file %s", {name});
         const bool success = _file.open(name, _flags, report, _file_format);
 

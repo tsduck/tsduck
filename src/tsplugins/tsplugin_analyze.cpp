@@ -34,7 +34,7 @@ namespace ts {
 
     private:
         // Command line options:
-        UString           _output_name {};
+        fs::path          _output_name {};
         NanoSecond        _output_interval = 0;
         bool              _multiple_output = false;
         bool              _cumulative = false;
@@ -92,7 +92,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
          u"with a time stamp in its name as 'base-YYYYMMDD-hhmmss.ext'.");
 
     option(u"output-file", 'o', FILENAME);
-    help(u"output-file", u"filename",
+    help(u"output-file",
          u"Specify the output text file for the analysis result. "
          u"By default, use the standard output.");
 }
@@ -106,7 +106,7 @@ bool ts::AnalyzePlugin::getOptions()
 {
     duck.loadArgs(*this);
     _analyzer_options.loadArgs(duck, *this);
-    _output_name = value(u"output-file");
+    getPathValue(_output_name, u"output-file");
     _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
     _multiple_output = present(u"multiple-files");
     _cumulative = present(u"cumulative");

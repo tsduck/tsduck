@@ -49,7 +49,7 @@ namespace ts {
         bool       _header = false;          // Display header lines.
         bool       _multiple_output = false; // Don't rewrite output files with --interval.
         UString    _csv_separator {DefaultCsvSeparator}; // Separator character in CSV lines.
-        UString    _output_name {};          // Output file name.
+        fs::path   _output_name {};          // Output file name.
         NanoSecond _output_interval = 0;     // Recreate output at this time interval.
         PIDSet     _pids {};                 // List of PID's to track.
         TSPacketLabelSet _labels {};         // List of labels to track.
@@ -131,7 +131,7 @@ ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
          u"Do not output initial header line in CSV and text format.");
 
     option(u"output-file", 'o', FILENAME);
-    help(u"output-file", u"filename",
+    help(u"output-file",
          u"Specify the output text file for the analysis result. "
          u"By default, use the standard output.");
 
@@ -159,7 +159,7 @@ bool ts::StatsPlugin::getOptions()
     _multiple_output = present(u"multiple-files");
     _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
     getValue(_csv_separator, u"separator", DefaultCsvSeparator);
-    getValue(_output_name, u"output-file");
+    getPathValue(_output_name, u"output-file");
     getIntValues(_pids, u"pid");
     getIntValues(_labels, u"label");
 
@@ -217,10 +217,10 @@ bool ts::StatsPlugin::openOutput()
     }
 
     // Build file name in case of --multiple-files
-    const UString name(_multiple_output ? _name_gen.newFileName() : _output_name);
+    const fs::path name(_multiple_output ? _name_gen.newFileName() : _output_name);
 
     // Create the file
-    _output_stream.open(name.toUTF8().c_str());
+    _output_stream.open(name);
     if (_output_stream) {
         tsp->verbose(u"created %s", {name});
         return true;

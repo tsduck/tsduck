@@ -349,7 +349,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         if (temporary) {
             // Immediately delete the file. It is removed from the directory.
             // It remains accessible as long as the file is open and is deleted on close.
-            ::unlink(_filename.toUTF8().c_str());
+            ::unlink(_filename.c_str());
         }
     }
 
