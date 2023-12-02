@@ -1,0 +1,66 @@
+[ISDB_target_region_descriptor.region_spec_type]
+Bits = 8
+0x00 = Reserved
+0x01 = Region designation of prefecture for BS digital
+0x02-0xFF = Reserved
+
+
+[ISDB_target_region_descriptor.region]
+Bits = 8
+1 = East Hokkaido
+2 = West Hokkaido
+3 = Aomori
+4 = Iwate
+5 = Miyagi
+6 = Akita
+7 = Yamagata
+8 = Fukushima
+9 = Ibaraki
+10 = Tochigi
+11 = Gunma
+12 = Saitama
+13 = Chiba
+14 = Tokyo (excluding island area)
+15 = Kanagawa
+16 = Niigata
+17 = Toyama
+18 = Ishikawa
+19 = Fukui
+20 = Yamanashi
+21 = Nagano
+22 = Gifu
+23 = Shizuoka
+24 = Aichi
+25 = Mie
+26 = Shiga
+27 = Kyoto
+28 = Osaka
+29 = Hyogo
+30 = Nara
+31 = Wakayama
+32 = Tottori
+33 = Shimane
+34 = Okayama
+35 = Hiroshima
+36 = Yamaguchi
+37 = Tokushima
+38 = Kagawa
+39 = Ehime
+40 = Kochi
+41 = Fukuoka
+42 = Saga
+43 = Nagasaki
+44 = Kumamoto
+45 = Oita
+46 = Miyazaki
+47 = Kagoshima (excluding south west islands)
+48 = Okinawa
+49 = Island part of Tokyo (Izu, Ogasawara islands)
+50 = Island part of Kagoshima (south west islands)
+51 = Reserved
+52 = Reserved
+53 = Reserved
+54 = Reserved
+55 = Reserved
+56 = Reserved
+
