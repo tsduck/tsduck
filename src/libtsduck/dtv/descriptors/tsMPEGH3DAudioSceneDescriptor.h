@@ -23,12 +23,20 @@ namespace ts {
     //!
     class TSDUCKDLL MPEGH3DAudioSceneDescriptor : public AbstractDescriptor
     {
-        class TSDUCKDLL MH3D_InteractivityInfo_type {
+    public:
+        //!
+        //! Interactivity group.
+        //!
+        class TSDUCKDLL MH3D_InteractivityInfo_type
+        {
             TS_DEFAULT_COPY_MOVE(MH3D_InteractivityInfo_type);
-
-            class TSDUCKDLL PositionInteractivityType {
+        public:
+            //!
+            //! Position interactivity.
+            //!
+            class TSDUCKDLL PositionInteractivityType
+            {
                 TS_DEFAULT_COPY_MOVE(PositionInteractivityType);
-
             public:
                 uint8_t mae_interactivityMinAzOffset = 0;    //!< 7 bits. Minimum azimuth offset for changing the position of the members of the metadata element group.
                 uint8_t mae_interactivityMaxAzOffset = 0;    //!< 7 bits. Maximum azimuth offset for changing the position of the members of the metadata element group.
@@ -55,10 +63,12 @@ namespace ts {
                 void display(TablesDisplay&, PSIBuffer&, const UString&);
                 //! @endcond
             };
-
-            class TSDUCKDLL GainInteractivityType {
+            //!
+            //! Gain interactivity.
+            //!
+            class TSDUCKDLL GainInteractivityType
+            {
                 TS_DEFAULT_COPY_MOVE(GainInteractivityType);
-
             public:
                 uint8_t mae_interactivityMinGain = 0;  //!< 6 bits. Minumum gain of the members of a metadata element group.
                 uint8_t mae_interactivityMaxGain = 0;  //!< 5 bits. Maximum gain of the members of a metadata element group.
@@ -87,8 +97,8 @@ namespace ts {
             bool                                     mae_allowOnOff = false;   //!< Indicates if the audience is allowed to switch a metadata element group on and off.
             bool                                     mae_defaultOnOff = false; //!< Default status of a metadata element group.
             uint8_t                                  mae_contentKind = 0;      //!< 4 bits. The type of content of a metadata element group, see table 247 of ISO.IEC 23008-3.
-            std::optional<PositionInteractivityType> positionInteractivity {};
-            std::optional<GainInteractivityType>     gainInteractivity {};
+            std::optional<PositionInteractivityType> positionInteractivity {}; //!< Position interactivity.
+            std::optional<GainInteractivityType>     gainInteractivity {};     //!< Gain interactivity.
             std::optional<UString>                   mae_contentLanguage {};   //!< ISO-639 language code, 3 characters.
 
             //!
@@ -107,12 +117,15 @@ namespace ts {
             void toXML(xml::Element*) const;
             bool fromXML(const xml::Element*);
             void display(TablesDisplay&, PSIBuffer&, const UString&, uint8_t);
-            //! @edncond
+            //! @endcond
         };
 
-        class TSDUCKDLL MH3D_SwitchGroup_type {
+        //!
+        //! Switch group.
+        //!
+        class TSDUCKDLL MH3D_SwitchGroup_type
+        {
             TS_DEFAULT_COPY_MOVE(MH3D_SwitchGroup_type);
-
         public:
             uint8_t              mae_switchGroupID = 0;               //!< 5 bits. ID for a switch group of metadata elements
             bool                 mae_switchGroupAllowOnOff = false;   //!< Indicates if the audience is allowed to completely disable the playback of the switch group.
@@ -138,13 +151,20 @@ namespace ts {
             void display(TablesDisplay&, PSIBuffer&, const UString&, uint8_t);
             //! @endcond
         };
-        
-        class TSDUCKDLL MH3D_PresetGroup_type {
+
+        //!
+        //! Preset group
+        //!
+        class TSDUCKDLL MH3D_PresetGroup_type
+        {
             TS_DEFAULT_COPY_MOVE(MH3D_PresetGroup_type);
-
-            class TSDUCKDLL GroupPresetConditions_type {
+        public:
+            //!
+            //! Group preset conditions.
+            //!
+            class TSDUCKDLL GroupPresetConditions_type
+            {
                 TS_DEFAULT_COPY_MOVE(GroupPresetConditions_type);
-
             public:
                 uint8_t                mae_groupPresetGroupID = 0;                     //!< 7 bits. ID for a group preset.
                 std::optional<bool>    mae_groupPresetDisableGainInteractivity {};     //!< Indicates if the gain interactivity of the group of the members shall be disabled.
@@ -176,7 +196,7 @@ namespace ts {
         public:
             uint8_t                                 mae_groupPresetID = 0;    //!< 5 bits. ID for a group preset.
             uint8_t                                 mae_groupPresetKind = 0;  //!< 5 bits. Kind of content of a group preset, see tabe=le 248 of ISO.IEC 23008-3.
-            std::vector<GroupPresetConditions_type> groupPresetConditions {};
+            std::vector<GroupPresetConditions_type> groupPresetConditions {}; //!< Group preset conditions.
 
             //!
             //! Default constructor.
@@ -196,13 +216,14 @@ namespace ts {
             void display(TablesDisplay&, PSIBuffer&, const UString&, uint8_t);
             //! @endcond
         };
+
     public:
         // MPEGH3DAudioSceneDescriptor public members:
-        uint8_t                                  _3dAudioSceneID = 0;  //!< ID for the current audio scene, per mae_audio_SeceneInfoId in ISO/IEC 23008-03.
-        std::vector<MH3D_InteractivityInfo_type> interactivityGroups {};
-        std::vector<MH3D_SwitchGroup_type>       switchGroups {};
-        std::vector<MH3D_PresetGroup_type>       presetGroups {};
-        ByteBlock                                reserved {};             //!< Reserved data.
+        uint8_t                                  _3dAudioSceneID = 0;    //!< ID for the current audio scene, per mae_audio_SeceneInfoId in ISO/IEC 23008-03.
+        std::vector<MH3D_InteractivityInfo_type> interactivityGroups {}; //!< Interactivity groups.
+        std::vector<MH3D_SwitchGroup_type>       switchGroups {};        //!< Switch groups.
+        std::vector<MH3D_PresetGroup_type>       presetGroups {};        //!< Preset groups.
+        ByteBlock                                reserved {};            //!< Reserved data.
 
         //!
         //! Default constructor.

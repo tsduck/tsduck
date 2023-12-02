@@ -18,6 +18,10 @@
 namespace ts {
     //!
     //! Representation of an RAR_over_IP_descriptor
+    //!
+    //! This descriptor cannot be present in other tables than a RNT
+    //! because its tag reuses a DVB-defined one.
+    //!
     //! @see ETSI TS 102 323 clause 5.3.6.
     //! @ingroup descriptor
     //!
@@ -25,11 +29,11 @@ namespace ts {
     {
     public:
 
-        Time                   first_valid_date {};     //!< The first date when this CRID authority reference can be used.
-        Time                   last_valid_date {};      //!< The first date when this CRID authority reference cannot be used.
-        uint8_t                weighting = 0;           //!< 6 bits. A hint to the PDR as to the order to try multiple records for a single CRID authority from the same resolution provider.
-        bool                   complete_flag = false;   //!< This flag indicates if the referenced CRI data is complete
-        UString                url {};                  //!< The URL describing the location where CRIDs belonging to this CRID authority can be resolved.
+        Time    first_valid_date {};     //!< The first date when this CRID authority reference can be used.
+        Time    last_valid_date {};      //!< The first date when this CRID authority reference cannot be used.
+        uint8_t weighting = 0;           //!< 6 bits. A hint to the PDR as to the order to try multiple records for a single CRID authority from the same resolution provider.
+        bool    complete_flag = false;   //!< This flag indicates if the referenced CRI data is complete
+        UString url {};                  //!< The URL describing the location where CRIDs belonging to this CRID authority can be resolved.
 
         //!
         //! Default constructor.

@@ -22,7 +22,7 @@
           distanceOffsetMax="uint4, required"/>
         
         <GainInteractivity
-          interactivityGainMin="unit6, required"
+          interactivityGainMin="uint6, required"
           interactivityGainMax="uint5, required"/>
         
       </InteractivityGroup>
@@ -54,7 +54,7 @@
           groupPresetGain="uint8, optional in groupPresetConditionOnOff=true group"
           groupPresetAzOffset="uint8, optional in groupPresetConditionOnOff=true group - must be specified with groupPresetElOffset and groupPresetDistFactor"
           groupPresetElOffset="uint6, optional in groupPresetConditionOnOff=true group - must be specified with groupPresetAzOffset and groupPresetDistFactor"
-          groupPresetDistFactor="uint4, optional in groupPresetConditionOnOff=true group e- must be specified with groupPresetAzOffset and groupPresetElOffset"/>
+          groupPresetDistFactor="uint4, optional in groupPresetConditionOnOff=true group - must be specified with groupPresetAzOffset and groupPresetElOffset"/>
       </PresetGroup>
 
       <reserved>

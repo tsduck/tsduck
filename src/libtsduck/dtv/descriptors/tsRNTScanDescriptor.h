@@ -13,18 +13,25 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsTime.h"
 
 namespace ts {
     //!
     //! Representation of an RNT_scan_descriptor
+    //!
+    //! This descriptor cannot be present in other tables than a RNT
+    //! because its tag reuses a DVB-defined one.
+    //!
     //! @see ETSI TS 102 323 clause 5.3.7.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL RNTScanDescriptor: public AbstractDescriptor
     {
     public:
-        class ScanTriplet {
+        //!
+        //! Scan triplet.
+        //!
+        class ScanTriplet
+        {
             TS_DEFAULT_COPY_MOVE(ScanTriplet);
         public:
             uint16_t transport_stream_id = 0;   //!< The value of transport stream id of the transport stream referenced by this entry.

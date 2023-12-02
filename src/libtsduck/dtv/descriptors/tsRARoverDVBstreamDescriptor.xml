@@ -13,8 +13,7 @@
       component_tag="uint8, required"
       download_start_time="YYYY-MM-DD hh:mm:ss, optional group with download_period_duration and download_cycle_time"
       download_period_duration="uint8, optional group with download_start_time and download_cycle_time"
-      download_cycle_time="uint8, optional group with download_start_time and download_period_duration"
-      />
+      download_cycle_time="uint8, optional group with download_start_time and download_period_duration"/>
 
   </_descriptors>
 </tsduck>
