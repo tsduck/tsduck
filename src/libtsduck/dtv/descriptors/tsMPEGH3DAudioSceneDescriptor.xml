@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEGH_3D_audio_scene_descriptor
+        sceneID="uint8, required">
+
+      <!-- up to 127 interactivity groups -->
+      <InteractivityGroup
+        groupID="uint7, required"
+        allowOnOff="bool, required"
+        defaultOnOff="bool, required"
+        contentKind="uint4, required"
+        contentLanguage="char3, optional">
+
+        <PositionInteractivity
+          azimuthOffsetMin="uint7, required"
+          azimuthOffsetMax="uint7, required"
+          elevationOffsetMin="uint5, required"
+          elevationOffsetMax="uint5, required"
+          distanceOffsetMin="uint4, required"
+          distanceOffsetMax="uint4, required"/>
+        
+        <GainInteractivity
+          interactivityGainMin="unit6, required"
+          interactivityGainMax="uint5, required"/>
+        
+      </InteractivityGroup>
+      
+      <!-- up to 31 switch groups -->
+      <SwitchGroup 
+        switchGroupID="uint5, required"
+        switchGroupAllowOnOff="bool, required"
+        switchGroupDefaultOnOff="bool, required"
+        switchGroupDefaultGroupID="uint7, required">
+
+        <!-- required -->
+        <SwitchGroupMembers>
+          7bit Hexadecimal content, 1 to 32 values
+        </SwitchGroupMembers>
+        
+      </SwitchGroup>
+      
+      <!-- up to 31 preset groups -->
+      <PresetGroup
+        groupPresetID="uint5, required"
+        groupPresetKind="uint4, required">
+
+        <!-- 1 to 16 preset conditions -->
+        <PresetConditions
+          groupPresetGroupID="uint7, required"
+          groupPresetDisableGainInteractivity="bool, required in groupPresetConditionOnOff=true group"
+          groupPresetDisablePositionInteractivity="bool, required in groupPresetConditionOnOff=true group"
+          groupPresetGain="uint8, optional in groupPresetConditionOnOff=true group"
+          groupPresetAzOffset="uint8, optional in groupPresetConditionOnOff=true group - must be specified with groupPresetElOffset and groupPresetDistFactor"
+          groupPresetElOffset="uint6, optional in groupPresetConditionOnOff=true group - must be specified with groupPresetAzOffset and groupPresetDistFactor"
+          groupPresetDistFactor="uint4, optional in groupPresetConditionOnOff=true group e- must be specified with groupPresetAzOffset and groupPresetElOffset"/>
+      </PresetGroup>
+
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </MPEGH_3D_audio_scene_descriptor>
+
+  </_descriptors>
+</tsduck>
