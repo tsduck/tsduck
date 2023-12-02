@@ -1,0 +1,32 @@
+[ISDB_hyperlink_descriptor.hyper_linkage_type]
+Bits = 8
+0x00 = Reserved
+0x01 = Combined data
+0x02 = Combined stream
+0x03 = Content to index
+0x04 = Index to content
+0x05 = Guide data
+0x06 = Undefined
+0x07 = Content to metadata
+0x08 = Metadata to content
+0x09 = Portal URI
+0x0A = Authority URL
+0x0B-0x3F = Undefined
+0x40 = Index module
+0x41-0x7F = Undefined
+0x80-0xFF = User private
+
+[ISDB_hyperlink_descriptor.link_destination_type]
+Bits = 8
+0x00 = Reserved
+0x01 = Link to service
+0x02 = Link to event
+0x03 = Link to module
+0x04 = Link to content
+0x05 = Link to content module
+0x06 = link to ERT module
+0x07 = Link to stored content
+0x08-0x7F = Reserved
+0x80-0xFE = User private
+0xFF = Reserved
+
