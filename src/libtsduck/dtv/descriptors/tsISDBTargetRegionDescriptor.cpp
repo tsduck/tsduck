@@ -84,15 +84,15 @@ void ts::ISDBTargetRegionDescriptor::deserializePayload(PSIBuffer& buf)
         PrefectureMap tmp(buf);
         target_region_mask = tmp;
     }
- }
+}
 
 void ts::ISDBTargetRegionDescriptor::PrefectureMap::deserialize(PSIBuffer& buf)
- {
+{
     clear();
     for (size_t i = 0; i < MAX_PREFECTURES; i++) {
         prefectures[i] = buf.getBool();
     }
- }
+}
 
 //----------------------------------------------------------------------------
 // Static method to display a descriptor.
@@ -100,7 +100,6 @@ void ts::ISDBTargetRegionDescriptor::PrefectureMap::deserialize(PSIBuffer& buf)
 
 void ts::ISDBTargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    #define LINE_WIDTH 80
     if (buf.canReadBytes(1)) {
         uint8_t _region_spec_type = buf.getUInt8();
         disp << margin << DataName(MY_XML_NAME, u"region_spec_type", _region_spec_type) << std::endl;
@@ -113,6 +112,7 @@ void ts::ISDBTargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 
 void ts::ISDBTargetRegionDescriptor::PrefectureMap::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
+    constexpr auto LINE_WIDTH = 80;
     deserialize(buf);
     disp << margin << "Prefectures: " << toString() << std::endl;
     uint8_t count = 0;
