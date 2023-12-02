@@ -1395,7 +1395,7 @@ void UStringTest::testArgMixIn()
     enum : int8_t {EC = 4, ED = 8};
     const ts::IPv4SocketAddress sock(ts::IPv4Address(10, 20, 30, 40), 12345);
 
-    testArgMixInCalled2({12, u8, i16, -99ll, "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock, fs::path(u"foo.bar")});
+    testArgMixInCalled2({12, u8, i16, -99ll, "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock, fs::path(ts::UString(u"foo.bar"))});
 }
 
 void UStringTest::testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list)
@@ -1739,19 +1739,16 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(it->isUString());
     TSUNIT_EQUAL("", it->toCharPtr());
-    TSUNIT_EQUAL(u"foo.bar", it->toUCharPtr());
-    TSUNIT_EQUAL("", it->toString());
-    TSUNIT_EQUAL(u"foo.bar", it->toUString());
 #else
     TSUNIT_ASSERT(it->isAnyString8());
     TSUNIT_ASSERT(!it->isAnyString16());
     TSUNIT_ASSERT(it->isString());
     TSUNIT_ASSERT(!it->isUString());
     TSUNIT_EQUAL("foo.bar", it->toCharPtr());
-    TSUNIT_EQUAL(u"", it->toUCharPtr());
-    TSUNIT_EQUAL("foo.bar", it->toString());
-    TSUNIT_EQUAL(u"", it->toUString());
 #endif
+    TSUNIT_EQUAL(u"foo.bar", it->toUCharPtr());
+    TSUNIT_EQUAL("", it->toString());
+    TSUNIT_EQUAL(u"foo.bar", it->toUString());
     TSUNIT_ASSERT(!it->isCharPtr());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_EQUAL(0, it->size());
