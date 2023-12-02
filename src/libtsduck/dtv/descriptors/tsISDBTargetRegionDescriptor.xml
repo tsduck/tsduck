@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_target_region_descriptor
+        region_spec_type="uint8, required"
+        regions_mask="string, optional"/>
+
+  </_descriptors>
+</tsduck>
