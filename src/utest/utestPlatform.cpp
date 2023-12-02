@@ -95,6 +95,7 @@ void PlatformTest::testIntegerTypes()
         << ", sizeof(unsigned char) = " << sizeof(unsigned char)
         << ", is_signed(char) = " << std::is_signed<char>::value << std::endl
         << "PlatformTest: TS_WCHAR_SIZE = " << TS_WCHAR_SIZE << std::endl
+        << "PlatformTest: sizeof(fs::path::value_type) = " << sizeof(fs::path::value_type) << std::endl
         << "std::numeric_limits<int64_t>::max() = " << std::numeric_limits<int64_t>::max() << std::endl
         << "std::numeric_limits<int64_t>::digits10 = " << std::numeric_limits<int64_t>::digits10 << std::endl
         << "std::numeric_limits<double>::max() = " << std::numeric_limits<double>::max() << std::endl
@@ -129,6 +130,12 @@ void PlatformTest::testIntegerTypes()
     TSUNIT_ASSERT(!std::numeric_limits<uint64_t>::is_signed);
 
     TSUNIT_EQUAL(sizeof(wchar_t), TS_WCHAR_SIZE);
+
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(2, sizeof(fs::path::value_type));
+#else
+    TSUNIT_EQUAL(1, sizeof(fs::path::value_type));
+#endif
 
     int8_t  i8  = -1;
     int16_t i16 = -1;

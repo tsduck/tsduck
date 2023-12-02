@@ -103,7 +103,7 @@ void ts::TSFileOutputArgs::defineArgs(Args& args)
 
 bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    args.getValue(_name);
+    args.getPathValue(_name);
     _reopen = args.present(u"reopen-on-error");
     args.getIntValue(_retry_max, u"max-retry", 0);
     args.getIntValue(_retry_interval, u"retry-interval", DEFAULT_RETRY_INTERVAL);

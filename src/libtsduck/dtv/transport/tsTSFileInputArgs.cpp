@@ -88,7 +88,7 @@ void ts::TSFileInputArgs::defineArgs(Args& args)
 
 bool ts::TSFileInputArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    args.getValues(_filenames);
+    args.getPathValues(_filenames);
     _repeat_count = args.present(u"infinite") ? 0 : args.intValue<size_t>(u"repeat", 1);
     _start_offset = args.intValue<uint64_t>(u"byte-offset", args.intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
     _interleave = args.present(u"interleave");
@@ -134,7 +134,7 @@ bool ts::TSFileInputArgs::openFile(size_t name_index, size_t file_index, Report&
 {
     assert(name_index < _filenames.size());
     assert(file_index < _files.size());
-    const UString& name(_filenames[name_index]);
+    const fs::path& name(_filenames[name_index]);
 
     // Report file name when there are more than one file.
     // No need to report this with --interleave since all files are open at startup.
