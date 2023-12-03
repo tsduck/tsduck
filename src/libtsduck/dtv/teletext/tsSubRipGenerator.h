@@ -30,7 +30,7 @@ namespace ts {
         //! Use isOpen() to check if the file was correctly created.
         //! @param [in,out] report Where to report errors.
         //!
-        explicit SubRipGenerator(const UString& fileName = UString(), Report& report = NULLREP);
+        explicit SubRipGenerator(const fs::path& fileName = UString(), Report& report = NULLREP);
 
         //!
         //! Constructor.
@@ -50,7 +50,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True if the file was correctly created and open, false otherwise.
         //!
-        bool open(const UString& fileName, Report& report = NULLREP);
+        bool open(const fs::path& fileName, Report& report = NULLREP);
 
         //!
         //! Open or re-open the generator to a new text stream.
@@ -109,8 +109,8 @@ namespace ts {
         static UString FormatDuration(MilliSecond showTimestamp, MilliSecond hideTimestamp);
 
     private:
-        std::ofstream _outputStream;  //!< Text stream for output file.
-        std::ostream* _stream;        //!< Output text stream.
-        int           _frameCount;    //!< Number of output frames.
+        std::ofstream _outputStream {};   // Text stream for output file.
+        std::ostream* _stream = nullptr;  // Output text stream.
+        int           _frameCount = 0;    // Number of output frames.
     };
 }

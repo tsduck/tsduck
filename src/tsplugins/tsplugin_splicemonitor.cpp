@@ -73,7 +73,7 @@ namespace ts {
         bool        _no_adjustment = false;  // Do not adjust PTS of splice command reception time.
         PID         _splice_pid = PID_NULL;  // The only splice PID to monitor.
         PID         _pts_pid = PID_NULL;     // The only PTS PID to use.
-        UString     _output_file {};         // Output file name.
+        fs::path    _output_file {};         // Output file name.
         UString     _alarm_command {};       // Alarm command name.
         size_t      _min_repetition = 0;     // Minimum number of occurrences per command.
         size_t      _max_repetition = 0;     // Maximum number of occurrences per command.
@@ -209,7 +209,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
     _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
-    getValue(_output_file, u"output-file");
+    getPathValue(_output_file, u"output-file");
     getValue(_alarm_command, u"alarm-command");
     getIntValue(_min_preroll, u"min-pre-roll-time");
     getIntValue(_max_preroll, u"max-pre-roll-time");

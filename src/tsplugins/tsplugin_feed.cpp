@@ -45,7 +45,7 @@ namespace ts {
         bool              _replace_ts = false;     // Replace extracted TS.
         PID               _feed_pid = PID_NULL;       // Original value for --pid.
         TSFile::OpenFlags _outfile_flags = TSFile::NONE;  // Open flags for output file.
-        UString           _outfile_name {};   // Output file name.
+        fs::path          _outfile_name {};   // Output file name.
         uint8_t           _service_type = DEFAULT_SERVICE_TYPE;   // Service type carrying an inner TS.
         uint8_t           _stream_type = DEFAULT_STREAM_TYPE;    // Service type carrying an inner TS.
 
@@ -123,7 +123,7 @@ bool ts::FeedPlugin::getOptions()
     getIntValue(_feed_pid, u"pid", PID_NULL);
     getIntValue(_service_type, u"service-type", DEFAULT_SERVICE_TYPE);
     getIntValue(_stream_type, u"stream-type", DEFAULT_STREAM_TYPE);
-    getValue(_outfile_name, u"output-file");
+    getPathValue(_outfile_name, u"output-file");
 
     // Output file open flags.
     _outfile_flags = TSFile::WRITE | TSFile::SHARED;

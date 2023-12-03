@@ -217,7 +217,7 @@ namespace ts {
         bool loadArgs(DuckContext& duck, Args& args);
 
         // Inherited methods.
-        virtual bool open(const UString& filename, Report& report) override;
+        virtual bool open(const fs::path& filename, Report& report) override;
         virtual bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report) override;
 
     private:

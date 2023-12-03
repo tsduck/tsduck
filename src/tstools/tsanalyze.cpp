@@ -32,7 +32,7 @@ namespace {
 
         ts::DuckContext       duck {this};         // TSDuck execution context.
         ts::BitRate           bitrate = 0;         // Expected bitrate (188-byte packets)
-        ts::UString           infile {};           // Input file name
+        fs::path              infile {};           // Input file name
         ts::TSPacketFormat    format = ts::TSPacketFormat::AUTODETECT; // Input file format.
         ts::TSAnalyzerOptions analysis {};         // Analysis options.
         ts::PagerArgs         pager {true, true};  // Output paging options.
@@ -67,7 +67,7 @@ Options::Options(int argc, char *argv[]) :
     pager.loadArgs(duck, *this);
     analysis.loadArgs(duck, *this);
 
-    getValue(infile, u"");
+    getPathValue(infile, u"");
     getValue(bitrate, u"bitrate");
     format = ts::LoadTSPacketFormatInputOption(*this);
 

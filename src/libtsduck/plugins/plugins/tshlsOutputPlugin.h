@@ -45,7 +45,7 @@ namespace ts {
         private:
             // Command line options.
             UString            _segmentTemplate {};         // Command line segment file names template.
-            UString            _playlistFile {};            // Playlist file name.
+            fs::path           _playlistFile {};            // Playlist file name.
             bool               _intraClose = false;         // Try to start segments on intra images.
             bool               _useBitrateTag = false;      // Specify EXT-X-BITRATE tags for each segment in the playlist.
             bool               _alignFirstSegment = false;  // Align first segment to the first PAT and PMT.

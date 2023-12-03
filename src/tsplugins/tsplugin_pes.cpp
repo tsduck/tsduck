@@ -62,7 +62,7 @@ namespace ts {
         size_t    _max_dump_count = 0;
         int       _min_payload = 0;    // Minimum payload size (<0: no filter)
         int       _max_payload = 0;    // Maximum payload size (<0: no filter)
-        UString   _out_filename {};
+        fs::path  _out_filename {};
         UString   _pes_filename {};
         UString   _es_filename {};
         PIDSet    _pids {};
@@ -84,7 +84,7 @@ namespace ts {
         FileNameGenerator _es_name_gen {};
 
         // Open output file.
-        bool openOutput(const UString&, std::ofstream*, std::ostream**, bool binary);
+        bool openOutput(const fs::path&, std::ofstream*, std::ostream**, bool binary);
 
         // A string containing the PID and optional TS packet indexes.
         UString prefix(const DemuxedData&) const;
@@ -295,7 +295,7 @@ bool ts::PESPlugin::getOptions()
     getIntValue(_min_payload, u"min-payload-size", -1);
     getIntValue(_max_payload, u"max-payload-size", -1);
     getIntValue(_default_h26x, u"h26x-default-format", CodecType::AVC);
-    getValue(_out_filename, u"output-file");
+    getPathValue(_out_filename, u"output-file");
     getValue(_pes_filename, u"save-pes");
     getValue(_es_filename, u"save-es");
     _negate_nal_unit_filter = present(u"negate-nal-unit-type");
@@ -381,7 +381,7 @@ bool ts::PESPlugin::start()
 // Open output binary file (--save-pes or --save-es).
 //----------------------------------------------------------------------------
 
-bool ts::PESPlugin::openOutput(const UString& filename, std::ofstream* file, std::ostream** stream, bool binary)
+bool ts::PESPlugin::openOutput(const fs::path& filename, std::ofstream* file, std::ostream** stream, bool binary)
 {
     if (filename == u"-") {
         // Save binary data on standard output, in binary mode.
@@ -397,7 +397,7 @@ bool ts::PESPlugin::openOutput(const UString& filename, std::ofstream* file, std
     else {
         // Save binary data in a regular binary file.
         tsp->verbose(u"creating %s", {filename});
-        file->open(filename.toUTF8().c_str(), binary ? (std::ios::out | std::ios::binary) : std::ios::out);
+        file->open(filename, binary ? (std::ios::out | std::ios::binary) : std::ios::out);
         if (!(*file)) {
             error(u"cannot create %s", {filename});
             return false;
@@ -414,9 +414,9 @@ bool ts::PESPlugin::openOutput(const UString& filename, std::ofstream* file, std
 
 void ts::PESPlugin::saveOnePES(FileNameGenerator& namegen, const uint8_t* data, size_t size)
 {
-    const UString filename(namegen.newFileName());
+    const fs::path filename(namegen.newFileName());
     tsp->debug(u"creating %s", {filename});
-    std::ofstream file(filename.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    std::ofstream file(filename, std::ios::out | std::ios::binary);
     if (!file) {
         error(u"cannot create %s", {filename});
         _abort = false;
