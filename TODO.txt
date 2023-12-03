@@ -15,15 +15,10 @@ TSDuck - List of features to be implemented or fixed
     - 2.6.74   auxiliary_video_stream_descriptor
   - With embedded data structures from ISO/IEC 23008-3 (High efficiency 3D audio):
     - 2.6.108  MPEGH_3D_audio_config_descriptor
-    - 2.6.110  MPEGH_3D_audio_scene_descriptor
     - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
     - 2.6.118  MPEGH_3D_audio_command_descriptor
 
   ETSI TS 102 323 (Carriage and signalling of TV-Anytime information)
-  - 5.3.5   RAR_over_DVB_stream_descriptor (RNT-specific)
-  - 5.3.6   RAR_over_IP_descriptor (RNT-specific)
-  - 5.3.7   RNT_scan_descriptor (RNT-specific)
-  - 6.3.3   default_authority_descriptor
   - 10.4.2  RCT (Related Content Table)
 
   ARIB STD-B10 (ISDB Service Information)

@@ -1,0 +1,34 @@
+[MPEGH_3D_audio_scene_descriptor.mae_contentKind]
+Bits = 4
+# ISO/IEC 23008-2 table 247
+0 = undefined
+1 = complete main
+2 = dialogue
+3 = music
+4 = effect
+5 = mixed
+6 = LFE
+7 = voiceover
+8 = spoken subtitle
+9 = audio description/visually impaired
+10 = commentary
+11 = hearing impaired
+12 = emergency
+13-15 = reserved
+
+[MPEGH_3D_audio_scene_descriptor.mae_groupPresetKind]
+Bits = 5
+# ISO/IEC 23008-2 table 248
+0 = undefined
+1 = integrated TV loudspeaker
+2 = high quality loudspeaker
+3 = mobile loudspeakers
+4 = mobile headphones
+5 = hearing impaired (light)
+6 = hearing impaired (heavy)
+7 = visually impaired / audio description
+8 = spoken subtitles
+9 = loudness / DRC
+10-25 = reserved for ISO
+26-30 = reserved for other
+31 = other

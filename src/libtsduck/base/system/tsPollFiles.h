@@ -27,7 +27,7 @@ namespace ts {
         //!
         //! Default interval in milliseconds between two poll operations.
         //!
-        static const MilliSecond DEFAULT_POLL_INTERVAL = 1000;
+        static constexpr MilliSecond DEFAULT_POLL_INTERVAL = 1000;
 
         //!
         //! Default minimum file stability delay.
@@ -35,7 +35,7 @@ namespace ts {
         //! added or modified. This prevent too frequent poll notifications when a file is
         //! being written and his size modified at each poll.
         //!
-        static const MilliSecond DEFAULT_MIN_STABLE_DELAY = 500;
+        static constexpr MilliSecond DEFAULT_MIN_STABLE_DELAY = 500;
 
         //!
         //! Constructor.
