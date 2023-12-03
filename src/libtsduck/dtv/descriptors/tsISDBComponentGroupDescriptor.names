@@ -1,0 +1,19 @@
+[ISDB_component_group_descriptor.component_group_type]
+# ARIB STD-B10 table 6-72
+Bits = 3
+0x0 = Multi-view TV service
+0x1-0x7 = Undefined
+
+[ISDB_component_group_descriptor.component_group_id]
+# ARIB STD-B10 table 6-73
+Bits = 4
+0x0 = Main group
+0x1-0xF = Sub group
+
+[ISDB_component_group_descriptor.CA_unit_id]
+# ARIB STD-B10 table 6-73
+Bits = 4
+0x0 = Non-CA unit group
+0x1 = CA unit group including default ES group
+0x2-0xF = CA unit group other than above
+
