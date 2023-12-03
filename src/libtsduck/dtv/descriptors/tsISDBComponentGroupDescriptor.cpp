@@ -179,7 +179,7 @@ void ts::ISDBComponentGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 
 void ts::ISDBComponentGroupDescriptor::ComponentGroup::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, bool total_bit_rate_flag, size_t group_num)
 {
-    disp << margin << UString::Format(u"Component group #%2d", {group_num}) << "; id: "
+    disp << margin << UString::Format(u"Component group #%2d; id: ", {group_num}) 
          << DataName(MY_XML_NAME, u"component_group_id", buf.getBits<uint8_t>(4), NamesFlags::VALUE)  << std::endl;
     const size_t num_of_CA_unit = buf.getBits<uint8_t>(4);
     for (size_t i = 0; i < num_of_CA_unit; i++) {
