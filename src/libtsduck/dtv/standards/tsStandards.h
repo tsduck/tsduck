@@ -21,14 +21,14 @@ namespace ts {
     //! @ingroup mpeg
     //!
     enum class Standards : uint16_t {
-        NONE  = 0x00,  //!< No known standard
-        MPEG  = 0x01,  //!< Defined by MPEG, common to all standards
-        DVB   = 0x02,  //!< Defined by ETSI/DVB.
-        SCTE  = 0x04,  //!< Defined by ANSI/SCTE.
-        ATSC  = 0x08,  //!< Defined by ATSC.
-        ISDB  = 0x10,  //!< Defined by ISDB.
-        JAPAN = 0x20,  //!< Defined in Japan only (typically in addition to ISDB).
-        ABNT  = 0x40,  //!< Defined by ABNT (Brazil, typically in addition to ISDB).
+        NONE  = 0x0000,  //!< No known standard
+        MPEG  = 0x0001,  //!< Defined by MPEG, common to all standards
+        DVB   = 0x0002,  //!< Defined by ETSI/DVB.
+        SCTE  = 0x0004,  //!< Defined by ANSI/SCTE.
+        ATSC  = 0x0008,  //!< Defined by ATSC.
+        ISDB  = 0x0010,  //!< Defined by ISDB.
+        JAPAN = 0x0020,  //!< Defined in Japan only (typically in addition to ISDB).
+        ABNT  = 0x0040,  //!< Defined by ABNT (Brazil, typically in addition to ISDB).
     };
 
     //!

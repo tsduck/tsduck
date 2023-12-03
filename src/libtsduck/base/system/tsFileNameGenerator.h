@@ -71,7 +71,7 @@ namespace ts {
         //! In date and time mode, the current local time is used.
         //! @return A new file name.
         //!
-        UString newFileName();
+        fs::path newFileName();
 
         //!
         //! Generate a new file name with a specific date and time.
@@ -79,7 +79,7 @@ namespace ts {
         //! Ignored in counter mode.
         //! @return A new file name.
         //!
-        UString newFileName(const Time& time);
+        fs::path newFileName(const Time& time);
 
     private:
         UString _name_prefix {};               // Full name prefix.
@@ -87,7 +87,7 @@ namespace ts {
         bool    _counter_mode = true;          // Use counter mode (ie. not date and time).
         size_t  _counter_value = 0;            // Next counter value in file names.
         size_t  _counter_width {6};            // Counter width in file name.
-        int     _time_fields {Time::DATETIME}; // The time fields to use.
+        int     _time_fields = Time::DATETIME; // The time fields to use.
         UString _last_time {};                 // The last returned time fields. Use _counter_value to avoid identical file names.
 
         // Fix name prefix, make sure it ends with '-' or any punctuation.

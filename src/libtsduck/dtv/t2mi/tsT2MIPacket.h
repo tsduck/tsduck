@@ -33,6 +33,7 @@ namespace ts {
     //!
     //! Representation of a DVB T2-MI (DVB-T2 Modulator Interface) packet.
     //! @ingroup mpeg
+    //! @see ETSI TS 102 773 V1.4.1, section 5.1
     //!
     class TSDUCKDLL T2MIPacket : public DemuxedData
     {

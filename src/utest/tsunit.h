@@ -64,6 +64,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 #include <exception>
 #include <cstdlib>
 #include <cstdio>
@@ -554,6 +555,12 @@ namespace tsunit {
         static void equal(const ETYPE& expected, const ATYPE& actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
         {
             equalString(std::u16string(expected), std::u16string(actual), sourcefile, linenumber);
+        }
+        template<typename ETYPE,
+                 typename std::enable_if<std::is_convertible<ETYPE, std::u16string>::value>::type* = nullptr>
+        static void equal(const ETYPE& expected, const std::filesystem::path& actual, const std::string&, const std::string&, const char* sourcefile, int linenumber)
+        {
+            equalString(std::u16string(expected), actual.u16string(), sourcefile, linenumber);
         }
 
         // Assert equal for pointer types.

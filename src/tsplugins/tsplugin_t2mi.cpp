@@ -40,24 +40,28 @@ namespace ts {
         // Set of identified T2-MI PID's with their PLP's (with --identify).
         typedef std::map<PID, PLPSet> IdentifiedSet;
 
-        // Plugin private fields.
-        bool              _abort = false;           // Error, abort asap.
-        bool              _extract = false;         // Extract encapsulated TS.
-        bool              _replace_ts = false;      // Replace transferred TS.
-        bool              _log = false;             // Log T2-MI packets.
-        bool              _identify = false;        // Identify T2-MI PID's and PLP's in the TS or PID.
-        PID               _original_pid = PID_NULL; // Original value for --pid.
-        PID               _extract_pid = PID_NULL;  // PID carrying the T2-MI encapsulation.
-        uint8_t           _plp = 0;                 // The PLP to extract in _pid.
-        bool              _plp_valid = false;       // False if PLP not yet known.
-        TSFile::OpenFlags _outfile_flags = TSFile::NONE; // Open flags for output file.
-        UString           _outfile_name {};         // Output file name.
-        TSFile            _outfile {};              // Output file for extracted stream.
-        PacketCounter     _t2mi_count = 0;          // Number of input T2-MI packets.
-        PacketCounter     _ts_count = 0;            // Number of extracted TS packets.
-        T2MIDemux         _demux {duck, this};      // T2-MI demux.
-        IdentifiedSet     _identified {};           // Map of identified PID's and PLP's.
-        std::deque<TSPacket> _ts_queue {};          // Queue of demuxed TS packets.
+        // Command line options:
+        bool                   _extract = false;              // Extract encapsulated TS.
+        bool                   _replace_ts = false;           // Replace transferred TS.
+        bool                   _log = false;                  // Log T2-MI packets.
+        bool                   _identify = false;             // Identify T2-MI PID's and PLP's in the TS or PID.
+        std::optional<PID>     _original_pid {};              // Original value for --pid.
+        std::optional<uint8_t> _original_plp {};              // Original value for --plp.
+        TSFile::OpenFlags      _ts_file_flags = TSFile::NONE; // Open flags for output file.
+        UString                _ts_file_name {};              // Output file name for extracted TS.
+        UString                _t2mi_file_name {};            // Output file name for T2-MI packets.
+
+        // Working data:
+        bool                   _abort = false;       // Error, abort asap.
+        std::optional<PID>     _extract_pid {};      // The PID containing the T2MI stream to extract.
+        std::optional<uint8_t> _extract_plp {};      // The PLP to extract in that PID.
+        TSFile                 _ts_file {};          // Output file for extracted TS.
+        std::ofstream          _t2mi_file {};        // Output file for extracted T2-MI packets.
+        PacketCounter          _t2mi_count = 0;      // Number of input T2-MI packets.
+        PacketCounter          _ts_count = 0;        // Number of extracted TS packets.
+        T2MIDemux              _demux {duck, this};  // T2-MI demux.
+        IdentifiedSet          _identified {};       // Map of identified PID's and PLP's.
+        std::deque<TSPacket>   _ts_queue {};         // Queue of demuxed TS packets.
 
         // Inherited methods.
         virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;
@@ -84,26 +88,27 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     option(u"extract", 'e');
     help(u"extract",
          u"Extract encapsulated TS packets from one PLP of a T2-MI stream. "
-         u"This is the default if neither --extract nor --log nor --identify is "
-         u"specified. By default, the transport stream is completely replaced by "
-         u"the extracted stream. See option --output-file.");
+         u"This is the default if neither --extract nor --t2mi-file nor --log nor --identify is specified. "
+         u"By default, the transport stream is completely replaced by the extracted stream. "
+         u"See also option --output-file.");
 
     option(u"identify", 'i');
     help(u"identify",
-         u"Identify all T2-MI PID's and PLP's. If --pid is specified, only identify "
-         u"PLP's in this PID. If --pid is not specified, identify all PID's carrying "
-         u"T2-MI and their PLP's (require a fully compliant T2-MI signalization).");
+         u"Identify all T2-MI PID's and PLP's. "
+         u"If --pid is specified, only identify PLP's in this PID. "
+         u"If --pid is not specified, identify all PID's carrying T2-MI and their PLP's "
+         u"(require a fully compliant T2-MI signalization).");
 
     option(u"keep", 'k');
     help(u"keep",
-         u"With --output-file, keep existing file (abort if the specified file "
-         u"already exists). By default, existing files are overwritten.");
+         u"With --output-file, keep existing file (abort if the specified file already exists). "
+         u"By default, existing files are overwritten.");
 
     option(u"log", 'l');
     help(u"log", u"Log all T2-MI packets using one single summary line per packet.");
 
     option(u"output-file", 'o', FILENAME);
-    help(u"output-file", u"filename",
+    help(u"output-file",
          u"Specify that the extracted stream is saved in this file. In that case, "
          u"the main transport stream is passed unchanged to the next plugin.");
 
@@ -117,6 +122,12 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
          u"Specify the PLP (Physical Layer Pipe) to extract from the T2-MI "
          u"encapsulation. By default, use the first PLP which is found. "
          u"Ignored if --extract is not used.");
+
+    option(u"t2mi-file", 't', FILENAME);
+    help(u"t2mi-file",
+         u"Save the complete T2-MI packets in the specified binary file. "
+         "If --plp is specified, only save T2-MI packets for that PLP. "
+         "Otherwise, save all T2-MI packets from the selected PID.");
 }
 
 
@@ -130,28 +141,28 @@ bool ts::T2MIPlugin::getOptions()
     _extract = present(u"extract");
     _log = present(u"log");
     _identify = present(u"identify");
-    _plp_valid = present(u"plp");
-    getIntValue(_original_pid, u"pid", PID_NULL);
-    getIntValue(_plp, u"plp");
-    getValue(_outfile_name, u"output-file");
+    getOptionalIntValue(_original_pid, u"pid", true);
+    getOptionalIntValue(_original_plp, u"plp", true);
+    getValue(_ts_file_name, u"output-file");
+    getValue(_t2mi_file_name, u"t2mi-file");
 
     // Output file open flags.
-    _outfile_flags = TSFile::WRITE | TSFile::SHARED;
+    _ts_file_flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
-        _outfile_flags |= TSFile::APPEND;
+        _ts_file_flags |= TSFile::APPEND;
     }
     if (present(u"keep")) {
-        _outfile_flags |= TSFile::KEEP;
+        _ts_file_flags |= TSFile::KEEP;
     }
 
     // Extract is the default operation.
     // It is also implicit if an output file is specified.
-    if ((!_extract && !_log && !_identify) || !_outfile_name.empty()) {
+    if ((!_extract && !_log && !_identify && _t2mi_file_name.empty()) || !_ts_file_name.empty()) {
         _extract = true;
     }
 
     // Replace the TS if no output file is present.
-    _replace_ts = _extract && _outfile_name.empty();
+    _replace_ts = _extract && _ts_file_name.empty();
     return true;
 }
 
@@ -165,8 +176,9 @@ bool ts::T2MIPlugin::start()
     // Initialize the demux.
     _demux.reset();
     _extract_pid = _original_pid;
-    if (_extract_pid != PID_NULL) {
-        _demux.addPID(_extract_pid);
+    _extract_plp = _original_plp;
+    if (_extract_pid.has_value()) {
+        _demux.addPID(*_extract_pid);
     }
 
     // Reset the packet output.
@@ -176,8 +188,21 @@ bool ts::T2MIPlugin::start()
     _ts_count = 0;
     _abort = false;
 
-    // Open output file if present.
-    return _outfile_name.empty() || _outfile.open(_outfile_name, _outfile_flags , *tsp);
+    // Open output files.
+    if (!_ts_file_name.empty() && !_ts_file.open(_ts_file_name, _ts_file_flags , *tsp)) {
+        return false;
+    }
+    if (!_t2mi_file_name.empty()) {
+        _t2mi_file.open(_t2mi_file_name.toUTF8(), std::ios::out | std::ios::binary);
+        if (!_t2mi_file) {
+            tsp->error(u"error creating %s", {_t2mi_file_name});
+            if (_ts_file.isOpen()) {
+                _ts_file.close(*tsp);
+            }
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -187,9 +212,12 @@ bool ts::T2MIPlugin::start()
 
 bool ts::T2MIPlugin::stop()
 {
-    // Close extracted TS file.
-    if (_outfile.isOpen()) {
-        _outfile.close(*tsp);
+    // Close output files.
+    if (_t2mi_file.is_open()) {
+        _t2mi_file.close();
+    }
+    if (_ts_file.isOpen()) {
+        _ts_file.close(*tsp);
     }
 
     // With --extract, display a summary.
@@ -228,14 +256,13 @@ bool ts::T2MIPlugin::stop()
 
 void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc)
 {
-    // Found a new PID carrying T2-MI.
-    // Use it by default for extraction.
-    if (_extract_pid == PID_NULL && pid != PID_NULL) {
+    // Found a new PID carrying T2-MI. Use it by default for extraction.
+    if (!_extract_pid.has_value()) {
         if (_extract || _log) {
             tsp->verbose(u"using PID 0x%X (%d) to extract T2-MI stream", {pid, pid});
         }
         _extract_pid = pid;
-        _demux.addPID(_extract_pid);
+        _demux.addPID(pid);
     }
 
     // Report all new PID's with --identify.
@@ -260,7 +287,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
     const uint8_t plp = hasPLP ? pkt.plp() : 0;
 
     // Log T2-MI packets.
-    if (_log && pid == _extract_pid) {
+    if (_log && _extract_pid == pid) {
         UString plpInfo;
         if (hasPLP) {
             plpInfo = UString::Format(u", PLP: 0x%X (%d)", {plp, plp});
@@ -272,14 +299,13 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
     }
 
     // Select PLP when extraction is requested.
-    if (_extract && pid == _extract_pid && hasPLP) {
-        if (!_plp_valid) {
+    if (_extract && _extract_pid == pid && hasPLP) {
+        if (!_extract_plp.has_value()) {
             // The PLP was not yet specified, use this one by default.
-            _plp = plp;
-            _plp_valid = true;
-            tsp->verbose(u"extracting PLP 0x%X (%d)", {_plp, _plp});
+            _extract_plp = plp;
+            tsp->verbose(u"extracting PLP 0x%X (%d)", {plp, plp});
         }
-        if (plp == _plp) {
+        if (_extract_plp == plp) {
             // Count input T2-MI packets.
             _t2mi_count++;
         }
@@ -290,7 +316,15 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         PLPSet& plps(_identified[pid]);
         if (!plps.test(plp)) {
             plps.set(plp);
-            tsp->info(u"PID 0x%X (%d), found PLP %d", {pid, pid, plp});
+            tsp->info(u"PID 0x%X (%<d), found PLP %d", {pid, plp});
+        }
+    }
+
+    // Save raw T2-MI packets.
+    if (_t2mi_file.is_open() && (!_original_plp.has_value() || (hasPLP && _original_plp == plp))) {
+        if (!_t2mi_file.write(reinterpret_cast<const char*>(pkt.content()), std::streamsize(pkt.size()))) {
+            tsp->error(u"error writing raw T2-MI packets to %s", {_t2mi_file_name});
+            _abort = true;
         }
     }
 }
@@ -303,7 +337,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts)
 {
     // Keep packet from the filtered PLP only.
-    if (_extract && _plp_valid && t2mi.plp() == _plp) {
+    if (!_abort && _extract && _extract_plp == t2mi.plp()) {
         if (_replace_ts) {
             // Enqueue the TS packet for replacement later.
             // We do not really care about queue size because an overflow is not possible.
@@ -314,7 +348,8 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
         }
         else {
             // Write the packet to output file.
-            _abort = _abort || !_outfile.writePackets(&ts, nullptr, 1, *tsp);
+            _abort = !_ts_file.writePackets(&ts, nullptr, 1, *tsp);
+            _ts_count++;
         }
     }
 }
@@ -332,7 +367,7 @@ ts::ProcessorPlugin::Status ts::T2MIPlugin::processPacket(TSPacket& pkt, TSPacke
     if (_abort) {
         return TSP_END;
     }
-    else if (!_extract) {
+    else if (!_replace_ts) {
         // Without TS replacement, we simply pass all packets, unchanged.
         return TSP_OK;
     }

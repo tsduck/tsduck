@@ -39,7 +39,7 @@ namespace ts {
         virtual ~TSFileOutputResync() override;
 
         // Overrides TSFile methods
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT) override;
 
         //!
         //! Write TS packets to the file.
@@ -72,8 +72,8 @@ namespace ts {
         ContinuityAnalyzer _ccFixer {AllPIDs};
 
         // Make openRead() and read-only writePackets() inaccessible.
-        bool openRead(const UString&, size_t, uint64_t, Report&) = delete;
-        bool openRead(const UString&, uint64_t, Report&) = delete;
+        bool openRead(const fs::path&, size_t, uint64_t, Report&) = delete;
+        bool openRead(const fs::path&, uint64_t, Report&) = delete;
         virtual bool writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report) override;
     };
 }
