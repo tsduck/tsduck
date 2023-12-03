@@ -1,0 +1,15 @@
+[ISDB_connected_transmission_descriptor.segment_type]
+# ARIB STD-B10 table 6-80
+Bits = 2
+0x0 = 1 segment  (1 layer)
+0x1 = 2 segments  (2 layers)
+0x2 = 13 segments
+0x3 = Refer to TMCC signal
+
+[ISDB_connected_transmission_descriptor.modulation_type]
+# ARIB STD-B10 table 6-81
+Bits = 2
+0x0 = Differential modulation
+0x1 = Synchronous modulation
+0x2 = Reserved for future use
+0x3 = Refer to TMCC signal
