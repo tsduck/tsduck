@@ -41,7 +41,7 @@ bool ts::PcapFile::error(Report& report, const UString& fmt, std::initializer_li
 // Open the file for read.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFile::open(const UString& filename, Report& report)
+bool ts::PcapFile::open(const fs::path& filename, Report& report)
 {
     if (_in != nullptr) {
         report.error(u"already open");
@@ -68,7 +68,7 @@ bool ts::PcapFile::open(const UString& filename, Report& report)
         _name = u"standard input";
     }
     else {
-        _file.open(filename.toUTF8().c_str(), std::ios::in | std::ios::binary);
+        _file.open(filename, std::ios::in | std::ios::binary);
         if (!_file) {
             report.error(u"error opening %s", {filename});
             return false;

@@ -37,7 +37,7 @@ namespace ts {
         //! @param [in,out] stream The input stream to redirect, @c std::cin by default.
         //! @param [in,out] mode Mode to use to open the file, @c std::ios::binary by default.
         //!
-        InputRedirector(const UString& name,
+        InputRedirector(const fs::path& name,
                         Args& args,
                         std::istream& stream = std::cin,
                         std::ios::openmode mode = std::ios::binary);

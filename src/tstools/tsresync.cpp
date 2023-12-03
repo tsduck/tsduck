@@ -37,14 +37,14 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        size_t      sync_size = 0;      // number of initial bytes to analyze for resync
-        size_t      contig_size = 0;    // required size of contiguous packets to accept a stream slice
-        size_t      packet_size = 0;    // specific non-standard input packet size (zero means use standard sizes)
-        size_t      header_size = 0;    // header size (when packet_size > 0)
-        bool        cont_sync = false;  // continuous synchronization (default: stop on error)
-        bool        keep = false;       // keep packet size (default: reduce to 188 bytes)
-        ts::UString infile {};          // Input file name
-        ts::UString outfile {};         // Output file name
+        size_t   sync_size = 0;      // number of initial bytes to analyze for resync
+        size_t   contig_size = 0;    // required size of contiguous packets to accept a stream slice
+        size_t   packet_size = 0;    // specific non-standard input packet size (zero means use standard sizes)
+        size_t   header_size = 0;    // header size (when packet_size > 0)
+        bool     cont_sync = false;  // continuous synchronization (default: stop on error)
+        bool     keep = false;       // keep packet size (default: reduce to 188 bytes)
+        fs::path infile {};          // Input file name
+        fs::path outfile {};         // Output file name
     };
 }
 
@@ -93,12 +93,12 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    infile = value(u"");
-    outfile = value(u"output");
-    sync_size = intValue<size_t>(u"sync-size", DEFAULT_SYNC_SIZE);
-    contig_size = intValue<size_t>(u"min-contiguous", DEFAULT_CONTIG_SIZE);
-    header_size = intValue<size_t>(u"header-size", 0);
-    packet_size = intValue<size_t>(u"packet-size", 0);
+    getPathValue(infile, u"");
+    getPathValue(outfile, u"output");
+    getIntValue(sync_size, u"sync-size", DEFAULT_SYNC_SIZE);
+    getIntValue(contig_size, u"min-contiguous", DEFAULT_CONTIG_SIZE);
+    getIntValue(header_size, u"header-size", 0);
+    getIntValue(packet_size, u"packet-size", 0);
     keep = present(u"keep");
     cont_sync = present(u"continue");
 

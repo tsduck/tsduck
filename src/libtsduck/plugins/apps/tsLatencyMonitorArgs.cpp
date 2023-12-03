@@ -39,7 +39,7 @@ void ts::LatencyMonitorArgs::defineArgs(Args& args)
 bool ts::LatencyMonitorArgs::loadArgs(Args& args)
 {
     appName = args.appName();
-    outputName = args.value(u"output-file");
+    args.getPathValue(outputName, u"output-file");
     args.getIntValue(bufferTime, u"buffer-time", 1);
     args.getIntValue(outputInterval, u"output-interval", 1);
 

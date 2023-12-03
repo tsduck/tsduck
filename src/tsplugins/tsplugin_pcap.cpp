@@ -38,7 +38,7 @@ namespace ts {
 
     private:
         // Command line options:
-        UString           _file_name {};            // Pcap file name.
+        fs::path          _file_name {};            // Pcap file name.
         IPv4SocketAddress _destination {};          // Selected destination UDP socket address.
         IPv4SocketAddress _source {};               // Selected source UDP socket address.
         bool              _multicast = false;       // Use multicast destinations only.
@@ -160,7 +160,7 @@ ts::PcapInputPlugin::PcapInputPlugin(TSP* tsp_) :
 
 bool ts::PcapInputPlugin::getOptions()
 {
-    getValue(_file_name, u"");
+    getPathValue(_file_name, u"");
     getSocketValue(_source, u"source");
     getSocketValue(_destination, u"destination");
     _multicast = present(u"multicast-only");

@@ -74,7 +74,7 @@ namespace ts {
         //! @param [in] fileName Name of the file to load.
         //! @return True on success, false on failure.
         //!
-        bool loadFile(const UString& fileName);
+        bool loadFile(const fs::path& fileName);
 
         //!
         //! Load the document to parse from a text stream.
@@ -88,7 +88,7 @@ namespace ts {
         //! @param [in] fileName Name of the file to save.
         //! @return True on success, false on failure.
         //!
-        bool saveFile(const UString& fileName);
+        bool saveFile(const fs::path& fileName);
 
         //!
         //! Save the document to parse to a text stream.

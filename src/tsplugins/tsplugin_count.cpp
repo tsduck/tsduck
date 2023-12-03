@@ -52,6 +52,7 @@ namespace ts {
         bool           _report_summary = false;  // Report summary
         bool           _report_total = false;    // Report total of all PIDs
         PacketCounter  _report_interval = 0;     // If non-zero, report time-stamp at this packet interval
+        fs::path       _outfile_name {};         // Output file name.
 
         // Working data:
         std::ofstream  _outfile {};              // User-specified output file
@@ -132,6 +133,7 @@ bool ts::CountPlugin::getOptions()
     _negate = present(u"negate");
     getIntValue(_report_interval, u"interval");
     getIntValues(_pids, u"pid");
+    getPathValue(_outfile_name, u"output-file");
     _tag = value(u"tag");
     if (!_tag.empty()) {
         _tag += u": ";
@@ -152,12 +154,11 @@ bool ts::CountPlugin::getOptions()
 bool ts::CountPlugin::start()
 {
     // Create output file
-    if (present(u"output-file")) {
-        const UString name(value(u"output-file"));
-        tsp->verbose(u"creating %s", {name});
-        _outfile.open(name.toUTF8().c_str(), std::ios::out);
+    if (!_outfile_name.empty()) {
+        tsp->verbose(u"creating %s", {_outfile_name});
+        _outfile.open(_outfile_name, std::ios::out);
         if (!_outfile) {
-            tsp->error(u"cannot create %s", {name});
+            tsp->error(u"cannot create %s", {_outfile_name});
             return false;
         }
     }

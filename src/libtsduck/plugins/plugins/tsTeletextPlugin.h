@@ -38,7 +38,7 @@ namespace ts {
         int              _page {-1};                  // Teletext page.
         int              _maxFrames = 0;              // Max number of Teletext frames to generate.
         UString          _language {};                // Language to select.
-        UString          _outFile {};                 // Output file name.
+        fs::path         _outFile {};                 // Output file name.
         ServiceDiscovery _service {duck, this};       // Service name & id.
         TeletextDemux    _demux {duck, this, NoPID};  // Teletext demux to extract subtitle frames.
         SubRipGenerator  _srtOutput {};               // Generate SRT output file.

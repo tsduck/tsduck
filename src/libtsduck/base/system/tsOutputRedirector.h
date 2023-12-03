@@ -37,7 +37,7 @@ namespace ts {
         //! @param [in,out] stream The output stream to redirect, @c std::cout by default.
         //! @param [in,out] mode Mode to use to open the file, @c std::ios::binary by default.
         //!
-        OutputRedirector(const UString& name,
+        OutputRedirector(const fs::path& name,
                          Args& args,
                          std::ostream& stream = std::cout,
                          std::ios::openmode mode = std::ios::binary);

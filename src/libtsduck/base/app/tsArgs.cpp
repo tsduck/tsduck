@@ -839,7 +839,7 @@ void ts::Args::getPathValue(fs::path& value, const UChar* name, const fs::path& 
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not a filesystem path");
     }
     else if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
-        value= def_value;
+        value = def_value;
     }
     else {
         value = fs::path(opt.values[index].string.value());

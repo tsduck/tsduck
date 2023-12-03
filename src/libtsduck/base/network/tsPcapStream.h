@@ -135,7 +135,7 @@ namespace ts {
         size_t maxReassemblyQueueSize() const { return _max_queue_size; }
 
         // Inherited methods.
-        virtual bool open(const UString& filename, Report& report) override;
+        virtual bool open(const fs::path& filename, Report& report) override;
         virtual void setBidirectionalFilter(const IPv4SocketAddress& addr1, const IPv4SocketAddress& addr2) override;
 
     private:

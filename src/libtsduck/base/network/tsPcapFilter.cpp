@@ -172,7 +172,7 @@ const ts::IPv4SocketAddress& ts::PcapFilter::otherFilter(const IPv4SocketAddress
 // Open the file, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFilter::open(const UString& filename, Report& report)
+bool ts::PcapFilter::open(const fs::path& filename, Report& report)
 {
     // Invoke superclass.
     const bool ok = PcapFile::open(filename, report);
