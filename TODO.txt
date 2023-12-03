@@ -29,7 +29,6 @@ TSDuck - List of features to be implemented or fixed
   ARIB STD-B10 (ISDB Service Information)
   - Part 2:
     - 6.2.37  component_group_descriptor
-    - 6.2.41  connected_transmission_descriptor
     - 6.2.46  carousel_compatible_composite_descriptor
 
   ARIB STD-B21 (ISDB Receiver for Digital Broadcasting)
