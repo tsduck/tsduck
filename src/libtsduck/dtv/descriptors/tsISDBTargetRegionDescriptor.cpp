@@ -48,7 +48,7 @@ void ts::ISDBTargetRegionDescriptor::clearContent()
 
 void ts::ISDBTargetRegionDescriptor::PrefectureMap::clear()
 {
-    for (auto p : prefectures) {
+    for (auto & p : prefectures) {
         p = false;
     }
 }

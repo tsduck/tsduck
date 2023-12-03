@@ -150,6 +150,8 @@ void ts::ISDBHyperlinkDescriptor::serializePayload(PSIBuffer& buf) const
                 link_to_stored_content.value().serialize(buf);
             }
             break;
+        default:
+            break;
     }
     buf.putBytes(private_data);
 }
@@ -241,6 +243,8 @@ void ts::ISDBHyperlinkDescriptor::deserializePayload(PSIBuffer& buf)
             StoredContent uri(buf);
             link_to_stored_content = uri;
             } 
+            break;
+        default:
             break;
     }
     buf.getBytes(private_data);   
@@ -335,6 +339,8 @@ void ts::ISDBHyperlinkDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
                 StoredContent tmp;
                 tmp.display(disp, buf, margin);
                 }
+                break;
+            default:
                 break;
         }
         disp.displayPrivateData(u"Reserved data", buf, NPOS, margin);
@@ -437,6 +443,8 @@ void ts::ISDBHyperlinkDescriptor::buildXML(DuckContext& duck, xml::Element* root
                 link_to_stored_content.value().toXML(root->addElement(u"StoredContent"));
             }
         }
+        break;
+        default:
         break;
     }
     root->addHexaTextChild(u"private_data", private_data, true);
@@ -563,6 +571,8 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                     link_to_stored_content = t;
                 }
             } 
+            break;
+            default:
             break;
         }
     }
