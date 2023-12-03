@@ -14,7 +14,6 @@
 #include "tsWebRequest.h"
 #include "tsFatal.h"
 #include "tsFileUtils.h"
-#include "tsSysUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsSingleton.h"
 #include "tsURL.h"
@@ -46,7 +45,6 @@ ts::UString ts::WebRequest::_defaultProxyHost(DefaultProxy::Instance().url.getHo
 uint16_t    ts::WebRequest::_defaultProxyPort = DefaultProxy::Instance().url.getPort();
 ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance().url.getUserName());
 ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance().url.getPassword());
-const ts::UString ts::WebRequest::DEFAULT_USER_AGENT(u"tsduck");
 
 
 //----------------------------------------------------------------------------
@@ -195,6 +193,9 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
     if (args.useCompression) {
         enableCompression();
     }
+    for (const auto& it : args.headers) {
+        setRequestHeader(it.first, it.second);
+    }
 }
 
 
@@ -204,6 +205,12 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
 
 void ts::WebRequest::setRequestHeader(const UString& name, const UString& value)
 {
+    // Check for duplicates on key AND value (multiple headers with the same key are permitted)
+    for (const auto& header : _requestHeaders) {
+        if (header.first == name && header.second == value) {
+            return;
+        }
+    }
     _requestHeaders.insert(std::make_pair(name, value));
 }
 

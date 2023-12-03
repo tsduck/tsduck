@@ -1395,7 +1395,7 @@ void UStringTest::testArgMixIn()
     enum : int8_t {EC = 4, ED = 8};
     const ts::IPv4SocketAddress sock(ts::IPv4Address(10, 20, 30, 40), 12345);
 
-    testArgMixInCalled2({12, u8, i16, -99ll, "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock});
+    testArgMixInCalled2({12, u8, i16, -99ll, "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock, fs::path(ts::UString(u"foo.bar"))});
 }
 
 void UStringTest::testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list)
@@ -1405,7 +1405,7 @@ void UStringTest::testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list)
 
 void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
 {
-    TSUNIT_EQUAL(14, list.size());
+    TSUNIT_EQUAL(15, list.size());
 
     auto it = list.begin();
 
@@ -1725,6 +1725,37 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"10.20.30.40:12345", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"10.20.30.40:12345", it->toUString());
+    ++it;
+
+    // fs::path(u"foo.bar")
+    TSUNIT_ASSERT(!it->isOutputInteger());
+    TSUNIT_ASSERT(!it->isInteger());
+    TSUNIT_ASSERT(!it->isSigned());
+    TSUNIT_ASSERT(!it->isUnsigned());
+    TSUNIT_ASSERT(it->isAnyString());
+#if defined(TS_WINDOWS)
+    TSUNIT_ASSERT(!it->isAnyString8());
+    TSUNIT_ASSERT(it->isAnyString16());
+    TSUNIT_ASSERT(!it->isString());
+    TSUNIT_ASSERT(it->isUString());
+    TSUNIT_EQUAL("", it->toCharPtr());
+#else
+    TSUNIT_ASSERT(it->isAnyString8());
+    TSUNIT_ASSERT(!it->isAnyString16());
+    TSUNIT_ASSERT(it->isString());
+    TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_EQUAL("foo.bar", it->toCharPtr());
+#endif
+    TSUNIT_EQUAL(u"foo.bar", it->toUCharPtr());
+    TSUNIT_EQUAL("", it->toString());
+    TSUNIT_EQUAL(u"foo.bar", it->toUString());
+    TSUNIT_ASSERT(!it->isCharPtr());
+    TSUNIT_ASSERT(!it->isUCharPtr());
+    TSUNIT_EQUAL(0, it->size());
+    TSUNIT_EQUAL(0, it->toInt32());
+    TSUNIT_EQUAL(0, it->toUInt32());
+    TSUNIT_EQUAL(0, it->toInt64());
+    TSUNIT_EQUAL(0, it->toUInt64());
     ++it;
 
     TSUNIT_ASSERT(it == list.end());

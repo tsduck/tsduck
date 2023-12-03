@@ -173,7 +173,7 @@ size_t ts::DemuxedData::size() const
 
 size_t ts::DemuxedData::rawDataSize() const
 {
-    //Non-virtual method, always the same result.
+    // Non-virtual method, always the same result.
     return _data.isNull() ? 0 : _data->size();
 }
 

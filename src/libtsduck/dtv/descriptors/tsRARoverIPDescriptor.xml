@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <RAR_over_IP_descriptor
+      first_valid_date="YYYY-MM-DD hh:mm:ss, required"
+      last_valid_date="YYYY-MM-DD hh:mm:ss, required"
+      weighting="uint6, required"
+      complete_flag="bool, required"
+      url="string, required"/>
+
+  </_descriptors>
+</tsduck>

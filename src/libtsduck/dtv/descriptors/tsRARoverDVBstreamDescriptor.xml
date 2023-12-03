@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <RAR_over_DVB_stream_descriptor
+      first_valid_date="YYYY-MM-DD hh:mm:ss, required"
+      last_valid_date="YYYY-MM-DD hh:mm:ss, required"
+      weighting="uint6, required"
+      complete_flag="bool, required"
+      transport_stream_id="uint16, required"
+      original_network_id="uint16, required"
+      service_id="uint16, required"
+      component_tag="uint8, required"
+      download_start_time="YYYY-MM-DD hh:mm:ss, optional group with download_period_duration and download_cycle_time"
+      download_period_duration="uint8, optional group with download_start_time and download_cycle_time"
+      download_cycle_time="uint8, optional group with download_start_time and download_period_duration"/>
+
+  </_descriptors>
+</tsduck>

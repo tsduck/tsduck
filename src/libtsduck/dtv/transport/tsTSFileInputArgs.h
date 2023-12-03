@@ -92,7 +92,7 @@ namespace ts {
         uint64_t            _start_offset = 0;
         size_t              _base_label = 0;
         TSPacketFormat      _file_format = TSPacketFormat::AUTODETECT;
-        UStringVector       _filenames {};
+        std::vector<fs::path> _filenames {};
         std::vector<size_t> _start_stuffing {};
         std::vector<size_t> _stop_stuffing {};
         std::set<size_t>    _eof {};                  // Set of file indexes having reached end of file.

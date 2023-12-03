@@ -518,6 +518,12 @@ namespace ts {
         DID_UNT_ENHANCED_MSG    = 0x0C, //!< DID for UNT enhanced_message_descriptor
         DID_UNT_SSU_URI         = 0x0D, //!< DID for UNT ssu_uri_descriptor
 
+        // Valid only in a DVB RNT (RAR Notification Table, ETSI TS 102 323):
+
+        DVB_RNT_RAR_OVER_DVB    = 0x40, //!< DID for RNT RAR_over_DVB_stream_descriptor
+        DVB_RNT_RAR_OVER_IP     = 0x41, //!< DID for RNT RAR_over_IP_descriptor
+        DVB_RNT_SCAN            = 0x42, //!< DID for RNT RNT_scan_dscriptor
+
         // Valid in DVB context after PDS_LOGIWAYS private_data_specifier
 
         DID_LW_SUBSCRIPTION      = 0x81, //!< DID for Logiways subscription_descriptor
@@ -567,7 +573,7 @@ namespace ts {
 
         // Valid in DVB context after PDS_AUSTRALIA private_data_specifier
 
-        DID_AUSTRALIA_LOGICAL_CHAN  = 0x83, //!< DID for Free TV Australia logical_channel_descriptor
+        DID_AUSTRALIA_LOGICAL_CHAN = 0x83, //!< DID for Free TV Australia logical_channel_descriptor
 
         // Valid in DVB context after PDS_CANALPLUS private_data_specifier
 
@@ -656,7 +662,7 @@ namespace ts {
 
         // Valid in DVB context after PDS_AOM private_data_specifier
 
-        DID_AV1_VIDEO           = 0x80, //!< DID  for AV1 video descriptor, as defined in https://aomediacodec.github.io/av1-mpeg2-ts/
+        DID_AV1_VIDEO           = 0x80, //!< DID for AV1 video descriptor, as defined in https://aomediacodec.github.io/av1-mpeg2-ts/
 
         // Valid in ATSC / SCTE context:
 
