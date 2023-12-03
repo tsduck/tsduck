@@ -585,7 +585,8 @@ namespace ts {
         {
 #if defined(TS_WINDOWS)
             // Faster on Windows sice paths are already UTF-16.
-            return operator==(other.c_str());
+            static_assert(sizeof(std::filesystem::path::value_type) == sizeof(UChar));
+            return operator==(reinterpret_cast<const UChar*>(other.c_str()));
 #else
             return operator==(other.u16string());
 #endif
