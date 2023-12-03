@@ -1,0 +1,8 @@
+[ISDB_LDT_linkage_descriptor.description_type]
+Bits = 4
+0x0 = Undefined
+0x1 = Described with short_event_descriptor
+0x2 = Described with extended_event_descriptor (Independent type without describing item_description)
+0x3 = Described with extended_event_descriptor
+0x4-0xE = Reserved
+0x0F = Others (Including not specified descriptor and mixed)
