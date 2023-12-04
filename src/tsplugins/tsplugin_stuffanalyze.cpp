@@ -54,7 +54,7 @@ namespace ts {
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         // Plugin private fields.
-        UString          _output_name {};    // Output file name
+        fs::path         _output_name {};    // Output file name
         std::ofstream    _output_stream {};  // Output file stream
         std::ostream*    _output = nullptr;  // Actual output stream
         CASSelectionArgs _cas_args {};       // CAS selection
@@ -106,7 +106,7 @@ bool ts::StuffAnalyzePlugin::start()
 {
     // Get command line arguments
     _cas_args.loadArgs(duck, *this);
-    getValue(_output_name, u"output-file");
+    getPathValue(_output_name, u"output-file");
     getIntValues(_analyze_pids, u"pid");
 
     // Initialize the PSI demux.
@@ -130,7 +130,7 @@ bool ts::StuffAnalyzePlugin::start()
     }
     else {
         _output = &_output_stream;
-        _output_stream.open(_output_name.toUTF8().c_str());
+        _output_stream.open(_output_name);
         if (!_output_stream) {
             tsp->error(u"cannot create file %s", {_output_name});
             return false;

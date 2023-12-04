@@ -32,7 +32,7 @@ namespace ts {
     private:
         // Command line options:
         TSDumpArgs _dump {};
-        UString    _outname {};
+        fs::path   _outname {};
 
         // Working data.
         std::ofstream _outfile {};
@@ -65,7 +65,7 @@ ts::DumpPlugin::DumpPlugin(TSP* tsp_) :
 bool ts::DumpPlugin::getOptions()
 {
     bool ok = _dump.loadArgs(duck, *this);
-    getValue(_outname, u"output-file");
+    getPathValue(_outname, u"output-file");
 
     if (_dump.log && !_outname.empty()) {
         tsp->error(u"--log and --output-file are mutually exclusive");
@@ -85,7 +85,7 @@ bool ts::DumpPlugin::start()
         _out = &std::cout;
     }
     else {
-        _outfile.open(_outname.toUTF8().c_str());
+        _outfile.open(_outname);
         if (!_outfile) {
             tsp->error(u"error creating output file %s", {_outname});
             return false;

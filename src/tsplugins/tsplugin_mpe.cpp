@@ -45,7 +45,7 @@ namespace ts {
         bool          _signal_event = false;    // Signal a plugin event on MPE packet.
         bool          _all_mpe_pids = false;    // Extract all MPE PID's.
         bool          _outfile_append = false;  // Append file.
-        UString       _outfile_name {};         // Output file name.
+        fs::path      _outfile_name {};         // Output file name.
         UString       _log_hexa_prefix {};      // Prefix before hexa log line.
         PacketCounter _max_datagram = 0;        // Maximum number of datagrams to extract.
         size_t        _min_net_size = 0;        // Minimum size of network datagrams.
@@ -230,7 +230,7 @@ bool ts::MPEPlugin::getOptions()
     _log = _sync_layout || (_dump_udp && !_signal_event) || _dump_datagram || _log_hexa_line || present(u"log");
     _send_udp = present(u"udp-forward");
     _outfile_append = present(u"append");
-    getValue(_outfile_name, u"output-file");
+    getPathValue(_outfile_name, u"output-file");
     getValue(_log_hexa_prefix, u"log-hexa-line");
     getIntValue(_max_datagram, u"max-datagram");
     getIntValue(_dump_max, u"dump-max", NPOS);
@@ -292,7 +292,7 @@ bool ts::MPEPlugin::start()
         if (_outfile_append) {
             mode |= std::ios::ate;
         }
-        _outfile.open(_outfile_name.toUTF8().c_str(), mode);
+        _outfile.open(_outfile_name, mode);
         if (!_outfile.is_open()) {
             tsp->error(u"error creating %s", {_outfile_name});
             return false;

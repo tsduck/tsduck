@@ -52,7 +52,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const UString& filename, Report& report);
+        virtual bool open(const fs::path& filename, Report& report);
 
         //!
         //! Check if the file is open.
@@ -65,7 +65,7 @@ namespace ts {
         //! @return The file name as specified in open().
         //! If the standard input is used, return "standard input".
         //!
-        UString fileName() const { return _name; }
+        fs::path fileName() const { return _name; }
 
         //!
         //! Read the next IPv4 packet (headers included).

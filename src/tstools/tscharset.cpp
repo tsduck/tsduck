@@ -40,7 +40,7 @@ namespace ts {
         bool        c_style = false;       // Output binary data in C/C++ syntax.
         bool        to_utf8 = false;       // Output decoded string as UTF-8.
         bool        to_utf16 = false;      // Output decoded string as UTF-16.
-        UString     outfile {};            // Output file.
+        fs::path    outfile {};            // Output file.
         UString     encode {};             // String to encode.
         ByteBlock   decode {};             // Hexadecimal content to decode.
 
@@ -120,7 +120,7 @@ ts::CharsetOptions::CharsetOptions(int argc, char *argv[]) :
 
     // Get parameter values.
     duck.loadArgs(*this);
-    getValue(outfile, u"output");
+    getPathValue(outfile, u"output");
     getValue(encode, u"encode");
     const UString decodeHex(value(u"decode"));
     list = present(u"list-charsets");

@@ -48,8 +48,8 @@ namespace ts {
         std::optional<PID>     _original_pid {};              // Original value for --pid.
         std::optional<uint8_t> _original_plp {};              // Original value for --plp.
         TSFile::OpenFlags      _ts_file_flags = TSFile::NONE; // Open flags for output file.
-        UString                _ts_file_name {};              // Output file name for extracted TS.
-        UString                _t2mi_file_name {};            // Output file name for T2-MI packets.
+        fs::path               _ts_file_name {};              // Output file name for extracted TS.
+        fs::path               _t2mi_file_name {};            // Output file name for T2-MI packets.
 
         // Working data:
         bool                   _abort = false;       // Error, abort asap.
@@ -143,8 +143,8 @@ bool ts::T2MIPlugin::getOptions()
     _identify = present(u"identify");
     getOptionalIntValue(_original_pid, u"pid", true);
     getOptionalIntValue(_original_plp, u"plp", true);
-    getValue(_ts_file_name, u"output-file");
-    getValue(_t2mi_file_name, u"t2mi-file");
+    getPathValue(_ts_file_name, u"output-file");
+    getPathValue(_t2mi_file_name, u"t2mi-file");
 
     // Output file open flags.
     _ts_file_flags = TSFile::WRITE | TSFile::SHARED;
@@ -193,7 +193,7 @@ bool ts::T2MIPlugin::start()
         return false;
     }
     if (!_t2mi_file_name.empty()) {
-        _t2mi_file.open(_t2mi_file_name.toUTF8(), std::ios::out | std::ios::binary);
+        _t2mi_file.open(_t2mi_file_name, std::ios::out | std::ios::binary);
         if (!_t2mi_file) {
             tsp->error(u"error creating %s", {_t2mi_file_name});
             if (_ts_file.isOpen()) {

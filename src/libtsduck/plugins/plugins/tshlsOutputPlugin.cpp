@@ -154,7 +154,7 @@ bool ts::hls::OutputPlugin::isRealTime()
 bool ts::hls::OutputPlugin::getOptions()
 {
     getValue(_segmentTemplate, u"");
-    getValue(_playlistFile, u"playlist");
+    getPathValue(_playlistFile, u"playlist");
     _intraClose = present(u"intra-close");
     _useBitrateTag = !present(u"no-bitrate");
     _alignFirstSegment = present(u"align-first-segment");
