@@ -77,11 +77,11 @@ bool ts::TeletextPlugin::start()
     // Get command line arguments.
     duck.loadArgs(*this);
     _service.set(value(u"service"));
-    _pid = intValue<PID>(u"pid", PID_NULL);
-    _page = intValue<int>(u"page", -1);
-    _maxFrames = intValue<int>(u"max-frames", 0);
+    getIntValue(_pid, u"pid", PID_NULL);
+    getIntValue(_page, u"page", -1);
+    getIntValue(_maxFrames, u"max-frames", 0);
     getValue(_language, u"language");
-    getValue(_outFile, u"output-file");
+    getPathValue(_outFile, u"output-file");
     _demux.setAddColors(present(u"colors"));
 
     // Create the output file.

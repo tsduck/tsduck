@@ -575,28 +575,50 @@ namespace ts {
 
         //!
         //! Conversion operator from ts::UString to std::filesystem::path
+        //! @return A path value.
         //!
         operator std::filesystem::path() const { return std::filesystem::path(begin(), end()); }
 
         //!
-        //! Comparison operator with std::filesystem::path
+        //! Comparison operator with std::filesystem::path.
+        //! @param [in] other A path to compare.
+        //! @return True if this string object is equal to the path string, false otherwise.
         //!
         bool operator==(const std::filesystem::path& other) const
         {
 #if defined(TS_WINDOWS)
             // Faster on Windows sice paths are already UTF-16.
-            return operator==(other.c_str());
+            static_assert(sizeof(std::filesystem::path::value_type) == sizeof(UChar));
+            return operator==(reinterpret_cast<const UChar*>(other.c_str()));
 #else
             return operator==(other.u16string());
 #endif
         }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
+#if defined(TS_NEED_UNEQUAL_OPERATOR) && !defined(DOXYGEN)
         bool operator!=(const std::filesystem::path& other) const { return ! operator==(other); }
 #endif
 
         //--------------------------------------------------------------------
         // Operations on string content
         //--------------------------------------------------------------------
+
+        //!
+        //! Get the address after the last character in the string.
+        //! @return The address after the last character in the string.
+        //!
+        const UChar* last() const
+        {
+            return data() + size();
+        }
+
+        //!
+        //! Get the address after the last character in the string.
+        //! @return The address after the last character in the string.
+        //!
+        UChar* last()
+        {
+            return data() + size();
+        }
 
         //!
         //! Get the display width in characters.
@@ -642,24 +664,6 @@ namespace ts {
         //! @return A copy of the string, truncated to the given display width.
         //!
         UString toTruncatedWidth(size_type maxWidth, StringDirection direction = LEFT_TO_RIGHT) const;
-
-        //!
-        //! Get the address after the last character in the string.
-        //! @return The address after the last character in the string.
-        //!
-        const UChar* last() const
-        {
-            return data() + size();
-        }
-
-        //!
-        //! Get the address after the last character in the string.
-        //! @return The address after the last character in the string.
-        //!
-        UChar* last()
-        {
-            return data() + size();
-        }
 
         //!
         //! Reverse the order of characters in the string.
@@ -964,7 +968,7 @@ namespace ts {
         //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void splitBlocks(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const
+        void splitBlocks(CONTAINER& container, UChar startWith = u'[', UChar endWith = u']', bool trimSpaces = true) const
         {
             container.clear();
             splitBlocksAppend(container, startWith, endWith, trimSpaces);
@@ -980,7 +984,7 @@ namespace ts {
         //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
-        void splitBlocksAppend(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const;
+        void splitBlocksAppend(CONTAINER& container, UChar startWith = u'[', UChar endWith = u']', bool trimSpaces = true) const;
 
         //!
         //! Split a string into multiple lines which are not longer than a specified maximum width.
@@ -1462,7 +1466,7 @@ namespace ts {
         //! @param [in] enforceLastLineFeed If true and this string does not end with a line feed, force a final line feed.
         //! @return True on success, false on error (mostly file errors).
         //!
-        bool save(const UString& fileName, bool append = false, bool enforceLastLineFeed = false) const;
+        bool save(const fs::path& fileName, bool append = false, bool enforceLastLineFeed = false) const;
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1476,7 +1480,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class ITERATOR>
-        static bool Save(ITERATOR begin, ITERATOR end, const UString& fileName, bool append = false);
+        static bool Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1488,7 +1492,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Save(const CONTAINER& container, const UString& fileName, bool append = false);
+        static bool Save(const CONTAINER& container, const fs::path& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a stream, in UTF-8 format, one per line.
@@ -1520,7 +1524,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Load(CONTAINER& container, const UString& fileName);
+        static bool Load(CONTAINER& container, const fs::path& fileName);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
@@ -1531,7 +1535,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool LoadAppend(CONTAINER& container, const UString& fileName);
+        static bool LoadAppend(CONTAINER& container, const fs::path& fileName);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's into a container.
@@ -2887,9 +2891,9 @@ typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& con
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-bool ts::UString::Save(ITERATOR begin, ITERATOR end, const UString& fileName, bool append)
+bool ts::UString::Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append)
 {
-    std::ofstream file(fileName.toUTF8().c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out);
+    std::ofstream file(fileName, append ? (std::ios::out | std::ios::app) : std::ios::out);
     Save(begin, end, file);
     file.close();
     return !file.fail();
@@ -2912,7 +2916,7 @@ bool ts::UString::Save(const CONTAINER& container, std::ostream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::Save(const CONTAINER& container, const UString& fileName, bool append)
+bool ts::UString::Save(const CONTAINER& container, const fs::path& fileName, bool append)
 {
     return Save(container.begin(), container.end(), fileName, append);
 }
@@ -2946,14 +2950,14 @@ bool ts::UString::Load(CONTAINER& container, std::istream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::LoadAppend(CONTAINER& container, const UString& fileName)
+bool ts::UString::LoadAppend(CONTAINER& container, const fs::path& fileName)
 {
-    std::ifstream file(fileName.toUTF8().c_str());
+    std::ifstream file(fileName);
     return LoadAppend(container, file);
 }
 
 template <class CONTAINER>
-bool ts::UString::Load(CONTAINER& container, const UString& fileName)
+bool ts::UString::Load(CONTAINER& container, const fs::path& fileName)
 {
     container.clear();
     return LoadAppend(container, fileName);

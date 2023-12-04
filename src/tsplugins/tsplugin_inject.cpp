@@ -15,7 +15,6 @@
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRateList.h"
 #include "tsSectionFileArgs.h"
-#include "tsFileUtils.h"
 
 #define DEF_EVALUATE_INTERVAL  100   // In packets
 #define DEF_POLL_FILE_MS      1000   // In milliseconds

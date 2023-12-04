@@ -48,9 +48,10 @@ namespace ts {
         typedef SafePtr<SpliceContext> SpliceContextPtr;
         typedef std::map<PID,SpliceContextPtr> SpliceContextMap;
 
-        // PCRExtractPlugin private members
-        PIDSet           _pids {};           // List of PID's to analyze
-        UString          _separator {};      // Field separator
+        // Command line options:
+        fs::path         _output_name {};         // Output file name (empty means stderr)
+        PIDSet           _pids {};                // List of PID's to analyze
+        UString          _separator {};           // Field separator
         bool             _all_pids = false;       // Analyze all PID's
         bool             _noheader = false;       // Suppress header
         bool             _good_pts_only = false;  // Keep "good" PTS only
@@ -62,12 +63,13 @@ namespace ts {
         bool             _log_format = false;     // Output in log format
         bool             _evaluate_pcr = false;   // Evaluate PCR offset for packets with PTS/DTS without PCR
         bool             _scte35 = false;         // Detect SCTE 35 PTS values
-        UString          _output_name {};    // Output file name (empty means stderr)
-        std::ofstream    _output_stream {};  // Output stream file
-        std::ostream*    _output = nullptr;         // Reference to actual output stream file
-        PIDContextMap    _stats {};          // Per-PID statistics
-        SpliceContextMap _splices {};        // Per-PID splice information
-        SectionDemux     _demux {duck, this};          // Section demux for service and SCTE 35 analysis
+
+        // Working data:
+        std::ofstream    _output_stream {};       // Output stream file
+        std::ostream*    _output = nullptr;       // Reference to actual output stream file
+        PIDContextMap    _stats {};               // Per-PID statistics
+        SpliceContextMap _splices {};             // Per-PID splice information
+        SectionDemux     _demux {duck, this};     // Section demux for service and SCTE 35 analysis
 
         // Types of time stamps.
         enum DataType {PCR, OPCR, PTS, DTS};
@@ -233,7 +235,7 @@ bool ts::PCRExtractPlugin::getOptions()
 {
     // Get command line options.
     getIntValues(_pids, u"pid", true);
-    getValue(_output_name, u"output-file");
+    getPathValue(_output_name, u"output-file");
     getValue(_separator, u"separator", DefaultCsvSeparator);
     _all_pids = !present(u"pid");
     _noheader = present(u"noheader");
@@ -279,7 +281,7 @@ bool ts::PCRExtractPlugin::start()
     }
     else {
         _output = &_output_stream;
-        _output_stream.open(_output_name.toUTF8().c_str());
+        _output_stream.open(_output_name);
         if (!_output_stream) {
             tsp->error(u"cannot create file %s", {_output_name});
             return false;

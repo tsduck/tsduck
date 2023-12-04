@@ -33,7 +33,7 @@ ts::PcapStream::DataBlock::DataBlock(const IPv4Packet& pkt, MicroSecond tstamp) 
 // Open the file, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::open(const UString& filename, Report& report)
+bool ts::PcapStream::open(const fs::path& filename, Report& report)
 {
     // Invoke superclass.
     const bool ok = PcapFilter::open(filename, report);
