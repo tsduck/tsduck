@@ -189,7 +189,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::display(TablesDisplay& di
     if (total_bit_rate_flag) {
         const uint8_t tbr = buf.getUInt8();
         disp << margin << "  "
-             << UString::Format(u"Total bit rate: %7.2fMbps (%d)", {float(float(tbr) / 4), tbr}) << std::endl;
+             << UString::Format(u"Total bit rate: %7.2fMbps (%d)", {double(float(tbr) / 4), tbr}) << std::endl;
     }
     disp << margin << "  "
          << "Explanation: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
@@ -204,7 +204,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::display(TablesDis
     for (size_t i = 0; i < num_of_component; i++) {
         _component_tags.push_back(buf.getUInt8());
     }
-    disp.displayVector(u"Component tags: ", _component_tags, margin);
+    disp.displayVector(u"Component tags:", _component_tags, margin);
 }
 
 
