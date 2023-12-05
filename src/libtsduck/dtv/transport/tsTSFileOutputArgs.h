@@ -86,7 +86,7 @@ namespace ts {
     private:
         // Command line options:
         const bool        _allow_stdout;
-        UString           _name {};
+        fs::path          _name {};
         TSFile::OpenFlags _flags = TSFile::NONE;
         TSPacketFormat    _file_format = TSPacketFormat::TS;
         bool              _reopen = false;

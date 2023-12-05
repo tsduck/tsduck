@@ -25,51 +25,13 @@
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::TSFile::TSFile() :
     TSPacketStream(TSPacketFormat::AUTODETECT, this, this)
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Copy constructor.
-//----------------------------------------------------------------------------
-
-ts::TSFile::TSFile(const TSFile& other) :
-    TSPacketStream(other.packetFormat(), this, this),
-    AbstractReadStreamInterface(other),   // required on old gcc 8.5 and below (gcc bug)
-    AbstractWriteStreamInterface(other),  // required on old gcc 8.5 and below (gcc bug)
-    _filename(other._filename),
-    _repeat(other._repeat),
-    _counter(0),
-    _start_offset(other._start_offset),
-    _open_null(other._open_null),
-    _close_null(other._close_null),
-    _open_null_read(0),
-    _close_null_read(0),
-    _is_open(false),
-    _flags(NONE),
-    _severity(other._severity),
-    _at_eof(false),
-    _aborted(false),
-    _rewindable(false),
-    _regular(false),
-    _std_inout(other._std_inout),
-#if defined(TS_WINDOWS)
-    _handle(INVALID_HANDLE_VALUE)
-#else
-    _fd(-1)
-#endif
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Move constructor.
-//----------------------------------------------------------------------------
 
 ts::TSFile::TSFile(TSFile&& other) noexcept :
     TSPacketStream(other.packetFormat(), this, this),
@@ -104,11 +66,6 @@ ts::TSFile::TSFile(TSFile&& other) noexcept :
 #endif
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-
 ts::TSFile::~TSFile()
 {
     if (_is_open) {
@@ -124,7 +81,7 @@ ts::TSFile::~TSFile()
 ts::UString ts::TSFile::getDisplayFileName() const
 {
     if (!_std_inout) {
-        return _filename;
+        return UString(_filename);
     }
     else if ((_flags & READ) != 0) {
         return u"standard input";
@@ -153,7 +110,7 @@ void ts::TSFile::setStuffing(size_t initial, size_t final)
 // Open file for read in a rewindable mode.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report& report, TSPacketFormat format)
+bool ts::TSFile::openRead(const fs::path& filename, uint64_t start_offset, Report& report, TSPacketFormat format)
 {
     if (_is_open) {
         report.log(_severity, u"already open");
@@ -176,7 +133,7 @@ bool ts::TSFile::openRead(const UString& filename, uint64_t start_offset, Report
 // Open file for read with optional repetition.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format)
+bool ts::TSFile::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format)
 {
     if (_is_open) {
         report.log(_severity, u"already open");
@@ -199,7 +156,7 @@ bool ts::TSFile::openRead(const UString& filename, size_t repeat_count, uint64_t
 // Open file, generic form.
 //----------------------------------------------------------------------------
 
-bool ts::TSFile::open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format)
+bool ts::TSFile::open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format)
 {
     // Enforce WRITE if APPEND is specified.
     if ((flags & APPEND) != 0) {
@@ -292,8 +249,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     }
 
     if (!_std_inout) {
-        // Actual file name, open it.
-        _handle = ::CreateFileW(_filename.wc_str(), access, shared, nullptr, winflags, attrib, nullptr);
+        // Actual file name, open it. On Windows, fs::path uses 16-bit wchar_t.
+        _handle = ::CreateFileW(_filename.c_str(), access, shared, nullptr, winflags, attrib, nullptr);
         if (_handle == INVALID_HANDLE_VALUE) {
             const SysErrorCode err = LastSysErrorCode();
             report.log(_severity, u"cannot open %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
@@ -377,7 +334,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     }
     else {
         // Open a named file.
-        if ((_fd = ::open(_filename.toUTF8().c_str(), uflags, mode)) < 0) {
+        if ((_fd = ::open(_filename.c_str(), uflags, mode)) < 0) {
             const SysErrorCode err = LastSysErrorCode();
             report.log(_severity, u"cannot open file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
             return false;
@@ -392,7 +349,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         if (temporary) {
             // Immediately delete the file. It is removed from the directory.
             // It remains accessible as long as the file is open and is deleted on close.
-            ::unlink(_filename.toUTF8().c_str());
+            ::unlink(_filename.c_str());
         }
     }
 

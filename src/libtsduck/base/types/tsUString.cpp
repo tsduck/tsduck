@@ -1461,9 +1461,9 @@ bool ts::UString::similar(const void* addr, size_type size) const
 // Save this string into a file, in UTF-8 format.
 //----------------------------------------------------------------------------
 
-bool ts::UString::save(const ts::UString& fileName, bool append, bool enforceLastLineFeed) const
+bool ts::UString::save(const fs::path& fileName, bool append, bool enforceLastLineFeed) const
 {
-    std::ofstream file(fileName.toUTF8().c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out);
+    std::ofstream file(fileName, append ? (std::ios::out | std::ios::app) : std::ios::out);
     file << *this;
     if (enforceLastLineFeed && !empty() && back() != LINE_FEED) {
         // Check if the first end of line is a LF or CR/LF.

@@ -24,7 +24,7 @@ ts::json::RunningDocument::~RunningDocument()
 // Initialize the document.
 //----------------------------------------------------------------------------
 
-bool ts::json::RunningDocument::open(const ValuePtr& root, const UString& fileName, std::ostream& strm)
+bool ts::json::RunningDocument::open(const ValuePtr& root, const fs::path& fileName, std::ostream& strm)
 {
     // Cleanup previous state.
     close();

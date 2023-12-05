@@ -33,6 +33,7 @@ namespace ts {
         TS_PLUGIN_CONSTRUCTORS(EITPlugin);
     public:
         // Implementation of plugin API
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -60,7 +61,10 @@ namespace ts {
         // Map of services, indexed by combination of TS id / service id
         typedef std::map <uint32_t, ServiceDesc> ServiceMap;
 
-        // EITPlugin private members
+        // Command line options.
+        fs::path           _outfile_name {};
+
+        // Working data.
         std::ofstream      _outfile {};
         Time               _last_utc {};  // Last UTC time seen in TDT
         SectionCounter     _eitpf_act_count = 0;
@@ -127,18 +131,28 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16
 
 
 //----------------------------------------------------------------------------
+// Get options method
+//----------------------------------------------------------------------------
+
+bool ts::EITPlugin::getOptions()
+{
+    getPathValue(_outfile_name, u"output-file");
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
 bool ts::EITPlugin::start()
 {
-    // Create output file
-    if (present(u"output-file")) {
-        const UString name(value(u"output-file"));
-        tsp->verbose(u"creating %s", {name});
-        _outfile.open (name.toUTF8().c_str(), std::ios::out);
+    // Create output file.
+    if (!_outfile_name.empty()) {
+        tsp->verbose(u"creating %s", {_outfile_name});
+        _outfile.open(_outfile_name, std::ios::out);
         if (!_outfile) {
-            tsp->error(u"cannot create %s", {name});
+            tsp->error(u"cannot create %s", {_outfile_name});
             return false;
         }
     }

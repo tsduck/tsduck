@@ -58,7 +58,7 @@ namespace ts {
             //! The referenced stream object must remain valid as long as this object.
             //! @return True on success, false on error.
             //!
-            bool open(const ValuePtr& root, const UString& fileName = UString(), std::ostream& strm = std::cout);
+            bool open(const ValuePtr& root, const fs::path& fileName = fs::path(), std::ostream& strm = std::cout);
 
             //!
             //! Add one JSON value in the open array of the running document.
