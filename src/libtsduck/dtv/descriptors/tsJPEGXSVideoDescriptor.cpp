@@ -38,10 +38,14 @@ void ts::JPEGXSVideoDescriptor::clearContent()
     horizontal_size = 0;
     vertical_size = 0;
     brat = 0;
-    frat = 0;
-    schar = 0;
+    interlace_mode = 0;
+    framerate_DEN = 1;
+    framerate_NUM = 0;
+    sample_bitdepth.reset();
+    sampling_structure.reset();
     Ppih = 0;
-    Plev = 0;
+    level = 0;
+    sublevel = 0;
     max_buffer_size = 0;
     buffer_model_type = 2;
     colour_primaries = 0;
@@ -80,10 +84,23 @@ void ts::JPEGXSVideoDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt16(horizontal_size);
     buf.putUInt16(vertical_size);
     buf.putUInt32(brat);
-    buf.putUInt32(frat);  // TODO: put as progressive/interlaced flag + 31 bits framerate
-    buf.putUInt16(schar);
+    buf.putBits(interlace_mode, 2);
+    buf.putBits(framerate_DEN, 6);
+    buf.putUInt8(0);
+    buf.putUInt16(framerate_NUM);
+    bool valid_flag = sample_bitdepth.has_value() && sampling_structure.has_value();
+    buf.putBit(valid_flag);
+    if (valid_flag) {
+        buf.putBits(0x00, 7);
+        buf.putBits(sample_bitdepth.value(), 4);
+        buf.putBits(sampling_structure.value(), 4);
+    }
+    else {
+        buf.putBits(0x0000, 15);
+    }
     buf.putUInt16(Ppih);
-    buf.putUInt16(Plev);
+    buf.putUInt8(level);
+    buf.putUInt8(sublevel);
     buf.putUInt32(max_buffer_size);
     buf.putUInt8(buffer_model_type);
     buf.putUInt8(colour_primaries);
@@ -111,10 +128,22 @@ void ts::JPEGXSVideoDescriptor::deserializePayload(PSIBuffer& buf)
     horizontal_size = buf.getUInt16();
     vertical_size = buf.getUInt16();
     brat = buf.getUInt32();
-    frat = buf.getUInt32();
-    schar = buf.getUInt16();
+    interlace_mode = buf.getBits<uint8_t>(2);
+    framerate_DEN = buf.getBits<uint8_t>(6);
+    buf.skipBits(8);
+    framerate_NUM = buf.getUInt16();
+    bool valid_flag = buf.getBool();
+    if (valid_flag) {
+        buf.skipBits(7);
+        sample_bitdepth = buf.getBits<uint8_t>(4);
+        sampling_structure = buf.getBits<uint8_t>(4);
+    }
+    else {
+        buf.skipBits(15);
+    }
     Ppih = buf.getUInt16();
-    Plev = buf.getUInt16();
+    level = buf.getUInt8();
+    sublevel = buf.getUInt8();
     max_buffer_size = buf.getUInt32();
     buffer_model_type = buf.getUInt8();
     colour_primaries = buf.getUInt8();
@@ -142,12 +171,26 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
     if (buf.canReadBytes(28)) {
         disp << margin << "Descriptor version: " << int(buf.getUInt8());
         disp << ", horizontal size: " << buf.getUInt16() << ", vertical size: " << buf.getUInt16() << std::endl;
-        disp << margin << "Max bitrate: " << buf.getUInt32();
-        disp << ", framerate: " << buf.getUInt32();
-        disp << ", sample characteristics: " << buf.getUInt16() << std::endl;
-        disp << margin << "Profile: " << buf.getUInt16();
-        disp << ", level: " << buf.getUInt16();
-        disp << ", max buffer size: " << buf.getUInt32();
+        disp << margin << "Max bitrate: " << buf.getUInt32() << "Mbit/s" << std::endl;
+        disp << margin << "Interlace: " << DataName(MY_XML_NAME, u"interlace_mode", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        uint8_t denominator = buf.getBits<uint8_t>(6);
+        buf.skipReservedBits(8, 0);
+        disp << margin << "Framerate: " << buf.getUInt16() << "/" << DataName(MY_XML_NAME, u"framerate_DEN", denominator);
+        bool _valid_flag = buf.getBool();
+        if (_valid_flag) {
+            buf.skipReservedBits(7, 0);
+            disp << ", bitdepth: " << int(buf.getBits<uint8_t>(4)+1) << "bits";
+            disp << ", structure: " << DataName(MY_XML_NAME, u"sampling_structure", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL);
+        }
+        else {
+            buf.skipReservedBits(15, 0);
+        }
+        disp << std::endl;
+        uint16_t _Ppih = buf.getUInt16();
+        disp << margin << "Profile: " << DataName(MY_XML_NAME, u"profile", _Ppih, NamesFlags::VALUE);
+        disp << ", level: " << DataName(MY_XML_NAME, u"level", buf.getUInt8(), NamesFlags::VALUE);
+        disp << ", sublevel: " << DataName(MY_XML_NAME, u"sublevel", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
+        disp << margin << "Max buffer size: " << buf.getUInt32();
         disp << ", buffer model: " << int(buf.getUInt8()) << std::endl;
         disp << margin << "Colour primaries: " << DataName(MY_XML_NAME, u"colour_primaries", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL);
         disp << ", transfer characteristics: " << DataName(MY_XML_NAME, u"transfer_characteristics", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
@@ -174,19 +217,23 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 
 void ts::JPEGXSVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {  
-    root->setIntAttribute(u"descriptor_version", descriptor_version, false);
-    root->setIntAttribute(u"horizontal_size", horizontal_size, false);
-    root->setIntAttribute(u"vertical_size", vertical_size, false);
-    root->setIntAttribute(u"brat", brat, false);
-    root->setIntAttribute(u"frat", frat, false);
-    root->setIntAttribute(u"schar", schar, false);
-    root->setIntAttribute(u"Ppih", Ppih, false);
-    root->setIntAttribute(u"Plev", Plev, false);
-    root->setIntAttribute(u"max_buffer_size", max_buffer_size, false);
-    root->setIntAttribute(u"buffer_model_type", buffer_model_type, false);
-    root->setIntAttribute(u"colour_primaries", colour_primaries, false);
-    root->setIntAttribute(u"transfer_characteristics", transfer_characteristics, false);
-    root->setIntAttribute(u"matrix_coefficients", matrix_coefficients, false);
+    root->setIntAttribute(u"descriptor_version", descriptor_version);
+    root->setIntAttribute(u"horizontal_size", horizontal_size);
+    root->setIntAttribute(u"vertical_size", vertical_size);
+    root->setIntAttribute(u"brat", brat);
+    root->setIntAttribute(u"interlace_mode", interlace_mode);
+    root->setIntEnumAttribute(FramerateDenominators, u"framerate_DEN", framerate_DEN);
+    root->setIntAttribute(u"framerate_NUM", framerate_NUM);
+    root->setOptionalIntAttribute(u"sample_bitdepth", sample_bitdepth);
+    root->setOptionalIntAttribute(u"sampling_structure", sampling_structure);
+    root->setIntAttribute(u"Ppih", Ppih, true);
+    root->setIntAttribute(u"level", level, true);
+    root->setIntAttribute(u"sublevel", sublevel, true);
+    root->setIntAttribute(u"max_buffer_size", max_buffer_size);
+    root->setIntAttribute(u"buffer_model_type", buffer_model_type);
+    root->setIntAttribute(u"colour_primaries", colour_primaries);
+    root->setIntAttribute(u"transfer_characteristics", transfer_characteristics);
+    root->setIntAttribute(u"matrix_coefficients", matrix_coefficients);
     root->setBoolAttribute(u"video_full_range_flag", video_full_range_flag);
     root->setBoolAttribute(u"still_mode", still_mode);
 
@@ -198,6 +245,17 @@ void ts::JPEGXSVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 
 //----------------------------------------------------------------------------
+// Enumerations for XML.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::JPEGXSVideoDescriptor::FramerateDenominators({
+    // Table A.8 of ISO/IEC 21122-3
+    {u"1", 1},
+    {u"1.001", 2},
+});
+
+
+//----------------------------------------------------------------------------
 // XML deserialization
 //----------------------------------------------------------------------------
 
@@ -206,22 +264,34 @@ bool ts::JPEGXSVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element
     xml::ElementVector mdms;
     bool ok =
         element->getIntAttribute(descriptor_version, u"descriptor_version", true, 0, 0x00, 0x00) &&
-        element->getIntAttribute(horizontal_size, u"horizontal_size", true, 0) &&
-        element->getIntAttribute(vertical_size, u"vertical_size", true, 0) &&
-        element->getIntAttribute(brat, u"brat", true, 0) &&
-        element->getIntAttribute(frat, u"frat", true, 0) &&
-        element->getIntAttribute(schar, u"schar", true, 0) &&
-        element->getIntAttribute(Ppih, u"Ppih", true, 0) &&
-        element->getIntAttribute(Plev, u"Plev", true, 0) &&
-        element->getIntAttribute(max_buffer_size, u"max_buffer_size", true, 0) &&
+        element->getIntAttribute(horizontal_size, u"horizontal_size", true) &&
+        element->getIntAttribute(vertical_size, u"vertical_size", true) &&
+        element->getIntAttribute(brat, u"brat", true) &&
+        element->getIntAttribute(interlace_mode, u"interlace_mode", true, 0, 0, 0x03) &&
+        element->getIntEnumAttribute(framerate_DEN, FramerateDenominators, u"framerate_DEN", true) &&
+        element->getIntAttribute(framerate_NUM, u"framerate_NUM", true) &&
+        element->getOptionalIntAttribute(sample_bitdepth, u"sample_bitdepth", 0, 0xF) &&
+        element->getOptionalIntAttribute(sampling_structure, u"sampling_structure", 0, 0xF) &&
+        element->getIntAttribute(Ppih, u"Ppih", true) &&
+        element->getIntAttribute(level, u"level", true) &&
+        element->getIntAttribute(sublevel, u"sublevel", true) &&
+        element->getIntAttribute(max_buffer_size, u"max_buffer_size", true) &&
         element->getIntAttribute(buffer_model_type, u"buffer_model_type", true, 0, 2, 2) &&
-        element->getIntAttribute(colour_primaries, u"colour_primaries", true, 0) &&
-        element->getIntAttribute(transfer_characteristics, u"transfer_characteristics", true, 0) &&
-        element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true, 0) &&
+        element->getIntAttribute(colour_primaries, u"colour_primaries", true) &&
+        element->getIntAttribute(transfer_characteristics, u"transfer_characteristics", true) &&
+        element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true) &&
         element->getBoolAttribute(video_full_range_flag, u"video_full_range_flag", true) &&
         element->getBoolAttribute(still_mode, u"still_mode", true) &&
         element->getHexaTextChild(private_data, u"private_data", false) &&
         element->getChildren(mdms, u"mdm", 0, 1);
+
+    if (ok) {
+        if ((sample_bitdepth.has_value() && !sampling_structure.has_value()) ||
+            (!sample_bitdepth.has_value() && sampling_structure.has_value())) {
+            element->report().error(u"neither or both of sample_bitdepth and sampling_structure are to be signalled  in <%s> at line %d", {element->name(), element->lineNumber()});
+            ok = false;
+        }
+    }
 
     if (ok) {
         if (!mdms.empty()) {
@@ -232,6 +302,5 @@ bool ts::JPEGXSVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element
             }
         }
     }
-
     return ok;
 }
