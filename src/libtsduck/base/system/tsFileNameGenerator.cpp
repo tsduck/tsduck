@@ -139,10 +139,10 @@ void ts::FileNameGenerator::initDateTime(const UString& name_template, int field
 // Generate a new file name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::FileNameGenerator::newFileName()
+fs::path ts::FileNameGenerator::newFileName()
 {
     if (_counter_mode) {
-        return UString::Format(u"%s%0*d%s", {_name_prefix, _counter_width, _counter_value++, _name_suffix});
+        return fs::path(UString::Format(u"%s%0*d%s", {_name_prefix, _counter_width, _counter_value++, _name_suffix}));
     }
     else {
         return newFileName(Time::CurrentLocalTime());
@@ -154,7 +154,7 @@ ts::UString ts::FileNameGenerator::newFileName()
 // Generate a new file name with a specific date and time.
 //----------------------------------------------------------------------------
 
-ts::UString ts::FileNameGenerator::newFileName(const Time& time)
+fs::path ts::FileNameGenerator::newFileName(const Time& time)
 {
     // In counter mode, use the other version.
     if (_counter_mode) {
@@ -198,5 +198,5 @@ ts::UString ts::FileNameGenerator::newFileName(const Time& time)
         str.format(u"-%d", {_counter_value++});
     }
 
-    return _name_prefix + str + _name_suffix;
+    return fs::path(_name_prefix + str + _name_suffix);
 }

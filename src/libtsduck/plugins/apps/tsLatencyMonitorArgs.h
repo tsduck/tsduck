@@ -27,7 +27,7 @@ namespace ts {
     public:
         UString             appName {};          //!< Application name, for help messages.
         PluginOptionsVector inputs {};           //!< Input plugins descriptions.
-        UString             outputName {};       //!< Output file name (empty means stderr).
+        fs::path            outputName {};       //!< Output file name (empty means stderr).
         uint64_t            bufferTime = 0;      //!< Buffer time of timing data list
         uint64_t            outputInterval = 0;  //!< Waiting time between every output in seconds
 

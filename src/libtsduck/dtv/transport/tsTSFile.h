@@ -35,25 +35,19 @@ namespace ts {
         //! Default constructor.
         //!
         TSFile();
+        
+        //!
+        //! Move constructor.
+        //! The full state is moved
+        //! The move constructor is required to have vectors of TSFile.
+        //! @param [in,out] other Other instance to move. Closed on return.
+        //!
+        TSFile(TSFile&& other) noexcept;
 
         //!
         //! Destructor.
         //!
         virtual ~TSFile() override;
-
-        //!
-        //! Copy constructor.
-        //! Only the configuration is copied (name, repetition, etc.)
-        //! @param [in] other Other instance to copy.
-        //!
-        TSFile(const TSFile& other);
-
-        //!
-        //! Move constructor.
-        //! The full state is moved.
-        //! @param [in,out] other Other instance to move. Closed on return.
-        //!
-        TSFile(TSFile&& other) noexcept;
 
         //!
         //! Open the file for read.
@@ -69,7 +63,7 @@ namespace ts {
         //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const UString& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Open the file for read in rewindable mode.
@@ -84,7 +78,7 @@ namespace ts {
         //! @see rewind()
         //! @see seek()
         //!
-        bool openRead(const UString& filename, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        bool openRead(const fs::path& filename, uint64_t start_offset, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Flags for open().
@@ -111,7 +105,7 @@ namespace ts {
         //! @param [in] format Format of the TS file.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        virtual bool open(const fs::path& filename, OpenFlags flags, Report& report, TSPacketFormat format = TSPacketFormat::AUTODETECT);
 
         //!
         //! Check if the file is open.
@@ -123,7 +117,7 @@ namespace ts {
         //! Get the file name.
         //! @return The file name.
         //!
-        UString getFileName() const { return _filename; }
+        fs::path getFileName() const { return _filename; }
 
         //!
         //! Get the file name as a display string.
@@ -187,7 +181,7 @@ namespace ts {
         virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets, Report& report) override;
 
     private:
-        UString       _filename {};          //!< Input file name.
+        fs::path      _filename {};          //!< Input file name.
         size_t        _repeat = 0;           //!< Repeat count (0 means infinite)
         size_t        _counter = 0;          //!< Current repeat count
         uint64_t      _start_offset = 0;     //!< Initial byte offset in file
@@ -225,8 +219,9 @@ namespace ts {
         bool seekCheck(Report& report);
         bool seekInternal(uint64_t index, Report& report);
 
-        // Inaccessible operations.
-        TSFile& operator=(TSFile&) = delete;
+        // Inaccessible operations. Same as TS_NOCOPY() except that we keep the move constructor (required for vectors).
+        TSFile(const TSFile&) = delete;
+        TSFile& operator=(const TSFile&) = delete;
         TSFile& operator=(TSFile&&) = delete;
     };
 }

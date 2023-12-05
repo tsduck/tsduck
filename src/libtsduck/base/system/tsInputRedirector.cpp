@@ -14,12 +14,12 @@
 // Constructor:
 //----------------------------------------------------------------------------
 
-ts::InputRedirector::InputRedirector(const UString& name, Args& args, std::istream& stream, std::ios::openmode mode) :
+ts::InputRedirector::InputRedirector(const fs::path& name, Args& args, std::istream& stream, std::ios::openmode mode) :
     _stream(stream)
 {
     // The nme "-" means standard output.
     if (!name.empty() && name != u"-") {
-        _file.open(name.toUTF8().c_str(), mode);
+        _file.open(name, mode);
         if (_file) {
             _previous = _stream.rdbuf(_file.rdbuf());
         }

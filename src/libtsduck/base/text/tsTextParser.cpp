@@ -72,7 +72,7 @@ void ts::TextParser::loadDocument(const UString& text)
     _pos = Position(_lines);
 }
 
-bool ts::TextParser::loadFile(const UString& fileName)
+bool ts::TextParser::loadFile(const fs::path& fileName)
 {
     // Load the file into the internal lines buffer.
     const bool ok = UString::Load(_lines, fileName);
@@ -103,7 +103,7 @@ bool ts::TextParser::loadStream(std::istream& strm)
 // Save the document to parse to a text file.
 //----------------------------------------------------------------------------
 
-bool ts::TextParser::saveFile(const UString& fileName)
+bool ts::TextParser::saveFile(const fs::path& fileName)
 {
     return UString::Save(_lines, fileName);
 }

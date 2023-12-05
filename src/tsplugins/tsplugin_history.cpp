@@ -64,7 +64,7 @@ namespace ts {
         bool          _ignore_stream_id = false;  // Ignore stream_id modifications
         bool          _use_milliseconds = false;  // Report playback time instead of packet number
         PacketCounter _suspend_after = 0;         // Number of missing packets after which a PID is considered as suspended
-        UString       _outfile_name {};           // Output file name
+        fs::path      _outfile_name {};           // Output file name
 
         // Workign data
         std::ofstream _outfile {};                // User-specified output file
@@ -150,7 +150,7 @@ bool ts::HistoryPlugin::getOptions()
     _ignore_stream_id = present(u"ignore-stream-id-change");
     _use_milliseconds = present(u"milli-seconds");
     getIntValue(_suspend_after, u"suspend-packet-threshold");
-    getValue(_outfile_name, u"output-file");
+    getPathValue(_outfile_name, u"output-file");
     return true;
 }
 
@@ -164,7 +164,7 @@ bool ts::HistoryPlugin::start()
     // Create output file
     if (!_outfile_name.empty()) {
         tsp->verbose(u"creating %s", {_outfile_name});
-        _outfile.open(_outfile_name.toUTF8().c_str(), std::ios::out);
+        _outfile.open(_outfile_name, std::ios::out);
         if (!_outfile) {
             tsp->error(u"cannot create %s", {_outfile_name});
             return false;

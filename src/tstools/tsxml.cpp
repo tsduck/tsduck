@@ -40,7 +40,7 @@ namespace {
 
         ts::DuckContext          duck {this};           // TSDuck execution contexts.
         ts::UStringVector        infiles {};            // Input file names.
-        ts::UString              outfile {};            // Output file name.
+        fs::path                 outfile {};            // Output file name.
         ts::UString              model {};              // Model file name.
         ts::UStringVector        patches {};            // XML patch files.
         ts::UStringVector        sorted_tags {};        // Sort the content of these tags.
@@ -165,7 +165,7 @@ Options::Options(int argc, char *argv[]) :
     getValues(infiles, u"");
     getValues(patches, u"patch");
     getValues(sorted_tags, u"sort");
-    getValue(outfile, u"output");
+    getPathValue(outfile, u"output");
     getIntValue(indent, u"indent", 2);
     getValue(xml_prefix, u"xml-line");
     getIntValue(merge_attr, u"attributes-merge", ts::xml::MergeAttributes::ADD);
@@ -330,7 +330,7 @@ int MainCode(int argc, char *argv[])
     opt.exitOnError();
 
     // Redirect standard output only if required.
-    ts::OutputRedirector out(opt.need_output ? opt.outfile : u"", opt, std::cout, std::ios::out);
+    ts::OutputRedirector out(opt.need_output ? opt.outfile : fs::path(), opt, std::cout, std::ios::out);
 
     if (opt.merge_inputs && opt.infiles.size() > 1) {
         // Load all input files as one merged document.

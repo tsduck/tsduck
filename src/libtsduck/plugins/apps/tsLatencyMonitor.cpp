@@ -62,7 +62,7 @@ bool ts::LatencyMonitor::start()
     }
     else {
         _output_file = &_output_stream;
-        _output_stream.open(_args.outputName.toUTF8().c_str());
+        _output_stream.open(_args.outputName);
         if (!_output_stream) {
             return false;
         }

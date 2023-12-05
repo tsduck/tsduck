@@ -120,7 +120,7 @@ namespace ts {
         //! @param [in] fileName Output file name.
         //! @return True on success, false on error.
         //!
-        bool setFile(const UString& fileName);
+        bool setFile(const fs::path& fileName);
 
         //!
         //! Set output to an internal string buffer.

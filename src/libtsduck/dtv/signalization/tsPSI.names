@@ -542,6 +542,10 @@ Bits = 8
 0x74_FFFFFFFF_15 = AIT Simple Application Location
 0x74_FFFFFFFF_16 = AIT Application Usage
 0x74_FFFFFFFF_17 = AIT Simple Application Boundary
+# Valid in an RNT (0x79, Resolution Provider Notification Table, ETSI TS 102 323):
+0x79_FFFFFFFF_40 = RNT RAR Over DVB Stream
+0x79_FFFFFFFF_41 = RNT RAR Over IP
+0x79_FFFFFFFF_42 = RNT Scan
 # Valid in AES (0xD8, Emergency Alert System, SCTE 18):
 0xD8_FFFFFFFF_00 = SCTE 18 EAS In-Band Details Channel
 0xD8_FFFFFFFF_01 = SCTE 18 EAS In-Band Exceptions Channel

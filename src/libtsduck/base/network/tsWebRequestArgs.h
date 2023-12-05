@@ -32,16 +32,17 @@ namespace ts {
         WebRequestArgs() = default;
 
         // Public fields, by options.
-        MilliSecond   connectionTimeout = 0;  //!< -\-connection-timeout
-        MilliSecond   receiveTimeout = 0;     //!< -\-receive-timeout
-        uint16_t      proxyPort = 0;          //!< -\-proxy-port
-        UString       proxyHost {};           //!< -\-proxy-host
-        UString       proxyUser {};           //!< -\-proxy-user
-        UString       proxyPassword {};       //!< -\-proxy-password
-        UString       userAgent {};           //!< -\-user-agent
-        bool          useCookies = true;      //!< Use cookies, no command line options, true by default
-        UString       cookiesFile {};         //!< Cookies files (Linux only), no command line options
-        bool          useCompression = false; //!< -\-compressed
+        MilliSecond   connectionTimeout = 0;        //!< -\-connection-timeout
+        MilliSecond   receiveTimeout = 0;           //!< -\-receive-timeout
+        uint16_t      proxyPort = 0;                //!< -\-proxy-port
+        UString       proxyHost {};                 //!< -\-proxy-host
+        UString       proxyUser {};                 //!< -\-proxy-user
+        UString       proxyPassword {};             //!< -\-proxy-password
+        UString       userAgent {};                 //!< -\-user-agent
+        bool          useCookies = true;            //!< Use cookies, no command line options, true by default
+        UString       cookiesFile {};               //!< Cookies files (Linux only), no command line options
+        bool          useCompression = false;       //!< -\-compressed
+        std::multimap<UString,UString> headers {};  //!< -\-headers
 
         //!
         //! Add command line option definitions in an Args.
