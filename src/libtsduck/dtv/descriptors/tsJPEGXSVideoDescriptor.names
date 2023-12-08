@@ -6,3 +6,73 @@ Inherit = J2K_video_descriptor.transfer_characteristics
 
 [JPEG_XS_video_descriptor.matrix_coefficients]
 Inherit = J2K_video_descriptor.matrix_coefficients
+
+[JPEG_XS_video_descriptor.profile]
+# Table A.7 of ISO/IEC 21122-2
+Bits = 16
+0x0000 = Unrestricted
+0x1500 = Light 4:2:0
+0x1A00 = Light 444.12
+0x2500 = Light-Subline 422.10
+0x3240 = Main 420.12
+0x3540 = Main 422.10
+0x3A40 = Main 444.12
+0x3E40 = Main 4444.12
+0x4A40 = High 444.12
+0x4E40 = High 4444.12
+0x6Ec0 = MLS.12
+0x9300 = Light Bayer
+0xB340 = Main Bayer
+0xC340 = High Bayer
+
+[JPEG_XS_video_descriptor.level]
+# Table A.15 of ISO/IEC 21122-2
+# upper 8 bits of "Plev & 0xFF00"
+Bits = 8
+0x00 = Unrestricted
+0x04 = 1k-1
+0x10 = 2k-1
+0x20 = 4k-1
+0x24 = 4k-2
+0x28 = 4k-3
+0x30 = 8k-1
+0x34 = 8k-2
+0x38 = 8k-3
+0x40 = 10k-1
+
+[JPEG_XS_video_descriptor.sublevel]
+# Table A.16 of ISO/IEC 21122-2
+# lower 8 bits of "Plev & 0x00FF"
+Bits = 8
+0x00 = Unrestricted
+0x80 = Full
+0x10 = Sublev12bpp
+0x0C = Sublev9pp
+0x08 = Sublev6bpp
+0x04 = Sublev3bpp
+0x03 = Sublev2bpp
+
+[JPEG_XS_video_descriptor.interlace_mode]
+# Table A.7 of ISO/IEC 21122-3
+Bits = 2
+0 = Progressive frame (frame contains one full-height picture)
+1 = Interlaced frame, first picture is top video field (top field first)
+2 = Interlaced frame, first picture is bottom video field (bottom field first)
+3 = Reserved
+
+[JPEG_XS_video_descriptor.framerate_DEN]
+# Table A.8 of ISO/IEC 21122-3
+Bits = 6
+1 = 1
+2 = 1.001
+
+[JPEG_XS_video_descriptor.sampling_structure]
+# Table A.10 of ISO/IEC 21122-3
+0 = 4:2:2 (YCbCr)
+1 = 4:4:4 (YCbCr)
+2 = 4:4:4 (RGB)
+3 = 4:2:0 (YCbCr)
+4 = 4:2:2:4 (YCbCrAux)
+5 = 4:4:4:4 (YCbCrAux)
+6 = 4:4:4:4 (RGBAux)
+
