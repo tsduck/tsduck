@@ -130,7 +130,7 @@ namespace ts {
         //! Destructor.
         //! If this object contains a non-success code, an error message is logged on the report.
         //!
-        ~ErrCodeReport() { log(); };
+        ~ErrCodeReport() { log(); }
 
         //!
         //! Report error immediately instead of waiting for the destructor.
