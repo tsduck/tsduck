@@ -35,72 +35,40 @@ namespace ts {
     constexpr const UChar* DefaultCsvSeparator = u",";
 
     //!
-    //! Integer type for operating system error codes.
-    //!
-#if defined(DOXYGEN)
-    typedef platform_specific SysErrorCode;
-#elif defined(TS_WINDOWS)
-    typedef ::DWORD SysErrorCode;
-#else
-    typedef int SysErrorCode;
-#endif
-
-    //!
-    //! A SysErrorCode value indicating success.
-    //! It is not guaranteed that this value is the @e only success value.
-    //! Operating system calls which complete successfully may also return
-    //! other values.
-    //!
-#if defined(DOXYGEN)
-    const SysErrorCode SYS_SUCCESS = platform_specific;
-#elif defined(TS_WINDOWS)
-    const SysErrorCode SYS_SUCCESS = ERROR_SUCCESS;
-#elif defined(TS_UNIX)
-    const SysErrorCode SYS_SUCCESS = 0;
-#else
-    #error "Unsupported operating system"
-#endif
-
-    //!
-    //! A SysErrorCode value indicating a generic data error.
-    //! This value can be used to initialize an error code to some generic
-    //! error code indicating that a data is not yet available or an
-    //! operation is not yet performed.
-    //!
-#if defined(DOXYGEN)
-    const SysErrorCode SYS_DATA_ERROR = platform_specific;
-#elif defined(TS_WINDOWS)
-    const SysErrorCode SYS_DATA_ERROR = ERROR_INVALID_DATA;
-#elif defined(TS_UNIX)
-    const SysErrorCode SYS_DATA_ERROR = EINVAL;
-#else
-    #error "Unsupported operating system"
-#endif
-
-    //!
     //! Get the error code of the last operating system call.
     //! The validity of the returned value may depends on specific conditions.
+    //!
+    //! Portability of error code representation: On UNIX, error codes are just @c int. On Windows, error
+    //! codes are @c DWORD, which is compatible with @c int. In C++11, @c std::error_core uses @c int for
+    //! error codes. Therefore, because of this new C++11 feature, we just use @c int.
+    //!
+    //! Windows note: According to Windows documentation, socket functions should call WSAGetLastError()
+    //! instead of GetLastError() to retrieve the error code. This is an oddity from the old 16-bit
+    //! Windows API. On Win32, various sources confirm that WSAGetLastError() just call GetLastError().
+    //! Thus, in this application, we do not make the difference.
+    //!
     //! @return The error code of the last operating system call.
     //!
-    TSDUCKDLL inline SysErrorCode LastSysErrorCode()
+    TSDUCKDLL inline int LastSysErrorCode()
     {
 #if defined(TS_WINDOWS)
         return ::GetLastError();
-#elif defined(TS_UNIX)
-        return errno;
 #else
-        #error "Unsupported operating system"
+        return errno;
 #endif
     }
 
     //!
-    //! Format an error code into a string.
-    //!
+    //! Format a system error code into a string.
     //! @param [in] code An error code from the operating system.
-    //! Typically a result from LastSysErrorCode().
+    //! Typically a result from @c errno (Unix) or @c GetLastError() (Windows).
+    //! @param [in] category Error category, system by default.
     //! @return A string describing the error.
     //!
-    TSDUCKDLL UString SysErrorCodeMessage(SysErrorCode code = LastSysErrorCode());
+    TSDUCKDLL inline std::string SysErrorCodeMessage(int code = LastSysErrorCode(), const std::error_category& category = std::system_category())
+    {
+        return std::error_code(code, category).message();
+    }
 
     //!
     //! Portable type for ioctl() request parameter.
@@ -158,7 +126,14 @@ namespace ts {
     //! Get the current process id.
     //! @return Identification of the current process.
     //!
-    TSDUCKDLL ProcessId CurrentProcessId();
+    TSDUCKDLL inline ProcessId CurrentProcessId()
+    {
+#if defined(TS_WINDOWS)
+        return ::GetCurrentProcessId();
+#else
+        return ::getpid();
+#endif
+    }
 
     //!
     //! Check if the current user is privileged (root on UNIX, an administrator on Windows).

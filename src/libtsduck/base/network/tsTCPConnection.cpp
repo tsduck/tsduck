@@ -8,6 +8,7 @@
 
 #include "tsTCPConnection.h"
 #include "tsIPUtils.h"
+#include "tsSysUtils.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
 #include "tsException.h"
@@ -85,7 +86,7 @@ bool ts::TCPConnection::getPeer(IPv4SocketAddress& peer, Report& report) const
     SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
     if (::getpeername(getSocket(), &sock_addr, &len) != 0) {
-        report.error(u"error getting socket peer: " + SysSocketErrorCodeMessage());
+        report.error(u"error getting socket peer: %s", {SysErrorCodeMessage()});
         return false;
     }
     peer = IPv4SocketAddress(sock_addr);
@@ -122,7 +123,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
         }
 #endif
         else {
-            report.error(u"error sending data to socket: " + SysSocketErrorCodeMessage());
+            report.error(u"error sending data to socket: %s", {SysErrorCodeMessage()});
             return false;
         }
     }
@@ -149,20 +150,20 @@ bool ts::TCPConnection::receive(void* data,             // Buffers address
     // Loop on unsollicited interrupts
     for (;;) {
         SysSocketSignedSizeType got = ::recv(getSocket(), SysRecvBufferPointer(data), int(max_size), 0);
-        const SysSocketErrorCode err_code = LastSysSocketErrorCode();
+        const int errcode = LastSysErrorCode();
         if (got > 0) {
             // Received some data
             assert(size_t(got) <= max_size);
             ret_size = size_t(got);
             return true;
         }
-        else if (got == 0 || err_code == SYS_SOCKET_ERR_RESET) {
+        else if (got == 0 || errcode == SYS_SOCKET_ERR_RESET) {
             // End of connection (graceful or aborted). Do not report an error.
             declareDisconnected(report);
             return false;
         }
-#if !defined(TS_WINDOWS)
-        else if (err_code == EINTR) {
+#if defined(TS_UNIX)
+        else if (errcode == EINTR) {
             // Ignore signal, retry
             report.debug(u"recv() interrupted by signal, retrying");
         }
@@ -171,7 +172,7 @@ bool ts::TCPConnection::receive(void* data,             // Buffers address
             std::lock_guard<std::recursive_mutex> lock(_mutex);
             if (isOpen()) {
                 // Report the error only if the error does not result from a close in another thread.
-                report.error(u"error receiving data from socket: %s", {SysSocketErrorCodeMessage(err_code)});
+                report.error(u"error receiving data from socket: %s", {SysErrorCodeMessage(errcode)});
             }
             return false;
         }
@@ -228,7 +229,7 @@ bool ts::TCPConnection::connect(const IPv4SocketAddress& addr, Report& report)
         }
 #endif
         else {
-            report.error(u"error connecting socket: %s", {SysSocketErrorCodeMessage()});
+            report.error(u"error connecting socket: %s", {SysErrorCodeMessage()});
             return false;
         }
     }
@@ -242,11 +243,11 @@ bool ts::TCPConnection::connect(const IPv4SocketAddress& addr, Report& report)
 bool ts::TCPConnection::shutdownSocket(int how, Report& report)
 {
     if (::shutdown(getSocket(), how) != 0) {
-        const SysSocketErrorCode err_code = LastSysSocketErrorCode();
+        const int errcode = LastSysErrorCode();
         std::lock_guard<std::recursive_mutex> lock(_mutex);
         // Do not report "not connected" errors since they are normal when the peer disconnects first.
-        if (isOpen() && err_code != SYS_SOCKET_ERR_NOTCONN) {
-            report.error(u"error shutting down socket: %s", {SysSocketErrorCodeMessage(err_code)});
+        if (isOpen() && errcode != SYS_SOCKET_ERR_NOTCONN) {
+            report.error(u"error shutting down socket: %s", {SysErrorCodeMessage(errcode)});
             return false;
         }
     }

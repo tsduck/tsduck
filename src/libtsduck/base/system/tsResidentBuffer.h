@@ -56,9 +56,9 @@ namespace ts {
 
         //!
         //! Get error code when not locked
-        //! @return The system error code when locking failed.
+        //! @return A constant reference to the system error code when locking failed.
         //!
-        SysErrorCode lockErrorCode() const { return _error_code; }
+        const std::error_code& lockErrorCode() const { return _error_code; }
 
         //!
         //! Return base address of the buffer.
@@ -73,14 +73,14 @@ namespace ts {
         size_t count() const { return _elem_count; }
 
     private:
-        char*        _allocated_base = nullptr;  // First allocated address
-        char*        _locked_base = nullptr;     // First locked address (mlock, page boundary)
-        T*           _base = nullptr;            // Same as _locked_base with type T*
-        size_t       _allocated_size = 0;        // Allocated size (ts_malloc)
-        size_t       _locked_size = 0;           // Locked size (mlock, multiple of page size)
-        size_t       _elem_count = 0;            // Element count in locked region
-        bool         _is_locked = false;         // False if mlock failed.
-        SysErrorCode _error_code {SYS_SUCCESS};  // Lock error code
+        char*  _allocated_base = nullptr;  // First allocated address
+        char*  _locked_base = nullptr;     // First locked address (mlock, page boundary)
+        T*     _base = nullptr;            // Same as _locked_base with type T*
+        size_t _allocated_size = 0;        // Allocated size (ts_malloc)
+        size_t _locked_size = 0;           // Locked size (mlock, multiple of page size)
+        size_t _elem_count = 0;            // Element count in locked region
+        bool   _is_locked = false;         // False if mlock failed.
+        std::error_code _error_code {};    // Lock error code
     };
 }
 
@@ -127,22 +127,24 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
 
     // Get the current working set of the process.
     // If working set too low, try to extend working set.
-    ::SIZE_T wsmin, wsmax;
+    ::SIZE_T wsmin = 0;
+    ::SIZE_T wsmax = 0;
     if (::GetProcessWorkingSetSize(::GetCurrentProcess(), &wsmin, &wsmax) == 0) {
-        _error_code = LastSysErrorCode();
+        _error_code.assign(::GetLastError(), std::system_category());
     }
     else if (size_t(wsmin) < 2 * _locked_size) {
         wsmin = ::SIZE_T(2 * _locked_size);
         wsmax = std::max(wsmax, ::SIZE_T(4 * _locked_size));
         if (::SetProcessWorkingSetSize(::GetCurrentProcess(), wsmin, wsmax) == 0) {
-            _error_code = LastSysErrorCode();
+            _error_code.assign(::GetLastError(), std::system_category());
         }
     }
 
-    // Lock in virtual memory
+    // Lock in virtual memory.
     _is_locked = ::VirtualLock(_locked_base, _locked_size) != 0;
-    if (!_is_locked && _error_code == SYS_SUCCESS) {
-        _error_code = LastSysErrorCode();
+    if (!_is_locked && _error_code.default_error_condition().value() == 0) {
+        // Keep this error only when no previous error.
+        _error_code.assign(::GetLastError(), std::system_category());
     }
 
 #else
@@ -150,7 +152,9 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     // UNIX implementation
 
     _is_locked = ::mlock(_locked_base, _locked_size) == 0;
-    _error_code = _is_locked ? SYS_SUCCESS : LastSysErrorCode();
+    if (!_is_locked) {
+        _error_code.assign(errno, std::system_category());
+    }
 
 #endif
 }

@@ -7,7 +7,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPUtils.h"
+#include "tsSysUtils.h"
 #include "tsIPv4Address.h"
+#include "tsSingleton.h"
 
 
 //----------------------------------------------------------------------------
@@ -32,6 +34,36 @@ bool ts::IPInitialize(Report& report)
 #endif
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the std::error_category for getaddrinfo() error code (Unix only).
+//----------------------------------------------------------------------------
+
+#if defined(TS_UNIX)
+namespace {
+    class getaddrinfo_error_category: public std::error_category
+    {
+        TS_DECLARE_SINGLETON(getaddrinfo_error_category);
+    public:
+        virtual const char* name() const noexcept override;
+        virtual std::string message(int code) const override;
+    };
+}
+TS_DEFINE_SINGLETON(getaddrinfo_error_category);
+getaddrinfo_error_category::getaddrinfo_error_category() {}
+const char* getaddrinfo_error_category::name() const noexcept { return "getaddrinfo"; }
+std::string getaddrinfo_error_category::message(int code) const { return gai_strerror(code); }
+#endif
+
+const std::error_category& ts::getaddrinfo_category()
+{
+#if defined(TS_UNIX)
+    return getaddrinfo_error_category::Instance();
+#else
+    return std::system_category();
+#endif
 }
 
 
@@ -65,7 +97,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
         return false;
     }
 
-    // Browse the list of interfaces.
+    // Browse the list of interfaces.errcode
     for (::ifaddrs* ifa = start; ifa != nullptr; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr != nullptr) {
             IPv4Address addr(*ifa->ifa_addr);
@@ -83,7 +115,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     // Create a socket to query the system on
     SysSocketType sock = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == SYS_SOCKET_INVALID) {
-        report.error(u"error creating socket: %s", {SysSocketErrorCodeMessage()});
+        report.error(u"error creating socket: %s", {SysErrorCodeMessage()});
         return false;
     }
 
@@ -94,7 +126,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     ::INTERFACE_INFO info[32];  // max 32 local interface (arbitrary)
     ::DWORD retsize;
     if (::WSAIoctl(sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD(sizeof(info)), &retsize, 0, 0) != 0) {
-        report.error(u"error getting local addresses: %s", {SysSocketErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", {SysErrorCodeMessage()});
         status = false;
     }
     else {
@@ -119,7 +151,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     ifc.ifc_len = sizeof(info);
 
     if (::ioctl(sock, SIOCGIFCONF, &ifc) != 0) {
-        report.error(u"error getting local addresses: %s", {SysSocketErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", {SysErrorCodeMessage()});
         status = false;
     }
     else {
@@ -133,8 +165,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
                 ::ifreq req;
                 req = info[i];
                 if (::ioctl(sock, SIOCGIFNETMASK, &req) != 0) {
-                    const SysSocketErrorCode err = LastSysSocketErrorCode();
-                    report.error(u"error getting network mask for %s: %s", {addr, SysSocketErrorCodeMessage(err)});
+                    report.error(u"error getting network mask for %s: %s", {addr, SysErrorCodeMessage()});
                 }
                 else {
                     mask = IPv4Address(req.ifr_netmask);

@@ -370,7 +370,7 @@ void SysUtilsTest::testErrorCode()
 {
     // Hard to make automated tests since we do not expect portable strings
 
-    const ts::SysErrorCode code =
+    const int code =
 #if defined(TS_WINDOWS)
         WAIT_TIMEOUT;
 #elif defined(TS_UNIX)
@@ -380,11 +380,9 @@ void SysUtilsTest::testErrorCode()
 #endif
 
     const ts::UString codeMessage(ts::SysErrorCodeMessage(code));
-    const ts::UString successMessage(ts::SysErrorCodeMessage(ts::SYS_SUCCESS));
+    const ts::UString successMessage(ts::SysErrorCodeMessage(0));
 
-    debug() << "SysUtilsTest: sizeof(ts::SysErrorCode) = " << sizeof(ts::SysErrorCode) << std::endl
-            << "SysUtilsTest: ts::SYS_SUCCESS = " << ts::SYS_SUCCESS << std::endl
-            << "SysUtilsTest: SUCCESS message = \"" << successMessage << "\"" << std::endl
+    debug() << "SysUtilsTest: SUCCESS message = \"" << successMessage << "\"" << std::endl
             << "SysUtilsTest: test code = " << code << std::endl
             << "SysUtilsTest: test code message = \"" << codeMessage << "\"" << std::endl;
 

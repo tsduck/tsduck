@@ -68,9 +68,10 @@ namespace ts {
         //! @param [in,out] report The report to which all error messages are logged in the destructor.
         //! @param [in] message Option message to display before the system error message.
         //! @param [in] object Optional "object" name, to be displayed after @a message.
+        //! @param [in] severity Severity at which the message is reported (default: error).
         //!
-        ErrCodeReport(Report& report, const UString& message = UString(), const UString& object = UString()) :
-            _report(&report), _message(message), _object(object) {}
+        ErrCodeReport(Report& report, const UString& message = UString(), const UString& object = UString(), int severity = Severity::Error) :
+            _report(&report), _message(message), _object(object), _severity(severity) {}
 
         //!
         //! Constructor with error indicator and error reporting.
@@ -78,9 +79,10 @@ namespace ts {
         //! @param [in,out] report The report to which all error messages are logged in the destructor.
         //! @param [in] message Option message to display before the system error message.
         //! @param [in] object Optional "object" name, to be displayed after @a message.
+        //! @param [in] severity Severity at which the message is reported (default: error).
         //!
-        ErrCodeReport(bool& success, Report& report, const UString& message = UString(), const UString& object = UString()) :
-            _success(&success), _report(&report), _message(message), _object(object) {}
+        ErrCodeReport(bool& success, Report& report, const UString& message = UString(), const UString& object = UString(), int severity = Severity::Error) :
+            _success(&success), _report(&report), _message(message), _object(object), _severity(severity) {}
 
         //!
         //! Constructor with error indicator only and no error reporting.
@@ -97,22 +99,23 @@ namespace ts {
 
         //! @cond nodoxygen
         //  Alternative constructors to avoid a Microsoft C++ issue, see comments in the declaration of the class.
-        ErrCodeReport(Report& report, const UChar* message, const UString& object = UString()) :
-            _report(&report), _message(message), _object(object) {}
-        ErrCodeReport(Report& report, const UChar* message, const UChar* object) :
-            _report(&report), _message(message), _object(object) {}
-        ErrCodeReport(Report& report, const UChar* message, const fs::path& object) :
-            _report(&report), _message(message), _object(object.string()) {}
-        ErrCodeReport(Report& report, const UString& message, const fs::path& object) :
-            _report(&report), _message(message), _object(object.string()) {}
-        ErrCodeReport(bool& success, Report& report, const UChar* message, const UString& object = UString()) :
-            _success(&success), _report(&report), _message(message), _object(object) {}
-        ErrCodeReport(bool& success, Report& report, const UChar* message, const UChar* object) :
-            _success(&success), _report(&report), _message(message), _object(object) {}
-        ErrCodeReport(bool& success, Report& report, const UChar* message, const fs::path& object) :
-            _success(&success), _report(&report), _message(message), _object(object.string()) {}
-        ErrCodeReport(bool& success, Report& report, const UString& message, const fs::path& object) :
-            _success(&success), _report(&report), _message(message), _object(object.string()) {}
+        ErrCodeReport(Report& report, const UChar* message, const UString& object = UString(), int severity = Severity::Error) :
+            _report(&report), _message(message), _object(object), _severity(severity) {}
+        ErrCodeReport(Report& report, const UChar* message, const UChar* object, int severity = Severity::Error) :
+            _report(&report), _message(message), _object(object), _severity(severity) {}
+        ErrCodeReport(Report& report, const UChar* message, const fs::path& object, int severity = Severity::Error) :
+            _report(&report), _message(message), _object(object.string()), _severity(severity) {}
+        ErrCodeReport(Report& report, const UString& message, const fs::path& object, int severity = Severity::Error) :
+            _report(&report), _message(message), _object(object.string()), _severity(severity) {}
+
+        ErrCodeReport(bool& success, Report& report, const UChar* message, const UString& object = UString(), int severity = Severity::Error) :
+            _success(&success), _report(&report), _message(message), _object(object), _severity(severity) {}
+        ErrCodeReport(bool& success, Report& report, const UChar* message, const UChar* object, int severity = Severity::Error) :
+            _success(&success), _report(&report), _message(message), _object(object), _severity(severity) {}
+        ErrCodeReport(bool& success, Report& report, const UChar* message, const fs::path& object, int severity = Severity::Error) :
+            _success(&success), _report(&report), _message(message), _object(object.string()), _severity(severity) {}
+        ErrCodeReport(bool& success, Report& report, const UString& message, const fs::path& object, int severity = Severity::Error) :
+            _success(&success), _report(&report), _message(message), _object(object.string()), _severity(severity) {}
         //! @endcond
 
         //!
@@ -127,12 +130,19 @@ namespace ts {
         //! Destructor.
         //! If this object contains a non-success code, an error message is logged on the report.
         //!
-        ~ErrCodeReport();
+        ~ErrCodeReport() { log(); };
+
+        //!
+        //! Report error immediately instead of waiting for the destructor.
+        //! The error is then cleared, to avoid later report in the destructor.
+        //!
+        void log();
 
     private:
         bool*   _success = nullptr;
         Report* _report = nullptr;
         UString _message {};
         UString _object {};
+        int     _severity = Severity::Error;
     };
 }

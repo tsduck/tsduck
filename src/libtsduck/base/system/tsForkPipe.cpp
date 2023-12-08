@@ -558,7 +558,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
 
     bool error = false;
-    SysErrorCode error_code = SYS_SUCCESS;
+    int errcode = 0;
 
 #if defined(TS_WINDOWS)
 
@@ -576,11 +576,11 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
         }
         else {
             // Write error
-            error_code = LastSysErrorCode();
+            errcode = ::GetLastError();
             error = true;
             // MSDN documentation on WriteFile says ERROR_BROKEN_PIPE,
             // experience says ERROR_NO_DATA.
-            _broken_pipe = error_code == ERROR_BROKEN_PIPE || error_code == ERROR_NO_DATA;
+            _broken_pipe = errcode == ERROR_BROKEN_PIPE || errcode == ERROR_NO_DATA;
         }
     }
 
@@ -598,11 +598,10 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
             remain -= std::max(remain, size_t(outsize));
             written_size += size_t(outsize);
         }
-        else if ((error_code = LastSysErrorCode()) != EINTR) {
+        else if ((errcode = errno) != EINTR) {
             // Actual error (not an interrupt)
-            error_code = LastSysErrorCode();
             error = true;
-            _broken_pipe = error_code == EPIPE;
+            _broken_pipe = errcode == EPIPE;
         }
     }
 #endif
@@ -612,7 +611,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
     else if (!_broken_pipe) {
         // Always report non-pipe error (message + error status).
-        report.error(u"error writing to pipe: %s", {SysErrorCodeMessage(error_code)});
+        report.error(u"error writing to pipe: %s", {SysErrorCodeMessage(errcode)});
         return false;
     }
     else if (_ignore_abort) {
@@ -656,10 +655,9 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
         return true;
     }
 
-    SysErrorCode error_code = SYS_SUCCESS;
-
 #if defined(TS_WINDOWS)
 
+    ::DWORD errcode = ERROR_SUCCESS;
     ::DWORD insize = 0;
     if (::ReadFile(_handle, addr, ::DWORD(max_size), &insize, nullptr) != 0) {
         // Normal case, some data were read.
@@ -668,14 +666,14 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
         ret_size = size_t(insize);
         return true;
     }
-    else if ((error_code = LastSysErrorCode()) == ERROR_HANDLE_EOF || error_code == ERROR_BROKEN_PIPE) {
+    else if ((errcode = ::GetLastError()) == ERROR_HANDLE_EOF || errcode == ERROR_BROKEN_PIPE) {
         // End of file, not a real "error".
         _eof = true;
         return false;
     }
     else {
-        // This is a real error
-        report.error(u"error reading from pipe: %s", {SysErrorCodeMessage(error_code)});
+        // This is a real error.
+        ErrCodeReport(errcode, report, u"error reading from pipe");
         return false;
     }
 
@@ -694,9 +692,9 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
             ret_size = size_t(insize);
             return true;
         }
-        else if ((error_code = LastSysErrorCode()) != EINTR) {
+        else if (errno != EINTR) {
             // Actual error (not an interrupt)
-            report.error(u"error reading from pipe: %s", {SysErrorCodeMessage(error_code)});
+            report.error(u"error reading from pipe: %s", {SysErrorCodeMessage()});
             return false;
         }
     }

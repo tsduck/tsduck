@@ -8,6 +8,7 @@
 
 #include "tsTCPServer.h"
 #include "tsIPUtils.h"
+#include "tsSysUtils.h"
 #include "tsMemory.h"
 
 
@@ -19,7 +20,7 @@ bool ts::TCPServer::listen(int backlog, Report& report)
 {
     report.debug(u"server listen, backlog is %d", {backlog});
     if (::listen(getSocket(), backlog) != 0) {
-        report.error(u"error starting TCP server: %s", {SysSocketErrorCodeMessage()});
+        report.error(u"error starting TCP server: %s", {SysErrorCodeMessage()});
         return false;
     }
     return true;
@@ -51,7 +52,7 @@ bool ts::TCPServer::accept (TCPConnection& client, IPv4SocketAddress& client_add
     if (client_sock == SYS_SOCKET_INVALID) {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
         if (isOpen()) {
-            report.error(u"error accepting TCP client: %s", {SysSocketErrorCodeMessage()});
+            report.error(u"error accepting TCP client: %s", {SysErrorCodeMessage()});
         }
         return false;
     }
@@ -74,9 +75,9 @@ bool ts::TCPServer::close(Report& report)
     // Shutdown server socket.
     // Do not report "not connected" errors since they are normal when the client disconnects first.
     if (::shutdown(getSocket(), SYS_SOCKET_SHUT_RDWR) != 0) {
-        const SysSocketErrorCode err_code = LastSysSocketErrorCode();
-        if (err_code != SYS_SOCKET_ERR_NOTCONN) {
-            report.error(u"error shutdowning server socket: %s", {SysSocketErrorCodeMessage()});
+        const int errcode = LastSysErrorCode();
+        if (errcode != SYS_SOCKET_ERR_NOTCONN) {
+            report.error(u"error shutdowning server socket: %s", {SysErrorCodeMessage(errcode)});
         }
     }
 

@@ -9,13 +9,21 @@
 #include "tsErrCodeReport.h"
 
 
-ts::ErrCodeReport::~ErrCodeReport()
+void ts::ErrCodeReport::log()
 {
     // Check if the portable equivalent code is an error.
     const bool success = default_error_condition().value() == 0;
+
+    // Report in external variable.
     if (_success != nullptr) {
         *_success = success;
+        // In case of error, make sure we don't clear the external boolean later.
+        if (!success) {
+            _success = nullptr;
+        }
     }
+
+    // Log error message.
     if (!success && _report != nullptr) {
         UString msg(_message);
         if (!_object.empty()) {
@@ -27,6 +35,9 @@ ts::ErrCodeReport::~ErrCodeReport()
         if (!msg.empty()) {
             msg.append(u": ");
         }
-        _report->error(u"%s%s", {msg, message()});
+        _report->log(_severity, u"%s%s", {msg, message()});
     }
+
+    // Clear error to avoid later message.
+    clear();
 }
