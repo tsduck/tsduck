@@ -5,8 +5,8 @@
 
   <ItemGroup>
     <DtvNamesFiles Include="$(TSDuckRootDir)src\libtsduck\config\tsduck.dtv.skeleton.names;
-                            $(TSDuckRootDir)src\libtsduck\base\*\*.names;
-                            $(TSDuckRootDir)src\libtsduck\dtv\*\*.names"/>
+                            $(TSDuckRootDir)src\libtsduck\base\**\*.names;
+                            $(TSDuckRootDir)src\libtsduck\dtv\**\*.names"/>
   </ItemGroup>
 
   <Target Name="BuildDtvNames" Inputs="@(DtvNamesFiles)" Outputs="$(OutDir)tsduck.dtv.names">
