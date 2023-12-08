@@ -22,29 +22,33 @@ namespace ts {
     //!
     class TSDUCKDLL ISDBTargetRegionDescriptor : public AbstractDescriptor
     {
-        class PrefectureMap {
+    public:
+        //!
+        //! Prefecture map.
+        //!
+        class PrefectureMap
+        {
             TS_DEFAULT_COPY_MOVE(PrefectureMap);
-
-        private:
-            static const size_t MAX_PREFECTURES = 56;
         public:
-            std::array<bool, MAX_PREFECTURES> prefectures {};
+            static constexpr size_t MAX_PREFECTURES = 56;      //!< Maximum number of prefectures in a map.
+            std::array<bool, MAX_PREFECTURES> prefectures {};  //!< Map of prefectures.
+
             //!
             //! Default constructor.
             //!
-            PrefectureMap() { clear(); }
+            PrefectureMap() = default;
             //!
             //! Read-in constructor.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
             //!
-            PrefectureMap(PSIBuffer& buf) : PrefectureMap() { deserialize(buf); }
+            PrefectureMap(PSIBuffer& buf) { deserialize(buf); }
 
             //!
             //! toString
             //! @returns a string depiction of the prefectures included in the target region in a bitmap form where each represented by a 1 or 0 character.
-            //! 
+            //!
             ts::UString toString() const;
 
             //! @cond nodoxygen
@@ -57,10 +61,9 @@ namespace ts {
             //! @endcond
         };
 
-    public:
         // ISDBTargetRegionDescriptor public members:
-        uint8_t                      region_spec_type = 0;
-        std::optional<PrefectureMap> target_region_mask {};
+        uint8_t                      region_spec_type = 0;   //!< Region spec type.
+        std::optional<PrefectureMap> target_region_mask {};  //!< Target region mask.
 
         //!
         //! Default constructor.

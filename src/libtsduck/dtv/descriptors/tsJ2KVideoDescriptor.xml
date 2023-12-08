@@ -48,7 +48,7 @@
         L_min="uint32, required"
         MaxCLL="uint16, required"
         MaxFALL="uint16, required"/>
-      
+
       <private_data>
         Hexadecimal content
       </private_data>

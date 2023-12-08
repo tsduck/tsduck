@@ -18,7 +18,7 @@
         transport_stream_id="uint16, required"
         service_id="uint16, required"
         event_id="uint16, required"/>
-      
+
       <!-- link_destination_type = 0x03 -->
       <Module
         original_network_id="uint16, required"
@@ -52,7 +52,7 @@
 
       <!-- link_destination_type = 0x07 -->
       <StoredContent uri="string, required"/>
-      
+
       <private_data>
           Hexadecimal encoded private data
       </private_data>

@@ -21,10 +21,19 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.37
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ISDBComponentGroupDescriptor: public AbstractDescriptor {
-        class ComponentGroup {
+    class TSDUCKDLL ISDBComponentGroupDescriptor: public AbstractDescriptor
+    {
+    public:
+        //!
+        //! Component group.
+        //!
+        class ComponentGroup
+        {
             TS_DEFAULT_COPY_MOVE(ComponentGroup);
-
+        public:
+            //!
+            //! CA unit.
+            //!
             class CAUnit {
                 TS_DEFAULT_COPY_MOVE(CAUnit);
             public:
@@ -34,7 +43,7 @@ namespace ts {
                 //!
                 //! Default constructor.
                 //!
-                CAUnit() { clear(); }
+                CAUnit() = default;
                 //!
                 //! Read-in constructor.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
@@ -53,21 +62,23 @@ namespace ts {
                 //! @endcond
             };
 
-        public:
             uint8_t                component_group_id = 0; //!< The component group identifier in accordance with table 6-73.
-            std::vector<CAUnit>    CA_units {};
+            std::vector<CAUnit>    CA_units {};            //!< All CA units.
             std::optional<uint8_t> total_bit_rate {};      //!< The component tag value belonging to the component group.
-            UString                explanation {};         //!< Explanation of component group. For character information coding, see Annex A.          
+            UString                explanation {};         //!< Explanation of component group. For character information coding, see Annex A.
 
             //!
             //! Default constructor.
             //!
-            ComponentGroup() { clear(); }
+            ComponentGroup() = default;
             //!
             //! Read-in constructor.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //! @param [in] total_bit_rate_flag Indicates the description status of the total bit rate in the component group in the event.When this bit is "0", the total bit rate
+            //! field in the component group does not exist in the corresponding descriptor. When this bit is "1", the total bit rate field in the
+            //! component group exists in the corresponding descriptor.
             //!
             ComponentGroup(PSIBuffer& buf, bool total_bit_rate_flag) :
                 ComponentGroup() { deserialize(buf, total_bit_rate_flag); }
@@ -82,10 +93,9 @@ namespace ts {
             //! @endcond
         };
 
-    public:
         // ISDBComponentGroupDescriptor public members:
         uint8_t                     component_group_type = 0;  //!< 3 bits. Group type of the component in accordance with table 6 - 72.
-        std::vector<ComponentGroup> components {};
+        std::vector<ComponentGroup> components {};             //!< All components.
 
         //!
         //! Default constructor.
@@ -101,17 +111,14 @@ namespace ts {
 
         //!
         //! matching_total_bit_rate
-        //! @return true of the #total_bit_rate value is set or unset for all #components
-        //! Indicates the description status of the total bit rate in the component group in the event.When this bit is "0", the total bit rate
-        //! field in the component group does not exist in the corresponding descriptor. When this bit is "1", the total bit rate field in the
-        //! component group exists in the corresponding descriptor.
-        //! 
+        //! @return True if the total_bit_rate value is set or unset for all #components.
+        //!
         bool matching_total_bit_rate();
 
         //!
         //! total_bit_rate_flag
-        //! @return true if all of the #components have a #total_bit_rate value
-        //! 
+        //! @return true if all of the #components have a total_bit_rate value
+        //!
         bool total_bit_rate_flag() const;
 
         // Inherited methods
@@ -125,4 +132,4 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
-}  // namespace ts
+}

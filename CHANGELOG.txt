@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3468
+VERSION 3.36-3488
 
 [NEW] New commands and plugins:
 
@@ -16,6 +16,7 @@ VERSION 3.36-3468
   * Improved the measurement precision in plugin "bitrate_monitor".
   * Renamed FlexMux-related descriptors and fields as M4Mux to comply with
     ISO/IEC 13818-1 9th edition.
+  * Added support for many new descriptors (contribution from Paul Higgs).
   * In "tsanalyze" and plugin "analyze", the LCN and hidden flag of services
     are now reported in all formats, text, normalized, JSON.
   * New options in existing commands and plugins:

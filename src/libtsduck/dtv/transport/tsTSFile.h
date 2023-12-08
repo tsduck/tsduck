@@ -35,7 +35,7 @@ namespace ts {
         //! Default constructor.
         //!
         TSFile();
-        
+
         //!
         //! Move constructor.
         //! The full state is moved

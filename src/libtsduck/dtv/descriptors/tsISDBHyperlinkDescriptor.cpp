@@ -46,7 +46,7 @@ ts::ISDBHyperlinkDescriptor::ISDBHyperlinkDescriptor(DuckContext& duck, const De
     deserialize(duck, desc);
 }
 
-   
+
 void ts::ISDBHyperlinkDescriptor::clearContent()
 {
     hyper_linkage_type = 0;
@@ -222,32 +222,32 @@ void ts::ISDBHyperlinkDescriptor::deserializePayload(PSIBuffer& buf)
         case LINK_TO_MODULE: {
             ModuleTriplet mod(buf);
             link_to_module = mod;
-            } 
+            }
             break;
         case LINK_TO_CONTENT: {
             ModuleTriplet mod(buf);
             link_to_module = mod;
-            } 
+            }
             break;
         case LINK_TO_CONTENT_MODULE: {
             ContentModuleTriplet mod(buf);
             link_to_content_module = mod;
-            } 
+            }
             break;
         case LINK_TO_ERT_NODE: {
             ERTNode ert(buf);
             link_to_ert_node = ert;
-            } 
+            }
             break;
         case LINK_TO_STORED_CONTENT: {
             StoredContent uri(buf);
             link_to_stored_content = uri;
-            } 
+            }
             break;
         default:
             break;
     }
-    buf.getBytes(private_data);   
+    buf.getBytes(private_data);
  }
 
 void ts::ISDBHyperlinkDescriptor::ServiceTriplet::deserialize(PSIBuffer& buf) {
@@ -308,22 +308,22 @@ void ts::ISDBHyperlinkDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
             case LINK_TO_SERVICE: {
                 ServiceTriplet tmp;
                 tmp.display(disp, buf, margin);
-                } 
+                }
                 break;
             case LINK_TO_EVENT: {
                 EventTriplet tmp;
                 tmp.display(disp, buf, margin);
-                } 
+                }
                 break;
             case LINK_TO_MODULE: {
                 ModuleTriplet tmp;
                 tmp.display(disp, buf, margin);
-                } 
+                }
                 break;
             case LINK_TO_CONTENT: {
                 ContentTriplet tmp;
                 tmp.display(disp, buf, margin);
-                } 
+                }
                 break;
             case LINK_TO_CONTENT_MODULE: {
                 ContentModuleTriplet tmp;
@@ -412,31 +412,31 @@ void ts::ISDBHyperlinkDescriptor::buildXML(DuckContext& duck, xml::Element* root
             if (link_to_event.has_value()) {
                 link_to_event.value().toXML(root->addElement(u"Event"));
             }
-        } 
+        }
         break;
         case LINK_TO_MODULE: {
             if (link_to_module.has_value()) {
                 link_to_module.value().toXML(root->addElement(u"Module"));
             }
-        } 
+        }
         break;
         case LINK_TO_CONTENT: {
             if (link_to_content.has_value()) {
                 link_to_content.value().toXML(root->addElement(u"Content"));
             }
-        } 
+        }
         break;
         case LINK_TO_CONTENT_MODULE: {
             if (link_to_content_module.has_value()) {
                 link_to_content_module.value().toXML(root->addElement(u"ContentModule"));
             }
-        } 
+        }
         break;
         case LINK_TO_ERT_NODE: {
             if (link_to_ert_node.has_value()) {
                 link_to_ert_node.value().toXML(root->addElement(u"ERTNode"));
             }
-        } 
+        }
         break;
         case LINK_TO_STORED_CONTENT: {
             if (link_to_stored_content.has_value()) {
@@ -516,7 +516,7 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                 if (ok) {
                     link_to_service = tmp;
                 }
-            } 
+            }
             break;
             case LINK_TO_EVENT: {
                 EventTriplet t;
@@ -525,7 +525,7 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                 if (ok) {
                     link_to_event = t;
                 }
-            } 
+            }
             break;
             case LINK_TO_MODULE: {
                 ModuleTriplet t;
@@ -534,7 +534,7 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                 if (ok) {
                     link_to_module = t;
                 }
-            } 
+            }
             break;
             case LINK_TO_CONTENT: {
                 ContentTriplet t;
@@ -543,34 +543,34 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                 if (ok) {
                     link_to_content = t;
                 }
-            } 
+            }
             break;
             case LINK_TO_CONTENT_MODULE: {
                 ContentModuleTriplet t;
-                ok = element->getChildren(elems, u"ContentModule", 1, 1) && 
+                ok = element->getChildren(elems, u"ContentModule", 1, 1) &&
                      t.fromXML(elems[0]);
                 if (ok) {
                     link_to_content_module = t;
                 }
-            } 
+            }
             break;
             case LINK_TO_ERT_NODE: {
                 ERTNode t;
-                ok = element->getChildren(elems, u"ERTNode", 1, 1) && 
+                ok = element->getChildren(elems, u"ERTNode", 1, 1) &&
                      t.fromXML(elems[0]);
                 if (ok) {
                     link_to_ert_node = t;
                 }
-            } 
+            }
             break;
             case LINK_TO_STORED_CONTENT: {
                 StoredContent t;
-                ok = element->getChildren(elems, u"StoredContent", 1, 1) && 
+                ok = element->getChildren(elems, u"StoredContent", 1, 1) &&
                      t.fromXML(elems[0]);
                 if (ok) {
                     link_to_stored_content = t;
                 }
-            } 
+            }
             break;
             default:
             break;
