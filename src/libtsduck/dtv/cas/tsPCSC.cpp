@@ -385,7 +385,7 @@ ts::UString ts::pcsc::StrError(::LONG status)
             // pcsc_stringify_error is specific to pcsc-lite.
             return UString::FromUTF8(pcsc_stringify_error(status));
 #elif defined(TS_WINDOWS)
-            return SysErrorCodeMessage(status);
+            return UString::FromUTF8(SysErrorCodeMessage(status));
 #else
             return UString::Format(u"unknown PC/SC error code 0x%X (%<d)", {status});
 #endif
