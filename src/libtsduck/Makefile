@@ -47,7 +47,7 @@ include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtsduck.
 
-VPATH := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp)))))
+VPATH := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
 # Implicit search directives.
@@ -76,7 +76,7 @@ TSDUCK_H = $(BINDIR)/include/tsduck.h
 
 .PHONY: headers
 headers: $(TSDUCK_H)
-$(TSDUCK_H): $(filter-out %Template.h,$(wildcard *.h */*.h */*/*.h))
+$(TSDUCK_H): $(wildcard *.h */*.h */*/*.h */*/*/*.h)
 	@echo '  [GEN] $(notdir $@)'; \
 	mkdir -p $(dir $@); \
 	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py $@
@@ -146,7 +146,7 @@ OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tsduck.o,$(OBJS))
 
 else
 
-F_OBJ_BLOB  = $(addsuffix .o,$(addprefix $(OBJDIR)/,$(sort $(notdir $(basename $(wildcard $(1)/*.cpp))))))
+F_OBJ_BLOB  = $(addsuffix .o,$(addprefix $(OBJDIR)/,$(sort $(notdir $(basename $(wildcard $(1)/*.cpp $(1)/*/*.cpp))))))
 OBJS_TABLES = $(call F_OBJ_BLOB,dtv/tables)
 OBJS_DESCS  = $(call F_OBJ_BLOB,dtv/descriptors)
 OBJS_CHARS  = $(call F_OBJ_BLOB,dtv/charset)
