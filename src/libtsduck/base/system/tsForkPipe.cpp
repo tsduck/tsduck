@@ -673,7 +673,7 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
     }
     else {
         // This is a real error.
-        ErrCodeReport(errcode, report, u"error reading from pipe");
+        report.error(u"error reading from pipe: %s", {SysErrorCodeMessage(errcode)});
         return false;
     }
 
