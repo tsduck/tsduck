@@ -20,15 +20,15 @@
           elevationOffsetMax="uint5, required"
           distanceOffsetMin="uint4, required"
           distanceOffsetMax="uint4, required"/>
-        
+
         <GainInteractivity
           interactivityGainMin="uint6, required"
           interactivityGainMax="uint5, required"/>
-        
+
       </InteractivityGroup>
-      
+
       <!-- up to 31 switch groups -->
-      <SwitchGroup 
+      <SwitchGroup
         switchGroupID="uint5, required"
         switchGroupAllowOnOff="bool, required"
         switchGroupDefaultOnOff="bool, required"
@@ -38,9 +38,9 @@
         <SwitchGroupMembers>
           7bit Hexadecimal content, 1 to 32 values
         </SwitchGroupMembers>
-        
+
       </SwitchGroup>
-      
+
       <!-- up to 31 preset groups -->
       <PresetGroup
         groupPresetID="uint5, required"

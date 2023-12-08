@@ -197,7 +197,7 @@ void ts::J2KVideoDescriptor::deserializePayload(PSIBuffer& buf)
             Mastering_Display_Metadata_type m(buf);
             mdm = m;
         }
-    } 
+    }
     buf.getBytes(private_data);
 }
 
@@ -336,7 +336,7 @@ void ts::J2KVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->addHexaTextChild(u"private_data", private_data, true);
 }
 
-void ts::J2KVideoDescriptor::JPEGXS_Stripe_type::toXML(xml::Element* root) const 
+void ts::J2KVideoDescriptor::JPEGXS_Stripe_type::toXML(xml::Element* root) const
 {
     root->setIntAttribute(u"strp_max_idx", strp_max_idx);
     root->setIntAttribute(u"strp_height", strp_height);
@@ -367,7 +367,7 @@ bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
          element->hasAttribute(u"transfer_characteristics") ||
          element->hasAttribute(u"matrix_coefficients") ||
          element->hasAttribute(u"video_full_range_flag"))) {
-    
+
         element->report().error(u"cannot specify both legacy (color_specification) and extended (colour_primaries, transfer_characteristics, matrix_coefficients, video_full_range_flag) attributes in <%s>, line %d", {element->name(), element->lineNumber()});
         return false;
     }
@@ -379,7 +379,7 @@ bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
             element->getIntAttribute(max_bit_rate, u"max_bit_rate", true) &&
             element->getIntAttribute(max_buffer_size, u"max_buffer_size", true) &&
             element->getIntAttribute(DEN_frame_rate, u"DEN_frame_rate", true) &&
-            element->getIntAttribute(NUM_frame_rate, u"NUM_frame_rate", true) &&      
+            element->getIntAttribute(NUM_frame_rate, u"NUM_frame_rate", true) &&
             element->getBoolAttribute(still_mode, u"still_mode", true) &&
             element->getBoolAttribute(interlaced_video, u"interlaced_video", true) &&
             element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 26);
@@ -407,7 +407,7 @@ bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
             }
         }
     }
-    
+
     if (ok && isExtendedCapabilities) {
         xml::ElementVector ext_data;
 

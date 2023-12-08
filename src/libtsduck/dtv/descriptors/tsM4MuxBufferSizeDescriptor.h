@@ -26,7 +26,7 @@ namespace ts {
     public:
         //!
         //! M4Mux description.
-        //! 
+        //!
         //! See clasue 7.4.2.4 of ISO/IEC 14496-1:2010
         //!
         class TSDUCKDLL M4MuxBufferDescriptor_type {

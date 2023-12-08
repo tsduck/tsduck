@@ -10,9 +10,10 @@
        modulation_type_C="uint2, required">
 
        <addtional_connected_transmission_info>
-	      Hexadecimal data
+         Hexadecimal data
        </addtional_connected_transmission_info>
-      
+
     </ISDB_connected_transmission_descriptor>
+
   </_descriptors>
 </tsduck>

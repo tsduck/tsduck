@@ -16,10 +16,11 @@
           <component_tags>
             Up to 16 8-bit component tags
           </component_tags>
-        
+
         </CAUnit>
       </component_group>
-      
+
     </ISDB_component_group_descriptor>
+
   </_descriptors>
 </tsduck>

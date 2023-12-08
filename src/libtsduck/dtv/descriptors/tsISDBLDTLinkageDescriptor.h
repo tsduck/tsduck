@@ -20,8 +20,14 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.40
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ISDBLDTLinkageDescriptor: public AbstractDescriptor {
-        class DescriptionType {
+    class TSDUCKDLL ISDBLDTLinkageDescriptor : public AbstractDescriptor
+    {
+    public:
+        //!
+        //! Linkage description type.
+        //!
+        class DescriptionType
+        {
             TS_DEFAULT_COPY_MOVE(DescriptionType);
         public:
             uint16_t id = 0;            //!< The id_number of the linked descriptor.
@@ -30,7 +36,7 @@ namespace ts {
             //!
             //! Default constructor.
             //!
-            DescriptionType() { clear(); }
+            DescriptionType() = default;
             //!
             //! Read-in constructor.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
@@ -43,7 +49,7 @@ namespace ts {
             //! toString
             //! @returns a string depiction of the prefectures included in the target region in a bitmap form where each represented by a 1 or 0 character.
             //!
-            ts::UString toString() const;
+            UString toString() const;
 
             //! @cond nodoxygen
             void clear();
@@ -55,12 +61,11 @@ namespace ts {
             //! @endcond
         };
 
-    public:
         // ISDBLDTLinkageDescriptor public members:
         uint16_t original_service_id = 0;               //!< The original_service_id of the linked LDT sub_table.
         uint16_t transport_stream_id = 0;               //!< The ts_id of the LDT sub_table which the linked LDT sub_table is included.
         uint16_t original_network_id = 0;               //!< The network_id of the originating delivery system in which the linked LDT sub_table is included.
-        std::vector<DescriptionType> descriptions {};
+        std::vector<DescriptionType> descriptions {};   //!< Linkage descriptions.
 
         //!
         //! Default constructor.

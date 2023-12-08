@@ -2,7 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <!-- removed    schar="unint16, required" -->
+    <!-- removed  schar="unint16, required" -->
     <JPEG_XS_video_descriptor
         descriptor_version="uint8, required"
         horizontal_size="uint16, required"
@@ -37,7 +37,7 @@
         L_min="uint32, required"
         MaxCLL="uint16, required"
         MaxFALL="uint16, required"/>
-      
+
       <private_data>
         Hexadecimal content
       </private_data>

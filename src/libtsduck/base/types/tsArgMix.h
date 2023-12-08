@@ -257,7 +257,7 @@ namespace ts {
 
         //!
         //! Size flag for std::filesystem::path, either BIT8 or BIT16.
-        //! 
+        //!
         static constexpr TypeFlags BITPATH =
 #if defined(TS_WINDOWS)
             BIT16;

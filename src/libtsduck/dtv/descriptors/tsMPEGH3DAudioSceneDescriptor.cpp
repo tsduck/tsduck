@@ -57,7 +57,7 @@ ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::MH3D_Interactivity
     mae_contentLanguage.reset();
 }
 
-ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractivityType::PositionInteractivityType() 
+ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractivityType::PositionInteractivityType()
 {
     mae_interactivityMinAzOffset = 0;
     mae_interactivityMaxAzOffset = 0;
@@ -67,7 +67,7 @@ ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractiv
     mae_interactivityMaxDistOffset = 0;
 }
 
-ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::GainInteractivityType::GainInteractivityType() 
+ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::GainInteractivityType::GainInteractivityType()
 {
     mae_interactivityMinGain = 0;
     mae_interactivityMaxGain = 0;
@@ -145,7 +145,7 @@ void ts::MPEGH3DAudioSceneDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBytes(reserved);
 }
 
-void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::serialize(PSIBuffer& buf) const 
+void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::serialize(PSIBuffer& buf) const
 {
     buf.putReserved(1);
     buf.putBits(mae_groupID, 7);
@@ -168,7 +168,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::serialize(PSI
     }
 }
 
-void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractivityType::serialize(PSIBuffer& buf) const 
+void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractivityType::serialize(PSIBuffer& buf) const
 {
     buf.putReserved(1);
     buf.putBits(mae_interactivityMinAzOffset, 7);
@@ -182,7 +182,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInter
     buf.putBits(mae_interactivityMaxDistOffset, 4);
 }
 
-void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::GainInteractivityType::serialize(PSIBuffer& buf) const 
+void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::GainInteractivityType::serialize(PSIBuffer& buf) const
 {
     buf.putReserved(2);
     buf.putBits(mae_interactivityMinGain, 6);
@@ -190,7 +190,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::GainInteracti
     buf.putBits(mae_interactivityMaxGain, 5);
 }
 
-void ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::serialize(PSIBuffer& buf) const 
+void ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::serialize(PSIBuffer& buf) const
 {
     buf.putReserved(1);
     buf.putBits(mae_switchGroupID, 5);
@@ -206,7 +206,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::serialize(PSIBuffer
     buf.putBits(mae_switchGroupDefaultGroupID, 7);
 }
 
-void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::serialize(PSIBuffer& buf) const 
+void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::serialize(PSIBuffer& buf) const
 {
     buf.putReserved(3);
     buf.putBits(mae_groupPresetID, 5);
@@ -219,7 +219,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::serialize(PSIBuffer
     }
 }
 
-void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditions_type::serialize(PSIBuffer& buf) const 
+void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditions_type::serialize(PSIBuffer& buf) const
 {
     buf.putBits(mae_groupPresetGroupID, 7);
     const bool mae_groupPresetConditionOnOff = mae_groupPresetDisableGainInteractivity.has_value() &&
@@ -258,7 +258,7 @@ void ts::MPEGH3DAudioSceneDescriptor::deserializePayload(PSIBuffer& buf)
     const bool switchGroupDefinitionPresent = buf.getBool();
     const bool presetGroupDefinitionPresent = buf.getBool();
     buf.skipBits(5);
-    _3dAudioSceneID = buf.getUInt8(); 
+    _3dAudioSceneID = buf.getUInt8();
     if (groupDefinitionPresent) {
         buf.skipBits(1);
         const uint8_t numGroups = buf.getBits<uint8_t>(7);
@@ -283,7 +283,7 @@ void ts::MPEGH3DAudioSceneDescriptor::deserializePayload(PSIBuffer& buf)
             presetGroups.push_back(newPresetGroup);
         }
     }
-    buf.getBytes(reserved);    
+    buf.getBytes(reserved);
 }
 
 void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::deserialize(PSIBuffer& buf)
@@ -407,7 +407,7 @@ void ts::MPEGH3DAudioSceneDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
             for (uint8_t i = 0; i < numGroups; i++) {
                 MH3D_InteractivityInfo_type tempIG;
                 tempIG.display(disp, buf, margin, i);
-            } 
+            }
         }
         if (switchGroupDefinitionPresent) {
             buf.skipReservedBits(3);
@@ -415,7 +415,7 @@ void ts::MPEGH3DAudioSceneDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
             for (uint8_t i = 0; i < numSwitchGroups; i++) {
                 MH3D_SwitchGroup_type tempSG;
                 tempSG.display(disp, buf, margin, i);
-            } 
+            }
         }
         if (presetGroupDefinitionPresent) {
             buf.skipReservedBits(3);
@@ -423,7 +423,7 @@ void ts::MPEGH3DAudioSceneDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
             for (uint8_t i = 0; i < numPresetGroups; i++) {
                 MH3D_PresetGroup_type tempPG;
                 tempPG.display(disp, buf, margin, i);
-            } 
+            }
         }
         disp.displayPrivateData(u"Reserved data", buf, NPOS, margin);
     }
@@ -559,13 +559,13 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::toXML(xml::El
     root->setIntAttribute(u"contentKind", mae_contentKind);
     if (mae_contentLanguage.has_value())
         root->setAttribute(u"contentLanguage", mae_contentLanguage.value());
-    
+
     if (positionInteractivity.has_value()) {
         positionInteractivity.value().toXML(root->addElement(u"PositionInteractivity"));
     }
     if (gainInteractivity.has_value()) {
         gainInteractivity.value().toXML(root->addElement(u"GainInteractivity"));
-    }           
+    }
 }
 
 void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractivityType::toXML(xml::Element* root) const
@@ -690,7 +690,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::fromXML(const
                 gainInteractivity = gain;
             }
         }
-    }        
+    }
     return ok;
 }
 
@@ -732,13 +732,13 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::fromXML(const xml::
     return ok;
 }
 
-bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::fromXML(const xml::Element* element) 
+bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::fromXML(const xml::Element* element)
 {
     ts::xml::ElementVector preset_conditions;
     bool ok = element->getIntAttribute(mae_groupPresetID, u"groupPresetID", true, 0, 0, 0x1f) &&
               element->getIntAttribute(mae_groupPresetKind, u"groupPresetKind", true, 0, 0, 0x1f) &&
               element->getChildren(preset_conditions, u"PresetConditions", 1, 16);
-    
+
     bool conditions_ok = true;
     if (ok) {
         for (size_t i = 0; i < preset_conditions.size(); ++i) {
@@ -754,7 +754,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::fromXML(const xml::
     return ok && conditions_ok;
 }
 
-bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditions_type::fromXML(const xml::Element* element) 
+bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditions_type::fromXML(const xml::Element* element)
 {
     bool ok = element->getIntAttribute(mae_groupPresetGroupID, u"groupPresetGroupID", true, 0, 0, 0x7f);
     bool hasPresetDisableGainInteractivity = element->hasAttribute(u"groupPresetDisableGainInteractivity"),
@@ -764,7 +764,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
          hasPresetElOffset = element->hasAttribute(u"groupPresetElOffset"),
          hasPresetDistFactor = element->hasAttribute(u"groupPresetDistFactor");
 
-    if (!(hasPresetDisableGainInteractivity || hasPresetDisablePositionInteractivity || hasPresetGain || 
+    if (!(hasPresetDisableGainInteractivity || hasPresetDisablePositionInteractivity || hasPresetGain ||
           hasPresetAzOffset || hasPresetElOffset || hasPresetDistFactor)) {
         // i.e. groupPresetConditionOnOff == false
         return ok;

@@ -216,7 +216,7 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 //----------------------------------------------------------------------------
 
 void ts::JPEGXSVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
-{  
+{
     root->setIntAttribute(u"descriptor_version", descriptor_version);
     root->setIntAttribute(u"horizontal_size", horizontal_size);
     root->setIntAttribute(u"vertical_size", vertical_size);

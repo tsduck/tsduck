@@ -11,7 +11,7 @@
         id="uint16, required"
         type="uint4, required"
         user_defined="uint8, required"/>
-      
+
     </ISDB_LDT_linkage_descriptor>
   </_descriptors>
 </tsduck>
