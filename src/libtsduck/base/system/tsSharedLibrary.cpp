@@ -63,13 +63,13 @@ void ts::SharedLibrary::load(const UString& filename)
     _module = ::LoadLibraryExW(_filename.wc_str(), nullptr, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {
-        _error = SysErrorCodeMessage();
+        _error.assignFromUTF8(SysErrorCodeMessage());
     }
 #else
     _dl = ::dlopen(_filename.toUTF8().c_str(), RTLD_NOW | RTLD_GLOBAL);
     _is_loaded = _dl != nullptr;
     if (!_is_loaded) {
-        _error = UString::FromUTF8(dlerror());
+        _error.assignFromUTF8(dlerror());
     }
 #endif
 
