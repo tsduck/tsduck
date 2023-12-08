@@ -203,7 +203,7 @@ ts::UString ts::ComMessage(::HRESULT hr)
         return UString(buf, size);
     }
     else {
-        return SysErrorCodeMessage(hr);
+        return UString::FromUTF8(SysErrorCodeMessage(hr));
     }
 }
 
