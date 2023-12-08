@@ -2,15 +2,20 @@
 <tsduck>
   <_descriptors>
 
+    <!-- removed    schar="unint16, required" -->
     <JPEG_XS_video_descriptor
         descriptor_version="uint8, required"
         horizontal_size="uint16, required"
         vertical_size="uint16, required"
         brat="uint32, required"
-        frat="uint32, required"
-        schar="unint16, required"
+        interlace_mode = "uint2, required"
+        framerate_DEN="1|1.001, required"
+        framerate_NUM="uint16, required"
+        sample_bitdepth="uint4, together with sampling_structure"
+        sampling_structure="uint4, together with bit_depth"
         Ppih="unit16, required"
-        Plev="uint16, required"
+        level="uint8, required"
+        sublevel="uint8, required"
         max_buffer_size="uint32, required"
         buffer_model_type="uint8, required"
         colour_primaries="unit8, required"
