@@ -14,11 +14,8 @@
 
 #pragma once
 #include "tsCerrReport.h"
-#include "tsSysUtils.h"
 #include "tsIPv4Address.h"
 #include "tsIPv4AddressMask.h"
-#include "tsIPv6Address.h"
-#include "tsIPv4SocketAddress.h"
 
 namespace ts {
     //!
@@ -68,60 +65,26 @@ namespace ts {
 #endif
 
     //!
-    //! Type for socket error codes as returned by system calls.
-    //!
-    typedef int SysSocketErrorCode;
-
-    //!
     //! System error code value meaning "connection reset by peer".
     //!
 #if defined(DOXYGEN)
-    constexpr SysSocketErrorCode SYS_SOCKET_ERR_RESET = platform_specific;
+    constexpr int SYS_SOCKET_ERR_RESET = platform_specific;
 #elif defined(TS_WINDOWS)
-    constexpr SysSocketErrorCode SYS_SOCKET_ERR_RESET = WSAECONNRESET;
+    constexpr int SYS_SOCKET_ERR_RESET = WSAECONNRESET;
 #elif defined(TS_UNIX)
-    constexpr SysSocketErrorCode SYS_SOCKET_ERR_RESET = EPIPE;
+    constexpr int SYS_SOCKET_ERR_RESET = EPIPE;
 #endif
 
     //!
     //! System error code value meaning "peer socket not connected".
     //!
 #if defined(DOXYGEN)
-    constexpr SysSocketErrorCode SYS_SOCKET_ERR_NOTCONN = platform_specific;
+    constexpr int SYS_SOCKET_ERR_NOTCONN = platform_specific;
 #elif defined(TS_WINDOWS)
-    constexpr SysSocketErrorCode SYS_SOCKET_ERR_NOTCONN = WSAENOTCONN;
+    constexpr int SYS_SOCKET_ERR_NOTCONN = WSAENOTCONN;
 #elif defined(TS_UNIX)
-    constexpr SysSocketErrorCode SYS_SOCKET_ERR_NOTCONN = ENOTCONN;
+    constexpr int SYS_SOCKET_ERR_NOTCONN = ENOTCONN;
 #endif
-
-    //!
-    //! Get the error code of the last socket system call.
-    //! The validity of the returned value may depends on specific conditions.
-    //! @return The error code of the last socket system call.
-    //!
-    TSDUCKDLL inline SysSocketErrorCode LastSysSocketErrorCode()
-    {
-#if defined(TS_WINDOWS)
-        return ::WSAGetLastError();
-#elif defined(TS_UNIX)
-        return errno;
-#else
-        #error "Unsupported operating system"
-#endif
-    }
-
-    //!
-    //! Format a socket error code into a string.
-    //! @param [in] code An error code from the operating system.
-    //! Typically a result from LastSysSocketErrorCode().
-    //! @return A string describing the error.
-    //!
-    TSDUCKDLL inline UString SysSocketErrorCodeMessage(SysSocketErrorCode code = LastSysSocketErrorCode())
-    {
-        // Note for windows: although error codes types are different for system and
-        // winsock, it appears that the system error message also applies to winsock.
-        return SysErrorCodeMessage(code);
-    }
 
     //!
     //! Integer data type which receives the length of a struct sockaddr.
@@ -370,7 +333,7 @@ namespace ts {
     //! @param [in] sock System socket descriptor.
     //! @return Error code.
     //!
-    TSDUCKDLL inline SysSocketErrorCode SysCloseSocket(SysSocketType sock)
+    TSDUCKDLL inline int SysCloseSocket(SysSocketType sock)
     {
 #if defined(TS_WINDOWS)
         return ::closesocket(sock);
@@ -380,6 +343,12 @@ namespace ts {
         #error "Unsupported operating system"
 #endif
     }
+
+    //!
+    //! Get the std::error_category for getaddrinfo() error code (Unix only).
+    //! @return A constant reference to a std::error_category instance.
+    //!
+    TSDUCKDLL const std::error_category& getaddrinfo_category();
 
     //------------------------------------------------------------------------
     // Local network interfaces.

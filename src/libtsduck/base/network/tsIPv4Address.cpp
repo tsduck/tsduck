@@ -156,18 +156,14 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
 
     if (status != 0) {
 #if defined(TS_WINDOWS)
-        const SysSocketErrorCode code = LastSysSocketErrorCode();
-        report.error(name + u": " + SysSocketErrorCodeMessage(code));
+        report.error(u"%s: %s", {name, SysErrorCodeMessage()});
 #else
-        const SysErrorCode code = LastSysErrorCode();
-        UString errmsg;
         if (status == EAI_SYSTEM) {
-            errmsg = SysErrorCodeMessage(code);
+            report.error(u"%s: %s", {name, SysErrorCodeMessage(LastSysErrorCode())});
         }
         else {
-            errmsg = UString::FromUTF8(gai_strerror(status));
+            report.error(u"%s: %s", {name, SysErrorCodeMessage(status, getaddrinfo_category())});
         }
-        report.error(name + u": " + errmsg);
 #endif
         return false;
     }

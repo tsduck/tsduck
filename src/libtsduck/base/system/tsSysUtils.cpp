@@ -191,17 +191,8 @@ ts::UString ts::CallerLibraryFile()
 
 
 //----------------------------------------------------------------------------
-// Get current process characteristics.
+// Check if the current user is privileged (UNIX root, Windows administrator).
 //----------------------------------------------------------------------------
-
-ts::ProcessId ts::CurrentProcessId()
-{
-#if defined(TS_WINDOWS)
-    return ::GetCurrentProcessId();
-#else
-    return ::getpid();
-#endif
-}
 
 bool ts::IsPrivilegedUser()
 {
@@ -218,62 +209,6 @@ bool ts::IsPrivilegedUser()
     return ok;
 #else
     return ::geteuid() == 0;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Format an error code into a string
-//----------------------------------------------------------------------------
-
-#if !defined(TS_WINDOWS)
-// Depending on GNU vs. POSIX, strerror_r returns an int or a char*.
-// There are two short functions to handle the strerror_r result.
-// The C++ compiler will automatically invoke the right one.
-// The other one is unused (disable unused warning).
-
-TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(unused-function)
-TS_GCC_NOWARNING(unused-function)
-namespace {
-    // POSIX version, strerror_r returns an int, leave result unmodified.
-    inline void handle_strerror_r(bool& found, char*& result, int strerror_t_ret)
-    {
-        found = strerror_t_ret == 0; // success
-    }
-    // GNU version, strerror_r returns char*, not necessarily in buffer.
-    inline void handle_strerror_r(bool& found, char*& result, char* strerror_t_ret)
-    {
-        result = strerror_t_ret; // actual message
-        found = result != nullptr;
-    }
-}
-TS_POP_WARNING()
-#endif // not Windows
-
-// Portable public interface:
-ts::UString ts::SysErrorCodeMessage(ts::SysErrorCode code)
-{
-#if defined(TS_WINDOWS)
-    return WinErrorMessage(code);
-#else
-    char message[1024];
-    TS_ZERO(message);
-
-    char* result = message;
-    bool found = false;
-    handle_strerror_r(found, result, strerror_r(code, message, sizeof(message)));
-
-    if (found) {
-        // Make sure message is nul-terminated.
-        message[sizeof(message) - 1] = 0;
-        // Remove trailing newlines (if any)
-        for (size_t i = ::strlen(result); i > 0 && (result[i - 1] == '\n' || result[i - 1] == '\r'); result[--i] = 0) {}
-        return UString::FromUTF8(result);
-    }
-
-    // At this point, the message is not found.
-    return UString::Format(u"System error %d (0x%X)", {code, code});
 #endif
 }
 

@@ -18,7 +18,7 @@ ts::Exception::Exception(const UString& w) :
 }
 
 ts::Exception::Exception(const UString& w, int error) :
-    Exception(UString::Format(u"%s, system error %d (0x%X), %s", {w, error, error, SysErrorCodeMessage(SysErrorCode(error))}))
+    Exception(UString::Format(u"%s, system error %d (0x%X), %s", {w, error, error, SysErrorCodeMessage(error)}))
 {
 }
 

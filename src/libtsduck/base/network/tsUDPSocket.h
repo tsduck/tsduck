@@ -390,8 +390,8 @@ namespace ts {
 #endif
         MReqSet           _mcast {};    // Current set of multicast memberships
 
-        // Perform one receive operation. Hide the system mud.
-        SysSocketErrorCode receiveOne(void* data, size_t max_size, size_t& ret_size, IPv4SocketAddress& sender, IPv4SocketAddress& destination, Report& report, MicroSecond* timestamp);
+        // Perform one receive operation. Hide the system mud. Return a system socket error code.
+        int receiveOne(void* data, size_t max_size, size_t& ret_size, IPv4SocketAddress& sender, IPv4SocketAddress& destination, Report& report, MicroSecond* timestamp);
 
         // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)

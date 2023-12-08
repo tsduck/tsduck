@@ -13,8 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPv4Address.h"
-#include "tsIPUtils.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     //!

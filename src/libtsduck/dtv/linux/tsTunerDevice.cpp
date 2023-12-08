@@ -349,7 +349,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
 #endif
     else {
         // DTV_ENUM_DELSYS failed, convert tuner type from FE_GET_INFO.
-        const SysErrorCode err = LastSysErrorCode();
+        const int err = errno;
         const bool can2g = (_fe_info.caps & FE_CAN_2G_MODULATION) != 0;
         switch (_fe_info.type) {
             case FE_QPSK:
@@ -410,7 +410,7 @@ void ts::TunerDevice::hardClose(Report* report)
 {
     // Stop the demux
     if (_demux_fd >= 0 && ::ioctl(_demux_fd, ioctl_request_t(DMX_STOP)) < 0 && report != nullptr) {
-        report->error(u"error stopping demux on %s: %s", {_demux_name, SysErrorCodeMessage()});
+        _duck.report().error(u"error stopping demux %s: %s", {_demux_name, SysErrorCodeMessage()});
     }
 
     // Close DVB adapter devices
@@ -487,12 +487,11 @@ bool ts::TunerDevice::getFrontendStatus(::fe_status_t& status)
 
     errno = 0;
     const bool ok = ::ioctl(_frontend_fd, ioctl_request_t(FE_READ_STATUS), &status) == 0;
-    const SysErrorCode err = LastSysErrorCode();
-    if (ok || (!ok && err == EBUSY && status != FE_ZERO)) {
+    if (ok || (!ok && errno == EBUSY && status != FE_ZERO)) {
         return true;
     }
     else {
-        _duck.report().error(u"error reading status on %s: %s", {_frontend_name, SysErrorCodeMessage(err)});
+        _duck.report().error(u"error reading status on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
 }
@@ -586,8 +585,7 @@ bool ts::TunerDevice::getSignalState(SignalState& state)
     props.addStat(DTV_STAT_TOTAL_BLOCK_COUNT);
 
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-        const SysErrorCode err = LastSysErrorCode();
-        _duck.report().error(u"error getting tuner statistics: %s", {SysErrorCodeMessage(err)});
+        _duck.report().error(u"error getting tuner statistics: %s", {SysErrorCodeMessage()});
         return false;
     }
 
@@ -602,10 +600,9 @@ bool ts::TunerDevice::getSignalState(SignalState& state)
     // Try to get the signal strength from the legacy API.
     uint16_t strength = 0;
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_READ_SIGNAL_STRENGTH), &strength) < 0) {
-        const SysErrorCode err = LastSysErrorCode();
         // Silently ignore deprecated feature, see comment at beginning of file.
-        if (err != DVB_ENOTSUPP) {
-            _duck.report().error(u"error reading signal strength on %s: %s", {_frontend_name, SysErrorCodeMessage(err)});
+        if (errno != DVB_ENOTSUPP) {
+            _duck.report().error(u"error reading signal strength on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         }
         return -1;
     }
@@ -641,8 +638,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
     DTVProperties props;
     props.add(DTV_DELIVERY_SYSTEM);
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-        const SysErrorCode err = LastSysErrorCode();
-        _duck.report().error(u"error getting current delivery system from tuner: %s", {SysErrorCodeMessage(err)});
+        _duck.report().error(u"error getting current delivery system from tuner %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
 
@@ -676,8 +672,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #endif
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters from tuner %s: %s", {_frontend_name, SysErrorCodeMessage()});
                 return false;
             }
 
@@ -716,8 +711,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #endif
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters from tuner %s: %s", {_frontend_name, SysErrorCodeMessage()});
                 return false;
             }
 
@@ -749,8 +743,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_MODULATION);
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters from tuner %s: %s", {_frontend_name, SysErrorCodeMessage()});
                 return false;
             }
 
@@ -768,8 +761,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_MODULATION);
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters from tuner %s: %s", {_frontend_name, SysErrorCodeMessage()});
                 return false;
             }
 
@@ -795,8 +787,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_STREAM_ID);
 #endif
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters from tuner %s: %s", {_frontend_name, SysErrorCodeMessage()});
                 return false;
             }
 
@@ -841,8 +832,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             props.add(DTV_ISDBT_LAYERC_TIME_INTERLEAVING);
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
-                const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters from tuner %s: %s", {_frontend_name, SysErrorCodeMessage()});
                 return false;
             }
 
@@ -990,8 +980,7 @@ bool ts::TunerDevice::dtvTune(DTVProperties& props)
     _duck.report().debug(u"tuning on %s", {_frontend_name});
     props.report(_duck.report(), Severity::Debug);
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_SET_PROPERTY), props.getIoctlParam()) < 0) {
-        const SysErrorCode err = LastSysErrorCode();
-        _duck.report().error(u"tuning error on %s: %s", {_frontend_name, SysErrorCodeMessage(err)});
+        _duck.report().error(u"tuning error on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
     return true;
@@ -1043,13 +1032,13 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
 
     // Stop 22 kHz continuous tone (was on if previously tuned on high band)
     if (ioctl_fe_set_tone(_frontend_fd, SEC_TONE_OFF) < 0) {
-        _duck.report().error(u"DVB frontend FE_SET_TONE error: %s", {SysErrorCodeMessage()});
+        _duck.report().error(u"DVB frontend FE_SET_TONE error on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
 
     // Setup polarisation voltage: 13V for vertical polarisation, 18V for horizontal
     if (ioctl_fe_set_voltage(_frontend_fd, params.polarity == POL_VERTICAL ? SEC_VOLTAGE_13 : SEC_VOLTAGE_18) < 0) {
-        _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error: %s", {SysErrorCodeMessage()});
+        _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
 
@@ -1069,7 +1058,7 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     //      In reply to this report, the answer was "thanks, committed" but it does
     //      not appear to be committed. Here, we use the "probably correct" code.
     if (ioctl_fe_diseqc_send_burst(_frontend_fd, params.satellite_number == 0 ? SEC_MINI_A : SEC_MINI_B) < 0) {
-        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_BURST error: %s", {SysErrorCodeMessage()});
+        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_BURST error on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
 
@@ -1091,7 +1080,7 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
     cmd.msg[5] = 0x00;  // Unused
 
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
-        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", {SysErrorCodeMessage()});
+        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
 
@@ -1100,7 +1089,7 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
 
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
     if (::ioctl_fe_set_tone(_frontend_fd, high_band ? SEC_TONE_ON : SEC_TONE_OFF) < 0) {
-        _duck.report().error(u"DVB frontend FE_SET_TONE error: %s", {SysErrorCodeMessage()});
+        _duck.report().error(u"DVB frontend FE_SET_TONE error on %s: %s", {_frontend_name, SysErrorCodeMessage()});
         return false;
     }
     return true;
