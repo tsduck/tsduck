@@ -790,7 +790,7 @@ ifeq ($(PUBLIC_INCLUDES),)
     ifeq ($(BSD),)
         export OTHER_OS := $(OTHER_OS) bsd
     endif
-    export ALL_INCLUDES := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
+    export ALL_INCLUDES := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h $(LIBTSDUCKDIR)/*/*/*/*.h)))))
     export PRIVATE_INCLUDES := $(filter %/private,$(ALL_INCLUDES))
     export PUBLIC_INCLUDES := $(filter-out %/private,$(ALL_INCLUDES))
 endif
