@@ -444,7 +444,7 @@ void SysUtilsTest::testTempFiles()
 
     // Check that temporary files are in this directory
     const fs::path tmpName(ts::TempFile());
-    TSUNIT_EQUAL(fs::canonical(tmpName.parent_path()), fs::canonical(fs::temp_directory_path()));
+    TSUNIT_EQUAL(fs::canonical(tmpName.parent_path()).string(), fs::canonical(fs::temp_directory_path()).string());
 
     // Check that we are allowed to create temporary files.
     TSUNIT_ASSERT(!fs::exists(tmpName));
