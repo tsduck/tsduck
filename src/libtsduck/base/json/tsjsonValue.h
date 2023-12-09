@@ -78,7 +78,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            virtual bool save(const UString& fileName, size_t indent = 2, bool stdOutputIfEmpty = false, Report& report = NULLREP);
+            virtual bool save(const fs::path& fileName, size_t indent = 2, bool stdOutputIfEmpty = false, Report& report = NULLREP);
             //!
             //! Check if this instance is a JSON null literal.
             //! @return True if this instance is a JSON null literal.

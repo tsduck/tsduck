@@ -79,7 +79,7 @@ namespace ts {
             //! @param [in] indent Indentation width of each level.
             //! @return True on success, false on error.
             //!
-            bool save(const UString& fileName, size_t indent = 2);
+            bool save(const fs::path& fileName, size_t indent = 2);
 
             //!
             //! Check if a "file name" is in fact inline XML content instead of a file name.

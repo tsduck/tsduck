@@ -92,7 +92,7 @@ ts::UString ts::json::Value::oneLiner(Report& report) const
 // Save the value as a JSON file.
 //----------------------------------------------------------------------------
 
-bool ts::json::Value::save(const UString& fileName, size_t indent, bool stdOutputIfEmpty, Report& report)
+bool ts::json::Value::save(const fs::path& fileName, size_t indent, bool stdOutputIfEmpty, Report& report)
 {
     TextFormatter out(report);
     out.setIndentSize(indent);

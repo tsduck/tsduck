@@ -27,7 +27,6 @@
 class ARIBCharsetTest: public tsunit::Test
 {
 public:
-    ARIBCharsetTest();
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -140,7 +139,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    const bool _cSyntaxDebug;
+    const bool _cSyntaxDebug = !ts::GetEnvironment(u"TS_UTEST_ARIB_CSYNTAX").empty();
     void dump(const ts::UString& title, const ts::ByteBlock& bb);
     void dump(const ts::UString& title, const ts::UString& str);
 };
@@ -151,12 +150,6 @@ TSUNIT_REGISTER(ARIBCharsetTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-ARIBCharsetTest::ARIBCharsetTest() :
-    _cSyntaxDebug(!ts::GetEnvironment(u"TS_UTEST_ARIB_CSYNTAX").empty())
-{
-}
 
 // Test suite initialization method.
 void ARIBCharsetTest::beforeTest()

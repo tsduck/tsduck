@@ -120,7 +120,7 @@ namespace ts {
         //! is ignored. On Unix systems, this file is used to store and retrieve cookies
         //! in the libcurl format. When @a fileName is empty, use a temporary file name.
         //!
-        void enableCookies(const UString& fileName = UString());
+        void enableCookies(const fs::path& fileName = fs::path());
 
         //!
         //! Disable the use of cookies for all requests.
@@ -136,7 +136,7 @@ namespace ts {
         //!   per-application file and this method always report an empty string.
         //! @return The cookie file name.
         //!
-        UString getCookiesFileName() const;
+        fs::path getCookiesFileName() const;
 
         //!
         //! Delete the cookies file, if one was defined.
@@ -334,7 +334,7 @@ namespace ts {
         //! @param [in] chunkSize Individual download chunk size.
         //! @return True on success, false on error.
         //!
-        bool downloadFile(const UString& url, const UString& fileName, size_t chunkSize = DEFAULT_CHUNK_SIZE);
+        bool downloadFile(const UString& url, const fs::path& fileName, size_t chunkSize = DEFAULT_CHUNK_SIZE);
 
         //!
         //! Get the version of the underlying HTTP library.
@@ -359,7 +359,7 @@ namespace ts {
         UString       _proxyUser {};
         UString       _proxyPassword {};
         bool          _useCompression = false;
-        UString       _cookiesFileName {};
+        fs::path      _cookiesFileName {};
         bool          _useCookies = false;
         bool          _deleteCookiesFile = false; // delete the cookies file on close
         HeadersMap    _requestHeaders {};         // all request headers (to send)

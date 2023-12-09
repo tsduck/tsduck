@@ -37,8 +37,6 @@
 class SysUtilsTest: public tsunit::Test
 {
 public:
-    SysUtilsTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -97,8 +95,8 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::NanoSecond  _nsPrecision;
-    ts::MilliSecond _msPrecision;
+    ts::NanoSecond  _nsPrecision = 0;
+    ts::MilliSecond _msPrecision = 0;
 };
 
 TSUNIT_REGISTER(SysUtilsTest);
@@ -107,13 +105,6 @@ TSUNIT_REGISTER(SysUtilsTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-SysUtilsTest::SysUtilsTest() :
-    _nsPrecision(0),
-    _msPrecision(0)
-{
-}
 
 // Test suite initialization method.
 void SysUtilsTest::beforeTest()
@@ -145,10 +136,10 @@ namespace {
 // Create a file with the specified size using standard C++ I/O.
 // Return true on success, false on error.
 namespace {
-    bool _CreateFile(const ts::UString& name, size_t size)
+    bool _CreateFile(const fs::path& name, size_t size)
     {
         ts::UString data(size, '-');
-        std::ofstream file(name.toUTF8().c_str(), std::ios::binary);
+        std::ofstream file(name, std::ios::binary);
         if (file) {
             file << data;
             file.close();
@@ -175,8 +166,8 @@ void SysUtilsTest::testCurrentExecutableFile()
 {
     // Hard to make automated tests since we do not expect a predictible executable name.
 
-    ts::UString exe(ts::ExecutableFile());
-    debug() << "SysUtilsTest: ts::ExecutableFile() = \"" << exe << "\"" << std::endl;
+    fs::path exe(ts::ExecutableFile());
+    debug() << "SysUtilsTest: ts::ExecutableFile() = \"" << exe.string() << "\"" << std::endl;
     TSUNIT_ASSERT(!exe.empty());
     TSUNIT_ASSERT(fs::exists(exe));
 }
@@ -452,8 +443,8 @@ void SysUtilsTest::testTempFiles()
     TSUNIT_ASSERT(fs::is_directory(fs::temp_directory_path()));
 
     // Check that temporary files are in this directory
-    const ts::UString tmpName(ts::TempFile());
-    TSUNIT_ASSERT(fs::path(ts::DirectoryName(tmpName)) == fs::temp_directory_path());
+    const fs::path tmpName(ts::TempFile());
+    TSUNIT_EQUAL(fs::canonical(tmpName.parent_path()), fs::canonical(fs::temp_directory_path()));
 
     // Check that we are allowed to create temporary files.
     TSUNIT_ASSERT(!fs::exists(tmpName));
@@ -466,7 +457,7 @@ void SysUtilsTest::testTempFiles()
 
 void SysUtilsTest::testFileSize()
 {
-    const ts::UString tmpName(ts::TempFile());
+    const fs::path tmpName(ts::TempFile());
     TSUNIT_ASSERT(!fs::exists(tmpName));
 
     // Create a file
@@ -479,7 +470,7 @@ void SysUtilsTest::testFileSize()
     TSUNIT_ASSERT(success);
     TSUNIT_EQUAL(567, fs::file_size(tmpName, &ts::ErrCodeReport(CERR)));
 
-    const ts::UString tmpName2(ts::TempFile());
+    const fs::path tmpName2(ts::TempFile());
     TSUNIT_ASSERT(!fs::exists(tmpName2));
     fs::rename(tmpName, tmpName2, &ts::ErrCodeReport(success, CERR));
     TSUNIT_ASSERT(success);
@@ -493,7 +484,7 @@ void SysUtilsTest::testFileSize()
 
 void SysUtilsTest::testFileTime()
 {
-    const ts::UString tmpName(ts::TempFile());
+    const fs::path tmpName(ts::TempFile());
 
     const ts::Time before(ts::Time::CurrentUTC());
     TSUNIT_ASSERT(_CreateFile(tmpName, 0));
@@ -550,7 +541,7 @@ void SysUtilsTest::testFileTime()
 
 void SysUtilsTest::testDirectory()
 {
-    const ts::UString dirName(ts::TempFile(u""));
+    const fs::path dirName(ts::TempFile(u""));
     const ts::UString sep(1, fs::path::preferred_separator);
     const ts::UString fileName(sep + u"foo.bar");
 
@@ -564,7 +555,7 @@ void SysUtilsTest::testDirectory()
     TSUNIT_ASSERT(!fs::is_directory(dirName + fileName));
 
     bool success = true;
-    const ts::UString dirName2(ts::TempFile(u""));
+    const fs::path dirName2(ts::TempFile(u""));
     TSUNIT_ASSERT(!fs::exists(dirName2));
     fs::rename(dirName, dirName2, &ts::ErrCodeReport(success, CERR));
     TSUNIT_ASSERT(success);

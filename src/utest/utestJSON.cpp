@@ -32,8 +32,6 @@
 class JsonTest: public tsunit::Test
 {
 public:
-    JsonTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -58,7 +56,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::UString _tempFileName;
+    fs::path _tempFileName {};
 
     static ts::UString LoadFile(const ts::UString& filename);
     ts::UString loadTempFile() const { return LoadFile(_tempFileName); }
@@ -70,12 +68,6 @@ TSUNIT_REGISTER(JsonTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-JsonTest::JsonTest() :
-    _tempFileName()
-{
-}
 
 // Test suite initialization method.
 void JsonTest::beforeTest()

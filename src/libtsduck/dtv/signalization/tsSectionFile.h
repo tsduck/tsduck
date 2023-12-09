@@ -275,7 +275,7 @@ namespace ts {
         //! If the file name is empty or "-", the standard input is used.
         //! @return True on success, false on error.
         //!
-        bool loadBinary(const UString& file_name);
+        bool loadBinary(const fs::path& file_name);
 
         //!
         //! Save a binary section file.
@@ -293,7 +293,7 @@ namespace ts {
         //! If the file name is empty or "-", the standard output is used.
         //! @return True on success, false on error.
         //!
-        bool saveBinary(const UString& file_name) const;
+        bool saveBinary(const fs::path& file_name) const;
 
         //!
         //! Load a binary section file from a memory buffer.

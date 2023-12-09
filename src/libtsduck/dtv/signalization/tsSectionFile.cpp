@@ -304,7 +304,7 @@ void ts::SectionFile::rebuildTables()
 // Load a binary section file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::loadBinary(const UString& file_name)
+bool ts::SectionFile::loadBinary(const fs::path& file_name)
 {
     // Separately process standard input.
     if (file_name.empty() || file_name == u"-") {
@@ -312,7 +312,7 @@ bool ts::SectionFile::loadBinary(const UString& file_name)
     }
 
     // Open the input file.
-    std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
+    std::ifstream strm(file_name, std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
         _report.error(u"cannot open %s", {file_name});
         return false;
@@ -348,7 +348,7 @@ bool ts::SectionFile::loadBinary(std::istream& strm, Report& report)
 // Save a binary section file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::saveBinary(const UString& file_name) const
+bool ts::SectionFile::saveBinary(const fs::path& file_name) const
 {
     // Separately process standard output.
     if (file_name.empty() || file_name == u"-") {
@@ -356,7 +356,7 @@ bool ts::SectionFile::saveBinary(const UString& file_name) const
     }
 
     // Create the output file.
-    std::ofstream strm(file_name.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    std::ofstream strm(file_name, std::ios::out | std::ios::binary);
     if (!strm.is_open()) {
         _report.error(u"error creating %s", {file_name});
         return false;

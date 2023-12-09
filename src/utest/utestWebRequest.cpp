@@ -29,8 +29,6 @@
 class WebRequestTest: public tsunit::Test
 {
 public:
-    WebRequestTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -51,7 +49,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::UString _tempFileName;
+    fs::path _tempFileName {};
     ts::Report& report();
     void testURL(const ts::UString& url, bool expectRedirection, bool expectSSL, bool expectTextContent, bool expectInvariant);
 };
@@ -62,12 +60,6 @@ TSUNIT_REGISTER(WebRequestTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-WebRequestTest::WebRequestTest() :
-    _tempFileName()
-{
-}
 
 // Test suite initialization method.
 void WebRequestTest::beforeTest()

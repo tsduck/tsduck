@@ -265,7 +265,7 @@ ts::UString ts::BaseName(const UString& path, const UString& suffix)
 {
     const UString::size_type sep = LastPathSeparator(path);
     const UString base(path.substr(sep == NPOS ? 0 : sep + 1));
-    const bool suffixFound = !suffix.empty() && base.endWith(suffix, FileSystemCaseSensitivity);
+    const bool suffixFound = !suffix.empty() && base.endWith(suffix, FILE_SYSTEM_CASE_SENSITVITY);
     return suffixFound ? base.substr(0, base.size() - suffix.size()) : base;
 }
 
@@ -335,7 +335,7 @@ ts::UString ts::PathPrefix(const UString& path)
 // Get the current user's home directory.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UserHomeDirectory()
+fs::path ts::UserHomeDirectory()
 {
 #if defined(TS_WINDOWS)
 
@@ -365,9 +365,11 @@ ts::UString ts::UserHomeDirectory()
 // Return the name of a unique temporary file name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::TempFile(const UString& suffix)
+fs::path ts::TempFile(const UString& suffix)
 {
-    return fs::temp_directory_path() + fs::path::preferred_separator + UString::Format(u"tstmp-%X", {UID::Instance().newUID()}) + suffix;
+    fs::path name(fs::temp_directory_path());
+    name /= UString::Format(u"tstmp-%X%s", {UID::Instance().newUID(), suffix});
+    return name;
 }
 
 
@@ -407,8 +409,8 @@ ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pat
 
     // Adjust file name with the executable suffix.
     UString name(fileName);
-    if (!name.endWith(ExecutableFileSuffix, FileSystemCaseSensitivity)) {
-        name.append(ExecutableFileSuffix);
+    if (!name.endWith(EXECUTABLE_FILE_SUFFIX, FILE_SYSTEM_CASE_SENSITVITY)) {
+        name.append(EXECUTABLE_FILE_SUFFIX);
     }
 
     // Executable mask at any level.

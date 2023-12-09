@@ -61,7 +61,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
         for (auto itPager = pagers.begin(); itPager != pagers.end() && _pagerCommand.empty(); ++itPager) {
             for (auto itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
                 // Full path of executable file.
-                const UString exe(*itDir + fs::path::preferred_separator + itPager->command + ExecutableFileSuffix);
+                const UString exe(*itDir + fs::path::preferred_separator + itPager->command + EXECUTABLE_FILE_SUFFIX);
                 if (fs::exists(exe)) {
                     // The executable exists.
                     bool useParameters = true;

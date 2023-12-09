@@ -88,9 +88,9 @@ namespace {
 
 void ConfigTest::testDefaultFile()
 {
-    debug() << "ConfigTest: DefaultFileName() = \"" << ts::ConfigFile::DefaultFileName() << "\"" << std::endl
-            << "ConfigTest: DefaultFileName(UNIX_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE) << "\"" << std::endl
-            << "ConfigTest: DefaultFileName(WINDOWS_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE) << "\"" << std::endl;
+    debug() << "ConfigTest: DefaultFileName() = \"" << ts::ConfigFile::DefaultFileName().string() << "\"" << std::endl
+            << "ConfigTest: DefaultFileName(UNIX_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE).string() << "\"" << std::endl
+            << "ConfigTest: DefaultFileName(WINDOWS_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE).string() << "\"" << std::endl;
 
     TSUNIT_ASSERT(!ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE).empty());
     TSUNIT_ASSERT(!ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE).empty());

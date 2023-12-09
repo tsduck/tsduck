@@ -25,8 +25,6 @@
 class ThreadTest: public tsunit::Test
 {
 public:
-    ThreadTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -42,8 +40,8 @@ public:
     TSUNIT_TEST(testMutexTimeout);
     TSUNIT_TEST_END();
 private:
-    ts::NanoSecond  _nsPrecision;
-    ts::MilliSecond _msPrecision;
+    ts::NanoSecond  _nsPrecision = 0;
+    ts::MilliSecond _msPrecision = 0;
 };
 
 TSUNIT_REGISTER(ThreadTest);
@@ -52,13 +50,6 @@ TSUNIT_REGISTER(ThreadTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-ThreadTest::ThreadTest() :
-    _nsPrecision(0),
-    _msPrecision(0)
-{
-}
 
 // Test suite initialization method.
 void ThreadTest::beforeTest()

@@ -974,7 +974,7 @@ ts::UString ts::Args::commandLine() const
 
 ts::UString ts::Args::GetAppName(int argc, char* argv[])
 {
-    return argc < 1 || argv == nullptr ? UString() : BaseName(UString::FromUTF8(argv[0]), ExecutableFileSuffix);
+    return argc < 1 || argv == nullptr ? UString() : BaseName(UString::FromUTF8(argv[0]), EXECUTABLE_FILE_SUFFIX);
 }
 
 

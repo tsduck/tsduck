@@ -41,7 +41,7 @@ namespace {
         ts::PagerArgs         pager {true, true};        // Output paging options.
         ts::UDPReceiver       udp {*this};               // Options about receiving UDP tables
         ts::duck::Protocol    duck_protocol {};          // To analyze incoming UDP messages
-        ts::UStringVector     infiles {};                // Input file names
+        std::vector<fs::path> infiles {};                // Input file names
         ts::CRC32::Validation crc_validation = ts::CRC32::CHECK;  // Validation of CRC32 in input sections
         size_t                max_tables = 0;            // Max number of tables to dump.
         size_t                max_invalid_udp = 16;      // Max number of invalid UDP messages before giving up.
@@ -90,7 +90,7 @@ Options::Options(int argc, char *argv[]) :
     display.loadArgs(duck, *this);
     udp.loadArgs(duck, *this);
 
-    getValues(infiles, u"");
+    getPathValues(infiles, u"");
     max_tables = intValue<size_t>(u"max-tables", std::numeric_limits<size_t>::max());
     no_encapsulation = present(u"no-encapsulation");
     crc_validation = present(u"ignore-crc32") ? ts::CRC32::IGNORE : ts::CRC32::CHECK;

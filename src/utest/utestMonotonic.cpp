@@ -23,8 +23,6 @@
 class MonotonicTest: public tsunit::Test
 {
 public:
-    MonotonicTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -38,8 +36,8 @@ public:
     TSUNIT_TEST(testWait);
     TSUNIT_TEST_END();
 private:
-    ts::NanoSecond  _nsPrecision;
-    ts::MilliSecond _msPrecision;
+    ts::NanoSecond  _nsPrecision = 0;
+    ts::MilliSecond _msPrecision = 0;
 };
 
 TSUNIT_REGISTER(MonotonicTest);
@@ -48,13 +46,6 @@ TSUNIT_REGISTER(MonotonicTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-MonotonicTest::MonotonicTest() :
-    _nsPrecision(0),
-    _msPrecision(0)
-{
-}
 
 // Test suite initialization method.
 void MonotonicTest::beforeTest()

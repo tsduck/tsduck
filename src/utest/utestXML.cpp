@@ -29,8 +29,6 @@
 class XMLTest: public tsunit::Test
 {
 public:
-    XMLTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -65,7 +63,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::UString _tempFileName;
+    fs::path _tempFileName {};
     ts::Report& report();
 };
 
@@ -75,12 +73,6 @@ TSUNIT_REGISTER(XMLTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-XMLTest::XMLTest() :
-    _tempFileName()
-{
-}
 
 // Test suite initialization method.
 void XMLTest::beforeTest()

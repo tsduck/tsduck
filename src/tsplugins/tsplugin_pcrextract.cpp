@@ -19,6 +19,7 @@
 #include "tsSpliceInformationTable.h"
 #include "tsRegistrationDescriptor.h"
 #include "tsSCTE35.h"
+#include "tsFileUtils.h"
 #include "tsFatal.h"
 
 
@@ -211,7 +212,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 
     option(u"separator", 's', STRING);
     help(u"separator", u"string",
-         u"Field separator string in CSV output (default: '" + UString(DefaultCsvSeparator) + u"').");
+         u"Field separator string in CSV output (default: '" + UString(DEFAULT_CSV_SEPARATOR) + u"').");
 }
 
 
@@ -236,7 +237,7 @@ bool ts::PCRExtractPlugin::getOptions()
     // Get command line options.
     getIntValues(_pids, u"pid", true);
     getPathValue(_output_name, u"output-file");
-    getValue(_separator, u"separator", DefaultCsvSeparator);
+    getValue(_separator, u"separator", DEFAULT_CSV_SEPARATOR);
     _all_pids = !present(u"pid");
     _noheader = present(u"noheader");
     _scte35 = present(u"scte35");

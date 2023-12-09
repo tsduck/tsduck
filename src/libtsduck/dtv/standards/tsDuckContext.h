@@ -94,7 +94,7 @@ namespace ts {
         //! output is already redirected outside @c std::cout, do nothing.
         //! @return True on success, false on error.
         //!
-        bool setOutput(const UString& fileName, bool override = true);
+        bool setOutput(const fs::path& fileName, bool override = true);
 
         //!
         //! Redirect the output stream to a stream.

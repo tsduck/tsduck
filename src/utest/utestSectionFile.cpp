@@ -36,8 +36,6 @@
 class SectionFileTest: public tsunit::Test
 {
 public:
-    SectionFileTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -71,8 +69,8 @@ private:
     // Unitary test for one table.
     void testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size);
     ts::Report& report();
-    ts::UString _tempFileNameBin;
-    ts::UString _tempFileNameXML;
+    fs::path _tempFileNameBin {};
+    fs::path _tempFileNameXML {};
 };
 
 TSUNIT_REGISTER(SectionFileTest);
@@ -81,13 +79,6 @@ TSUNIT_REGISTER(SectionFileTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-SectionFileTest::SectionFileTest() :
-    _tempFileNameBin(),
-    _tempFileNameXML()
-{
-}
 
 // Test suite initialization method.
 void SectionFileTest::beforeTest()

@@ -53,7 +53,7 @@ namespace ts {
             //! The referenced stream object must remain valid as long as this object.
             //! @return New root element of the document or null on error.
             //!
-            Element* open(const UString& rootName, const UString& declaration = UString(), const UString& fileName = UString(), std::ostream& strm = std::cout);
+            Element* open(const UString& rootName, const UString& declaration = UString(), const fs::path& fileName = fs::path(), std::ostream& strm = std::cout);
 
             //!
             //! Flush the running document.

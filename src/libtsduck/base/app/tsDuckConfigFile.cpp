@@ -23,7 +23,7 @@ TS_DEFINE_SINGLETON(ts::DuckConfigFile);
 
 ts::DuckConfigFile::DuckConfigFile() :
     ConfigFile(UserConfigurationFileName(u".tsduck", u"tsduck.ini"), NULLREP, u"TSDUCK_NO_USER_CONFIG"),
-    _appName(PathPrefix(BaseName(ExecutableFile())).toLower()),
+    _appName(UString(ExecutableFile().stem()).toLower()),
     _appSection(section(_appName)),
     _mainSection(section(u""))
 {

@@ -78,7 +78,7 @@ namespace ts {
             //! @param [in] tools List of tools (executables) which are provided by this extension.
             //!
             Register(const UString& name,
-                     const UString& file_name,
+                     const fs::path& file_name,
                      const UString& description,
                      const UStringVector& plugins = UStringVector(),
                      const UStringVector& tools = UStringVector());
@@ -92,7 +92,7 @@ namespace ts {
         {
         public:
             const UString       name;         // Extension name.
-            const UString       file_name;    // Extension shared library file name.
+            const fs::path      file_name;    // Extension shared library file name.
             const UString       description;  // One-line description of the extension.
             const UStringVector plugins;      // List of tsp plugin names which are provided by this extension.
             const UStringVector tools;        // List of tools (executables) which are provided by this extension.

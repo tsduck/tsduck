@@ -69,7 +69,7 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"or JSON structures may contain complete tables only.");
 
     args.option(u"binary-output", 'b', Args::FILENAME);
-    args.help(u"binary-output", u"filename",
+    args.help(u"binary-output",
               u"Save sections in the specified binary output file. "
               u"If empty or '-', the binary sections are written to the standard output. "
               u"See also option -m, --multiple-files.");
@@ -184,7 +184,7 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"Same as --invalid-sections but do not display valid tables and sections.");
 
     args.option(u"output-file", 'o', Args::FILENAME);
-    args.help(u"output-file", u"filename",
+    args.help(u"output-file",
               u"Save the tables or sections in human-readable text format in the specified "
               u"file. By default, when no output option is specified, text is produced on "
               u"the standard output. If you need text formatting on the standard output in "
@@ -230,7 +230,7 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"The specified file always contains one single table, the latest one.");
 
     args.option(u"text-output", 0, Args::FILENAME);
-    args.help(u"text-output", u"filename", u"A synonym for --output-file.");
+    args.help(u"text-output", u"A synonym for --output-file.");
 
     args.option(u"time-stamp");
     args.help(u"time-stamp", u"Display a time stamp (current local time) with each table.");
@@ -243,12 +243,12 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"Multicast TTL is 1 on most systems.");
 
     args.option(u"xml-output", 0,  Args::FILENAME);
-    args.help(u"xml-output", u"filename",
+    args.help(u"xml-output",
               u"Save the tables in XML format in the specified file. "
               u"To output the XML text on the standard output, explicitly specify this option with \"-\" as output file name.");
 
     args.option(u"json-output", 0,  Args::FILENAME);
-    args.help(u"json-output", u"filename",
+    args.help(u"json-output",
               u"Save the tables in JSON format in the specified file. "
               u"The tables are initially formatted as XML and automated XML-to-JSON conversion is applied. "
               u"To output the JSON text on the standard output, explicitly specify this option with \"-\" as output file name.");
@@ -281,11 +281,11 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Output destinations.
-    args.getValue(_xml_destination, u"xml-output");
-    args.getValue(_json_destination, u"json-output");
-    args.getValue(_bin_destination, u"binary-output");
+    args.getPathValue(_text_destination, u"output-file", args.value(u"text-output"));
+    args.getPathValue(_xml_destination, u"xml-output");
+    args.getPathValue(_json_destination, u"json-output");
+    args.getPathValue(_bin_destination, u"binary-output");
     args.getValue(_udp_destination, u"ip-udp");
-    args.getValue(_text_destination, u"output-file", args.value(u"text-output").c_str());
 
     _bin_stdout = _use_binary && (_bin_destination.empty() || _bin_destination == u"-");
     _bin_multi_files = !_bin_stdout && args.present(u"multiple-files");
@@ -1027,7 +1027,7 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
 // Create a binary file. On error, set _abort and return false.
 //----------------------------------------------------------------------------
 
-bool ts::TablesLogger::createBinaryFile(const ts::UString& name)
+bool ts::TablesLogger::createBinaryFile(const fs::path& name)
 {
     if (_bin_stdout) {
         // Make sure that the standard output is in binary mode.
@@ -1035,7 +1035,7 @@ bool ts::TablesLogger::createBinaryFile(const ts::UString& name)
     }
     else {
         _report.verbose(u"creating %s", {name});
-        _bin_file.open(name.toUTF8().c_str(), std::ios::out | std::ios::binary);
+        _bin_file.open(name, std::ios::out | std::ios::binary);
         if (_bin_file) {
             return true;
         }
@@ -1057,12 +1057,13 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
     // Create individual file for this section if required.
     if (_bin_multi_files) {
         // Build a unique file name for this section
-        UString outname(PathPrefix(_bin_destination));
-        outname.format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
+        UString suffix;
+        suffix.format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
         if (sect.isLongSection()) {
-            outname.format(u"_e%04X_v%02X_s%02X", {sect.tableIdExtension(), sect.version(), sect.sectionNumber()});
+            suffix.format(u"_e%04X_v%02X_s%02X", {sect.tableIdExtension(), sect.version(), sect.sectionNumber()});
         }
-        outname += PathSuffix(_bin_destination);
+        fs::path outname(_bin_destination);
+        outname.replace_filename(_bin_destination.stem() + suffix + _bin_destination.extension());
         // Create the output file
         if (!createBinaryFile(outname)) {
             return;

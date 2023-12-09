@@ -37,8 +37,6 @@
 class TunerTest: public tsunit::Test
 {
 public:
-    TunerTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -59,7 +57,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::COM _com; // required in Windows only
+    ts::COM _com {}; // required in Windows only
 };
 
 TSUNIT_REGISTER(TunerTest);
@@ -68,12 +66,6 @@ TSUNIT_REGISTER(TunerTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-TunerTest::TunerTest() :
-    _com()
-{
-}
 
 // Test suite initialization method.
 void TunerTest::beforeTest()

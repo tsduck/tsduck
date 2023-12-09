@@ -21,8 +21,6 @@
 class HLSTest: public tsunit::Test
 {
 public:
-    HLSTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -41,7 +39,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    int _previousSeverity;
+    int _previousSeverity = 0;
 };
 
 TSUNIT_REGISTER(HLSTest);
@@ -50,12 +48,6 @@ TSUNIT_REGISTER(HLSTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-HLSTest::HLSTest() :
-    _previousSeverity(0)
-{
-}
 
 // Test suite initialization method.
 void HLSTest::beforeTest()
