@@ -59,7 +59,7 @@
 // Return the name of the current application executable file.
 //----------------------------------------------------------------------------
 
-ts::UString ts::ExecutableFile()
+fs::path ts::ExecutableFile()
 {
     UString path;
 
@@ -113,12 +113,12 @@ ts::UString ts::ExecutableFile()
 
     ByteBlock argv_data(SysCtrlBytes({CTL_KERN, KERN_PROC_ARGS, ::getpid(), KERN_PROC_ARGV}));
     if (argv_data.size() < sizeof(char*)) {
-        return UString();
+        return fs::path();
     }
     char** argv = reinterpret_cast<char**>(argv_data.data());
     char* exe = argv[0];
     if (exe == nullptr) {
-        return UString();
+        return fs::path();
     }
     if (::strchr(exe, '/') != nullptr) {
         // A path is provided, resolve it.
@@ -134,10 +134,10 @@ ts::UString ts::ExecutableFile()
     }
 
 #else
-#error "ts::ExecutableFile not implemented on this system"
+    #error "ts::ExecutableFile not implemented on this system"
 #endif
 
-    return path.empty() ? path : AbsoluteFilePath(path);
+    return path.empty() ? fs::path() : fs::weakly_canonical(path);
 }
 
 
@@ -145,7 +145,7 @@ ts::UString ts::ExecutableFile()
 //! Get the name of the executable or shared library containing the caller.
 //----------------------------------------------------------------------------
 
-ts::UString ts::CallerLibraryFile()
+fs::path ts::CallerLibraryFile()
 {
 #if defined(TSDUCK_STATIC)
 
@@ -161,7 +161,7 @@ ts::UString ts::CallerLibraryFile()
     // Get the module (DLL) into which this address can be found.
     ::HMODULE handle = nullptr;
     if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, ::LPCWSTR(ret), &handle) == 0) {
-        return UString();
+        return fs::path();
     }
     else {
         std::array<::WCHAR, 2048> name;
@@ -178,10 +178,10 @@ ts::UString ts::CallerLibraryFile()
     ::Dl_info info;
     TS_ZERO(info);
     if (ret != nullptr && ::dladdr(ret, &info) != 0 && info.dli_fname != nullptr) {
-        return UString::FromUTF8(info.dli_fname);
+        return fs::path(info.dli_fname);
     }
     else {
-        return UString();
+        return fs::path();
     }
 
 #else

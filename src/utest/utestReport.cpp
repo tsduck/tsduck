@@ -24,8 +24,6 @@
 class ReportTest: public tsunit::Test
 {
 public:
-    ReportTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -46,7 +44,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::UString _fileName;
+    fs::path _fileName {};
 };
 
 TSUNIT_REGISTER(ReportTest);
@@ -55,12 +53,6 @@ TSUNIT_REGISTER(ReportTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-ReportTest::ReportTest() :
-    _fileName()
-{
-}
 
 // Test suite initialization method.
 void ReportTest::beforeTest()
@@ -285,7 +277,7 @@ void ReportTest::testByName()
 // Test case: log file on open stream
 void ReportTest::testByStream()
 {
-    std::ofstream stream(_fileName.toUTF8().c_str());
+    std::ofstream stream(_fileName);
     TSUNIT_ASSERT(stream.is_open());
 
     {

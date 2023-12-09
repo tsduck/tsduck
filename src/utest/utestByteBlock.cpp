@@ -23,8 +23,6 @@
 class ByteBlockTest: public tsunit::Test
 {
 public:
-    ByteBlockTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -39,7 +37,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::UString _tempFileName;
+    fs::path _tempFileName {};
 };
 
 TSUNIT_REGISTER(ByteBlockTest);
@@ -48,12 +46,6 @@ TSUNIT_REGISTER(ByteBlockTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-ByteBlockTest::ByteBlockTest() :
-    _tempFileName()
-{
-}
 
 // Test suite initialization method.
 void ByteBlockTest::beforeTest()

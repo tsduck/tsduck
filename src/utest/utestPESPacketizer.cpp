@@ -14,7 +14,6 @@
 #include "tsPESDemux.h"
 #include "tsDuckContext.h"
 #include "tsTSPacket.h"
-#include "tsCerrReport.h"
 #include "tsunit.h"
 
 
@@ -25,7 +24,6 @@
 class PESPacketizerTest: public tsunit::Test, private ts::PESHandlerInterface
 {
 public:
-    PESPacketizerTest();
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -36,7 +34,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    size_t _pes_count;
+    size_t _pes_count = 0;
     virtual void handlePESPacket(ts::PESDemux& demux, const ts::PESPacket& packet) override;
 };
 
@@ -46,12 +44,6 @@ TSUNIT_REGISTER(PESPacketizerTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-PESPacketizerTest::PESPacketizerTest() :
-    _pes_count(0)
-{
-}
 
 // Test suite initialization method.
 void PESPacketizerTest::beforeTest()

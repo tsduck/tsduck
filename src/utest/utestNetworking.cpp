@@ -19,7 +19,6 @@
 #include "tsTCPConnection.h"
 #include "tsTCPServer.h"
 #include "tsUDPSocket.h"
-#include "tsThread.h"
 #include "tsNullReport.h"
 #include "tsIPUtils.h"
 #include "tsCerrReport.h"
@@ -34,8 +33,6 @@
 class NetworkingTest: public tsunit::Test
 {
 public:
-    NetworkingTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -72,7 +69,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    int _previousSeverity;
+    int _previousSeverity = 0;
 };
 
 TSUNIT_REGISTER(NetworkingTest);
@@ -81,12 +78,6 @@ TSUNIT_REGISTER(NetworkingTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-NetworkingTest::NetworkingTest() :
-    _previousSeverity(0)
-{
-}
 
 // Test suite initialization method.
 void NetworkingTest::beforeTest()

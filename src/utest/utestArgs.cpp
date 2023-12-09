@@ -29,8 +29,6 @@
 class ArgsTest: public tsunit::Test
 {
 public:
-    ArgsTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -97,8 +95,8 @@ public:
 private:
     typedef ts::FloatingPoint<double> Double;
     typedef ts::UStringVector USV;
-    ts::UString _tempFile1;
-    ts::UString _tempFile2;
+    fs::path _tempFile1 {};
+    fs::path _tempFile2 {};
 };
 
 TSUNIT_REGISTER(ArgsTest);
@@ -107,13 +105,6 @@ TSUNIT_REGISTER(ArgsTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-ArgsTest::ArgsTest() :
-    _tempFile1(),
-    _tempFile2()
-{
-}
 
 // Test suite initialization method.
 void ArgsTest::beforeTest()

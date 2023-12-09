@@ -29,12 +29,6 @@
 
 namespace ts {
     //!
-    //! Default separator in CSV (comma-separated values) format.
-    //! CSV files are suitable for analysis using tools such as Microsoft Excel.
-    //!
-    constexpr const UChar* DefaultCsvSeparator = u",";
-
-    //!
     //! Get the error code of the last operating system call.
     //! The validity of the returned value may depends on specific conditions.
     //!
@@ -90,13 +84,13 @@ namespace ts {
     //! Get the name of the current application executable file.
     //! @return The full path of the executable file which is run in the current process.
     //!
-    TSDUCKDLL UString ExecutableFile();
+    TSDUCKDLL fs::path ExecutableFile();
 
     //!
     //! Get the name of the executable or shared library file containing the caller code.
     //! @return The full path of the file or empty in case of error or if not supported.
     //!
-    TSDUCKDLL UString CallerLibraryFile();
+    TSDUCKDLL fs::path CallerLibraryFile();
 
     //!
     //! Suspend the current thread for the specified period.

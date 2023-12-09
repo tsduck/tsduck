@@ -23,38 +23,44 @@ namespace ts {
     //! Executable file suffix.
     //!
 #if defined(DOXYGEN)
-    constexpr const UChar* ExecutableFileSuffix = platform - specific(".exe", "");  // for doc only
+    constexpr const UChar* EXECUTABLE_FILE_SUFFIX = platform - specific(".exe", "");  // for doc only
 #elif defined(TS_WINDOWS)
-    constexpr const UChar* ExecutableFileSuffix = u".exe";
+    constexpr const UChar* EXECUTABLE_FILE_SUFFIX = u".exe";
 #else
-    constexpr const UChar* ExecutableFileSuffix = u"";
+    constexpr const UChar* EXECUTABLE_FILE_SUFFIX = u"";
 #endif
 
     //!
     //! File name extension of shared library file names (".so" on Linux, '.dylib" on macOS, ".dll" on Windows).
     //!
 #if defined(DOXYGEN)
-    constexpr const UChar* SharedLibrarySuffix = platform - specific(".dll", ".so", ".dylib");  // for doc only
+    constexpr const UChar* SHARED_LIBRARY_SUFFIX = platform - specific(".dll", ".so", ".dylib");  // for doc only
 #elif defined(TS_WINDOWS)
-    constexpr const UChar* SharedLibrarySuffix = u".dll";
+    constexpr const UChar* SHARED_LIBRARY_SUFFIX = u".dll";
 #elif defined(TS_MAC)
-    constexpr const UChar* SharedLibrarySuffix = u".dylib";
+    constexpr const UChar* SHARED_LIBRARY_SUFFIX = u".dylib";
 #else
-    constexpr const UChar* SharedLibrarySuffix = u".so";
+    constexpr const UChar* SHARED_LIBRARY_SUFFIX = u".so";
 #endif
 
     //!
     //! Case-sensitivity of the names in the file system.
     //!
 #if defined(DOXYGEN)
-    constexpr CaseSensitivity FileSystemCaseSensitivity = platform-specific;
+    constexpr CaseSensitivity FILE_SYSTEM_CASE_SENSITVITY = platform-specific;
 #elif defined(TS_WINDOWS)
-    constexpr CaseSensitivity FileSystemCaseSensitivity = CASE_INSENSITIVE;
+    constexpr CaseSensitivity FILE_SYSTEM_CASE_SENSITVITY = CASE_INSENSITIVE;
 #elif defined(TS_UNIX)
-    constexpr CaseSensitivity FileSystemCaseSensitivity = CASE_SENSITIVE;
+    constexpr CaseSensitivity FILE_SYSTEM_CASE_SENSITVITY = CASE_SENSITIVE;
 #else
 #error "Unimplemented operating system"
 #endif
+
+    //!
+    //! Default separator in CSV (comma-separated values) format.
+    //! CSV files are suitable for analysis using tools such as Microsoft Excel.
+    //!
+    constexpr const UChar* DEFAULT_CSV_SEPARATOR = u",";
 
     //!
     //! Return a "vernacular" version of a file path.
@@ -97,7 +103,7 @@ namespace ts {
     //!
     TSDUCKDLL UString RelativeFilePath(const UString& path,
                                        const UString& base = UString(),
-                                       CaseSensitivity caseSensitivity = FileSystemCaseSensitivity,
+                                       CaseSensitivity caseSensitivity = FILE_SYSTEM_CASE_SENSITVITY,
                                        bool portableSlashes = false);
 
     //!
@@ -162,14 +168,14 @@ namespace ts {
     //! @return The full path of the current user's home directory.
     //! @throw ts::Exception In case of operating system error.
     //!
-    TSDUCKDLL UString UserHomeDirectory();
+    TSDUCKDLL fs::path UserHomeDirectory();
 
     //!
     //! Return the name of a unique temporary file.
     //! @param [in] suffix An optional suffix to add to the file name.
     //! @return A unique temporary file name.
     //!
-    TSDUCKDLL UString TempFile(const UString& suffix = u".tmp");
+    TSDUCKDLL fs::path TempFile(const UString& suffix = u".tmp");
 
     //!
     //! Get the local time of the last modification of a file.
@@ -262,7 +268,7 @@ namespace ts {
     //! Search an executable file.
     //! @param [in] fileName Name of the file to search.
     //! @param [in] pathName Name of the seach path environment variable.
-    //! @return The path to an existing file or an empty string if not found.
+    //! @return The path to an existing file or an empty path if not found.
     //!
     TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PathEnvironmentVariable);
 

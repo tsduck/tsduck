@@ -52,7 +52,7 @@ bool ts::TimeShiftBuffer::setMemoryPackets(size_t count)
     }
 }
 
-bool ts::TimeShiftBuffer::setBackupDirectory(const UString& directory)
+bool ts::TimeShiftBuffer::setBackupDirectory(const fs::path& directory)
 {
     if (_is_open) {
         return false;
@@ -85,10 +85,10 @@ bool ts::TimeShiftBuffer::open(Report& report)
     else {
         // The buffer is backed up on disk.
         // Get the name of a temporary file. If a directory is specified, we will use the base name only.
-        UString filename(TempFile());
+        fs::path filename(TempFile());
         if (!_directory.empty()) {
             if (fs::is_directory(_directory)) {
-                filename = _directory + fs::path::preferred_separator + BaseName(filename);
+                filename = _directory + fs::path::preferred_separator + filename.filename();
             }
             else {
                 report.error(u"directory %s does not exist", {_directory});

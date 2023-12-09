@@ -13,11 +13,6 @@
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-utest::TSUnitThread::TSUnitThread() :
-    ts::Thread()
-{
-}
-
 utest::TSUnitThread::TSUnitThread(const ts::ThreadAttributes& attributes) :
     ts::Thread(attributes)
 {

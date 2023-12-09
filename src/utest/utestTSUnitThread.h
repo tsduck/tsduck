@@ -31,7 +31,7 @@ namespace utest {
         //!
         //! Default constructor.
         //!
-        TSUnitThread();
+        TSUnitThread() = default;
 
         //!
         //! Destructor.

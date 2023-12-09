@@ -29,7 +29,7 @@ ts::xml::RunningDocument::~RunningDocument()
 // Initialize the document.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::xml::RunningDocument::open(const UString& rootName, const UString& declaration, const UString& fileName, std::ostream& strm)
+ts::xml::Element* ts::xml::RunningDocument::open(const UString& rootName, const UString& declaration, const fs::path& fileName, std::ostream& strm)
 {
     // Cleanup previous state.
     close();

@@ -34,7 +34,7 @@ namespace {
         ts::TablesDisplay  display {duck};     // Table formatting.
         ts::TablesLogger   logger {display};   // Table logging.
         ts::PagerArgs      pager {true, true}; // Output paging options.
-        ts::UString        infile {};          // Input file name.
+        fs::path           infile {};          // Input file name.
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
     };
 }
@@ -62,7 +62,7 @@ Options::Options(int argc, char *argv[]) :
     logger.loadArgs(duck, *this);
     display.loadArgs(duck, *this);
 
-    getValue(infile, u"");
+    getPathValue(infile, u"");
     format = ts::LoadTSPacketFormatInputOption(*this);
 
     exitOnError();

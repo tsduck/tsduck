@@ -209,7 +209,7 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 // Save an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::save(const UString& fileName, size_t indent)
+bool ts::xml::Document::save(const fs::path& fileName, size_t indent)
 {
     TextFormatter out(report());
     out.setIndentSize(indent);

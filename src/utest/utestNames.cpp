@@ -32,8 +32,6 @@
 class NamesTest: public tsunit::Test
 {
 public:
-    NamesTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -124,7 +122,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::UString _tempFileName;
+    fs::path _tempFileName {};
 };
 
 TSUNIT_REGISTER(NamesTest);
@@ -133,12 +131,6 @@ TSUNIT_REGISTER(NamesTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-NamesTest::NamesTest() :
-    _tempFileName()
-{
-}
 
 // Test suite initialization method.
 void NamesTest::beforeTest()

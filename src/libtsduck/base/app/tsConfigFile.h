@@ -36,7 +36,7 @@ namespace ts {
         //! @param [in] env_disable Optional name of an environment variable. When the corresponding
         //! environment variable is defined to some non-empty value, the file is not loaded.
         //!
-        explicit ConfigFile(const UString& filename = UString(), Report& report = CERR, const UString env_disable = UString());
+        explicit ConfigFile(const fs::path& filename = fs::path(), Report& report = CERR, const UString env_disable = UString());
 
         //!
         //! Constructor.
@@ -46,7 +46,7 @@ namespace ts {
         //! @param [in] env_disable Optional name of an environment variable. When the corresponding
         //! environment variable is defined to some non-empty value, the file is not loaded.
         //!
-        ConfigFile(const UString& filename1, const UString& filename2, Report& report = CERR, const UString env_disable = UString());
+        ConfigFile(const fs::path& filename1, const fs::path& filename2, Report& report = CERR, const UString env_disable = UString());
 
         //!
         //! Constructor.
@@ -66,16 +66,16 @@ namespace ts {
         //!
         //! Get the default configuration file name.
         //! @param [in] style System style for file name.
-        //! @param [in] name Application name (default: executable base name).
+        //! @param [in] app_name Application name (default: executable base name).
         //! @return The default configuration file name for the application.
         //!
-        static UString DefaultFileName(FileStyle style = LOCAL_SYSTEM, const UString& name = UString());
+        static fs::path DefaultFileName(FileStyle style = LOCAL_SYSTEM, const UString& app_name = UString());
 
         //!
         //! Get the latest loaded file.
         //! @return The name of the latest loaded file.
         //!
-        UString fileName() const { return _filename; }
+        fs::path fileName() const { return _filename; }
 
         //!
         //! Reload the configuration from a file.
@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool load(const UString& filename, Report& report = CERR);
+        bool load(const fs::path& filename, Report& report = CERR);
 
         //!
         //! Merge the configuration from a file.
@@ -92,7 +92,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool merge(const UString& filename, Report& report = CERR);
+        bool merge(const fs::path& filename, Report& report = CERR);
 
         //!
         //! Merge the configuration from a file.
@@ -108,7 +108,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool save(const UString& filename = UString(), Report& report = CERR) const;
+        bool save(const fs::path& filename = UString(), Report& report = CERR) const;
 
         //!
         //! Save a configuration file in a stream
@@ -178,8 +178,8 @@ namespace ts {
         typedef std::map <UString, ConfigSection> SectionMap;
 
         // Private members:
-        mutable UString _filename {};
-        SectionMap      _sections {};
+        mutable fs::path _filename {};
+        SectionMap       _sections {};
 
         // Used to return a constant reference.
         static const ConfigSection _empty;

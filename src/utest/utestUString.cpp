@@ -25,8 +25,6 @@
 class UStringTest: public tsunit::Test
 {
 public:
-    UStringTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -146,8 +144,8 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::UString _tempFilePrefix;
-    int _nextFileIndex;
+    fs::path _tempFilePrefix {};
+    int _nextFileIndex = 0;
     ts::UString temporaryFileName(int) const;
     ts::UString newTemporaryFileName();
 
@@ -158,10 +156,10 @@ private:
     // Two sample Unicode characters from the supplementary planes:
     //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
     //   U+1D539: MATHEMATICAL DOUBLE-STRUCK CAPITAL B
-    static const ts::UChar MATH_A1 = ts::UChar(0xD800 | (0x1D538 >> 10));
-    static const ts::UChar MATH_A2 = ts::UChar(0xDC00 | (0x1D538 & 0x03FF));
-    static const ts::UChar MATH_B1 = ts::UChar(0xD800 | (0x1D539 >> 10));
-    static const ts::UChar MATH_B2 = ts::UChar(0xDC00 | (0x1D539 & 0x03FF));
+    static constexpr ts::UChar MATH_A1 = ts::UChar(0xD800 | (0x1D538 >> 10));
+    static constexpr ts::UChar MATH_A2 = ts::UChar(0xDC00 | (0x1D538 & 0x03FF));
+    static constexpr ts::UChar MATH_B1 = ts::UChar(0xD800 | (0x1D539 >> 10));
+    static constexpr ts::UChar MATH_B2 = ts::UChar(0xDC00 | (0x1D539 & 0x03FF));
 };
 
 TSUNIT_REGISTER(UStringTest);
@@ -170,13 +168,6 @@ TSUNIT_REGISTER(UStringTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-UStringTest::UStringTest() :
-    _tempFilePrefix(),
-    _nextFileIndex(0)
-{
-}
 
 // Test suite initialization method.
 void UStringTest::beforeTest()

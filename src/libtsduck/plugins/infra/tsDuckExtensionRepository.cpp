@@ -52,7 +52,7 @@ ts::DuckExtensionRepository::Loader::Loader()
         const UString& filename(files[i]);
 
         // Get extension name from file name (without tslibext_).
-        const UString name(BaseName(filename, SharedLibrarySuffix).toRemovedPrefix(u"tslibext_", FileSystemCaseSensitivity));
+        const UString name(BaseName(filename, SHARED_LIBRARY_SUFFIX).toRemovedPrefix(u"tslibext_", FILE_SYSTEM_CASE_SENSITVITY));
         if (name.isContainedSimilarIn(ignore)) {
             // This extension is listed in TSLIBEXT_IGNORE.
             CERR.debug(u"ignoring extension \"%s\"", {filename});
@@ -76,13 +76,13 @@ ts::DuckExtensionRepository::Loader::Loader()
 //----------------------------------------------------------------------------
 
 ts::DuckExtensionRepository::Register::Register(const UString& name,
-                                                const UString& file_name,
+                                                const fs::path& file_name,
                                                 const UString& description,
                                                 const UStringVector& plugins,
                                                 const UStringVector& tools)
 {
     CERR.debug(u"registering extension \"%s\"", {name});
-    DuckExtensionRepository::Instance()._extensions.push_back({ name, file_name, description, plugins, tools });
+    DuckExtensionRepository::Instance()._extensions.push_back({name, file_name, description, plugins, tools});
 }
 
 
@@ -136,10 +136,10 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
             // Display full file names.
             out.format(u"%*s Library: %s\n", {width, u"", ext.file_name});
             for (size_t i = 0; i < ext.plugins.size(); ++i) {
-                out.format(u"%*s Plugin %s: %s\n", {width, u"", ext.plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext.plugins[i], SharedLibrarySuffix)});
+                out.format(u"%*s Plugin %s: %s\n", {width, u"", ext.plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext.plugins[i], SHARED_LIBRARY_SUFFIX)});
             }
             for (size_t i = 0; i < ext.tools.size(); ++i) {
-                out.format(u"%*s Command %s: %s\n", {width, u"", ext.tools[i], SearchFile(tools_dirs, u"", ext.tools[i], ExecutableFileSuffix)});
+                out.format(u"%*s Command %s: %s\n", {width, u"", ext.tools[i], SearchFile(tools_dirs, u"", ext.tools[i], EXECUTABLE_FILE_SUFFIX)});
             }
         }
         else {

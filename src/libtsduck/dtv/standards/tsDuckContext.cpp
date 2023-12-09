@@ -311,7 +311,7 @@ void ts::DuckContext::setOutput(std::ostream* stream, bool override)
     }
 }
 
-bool ts::DuckContext::setOutput(const UString& fileName, bool override)
+bool ts::DuckContext::setOutput(const fs::path& fileName, bool override)
 {
     // Do not override output if not standard output (or explicit override).
     if (override || _out == &std::cout) {
@@ -324,8 +324,7 @@ bool ts::DuckContext::setOutput(const UString& fileName, bool override)
         // Open new file if any.
         if (!fileName.empty() && fileName != u"-") {
             _report->verbose(u"creating %s", {fileName});
-            const std::string nameUTF8(fileName.toUTF8());
-            _outFile.open(nameUTF8.c_str(), std::ios::out);
+            _outFile.open(fileName, std::ios::out);
             if (!_outFile) {
                 _report->error(u"cannot create %s", {fileName});
                 return false;

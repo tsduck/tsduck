@@ -253,7 +253,7 @@ bool ts::hls::PlayList::addSegment(const MediaSegment& seg, Report& report)
         // Build a relative URI.
         if (!_isURL && !_original.empty()) {
             // The playlist's URI is a file name, update the segment's URI.
-            _segments.back().relativeURI = RelativeFilePath(seg.relativeURI, _fileBase, FileSystemCaseSensitivity, true);
+            _segments.back().relativeURI = RelativeFilePath(seg.relativeURI, _fileBase, FILE_SYSTEM_CASE_SENSITVITY, true);
         }
         return true;
     }
@@ -275,7 +275,7 @@ bool ts::hls::PlayList::addPlayList(const MediaPlayList& pl, Report& report)
         // Build a relative URI.
         if (!_isURL && !_original.empty()) {
             // The master playlist's URI is a file name, update the media playlist's URI.
-            _playlists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FileSystemCaseSensitivity, true);
+            _playlists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FILE_SYSTEM_CASE_SENSITVITY, true);
         }
         return true;
     }
@@ -293,7 +293,7 @@ bool ts::hls::PlayList::addAltPlayList(const AltPlayList& pl, Report& report)
         // Build a relative URI if there is one (the URI field is optional in an alternative rendition playlist).
         if (!pl.relativeURI.empty() && !_isURL && !_original.empty()) {
             // The master playlist's URI is a file name, update the media playlist's URI.
-            _altPlaylists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FileSystemCaseSensitivity, true);
+            _altPlaylists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FILE_SYSTEM_CASE_SENSITVITY, true);
         }
         return true;
     }

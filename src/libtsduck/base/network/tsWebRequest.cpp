@@ -128,7 +128,7 @@ const ts::UString& ts::WebRequest::proxyPassword() const
 // Set global cookie management.
 //----------------------------------------------------------------------------
 
-void ts::WebRequest::enableCookies(const UString& fileName)
+void ts::WebRequest::enableCookies(const fs::path& fileName)
 {
     _useCookies = true;
     // Delete previous cookies file.
@@ -148,7 +148,7 @@ void ts::WebRequest::disableCookies()
     }
 }
 
-ts::UString ts::WebRequest::getCookiesFileName() const
+fs::path ts::WebRequest::getCookiesFileName() const
 {
     return _cookiesFileName;
 }
@@ -419,7 +419,7 @@ bool ts::WebRequest::downloadTextContent(const UString& url, UString& text, size
 // Download the content of the URL in a file.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::downloadFile(const UString& url, const UString& fileName, size_t chunkSize)
+bool ts::WebRequest::downloadFile(const UString& url, const fs::path& fileName, size_t chunkSize)
 {
     // Transfer initialization.
     if (!open(url)) {
@@ -427,7 +427,7 @@ bool ts::WebRequest::downloadFile(const UString& url, const UString& fileName, s
     }
 
     // Create the output file.
-    std::ofstream file(fileName.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    std::ofstream file(fileName, std::ios::out | std::ios::binary);
     if (!file) {
         _report.error(u"error creating file %s", {fileName});
         close();

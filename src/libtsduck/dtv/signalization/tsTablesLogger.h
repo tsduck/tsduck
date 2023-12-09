@@ -158,10 +158,10 @@ namespace ts {
         bool                     _use_json = false;          // Produce JSON tables.
         bool                     _use_binary = false;        // Save binary sections.
         bool                     _use_udp = false;           // Send sections using UDP/IP.
-        UString                  _text_destination {};       // Text output file name.
-        UString                  _xml_destination {};        // XML output file name.
-        UString                  _json_destination {};       // JSON output file name.
-        UString                  _bin_destination {};        // Binary output file name.
+        fs::path                 _text_destination {};       // Text output file name.
+        fs::path                 _xml_destination {};        // XML output file name.
+        fs::path                 _json_destination {};       // JSON output file name.
+        fs::path                 _bin_destination {};        // Binary output file name.
         UString                  _udp_destination {};        // UDP/IP destination address:port.
         bool                     _bin_multi_files = false;   // Multiple binary output files (one per section).
         bool                     _bin_stdout = false;        // Output binary sections on stdout.
@@ -224,7 +224,7 @@ namespace ts {
         duck::Protocol           _duck_protocol {};          // To generate UDP messages.
 
         // Create a binary file. On error, set _abort and return false.
-        bool createBinaryFile(const UString& name);
+        bool createBinaryFile(const fs::path& name);
 
         // Save a section in a binary file
         void saveBinarySection(const Section&);

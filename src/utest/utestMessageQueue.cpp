@@ -25,8 +25,6 @@
 class MessageQueueTest: public tsunit::Test
 {
 public:
-    MessageQueueTest();
-
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -40,8 +38,8 @@ public:
     TSUNIT_TEST(testPriorityQueue);
     TSUNIT_TEST_END();
 private:
-    ts::NanoSecond  _nsPrecision;
-    ts::MilliSecond _msPrecision;
+    ts::NanoSecond  _nsPrecision = 0;
+    ts::MilliSecond _msPrecision = 0;
 };
 
 TSUNIT_REGISTER(MessageQueueTest);
@@ -50,13 +48,6 @@ TSUNIT_REGISTER(MessageQueueTest);
 //----------------------------------------------------------------------------
 // Initialization.
 //----------------------------------------------------------------------------
-
-// Constructor.
-MessageQueueTest::MessageQueueTest() :
-    _nsPrecision(0),
-    _msPrecision(0)
-{
-}
 
 // Test suite initialization method.
 void MessageQueueTest::beforeTest()

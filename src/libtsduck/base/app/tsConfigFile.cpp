@@ -18,12 +18,12 @@ const ts::ConfigSection ts::ConfigFile::_empty;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ConfigFile::ConfigFile(const UString& filename, Report& report, const UString env_disable) :
-    ConfigFile(filename, UString(), report, env_disable)
+ts::ConfigFile::ConfigFile(const fs::path& filename, Report& report, const UString env_disable) :
+    ConfigFile(filename, fs::path(), report, env_disable)
 {
 }
 
-ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, Report& report, const UString env_disable)
+ts::ConfigFile::ConfigFile(const fs::path& filename1, const fs::path& filename2, Report& report, const UString env_disable)
 {
     // Only if not disabled by environment variable.
     if (env_disable.empty() || GetEnvironment(env_disable).empty()) {
@@ -46,10 +46,10 @@ ts::ConfigFile::ConfigFile(std::istream& strm)
 
 
 //----------------------------------------------------------------------------
-// Default configuration file name (executable file name with ".ini" extension)
+// Default configuration file app_name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::ConfigFile::DefaultFileName(FileStyle style, const UString& name)
+fs::path ts::ConfigFile::DefaultFileName(FileStyle style, const UString& app_name)
 {
     if (style == LOCAL_SYSTEM) {
 #if defined(TS_WINDOWS)
@@ -59,17 +59,26 @@ ts::UString ts::ConfigFile::DefaultFileName(FileStyle style, const UString& name
 #endif
     }
 
-    UString fileName(name);
-    if (fileName.empty()) {
-        fileName = PathPrefix(BaseName(ExecutableFile()));
-    }
-
+    // Build directory part of default configuration.
+    fs::path filename;
+    const fs::path exec(ExecutableFile());
     if (style == WINDOWS_STYLE) {
-        return DirectoryName(ExecutableFile()) + fs::path::preferred_separator + fileName + u".ini";
+        filename = exec.parent_path();
     }
     else {
-        return (UserHomeDirectory() + fs::path::preferred_separator) + u'.' + fileName;
+        filename = UserHomeDirectory();
     }
+
+    // Build base name part.
+    const fs::path stem(app_name.empty() ? exec.stem() : fs::path(app_name));
+
+    if (style == WINDOWS_STYLE) {
+        filename /= stem + u".ini";
+    }
+    else {
+        filename /= u"." + stem;
+    }
+    return filename;
 }
 
 
@@ -87,7 +96,7 @@ void ts::ConfigFile::reset()
 // Reload configuration from a file
 //----------------------------------------------------------------------------
 
-bool ts::ConfigFile::load(const UString& filename, Report& report)
+bool ts::ConfigFile::load(const fs::path& filename, Report& report)
 {
     reset();
     return merge(filename, report);
@@ -98,13 +107,13 @@ bool ts::ConfigFile::load(const UString& filename, Report& report)
 // Merge configuration from a file.
 //----------------------------------------------------------------------------
 
-bool ts::ConfigFile::merge(const UString& filename, Report& report)
+bool ts::ConfigFile::merge(const fs::path& filename, Report& report)
 {
     // Save file name for further save
     _filename = filename;
 
     // Open the file
-    std::ifstream file(_filename.toUTF8().c_str());
+    std::ifstream file(_filename);
 
     // Non-existent file means empty configuration.
     // Report a warning.
@@ -172,7 +181,7 @@ void ts::ConfigFile::merge(std::istream& strm)
 // If no file name is specified, use name from constructor or load()
 //----------------------------------------------------------------------------
 
-bool ts::ConfigFile::save(const UString& filename, Report& report) const
+bool ts::ConfigFile::save(const fs::path& filename, Report& report) const
 {
     // Get file name
     if (!filename.empty()) {
@@ -184,7 +193,7 @@ bool ts::ConfigFile::save(const UString& filename, Report& report) const
     }
 
     // Create the file
-    std::ofstream file(_filename.toUTF8().c_str());
+    std::ofstream file(_filename);
 
     if (!file) {
         report.error(u"error creating configuration file %s", {_filename});

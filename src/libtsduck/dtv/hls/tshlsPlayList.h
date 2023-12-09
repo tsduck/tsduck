@@ -434,8 +434,8 @@ namespace ts {
             typedef std::deque<AltPlayList> AltPlayListQueue;
 
             bool               _valid = false;       // Content loaded and valid.
-            int                _version {1};         // Playlist format version.
-            PlayListType       _type {PlayListType::UNKNOWN}; // Playlist type.
+            int                _version = 1;         // Playlist format version.
+            PlayListType       _type = PlayListType::UNKNOWN; // Playlist type.
             UString            _original {};         // Original URL or file name.
             UString            _fileBase {};         // Base file path to resolve relative URI's (when original is a file name).
             bool               _isURL = false;       // The base is an URL, not a directory name.
