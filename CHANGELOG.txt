@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3512
+VERSION 3.36-3514
 
 [NEW] New commands and plugins:
 
@@ -20,7 +20,7 @@ VERSION 3.36-3512
   * In "tsanalyze" and plugin "analyze", the LCN and hidden flag of services
     are now reported in all formats, text, normalized, JSON.
   * New options in existing commands and plugins:
-    - Option --summary in plugin "bitrate_monitor".
+    - Options --json-line, --summary in plugin "bitrate_monitor".
     - Option --buffer-size in output and packet processing plugins "ip"
       (already existed in input plugin "ip" but was missing in the two others).
     - Option --random in plugin "pcredit".
