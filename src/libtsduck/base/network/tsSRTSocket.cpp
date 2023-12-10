@@ -10,7 +10,6 @@
 #include "tsSingleton.h"
 #include "tsArgs.h"
 #include "tsjsonObject.h"
-#include "tsTextFormatter.h"
 #include "tsTime.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"

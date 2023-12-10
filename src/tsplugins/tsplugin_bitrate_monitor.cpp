@@ -13,6 +13,8 @@
 
 #include "tsPluginRepository.h"
 #include "tsForkPipe.h"
+#include "tsjsonObject.h"
+#include "tsjsonArray.h"
 #include "tsTime.h"
 #include "tsMonotonic.h"
 #include "tsSingleDataStatistics.h"
@@ -61,10 +63,13 @@ namespace ts {
         // Command line options.
         bool             _full_ts = false;       // Monitor full TS.
         bool             _summary = false;       // Display a final summary.
+        bool             _json_line = false;     // Use JSON log style.
         PID              _first_pid = PID_NULL;  // First monitored PID (for messages).
         size_t           _pid_count = 0;         // Number of PID's to monitor.
         PIDSet           _pids {};               // Monitored PID's.
+        json::ValuePtr   _json_pids {};          // Monitored PID's in JSON format.
         UString          _tag {};                // Message tag.
+        UString          _json_prefix {};        // Prefix before JSON line.
         BitRate          _min_bitrate = 0;       // Minimum allowed bitrate.
         BitRate          _max_bitrate = 0;       // Maximum allowed bitrate.
         Second           _periodic_bitrate = 0;  // Report bitrate at regular intervals, even if in range.
@@ -97,6 +102,9 @@ namespace ts {
 
         // Check time and compute bitrate when necessary.
         void checkTime();
+
+        // Add common JSON parts and log the message.
+        void jsonLine(const UChar* status, int64_t bitrate, int64_t net_bitrate);
     };
 }
 
@@ -132,10 +140,11 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
          u"6. Maximum bitrate in b/s (decimal integer).\n"
          u"7. Net bitrate, without null packets, in b/s (decimal integer).");
 
-    option(u"time-interval", 't', UINT16);
-    help(u"time-interval",
-         u"Time interval (in seconds) used to compute the bitrate. "
-         u"Default: " + UString::Decimal(DEFAULT_TIME_WINDOW_SIZE) + u" s.");
+    option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    help(u"json-line", u"'prefix'",
+         u"Report the bitrate information as one single line in JSON format. "
+         u"The optional string parameter specifies a prefix to prepend on the log "
+         u"line before the JSON text to locate the appropriate line in the logs.");
 
     option<BitRate>(u"min");
     help(u"min",
@@ -194,6 +203,11 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     help(u"tag", u"'string'",
          u"Message tag to be displayed in alarms. "
          u"Useful when the plugin is used several times in the same process.");
+
+    option(u"time-interval", 't', UINT16);
+    help(u"time-interval",
+         u"Time interval (in seconds) used to compute the bitrate. "
+         u"Default: " + UString::Decimal(DEFAULT_TIME_WINDOW_SIZE) + u" s.");
 }
 
 
@@ -227,6 +241,8 @@ bool ts::BitrateMonitorPlugin::getOptions()
     getIntValue(_window_size, u"time-interval", DEFAULT_TIME_WINDOW_SIZE);
     getValue(_min_bitrate, u"min", DEFAULT_BITRATE_MIN);
     getValue(_max_bitrate, u"max", DEFAULT_BITRATE_MAX);
+    _json_line = present(u"json-line");
+    getValue(_json_prefix, u"json-line");
     getIntValue(_periodic_bitrate, u"periodic-bitrate", 0);
     getIntValue(_periodic_command, u"periodic-command", 0);
     getIntValues(_labels_below, u"set-label-below");
@@ -258,6 +274,14 @@ bool ts::BitrateMonitorPlugin::getOptions()
     else {
         _alarm_prefix.format(u"PID 0x%X (%<d)", {_first_pid});
         _alarm_target.format(u"%d", {_first_pid});
+        if (_json_line) {
+            _json_pids = new json::Array;
+            for (size_t pid = 0; pid < _pids.size(); ++pid) {
+                if (_pids.test(pid)) {
+                    _json_pids->set(pid);
+                }
+            }
+        }
     }
 
     return ok;
@@ -303,14 +327,42 @@ bool ts::BitrateMonitorPlugin::start()
 bool ts::BitrateMonitorPlugin::stop()
 {
     if (_summary) {
-        if (_full_ts) {
-            tsp->info(u"%s average bitrate: %'d bits/s, average net bitrate: %'d bits/s", {_alarm_prefix, _stats.meanRound(), _net_stats.meanRound()});
+        const int64_t bitrate = _stats.meanRound();
+        const int64_t net_bitrate = _net_stats.meanRound();
+        if (_json_line) {
+            jsonLine(u"summary", bitrate, net_bitrate);
+        }
+        else if (_full_ts) {
+            tsp->info(u"%s average bitrate: %'d bits/s, average net bitrate: %'d bits/s", {_alarm_prefix, bitrate, net_bitrate});
         }
         else {
-            tsp->info(u"%s average bitrate: %'d bits/s", {_alarm_prefix, _stats.meanRound()});
+            tsp->info(u"%s average bitrate: %'d bits/s", {_alarm_prefix, bitrate});
         }
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Add common JSON parts and log the message.
+//----------------------------------------------------------------------------
+
+void ts::BitrateMonitorPlugin::jsonLine(const UChar* status, int64_t bitrate, int64_t net_bitrate)
+{
+    json::Object root;
+    if (_full_ts) {
+        root.add(u"type", u"ts");
+        root.add(u"net", net_bitrate);
+        root.add(u"stuffing", std::max<int64_t>(0, bitrate - net_bitrate));
+    }
+    else {
+        root.add(u"type", u"pid");
+        root.add(u"pid", _json_pids);
+    }
+    root.add(u"bitrate", bitrate);
+    root.add(u"status", status);
+    root.add(u"time", Time::CurrentLocalTime().format(Time::DATETIME));
+    tsp->info(_json_prefix + root.oneLiner(*tsp));
 }
 
 
@@ -365,7 +417,10 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     // Periodic bitrate display.
     if (_periodic_bitrate > 0 && --_bitrate_countdown <= 0) {
         _bitrate_countdown = _periodic_bitrate;
-        if (_full_ts) {
+        if (_json_line) {
+            jsonLine(alarm_status, bitrate.toInt64(), net_bitrate.toInt64());
+        }
+        else if (_full_ts) {
             tsp->info(u"%s, %s bitrate: %'d bits/s, net bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate, net_bitrate});
         }
         else {
