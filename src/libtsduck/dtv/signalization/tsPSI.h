@@ -707,7 +707,7 @@ namespace ts {
         DID_ISDB_HYBRID_INFO    = 0x68, //!< DID for ISDB Hybrid information descriptor (WARNING: conflict with DVB)
         DID_ISDB_HIERARCH_TRANS = 0xC0, //!< DID for ISDB Hierarchical transmission descriptor
         DID_ISDB_COPY_CONTROL   = 0xC1, //!< DID for ISDB Digital copy control descriptor
-        DID_ISDB_NETWORK_ID     = 0xC2, //!< DID for ISDB Network identification descriptor
+        DID_ISDB_NETWORK_ID     = 0xC2, //!< DID for ISDB Network identifier descriptor
         DID_ISDB_PART_TS_TIME   = 0xC3, //!< DID for ISDB Partial Transport Stream time descriptor
         DID_ISDB_AUDIO_COMP     = 0xC4, //!< DID for ISDB Audio component descriptor
         DID_ISDB_HYPERLINK      = 0xC5, //!< DID for ISDB Hyperlink descriptor

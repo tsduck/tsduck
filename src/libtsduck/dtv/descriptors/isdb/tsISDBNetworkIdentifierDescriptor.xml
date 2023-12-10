@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_network_identifier_descriptor
+        country_code="char3, required"
+        media_type="AB|AC|BS|CB|TB, required"
+        network_id="uint16, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </ISDB_network_identifier_descriptor>
+    
+  </_descriptors>
+</tsduck>

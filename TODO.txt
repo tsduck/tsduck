@@ -27,7 +27,6 @@ TSDuck - List of features to be implemented or fixed
 
   ARIB STD-B21 (ISDB Receiver for Digital Broadcasting)
   - 9.1.8.3   partial_transport_stream_time_descriptor
-  - 9.1.8.3   network_identification_descriptor
   - 9.1.8.3   partial_TS_time_descriptor
   - 12.2.1.1  SDTT (Software Download Trigger Table)
   - 12.2.1.1  download_content_descriptor

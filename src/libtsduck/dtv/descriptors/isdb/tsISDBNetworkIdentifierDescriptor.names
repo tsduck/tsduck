@@ -1,0 +1,8 @@
+[ISDB_network_identifier_descriptor.media_type]
+# table in ARIB STD-B21, 9.1.8.3
+Bits = 16
+0x4142 = Advanced BS
+0x4143 = Advanced wide-band CS
+0x4253 = BS/broadband CS
+0x4353 = Narrow-band CS / Advanced narrow-band CS
+0x5442 = Terrestrial broadcasting
