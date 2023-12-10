@@ -1244,11 +1244,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
         }
         root.query(u"global.instant", true).add(u"rtt-ms", stats.msRTT);
         // Generate one line.
-        TextFormatter text(report);
-        text.setString();
-        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
-        root.print(text);
-        report.info(_guts->json_prefix + text.toString());
+        report.info(_guts->json_prefix + root.oneLiner(report));
     }
     else {
         // Statistics in human-readable format.

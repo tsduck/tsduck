@@ -270,6 +270,12 @@ namespace ts {
             virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const;
 
             //!
+            //! Format the value as a one-liner XML text.
+            //! @return The formatted one-line XML text.
+            //!
+            virtual UString oneLiner() const;
+
+            //!
             //! Check if the text shall be stuck to other elements in XML output.
             //! @return True if the text shall be stuck to other elements.
             //! False by default.

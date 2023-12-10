@@ -382,3 +382,17 @@ ts::xml::Node* ts::xml::Node::identifyNextNode(TextParser& parser)
         return new Text(_report, parser.lineNumber(), false);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Format the value as a one-liner XML text.
+//----------------------------------------------------------------------------
+
+ts::UString ts::xml::Node::oneLiner() const
+{
+    TextFormatter out(_report);
+    out.setString();
+    out.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+    print(out);
+    return out.toString();
+}

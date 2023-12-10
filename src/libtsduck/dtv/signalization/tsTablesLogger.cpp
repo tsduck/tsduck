@@ -12,7 +12,6 @@
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
 #include "tsArgs.h"
-#include "tsFileUtils.h"
 #include "tsDuckContext.h"
 #include "tsSimulCryptDate.h"
 #include "tsxmlElement.h"
@@ -846,32 +845,19 @@ void ts::TablesLogger::logXMLJSON(const BinaryTable& table)
         return;
     }
 
-    // Initialize a text formatter for one-liner.
-    TextFormatter text(_report);
-    text.setString();
-    text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
-
     // Log the XML line.
     if (_log_xml_line) {
-        doc.print(text);
-        _report.info(_log_xml_prefix + text.toString());
+        _report.info(_log_xml_prefix + doc.oneLiner());
     }
 
     // Log the JSON line.
     if (_log_json_line) {
-
         // Convert the XML document into JSON.
         // Force "tsduck" root to appear so that the path to the first table is always the same.
         const json::ValuePtr root(_x2j_conv.convertToJSON(doc, true));
 
-        // Reset the text formatter if already used for XML.
-        if (_log_xml_line) {
-            text.setString();
-        }
-
         // Query the first (and only) converted table and log it as one line.
-        root->query(u"#nodes[0]").print(text);
-        _report.info(_log_json_prefix + text.toString());
+        _report.info(_log_json_prefix + root->query(u"#nodes[0]").oneLiner(_report));
     }
 }
 
