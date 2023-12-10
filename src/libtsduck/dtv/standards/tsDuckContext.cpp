@@ -169,6 +169,25 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
 
 
 //----------------------------------------------------------------------------
+// Registration ids (from MPEG-defined registration_descriptor).
+//----------------------------------------------------------------------------
+
+void ts::DuckContext::addRegistrationId(uint32_t regid)
+{
+    if (regid != REGID_NULL) {
+        _lastRegistrationId = regid;
+        _registrationIds.insert(regid);
+    }
+}
+
+void ts::DuckContext::resetRegistrationIds()
+{
+    _lastRegistrationId = REGID_NULL;
+    _registrationIds.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Name of the default region for UVH and VHF band frequency layout.
 //----------------------------------------------------------------------------
 

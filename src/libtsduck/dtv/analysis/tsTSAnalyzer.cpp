@@ -561,10 +561,11 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
     for (auto& it : pmt.streams) {
         const PID es_pid = it.first;
         const PMT::Stream& stream(it.second);
+        const uint32_t regid = pmt.registrationId(es_pid);
         ps = getPID(es_pid);
         ps->addService(pmt.service_id);
         ps->stream_type = stream.stream_type;
-        ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type);
+        ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type, regid);
         ps->carry_video = ps->carry_video || StreamTypeIsVideo(stream.stream_type);
         ps->carry_pes = ps->carry_pes || StreamTypeIsPES(stream.stream_type);
         if (!ps->carry_section && !ps->carry_t2mi && StreamTypeIsSection(stream.stream_type)) {
@@ -578,7 +579,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
             AppendUnique(ps->attributes, ps->audio2.toString());
         }
 
-        ps->description = names::StreamType(stream.stream_type);
+        ps->description = names::StreamType(stream.stream_type, NamesFlags::NAME, regid);
         analyzeDescriptors(stream.descs, svp.pointer(), ps.pointer());
     }
 }

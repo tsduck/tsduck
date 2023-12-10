@@ -60,6 +60,9 @@ void ts::RegistrationDescriptor::deserializePayload(PSIBuffer& buf)
 {
     format_identifier = buf.getUInt32();
     buf.getBytes(additional_identification_info);
+
+    // Keep track of last registration id.
+    buf.duck().addRegistrationId(format_identifier);
 }
 
 
@@ -89,6 +92,14 @@ void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::RegistrationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(format_identifier, u"format_identifier", true) &&
-           element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+    const bool ok =
+        element->getIntAttribute(format_identifier, u"format_identifier", true) &&
+        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
+
+    // Keep track of last registration id.
+    if (ok) {
+        duck.addRegistrationId(format_identifier);
+    }
+
+    return ok;
 }
