@@ -113,9 +113,15 @@ ts::UString ts::names::EDID(uint8_t edid, NamesFlags flags)
     return NameFromDTV(u"DVBExtendedDescriptorId", NamesFile::Value(edid), flags, 8);
 }
 
-ts::UString ts::names::StreamType(uint8_t type, NamesFlags flags)
+ts::UString ts::names::StreamType(uint8_t type, NamesFlags flags, uint32_t regid)
 {
-    return NameFromDTV(u"StreamType", NamesFile::Value(type), flags, 8);
+    const NamesFile* const repo = NamesFile::Instance(NamesFile::Predefined::DTV);
+    NamesFile::Value fullValue = (NamesFile::Value(regid) << 8) | NamesFile::Value(type);
+    if (regid == REGID_NULL || !repo->nameExists(u"StreamType", fullValue)) {
+        // No value found with registration id, use the stream type alone.
+        fullValue = NamesFile::Value(type);
+    }
+    return repo->nameFromSection(u"StreamType", fullValue, flags, 8);
 }
 
 ts::UString ts::names::PrivateDataSpecifier(uint32_t pds, NamesFlags flags)

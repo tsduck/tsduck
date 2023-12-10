@@ -843,6 +843,24 @@ namespace ts {
 
 
     //---------------------------------------------------------------------
+    //! Format identifier values in MPEG-defined registration_descriptor.
+    //---------------------------------------------------------------------
+
+    enum : uint32_t {
+        REGID_AC3  = 0x41432D33, //!< "AC-3" registration identifier.
+        REGID_CUEI = 0x43554549, //!< "CUEI" registration identifier (SCTE-35 splice information).
+        REGID_DTG1 = 0x44544731, //!< "DTG1" registration identifier.
+        REGID_EAC3 = 0x45414333, //!< "EAC3" registration identifier.
+        REGID_GA94 = 0x47413934, //!< "GA94" registration identifier (ATSC).
+        REGID_HDMV = 0x48444D56, //!< "HDMV" registration identifier (BluRay disks).
+        REGID_HEVC = 0x48455643, //!< "HEVC" registration identifier.
+        REGID_KLVA = 0x4B4C5641, //!< "KLVA" registration identifier.
+        REGID_SCTE = 0x53435445, //!< "SCTE" registration identifier.
+        REGID_NULL = 0xFFFFFFFF, //!< Unassigned registration identifier.
+    };
+
+
+    //---------------------------------------------------------------------
     //! Stream type values, as used in the PMT.
     //---------------------------------------------------------------------
 
@@ -902,11 +920,36 @@ namespace ts {
         ST_VVC_VIDEO_SUBSET = 0x34, //!< VVC/H.266 temporal video subset of a VVC video stream
         ST_EVC_VIDEO        = 0x35, //!< EVC video or EVC temporal sub-video
         ST_LCEVC_VIDEO      = 0x36, //!< LCEVC video stream according to ISO/IEC 23094-2
+        ST_CHINESE_VIDEO    = 0x42, //!< Chinese Video Standard
         ST_IPMP             = 0x7F, //!< IPMP stream
+        ST_DGC_II_VIDEO     = 0x80, //!< DigiCipher II Video
         ST_AC3_AUDIO        = 0x81, //!< AC-3 Audio (ATSC only)
+        ST_AC3_TRUEHD_AUDIO = 0x83, //!< ATSC AC-3 True HD Audio
+        ST_AC3_PLUS_AUDIO   = 0x84, //!< ATSC AC-3+ Audio
         ST_SCTE35_SPLICE    = 0x86, //!< SCTE 35 splice information tables
         ST_EAC3_AUDIO       = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
+        ST_A52B_AC3_AUDIO   = 0x91, //!< A52b/AC-3 Audio
+        ST_MS_VIDEO         = 0xA0, //!< MSCODEC Video
         ST_AVS3             = 0xD4, //!< AVS3 video
+        ST_VC1              = 0xEA, //!< Private ES (VC-1)
+
+        // Valid after a "HDMV" registration descriptor.
+
+        ST_LPCM_AUDIO       = 0x80, //!< LPCM Audio
+        ST_HDMV_AC3         = 0x81, //!< HDMV AC-3 Audio
+        ST_DTS_AUDIO        = 0x82, //!< HDMV DTS Audio
+        ST_HDMV_AC3_TRUEHD  = 0x83, //!< HDMV AC-3 True HD Audio
+        ST_HDMV_AC3_PLUS    = 0x84, //!< HDMV AC-3+ Audio
+        ST_DTS_HS_AUDIO     = 0x85, //!< DTS-HD Audio
+        ST_DTS_HD_MA_AUDIO  = 0x86, //!< DTS-HD Master Audio
+        ST_HDMV_EAC3        = 0x87, //!< HDMV Enhanced-AC-3 Audio
+        ST_DTS_AUDIO_8A     = 0x8A, //!< DTS Audio
+        ST_SUBPIC_PGS       = 0x90, //!< Subpicture PGS
+        ST_IGS              = 0x91, //!< IGS
+        ST_DVD_SUBTITLES    = 0x92, //!< DVD_SPU vls Subtitle
+        ST_SDDS_AUDIO       = 0x94, //!< SDDS Audio
+        ST_HDMV_AC3_PLS_SEC = 0xA1, //!< HDMV AC-3+ Secondary Audio
+        ST_DTS_HD_SEC       = 0xA2, //!< DTS-HD Secondary Audio
     };
 
     //!
@@ -947,9 +990,10 @@ namespace ts {
     //!
     //! Check if a stream type value indicates an audio stream.
     //! @param [in] st Stream type as used in the PMT.
+    //! @param [in] regid Previous registration id from a registration descriptor.
     //! @return True if @a st indicates an audio stream.
     //!
-    TSDUCKDLL bool StreamTypeIsAudio(uint8_t st);
+    TSDUCKDLL bool StreamTypeIsAudio(uint8_t st, uint32_t regid = REGID_NULL);
 
     //!
     //! Check if a stream type value indicates a stream carrying sections.
