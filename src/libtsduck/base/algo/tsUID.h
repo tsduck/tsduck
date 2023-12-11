@@ -32,7 +32,6 @@ namespace ts {
         uint64_t newUID();
 
     private:
-        std::mutex _mutex {};
-        uint64_t   _next_uid;
+        std::atomic<uint64_t> _next_uid {};
     };
 }

@@ -42,7 +42,7 @@ ts::DuckExtensionRepository::Loader::Loader()
 
     // Get list of shared library files
     UStringVector files;
-    ApplicationSharedLibrary::GetPluginList(files, u"tslibext_", PluginsPathEnvironmentVariable);
+    ApplicationSharedLibrary::GetPluginList(files, u"tslibext_", PLUGINS_PATH_ENVIRONMENT_VARIABLE);
     CERR.debug(u"found %d possible extensions", {files.size()});
 
     // Load all plugins shared library.
@@ -119,11 +119,11 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 
     // Search path for plugins.
     UStringList plugins_dirs;
-    ApplicationSharedLibrary::GetSearchPath(plugins_dirs, PluginsPathEnvironmentVariable);
+    ApplicationSharedLibrary::GetSearchPath(plugins_dirs, PLUGINS_PATH_ENVIRONMENT_VARIABLE);
 
     // Search path for executables.
     UStringList tools_dirs;
-    GetEnvironmentPath(tools_dirs, PathEnvironmentVariable);
+    GetEnvironmentPath(tools_dirs, PATH_ENVIRONMENT_VARIABLE);
 
     // Build the output text as a string.
     UString out;

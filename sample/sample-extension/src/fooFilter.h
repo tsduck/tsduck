@@ -21,6 +21,7 @@ namespace foo {
         // Implementation of TablesLoggerFilterInterface.
         virtual void defineFilterOptions(ts::Args& args) const override;
         virtual bool loadFilterOptions(ts::DuckContext& duck, ts::Args& args, ts::PIDSet& initial_pids) override;
+        virtual bool reset() override;
         virtual bool filterSection(ts::DuckContext& duck, const ts::Section& section, uint16_t cas, ts::PIDSet& more_pids) override;
 
     private:

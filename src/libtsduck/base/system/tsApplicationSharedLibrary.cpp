@@ -122,7 +122,7 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
 
     // On Windows system, try the PATH.
 #if defined(TS_WINDOWS)
-    GetEnvironmentPathAppend(directories, PathEnvironmentVariable);
+    GetEnvironmentPathAppend(directories, PATH_ENVIRONMENT_VARIABLE);
 #endif
 
     // Make sure that the same directory is not present twice.

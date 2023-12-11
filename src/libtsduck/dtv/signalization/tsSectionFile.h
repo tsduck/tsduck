@@ -140,7 +140,7 @@ namespace ts {
         //! @return If @a type is not FileType::UNSPECIFIED, remove the
         //! extension from @a file_name and add the extension corresponding to @a type.
         //!
-        static UString BuildFileName(const UString& file_name, FileType type);
+        static fs::path BuildFileName(const fs::path& file_name, FileType type);
 
         //!
         //! Set new parsing and formatting tweaks for XML files.
@@ -458,22 +458,22 @@ namespace ts {
         //!
         //! Default file name suffix for binary section files.
         //!
-        static const UChar* const DEFAULT_BINARY_SECTION_FILE_SUFFIX;
+        static constexpr const UChar* const DEFAULT_BINARY_SECTION_FILE_SUFFIX = u".bin";
 
         //!
         //! Default file name suffix for XML section files.
         //!
-        static const UChar* const DEFAULT_XML_SECTION_FILE_SUFFIX;
+        static constexpr const UChar* const DEFAULT_XML_SECTION_FILE_SUFFIX = u".xml";
 
         //!
         //! Default file name suffix for JSON section files.
         //!
-        static const UChar* const DEFAULT_JSON_SECTION_FILE_SUFFIX;
+        static constexpr const UChar* const DEFAULT_JSON_SECTION_FILE_SUFFIX = u".json";
 
         //!
         //! File name of the XML model file for tables.
         //!
-        static const UChar* const XML_TABLES_MODEL;
+        static constexpr const UChar* const XML_TABLES_MODEL = u"tsduck.tables.model.xml";
 
     private:
         DuckContext&         _duck;                   // Reference to TSDuck execution context.

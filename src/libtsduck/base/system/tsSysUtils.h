@@ -104,32 +104,6 @@ namespace ts {
     }
 
     //!
-    //! Integer type for process identifier
-    //!
-#if defined(DOXYGEN)
-    typedef platform_specific ProcessId;
-#elif defined(TS_WINDOWS)
-    typedef ::DWORD ProcessId;
-#elif defined(TS_UNIX)
-    typedef pid_t ProcessId;
-#else
-    #error "Unimplemented operating system"
-#endif
-
-    //!
-    //! Get the current process id.
-    //! @return Identification of the current process.
-    //!
-    TSDUCKDLL inline ProcessId CurrentProcessId()
-    {
-#if defined(TS_WINDOWS)
-        return ::GetCurrentProcessId();
-#else
-        return ::getpid();
-#endif
-    }
-
-    //!
     //! Check if the current user is privileged (root on UNIX, an administrator on Windows).
     //! @return True if the current user is privileged.
     //!

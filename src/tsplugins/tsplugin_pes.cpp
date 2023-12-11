@@ -63,8 +63,8 @@ namespace ts {
         int       _min_payload = 0;    // Minimum payload size (<0: no filter)
         int       _max_payload = 0;    // Maximum payload size (<0: no filter)
         fs::path  _out_filename {};
-        UString   _pes_filename {};
-        UString   _es_filename {};
+        fs::path  _pes_filename {};
+        fs::path  _es_filename {};
         PIDSet    _pids {};
         CodecType _default_h26x = CodecType::UNDEFINED;
         std::set<uint8_t>    _nal_unit_filter {};
@@ -296,8 +296,8 @@ bool ts::PESPlugin::getOptions()
     getIntValue(_max_payload, u"max-payload-size", -1);
     getIntValue(_default_h26x, u"h26x-default-format", CodecType::AVC);
     getPathValue(_out_filename, u"output-file");
-    getValue(_pes_filename, u"save-pes");
-    getValue(_es_filename, u"save-es");
+    getPathValue(_pes_filename, u"save-pes");
+    getPathValue(_es_filename, u"save-es");
     _negate_nal_unit_filter = present(u"negate-nal-unit-type");
     getIntValues(_nal_unit_filter, u"nal-unit-type");
     getIntValues(_sei_type_filter, u"sei-type");

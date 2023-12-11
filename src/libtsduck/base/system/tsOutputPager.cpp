@@ -45,7 +45,7 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
 
         // Get the path search list.
         UStringList dirs;
-        GetEnvironmentPath(dirs, PathEnvironmentVariable);
+        GetEnvironmentPath(dirs, PATH_ENVIRONMENT_VARIABLE);
 
         // Predefined list of commands.
         struct PredefinedPager {

@@ -20,11 +20,6 @@
 #include "tsEIT.h"
 #include "tsFatal.h"
 
-const ts::UChar* const ts::SectionFile::DEFAULT_BINARY_SECTION_FILE_SUFFIX = u".bin";
-const ts::UChar* const ts::SectionFile::DEFAULT_XML_SECTION_FILE_SUFFIX = u".xml";
-const ts::UChar* const ts::SectionFile::DEFAULT_JSON_SECTION_FILE_SUFFIX = u".json";
-const ts::UChar* const ts::SectionFile::XML_TABLES_MODEL = u"tsduck.tables.model.xml";
-
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
@@ -748,19 +743,24 @@ ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name,
 // Build a file name, based on a file type.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SectionFile::BuildFileName(const UString& file_name, FileType type)
+fs::path ts::SectionFile::BuildFileName(const fs::path& file_name, FileType type)
 {
+    fs::path res(file_name);
     switch (type) {
         case FileType::BINARY:
-            return PathPrefix(file_name) + DEFAULT_BINARY_SECTION_FILE_SUFFIX;
+            res.replace_extension(DEFAULT_BINARY_SECTION_FILE_SUFFIX);
+            break;
         case FileType::XML:
-            return PathPrefix(file_name) + DEFAULT_XML_SECTION_FILE_SUFFIX;
+            res.replace_extension(DEFAULT_XML_SECTION_FILE_SUFFIX);
+            break;
         case FileType::JSON:
-            return PathPrefix(file_name) + DEFAULT_JSON_SECTION_FILE_SUFFIX;
+            res.replace_extension(DEFAULT_JSON_SECTION_FILE_SUFFIX);
+            break;
         case FileType::UNSPECIFIED:
         default:
-            return file_name;
+            break;
     }
+    return res;
 }
 
 
