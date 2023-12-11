@@ -17,29 +17,25 @@
 //----------------------------------------------------------------------------
 
 #include "tsUID.h"
-#include "tsSysUtils.h"
 #include "tsTime.h"
 
 // Define singleton instance
-TS_DEFINE_SINGLETON (ts::UID);
+TS_DEFINE_SINGLETON(ts::UID);
 
-
-//----------------------------------------------------------------------------
-// Default constructor
-//----------------------------------------------------------------------------
-
-ts::UID::UID() :
-    _next_uid((uint64_t(CurrentProcessId()) << 40) | ((uint64_t(Time::CurrentUTC() - Time::Epoch) & 0x00FFFFFF) << 16))
+// Constructor
+ts::UID::UID()
 {
+    const uint64_t process =
+#if defined(TS_WINDOWS)
+        ::GetCurrentProcessId();
+#else
+        ::getpid();
+#endif
+    _next_uid = (process << 40) | ((uint64_t(Time::CurrentUTC() - Time::Epoch) & 0x00FFFFFF) << 16);
 }
 
-
-//----------------------------------------------------------------------------
 // Generate a new UID
-//----------------------------------------------------------------------------
-
 uint64_t ts::UID::newUID()
 {
-    std::lock_guard<std::mutex> lock(_mutex);
-    return _next_uid++;
+    return _next_uid++; // atomic operation
 }

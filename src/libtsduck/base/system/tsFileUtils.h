@@ -270,7 +270,7 @@ namespace ts {
     //! @param [in] pathName Name of the seach path environment variable.
     //! @return The path to an existing file or an empty path if not found.
     //!
-    TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PathEnvironmentVariable);
+    TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PATH_ENVIRONMENT_VARIABLE);
 
     //!
     //! Search a configuration file.

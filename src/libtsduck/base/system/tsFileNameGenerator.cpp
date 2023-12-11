@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsFileNameGenerator.h"
-#include "tsFileUtils.h"
 
 
 //----------------------------------------------------------------------------
@@ -26,17 +25,30 @@ size_t ts::FileNameGenerator::TrailingDigits(const UString& str)
 
 
 //----------------------------------------------------------------------------
-// Fix name prefix, make sure it ends with '-' or any punctuation.
+// Initialize the name prefix and suffix.
+// Return the number of trailing digits in prefix.
 //----------------------------------------------------------------------------
 
-void ts::FileNameGenerator::fixNamePrefix()
+size_t ts::FileNameGenerator::init(const fs::path& name_template)
 {
-    if (!_name_prefix.empty()) {
+    // Analyze the file name template to isolate segments.
+    fs::path prefix(name_template);
+    prefix.replace_extension();
+    _name_prefix = prefix;
+    _name_suffix = name_template.extension();
+
+    // Compute number of existing digits at end of template head.
+    const size_t width = TrailingDigits(_name_prefix);
+
+    // If no pre-existing integer field at end of file name, make sure to add a punctuation.
+    if (width == 0 && !_name_prefix.empty()) {
         const UChar c = _name_prefix.back();
-        if (c != u'-' && c != u'_' && c != u'.') {
-            _name_prefix.append(u'-');
+        if (c != u'-' && c != u'_' && c != u'.' && c != u'/' && c != u'\\') {
+            _name_prefix += u"-";
         }
     }
+
+    return width;
 }
 
 
@@ -44,27 +56,20 @@ void ts::FileNameGenerator::fixNamePrefix()
 // Reinitialize the file name generator in counter mode.
 //----------------------------------------------------------------------------
 
-void ts::FileNameGenerator::initCounter(const UString& name_template, size_t initial_counter, size_t counter_width)
+void ts::FileNameGenerator::initCounter(const fs::path& name_template, size_t initial_counter, size_t counter_width)
 {
     _counter_mode = true;
+    _counter_value = initial_counter;
+    _counter_width = std::max<size_t>(1, counter_width);
 
-    // Analyze the file name template to isolate segments.
-    _name_prefix = PathPrefix(name_template);
-    _name_suffix = PathSuffix(name_template);
+    const size_t width = init(name_template);
 
-    // Compute number of existing digits at end of template head.
-    _counter_width = TrailingDigits(_name_prefix);
-    if (_counter_width == 0) {
-        // No pre-existing integer field at end of file name. Use user-defined values.
-        _counter_value = initial_counter;
-        _counter_width = std::max<size_t>(1, counter_width);
-        fixNamePrefix();
-    }
-    else {
+    if (width > 0) {
         // Use existing integer field as initial value.
+        _counter_width = width;
         const size_t len = _name_prefix.length();
-        _name_prefix.substr(len - _counter_width).toInteger(_counter_value);
-        _name_prefix.resize(len - _counter_width);
+        _name_prefix.substr(len - width).toInteger(_counter_value);
+        _name_prefix.resize(len - width);
     }
 }
 
@@ -73,28 +78,22 @@ void ts::FileNameGenerator::initCounter(const UString& name_template, size_t ini
 // Reinitialize the file name generator in date and time mode.
 //----------------------------------------------------------------------------
 
-void ts::FileNameGenerator::initDateTime(const UString& name_template, int fields)
+void ts::FileNameGenerator::initDateTime(const fs::path& name_template, int fields)
 {
     _counter_mode = false;
+    _time_fields = fields == 0 ? Time::DATETIME : fields;
     _last_time.clear();
 
-    // Analyze the file name template to isolate segments.
-    _name_prefix = PathPrefix(name_template);
-    _name_suffix = PathSuffix(name_template);
+    size_t time_len = init(name_template);
 
-    // Attempt to locate date-time at end of prefix.
-    size_t date_len = 0;
-    size_t time_len = TrailingDigits(_name_prefix);
-    if (time_len == 0) {
-        // No pre-existing date-time at end of file name. Use user-defined values.
-        _time_fields = fields == 0 ? Time::DATETIME : fields;
-        fixNamePrefix();
-    }
-    else {
+    if (time_len > 0) {
+        // Locate [date-]time fields at end of prefix.
         // Check if there is another field.
         const size_t len = _name_prefix.length();
+        size_t date_len = 0;
         size_t field_len = time_len;
         if (time_len < len && _name_prefix[len - time_len - 1] == u'-') {
+            // The prefix ends in "-time", maybe there is a preceding date.
             date_len = TrailingDigits(_name_prefix.substr(0, len - time_len - 1));
             if (date_len == 0) {
                 // Only one field, this is a date field.

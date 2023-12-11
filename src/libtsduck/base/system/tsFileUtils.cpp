@@ -459,7 +459,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     // At this point, the file name has no directory and is not found in the current directory.
     // Build the list of directories to search. First, start with all directories from $TSPLUGINS_PATH.
     UStringList dirList;
-    GetEnvironmentPathAppend(dirList, PluginsPathEnvironmentVariable);
+    GetEnvironmentPathAppend(dirList, PLUGINS_PATH_ENVIRONMENT_VARIABLE);
 
     // Then, try in same directory as executable.
     const UString execDir(DirectoryName(ExecutableFile()));
@@ -481,7 +481,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 #endif
 
     // Finally try all directories from $PATH.
-    GetEnvironmentPathAppend(dirList, PathEnvironmentVariable);
+    GetEnvironmentPathAppend(dirList, PATH_ENVIRONMENT_VARIABLE);
 
     // Add default system locations of the configuration files. This is useful when the
     // application is not a TSDuck one but a third-party application which uses the
