@@ -723,7 +723,8 @@ ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name,
     if (json::IsInlineJSON(file_name)) {
         return FileType::JSON; // inline JSON content
     }
-    const UString ext(PathSuffix(file_name).toLower());
+    UString ext(fs::path(file_name).extension());
+    ext.convertToLower();
     if (ext == DEFAULT_XML_SECTION_FILE_SUFFIX) {
         return FileType::XML;
     }

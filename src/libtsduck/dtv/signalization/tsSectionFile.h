@@ -125,7 +125,7 @@ namespace ts {
 
         //!
         //! Get a file type, based on a file name.
-        //! @param [in] file_name File name.
+        //! @param [in] file_name File name or inline XML or inline JSON.
         //! @param [in] type File type.
         //! @return If @a type is not FileType::UNSPECIFIED, return @a type.
         //! Otherwise, return the file type based on the file name. If the file

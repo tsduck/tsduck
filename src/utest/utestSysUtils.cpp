@@ -458,18 +458,6 @@ void SysUtilsTest::testFilePaths()
 
     TSUNIT_ASSERT(ts::BaseName(dirSep + u"foo.bar") == u"foo.bar");
     TSUNIT_ASSERT(ts::BaseName(dirSep) == u"");
-
-    TSUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo.bar") == u".bar");
-    TSUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo.") == u".");
-    TSUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo") == u"");
-
-    TSUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo", u".none") == dirSep + u"foo.none");
-    TSUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo.", u".none") == dirSep + u"foo.");
-    TSUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo.bar", u".none") == dirSep + u"foo.bar");
-
-    TSUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo.bar") == dirSep + u"foo");
-    TSUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo.") == dirSep + u"foo");
-    TSUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo") == dirSep + u"foo");
 }
 
 void SysUtilsTest::testTempFiles()
