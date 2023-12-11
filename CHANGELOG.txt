@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3514
+VERSION 3.36-3521
 
 [NEW] New commands and plugins:
 
@@ -218,6 +218,7 @@ VERSION 3.31-2754
     - Options --byte-offset, --packet-offset in "tsdump".
     - Options --search-reorder, --min-reorder in "tscmp".
     - Option --rs204 in output plugin "ip".
+    - Option --json-line in plugin "continuity".
 
 [BUG] Bug fixes:
 
