@@ -910,8 +910,8 @@ namespace ts {
         ST_HEVC_SUBVIDEO_H  = 0x2A, //!< HEVC enhancement sub-partition, Annex H of ISO 23008-2
         ST_HEVC_SUBVIDEO_TH = 0x2B, //!< HEVC temporal enhancement sub-partition, Annex H of ISO 23008 - 2
         ST_GREEN            = 0x2C, //!< Green access units carried in MPEG-2 sections
-        ST_MPH3D_MAIN       = 0x2D, //!< ISO 23008-3 Audio with MHAS transport syntax – main stream
-        ST_MPH3D_AUX        = 0x2E, //!< ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
+        ST_MPH3D_MAIN       = 0x2D, //!< ISO 23008-3 Audio with MHAS transport syntax - main stream
+        ST_MPH3D_AUX        = 0x2E, //!< ISO 23008-3 Audio with MHAS transport syntax - auxiliary stream
         ST_QUALITY          = 0x2F, //!< Quality access units carried in sections
         ST_MEDIA_ORCHESTR   = 0x30, //!< Media Orchestration Access Units carried in sections
         ST_HEVC_TILESET     = 0x31, //!< HEVC substream containing Motion Constrained Tile Set
