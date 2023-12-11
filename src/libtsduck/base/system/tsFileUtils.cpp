@@ -271,67 +271,6 @@ ts::UString ts::BaseName(const UString& path, const UString& suffix)
 
 
 //----------------------------------------------------------------------------
-// Return the suffix of a file path (eg. "dir/foo.bar" => ".bar")
-//----------------------------------------------------------------------------
-
-ts::UString ts::PathSuffix(const UString& path)
-{
-    UString::size_type sep = LastPathSeparator(path);
-    UString::size_type dot = path.rfind(u'.');
-
-    if (dot == NPOS) {
-        return ts::UString();  // no dot in path
-    }
-    else if (sep != NPOS && dot < sep) {
-        return ts::UString();  // dot in directory part, not in base name
-    }
-    else {
-        return path.substr(dot); // dot in base name
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// If the file path does not contain a suffix, add the specified one.
-// Otherwise, return the name unchanged.
-//----------------------------------------------------------------------------
-
-ts::UString ts::AddPathSuffix(const UString& path, const UString& suffix)
-{
-    UString::size_type sep = LastPathSeparator(path);
-    UString::size_type dot = path.rfind(u'.');
-
-    if (dot == NPOS || (sep != NPOS && dot < sep)) {
-        return path + suffix;
-    }
-    else {
-        return path;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Return the prefix of a file path (eg. "dir/foo.bar" => "dir/foo")
-//----------------------------------------------------------------------------
-
-ts::UString ts::PathPrefix(const UString& path)
-{
-    UString::size_type sep = LastPathSeparator(path);
-    UString::size_type dot = path.rfind(u'.');
-
-    if (dot == NPOS) {
-        return path;  // no dot in path
-    }
-    else if (sep != NPOS && dot < sep) {
-        return path;  // dot in directory part, not in base name
-    }
-    else {
-        return path.substr(0, dot); // dot in base name
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Get the current user's home directory.
 //----------------------------------------------------------------------------
 

@@ -17,13 +17,13 @@
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
+ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const fs::path& filename,
                                                        const UString& prefix,
                                                        const UString& library_path,
                                                        SharedLibraryFlags flags,
                                                        Report& report) :
     // Do not load in superclass since plain filename is not the first choice.
-    SharedLibrary(UString(), flags, report),
+    SharedLibrary(fs::path(), flags, report),
     _prefix(prefix)
 {
     // Without file name, nothing to do.
@@ -31,7 +31,7 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
         return;
     }
 
-    const UString basename(BaseName(filename));
+    const fs::path basename(filename.filename());
     const bool has_directory = basename != filename;
 
     // If there is no directory in file name, use search rules in specific directories.
@@ -43,23 +43,33 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
         // Try in each directory.
         for (auto it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
             // First, try name with prefix.
-            load(AddPathSuffix(*it + fs::path::preferred_separator + prefix + basename, SHARED_LIBRARY_SUFFIX));
+            fs::path lib(*it);
+            lib /= prefix + basename;
+            lib.replace_extension(SHARED_LIBRARY_SUFFIX);
+            load(lib);
 
             // And then try specified name without prefix.
             if (!isLoaded()) {
-                load(AddPathSuffix(*it + fs::path::preferred_separator + basename, SHARED_LIBRARY_SUFFIX));
+                lib = *it;
+                lib /= basename;
+                lib.replace_extension(SHARED_LIBRARY_SUFFIX);
+                load(lib);
             }
         }
     }
 
     // Without directory and still not loaded, try the standard system lookup rules with prefix.
     if (!isLoaded() && !has_directory) {
-        load(AddPathSuffix(prefix + filename, SHARED_LIBRARY_SUFFIX));
+        fs::path lib(prefix + filename);
+        lib.replace_extension(SHARED_LIBRARY_SUFFIX);
+        load(lib);
     }
 
     // With a directory in name or if still not loaded, try the standard system lookup rules with plain name.
     if (!isLoaded()) {
-        load(AddPathSuffix(filename, SHARED_LIBRARY_SUFFIX));
+        fs::path lib(filename);
+        lib.replace_extension(SHARED_LIBRARY_SUFFIX);
+        load(lib);
     }
 }
 
@@ -74,7 +84,7 @@ ts::ApplicationSharedLibrary::~ApplicationSharedLibrary()
 
 ts::UString ts::ApplicationSharedLibrary::moduleName() const
 {
-    const UString name(PathPrefix(BaseName(fileName())));
+    const UString name(fileName().stem());
     return !_prefix.empty() && name.find(_prefix) == 0 ? name.substr(_prefix.size()) : name;
 }
 
