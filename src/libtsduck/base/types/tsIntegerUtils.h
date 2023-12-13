@@ -656,23 +656,23 @@ namespace ts {
     template <typename INT> struct static_power10<INT,  0> { static constexpr INT value = 1; };
     template <typename INT> struct static_power10<INT,  1> { static constexpr INT value = 10; };
     template <typename INT> struct static_power10<INT,  2> { static constexpr INT value = 100; };
-    template <typename INT> struct static_power10<INT,  3> { static constexpr INT value = 1000; };
-    template <typename INT> struct static_power10<INT,  4> { static constexpr INT value = 10000; };
-    template <typename INT> struct static_power10<INT,  5> { static constexpr INT value = 100000; };
-    template <typename INT> struct static_power10<INT,  6> { static constexpr INT value = 1000000; };
-    template <typename INT> struct static_power10<INT,  7> { static constexpr INT value = 10000000; };
-    template <typename INT> struct static_power10<INT,  8> { static constexpr INT value = 100000000; };
-    template <typename INT> struct static_power10<INT,  9> { static constexpr INT value = 1000000000; };
-    template <typename INT> struct static_power10<INT, 10> { static constexpr INT value = 10000000000; };
-    template <typename INT> struct static_power10<INT, 11> { static constexpr INT value = 100000000000; };
-    template <typename INT> struct static_power10<INT, 12> { static constexpr INT value = 1000000000000; };
-    template <typename INT> struct static_power10<INT, 13> { static constexpr INT value = 10000000000000; };
-    template <typename INT> struct static_power10<INT, 14> { static constexpr INT value = 100000000000000; };
-    template <typename INT> struct static_power10<INT, 15> { static constexpr INT value = 1000000000000000; };
-    template <typename INT> struct static_power10<INT, 16> { static constexpr INT value = 10000000000000000; };
-    template <typename INT> struct static_power10<INT, 17> { static constexpr INT value = 100000000000000000; };
-    template <typename INT> struct static_power10<INT, 18> { static constexpr INT value = 1000000000000000000; };
-    template <typename INT> struct static_power10<INT, 19> { static constexpr INT value = 10000000000000000000ull; };
+    template <typename INT> struct static_power10<INT,  3> { static constexpr INT value = 1'000; };
+    template <typename INT> struct static_power10<INT,  4> { static constexpr INT value = 10'000; };
+    template <typename INT> struct static_power10<INT,  5> { static constexpr INT value = 100'000; };
+    template <typename INT> struct static_power10<INT,  6> { static constexpr INT value = 1'000'000; };
+    template <typename INT> struct static_power10<INT,  7> { static constexpr INT value = 10'000'000; };
+    template <typename INT> struct static_power10<INT,  8> { static constexpr INT value = 100'000'000; };
+    template <typename INT> struct static_power10<INT,  9> { static constexpr INT value = 1'000'000'000; };
+    template <typename INT> struct static_power10<INT, 10> { static constexpr INT value = 10'000'000'000; };
+    template <typename INT> struct static_power10<INT, 11> { static constexpr INT value = 100'000'000'000; };
+    template <typename INT> struct static_power10<INT, 12> { static constexpr INT value = 1'000'000'000'000; };
+    template <typename INT> struct static_power10<INT, 13> { static constexpr INT value = 10'000'000'000'000; };
+    template <typename INT> struct static_power10<INT, 14> { static constexpr INT value = 100'000'000'000'000; };
+    template <typename INT> struct static_power10<INT, 15> { static constexpr INT value = 1'000'000'000'000'000; };
+    template <typename INT> struct static_power10<INT, 16> { static constexpr INT value = 10'000'000'000'000'000; };
+    template <typename INT> struct static_power10<INT, 17> { static constexpr INT value = 100'000'000'000'000'000; };
+    template <typename INT> struct static_power10<INT, 18> { static constexpr INT value = 1'000'000'000'000'000'000; };
+    template <typename INT> struct static_power10<INT, 19> { static constexpr INT value = 10'000'000'000'000'000'000ull; };
     //! @endcond
 
     //!

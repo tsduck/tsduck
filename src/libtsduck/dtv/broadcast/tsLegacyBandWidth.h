@@ -25,13 +25,13 @@ namespace ts {
 
     class Args;
 
-    constexpr BandWidth BW_AUTO      = 0;        //!< Bandwidth automatically set (legacy symbol).
-    constexpr BandWidth BW_1_712_MHZ = 1712000;  //!< 1.712 MHz bandwidth (DVB-T2 only, legacy symbol).
-    constexpr BandWidth BW_5_MHZ     = 5000000;  //!< 5 MHz bandwidth (DVB-T2 only, legacy symbol).
-    constexpr BandWidth BW_6_MHZ     = 6000000;  //!< 6 MHz bandwidth (legacy symbol).
-    constexpr BandWidth BW_7_MHZ     = 7000000;  //!< 7 MHz bandwidth (legacy symbol).
-    constexpr BandWidth BW_8_MHZ     = 8000000;  //!< 8 MHz bandwidth (legacy symbol).
-    constexpr BandWidth BW_10_MHZ    = 10000000; //!< 10 MHz bandwidth (DVB-T2 only, legacy symbol).
+    constexpr BandWidth BW_AUTO      = 0;          //!< Bandwidth automatically set (legacy symbol).
+    constexpr BandWidth BW_1_712_MHZ = 1'712'000;  //!< 1.712 MHz bandwidth (DVB-T2 only, legacy symbol).
+    constexpr BandWidth BW_5_MHZ     = 5'000'000;  //!< 5 MHz bandwidth (DVB-T2 only, legacy symbol).
+    constexpr BandWidth BW_6_MHZ     = 6'000'000;  //!< 6 MHz bandwidth (legacy symbol).
+    constexpr BandWidth BW_7_MHZ     = 7'000'000;  //!< 7 MHz bandwidth (legacy symbol).
+    constexpr BandWidth BW_8_MHZ     = 8'000'000;  //!< 8 MHz bandwidth (legacy symbol).
+    constexpr BandWidth BW_10_MHZ    = 10'000'000; //!< 10 MHz bandwidth (DVB-T2 only, legacy symbol).
 
     //!
     //! Get the bandwidth value in Hz (deprecated).

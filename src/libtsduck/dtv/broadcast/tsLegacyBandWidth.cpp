@@ -20,12 +20,12 @@ bool ts::LegacyBandWidthToHz(BandWidth& hz, const UString& str)
     // Redefine legacy names with values in Hz.
     const Enumeration legacy({
         {u"auto",      0},
-        {u"1.712-MHz", 1712000},
-        {u"5-MHz",     5000000},
-        {u"6-MHz",     6000000},
-        {u"7-MHz",     7000000},
-        {u"8-MHz",     8000000},
-        {u"10-MHz",    10000000},
+        {u"1.712-MHz", 1'712'000},
+        {u"5-MHz",     5'000'000},
+        {u"6-MHz",     6'000'000},
+        {u"7-MHz",     7'000'000},
+        {u"8-MHz",     8'000'000},
+        {u"10-MHz",    10'000'000},
     });
 
     int bw = legacy.value(str, false);
@@ -38,9 +38,9 @@ bool ts::LegacyBandWidthToHz(BandWidth& hz, const UString& str)
         // Not a positive integer and not a legacy value.
         return false;
     }
-    else if (bw < 1000) {
+    else if (bw < 1'000) {
         // Low values, less than 1000, are interpreted in MHz (legacy again...)
-        hz = BandWidth(bw * 1000000);
+        hz = BandWidth(bw * 1'000'000);
         return true;
     }
     else {

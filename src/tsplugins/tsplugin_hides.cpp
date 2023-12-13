@@ -58,7 +58,7 @@ ts::HiDesOutputPlugin::HiDesOutputPlugin(TSP* tsp_) :
          u"Specify the HiDes adapter number to use. By default, the first HiDes "
          u"device is selected. Use the command tshides to list all HiDes devices.");
 
-    DefineLegacyBandWidthArg(*this, u"bandwidth", 'b', 8000000);
+    DefineLegacyBandWidthArg(*this, u"bandwidth", 'b', 8'000'000);
 
     option(u"constellation", 'c', Enumeration({
         {u"QPSK",   QPSK},
