@@ -1221,43 +1221,43 @@ namespace ts {
     //! This constant shall be used by convention to express an infinite
     //! number of sub-quantities of seconds.
     //!
-    constexpr SubSecond Infinite = 0x7FFFFFFFFFFFFFFF;
+    constexpr SubSecond Infinite = 0x7FFF'FFFF'FFFF'FFFF;
     //!
     //! Number of nanoseconds per second
     //!
-    constexpr NanoSecond NanoSecPerSec = 1000000000;
+    constexpr NanoSecond NanoSecPerSec = 1'000'000'000;
     //!
     //! Number of nanoseconds per millisecond
     //!
-    constexpr NanoSecond NanoSecPerMilliSec = 1000000;
+    constexpr NanoSecond NanoSecPerMilliSec = 1'000'000;
     //!
     //! Number of nanoseconds per microsecond
     //!
-    constexpr NanoSecond NanoSecPerMicroSec = 1000;
+    constexpr NanoSecond NanoSecPerMicroSec = 1'000;
     //!
     //! Number of microseconds per second
     //!
-    constexpr MicroSecond MicroSecPerSec = 1000000;
+    constexpr MicroSecond MicroSecPerSec = 1'000'000;
     //!
     //! Number of microseconds per millisecond
     //!
-    constexpr MicroSecond MicroSecPerMilliSec = 1000;
+    constexpr MicroSecond MicroSecPerMilliSec = 1'000;
     //!
     //! Number of milliseconds per second
     //!
-    constexpr MilliSecond MilliSecPerSec = 1000;
+    constexpr MilliSecond MilliSecPerSec = 1'000;
     //!
     //! Number of milliseconds per minute
     //!
-    constexpr MilliSecond MilliSecPerMin = 1000 * 60;
+    constexpr MilliSecond MilliSecPerMin = 1'000 * 60;
     //!
     //! Number of milliseconds per hour
     //!
-    constexpr MilliSecond MilliSecPerHour = 1000 * 60 * 60;
+    constexpr MilliSecond MilliSecPerHour = 1'000 * 60 * 60;
     //!
     //! Number of milliseconds per day
     //!
-    constexpr MilliSecond MilliSecPerDay = 1000 * 60 * 60 * 24;
+    constexpr MilliSecond MilliSecPerDay = 1'000 * 60 * 60 * 24;
 
     //!
     //! This error code is returned by some functions in std::filesystem.
