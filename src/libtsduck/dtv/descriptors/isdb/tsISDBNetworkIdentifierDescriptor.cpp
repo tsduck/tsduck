@@ -99,7 +99,7 @@ const ts::Enumeration ts::ISDBNetworkIdentifierDescriptor::MediaTypes({
     {u"AB", 0x4142},      // Advanced BS
     {u"AC", 0x4143},      // Advanced wide-band CS
     {u"BS", 0x4253},      // BS/broadband CS
-    {u"CS", 0x4353},      // Narrow-band CS / Advanced narrow-band 
+    {u"CS", 0x4353},      // Narrow-band CS / Advanced narrow-band
     {u"TB", 0x5442},      // Terrestrial broadcasting
 });
 
@@ -113,7 +113,7 @@ void ts::ISDBNetworkIdentifierDescriptor::buildXML(DuckContext& duck, xml::Eleme
     root->setAttribute(u"country_code", country_code);
     root->setEnumAttribute(MediaTypes, u"media_type", media_type);
     root->setIntAttribute(u"network_id", network_id, true);
-    root->addHexaTextChild(u"private", private_data, true);
+    root->addHexaTextChild(u"private_data", private_data, true);
 }
 
 
@@ -123,14 +123,9 @@ void ts::ISDBNetworkIdentifierDescriptor::buildXML(DuckContext& duck, xml::Eleme
 
 bool ts::ISDBNetworkIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    int  value = 0;
-    bool ok =  element->getAttribute(country_code, u"country_code", true, u"", 3, 3) &&
-               element->getEnumAttribute(value, MediaTypes, u"media_type", true) &&
-               element->getIntAttribute(network_id, u"network_id", true) &&
-               element->getHexaTextChild(private_data, u"private_data"); 
-    if (ok) {
-        media_type = uint16_t(value);
-    }
-    return ok;
+    return element->getAttribute(country_code, u"country_code", true, u"", 3, 3) &&
+           element->getIntEnumAttribute(media_type, MediaTypes, u"media_type", true) &&
+           element->getIntAttribute(network_id, u"network_id", true) &&
+           element->getHexaTextChild(private_data, u"private_data");
 }
 
