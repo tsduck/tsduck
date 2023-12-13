@@ -129,15 +129,15 @@ bool ts::PlayPlugin::start()
     // Command to execute will be built here
     UString command;
 
+    // Get environment path
+    UStringVector search_path;
+    GetEnvironmentPath(search_path, PATH_ENVIRONMENT_VARIABLE);
+
 #if defined(TS_WINDOWS)
 
     // On Windows, VLC is the only known media player that can read an MPEG
     // transport stream on its standard input. Try to locate vlc.exe using
     // various means.
-
-    // Get environment path
-    UStringVector search_path;
-    GetEnvironmentPath(search_path, PathEnvironmentVariable);
 
     // Look into some registry location
     UString ent = Registry::GetValue(u"HKLM\\SOFTWARE\\VideoLAN\\VLC", u"InstallDir");
@@ -165,10 +165,6 @@ bool ts::PlayPlugin::start()
     }
 
 #else // UNIX
-
-    // Get environment path.
-    UStringVector search_path;
-    GetEnvironmentPath(search_path, PathEnvironmentVariable);
 
     // On macOS, additional applications are installed on /usr/local because of system integrity protection.
 #if defined(TS_MAC)

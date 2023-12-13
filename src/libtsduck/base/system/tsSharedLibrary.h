@@ -39,7 +39,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @see SharedLibraryFlags
         //!
-        explicit SharedLibrary(const UString& filename, SharedLibraryFlags flags = SharedLibraryFlags::NONE, Report& report = NULLREP);
+        explicit SharedLibrary(const fs::path& filename, SharedLibraryFlags flags = SharedLibraryFlags::NONE, Report& report = NULLREP);
 
         //!
         //! Destructor.
@@ -51,20 +51,20 @@ namespace ts {
         //! Check if the library was successfully loaded.
         //! @return True if the library was successfully loaded.
         //!
-        bool isLoaded() const {return _is_loaded;}
+        bool isLoaded() const { return _is_loaded; }
 
         //!
         //! Return a message describing the constructor error.
         //! Useful when isLoaded() == false.
         //! @return An error message.
         //!
-        const UString& errorMessage() const {return _error;}
+        const UString& errorMessage() const { return _error; }
 
         //!
         //! Return actual file name of shared library.
         //! @return The actual file name of shared library.
         //!
-        const UString& fileName() const {return _filename;}
+        const fs::path& fileName() const { return _filename; }
 
         //!
         //! Get the value of an exported symbol inside the shared library.
@@ -80,7 +80,7 @@ namespace ts {
         //! Try to load an alternate file if the shared library is not yet loaded.
         //! @param [in] filename Shared library file name.
         //!
-        void load(const UString& filename);
+        void load(const fs::path& filename);
 
         //!
         //! Force unload, even if permanent
@@ -90,10 +90,10 @@ namespace ts {
     private:
         // Private members
         Report&            _report;
-        UString            _filename {};
+        fs::path           _filename {};
         UString            _error {};
         bool               _is_loaded = false;
-        SharedLibraryFlags _flags {SharedLibraryFlags::NONE};
+        SharedLibraryFlags _flags = SharedLibraryFlags::NONE;
 
 #if defined(TS_WINDOWS)
         ::HMODULE _module = 0;

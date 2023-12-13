@@ -154,6 +154,16 @@ namespace ts {
         //!
         PID firstVideoPID(const DuckContext& duck) const;
 
+        //!
+        //! Search the first format identifier in a registration descriptor.
+        //! When @a pid is specified, the registration descriptor is first search in the corresponding
+        //! component-level descriptor list and, if no registration descriptor was found, in the
+        //! program-level descriptor list.
+        //! @param [in] pid The PID to search or PID_NULL to search in program-level descriptor list only.
+        //! @return The first format identifier in a registration descriptor or REGID_NULL if none was found.
+        //!
+        uint32_t registrationId(PID pid = PID_NULL) const;
+
         // Inherited methods
         virtual bool isPrivate() const override;
         virtual uint16_t tableIdExtension() const override;

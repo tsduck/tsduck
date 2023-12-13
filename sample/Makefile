@@ -10,4 +10,4 @@
 
 .PHONY: default
 default:
-	@for dir in $(wildcard sample-*/); do $(MAKE) -C $$dir; done
+	@for dir in $(wildcard sample-*/); do $(MAKE) -C $$dir || exit $$?; done

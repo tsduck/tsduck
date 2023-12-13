@@ -126,16 +126,35 @@ bool ts::StreamTypeIsVVC(uint8_t st)
 // Check if an ST value indicates an audio stream
 //----------------------------------------------------------------------------
 
-bool ts::StreamTypeIsAudio(uint8_t st)
+bool ts::StreamTypeIsAudio(uint8_t st, uint32_t regid)
 {
-    return st == ST_MPEG1_AUDIO     ||
-           st == ST_MPEG2_AUDIO     ||
-           st == ST_MPEG4_AUDIO     ||
-           st == ST_AAC_AUDIO       ||
-           st == ST_AC3_AUDIO       ||
-           st == ST_EAC3_AUDIO      ||
-           st == ST_MPEG4_AUDIO_RAW ||
-           st == ST_MPH3D_MAIN      ||
+    bool audio = false;
+    if (regid == REGID_HDMV) {
+        audio = st == ST_LPCM_AUDIO       ||
+                st == ST_HDMV_AC3         ||
+                st == ST_DTS_AUDIO        ||
+                st == ST_HDMV_AC3_TRUEHD  ||
+                st == ST_HDMV_AC3_PLUS    ||
+                st == ST_DTS_HS_AUDIO     ||
+                st == ST_DTS_HD_MA_AUDIO  ||
+                st == ST_HDMV_EAC3        ||
+                st == ST_DTS_AUDIO_8A     ||
+                st == ST_SDDS_AUDIO       ||
+                st == ST_HDMV_AC3_PLS_SEC ||
+                st == ST_DTS_HD_SEC;
+    }
+    return audio                     ||
+           st == ST_MPEG1_AUDIO      ||
+           st == ST_MPEG2_AUDIO      ||
+           st == ST_MPEG4_AUDIO      ||
+           st == ST_AAC_AUDIO        ||
+           st == ST_AC3_AUDIO        ||
+           st == ST_AC3_PLUS_AUDIO   ||
+           st == ST_AC3_TRUEHD_AUDIO ||
+           st == ST_A52B_AC3_AUDIO   ||
+           st == ST_EAC3_AUDIO       ||
+           st == ST_MPEG4_AUDIO_RAW  ||
+           st == ST_MPH3D_MAIN       ||
            st == ST_MPH3D_AUX;
 }
 

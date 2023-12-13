@@ -153,7 +153,7 @@ bool ts::hls::OutputPlugin::isRealTime()
 
 bool ts::hls::OutputPlugin::getOptions()
 {
-    getValue(_segmentTemplate, u"");
+    getPathValue(_segmentTemplate, u"");
     getPathValue(_playlistFile, u"playlist");
     _intraClose = present(u"intra-close");
     _useBitrateTag = !present(u"no-bitrate");

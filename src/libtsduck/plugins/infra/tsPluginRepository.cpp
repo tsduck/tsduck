@@ -110,7 +110,7 @@ FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UStri
         // the shareable image in memory after returning from this function. Also make
         // sure to include the plugin's directory in the shared library search path:
         // an extension may install a library in the same directory as the plugin.
-        ApplicationSharedLibrary shlib(plugin_name, u"tsplugin_", PluginsPathEnvironmentVariable, SharedLibraryFlags::PERMANENT, report);
+        ApplicationSharedLibrary shlib(plugin_name, u"tsplugin_", PLUGINS_PATH_ENVIRONMENT_VARIABLE, SharedLibraryFlags::PERMANENT, report);
         if (shlib.isLoaded()) {
             // Search again if the shareable library was loaded.
             // The shareable library is supposed to register its plugins on initialization.
@@ -212,7 +212,7 @@ void ts::PluginRepository::loadAllPlugins(Report& report)
 
     // Get list of shared library files
     UStringVector files;
-    ApplicationSharedLibrary::GetPluginList(files, u"tsplugin_", PluginsPathEnvironmentVariable);
+    ApplicationSharedLibrary::GetPluginList(files, u"tsplugin_", PLUGINS_PATH_ENVIRONMENT_VARIABLE);
 
     // Load all plugins, let them register their plugins.
     for (size_t i = 0; i < files.size(); ++i) {

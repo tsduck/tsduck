@@ -20,11 +20,11 @@ namespace ts {
     //! Environment variable containing the command search path.
     //!
 #if defined(DOXYGEN)
-    constexpr const UChar* PathEnvironmentVariable = platform - specific("PATH", "Path");  // for doc only
+    constexpr const UChar* PATH_ENVIRONMENT_VARIABLE = platform - specific("PATH", "Path");  // for doc only
 #elif defined(TS_WINDOWS)
-    constexpr const UChar* PathEnvironmentVariable = u"Path";
+    constexpr const UChar* PATH_ENVIRONMENT_VARIABLE = u"Path";
 #elif defined(TS_UNIX)
-    constexpr const UChar* PathEnvironmentVariable = u"PATH";
+    constexpr const UChar* PATH_ENVIRONMENT_VARIABLE = u"PATH";
 #else
     #error "Unimplemented operating system"
 #endif
@@ -32,17 +32,17 @@ namespace ts {
     //!
     //! Name of the environment variable which contains a list of paths for plugins.
     //!
-    constexpr const UChar* PluginsPathEnvironmentVariable = u"TSPLUGINS_PATH";
+    constexpr const UChar* PLUGINS_PATH_ENVIRONMENT_VARIABLE = u"TSPLUGINS_PATH";
 
     //!
     //! Separator character in search paths.
     //!
 #if defined(DOXYGEN)
-    constexpr char SearchPathSeparator = platform-specific (':', ';'); // for doc only
+    constexpr UChar SEARCH_PATH_SEPARATOR = platform-specific (':', ';'); // for doc only
 #elif defined(TS_WINDOWS)
-    constexpr UChar SearchPathSeparator = u';';
+    constexpr UChar SEARCH_PATH_SEPARATOR = u';';
 #elif defined(TS_UNIX)
-    constexpr UChar SearchPathSeparator = u':';
+    constexpr UChar SEARCH_PATH_SEPARATOR = u':';
 #else
     #error "Unimplemented operating system"
 #endif
@@ -75,7 +75,7 @@ namespace ts {
     template <class CONTAINER>
     inline void GetEnvironmentPath(CONTAINER& container, const UString& name, const UString& def = UString())
     {
-        GetEnvironment(name, def).split(container, SearchPathSeparator, true, true);
+        GetEnvironment(name, def).split(container, SEARCH_PATH_SEPARATOR, true, true);
     }
 
     //!
@@ -92,7 +92,7 @@ namespace ts {
     template <class CONTAINER>
     inline void GetEnvironmentPathAppend(CONTAINER& container, const UString& name, const UString& def = UString())
     {
-        GetEnvironment(name, def).splitAppend(container, SearchPathSeparator, true, true);
+        GetEnvironment(name, def).splitAppend(container, SEARCH_PATH_SEPARATOR, true, true);
     }
 
     //!
@@ -120,7 +120,7 @@ namespace ts {
     template <class CONTAINER>
     inline void SetEnvironmentPath(const UString& name, const CONTAINER& container)
     {
-        SetEnvironment(name, UString::Join(container, UString(1, SearchPathSeparator)));
+        SetEnvironment(name, UString::Join(container, UString(1, SEARCH_PATH_SEPARATOR)));
     }
 
     //!

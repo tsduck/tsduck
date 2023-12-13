@@ -50,7 +50,7 @@ Options::Options(int argc, char *argv[]) :
     finalSeparator(false),
     dryRun(false)
 {
-    const ts::UString sep(1, ts::SearchPathSeparator);
+    const ts::UString sep(1, ts::SEARCH_PATH_SEPARATOR);
 
     option(u"", 0, Args::STRING, 1, 1);
     help(u"", u"A directory to add or remove to the system Path.");
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
 
     // Split the Path into a list of clean directories.
     ts::UStringList dirs;
-    path.split(dirs, ts::SearchPathSeparator, true, true);
+    path.split(dirs, ts::SEARCH_PATH_SEPARATOR, true, true);
     for (auto& it : dirs) {
         it = CleanupDirectory(it);
     }
@@ -155,12 +155,12 @@ int main(int argc, char* argv[])
     }
 
     // Rebuild the new Path.
-    path = ts::UString::Join(dirs, ts::UString(1, ts::SearchPathSeparator));
+    path = ts::UString::Join(dirs, ts::UString(1, ts::SEARCH_PATH_SEPARATOR));
     if (opt.initialSeparator) {
-        path.insert(path.begin(), ts::SearchPathSeparator);
+        path.insert(path.begin(), ts::SEARCH_PATH_SEPARATOR);
     }
     if (opt.finalSeparator) {
-        path.append(ts::SearchPathSeparator);
+        path.append(ts::SEARCH_PATH_SEPARATOR);
     }
     if (opt.dryRun) {
         opt.info(u"New %s value: %s", {opt.environment, path});

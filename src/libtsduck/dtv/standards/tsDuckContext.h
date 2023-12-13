@@ -287,6 +287,35 @@ namespace ts {
         PDS actualPDS(PDS pds) const;
 
         //!
+        //! Add a registration id, as found in an MPEG-defined registration descriptor.
+        //! @param [in] regid A new registration id.
+        //!
+        void addRegistrationId(uint32_t regid);
+
+        //!
+        //! Get the set of all registration ids, as found in MPEG-defined registration descriptors.
+        //! @return A constant reference to the set of all registration ids.
+        //!
+        const std::set<uint32_t>& registrationIds() const
+        {
+            return _registrationIds;
+        }
+
+        //!
+        //! Get the last registration id, as found in MPEG-defined registration descriptors.
+        //! @return The last registration id or REGID_NULL if none was found.
+        //!
+        uint32_t lastRegistrationId() const
+        {
+            return _lastRegistrationId;
+        }
+
+        //!
+        //! Clear all accumulated registration ids, as found in MPEG-defined registration descriptors.
+        //!
+        void resetRegistrationIds();
+
+        //!
         //! Get the list of standards which are present in the transport stream or context.
         //! @return A bit mask of standards.
         //!
@@ -484,7 +513,9 @@ namespace ts {
         UString        _hfDefaultRegion {};              // Default region for UHF/VHF band.
         MilliSecond    _timeReference = 0;               // Time reference in milli-seconds from UTC (used in ISDB variants).
         UString        _timeRefConfig {};                // Time reference name from TSDuck configuration file.
-        int            _definedCmdOptions = 0;           // Defined command line options.
+        int            _definedCmdOptions = 0;           // Mask of defined command line options (CMD_xxx below).
+        uint32_t       _lastRegistrationId = REGID_NULL; // Last encountered registration id in a registration descriptor.
+        std::set<uint32_t> _registrationIds {};          // Set of all registration ids.
         const std::map<uint16_t, const UChar*> _predefined_cas {};  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.

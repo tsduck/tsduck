@@ -20,7 +20,7 @@
 // Constructor: Load a shared library
 //----------------------------------------------------------------------------
 
-ts::SharedLibrary::SharedLibrary(const UString& filename, SharedLibraryFlags flags, Report& report) :
+ts::SharedLibrary::SharedLibrary(const fs::path& filename, SharedLibraryFlags flags, Report& report) :
     _report(report),
     _flags(flags)
 {
@@ -47,7 +47,7 @@ ts::SharedLibrary::~SharedLibrary()
 // Try to load an alternate file if the shared library is not yet loaded.
 //----------------------------------------------------------------------------
 
-void ts::SharedLibrary::load(const UString& filename)
+void ts::SharedLibrary::load(const fs::path& filename)
 {
     if (_is_loaded) {
         return; // already loaded
@@ -60,13 +60,13 @@ void ts::SharedLibrary::load(const UString& filename)
 #if defined(TSDUCK_STATIC)
     _error = u"statically linked application";
 #elif defined(TS_WINDOWS)
-    _module = ::LoadLibraryExW(_filename.wc_str(), nullptr, 0);
+    _module = ::LoadLibraryExW(_filename.c_str(), nullptr, 0);
     _is_loaded = _module != 0;
     if (!_is_loaded) {
         _error.assignFromUTF8(SysErrorCodeMessage());
     }
 #else
-    _dl = ::dlopen(_filename.toUTF8().c_str(), RTLD_NOW | RTLD_GLOBAL);
+    _dl = ::dlopen(_filename.c_str(), RTLD_NOW | RTLD_GLOBAL);
     _is_loaded = _dl != nullptr;
     if (!_is_loaded) {
         _error.assignFromUTF8(dlerror());
@@ -78,7 +78,7 @@ void ts::SharedLibrary::load(const UString& filename)
         if (_error.empty()) {
             _error = u"error loading " + filename;
         }
-        else if (_error.find(filename) == NPOS) {
+        else if (_error.find(UString(filename)) == NPOS) {
             _error = filename + u": " + _error;
         }
         _report.debug(_error);

@@ -277,12 +277,7 @@ namespace {
     {
         if (opt.xml_line) {
             // Output XML result as one line on error log.
-            // Use a text formatter for one-liner.
-            ts::TextFormatter text(opt);
-            text.setString();
-            text.setEndOfLineMode(ts::TextFormatter::EndOfLineMode::SPACING);
-            doc.print(text);
-            opt.info(opt.xml_prefix + text.toString());
+            opt.info(opt.xml_prefix + doc.oneLiner());
         }
         if (opt.json.useJSON()) {
             // Perform XML to JSON conversion.

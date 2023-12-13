@@ -188,12 +188,7 @@ bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
     if (_json_line || _json_tcp || _json_udp) {
 
         // Generate one JSON line.
-        TextFormatter text(rep);
-        text.setString();
-        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
-        root.print(text);
-        UString line;
-        text.getString(line);
+        const UString line(root.oneLiner(rep));
 
         // When sent over the network, use a UTF-8 string.
         std::string line8;

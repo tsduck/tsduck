@@ -54,7 +54,7 @@ namespace ts {
         //! @param [in] counter_width Width of the counter field in the file name.
         //! Ignored if @a name_template already contains a counter value.
         //!
-        void initCounter(const UString& name_template, size_t initial_counter = 0, size_t counter_width = 6);
+        void initCounter(const fs::path& name_template, size_t initial_counter = 0, size_t counter_width = 6);
 
         //!
         //! Reinitialize the file name generator in date and time mode.
@@ -63,7 +63,7 @@ namespace ts {
         //! Ignored if @a name_template already contains a date and time value.
         //! @see Time::FieldMask
         //!
-        void initDateTime(const UString& name_template, int fields = Time::DATETIME);
+        void initDateTime(const fs::path& name_template, int fields = Time::DATETIME);
 
         //!
         //! Generate a new file name.
@@ -86,12 +86,12 @@ namespace ts {
         UString _name_suffix {};               // Full name suffix.
         bool    _counter_mode = true;          // Use counter mode (ie. not date and time).
         size_t  _counter_value = 0;            // Next counter value in file names.
-        size_t  _counter_width {6};            // Counter width in file name.
+        size_t  _counter_width = 6;            // Counter width in file name.
         int     _time_fields = Time::DATETIME; // The time fields to use.
         UString _last_time {};                 // The last returned time fields. Use _counter_value to avoid identical file names.
 
-        // Fix name prefix, make sure it ends with '-' or any punctuation.
-        void fixNamePrefix();
+        // Initialize the name prefix and suffix. Return the number of trailing digits in prefix.
+        size_t init(const fs::path& name_template);
 
         // Get the number of trailing digits in a string.
         static size_t TrailingDigits(const UString&);

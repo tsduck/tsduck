@@ -149,6 +149,14 @@ namespace ts {
         void setMessagePrefix(const UString& prefix) { _prefix = prefix; }
 
         //!
+        //! Specify to log messages in JSON format.
+        //! If a message prefix is set, it is logged just before the JSON structure
+        //! and can be used to locate the appropriate JSON messages in a flow of logs.
+        //! @param [in] on Set the JSON mode on or off.
+        //!
+        void setJSON(bool on) { _json = on; }
+
+        //!
         //! Replace the list of PID's to process.
         //! @param [in] pid_filter The list of PID's to process.
         //!
@@ -228,7 +236,7 @@ namespace ts {
         //! @param [in] cc2 Second continuity counter.
         //! @return Number of missing packets between @a cc1 and @a cc2.
         //!
-        static int MissingPackets(int cc1, int cc2);
+        static size_t MissingPackets(int cc1, int cc2);
 
     private:
         // PID analysis state
@@ -252,6 +260,7 @@ namespace ts {
         bool          _fix_errors = false;        // Fix discontinuity errors.
         bool          _replicate_dup = true;      // With _fix_errors, replicate duplicate packets.
         bool          _generator = false;         // Use generator mode.
+        bool          _json = false;              // Log JSON messages.
         UString       _prefix {};                 // Message prefix.
         PacketCounter _total_packets = 0;         // Total number of packets.
         PacketCounter _processed_packets = 0;     // Number of processed packets.
@@ -266,5 +275,8 @@ namespace ts {
 
         // Build the first part of an error message.
         UString linePrefix(PID pid) const;
+
+        // Log a JSON message.
+        void logJSON(PID pid, const UChar* type, size_t packet_count = NPOS);
     };
 }

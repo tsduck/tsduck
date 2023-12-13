@@ -832,7 +832,9 @@ Bits = 8
 0x24 = S2Xv2 Satellite Delivery System
 
 [StreamType]
-# In PMT
+# In PMT: 0xrrrrrrrrtt with
+#  0xrrrrrrrr : registration id (in registration descriptor)
+#  0xtt : stream type
 Bits = 8
 # MPEG values
 0x01 = MPEG-1 Video
@@ -879,8 +881,8 @@ Bits = 8
 0x2A = HEVC enhancement sub-partition, TemporalId 0 of HEVC Annex H
 0x2B = HEVC temporal enhancement sub-partition of HEVC stream Annex H
 0x2C = Green access units carried in MPEG-2 sections
-0x2D = ISO 23008-3 Audio with MHAS transport syntax – main stream
-0x2E = ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
+0x2D = ISO 23008-3 Audio with MHAS transport syntax - main stream
+0x2E = ISO 23008-3 Audio with MHAS transport syntax - auxiliary stream
 0x2F = Quality access units carried in sections
 0x30 = Media Orchestration Access Units carried in sections
 0x31 = HEVC substream containing Motion Constrained Tile Set
@@ -889,11 +891,16 @@ Bits = 8
 0x34 = VVC/H.266 temporal video subset, Annex A of ITUT H.266|ISO/IEC 23090-3
 0x35 = EVC, ISO/IEC 23094-1
 0x36 = LCEVC, ISO/IEC 23094-2
+0x42 = Chinese Video Standard
 0x7F = IPMP
 # ATSC values
+0x80 = DigiCipher II Video
 0x81 = ATSC AC-3 Audio
+0x83 = ATSC AC-3 True HD Audio
+0x84 = ATSC AC-3+ Audio
 0x86 = SCTE 35 Splice Info
 0x87 = ATSC Enhanced-AC-3 Audio
+0x91 = A52b/AC-3 Audio
 # Canal+ values (no longer displayed by default, need C+ context)
 # 0xBF = C+ Dummy stream
 # 0xC0 = C+ Module
@@ -911,7 +918,25 @@ Bits = 8
 # 0xCE = C+ CMPS ECM
 # 0xCF = C+ CMPT (CMPS scenario)
 # 0xD0 = C+ Appli loader
+0xA0 = MSCODEC Video
 0xD4 = AVS3 video
+0xEA = Private ES (VC-1)
+# With HDMV registration id.
+0x48444D56_80 = LPCM Audio
+0x48444D56_81 = HDMV AC-3 Audio
+0x48444D56_82 = HDMV DTS Audio
+0x48444D56_83 = HDMV AC-3 True HD Audio
+0x48444D56_84 = HDMV AC-3+ Audio
+0x48444D56_85 = DTS-HD Audio
+0x48444D56_86 = DTS-HD Master Audio
+0x48444D56_87 = HDMV Enhanced-AC-3 Audio
+0x48444D56_8A = DTS Audio
+0x48444D56_90 = Subpicture PGS
+0x48444D56_91 = IGS
+0x48444D56_92 = DVD_SPU vls Subtitle
+0x48444D56_94 = SDDS Audio
+0x48444D56_A1 = HDMV AC-3+ Secondary Audio
+0x48444D56_A2 = DTS-HD Secondary Audio
 
 [RunningStatus]
 Bits = 3

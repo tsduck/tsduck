@@ -39,7 +39,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @see GetSearchPath()
         //!
-        explicit ApplicationSharedLibrary(const UString& filename,
+        explicit ApplicationSharedLibrary(const fs::path& filename,
                                           const UString& prefix = UString(),
                                           const UString& library_path = UString(),
                                           SharedLibraryFlags flags = SharedLibraryFlags::NONE,
@@ -60,7 +60,7 @@ namespace ts {
         //! Get the prefix.
         //! @return The file name prefix.
         //!
-        UString prefix() const {return _prefix;}
+        UString prefix() const { return _prefix; }
 
         //!
         //! Get the list of directories where to search application shared libraries or plugins.
