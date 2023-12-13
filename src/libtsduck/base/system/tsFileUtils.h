@@ -134,35 +134,6 @@ namespace ts {
     TSDUCKDLL UString BaseName(const UString& path, const UString& suffix = UString());
 
     //!
-    //! Return the suffix of a file path ("dir/foo.bar" => ".bar").
-    //!
-    //! @param [in] path A file path.
-    //! @return The suffix of @a path ("dir/foo.bar" => ".bar").
-    //!
-    TSDUCKDLL UString PathSuffix(const UString& path);
-
-    //!
-    //! Conditionally add a suffix to a file path.
-    //!
-    //! If the file path does not contain a suffix, add the specified one.
-    //! Otherwise, return the name unchanged.
-    //!
-    //! @param [in] path A file path.
-    //! @param [in] suffix The suffix to conditionally add.
-    //! @return The @a path with a suffix (for conditional suffix ".bar",
-    //! "dir/foo" => "dir/foo.bar" and "dir/foo.too" => "dir/foo.too").
-    //!
-    TSDUCKDLL UString AddPathSuffix(const UString& path, const UString& suffix);
-
-    //!
-    //! Return the prefix of a file path ("dir/foo.bar" => "dir/foo").
-    //!
-    //! @param [in] path A file path.
-    //! @return The prefix of @a path ("dir/foo.bar" => "dir/foo").
-    //!
-    TSDUCKDLL UString PathPrefix(const UString& path);
-
-    //!
     //! Get the current user's home directory.
     //!
     //! @return The full path of the current user's home directory.
@@ -270,7 +241,7 @@ namespace ts {
     //! @param [in] pathName Name of the seach path environment variable.
     //! @return The path to an existing file or an empty path if not found.
     //!
-    TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PathEnvironmentVariable);
+    TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = PATH_ENVIRONMENT_VARIABLE);
 
     //!
     //! Search a configuration file.

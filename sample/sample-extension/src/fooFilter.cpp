@@ -49,6 +49,17 @@ bool foo::FooFilter::loadFilterOptions(ts::DuckContext& duck, ts::Args& args, ts
 
 
 //----------------------------------------------------------------------------
+// Reset context, if filtering restarts from the beginning for instance.
+//----------------------------------------------------------------------------
+
+bool foo::FooFilter::reset()
+{
+    // No running state to reinitialize here.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Check if a specific section must be filtered and displayed.
 // This function must return true if the section can be displayed and false
 // if it must not be displayed. A section is actually displayed if all section

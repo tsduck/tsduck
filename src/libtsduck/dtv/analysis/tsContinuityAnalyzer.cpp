@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsContinuityAnalyzer.h"
+#include "tsjsonObject.h"
 #include "tsNullReport.h"
 
 
@@ -133,8 +134,10 @@ ts::TSPacket ts::ContinuityAnalyzer::lastPacket(PID pid) const
 //  Return the number of missing packets between two continuity counters
 //----------------------------------------------------------------------------
 
-int ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
+size_t ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
 {
+    cc1 &= CC_MASK;
+    cc2 &= CC_MASK;
     return (cc2 <= cc1 ? 16 : 0) + cc2 - cc1 - 1;
 }
 
@@ -146,6 +149,23 @@ int ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
 ts::UString ts::ContinuityAnalyzer::linePrefix(PID pid) const
 {
     return UString::Format(u"%spacket index: %'d, PID: 0x%04X", {_prefix, _total_packets, pid});
+}
+
+
+//----------------------------------------------------------------------------
+// Log a JSON message.
+//----------------------------------------------------------------------------
+
+void ts::ContinuityAnalyzer::logJSON(PID pid, const UChar* type, size_t packet_count)
+{
+    json::Object root;
+    root.add(u"index", _total_packets);
+    root.add(u"pid", pid);
+    root.add(u"type", type);
+    if (packet_count != NPOS) {
+        root.add(u"packets", packet_count);
+    }
+    _report->log(_severity, _prefix + root.oneLiner(*_report));
 }
 
 
@@ -198,7 +218,12 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
             if (++state.dup_count >= 2) {
                 // The standard allows at most 2 duplicate packets.
                 if (_display_errors) {
-                    _report->log(_severity, u"%s, %d duplicate packets", {linePrefix(pid), state.dup_count + 1});
+                    if (_json) {
+                        logJSON(pid, u"duplicate", state.dup_count + 1);
+                    }
+                    else {
+                        _report->log(_severity, u"%s, %d duplicate packets", {linePrefix(pid), state.dup_count + 1});
+                    }
                 }
                 // There is nothing we can do to fix this.
                 _error_count++;
@@ -223,10 +248,20 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                 if (_display_errors) {
                     // Display a specific message depending on the error.
                     if (!has_payload && cc == ((last_cc_in + 1) & CC_MASK)) {
-                        _report->log(_severity, u"%s, incorrect CC increment without payload", {linePrefix(pid)});
+                        if (_json) {
+                            logJSON(pid, u"increment-without-payload");
+                        }
+                        else {
+                            _report->log(_severity, u"%s, incorrect CC increment without payload", {linePrefix(pid)});
+                        }
                     }
                     else {
-                        _report->log(_severity, u"%s, missing %d packets", {linePrefix(pid), MissingPackets(last_cc_in, cc)});
+                        if (_json) {
+                            logJSON(pid, u"missing", MissingPackets(last_cc_in, cc));
+                        }
+                        else {
+                            _report->log(_severity, u"%s, missing %d packets", {linePrefix(pid), MissingPackets(last_cc_in, cc)});
+                        }
                     }
                 }
                 _error_count++;

@@ -40,9 +40,8 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
-    void testCurrentProcessId();
+    void testStdFileSystem();
     void testCurrentExecutableFile();
-    void testSleep();
     void testEnvironment();
     void testRegistry();
     void testIgnoreBrokenPipes();
@@ -51,9 +50,7 @@ public:
     void testVernacularFilePath();
     void testFilePaths();
     void testTempFiles();
-    void testFileSize();
     void testFileTime();
-    void testDirectory();
     void testWildcard();
     void testSearchWildcard();
     void testHomeDirectory();
@@ -67,9 +64,8 @@ public:
     void testRelativeFilePath();
 
     TSUNIT_TEST_BEGIN(SysUtilsTest);
-    TSUNIT_TEST(testCurrentProcessId);
+    TSUNIT_TEST(testStdFileSystem);
     TSUNIT_TEST(testCurrentExecutableFile);
-    TSUNIT_TEST(testSleep);
     TSUNIT_TEST(testEnvironment);
     TSUNIT_TEST(testRegistry);
     TSUNIT_TEST(testIgnoreBrokenPipes);
@@ -78,9 +74,7 @@ public:
     TSUNIT_TEST(testVernacularFilePath);
     TSUNIT_TEST(testFilePaths);
     TSUNIT_TEST(testTempFiles);
-    TSUNIT_TEST(testFileSize);
     TSUNIT_TEST(testFileTime);
-    TSUNIT_TEST(testDirectory);
     TSUNIT_TEST(testWildcard);
     TSUNIT_TEST(testSearchWildcard);
     TSUNIT_TEST(testHomeDirectory);
@@ -153,13 +147,70 @@ namespace {
 // Test cases
 //----------------------------------------------------------------------------
 
-void SysUtilsTest::testCurrentProcessId()
+// Various tests on std::filesystem and std::filesystem::path.
+// We trust the C++ runtime library, this is just a test to understand what it does.
+void SysUtilsTest::testStdFileSystem()
 {
-    // Hard to make automated tests since we do not expect predictible values
+    bool success = true;
 
-    debug() << "SysUtilsTest: sizeof(ts::ProcessId) = " << sizeof(ts::ProcessId) << std::endl
-            << "SysUtilsTest: ts::CurrentProcessId() = " << ts::CurrentProcessId() << std::endl
-            << "SysUtilsTest: ts::IsPrivilegedUser() = " << ts::IsPrivilegedUser() << std::endl;
+    // Test directory creation.
+    const fs::path tmpDirName1(ts::TempFile(u""));
+    TSUNIT_ASSERT(!fs::exists(tmpDirName1));
+    TSUNIT_ASSERT(fs::create_directories(tmpDirName1));
+    TSUNIT_ASSERT(fs::exists(tmpDirName1));
+    TSUNIT_ASSERT(fs::is_directory(tmpDirName1));
+
+    // Test file in directory.
+    fs::path tmpName1(tmpDirName1);
+    tmpName1 /= u"foo.bar";
+    TSUNIT_ASSERT(_CreateFile(tmpName1, 0));
+    TSUNIT_ASSERT(fs::exists(tmpName1));
+    TSUNIT_ASSERT(!fs::is_directory(tmpName1));
+
+    // Test rename directory.
+    const fs::path tmpDirName2(ts::TempFile(u""));
+    TSUNIT_ASSERT(!fs::exists(tmpDirName2));
+    fs::rename(tmpDirName1, tmpDirName2, &ts::ErrCodeReport(success, CERR));
+    TSUNIT_ASSERT(success);
+    TSUNIT_ASSERT(fs::exists(tmpDirName2));
+    TSUNIT_ASSERT(fs::is_directory(tmpDirName2));
+    TSUNIT_ASSERT(!fs::exists(tmpDirName1));
+    TSUNIT_ASSERT(!fs::is_directory(tmpDirName1));
+    tmpName1 = tmpDirName2;
+    tmpName1 /= u"foo.bar";
+    TSUNIT_ASSERT(fs::exists(tmpName1));
+    TSUNIT_ASSERT(!fs::is_directory(tmpName1));
+
+    // Test remove directory and its content.
+    TSUNIT_ASSERT(fs::remove(tmpName1, &ts::ErrCodeReport(CERR, u"error deleting", tmpName1)));
+    TSUNIT_ASSERT(!fs::exists(tmpName1));
+    TSUNIT_ASSERT(fs::is_directory(tmpDirName2));
+    TSUNIT_ASSERT(fs::remove(tmpDirName2, &ts::ErrCodeReport(CERR, u"error deleting", tmpDirName2)));
+    TSUNIT_ASSERT(!fs::exists(tmpDirName2));
+    TSUNIT_ASSERT(!fs::is_directory(tmpDirName2));
+
+    // Test file size.
+    const fs::path tmpName2(ts::TempFile());
+    TSUNIT_ASSERT(!fs::exists(tmpName2));
+    TSUNIT_ASSERT(_CreateFile(tmpName2, 1234));
+    TSUNIT_ASSERT(fs::exists(tmpName2));
+    TSUNIT_EQUAL(1234, fs::file_size(tmpName2, &ts::ErrCodeReport(CERR)));
+    fs::resize_file(tmpName2, 567, &ts::ErrCodeReport(success, CERR));
+    TSUNIT_ASSERT(success);
+    TSUNIT_EQUAL(567, fs::file_size(tmpName2, &ts::ErrCodeReport(CERR)));
+
+    // Test rename file.
+    const fs::path tmpName3(ts::TempFile());
+    TSUNIT_ASSERT(!fs::exists(tmpName3));
+    fs::rename(tmpName2, tmpName3, &ts::ErrCodeReport(success, CERR));
+    TSUNIT_ASSERT(success);
+    TSUNIT_ASSERT(fs::exists(tmpName3));
+    TSUNIT_ASSERT(!fs::exists(tmpName2));
+    TSUNIT_EQUAL(567, fs::file_size(tmpName3, &ts::ErrCodeReport(CERR)));
+
+    // Remove previous temporary file.
+    TSUNIT_ASSERT(fs::remove(tmpName3, &ts::ErrCodeReport(CERR, u"error deleting", tmpName2)));
+    TSUNIT_ASSERT(!fs::exists(tmpName3));
 }
 
 void SysUtilsTest::testCurrentExecutableFile()
@@ -170,18 +221,6 @@ void SysUtilsTest::testCurrentExecutableFile()
     debug() << "SysUtilsTest: ts::ExecutableFile() = \"" << exe.string() << "\"" << std::endl;
     TSUNIT_ASSERT(!exe.empty());
     TSUNIT_ASSERT(fs::exists(exe));
-}
-
-void SysUtilsTest::testSleep()
-{
-    // The will slow down our test suites by 400 ms...
-
-    const ts::Time before(ts::Time::CurrentUTC());
-    ts::SleepThread(400);
-    const ts::Time after(ts::Time::CurrentUTC());
-    TSUNIT_ASSERT(after >= before + 400 - _msPrecision);
-
-    debug() << "SysUtilsTest: ts::SleepThread(400), measured " << (after - before) << " ms" << std::endl;
 }
 
 void SysUtilsTest::testEnvironment()
@@ -239,7 +278,7 @@ void SysUtilsTest::testEnvironment()
 
     ts::UString value(ref[0]);
     for (size_t i = 1; i < ref.size(); ++i) {
-        value += ts::SearchPathSeparator + ref[i];
+        value += ts::SEARCH_PATH_SEPARATOR + ref[i];
     }
     ts::SetEnvironment(u"UTEST_A", value);
 
@@ -419,18 +458,6 @@ void SysUtilsTest::testFilePaths()
 
     TSUNIT_ASSERT(ts::BaseName(dirSep + u"foo.bar") == u"foo.bar");
     TSUNIT_ASSERT(ts::BaseName(dirSep) == u"");
-
-    TSUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo.bar") == u".bar");
-    TSUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo.") == u".");
-    TSUNIT_ASSERT(ts::PathSuffix(dirSep + u"foo") == u"");
-
-    TSUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo", u".none") == dirSep + u"foo.none");
-    TSUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo.", u".none") == dirSep + u"foo.");
-    TSUNIT_ASSERT(ts::AddPathSuffix(dirSep + u"foo.bar", u".none") == dirSep + u"foo.bar");
-
-    TSUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo.bar") == dirSep + u"foo");
-    TSUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo.") == dirSep + u"foo");
-    TSUNIT_ASSERT(ts::PathPrefix(dirSep + u"foo") == dirSep + u"foo");
 }
 
 void SysUtilsTest::testTempFiles()
@@ -453,33 +480,6 @@ void SysUtilsTest::testTempFiles()
     TSUNIT_EQUAL(0, fs::file_size(tmpName, &ts::ErrCodeReport(CERR)));
     TSUNIT_ASSERT(fs::remove(tmpName, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
     TSUNIT_ASSERT(!fs::exists(tmpName));
-}
-
-void SysUtilsTest::testFileSize()
-{
-    const fs::path tmpName(ts::TempFile());
-    TSUNIT_ASSERT(!fs::exists(tmpName));
-
-    // Create a file
-    TSUNIT_ASSERT(_CreateFile(tmpName, 1234));
-    TSUNIT_ASSERT(fs::exists(tmpName));
-    TSUNIT_EQUAL(1234, fs::file_size(tmpName, &ts::ErrCodeReport(CERR)));
-
-    bool success = true;
-    fs::resize_file(tmpName, 567, &ts::ErrCodeReport(success, CERR));
-    TSUNIT_ASSERT(success);
-    TSUNIT_EQUAL(567, fs::file_size(tmpName, &ts::ErrCodeReport(CERR)));
-
-    const fs::path tmpName2(ts::TempFile());
-    TSUNIT_ASSERT(!fs::exists(tmpName2));
-    fs::rename(tmpName, tmpName2, &ts::ErrCodeReport(success, CERR));
-    TSUNIT_ASSERT(success);
-    TSUNIT_ASSERT(fs::exists(tmpName2));
-    TSUNIT_ASSERT(!fs::exists(tmpName));
-    TSUNIT_EQUAL(567, fs::file_size(tmpName2, &ts::ErrCodeReport(CERR)));
-
-    TSUNIT_ASSERT(fs::remove(tmpName2, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
-    TSUNIT_ASSERT(!fs::exists(tmpName2));
 }
 
 void SysUtilsTest::testFileTime()
@@ -537,42 +537,6 @@ void SysUtilsTest::testFileTime()
 
     TSUNIT_ASSERT(fs::remove(tmpName, &ts::ErrCodeReport(CERR, u"error deleting", tmpName)));
     TSUNIT_ASSERT(!fs::exists(tmpName));
-}
-
-void SysUtilsTest::testDirectory()
-{
-    const fs::path dirName(ts::TempFile(u""));
-    const ts::UString sep(1, fs::path::preferred_separator);
-    const ts::UString fileName(sep + u"foo.bar");
-
-    TSUNIT_ASSERT(!fs::exists(dirName));
-    TSUNIT_ASSERT(fs::create_directories(dirName));
-    TSUNIT_ASSERT(fs::exists(dirName));
-    TSUNIT_ASSERT(fs::is_directory(dirName));
-
-    TSUNIT_ASSERT(_CreateFile(dirName + fileName, 0));
-    TSUNIT_ASSERT(fs::exists(dirName + fileName));
-    TSUNIT_ASSERT(!fs::is_directory(dirName + fileName));
-
-    bool success = true;
-    const fs::path dirName2(ts::TempFile(u""));
-    TSUNIT_ASSERT(!fs::exists(dirName2));
-    fs::rename(dirName, dirName2, &ts::ErrCodeReport(success, CERR));
-    TSUNIT_ASSERT(success);
-    TSUNIT_ASSERT(fs::exists(dirName2));
-    TSUNIT_ASSERT(fs::is_directory(dirName2));
-    TSUNIT_ASSERT(!fs::exists(dirName));
-    TSUNIT_ASSERT(!fs::is_directory(dirName));
-    TSUNIT_ASSERT(fs::exists(dirName2 + fileName));
-    TSUNIT_ASSERT(!fs::is_directory(dirName2 + fileName));
-
-    TSUNIT_ASSERT(fs::remove(dirName2 + fileName, &ts::ErrCodeReport(CERR, u"error deleting", dirName2 + fileName)));
-    TSUNIT_ASSERT(!fs::exists(dirName2 + fileName));
-    TSUNIT_ASSERT(fs::is_directory(dirName2));
-
-    TSUNIT_ASSERT(fs::remove(dirName2, &ts::ErrCodeReport(CERR, u"error deleting", dirName2)));
-    TSUNIT_ASSERT(!fs::exists(dirName2));
-    TSUNIT_ASSERT(!fs::is_directory(dirName2));
 }
 
 void SysUtilsTest::testWildcard()

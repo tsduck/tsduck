@@ -29,11 +29,6 @@ namespace ts {
         //! internal characteristics of Node. However, if we make this inheritance private,
         //! the dynamic_cast operations in RingNode fail. This is a very annoying C++ feature.
         //!
-        //  TODO: RingNode properties are never used into subclasses or client classes.
-        //  It should be "private RingNode". For some reason, all XML unitary tests fail when
-        //  the parent class is not public (seen on Ubuntu 22 with GCC 11). Need to investigate
-        //  the root cause for this and then hide the superclass.
-        //
         class TSDUCKDLL Node : public RingNode
         {
         public:
@@ -268,6 +263,12 @@ namespace ts {
             //! If zero, no output is produced.
             //!
             virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const;
+
+            //!
+            //! Format the value as a one-liner XML text.
+            //! @return The formatted one-line XML text.
+            //!
+            virtual UString oneLiner() const;
 
             //!
             //! Check if the text shall be stuck to other elements in XML output.

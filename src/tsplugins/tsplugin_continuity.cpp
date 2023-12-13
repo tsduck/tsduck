@@ -30,12 +30,17 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        UString            _tag {};                      // Message tag
-        bool               _fix = false;                 // Fix incorrect continuity counters
-        bool               _no_replicate = false;        // Option --no-replicate-duplicated
-        int                _log_level = Severity::Info;  // Log level for discontinuity messages
-        PIDSet             _pids {};                     // PID values to check or fix
-        ContinuityAnalyzer _cc_analyzer {NoPID, tsp};    // Continuity counters analyzer
+        // Command line options.
+        UString _tag {};                      // Message tag
+        bool    _fix = false;                 // Fix incorrect continuity counters
+        bool    _no_replicate = false;        // Option --no-replicate-duplicated
+        bool    _json_line = false;           // Use JSON log style.
+        UString _json_prefix {};              // Prefix before JSON line.
+        int     _log_level = Severity::Info;  // Log level for discontinuity messages
+        PIDSet  _pids {};                     // PID values to check or fix
+
+        // Working data.
+        ContinuityAnalyzer _cc_analyzer {NoPID, tsp};
     };
 }
 
@@ -52,6 +57,12 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
     option(u"fix", 'f');
     help(u"fix",
          u"Fix incorrect continuity counters. By default, only display discontinuities.");
+
+    option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    help(u"json-line", u"'prefix'",
+         u"Report the continuity information as one single line in JSON format. "
+         u"The optional string parameter specifies a prefix to prepend on the log "
+         u"line before the JSON text to locate the appropriate line in the logs.");
 
     option(u"no-replicate-duplicated");
     help(u"no-replicate-duplicated",
@@ -83,6 +94,8 @@ bool ts::ContinuityPlugin::getOptions()
 {
     // Command line arguments
     getIntValues(_pids, u"pid", true);
+    getValue(_json_prefix, u"json-line");
+    _json_line = present(u"json-line");
     _fix = present(u"fix");
     _no_replicate = present(u"no-replicate-duplicated");
     _tag = value(u"tag");
@@ -110,7 +123,8 @@ bool ts::ContinuityPlugin::start()
     _cc_analyzer.reset();
     _cc_analyzer.setPIDFilter(_pids);
     _cc_analyzer.setDisplay(true);
-    _cc_analyzer.setMessagePrefix(_tag);
+    _cc_analyzer.setJSON(_json_line);
+    _cc_analyzer.setMessagePrefix(_json_line ? _json_prefix : _tag);
     _cc_analyzer.setMessageSeverity(_log_level);
     _cc_analyzer.setFix(_fix);
     _cc_analyzer.setReplicateDuplicated(!_no_replicate);

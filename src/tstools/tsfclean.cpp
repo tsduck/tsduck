@@ -38,10 +38,10 @@ namespace ts {
         FileCleanOptions(int argc, char *argv[]);
         virtual ~FileCleanOptions() override;
 
-        DuckContext   duck {this};  // TSDuck execution context.
-        UStringVector in_files {};  // Input file names.
-        UString       out_file {};  // Output file name or directory.
-        bool          out_dir {};   // Output name is a directory.
+        DuckContext           duck {this};  // TSDuck execution context.
+        std::vector<fs::path> in_files {};  // Input file names.
+        fs::path              out_file {};  // Output file name or directory.
+        bool                  out_dir {};   // Output name is a directory.
     };
 }
 
@@ -55,15 +55,15 @@ ts::FileCleanOptions::FileCleanOptions(int argc, char *argv[]) :
          u"If more than one file is specified, the output name shall specify a directory.");
 
     option(u"output", 'o', FILENAME, 1, 1);
-    help(u"output", u"path",
+    help(u"output",
          u"Output file or directory. "
          u"This is a mandatory parameter, there is no default. "
          u"If more than one input file is specified, the output name shall specify a directory.");
 
     analyze(argc, argv);
 
-    getValues(in_files, u"");
-    getValue(out_file, u"output");
+    getPathValues(in_files, u"");
+    getPathValue(out_file, u"output");
     out_dir = fs::is_directory(out_file);
 
     if (in_files.size() > 1 && !out_dir) {
@@ -87,7 +87,7 @@ namespace ts {
         TS_NOBUILD_NOCOPY(FileCleaner);
     public:
         // Constructor, performing the TS file cleanup.
-        FileCleaner(FileCleanOptions& opt, const UString& infile_name);
+        FileCleaner(FileCleanOptions& opt, const fs::path& infile_name);
 
         // Status of the cleanup.
         bool success() const { return _success; }
@@ -147,7 +147,7 @@ namespace ts {
 // File cleaner constructor.
 //----------------------------------------------------------------------------
 
-ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) :
+ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name) :
     _opt(opt)
 {
     // Mark all tables as invalid. The first occurrence in the input file will initialize them.
@@ -156,11 +156,10 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) 
     _sdt.invalidate();
 
     // Output file name.
-    UString outfile_name(_opt.out_file);
+    fs::path outfile_name(_opt.out_file);
     if (_opt.out_dir) {
         // Output name is a directory.
-        outfile_name.append(fs::path::preferred_separator);
-        outfile_name.append(BaseName(infile_name));
+        outfile_name /= infile_name.filename();
     }
     _opt.verbose(u"cleaning %s -> %s", {infile_name, outfile_name});
 
@@ -274,7 +273,7 @@ void ts::FileCleaner::errorCleanup()
         _in_file.close(_opt);
     }
     if (_out_file.isOpen()) {
-        const UString filename(_out_file.getFileName());
+        const fs::path filename(_out_file.getFileName());
         _out_file.close(_opt);
         fs::remove(filename, &ErrCodeReport(_opt, u"error deleting", filename));
     }

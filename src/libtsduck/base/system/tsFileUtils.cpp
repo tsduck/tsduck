@@ -271,67 +271,6 @@ ts::UString ts::BaseName(const UString& path, const UString& suffix)
 
 
 //----------------------------------------------------------------------------
-// Return the suffix of a file path (eg. "dir/foo.bar" => ".bar")
-//----------------------------------------------------------------------------
-
-ts::UString ts::PathSuffix(const UString& path)
-{
-    UString::size_type sep = LastPathSeparator(path);
-    UString::size_type dot = path.rfind(u'.');
-
-    if (dot == NPOS) {
-        return ts::UString();  // no dot in path
-    }
-    else if (sep != NPOS && dot < sep) {
-        return ts::UString();  // dot in directory part, not in base name
-    }
-    else {
-        return path.substr(dot); // dot in base name
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// If the file path does not contain a suffix, add the specified one.
-// Otherwise, return the name unchanged.
-//----------------------------------------------------------------------------
-
-ts::UString ts::AddPathSuffix(const UString& path, const UString& suffix)
-{
-    UString::size_type sep = LastPathSeparator(path);
-    UString::size_type dot = path.rfind(u'.');
-
-    if (dot == NPOS || (sep != NPOS && dot < sep)) {
-        return path + suffix;
-    }
-    else {
-        return path;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Return the prefix of a file path (eg. "dir/foo.bar" => "dir/foo")
-//----------------------------------------------------------------------------
-
-ts::UString ts::PathPrefix(const UString& path)
-{
-    UString::size_type sep = LastPathSeparator(path);
-    UString::size_type dot = path.rfind(u'.');
-
-    if (dot == NPOS) {
-        return path;  // no dot in path
-    }
-    else if (sep != NPOS && dot < sep) {
-        return path;  // dot in directory part, not in base name
-    }
-    else {
-        return path.substr(0, dot); // dot in base name
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Get the current user's home directory.
 //----------------------------------------------------------------------------
 
@@ -459,7 +398,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
     // At this point, the file name has no directory and is not found in the current directory.
     // Build the list of directories to search. First, start with all directories from $TSPLUGINS_PATH.
     UStringList dirList;
-    GetEnvironmentPathAppend(dirList, PluginsPathEnvironmentVariable);
+    GetEnvironmentPathAppend(dirList, PLUGINS_PATH_ENVIRONMENT_VARIABLE);
 
     // Then, try in same directory as executable.
     const UString execDir(DirectoryName(ExecutableFile()));
@@ -481,7 +420,7 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 #endif
 
     // Finally try all directories from $PATH.
-    GetEnvironmentPathAppend(dirList, PathEnvironmentVariable);
+    GetEnvironmentPathAppend(dirList, PATH_ENVIRONMENT_VARIABLE);
 
     // Add default system locations of the configuration files. This is useful when the
     // application is not a TSDuck one but a third-party application which uses the

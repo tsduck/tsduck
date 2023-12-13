@@ -15,7 +15,6 @@
 #include "tsSectionFileArgs.h"
 #include "tsxmlTweaks.h"
 #include "tsReportWithPrefix.h"
-#include "tsFileUtils.h"
 #include "tsSysUtils.h"
 TS_MAIN(MainCode);
 
@@ -32,8 +31,8 @@ namespace {
         Options(int argc, char *argv[]);
 
         ts::DuckContext     duck {this};             // Execution context.
-        ts::UStringVector   inFiles {};              // Input file names.
-        ts::UString         outFile {};              // Output file path.
+        ts::UStringVector   inFiles {};              // Input file names, strings, not fs::path, can be inlined XML or JSON.
+        fs::path            outFile {};              // Output file path.
         bool                outIsDir = false;        // Output name is a directory.
         bool                useStdIn = false;        // At least one input file is the standard input.
         bool                useStdOut = false;       // Use standard output.
@@ -97,7 +96,7 @@ Options::Options(int argc, char *argv[]) :
          u"The default output file names have extension .json.");
 
     option(u"output", 'o', FILENAME);
-    help(u"output", u"filepath",
+    help(u"output",
          u"Specify the output file name. "
          u"By default, the output file has the same name as the input and extension .bin (compile), .xml or .json (decompile). "
          u"If the specified path is a directory, the output file is built from this directory and default file name. "
@@ -119,16 +118,16 @@ Options::Options(int argc, char *argv[]) :
     xmlTweaks.loadArgs(duck, *this);
 
     getValues(inFiles, u"");
-    getValue(outFile, u"output");
+    getPathValue(outFile, u"output");
     compile = present(u"compile");
     decompile = present(u"decompile");
     fromJSON = present(u"from-json");
-    toJSON = present(u"json") || outFile.endWith(ts::SectionFile::DEFAULT_JSON_SECTION_FILE_SUFFIX);
+    toJSON = present(u"json") || ts::UString(outFile.extension()).similar(ts::SectionFile::DEFAULT_JSON_SECTION_FILE_SUFFIX);
     xmlModel = present(u"xml-model");
     withExtensions = present(u"extensions");
     useStdIn = ts::UString(u"-").isContainedSimilarIn(inFiles);
-    useStdOut = outFile == u"-";
-    outIsDir = !useStdOut && !outFile.empty() && fs::is_directory(outFile);
+    useStdOut = outFile.empty() || outFile == u"-";
+    outIsDir = !useStdOut && fs::is_directory(outFile);
 
     if (useStdOut) {
         outFile.clear();
@@ -158,11 +157,10 @@ namespace {
     bool DisplayModel(Options& opt)
     {
         // Save to a file. Default to stdout.
-        ts::UString outName(opt.outFile);
+        fs::path outName(opt.outFile);
         if (opt.outIsDir) {
             // Specified output is a directory, add default name.
-            outName.push_back(fs::path::preferred_separator);
-            outName.append(ts::SectionFile::XML_TABLES_MODEL);
+            outName /= ts::SectionFile::XML_TABLES_MODEL;
         }
         if (!outName.empty()) {
             opt.verbose(u"saving model file to %s", {outName});
@@ -200,13 +198,14 @@ namespace {
         }
 
         // Compute output file name with default file type.
-        ts::UString outname(opt.outFile);
+        fs::path outname(opt.outFile);
+        const fs::path inname(infile);
         if (!useStdOut) {
             if (outname.empty()) {
-                outname = ts::SectionFile::BuildFileName(infile, outType);
+                outname = ts::SectionFile::BuildFileName(inname, outType);
             }
             else if (opt.outIsDir) {
-                outname += fs::path::preferred_separator + ts::SectionFile::BuildFileName(ts::BaseName(infile), outType);
+                outname /= ts::SectionFile::BuildFileName(inname.filename(), outType);
             }
         }
 
@@ -214,7 +213,7 @@ namespace {
         file.setTweaks(opt.xmlTweaks);
         file.setCRCValidation(ts::CRC32::CHECK);
 
-        ts::ReportWithPrefix report(opt, (useStdIn ? u"stdin" : ts::BaseName(infile)) + u": ");
+        ts::ReportWithPrefix report(opt, (useStdIn ? u"stdin" : inname.filename()) + u": ");
 
         // Process the input file, starting with error cases.
         if (!compile && !decompile) {

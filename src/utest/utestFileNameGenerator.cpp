@@ -75,6 +75,11 @@ void FileNameGeneratorTest::testCounter()
     TSUNIT_EQUAL(u"base-0001235.ext", gen.newFileName());
     TSUNIT_EQUAL(u"base-0001236.ext", gen.newFileName(ts::Time::CurrentLocalTime()));
 
+    gen.initCounter(u"foo/bar/base.ext", 1234, 7);
+    TSUNIT_EQUAL(u"foo/bar/base-0001234.ext", gen.newFileName());
+    TSUNIT_EQUAL(u"foo/bar/base-0001235.ext", gen.newFileName());
+    TSUNIT_EQUAL(u"foo/bar/base-0001236.ext", gen.newFileName(ts::Time::CurrentLocalTime()));
+
     gen.initCounter(u"foo056.bar", 3, 7);
     TSUNIT_EQUAL(u"foo056.bar", gen.newFileName());
     TSUNIT_EQUAL(u"foo057.bar", gen.newFileName());
@@ -93,6 +98,9 @@ void FileNameGeneratorTest::testDateTime()
 
     gen.initDateTime(u"base.ext");
     TSUNIT_EQUAL(u"base-20210321-121314.ext", gen.newFileName(ts::Time(2021, 03, 21, 12, 13, 14, 521)));
+
+    gen.initDateTime(u"foo/bar/base.ext");
+    TSUNIT_EQUAL(u"foo/bar/base-20210321-121314.ext", gen.newFileName(ts::Time(2021, 03, 21, 12, 13, 14, 521)));
 
     gen.initDateTime(u"base.ext", ts::Time::ALL);
     TSUNIT_EQUAL(u"base-20210321-121314521.ext", gen.newFileName(ts::Time(2021, 03, 21, 12, 13, 14, 521)));

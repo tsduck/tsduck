@@ -630,12 +630,12 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section,
 //----------------------------------------------------------------------------
 
 void ts::TablesDisplay::displayDescriptorListWithLength(const Section& section,
-                                                                 PSIBuffer& buf,
-                                                                 const UString& margin,
-                                                                 const UString& title,
-                                                                 const UString& empty_text,
-                                                                 size_t length_bits,
-                                                                 uint16_t cas)
+                                                        PSIBuffer& buf,
+                                                        const UString& margin,
+                                                        const UString& title,
+                                                        const UString& empty_text,
+                                                        size_t length_bits,
+                                                        uint16_t cas)
 {
     const size_t length = buf.getUnalignedLength(length_bits);
     displayDescriptorList(section, buf, margin, title, empty_text, length, cas);
@@ -675,8 +675,12 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
              << names::DID(desc_tag, pds, tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
              << desc_length << " bytes" << std::endl;
 
-        // If the descriptor contains a private_data_specifier, keep it
-        // to establish a private context.
+        // If the descriptor contains a registration id, keep it in the TSDuck context.
+        if (desc_tag == DID_REGISTRATION && desc_length >= 4) {
+            _duck.addRegistrationId(GetUInt32(desc_start));
+        }
+
+        // If the descriptor contains a private_data_specifier, keep it to establish a private context.
         if (desc_tag == DID_PRIV_DATA_SPECIF && desc_length >= 4) {
             pds = GetUInt32(desc_start);
             // PDS zero means return to default value.
