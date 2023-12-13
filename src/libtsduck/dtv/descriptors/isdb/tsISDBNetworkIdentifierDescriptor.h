@@ -26,10 +26,10 @@ namespace ts {
 
     public:
         // ISDBNetworkIdentifierDescriptor public members:
-        UString     country_code {};
-        uint16_t    media_type = 0;
-        uint16_t    network_id = 0;
-        ByteBlock   private_data {};
+        UString     country_code {};   //!< Country code.
+        uint16_t    media_type = 0;    //!< Media type (two ASCII letters, e.g. "AB", "AC", etc.)
+        uint16_t    network_id = 0;    //!< Network identifier.
+        ByteBlock   private_data {};   //!< Private data.
 
         //!
         //! Default constructor.
@@ -54,7 +54,7 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
-    protected:
+    private:
         // Enumerations for XML
         static const Enumeration MediaTypes;
     };
