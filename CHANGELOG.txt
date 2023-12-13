@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3521
+VERSION 3.36-3527
 
 [NEW] New commands and plugins:
 
@@ -58,6 +58,8 @@ VERSION 3.36-3521
     parameter set.
   * Fixed issue #1377: Incorrect display of stream types (PMT) in the context
     of HDMV streams (BluRay disks).
+  * Fixed issue #1383: plugin "history" always failed with input plugin "ip"
+    because it was not possible to determine the initial bitrate.
 
 -------------------------------------------------------------------------------
 

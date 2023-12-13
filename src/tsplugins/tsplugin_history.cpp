@@ -63,16 +63,22 @@ namespace ts {
         bool          _time_all = false;          // Report all TDT/TOT
         bool          _ignore_stream_id = false;  // Ignore stream_id modifications
         bool          _use_milliseconds = false;  // Report playback time instead of packet number
-        PacketCounter _suspend_after = 0;         // Number of missing packets after which a PID is considered as suspended
+        PacketCounter _suspend_threshold = 0;     // Number of missing packets after which a PID is considered as suspended
         fs::path      _outfile_name {};           // Output file name
 
-        // Workign data
+        // Working data
         std::ofstream _outfile {};                // User-specified output file
+        PacketCounter _suspend_after = 0;         // Number of missing packets after which a PID is considered as suspended
         TDT           _last_tdt {};               // Last received TDT
         PacketCounter _last_tdt_pkt = 0;          // Packet# of last TDT
         bool          _last_tdt_reported = false; // Last TDT already reported
+        bool          _bitrate_error = false;     // Already reported an "unknown bitrate" error
         SectionDemux  _demux {duck, this, this};  // Section filter
         std::map<PID,PIDContext> _cpids {};       // Description of each PID
+
+        // Number of packets after which we report a warning if the bitrate is unknown.
+        // This is one second of content at 10 Mb/s.
+        static constexpr PacketCounter INITIAL_PACKET_THRESHOLD = 10'000'000 / PKT_SIZE_BITS;
 
         // Invoked by the demux.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -149,7 +155,7 @@ bool ts::HistoryPlugin::getOptions()
     _time_all = present(u"time-all");
     _ignore_stream_id = present(u"ignore-stream-id-change");
     _use_milliseconds = present(u"milli-seconds");
-    getIntValue(_suspend_after, u"suspend-packet-threshold");
+    getIntValue(_suspend_threshold, u"suspend-packet-threshold");
     getPathValue(_outfile_name, u"output-file");
     return true;
 }
@@ -172,6 +178,8 @@ bool ts::HistoryPlugin::start()
     }
 
     // Reinitialize state
+    _suspend_after = _suspend_threshold;
+    _bitrate_error = false;
     _last_tdt_pkt = 0;
     _last_tdt_reported = false;
     _last_tdt.invalidate();
@@ -411,13 +419,18 @@ void ts::HistoryPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint16
 
 ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // Make sure we know how long to wait for suspended PID
-    if (_suspend_after == 0) {
-        // Number of packets in 60 second at current bitrate
-        _suspend_after = ((tsp->bitrate() * 60) / PKT_SIZE_BITS).toInt();
-        if (_suspend_after == 0) {
+    // Make sure we know how long to wait for suspended PID, compute number of packets for a PID to disappear.
+    // If --suspend-packet-threshold is not specified ...
+    if (_suspend_threshold == 0) {
+        const BitRate bitrate = tsp->bitrate();
+        if (bitrate > PKT_SIZE_BITS) {
+            // Number of packets in 60 second at current bitrate
+            _suspend_after = ((bitrate * 60) / PKT_SIZE_BITS).toInt();
+        }
+        else if (_suspend_after == 0 && !_bitrate_error && tsp->pluginPackets() > INITIAL_PACKET_THRESHOLD) {
+            // Report this warning only once
+            _bitrate_error = true;
             tsp->warning(u"bitrate unknown or too low, use option --suspend-packet-threshold");
-            return TSP_END;
         }
     }
 
@@ -439,7 +452,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
         cpid.first_pkt = tsp->pluginPackets();
         report(u"PID %d (0x%<X) first packet, %s", {pid, scrambling ? u"scrambled" : u"clear"});
     }
-    else if (cpid.last_pkt + _suspend_after < tsp->pluginPackets()) {
+    else if (_suspend_after > 0 && cpid.last_pkt + _suspend_after < tsp->pluginPackets()) {
         // Last packet in the PID is so old that we consider the PID as suspended, and now restarted
         report(cpid.last_pkt, u"PID %d (0x%<X) suspended, %s, service 0x%X", {pid, cpid.scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
         report(u"PID %d (0x%<X) restarted, %s, service 0x%04X", {pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
