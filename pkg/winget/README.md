@@ -40,15 +40,5 @@ Because winget manages binary packages only, the NSIS installer for TSDuck shall
 built first and published on GitHub as a release. Then, the winget manifest for TSDuck
 will point to that release on GitHub.
 
-As of this writing, the current release of TSDuck is 3.35. This is the first version
-which was submitted to winget.
-
-Submitting an update has not yet been done. It is unclear if new releases of packages on GitHub are
-automatically detected, as [discussed here](https://github.com/microsoft/winget-cli/discussions/2525)
-or if an explicit pull request must be submitted.
-
-The command `wingetcreate update` also seems to provide some assistance in the publication of package updates.
-It is [described here](https://github.com/microsoft/winget-create/blob/main/doc/update.md).
-
-This README file will be updated and potential automation scripts will be placed
-in this directory when TSDuck version 3.36 is released.
+The PowerShell script `release.ps1`, in this directory, is used to create and publish a new
+TSDuck release on winget.
