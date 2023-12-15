@@ -2,6 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.37-3529
+
+[NEW] New commands and plugins:
+
+[IMP] Improvements on existing commands and plugins:
+
+[BUG] Bug fixes:
+
+-------------------------------------------------------------------------------
+
 VERSION 3.36-3527
 
 [NEW] New commands and plugins:
