@@ -54,8 +54,6 @@ Every night, if there were any modification in the TSDuck repo during the last d
 "nightly builds" are automatically produced and published on the [TSDuck web site](https://tsduck.io/).
 No manual action is required, everything is automated.
 
-### Building binaries and documentation
-
 The workflow `.github/workflows/nightly-build.yml` is automatically run every day at 00:40 UTC.
 
 - On Linux Ubuntu and Windows (64 bits only), the TSDuck binary packages are built
@@ -71,22 +69,11 @@ The workflow `.github/workflows/nightly-build.yml` is automatically run every da
   published as "artefacts" of the workflow. They are publicly downloadable from
   [GitHub](https://github.com/tsduck/tsduck/actions/).
 
-### Publishing on the web site
-
-At the end of the `nightly-build.yml` workflow, the update worklow named
-`.github/workflows/nightly-build-update.yml` is automatically run.
-
-It triggers a signal on the [TSDuck web site](https://tsduck.io/). A PHP script
-is automatically run on the web site to retrieve, download and publish the latest
-[nighly binaries](https://tsduck.io/download/prerelease/) and
+At the end of the `nightly-build.yml` workflow, when all build jobs are completed,
+the update job triggers a signal on the [TSDuck web site](https://tsduck.io/). A PHP
+script is automatically run on the web site to retrieve, download and publish the
+latest [nighly binaries](https://tsduck.io/download/prerelease/) and
 [programming documentation](https://tsduck.io/doxy/).
-
-Note: It had been observed, in rare cases, that the artefacts of the nighlty build
-workflow are published with some delay, typically after the start of the update
-workflow. In that case, the PHP script on the web site does not find any new
-artefact and the nighty builds are not updated. To solve this issue, the update
-workflow is also scheduled to run every day at 11:15 UTC. Thus, if the nightly
-builds were missed at the end of their workflow, they will be grabbed around midday.
 
 ## Release creation  {#auto_release}
 

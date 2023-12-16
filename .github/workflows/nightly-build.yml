@@ -102,7 +102,7 @@ jobs:
 
     - name: Upload version
       if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: version
         path: version.txt
@@ -110,7 +110,7 @@ jobs:
 
     - name: Upload 64-bit installer
       if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: installer-64
         path: pkg/installers/TSDuck-Win64-${{ env.VERSION }}.exe
@@ -118,7 +118,7 @@ jobs:
 
     - name: Upload 64-bit portable
       if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: portable-64
         path: pkg/installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
@@ -198,7 +198,7 @@ jobs:
 
     - name: Upload command lists
       if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: command-lists
         path: tsduck.commands.zip
@@ -206,7 +206,7 @@ jobs:
 
     - name: Upload Ubuntu package
       if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: ubuntu-package
         path: pkg/installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
@@ -214,7 +214,7 @@ jobs:
         
     - name: Upload Ubuntu dev package
       if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: ubuntu-dev-package
         path: pkg/installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
@@ -256,8 +256,25 @@ jobs:
 
     - name: Upload doxygen package
       if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
         name: doxy-package
         path: doxy.zip
         retention-days: 5
+
+  update:
+    name: Update nightly builds on tsduck.io
+    # Starting with upload-artifact@v4, it is guaranteed that the artifacts are
+    # available when the step completes. Therefore, it is no longer necessary to
+    # have a separate workflow to update the website. We just need to wait for
+    # the completion of the build jobs.
+    if: github.repository == 'tsduck/tsduck'
+    needs: [linux, windows, doc]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install dependencies
+      run: sudo apt install -y curl jq
+    - name: Trigger download
+      run: |
+        curl --retry 5 --retry-all-errors -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/download/prerelease/get-nightly-builds -o update.log
+        jq . update.log || cat update.log
