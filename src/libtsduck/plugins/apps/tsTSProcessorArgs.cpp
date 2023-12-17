@@ -89,9 +89,9 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"Specify the reception timeout in milliseconds for control commands. "
               u"The default timeout is " + UString::Decimal(DEFAULT_CONTROL_TIMEOUT) + u" ms.");
 
-    args.option(u"final-wait", 0, Args::INT64);
-    args.help(u"final-wait", u"milliseconds",
-              u"Wait the specified number of milliseconds after the last input packet. "
+    args.option<std::chrono::milliseconds>(u"final-wait");
+    args.help(u"final-wait",
+              u"Wait the specified duration after the last input packet. "
               u"Zero means wait forever.");
 
     args.option(u"ignore-joint-termination", 'i');
@@ -180,7 +180,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     ignore_jt = args.present(u"ignore-joint-termination");
     args.getTristateValue(realtime, u"realtime");
     args.getIntValue(receive_timeout, u"receive-timeout", 0);
-    args.getIntValue(final_wait, u"final-wait", -1);
+    args.getChronoValue(final_wait, u"final-wait", std::chrono::milliseconds(-1));
     args.getIPValue(control_local, u"control-local");
     args.getIntValue(control_port, u"control-port", 0);
     args.getIntValue(control_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);

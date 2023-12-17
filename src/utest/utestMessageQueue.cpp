@@ -107,7 +107,7 @@ namespace {
             tsunit::Test::debug() << "MessageQueueTest: test thread: started" << std::endl;
 
             // Initial suspend of 500 ms
-            ts::SleepThread(500);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
             // Read messages. Expect consecutive values until negative value.
             int expected = 0;

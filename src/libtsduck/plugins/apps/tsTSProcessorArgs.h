@@ -44,7 +44,7 @@ namespace ts {
         PacketCounter     init_bitrate_adj = DEFAULT_INIT_BITRATE_PKT_INTERVAL; //!< As long as input bitrate is unknown, reevaluate periodically.
         Tristate          realtime = Tristate::Maybe; //!< Use real-time options.
         MilliSecond       receive_timeout = 0;      //!< Timeout on input operations.
-        MilliSecond       final_wait = -1;          //!< Time to wait after last input packet. Zero means infinite, negative means none.
+        std::chrono::milliseconds final_wait = std::chrono::milliseconds(-1); //!< Time to wait after last input packet. Zero means infinite, negative means none.
         uint16_t          control_port = 0;         //!< TCP server port for control commands.
         IPv4Address       control_local {};         //!< Local interface on which to listen for control commands.
         bool              control_reuse = false;    //!< Set the 'reuse port' socket option on the control TCP server port.

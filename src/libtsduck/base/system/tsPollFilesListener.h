@@ -40,7 +40,7 @@ namespace ts {
         //! poll notifications when a file is being written and his size modified at each poll.
         //! @return True to continue polling, false to exit polling.
         //!
-        virtual bool updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay);
+        virtual bool updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay);
 
         //!
         //! Virtual destructor.

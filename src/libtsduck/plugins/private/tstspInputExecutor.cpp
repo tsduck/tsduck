@@ -360,21 +360,21 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
 void ts::tsp::InputExecutor::passInputPackets(size_t pkt_count, bool input_end)
 {
     // At end of input with --final-wait, wait before reporting the end of input.
-    if (input_end && _options.final_wait >= 0) {
+    if (input_end && _options.final_wait.count() >= 0) {
         // If there are some packets, report them without end-of-input before waiting.
         if (pkt_count > 0) {
             passPackets(pkt_count, _tsp_bitrate, _tsp_bitrate_confidence, false, false);
             pkt_count = 0;
         }
         // Wait the specified number of milliseconds or forever if zero.
-        debug(u"final wait after end of input: %'d ms", {_options.final_wait});
-        if (_options.final_wait > 0) {
-            SleepThread(_options.final_wait);
+        debug(u"final wait after end of input: %s", {UString::Chrono(_options.final_wait, true)});
+        if (_options.final_wait.count() > 0) {
+            std::this_thread::sleep_for(_options.final_wait);
         }
         else {
             // Wait forever. Repeatedly use long waits (one day) to avoid system limitations.
             for (;;) {
-                SleepThread(MilliSecPerDay);
+                std::this_thread::sleep_for(std::chrono::hours(24));
             }
         }
         debug(u"end of final wait");

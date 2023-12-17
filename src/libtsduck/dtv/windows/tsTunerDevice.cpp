@@ -431,7 +431,7 @@ bool ts::TunerDevice::start()
     // it has been observed that remaining packets from the previous run were still
     // there. Wait a little bit and reflush after Run() to avoid that.
     // Yes, this is a horrible hack, but if you have a better fix...
-    SleepThread(50); // milliseconds
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     sink->Flush();
 
     // If a signal timeout was specified, read a packet with timeout

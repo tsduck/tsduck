@@ -8,27 +8,7 @@
 
 #include "tsPollFiles.h"
 #include "tsFileUtils.h"
-#include "tsSysUtils.h"
-#include "tsNullReport.h"
 #include "tsErrCodeReport.h"
-
-
-//----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::PollFiles::PollFiles(const UString& wildcard,
-                         PollFilesListener* listener,
-                         MilliSecond poll_interval,
-                         MilliSecond min_stable_delay,
-                         Report& report) :
-    _report(report),
-    _files_wildcard(wildcard),
-    _poll_interval(poll_interval),
-    _min_stable_delay(min_stable_delay),
-    _listener(listener)
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -37,12 +17,13 @@ ts::PollFiles::PollFiles(const UString& wildcard,
 
 void ts::PollFiles::pollRepeatedly()
 {
-    _report.debug(u"Starting PollFiles on %s, poll interval = %d ms, min stable delay = %d ms", {_files_wildcard, _poll_interval, _min_stable_delay});
+    _report.debug(u"Starting PollFiles on %s, poll interval = %d, min stable delay = %d",
+                  {_files_wildcard, UString::Chrono(_poll_interval, true), UString::Chrono(_min_stable_delay, true)});
 
     // Loop on poll for files.
     while (pollOnce()) {
         // Wait until next poll
-        SleepThread(_poll_interval);
+        std::this_thread::sleep_for(_poll_interval);
     }
 }
 
