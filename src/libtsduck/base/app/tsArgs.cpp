@@ -33,7 +33,8 @@ const ts::Enumeration ts::Args::HelpFormatEnum({
 // Constructors for IOption
 //----------------------------------------------------------------------------
 
-ts::Args::IOption::IOption(const UChar*    name_,
+ts::Args::IOption::IOption(Args*           parent,
+                           const UChar*    name_,
                            UChar           short_name_,
                            ArgType         type_,
                            size_t          min_occur_,
@@ -65,7 +66,7 @@ ts::Args::IOption::IOption(const UChar*    name_,
     }
     // Handle invalid values
     if (max_occur < min_occur) {
-        throw ArgsError(u"invalid occurences for " + display());
+        parent->fatalArgError(u"invalid occurences for " + display());
     }
     // Parameters are values by definition
     if (name.empty() && type == NONE) {
@@ -99,7 +100,7 @@ ts::Args::IOption::IOption(const UChar*    name_,
         case ANUMBER:
         case CHRONO:
             if (max_value < min_value) {
-                throw ArgsError(u"invalid value range for " + display());
+                parent->fatalArgError(u"invalid value range for " + display());
             }
             break;
         case UNSIGNED:
@@ -158,11 +159,12 @@ ts::Args::IOption::IOption(const UChar*    name_,
             type = INTEGER;
             break;
         default:
-            throw ArgsError(UString::Format(u"invalid option type %d", {type}));
+            parent->fatalArgError(UString::Format(u"invalid option type %d", {type}));
     }
 }
 
-ts::Args::IOption::IOption(const UChar*       name_,
+ts::Args::IOption::IOption(Args*              parent,
+                           const UChar*       name_,
                            UChar              short_name_,
                            const Enumeration& enumeration_,
                            size_t             min_occur_,
@@ -185,7 +187,7 @@ ts::Args::IOption::IOption(const UChar*       name_,
     }
     // Handle invalid values
     if (max_occur < min_occur) {
-        throw ArgsError(u"invalid occurences for " + display());
+        parent->fatalArgError(u"invalid occurences for " + display());
     }
 }
 
@@ -416,6 +418,23 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
 
 
 //----------------------------------------------------------------------------
+// Fatal internal error in the application.
+//----------------------------------------------------------------------------
+
+void ts::Args::fatalArgError(const UString& reason) const
+{
+    CERR.fatal(u"%s: application internal error, %s", {_app_name, reason});
+    std::exit(EXIT_FAILURE);
+}
+
+void ts::Args::fatalArgError(const UString& option, const UString& reason) const
+{
+    CERR.fatal(u"%s: application internal error, option --%s %s", {_app_name, option, reason});
+    std::exit(EXIT_FAILURE);
+}
+
+
+//----------------------------------------------------------------------------
 // Simple virtual methods.
 //----------------------------------------------------------------------------
 
@@ -457,7 +476,7 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"help");
     }
     else if (!Contains(_iopts, u"help")) {
-        addOption(IOption(u"help", 0, HelpFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
+        addOption(IOption(this, u"help", 0, HelpFormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"help", u"Display this help text.");
     }
 
@@ -466,7 +485,7 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"version");
     }
     else if (!Contains(_iopts, u"version")) {
-        addOption(IOption(u"version", 0,  VersionInfo::FormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
+        addOption(IOption(this, u"version", 0,  VersionInfo::FormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
         help(u"version", u"Display the TSDuck version number.");
     }
 
@@ -475,7 +494,7 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"verbose");
     }
     else if (!Contains(_iopts, u"verbose")) {
-        addOption(IOption(u"verbose", 'v', NONE, 0, 1, 0, 0, 0, IOPT_PREDEFINED));
+        addOption(IOption(this, u"verbose", 'v', NONE, 0, 1, 0, 0, 0, IOPT_PREDEFINED));
         help(u"verbose", u"Produce verbose output.");
     }
 
@@ -484,7 +503,7 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"debug");
     }
     else if (!Contains(_iopts, u"debug")) {
-        addOption(IOption(u"debug", 'd', POSITIVE, 0, 1, 0, 0, 0, IOPT_PREDEFINED | IOPT_OPTVALUE));
+        addOption(IOption(this, u"debug", 'd', POSITIVE, 0, 1, 0, 0, 0, IOPT_PREDEFINED | IOPT_OPTVALUE));
         help(u"debug", u"level", u"Produce debug traces. The default level is 1. Higher levels produce more messages.");
     }
 }
@@ -755,7 +774,7 @@ ts::Args::IOption* ts::Args::search(const UString& name)
 
 //----------------------------------------------------------------------------
 // Locate an IOption based on its complete long name.
-// Throw ArgsError if option does not exist (application internal error)
+// Fatal error if option does not exist (application internal error)
 //----------------------------------------------------------------------------
 
 ts::Args::IOption& ts::Args::getIOption(const UChar* name)
@@ -766,7 +785,7 @@ ts::Args::IOption& ts::Args::getIOption(const UChar* name)
         return it->second;
     }
     else {
-        throw ArgsError(_app_name + u": application internal error, option --" + name1 + u" undefined");
+        fatalArgError(name1, u"undefined");
     }
 }
 
@@ -815,7 +834,7 @@ void ts::Args::getValue(UString& value, const UChar* name, const UChar* def_valu
 {
     const IOption& opt(getIOption(name));
     if (opt.type == INTEGER) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
+        fatalArgError(opt.name, u"is integer, cannot be accessed as string");
     }
     else if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
         value= def_value;
@@ -829,7 +848,7 @@ void ts::Args::getOptionalValue(std::optional<UString>& value, const UChar* name
 {
     const IOption& opt(getIOption(name));
     if (opt.type == INTEGER) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as string");
+        fatalArgError(opt.name, u"is integer, cannot be accessed as string");
     }
     else if (!opt.values.empty() && opt.values[0].string.has_value()) {
         value = opt.values[0].string;
@@ -843,7 +862,7 @@ void ts::Args::getPathValue(fs::path& value, const UChar* name, const fs::path& 
 {
     const IOption& opt(getIOption(name));
     if (opt.type != FILENAME && opt.type != DIRECTORY) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not a filesystem path");
+        fatalArgError(opt.name, u"is not a filesystem path");
     }
     else if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
         value = def_value;
@@ -862,7 +881,7 @@ void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index
 {
     const IOption& opt(getIOption(name));
     if (opt.type == INTEGER) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as tristate");
+        fatalArgError(opt.name, u"is integer, cannot be accessed as tristate");
     }
     if (index >= opt.values.size()) {
         // Option not present, meaning unspecified.
@@ -896,7 +915,7 @@ void ts::Args::getHexaValue(ByteBlock& value, const UChar* name, const ByteBlock
 {
     const IOption& opt(getIOption(name));
     if (opt.type != STRING && opt.type != HEXADATA) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as string or hexa string");
+        fatalArgError(opt.name, u"is not declared as string or hexa string");
     }
     if (index >= opt.values.size() || !opt.values[index].string.has_value()) {
         value = def_value;
@@ -922,7 +941,7 @@ void ts::Args::getIPValue(IPv4Address& value, const UChar* name, const IPv4Addre
 {
     const IOption& opt(getIOption(name));
     if (opt.type != IPADDR && opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as IPv4 address");
+        fatalArgError(opt.name, u"is not declared as IPv4 address");
     }
     value = index >= opt.values.size() ? def_value : opt.values[index].address;
     if (!value.hasAddress() && def_value.hasAddress()) {
@@ -941,7 +960,7 @@ void ts::Args::getSocketValue(IPv4SocketAddress& value, const UChar* name, const
 {
     const IOption& opt(getIOption(name));
     if (opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as IPv4 socket address");
+        fatalArgError(opt.name, u"is not declared as IPv4 socket address");
     }
     value = index >= opt.values.size() ? def_value : opt.values[index].address;
     if (!value.hasAddress() && def_value.hasAddress()) {
