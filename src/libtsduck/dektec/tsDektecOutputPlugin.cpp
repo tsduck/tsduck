@@ -1796,7 +1796,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                 // it can result in overflows, per information in the DTAPI documentation.
                 // Also, this approach fulfills the promise of a "real-time" plug-in, and the
                 // Dektec output plug-in indicates that it is a real-time plug-in.
-                SleepThread(1);
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
 

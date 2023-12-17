@@ -200,6 +200,7 @@ void ThreadTest::testDeleteWhenTerminated()
     TSUNIT_ASSERT(thread->start());
     int counter = 100;
     while (!report && counter-- > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
         ts::SleepThread(20);
     }
     const ts::Time after(ts::Time::CurrentUTC());

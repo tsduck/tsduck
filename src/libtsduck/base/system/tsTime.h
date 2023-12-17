@@ -78,8 +78,7 @@ namespace ts {
         //!
         //! Operator Time + MilliSecond => Time.
         //! @param [in] duration A number of milliseconds.
-        //! @return A @c Time object representing this object plus the
-        //! specified number of milliseconds.
+        //! @return A @c Time object representing this object plus the specified number of milliseconds.
         //!
         Time operator+(const MilliSecond& duration) const
         {
@@ -87,14 +86,35 @@ namespace ts {
         }
 
         //!
+        //! Operator Time + std::chrono::duration => Time.
+        //! @param [in] duration A duration.
+        //! @return A @c Time object representing this object plus the specified duration.
+        //!
+        template <class Rep, class Period>
+        Time operator+(const std::chrono::duration<Rep,Period>& duration) const
+        {
+            return Time(_value + Ticks(duration).count());
+        }
+
+        //!
         //! Operator Time - MilliSecond => Time.
         //! @param [in] duration A number of milliseconds.
-        //! @return A @c Time object representing this object minus the
-        //! specified number of milliseconds.
+        //! @return A @c Time object representing this object minus the specified number of milliseconds.
         //!
         Time operator-(const MilliSecond& duration) const
         {
             return Time(_value - duration * TICKS_PER_MS);
+        }
+
+        //!
+        //! Operator Time - std::chrono::duration => Time.
+        //! @param [in] duration A duration.
+        //! @return A @c Time object representing this object minus the specified duration.
+        //!
+        template <class Rep, class Period>
+        Time operator-(const std::chrono::duration<Rep,Period>& duration) const
+        {
+            return Time(_value - Ticks(duration).count());
         }
 
         //!
@@ -109,6 +129,18 @@ namespace ts {
         }
 
         //!
+        //! Operator Time += std::chrono::duration
+        //! @param [in] duration A duration to add to this object.
+        //! @return A reference to this object.
+        //!
+        template <class Rep, class Period>
+        Time& operator+=(const std::chrono::duration<Rep,Period>& duration)
+        {
+            _value += Ticks(duration).count();
+            return *this;
+        }
+
+        //!
         //! Operator Time -= MilliSecond
         //! @param [in] duration A number of milliseconds to substract from this object.
         //! @return A reference to this object.
@@ -116,6 +148,18 @@ namespace ts {
         Time& operator-=(const MilliSecond& duration)
         {
             _value -= duration * TICKS_PER_MS;
+            return *this;
+        }
+
+        //!
+        //! Operator Time -= std::chrono::duration
+        //! @param [in] duration A duration to substract from this object.
+        //! @return A reference to this object.
+        //!
+        template <class Rep, class Period>
+        Time& operator-=(const std::chrono::duration<Rep,Period>& duration)
+        {
+            _value -= Ticks(duration).count();
             return *this;
         }
 
@@ -728,6 +772,9 @@ namespace ts {
             // of microseconds since January 1, 1970
             1000;
 #endif
+
+        // The std::chrono::duration type with natural clock ticks.
+        typedef std::chrono::duration<std::intmax_t, std::ratio<1, MilliSecPerSec * TICKS_PER_MS>> Ticks;
 
         // On Win32, a the FILETIME structure is binary-compatible with a 64-bit integer.
 #if defined(TS_WINDOWS)

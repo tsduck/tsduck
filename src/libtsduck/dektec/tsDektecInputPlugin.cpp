@@ -776,7 +776,7 @@ bool ts::DektecInputPlugin::configureLNB()
 
     // Wait at least 15ms. Not sure it is necessary with Dektec. It is necessary with LinuxTV.
     // Is this required by Linux TV or this is the required LNB setup ?
-    SleepThread(15);
+    std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
     // Send tone burst: A for satellite 0, B for satellite 1.
     // DiSEqC switches may address up to 4 dishes (satellite number 0 to 3)
@@ -789,7 +789,7 @@ bool ts::DektecInputPlugin::configureLNB()
     }
 
     // Wait 15ms again.
-    SleepThread(15);
+    std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
     // Send DiSEqC commands. See DiSEqC spec ...
     uint8_t cmd[6];
@@ -809,7 +809,7 @@ bool ts::DektecInputPlugin::configureLNB()
     }
 
     // Wait 15ms again.
-    SleepThread(15);
+    std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
     status = _guts->chan.LnbEnableTone(_guts->high_band);
@@ -884,7 +884,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
     if (_guts->init_cnt == INIT_RECEIVE_COUNT && _guts->preload_fifo) {
         int fifo_load = 0;
         while ((status = _guts->chan.GetFifoLoad(fifo_load)) == DTAPI_OK && fifo_load < _guts->cur_fifo_size / 2) {
-            SleepThread(10);
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         if (status != DTAPI_OK) {
             tsp->error(u"error getting input initial FIFO load: %s", {DektecStrError(status)});

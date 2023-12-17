@@ -126,13 +126,13 @@ namespace {
         const ::CURLcode initStatus;
 
         // Get number of retries for an URL.
-        void getRetry(const ts::UString& url, size_t& retries, ts::MilliSecond& interval);
+        void getRetry(const ts::UString& url, size_t& retries, std::chrono::milliseconds& interval);
 
     private:
         // Per-host retry policy.
         struct Retry {
             size_t retries = 0;
-            ts::MilliSecond interval = 0;
+            std::chrono::milliseconds interval {};
         };
         std::map<ts::UString, Retry> _retries {};
     };
@@ -154,7 +154,9 @@ namespace {
                     dir.substr(eq + 1).toInteger(retry.retries);
                 }
                 else if (dir.startWith(u"INTERVAL=", ts::CASE_INSENSITIVE)) {
-                    dir.substr(eq + 1).toInteger(retry.interval);
+                    std::chrono::milliseconds::rep interval = 0;
+                    dir.substr(eq + 1).toInteger(interval);
+                    retry.interval = std::chrono::milliseconds(interval);
                 }
                 else if (dir.startWith(u"HOST=", ts::CASE_INSENSITIVE)) {
                     _retries.insert(std::make_pair(dir.substr(eq + 1).toLower(), retry));
@@ -164,7 +166,7 @@ namespace {
     }
 
     // Get number of retries for an URL.
-    void LibCurlInit::getRetry(const ts::UString& url, size_t& retries, ts::MilliSecond& interval)
+    void LibCurlInit::getRetry(const ts::UString& url, size_t& retries, std::chrono::milliseconds& interval)
     {
         const ts::URL u(url);
         const auto it = _retries.find(u.getHost().toLower());
@@ -174,7 +176,7 @@ namespace {
         }
         else {
             retries = 0;
-            interval = 0;
+            interval = std::chrono::milliseconds::zero();
         }
     }
 }
@@ -336,9 +338,9 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
     // Get retry scheme for that URL.
     size_t retries = 0;
-    MilliSecond retryInterval = 0;
+    std::chrono::milliseconds retryInterval;
     LibCurlInit::Instance().getRetry(_request._originalURL, retries, retryInterval);
-    _request._report.debug(u"curl retries: %d, interval: %'d ms", {retries, retryInterval});
+    _request._report.debug(u"curl retries: %d, interval: %s", {retries, UString::Chrono(retryInterval, true)});
 
     // Loop until all retries are exhausted.
     for (;;) {
@@ -529,9 +531,9 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
         else if (_canRetry) {
             // No data received and some remaining retries.
-            _request._report.debug(u"cannot start transfer, retrying after %'d milliseconds", {retryInterval});
+            _request._report.debug(u"cannot start transfer, retrying after %s", {UString::Chrono(retryInterval)});
             retries--;
-            SleepThread(retryInterval);
+            std::this_thread::sleep_for(retryInterval);
         }
         else {
             return false;

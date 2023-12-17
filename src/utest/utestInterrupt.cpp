@@ -82,7 +82,7 @@ void InterruptTest::testInterrupt()
         std::cerr << "* Established one-shot handler" << std::endl;
         for (;;) {
             std::cerr << "* Press Ctrl+C..." << std::endl;
-            ts::SleepThread(5000);
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     }
     else {

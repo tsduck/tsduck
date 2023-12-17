@@ -49,20 +49,20 @@ namespace ts {
         TSPacketFormat   _format = TSPacketFormat::AUTODETECT;              // Packet format on the pipe
         size_t           _max_queue = DEFAULT_MAX_QUEUED_PACKETS;           // Maximum number of queued packets.
         size_t           _accel_threshold = DEFAULT_MAX_QUEUED_PACKETS / 2; // Queue threshold after which insertion is accelerated.
-        bool             _no_wait = false;             // Do not wait for command completion.
-        bool             _merge_psi = false;           // Merge PSI/SI information.
-        bool             _pcr_restamp = false;         // Restamp PCR from the merged stream.
-        bool             _incremental_pcr = false;     // Use incremental method to restamp PCR's.
-        bool             _merge_smoothing = false;     // Smoothen packet insertion.
-        bool             _ignore_conflicts = false;    // Ignore PID conflicts.
-        bool             _pcr_reset_backwards = false; // Reset PCR restamping when DTS/PTD move backwards the PCR.
-        bool             _terminate = false;           // Terminate processing after last merged packet.
-        bool             _restart = false;             // Restart command after termination.
-        MilliSecond      _restart_interval = 0;        // Interval before restarting the merge command.
-        BitRate          _user_bitrate = 0;            // User-specified bitrate of the merged stream.
-        PIDSet           _allowed_pids {};             // List of PID's to merge (other PID's from the merged stream are dropped).
-        TSPacketLabelSet _set_labels {};               // Labels to set on output packets.
-        TSPacketLabelSet _reset_labels {};             // Labels to reset on output packets.
+        bool             _no_wait = false;              // Do not wait for command completion.
+        bool             _merge_psi = false;            // Merge PSI/SI information.
+        bool             _pcr_restamp = false;          // Restamp PCR from the merged stream.
+        bool             _incremental_pcr = false;      // Use incremental method to restamp PCR's.
+        bool             _merge_smoothing = false;      // Smoothen packet insertion.
+        bool             _ignore_conflicts = false;     // Ignore PID conflicts.
+        bool             _pcr_reset_backwards = false;  // Reset PCR restamping when DTS/PTD move backwards the PCR.
+        bool             _terminate = false;            // Terminate processing after last merged packet.
+        bool             _restart = false;              // Restart command after termination.
+        std::chrono::milliseconds _restart_interval {}; // Interval before restarting the merge command.
+        BitRate          _user_bitrate = 0;             // User-specified bitrate of the merged stream.
+        PIDSet           _allowed_pids {};              // List of PID's to merge (other PID's from the merged stream are dropped).
+        TSPacketLabelSet _set_labels {};                // Labels to set on output packets.
+        TSPacketLabelSet _reset_labels {};              // Labels to reset on output packets.
 
         // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
         typedef SafePtr<TSForkPipe> TSForkPipePtr;
@@ -214,9 +214,9 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"By default, when packet insertion is complete, the transmission continues and the stuffing is no longer modified. "
          u"The options --restart and --terminate are mutually exclusive.");
 
-    option(u"restart-interval", 0, POSITIVE);
-    help(u"restart-interval", u"milliseconds",
-         u"With --restart, specify the number of milliseconds to wait before restarting the merge command. "
+    option<std::chrono::milliseconds>(u"restart-interval");
+    help(u"restart-interval",
+         u"With --restart, specify the duration to wait before restarting the merge command. "
          u"By default, with --restart, the merge command is restarted immediately after termination.");
 
     option(u"terminate");
@@ -263,7 +263,7 @@ bool ts::MergePlugin::getOptions()
     _pcr_reset_backwards = present(u"pcr-reset-backwards");
     _terminate = present(u"terminate");
     _restart = present(u"restart");
-    getIntValue(_restart_interval, u"restart-interval", 0);
+    getChronoValue(_restart_interval, u"restart-interval");
     getValue(_user_bitrate, u"bitrate");
     tsp->useJointTermination(present(u"joint-termination"));
     getIntValues(_set_labels, u"set-label");
@@ -328,7 +328,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
     // At this point, a start is requested.
     if (do_close) {
         // This is a restart, not a simple initial start. Optionally wait before restart.
-        SleepThread(_restart_interval);
+        std::this_thread::sleep_for(_restart_interval);
         // Because of the previous failure, we probably had error messages.
         // Inform the user that we restart and the error is not permanent.
         tsp->info(u"restarting merge command");

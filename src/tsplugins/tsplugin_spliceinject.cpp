@@ -31,11 +31,11 @@ namespace {
     // Default maximum number of sections in queue.
     const size_t DEFAULT_SECTION_QUEUE_SIZE = 100;
 
-    // Default interval in milliseconds between two poll operations.
-    const ts::MilliSecond DEFAULT_POLL_INTERVAL = 500;
+    // Default interval between two poll operations.
+    const std::chrono::milliseconds DEFAULT_POLL_INTERVAL = std::chrono::milliseconds(500);
 
     // Default minimum file stability delay.
-    const ts::MilliSecond DEFAULT_MIN_STABLE_DELAY = 500;
+    const std::chrono::milliseconds DEFAULT_MIN_STABLE_DELAY = std::chrono::milliseconds(500);
 
     // Default start delay for non-immediate splice_insert() and time_signal() commands.
     const ts::MilliSecond DEFAULT_START_DELAY = 2000;
@@ -91,8 +91,8 @@ namespace ts {
         size_t         _inject_count = 0;
         MilliSecond    _inject_interval = 0;
         MilliSecond    _start_delay = 0;
-        MilliSecond    _poll_interval = 0;
-        MilliSecond    _min_stable_delay = 0;
+        std::chrono::milliseconds _poll_interval {};
+        std::chrono::milliseconds _min_stable_delay {};
         std::uintmax_t _max_file_size = 0;
         size_t         _queue_size = 0;
         SectionPtr     _null_splice {};            // A null splice section to maintain PID bitrate.
@@ -156,7 +156,7 @@ namespace ts {
 
             // Implementation of PollFilesListener.
             virtual bool handlePolledFiles(const PolledFileList& files) override;
-            virtual bool updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay) override;
+            virtual bool updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay) override;
         };
 
         // -------------------
@@ -298,12 +298,11 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"This option can be used instead of --min-bitrate when the bitrate of the transport stream is unknown or unreliable. "
          u"The specified value is the number of TS packets between two splice commands.");
 
-    option(u"min-stable-delay", 0, UNSIGNED);
+    option<std::chrono::milliseconds>(u"min-stable-delay");
     help(u"min-stable-delay",
-         u"A file size needs to be stable during that duration, in milliseconds, for "
-         u"the file to be reported as added or modified. This prevents too frequent "
-         u"poll notifications when a file is being written and his size modified at "
-         u"each poll. The default is " + UString::Decimal(DEFAULT_MIN_STABLE_DELAY) + u" ms.");
+         u"A file size needs to be stable during that duration for the file to be reported as added or modified. "
+         u"This prevents too frequent poll notifications when a file is being written and his size modified at each poll. "
+         u"The default is " + UString::Chrono(DEFAULT_MIN_STABLE_DELAY, true) + u".");
 
     option(u"no-reuse-port");
     help(u"no-reuse-port",
@@ -321,15 +320,15 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"service with a stream type equal to 0x86 in the PMT, as specified by SCTE 35 "
          u"standard.");
 
+    option<std::chrono::milliseconds>(u"poll-interval");
+    help(u"poll-interval",
+         u"Specifies the interval between two poll operations. "
+         u"The default is " + UString::Chrono(DEFAULT_POLL_INTERVAL, true) + u".");
+
     option(u"pts-pid", 0, PIDVAL);
     help(u"pts-pid",
          u"Specifies the PID carrying PTS reference clock. By default, use the video "
          u"PID as declared in the PMT of the service.");
-
-    option(u"poll-interval", 0, UNSIGNED);
-    help(u"poll-interval",
-         u"Specifies the interval in milliseconds between two poll operations. The "
-         u"default is " + UString::Decimal(DEFAULT_POLL_INTERVAL) + u" ms.");
 
     option(u"queue-size", 0, UINT32);
     help(u"queue-size",
@@ -397,8 +396,8 @@ bool ts::SpliceInjectPlugin::getOptions()
     getIntValue(_inject_interval, u"inject-interval", DEFAULT_INJECT_INTERVAL);
     getIntValue(_start_delay, u"start-delay", DEFAULT_START_DELAY);
     getIntValue(_max_file_size, u"max-file-size", DEFAULT_MAX_FILE_SIZE);
-    getIntValue(_poll_interval, u"poll-interval", DEFAULT_POLL_INTERVAL);
-    getIntValue(_min_stable_delay, u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
+    getChronoValue(_poll_interval, u"poll-interval", DEFAULT_POLL_INTERVAL);
+    getChronoValue(_min_stable_delay, u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
     getIntValue(_queue_size, u"queue-size", DEFAULT_SECTION_QUEUE_SIZE);
     _wait_first_batch = present(u"wait-first-batch");
 
@@ -950,7 +949,7 @@ void ts::SpliceInjectPlugin::FileListener::main()
 }
 
 // Invoked before polling.
-bool ts::SpliceInjectPlugin::FileListener::updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay)
+bool ts::SpliceInjectPlugin::FileListener::updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay)
 {
     return !_terminate;
 }
