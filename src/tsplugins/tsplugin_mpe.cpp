@@ -118,7 +118,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"The event data is an instance of PluginEventData pointing to "
          u"the network datagram (default) or UDP payload (with --dump-udp).");
 
-    option(u"local-address", 0, STRING);
+    option(u"local-address", 0, IPADDR);
     help(u"local-address", u"address",
          u"With --udp-forward, specify the IP address of the outgoing local interface "
          u"for multicast traffic. It can be also a host name that translates to a "
