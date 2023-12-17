@@ -2,13 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3529
-
-[NEW] New commands and plugins:
-
-[IMP] Improvements on existing commands and plugins:
+VERSION 3.37-3533
 
 [BUG] Bug fixes:
+
+  * Fixed issue #1389: Because of a recent regression, the plugin "mpe" crashed
+    when analyzing its command line options.
 
 -------------------------------------------------------------------------------
 
