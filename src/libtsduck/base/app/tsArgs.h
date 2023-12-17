@@ -270,11 +270,6 @@ namespace ts {
         TS_NOCOPY(Args);
     public:
         //!
-        //! Internal application error in command line argument handling.
-        //!
-        TS_DECLARE_EXCEPTION(ArgsError);
-
-        //!
         //! Args object flags, used in an or'ed mask.
         //!
         enum Flags {
@@ -364,7 +359,7 @@ namespace ts {
                      bool         optional = false,
                      size_t       decimals = 0)
         {
-            addOption(IOption(name, short_name, type, min_occur, max_occur, min_value, max_value, decimals, optional ? uint32_t(IOPT_OPTVALUE) : 0));
+            addOption(IOption(this, name, short_name, type, min_occur, max_occur, min_value, max_value, decimals, optional ? uint32_t(IOPT_OPTVALUE) : 0));
             return *this;
         }
 
@@ -389,7 +384,7 @@ namespace ts {
                      size_t              max_occur = 0,
                      bool                optional = false)
         {
-            addOption(IOption(name, short_name, enumeration, min_occur, max_occur, optional ? uint32_t(IOPT_OPTVALUE) : 0));
+            addOption(IOption(this, name, short_name, enumeration, min_occur, max_occur, optional ? uint32_t(IOPT_OPTVALUE) : 0));
             return *this;
         }
 
@@ -417,7 +412,7 @@ namespace ts {
                      INT2         max_value = std::numeric_limits<INT1>::max(),
                      bool         optional = false)
         {
-            addOption(IOption(name, short_name, ANUMBER, min_occur, max_occur, int64_t(min_value), int64_t(max_value), 0, optional ? uint32_t(IOPT_OPTVALUE) : 0, new NUMTYPE));
+            addOption(IOption(this, name, short_name, ANUMBER, min_occur, max_occur, int64_t(min_value), int64_t(max_value), 0, optional ? uint32_t(IOPT_OPTVALUE) : 0, new NUMTYPE));
             return *this;
         }
 
@@ -444,7 +439,7 @@ namespace ts {
                      int64_t      max_value = std::numeric_limits<int64_t>::max(),
                      bool         optional = false)
         {
-            addOption(IOption(name, short_name, CHRONO, min_occur, max_occur, min_value, max_value, 0,
+            addOption(IOption(this, name, short_name, CHRONO, min_occur, max_occur, min_value, max_value, 0,
                               optional ? uint32_t(IOPT_OPTVALUE) : 0, nullptr, DURATION::period::num, DURATION::period::den));
             return *this;
         }
@@ -1300,7 +1295,8 @@ namespace ts {
             std::intmax_t     den = 0;         // Denominator of ratio (with CHRONO)
 
             // Constructor:
-            IOption(const UChar*    name,
+            IOption(Args*           parent,
+                    const UChar*    name,
                     UChar           short_name,
                     ArgType         type,
                     size_t          min_occur,
@@ -1314,7 +1310,8 @@ namespace ts {
                     std::intmax_t   den = 0);
 
             // Constructor:
-            IOption(const UChar*       name,
+            IOption(Args*              parent,
+                    const UChar*       name,
                     UChar              short_name,
                     const Enumeration& enumeration,
                     size_t             min_occur,
@@ -1400,6 +1397,10 @@ namespace ts {
         // Throw exception if not found.
         const IOption& getIOption(const UChar* name) const;
         IOption& getIOption(const UChar* name);
+
+        // Fatal internal error in the application.
+        [[noreturn]] void fatalArgError(const UString& reason) const;
+        [[noreturn]] void fatalArgError(const UString& option, const UString& reason) const;
     };
 }
 
@@ -1444,7 +1445,7 @@ void ts::Args::getPathValues(CONTAINER& values, const UChar* name) const
     const IOption& opt(getIOption(name));
     values.clear();
     if (opt.type != FILENAME && opt.type != DIRECTORY) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not a filesystem path");
+        fatalArgError(opt.name, u"is not a filesystem path");
     }
     for (const auto& it : opt.values) {
         if (it.string.has_value()) {
@@ -1680,7 +1681,7 @@ void ts::Args::getChronoValue(std::chrono::duration<Rep1, Period1>& value,
 {
     const IOption& opt(getIOption(name));
     if (opt.type != CHRONO) {
-        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not a chrono::duration type");
+        fatalArgError(opt.name, u"is not a chrono::duration type");
     }
 
     std::intmax_t ivalue = 0;
