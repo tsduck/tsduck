@@ -58,6 +58,7 @@ public:
     void testFixedPoint();
     void testFraction();
     void testDouble();
+    void testChrono();
     void testInvalidFraction();
     void testInvalidDouble();
 
@@ -88,6 +89,7 @@ public:
     TSUNIT_TEST(testFixedPoint);
     TSUNIT_TEST(testFraction);
     TSUNIT_TEST(testDouble);
+    TSUNIT_TEST(testChrono);
     TSUNIT_TEST(testInvalidFraction);
     TSUNIT_TEST(testInvalidDouble);
     TSUNIT_TEST_END();
@@ -254,6 +256,7 @@ namespace {
             option(u"opt9", 'c', ts::Enumeration({{u"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
             option(u"mask",  0,  ts::Enumeration({{u"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
             option(u"opt10", 0,  ts::Args::UNSIGNED, 0, ts::Args::UNLIMITED_COUNT, 0, 0, false, 3);
+            option<std::chrono::seconds>(u"opt11");
 
             help(u"", u"The parameters");
             help(u"opt1", u"No value.");
@@ -267,6 +270,7 @@ namespace {
             help(u"opt9", u"Enumeration.");
             help(u"mask", u"Enumeration, unlimited count.");
             help(u"opt10", u"Unsigned int 3 decimal digits.");
+            help(u"opt11", u"Number of seconds.");
         }
     };
 }
@@ -307,6 +311,9 @@ void ArgsTest::testHelpCustom()
         u"  --opt10 value\n"
         u"      Unsigned int 3 decimal digits.\n"
         u"      The value may include up to 3 meaningful decimal digits.\n"
+        u"\n"
+        u"  --opt11 seconds\n"
+        u"      Number of seconds.\n"
         u"\n"
         u"  -a value\n"
         u"  --opt2 value\n"
@@ -911,6 +918,44 @@ void ArgsTest::testDouble()
     TSUNIT_EQUAL(2.56,  args.numValue<Double>(u"", 0, 1).toDouble());
     TSUNIT_EQUAL(0.0,   args.numValue<Double>(u"", 0, 2).toDouble());
     TSUNIT_EQUAL(-6.12, args.numValue<Double>(u"", 0, 3).toDouble());
+}
+
+// Test case: std::chrono::duration types.
+void ArgsTest::testChrono()
+{
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+    args.redirectReport(&CERR);
+    args.option<std::chrono::seconds>(u"foo", 0, 0, ts::Args::UNLIMITED_COUNT);
+
+    TSUNIT_ASSERT(args.analyze(u"test", {u"--foo", u"23", u"--foo", u"6"}));
+    TSUNIT_EQUAL(2, args.count(u"foo"));
+
+    std::chrono::seconds s;
+    std::chrono::milliseconds ms;
+
+    args.getChronoValue(s, u"foo");
+    TSUNIT_EQUAL(23, s.count());
+
+    args.getChronoValue(ms, u"foo");
+    TSUNIT_EQUAL(23'000, ms.count());
+
+    args.getChronoValue(s, u"foo", 1);
+    TSUNIT_EQUAL(6, s.count());
+
+    args.getChronoValue(ms, u"foo", 1);
+    TSUNIT_EQUAL(6'000, ms.count());
+
+    args.getChronoValue(s, u"foo", 2);
+    TSUNIT_EQUAL(0, s.count());
+
+    args.getChronoValue(ms, u"foo", 2);
+    TSUNIT_EQUAL(0, ms.count());
+
+    args.getChronoValue(s, u"foo", std::chrono::minutes(1), 2);
+    TSUNIT_EQUAL(60, s.count());
+
+    args.getChronoValue(ms, u"foo", std::chrono::minutes(1), 2);
+    TSUNIT_EQUAL(60'000, ms.count());
 }
 
 // Test case:
