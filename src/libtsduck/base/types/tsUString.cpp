@@ -16,6 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsEnvironment.h"
 #include "tsIntegerUtils.h"
+#include "tsSingleton.h"
 #include "tsEnumeration.h"
 
 // The UTF-8 Byte Order Mark
@@ -1366,6 +1367,70 @@ ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool for
     }
     else { // more than 8 GB => use GB
         return Decimal(value / (k * k * k), 0, true, u",", forceSign) + u" G" + units;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Format the name of an instance of std::chrono::duration based on its ratio.
+//----------------------------------------------------------------------------
+
+namespace {
+    struct Ratio
+    {
+        std::intmax_t num;
+        std::intmax_t den;
+        bool operator<(const Ratio& other) const { return num < other.num || (num == other.num && den < other.den); }
+    };
+    struct UnitNames
+    {
+        const ts::UChar* nshort;
+        const ts::UChar* nlong;
+    };
+    typedef std::map<Ratio,UnitNames> UnitMap;
+}
+
+#if defined(TS_CXX20)
+#define TS_CXX20_CHRONO                                                                       \
+    {{std::chrono::days::period::num,   std::chrono::days::period::den},   {u"d", u"day"}},   \
+    {{std::chrono::weeks::period::num,  std::chrono::weeks::period::den},  {u"w", u"week"}},  \
+    {{std::chrono::months::period::num, std::chrono::months::period::den}, {u"m", u"month"}}, \
+    {{std::chrono::years::period::num,  std::chrono::years::period::den},  {u"y", u"year"}}
+#else
+#define TS_CXX20_CHRONO
+#endif
+
+TS_STATIC_INSTANCE(UnitMap, ({
+        {{std::chrono::seconds::period::num,      std::chrono::seconds::period::den},      {u"s",  u"second"}},
+        {{std::chrono::milliseconds::period::num, std::chrono::milliseconds::period::den}, {u"ms", u"millisecond"}},
+        {{std::chrono::microseconds::period::num, std::chrono::microseconds::period::den}, {u"us", u"microsecond"}},
+        {{std::chrono::nanoseconds::period::num,  std::chrono::nanoseconds::period::den},  {u"ns", u"nanosecond"}},
+        {{std::chrono::minutes::period::num,      std::chrono::minutes::period::den},      {u"mn", u"minute"}},
+        {{std::chrono::hours::period::num,        std::chrono::hours::period::den},        {u"h",  u"hour"}},
+        TS_CXX20_CHRONO
+    }), ChronoUnitMap);
+
+ts::UString ts::UString::ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format, bool plural)
+{
+    const auto it = ChronoUnitMap::Instance().find({num, den});
+    if (it != ChronoUnitMap::Instance().end()) {
+        if (short_format) {
+            return it->second.nshort;
+        }
+        else {
+            UString u(it->second.nlong);
+            // Currently, all plural forms are just "s".
+            if (plural) {
+                u.append('s');
+            }
+            return u;
+        }
+    }
+    else if (den == 1) {
+        return Format(u"%'d-%s", {num, short_format ? u"sec" : u"second"});
+    }
+    else {
+        return Format(u"%'d/%'d-%s", {num, den, short_format ? u"sec" : u"second"});
     }
 }
 

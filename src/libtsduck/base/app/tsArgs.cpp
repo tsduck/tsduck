@@ -33,16 +33,18 @@ const ts::Enumeration ts::Args::HelpFormatEnum({
 // Constructors for IOption
 //----------------------------------------------------------------------------
 
-ts::Args::IOption::IOption(const UChar* name_,
-                           UChar        short_name_,
-                           ArgType      type_,
-                           size_t       min_occur_,
-                           size_t       max_occur_,
-                           int64_t      min_value_,
-                           int64_t      max_value_,
-                           size_t       decimals_,
-                           uint32_t     flags_,
-                           AbstractNumber* anumber_) :
+ts::Args::IOption::IOption(const UChar*    name_,
+                           UChar           short_name_,
+                           ArgType         type_,
+                           size_t          min_occur_,
+                           size_t          max_occur_,
+                           int64_t         min_value_,
+                           int64_t         max_value_,
+                           size_t          decimals_,
+                           uint32_t        flags_,
+                           AbstractNumber* anumber_,
+                           std::intmax_t   num_,
+                           std::intmax_t   den_) :
 
     name(name_ == nullptr ? UString() : name_),
     short_name(short_name_),
@@ -53,7 +55,9 @@ ts::Args::IOption::IOption(const UChar* name_,
     max_value(max_value_),
     decimals(decimals_),
     flags(flags_),
-    anumber(anumber_)
+    anumber(anumber_),
+    num(num_),
+    den(den_)
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -93,6 +97,7 @@ ts::Args::IOption::IOption(const UChar* name_,
             TS_FALLTHROUGH
         case INTEGER:
         case ANUMBER:
+        case CHRONO:
             if (max_value < min_value) {
                 throw ArgsError(u"invalid value range for " + display());
             }
@@ -228,6 +233,7 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
             case IPSOCKADDR_OA:  desc = u"[ip-address:]port"; break;
             case IPSOCKADDR_OP:  desc = u"ip-address[:port]"; break;
             case IPSOCKADDR_OAP: desc = u"[ip-address]:[port]"; break;
+            case CHRONO:         desc = UString::ChronoUnit(num, den, false, true); break;
             default:             desc = u"value"; break;
         }
         TS_POP_WARNING()
@@ -289,6 +295,7 @@ ts::UString ts::Args::IOption::optionType() const
         case INT16:
         case INT32:
         case INT64:
+        case CHRONO:
             if (enumeration.empty()) {
                 desc += u":int";
             }
@@ -1272,7 +1279,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
             return false;
         }
     }
-    else if (opt.type != INTEGER) {
+    else if (opt.type != INTEGER && opt.type != CHRONO) {
         // These cases must have been previously eliminated.
         assert(opt.type != UNSIGNED);
         assert(opt.type != POSITIVE);

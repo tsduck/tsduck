@@ -1151,6 +1151,9 @@ namespace fs = std::filesystem;
 
 namespace ts {
 
+    // Make sure that standard chrono literals such as 10ms or 3s can be used inside namespace ts.
+    using namespace std::chrono_literals;
+
     // Some common pointer types, typically for casting.
     typedef char*           char_ptr;          //!< Pointer to @c char
     typedef int8_t*         int8_ptr;          //!< Pointer to @c int8_t

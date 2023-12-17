@@ -1377,10 +1377,51 @@ namespace ts {
         //! @tparam INT An integer type.
         //! @param [in] value An integer value, a portion of @a total.
         //! @param [in] total The total value.
-        //! @return A string reprenting the percentage of @a value in @a total.
+        //! @return A string representing the percentage of @a value in @a total.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         static UString Percentage(INT value, INT total);
+
+        //!
+        //! Format the name of an instance of std::chrono::duration.
+        //! @tparam DURATION An instance of std::chrono::duration.
+        //! @param [in] short_format When true, use short unit format (e.g. "ms").
+        //! By default, use a full unit name (e.g. "millisecond").
+        //! @param [in] plural When true, use the plural form (full unit name only, e.g. "milliseconds").
+        //! @return A string representing the unit of the @a DURATION.
+        //!
+        template <class DURATION, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+        static UString ChronoUnit(bool short_format = false, bool plural = false)
+        {
+            return ChronoUnit(DURATION::period::num, DURATION::period::den, short_format, plural);
+        }
+
+        //!
+        //! Format the name of an instance of std::chrono::duration based on its ratio values.
+        //! @param [in] num Ratio numerator.
+        //! @param [in] den Ratio denominator.
+        //! @param [in] short_format When true, use short unit format (e.g. "ms").
+        //! By default, use a full unit name (e.g. "millisecond").
+        //! @param [in] plural When true, use the plural form (full unit name only, e.g. "milliseconds").
+        //! @return A string representing the unit of the @a DURATION.
+        //!
+        static UString ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format = false, bool plural = false);
+
+        //!
+        //! Format a string containing a std::chrono::duration value, with units.
+        //! @param [in] value The chrono value to format.
+        //! @param [in] short_format When true, use short unit format (e.g. "ms").
+        //! By default, use a full unit name (e.g. "millisecond").
+        //! @param [in] separator Separator string for groups of thousands, a comma by default.
+        //! @return The formatted string.
+        //!
+        template <class Rep, class Period>
+        static UString Chrono(const std::chrono::duration<Rep, Period>& value,
+                              bool short_format = false,
+                              const UString& separator = DEFAULT_THOUSANDS_SEPARATOR)
+        {
+            return Decimal(value.count(), 0, true, separator) + u" " + ChronoUnit(Period::num, Period::den, short_format, value.count() > 1);
+        }
 
         //--------------------------------------------------------------------
         // Comparison operations
@@ -1466,7 +1507,7 @@ namespace ts {
         //! @param [in] enforceLastLineFeed If true and this string does not end with a line feed, force a final line feed.
         //! @return True on success, false on error (mostly file errors).
         //!
-        bool save(const fs::path& fileName, bool append = false, bool enforceLastLineFeed = false) const;
+        bool save(const std::filesystem::path& fileName, bool append = false, bool enforceLastLineFeed = false) const;
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1480,7 +1521,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class ITERATOR>
-        static bool Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append = false);
+        static bool Save(ITERATOR begin, ITERATOR end, const std::filesystem::path& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1492,7 +1533,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Save(const CONTAINER& container, const fs::path& fileName, bool append = false);
+        static bool Save(const CONTAINER& container, const std::filesystem::path& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a stream, in UTF-8 format, one per line.
@@ -1524,7 +1565,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Load(CONTAINER& container, const fs::path& fileName);
+        static bool Load(CONTAINER& container, const std::filesystem::path& fileName);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
@@ -1535,7 +1576,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool LoadAppend(CONTAINER& container, const fs::path& fileName);
+        static bool LoadAppend(CONTAINER& container, const std::filesystem::path& fileName);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's into a container.
@@ -2891,7 +2932,7 @@ typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& con
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-bool ts::UString::Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append)
+bool ts::UString::Save(ITERATOR begin, ITERATOR end, const std::filesystem::path& fileName, bool append)
 {
     std::ofstream file(fileName, append ? (std::ios::out | std::ios::app) : std::ios::out);
     Save(begin, end, file);
@@ -2916,7 +2957,7 @@ bool ts::UString::Save(const CONTAINER& container, std::ostream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::Save(const CONTAINER& container, const fs::path& fileName, bool append)
+bool ts::UString::Save(const CONTAINER& container, const std::filesystem::path& fileName, bool append)
 {
     return Save(container.begin(), container.end(), fileName, append);
 }
@@ -2950,14 +2991,14 @@ bool ts::UString::Load(CONTAINER& container, std::istream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::LoadAppend(CONTAINER& container, const fs::path& fileName)
+bool ts::UString::LoadAppend(CONTAINER& container, const std::filesystem::path& fileName)
 {
     std::ifstream file(fileName);
     return LoadAppend(container, file);
 }
 
 template <class CONTAINER>
-bool ts::UString::Load(CONTAINER& container, const fs::path& fileName)
+bool ts::UString::Load(CONTAINER& container, const std::filesystem::path& fileName)
 {
     container.clear();
     return LoadAppend(container, fileName);

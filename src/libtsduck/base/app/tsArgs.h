@@ -316,6 +316,7 @@ namespace ts {
             INT32,          //!< Integer -2,147,483,648..2,147,483,647.
             INT64,          //!< 64-bit signed.
             ANUMBER,        //!< A subclass of AbstractNumber.
+            CHRONO,         //!< Any instantiation of std::chrono::duration.
             TRISTATE,       //!< Tristate value, ts::Maybe if absent.
             IPADDR,         //!< IPv4 address or host name translating to an address.
             IPSOCKADDR,     //!< IPv4 socket address (or host name) and port, both are mandatory.
@@ -417,6 +418,34 @@ namespace ts {
                      bool         optional = false)
         {
             addOption(IOption(name, short_name, ANUMBER, min_occur, max_occur, int64_t(min_value), int64_t(max_value), 0, optional ? uint32_t(IOPT_OPTVALUE) : 0, new NUMTYPE));
+            return *this;
+        }
+
+        //!
+        //! Add the definition of an option, the value being an instance of std::chrono::duration.
+        //!
+        //! This method is typically invoked in the constructor of a subclass of Args.
+        //! @tparam DURATION An instance of std::chrono::duration.
+        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] short_name Optional one letter short name.
+        //! @param [in] min_occur Minimum number of occurences of this option on the command line.
+        //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
+        //! @param [in] min_value Minimum value. Use an integer value, not a @a DURATION value.
+        //! @param [in] max_value Maximum value. Use an integer value, not a @a DURATION value.
+        //! @param [in] optional  When true, the option's value is optional.
+        //! @return A reference to this instance.
+        //!
+        template <class DURATION, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+        Args& option(const UChar* name,
+                     UChar        short_name = 0,
+                     size_t       min_occur = 0,
+                     size_t       max_occur = 0,
+                     int64_t      min_value = 0,
+                     int64_t      max_value = std::numeric_limits<int64_t>::max(),
+                     bool         optional = false)
+        {
+            addOption(IOption(name, short_name, CHRONO, min_occur, max_occur, min_value, max_value, 0,
+                              optional ? uint32_t(IOPT_OPTVALUE) : 0, nullptr, DURATION::period::num, DURATION::period::den));
             return *this;
         }
 
@@ -950,6 +979,50 @@ namespace ts {
         void getBitMaskValue(INT& value, const UChar* name = nullptr, const INT& def_value = static_cast<INT>(0)) const;
 
         //!
+        //! Get the value of an std::chrono::duration option in the last analyzed command line.
+        //!
+        //! If the option has been declared with a std::chrono::duration type in the syntax of the command,
+        //! the validity of the supplied option value has been checked by the analyze() method.
+        //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
+        //!
+        //! @param [out] value A variable receiving the duration value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the first occurence.
+        //! Add the definition of an option, the value being an instance of std::chrono::duration.
+        //!
+        template <class Rep1, class Period1, class Rep2, class Period2>
+        void getChronoValue(std::chrono::duration<Rep1, Period1>& value,
+                            const UChar* name = nullptr,
+                            const std::chrono::duration<Rep2, Period2>& def_value = std::chrono::duration<Rep1, Period1>::zero(),
+                            size_t index = 0) const;
+
+        //!
+        //! Get the value of an std::chrono::duration option in the last analyzed command line.
+        //!
+        //! If the option has been declared with a std::chrono::duration type in the syntax of the command,
+        //! the validity of the supplied option value has been checked by the analyze() method.
+        //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
+        //!
+        //! @param [out] value A variable receiving the duration value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] index The occurence of the option to return. Zero designates the first occurence.
+        //! Add the definition of an option, the value being an instance of std::chrono::duration.
+        //!
+        template <class Rep, class Period>
+        void getChronoValue(std::chrono::duration<Rep, Period>& value, const UChar* name = nullptr, size_t index = 0) const
+        {
+            getChronoValue(value, name, std::chrono::duration<Rep, Period>::zero(), index);
+        }
+
+        //!
         //! Get the value of tristate option in the last analyzed command line.
         //!
         //! @param [out] value A variable receiving the tristate value of the option or parameter.
@@ -1208,33 +1281,37 @@ namespace ts {
         class TSDUCKDLL IOption
         {
         public:
-            UString        name {};         // Long name (u"verbose" for --verbose)
-            UChar          short_name = 0;  // Short option name (u'v' for -v), 0 if unused
-            ArgType        type = NONE;     // Argument type
-            size_t         min_occur = 0;   // Minimum occurence
-            size_t         max_occur = 0;   // Maximum occurence
-            int64_t        min_value = 0;   // Minimum value (for integer args)
-            int64_t        max_value = 0;   // Maximum value (for integer args)
-            size_t         decimals = 0;    // Number of meaningful decimal digits
-            uint32_t       flags = 0;       // Option flags
-            Enumeration    enumeration {};  // Enumeration values (if not empty)
-            UString        syntax {};       // Syntax of value (informational, "address:port" for instance)
-            UString        help {};         // Help description
-            ArgValueVector values {};       // Set of values after analysis
-            size_t         value_count = 0; // Number of values, can be > values.size() in case of ranges of integers
-            AbstractNumberPtr anumber {};   // Dummy instance of AbstractNumber to validate the value, to deallocate
+            UString           name {};         // Long name (u"verbose" for --verbose)
+            UChar             short_name = 0;  // Short option name (u'v' for -v), 0 if unused
+            ArgType           type = NONE;     // Argument type
+            size_t            min_occur = 0;   // Minimum occurence
+            size_t            max_occur = 0;   // Maximum occurence
+            int64_t           min_value = 0;   // Minimum value (for integer args)
+            int64_t           max_value = 0;   // Maximum value (for integer args)
+            size_t            decimals = 0;    // Number of meaningful decimal digits
+            uint32_t          flags = 0;       // Option flags
+            Enumeration       enumeration {};  // Enumeration values (if not empty)
+            UString           syntax {};       // Syntax of value (informational, "address:port" for instance)
+            UString           help {};         // Help description
+            ArgValueVector    values {};       // Set of values after analysis
+            size_t            value_count = 0; // Number of values, can be > values.size() in case of ranges of integers
+            AbstractNumberPtr anumber {};      // Dummy instance of AbstractNumber to validate the value, to deallocate
+            std::intmax_t     num = 0;         // Numerator of ratio (with CHRONO)
+            std::intmax_t     den = 0;         // Denominator of ratio (with CHRONO)
 
             // Constructor:
-            IOption(const UChar* name,
-                    UChar        short_name,
-                    ArgType      type,
-                    size_t       min_occur,
-                    size_t       max_occur,
-                    int64_t      min_value,
-                    int64_t      max_value,
-                    size_t       decimals,
-                    uint32_t     flags,
-                    AbstractNumber* anumber = nullptr);
+            IOption(const UChar*    name,
+                    UChar           short_name,
+                    ArgType         type,
+                    size_t          min_occur,
+                    size_t          max_occur,
+                    int64_t         min_value,
+                    int64_t         max_value,
+                    size_t          decimals,
+                    uint32_t        flags,
+                    AbstractNumber* anumber = nullptr,
+                    std::intmax_t   num = 0,
+                    std::intmax_t   den = 0);
 
             // Constructor:
             IOption(const UChar*       name,
@@ -1315,6 +1392,10 @@ namespace ts {
         IOption* search(UChar c);
         IOption* search(const UString& name);
 
+        // Get the value of an integer option (internal version), return trueu if found.
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
+        bool getIntInternal(INT& value, const UChar* name, size_t index) const;
+
         // Locate an option description. Used by application to get values.
         // Throw exception if not found.
         const IOption& getIOption(const UChar* name) const;
@@ -1377,33 +1458,51 @@ void ts::Args::getPathValues(CONTAINER& values, const UChar* name) const
 // Get the integer value of an option.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename INT2, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
-void ts::Args::getIntValue(INT& value, const UChar* name, const INT2 def_value, size_t index) const
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+bool ts::Args::getIntInternal(INT& value, const UChar* name, size_t index) const
 {
     const IOption& opt(getIOption(name));
-    if (opt.type != INTEGER || index >= opt.value_count) {
-        // Invalid index.
-        value = static_cast<INT>(def_value);
+    if ((opt.type != INTEGER && opt.type != CHRONO) || index >= opt.value_count) {
+        // Invalid type or index.
+        return false;
     }
     else if (opt.value_count == opt.values.size()) {
         // No range, one integer per option, direct lookup.
-        assert(index < opt.values.size());
-        value = opt.values[index].int_count == 0 ? static_cast<INT>(def_value) : static_cast<INT>(opt.values[index].int_base);
+        const auto& val(opt.values[index]);
+        if (val.int_count == 0) {
+            // Option present without value.
+            return false;
+        }
+        else {
+            value = static_cast<INT>(val.int_base);
+            return true;
+        }
     }
     else {
         // There is at least one range, iterate.
-        bool found = false;
-        for (size_t i = 0; !found && i < opt.values.size(); ++i) {
-            if (index > 0 && index >= opt.values[i].int_count) {
+        for (const auto& val : opt.values) {
+            if (index > 0 && index >= val.int_count) {
                 // Not in this range.
-                index -= opt.values[i].int_count == 0 ? 1 : opt.values[i].int_count;
+                index -= std::max<size_t>(1, val.int_count);
+            }
+            else if (val.int_count == 0) {
+                // Option present without value.
+                return false;
             }
             else {
-                found = true;
-                value = opt.values[i].int_count == 0 ? static_cast<INT>(def_value) : static_cast<INT>(opt.values[i].int_base + index);
+                value = static_cast<INT>(val.int_base + index);
+                return true;
             }
         }
-        assert(found);
+        return false;
+    }
+}
+
+template <typename INT, typename INT2, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::Args::getIntValue(INT& value, const UChar* name, const INT2 def_value, size_t index) const
+{
+    if (!getIntInternal(value, name, index)) {
+        value = static_cast<INT>(def_value);
     }
 }
 
@@ -1411,7 +1510,7 @@ template <typename INT, typename std::enable_if<std::is_integral<INT>::value || 
 INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) const
 {
     INT value = def_value;
-    getIntValue(value, name, def_value, index);
+    getIntInternal(value, name, index);
     return value;
 }
 
@@ -1566,4 +1665,35 @@ INT ts::Args::bitMaskValue(const UChar* name, const INT& def_value) const
     INT value(def_value);
     getBitMaskValue(value, name, def_value);
     return value;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the value of an std::chrono::duration option.
+//----------------------------------------------------------------------------
+
+template <class Rep1, class Period1, class Rep2, class Period2>
+void ts::Args::getChronoValue(std::chrono::duration<Rep1, Period1>& value,
+                              const UChar* name,
+                              const std::chrono::duration<Rep2, Period2>& def_value,
+                              size_t index) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.type != CHRONO) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not a chrono::duration type");
+    }
+
+    std::intmax_t ivalue = 0;
+    if (!getIntInternal(ivalue, name, index)) {
+        // Not found. Compile-time conversion on default value if necessary.
+        value = def_value;
+        return;
+    }
+
+    if (Period1::num != opt.num || Period1::den != opt.den) {
+        // Run-time conversion. Potentially subject to integer overflow.
+        ivalue = (ivalue * opt.num * Period1::den) / (opt.den * Period1::num);
+    }
+
+    value = std::chrono::duration<Rep1, Period1>(static_cast<Rep1>(ivalue));
 }
