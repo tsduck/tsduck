@@ -40,7 +40,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~TunerDevice();
+        virtual ~TunerDevice() override;
 
         // Implementation of TunerBase.
         virtual bool open(const UString& device_name, bool info_only) override;
@@ -67,18 +67,18 @@ namespace ts {
         virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin = UString(), bool extended = false) override;
 
     private:
-        bool              _is_open;
-        bool              _info_only;
-        UString           _device_name;      // Used to open the tuner
-        UString           _device_info;      // Device-specific, can be empty
-        UString           _device_path;      // System-specific device path.
-        std::chrono::milliseconds _signal_timeout {};
-        bool              _signal_timeout_silent;
+        bool                      _is_open = false;
+        bool                      _info_only = false;
+        UString                   _device_name {};    // Used to open the tuner
+        UString                   _device_info {};    // Device-specific, can be empty
+        UString                   _device_path {};    // System-specific device path.
+        std::chrono::milliseconds _signal_timeout = DEFAULT_SIGNAL_TIMEOUT;
+        bool                      _signal_timeout_silent = false;
         std::chrono::milliseconds _receive_timeout {};
-        DeliverySystemSet _delivery_systems;
-        volatile bool     _aborted;          // Reception was aborted
-        size_t            _sink_queue_size;  // Media sample queue size
-        TunerGraph        _graph;            // The filter graph
+        DeliverySystemSet         _delivery_systems {};
+        volatile bool             _aborted = false;   // Reception was aborted
+        size_t                    _sink_queue_size = DEFAULT_SINK_QUEUE_SIZE; // Media sample queue size
+        TunerGraph                _graph {};          // The filter graph
 
         // Find one or more tuners. Exactly one of Tuner* or TunerPtrVector* must be non-zero.
         // If Tuner* is non-zero, find the first tuner (matching _device_name if not empty).

@@ -228,16 +228,16 @@ bool ts::WebRequest::SystemGuts::init()
     }
 
     // Specify the various timeouts.
-    if (_request._connectionTimeout > 0) {
-        ::DWORD timeout = ::DWORD(_request._connectionTimeout);
+    if (_request._connectionTimeout.count() > 0) {
+        ::DWORD timeout = ::DWORD(_request._connectionTimeout.count());
         if (!::InternetSetOptionW(_inet, INTERNET_OPTION_CONNECT_TIMEOUT, &timeout, ::DWORD(sizeof(timeout)))) {
             error(u"error setting connection timeout");
             clear();
             return false;
         }
     }
-    if (_request._receiveTimeout > 0) {
-        ::DWORD timeout = ::DWORD(_request._receiveTimeout);
+    if (_request._receiveTimeout.count() > 0) {
+        ::DWORD timeout = ::DWORD(_request._receiveTimeout.count());
         if (!::InternetSetOptionW(_inet, INTERNET_OPTION_RECEIVE_TIMEOUT, &timeout, ::DWORD(sizeof(timeout))) ||
             !::InternetSetOptionW(_inet, INTERNET_OPTION_DATA_RECEIVE_TIMEOUT, &timeout, ::DWORD(sizeof(timeout))))
         {

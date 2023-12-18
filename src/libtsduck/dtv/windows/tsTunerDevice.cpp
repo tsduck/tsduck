@@ -29,19 +29,7 @@
 //-----------------------------------------------------------------------------
 
 ts::TunerDevice::TunerDevice(DuckContext& duck) :
-    TunerBase(duck),
-    _is_open(false),
-    _info_only(false),
-    _device_name(),
-    _device_info(),
-    _device_path(),
-    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent(false),
-    _receive_timeout(0),
-    _delivery_systems(),
-    _aborted(false),
-    _sink_queue_size(DEFAULT_SINK_QUEUE_SIZE),
-    _graph()
+    TunerBase(duck)
 {
 }
 
@@ -435,9 +423,9 @@ bool ts::TunerDevice::start()
     sink->Flush();
 
     // If a signal timeout was specified, read a packet with timeout
-    if (_signal_timeout > 0) {
+    if (_signal_timeout.count() > 0) {
         TSPacket pack;
-        if (sink->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
+        if (sink->Read(&pack, sizeof(pack), _signal_timeout.count()) == 0) {
             if (!_signal_timeout_silent) {
                 _duck.report().error(u"no input DVB signal after %s", {UString::Chrono(_signal_timeout)});
             }
@@ -507,12 +495,12 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
 
     // Read packets from the tuner device
     size_t got_size = 0;
-    if (_receive_timeout <= 0) {
+    if (_receive_timeout.count() <= 0) {
         got_size = sink->Read(buffer, max_packets * PKT_SIZE);
     }
     else {
         const Time limit(Time::CurrentUTC() + _receive_timeout);
-        got_size = sink->Read(buffer, max_packets * PKT_SIZE, _receive_timeout);
+        got_size = sink->Read(buffer, max_packets * PKT_SIZE, _receive_timeout.count());
         if (got_size == 0 && Time::CurrentUTC() >= limit) {
             _duck.report().error(u"receive timeout on " + _device_name);
         }
