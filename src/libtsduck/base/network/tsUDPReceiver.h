@@ -106,7 +106,7 @@ namespace ts {
         //! Set reception timeout as if it comes from command line.
         //! @param [in] timeout Receive timeout in milliseconds. No timeout if zero or negative.
         //!
-        void setReceiveTimeoutArg(MilliSecond timeout);
+        void setReceiveTimeoutArg(std::chrono::milliseconds timeout);
 
         // Override UDPSocket methods
         virtual bool open(Report& report = CERR) override;
@@ -133,7 +133,7 @@ namespace ts {
         bool              _mc_loopback = true;         // Multicast loopback option
         bool              _recv_timestamps = true;     // Get receive timestamps, currently hardcoded, is there a reason to disable it?
         size_t            _recv_bufsize = 0;           // Socket receive buffer size.
-        MilliSecond       _recv_timeout {-1};          // Receive timeout.
+        std::chrono::milliseconds _recv_timeout = std::chrono::milliseconds(-1);  // Receive timeout.
         IPv4SocketAddress _use_source {};              // Filter on this socket address of sender (can be a simple filter of an SSM source).
         IPv4SocketAddress _first_source {};            // Socket address of first received packet.
         IPv4SocketAddressSet _sources {};              // Set of all detected packet sources.

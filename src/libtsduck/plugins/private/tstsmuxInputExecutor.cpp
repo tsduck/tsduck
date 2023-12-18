@@ -143,7 +143,7 @@ void ts::tsmux::InputExecutor::main()
                 verbose(u"restarting input plugin '%s' after end of stream or failure", {pluginName()});
                 _input->stop();
                 while (!_terminate && !_input->start()) {
-                    SleepThread(_opt.outputRestartDelay);
+                    std::this_thread::sleep_for(_opt.inputRestartDelay);
                 }
             }
         }

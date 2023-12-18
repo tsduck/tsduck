@@ -547,10 +547,10 @@ ts::UString ts::DektecInputPlugin::demodParsToXml()
 // Set receive timeout from tsp.
 //----------------------------------------------------------------------------
 
-bool ts::DektecInputPlugin::setReceiveTimeout(MilliSecond timeout)
+bool ts::DektecInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
 {
-    if (timeout > 0) {
-        _guts->timeout_ms = int(timeout);
+    if (timeout.count() > 0) {
+        _guts->timeout_ms = int(timeout.count());
     }
     return true;
 }

@@ -25,12 +25,10 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     _sock.defineArgs(*this);
 
     option(u"multiple", 'm');
-    help(u"multiple",
-         u"When the receiver peer disconnects, wait for another one and continue.");
+    help(u"multiple", u"When the receiver peer disconnects, wait for another one and continue.");
 
-    option(u"restart-delay", 0, UNSIGNED);
-    help(u"restart-delay", u"milliseconds",
-         u"With --multiple, wait the specified number of milliseconds before restarting.");
+    option<std::chrono::milliseconds>(u"restart-delay");
+    help(u"restart-delay", u"With --multiple, wait the specified delay before restarting.");
 
     // These options are legacy, now use --listener and/or --caller.
     option(u"", 0, STRING, 0, 1);
@@ -58,7 +56,7 @@ bool ts::SRTOutputPlugin::isRealTime()
 bool ts::SRTOutputPlugin::getOptions()
 {
     _multiple = present(u"multiple");
-    getIntValue(_restart_delay, u"restart-delay", 0);
+    getChronoValue(_restart_delay, u"restart-delay");
     return _sock.setAddresses(value(u""), value(u"rendezvous"), UString(), *tsp) &&
            _sock.loadArgs(duck, *this) &&
            _datagram.loadArgs(duck, *this);
@@ -128,8 +126,8 @@ bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size, Report&
         }
         // Multiple sessions, close socket and re-open to acquire another receiver.
         stop();
-        if (_restart_delay > 0) {
-            SleepThread(_restart_delay);
+        if (_restart_delay.count() > 0) {
+            std::this_thread::sleep_for(_restart_delay);
         }
         if (!start()) {
             return false;

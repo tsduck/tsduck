@@ -114,11 +114,11 @@ namespace {
     class ThreadTermination: public utest::TSUnitThread
     {
     private:
-        volatile bool&  _report;
-        ts::MilliSecond _delay;
-        ts::MilliSecond _msPrecision;
+        volatile bool&            _report;
+        std::chrono::milliseconds _delay;
+        ts::MilliSecond           _msPrecision;
     public:
-        ThreadTermination (volatile bool& report, ts::MilliSecond delay, ts::MilliSecond msPrecision) :
+        ThreadTermination(volatile bool& report, std::chrono::milliseconds delay, ts::MilliSecond msPrecision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000)),
             _report(report),
             _delay(delay),
@@ -133,9 +133,9 @@ namespace {
         {
             TSUNIT_ASSERT(isCurrentThread());
             const ts::Time before(ts::Time::CurrentUTC());
-            ts::SleepThread(_delay);
+            std::this_thread::sleep_for(_delay);
             const ts::Time after(ts::Time::CurrentUTC());
-            tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay << ", after - before = " << (after - before) << std::endl;
+            tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay.count() << ", after - before = " << (after - before) << std::endl;
             TSUNIT_ASSERT(after >= before + _delay - _msPrecision);
             _report = true;
         }
@@ -147,7 +147,7 @@ void ThreadTest::testTermination()
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
     {
-        ThreadTermination thread(report, 200, _msPrecision);
+        ThreadTermination thread(report, std::chrono::milliseconds(200), _msPrecision);
         TSUNIT_ASSERT(thread.start());
         TSUNIT_ASSERT(!thread.isCurrentThread());
     }
@@ -165,11 +165,11 @@ namespace {
     class ThreadDeleteWhenTerminated: public utest::TSUnitThread
     {
     private:
-        volatile bool&  _report;
-        ts::MilliSecond _delay;
-        ts::MilliSecond _msPrecision;
+        volatile bool&            _report;
+        std::chrono::milliseconds _delay;
+        ts::MilliSecond           _msPrecision;
     public:
-        ThreadDeleteWhenTerminated (volatile bool& report, ts::MilliSecond delay, ts::MilliSecond msPrecision) :
+        ThreadDeleteWhenTerminated(volatile bool& report, std::chrono::milliseconds delay, ts::MilliSecond msPrecision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000).setDeleteWhenTerminated(true)),
             _report(report),
             _delay(delay),
@@ -185,7 +185,7 @@ namespace {
         virtual void test() override
         {
             const ts::Time before(ts::Time::CurrentUTC());
-            ts::SleepThread(_delay);
+            std::this_thread::sleep_for(_delay);
             const ts::Time after(ts::Time::CurrentUTC());
             TSUNIT_ASSERT(after >= before + _delay - _msPrecision);
         }
@@ -196,12 +196,11 @@ void ThreadTest::testDeleteWhenTerminated()
 {
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
-    ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, 100, _msPrecision);
+    ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, std::chrono::milliseconds(100), _msPrecision);
     TSUNIT_ASSERT(thread->start());
     int counter = 100;
     while (!report && counter-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        ts::SleepThread(20);
     }
     const ts::Time after(ts::Time::CurrentUTC());
     if (counter > 0) {

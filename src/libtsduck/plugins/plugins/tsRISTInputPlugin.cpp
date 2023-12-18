@@ -50,16 +50,16 @@ TS_REGISTER_INPUT_PLUGIN(u"rist", ts::RISTInputPlugin);
 
 class ts::RISTInputPlugin::Guts
 {
-     TS_NOBUILD_NOCOPY(Guts);
+    TS_NOBUILD_NOCOPY(Guts);
 public:
-     RISTPluginData rist;
-     MilliSecond    timeout = 0;           // receive timeout.
-     ByteBlock      buffer {};             // data in excess from last input.
-     int            last_qsize = 0;        // last queue size in data blocks.
-     bool           qsize_warned = false;  // a warning was reporting on heavy queue size.
+    RISTPluginData rist;
+    std::chrono::milliseconds timeout {}; // receive timeout.
+    ByteBlock      buffer {};             // data in excess from last input.
+    int            last_qsize = 0;        // last queue size in data blocks.
+    bool           qsize_warned = false;  // a warning was reporting on heavy queue size.
 
-     // Constructor.
-     Guts(Args* args, TSP* tsp) : rist(*tsp) {}
+    // Constructor.
+    Guts(Args* args, TSP* tsp) : rist(*tsp) {}
 };
 
 
@@ -98,9 +98,9 @@ bool ts::RISTInputPlugin::getOptions()
 // Set receive timeout from tsp.
 //----------------------------------------------------------------------------
 
-bool ts::RISTInputPlugin::setReceiveTimeout(MilliSecond timeout)
+bool ts::RISTInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
 {
-    if (timeout > 0) {
+    if (timeout.count() > 0) {
         _guts->timeout = timeout;
     }
     return true;
@@ -182,14 +182,14 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
         // Here, we poll every few seconds when no timeout is specified and check for abort.
         for (;;) {
             // The returned value is: number of buffers remaining on queue +1 (0 if no buffer returned), -1 on error.
-            const int queue_size = ::rist_receiver_data_read2(_guts->rist.ctx, &dblock, _guts->timeout == 0 ? 5000 : int(_guts->timeout));
+            const int queue_size = ::rist_receiver_data_read2(_guts->rist.ctx, &dblock, _guts->timeout.count() == 0 ? 5000 : int(_guts->timeout.count()));
             if (queue_size < 0) {
                 tsp->error(u"reception error");
                 return 0;
             }
             else if (queue_size == 0 || dblock == nullptr) {
                 // No data block returned but not an error, must be a timeout.
-                if (_guts->timeout > 0) {
+                if (_guts->timeout.count() > 0) {
                     // This is a user-specified timeout.
                     tsp->error(u"reception timeout");
                     return 0;

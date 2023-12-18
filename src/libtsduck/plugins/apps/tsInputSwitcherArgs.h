@@ -46,17 +46,17 @@ namespace ts {
         size_t              sockBuffer = 0;        //!< Socket buffer size.
         IPv4SocketAddress   remoteServer {};       //!< UDP server address for remote control.
         IPv4AddressSet      allowedRemote {};      //!< Set of allowed remotes.
-        MilliSecond         receiveTimeout = 0;    //!< Receive timeout before switch (0=none).
+        std::chrono::milliseconds receiveTimeout {}; //!< Receive timeout before switch (0=none).
         PluginOptionsVector inputs {};             //!< Input plugins descriptions.
         PluginOptions       output {};             //!< Output plugin description.
 
-        static constexpr size_t      DEFAULT_MAX_INPUT_PACKETS = 128;  //!< Default maximum input packets to read at a time.
-        static constexpr size_t      MIN_INPUT_PACKETS = 1;            //!< Minimum input packets to read at a time.
-        static constexpr size_t      DEFAULT_MAX_OUTPUT_PACKETS = 128; //!< Default maximum input packets to send at a time.
-        static constexpr size_t      MIN_OUTPUT_PACKETS = 1;           //!< Minimum input packets to send at a time.
-        static constexpr size_t      DEFAULT_BUFFERED_PACKETS = 512;   //!< Default input size buffer in packets.
-        static constexpr size_t      MIN_BUFFERED_PACKETS = 16;        //!< Minimum input size buffer in packets.
-        static constexpr MilliSecond DEFAULT_RECEIVE_TIMEOUT = 2000;   //!< Default received timeout with --primary-input.
+        static constexpr size_t DEFAULT_MAX_INPUT_PACKETS = 128;  //!< Default maximum input packets to read at a time.
+        static constexpr size_t MIN_INPUT_PACKETS = 1;            //!< Minimum input packets to read at a time.
+        static constexpr size_t DEFAULT_MAX_OUTPUT_PACKETS = 128; //!< Default maximum input packets to send at a time.
+        static constexpr size_t MIN_OUTPUT_PACKETS = 1;           //!< Minimum input packets to send at a time.
+        static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;   //!< Default input size buffer in packets.
+        static constexpr size_t MIN_BUFFERED_PACKETS = 16;        //!< Minimum input size buffer in packets.
+        static constexpr std::chrono::milliseconds DEFAULT_RECEIVE_TIMEOUT = std::chrono::milliseconds(2000); //!< Default received timeout with --primary-input.
 
         //!
         //! Constructor.

@@ -107,12 +107,12 @@ void ts::MuxerArgs::defineArgs(Args& args)
     args.help(u"pat-bitrate",
               u"PAT bitrate in output stream. The default is " + UString::Decimal(DEFAULT_PSI_BITRATE) + u" b/s.");
 
-    args.option(u"restart-delay", 0, Args::UNSIGNED);
-    args.help(u"restart-delay", u"milliseconds",
-              u"Specify a restart delay in milliseconds for plugins. "
+    args.option<std::chrono::milliseconds>(u"restart-delay");
+    args.help(u"restart-delay",
+              u"Specify a restart delay for plugins. "
               u"When a plugin fails or terminates, it is immediately restarted. "
               u"In case of initial restart error, wait the specified delay before retrying. "
-              u"The default is " + UString::Decimal(DEFAULT_RESTART_DELAY) + u" milliseconds.");
+              u"The default is " + UString::Chrono(DEFAULT_RESTART_DELAY, true) + u".");
 
     args.option(u"sdt", 0, TableScopeEnum);
     args.help(u"sdt", u"type",
@@ -156,9 +156,9 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     outputOnce = args.present(u"terminate-with-output");
     ignoreConflicts = args.present(u"ignore-conflicts");
     args.getValue(outputBitRate, u"bitrate");
-    args.getIntValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
-    args.getIntValue(cadence, u"cadence", DEFAULT_CADENCE);
+    args.getChronoValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
     outputRestartDelay = inputRestartDelay;
+    args.getIntValue(cadence, u"cadence", DEFAULT_CADENCE);
     args.getIntValue(inBufferPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
     args.getIntValue(maxInputPackets, u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS);
     args.getIntValue(maxOutputPackets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);

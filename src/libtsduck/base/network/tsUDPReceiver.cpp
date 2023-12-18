@@ -85,7 +85,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
               u"Set the reuse port socket option. This is now enabled by default, the option "
               u"is present for legacy only.");
 
-    args.option(u"receive-timeout", 0, Args::UNSIGNED);
+    args.option<std::chrono::milliseconds>(u"receive-timeout");
     args.help(u"receive-timeout",
               u"Specify the UDP reception timeout in milliseconds. "
               u"This timeout applies to each receive operation, individually. "
@@ -138,7 +138,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
     _use_first_source = args.present(u"first-source");
     _mc_loopback = !args.present(u"disable-multicast-loop");
     args.getIntValue(_recv_bufsize, u"buffer-size", 0);
-    args.getIntValue(_recv_timeout, u"receive-timeout", _recv_timeout); // preserve previous value
+    args.getChronoValue(_recv_timeout, u"receive-timeout", _recv_timeout); // preserve previous value
 
     // Check the presence of the '@' indicating a source address.
     const size_t sep = destination.find(u'@');
@@ -246,9 +246,9 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
 // Set reception timeout.
 //----------------------------------------------------------------------------
 
-void ts::UDPReceiver::setReceiveTimeoutArg(MilliSecond timeout)
+void ts::UDPReceiver::setReceiveTimeoutArg(std::chrono::milliseconds timeout)
 {
-    if (timeout > 0) {
+    if (timeout.count() > 0) {
         _recv_timeout = timeout;
     }
 }
@@ -306,7 +306,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
         setReceiveTimestamps(_recv_timestamps, report) &&
         setMulticastLoop(_mc_loopback, report) &&
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
-        (_recv_timeout < 0 || setReceiveTimeout(_recv_timeout, report)) &&
+        (_recv_timeout.count() < 0 || setReceiveTimeout(_recv_timeout, report)) &&
         bind(local_addr, report);
 
     // Optional SSM source address.

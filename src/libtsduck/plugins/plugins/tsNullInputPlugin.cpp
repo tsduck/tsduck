@@ -61,7 +61,7 @@ bool ts::NullInputPlugin::start()
 // Input is never blocking.
 //----------------------------------------------------------------------------
 
-bool ts::NullInputPlugin::setReceiveTimeout(MilliSecond timeout)
+bool ts::NullInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
 {
     return true;
 }
@@ -76,7 +76,7 @@ bool ts::NullInputPlugin::abortInput()
 // Input method
 //----------------------------------------------------------------------------
 
-size_t ts::NullInputPlugin::receive (TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
+size_t ts::NullInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     // If "joint termination" reached for this plugin
     if (_count >= _limit && tsp->useJointTermination()) {

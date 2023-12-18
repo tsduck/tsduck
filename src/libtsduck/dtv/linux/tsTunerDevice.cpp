@@ -51,7 +51,7 @@ ts::TunerDevice::TunerDevice(DuckContext& duck) :
 ts::TunerDevice::~TunerDevice()
 {
     // Cleanup receive timer resources
-    setReceiveTimeout(0);
+    setReceiveTimeout(std::chrono::milliseconds::zero());
 }
 
 
@@ -178,12 +178,12 @@ ts::UString ts::TunerDevice::devicePath() const
     return _device_path;
 }
 
-ts::MilliSecond ts::TunerDevice::receiveTimeout() const
+std::chrono::milliseconds ts::TunerDevice::receiveTimeout() const
 {
     return _receive_timeout;
 }
 
-void ts::TunerDevice::setSignalTimeout(MilliSecond t)
+void ts::TunerDevice::setSignalTimeout(std::chrono::milliseconds t)
 {
     _signal_timeout = t;
 }
@@ -193,7 +193,7 @@ void ts::TunerDevice::setSignalTimeoutSilent(bool silent)
     _signal_timeout_silent = silent;
 }
 
-void ts::TunerDevice::setSignalPoll(MilliSecond t)
+void ts::TunerDevice::setSignalPoll(std::chrono::milliseconds t)
 {
     _signal_poll = t;
 }
@@ -1334,7 +1334,7 @@ bool ts::TunerDevice::start()
     // Wait for input signal locking if a non-zero timeout is specified.
 
     bool signal_ok = true;
-    for (MilliSecond remain_ms = _signal_timeout; remain_ms > 0; remain_ms -= _signal_poll) {
+    for (std::chrono::milliseconds remain_ms = _signal_timeout; remain_ms.count() > 0; remain_ms -= _signal_poll) {
 
         // Read the frontend status
         ::fe_status_t status = FE_ZERO;
@@ -1347,7 +1347,7 @@ bool ts::TunerDevice::start()
         }
 
         // Wait the polling time
-        SleepThread(_signal_poll < remain_ms ? _signal_poll : remain_ms);
+        std::this_thread::sleep_for(_signal_poll < remain_ms ? _signal_poll : remain_ms);
     }
 
     // If the timeout has expired, error
@@ -1356,7 +1356,7 @@ bool ts::TunerDevice::start()
         return false;
     }
     else if (!signal_ok) {
-        _duck.report().log(_signal_timeout_silent ? Severity::Debug : Severity::Error, u"no input signal lock after %d milliseconds", {_signal_timeout});
+        _duck.report().log(_signal_timeout_silent ? Severity::Debug : Severity::Error, u"no input signal lock after %s", {UString::Chrono(_signal_timeout)});
         return false;
     }
     else {
@@ -1408,9 +1408,9 @@ namespace {
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout)
+bool ts::TunerDevice::setReceiveTimeout(std::chrono::milliseconds timeout)
 {
-    if (timeout > 0) {
+    if (timeout.count() > 0) {
         // Set an actual receive timer.
         if (_rt_signal < 0) {
             // Allocate one real-time signal.
@@ -1454,7 +1454,7 @@ bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout)
     }
     else {
         // Cancel receive timer
-        _receive_timeout = 0;
+        _receive_timeout = std::chrono::milliseconds::zero();
         bool ok = true;
 
         // Disable and release signal
@@ -1515,13 +1515,13 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
 
     // Set deadline if receive timeout in effect
     Time time_limit;
-    if (_receive_timeout > 0) {
+    if (_receive_timeout.count() > 0) {
         assert(_rt_timer_valid);
         // Arm the receive timer.
         // Note that _receive_timeout is in milliseconds and ::itimerspec is in nanoseconds.
         ::itimerspec timeout;
-        timeout.it_value.tv_sec = long(_receive_timeout / 1000);
-        timeout.it_value.tv_nsec = long(1000000 * (_receive_timeout % 1000));
+        timeout.it_value.tv_sec = long(_receive_timeout.count() / 1000);
+        timeout.it_value.tv_nsec = long(1000000 * (_receive_timeout.count() % 1000));
         timeout.it_interval.tv_sec = 0;
         timeout.it_interval.tv_nsec = 0;
         if (::timer_settime(_rt_timer, 0, &timeout, nullptr) < 0) {
@@ -1581,7 +1581,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
         // triggered between this test and the start of the next read, the
         // next read will not be interrupted and the receive timer will not
         // apply to this read.
-        if (_receive_timeout > 0 && Time::CurrentLocalTime() >= time_limit) {
+        if (_receive_timeout.count() > 0 && Time::CurrentLocalTime() >= time_limit) {
             if (got_size == 0) {
                 _duck.report().error(u"receive timeout on %s", {_device_name});
             }
@@ -1590,7 +1590,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
     }
 
     // Disarm the receive timer.
-    if (_receive_timeout > 0) {
+    if (_receive_timeout.count() > 0) {
         ::itimerspec timeout;
         timeout.it_value.tv_sec = 0;
         timeout.it_value.tv_nsec = 0;

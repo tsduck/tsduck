@@ -23,7 +23,7 @@ void ts::InputSwitcherArgs::enforceDefaults()
     if (output.name.empty()) {
         output.set(u"file");
     }
-    if (receiveTimeout <= 0 && primaryInput != NPOS) {
+    if (receiveTimeout.count() <= 0 && primaryInput != NPOS) {
         receiveTimeout = DEFAULT_RECEIVE_TIMEOUT;
     }
 
@@ -143,14 +143,14 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
               u"Disable the reuse port socket option for the remote control. "
               u"Do not use unless completely necessary.");
 
-    args.option(u"receive-timeout", 0, Args::UNSIGNED);
+    args.option<std::chrono::milliseconds>(u"receive-timeout");
     args.help(u"receive-timeout",
               u"Specify a receive timeout in milliseconds. "
               u"When the current input plugin has received no packet within "
               u"this timeout, automatically switch to the next plugin. "
               u"By default, without --primary-input, there is no automatic switch "
               u"when the current input plugin is waiting for packets. With "
-              u"--primary-input, the default is " + UString::Decimal(DEFAULT_RECEIVE_TIMEOUT) + u" ms.");
+              u"--primary-input, the default is " + UString::Chrono(DEFAULT_RECEIVE_TIMEOUT, true) + u".");
 
     args.option(u"remote", 'r', Args::IPSOCKADDR_OA);
     args.help(u"remote",
@@ -186,7 +186,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(sockBuffer, u"udp-buffer-size");
     args.getIntValue(firstInput, u"first-input", 0);
     args.getIntValue(primaryInput, u"primary-input", NPOS);
-    args.getIntValue(receiveTimeout, u"receive-timeout", primaryInput >= inputs.size() ? 0 : DEFAULT_RECEIVE_TIMEOUT);
+    args.getChronoValue(receiveTimeout, u"receive-timeout", primaryInput >= inputs.size() ? std::chrono::milliseconds::zero() : DEFAULT_RECEIVE_TIMEOUT);
 
     // Event reporting.
     args.getValue(eventCommand, u"event-command");

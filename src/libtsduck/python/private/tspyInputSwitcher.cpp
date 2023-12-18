@@ -132,7 +132,7 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
     args.maxInputPackets = size_t(std::max<long>(0, pyargs->max_input_packets));
     args.maxOutputPackets = size_t(std::max<long>(0, pyargs->max_output_packets));
     args.sockBuffer = size_t(std::max<long>(0, pyargs->sock_buffer));
-    args.receiveTimeout = ts::MilliSecond(std::max<long>(0, pyargs->receive_timeout));
+    args.receiveTimeout = std::chrono::milliseconds(std::chrono::milliseconds::rep(std::max<long>(0, pyargs->receive_timeout)));
     if (pyargs->remote_server_port > 0 && pyargs->remote_server_port < 0xFFFF) {
         args.remoteServer.setPort(uint16_t(pyargs->remote_server_port));
     }

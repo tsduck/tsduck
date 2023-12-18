@@ -84,10 +84,10 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"By default, as a security precaution, only the local host is allowed to connect. "
               u"Several --control-source options are allowed.");
 
-    args.option(u"control-timeout", 0, Args::UNSIGNED);
-    args.help(u"control-timeout", u"milliseconds",
-              u"Specify the reception timeout in milliseconds for control commands. "
-              u"The default timeout is " + UString::Decimal(DEFAULT_CONTROL_TIMEOUT) + u" ms.");
+    args.option<std::chrono::milliseconds>(u"control-timeout");
+    args.help(u"control-timeout",
+              u"Specify the reception timeout for control commands. "
+              u"The default timeout is " + UString::Chrono(DEFAULT_CONTROL_TIMEOUT, true) + u".");
 
     args.option<std::chrono::milliseconds>(u"final-wait");
     args.help(u"final-wait",
@@ -120,9 +120,9 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"This can be useful if the same plugin is used several times "
               u"and all instances log many messages.");
 
-    args.option(u"receive-timeout", 0, Args::POSITIVE);
-    args.help(u"receive-timeout", u"milliseconds",
-              u"Specify a timeout in milliseconds for all input operations. "
+    args.option<std::chrono::milliseconds>(u"receive-timeout");
+    args.help(u"receive-timeout",
+              u"Specify a timeout for all input operations. "
               u"Equivalent to the same --receive-timeout options in some plugins. "
               u"By default, there is no input timeout.");
 
@@ -179,11 +179,11 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(instuff_stop, u"add-stop-stuffing", 0);
     ignore_jt = args.present(u"ignore-joint-termination");
     args.getTristateValue(realtime, u"realtime");
-    args.getIntValue(receive_timeout, u"receive-timeout", 0);
+    args.getChronoValue(receive_timeout, u"receive-timeout");
     args.getChronoValue(final_wait, u"final-wait", std::chrono::milliseconds(-1));
     args.getIPValue(control_local, u"control-local");
     args.getIntValue(control_port, u"control-port", 0);
-    args.getIntValue(control_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);
+    args.getChronoValue(control_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);
     control_reuse = args.present(u"control-reuse-port");
 
     // Convert MB in MiB for buffer size for compatibility with original versions.

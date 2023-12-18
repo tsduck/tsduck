@@ -121,16 +121,16 @@ bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
 // Set the receive timeout.
 //----------------------------------------------------------------------------
 
-bool ts::Socket::setReceiveTimeout(ts::MilliSecond timeout, ts::Report& report)
+bool ts::Socket::setReceiveTimeout(std::chrono::milliseconds timeout, Report& report)
 {
-    report.debug(u"setting socket receive timeout to %'d ms", {timeout});
+    report.debug(u"setting socket receive timeout to %s", {UString::Chrono(timeout)});
 
 #if defined(TS_WINDOWS)
-    ::DWORD param = ::DWORD(timeout);
+    ::DWORD param = ::DWORD(timeout.count());
 #else
     struct timeval param;
-    param.tv_sec = time_t(timeout / MilliSecPerSec);
-    param.tv_usec = suseconds_t(timeout % MilliSecPerSec);
+    param.tv_sec = time_t(timeout.count() / 1000);
+    param.tv_usec = suseconds_t(timeout.count() % 1000);
 #endif
 
     if (::setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, SysSockOptPointer(&param), sizeof(param)) != 0) {

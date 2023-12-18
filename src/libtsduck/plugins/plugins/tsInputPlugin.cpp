@@ -23,7 +23,7 @@ ts::InputPlugin::InputPlugin(TSP* tsp_, const UString& description, const UStrin
 // Default implementations of virtual methods.
 //----------------------------------------------------------------------------
 
-bool ts::InputPlugin::setReceiveTimeout(MilliSecond timeout)
+bool ts::InputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
 {
     return false;
 }

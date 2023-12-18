@@ -29,7 +29,7 @@ namespace ts {
         virtual bool start() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
-        virtual bool setReceiveTimeout(MilliSecond timeout) override;
+        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout) override;
 
     private:
         // Command line options:
@@ -367,7 +367,7 @@ bool ts::CraftInput::start()
 // Input is never blocking.
 //----------------------------------------------------------------------------
 
-bool ts::CraftInput::setReceiveTimeout(MilliSecond timeout)
+bool ts::CraftInput::setReceiveTimeout(std::chrono::milliseconds timeout)
 {
     return true;
 }

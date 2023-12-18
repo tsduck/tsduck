@@ -30,11 +30,11 @@ ts::TunerArgs::TunerArgs(bool info_only) :
 void ts::TunerArgs::clear()
 {
     device_name.clear();
-    signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;
-    receive_timeout = 0;
+    receiver_name.clear();
     demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
     demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;
-    receiver_name.clear();
+    signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;
+    receive_timeout = std::chrono::milliseconds::zero();
 
     // Reset superclass.
     ModulationArgs::clear();
@@ -56,7 +56,7 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
         status = false;
     }
     if (args.present(u"device-name")) {
-        device_name = args.value(u"device-name");
+        args.getValue(device_name, u"device-name");
     }
     else if (args.present(u"adapter")) {
         const int adapter = args.intValue(u"adapter", 0);
@@ -72,18 +72,18 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
 
 #if defined(TS_WINDOWS)
     // Windows-specific tuner options.
-    receiver_name = args.value(u"receiver-name");
+    args.getValue(receiver_name, u"receiver-name");
 #endif
 
     // Tuning options.
     if (!_info_only) {
         // Reception parameters.
-        signal_timeout = args.intValue<MilliSecond>(u"signal-timeout", Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) * 1000;
-        receive_timeout = args.intValue<MilliSecond>(u"receive-timeout", receive_timeout); // preserve previous value
+        args.getChronoValue(signal_timeout, u"signal-timeout", Tuner::DEFAULT_SIGNAL_TIMEOUT);
+        args.getChronoValue(receive_timeout, u"receive-timeout", receive_timeout); // preserve previous value
 #if defined(TS_LINUX)
-        demux_buffer_size = args.intValue<size_t>(u"demux-buffer-size", Tuner::DEFAULT_DEMUX_BUFFER_SIZE);
+        args.getIntValue(demux_buffer_size, u"demux-buffer-size", Tuner::DEFAULT_DEMUX_BUFFER_SIZE);
 #elif defined(TS_WINDOWS)
-        demux_queue_size = args.intValue<size_t>(u"demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
+        args.getIntValue(demux_queue_size, u"demux-queue-size", Tuner::DEFAULT_SINK_QUEUE_SIZE);
 #endif
 
         // Locating the transponder by channel
@@ -185,18 +185,18 @@ void ts::TunerArgs::defineArgs(Args& args, bool allow_short_options)
     if (!_info_only) {
 
         // Reception parameters.
-        args.option(u"receive-timeout", 0, Args::UNSIGNED);
-        args.help(u"receive-timeout", u"milliseconds",
+        args.option<std::chrono::milliseconds>(u"receive-timeout");
+        args.help(u"receive-timeout",
                   u"Specifies the timeout, in milliseconds, for each receive operation. "
                   u"To disable the timeout and wait indefinitely for packets, specify zero. "
                   u"This is the default.");
 
-        args.option(u"signal-timeout", 0, Args::UNSIGNED);
-        args.help(u"signal-timeout", u"seconds",
+        args.option<std::chrono::seconds>(u"signal-timeout");
+        args.help(u"signal-timeout",
                   u"Specifies the timeout, in seconds, for DVB signal locking. If no signal "
                   u"is detected after this timeout, the command aborts. To disable the "
                   u"timeout and wait indefinitely for the signal, specify zero. The default "
-                  u"is " + UString::Decimal(Tuner::DEFAULT_SIGNAL_TIMEOUT / 1000) + u" seconds.");
+                  u"is " + UString::Chrono(std::chrono::duration_cast<std::chrono::seconds>(Tuner::DEFAULT_SIGNAL_TIMEOUT)) + u".");
 
 #if defined(TS_LINUX)
 

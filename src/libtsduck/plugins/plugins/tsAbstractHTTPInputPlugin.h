@@ -33,7 +33,7 @@ namespace ts {
         virtual bool abortInput() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-        virtual bool setReceiveTimeout(MilliSecond timeout) override;
+        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout) override;
 
     protected:
         //!

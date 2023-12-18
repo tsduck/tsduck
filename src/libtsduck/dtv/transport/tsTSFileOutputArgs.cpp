@@ -8,7 +8,6 @@
 
 #include "tsTSFileOutputArgs.h"
 #include "tsNullReport.h"
-#include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsErrCodeReport.h"
 
@@ -59,11 +58,10 @@ void ts::TSFileOutputArgs::defineArgs(Args& args)
               u"Then, in case of open error, periodically retry to open the file. "
               u"See also options --retry-interval and --max-retry.");
 
-    args.option(u"retry-interval", 0, Args::POSITIVE);
-    args.help(u"retry-interval", u"milliseconds",
-              u"With --reopen-on-error, specify the number of milliseconds to wait before "
-              u"attempting to reopen the file after a failure. The default is " +
-              UString::Decimal(DEFAULT_RETRY_INTERVAL) + u" milliseconds.");
+    args.option<std::chrono::milliseconds>(u"retry-interval");
+    args.help(u"retry-interval",
+              u"With --reopen-on-error, specify the delay to wait before attempting to reopen the file after a failure. "
+              u"The default is " + UString::Chrono(DEFAULT_RETRY_INTERVAL, true) + u".");
 
     args.option(u"max-retry", 0, Args::UINT32);
     args.help(u"max-retry",
@@ -106,7 +104,7 @@ bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
     args.getPathValue(_name);
     _reopen = args.present(u"reopen-on-error");
     args.getIntValue(_retry_max, u"max-retry", 0);
-    args.getIntValue(_retry_interval, u"retry-interval", DEFAULT_RETRY_INTERVAL);
+    args.getChronoValue(_retry_interval, u"retry-interval", DEFAULT_RETRY_INTERVAL);
     args.getIntValue(_start_stuffing, u"add-start-stuffing", 0);
     args.getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
     args.getIntValue(_max_files, u"max-files", 0);
@@ -182,7 +180,7 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
 
         // Wait before next open when required.
         if (initial_wait || done_once) {
-            SleepThread(_retry_interval);
+            std::this_thread::sleep_for(_retry_interval);
         }
 
         // Try to open the file.

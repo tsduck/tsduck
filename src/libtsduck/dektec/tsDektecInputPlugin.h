@@ -37,7 +37,7 @@ namespace ts {
         virtual BitRate getBitrate() override;
         virtual BitRateConfidence getBitrateConfidence() override;
         virtual size_t stackUsage() const override;
-        virtual bool setReceiveTimeout(MilliSecond timeout) override;
+        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout) override;
 
     private:
         class Guts;
