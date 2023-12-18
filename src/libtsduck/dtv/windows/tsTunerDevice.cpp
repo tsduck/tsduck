@@ -95,12 +95,12 @@ ts::UString ts::TunerDevice::devicePath() const
     return _device_path;
 }
 
-ts::MilliSecond ts::TunerDevice::receiveTimeout() const
+std::chrono::milliseconds ts::TunerDevice::receiveTimeout() const
 {
     return _receive_timeout;
 }
 
-void ts::TunerDevice::setSignalTimeout(MilliSecond t)
+void ts::TunerDevice::setSignalTimeout(std::chrono::milliseconds t)
 {
     _signal_timeout = t;
 }
@@ -439,7 +439,7 @@ bool ts::TunerDevice::start()
         TSPacket pack;
         if (sink->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
             if (!_signal_timeout_silent) {
-                _duck.report().error(u"no input DVB signal after %'d milliseconds", {_signal_timeout});
+                _duck.report().error(u"no input DVB signal after %s", {UString::Chrono(_signal_timeout)});
             }
             return false;
         }
@@ -466,7 +466,7 @@ bool ts::TunerDevice::stop(bool silent)
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout)
+bool ts::TunerDevice::setReceiveTimeout(std::chrono::milliseconds timeout)
 {
     _receive_timeout = timeout;
     return true;

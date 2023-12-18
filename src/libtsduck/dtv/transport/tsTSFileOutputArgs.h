@@ -81,7 +81,7 @@ namespace ts {
         //!
         //! Default retry interval in milliseconds.
         //!
-        static constexpr MilliSecond DEFAULT_RETRY_INTERVAL  = 2000;
+        static constexpr std::chrono::milliseconds DEFAULT_RETRY_INTERVAL = std::chrono::milliseconds(2000);
 
     private:
         // Command line options:
@@ -90,7 +90,7 @@ namespace ts {
         TSFile::OpenFlags _flags = TSFile::NONE;
         TSPacketFormat    _file_format = TSPacketFormat::TS;
         bool              _reopen = false;
-        MilliSecond       _retry_interval = DEFAULT_RETRY_INTERVAL;
+        std::chrono::milliseconds _retry_interval = DEFAULT_RETRY_INTERVAL;
         size_t            _retry_max = 0;
         size_t            _start_stuffing = 0;
         size_t            _stop_stuffing = 0;

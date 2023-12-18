@@ -46,8 +46,6 @@ int ts::DektecControl::execute()
 #include "tsjsonOutputArgs.h"
 #include "tsjson.h"
 #include "tsjsonObject.h"
-#include "tsjsonString.h"
-#include "tsjsonNumber.h"
 
 
 //----------------------------------------------------------------------------
@@ -60,17 +58,17 @@ class ts::DektecControl::Guts
 private:
     Report& _report;
 public:
-    bool    _list_all = false;    // List all Dektec devices
-    bool    _normalized = false;  // List in "normalized" format
-    json::OutputArgs _json {};    // List in JSON format
-    int     _wait_sec = 0;        // Wait time before exit
-    size_t  _devindex = 0;        // Dektec device
-    bool    _reset = false;       // Reset the device
-    bool    _set_led = false;     // Change LED state
-    int     _led_state = 0;       // State of the LED (one of DTAPI_LED_*)
-    int     _set_input = 0;       // Port number to set as input, for directional ports
-    int     _set_output = 0;      // Port number to set as output, for directional ports
-    int     _power_mode = -1;     // Power mode to set on DTU-315
+    bool   _list_all = false;    // List all Dektec devices
+    bool   _normalized = false;  // List in "normalized" format
+    size_t _devindex = 0;        // Dektec device
+    bool   _reset = false;       // Reset the device
+    bool   _set_led = false;     // Change LED state
+    int    _led_state = 0;       // State of the LED (one of DTAPI_LED_*)
+    int    _set_input = 0;       // Port number to set as input, for directional ports
+    int    _set_output = 0;      // Port number to set as output, for directional ports
+    int    _power_mode = -1;     // Power mode to set on DTU-315
+    json::OutputArgs _json {};   // List in JSON format
+    std::chrono::seconds _wait_sec {};  // Wait time before exit
 
     // Constructor
     Guts(Report& report) : _report(report) {}
@@ -150,23 +148,23 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     option(u"reset", 'r');
     help(u"reset", u"Reset the device.");
 
-    option(u"wait", 'w', UNSIGNED);
-    help(u"wait", u"seconds",
+    option<std::chrono::seconds>(u"wait", 'w');
+    help(u"wait",
          u"Wait the specified number of seconds before exiting. The default "
          u"if 5 seconds if option --led is specified and 0 otherwise.");
 
     analyze(argc, argv);
 
-    _guts->_devindex   = intValue(u"", 0);
-    _guts->_list_all   = present(u"all");
+    getIntValue(_guts->_devindex, u"", 0);
     _guts->_normalized = present(u"normalized");
-    _guts->_reset      = present(u"reset");
-    _guts->_set_led    = present(u"led");
-    _guts->_led_state  = intValue(u"led", DTAPI_LED_OFF);
-    _guts->_set_input  = intValue(u"input", -1);
-    _guts->_set_output = intValue(u"output", -1);
-    _guts->_wait_sec   = intValue(u"wait", _guts->_set_led ? 5 : 0);
-    _guts->_power_mode = intValue(u"power-mode", -1);
+    _guts->_list_all = present(u"all");
+    _guts->_set_led = present(u"led");
+    _guts->_reset = present(u"reset");
+    getIntValue(_guts->_led_state, u"led", DTAPI_LED_OFF);
+    getIntValue(_guts->_set_input, u"input", -1);
+    getIntValue(_guts->_set_output, u"output", -1);
+    getIntValue(_guts->_power_mode,u"power-mode", -1);
+    getChronoValue(_guts->_wait_sec, u"wait", std::chrono::seconds(_guts->_set_led ? 5 : 0));
     _guts->_json.loadArgs(_duck, *this);
 
     if (_guts->_json.useFile() && _guts->_normalized) {
@@ -746,7 +744,7 @@ int ts::DektecControl::Guts::oneDevice(const DektecDevice& device)
         }
     }
 
-    SleepThread(MilliSecPerSec * _wait_sec);
+    std::this_thread::sleep_for(_wait_sec);
     dtdev.Detach();
 
     return EXIT_SUCCESS;

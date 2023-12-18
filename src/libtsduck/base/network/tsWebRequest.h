@@ -53,13 +53,13 @@ namespace ts {
         //! Set the connection timeout for this request.
         //! @param [in] timeout Connection timeout in milliseconds.
         //!
-        void setConnectionTimeout(MilliSecond timeout) { _connectionTimeout = timeout; }
+        void setConnectionTimeout(std::chrono::milliseconds timeout) { _connectionTimeout = timeout; }
 
         //!
         //! Set the timeout for each receive operation.
         //! @param [in] timeout Reception timeout in milliseconds.
         //!
-        void setReceiveTimeout(MilliSecond timeout) { _receiveTimeout = timeout; }
+        void setReceiveTimeout(std::chrono::milliseconds timeout) { _receiveTimeout = timeout; }
 
         //!
         //! Set the optional proxy host and port for this request.
@@ -352,8 +352,8 @@ namespace ts {
         bool          _autoRedirect = true;
         UString       _originalURL {};
         UString       _finalURL {};
-        MilliSecond   _connectionTimeout = 0;
-        MilliSecond   _receiveTimeout = 0;
+        std::chrono::milliseconds _connectionTimeout {};
+        std::chrono::milliseconds _receiveTimeout {};
         UString       _proxyHost {};
         uint16_t      _proxyPort = 0;
         UString       _proxyUser {};

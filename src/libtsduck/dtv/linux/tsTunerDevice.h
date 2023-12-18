@@ -58,11 +58,11 @@ namespace ts {
         virtual void abort(bool silent = false) override;
         virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort = nullptr) override;
         virtual bool getCurrentTuning(ModulationArgs& params, bool reset_unknown) override;
-        virtual void setSignalTimeout(MilliSecond t) override;
+        virtual void setSignalTimeout(std::chrono::milliseconds t) override;
         virtual void setSignalTimeoutSilent(bool silent) override;
-        virtual bool setReceiveTimeout(MilliSecond t) override;
-        virtual MilliSecond receiveTimeout() const override;
-        virtual void setSignalPoll(MilliSecond t) override;
+        virtual bool setReceiveTimeout(std::chrono::milliseconds t) override;
+        virtual std::chrono::milliseconds receiveTimeout() const override;
+        virtual void setSignalPoll(std::chrono::milliseconds t) override;
         virtual void setDemuxBufferSize(size_t s) override;
         virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin = UString(), bool extended = false) override;
 
@@ -72,9 +72,9 @@ namespace ts {
         UString             _device_name {};          // Used to open the tuner
         UString             _device_info {};          // Device-specific, can be empty
         UString             _device_path {};          // System-specific device path.
-        MilliSecond         _signal_timeout = DEFAULT_SIGNAL_TIMEOUT;
+        std::chrono::milliseconds _signal_timeout = DEFAULT_SIGNAL_TIMEOUT;
         bool                _signal_timeout_silent = false;
-        MilliSecond         _receive_timeout = 0;
+        std::chrono::milliseconds _receive_timeout {};
         DeliverySystemSet   _delivery_systems {};
         volatile bool       _reading_dvr = false;     // Read operation in progree on dvr.
         volatile bool       _aborted = false;         // Tuner operation was aborted
@@ -84,9 +84,9 @@ namespace ts {
         int                 _frontend_fd = -1;        // Frontend device file descriptor
         int                 _demux_fd = -1;           // Demux device file descriptor
         int                 _dvr_fd = -1;             // DVR device file descriptor
-        unsigned long       _demux_bufsize {DEFAULT_DEMUX_BUFFER_SIZE};
+        unsigned long       _demux_bufsize = DEFAULT_DEMUX_BUFFER_SIZE;
         ::dvb_frontend_info _fe_info {};              // Front-end characteristics
-        MilliSecond         _signal_poll {DEFAULT_SIGNAL_POLL};
+        std::chrono::milliseconds _signal_poll = DEFAULT_SIGNAL_POLL;
         int                 _rt_signal = -1;          // Receive timeout signal number
         ::timer_t           _rt_timer = nullptr;      // Receive timeout timer
         bool                _rt_timer_valid = false;  // Receive timeout timer was created

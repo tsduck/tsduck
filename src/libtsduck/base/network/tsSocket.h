@@ -78,7 +78,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setReceiveTimeout(MilliSecond timeout, Report& report = CERR);
+        bool setReceiveTimeout(std::chrono::milliseconds timeout, Report& report = CERR);
 
         //!
         //! Set the "reuse port" option.

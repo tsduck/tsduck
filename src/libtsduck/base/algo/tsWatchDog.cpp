@@ -13,7 +13,7 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::WatchDog::WatchDog(ts::WatchDogHandlerInterface* handler, ts::MilliSecond timeout, int id, ts::Report& log) :
+ts::WatchDog::WatchDog(WatchDogHandlerInterface* handler, std::chrono::milliseconds timeout, int id, Report& log) :
     _log(log),
     _watchDogId(id),
     _handler(handler),
@@ -64,7 +64,7 @@ void ts::WatchDog::activate()
 // Set a new timeout value.
 //----------------------------------------------------------------------------
 
-void ts::WatchDog::setTimeout(MilliSecond timeout, bool autoStart)
+void ts::WatchDog::setTimeout(std::chrono::milliseconds timeout, bool autoStart)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     _timeout = timeout;
@@ -116,11 +116,11 @@ void ts::WatchDog::main()
         // Wait for the condition to be signaled. Get protected data while under mutex protection.
         {
             std::unique_lock<std::mutex> lock(_mutex);
-            if (!_active || _timeout == 0) {
+            if (!_active || _timeout.count() == 0) {
                 _condition.wait(lock);
             }
             else {
-                expired = _condition.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(_timeout))) == std::cv_status::timeout;
+                expired = _condition.wait_for(lock, _timeout) == std::cv_status::timeout;
             }
             h = _handler;
         }

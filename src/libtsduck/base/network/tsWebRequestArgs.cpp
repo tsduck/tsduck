@@ -21,10 +21,10 @@ void ts::WebRequestArgs::defineArgs(Args& args)
               u"Accept compressed HTTP responses. By default, compressed responses are "
               u"not accepted.");
 
-    args.option(u"connection-timeout", 0, Args::POSITIVE);
+    args.option<std::chrono::milliseconds>(u"connection-timeout");
     args.help(u"connection-timeout",
-              u"Specify the connection timeout in milliseconds. By default, let the "
-              u"operating system decide.");
+              u"Specify the connection timeout. "
+              u"By default, let the operating system decide.");
 
     args.option(u"proxy-host", 0, Args::STRING);
     args.help(u"proxy-host", u"name",
@@ -42,11 +42,11 @@ void ts::WebRequestArgs::defineArgs(Args& args)
     args.help(u"proxy-user", u"name",
               u"Optional proxy user name for Internet access.");
 
-    args.option(u"receive-timeout", 0, Args::POSITIVE);
+    args.option<std::chrono::milliseconds>(u"receive-timeout");
     args.help(u"receive-timeout",
-              u"Specify the data reception timeout in milliseconds. This timeout applies "
-              u"to each receive operation, individually. By default, let the operating "
-              u"system decide.");
+              u"Specify the data reception timeout. "
+              u"This timeout applies to each receive operation, individually. "
+              u"By default, let the operating system decide.");
 
     args.option(u"user-agent", 0, Args::STRING);
     args.help(u"user-agent", u"'string'",
@@ -66,8 +66,8 @@ void ts::WebRequestArgs::defineArgs(Args& args)
 bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)
 {
     // Preserve previous timeout values
-    args.getIntValue(connectionTimeout, u"connection-timeout", connectionTimeout);
-    args.getIntValue(receiveTimeout, u"receive-timeout", receiveTimeout);
+    args.getChronoValue(connectionTimeout, u"connection-timeout", connectionTimeout);
+    args.getChronoValue(receiveTimeout, u"receive-timeout", receiveTimeout);
     args.getIntValue(proxyPort, u"proxy-port");
     args.getValue(proxyHost, u"proxy-host");
     args.getValue(proxyUser, u"proxy-user");

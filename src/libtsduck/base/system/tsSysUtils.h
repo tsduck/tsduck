@@ -93,17 +93,6 @@ namespace ts {
     TSDUCKDLL fs::path CallerLibraryFile();
 
     //!
-    //! Suspend the current thread for the specified period.
-    //! Before enforcing C++11, this function used to be implemented in a system-dependent manner.
-    //! Now, it is just an encapsulation of std::this_thread::sleep_for().
-    //! @param [in] delay Number of milliseconds to sleep the current thread.
-    //!
-    TSDUCKDLL inline void SleepThread(MilliSecond delay)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(std::chrono::milliseconds::rep(delay)));
-    }
-
-    //!
     //! Check if the current user is privileged (root on UNIX, an administrator on Windows).
     //! @return True if the current user is privileged.
     //!

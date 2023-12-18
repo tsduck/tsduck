@@ -79,11 +79,11 @@ namespace ts {
         virtual void abort(bool silent = false) override;
         virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort = nullptr) override;
         virtual bool getCurrentTuning(ModulationArgs& params, bool reset_unknown) override;
-        virtual void setSignalTimeout(MilliSecond t) override;
+        virtual void setSignalTimeout(std::chrono::milliseconds t) override;
         virtual void setSignalTimeoutSilent(bool silent) override;
-        virtual bool setReceiveTimeout(MilliSecond t) override;
-        virtual MilliSecond receiveTimeout() const override;
-        virtual void setSignalPoll(MilliSecond t) override;
+        virtual bool setReceiveTimeout(std::chrono::milliseconds t) override;
+        virtual std::chrono::milliseconds receiveTimeout() const override;
+        virtual void setSignalPoll(std::chrono::milliseconds t) override;
         virtual void setDemuxBufferSize(size_t s) override;
         virtual void setSinkQueueSize(size_t s) override;
         virtual void setReceiverFilterName(const UString& name) override;

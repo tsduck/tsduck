@@ -44,7 +44,7 @@ namespace ts {
         //! The id is not interpreted by the watchdog, it is only stored for the application.
         //! @param [in,out] log Log report.
         //!
-        WatchDog(WatchDogHandlerInterface* handler = nullptr, MilliSecond timeout = 0, int id = 0, Report& log = NULLREP);
+        WatchDog(WatchDogHandlerInterface* handler = nullptr, std::chrono::milliseconds timeout = std::chrono::milliseconds::zero(), int id = 0, Report& log = NULLREP);
 
         //!
         //! Destructor.
@@ -58,7 +58,7 @@ namespace ts {
         //! automatically started. Otherwise, it is suspended. The previous timeout,
         //! if active, is automatically canceled.
         //!
-        void setTimeout(MilliSecond timeout, bool autoStart = false);
+        void setTimeout(std::chrono::milliseconds timeout, bool autoStart = false);
 
         //!
         //! Restart the watchdog, the previous timeout is canceled.
@@ -95,7 +95,7 @@ namespace ts {
         std::mutex                _mutex {};           // Mutex to protect the following fields.
         std::condition_variable   _condition {};       // Condition to signal when something changed.
         WatchDogHandlerInterface* _handler = nullptr;  // Handler for expiration.
-        MilliSecond               _timeout = 0;        // Expiration timeout, 0 means no timeout.
+        std::chrono::milliseconds _timeout {};         // Expiration timeout, 0 means no timeout.
         bool                      _active = false;     // The watchdog is active.
         bool                      _started = false;    // The thread is started.
 

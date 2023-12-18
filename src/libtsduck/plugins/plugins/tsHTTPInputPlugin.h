@@ -34,10 +34,10 @@ namespace ts {
 
     private:
         // Command line options:
-        size_t      _repeat_count = 0;
-        bool        _ignore_errors = false;
-        MilliSecond _reconnect_delay = 0;
-        UString     _url {};
+        size_t  _repeat_count = 0;
+        bool _ignore_errors = false;
+        std::chrono::milliseconds _reconnect_delay {};
+        UString _url {};
 
         // Working data:
         size_t _transfer_count = 0;

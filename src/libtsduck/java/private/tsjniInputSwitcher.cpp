@@ -140,7 +140,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_InputSwitcher_start(JNIEnv* env, jobje
     args.maxInputPackets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxInputPackets")));
     args.maxOutputPackets = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxOutputPackets")));
     args.sockBuffer = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "sockBuffer")));
-    args.receiveTimeout = ts::MilliSecond(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout")));
+    args.receiveTimeout = std::chrono::milliseconds(std::chrono::milliseconds::rep(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout"))));
     jint port = ts::jni::GetIntField(env, obj, "remoteServerPort");
     if (port > 0 && port < 0xFFFF) {
         args.remoteServer.setPort(uint16_t(port));

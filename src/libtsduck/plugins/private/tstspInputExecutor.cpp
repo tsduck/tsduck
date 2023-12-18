@@ -42,7 +42,7 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
     _dts_analyzer.resetAndUseDTS(MIN_ANALYZE_PID, MIN_ANALYZE_DTS);
 
     // Propose receive timeout to input plugin.
-    if (options.receive_timeout > 0 && !_input->setReceiveTimeout(options.receive_timeout)) {
+    if (options.receive_timeout.count() > 0 && !_input->setReceiveTimeout(options.receive_timeout)) {
         debug(u"%s input plugin does not support receive timeout, using watchdog and abort", {pluginName()});
         _use_watchdog = true;
     }

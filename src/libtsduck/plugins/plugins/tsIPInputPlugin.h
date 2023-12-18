@@ -29,7 +29,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool abortInput() override;
-        virtual bool setReceiveTimeout(MilliSecond timeout) override;
+        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout) override;
 
     protected:
         // Implementation of AbstractDatagramInputPlugin.

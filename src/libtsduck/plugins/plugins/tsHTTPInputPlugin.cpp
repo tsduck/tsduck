@@ -35,9 +35,9 @@ ts::HTTPInputPlugin::HTTPInputPlugin(TSP* tsp_) :
          u"Repeat the playout of the content infinitely (default: only once). "
          u"The URL is re-opened each time and the content may be different.");
 
-    option(u"reconnect-delay", 0, UNSIGNED);
+    option<std::chrono::milliseconds>(u"reconnect-delay");
     help(u"reconnect-delay",
-         u"With --repeat or --infinite, wait the specified number of milliseconds before reconnecting. "
+         u"With --repeat or --infinite, wait the specified delay before reconnecting. "
          u"By default, repeat immediately.");
 
     option(u"repeat", 'r', POSITIVE);
@@ -55,7 +55,7 @@ bool ts::HTTPInputPlugin::getOptions()
 {
     getValue(_url, u"");
     getIntValue(_repeat_count, u"repeat", present(u"infinite") ? std::numeric_limits<size_t>::max() : 1);
-    getIntValue(_reconnect_delay, u"reconnect-delay", 0);
+    getChronoValue(_reconnect_delay, u"reconnect-delay");
     _ignore_errors = present(u"ignore-errors");
     return AbstractHTTPInputPlugin::getOptions();
 }
@@ -102,8 +102,8 @@ bool ts::HTTPInputPlugin::openURL(WebRequest& request)
         }
 
         // Wait between reconnections.
-        if (_reconnect_delay > 0) {
-            SleepThread(_reconnect_delay);
+        if (_reconnect_delay.count() > 0) {
+            std::this_thread::sleep_for(_reconnect_delay);
         }
     }
 }

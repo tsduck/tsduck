@@ -39,8 +39,8 @@ namespace ts {
         bool                   inputOnce = false;                             //!< Terminate when all input plugins complete, do not restart plugins.
         bool                   outputOnce = false;                            //!< Terminate when the output plugin fails, do not restart.
         bool                   ignoreConflicts = false;                       //!< Ignore PID or service conflicts (inconsistent stream).
-        MilliSecond            inputRestartDelay = DEFAULT_RESTART_DELAY;     //!< When an input start fails, retry after that delay.
-        MilliSecond            outputRestartDelay = DEFAULT_RESTART_DELAY;    //!< When the output start fails, retry after that delay.
+        std::chrono::milliseconds inputRestartDelay = DEFAULT_RESTART_DELAY;     //!< When an input start fails, retry after that delay.
+        std::chrono::milliseconds outputRestartDelay = DEFAULT_RESTART_DELAY;    //!< When the output start fails, retry after that delay.
         MicroSecond            cadence = DEFAULT_CADENCE;                     //!< Internal polling cadence in microseconds.
         size_t                 inBufferPackets = DEFAULT_BUFFERED_PACKETS;    //!< Input buffer size in packets.
         size_t                 outBufferPackets = DEFAULT_BUFFERED_PACKETS;   //!< Output buffer size in packets (default: N x inBufferPackets).
@@ -61,7 +61,7 @@ namespace ts {
         static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;       //!< Default input size buffer in packets.
         static constexpr size_t MIN_BUFFERED_PACKETS = 16;            //!< Minimum input size buffer in packets.
         static constexpr size_t DEFAULT_LOSSY_INPUT_PACKETS = 16;     //!< Default number of oldest input packets to drop with lossy input.
-        static constexpr MilliSecond DEFAULT_RESTART_DELAY = 2000;    //!< Default input and output restart delay.
+        static constexpr std::chrono::milliseconds DEFAULT_RESTART_DELAY = std::chrono::milliseconds(2000);  //!< Default input and output restart delay.
         static constexpr MicroSecond DEFAULT_CADENCE = 10000;         //!< Default cadence in microseconds.
         static constexpr BitRate::int_t MIN_PSI_BITRATE = 100;        //!< Minimum bitrate for global PSI/SI PID's.
         static constexpr BitRate::int_t DEFAULT_PSI_BITRATE = 15000;  //!< Default bitrate for global PSI/SI PID's.
