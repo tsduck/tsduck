@@ -38,6 +38,11 @@ namespace ts {
         static constexpr std::chrono::milliseconds DEFAULT_MIN_STABLE_DELAY = std::chrono::milliseconds(500);
 
         //!
+        //! Default constructor
+        //!
+        PollFiles() = default;
+
+        //!
         //! Constructor.
         //! @param [in] wildcard Wildcard specification of files to poll (eg "/path/to/*.dat").
         //! @param [in] listener Invoked on file modification. Can be null.
@@ -48,7 +53,7 @@ namespace ts {
         //! @param [in,out] report For debug messages only.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
-        PollFiles(const UString& wildcard = UString(),
+        PollFiles(const UString& wildcard,
                   PollFilesListener* listener = nullptr,
                   const std::chrono::duration<Rep1,Period1>& poll_interval = DEFAULT_POLL_INTERVAL,
                   const std::chrono::duration<Rep2,Period2>& min_stable_delay = DEFAULT_MIN_STABLE_DELAY,
@@ -103,13 +108,13 @@ namespace ts {
         bool pollOnce();
 
     private:
-        Report&            _report;
-        UString            _files_wildcard {};
+        Report&                   _report {CERR};
+        UString                   _files_wildcard {};
         std::chrono::milliseconds _poll_interval = DEFAULT_POLL_INTERVAL;
         std::chrono::milliseconds _min_stable_delay = DEFAULT_MIN_STABLE_DELAY;
-        PollFilesListener* _listener = nullptr;
-        PolledFileList     _polled_files {};    // Updated at each poll, sorted by file name
-        PolledFileList     _notified_files {};  // Modifications to notify
+        PollFilesListener*        _listener = nullptr;
+        PolledFileList            _polled_files {};    // Updated at each poll, sorted by file name
+        PolledFileList            _notified_files {};  // Modifications to notify
 
         // Mark a file as deleted, move from polled to notified files.
         void deleteFile(PolledFileList::iterator&);
