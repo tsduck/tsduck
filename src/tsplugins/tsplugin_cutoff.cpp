@@ -157,7 +157,7 @@ ts::ProcessorPlugin::Status ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPac
 {
     // Process all enqueued commands from the UDP listener thread.
     CommandQueue::MessagePtr cmd;
-    while (_command_queue.dequeue(cmd, 0)) {
+    while (_command_queue.dequeue(cmd, cn::milliseconds::zero())) {
         if (!cmd.isNull()) {
             // Split the command from spaces.
             UStringVector argv;
@@ -234,7 +234,7 @@ void ts::CutoffPlugin::main()
 
         // Enqueue the command immediately. Never wait.
         if (!cmd->empty()) {
-            _command_queue.enqueue(cmd, 0);
+            _command_queue.enqueue(cmd, cn::milliseconds::zero());
         }
     }
 

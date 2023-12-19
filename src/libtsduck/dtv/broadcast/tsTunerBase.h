@@ -192,7 +192,7 @@ namespace ts {
         //!
         //! Default timeout before getting a signal on start.
         //!
-        static constexpr std::chrono::milliseconds DEFAULT_SIGNAL_TIMEOUT = std::chrono::seconds(5);
+        static constexpr cn::milliseconds DEFAULT_SIGNAL_TIMEOUT = cn::seconds(5);
 
         //!
         //! Set the timeout before getting a signal on start.
@@ -200,7 +200,7 @@ namespace ts {
         //! Must be set before start().
         //! @param [in] t Number of milliseconds to wait after start() before receiving a signal.
         //!
-        virtual void setSignalTimeout(std::chrono::milliseconds t);
+        virtual void setSignalTimeout(cn::milliseconds t);
 
         //!
         //! Set if an error should be reported on timeout before getting a signal on start.
@@ -216,19 +216,19 @@ namespace ts {
         //! timeout is applied.
         //! @return True on success, false on error.
         //!
-        virtual bool setReceiveTimeout(std::chrono::milliseconds t);
+        virtual bool setReceiveTimeout(cn::milliseconds t);
 
         //!
         //! Get the timeout for receive operation.
         //! @return The timeout for receive operation.
         //! @see setReceiveTimeout()
         //!
-        virtual std::chrono::milliseconds receiveTimeout() const;
+        virtual cn::milliseconds receiveTimeout() const;
 
         //!
         //! Default poll interval for signal timeout (Linux-specific).
         //!
-        static constexpr std::chrono::milliseconds DEFAULT_SIGNAL_POLL = std::chrono::milliseconds(100);
+        static constexpr cn::milliseconds DEFAULT_SIGNAL_POLL = cn::milliseconds(100);
 
         //!
         //! Set the poll interval for signal timeout (Linux-specific).
@@ -236,7 +236,7 @@ namespace ts {
         //! This is a Linux-specific method which does nothing on other systems.
         //! @param [in] t Poll interval in milliseconds.
         //!
-        virtual void setSignalPoll(std::chrono::milliseconds t);
+        virtual void setSignalPoll(cn::milliseconds t);
 
         //!
         //! Default demux buffer size in bytes (Linux-specific).

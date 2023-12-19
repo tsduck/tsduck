@@ -39,7 +39,7 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
     }
 
     // Deadline for table collection
-    const Time deadline(timeout == Infinite ? Time::Apocalypse : Time::CurrentUTC() + timeout);
+    const Time deadline(Time::CurrentUTC() + timeout);
 
     // Allocate packet buffer on heap (risk of stack overflow)
     std::vector<TSPacket> buffer(BUFFER_PACKET_COUNT);

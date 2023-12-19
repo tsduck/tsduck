@@ -107,13 +107,13 @@ namespace {
             tsunit::Test::debug() << "MessageQueueTest: test thread: started" << std::endl;
 
             // Initial suspend of 500 ms
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::this_thread::sleep_for(cn::milliseconds(500));
 
             // Read messages. Expect consecutive values until negative value.
             int expected = 0;
             TestQueue::MessagePtr message;
             do {
-                TSUNIT_ASSERT(_queue.dequeue(message, 10000));
+                TSUNIT_ASSERT(_queue.dequeue(message, cn::milliseconds(10000)));
                 TSUNIT_ASSERT(!message.isNull());
                 tsunit::Test::debug() << "MessageQueueTest: test thread: received " << *message << std::endl;
                 if (*message >= 0) {
@@ -139,13 +139,13 @@ void MessageQueueTest::testQueue()
 
     // Enqueue 10 message, should not fail.
     // First 2 messages are enqueued without timeout.
-    TSUNIT_ASSERT(queue.enqueue(new int(message++)));
-    TSUNIT_ASSERT(queue.enqueue(new int(message++)));
+    queue.enqueue(new int(message++));
+    queue.enqueue(new int(message++));
 
     // Next 8 messages are enqueued with 100 ms timeout.
     // No specific reason for this, simply test both versions of enqueue().
     while (message < 10) {
-        TSUNIT_ASSERT(queue.enqueue(new int(message++), 100));
+        TSUNIT_ASSERT(queue.enqueue(new int(message++), cn::milliseconds(100)));
     }
 
     // Start the thread
@@ -155,11 +155,11 @@ void MessageQueueTest::testQueue()
 
     // Enqueue 11th message with 50 ms timeout, should fail
     debug() << "MessageQueueTest: main thread: enqueueing " << message << " (should fail)" << std::endl;
-    TSUNIT_ASSERT(!queue.enqueue(new int(message), 50));
+    TSUNIT_ASSERT(!queue.enqueue(new int(message), cn::milliseconds(50)));
 
     // Enqueue message, should take at least 500 ms
     debug() << "MessageQueueTest: main thread: enqueueing " << message << " (10 s. timeout)" << std::endl;
-    const bool enqueued = queue.enqueue(new int(message++), 10000);
+    const bool enqueued = queue.enqueue(new int(message++), cn::milliseconds(10000));
     const ts::MilliSecond duration = ts::Time::CurrentUTC() - start;
     debug() << "MessageQueueTest: main thread: enqueue = " << ts::UString::TrueFalse(enqueued) << ", duration = " << ts::UString::Decimal(duration) << " ms" << std::endl;
     TSUNIT_ASSERT(enqueued);
@@ -185,16 +185,16 @@ void MessageQueueTest::testPriorityQueue()
     ts::MessagePriorityQueue<Message> queue;
     ts::MessagePriorityQueue<Message>::MessagePtr msg;
 
-    TSUNIT_ASSERT(queue.enqueue(new Message(1, 1), 0));
-    TSUNIT_ASSERT(queue.enqueue(new Message(5, 2), 0));
-    TSUNIT_ASSERT(queue.enqueue(new Message(2, 3), 0));
-    TSUNIT_ASSERT(queue.enqueue(new Message(6, 4), 0));
-    TSUNIT_ASSERT(queue.enqueue(new Message(3, 5), 0));
-    TSUNIT_ASSERT(queue.enqueue(new Message(2, 6), 0));
-    TSUNIT_ASSERT(queue.enqueue(new Message(0, 7), 0));
-    TSUNIT_ASSERT(queue.enqueue(new Message(0, 8), 0));
+    TSUNIT_ASSERT(queue.enqueue(new Message(1, 1), cn::milliseconds::zero()));
+    TSUNIT_ASSERT(queue.enqueue(new Message(5, 2), cn::milliseconds::zero()));
+    TSUNIT_ASSERT(queue.enqueue(new Message(2, 3), cn::milliseconds::zero()));
+    TSUNIT_ASSERT(queue.enqueue(new Message(6, 4), cn::milliseconds::zero()));
+    TSUNIT_ASSERT(queue.enqueue(new Message(3, 5), cn::milliseconds::zero()));
+    TSUNIT_ASSERT(queue.enqueue(new Message(2, 6), cn::milliseconds::zero()));
+    TSUNIT_ASSERT(queue.enqueue(new Message(0, 7), cn::milliseconds::zero()));
+    TSUNIT_ASSERT(queue.enqueue(new Message(0, 8), cn::milliseconds::zero()));
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(7, msg->b);
@@ -204,40 +204,40 @@ void MessageQueueTest::testPriorityQueue()
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(8, msg->b);
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(8, msg->b);
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(1, msg->a);
     TSUNIT_EQUAL(1, msg->b);
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(2, msg->a);
     TSUNIT_EQUAL(3, msg->b);
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(2, msg->a);
     TSUNIT_EQUAL(6, msg->b);
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(3, msg->a);
     TSUNIT_EQUAL(5, msg->b);
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(5, msg->a);
     TSUNIT_EQUAL(2, msg->b);
 
-    TSUNIT_ASSERT(queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(6, msg->a);
     TSUNIT_EQUAL(4, msg->b);
 
-    TSUNIT_ASSERT(!queue.dequeue(msg, 0));
+    TSUNIT_ASSERT(!queue.dequeue(msg, cn::milliseconds::zero()));
 }

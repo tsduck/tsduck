@@ -121,7 +121,7 @@ bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
 // Set the receive timeout.
 //----------------------------------------------------------------------------
 
-bool ts::Socket::setReceiveTimeout(std::chrono::milliseconds timeout, Report& report)
+bool ts::Socket::setReceiveTimeout(cn::milliseconds timeout, Report& report)
 {
     report.debug(u"setting socket receive timeout to %s", {UString::Chrono(timeout)});
 

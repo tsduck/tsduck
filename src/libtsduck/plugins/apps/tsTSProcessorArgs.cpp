@@ -84,12 +84,12 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"By default, as a security precaution, only the local host is allowed to connect. "
               u"Several --control-source options are allowed.");
 
-    args.option<std::chrono::milliseconds>(u"control-timeout");
+    args.option<cn::milliseconds>(u"control-timeout");
     args.help(u"control-timeout",
               u"Specify the reception timeout for control commands. "
               u"The default timeout is " + UString::Chrono(DEFAULT_CONTROL_TIMEOUT, true) + u".");
 
-    args.option<std::chrono::milliseconds>(u"final-wait");
+    args.option<cn::milliseconds>(u"final-wait");
     args.help(u"final-wait",
               u"Wait the specified duration after the last input packet. "
               u"Zero means wait forever.");
@@ -120,7 +120,7 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"This can be useful if the same plugin is used several times "
               u"and all instances log many messages.");
 
-    args.option<std::chrono::milliseconds>(u"receive-timeout");
+    args.option<cn::milliseconds>(u"receive-timeout");
     args.help(u"receive-timeout",
               u"Specify a timeout for all input operations. "
               u"Equivalent to the same --receive-timeout options in some plugins. "
@@ -180,7 +180,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     ignore_jt = args.present(u"ignore-joint-termination");
     args.getTristateValue(realtime, u"realtime");
     args.getChronoValue(receive_timeout, u"receive-timeout");
-    args.getChronoValue(final_wait, u"final-wait", std::chrono::milliseconds(-1));
+    args.getChronoValue(final_wait, u"final-wait", cn::milliseconds(-1));
     args.getIPValue(control_local, u"control-local");
     args.getIntValue(control_port, u"control-port", 0);
     args.getChronoValue(control_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);

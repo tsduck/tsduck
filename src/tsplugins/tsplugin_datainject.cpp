@@ -374,7 +374,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
             else {
                 // Packet mode: Dequeue a packet immediately.
                 PacketPtrMT pp;
-                got_packet = _packet_queue.dequeue(pp, 0);
+                got_packet = _packet_queue.dequeue(pp, cn::milliseconds::zero());
                 if (got_packet) {
                     pkt = *pp;
                 }
@@ -408,7 +408,7 @@ void ts::DataInjectPlugin::provideSection(SectionCounter counter, SectionPtr& se
 {
     // Try to dequeue a section immediately.
     SectionPtrMT mt_section;
-    if (_section_queue.dequeue(mt_section, 0)) {
+    if (_section_queue.dequeue(mt_section, cn::milliseconds::zero())) {
         // A section was dequeue. Change the mutex of the safe pointer.
         section = mt_section.changeMutex<SectionPtr::MutexType>();
     }
@@ -496,7 +496,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
         for (size_t i = 0; i < m->datagram.size(); ++i) {
             SectionPtrMT sp(new Section(m->datagram[i]));
             if (sp->isValid()) {
-                processPacketLoss(u"sections", _section_queue.enqueue(sp, 0));
+                processPacketLoss(u"sections", _section_queue.enqueue(sp, cn::milliseconds::zero()));
             }
             else {
                 tsp->error(u"received an invalid section (%d bytes)", {m->datagram[i]->size()});
@@ -515,7 +515,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                 else {
                     PacketPtrMT p(new TSPacket());
                     p->copyFrom(data);
-                    processPacketLoss(u"packets", _packet_queue.enqueue(p, 0));
+                    processPacketLoss(u"packets", _packet_queue.enqueue(p, cn::milliseconds::zero()));
                     data += PKT_SIZE;
                     size -= PKT_SIZE;
                 }

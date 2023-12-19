@@ -91,7 +91,7 @@ namespace ts {
         //! @return A @c Time object representing this object plus the specified duration.
         //!
         template <class Rep, class Period>
-        Time operator+(const std::chrono::duration<Rep,Period>& duration) const
+        Time operator+(const cn::duration<Rep,Period>& duration) const
         {
             return Time(_value + Ticks(duration).count());
         }
@@ -112,7 +112,7 @@ namespace ts {
         //! @return A @c Time object representing this object minus the specified duration.
         //!
         template <class Rep, class Period>
-        Time operator-(const std::chrono::duration<Rep,Period>& duration) const
+        Time operator-(const cn::duration<Rep,Period>& duration) const
         {
             return Time(_value - Ticks(duration).count());
         }
@@ -134,7 +134,7 @@ namespace ts {
         //! @return A reference to this object.
         //!
         template <class Rep, class Period>
-        Time& operator+=(const std::chrono::duration<Rep,Period>& duration)
+        Time& operator+=(const cn::duration<Rep,Period>& duration)
         {
             _value += Ticks(duration).count();
             return *this;
@@ -157,7 +157,7 @@ namespace ts {
         //! @return A reference to this object.
         //!
         template <class Rep, class Period>
-        Time& operator-=(const std::chrono::duration<Rep,Period>& duration)
+        Time& operator-=(const cn::duration<Rep,Period>& duration)
         {
             _value -= Ticks(duration).count();
             return *this;
@@ -774,7 +774,7 @@ namespace ts {
 #endif
 
         // The std::chrono::duration type with natural clock ticks.
-        typedef std::chrono::duration<std::intmax_t, std::ratio<1, MilliSecPerSec * TICKS_PER_MS>> Ticks;
+        typedef cn::duration<std::intmax_t, std::ratio<1, MilliSecPerSec * TICKS_PER_MS>> Ticks;
 
         // On Win32, a the FILETIME structure is binary-compatible with a 64-bit integer.
 #if defined(TS_WINDOWS)

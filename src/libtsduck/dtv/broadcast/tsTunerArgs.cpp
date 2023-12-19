@@ -34,7 +34,7 @@ void ts::TunerArgs::clear()
     demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE;
     demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;
     signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;
-    receive_timeout = std::chrono::milliseconds::zero();
+    receive_timeout = cn::milliseconds::zero();
 
     // Reset superclass.
     ModulationArgs::clear();
@@ -185,18 +185,18 @@ void ts::TunerArgs::defineArgs(Args& args, bool allow_short_options)
     if (!_info_only) {
 
         // Reception parameters.
-        args.option<std::chrono::milliseconds>(u"receive-timeout");
+        args.option<cn::milliseconds>(u"receive-timeout");
         args.help(u"receive-timeout",
                   u"Specifies the timeout, in milliseconds, for each receive operation. "
                   u"To disable the timeout and wait indefinitely for packets, specify zero. "
                   u"This is the default.");
 
-        args.option<std::chrono::seconds>(u"signal-timeout");
+        args.option<cn::seconds>(u"signal-timeout");
         args.help(u"signal-timeout",
                   u"Specifies the timeout, in seconds, for DVB signal locking. If no signal "
                   u"is detected after this timeout, the command aborts. To disable the "
                   u"timeout and wait indefinitely for the signal, specify zero. The default "
-                  u"is " + UString::Chrono(std::chrono::duration_cast<std::chrono::seconds>(Tuner::DEFAULT_SIGNAL_TIMEOUT)) + u".");
+                  u"is " + UString::Chrono(cn::duration_cast<cn::seconds>(Tuner::DEFAULT_SIGNAL_TIMEOUT)) + u".");
 
 #if defined(TS_LINUX)
 

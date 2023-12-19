@@ -46,7 +46,7 @@ namespace ts {
         size_t              sockBuffer = 0;        //!< Socket buffer size.
         IPv4SocketAddress   remoteServer {};       //!< UDP server address for remote control.
         IPv4AddressSet      allowedRemote {};      //!< Set of allowed remotes.
-        std::chrono::milliseconds receiveTimeout {}; //!< Receive timeout before switch (0=none).
+        cn::milliseconds    receiveTimeout {};     //!< Receive timeout before switch (0=none).
         PluginOptionsVector inputs {};             //!< Input plugins descriptions.
         PluginOptions       output {};             //!< Output plugin description.
 
@@ -56,7 +56,7 @@ namespace ts {
         static constexpr size_t MIN_OUTPUT_PACKETS = 1;           //!< Minimum input packets to send at a time.
         static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;   //!< Default input size buffer in packets.
         static constexpr size_t MIN_BUFFERED_PACKETS = 16;        //!< Minimum input size buffer in packets.
-        static constexpr std::chrono::milliseconds DEFAULT_RECEIVE_TIMEOUT = std::chrono::milliseconds(2000); //!< Default received timeout with --primary-input.
+        static constexpr cn::milliseconds DEFAULT_RECEIVE_TIMEOUT = cn::milliseconds(2000); //!< Default received timeout with --primary-input.
 
         //!
         //! Constructor.

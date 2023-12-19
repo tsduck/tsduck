@@ -511,11 +511,14 @@ ts::NanoSecond ts::Time::UnixClockNanoSeconds(clockid_t clock, const MilliSecond
     // Current time in nano-seconds:
     const NanoSecond nanoseconds = NanoSecond(result.tv_nsec) + NanoSecond(result.tv_sec) * NanoSecPerSec;
 
+    // Last possible integer time value:
+    constexpr SubSecond MAX = std::numeric_limits<SubSecond>::max();
+
     // Delay in nano-seconds:
-    const NanoSecond nsDelay = (delay < Infinite / NanoSecPerMilliSec) ? delay * NanoSecPerMilliSec : Infinite;
+    const NanoSecond nsDelay = (delay < MAX / NanoSecPerMilliSec) ? delay * NanoSecPerMilliSec : MAX;
 
     // Current time + delay in nano-seconds:
-    return (nanoseconds < Infinite - nsDelay) ? nanoseconds + nsDelay : Infinite;
+    return (nanoseconds < MAX - nsDelay) ? nanoseconds + nsDelay : MAX;
 }
 
 void ts::Time::GetUnixClock(::timespec& result, clockid_t clock, const MilliSecond& delay)

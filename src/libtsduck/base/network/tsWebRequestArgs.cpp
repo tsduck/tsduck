@@ -21,7 +21,7 @@ void ts::WebRequestArgs::defineArgs(Args& args)
               u"Accept compressed HTTP responses. By default, compressed responses are "
               u"not accepted.");
 
-    args.option<std::chrono::milliseconds>(u"connection-timeout");
+    args.option<cn::milliseconds>(u"connection-timeout");
     args.help(u"connection-timeout",
               u"Specify the connection timeout. "
               u"By default, let the operating system decide.");
@@ -42,7 +42,7 @@ void ts::WebRequestArgs::defineArgs(Args& args)
     args.help(u"proxy-user", u"name",
               u"Optional proxy user name for Internet access.");
 
-    args.option<std::chrono::milliseconds>(u"receive-timeout");
+    args.option<cn::milliseconds>(u"receive-timeout");
     args.help(u"receive-timeout",
               u"Specify the data reception timeout. "
               u"This timeout applies to each receive operation, individually. "

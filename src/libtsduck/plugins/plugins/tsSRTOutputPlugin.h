@@ -33,10 +33,10 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        bool _multiple = false;   // Accept multiple (sequential) connections.
-        std::chrono::milliseconds _restart_delay {};  // If _multiple, wait before reconnecting.
+        bool             _multiple = false;  // Accept multiple (sequential) connections.
+        cn::milliseconds _restart_delay {};  // If _multiple, wait before reconnecting.
         TSDatagramOutput _datagram {TSDatagramOutputOptions::NONE, this}; // Buffering TS packets.
-        SRTSocket _sock {}; // Outgoing SRT socket.
+        SRTSocket        _sock {};           // Outgoing SRT socket.
 
         // Implementation of TSDatagramOutputHandlerInterface.
         virtual bool sendDatagram(const void* address, size_t size, Report& report) override;

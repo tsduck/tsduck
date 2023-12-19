@@ -170,7 +170,7 @@ bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
     return _current->getCurrentTuning(params, reset_unknown);
 }
 
-void ts::Tuner::setSignalTimeout(std::chrono::milliseconds t)
+void ts::Tuner::setSignalTimeout(cn::milliseconds t)
 {
     return _current->setSignalTimeout(t);
 }
@@ -180,17 +180,17 @@ void ts::Tuner::setSignalTimeoutSilent(bool silent)
     return _current->setSignalTimeoutSilent(silent);
 }
 
-bool ts::Tuner::setReceiveTimeout(std::chrono::milliseconds t)
+bool ts::Tuner::setReceiveTimeout(cn::milliseconds t)
 {
     return _current->setReceiveTimeout(t);
 }
 
-std::chrono::milliseconds ts::Tuner::receiveTimeout() const
+cn::milliseconds ts::Tuner::receiveTimeout() const
 {
     return _current->receiveTimeout();
 }
 
-void ts::Tuner::setSignalPoll(std::chrono::milliseconds t)
+void ts::Tuner::setSignalPoll(cn::milliseconds t)
 {
     return _current->setSignalPoll(t);
 }

@@ -116,7 +116,7 @@ void ts::SystemMonitor::main()
         {
             std::unique_lock<std::mutex> lock(_mutex);
             if (!_terminate) {
-                _wake_up.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds(period->interval)));
+                _wake_up.wait_for(lock, cn::milliseconds(cn::milliseconds(period->interval)));
             }
             if (_terminate) {
                 break;

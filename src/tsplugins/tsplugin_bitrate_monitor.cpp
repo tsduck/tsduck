@@ -314,7 +314,7 @@ bool ts::BitrateMonitorPlugin::start()
     _net_stats.reset();
 
     // We must never wait for packets more than one second.
-    tsp->setPacketTimeout(MilliSecPerSec);
+    tsp->setPacketTimeout(cn::seconds(1));
 
     return true;
 }

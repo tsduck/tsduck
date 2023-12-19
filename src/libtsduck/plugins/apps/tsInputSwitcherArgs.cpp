@@ -143,7 +143,7 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
               u"Disable the reuse port socket option for the remote control. "
               u"Do not use unless completely necessary.");
 
-    args.option<std::chrono::milliseconds>(u"receive-timeout");
+    args.option<cn::milliseconds>(u"receive-timeout");
     args.help(u"receive-timeout",
               u"Specify a receive timeout in milliseconds. "
               u"When the current input plugin has received no packet within "
@@ -186,7 +186,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(sockBuffer, u"udp-buffer-size");
     args.getIntValue(firstInput, u"first-input", 0);
     args.getIntValue(primaryInput, u"primary-input", NPOS);
-    args.getChronoValue(receiveTimeout, u"receive-timeout", primaryInput >= inputs.size() ? std::chrono::milliseconds::zero() : DEFAULT_RECEIVE_TIMEOUT);
+    args.getChronoValue(receiveTimeout, u"receive-timeout", primaryInput >= inputs.size() ? cn::milliseconds::zero() : DEFAULT_RECEIVE_TIMEOUT);
 
     // Event reporting.
     args.getValue(eventCommand, u"event-command");

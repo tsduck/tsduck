@@ -19,10 +19,10 @@
 
 namespace {
     // Default interval in milliseconds between two poll operations.
-    const std::chrono::milliseconds DEFAULT_POLL_INTERVAL = std::chrono::milliseconds(500);
+    const cn::milliseconds DEFAULT_POLL_INTERVAL = cn::milliseconds(500);
 
     // Default minimum file stability delay.
-    const std::chrono::milliseconds DEFAULT_MIN_STABLE_DELAY = std::chrono::milliseconds(500);
+    const cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
 
     // Stack size of listener threads.
     constexpr size_t SERVER_THREAD_STACK_SIZE = 128 * 1024;
@@ -65,21 +65,21 @@ namespace ts {
 
             // Implementation of PollFilesListener.
             virtual bool handlePolledFiles(const PolledFileList& files) override;
-            virtual bool updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay) override;
+            virtual bool updatePollFiles(UString& wildcard, cn::milliseconds& poll_interval, cn::milliseconds& min_stable_delay) override;
         };
 
         // Command line options:
-        bool          _delete_files = false;
-        bool          _wait_first_batch = false;
-        bool          _use_system_time = false;
-        Time          _start_time {};
-        EITOptions    _eit_options = EITOptions::GEN_ALL;
-        BitRate       _eit_bitrate = 0;
-        UString       _files {};
-        int           _ts_id = -1;
-        std::chrono::milliseconds _poll_interval {};
-        std::chrono::milliseconds _min_stable_delay {};
-        EITRepetitionProfile      _eit_profile {};
+        bool             _delete_files = false;
+        bool             _wait_first_batch = false;
+        bool             _use_system_time = false;
+        Time             _start_time {};
+        EITOptions       _eit_options = EITOptions::GEN_ALL;
+        BitRate          _eit_bitrate = 0;
+        UString          _files {};
+        int              _ts_id = -1;
+        cn::milliseconds _poll_interval {};
+        cn::milliseconds _min_stable_delay {};
+        EITRepetitionProfile _eit_profile {};
 
         // Working data.
         FileListener  _file_listener;
@@ -200,7 +200,7 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"With this option, EIT schedule update is less frequent and the load on the plugin and "
          u"the receiver is lower.");
 
-    option<std::chrono::milliseconds>(u"min-stable-delay");
+    option<cn::milliseconds>(u"min-stable-delay");
     help(u"min-stable-delay",
          u"An input file size needs to be stable during that duration for the file to be reported as added or modified. "
          u"This prevents too frequent poll notifications when a file is being written and his size modified at each poll. "
@@ -222,7 +222,7 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
     help(u"pf",
          u"Generate EIT p/f. Same as --actual-pf --other-pf.");
 
-    option<std::chrono::milliseconds>(u"poll-interval");
+    option<cn::milliseconds>(u"poll-interval");
     help(u"poll-interval",
          u"Interval between two poll operations to detect new or modified input files. "
          u"The default is " + UString::Chrono(DEFAULT_POLL_INTERVAL, true) + u".");
@@ -503,7 +503,7 @@ void ts::EITInjectPlugin::FileListener::main()
 }
 
 // Invoked before polling.
-bool ts::EITInjectPlugin::FileListener::updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay)
+bool ts::EITInjectPlugin::FileListener::updatePollFiles(UString& wildcard, cn::milliseconds& poll_interval, cn::milliseconds& min_stable_delay)
 {
     return !_terminate;
 }

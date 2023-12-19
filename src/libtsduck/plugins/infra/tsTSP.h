@@ -129,9 +129,9 @@ namespace ts {
         //! If the method returns false, the plugin is aborted.
         //!
         //! @param [in] timeout Maximum number of milliseconds to wait for packets in the buffer.
-        //! The default timeout is infinite.
+        //! Infinite timeout when negative. The default timeout is infinite.
         //!
-        void setPacketTimeout(MilliSecond timeout) { _tsp_timeout = timeout; }
+        void setPacketTimeout(cn::milliseconds timeout) { _tsp_timeout = timeout; }
 
         //!
         //! Check for aborting application.
@@ -194,7 +194,7 @@ namespace ts {
         bool              _use_realtime = false;     //!< The plugin should use realtime defaults.
         BitRate           _tsp_bitrate = 0;          //!< TSP input bitrate.
         BitRateConfidence _tsp_bitrate_confidence = BitRateConfidence::LOW;  //!< TSP input bitrate confidence.
-        MilliSecond       _tsp_timeout = Infinite;   //!< Timeout when waiting for packets (infinite by default).
+        cn::milliseconds  _tsp_timeout = cn::milliseconds(-1); //!< Timeout when waiting for packets, infinite if negative.
         volatile bool     _tsp_aborting = false;     //!< TSP is currently aborting.
 
         //!

@@ -37,7 +37,7 @@ bool ts::AbstractHTTPInputPlugin::getOptions()
 // Set receive timeout from tsp.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractHTTPInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::AbstractHTTPInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
     if (timeout.count() > 0) {
         webArgs.receiveTimeout = webArgs.connectionTimeout = timeout;

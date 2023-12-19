@@ -104,7 +104,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
     args.instuff_stop = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "addStopStuffing")));
     args.fixed_bitrate = ts::BitRate(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bitrate")));
     args.bitrate_adj = ts::MilliSecond(std::max<jint>(0, ts::jni::GetIntField(env, obj, "bitrateAdjustInterval")));
-    args.receive_timeout = std::chrono::milliseconds(std::chrono::milliseconds::rep(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout"))));
+    args.receive_timeout = cn::milliseconds(cn::milliseconds::rep(std::max<jint>(0, ts::jni::GetIntField(env, obj, "receiveTimeout"))));
     args.app_name = ts::jni::GetStringField(env, obj, "appName");
 
     // Get plugins description.

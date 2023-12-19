@@ -32,10 +32,10 @@ namespace {
     const size_t DEFAULT_SECTION_QUEUE_SIZE = 100;
 
     // Default interval between two poll operations.
-    const std::chrono::milliseconds DEFAULT_POLL_INTERVAL = std::chrono::milliseconds(500);
+    const cn::milliseconds DEFAULT_POLL_INTERVAL = cn::milliseconds(500);
 
     // Default minimum file stability delay.
-    const std::chrono::milliseconds DEFAULT_MIN_STABLE_DELAY = std::chrono::milliseconds(500);
+    const cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
 
     // Default start delay for non-immediate splice_insert() and time_signal() commands.
     const ts::MilliSecond DEFAULT_START_DELAY = 2000;
@@ -74,28 +74,28 @@ namespace ts {
 
     private:
         // Command line options:
-        bool           _use_files = false;         // Use file polling input.
-        bool           _use_udp = false;           // Use UDP input.
-        bool           _delete_files = false;
-        bool           _reuse_port = false;
-        bool           _wait_first_batch = false;  // Option --wait-first-batch (wfb).
-        PID            _inject_pid_opt = PID_NULL; // PID for injection, as specified in cmmand line.
-        PID            _pcr_pid_opt = PID_NULL;    // PID containing PCR's, as specified in cmmand line.
-        PID            _pts_pid_opt = PID_NULL;    // PID containing PTS's, as specified in cmmand line.
-        BitRate        _min_bitrate = 0;
-        PacketCounter  _min_inter_packet = 0;
-        UString        _files {};
-        UString        _service_ref {};            // Service name or id.
+        bool              _use_files = false;         // Use file polling input.
+        bool              _use_udp = false;           // Use UDP input.
+        bool              _delete_files = false;
+        bool              _reuse_port = false;
+        bool              _wait_first_batch = false;  // Option --wait-first-batch (wfb).
+        PID               _inject_pid_opt = PID_NULL; // PID for injection, as specified in cmmand line.
+        PID               _pcr_pid_opt = PID_NULL;    // PID containing PCR's, as specified in cmmand line.
+        PID               _pts_pid_opt = PID_NULL;    // PID containing PTS's, as specified in cmmand line.
+        BitRate           _min_bitrate = 0;
+        PacketCounter     _min_inter_packet = 0;
+        UString           _files {};
+        UString           _service_ref {};            // Service name or id.
         IPv4SocketAddress _server_address {};
-        size_t         _sock_buf_size = 0;
-        size_t         _inject_count = 0;
-        MilliSecond    _inject_interval = 0;
-        MilliSecond    _start_delay = 0;
-        std::chrono::milliseconds _poll_interval {};
-        std::chrono::milliseconds _min_stable_delay {};
-        std::uintmax_t _max_file_size = 0;
-        size_t         _queue_size = 0;
-        SectionPtr     _null_splice {};            // A null splice section to maintain PID bitrate.
+        size_t            _sock_buf_size = 0;
+        size_t            _inject_count = 0;
+        MilliSecond       _inject_interval = 0;
+        MilliSecond       _start_delay = 0;
+        cn::milliseconds  _poll_interval {};
+        cn::milliseconds  _min_stable_delay {};
+        std::uintmax_t    _max_file_size = 0;
+        size_t            _queue_size = 0;
+        SectionPtr        _null_splice {};            // A null splice section to maintain PID bitrate.
 
         // The plugin contains two internal threads in addition to the packet processing thread.
         // One thread polls input files and another thread receives UDP messages.
@@ -156,7 +156,7 @@ namespace ts {
 
             // Implementation of PollFilesListener.
             virtual bool handlePolledFiles(const PolledFileList& files) override;
-            virtual bool updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay) override;
+            virtual bool updatePollFiles(UString& wildcard, cn::milliseconds& poll_interval, cn::milliseconds& min_stable_delay) override;
         };
 
         // -------------------
@@ -298,7 +298,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"This option can be used instead of --min-bitrate when the bitrate of the transport stream is unknown or unreliable. "
          u"The specified value is the number of TS packets between two splice commands.");
 
-    option<std::chrono::milliseconds>(u"min-stable-delay");
+    option<cn::milliseconds>(u"min-stable-delay");
     help(u"min-stable-delay",
          u"A file size needs to be stable during that duration for the file to be reported as added or modified. "
          u"This prevents too frequent poll notifications when a file is being written and his size modified at each poll. "
@@ -320,7 +320,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"service with a stream type equal to 0x86 in the PMT, as specified by SCTE 35 "
          u"standard.");
 
-    option<std::chrono::milliseconds>(u"poll-interval");
+    option<cn::milliseconds>(u"poll-interval");
     help(u"poll-interval",
          u"Specifies the interval between two poll operations. "
          u"The default is " + UString::Chrono(DEFAULT_POLL_INTERVAL, true) + u".");
@@ -624,7 +624,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
         // drop the command and loop on next command from the queue.
         if (cmd->last_pts != INVALID_PTS && SequencedPTS(cmd->last_pts, _last_pts)) {
             CommandPtr cmd2;
-            const bool dequeued = _queue.dequeue(cmd2, 0);
+            const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
             assert(dequeued);
             assert(cmd2 == cmd);
             tsp->verbose(u"dropping %s, obsolete, current PTS: 0x%09X", {*cmd2, _last_pts});
@@ -637,7 +637,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
 
             // We must process this command, remove it from the queue.
             CommandPtr cmd2;
-            const bool dequeued = _queue.dequeue(cmd2, 0);
+            const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
             assert(dequeued);
             assert(cmd2 == cmd);
 
@@ -766,7 +766,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
                 }
                 else {
                     tsp->verbose(u"enqueuing %s", {*cmd});
-                    if (!_queue.enqueue(cmd, 0)) {
+                    if (!_queue.enqueue(cmd, cn::milliseconds::zero())) {
                         tsp->warning(u"queue overflow, dropped one section");
                     }
                 }
@@ -949,7 +949,7 @@ void ts::SpliceInjectPlugin::FileListener::main()
 }
 
 // Invoked before polling.
-bool ts::SpliceInjectPlugin::FileListener::updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay)
+bool ts::SpliceInjectPlugin::FileListener::updatePollFiles(UString& wildcard, cn::milliseconds& poll_interval, cn::milliseconds& min_stable_delay)
 {
     return !_terminate;
 }

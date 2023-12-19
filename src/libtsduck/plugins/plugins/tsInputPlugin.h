@@ -53,7 +53,7 @@ namespace ts {
         //! @param [in] timeout Receive timeout in milliseconds. No timeout if zero or negative.
         //! @return True when the timeout is accepted, false if not supported by the plugin.
         //!
-        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout);
+        virtual bool setReceiveTimeout(cn::milliseconds timeout);
 
         //!
         //! Abort the input operation currently in progress.

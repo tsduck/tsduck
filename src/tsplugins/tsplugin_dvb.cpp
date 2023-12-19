@@ -36,7 +36,7 @@ namespace ts {
         virtual BitRate getBitrate() override;
         virtual BitRateConfidence getBitrateConfidence() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout) override;
+        virtual bool setReceiveTimeout(cn::milliseconds timeout) override;
         virtual bool abortInput() override;
 
         // Larger stack size than default
@@ -82,7 +82,7 @@ bool ts::DVBInputPlugin::getOptions()
 // Set receive timeout from tsp.
 //----------------------------------------------------------------------------
 
-bool ts::DVBInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::DVBInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
     if (timeout.count() > 0) {
         _tuner_args.receive_timeout = timeout;

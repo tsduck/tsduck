@@ -40,7 +40,7 @@ namespace ts {
         //! @param [in] timeout Execution timeout in milliseconds.
         //! @param [in] pat_only If true, only collect the PAT, do not wait for more information.
         //!
-        TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout = Infinite, bool pat_only = false);
+        TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, bool pat_only = false);
 
         //!
         //! Get the list of services.

@@ -51,7 +51,7 @@ ts::TunerDevice::TunerDevice(DuckContext& duck) :
 ts::TunerDevice::~TunerDevice()
 {
     // Cleanup receive timer resources
-    setReceiveTimeout(std::chrono::milliseconds::zero());
+    setReceiveTimeout(cn::milliseconds::zero());
 }
 
 
@@ -178,12 +178,12 @@ ts::UString ts::TunerDevice::devicePath() const
     return _device_path;
 }
 
-std::chrono::milliseconds ts::TunerDevice::receiveTimeout() const
+cn::milliseconds ts::TunerDevice::receiveTimeout() const
 {
     return _receive_timeout;
 }
 
-void ts::TunerDevice::setSignalTimeout(std::chrono::milliseconds t)
+void ts::TunerDevice::setSignalTimeout(cn::milliseconds t)
 {
     _signal_timeout = t;
 }
@@ -193,7 +193,7 @@ void ts::TunerDevice::setSignalTimeoutSilent(bool silent)
     _signal_timeout_silent = silent;
 }
 
-void ts::TunerDevice::setSignalPoll(std::chrono::milliseconds t)
+void ts::TunerDevice::setSignalPoll(cn::milliseconds t)
 {
     _signal_poll = t;
 }
@@ -1334,7 +1334,7 @@ bool ts::TunerDevice::start()
     // Wait for input signal locking if a non-zero timeout is specified.
 
     bool signal_ok = true;
-    for (std::chrono::milliseconds remain_ms = _signal_timeout; remain_ms.count() > 0; remain_ms -= _signal_poll) {
+    for (cn::milliseconds remain_ms = _signal_timeout; remain_ms.count() > 0; remain_ms -= _signal_poll) {
 
         // Read the frontend status
         ::fe_status_t status = FE_ZERO;
@@ -1408,7 +1408,7 @@ namespace {
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::TunerDevice::setReceiveTimeout(cn::milliseconds timeout)
 {
     if (timeout.count() > 0) {
         // Set an actual receive timer.
@@ -1454,7 +1454,7 @@ bool ts::TunerDevice::setReceiveTimeout(std::chrono::milliseconds timeout)
     }
     else {
         // Cancel receive timer
-        _receive_timeout = std::chrono::milliseconds::zero();
+        _receive_timeout = cn::milliseconds::zero();
         bool ok = true;
 
         // Disable and release signal

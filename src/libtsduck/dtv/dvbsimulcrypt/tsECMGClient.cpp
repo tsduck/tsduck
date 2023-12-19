@@ -261,7 +261,10 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     }
 
     // Compute ECM generation timeout (very conservative)
-    const MilliSecond timeout = std::max(RESPONSE_TIMEOUT, 2 * MilliSecond(_channel_status.max_comp_time));
+    cn::milliseconds timeout = cn::milliseconds(2 * cn::milliseconds::rep(_channel_status.max_comp_time));
+    if (timeout < RESPONSE_TIMEOUT) {
+        timeout = RESPONSE_TIMEOUT;
+    }
 
     // Wait for an ECM response from the ECMG
     tlv::MessagePtr resp;

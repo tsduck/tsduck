@@ -398,7 +398,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
 
         while (_playlist.segmentCount() == 0 && Time::CurrentUTC() <= _playlist.terminationUTC() && !tsp->aborting()) {
             // The wait between two retries is half the target duration of a segment, with a minimum of 2 seconds.
-            std::this_thread::sleep_for(std::chrono::seconds(std::max<std::chrono::seconds::rep>(2, _playlist.targetDuration() / 2)));
+            std::this_thread::sleep_for(cn::seconds(std::max<cn::seconds::rep>(2, _playlist.targetDuration() / 2)));
             // This time, we stop on reload error.
             if (!_playlist.reload(false, webArgs, *tsp)) {
                 break;

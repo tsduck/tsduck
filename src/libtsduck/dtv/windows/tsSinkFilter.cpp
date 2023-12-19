@@ -274,7 +274,7 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
         }
         else {
             const Time start(Time::CurrentUTC());
-            _not_empty.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(timeout)), [this]() { return !_queue.empty(); });
+            _not_empty.wait_for(lock, cn::milliseconds(cn::milliseconds::rep(timeout)), [this]() { return !_queue.empty(); });
             timeout -= Time::CurrentUTC() - start;
         }
         TRACE(5, u"SinkFilter::Read, end of waiting for packets, queue size = %d", {_queue.size()});
@@ -758,7 +758,7 @@ STDMETHODIMP ts::SinkPin::ReceiveMultiple(::IMediaSample** pSamples, long nSampl
     // Enqueue all media samples using one single lock section.
     {
         // Try to get the mutex within 1 second.
-        std::unique_lock<std::timed_mutex> lock(_filter->_mutex, std::chrono::seconds(1));
+        std::unique_lock<std::timed_mutex> lock(_filter->_mutex, cn::seconds(1));
         if (!lock.owns_lock()) {
             _report.error(u"cannot enqueue media sample, lock timeout");
             return S_FALSE;

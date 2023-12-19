@@ -873,8 +873,11 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 #include "tsAfterStandardHeaders.h"
 
-// Shortcut for standard namespace.
+//! Namespace @c is a shortcut for @c std::filesystem.
 namespace fs = std::filesystem;
+
+//! Namespace @c cn a shortcut for @c std::chrono.
+namespace cn = std::chrono;
 
 
 //----------------------------------------------------------------------------

@@ -13,7 +13,7 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::WatchDog::WatchDog(WatchDogHandlerInterface* handler, std::chrono::milliseconds timeout, int id, Report& log) :
+ts::WatchDog::WatchDog(WatchDogHandlerInterface* handler, cn::milliseconds timeout, int id, Report& log) :
     _log(log),
     _watchDogId(id),
     _handler(handler),
@@ -64,7 +64,7 @@ void ts::WatchDog::activate()
 // Set a new timeout value.
 //----------------------------------------------------------------------------
 
-void ts::WatchDog::setTimeout(std::chrono::milliseconds timeout, bool autoStart)
+void ts::WatchDog::setTimeout(cn::milliseconds timeout, bool autoStart)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     _timeout = timeout;
