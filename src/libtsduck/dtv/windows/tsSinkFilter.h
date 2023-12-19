@@ -99,14 +99,13 @@ namespace ts {
         //! Read data from transport stream.
         //! @param [out] buffer Address of returned TS packet buffer.
         //! @param [in] buffer_size Size in bytes of the @a buffer.
-        //! @param [in] timeout Read timeout in milliseconds.
-        //! If timeout is not infinite and no packet has been read
-        //! within this timeout, return zero.
+        //! @param [in] timeout Read timeout in milliseconds. Ignored if zero or negative.
+        //! If timeout is positive and no packet has been read within this timeout, return zero.
         //! @return The size in bytes of the data returned in buffer.
         //! Always return a multiple of 188, complete TS packets.
         //! Return zero on error or end of stream.
         //!
-        size_t Read(void* buffer, size_t buffer_size, MilliSecond timeout = Infinite);
+        size_t Read(void* buffer, size_t buffer_size, cn::milliseconds timeout = cn::milliseconds::zero());
 
         //!
         //! Abort a blocked Read() operation.
