@@ -113,7 +113,7 @@ bool ts::TunerBase::close(bool silent)
     return false;
 }
 
-void ts::TunerBase::setSignalTimeout(std::chrono::milliseconds t)
+void ts::TunerBase::setSignalTimeout(cn::milliseconds t)
 {
 }
 
@@ -121,14 +121,14 @@ void ts::TunerBase::setSignalTimeoutSilent(bool silent)
 {
 }
 
-bool ts::TunerBase::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::TunerBase::setReceiveTimeout(cn::milliseconds timeout)
 {
     return true;
 }
 
-std::chrono::milliseconds ts::TunerBase::receiveTimeout() const
+cn::milliseconds ts::TunerBase::receiveTimeout() const
 {
-    return std::chrono::milliseconds::zero();
+    return cn::milliseconds::zero();
 }
 
 bool ts::TunerBase::getSignalState(SignalState& state)
@@ -147,7 +147,7 @@ std::ostream& ts::TunerBase::displayStatus(std::ostream& strm, const UString& ma
 // Set the Linux-specific parameters. Overriden on Linux only.
 //-----------------------------------------------------------------------------
 
-void ts::TunerBase::setSignalPoll(std::chrono::milliseconds)
+void ts::TunerBase::setSignalPoll(cn::milliseconds)
 {
 }
 

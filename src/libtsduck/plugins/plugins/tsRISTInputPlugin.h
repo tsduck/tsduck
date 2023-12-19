@@ -29,7 +29,7 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool isRealTime() override;
-        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout) override;
+        virtual bool setReceiveTimeout(cn::milliseconds timeout) override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;

@@ -85,7 +85,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
               u"Set the reuse port socket option. This is now enabled by default, the option "
               u"is present for legacy only.");
 
-    args.option<std::chrono::milliseconds>(u"receive-timeout");
+    args.option<cn::milliseconds>(u"receive-timeout");
     args.help(u"receive-timeout",
               u"Specify the UDP reception timeout in milliseconds. "
               u"This timeout applies to each receive operation, individually. "
@@ -246,7 +246,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
 // Set reception timeout.
 //----------------------------------------------------------------------------
 
-void ts::UDPReceiver::setReceiveTimeoutArg(std::chrono::milliseconds timeout)
+void ts::UDPReceiver::setReceiveTimeoutArg(cn::milliseconds timeout)
 {
     if (timeout.count() > 0) {
         _recv_timeout = timeout;

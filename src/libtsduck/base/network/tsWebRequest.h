@@ -53,13 +53,13 @@ namespace ts {
         //! Set the connection timeout for this request.
         //! @param [in] timeout Connection timeout in milliseconds.
         //!
-        void setConnectionTimeout(std::chrono::milliseconds timeout) { _connectionTimeout = timeout; }
+        void setConnectionTimeout(cn::milliseconds timeout) { _connectionTimeout = timeout; }
 
         //!
         //! Set the timeout for each receive operation.
         //! @param [in] timeout Reception timeout in milliseconds.
         //!
-        void setReceiveTimeout(std::chrono::milliseconds timeout) { _receiveTimeout = timeout; }
+        void setReceiveTimeout(cn::milliseconds timeout) { _receiveTimeout = timeout; }
 
         //!
         //! Set the optional proxy host and port for this request.
@@ -347,34 +347,34 @@ namespace ts {
         // This is done to avoid inclusion of specialized headers in this public file.
         class SystemGuts;
 
-        Report&       _report;
-        UString       _userAgent {DEFAULT_USER_AGENT};
-        bool          _autoRedirect = true;
-        UString       _originalURL {};
-        UString       _finalURL {};
-        std::chrono::milliseconds _connectionTimeout {};
-        std::chrono::milliseconds _receiveTimeout {};
-        UString       _proxyHost {};
-        uint16_t      _proxyPort = 0;
-        UString       _proxyUser {};
-        UString       _proxyPassword {};
-        bool          _useCompression = false;
-        fs::path      _cookiesFileName {};
-        bool          _useCookies = false;
-        bool          _deleteCookiesFile = false; // delete the cookies file on close
-        HeadersMap    _requestHeaders {};         // all request headers (to send)
-        HeadersMap    _responseHeaders {};        // all response headers (received)
-        int           _httpStatus = 0;            // 200, 404, etc.
-        size_t        _contentSize = 0;           // actually downloaded size
-        size_t        _headerContentSize = 0;     // content size, as announced in response header
-        volatile bool _isOpen = false;            // the transfer is open/started.
-        volatile bool _interrupted = false;       // interrupted by application-defined handler
-        SystemGuts*   _guts = nullptr;            // system-specific data
+        Report&          _report;
+        UString          _userAgent {DEFAULT_USER_AGENT};
+        bool             _autoRedirect = true;
+        UString          _originalURL {};
+        UString          _finalURL {};
+        cn::milliseconds _connectionTimeout {};
+        cn::milliseconds _receiveTimeout {};
+        UString          _proxyHost {};
+        uint16_t         _proxyPort = 0;
+        UString          _proxyUser {};
+        UString          _proxyPassword {};
+        bool             _useCompression = false;
+        fs::path         _cookiesFileName {};
+        bool             _useCookies = false;
+        bool             _deleteCookiesFile = false; // delete the cookies file on close
+        HeadersMap       _requestHeaders {};         // all request headers (to send)
+        HeadersMap       _responseHeaders {};        // all response headers (received)
+        int              _httpStatus = 0;            // 200, 404, etc.
+        size_t           _contentSize = 0;           // actually downloaded size
+        size_t           _headerContentSize = 0;     // content size, as announced in response header
+        volatile bool    _isOpen = false;            // the transfer is open/started.
+        volatile bool    _interrupted = false;       // interrupted by application-defined handler
+        SystemGuts*      _guts = nullptr;            // system-specific data
 
-        static UString  _defaultProxyHost;
-        static uint16_t _defaultProxyPort;
-        static UString  _defaultProxyUser;
-        static UString  _defaultProxyPassword;
+        static UString   _defaultProxyHost;
+        static uint16_t  _defaultProxyPort;
+        static UString   _defaultProxyUser;
+        static UString   _defaultProxyPassword;
 
         // Allocate and deallocate guts (depend on implementations).
         void allocateGuts();

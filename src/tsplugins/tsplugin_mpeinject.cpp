@@ -333,7 +333,7 @@ void ts::MPEInjectPlugin::provideSection(SectionCounter counter, SectionPtr& sec
     // The packetizer needs a new section to packetize. Try to get next section.
     // Do not wait for a section, just do nothing if there is none available.
     SectionQueue::MessagePtr ptr;
-    if (_section_queue.dequeue(ptr, 0) && !ptr.isNull() && ptr->isValid()) {
+    if (_section_queue.dequeue(ptr, cn::milliseconds::zero()) && !ptr.isNull() && ptr->isValid()) {
         // Got a valid section. Transfer the section pointer ownership.
         // We need an ownership transfer because SectionQueue::MessagePtr uses
         // a real Mutex while SectionPtr uses a ts::null_mutex (unsynchronized).
@@ -402,7 +402,7 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
             _plugin->tsp->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes", {sender, destination, insize});
         }
         else {
-            const bool queued = _plugin->_section_queue.enqueue(section, 0);
+            const bool queued = _plugin->_section_queue.enqueue(section, cn::milliseconds::zero());
             if (!queued) {
                 overflow_count++;
             }

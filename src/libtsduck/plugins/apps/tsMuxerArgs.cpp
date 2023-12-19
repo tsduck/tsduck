@@ -107,7 +107,7 @@ void ts::MuxerArgs::defineArgs(Args& args)
     args.help(u"pat-bitrate",
               u"PAT bitrate in output stream. The default is " + UString::Decimal(DEFAULT_PSI_BITRATE) + u" b/s.");
 
-    args.option<std::chrono::milliseconds>(u"restart-delay");
+    args.option<cn::milliseconds>(u"restart-delay");
     args.help(u"restart-delay",
               u"Specify a restart delay for plugins. "
               u"When a plugin fails or terminates, it is immediately restarted. "

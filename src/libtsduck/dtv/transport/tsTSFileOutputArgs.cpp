@@ -58,7 +58,7 @@ void ts::TSFileOutputArgs::defineArgs(Args& args)
               u"Then, in case of open error, periodically retry to open the file. "
               u"See also options --retry-interval and --max-retry.");
 
-    args.option<std::chrono::milliseconds>(u"retry-interval");
+    args.option<cn::milliseconds>(u"retry-interval");
     args.help(u"retry-interval",
               u"With --reopen-on-error, specify the delay to wait before attempting to reopen the file after a failure. "
               u"The default is " + UString::Chrono(DEFAULT_RETRY_INTERVAL, true) + u".");

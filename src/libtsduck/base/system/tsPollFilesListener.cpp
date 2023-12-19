@@ -8,7 +8,7 @@
 
 #include "tsPollFilesListener.h"
 
-bool ts::PollFilesListener::updatePollFiles(UString& wildcard, std::chrono::milliseconds& poll_interval, std::chrono::milliseconds& min_stable_delay)
+bool ts::PollFilesListener::updatePollFiles(UString& wildcard, cn::milliseconds& poll_interval, cn::milliseconds& min_stable_delay)
 {
     return true;
 }

@@ -27,7 +27,7 @@ namespace ts {
         //!
         //! Default interval between two poll operations.
         //!
-        static constexpr std::chrono::milliseconds DEFAULT_POLL_INTERVAL = std::chrono::milliseconds(1000);
+        static constexpr cn::milliseconds DEFAULT_POLL_INTERVAL = cn::milliseconds(1000);
 
         //!
         //! Default minimum file stability delay.
@@ -35,7 +35,7 @@ namespace ts {
         //! added or modified. This prevent too frequent poll notifications when a file is
         //! being written and his size modified at each poll.
         //!
-        static constexpr std::chrono::milliseconds DEFAULT_MIN_STABLE_DELAY = std::chrono::milliseconds(500);
+        static constexpr cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
 
         //!
         //! Default constructor
@@ -55,8 +55,8 @@ namespace ts {
         template <class Rep1, class Period1, class Rep2, class Period2>
         PollFiles(const UString& wildcard,
                   PollFilesListener* listener = nullptr,
-                  const std::chrono::duration<Rep1,Period1>& poll_interval = DEFAULT_POLL_INTERVAL,
-                  const std::chrono::duration<Rep2,Period2>& min_stable_delay = DEFAULT_MIN_STABLE_DELAY,
+                  const cn::duration<Rep1,Period1>& poll_interval = DEFAULT_POLL_INTERVAL,
+                  const cn::duration<Rep2,Period2>& min_stable_delay = DEFAULT_MIN_STABLE_DELAY,
                   Report& report = CERR) :
             _report(report),
             _files_wildcard(wildcard),
@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in] poll_interval Interval in milliseconds between two poll operations.
         //!
         template <class Rep, class Period>
-        void setPollInterval(const std::chrono::duration<Rep,Period>& poll_interval) { _poll_interval = poll_interval; }
+        void setPollInterval(const cn::duration<Rep,Period>& poll_interval) { _poll_interval = poll_interval; }
 
         //!
         //! Set a new minimum file stability delay.
@@ -92,7 +92,7 @@ namespace ts {
         //! poll notifications when a file is being written and his size modified at each poll.
         //!
         template <class Rep, class Period>
-        void setMinStableDelay(const std::chrono::duration<Rep,Period>& min_stable_delay) { _min_stable_delay = min_stable_delay; }
+        void setMinStableDelay(const cn::duration<Rep,Period>& min_stable_delay) { _min_stable_delay = min_stable_delay; }
 
         //!
         //! Poll files continuously until the listener asks to terminate.
@@ -108,13 +108,13 @@ namespace ts {
         bool pollOnce();
 
     private:
-        Report&                   _report {CERR};
-        UString                   _files_wildcard {};
-        std::chrono::milliseconds _poll_interval = DEFAULT_POLL_INTERVAL;
-        std::chrono::milliseconds _min_stable_delay = DEFAULT_MIN_STABLE_DELAY;
-        PollFilesListener*        _listener = nullptr;
-        PolledFileList            _polled_files {};    // Updated at each poll, sorted by file name
-        PolledFileList            _notified_files {};  // Modifications to notify
+        Report&            _report {CERR};
+        UString            _files_wildcard {};
+        cn::milliseconds   _poll_interval = DEFAULT_POLL_INTERVAL;
+        cn::milliseconds   _min_stable_delay = DEFAULT_MIN_STABLE_DELAY;
+        PollFilesListener* _listener = nullptr;
+        PolledFileList     _polled_files {};    // Updated at each poll, sorted by file name
+        PolledFileList     _notified_files {};  // Modifications to notify
 
         // Mark a file as deleted, move from polled to notified files.
         void deleteFile(PolledFileList::iterator&);

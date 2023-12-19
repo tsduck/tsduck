@@ -41,7 +41,7 @@ namespace {
         uint32_t              super_cas_id = 0;
         ts::ByteBlock         access_criteria {};
         ts::Second            cp_duration = 0;
-        ts::Second            stat_interval = 0;
+        cn::seconds           stat_interval {};
         ts::tlv::VERSION      dvbsim_version = 0;
         uint16_t              channel_count = 0;
         uint16_t              streams_per_channel = 0;
@@ -137,8 +137,8 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
          u"Specify the number of streams to open in each channel. "
          u"The default is 10.");
 
-    option(u"statistics-interval", 0, Args::UNSIGNED);
-    help(u"statistics-interval", u"seconds",
+    option<cn::seconds>(u"statistics-interval");
+    help(u"statistics-interval",
          u"Specify the interval in seconds between the display of two statistics lines. "
          u"When set to zero, disable periodic statistics, only display final statistics. "
          u"The default is 10 seconds.");
@@ -163,7 +163,7 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
     getIntValue(super_cas_id, u"super-cas-id");
     getHexaValue(access_criteria, u"access-criteria");
     getIntValue(cp_duration, u"cp-duration", 10);
-    getIntValue(stat_interval, u"statistics-interval", 10);
+    getChronoValue(stat_interval, u"statistics-interval", cn::seconds(10));
     getIntValue(max_ecm, u"max-ecm");
     getIntValue(max_seconds, u"max-seconds");
     log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
@@ -298,7 +298,7 @@ bool EventQueue::waitEvent(uint16_t& channel_id, uint16_t& stream_id)
         }
         else {
             // Wait until last event time (or explicitly signalled).
-            _condition.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(_events.back().due - now)));
+            _condition.wait_for(lock, cn::milliseconds(cn::milliseconds::rep(_events.back().due - now)));
         }
     }
 }
@@ -380,11 +380,11 @@ void CmdStatistics::main()
 {
     while (!_terminate) {
         std::unique_lock<std::mutex> lock(_mutex);
-        if (_opt.stat_interval == 0) {
+        if (_opt.stat_interval.count() <= 0) {
             _condition.wait(lock);
         }
         else {
-            _condition.wait_for(lock, std::chrono::seconds(std::chrono::seconds::rep(_opt.stat_interval)));
+            _condition.wait_for(lock, _opt.stat_interval);
         }
         if (!_terminate) {
             reportStatistics(_instant_response);

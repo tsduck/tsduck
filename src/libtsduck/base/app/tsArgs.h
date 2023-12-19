@@ -991,9 +991,9 @@ namespace ts {
         //! Add the definition of an option, the value being an instance of std::chrono::duration.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
-        void getChronoValue(std::chrono::duration<Rep1, Period1>& value,
+        void getChronoValue(cn::duration<Rep1, Period1>& value,
                             const UChar* name = nullptr,
-                            const std::chrono::duration<Rep2, Period2>& def_value = std::chrono::duration<Rep1, Period1>::zero(),
+                            const cn::duration<Rep2, Period2>& def_value = cn::duration<Rep1, Period1>::zero(),
                             size_t index = 0) const;
 
         //!
@@ -1012,9 +1012,9 @@ namespace ts {
         //! Add the definition of an option, the value being an instance of std::chrono::duration.
         //!
         template <class Rep, class Period>
-        void getChronoValue(std::chrono::duration<Rep, Period>& value, const UChar* name = nullptr, size_t index = 0) const
+        void getChronoValue(cn::duration<Rep, Period>& value, const UChar* name = nullptr, size_t index = 0) const
         {
-            getChronoValue(value, name, std::chrono::duration<Rep, Period>::zero(), index);
+            getChronoValue(value, name, cn::duration<Rep, Period>::zero(), index);
         }
 
         //!
@@ -1674,9 +1674,9 @@ INT ts::Args::bitMaskValue(const UChar* name, const INT& def_value) const
 //----------------------------------------------------------------------------
 
 template <class Rep1, class Period1, class Rep2, class Period2>
-void ts::Args::getChronoValue(std::chrono::duration<Rep1, Period1>& value,
+void ts::Args::getChronoValue(cn::duration<Rep1, Period1>& value,
                               const UChar* name,
-                              const std::chrono::duration<Rep2, Period2>& def_value,
+                              const cn::duration<Rep2, Period2>& def_value,
                               size_t index) const
 {
     const IOption& opt(getIOption(name));
@@ -1696,5 +1696,5 @@ void ts::Args::getChronoValue(std::chrono::duration<Rep1, Period1>& value,
         ivalue = (ivalue * opt.num * Period1::den) / (opt.den * Period1::num);
     }
 
-    value = std::chrono::duration<Rep1, Period1>(static_cast<Rep1>(ivalue));
+    value = cn::duration<Rep1, Period1>(static_cast<Rep1>(ivalue));
 }

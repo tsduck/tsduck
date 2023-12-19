@@ -88,7 +88,7 @@ void ts::EMMGClient::cleanupResponse()
 ts::tlv::TAG ts::EMMGClient::waitResponse()
 {
     std::unique_lock<std::recursive_mutex> lock(_mutex);
-    _got_response.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(RESPONSE_TIMEOUT)), [this]() { return _last_response != 0; });
+    _got_response.wait_for(lock, RESPONSE_TIMEOUT, [this]() { return _last_response != 0; });
     // No need to check wait_for() status, in case of timeout _last_response is zero.
     return _last_response;
 }

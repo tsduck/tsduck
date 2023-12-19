@@ -2253,30 +2253,30 @@ void UStringTest::testSuperCompare()
 
 void UStringTest::testChronoUnit()
 {
-    TSUNIT_EQUAL(u"nanosecond", ts::UString::ChronoUnit<std::chrono::nanoseconds>());
-    TSUNIT_EQUAL(u"second", ts::UString::ChronoUnit<std::chrono::seconds>());
-    TSUNIT_EQUAL(u"hour", ts::UString::ChronoUnit<std::chrono::hours>());
+    TSUNIT_EQUAL(u"nanosecond", ts::UString::ChronoUnit<cn::nanoseconds>());
+    TSUNIT_EQUAL(u"second", ts::UString::ChronoUnit<cn::seconds>());
+    TSUNIT_EQUAL(u"hour", ts::UString::ChronoUnit<cn::hours>());
 
-    TSUNIT_EQUAL(u"ns", ts::UString::ChronoUnit<std::chrono::nanoseconds>(true));
-    TSUNIT_EQUAL(u"s", ts::UString::ChronoUnit<std::chrono::seconds>(true));
-    TSUNIT_EQUAL(u"h", ts::UString::ChronoUnit<std::chrono::hours>(true));
+    TSUNIT_EQUAL(u"ns", ts::UString::ChronoUnit<cn::nanoseconds>(true));
+    TSUNIT_EQUAL(u"s", ts::UString::ChronoUnit<cn::seconds>(true));
+    TSUNIT_EQUAL(u"h", ts::UString::ChronoUnit<cn::hours>(true));
 
-    TSUNIT_EQUAL(u"nanoseconds", ts::UString::ChronoUnit<std::chrono::nanoseconds>(false, true));
-    TSUNIT_EQUAL(u"seconds", ts::UString::ChronoUnit<std::chrono::seconds>(false, true));
-    TSUNIT_EQUAL(u"hours", ts::UString::ChronoUnit<std::chrono::hours>(false, true));
+    TSUNIT_EQUAL(u"nanoseconds", ts::UString::ChronoUnit<cn::nanoseconds>(false, true));
+    TSUNIT_EQUAL(u"seconds", ts::UString::ChronoUnit<cn::seconds>(false, true));
+    TSUNIT_EQUAL(u"hours", ts::UString::ChronoUnit<cn::hours>(false, true));
 
-    typedef std::chrono::duration<int, std::ratio<2, 200>> centiseconds;
+    typedef cn::duration<int, std::ratio<2, 200>> centiseconds;
     TSUNIT_EQUAL(u"1/100-second", ts::UString::ChronoUnit<centiseconds>());
     TSUNIT_EQUAL(u"1/100-sec", ts::UString::ChronoUnit<centiseconds>(true));
 
-    typedef std::chrono::duration<int, std::ratio<10>> decaseconds;
+    typedef cn::duration<int, std::ratio<10>> decaseconds;
     TSUNIT_EQUAL(u"10-second", ts::UString::ChronoUnit<decaseconds>());
     TSUNIT_EQUAL(u"10-sec", ts::UString::ChronoUnit<decaseconds>(true));
 }
 
 void UStringTest::testChrono()
 {
-    TSUNIT_EQUAL(u"12,345 nanoseconds", ts::UString::Chrono(std::chrono::nanoseconds(12345)));
-    TSUNIT_EQUAL(u"1 second", ts::UString::Chrono(std::chrono::seconds(1)));
-    TSUNIT_EQUAL(u"250 ms", ts::UString::Chrono(std::chrono::milliseconds(250), true));
+    TSUNIT_EQUAL(u"12,345 nanoseconds", ts::UString::Chrono(cn::nanoseconds(12345)));
+    TSUNIT_EQUAL(u"1 second", ts::UString::Chrono(cn::seconds(1)));
+    TSUNIT_EQUAL(u"250 ms", ts::UString::Chrono(cn::milliseconds(250), true));
 }

@@ -61,7 +61,7 @@ bool ts::NullInputPlugin::start()
 // Input is never blocking.
 //----------------------------------------------------------------------------
 
-bool ts::NullInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::NullInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
     return true;
 }

@@ -68,7 +68,7 @@ public:
     int    _set_output = 0;      // Port number to set as output, for directional ports
     int    _power_mode = -1;     // Power mode to set on DTU-315
     json::OutputArgs _json {};   // List in JSON format
-    std::chrono::seconds _wait_sec {};  // Wait time before exit
+    cn::seconds _wait_sec {};    // Wait time before exit
 
     // Constructor
     Guts(Report& report) : _report(report) {}
@@ -148,7 +148,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     option(u"reset", 'r');
     help(u"reset", u"Reset the device.");
 
-    option<std::chrono::seconds>(u"wait", 'w');
+    option<cn::seconds>(u"wait", 'w');
     help(u"wait",
          u"Wait the specified number of seconds before exiting. The default "
          u"if 5 seconds if option --led is specified and 0 otherwise.");
@@ -164,7 +164,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     getIntValue(_guts->_set_input, u"input", -1);
     getIntValue(_guts->_set_output, u"output", -1);
     getIntValue(_guts->_power_mode,u"power-mode", -1);
-    getChronoValue(_guts->_wait_sec, u"wait", std::chrono::seconds(_guts->_set_led ? 5 : 0));
+    getChronoValue(_guts->_wait_sec, u"wait", cn::seconds(_guts->_set_led ? 5 : 0));
     _guts->_json.loadArgs(_duck, *this);
 
     if (_guts->_json.useFile() && _guts->_normalized) {

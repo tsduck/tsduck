@@ -571,31 +571,31 @@ namespace ts {
         //! Constructor from a std::filesystem::path.
         //! @param [in] p A standard path instance.
         //!
-        UString(const std::filesystem::path& p) : SuperClass(p.u16string()) {}
+        UString(const fs::path& p) : SuperClass(p.u16string()) {}
 
         //!
         //! Conversion operator from ts::UString to std::filesystem::path
         //! @return A path value.
         //!
-        operator std::filesystem::path() const { return std::filesystem::path(begin(), end()); }
+        operator fs::path() const { return fs::path(begin(), end()); }
 
         //!
         //! Comparison operator with std::filesystem::path.
         //! @param [in] other A path to compare.
         //! @return True if this string object is equal to the path string, false otherwise.
         //!
-        bool operator==(const std::filesystem::path& other) const
+        bool operator==(const fs::path& other) const
         {
 #if defined(TS_WINDOWS)
             // Faster on Windows sice paths are already UTF-16.
-            static_assert(sizeof(std::filesystem::path::value_type) == sizeof(UChar));
+            static_assert(sizeof(fs::path::value_type) == sizeof(UChar));
             return operator==(reinterpret_cast<const UChar*>(other.c_str()));
 #else
             return operator==(other.u16string());
 #endif
         }
 #if defined(TS_NEED_UNEQUAL_OPERATOR) && !defined(DOXYGEN)
-        bool operator!=(const std::filesystem::path& other) const { return ! operator==(other); }
+        bool operator!=(const fs::path& other) const { return ! operator==(other); }
 #endif
 
         //--------------------------------------------------------------------
@@ -1382,47 +1382,6 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         static UString Percentage(INT value, INT total);
 
-        //!
-        //! Format the name of an instance of std::chrono::duration.
-        //! @tparam DURATION An instance of std::chrono::duration.
-        //! @param [in] short_format When true, use short unit format (e.g. "ms").
-        //! By default, use a full unit name (e.g. "millisecond").
-        //! @param [in] plural When true, use the plural form (full unit name only, e.g. "milliseconds").
-        //! @return A string representing the unit of the @a DURATION.
-        //!
-        template <class DURATION, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
-        static UString ChronoUnit(bool short_format = false, bool plural = false)
-        {
-            return ChronoUnit(DURATION::period::num, DURATION::period::den, short_format, plural);
-        }
-
-        //!
-        //! Format the name of an instance of std::chrono::duration based on its ratio values.
-        //! @param [in] num Ratio numerator.
-        //! @param [in] den Ratio denominator.
-        //! @param [in] short_format When true, use short unit format (e.g. "ms").
-        //! By default, use a full unit name (e.g. "millisecond").
-        //! @param [in] plural When true, use the plural form (full unit name only, e.g. "milliseconds").
-        //! @return A string representing the unit of the @a DURATION.
-        //!
-        static UString ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format = false, bool plural = false);
-
-        //!
-        //! Format a string containing a std::chrono::duration value, with units.
-        //! @param [in] value The chrono value to format.
-        //! @param [in] short_format When true, use short unit format (e.g. "ms").
-        //! By default, use a full unit name (e.g. "millisecond").
-        //! @param [in] separator Separator string for groups of thousands, a comma by default.
-        //! @return The formatted string.
-        //!
-        template <class Rep, class Period>
-        static UString Chrono(const std::chrono::duration<Rep, Period>& value,
-                              bool short_format = false,
-                              const UString& separator = DEFAULT_THOUSANDS_SEPARATOR)
-        {
-            return Decimal(value.count(), 0, true, separator) + u" " + ChronoUnit(Period::num, Period::den, short_format, value.count() > 1);
-        }
-
         //--------------------------------------------------------------------
         // Comparison operations
         //--------------------------------------------------------------------
@@ -1507,7 +1466,7 @@ namespace ts {
         //! @param [in] enforceLastLineFeed If true and this string does not end with a line feed, force a final line feed.
         //! @return True on success, false on error (mostly file errors).
         //!
-        bool save(const std::filesystem::path& fileName, bool append = false, bool enforceLastLineFeed = false) const;
+        bool save(const fs::path& fileName, bool append = false, bool enforceLastLineFeed = false) const;
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1521,7 +1480,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class ITERATOR>
-        static bool Save(ITERATOR begin, ITERATOR end, const std::filesystem::path& fileName, bool append = false);
+        static bool Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a file, in UTF-8 format, one per line.
@@ -1533,7 +1492,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Save(const CONTAINER& container, const std::filesystem::path& fileName, bool append = false);
+        static bool Save(const CONTAINER& container, const fs::path& fileName, bool append = false);
 
         //!
         //! Save strings from a container into a stream, in UTF-8 format, one per line.
@@ -1565,7 +1524,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Load(CONTAINER& container, const std::filesystem::path& fileName);
+        static bool Load(CONTAINER& container, const fs::path& fileName);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
@@ -1576,7 +1535,7 @@ namespace ts {
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool LoadAppend(CONTAINER& container, const std::filesystem::path& fileName);
+        static bool LoadAppend(CONTAINER& container, const fs::path& fileName);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's into a container.
@@ -1811,6 +1770,66 @@ namespace ts {
                              size_type width = 0,
                              size_type precision = 0,
                              bool force_sign = false);
+        //!
+        //! Convert a string into a std::chrono::duration value.
+        //! No suffix is decoded. The string shall contain an integer value which
+        //! is interpreted in units of the temaplte std::chrono::duration type.
+        //! @param [out] value The returned decoded value. On error (invalid string), @a value
+        //! contains what could be decoded up to the first invalid character.
+        //! @param [in] thousandSeparators A string of characters which are interpreted as thousands
+        //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
+        //! is interpreted as a separator. Note that this implies that the optional thousands separators
+        //! may have one character only.
+        //! @param [in] minValue minimum allowed value for the decoded value.
+        //! @param [in] maxValue maximum allowed value for the decoded value.
+        //! @return True on success, false on error (invalid string).
+        //!
+        template <class Rep, class Period>
+        bool toChrono(cn::duration<Rep, Period>& value,
+                      const UString& thousandSeparators = UString(),
+                      const cn::duration<Rep, Period>& minValue = cn::duration<Rep, Period>::min(),
+                      const cn::duration<Rep, Period>& maxValue = cn::duration<Rep, Period>::max()) const;
+
+        //!
+        //! Format a string containing a std::chrono::duration value, with units.
+        //! @param [in] value The chrono value to format.
+        //! @param [in] short_format When true, use short unit format (e.g. "ms").
+        //! By default, use a full unit name (e.g. "millisecond").
+        //! @param [in] separator Separator string for groups of thousands, a comma by default.
+        //! @return The formatted string.
+        //!
+        template <class Rep, class Period>
+        static UString Chrono(const cn::duration<Rep, Period>& value,
+                              bool short_format = false,
+                              const UString& separator = DEFAULT_THOUSANDS_SEPARATOR)
+        {
+            return Decimal(value.count(), 0, true, separator) + u" " + ChronoUnit(Period::num, Period::den, short_format, value.count() > 1);
+        }
+
+        //!
+        //! Format the name of an instance of std::chrono::duration.
+        //! @tparam DURATION An instance of std::chrono::duration.
+        //! @param [in] short_format When true, use short unit format (e.g. "ms").
+        //! By default, use a full unit name (e.g. "millisecond").
+        //! @param [in] plural When true, use the plural form (full unit name only, e.g. "milliseconds").
+        //! @return A string representing the unit of the @a DURATION.
+        //!
+        template <class DURATION, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+        static UString ChronoUnit(bool short_format = false, bool plural = false)
+        {
+            return ChronoUnit(DURATION::period::num, DURATION::period::den, short_format, plural);
+        }
+
+        //!
+        //! Format the name of an instance of std::chrono::duration based on its ratio values.
+        //! @param [in] num Ratio numerator.
+        //! @param [in] den Ratio denominator.
+        //! @param [in] short_format When true, use short unit format (e.g. "ms").
+        //! By default, use a full unit name (e.g. "millisecond").
+        //! @param [in] plural When true, use the plural form (full unit name only, e.g. "milliseconds").
+        //! @return A string representing the unit of the @a DURATION.
+        //!
+        static UString ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format = false, bool plural = false);
 
         //--------------------------------------------------------------------
         // String formatting (freely inspired from printf)
@@ -2539,15 +2558,15 @@ TSDUCKDLL inline ts::UString operator+(const ts::UChar* s1, const ts::UString& s
 }
 
 // Equivalence with std::filesystem::path
-TSDUCKDLL inline bool operator==(const std::filesystem::path& s1, const ts::UString& s2) { return s2 == s1; }
+TSDUCKDLL inline bool operator==(const fs::path& s1, const ts::UString& s2) { return s2 == s1; }
 #if defined(TS_NEED_UNEQUAL_OPERATOR)
-TSDUCKDLL inline bool operator!=(const std::filesystem::path& s1, const ts::UString& s2) { return s2 != s1; }
+TSDUCKDLL inline bool operator!=(const fs::path& s1, const ts::UString& s2) { return s2 != s1; }
 #endif
-TSDUCKDLL inline bool operator==(const std::filesystem::path& s1, const ts::UChar* s2) { return ts::UString(s2) == s1; }
-TSDUCKDLL inline bool operator==(const ts::UChar* s1, const std::filesystem::path& s2) { return ts::UString(s1) == s2; }
+TSDUCKDLL inline bool operator==(const fs::path& s1, const ts::UChar* s2) { return ts::UString(s2) == s1; }
+TSDUCKDLL inline bool operator==(const ts::UChar* s1, const fs::path& s2) { return ts::UString(s1) == s2; }
 #if defined(TS_NEED_UNEQUAL_OPERATOR)
-TSDUCKDLL inline bool operator!=(const std::filesystem::path& s1, const ts::UChar* s2) { return !(s1 == s2); }
-TSDUCKDLL inline bool operator!=(const ts::UChar* s1, const std::filesystem::path& s2) { return !(s1 == s2); }
+TSDUCKDLL inline bool operator!=(const fs::path& s1, const ts::UChar* s2) { return !(s1 == s2); }
+TSDUCKDLL inline bool operator!=(const ts::UChar* s1, const fs::path& s2) { return !(s1 == s2); }
 #endif
 
 #if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION)
@@ -2932,7 +2951,7 @@ typename CONTAINER::const_iterator ts::UString::findSimilar(const CONTAINER& con
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-bool ts::UString::Save(ITERATOR begin, ITERATOR end, const std::filesystem::path& fileName, bool append)
+bool ts::UString::Save(ITERATOR begin, ITERATOR end, const fs::path& fileName, bool append)
 {
     std::ofstream file(fileName, append ? (std::ios::out | std::ios::app) : std::ios::out);
     Save(begin, end, file);
@@ -2957,7 +2976,7 @@ bool ts::UString::Save(const CONTAINER& container, std::ostream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::Save(const CONTAINER& container, const std::filesystem::path& fileName, bool append)
+bool ts::UString::Save(const CONTAINER& container, const fs::path& fileName, bool append)
 {
     return Save(container.begin(), container.end(), fileName, append);
 }
@@ -2991,14 +3010,14 @@ bool ts::UString::Load(CONTAINER& container, std::istream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::LoadAppend(CONTAINER& container, const std::filesystem::path& fileName)
+bool ts::UString::LoadAppend(CONTAINER& container, const fs::path& fileName)
 {
     std::ifstream file(fileName);
     return LoadAppend(container, file);
 }
 
 template <class CONTAINER>
-bool ts::UString::Load(CONTAINER& container, const std::filesystem::path& fileName)
+bool ts::UString::Load(CONTAINER& container, const fs::path& fileName)
 {
     container.clear();
     return LoadAppend(container, fileName);
@@ -3192,6 +3211,24 @@ bool ts::UString::toFloat(FLT& value, FLT minValue, FLT maxValue) const
     const int count = ::sscanf(str.c_str(), "%lf%c", &flt, &dummy);
     value = FLT(flt);
     return count == 1 && value >= minValue && value <= maxValue;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a string into a std::chrono::duration value.
+//----------------------------------------------------------------------------
+
+template <class Rep, class Period>
+bool ts::UString::toChrono(cn::duration<Rep, Period>& value,
+                           const UString& thousandSeparators,
+                           const cn::duration<Rep, Period>& minValue,
+                           const cn::duration<Rep, Period>& maxValue) const
+{
+    typedef cn::duration<Rep, Period> Duration;
+    typename Duration::rep ivalue = 0;
+    const bool ok = toInteger(ivalue, thousandSeparators, 0, UString(), minValue.count(), maxValue.count());
+    value = Duration(ivalue);
+    return ok;
 }
 
 

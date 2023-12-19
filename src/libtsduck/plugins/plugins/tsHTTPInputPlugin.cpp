@@ -35,7 +35,7 @@ ts::HTTPInputPlugin::HTTPInputPlugin(TSP* tsp_) :
          u"Repeat the playout of the content infinitely (default: only once). "
          u"The URL is re-opened each time and the content may be different.");
 
-    option<std::chrono::milliseconds>(u"reconnect-delay");
+    option<cn::milliseconds>(u"reconnect-delay");
     help(u"reconnect-delay",
          u"With --repeat or --infinite, wait the specified delay before reconnecting. "
          u"By default, repeat immediately.");

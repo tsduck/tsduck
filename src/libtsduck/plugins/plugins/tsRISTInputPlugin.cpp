@@ -34,7 +34,7 @@ bool ts::RISTInputPlugin::isRealTime()
 ts::RISTInputPlugin::RISTInputPlugin(TSP* t) : InputPlugin(t) {}
 ts::RISTInputPlugin::~RISTInputPlugin() {}
 bool ts::RISTInputPlugin::getOptions() NORIST_ERROR(false)
-bool ts::RISTInputPlugin::setReceiveTimeout(std::chrono::milliseconds) NORIST_ERROR(false)
+bool ts::RISTInputPlugin::setReceiveTimeout(cn::milliseconds) NORIST_ERROR(false)
 bool ts::RISTInputPlugin::start() NORIST_ERROR(false)
 bool ts::RISTInputPlugin::stop() NORIST_ERROR(false)
 size_t ts::RISTInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t) NORIST_ERROR(0)
@@ -52,11 +52,11 @@ class ts::RISTInputPlugin::Guts
 {
     TS_NOBUILD_NOCOPY(Guts);
 public:
-    RISTPluginData            rist;
-    std::chrono::milliseconds timeout {};           // receive timeout.
-    ByteBlock                 buffer {};            // data in excess from last input.
-    int                       last_qsize = 0;       // last queue size in data blocks.
-    bool                      qsize_warned = false; // a warning was reporting on heavy queue size.
+    RISTPluginData   rist;
+    cn::milliseconds timeout {};           // receive timeout.
+    ByteBlock        buffer {};            // data in excess from last input.
+    int              last_qsize = 0;       // last queue size in data blocks.
+    bool             qsize_warned = false; // a warning was reporting on heavy queue size.
 
     // Constructor.
     Guts(Args* args, TSP* tsp) : rist(*tsp) {}
@@ -98,7 +98,7 @@ bool ts::RISTInputPlugin::getOptions()
 // Set receive timeout from tsp.
 //----------------------------------------------------------------------------
 
-bool ts::RISTInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::RISTInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
     if (timeout.count() > 0) {
         _guts->timeout = timeout;

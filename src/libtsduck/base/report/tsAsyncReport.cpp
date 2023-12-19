@@ -44,7 +44,7 @@ void ts::AsyncReport::terminate()
     if (!_terminated) {
         // Insert an "end of report" message in the queue.
         // This message will tell the logging thread to terminate.
-        _log_queue.forceEnqueue(new LogMessage(true, 0, UString()));
+        _log_queue.forceEnqueue(new LogMessage {true, 0, UString()});
 
         // Wait for termination of the logging thread
         waitForTermination();
@@ -69,9 +69,15 @@ void ts::AsyncReport::writeLog(int severity, const UString &msg)
 #endif
 
     if (!_terminated) {
-        // Enqueue the message immediately (timeout = 0), drop message on overflow.
-        // On the contrary, in synchronous mode, wait infinitely until the message is queued.
-        _log_queue.enqueue(new LogMessage(false, severity, msg), _synchronous ? Infinite : 0);
+        LogMessage* p = new LogMessage {false, severity, msg};
+        if (_synchronous) {
+            // Synchronous mode, wait infinitely until the message is queued.
+            _log_queue.enqueue(p);
+        }
+        else {
+            // Enqueue the message immediately (timeout = 0), drop message on overflow.
+            _log_queue.enqueue(p, cn::milliseconds::zero());
+        }
     }
 }
 
@@ -87,8 +93,16 @@ void ts::AsyncReport::main()
     // Notify subclasses (if any) of thread start.
     asyncThreadStarted();
 
-    while (_log_queue.dequeue(msg) && !msg->terminate) {
+    for (;;) {
+        // Dequeue next message (infinite wait).
+        _log_queue.dequeue(msg);
 
+        // Exit when received a termination message.
+        if (msg->terminate) {
+            break;
+        }
+
+        // Notify subclass of message (or log it on standard error).
         asyncThreadLog(msg->severity, msg->message);
 
         // Abort application on fatal error

@@ -29,10 +29,10 @@ namespace ts {
         // Public fields
         UString device_name {};       //!< Name of tuner device.
         UString receiver_name {};     //!< Name of the DirectShow receiver to use (Windows-specific).
-        size_t  demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE;              //!< Demux buffer size in bytes (Linux-specific).
-        size_t  demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;                 //!< Max number of queued media samples (Windows-specific).
-        std::chrono::milliseconds signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;  //!< Signal locking timeout in milliseconds.
-        std::chrono::milliseconds receive_timeout {};                              //!< Packet received timeout in milliseconds.
+        size_t  demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE;     //!< Demux buffer size in bytes (Linux-specific).
+        size_t  demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE;        //!< Max number of queued media samples (Windows-specific).
+        cn::milliseconds signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;  //!< Signal locking timeout in milliseconds.
+        cn::milliseconds receive_timeout {};                              //!< Packet received timeout in milliseconds.
 
         //!
         //! Default constructor.

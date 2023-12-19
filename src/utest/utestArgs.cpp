@@ -256,7 +256,7 @@ namespace {
             option(u"opt9", 'c', ts::Enumeration({{u"val1", 11}, {u"val2", 12}, {u"val3", 13}}));
             option(u"mask",  0,  ts::Enumeration({{u"bit1", 0x01}, {u"bit2", 0x02}, {u"bit3", 0x04}}), 0, ts::Args::UNLIMITED_COUNT);
             option(u"opt10", 0,  ts::Args::UNSIGNED, 0, ts::Args::UNLIMITED_COUNT, 0, 0, false, 3);
-            option<std::chrono::seconds>(u"opt11");
+            option<cn::seconds>(u"opt11");
 
             help(u"", u"The parameters");
             help(u"opt1", u"No value.");
@@ -925,13 +925,13 @@ void ArgsTest::testChrono()
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&CERR);
-    args.option<std::chrono::seconds>(u"foo", 0, 0, ts::Args::UNLIMITED_COUNT);
+    args.option<cn::seconds>(u"foo", 0, 0, ts::Args::UNLIMITED_COUNT);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--foo", u"23", u"--foo", u"6"}));
     TSUNIT_EQUAL(2, args.count(u"foo"));
 
-    std::chrono::seconds s;
-    std::chrono::milliseconds ms;
+    cn::seconds s;
+    cn::milliseconds ms;
 
     args.getChronoValue(s, u"foo");
     TSUNIT_EQUAL(23, s.count());
@@ -951,10 +951,10 @@ void ArgsTest::testChrono()
     args.getChronoValue(ms, u"foo", 2);
     TSUNIT_EQUAL(0, ms.count());
 
-    args.getChronoValue(s, u"foo", std::chrono::minutes(1), 2);
+    args.getChronoValue(s, u"foo", cn::minutes(1), 2);
     TSUNIT_EQUAL(60, s.count());
 
-    args.getChronoValue(ms, u"foo", std::chrono::minutes(1), 2);
+    args.getChronoValue(ms, u"foo", cn::minutes(1), 2);
     TSUNIT_EQUAL(60'000, ms.count());
 }
 

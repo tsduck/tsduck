@@ -83,12 +83,12 @@ ts::UString ts::TunerDevice::devicePath() const
     return _device_path;
 }
 
-std::chrono::milliseconds ts::TunerDevice::receiveTimeout() const
+cn::milliseconds ts::TunerDevice::receiveTimeout() const
 {
     return _receive_timeout;
 }
 
-void ts::TunerDevice::setSignalTimeout(std::chrono::milliseconds t)
+void ts::TunerDevice::setSignalTimeout(cn::milliseconds t)
 {
     _signal_timeout = t;
 }
@@ -419,7 +419,7 @@ bool ts::TunerDevice::start()
     // it has been observed that remaining packets from the previous run were still
     // there. Wait a little bit and reflush after Run() to avoid that.
     // Yes, this is a horrible hack, but if you have a better fix...
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::this_thread::sleep_for(cn::milliseconds(50));
     sink->Flush();
 
     // If a signal timeout was specified, read a packet with timeout
@@ -454,7 +454,7 @@ bool ts::TunerDevice::stop(bool silent)
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::TunerDevice::setReceiveTimeout(cn::milliseconds timeout)
 {
     _receive_timeout = timeout;
     return true;

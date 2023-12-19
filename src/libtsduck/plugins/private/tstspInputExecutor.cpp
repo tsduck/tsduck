@@ -374,7 +374,7 @@ void ts::tsp::InputExecutor::passInputPackets(size_t pkt_count, bool input_end)
         else {
             // Wait forever. Repeatedly use long waits (one day) to avoid system limitations.
             for (;;) {
-                std::this_thread::sleep_for(std::chrono::hours(24));
+                std::this_thread::sleep_for(cn::hours(24));
             }
         }
         debug(u"end of final wait");

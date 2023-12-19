@@ -78,7 +78,7 @@ bool ts::IPInputPlugin::abortInput()
 // Set receive timeout from tsp.
 //----------------------------------------------------------------------------
 
-bool ts::IPInputPlugin::setReceiveTimeout(std::chrono::milliseconds timeout)
+bool ts::IPInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
     if (timeout.count() > 0) {
         _sock.setReceiveTimeoutArg(timeout);

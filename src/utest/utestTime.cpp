@@ -125,10 +125,10 @@ void TimeTest::testOperators()
     TSUNIT_ASSERT(t2 - t1 == 1);
     TSUNIT_ASSERT(t1 - t2 == -1);
 
-    TSUNIT_ASSERT(t1 + std::chrono::milliseconds(1) == t2);
-    TSUNIT_ASSERT(t2 - std::chrono::milliseconds(1) == t1);
-    TSUNIT_ASSERT(t1 + std::chrono::microseconds(1000) == t2);
-    TSUNIT_ASSERT(t2 - std::chrono::microseconds(1000) == t1);
+    TSUNIT_ASSERT(t1 + cn::milliseconds(1) == t2);
+    TSUNIT_ASSERT(t2 - cn::milliseconds(1) == t1);
+    TSUNIT_ASSERT(t1 + cn::microseconds(1000) == t2);
+    TSUNIT_ASSERT(t2 - cn::microseconds(1000) == t1);
 
     t3 += 1;
     TSUNIT_ASSERT(t3 == t2);

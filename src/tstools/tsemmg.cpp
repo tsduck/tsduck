@@ -28,7 +28,7 @@ namespace {
     static constexpr ts::TID DEFAULT_EMM_MIN_TID = ts::TID_EMM_FIRST;
     static constexpr ts::TID DEFAULT_EMM_MAX_TID = ts::TID_EMM_LAST;
     static constexpr size_t DEFAULT_BYTES_PER_SEND = 500;
-    static constexpr std::chrono::milliseconds DEFAULT_UDP_END_WAIT = std::chrono::milliseconds(100);
+    static constexpr cn::milliseconds DEFAULT_UDP_END_WAIT = cn::milliseconds(100);
 
     // Minimum interval between two send operations.
     static const ts::NanoSecond MIN_SEND_INTERVAL = 4 * ts::NanoSecPerMilliSec; // 4 ms
@@ -78,7 +78,7 @@ namespace {
         ts::BitRate           dataBitrate = 0;           // Actual data bitrate.
         size_t                bytesPerSend = 0;          // Approximate size of each send.
         ts::NanoSecond        sendInterval = 0;          // Interval between two send operations.
-        std::chrono::milliseconds udpEndWait {};         // Number of ms to wait between last UDP message and stream close.
+        cn::milliseconds      udpEndWait {};             // Number of ms to wait between last UDP message and stream close.
 
         // Adjust the various rates and delays according to the allocated bandwidth.
         bool adjustBandwidth(uint16_t allocated);
@@ -207,7 +207,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
          u"name) is not specified, use the same IP address as the --mux option. The "
          u"port number is required, even if it is the same as the TCP port.");
 
-    option<std::chrono::milliseconds>(u"udp-end-wait", 'w');
+    option<cn::milliseconds>(u"udp-end-wait", 'w');
     help(u"udp-end-wait",
          u"With --udp, specify the number of milliseconds to wait after the last "
          u"data_provision message (UDP) and before the stream_close_request message (TCP). "

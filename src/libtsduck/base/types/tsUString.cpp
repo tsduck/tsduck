@@ -1392,21 +1392,21 @@ namespace {
 
 #if defined(TS_CXX20)
 #define TS_CXX20_CHRONO                                                                       \
-    {{std::chrono::days::period::num,   std::chrono::days::period::den},   {u"d", u"day"}},   \
-    {{std::chrono::weeks::period::num,  std::chrono::weeks::period::den},  {u"w", u"week"}},  \
-    {{std::chrono::months::period::num, std::chrono::months::period::den}, {u"m", u"month"}}, \
-    {{std::chrono::years::period::num,  std::chrono::years::period::den},  {u"y", u"year"}}
+    {{cn::days::period::num,   cn::days::period::den},   {u"d", u"day"}},   \
+    {{cn::weeks::period::num,  cn::weeks::period::den},  {u"w", u"week"}},  \
+    {{cn::months::period::num, cn::months::period::den}, {u"m", u"month"}}, \
+    {{cn::years::period::num,  cn::years::period::den},  {u"y", u"year"}}
 #else
 #define TS_CXX20_CHRONO
 #endif
 
 TS_STATIC_INSTANCE(UnitMap, ({
-        {{std::chrono::seconds::period::num,      std::chrono::seconds::period::den},      {u"s",  u"second"}},
-        {{std::chrono::milliseconds::period::num, std::chrono::milliseconds::period::den}, {u"ms", u"millisecond"}},
-        {{std::chrono::microseconds::period::num, std::chrono::microseconds::period::den}, {u"us", u"microsecond"}},
-        {{std::chrono::nanoseconds::period::num,  std::chrono::nanoseconds::period::den},  {u"ns", u"nanosecond"}},
-        {{std::chrono::minutes::period::num,      std::chrono::minutes::period::den},      {u"mn", u"minute"}},
-        {{std::chrono::hours::period::num,        std::chrono::hours::period::den},        {u"h",  u"hour"}},
+        {{cn::seconds::period::num,      cn::seconds::period::den},      {u"s",  u"second"}},
+        {{cn::milliseconds::period::num, cn::milliseconds::period::den}, {u"ms", u"millisecond"}},
+        {{cn::microseconds::period::num, cn::microseconds::period::den}, {u"us", u"microsecond"}},
+        {{cn::nanoseconds::period::num,  cn::nanoseconds::period::den},  {u"ns", u"nanosecond"}},
+        {{cn::minutes::period::num,      cn::minutes::period::den},      {u"mn", u"minute"}},
+        {{cn::hours::period::num,        cn::hours::period::den},        {u"h",  u"hour"}},
         TS_CXX20_CHRONO
     }), ChronoUnitMap);
 

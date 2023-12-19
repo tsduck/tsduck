@@ -28,7 +28,7 @@ namespace ts {
         virtual bool start() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
-        virtual bool setReceiveTimeout(std::chrono::milliseconds timeout) override;
+        virtual bool setReceiveTimeout(cn::milliseconds timeout) override;
 
     private:
         PacketCounter _max_count = 0;   // Number of packets to generate

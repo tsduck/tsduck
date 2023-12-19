@@ -114,11 +114,11 @@ namespace {
     class ThreadTermination: public utest::TSUnitThread
     {
     private:
-        volatile bool&            _report;
-        std::chrono::milliseconds _delay;
-        ts::MilliSecond           _msPrecision;
+        volatile bool&   _report;
+        cn::milliseconds _delay;
+        ts::MilliSecond  _msPrecision;
     public:
-        ThreadTermination(volatile bool& report, std::chrono::milliseconds delay, ts::MilliSecond msPrecision) :
+        ThreadTermination(volatile bool& report, cn::milliseconds delay, ts::MilliSecond msPrecision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000)),
             _report(report),
             _delay(delay),
@@ -147,7 +147,7 @@ void ThreadTest::testTermination()
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
     {
-        ThreadTermination thread(report, std::chrono::milliseconds(200), _msPrecision);
+        ThreadTermination thread(report, cn::milliseconds(200), _msPrecision);
         TSUNIT_ASSERT(thread.start());
         TSUNIT_ASSERT(!thread.isCurrentThread());
     }
@@ -165,11 +165,11 @@ namespace {
     class ThreadDeleteWhenTerminated: public utest::TSUnitThread
     {
     private:
-        volatile bool&            _report;
-        std::chrono::milliseconds _delay;
-        ts::MilliSecond           _msPrecision;
+        volatile bool&   _report;
+        cn::milliseconds _delay;
+        ts::MilliSecond  _msPrecision;
     public:
-        ThreadDeleteWhenTerminated(volatile bool& report, std::chrono::milliseconds delay, ts::MilliSecond msPrecision) :
+        ThreadDeleteWhenTerminated(volatile bool& report, cn::milliseconds delay, ts::MilliSecond msPrecision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000).setDeleteWhenTerminated(true)),
             _report(report),
             _delay(delay),
@@ -196,11 +196,11 @@ void ThreadTest::testDeleteWhenTerminated()
 {
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
-    ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, std::chrono::milliseconds(100), _msPrecision);
+    ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, cn::milliseconds(100), _msPrecision);
     TSUNIT_ASSERT(thread->start());
     int counter = 100;
     while (!report && counter-- > 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(cn::milliseconds(20));
     }
     const ts::Time after(ts::Time::CurrentUTC());
     if (counter > 0) {
@@ -249,7 +249,7 @@ namespace {
                 _condSig.notify_one();
             }
             // And sleep 100 ms.
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(cn::milliseconds(100));
             _mutex.unlock();
         }
     };
@@ -276,14 +276,14 @@ void ThreadTest::testMutexTimeout()
 
     // Use assumptions instead of assertions for time-dependent checks.
     // Timing can be very weird on virtual machines which are used for unitary tests.
-    const bool locked = mutex.try_lock_for(std::chrono::milliseconds(50));
+    const bool locked = mutex.try_lock_for(cn::milliseconds(50));
     if (locked) {
         mutex.unlock();
     }
     TSUNIT_ASSUME(!locked);
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
     TSUNIT_ASSUME(ts::Time::CurrentUTC() < dueTime2);
-    TSUNIT_ASSERT(mutex.try_lock_for(std::chrono::milliseconds(1000)));
+    TSUNIT_ASSERT(mutex.try_lock_for(cn::milliseconds(1000)));
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
     mutex.unlock();
 

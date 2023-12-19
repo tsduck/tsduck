@@ -27,7 +27,7 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     option(u"multiple", 'm');
     help(u"multiple", u"When the receiver peer disconnects, wait for another one and continue.");
 
-    option<std::chrono::milliseconds>(u"restart-delay");
+    option<cn::milliseconds>(u"restart-delay");
     help(u"restart-delay", u"With --multiple, wait the specified delay before restarting.");
 
     // These options are legacy, now use --listener and/or --caller.

@@ -187,12 +187,12 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
         // '_to_do' and, once we get it, implicitely relock the mutex.
         // We loop on this until packets are actually available.
         // If there is a timeout in the packet reception, call the plugin handler.
-        if (_tsp_timeout == Infinite) {
+        if (_tsp_timeout.count() < 0) {
+            // No timeout.
             _to_do.wait(lock);
         }
         else {
-            timeout = _to_do.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(_tsp_timeout))) == std::cv_status::timeout
-                      && !plugin()->handlePacketTimeout();
+            timeout = _to_do.wait_for(lock, _tsp_timeout) == std::cv_status::timeout && !plugin()->handlePacketTimeout();
         }
     }
 

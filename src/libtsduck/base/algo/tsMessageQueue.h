@@ -43,14 +43,8 @@ namespace ts {
 
         //!
         //! Constructor.
-        //!
         //! @param [in] maxMessages Maximum number of messages in the queue.
-        //! When a thread attempts to enqueue a message and the queue is full,
-        //! the thread waits until at least one message is dequeued.
-        //! If @a maxMessages is 0, the queue is unlimited. In that case,
-        //! the logic of the application must ensure that the queue is
-        //! bounded somehow, otherwise the queue may exhaust all the process
-        //! memory.
+        //! @see setMaxMessages()
         //!
         MessageQueue(size_t maxMessages = 0);
 
@@ -61,44 +55,51 @@ namespace ts {
 
         //!
         //! Get the maximum allowed messages in the queue.
-        //!
         //! @return The maximum allowed messages in the queue (0 means unlimited).
         //!
         size_t getMaxMessages() const;
 
         //!
         //! Change the maximum allowed messages in the queue.
-        //!
-        //! @param [in] maxMessages Maximum number of messages in the queue.
-        //! When a thread attempts to enqueue a message and the queue is full,
-        //! the thread waits until at least one message is dequeued.
-        //! If @a maxMessages is 0, the queue is unlimited. In that case,
-        //! the logic of the application must ensure that the queue is
-        //! bounded somehow, otherwise the queue may exhaust all the process
-        //! memory.
+        //! @param [in] maxMessages Maximum number of messages in the queue. When a thread attempts to
+        //! enqueue a message and the queue is full, the thread waits until at least one message is dequeued.
+        //! If @a maxMessages is 0, the queue is unlimited. In that case, the logic of the application must
+        //! ensure that the queue is bounded somehow, otherwise the queue may exhaust all the process memory.
         //!
         void setMaxMessages(size_t maxMessages);
 
         //!
         //! Insert a message in the queue.
+        //! If the queue is full, the calling thread waits until some space becomes available in the queue.
+        //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
+        //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
+        //! a null pointer if the message was successfully enqueued.
         //!
+        void enqueue(MessagePtr& msg);
+
+        //!
+        //! Insert a message in the queue.
         //! If the queue is full, the calling thread waits until some space becomes
         //! available in the queue or the timeout expires.
-        //!
         //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
         //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
         //! a null pointer if the message was successfully enqueued (no timeout).
         //! @param [in] timeout Maximum time to wait in milliseconds.
         //! @return True on success, false on error (queue still full after timeout).
         //!
-        bool enqueue(MessagePtr& msg, MilliSecond timeout = Infinite);
+        bool enqueue(MessagePtr& msg, cn::milliseconds timeout);
 
         //!
         //! Insert a message in the queue.
+        //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
+        //! be owned by a safe pointer. When the message is successfully enqueued, the
+        //! pointer becomes owned by a safe pointer and will be deallocated when no
+        //! longer used.
         //!
-        //! If the queue is full, the calling thread waits until some space becomes
-        //! available in the queue or the timeout expires.
+        void enqueue(MSG* msg);
+
         //!
+        //! Insert a message in the queue.
         //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
         //! be owned by a safe pointer. When the message is successfully enqueued, the
         //! pointer becomes owned by a safe pointer and will be deallocated when no
@@ -107,15 +108,13 @@ namespace ts {
         //! @param [in] timeout Maximum time to wait in milliseconds.
         //! @return True on success, false on error (queue still full after timeout).
         //!
-        bool enqueue(MSG* msg, MilliSecond timeout = Infinite);
+        bool enqueue(MSG* msg, cn::milliseconds timeout);
 
         //!
         //! Insert a message in the queue, even if the queue is full.
-        //!
         //! This method immediately inserts the message, even if the queue is full.
         //! This can be used to allow exceptional overflow of the queue with unique messages,
         //! to enqueue a message to instruct the consumer thread to terminate for instance.
-        //!
         //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
         //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
         //! a null pointer.
@@ -124,11 +123,9 @@ namespace ts {
 
         //!
         //! Insert a message in the queue, even if the queue is full.
-        //!
         //! This method immediately inserts the message, even if the queue is full.
         //! This can be used to allow exceptional overflow of the queue with unique messages,
         //! to enqueue a message to instruct the consumer thread to terminate for instance.
-        //!
         //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
         //! be owned by a safe pointer. When the message is enqueued, the pointer becomes
         //! owned by a safe pointer and will be deallocated when no longer used.
@@ -137,22 +134,25 @@ namespace ts {
 
         //!
         //! Remove a message from the queue.
+        //! Wait until a message is received.
+        //! @param [out] msg Received message.
         //!
+        void dequeue(MessagePtr& msg);
+
+        //!
+        //! Remove a message from the queue.
         //! Wait until a message is received or the timeout expires.
-        //!
         //! @param [out] msg Received message.
         //! @param [in] timeout Maximum time to wait in milliseconds.
         //! If @a timeout is zero and the queue is empty, return immediately.
         //! @return True on success, false on error (queue still empty after timeout).
         //!
-        bool dequeue(MessagePtr& msg, MilliSecond timeout = Infinite);
+        bool dequeue(MessagePtr& msg, cn::milliseconds timeout);
 
         //!
         //! Peek the next message from the queue, without dequeueing it.
-        //!
         //! If several threads simultaneously read from the queue, the returned
         //! message may be deqeued in the meantime by another thread.
-        //!
         //! @return A safe pointer to the first message in the queue or a null pointer
         //! if the queue is empty.
         //!
@@ -190,15 +190,17 @@ namespace ts {
         mutable std::mutex              _mutex {};         //!< Protect access to all private members
         mutable std::condition_variable _enqueued {};      //!< Signaled when some message is inserted
         mutable std::condition_variable _dequeued {};      //!< Signaled when some message is removed
-        size_t      _maxMessages = 0;  //!< Max number of messages in the queue
-        MessageList _queue {};         //!< Actual message queue.
+        size_t                          _maxMessages = 0;  //!< Max number of messages in the queue
+        MessageList                     _queue {};         //!< Actual message queue.
 
-        // Enqueue a safe pointer in the list and signal the condition.
-        // Must be executed under the protection of the lock.
+        // Enqueue/dequeue a safe pointer in the list and signal the corresponding condition.
+        // Dequeue returns false if the list is empty. Must be executed under the protection of the lock.
         void enqueuePtr(const MessagePtr& ptr);
+        bool dequeuePtr(MessagePtr& ptr);
 
         // Wait for free space in the queue using a specific timeout, under the protection of the mutex.
-        bool waitFreeSpace(std::unique_lock<std::mutex>& lock, MilliSecond timeout);
+        void waitFreeSpace(std::unique_lock<std::mutex>& lock);
+        bool waitFreeSpace(std::unique_lock<std::mutex>& lock, cn::milliseconds timeout);
     };
 }
 
@@ -264,8 +266,7 @@ ts::MessageQueue<MSG, MUTEX>::dequeuePlacement(MessageList& list)
 
 
 //----------------------------------------------------------------------------
-// Enqueue a safe pointer in the list and signal the condition.
-// Must be executed under the protection of the lock.
+// Enqueue/dequeue a safe pointer in the list and signal the condition.
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
@@ -275,53 +276,67 @@ void ts::MessageQueue<MSG, MUTEX>::enqueuePtr(const MessagePtr& ptr)
     _enqueued.notify_all();
 }
 
+template <typename MSG, class MUTEX>
+bool ts::MessageQueue<MSG, MUTEX>::dequeuePtr(MessagePtr& ptr)
+{
+    const auto it = dequeuePlacement(_queue);
+    if (it == _queue.end()) {
+        // Queue empty or nothing to dequeue, no message
+        return false;
+    }
+    else {
+        // Queue not empty, remove a message
+        ptr = *it;
+        _queue.erase(it);
+
+        // Signal that a message has been dequeued
+        _dequeued.notify_all();
+        return true;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Wait for free space in the queue using a specific timeout.
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-bool ts::MessageQueue<MSG, MUTEX>::waitFreeSpace(std::unique_lock<std::mutex>& lock, MilliSecond timeout)
+void ts::MessageQueue<MSG, MUTEX>::waitFreeSpace(std::unique_lock<std::mutex>& lock)
 {
-    // If the queue is full, wait for dequeued messages and the queue not being full.
-    if (_maxMessages != 0 && timeout > 0) {
-        Time start(Time::CurrentUTC());
-        while (_queue.size() >= _maxMessages) {
-            if (timeout == Infinite) {
-                _dequeued.wait(lock);
-            }
-            else {
-                // Reduce timeout
-                const Time now(Time::CurrentUTC());
-                timeout -= now - start;
-                start = now;
-                if (timeout <= 0 || _dequeued.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(timeout))) == std::cv_status::timeout) {
-                    break; // timeout
-                }
-            }
-        }
+    if (_maxMessages != 0) {
+        _dequeued.wait(lock, [this]() { return _queue.size() < _maxMessages; });
     }
+}
 
-    // Now, may we enqueue the message?
-    return _maxMessages == 0 || _queue.size() < _maxMessages;
+template <typename MSG, class MUTEX>
+bool ts::MessageQueue<MSG, MUTEX>::waitFreeSpace(std::unique_lock<std::mutex>& lock, cn::milliseconds timeout)
+{
+    return _maxMessages == 0 || _dequeued.wait_for(lock, timeout, [this]() { return _queue.size() < _maxMessages; });
 }
 
 
 //----------------------------------------------------------------------------
-// Insert a message in the queue with a timeout.
+// Insert a message.
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-bool ts::MessageQueue<MSG, MUTEX>::enqueue(MessagePtr& msg, MilliSecond timeout)
+void ts::MessageQueue<MSG, MUTEX>::enqueue(MessagePtr& msg)
 {
-    // Take mutex, potentially wait on dequeued condition.
-    // Note that we lock the mutex _without_ timeout. Nobody keeps the mutex longer
-    // than accessing a field. So the timeout does not apply here. The timeout applies
-    // on waiting for space in the queue.
     std::unique_lock<std::mutex> lock(_mutex);
+    waitFreeSpace(lock);
+    {
+        // Transfer ownership of the pointed object inside a code block which guarantees
+        // that the new safe pointer will be destructed before releasing the lock.
+        const MessagePtr transferred(msg.release());
+        enqueuePtr(transferred);
+    }
+}
 
+template <typename MSG, class MUTEX>
+bool ts::MessageQueue<MSG, MUTEX>::enqueue(MessagePtr& msg, cn::milliseconds timeout)
+{
+    std::unique_lock<std::mutex> lock(_mutex);
     if (waitFreeSpace(lock, timeout)) {
-        // Successfully waited for free space in the queue.
         // Transfer ownership of the pointed object inside a code block which guarantees
         // that the new safe pointer will be destructed before releasing the lock.
         const MessagePtr transferred(msg.release());
@@ -335,11 +350,22 @@ bool ts::MessageQueue<MSG, MUTEX>::enqueue(MessagePtr& msg, MilliSecond timeout)
 }
 
 template <typename MSG, class MUTEX>
-bool ts::MessageQueue<MSG, MUTEX>::enqueue(MSG* msg, MilliSecond timeout)
+void ts::MessageQueue<MSG, MUTEX>::enqueue(MSG* msg)
 {
-    // Same code template as above.
     std::unique_lock<std::mutex> lock(_mutex);
+    waitFreeSpace(lock);
+    {
+        // Create a safe pointer to the pointed object inside a code block which guarantees
+        // that the safe pointer will be destructed before releasing the lock.
+        const MessagePtr ptr(msg);
+        enqueuePtr(ptr);
+    }
+}
 
+template <typename MSG, class MUTEX>
+bool ts::MessageQueue<MSG, MUTEX>::enqueue(MSG* msg, cn::milliseconds timeout)
+{
+    std::unique_lock<std::mutex> lock(_mutex);
     if (waitFreeSpace(lock, timeout)) {
         // Create a safe pointer to the pointed object inside a code block which guarantees
         // that the safe pointer will be destructed before releasing the lock.
@@ -389,48 +415,23 @@ void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MSG* msg)
 //----------------------------------------------------------------------------
 
 template <typename MSG, class MUTEX>
-bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
+void ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg)
 {
-    // Take mutex, potentially wait on enqueued condition.
-    // Note that we lock the mutex _without_ timeout. Nobody keeps the mutex longer
-    // than accessing a field. So the timeout does not apply here. The timeout applies
-    // on waiting for a message from an empty queue.
     std::unique_lock<std::mutex> lock(_mutex);
-
-    // If the timeout is non-zero, wait for the queue not being empty.
-    if (timeout > 0) {
-        Time start(Time::CurrentUTC());
-        while (_queue.empty()) {
-            if (timeout == Infinite) {
-                _enqueued.wait(lock);
-            }
-            else {
-                // Reduce timeout
-                const Time now(Time::CurrentUTC());
-                timeout -= now - start;
-                start = now;
-                if (timeout <= 0 || _enqueued.wait_for(lock, std::chrono::milliseconds(std::chrono::milliseconds::rep(timeout))) == std::cv_status::timeout) {
-                    break; // timeout
-                }
-            }
-        }
+    _enqueued.wait(lock, [this]() { return !_queue.empty(); });
+    if (!dequeuePtr(msg)) {
+        // Queue cannot be empty at end of wait without timeout.
+        msg.clear();
     }
+}
 
-    // Now, attempt to dequeue a message.
-    const auto it = dequeuePlacement(_queue);
-    if (it == _queue.end()) {
-        // Queue empty or nothing to dequeue, no message
-        return false;
-    }
-    else {
-        // Queue not empty, remove a message
-        msg = *it;
-        _queue.erase(it);
 
-        // Signal that a message has been dequeued
-        _dequeued.notify_all();
-        return true;
-    }
+template <typename MSG, class MUTEX>
+bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, cn::milliseconds timeout)
+{
+    std::unique_lock<std::mutex> lock(_mutex);
+    _enqueued.wait_for(lock, timeout, [this]() { return !_queue.empty(); });
+    return dequeuePtr(msg);
 }
 
 

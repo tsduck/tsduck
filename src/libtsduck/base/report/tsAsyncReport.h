@@ -115,11 +115,9 @@ namespace ts {
         // The application threads send that type of message to the logging thread
         struct LogMessage
         {
-            LogMessage(bool t, int s, const UString& m) : terminate(t), severity(s), message(m) {}
-
-            bool    terminate = false;  // tell logging thread to terminate
-            int     severity = Severity::Info;
-            UString message {};
+            bool    terminate;
+            int     severity;
+            UString message;
         };
         typedef SafePtr<LogMessage, ts::null_mutex> LogMessagePtr;
         typedef MessageQueue<LogMessage, ts::null_mutex> LogMessageQueue;
