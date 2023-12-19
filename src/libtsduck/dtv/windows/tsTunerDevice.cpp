@@ -425,7 +425,7 @@ bool ts::TunerDevice::start()
     // If a signal timeout was specified, read a packet with timeout
     if (_signal_timeout.count() > 0) {
         TSPacket pack;
-        if (sink->Read(&pack, sizeof(pack), _signal_timeout.count()) == 0) {
+        if (sink->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
             if (!_signal_timeout_silent) {
                 _duck.report().error(u"no input DVB signal after %s", {UString::Chrono(_signal_timeout)});
             }
@@ -476,8 +476,7 @@ void ts::TunerDevice::abort(bool silent)
 
 
 //-----------------------------------------------------------------------------
-// Read complete 188-byte TS packets in the buffer and return the
-// number of actually received packets (in the range 1 to max_packets).
+// Read complete 188-byte TS packets in the buffer.
 // Returning zero means error or end of input.
 //-----------------------------------------------------------------------------
 
@@ -493,19 +492,11 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
         return 0;
     }
 
-    // Read packets from the tuner device
-    size_t got_size = 0;
-    if (_receive_timeout.count() <= 0) {
-        got_size = sink->Read(buffer, max_packets * PKT_SIZE);
+    // Read packets from the tuner device.
+    const size_t got_size = sink->Read(buffer, max_packets * PKT_SIZE, _receive_timeout);
+    if (got_size == 0) {
+        _duck.report().error(u"receive timeout on " + _device_name);
     }
-    else {
-        const Time limit(Time::CurrentUTC() + _receive_timeout);
-        got_size = sink->Read(buffer, max_packets * PKT_SIZE, _receive_timeout.count());
-        if (got_size == 0 && Time::CurrentUTC() >= limit) {
-            _duck.report().error(u"receive timeout on " + _device_name);
-        }
-    }
-
     return got_size / PKT_SIZE;
 }
 

@@ -253,11 +253,13 @@ void ts::SinkFilter::Flush()
 // Read data from transport stream.
 // Return size in bytes, zero on error or end of stream.
 
-size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeout)
+size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, cn::milliseconds timeout)
 {
     TRACE(2, u"SinkFilter::Read");
     size_t remain = buffer_size;
     char* data = reinterpret_cast<char*>(buffer);
+    const bool infinite = timeout.count() <= 0;
+    const auto end = cn::steady_clock::now() + timeout;
 
     std::unique_lock<std::timed_mutex> lock(_mutex);
 
@@ -265,17 +267,15 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, MilliSecond timeou
     FillBuffer(data, remain);
 
     // Then, read from media queue if there is still some free space in the user's buffer.
-    while (remain >= PKT_SIZE && timeout > 0) {
+    while (remain >= PKT_SIZE && (infinite || cn::steady_clock::now() < end)) {
 
         // Wait for the queue not being empty
-        TRACE(5, u"SinkFilter::Read, waiting for packets, timeout = %d milliseconds", {timeout});
-        if (timeout == Infinite) {
+        TRACE(5, u"SinkFilter::Read, waiting for packets, timeout = %d milliseconds", {timeout.count()});
+        if (infinite) {
             _not_empty.wait(lock, [this]() { return !_queue.empty(); });
         }
         else {
-            const Time start(Time::CurrentUTC());
-            _not_empty.wait_for(lock, cn::milliseconds(cn::milliseconds::rep(timeout)), [this]() { return !_queue.empty(); });
-            timeout -= Time::CurrentUTC() - start;
+            _not_empty.wait_until(lock, end, [this]() { return !_queue.empty(); });
         }
         TRACE(5, u"SinkFilter::Read, end of waiting for packets, queue size = %d", {_queue.size()});
 

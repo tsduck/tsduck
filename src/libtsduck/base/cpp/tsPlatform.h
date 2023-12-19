@@ -1224,11 +1224,6 @@ namespace ts {
     //!
     typedef SubSecond NanoSecond;
     //!
-    //! This constant shall be used by convention to express an infinite
-    //! number of sub-quantities of seconds.
-    //!
-    constexpr SubSecond Infinite = 0x7FFF'FFFF'FFFF'FFFF;
-    //!
     //! Number of nanoseconds per second
     //!
     constexpr NanoSecond NanoSecPerSec = 1'000'000'000;
