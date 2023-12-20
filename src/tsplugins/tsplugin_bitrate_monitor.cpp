@@ -15,6 +15,7 @@
 #include "tsForkPipe.h"
 #include "tsjsonObject.h"
 #include "tsjsonArray.h"
+#include "tsxmlAttribute.h"
 #include "tsTime.h"
 #include "tsMonotonic.h"
 #include "tsSingleDataStatistics.h"
@@ -361,7 +362,8 @@ void ts::BitrateMonitorPlugin::jsonLine(const UChar* status, int64_t bitrate, in
     }
     root.add(u"bitrate", bitrate);
     root.add(u"status", status);
-    root.add(u"time", Time::CurrentLocalTime().format(Time::DATETIME));
+    // Make sure to sure the same time format as XML attributes.
+    root.add(u"time", xml::Attribute::DateTimeToString(Time::CurrentLocalTime()));
     tsp->info(_json_prefix + root.oneLiner(*tsp));
 }
 

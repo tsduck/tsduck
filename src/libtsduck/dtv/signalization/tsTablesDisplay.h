@@ -452,10 +452,10 @@ namespace ts {
         //! @param [in] num_per_line  Number of values to be output on a single line (default: 3)
         //!
         void displayVector(const UString& title,
-            UStringVector values,
-            const UString& margin = UString(),
-            bool space_first = true,
-            size_t num_per_line = 3);
+                           UStringVector values,
+                           const UString& margin = UString(),
+                           bool space_first = true,
+                           size_t num_per_line = 3);
 
     private:
         DuckContext&    _duck;                      // Reference to the associated TSDuck context.

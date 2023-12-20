@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3533
+VERSION 3.37-3541
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Option --time-stamp in plugin "bitrate_monitor".
 
 [BUG] Bug fixes:
 

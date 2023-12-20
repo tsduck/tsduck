@@ -272,12 +272,13 @@ namespace ts {
         //!
         class TSDUCKDLL XMLOptions
         {
+            TS_DEFAULT_COPY_MOVE(XMLOptions);
         public:
-            XMLOptions();       //!< Constructor.
-            bool forceGeneric;  //!< Force a generic table node even if the table can be specialized.
-            bool setPID;        //!< Add a metadata element with the source PID, when available.
-            bool setLocalTime;  //!< Add a metadata element with the current local time.
-            bool setPackets;    //!< Add a metadata element with the index of the first and last TS packets of the table.
+            XMLOptions() {};            //!< Constructor.
+            bool forceGeneric = false;  //!< Force a generic table node even if the table can be specialized.
+            bool setPID = false;        //!< Add a metadata element with the source PID, when available.
+            bool setLocalTime = false;  //!< Add a metadata element with the current local time.
+            bool setPackets = false;    //!< Add a metadata element with the index of the first and last TS packets of the table.
         };
 
         //!
@@ -308,7 +309,7 @@ namespace ts {
 
         // Private fields
         bool             _is_valid = false;
-        TID              _tid {TID_NULL};
+        TID              _tid = TID_NULL;
         uint16_t         _tid_ext = 0;
         uint8_t          _version = 0;
         PID              _source_pid = PID_NULL;
