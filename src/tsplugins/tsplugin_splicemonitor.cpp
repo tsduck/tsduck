@@ -24,6 +24,7 @@
 #include "tsjsonOutputArgs.h"
 #include "tsjsonRunningDocument.h"
 #include "tsxmlJSONConverter.h"
+#include "tsxmlAttribute.h"
 
 
 //----------------------------------------------------------------------------
@@ -71,6 +72,7 @@ namespace ts {
         bool        _packet_index = false;   // Show packet index.
         bool        _use_log = false;        // Use tsp logger for messages.
         bool        _no_adjustment = false;  // Do not adjust PTS of splice command reception time.
+        bool        _time_stamp = false;     // Display time stamps with each table and JSON structure.
         PID         _splice_pid = PID_NULL;  // The only splice PID to monitor.
         PID         _pts_pid = PID_NULL;     // The only PTS PID to use.
         fs::path    _output_file {};         // Output file name.
@@ -195,6 +197,10 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     help(u"time-pid",
          u"Specify one video or audio PID containing PTS time stamps to link with SCTE-35 sections to monitor. "
          u"By default, the PMT's are used to link between PTS PID's and SCTE-35 PID's.");
+
+    option(u"time-stamp");
+    help(u"time-stamp",
+         u"Add a time stamp (current local time) inside each JSON structure (tables and events).");
 }
 
 
@@ -206,6 +212,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
 {
     _json_args.loadArgs(duck, *this);
     _packet_index = present(u"packet-index");
+    _time_stamp = present(u"time-stamp");
     _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
@@ -389,6 +396,10 @@ void ts::SpliceMonitorPlugin::init(json::Object& obj, PID splice_pid, uint32_t e
         obj.add(u"event-pts", int64_t(evt->event_pts));
         obj.add(u"count", int64_t(evt->event_count));
     }
+    if (_time_stamp) {
+        // Make sure to sure the same time format as XML attributes.
+        obj.add(u"time", xml::Attribute::DateTimeToString(Time::CurrentLocalTime()));
+    }
 }
 
 
@@ -529,6 +540,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
             BinaryTable::XMLOptions xml;
             xml.setPID = true;
             xml.setPackets = _packet_index;
+            xml.setLocalTime = _time_stamp;
             table.toXML(duck, doc.rootElement(), xml);
             // Convert the XML document into JSON and get the first (and only) table.
             _json_args.report(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"), _json_doc, *tsp);

@@ -449,19 +449,6 @@ bool ts::BinaryTable::isShortSection() const
 
 
 //----------------------------------------------------------------------------
-// Options to convert a binary table into XML.
-//----------------------------------------------------------------------------
-
-ts::BinaryTable::XMLOptions::XMLOptions() :
-    forceGeneric(false),
-    setPID(false),
-    setLocalTime(false),
-    setPackets(false)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // This method converts the table to XML.
 //----------------------------------------------------------------------------
 
