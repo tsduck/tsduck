@@ -22,9 +22,10 @@ namespace ts {
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!
-    //! @tparam MUTEX A mutex class to synchronize access to the object.
+    //! @tparam MUTEX A mutex class to synchronize access to the object
+    //! (typically std::mutex for thread-safe usage, ts::null_mutex for mono-thread usage).
     //!
-    template <class MUTEX = ts::null_mutex>
+    template <class MUTEX>
     class ReportFile: public Report
     {
     public:

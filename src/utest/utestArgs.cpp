@@ -152,7 +152,7 @@ void ArgsTest::testAccessors()
 // Test case: help text with default options
 void ArgsTest::testHelpDefault()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&log);
 
@@ -218,7 +218,7 @@ void ArgsTest::testHelpDefault()
 // Test case: copy options
 void ArgsTest::testCopyOptions()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     ts::Args args1(u"{description1}", u"{syntax1}", ts::Args::NO_EXIT_ON_ERROR);
     ts::Args args2(u"{description2}", u"{syntax2}", ts::Args::NO_EXIT_ON_ERROR);
 
@@ -278,7 +278,7 @@ namespace {
 // Test case: help text of a custom commmand.
 void ArgsTest::testHelpCustom()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
@@ -356,7 +356,7 @@ void ArgsTest::testHelpCustom()
 // Test case: analyze valid command, get option values, use analyze() with variable length argument list
 void ArgsTest::testValidCommandVariableArgs()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt3", u"6", u"a", u"--opt1", u"b", u"--opt9", u"val2", u"--opt3", u"0", u"--opt3", u"6"}));
@@ -428,7 +428,7 @@ void ArgsTest::testValidCommandVariableArgs()
 // Test case: analyze valid command, get option values, use analyze() with argc, argv parameters.
 void ArgsTest::testValidCommandArgcArgv()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     char* argv[] = {
@@ -502,7 +502,7 @@ void ArgsTest::testValidCommandArgcArgv()
 // Test case: analyze valid command, get option values, use analyze() with container of arguments
 void ArgsTest::testValidCommandContainer()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     ts::UStringVector arguments;
@@ -574,7 +574,7 @@ void ArgsTest::testValidCommandContainer()
 // Test case: presence of thousands separator
 void ArgsTest::testThousandsSeparator()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"a", u"-5", u"2000", u"--opt5=3,000", u"-50x4,000", u"-5", u"80 000", u"-5", u"2,000 000"}));
@@ -590,7 +590,7 @@ void ArgsTest::testThousandsSeparator()
 // Test case: syntax of optional values
 void ArgsTest::testOptionalValue()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"a", u"--opt8", u"2"}));
@@ -607,7 +607,7 @@ void ArgsTest::testOptionalValue()
 // Test case:
 void ArgsTest::testMissingParameter()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--opt1"})));
@@ -618,7 +618,7 @@ void ArgsTest::testMissingParameter()
 // Test case:
 void ArgsTest::testTooManyParameters()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"a", u"b", u"c"}));
@@ -629,7 +629,7 @@ void ArgsTest::testTooManyParameters()
 // Test case:
 void ArgsTest::testAmbiguousOption()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"a", u"b"}));
@@ -640,7 +640,7 @@ void ArgsTest::testAmbiguousOption()
 // Test case:
 void ArgsTest::testInvalidIntegerOption()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"x", u"a", u"b"}));
@@ -651,7 +651,7 @@ void ArgsTest::testInvalidIntegerOption()
 // Test case:
 void ArgsTest::testIntegerTooLow()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"-10", u"a", u"b"}));
@@ -662,7 +662,7 @@ void ArgsTest::testIntegerTooLow()
 // Test case:
 void ArgsTest::testIntegerTooHigh()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt3 10 a b"));
@@ -673,7 +673,7 @@ void ArgsTest::testIntegerTooHigh()
 // Test case:
 void ArgsTest::testInvalidEnum()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt9 x a b"));
@@ -684,7 +684,7 @@ void ArgsTest::testInvalidEnum()
 // Test case:
 void ArgsTest::testValidEnum()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt9", u"0x20", u"a", u"b"}));
@@ -694,7 +694,7 @@ void ArgsTest::testValidEnum()
 // Test case: bitmask of integer values.
 void ArgsTest::testBitMask()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", USV({u"a"})));
@@ -710,7 +710,7 @@ void ArgsTest::testBitMask()
 // Test case: "gather parameters" option
 void ArgsTest::testGatherParameters()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
     args.redirectReport(&log);
 
@@ -801,7 +801,7 @@ void ArgsTest::testRanges()
     args.option(u"opt2", 0, ts::Args::UINT8, 0, 3, 0, 100);
     args.option(u"opt3", 0, ts::Args::INTEGER, 0, ts::Args::UNLIMITED_COUNT, 0, ts::Args::UNLIMITED_VALUE, true);
 
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     args.redirectReport(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"0", u"--opt1", u"1,0-0x00C", u"--opt1", u"4,7"}));
@@ -963,7 +963,7 @@ void ArgsTest::testInvalidFraction()
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     args.redirectReport(&log);
 
     typedef ts::Fraction<int32_t> Frac;
@@ -979,7 +979,7 @@ void ArgsTest::testInvalidDouble()
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     args.redirectReport(&log);
     args.option<Double>(u"opt", 0, 0, 1, 12, 15);
 

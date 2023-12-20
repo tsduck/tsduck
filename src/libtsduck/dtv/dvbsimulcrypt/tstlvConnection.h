@@ -25,11 +25,9 @@ namespace ts {
         //! @ingroup net
         //!
         //! @tparam MUTEX Mutex type for synchronization.
-        //! Serialization & deserialization need synchronized access.
-        //! By default, use thread-safe implementation.
-        //! Instantiate with MUTEX = ts::null_mutex for mono-thread application.
+        //! (typically std::mutex for thread-safe usage, ts::null_mutex for mono-thread usage).
         //!
-        template <class MUTEX = std::mutex>
+        template <class MUTEX>
         class Connection: public ts::TCPConnection
         {
             TS_NOBUILD_NOCOPY(Connection);

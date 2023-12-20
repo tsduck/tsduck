@@ -182,7 +182,7 @@ void XMLTest::testInvalid()
         u"<foo>\n"
         u"</bar>";
 
-    ts::ReportBuffer<> rep;
+    ts::ReportBuffer<ts::null_mutex> rep;
     ts::xml::Document doc(rep);
     TSUNIT_ASSERT(!doc.parse(xmlContent));
     TSUNIT_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.messages());

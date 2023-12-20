@@ -56,7 +56,7 @@ void ContinuityTest::afterTest()
 
 void ContinuityTest::testAnalyze()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     ts::ContinuityAnalyzer fixer(ts::AllPIDs, &log);
 
     fixer.setDisplay(true);
@@ -129,7 +129,7 @@ void ContinuityTest::testAnalyze()
 
 void ContinuityTest::testFix()
 {
-    ts::ReportBuffer<> log;
+    ts::ReportBuffer<ts::null_mutex> log;
     ts::ContinuityAnalyzer fixer(ts::AllPIDs, &log);
 
     fixer.setDisplay(true);
