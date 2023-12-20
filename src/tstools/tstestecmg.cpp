@@ -12,6 +12,7 @@
 
 #include "tsMain.h"
 #include "tsArgs.h"
+#include "tsTime.h"
 #include "tsDuckContext.h"
 #include "tsECMGSCS.h"
 #include "tsIPv4SocketAddress.h"
@@ -417,7 +418,7 @@ namespace {
 
     class ECMGConnection;
     typedef ts::SafePtr<ECMGConnection, std::mutex> ECMGConnectionPtr;
-    typedef ts::tlv::Connection<> Connection;
+    typedef ts::tlv::Connection<std::mutex> Connection;
 
     class ECMGConnection: public ts::Thread
     {

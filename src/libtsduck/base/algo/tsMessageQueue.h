@@ -14,7 +14,6 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsSafePtr.h"
-#include "tsTime.h"
 
 namespace ts {
     //!
@@ -25,9 +24,10 @@ namespace ts {
     //! access to a shared queue of generic messages.
     //!
     //! @tparam MSG The type of the messages to exchange.
-    //! @tparam MUTEX The type of mutex for synchronization of message pointers (std::mutex by default).
+    //! @tparam MUTEX The type of mutex for synchronization of message pointers
+    //! (typically std::mutex for thread-safe usage, ts::null_mutex for mono-thread usage).
     //!
-    template <typename MSG, class MUTEX = std::mutex>
+    template <typename MSG, class MUTEX>
     class MessageQueue
     {
         TS_NOCOPY(MessageQueue);

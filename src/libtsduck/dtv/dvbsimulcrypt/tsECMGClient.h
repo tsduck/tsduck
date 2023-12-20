@@ -148,13 +148,13 @@ namespace ts {
         State                       _state = INITIAL;
         const AbortInterface*       _abort = nullptr;
         tlv::Logger                 _logger {};
-        tlv::Connection<>           _connection {_protocol, true, 3}; // connection with ECMG server
+        tlv::Connection<null_mutex> _connection {_protocol, true, 3}; // connection with ECMG server
         ecmgscs::ChannelStatus      _channel_status {_protocol};      // initial response to channel_setup
         ecmgscs::StreamStatus       _stream_status {_protocol};       // initial response to stream_setup
         std::recursive_mutex        _mutex {};                        // exclusive access to protected fields
         std::condition_variable_any _work_to_do {};                   // notify receiver thread to do some work
         AsyncRequests               _async_requests {};
-        MessageQueue <tlv::Message, ts::null_mutex> _response_queue {RESPONSE_QUEUE_SIZE};
+        MessageQueue<tlv::Message, null_mutex> _response_queue {RESPONSE_QUEUE_SIZE};
 
         // Build a CW_provision message.
         void buildCWProvision(ecmgscs::CWProvision& msg,

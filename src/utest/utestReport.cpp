@@ -73,15 +73,19 @@ void ReportTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
+namespace {
+    typedef ts::ReportBuffer<std::mutex> TestBuffer;
+}
+
 // Test case: set/get severity
 void ReportTest::testSeverity()
 {
-    ts::ReportBuffer<> log1;
+    TestBuffer log1;
     TSUNIT_ASSERT(log1.maxSeverity() == ts::Severity::Info);
     TSUNIT_ASSERT(!log1.debug());
     TSUNIT_ASSERT(!log1.verbose());
 
-    ts::ReportBuffer<> log2(ts::Severity::Verbose);
+    TestBuffer log2(ts::Severity::Verbose);
     TSUNIT_ASSERT(log2.maxSeverity() == ts::Severity::Verbose);
     TSUNIT_ASSERT(!log2.debug());
     TSUNIT_ASSERT(log2.verbose());
@@ -99,7 +103,7 @@ void ReportTest::testSeverity()
 
 // Log sequence for testString
 namespace {
-    void _testStringSequence(ts::ReportBuffer<>& log, int level)
+    void _testStringSequence(TestBuffer& log, int level)
     {
         const ts::UString str1(u"1");
         const ts::UString str2(u"2");
@@ -127,50 +131,50 @@ namespace {
 // Test case: log string messages
 void ReportTest::testString()
 {
-    ts::ReportBuffer<> log;
+    TestBuffer log;
     TSUNIT_ASSERT(log.empty());
 
     _testStringSequence(log, ts::Severity::Debug);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"1\n"
-                                  u"Debug: 2\n"
-                                  u"Debug: 3\n"
-                                  u"Warning: 4\n"
-                                  u"5\n"
-                                  u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"Debug: 2\n"
+                 u"Debug: 3\n"
+                 u"Warning: 4\n"
+                 u"5\n"
+                 u"FATAL ERROR: 6\n"
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testStringSequence(log, ts::Severity::Info);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"1\n"
-                                  u"Warning: 4\n"
-                                  u"5\n"
-                                  u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"Warning: 4\n"
+                 u"5\n"
+                 u"FATAL ERROR: 6\n"
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testStringSequence(log, ts::Severity::Warning);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"Warning: 4\n"
-                                  u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"FATAL ERROR: 6\n"
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testStringSequence(log, ts::Severity::Error);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testStringSequence(log, ts::Severity::Fatal);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7",
+                 u"FATAL ERROR: 7",
                  log.messages());
 
     _testStringSequence(log, ts::Severity::Fatal - 1);
@@ -180,7 +184,7 @@ void ReportTest::testString()
 
 // Log sequence for testPrintf
 namespace {
-    void _testPrintfSequence(ts::ReportBuffer<>& log, int level)
+    void _testPrintfSequence(TestBuffer& log, int level)
     {
         log.setMaxSeverity(level);
         log.clear();
@@ -199,44 +203,44 @@ namespace {
 // Test case: log using printf-like formats
 void ReportTest::testPrintf()
 {
-    ts::ReportBuffer<> log;
+    TestBuffer log;
 
     _testPrintfSequence(log, ts::Severity::Debug);
     TSUNIT_EQUAL(u"1\n"
-                                  u"Debug: 2\n"
-                                  u"Debug: 3\n"
-                                  u"Warning: 4\n"
-                                  u"5\n"
-                                  u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"Debug: 2\n"
+                 u"Debug: 3\n"
+                 u"Warning: 4\n"
+                 u"5\n"
+                 u"FATAL ERROR: 6\n"
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testPrintfSequence(log, ts::Severity::Info);
     TSUNIT_EQUAL(u"1\n"
-                                  u"Warning: 4\n"
-                                  u"5\n"
-                                  u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"Warning: 4\n"
+                 u"5\n"
+                 u"FATAL ERROR: 6\n"
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testPrintfSequence(log, ts::Severity::Warning);
     TSUNIT_EQUAL(u"Warning: 4\n"
-                                  u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"FATAL ERROR: 6\n"
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testPrintfSequence(log, ts::Severity::Error);
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7\n"
-                                  u"Error: 8",
+                 u"FATAL ERROR: 7\n"
+                 u"Error: 8",
                  log.messages());
 
     _testPrintfSequence(log, ts::Severity::Fatal);
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
-                                  u"FATAL ERROR: 7",
+                 u"FATAL ERROR: 7",
                  log.messages());
 
     _testPrintfSequence(log, ts::Severity::Fatal - 1);
@@ -248,7 +252,7 @@ void ReportTest::testPrintf()
 void ReportTest::testByName()
 {
     {
-        ts::ReportFile<> log(_fileName, false, false);
+        ts::ReportFile<std::mutex> log(_fileName, false, false);
         log.info(u"info 1");
         log.error(u"error 1");
     }
@@ -262,7 +266,7 @@ void ReportTest::testByName()
     TSUNIT_ASSERT(value == ref);
 
     {
-        ts::ReportFile<> log(_fileName, true, false);
+        ts::ReportFile<std::mutex> log(_fileName, true, false);
         log.info(u"info 2");
         log.error(u"error 2");
     }
@@ -281,7 +285,7 @@ void ReportTest::testByStream()
     TSUNIT_ASSERT(stream.is_open());
 
     {
-        ts::ReportFile<> log(stream);
+        ts::ReportFile<std::mutex> log(stream);
         log.info(u"info 1");
         log.error(u"error 1");
     }
@@ -302,7 +306,7 @@ void ReportTest::testByStream()
 // Test case: std::error_code logging.
 void ReportTest::testErrCodeReport()
 {
-    ts::ReportBuffer<> log;
+    TestBuffer log;
 
     // Test existent directory.
     fs::path dir(fs::temp_directory_path());

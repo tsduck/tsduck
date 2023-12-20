@@ -73,7 +73,7 @@ bool ts::SectionDemux::Status::hasErrors() const
 
 std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, bool errors_only) const
 {
-    ReportFile<> rep(strm);
+    ReportFile<null_mutex> rep(strm);
     const UString margin(indent, ' ');
     display(rep, Severity::Info, margin, errors_only);
     return strm;

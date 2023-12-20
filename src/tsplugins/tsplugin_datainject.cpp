@@ -69,9 +69,9 @@ namespace ts {
             virtual void main() override;
 
         private:
-            DataInjectPlugin* const _plugin;
-            SwitchableReport        _report;
-            tlv::Connection<>       _client;
+            DataInjectPlugin* const     _plugin;
+            SwitchableReport            _report;
+            tlv::Connection<std::mutex> _client;
         };
 
         // UDP listener thread.

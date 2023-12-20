@@ -13,7 +13,7 @@
 #include "tsMessageQueue.h"
 #include "tsMessagePriorityQueue.h"
 #include "tsMonotonic.h"
-#include "tsSysUtils.h"
+#include "tsTime.h"
 #include "tsunit.h"
 #include "utestTSUnitThread.h"
 
@@ -69,7 +69,7 @@ void MessageQueueTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-typedef ts::MessageQueue<int> TestQueue;
+typedef ts::MessageQueue<int, std::mutex> TestQueue;
 
 // Test case: Constructor
 void MessageQueueTest::testConstructor()
@@ -182,8 +182,9 @@ void MessageQueueTest::testPriorityQueue()
         bool operator<(const Message& other) const { return a < other.a; }
     };
 
-    ts::MessagePriorityQueue<Message> queue;
-    ts::MessagePriorityQueue<Message>::MessagePtr msg;
+    typedef ts::MessagePriorityQueue<Message, std::mutex> Queue;
+    Queue queue;
+    Queue::MessagePtr msg;
 
     TSUNIT_ASSERT(queue.enqueue(new Message(1, 1), cn::milliseconds::zero()));
     TSUNIT_ASSERT(queue.enqueue(new Message(5, 2), cn::milliseconds::zero()));
