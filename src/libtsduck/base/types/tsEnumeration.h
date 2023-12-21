@@ -40,7 +40,7 @@ namespace ts {
         //!
         //! Integer type used in representations of values.
         //!
-        typedef int int_t;
+        using int_t = int;
 
         //!
         //! This value means "not found".
@@ -260,7 +260,7 @@ namespace ts {
         //! }
         //! @endcode
         //!
-        typedef std::multimap<int_t, UString>::const_iterator const_iterator;
+        using const_iterator = std::multimap<int_t, UString>::const_iterator;
 
         //!
         //! Return an iterator pointing to the first element of this object.

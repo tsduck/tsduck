@@ -45,7 +45,7 @@ namespace ts {
         //!
         //! List of language entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // MultilingualServiceNameDescriptor public members:
         EntryList entries {};  //!< List of language entries.

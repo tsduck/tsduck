@@ -703,7 +703,7 @@ void ts::xml::Element::getAttributes(std::map<UString,UString>& attr) const
 void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names) const
 {
     // Map of names, indexed by sequence number.
-    typedef std::multimap<size_t, UString> NameMap;
+    using NameMap = std::multimap<size_t, UString>;
     NameMap nameMap;
 
     // Read all names and build a map indexed by sequence number.

@@ -63,7 +63,7 @@ namespace ts {
         //! This list is equivalent to the compatibilityDescriptor()
         //! structure as defined in ISO/IEC 13818-6 and ETSI TS 102 006.
         //!
-        typedef std::list<CompatibilityDescriptor> CompatibilityDescriptorList;
+        using CompatibilityDescriptorList = std::list<CompatibilityDescriptor>;
 
         //!
         //! Description of a platform.
@@ -104,7 +104,7 @@ namespace ts {
         //!
         //! List of platforms.
         //!
-        typedef EntryWithDescriptorsList<Platform> PlatformList;
+        using PlatformList = EntryWithDescriptorsList<Platform>;
 
         //!
         //! Description of a set of devices.
@@ -145,7 +145,7 @@ namespace ts {
         //!
         //! List of devicess.
         //!
-        typedef EntryWithDescriptorsList<Devices> DevicesList;
+        using DevicesList = EntryWithDescriptorsList<Devices>;
 
         // UNT public members:
         uint8_t        action_type = 0;       //!< Action type.

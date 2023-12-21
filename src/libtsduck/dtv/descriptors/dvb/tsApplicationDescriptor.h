@@ -43,7 +43,7 @@ namespace ts {
         //!
         //! List of application profiles.
         //!
-        typedef std::list<Profile> ProfileList;
+        using ProfileList = std::list<Profile>;
 
         // ApplicationDescriptor public members:
         ProfileList profiles {};                   //!< List of application profiles.

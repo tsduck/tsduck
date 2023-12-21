@@ -40,7 +40,7 @@ namespace ts {
         //!
         //! List of Range entries.
         //!
-        typedef std::list<Range> RangeList;
+        using RangeList = std::list<Range>;
 
         // VideoDepthRangeDescriptor public members:
         RangeList ranges {};  //!< The list of ranges.

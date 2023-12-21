@@ -226,7 +226,7 @@ namespace ts {
         // Content of a section:
         // - The map key is the entry name.
         // - An entry is a vector of strings.
-        typedef std::map<UString, UStringVector> EntryMap;
+        using EntryMap = std::map<UString, UStringVector>;
 
         // Private members:
         EntryMap _entries {};

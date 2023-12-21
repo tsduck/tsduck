@@ -37,7 +37,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef AbstractDemux SuperClass;
+        using SuperClass = AbstractDemux;
 
         //!
         //! Constructor.
@@ -77,8 +77,8 @@ namespace ts {
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
 
         // Keep a map of all PMT's per service id.
-        typedef SafePtr<PMT> PMTPtr;
-        typedef std::map<uint16_t, PMTPtr> PMTMap;
+        using PMTPtr = SafePtr<PMT>;
+        using PMTMap = std::map<uint16_t, PMTPtr>;
 
         // We record here all MPE PID's from the IP/MAC Notification Table (INT).
         // In the INT, an MPE PID is defined by a 16-bit service id and an 8-bit component tag.

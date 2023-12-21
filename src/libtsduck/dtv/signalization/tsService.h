@@ -277,9 +277,9 @@ namespace ts {
     };
 
     // Containers
-    typedef std::vector<Service> ServiceVector;  //!< Vector of DVB services.
-    typedef std::list<Service> ServiceList;      //!< List of DVB services.
-    typedef std::set<Service> ServiceSet;        //!< Set of DVB services.
+    using ServiceVector = std::vector<Service>;  //!< Vector of DVB services.
+    using ServiceList = std::list<Service>;      //!< List of DVB services.
+    using ServiceSet = std::set<Service>;        //!< Set of DVB services.
 }
 
 

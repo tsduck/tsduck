@@ -774,7 +774,7 @@ namespace ts {
 #endif
 
         // The std::chrono::duration type with natural clock ticks.
-        typedef cn::duration<std::intmax_t, std::ratio<1, MilliSecPerSec * TICKS_PER_MS>> Ticks;
+        using Ticks = cn::duration<std::intmax_t, std::ratio<1, MilliSecPerSec * TICKS_PER_MS>>;
 
         // On Win32, a the FILETIME structure is binary-compatible with a 64-bit integer.
 #if defined(TS_WINDOWS)

@@ -194,17 +194,17 @@ namespace ts {
     //!
     //! Vector of socket addresses.
     //!
-    typedef std::vector<IPv4SocketAddress> IPv4SocketAddressVector;
+    using IPv4SocketAddressVector = std::vector<IPv4SocketAddress>;
 
     //!
     //! Set of socket addresses.
     //!
-    typedef std::set<IPv4SocketAddress> IPv4SocketAddressSet;
+    using IPv4SocketAddressSet = std::set<IPv4SocketAddress>;
 
     //! @cond nodoxygen
     // Legacy definitions.
-    typedef IPv4SocketAddress IPSocketAddress;
-    typedef IPv4SocketAddressVector IPSocketAddressVector;
-    typedef IPv4SocketAddressSet IPSocketAddressSet;
+    using IPSocketAddress = IPv4SocketAddress;
+    using IPSocketAddressVector = IPv4SocketAddressVector;
+    using IPSocketAddressSet = IPv4SocketAddressSet;
     //! @endcond
 }

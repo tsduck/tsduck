@@ -68,5 +68,5 @@ namespace ts {
     //!
     //! Legacy name for a DVB AC-3_descriptor.
     //!
-    typedef DVBAC3Descriptor AC3Descriptor;
+    using AC3Descriptor = DVBAC3Descriptor;
 }

@@ -347,8 +347,8 @@ namespace ts {
             Event(const uint8_t*& data, size_t& size);
         };
 
-        typedef SafePtr<Event> EventPtr;
-        typedef std::list<EventPtr> EventList;
+        using EventPtr = SafePtr<Event>;
+        using EventList = std::list<EventPtr>;
 
         // -----------------------------
         // Description of an EIT section
@@ -377,9 +377,9 @@ namespace ts {
             void updateVersion(EITGenerator* gen, bool recompute_crc);
         };
 
-        typedef SafePtr<ESection> ESectionPtr;
-        typedef std::list<ESectionPtr> ESectionList;      // a list of EIT schedule sections
-        typedef std::array<ESectionPtr, 2> ESectionPair;  // a pair of EIT p/f sections
+        using ESectionPtr = SafePtr<ESection>;
+        using ESectionList = std::list<ESectionPtr>;      // a list of EIT schedule sections
+        using ESectionPair = std::array<ESectionPtr, 2>;  // a pair of EIT p/f sections
 
         // ------------------------------------------------------------------
         // Description of an EIT schedule segment (3 hours, up to 8 sections)
@@ -399,8 +399,8 @@ namespace ts {
             ESegment(const Time& seg_start_time) : start_time(seg_start_time) {}
         };
 
-        typedef SafePtr<ESegment> ESegmentPtr;
-        typedef std::list<ESegmentPtr> ESegmentList;
+        using ESegmentPtr = SafePtr<ESegment>;
+        using ESegmentList = std::list<ESegmentPtr>;
 
         // ------------------------
         // Description of a service
@@ -434,8 +434,8 @@ namespace ts {
         // to inject, it is passed to the packetizer and requeued at the end of the list
         // for the next injection.
 
-        typedef std::map<ServiceIdTriplet, EService> EServiceMap;
-        typedef std::array<ESectionList, EITRepetitionProfile::PROFILE_COUNT> ESectionListArray;
+        using EServiceMap = std::map<ServiceIdTriplet, EService>;
+        using ESectionListArray = std::array<ESectionList, EITRepetitionProfile::PROFILE_COUNT>;
 
         // ---------------------------
         // EITGenerator private fields

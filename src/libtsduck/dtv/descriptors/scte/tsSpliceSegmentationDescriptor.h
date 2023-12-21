@@ -32,7 +32,7 @@ namespace ts {
         //!
         //! A map of 33-bit PTS offset values, indexed by 8-bit component tags.
         //!
-        typedef std::map<uint8_t, uint64_t> PTSOffsetByComponent;
+        using PTSOffsetByComponent = std::map<uint8_t, uint64_t>;
 
         // SpliceSegmentationDescriptor public members:
         uint32_t  identifier = SPLICE_ID_CUEI;             //!< Descriptor owner, 0x43554549 ("CUEI").

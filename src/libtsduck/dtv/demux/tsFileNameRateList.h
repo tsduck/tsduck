@@ -27,7 +27,7 @@ namespace ts {
         //!
         //! Reference to the superclass.
         //!
-        typedef std::list<FileNameRate> SuperClass;
+        using SuperClass = std::list<FileNameRate>;
 
         //!
         //! Default constructor.

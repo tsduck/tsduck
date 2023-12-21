@@ -151,7 +151,7 @@ namespace ts {
 
         // The LCN store is indexed by service id only. This is more efficient than using the DVB triplet as index.
         // This is a multimap since the same sevice id can be used on different TS.
-        typedef std::multimap<uint16_t,LCN> LCNMap;
+        using LCNMap = std::multimap<uint16_t,LCN>;
 
         // Get LCN entry.
         LCNMap::const_iterator findLCN(uint16_t srv_id, uint16_t ts_id, uint16_t onet_id) const;

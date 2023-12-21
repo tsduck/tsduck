@@ -29,17 +29,17 @@ namespace ts {
         //!
         //! Safe pointer to a JSON value (not thread-safe).
         //!
-        typedef SafePtr<Value, ts::null_mutex> ValuePtr;
+        using ValuePtr = SafePtr<Value, ts::null_mutex>;
 
         //!
         //! A vector of safe pointers to JSON values.
         //!
-        typedef std::vector<ValuePtr> ValuePtrVector;
+        using ValuePtrVector = std::vector<ValuePtr>;
 
         //!
         //! A list of safe pointers to JSON values.
         //!
-        typedef std::list<ValuePtr> ValuePtrList;
+        using ValuePtrList = std::list<ValuePtr>;
 
         //!
         //! Definition of the type of a value.

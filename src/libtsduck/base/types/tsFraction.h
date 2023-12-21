@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! The underlying integer type.
         //!
-        typedef INT_T int_t;
+        using int_t = INT_T;
 
         //!
         //! The minimum representable value of this fraction type.
@@ -134,7 +134,7 @@ namespace ts {
         //! Converts to a proper fraction (a fraction that is less than 1).
         //! The previous integer part is returned. This means that:
         //! @code
-        //!   typedef Fraction<...> Frac;
+        //!   using Frac = Fraction<...>;
         //!   Frac f(..);
         //!   Frac old(f);
         //!   Frac::int_t i = f.proper();

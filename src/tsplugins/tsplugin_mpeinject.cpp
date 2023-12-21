@@ -43,12 +43,12 @@ namespace ts {
     private:
         // Each UDP receiver is executed in a thread. There is a vector of receiver threads.
         class ReceiverThread;
-        typedef SafePtr<ReceiverThread> ReceiverPtr;
-        typedef std::vector<ReceiverPtr> ReceiverVector;
+        using ReceiverPtr = SafePtr<ReceiverThread>;
+        using ReceiverVector = std::vector<ReceiverPtr>;
 
         // Each receiver thread builds DSM-CC sections from the received UDP datagrams.
         // Sections from all receivers are multiplexed into one single thread-safe queue.
-        typedef MessageQueue<Section, std::mutex> SectionQueue;
+        using SectionQueue = MessageQueue<Section, std::mutex>;
 
         // Command line options.
         PID        _mpe_pid = PID_NULL;     // PID into insert the MPE datagrams.

@@ -37,7 +37,7 @@ namespace ts {
     //!
     //! @ingroup mpeg
     //!
-    typedef CompactBitSet<32> TSPacketLabelSet;
+    using TSPacketLabelSet = CompactBitSet<32>;
 
     //!
     //! Metadata of an MPEG-2 transport packet for tsp plugins.
@@ -315,11 +315,11 @@ namespace ts {
     //!
     //! Vector of packet metadata.
     //!
-    typedef std::vector<TSPacketMetadata> TSPacketMetadataVector;
+    using TSPacketMetadataVector = std::vector<TSPacketMetadata>;
 
     //!
     //! Metadata for TS packet are accessed in a memory-resident buffer.
     //! A packet and its metadata have the same index in their respective buffer.
     //!
-    typedef ResidentBuffer<TSPacketMetadata> PacketMetadataBuffer;
+    using PacketMetadataBuffer = ResidentBuffer<TSPacketMetadata>;
 }

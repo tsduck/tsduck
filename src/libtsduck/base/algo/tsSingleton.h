@@ -154,4 +154,4 @@
         ObjectClass* volatile StaticInstanceClass::_instance = nullptr;  \
         std::once_flag StaticInstanceClass::_once_flag {};               \
     }                                                                    \
-    typedef int TS_UNIQUE_NAME(for_trailing_semicolon)
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int

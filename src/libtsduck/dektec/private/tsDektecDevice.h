@@ -24,15 +24,15 @@ namespace ts {
     //!
     //! Vector of ts::DektecDevice.
     //!
-    typedef std::vector<DektecDevice> DektecDeviceVector;
+    using DektecDeviceVector = std::vector<DektecDevice>;
     //!
     //! Vector of Dtapi::DtDeviceDesc.
     //!
-    typedef std::vector<Dtapi::DtDeviceDesc> DektecDeviceDescVector;
+    using DektecDeviceDescVector = std::vector<Dtapi::DtDeviceDesc>;
     //!
     //! Vector of Dtapi::DtHwFuncDesc.
     //!
-    typedef std::vector<Dtapi::DtHwFuncDesc> DektecPortDescVector;
+    using DektecPortDescVector = std::vector<Dtapi::DtHwFuncDesc>;
 
     //!
     //! Get the error message corresponding to a DTAPI error code

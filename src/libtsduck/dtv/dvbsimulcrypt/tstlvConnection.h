@@ -35,7 +35,7 @@ namespace ts {
             //!
             //! Reference to superclass.
             //!
-            typedef ts::TCPConnection SuperClass;
+            using SuperClass = ts::TCPConnection;
 
             //!
             //! Constructor.

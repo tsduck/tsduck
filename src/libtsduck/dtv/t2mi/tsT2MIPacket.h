@@ -23,12 +23,12 @@ namespace ts {
     //!
     //! Safe pointer for T2MIPacket (not thread-safe).
     //!
-    typedef SafePtr<T2MIPacket, ts::null_mutex> T2MIPacketPtr;
+    using T2MIPacketPtr = SafePtr<T2MIPacket, ts::null_mutex>;
 
     //!
     //! Vector of T2MIPacket safe pointers.
     //!
-    typedef std::vector<T2MIPacketPtr> T2MIPacketPtrVector;
+    using T2MIPacketPtrVector = std::vector<T2MIPacketPtr>;
 
     //!
     //! Representation of a DVB T2-MI (DVB-T2 Modulator Interface) packet.
@@ -41,7 +41,7 @@ namespace ts {
         //!
         //! Explicit identification of super class.
         //!
-        typedef DemuxedData SuperClass;
+        using SuperClass = DemuxedData;
 
         //!
         //! Default constructor.

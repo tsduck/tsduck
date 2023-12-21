@@ -95,8 +95,8 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    typedef ts::FloatingPoint<double> Double;
-    typedef ts::UStringVector USV;
+    using Double = ts::FloatingPoint<double>;
+    using USV = ts::UStringVector;
     fs::path _tempFile1 {};
     fs::path _tempFile2 {};
 };
@@ -854,7 +854,7 @@ void ArgsTest::testDecimals()
 // Test case: fixed point types.
 void ArgsTest::testFixedPoint()
 {
-    typedef ts::FixedPoint<int32_t, 3> Fixed;
+    using Fixed = ts::FixedPoint<int32_t, 3>;
 
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&CERR);
@@ -876,7 +876,7 @@ void ArgsTest::testFixedPoint()
 // Test case: fraction types.
 void ArgsTest::testFraction()
 {
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
 
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&CERR);
@@ -966,7 +966,7 @@ void ArgsTest::testInvalidFraction()
     ts::ReportBuffer<ts::null_mutex> log;
     args.redirectReport(&log);
 
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
     args.option<Frac>(u"opt");
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"foo"}));

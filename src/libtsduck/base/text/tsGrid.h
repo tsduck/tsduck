@@ -250,7 +250,7 @@ namespace ts {
         void putLayout(const std::initializer_list<ColumnText> text);
 
     private:
-        typedef std::vector<ColumnLayout> LayoutVector;
+        using LayoutVector = std::vector<ColumnLayout>;
 
         std::ostream& _out;                 // Output text device.
         size_t        _lineWidth = 0;       // Display line width.

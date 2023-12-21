@@ -22,7 +22,7 @@ namespace ts {
     //!
     //! A vector of Dektec device information.
     //!
-    typedef std::vector<DektecDeviceInfo> DektecDeviceInfoVector;
+    using DektecDeviceInfoVector = std::vector<DektecDeviceInfo>;
 
     //!
     //! A simple encapsulation of Dektec device information.
@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! A vector of Dektec port information.
         //!
-        typedef std::vector<PortInfo> PortInfoVector;
+        using PortInfoVector = std::vector<PortInfo>;
 
         DektecDeviceInfo() = default;   //!< Constructor.
         UString        model {};        //!< Device model;

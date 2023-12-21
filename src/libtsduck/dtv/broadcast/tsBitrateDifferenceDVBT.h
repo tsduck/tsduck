@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! List of BitrateDifferenceDVBT.
     //!
-    typedef std::list<BitrateDifferenceDVBT> BitrateDifferenceDVBTList;
+    using BitrateDifferenceDVBTList = std::list<BitrateDifferenceDVBT>;
 
     //!
     //! A variant of DVB-T tuners parameters with an offset between a target bitrate and their theoretical bitrate.

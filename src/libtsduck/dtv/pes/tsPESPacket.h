@@ -24,12 +24,12 @@ namespace ts {
     //!
     //! Safe pointer for PESPacket (not thread-safe).
     //!
-    typedef SafePtr<PESPacket, ts::null_mutex> PESPacketPtr;
+    using PESPacketPtr = SafePtr<PESPacket, ts::null_mutex>;
 
     //!
     //! Vector of PESPacket safe pointers.
     //!
-    typedef std::vector<PESPacketPtr> PESPacketPtrVector;
+    using PESPacketPtrVector = std::vector<PESPacketPtr>;
 
     //!
     //! Representation of MPEG PES packets.
@@ -41,7 +41,7 @@ namespace ts {
         //!
         //! Explicit identification of super class.
         //!
-        typedef DemuxedData SuperClass;
+        using SuperClass = DemuxedData;
 
         //!
         //! Default constructor.

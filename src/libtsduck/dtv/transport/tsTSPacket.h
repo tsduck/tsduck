@@ -890,12 +890,12 @@ namespace ts {
     //!
     //! Vector of packets.
     //!
-    typedef std::vector<TSPacket> TSPacketVector;
+    using TSPacketVector = std::vector<TSPacket>;
 
     //!
     //! TS packet are accessed in a memory-resident buffer.
     //!
-    typedef ResidentBuffer<TSPacket> PacketBuffer;
+    using PacketBuffer = ResidentBuffer<TSPacket>;
 }
 
 //!

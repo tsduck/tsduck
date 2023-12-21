@@ -85,7 +85,7 @@ namespace ts {
             MilliSecond duration = 0;   // Period duration in milliseconds.
             MilliSecond interval = 0;   // Monitoring interval in that period.
         };
-        typedef std::list<Period> PeriodList;
+        using PeriodList = std::list<Period>;
 
         // Private members
         Report&    _report;

@@ -83,7 +83,7 @@ namespace ts {
         }                                                     \
     };                                                        \
     TS_POP_WARNING()                                          \
-    typedef int TS_UNIQUE_NAME(for_trailing_semicolon)
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int
 
 //!
 //! Locate the source of the exception in the Exception constructor message string.

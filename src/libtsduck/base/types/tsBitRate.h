@@ -131,16 +131,16 @@ namespace ts {
     //! @see TS_BITRATE_FLOAT
     //!
 #if defined(DOXYGEN)
-    typedef user_defined BitRate;
+    using BitRate = user_defined;
 #elif defined(TS_BITRATE_INTEGER)
-    typedef Integer<uint64_t> BitRate;
+    using BitRate = Integer<uint64_t>;
 #elif defined(TS_BITRATE_FRACTION)
-    typedef Fraction<uint64_t> BitRate;
+    using BitRate = Fraction<uint64_t>;
 #elif defined(TS_BITRATE_FLOAT)
     TS_LLVM_NOWARNING(implicit-int-float-conversion)
-    typedef FloatingPoint<double,TS_BITRATE_DISPLAY_DECIMALS> BitRate;
+    using BitRate = FloatingPoint<double,TS_BITRATE_DISPLAY_DECIMALS>;
 #elif defined(TS_BITRATE_FIXED)
-    typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
+    using BitRate = FixedPoint<int64_t, TS_BITRATE_DECIMALS>;
 #else
 #error "undefined implementation of BitRate"
 #endif

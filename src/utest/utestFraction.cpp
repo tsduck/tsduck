@@ -73,7 +73,7 @@ void FractionTest::afterTest()
 
 void FractionTest::testConstructor()
 {
-    typedef ts::Fraction<int16_t> Frac;
+    using Frac = ts::Fraction<int16_t>;
 
     Frac a1;
     TSUNIT_EQUAL(0, a1.toInt());
@@ -121,8 +121,8 @@ void FractionTest::testDouble()
 
 void FractionTest::testAbs()
 {
-    typedef ts::Fraction<int32_t> SF;
-    typedef ts::Fraction<uint32_t> UF;
+    using SF = ts::Fraction<int32_t>;
+    using UF = ts::Fraction<uint32_t>;
 
     const UF a1(23, 7);
     const SF a2(45, 6);
@@ -138,7 +138,7 @@ void FractionTest::testAbs()
 
 void FractionTest::testMin()
 {
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
 
     Frac a1(Frac(1, 2).min(Frac(2, 3)));
     TSUNIT_EQUAL(1, a1.numerator());
@@ -151,7 +151,7 @@ void FractionTest::testMin()
 
 void FractionTest::testMax()
 {
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
 
     Frac a1(Frac(1, 2).max(Frac(2, 3)));
     TSUNIT_EQUAL(2, a1.numerator());
@@ -164,7 +164,7 @@ void FractionTest::testMax()
 
 void FractionTest::testProper()
 {
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
 
     Frac a1(Frac(28, 6));
     TSUNIT_EQUAL(4, a1.proper());
@@ -179,7 +179,7 @@ void FractionTest::testProper()
 
 void FractionTest::testComparison()
 {
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
 
     TSUNIT_ASSERT(Frac(1, 2) == Frac(1, 2));
     TSUNIT_ASSERT(Frac(-1, 2) == Frac(1, -2));
@@ -220,7 +220,7 @@ void FractionTest::testComparison()
 
 void FractionTest::testArithmetics()
 {
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
 
     Frac a1;
     TSUNIT_EQUAL(0, a1.numerator());
@@ -325,7 +325,7 @@ void FractionTest::testArithmetics()
 
 void FractionTest::testToString()
 {
-    typedef ts::Fraction<int32_t> Frac;
+    using Frac = ts::Fraction<int32_t>;
     TSUNIT_EQUAL(u"12,345", Frac(12345).toString());
     TSUNIT_EQUAL(u"12,345/4", Frac(12345, 4).toString());
     TSUNIT_EQUAL(u"0", Frac().toString());

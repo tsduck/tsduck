@@ -110,6 +110,6 @@ namespace ts {
     };
 
     // Containers:
-    typedef std::set<TransportStreamId> TransportStreamIdSet;        //!< Set of TransportStreamId.
-    typedef std::vector<TransportStreamId> TransportStreamIdVector;  //!< Vector of TransportStreamId.
+    using TransportStreamIdSet = std::set<TransportStreamId>;        //!< Set of TransportStreamId.
+    using TransportStreamIdVector = std::vector<TransportStreamId>;  //!< Vector of TransportStreamId.
 }

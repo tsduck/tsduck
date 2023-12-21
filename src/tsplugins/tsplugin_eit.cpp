@@ -59,7 +59,7 @@ namespace ts {
         static uint16_t GetServiceId(uint32_t index) { return index & 0xFFFF; }
 
         // Map of services, indexed by combination of TS id / service id
-        typedef std::map <uint32_t, ServiceDesc> ServiceMap;
+        using ServiceMap = std::map <uint32_t, ServiceDesc>;
 
         // Command line options.
         fs::path           _outfile_name {};

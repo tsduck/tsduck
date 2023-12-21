@@ -41,13 +41,13 @@ namespace ts {
     private:
         // Description of one PID carrying PCR, PTS or DTS.
         class PIDContext;
-        typedef SafePtr<PIDContext> PIDContextPtr;
-        typedef std::map<PID,PIDContextPtr> PIDContextMap;
+        using PIDContextPtr = SafePtr<PIDContext>;
+        using PIDContextMap = std::map<PID,PIDContextPtr>;
 
         // Description of one PID carrying SCTE 35 splice information.
         class SpliceContext;
-        typedef SafePtr<SpliceContext> SpliceContextPtr;
-        typedef std::map<PID,SpliceContextPtr> SpliceContextMap;
+        using SpliceContextPtr = SafePtr<SpliceContext>;
+        using SpliceContextMap = std::map<PID,SpliceContextPtr>;
 
         // Command line options:
         fs::path         _output_name {};         // Output file name (empty means stderr)

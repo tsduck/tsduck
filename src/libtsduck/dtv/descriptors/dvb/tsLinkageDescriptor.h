@@ -99,7 +99,7 @@ namespace ts {
         //!
         //! List of extended event info.
         //!
-        typedef std::list<ExtendedEventLinkageInfo> ExtendedEventLinkageList;
+        using ExtendedEventLinkageList = std::list<ExtendedEventLinkageInfo>;
 
         // LinkageDescriptor public members:
         uint16_t                 ts_id = 0;                       //!< Transport stream id.

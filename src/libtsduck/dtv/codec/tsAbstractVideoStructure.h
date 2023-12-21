@@ -36,7 +36,7 @@ namespace ts {
         //!
         //! Unified name for superclass.
         //!
-        typedef AbstractVideoData SuperClass;
+        using SuperClass = AbstractVideoData;
 
         //!
         //! Constructor.

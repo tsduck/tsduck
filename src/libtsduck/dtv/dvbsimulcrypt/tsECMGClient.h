@@ -141,7 +141,7 @@ namespace ts {
         static constexpr cn::seconds RESPONSE_TIMEOUT = cn::seconds(5);
 
         // List of asynchronous ECM requests: key=cp_number, value=handler
-        typedef std::map <uint16_t, ECMGClientHandlerInterface*> AsyncRequests;
+        using AsyncRequests = std::map <uint16_t, ECMGClientHandlerInterface*>;
 
         // Private members
         const ecmgscs::Protocol&    _protocol;

@@ -165,8 +165,8 @@ namespace ts {
                 bool operator<(const Action& a) const;
             };
 
-            typedef std::set<Action> ActionSet;
-            typedef std::deque<Action> ActionQueue;
+            using ActionSet = std::set<Action>;
+            using ActionQueue = std::deque<Action>;
 
             Report&                     _log;               // Asynchronous log report.
             const InputSwitcherArgs&    _opt;               // Command line options.

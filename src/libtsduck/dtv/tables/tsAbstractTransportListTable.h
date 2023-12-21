@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! List of Transport's, indexed by TransportStreamId.
         //!
-        typedef EntryWithDescriptorsMap<TransportStreamId, Transport> TransportMap;
+        using TransportMap = EntryWithDescriptorsMap<TransportStreamId, Transport>;
 
 
         // NIT/BAT common public members:
@@ -115,7 +115,7 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&, const Section&) override;
 
     private:
-        typedef std::set<TransportStreamId> TransportStreamIdSet;
+        using TransportStreamIdSet = std::set<TransportStreamId>;
 
         // Add a new section to a table being serialized, while inside transport loop.
         void addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const;

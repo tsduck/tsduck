@@ -32,12 +32,12 @@ namespace ts {
         //!
         //! For each language, there is a map of service names per 8-bit name_id.
         //!
-        typedef std::map<uint8_t, UString> NameByIdMap;
+        using NameByIdMap = std::map<uint8_t, UString>;
 
         //!
         //! There is a map of service name sets per language.
         //!
-        typedef std::map<UString, NameByIdMap> LanguageMap;
+        using LanguageMap = std::map<UString, NameByIdMap>;
 
         // AbstractPreferredNameListDescriptor public members:
         LanguageMap entries {};  //!< Map of language entries.

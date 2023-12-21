@@ -1387,7 +1387,7 @@ namespace {
         const ts::UChar* nshort;
         const ts::UChar* nlong;
     };
-    typedef std::map<Ratio,UnitNames> UnitMap;
+    using UnitMap = std::map<Ratio,UnitNames>;
 }
 
 #if defined(TS_CXX20)

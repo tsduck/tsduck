@@ -158,7 +158,7 @@ namespace ts {
         //!
         //! List of events.
         //!
-        typedef EntryWithDescriptorsList<Event> EventList;
+        using EventList = EntryWithDescriptorsList<Event>;
 
         // EIT public members:
         uint16_t  service_id = 0;            //!< Service_id.
@@ -442,11 +442,11 @@ namespace ts {
         };
 
         // Safe pointer to BinaryEvent.
-        typedef SafePtr<BinaryEvent> BinaryEventPtr;
-        typedef std::vector<BinaryEventPtr> BinaryEventPtrVector;
+        using BinaryEventPtr = SafePtr<BinaryEvent>;
+        using BinaryEventPtrVector = std::vector<BinaryEventPtr>;
 
         // Events from a set of EIT sections are sorted according to service, then start time.
-        typedef std::map<ServiceIdTriplet, BinaryEventPtrVector> BinaryEventPtrMap;
+        using BinaryEventPtrMap = std::map<ServiceIdTriplet, BinaryEventPtrVector>;
 
         // Compare two pointers to events (same semantics as event comparison).
         static bool LessEventPtr(const Event*, const Event*);

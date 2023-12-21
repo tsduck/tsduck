@@ -39,7 +39,7 @@ namespace ts {
         //!
         //! List of schedule entries.
         //!
-        typedef std::list<Schedule> ScheduleList;
+        using ScheduleList = std::list<Schedule>;
 
         //!
         //! Content version entry.
@@ -67,7 +67,7 @@ namespace ts {
         //!
         //! List of content versions.
         //!
-        typedef EntryWithDescriptorsList<ContentVersion> ContentVersionList;
+        using ContentVersionList = EntryWithDescriptorsList<ContentVersion>;
 
         // PCAT public members:
         uint16_t           service_id = 0;           //!< Service id.

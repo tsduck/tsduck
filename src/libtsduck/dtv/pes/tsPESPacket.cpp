@@ -289,8 +289,8 @@ bool ts::PESPacket::operator==(const PESPacket& pp) const
 // List of functions to check the compatibility of PES content and codec.
 //----------------------------------------------------------------------------
 
-typedef bool (*ContentCheckFunction)(const uint8_t* data, size_t size, uint8_t stream_type);
-typedef std::map<ts::CodecType, ContentCheckFunction> CodecCheckMap;
+using ContentCheckFunction = bool (*)(const uint8_t* data, size_t size, uint8_t stream_type);
+using CodecCheckMap = std::map<ts::CodecType, ContentCheckFunction>;
 TS_STATIC_INSTANCE(CodecCheckMap, ({
     std::make_pair(ts::CodecType::MPEG1_VIDEO, ts::PESPacket::IsMPEG2Video),
     std::make_pair(ts::CodecType::MPEG2_VIDEO, ts::PESPacket::IsMPEG2Video),

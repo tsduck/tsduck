@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! The underlying unsigned integer type to represent the bit set.
         //!
-        typedef typename smaller_unsigned<BITS>::type int_t;
+        using int_t = typename smaller_unsigned<BITS>::type;
 
         //!
         //! The int_t value corresponding to all bits set.

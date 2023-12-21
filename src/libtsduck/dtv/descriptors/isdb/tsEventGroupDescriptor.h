@@ -47,8 +47,8 @@ namespace ts {
             uint16_t event_id = 0;             //!< Event id.
         };
 
-        typedef std::list<ActualEvent> ActualEventList;  //!< List of actual events.
-        typedef std::list<OtherEvent> OtherEventList;    //!< List of other events.
+        using ActualEventList = std::list<ActualEvent>;  //!< List of actual events.
+        using OtherEventList = std::list<OtherEvent>;    //!< List of other events.
 
         // EventGroupDescriptor public members:
         uint8_t         group_type = 0;    //!< 4 bits, group type.

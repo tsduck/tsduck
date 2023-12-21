@@ -1260,7 +1260,7 @@ namespace ts {
         };
 
         // List of values
-        typedef std::vector<ArgValue> ArgValueVector;
+        using ArgValueVector = std::vector<ArgValue>;
 
         // Flags for IOption.
         enum : uint32_t {
@@ -1270,7 +1270,7 @@ namespace ts {
         };
 
         // For AbstractNumber options, we keep one dummy instance of the actual type as a safe pointer.
-        typedef SafePtr<AbstractNumber> AbstractNumberPtr;
+        using AbstractNumberPtr = SafePtr<AbstractNumber>;
 
         // Internal representation of Option
         class TSDUCKDLL IOption
@@ -1343,7 +1343,7 @@ namespace ts {
         };
 
         // Map of options by name.
-        typedef std::map<UString,IOption> IOptionMap;
+        using IOptionMap = std::map<UString,IOption>;
 
         // Private fields
         Report*       _subreport = nullptr;

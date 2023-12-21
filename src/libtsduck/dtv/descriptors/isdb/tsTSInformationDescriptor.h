@@ -37,7 +37,7 @@ namespace ts {
         //!
         //! List of transmission type entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // TSInformationDescriptor public members:
         uint8_t   remote_control_key_id = 0;  //!< Remote control key id.

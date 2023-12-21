@@ -25,7 +25,7 @@
 #include "tsErrCodeReport.h"
 
 // To avoid long prefixes
-typedef ts::SectionFile::FileType FType;
+using FType = ts::SectionFile::FileType;
 
 namespace {
     // Default maximum number of sections in queue.
@@ -129,10 +129,10 @@ namespace ts {
         // Splice commands are passed from the server threads to the plugin thread using a message queue.
         // The next pts field is used as sort criteria. In the queue, all immediate commands come first.
         // Then, the non-immediate commands come in order of next_pts.
-        typedef MessagePriorityQueue<SpliceCommand, std::mutex> CommandQueue;
+        using CommandQueue = MessagePriorityQueue<SpliceCommand, std::mutex>;
 
         // Message queues enqueue smart pointers to the message type.
-        typedef CommandQueue::MessagePtr CommandPtr;
+        using CommandPtr = CommandQueue::MessagePtr;
 
         // --------------------
         // File listener thread

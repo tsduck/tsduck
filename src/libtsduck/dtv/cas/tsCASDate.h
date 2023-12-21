@@ -175,19 +175,19 @@ namespace ts {
     //! Representation of a Viaccess date.
     //! @ingroup mpeg
     //!
-    typedef CASDate<1980> ViaccessDate;
+    using ViaccessDate = CASDate<1980>;
 
     //!
     //! Representation of a MediaGuard date.
     //! @ingroup mpeg
     //!
-    typedef CASDate<1990> MediaGuardDate;
+    using MediaGuardDate = CASDate<1990>;
 
     //!
     //! Representation of a SafeAccess date.
     //! @ingroup mpeg
     //!
-    typedef CASDate<2000> SafeAccessDate;
+    using SafeAccessDate = CASDate<2000>;
 }
 
 

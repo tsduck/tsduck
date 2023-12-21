@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! Vector of constant elements.
         //!
-        typedef std::vector<const Element*> ElementVector;
+        using ElementVector = std::vector<const Element*>;
 
         //!
         //! Specify an unlimited number of elements.

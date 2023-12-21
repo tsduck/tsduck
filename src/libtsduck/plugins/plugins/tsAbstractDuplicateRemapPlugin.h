@@ -37,7 +37,7 @@ namespace ts {
         //!
         AbstractDuplicateRemapPlugin(bool remap, TSP* tsp, const UString& description = UString(), const UString& syntax = UString());
 
-        typedef std::map<PID, PID> PIDMap;    //!< A map from PID to PID.
+        using PIDMap = std::map<PID, PID>;    //!< A map from PID to PID.
         bool             _unchecked = false;  //!< Ignore conflicting input/output PID's.
         PIDSet           _newPIDs {};         //!< Set of output (duplicated or remapped) PID values.
         PIDMap           _pidMap {};          //!< Key = input pid, value = output PID.

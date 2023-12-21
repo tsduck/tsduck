@@ -44,7 +44,7 @@ namespace ts {
 
     private:
         // A map of service list descriptors, indexed by ts id / original netwok id.
-        typedef std::map<TransportStreamId, ServiceListDescriptor> SLDMap;
+        using SLDMap = std::map<TransportStreamId, ServiceListDescriptor>;
 
         PID                _nit_pid = PID_NIT;            // PID for the NIT (default: read PAT)
         UString            _new_netw_name {};             // New network name

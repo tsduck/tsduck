@@ -217,10 +217,10 @@ namespace ts {
         };
 
         // Safe pointer for SectionDesc (not thread-safe)
-        typedef SafePtr <SectionDesc, ts::null_mutex> SectionDescPtr;
+        using SectionDescPtr = SafePtr <SectionDesc, ts::null_mutex>;
 
         // List of sections
-        typedef std::list <SectionDescPtr> SectionDescList;
+        using SectionDescList = std::list <SectionDescPtr>;
 
         // Private members:
         StuffingPolicy  _stuffing {StuffingPolicy::NEVER};

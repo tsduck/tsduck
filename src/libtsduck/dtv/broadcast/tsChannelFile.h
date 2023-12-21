@@ -134,8 +134,8 @@ namespace ts {
             Service(uint16_t sid = 0) : id(sid) {}
         };
 
-        typedef SafePtr<Service, std::mutex>  ServicePtr;     //!< Safe pointer to a Service object (thread-safe).
-        typedef std::vector<ServicePtr> ServiceVector;  //!< Vector of safe pointers to Service objects.
+        using ServicePtr = SafePtr<Service, std::mutex>;  //!< Safe pointer to a Service object (thread-safe).
+        using ServiceVector = std::vector<ServicePtr>;    //!< Vector of safe pointers to Service objects.
 
         //!
         //! Description of one transport stream.
@@ -216,8 +216,8 @@ namespace ts {
             ServiceVector _services {};  // Services in the transport stream.
         };
 
-        typedef SafePtr<TransportStream, std::mutex>  TransportStreamPtr;     //!< Safe pointer to a TransportStream object (thread-safe).
-        typedef std::vector<TransportStreamPtr> TransportStreamVector;  //!< Vector of safe pointers to TransportStream objects.
+        using TransportStreamPtr = SafePtr<TransportStream, std::mutex>;  //!< Safe pointer to a TransportStream object (thread-safe).
+        using TransportStreamVector = std::vector<TransportStreamPtr>;    //!< Vector of safe pointers to TransportStream objects.
 
         //!
         //! Description of one network.
@@ -271,8 +271,8 @@ namespace ts {
             TransportStreamVector _ts {};  // Transport streams in the network.
         };
 
-        typedef SafePtr<Network, std::mutex>  NetworkPtr;     //!< Safe pointer to a Network object (thread-safe).
-        typedef std::vector<NetworkPtr> NetworkVector;  //!< Vector of safe pointers to Network objects.
+        using NetworkPtr = SafePtr<Network, std::mutex>;  //!< Safe pointer to a Network object (thread-safe).
+        using NetworkVector = std::vector<NetworkPtr>;    //!< Vector of safe pointers to Network objects.
 
         //!
         //! Get the number of networks in the file.

@@ -43,7 +43,7 @@ namespace ts {
             // Comparison, for sort algorithm
             bool operator< (const SliceEvent& e) const {return value < e.value;}
         };
-        typedef std::vector<SliceEvent> SliceEventVector;
+        using SliceEventVector = std::vector<SliceEvent>;
 
         // SlicePlugin private members
         bool              _use_time = false;     // Use milliseconds in SliceEvent::value

@@ -282,9 +282,9 @@ namespace ts {
         void setPESOffset(size_t offset) { _pesOffset = offset; }
 
     private:
-        typedef std::map<PID,uint8_t> PIDCCMap;  // map of continuity counters, indexed by PID
-        typedef SafePtr<TSPacket> TSPacketPtr;
-        typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
+        using PIDCCMap = std::map<PID,uint8_t>;  // map of continuity counters, indexed by PID
+        using TSPacketPtr = SafePtr<TSPacket>;
+        using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
         bool             _packing = false;         // Packing mode.
         size_t           _packDistance = NPOS;     // Maximum distance between inner packets.

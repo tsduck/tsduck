@@ -45,7 +45,7 @@ namespace ts {
         //!
         //! List of Announcement entries.
         //!
-        typedef std::list<Announcement> AnnouncementList;
+        using AnnouncementList = std::list<Announcement>;
 
         // AnnouncementSupportDescriptor public members:
         AnnouncementList announcements {};  //!< The list of announcements.

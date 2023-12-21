@@ -88,10 +88,10 @@ namespace ts {
     //!
     //! Safe pointer to a PolledFile (not thread-safe).
     //!
-    typedef SafePtr<PolledFile, ts::null_mutex> PolledFilePtr;
+    using PolledFilePtr = SafePtr<PolledFile, ts::null_mutex>;
 
     //!
     //! List of safe pointers to PolledFile (not thread-safe).
     //!
-    typedef std::list<PolledFilePtr> PolledFileList;
+    using PolledFileList = std::list<PolledFilePtr>;
 }

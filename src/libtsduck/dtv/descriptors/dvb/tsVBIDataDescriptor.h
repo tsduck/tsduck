@@ -38,7 +38,7 @@ namespace ts {
         //!
         //! List of field entries.
         //!
-        typedef std::list<Field> FieldList;
+        using FieldList = std::list<Field>;
 
         //!
         //! A service entry.
@@ -64,7 +64,7 @@ namespace ts {
         //!
         //! List of service entries.
         //!
-        typedef std::list<Service> ServiceList;
+        using ServiceList = std::list<Service>;
 
         // Public members
         ServiceList services {};  //!< The list of service entries in the descriptor.
