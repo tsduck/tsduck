@@ -274,7 +274,7 @@ namespace ts {
         {
             TS_DEFAULT_COPY_MOVE(XMLOptions);
         public:
-            XMLOptions() {};            //!< Constructor.
+            XMLOptions() {}             //!< Constructor.
             bool forceGeneric = false;  //!< Force a generic table node even if the table can be specialized.
             bool setPID = false;        //!< Add a metadata element with the source PID, when available.
             bool setLocalTime = false;  //!< Add a metadata element with the current local time.
