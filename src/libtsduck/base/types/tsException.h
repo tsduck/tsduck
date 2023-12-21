@@ -83,7 +83,9 @@ namespace ts {
         }                                                     \
     };                                                        \
     TS_POP_WARNING()                                          \
-    using TS_UNIQUE_NAME(for_trailing_semicolon) = int
+    /** @cond nodoxygen */                                    \
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int        \
+    /** @endcond */
 
 //!
 //! Locate the source of the exception in the Exception constructor message string.

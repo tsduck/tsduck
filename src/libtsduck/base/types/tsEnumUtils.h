@@ -64,17 +64,19 @@ namespace ts {
 //! e ^= B | C;
 //! @endcode
 //!
-#define TS_ENABLE_BITMASK_OPERATORS(T)           \
-    namespace ts {                               \
-        /** Template specialization on type T */ \
-        template<>                               \
-        struct EnableBitMaskOperators<T>         \
-        {                                        \
-            /** Enable bitmask operators on T */ \
-            static constexpr bool value = true;  \
-        };                                       \
-    }                                            \
-    using TS_UNIQUE_NAME(for_trailing_semicolon) = int
+#define TS_ENABLE_BITMASK_OPERATORS(T)                 \
+    namespace ts {                                     \
+        /** Template specialization on type T */       \
+        template<>                                     \
+        struct EnableBitMaskOperators<T>               \
+        {                                              \
+            /** Enable bitmask operators on T */       \
+            static constexpr bool value = true;        \
+        };                                             \
+    }                                                  \
+    /** @cond nodoxygen */                             \
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int \
+    /** @endcond */
 
 //!
 //! Bitmask "not" unary operator on enumeration types.
