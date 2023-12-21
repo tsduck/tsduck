@@ -65,7 +65,7 @@ void IntegerTest::afterTest()
 
 void IntegerTest::testUnit()
 {
-    typedef ts::Integer<int32_t> Int;
+    using Int = ts::Integer<int32_t>;
 
     Int i;
     Int n(-3);
@@ -101,7 +101,7 @@ void IntegerTest::testUnit()
 
 void IntegerTest::testAssignment()
 {
-    typedef ts::Integer<int32_t> Int;
+    using Int = ts::Integer<int32_t>;
 
     Int n;
     TSUNIT_EQUAL(0, n.toInt());
@@ -137,7 +137,7 @@ void IntegerTest::testAssignment()
 
 void IntegerTest::testComparison()
 {
-    typedef ts::Integer<int32_t> Int;
+    using Int = ts::Integer<int32_t>;
 
     TSUNIT_ASSERT(Int(-211) == Int(-211));
     TSUNIT_ASSERT(Int(21) == 21);
@@ -174,7 +174,7 @@ void IntegerTest::testComparison()
 
 void IntegerTest::testBounds()
 {
-    typedef ts::Integer<int16_t> Int;
+    using Int = ts::Integer<int16_t>;
 
     TSUNIT_EQUAL(-32768, Int::MIN.toInt());
     TSUNIT_EQUAL(32767, Int::MAX.toInt());
@@ -182,7 +182,7 @@ void IntegerTest::testBounds()
 
 void IntegerTest::testToString()
 {
-    typedef ts::Integer<int32_t> Int;
+    using Int = ts::Integer<int32_t>;
 
     TSUNIT_EQUAL(u"1,234", Int(1234).toString());
     TSUNIT_EQUAL(u"   -56,789", Int(-56789).toString(10));
@@ -192,7 +192,7 @@ void IntegerTest::testToString()
 
 void IntegerTest::testFromString()
 {
-    typedef ts::Integer<int32_t> Int;
+    using Int = ts::Integer<int32_t>;
 
     Int f0;
 

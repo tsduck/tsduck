@@ -38,7 +38,7 @@ namespace ts {
         //!
         //!< List of simultaneous service entries.
         //!
-        typedef std::list<SimultaneousService> SimultaneousServiceList;
+        using SimultaneousServiceList = std::list<SimultaneousService>;
 
         // ServiceGroupDescriptor public members:
         uint8_t                 service_group_type = 0;    //!< 4 bits, group type.

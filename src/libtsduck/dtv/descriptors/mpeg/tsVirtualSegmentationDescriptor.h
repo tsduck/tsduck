@@ -41,7 +41,7 @@ namespace ts {
         //!
         //! List of partition entries.
         //!
-        typedef std::list<Partition> PartitionList;
+        using PartitionList = std::list<Partition>;
 
         //!
         //! Maximum number of partitions (count must fit on 3 bits).

@@ -39,7 +39,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef AbstractDemux SuperClass;
+        using SuperClass = AbstractDemux;
 
         //!
         //! Constructor.
@@ -84,8 +84,8 @@ namespace ts {
         };
 
         // Map of safe pointers to PLPContext, indexed by PLP id.
-        typedef SafePtr<PLPContext, ts::null_mutex> PLPContextPtr;
-        typedef std::map<uint8_t, PLPContextPtr> PLPContextMap;
+        using PLPContextPtr = SafePtr<PLPContext, ts::null_mutex>;
+        using PLPContextMap = std::map<uint8_t, PLPContextPtr>;
 
         // Analysis context for one PID.
         struct PIDContext
@@ -103,8 +103,8 @@ namespace ts {
         };
 
         // Map of safe pointers to PIDContext, indexed by PID.
-        typedef SafePtr<PIDContext, ts::null_mutex> PIDContextPtr;
-        typedef std::map<PID, PIDContextPtr> PIDContextMap;
+        using PIDContextPtr = SafePtr<PIDContext, ts::null_mutex>;
+        using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Inherited methods from TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! List of service entries.
         //!
-        typedef std::list<Service> ServiceList;
+        using ServiceList = std::list<Service>;
 
         //!
         //! Channel list entry.
@@ -73,7 +73,7 @@ namespace ts {
         //!
         //! List of channel list entries.
         //!
-        typedef std::list<ChannelList> ChannelListList;
+        using ChannelListList = std::list<ChannelList>;
 
         // NorDigLogicalChannelDescriptorV2 public members:
         ChannelListList entries {};  //!< List of channel list entries.

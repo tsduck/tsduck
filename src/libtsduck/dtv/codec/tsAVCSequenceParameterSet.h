@@ -29,7 +29,7 @@ namespace ts {
         //!
         //! Reference to the superclass.
         //!
-        typedef AbstractAVCAccessUnit SuperClass;
+        using SuperClass = AbstractAVCAccessUnit;
 
         //!
         //! Constructor from a binary area.

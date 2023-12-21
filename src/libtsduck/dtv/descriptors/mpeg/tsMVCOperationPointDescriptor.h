@@ -38,7 +38,7 @@ namespace ts {
         //!
         //! List of operation point entries.
         //!
-        typedef std::list<Point> PointList;
+        using PointList = std::list<Point>;
 
         //!
         //! Level entry.
@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! List of level entries.
         //!
-        typedef std::list<Level> LevelList;
+        using LevelList = std::list<Level>;
 
         // MVCOperationPointDescriptor public members:
         uint8_t   profile_idc = 0;           //!< MVC profile.

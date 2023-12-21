@@ -137,5 +137,5 @@ namespace ts {
     //!
     //! A vector of TLVSyntax.
     //!
-    typedef std::vector<TLVSyntax> TLVSyntaxVector;
+    using TLVSyntaxVector = std::vector<TLVSyntax>;
 }

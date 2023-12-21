@@ -107,8 +107,8 @@ namespace ts {
         // It is difficult to find an efficient method to lookup registered handlers,
         // due to the combinations of criteria. We store them in a sequential list.
         // Since we do not expect many handlers and many events, that should be ok.
-        typedef std::pair<PluginEventHandlerInterface*, Criteria> HandlerEntry;
-        typedef std::list<HandlerEntry> HandlerEntryList;
+        using HandlerEntry = std::pair<PluginEventHandlerInterface*, Criteria>;
+        using HandlerEntryList = std::list<HandlerEntry>;
 
         // Accessing the list, including executing an event handler is done under a mutex.
         mutable std::recursive_mutex _mutex {};

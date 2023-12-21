@@ -16,9 +16,9 @@
 
 // We test our algorithms on elements of type 'Id'
 namespace {
-    typedef int Id;
-    typedef std::set<Id> IdSet;
-    typedef std::set<IdSet> SetOfIdSet;
+    using Id = int;
+    using IdSet = std::set<Id>;
+    using SetOfIdSet = std::set<IdSet>;
 }
 
 

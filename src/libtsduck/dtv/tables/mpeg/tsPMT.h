@@ -100,7 +100,7 @@ namespace ts {
         //!
         //! List of elementary streams, indexed by PID.
         //!
-        typedef EntryWithDescriptorsMap<PID, Stream> StreamMap;
+        using StreamMap = EntryWithDescriptorsMap<PID, Stream>;
 
         // PMT public members:
         uint16_t       service_id;  //!< Service id aka "program_number".

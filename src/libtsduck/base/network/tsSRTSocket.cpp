@@ -324,10 +324,10 @@ TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replaci
 // The header access_control.h was introduced in version 1.4.2.
 // On Windows, access_control.h was missing in the binary installer before 1.5.3.
 #if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
-    typedef SRT_REJECT_REASON RejectReason;
+    using RejectReason = SRT_REJECT_REASON;
 #else
     #define HAS_SRT_ACCESS_CONTROL 1
-    typedef int RejectReason;
+    using RejectReason = int;
     #if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
         #define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
     #else

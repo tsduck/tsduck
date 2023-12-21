@@ -44,7 +44,7 @@ namespace ts {
         //!
         //! List of change entries.
         //!
-        typedef std::list<Change> ChangeList;
+        using ChangeList = std::list<Change>;
 
         //!
         //! Cell entry.
@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! List of Cell entries.
         //!
-        typedef std::list<Cell> CellList;
+        using CellList = std::list<Cell>;
 
         // NetworkChangeNotifyDescriptor public members:
         CellList cells {};  //!< The list of cells and changes.

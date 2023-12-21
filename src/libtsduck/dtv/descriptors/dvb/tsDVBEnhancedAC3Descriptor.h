@@ -64,5 +64,5 @@ namespace ts {
     //!
     //! Legacy name for a DVB enhanced_AC-3_descriptor.
     //!
-    typedef DVBEnhancedAC3Descriptor EnhancedAC3Descriptor;
+    using EnhancedAC3Descriptor = DVBEnhancedAC3Descriptor;
 }

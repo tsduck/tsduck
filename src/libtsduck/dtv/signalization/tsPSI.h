@@ -20,9 +20,9 @@ namespace ts {
     //
     // Base types
     //
-    typedef uint8_t  TID;  //!< Table identifier.
-    typedef uint8_t  DID;  //!< Descriptor identifier.
-    typedef uint32_t PDS;  //!< Private data specifier.
+    using TID = uint8_t ;  //!< Table identifier.
+    using DID = uint8_t ;  //!< Descriptor identifier.
+    using PDS = uint32_t;  //!< Private data specifier.
 
     //!
     //! Maximum size of a descriptor (255 + 2-byte header).

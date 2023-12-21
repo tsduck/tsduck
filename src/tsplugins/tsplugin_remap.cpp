@@ -37,8 +37,8 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        typedef SafePtr<CyclingPacketizer, ts::null_mutex> CyclingPacketizerPtr;
-        typedef std::map<PID, CyclingPacketizerPtr> PacketizerMap;
+        using CyclingPacketizerPtr = SafePtr<CyclingPacketizer, ts::null_mutex>;
+        using PacketizerMap = std::map<PID, CyclingPacketizerPtr>;
 
         bool          _update_psi = false;  // Update all PSI
         bool          _pmt_ready = false;   // All PMT PID's are known

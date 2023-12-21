@@ -46,4 +46,4 @@ int TSDUCKDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* a
         TS_LIBCHECK();                        \
         return MainWrapper(func, argc, argv); \
     }                                         \
-    typedef int TS_UNIQUE_NAME(UnusedMainType) /* allow trailing semi-colon */
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int

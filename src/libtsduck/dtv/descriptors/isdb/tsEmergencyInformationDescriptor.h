@@ -35,7 +35,7 @@ namespace ts {
             std::vector<uint16_t> area_codes {};    //!< List of area code, 12 bits each.
         };
 
-        typedef std::list<Event> EventList;  //!< List of events.
+        using EventList = std::list<Event>;  //!< List of events.
 
         // EmergencyInformationDescriptor public members:
         EventList events {};  //!< List of events.

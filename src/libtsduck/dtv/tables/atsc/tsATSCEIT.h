@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! List of events.
         //!
-        typedef EntryWithDescriptorsList<Event> EventList;
+        using EventList = EntryWithDescriptorsList<Event>;
 
         // EIT public members:
         uint16_t  source_id = 0;         //!< EIT source id.

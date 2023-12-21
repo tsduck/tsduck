@@ -43,7 +43,7 @@ namespace ts {
 
         // In case of splicing by component, each PID in the service is identified by a component tag.
         // This is a map of component tags, indexed by PID.
-        typedef std::map<PID, uint8_t> TagByPID;
+        using TagByPID = std::map<PID, uint8_t>;
 
         // A reduced form of splice event.
         class Event
@@ -59,7 +59,7 @@ namespace ts {
         // Each PID of the service has a list of splice events, sorted by PTS value.
         // For simplicity, we use a map, indexed by PTS value.
         // If several events have the same PTS, the last one prevails.
-        typedef std::map<uint64_t,Event> EventByPTS;
+        using EventByPTS = std::map<uint64_t,Event>;
 
         // State of a PID which is subject to splicing.
         class PIDState
@@ -93,7 +93,7 @@ namespace ts {
         };
 
         // All PID's in the service are described by a map, indexed by PID.
-        typedef std::map<PID, PIDState> StateByPID;
+        using StateByPID = std::map<PID, PIDState>;
 
         // ------------------------------------------------------------
         // Plugin Implementation

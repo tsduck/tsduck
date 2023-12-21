@@ -47,7 +47,7 @@ namespace ts {
         //!
         //! List of service entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // PrefetchDescriptor public members:
         uint8_t   transport_protocol_label = 0;  //!< Transport protocol label.

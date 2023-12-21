@@ -356,7 +356,7 @@ namespace ts {
         // Encapsulate an ip_mreq
         struct MReq : public POCS<::ip_mreq>
         {
-            typedef POCS<::ip_mreq> SuperClass;
+            using SuperClass = POCS<::ip_mreq>;
             MReq() = default;
             MReq(const IPv4Address& multicast_, const IPv4Address& interface_) : SuperClass()
             {
@@ -364,13 +364,13 @@ namespace ts {
                 interface_.copy(data.imr_interface);
             }
         };
-        typedef std::set<MReq> MReqSet;
+        using MReqSet = std::set<MReq>;
 
         // Encapsulate an ip_mreq_source
 #if !defined(TS_NO_SSM)
         struct SSMReq : public POCS<::ip_mreq_source>
         {
-            typedef POCS<::ip_mreq_source> SuperClass;
+            using SuperClass = POCS<::ip_mreq_source>;
             SSMReq() = default;
             SSMReq(const IPv4Address& multicast_, const IPv4Address& interface_, const IPv4Address& source_) : SuperClass()
             {
@@ -379,7 +379,7 @@ namespace ts {
                 source_.copy(data.imr_sourceaddr);
             }
         };
-        typedef std::set<SSMReq> SSMReqSet;
+        using SSMReqSet = std::set<SSMReq>;
 #endif
 
         // Private members

@@ -221,10 +221,10 @@ namespace ts {
     //!
     //! Vector of socket addresses.
     //!
-    typedef std::vector<IPv6SocketAddress> IPv6SocketAddressVector;
+    using IPv6SocketAddressVector = std::vector<IPv6SocketAddress>;
 
     //!
     //! Set of socket addresses.
     //!
-    typedef std::set<IPv6SocketAddress> IPv6SocketAddressSet;
+    using IPv6SocketAddressSet = std::set<IPv6SocketAddress>;
 }

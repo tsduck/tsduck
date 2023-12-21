@@ -124,8 +124,8 @@ namespace ts {
         bool applyPatches(SectionPtr& section) const;
 
     private:
-        typedef ts::SafePtr<ts::xml::PatchDocument> PatchDocumentPtr;
-        typedef std::vector<PatchDocumentPtr> PatchDocumentVector;
+        using PatchDocumentPtr = ts::SafePtr<ts::xml::PatchDocument>;
+        using PatchDocumentVector = std::vector<PatchDocumentPtr>;
 
         DuckContext&        _duck;           // TSDuck execution context.
         UStringVector       _patchFiles {};  // XML patch file names.

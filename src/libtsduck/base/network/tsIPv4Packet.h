@@ -28,7 +28,7 @@ namespace ts {
         //!
         //! The concept of port is used by TCP and UDP.
         //!
-        typedef AbstractNetworkAddress::Port Port;
+        using Port = AbstractNetworkAddress::Port;
 
         //!
         //! Default constructor.

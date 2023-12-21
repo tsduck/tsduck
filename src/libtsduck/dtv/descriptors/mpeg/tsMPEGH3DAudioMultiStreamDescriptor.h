@@ -40,7 +40,7 @@ namespace ts {
         //!
         //! A list of mae_group (ISO/IEC 23008-3).
         //!
-        typedef std::list<Group> GroupList;
+        using GroupList = std::list<Group>;
 
         // MPEGH3DAudioMultiStreamDescriptor public members:
         bool      this_is_main_stream = false;  //!< The stream is a main stream, not an auxiliary stream.

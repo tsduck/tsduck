@@ -72,7 +72,7 @@ namespace {
 
     int TestData::_instanceCount = 0;
 
-    typedef ts::SafePtr<TestData> TestDataPtr;
+    using TestDataPtr = ts::SafePtr<TestData>;
 }
 
 
@@ -302,8 +302,8 @@ namespace {
         explicit SubTestData2 (int value) : TestData (value) {}
     };
 
-    typedef ts::SafePtr<SubTestData1> SubTestData1Ptr;
-    typedef ts::SafePtr<SubTestData2> SubTestData2Ptr;
+    using SubTestData1Ptr = ts::SafePtr<SubTestData1>;
+    using SubTestData2Ptr = ts::SafePtr<SubTestData2>;
 }
 
 // Test case: check downcasts

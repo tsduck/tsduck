@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! A list of item entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         //!
         //! Maximum number of services entries to fit in 255 bytes.

@@ -44,7 +44,7 @@ namespace ts {
         //!
         //! Explicit name of superclass, @c std::vector on @c uint8_t.
         //!
-        typedef std::vector<uint8_t> ByteVector;
+        using ByteVector = std::vector<uint8_t>;
 
         //!
         //! Default constructor.
@@ -550,22 +550,22 @@ namespace ts {
     //!
     //! Safe pointer for ByteBlock, not thread-safe.
     //!
-    typedef SafePtr<ByteBlock, ts::null_mutex> ByteBlockPtr;
+    using ByteBlockPtr = SafePtr<ByteBlock, ts::null_mutex>;
 
     //!
     //! Safe pointer for ByteBlock, thread-safe (MT = multi-thread).
     //!
-    typedef SafePtr<ByteBlock, std::mutex> ByteBlockPtrMT;
+    using ByteBlockPtrMT = SafePtr<ByteBlock, std::mutex>;
 
     //!
     //! Vector of ByteBlock.
     //!
-    typedef std::vector<ByteBlock> ByteBlockVector;
+    using ByteBlockVector = std::vector<ByteBlock>;
 
     //!
     //! List of ByteBlock.
     //!
-    typedef std::list<ByteBlock> ByteBlockList;
+    using ByteBlockList = std::list<ByteBlock>;
 }
 
 //!

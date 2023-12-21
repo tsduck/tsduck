@@ -30,7 +30,7 @@ namespace ts {
         //!
         //! A list of item entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // Public members
         uint8_t   descriptor_number = 0;      //!< See ETSI EN 300 468, 6.2.15.

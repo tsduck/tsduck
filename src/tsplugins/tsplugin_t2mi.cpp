@@ -35,10 +35,10 @@ namespace ts {
 
     private:
         // Set of identified PLP's in a PID (with --identify).
-        typedef std::bitset<256> PLPSet;
+        using PLPSet = std::bitset<256>;
 
         // Set of identified T2-MI PID's with their PLP's (with --identify).
-        typedef std::map<PID, PLPSet> IdentifiedSet;
+        using IdentifiedSet = std::map<PID, PLPSet>;
 
         // Command line options:
         bool                   _extract = false;              // Extract encapsulated TS.

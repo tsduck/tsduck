@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! List of services, indexed by service id.
         //!
-        typedef EntryWithDescriptorsMap<uint16_t,Service> ServiceMap;
+        using ServiceMap = EntryWithDescriptorsMap<uint16_t,Service>;
 
         // SelectionInformationTable public members:
         DescriptorList descs;     //!< Global descriptor list.

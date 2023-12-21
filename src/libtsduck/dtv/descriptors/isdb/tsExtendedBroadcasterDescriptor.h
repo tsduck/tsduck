@@ -43,7 +43,7 @@ namespace ts {
         //!
         //! List of broadcasters entries.
         //!
-        typedef std::list<Broadcaster> BroadcasterList;
+        using BroadcasterList = std::list<Broadcaster>;
 
         // ExtendedBroadcasterDescriptor public members:
         uint8_t         broadcaster_type = 0;            //!< 4 bits, broadcaster type.

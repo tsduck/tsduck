@@ -49,7 +49,7 @@ namespace ts {
         //!
         //! List of exception entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         //!
         //! Maximum number of entries to fit in 254 bytes.

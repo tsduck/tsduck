@@ -223,9 +223,9 @@ namespace ts {
         //---------------------------------------------------------------------
 
         struct TSDUCKDLL Traits {
-            typedef ts::duck::Tags     Tags;       //!< Actual set of tags for this protocol.
-            typedef ts::duck::Errors   Errors;     //!< Actual set of error codes for this protocol.
-            typedef ts::duck::Protocol Protocol;   //!< Actual protocol description.
+            using Tags = ts::duck::Tags;           //!< Actual set of tags for this protocol.
+            using Errors = ts::duck::Errors;       //!< Actual set of error codes for this protocol.
+            using Protocol = ts::duck::Protocol;   //!< Actual protocol description.
         };
     }
 }

@@ -38,7 +38,7 @@ namespace ts {
         //!
         //! List of CRID entries.
         //!
-        typedef std::list<CRID> CRIDList;
+        using CRIDList = std::list<CRID>;
 
         // CIT public members:
         uint16_t      service_id = 0;           //!< Service id.

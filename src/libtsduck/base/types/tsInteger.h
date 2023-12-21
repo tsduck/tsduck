@@ -33,7 +33,7 @@ namespace ts {
         //!
         //! The underlying signed integer type.
         //!
-        typedef INT_T int_t;
+        using int_t = INT_T;
 
         //!
         //! The minimum representable value of this fixed-point type.

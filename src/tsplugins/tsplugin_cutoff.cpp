@@ -39,7 +39,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        typedef MessageQueue<UString, std::mutex> CommandQueue;
+        using CommandQueue = MessageQueue<UString, std::mutex>;
 
         // Plugin private fields.
         volatile bool    _terminate = false;

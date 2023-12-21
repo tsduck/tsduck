@@ -149,7 +149,7 @@ namespace ts {
         //!
         //! List of services, indexed by service_id.
         //!
-        typedef EntryWithDescriptorsMap<uint16_t, ServiceEntry> ServiceMap;
+        using ServiceMap = EntryWithDescriptorsMap<uint16_t, ServiceEntry>;
 
         // SDT public members:
         uint16_t   ts_id = 0;     //!< Transport stream_id.

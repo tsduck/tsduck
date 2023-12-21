@@ -27,7 +27,7 @@ namespace ts {
         //!
         //! List of PMT PID's, indexed by service_id.
         //!
-        typedef std::map<uint16_t, PID> ServiceMap;
+        using ServiceMap = std::map<uint16_t, PID>;
 
         // Public members:
         uint16_t   ts_id = 0;          //!< Transport stream id.

@@ -58,5 +58,5 @@ namespace ts {
     //!
     //! Legacy name for a DVB AC-4_descriptor.
     //!
-    typedef DVBAC4Descriptor AC4Descriptor;
+    using AC4Descriptor = DVBAC4Descriptor;
 }

@@ -45,7 +45,7 @@ namespace ts {
         //!
         //! List of pre-selection entries.
         //!
-        typedef std::list<PreSelection> PreSelectionList;
+        using PreSelectionList = std::list<PreSelection>;
 
         // AudioPreselectionDescriptor public members:
         PreSelectionList entries {};  //!< List of pre-selection entries.

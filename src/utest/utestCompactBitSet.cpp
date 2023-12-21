@@ -95,7 +95,7 @@ void CompactBitSetTest::testSize()
 
 void CompactBitSetTest::testOps14()
 {
-    typedef ts::CompactBitSet<14> Set;
+    using Set = ts::CompactBitSet<14>;
 
     Set set1(0x0081);
 

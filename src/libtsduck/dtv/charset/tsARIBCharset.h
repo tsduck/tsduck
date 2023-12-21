@@ -113,7 +113,7 @@ namespace ts {
         static constexpr uint8_t GR_LAST  = 0xFE;
         static constexpr size_t  CHAR_ROW_SIZE = 94;
 
-        typedef char32_t CharRow[CHAR_ROW_SIZE];
+        using CharRow = char32_t[CHAR_ROW_SIZE];
 
         // Several contiguous rows are described in a structure.
         struct CharRows

@@ -69,7 +69,7 @@ void FixedPointTest::afterTest()
 
 void FixedPointTest::testUnit()
 {
-    typedef ts::FixedPoint<int32_t, 0> Fixed;
+    using Fixed = ts::FixedPoint<int32_t, 0>;
 
     Fixed i;
     Fixed n(-3);
@@ -115,7 +115,7 @@ void FixedPointTest::testUnit()
 
 void FixedPointTest::testSubUnit()
 {
-    typedef ts::FixedPoint<int32_t, 3> Fixed;
+    using Fixed = ts::FixedPoint<int32_t, 3>;
 
     Fixed i;
     Fixed n(-3);
@@ -161,7 +161,7 @@ void FixedPointTest::testSubUnit()
 
 void FixedPointTest::testAssignment()
 {
-    typedef ts::FixedPoint<int32_t, 3> Fixed;
+    using Fixed = ts::FixedPoint<int32_t, 3>;
 
     Fixed n;
     TSUNIT_EQUAL(0, n.toInt());
@@ -210,7 +210,7 @@ void FixedPointTest::testAssignment()
 
 void FixedPointTest::testComparison()
 {
-    typedef ts::FixedPoint<int32_t, 3> Fixed;
+    using Fixed = ts::FixedPoint<int32_t, 3>;
 
     TSUNIT_ASSERT(Fixed(-211) == Fixed(-211));
     TSUNIT_ASSERT(Fixed(1) == Fixed(1000, true));
@@ -249,7 +249,7 @@ void FixedPointTest::testComparison()
 
 void FixedPointTest::testBounds()
 {
-    typedef ts::FixedPoint<int16_t, 3> Fixed;
+    using Fixed = ts::FixedPoint<int16_t, 3>;
 
     TSUNIT_EQUAL(-32, Fixed::MIN.toInt());
     TSUNIT_EQUAL(-32768, Fixed::MIN.raw());
@@ -259,8 +259,8 @@ void FixedPointTest::testBounds()
 
 void FixedPointTest::testOverflow()
 {
-    typedef ts::FixedPoint<int16_t, 1> Fixed1;
-    typedef ts::FixedPoint<int16_t, 2> Fixed2;
+    using Fixed1 = ts::FixedPoint<int16_t, 1>;
+    using Fixed2 = ts::FixedPoint<int16_t, 2>;
 
     TSUNIT_ASSERT(!Fixed2(100).mulOverflow(3));
     TSUNIT_ASSERT(Fixed2(100).mulOverflow(4));
@@ -275,7 +275,7 @@ void FixedPointTest::testOverflow()
     TSUNIT_ASSERT(!Fixed1(10).mulOverflow(Fixed1(-30)));
     TSUNIT_ASSERT(Fixed1(10).mulOverflow(Fixed1(-40)));
 
-    typedef ts::FixedPoint<int64_t, 1> Fixed64;
+    using Fixed64 = ts::FixedPoint<int64_t, 1>;
 
     Fixed64 a(29202127);
     int64_t b = 31590000000;
@@ -284,8 +284,8 @@ void FixedPointTest::testOverflow()
 
 void FixedPointTest::testToString()
 {
-    typedef ts::FixedPoint<int32_t, 0> Fix0;
-    typedef ts::FixedPoint<int32_t, 3> Fix3;
+    using Fix0 = ts::FixedPoint<int32_t, 0>;
+    using Fix3 = ts::FixedPoint<int32_t, 3>;
 
     Fix0 f0;
     Fix3 f3;
@@ -320,8 +320,8 @@ void FixedPointTest::testToString()
 
 void FixedPointTest::testFromString()
 {
-    typedef ts::FixedPoint<int32_t, 0> Fix0;
-    typedef ts::FixedPoint<int32_t, 3> Fix3;
+    using Fix0 = ts::FixedPoint<int32_t, 0>;
+    using Fix3 = ts::FixedPoint<int32_t, 3>;
 
     Fix0 f0;
     Fix3 f3;

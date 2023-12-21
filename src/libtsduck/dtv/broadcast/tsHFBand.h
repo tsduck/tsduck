@@ -262,11 +262,11 @@ namespace ts {
         };
 
         // A list of channel ranges.
-        typedef std::list<ChannelsRange> ChannelsRangeList;
+        using ChannelsRangeList = std::list<ChannelsRange>;
 
         // Safe pointer to an HBBand object.
         // Not thread-safe since these objects are loaded once and remain constant.
-        typedef SafePtr<HFBand, ts::null_mutex> HFBandPtr;
+        using HFBandPtr = SafePtr<HFBand, ts::null_mutex>;
 
         // HFBand members.
         const UString     _band_name {};       // Type of HF band.
@@ -302,7 +302,7 @@ namespace ts {
         };
 
         // A map of HFBand by index.
-        typedef std::map<HFBandIndex,HFBandPtr> HFBandMap;
+        using HFBandMap = std::map<HFBandIndex,HFBandPtr>;
 
         // The repository of HF bands.
         class HFBandRepository

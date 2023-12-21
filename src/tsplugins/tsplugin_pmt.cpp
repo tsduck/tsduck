@@ -54,7 +54,7 @@ namespace ts {
         };
 
         // Map of new descriptors to add per component.
-        typedef std::map<PID, SafePtr<DescriptorList>> DescriptorListByPID;
+        using DescriptorListByPID = std::map<PID, SafePtr<DescriptorList>>;
 
         // PMTPlugin instance fields
         ServiceDiscovery     _service {duck, nullptr};   // Service of PMT to modify

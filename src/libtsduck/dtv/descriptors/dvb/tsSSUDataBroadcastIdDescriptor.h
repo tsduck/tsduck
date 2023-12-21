@@ -46,7 +46,7 @@ namespace ts {
         //!
         //! List of OUI entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // SSUDataBroadcastIdDescriptor public members:
         EntryList entries {};       //!< The list of OUI entries.

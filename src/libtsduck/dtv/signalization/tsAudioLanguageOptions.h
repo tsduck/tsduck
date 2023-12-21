@@ -181,7 +181,7 @@ namespace ts {
         //!
         //! Explicit naming of superclass.
         //!
-        typedef std::vector<AudioLanguageOptions> SuperClass;
+        using SuperClass = std::vector<AudioLanguageOptions>;
 
         //!
         //! Default constructor.

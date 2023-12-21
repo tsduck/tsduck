@@ -45,7 +45,7 @@ namespace ts {
         //!
         //! List of OUI entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // SSULinkageDescriptor public members:
         uint16_t  ts_id = 0;        //!< Transport stream id.

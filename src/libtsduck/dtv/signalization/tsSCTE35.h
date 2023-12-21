@@ -53,7 +53,7 @@ namespace ts {
     class TSDUCKDLL SpliceTime : public std::optional<uint64_t>
     {
     private:
-        typedef std::optional<uint64_t> SuperClass;
+        using SuperClass = std::optional<uint64_t>;
     public:
         //!
         //! Deserialize a SpliceTime structure from binary data.

@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! List of exception entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // EASAudioFileDescriptor public members:
         EntryList entries {};  //!< The list of audio source entries.

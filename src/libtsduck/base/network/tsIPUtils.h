@@ -39,11 +39,11 @@ namespace ts {
     //! Data type for socket descriptors as returned by the socket() system call.
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketType;
+    using SysSocketType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef ::SOCKET SysSocketType;
+    using SysSocketType = ::SOCKET;
 #elif defined(TS_UNIX)
-    typedef int SysSocketType;
+    using SysSocketType = int;
 #endif
 
     //!
@@ -98,11 +98,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketLengthType;
+    using SysSocketLengthType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef int SysSocketLengthType;
+    using SysSocketLengthType = int;
 #elif defined(TS_UNIX)
-    typedef ::socklen_t SysSocketLengthType;
+    using SysSocketLengthType = ::socklen_t;
 #endif
 
     //!
@@ -113,11 +113,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketSignedSizeType;
+    using SysSocketSignedSizeType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef int SysSocketSignedSizeType;
+    using SysSocketSignedSizeType = int;
 #elif defined(TS_UNIX)
-    typedef ::ssize_t SysSocketSignedSizeType;
+    using SysSocketSignedSizeType = ::ssize_t;
 #endif
 
     //!
@@ -131,11 +131,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketTTLType;
+    using SysSocketTTLType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef ::DWORD SysSocketTTLType;
+    using SysSocketTTLType = ::DWORD;
 #elif defined(TS_UNIX)
-    typedef int SysSocketTTLType;
+    using SysSocketTTLType = int;
 #endif
 
     //!
@@ -149,22 +149,22 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketMulticastTTLType;
+    using SysSocketMulticastTTLType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef ::DWORD SysSocketMulticastTTLType;
+    using SysSocketMulticastTTLType = ::DWORD;
 #elif defined(TS_UNIX)
-    typedef unsigned char SysSocketMulticastTTLType;
+    using SysSocketMulticastTTLType = unsigned char;
 #endif
 
     //!
     //! Integer data type for the Type Of Service (TOS) socket option.
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketTOSType;
+    using SysSocketTOSType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef ::DWORD SysSocketTOSType;
+    using SysSocketTOSType = ::DWORD;
 #elif defined(TS_UNIX)
-    typedef int SysSocketTOSType;
+    using SysSocketTOSType = int;
 #endif
 
     //!
@@ -178,11 +178,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketMulticastLoopType;
+    using SysSocketMulticastLoopType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef ::DWORD SysSocketMulticastLoopType;
+    using SysSocketMulticastLoopType = ::DWORD;
 #elif defined(TS_UNIX)
-    typedef unsigned char SysSocketMulticastLoopType;
+    using SysSocketMulticastLoopType = unsigned char;
 #endif
 
     //!
@@ -196,11 +196,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketPktInfoType;
+    using SysSocketPktInfoType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef ::DWORD SysSocketPktInfoType;
+    using SysSocketPktInfoType = ::DWORD;
 #elif defined(TS_UNIX)
-    typedef int SysSocketPktInfoType;
+    using SysSocketPktInfoType = int;
 #endif
 
     //!
@@ -213,11 +213,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSocketLingerType;
+    using SysSocketLingerType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef u_short SysSocketLingerType;
+    using SysSocketLingerType = u_short;
 #elif defined(TS_UNIX)
-    typedef int SysSocketLingerType;
+    using SysSocketLingerType = int;
 #endif
 
     //!
@@ -232,11 +232,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSockOptPointer;
+    using SysSockOptPointer = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef const char* SysSockOptPointer;
+    using SysSockOptPointer = const char*;
 #elif defined(TS_UNIX)
-    typedef void* SysSockOptPointer;
+    using SysSockOptPointer = void*;
 #endif
 
     //!
@@ -248,11 +248,11 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysRecvBufferPointer;
+    using SysRecvBufferPointer = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef char* SysRecvBufferPointer;
+    using SysRecvBufferPointer = char*;
 #elif defined(TS_UNIX)
-    typedef void* SysRecvBufferPointer;
+    using SysRecvBufferPointer = void*;
 #endif
 
     //!
@@ -264,22 +264,22 @@ namespace ts {
     //! @endcode
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSendBufferPointer;
+    using SysSendBufferPointer = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef const char* SysSendBufferPointer;
+    using SysSendBufferPointer = const char*;
 #elif defined(TS_UNIX)
-    typedef void* SysSendBufferPointer;
+    using SysSendBufferPointer = void*;
 #endif
 
     //!
     //! Integer type for the size of the data buffer for a send() system call.
     //!
 #if defined(DOXYGEN)
-    typedef platform_specific SysSendSizeType;
+    using SysSendSizeType = platform_specific;
 #elif defined(TS_WINDOWS)
-    typedef int SysSendSizeType;
+    using SysSendSizeType = int;
 #elif defined(TS_UNIX)
-    typedef size_t SysSendSizeType;
+    using SysSendSizeType = size_t;
 #endif
 
     //!

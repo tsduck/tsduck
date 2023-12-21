@@ -37,7 +37,7 @@ namespace ts {
         //!
         //! List of TVA_id entries.
         //!
-        typedef std::list<TVAId> TVAIdList;
+        using TVAIdList = std::list<TVAId>;
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

@@ -29,7 +29,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef AbstractDemux SuperClass;
+        using SuperClass = AbstractDemux;
 
         //!
         //! Constructor.
@@ -95,7 +95,7 @@ namespace ts {
             uint64_t _offset = 0;            //!< Accumulated offsets after wrapping up at max value once or more.
         };
 
-        typedef std::map<PID, TimeTracker> PIDContextMap;
+        using PIDContextMap = std::map<PID, TimeTracker>;
 
         PID           _pcrPID = PID_NULL;    //!< First detected PID with PCR's.
         TimeTracker   _pcrTime {PCR_SCALE};  //!< PCR time tracker on _pcrPID.

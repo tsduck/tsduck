@@ -170,7 +170,7 @@ namespace ts {
             //!
             //! Explicit reference to the super class.
             //!
-            typedef std::map<KEY, ENTRY> SuperClass;
+            using SuperClass = std::map<KEY, ENTRY>;
 
             //!
             //! Basic constructor.
@@ -278,7 +278,7 @@ namespace ts {
             //!
             //! Explicit reference to the super class.
             //!
-            typedef EntryWithDescriptorsMap<size_t, ENTRY> SuperClass;
+            using SuperClass = EntryWithDescriptorsMap<size_t, ENTRY>;
 
             //!
             //! Basic constructor.

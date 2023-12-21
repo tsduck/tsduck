@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! Reference to the superclass.
         //!
-        typedef AbstractVideoStructure SuperClass;
+        using SuperClass = AbstractVideoStructure;
 
         //!
         //! Constructor from a binary area.

@@ -52,11 +52,11 @@ namespace ts {
     //!
     //! Vector of IP addresses and network masks.
     //!
-    typedef std::vector<IPv4AddressMask> IPv4AddressMaskVector;
+    using IPv4AddressMaskVector = std::vector<IPv4AddressMask>;
 
     //! @cond nodoxygen
     // Legacy definitions.
-    typedef IPv4AddressMask IPAddressMask;
-    typedef IPv4AddressMaskVector IPAddressMaskVector;
+    using IPAddressMask = IPv4AddressMask;
+    using IPAddressMaskVector = IPv4AddressMaskVector;
     //! @endcond
 }
