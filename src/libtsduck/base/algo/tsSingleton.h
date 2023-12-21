@@ -154,4 +154,6 @@
         ObjectClass* volatile StaticInstanceClass::_instance = nullptr;  \
         std::once_flag StaticInstanceClass::_once_flag {};               \
     }                                                                    \
-    using TS_UNIQUE_NAME(for_trailing_semicolon) = int
+    /** @cond nodoxygen */                                               \
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int                   \
+    /** @endcond */
