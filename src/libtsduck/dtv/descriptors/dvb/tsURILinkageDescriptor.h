@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsUString.h"
 #include "tsByteBlock.h"
 
 namespace ts {
@@ -24,11 +25,45 @@ namespace ts {
     class TSDUCKDLL URILinkageDescriptor : public AbstractDescriptor
     {
     public:
+        class TSDUCKDLL DVB_I_Info
+        {
+            TS_DEFAULT_COPY_MOVE(DVB_I_Info);
+        public:
+            //!
+            //! DVB-I_info() structure conveyed in private_data when uri_linkage_type = 0x03
+            //
+            // DVB_I_Info public members:
+            uint8_t                end_point_type = 0;              //!< type of list signalled by the URI
+            std::optional<UString> service_list_name {};            //!< name of the service list referenced by the uri
+            std::optional<UString> service_list_provider_name {};   //!< name of the provider of the service list referenced by the uri
+
+            //!
+            //! Default constructor.
+            //!
+            DVB_I_Info();
+            //!
+            //! Constructor from a binary descriptor.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @param [in] bin A binary descriptor to deserialize.
+            //!
+            DVB_I_Info(PSIBuffer& buf) : DVB_I_Info() { deserialize(buf); };
+
+            //! @cond nodoxygen
+            void clearContent(void);
+            void serialize(PSIBuffer&) const;
+            void deserialize(PSIBuffer&);
+            void toXML(xml::Element*) const;
+            bool fromXML(const xml::Element*);
+            void display(TablesDisplay&, PSIBuffer&, const UString&);
+            //! @endcond
+        };
+        //
         // URILinkageDescriptor public members:
-        uint8_t   uri_linkage_type = 0;      //!< URI linkage type.
-        UString   uri {};                    //!< The URI.
-        uint16_t  min_polling_interval = 0;  //!< Valid when uri_linkage_type == 0x00 or 0x01.
-        ByteBlock private_data {};           //!< Private data.
+        uint8_t                   uri_linkage_type = 0;     //!< URI linkage type.
+        UString                   uri {};                   //!< The URI.
+        uint16_t                  min_polling_interval = 0; //!< Valid when uri_linkage_type == 0x00 or 0x01.
+        std::optional<DVB_I_Info> dvb_i_private_data {};    //!< Valid when uri_linkage_type == 0x03.
+        ByteBlock                 private_data {};          //!< Private data.
 
         //!
         //! Default constructor.
