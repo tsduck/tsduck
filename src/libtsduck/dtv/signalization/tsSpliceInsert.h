@@ -30,7 +30,7 @@ namespace ts {
         //! A map of 64-bit PTS time values, indexed by 8-bit component tags.
         //! Used when the program is splice component by component, not as a whole.
         //!
-        typedef std::map<uint8_t, SpliceTime> SpliceByComponent;
+        using SpliceByComponent = std::map<uint8_t, SpliceTime>;
 
         //!
         //! An invalid value for event id, can be used as place-holder.

@@ -135,14 +135,14 @@ namespace ts {
                 size_t min_count;          // Min occurence count
                 size_t max_count;          // Max occurence count
             };
-            typedef std::map<TAG,Parameter> ParameterMap;
+            using ParameterMap = std::map<TAG,Parameter>;
 
             // Description of a command:
             struct Command {
                 Command() = default;
                 ParameterMap params {};
             };
-            typedef std::map<TAG,Command> CommandMap;
+            using CommandMap = std::map<TAG,Command>;
 
             // Protocol private members
             bool       _has_version = false;

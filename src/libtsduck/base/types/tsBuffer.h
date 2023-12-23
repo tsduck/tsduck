@@ -1473,7 +1473,7 @@ namespace ts {
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
 INT ts::Buffer::getBits(size_t bits)
 {
-    typedef typename std::make_unsigned<INT>::type UNSINT;
+    using UNSINT = typename std::make_unsigned<INT>::type;
     const INT value = static_cast<INT>(getBits<UNSINT>(bits));
     return SignExtend(value, bits);
 }
@@ -1664,7 +1664,7 @@ INT ts::Buffer::getBCD(size_t bcd_count)
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
 bool ts::Buffer::getBCD(INT& value, size_t bcd_count)
 {
-    typedef typename std::make_unsigned<INT>::type UNSINT;
+    using UNSINT = typename std::make_unsigned<INT>::type;
     UNSINT uvalue = 0;
 
     if (_read_error || currentReadBitOffset() + 4 * bcd_count > currentWriteBitOffset()) {
@@ -1697,7 +1697,7 @@ bool ts::Buffer::putBCD(INT value, size_t bcd_count)
     }
 
     if (bcd_count > 0) {
-        typedef typename std::make_unsigned<INT>::type UNSINT;
+        using UNSINT = typename std::make_unsigned<INT>::type;
         UNSINT uvalue = static_cast<UNSINT>(value);
         UNSINT factor = static_cast<UNSINT>(Power10(bcd_count));
         while (bcd_count-- > 0) {

@@ -41,7 +41,7 @@ namespace ts {
         {
         private:
             // Attributes are stored indexed by case-(in)sensitive name.
-            typedef std::map<UString, Attribute> AttributeMap;
+            using AttributeMap = std::map<UString, Attribute>;
 
         public:
             //!

@@ -114,7 +114,7 @@ namespace ts {
         //!
         //! Largest integer type we manage in the repository of names.
         //!
-        typedef uint64_t Value;
+        using Value = uint64_t;
 
         //!
         //! Get the complete path of the configuration file from which the names were loaded.
@@ -210,7 +210,7 @@ namespace ts {
         };
 
         // Map of configuration entries, indexed by first value of the range.
-        typedef std::map<Value, ConfigEntry*> ConfigEntryMap;
+        using ConfigEntryMap = std::map<Value, ConfigEntry*>;
 
         // Description of a configuration section.
         // The name of the section is the key in a map.
@@ -236,7 +236,7 @@ namespace ts {
         };
 
         // Map of configuration sections, indexed by name.
-        typedef std::map<UString, ConfigSection*> ConfigSectionMap;
+        using ConfigSectionMap = std::map<UString, ConfigSection*>;
 
         // Decode a line as "first[-last] = name". Return true on success, false on error.
         bool decodeDefinition(const UString& line, ConfigSection* section);

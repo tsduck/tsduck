@@ -251,7 +251,7 @@ namespace ts {
         };
 
         // A map of PID state, indexed by PID.
-        typedef std::map<PID,PIDState> PIDStateMap;
+        using PIDStateMap = std::map<PID,PIDState>;
 
         // Private members.
         Report*       _report;                    // Where to report errors, never null.

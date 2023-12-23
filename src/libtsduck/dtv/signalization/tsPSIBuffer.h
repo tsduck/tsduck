@@ -486,7 +486,7 @@ namespace ts {
         DuckContext& _duck;
 
         // Common profile of Charset encoding methods.
-        typedef size_t (Charset::*EncodeMethod)(uint8_t*&, size_t&, const UString&, size_t, size_t) const;
+        using EncodeMethod = size_t (Charset::*)(uint8_t*&, size_t&, const UString&, size_t, size_t) const;
 
         // Common code the various putString functions.
         // When partial == true, return the number of encoded characters.

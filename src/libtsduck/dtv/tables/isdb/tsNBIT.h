@@ -49,7 +49,7 @@ namespace ts {
         //!
         //! List of informations, indexed by information_id.
         //!
-        typedef EntryWithDescriptorsMap<uint16_t, Information> InformationMap;
+        using InformationMap = EntryWithDescriptorsMap<uint16_t, Information>;
 
         // NBIT public members:
         uint16_t       original_network_id = 0;  //!< Original network id.

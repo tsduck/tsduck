@@ -42,12 +42,12 @@ namespace ts {
     //!
     //! Vector of strings
     //!
-    typedef std::vector<UString> UStringVector;
+    using UStringVector = std::vector<UString>;
 
     //!
     //! List of strings
     //!
-    typedef std::list<UString> UStringList;
+    using UStringList = std::list<UString>;
 
     //!
     //! An implementation of UTF-16 strings.
@@ -123,7 +123,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef std::u16string SuperClass;
+        using SuperClass = std::u16string;
 
         //!
         //! The 3-byte so-called "UTF-8 Byte Order Mark".
@@ -2429,7 +2429,7 @@ namespace ts {
             ArgMixInContext(UString& result, const UChar* fmt, std::initializer_list<ArgMixIn> args);
 
         private:
-            typedef std::initializer_list<ts::ArgMixIn>::const_iterator ArgIterator;
+            using ArgIterator = std::initializer_list<ts::ArgMixIn>::const_iterator;
 
             UString&          _result;  //!< Result string.
             ArgIterator       _arg;     //!< Current argument.
@@ -2465,7 +2465,7 @@ namespace ts {
             ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, std::initializer_list<ArgMixOut> args);
 
         private:
-            typedef std::initializer_list<ts::ArgMixOut>::const_iterator ArgIterator;
+            using ArgIterator = std::initializer_list<ts::ArgMixOut>::const_iterator;
 
             const UChar*      _input;   //!< Current pointer into input string.
             ArgIterator       _arg;     //!< Current argument.
@@ -3153,8 +3153,8 @@ bool ts::UString::toIntegers(CONTAINER& container,
                              typename CONTAINER::value_type maxValue) const
 {
     // Let's name int_type the integer type.
-    // In all STL standard containers, value_type is a typedef for the element type.
-    typedef typename CONTAINER::value_type int_type;
+    // In all STL standard containers, value_type is an alias for the element type.
+    using int_type = typename CONTAINER::value_type;
 
     // Reset the content of the container
     container.clear();
@@ -3224,7 +3224,7 @@ bool ts::UString::toChrono(cn::duration<Rep, Period>& value,
                            const cn::duration<Rep, Period>& minValue,
                            const cn::duration<Rep, Period>& maxValue) const
 {
-    typedef cn::duration<Rep, Period> Duration;
+    using Duration = cn::duration<Rep, Period>;
     typename Duration::rep ivalue = 0;
     const bool ok = toInteger(ivalue, thousandSeparators, 0, UString(), minValue.count(), maxValue.count());
     value = Duration(ivalue);
@@ -3340,7 +3340,7 @@ template<typename INT, typename std::enable_if<std::is_integral<INT>::value && s
 void ts::UString::DecimalHelper(UString& result, INT value, const UString& separator, bool force_sign)
 {
     // Unsigned version of the signed type (same size).
-    typedef typename std::make_unsigned<INT>::type UNSINT;
+    using UNSINT = typename std::make_unsigned<INT>::type;
 
     if (value == std::numeric_limits<INT>::min()) {
         DecimalMostNegative<INT>(result, separator);
@@ -3409,7 +3409,7 @@ ts::UString ts::UString::Hexa(INT svalue,
     }
 
     // In hexadecimal, always format the unsigned version of the binary value.
-    typedef typename std::make_unsigned<INT>::type UNSINT;
+    using UNSINT = typename std::make_unsigned<INT>::type;
     UNSINT value = static_cast<UNSINT>(svalue);
 
     // Format the value
@@ -3471,7 +3471,7 @@ ts::UString ts::UString::HexaMin(INT svalue,
     }
 
     // In hexadecimal, always format the unsigned version of the binary value.
-    typedef typename std::make_unsigned<INT>::type UNSINT;
+    using UNSINT = typename std::make_unsigned<INT>::type;
     UNSINT value = static_cast<UNSINT>(svalue);
 
     // Format the value

@@ -36,11 +36,11 @@ namespace ts {
         //! Handle to a registry key.
         //!
 #if defined(DOXYGEN)
-        typedef system-specific Handle;
+        using Handle = system-specific;
 #elif defined(TS_WINDOWS)
-        typedef ::HKEY Handle;
+        using Handle = ::HKEY;
 #else
-        typedef void* Handle;
+        using Handle = void*;
 #endif
 
         //!

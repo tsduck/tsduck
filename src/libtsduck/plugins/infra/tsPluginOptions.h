@@ -55,5 +55,5 @@ namespace ts {
     //!
     //! A vector of plugin options, representing a processing chain.
     //!
-    typedef std::vector<PluginOptions> PluginOptionsVector;
+    using PluginOptionsVector = std::vector<PluginOptions>;
 }

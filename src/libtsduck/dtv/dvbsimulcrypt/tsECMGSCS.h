@@ -387,22 +387,22 @@ namespace ts {
         //---------------------------------------------------------------------
 
         struct TSDUCKDLL Traits {
-            typedef ecmgscs::Tags     Tags;       //!< Actual set of tags for this protocol.
-            typedef ecmgscs::Errors   Errors;     //!< Actual set of error codes for this protocol.
-            typedef ecmgscs::Protocol Protocol;   //!< Actual protocol description.
+            using Tags = ecmgscs::Tags;           //!< Actual set of tags for this protocol.
+            using Errors = ecmgscs::Errors;       //!< Actual set of error codes for this protocol.
+            using Protocol = ecmgscs::Protocol;   //!< Actual protocol description.
 
-            typedef ecmgscs::ChannelSetup  ChannelSetup;   //!< Actual ChannelSetup message for this protocol.
-            typedef ecmgscs::ChannelTest   ChannelTest;    //!< Actual ChannelTest message for this protocol.
-            typedef ecmgscs::ChannelStatus ChannelStatus;  //!< Actual ChannelStatus message for this protocol.
-            typedef ecmgscs::ChannelClose  ChannelClose;   //!< Actual ChannelClose message for this protocol.
-            typedef ecmgscs::ChannelError  ChannelError;   //!< Actual ChannelError message for this protocol.
+            using ChannelSetup = ecmgscs::ChannelSetup;    //!< Actual ChannelSetup message for this protocol.
+            using ChannelTest = ecmgscs::ChannelTest;      //!< Actual ChannelTest message for this protocol.
+            using ChannelStatus = ecmgscs::ChannelStatus;  //!< Actual ChannelStatus message for this protocol.
+            using ChannelClose = ecmgscs::ChannelClose;    //!< Actual ChannelClose message for this protocol.
+            using ChannelError = ecmgscs::ChannelError;    //!< Actual ChannelError message for this protocol.
 
-            typedef ecmgscs::StreamSetup         StreamSetup;         //!< Actual StreamSetup message for this protocol.
-            typedef ecmgscs::StreamTest          StreamTest;          //!< Actual StreamTest message for this protocol.
-            typedef ecmgscs::StreamStatus        StreamStatus;        //!< Actual StreamStatus message for this protocol.
-            typedef ecmgscs::StreamCloseRequest  StreamCloseRequest;  //!< Actual StreamCloseRequest message for this protocol.
-            typedef ecmgscs::StreamCloseResponse StreamCloseResponse; //!< Actual StreamCloseResponse message for this protocol.
-            typedef ecmgscs::StreamError         StreamError;         //!< Actual StreamError message for this protocol.
+            using StreamSetup = ecmgscs::StreamSetup;                 //!< Actual StreamSetup message for this protocol.
+            using StreamTest = ecmgscs::StreamTest;                   //!< Actual StreamTest message for this protocol.
+            using StreamStatus = ecmgscs::StreamStatus;               //!< Actual StreamStatus message for this protocol.
+            using StreamCloseRequest = ecmgscs::StreamCloseRequest;   //!< Actual StreamCloseRequest message for this protocol.
+            using StreamCloseResponse = ecmgscs::StreamCloseResponse; //!< Actual StreamCloseResponse message for this protocol.
+            using StreamError = ecmgscs::StreamError;                 //!< Actual StreamError message for this protocol.
         };
     }
 }

@@ -1158,24 +1158,24 @@ namespace ts {
     using namespace std::chrono_literals;
 
     // Some common pointer types, typically for casting.
-    typedef char*           char_ptr;          //!< Pointer to @c char
-    typedef int8_t*         int8_ptr;          //!< Pointer to @c int8_t
-    typedef int16_t*        int16_ptr;         //!< Pointer to @c int16_t
-    typedef int32_t*        int32_ptr;         //!< Pointer to @c int32_t
-    typedef int64_t*        int64_ptr;         //!< Pointer to @c int64_t
-    typedef uint8_t*        uint8_ptr;         //!< Pointer to @c uint8_t
-    typedef uint16_t*       uint16_ptr;        //!< Pointer to @c uint16_t
-    typedef uint32_t*       uint32_ptr;        //!< Pointer to @c uint32_t
-    typedef uint64_t*       uint64_ptr;        //!< Pointer to @c uint64_t
-    typedef const char*     const_char_ptr;    //!< Pointer to @c const char
-    typedef const int8_t*   const_int8_ptr;    //!< Pointer to @c const int8_t
-    typedef const int16_t*  const_int16_ptr;   //!< Pointer to @c const int16_t
-    typedef const int32_t*  const_int32_ptr;   //!< Pointer to @c const int32_t
-    typedef const int64_t*  const_int64_ptr;   //!< Pointer to @c const int64_t
-    typedef const uint8_t*  const_uint8_ptr;   //!< Pointer to @c const uint8_t
-    typedef const uint16_t* const_uint16_ptr;  //!< Pointer to @c const uint16_t
-    typedef const uint32_t* const_uint32_ptr;  //!< Pointer to @c const uint32_t
-    typedef const uint64_t* const_uint64_ptr;  //!< Pointer to @c const uint64_t
+    using char_ptr = char*;                    //!< Pointer to @c char
+    using int8_ptr = int8_t*;                  //!< Pointer to @c int8_t
+    using int16_ptr = int16_t*;                //!< Pointer to @c int16_t
+    using int32_ptr = int32_t*;                //!< Pointer to @c int32_t
+    using int64_ptr = int64_t*;                //!< Pointer to @c int64_t
+    using uint8_ptr = uint8_t*;                //!< Pointer to @c uint8_t
+    using uint16_ptr = uint16_t*;              //!< Pointer to @c uint16_t
+    using uint32_ptr = uint32_t*;              //!< Pointer to @c uint32_t
+    using uint64_ptr = uint64_t*;              //!< Pointer to @c uint64_t
+    using const_char_ptr = const char*;        //!< Pointer to @c const char
+    using const_int8_ptr = const int8_t*;      //!< Pointer to @c const int8_t
+    using const_int16_ptr = const int16_t*;    //!< Pointer to @c const int16_t
+    using const_int32_ptr = const int32_t*;    //!< Pointer to @c const int32_t
+    using const_int64_ptr = const int64_t*;    //!< Pointer to @c const int64_t
+    using const_uint8_ptr = const uint8_t*;    //!< Pointer to @c const uint8_t
+    using const_uint16_ptr = const uint16_t*;  //!< Pointer to @c const uint16_t
+    using const_uint32_ptr = const uint32_t*;  //!< Pointer to @c const uint32_t
+    using const_uint64_ptr = const uint64_t*;  //!< Pointer to @c const uint64_t
 
     //!
     //! Constant meaning "no size", "not found" or "do not resize".
@@ -1183,9 +1183,9 @@ namespace ts {
     //! Required on Windows to avoid linking issue.
     //!
 #if defined(TS_WINDOWS)
-    const size_t NPOS = size_t(-1);
+    constexpr size_t NPOS = size_t(-1);
 #else
-    const size_t NPOS = std::string::npos;
+    constexpr size_t NPOS = std::string::npos;
 #endif
 
     //!
@@ -1202,27 +1202,27 @@ namespace ts {
     //! Note that this is a signed type. A number of sub-quantities of seconds
     //! can be negative, indicating a duration backward.
     //!
-    typedef int64_t SubSecond;
+    using SubSecond = int64_t;
     //!
     //! This integer type is used to represent a number of seconds.
     //! Should be explicitly used for clarity when a variable contains a number of seconds.
     //!
-    typedef SubSecond Second;
+    using Second = SubSecond;
     //!
     //! This integer type is used to represent a number of milliseconds.
     //! Should be explicitly used for clarity when a variable contains a number of milliseconds.
     //!
-    typedef SubSecond MilliSecond;
+    using MilliSecond = SubSecond;
     //!
     //! This integer type is used to represent a number of microseconds.
     //! Should be explicitly used for clarity when a variable contains a number of microseconds.
     //!
-    typedef SubSecond MicroSecond;
+    using MicroSecond = SubSecond;
     //!
     //! This integer type is used to represent a number of nanoseconds.
     //! Should be explicitly used for clarity when a variable contains a number of nanoseconds.
     //!
-    typedef SubSecond NanoSecond;
+    using NanoSecond = SubSecond;
     //!
     //! Number of nanoseconds per second
     //!
@@ -1325,6 +1325,32 @@ namespace ts {
         //! @return Always true.
         bool try_lock() noexcept { return true; }
     };
+
+    //!
+    //! Thread safety property of a class.
+    //!
+    enum class ThreadSafety {
+        Full,  //!< Thread safe, can be used from multiple threads.
+        None,  //!< No thread safety, use in one single thread or use explicit synchronization.
+    };
+
+    //!
+    //! Define the appropriate mutex class for a given level of thread-safety.
+    //! @tparam THS Thread-safety level.
+    //!
+    template<ThreadSafety THS>
+    struct ThreadSafetyMutex {
+        //! Mutex class for a given level of thread-safety.
+        //! The default is std::mutex and a non-thread-safe specialization uses ts::null_mutex.
+        using type = std::mutex;
+    };
+
+    // Specialization for monothread.
+    //! @cond nodoxygen
+    template<> struct ThreadSafetyMutex<ThreadSafety::None> {
+        using type = null_mutex;
+    };
+    //! @endcond
 }
 
 // Template specialization on null_mutex of standard lock_guard: reduce overhead to nothing.

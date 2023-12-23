@@ -34,7 +34,7 @@ namespace ts {
             uint8_t  last_reference_number = 0;  //!< Last reference number.
         };
 
-        typedef std::list<Reference> ReferenceList;  //!< List of references.
+        using ReferenceList = std::list<Reference>;  //!< List of references.
 
         // ReferenceDescriptor public members:
         uint16_t      information_provider_id = 0;  //!< Information provider id.

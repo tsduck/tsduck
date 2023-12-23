@@ -125,7 +125,7 @@ namespace ts {
         //!
         //! Vector of smartcard reader states.
         //!
-        typedef std::vector<ReaderState> ReaderStateVector;
+        using ReaderStateVector = std::vector<ReaderState>;
 
         //!
         //! Get the state of all smartcard readers in the system.

@@ -20,7 +20,7 @@
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
-typedef ts::FloatingPoint<double> Double;
+using Double = ts::FloatingPoint<double>;
 
 
 //----------------------------------------------------------------------------

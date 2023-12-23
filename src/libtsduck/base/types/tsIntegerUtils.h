@@ -41,12 +41,12 @@ namespace ts {
     // Implementation tools for make_signed.
     //
     //! @cond nodoxygen
-    template<typename T, size_t SIZE, bool ISSIGNED> struct make_signed_impl { typedef T type; };
-    template<> struct make_signed_impl<bool, 1, false> { typedef int8_t type; };
-    template<typename T> struct make_signed_impl<T, 1, false> { typedef int16_t type; };
-    template<typename T> struct make_signed_impl<T, 2, false> { typedef int32_t type; };
-    template<typename T> struct make_signed_impl<T, 4, false> { typedef int64_t type; };
-    template<typename T> struct make_signed_impl<T, 8, false> { typedef int64_t type; };
+    template<typename T, size_t SIZE, bool ISSIGNED> struct make_signed_impl { using type = T; };
+    template<> struct make_signed_impl<bool, 1, false> { using type = int8_t; };
+    template<typename T> struct make_signed_impl<T, 1, false> { using type = int16_t; };
+    template<typename T> struct make_signed_impl<T, 2, false> { using type = int32_t; };
+    template<typename T> struct make_signed_impl<T, 4, false> { using type = int64_t; };
+    template<typename T> struct make_signed_impl<T, 8, false> { using type = int64_t; };
     //! @endcond
 
     //!
@@ -58,7 +58,7 @@ namespace ts {
     template<typename T>
     struct make_signed {
         //! The equivalent signed type.
-        typedef typename make_signed_impl<T, sizeof(T), std::is_signed<T>::value>::type type;
+        using type = typename make_signed_impl<T, sizeof(T), std::is_signed<T>::value>::type;
     };
 
     //!
@@ -684,7 +684,7 @@ namespace ts {
         //!
         //! The smaller unsigned integer type with at list @a BITS bits.
         //!
-        typedef typename std::conditional<
+        using type = typename std::conditional<
             BITS <= 8,
             uint8_t,
             typename std::conditional<
@@ -700,7 +700,7 @@ namespace ts {
                     >::type
                 >::type
             >::type
-        >::type type;
+        >::type;
     };
 }
 
@@ -882,7 +882,7 @@ size_t ts::BitSize(INT x)
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
 size_t ts::BitSize(INT x)
 {
-    typedef typename std::make_unsigned<INT>::type UNS_INT;
+    using UNS_INT = typename std::make_unsigned<INT>::type;
     return BitSize<UNS_INT>(UNS_INT(x));
 }
 

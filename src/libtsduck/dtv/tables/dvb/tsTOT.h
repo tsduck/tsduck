@@ -26,8 +26,8 @@ namespace ts {
     class TSDUCKDLL TOT : public AbstractTable
     {
     public:
-        typedef LocalTimeOffsetDescriptor::Region       Region;        //!< Alias from LocalTimeOffsetDescriptor.
-        typedef LocalTimeOffsetDescriptor::RegionVector RegionVector;  //!< Alias from LocalTimeOffsetDescriptor.
+        using Region = LocalTimeOffsetDescriptor::Region;              //!< Alias from LocalTimeOffsetDescriptor.
+        using RegionVector = LocalTimeOffsetDescriptor::RegionVector;  //!< Alias from LocalTimeOffsetDescriptor.
 
         // Public members:
         Time           utc_time {}; //!< UTC time.

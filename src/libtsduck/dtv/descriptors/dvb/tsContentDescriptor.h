@@ -29,7 +29,7 @@ namespace ts {
         //!
         //! A list of content entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // Public members:
         EntryList entries {};  //!< The list of content entries.

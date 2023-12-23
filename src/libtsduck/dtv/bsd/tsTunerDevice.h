@@ -22,5 +22,5 @@ namespace ts {
     //! Digital TV tuner physical device.
     //! One version of this class exists for each operating system.
     //!
-    typedef TunerBase TunerDevice;
+    using TunerDevice = TunerBase;
 }

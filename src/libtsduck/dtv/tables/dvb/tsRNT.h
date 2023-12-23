@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! List of CRID autorities.
         //!
-        typedef EntryWithDescriptorsList<CRIDAuthority> CRIDAutorityList;
+        using CRIDAutorityList = EntryWithDescriptorsList<CRIDAuthority>;
 
         //!
         //! Description of a resolution provider.
@@ -83,7 +83,7 @@ namespace ts {
         //!
         //! List of resolution providers.
         //!
-        typedef EntryWithDescriptorsList<ResolutionProvider> ResolutionProviderList;
+        using ResolutionProviderList = EntryWithDescriptorsList<ResolutionProvider>;
 
         // RNT public members:
         uint16_t               context_id = 0;       //!< Network or bouquet id.

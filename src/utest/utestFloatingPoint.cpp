@@ -65,7 +65,7 @@ void FloatingPointTest::afterTest()
 
 void FloatingPointTest::testConstructor()
 {
-    typedef ts::FloatingPoint<double> Double;
+    using Double = ts::FloatingPoint<double>;
 
     Double a1;
     TSUNIT_EQUAL(0, a1.toInt());
@@ -86,7 +86,7 @@ void FloatingPointTest::testConstructor()
 
 void FloatingPointTest::testComparison()
 {
-    typedef ts::FloatingPoint<double> Double;
+    using Double = ts::FloatingPoint<double>;
 
     TSUNIT_ASSERT(Double(1.2) == Double(1.2));
     TSUNIT_ASSERT(Double(1.2) != Double(-4.8));
@@ -120,7 +120,7 @@ void FloatingPointTest::testComparison()
 
 void FloatingPointTest::testArithmetics()
 {
-    typedef ts::FloatingPoint<double> Double;
+    using Double = ts::FloatingPoint<double>;
 
     Double a1;
     TSUNIT_EQUAL(0.0, a1.toDouble());
@@ -199,7 +199,7 @@ void FloatingPointTest::testArithmetics()
 
 void FloatingPointTest::testToInt()
 {
-    typedef ts::FloatingPoint<double> Double;
+    using Double = ts::FloatingPoint<double>;
 
     TSUNIT_EQUAL(3, Double(3.4999).toInt());
     TSUNIT_EQUAL(4, Double(3.5001).toInt());
@@ -214,7 +214,7 @@ void FloatingPointTest::testToInt()
 
 void FloatingPointTest::testToString()
 {
-    typedef ts::FloatingPoint<double> Double;
+    using Double = ts::FloatingPoint<double>;
 
     TSUNIT_EQUAL(u"12,345", Double(12345).toString());
     TSUNIT_EQUAL(u"-12,345.04", Double(-12345.04).toString());
@@ -225,7 +225,7 @@ void FloatingPointTest::testToString()
     TSUNIT_EQUAL(u"1.333,333", ts::UString::Format(u"%'s", {Double(4) / Double(3)}));
     TSUNIT_EQUAL(u"1.333,333", ts::UString::Format(u"%'f", {Double(4) / Double(3)}));
 
-    typedef ts::FloatingPoint<double, 2> Double2;
+    using Double2 = ts::FloatingPoint<double, 2>;
     TSUNIT_EQUAL(u"1.33", (Double2(4) / Double2(3)).toString());
     TSUNIT_EQUAL(u"1.33", ts::UString::Format(u"%s", {Double2(4) / Double2(3)}));
     TSUNIT_EQUAL(u"1.33", ts::UString::Format(u"%f", {Double2(4) / Double2(3)}));
@@ -233,7 +233,7 @@ void FloatingPointTest::testToString()
 
 void FloatingPointTest::testFromString()
 {
-    typedef ts::FloatingPoint<double> Double;
+    using Double = ts::FloatingPoint<double>;
 
     Double a;
 

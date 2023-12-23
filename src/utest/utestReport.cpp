@@ -74,7 +74,7 @@ void ReportTest::afterTest()
 //----------------------------------------------------------------------------
 
 namespace {
-    typedef ts::ReportBuffer<std::mutex> TestBuffer;
+    using TestBuffer = ts::ReportBuffer<std::mutex>;
 }
 
 // Test case: set/get severity

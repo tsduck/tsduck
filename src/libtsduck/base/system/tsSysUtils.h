@@ -68,16 +68,16 @@ namespace ts {
     //! Portable type for ioctl() request parameter.
     //!
     #if defined(DOXYGEN)
-        typedef platform-dependent ioctl_request_t;
+        using ioctl_request_t = platform-dependent;
     #elif defined(TS_WINDOWS)
         // Second parameter of ::DeviceIoControl().
-        typedef ::DWORD ioctl_request_t;
+        using ioctl_request_t = ::DWORD;
     #else
         // Extract the type of the second parameter of ::ioctl().
         // It is "unsigned long" on most Linux systems but "int" on Alpine Linux.
         template<typename T>
         T request_param_type(int (*ioctl_syscall)(int, T, ...));
-        typedef decltype(request_param_type(&::ioctl)) ioctl_request_t;
+        using ioctl_request_t = decltype(request_param_type(&::ioctl));
     #endif
 
     //!

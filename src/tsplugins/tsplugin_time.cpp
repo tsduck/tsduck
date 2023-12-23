@@ -46,7 +46,7 @@ namespace ts {
             // Comparison, for sort algorithm
             bool operator<(const TimeEvent& t) const {return time < t.time;}
         };
-        typedef std::vector<TimeEvent> TimeEventVector;
+        using TimeEventVector = std::vector<TimeEvent>;
 
         // TimePlugin private members
         Status            _status = TSP_DROP;  // Packet status to return

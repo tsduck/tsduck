@@ -26,7 +26,7 @@ namespace ts {
         //!
         //! Reference to the superclass.
         //!
-        typedef AbstractVVCAccessUnit SuperClass;
+        using SuperClass = AbstractVVCAccessUnit;
 
         //!
         //! Constructor from a binary area.

@@ -225,7 +225,7 @@ namespace ts {
         //! Representation of request or reponse headers.
         //! The keys of the map are the header names.
         //!
-        typedef std::multimap<UString,UString> HeadersMap;
+        using HeadersMap = std::multimap<UString,UString>;
 
         //!
         //! Get all response headers.

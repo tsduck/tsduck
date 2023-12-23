@@ -139,7 +139,7 @@ namespace ts {
         //!
         //! Vector of COM pointers to IPin interfaces.
         //!
-        typedef std::vector<ComPtr<::IPin>> PinPtrVector;
+        using PinPtrVector = std::vector<ComPtr<::IPin>>;
 
         //!
         //! Get the list of pins on a filter.

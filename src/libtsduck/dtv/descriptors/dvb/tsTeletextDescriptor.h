@@ -76,7 +76,7 @@ namespace ts {
         //!
         //! List of language entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         //!
         //! Maximum number of language entries to fit in 255 bytes.

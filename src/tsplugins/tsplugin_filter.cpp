@@ -34,8 +34,8 @@ namespace ts {
 
     private:
         // Packet intervals and list of them.
-        typedef std::pair<PacketCounter, PacketCounter> PacketRange;
-        typedef std::list<PacketRange> PacketRangeList;
+        using PacketRange = std::pair<PacketCounter, PacketCounter>;
+        using PacketRangeList = std::list<PacketRange>;
 
         // Command line options:
         Status             _drop_status = TSP_DROP;     // Return status for unselected packets

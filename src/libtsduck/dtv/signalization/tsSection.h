@@ -41,7 +41,7 @@ namespace ts {
         //!
         //! Explicit identification of super class.
         //!
-        typedef DemuxedData SuperClass;
+        using SuperClass = DemuxedData;
 
         //!
         //! Default constructor.

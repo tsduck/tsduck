@@ -41,7 +41,7 @@ namespace ts {
         //!
         //! List of Events.
         //!
-        typedef std::list<Event> EventList;
+        using EventList = std::list<Event>;
 
         // RST public members:
         EventList events {};  //!< List of events with a running status.

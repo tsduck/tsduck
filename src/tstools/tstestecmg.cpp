@@ -329,7 +329,7 @@ namespace {
         void terminate();
 
     private:
-        typedef ts::SingleDataStatistics<ts::MilliSecond> ResponseStat;
+        using ResponseStat = ts::SingleDataStatistics<ts::MilliSecond>;
 
         const CmdOptions&          _opt;
         ts::Report&                _report;
@@ -417,8 +417,8 @@ void CmdStatistics::terminate()
 namespace {
 
     class ECMGConnection;
-    typedef ts::SafePtr<ECMGConnection, std::mutex> ECMGConnectionPtr;
-    typedef ts::tlv::Connection<std::mutex> Connection;
+    using ECMGConnectionPtr = ts::SafePtr<ECMGConnection, std::mutex>;
+    using Connection = ts::tlv::Connection<std::mutex>;
 
     class ECMGConnection: public ts::Thread
     {

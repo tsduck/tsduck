@@ -153,7 +153,7 @@ namespace ts {
     //! environment variable and the @e value is the corresponding value
     //! of this environment variable.
     //!
-    typedef std::map<UString, UString> Environment;
+    using Environment = std::map<UString, UString>;
 
     //!
     //! Get the content of the entire environment (all environment variables).

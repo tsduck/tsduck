@@ -45,7 +45,7 @@ namespace ts {
         //!
         //! List of descriptions, indexed by description_id.
         //!
-        typedef EntryWithDescriptorsMap<uint16_t, Description> DescriptionMap;
+        using DescriptionMap = EntryWithDescriptorsMap<uint16_t, Description>;
 
         // LDT public members:
         uint16_t       original_service_id = 0;  //!< Original service id.

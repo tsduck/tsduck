@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! List of local events.
         //!
-        typedef EntryWithDescriptorsList<Event> EventList;
+        using EventList = EntryWithDescriptorsList<Event>;
 
         // LIT public members:
         uint16_t  event_id = 0;             //!< Event id.

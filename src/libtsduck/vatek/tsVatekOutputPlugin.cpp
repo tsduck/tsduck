@@ -75,7 +75,7 @@ public:
     vatek_result modparam_config_dvb_t2(Pmodulator_param pmod);
 
     // Table of configuration methods per modulation.
-    typedef vatek_result (VatekOutputPlugin::Guts::*fpmodparam_config)(Pmodulator_param pmod);
+    using fpmodparam_config = vatek_result (VatekOutputPlugin::Guts::*)(Pmodulator_param pmod);
     struct tsmod_param_config {
         modulator_type    type;
         fpmodparam_config config;

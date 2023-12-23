@@ -45,13 +45,13 @@ namespace ts {
         //! Profile of a function which creates a table.
         //! @return A safe pointer to an instance of a concrete subclass of AbstractTable.
         //!
-        typedef AbstractTablePtr (*TableFactory)();
+        using TableFactory = AbstractTablePtr (*)();
 
         //!
         //! Profile of a function which creates a descriptor.
         //! @return A safe pointer to an instance of a concrete subclass of AbstractDescriptor.
         //!
-        typedef AbstractDescriptorPtr (*DescriptorFactory)();
+        using DescriptorFactory = AbstractDescriptorPtr (*)();
 
         //!
         //! Get the table factory for a given table id.

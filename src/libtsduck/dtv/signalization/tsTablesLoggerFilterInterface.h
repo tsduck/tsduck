@@ -71,10 +71,10 @@ namespace ts {
     //!
     //! A safe pointer to TablesLogger section filter (not thread-safe).
     //!
-    typedef SafePtr<TablesLoggerFilterInterface> TablesLoggerFilterPtr;
+    using TablesLoggerFilterPtr = SafePtr<TablesLoggerFilterInterface>;
 
     //!
     //! A vector of safe pointers to TablesLogger section filters.
     //!
-    typedef std::vector<TablesLoggerFilterPtr> TablesLoggerFilterVector;
+    using TablesLoggerFilterVector = std::vector<TablesLoggerFilterPtr>;
 }

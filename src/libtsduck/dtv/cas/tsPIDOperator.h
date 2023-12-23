@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Reference to the superclass.
         //!
-        typedef std::set<PIDOperator> SuperClass;
+        using SuperClass = std::set<PIDOperator>;
 
         //!
         //! Default constructor.

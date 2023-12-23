@@ -70,8 +70,8 @@ namespace ts {
     private:
         // Description of PID's. Map of safe pointers to PID contexts, indexed by PID.
         class PIDContext;
-        typedef SafePtr<PIDContext> PIDContextPtr;
-        typedef std::map<PID, PIDContextPtr> PIDContextMap;
+        using PIDContextPtr = SafePtr<PIDContext>;
+        using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // PCRAdjustPlugin private members
         BitRate       _user_bitrate = 0;          // User-specified bitrate.

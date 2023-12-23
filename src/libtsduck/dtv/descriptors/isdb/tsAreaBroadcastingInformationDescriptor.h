@@ -37,7 +37,7 @@ namespace ts {
             ByteBlock additional_station_info {};   //!< Additional station info.
         };
 
-        typedef std::list<Station> StationList;  //!< List of stations.
+        using StationList = std::list<Station>;  //!< List of stations.
 
         // AreaBroadcastingInformationDescriptor public members:
         StationList stations {};  //!< List of stations.

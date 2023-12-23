@@ -175,7 +175,7 @@ namespace ts {
     private:
         // Content of a file.
         // Entries before the first section belong to section named "".
-        typedef std::map <UString, ConfigSection> SectionMap;
+        using SectionMap = std::map <UString, ConfigSection>;
 
         // Private members:
         mutable fs::path _filename {};

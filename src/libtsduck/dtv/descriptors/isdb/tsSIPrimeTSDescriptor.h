@@ -39,7 +39,7 @@ namespace ts {
         //!
         //! List of tables entries.
         //!
-        typedef std::list<Entry> EntryList;
+        using EntryList = std::list<Entry>;
 
         // SIPrimeTSDescriptor public members:
         uint8_t   parameter_version = 0;             //!< Update count.

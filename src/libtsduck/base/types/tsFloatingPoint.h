@@ -35,13 +35,13 @@ namespace ts {
         //!
         //! The underlying floating-point type.
         //!
-        typedef FLOAT_T float_t;
+        using float_t = FLOAT_T;
 
         //!
         //! An integer type for conversion to integral values.
         //! Overflow may occur.
         //!
-        typedef int64_t int_t;
+        using int_t = int64_t;
 
         //!
         //! The displayed precision of the floating-point type (number of decimal digits).

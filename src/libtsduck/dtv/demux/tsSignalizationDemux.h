@@ -415,8 +415,8 @@ namespace ts {
             // Register a CAS type from a table.
             void setCAS(const AbstractTable* table, uint16_t cas_id);
         };
-        typedef SafePtr<PIDContext> PIDContextPtr;
-        typedef std::map<PID, PIDContextPtr> PIDContextMap;
+        using PIDContextPtr = SafePtr<PIDContext>;
+        using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Description of a Service.
         class ServiceContext
@@ -429,8 +429,8 @@ namespace ts {
             // Constructor.
             ServiceContext(uint16_t service_id);
         };
-        typedef SafePtr<ServiceContext> ServiceContextPtr;
-        typedef std::map<uint16_t, ServiceContextPtr> ServiceContextMap;
+        using ServiceContextPtr = SafePtr<ServiceContext>;
+        using ServiceContextMap = std::map<uint16_t, ServiceContextPtr>;
 
         // A view of ServiceContextMap which iterates over Service fields.
         // Used with LogicalChannelNumbers::updateServices() which uses a container of Services.

@@ -28,8 +28,8 @@ namespace ts {
         class Dimension;       //!< Description of a dimension.
         class RatingValue;     //!< Description of a rating value in a dimension.
 
-        typedef std::list<Dimension> DimensionList;      //!< List of dimensions.
-        typedef std::list<RatingValue> RatingValueList;  //!< List of rating values.
+        using DimensionList = std::list<Dimension>;      //!< List of dimensions.
+        using RatingValueList = std::list<RatingValue>;  //!< List of rating values.
 
         // RRT public members:
         uint8_t            rating_region = 0;     //!< Rating region id.

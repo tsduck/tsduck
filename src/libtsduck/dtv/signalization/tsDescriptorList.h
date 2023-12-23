@@ -401,7 +401,7 @@ namespace ts {
             // Constructor:
             Element(const DescriptorPtr& desc_ = DescriptorPtr(), PDS pds_ = 0) : desc(desc_), pds(pds_) {}
         };
-        typedef std::vector <Element> ElementVector;
+        using ElementVector = std::vector <Element>;
 
         // Private members
         const AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).

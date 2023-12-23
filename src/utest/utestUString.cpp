@@ -2265,11 +2265,11 @@ void UStringTest::testChronoUnit()
     TSUNIT_EQUAL(u"seconds", ts::UString::ChronoUnit<cn::seconds>(false, true));
     TSUNIT_EQUAL(u"hours", ts::UString::ChronoUnit<cn::hours>(false, true));
 
-    typedef cn::duration<int, std::ratio<2, 200>> centiseconds;
+    using centiseconds = cn::duration<int, std::ratio<2, 200>>;
     TSUNIT_EQUAL(u"1/100-second", ts::UString::ChronoUnit<centiseconds>());
     TSUNIT_EQUAL(u"1/100-sec", ts::UString::ChronoUnit<centiseconds>(true));
 
-    typedef cn::duration<int, std::ratio<10>> decaseconds;
+    using decaseconds = cn::duration<int, std::ratio<10>>;
     TSUNIT_EQUAL(u"10-second", ts::UString::ChronoUnit<decaseconds>());
     TSUNIT_EQUAL(u"10-sec", ts::UString::ChronoUnit<decaseconds>(true));
 }

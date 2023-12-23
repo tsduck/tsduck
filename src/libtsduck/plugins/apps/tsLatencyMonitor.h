@@ -64,14 +64,14 @@ namespace ts {
             uint64_t pcr;
             uint64_t timestamp;
         };
-        typedef std::list<TimingData> TimingDataList;
+        using TimingDataList = std::list<TimingData>;
 
         struct InputData
         {
             std::shared_ptr<tslatencymonitor::InputExecutor> inputExecutor;
             TimingDataList timingDataList;
         };
-        typedef std::vector<InputData> InputDataVector;
+        using InputDataVector = std::vector<InputData>;
 
         Report&              _report;
         LatencyMonitorArgs   _args {};

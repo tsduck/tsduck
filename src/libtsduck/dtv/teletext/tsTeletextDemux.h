@@ -29,7 +29,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef PESDemux SuperClass;
+        using SuperClass = PESDemux;
 
         //!
         //! Constructor
@@ -128,7 +128,7 @@ namespace ts {
         //!
         //! Map of TeletextPage, indexed by page number.
         //!
-        typedef std::map<int,TeletextPage> TeletextPageMap;
+        using TeletextPageMap = std::map<int,TeletextPage>;
 
         //!
         //! This internal structure contains the analysis context for one PID.
@@ -149,7 +149,7 @@ namespace ts {
         //!
         //! Map of PID analysis contexts, indexed by PID value.
         //!
-        typedef std::map<PID, PIDContext> PIDContextMap;
+        using PIDContextMap = std::map<PID, PIDContext>;
 
         //!
         //! Process one Teletext packet.

@@ -35,7 +35,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef AbstractDemux SuperClass;
+        using SuperClass = AbstractDemux;
 
         //!
         //! Constructor.

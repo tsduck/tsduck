@@ -36,21 +36,21 @@ namespace ts {
         //! @param [in] tsp Associated callback to tsp.
         //! @return A new allocated object implementing ts::InputPlugin.
         //!
-        typedef InputPlugin* (*InputPluginFactory)(TSP* tsp);
+        using InputPluginFactory = InputPlugin* (*)(TSP* tsp);
 
         //!
         //! Profile of a function which creates an output plugin.
         //! @param [in] tsp Associated callback to tsp.
         //! @return A new allocated object implementing ts::OutputPlugin.
         //!
-        typedef OutputPlugin* (*OutputPluginFactory)(TSP* tsp);
+        using OutputPluginFactory = OutputPlugin* (*)(TSP* tsp);
 
         //!
         //! Profile of a function which creates a packet processor plugin.
         //! @param [in] tsp Associated callback to tsp.
         //! @return A new allocated object implementing ts::ProcessorPlugin.
         //!
-        typedef ProcessorPlugin* (*ProcessorPluginFactory)(TSP* tsp);
+        using ProcessorPluginFactory = ProcessorPlugin* (*)(TSP* tsp);
 
         //!
         //! Allow or disallow the loading of plugins from shareable objects.
@@ -212,9 +212,9 @@ namespace ts {
         };
 
     private:
-        typedef std::map<UString, InputPluginFactory>     InputMap;
-        typedef std::map<UString, ProcessorPluginFactory> ProcessorMap;
-        typedef std::map<UString, OutputPluginFactory>    OutputMap;
+        using InputMap = std::map<UString, InputPluginFactory>    ;
+        using ProcessorMap = std::map<UString, ProcessorPluginFactory>;
+        using OutputMap = std::map<UString, OutputPluginFactory>   ;
 
         bool         _sharedLibraryAllowed = true;
         InputMap     _inputPlugins {};

@@ -337,7 +337,7 @@ namespace ts {
     //! a value in Hz. The former enum values are redefined as constants in header
     //! file tsLegacyBandWidth.h.
     //!
-    typedef uint32_t BandWidth;
+    using BandWidth = uint32_t;
 
     //!
     //! Transmission mode (OFDM)

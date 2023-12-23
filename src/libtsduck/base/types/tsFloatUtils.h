@@ -72,7 +72,7 @@ namespace ts {
         //! When no predefined floating point type matches the requirement,
         //! the generated type is @c void.
         //!
-        typedef typename std::conditional<
+        using type = typename std::conditional<
             match_ieee_float<float, storage_bits, exponent_bits, mantissa_bits>(),
             float,
             typename std::conditional<
@@ -84,18 +84,18 @@ namespace ts {
                     void
                 >::type
             >::type
-        >::type type;
+        >::type;
     };
 
     //!
     //! 32-bit IEEE floating point type.
     //!
-    typedef typename ieee_float<32, 8, 23>::type ieee_float32_t;
+    using ieee_float32_t = typename ieee_float<32, 8, 23>::type;
 
     //!
     //! 64-bit IEEE floating point type.
     //!
-    typedef typename ieee_float<64, 11, 52>::type ieee_float64_t;
+    using ieee_float64_t = typename ieee_float<64, 11, 52>::type;
 
     //!
     //! 80-bit IEEE floating point type.
@@ -103,7 +103,7 @@ namespace ts {
     //! Some systems cannot implement this. It is typically only available on Intel platforms.
     //! On other platforms, this type is @a void..
     //!
-    typedef typename ieee_float<80, 15, 64>::type ieee_float80_t;
+    using ieee_float80_t = typename ieee_float<80, 15, 64>::type;
 
     //!
     //! 128-bit IEEE floating point type.
@@ -112,7 +112,7 @@ namespace ts {
     //! GCC and Clang on Intel use a 80-bit floating type for long double.
     //! In that case, this type is @a void.
     //!
-    typedef typename ieee_float<128, 15, 112>::type ieee_float128_t;
+    using ieee_float128_t = typename ieee_float<128, 15, 112>::type;
 
     //!
     //! Function getting a 32-bit IEEE float from serialized data in big endian representation.

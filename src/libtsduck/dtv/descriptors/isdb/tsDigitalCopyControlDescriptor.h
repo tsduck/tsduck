@@ -39,7 +39,7 @@ namespace ts {
         //!
         //! List of service entries.
         //!
-        typedef std::list<Component> ComponentList;
+        using ComponentList = std::list<Component>;
 
         // DigitalCopyControlDescriptor public members:
         uint8_t                digital_recording_control_data = 0;  //!< 2 bits, copy control.

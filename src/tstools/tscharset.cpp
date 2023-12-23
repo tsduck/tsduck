@@ -284,8 +284,8 @@ namespace ts {
         ARIBCharsetCodeGenerator(std::ostream& out);
 
     private:
-        typedef ARIBCharset::CharMap CharMap;
-        typedef ARIBCharset::CharRows CharRows;
+        using CharMap = ARIBCharset::CharMap;
+        using CharRows = ARIBCharset::CharRows;
 
         // A slice of contiguous Unicode points.
         struct Slice
@@ -298,7 +298,7 @@ namespace ts {
         };
 
         // Map of character slices index per Unicode point base.
-        typedef std::map<char32_t,Slice> SliceMap;
+        using SliceMap = std::map<char32_t,Slice>;
 
         // Add one slice into the slice map;
         void buildSlice(const CharMap& cmap,   // character set

@@ -68,12 +68,12 @@ namespace ts {
         //!
         //! Generic definition of the pointed type for this safe pointer.
         //!
-        typedef T DataType;
+        using DataType = T;
 
         //!
         //! Generic definition of the mutex for this safe pointer.
         //!
-        typedef MUTEX MutexType;
+        using MutexType = MUTEX;
 
         //!
         //! Default constructor using an optional unmanaged object.

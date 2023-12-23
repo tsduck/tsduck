@@ -123,6 +123,6 @@ namespace ts {
         //!
         //! Vector of pointers to InputExecutor.
         //!
-        typedef std::vector<InputExecutor*> InputExecutorVector;
+        using InputExecutorVector = std::vector<InputExecutor*>;
     }
 }

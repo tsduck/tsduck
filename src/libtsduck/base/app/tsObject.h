@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Safe pointer for Object (thread-safe).
     //!
-    typedef SafePtr<Object, std::mutex> ObjectPtr;
+    using ObjectPtr = SafePtr<Object, std::mutex>;
 
     //!
     //! General-purpose base class for polymophic objects.

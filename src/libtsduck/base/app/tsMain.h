@@ -39,11 +39,13 @@ int TSDUCKDLL MainWrapper(int (*func)(int argc, char* argv[]), int argc, char* a
 //! @param func The actual main function with the same profile as main().
 //! @hideinitializer
 //!
-#define TS_MAIN(func)                         \
-    int func(int argc, char *argv[]);         \
-    int main(int argc, char *argv[])          \
-    {                                         \
-        TS_LIBCHECK();                        \
-        return MainWrapper(func, argc, argv); \
-    }                                         \
-    typedef int TS_UNIQUE_NAME(UnusedMainType) /* allow trailing semi-colon */
+#define TS_MAIN(func)                                  \
+    int func(int argc, char *argv[]);                  \
+    int main(int argc, char *argv[])                   \
+    {                                                  \
+        TS_LIBCHECK();                                 \
+        return MainWrapper(func, argc, argv);          \
+    }                                                  \
+    /** @cond nodoxygen */                             \
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int \
+    /** @endcond */

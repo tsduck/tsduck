@@ -26,7 +26,7 @@ namespace ts {
         //!
         //! Reference to the superclass.
         //!
-        typedef AbstractHEVCAccessUnit SuperClass;
+        using SuperClass = AbstractHEVCAccessUnit;
 
         //!
         //! Constructor from a binary area.

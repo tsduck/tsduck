@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! List of DCC selection terms.
         //!
-        typedef EntryWithDescriptorsList<Term> TermList;
+        using TermList = EntryWithDescriptorsList<Term>;
 
         //!
         //! Description of a channel change test.
@@ -89,7 +89,7 @@ namespace ts {
         //!
         //! List of channel change tests.
         //!
-        typedef EntryWithDescriptorsList<Test> TestList;
+        using TestList = EntryWithDescriptorsList<Test>;
 
         // DCCT public members:
         uint8_t        dcc_subtype = 0;       //!< DCC subtype, should be zero.

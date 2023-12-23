@@ -69,7 +69,7 @@ namespace ts {
         //!
         //! List of channels.
         //!
-        typedef EntryWithDescriptorsList<Channel> ChannelList;
+        using ChannelList = EntryWithDescriptorsList<Channel>;
 
         // VCT public members:
         uint8_t        protocol_version = 0;     //!< ATSC protocol version.

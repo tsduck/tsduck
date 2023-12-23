@@ -39,7 +39,7 @@ namespace ts {
         //!
         //! List of subcell entries.
         //!
-        typedef std::list<Subcell> SubcellList;
+        using SubcellList = std::list<Subcell>;
 
         //!
         //! Cell entry.
@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! List of Cell entries.
         //!
-        typedef std::list<Cell> CellList;
+        using CellList = std::list<Cell>;
 
         // CellListDescriptor public members:
         CellList cells {};  //!< The list of cells and subcells.

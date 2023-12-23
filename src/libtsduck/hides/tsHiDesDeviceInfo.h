@@ -64,5 +64,5 @@ namespace ts {
     //!
     //! A list of HiDes device information.
     //!
-    typedef std::list<HiDesDeviceInfo> HiDesDeviceInfoList;
+    using HiDesDeviceInfoList = std::list<HiDesDeviceInfo>;
 }

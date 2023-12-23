@@ -220,7 +220,7 @@ namespace tsunit {
     public:                                                           \
         static tsunit::TestSuite* testSuite()                         \
         {                                                             \
-            typedef classname _TestClass;                             \
+            using _TestClass = classname;                             \
             _TestClass* instance = new _TestClass;                    \
             tsunit::TestSuite* suite = new tsunit::TestSuite(#classname, instance)
 
@@ -248,11 +248,11 @@ namespace tsunit {
 //! @hideinitializer
 //! @see TSUNIT_TEST_BEGIN
 //!
-#define TSUNIT_TEST_END()   \
-            return suite;   \
-        }                   \
-    private:                \
-        typedef int TSUNIT_NAME(unused)
+#define TSUNIT_TEST_END()  \
+            return suite;  \
+        }                  \
+    private:               \
+        using TSUNIT_NAME(for_trailing_semicolon) = int
 
 //!
 //! Register a test class as a test suite.
@@ -302,7 +302,7 @@ namespace tsunit {
 namespace tsunit {
 
     // Generic vector of bytes.
-    typedef std::vector<uint8_t> Bytes;
+    using Bytes = std::vector<uint8_t>;
 
     // Generic root class for named objects.
     class Named
@@ -337,7 +337,7 @@ namespace tsunit {
     class TestCaseWrapper: public TestCase
     {
     public:
-        typedef void (TEST::*TestMethod)();
+        using TestMethod = void (TEST::*)();
         TestCaseWrapper(const std::string& testname, TestMethod method, TEST* test);
         virtual void run() override;
     private:
@@ -357,7 +357,7 @@ namespace tsunit {
     class TestExceptionWrapper: public TestCase
     {
     public:
-        typedef void (TEST::*TestMethod)();
+        using TestMethod = void (TEST::*)();
         TestExceptionWrapper(const std::string& testname, const std::string& excepname, TestMethod method, TEST* test, const char* sourcefile, int linenumber);
         virtual void run() override;
     private:
@@ -464,17 +464,17 @@ namespace tsunit {
     // A generalization of std::underlying_type which works on all types, not only enums.
     template<bool ISENUM, typename T>
     struct underlying_type_impl {
-        typedef T type;
+        using type = T;
     };
 
     template<typename T>
     struct underlying_type_impl<true,T> {
-        typedef typename std::underlying_type<T>::type type;
+        using type = typename std::underlying_type<T>::type;
     };
 
     template<typename T>
     struct underlying_type {
-        typedef typename underlying_type_impl<std::is_enum<T>::value, T>::type type;
+        using type = typename underlying_type_impl<std::is_enum<T>::value, T>::type;
     };
 
     // Converts an integer or enum into a string.
@@ -657,7 +657,7 @@ template<typename ETYPE,
          typename std::enable_if<tsunit::is_intenum<ATYPE>::value>::type*>
 void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const std::string& estr, const std::string& astr, const char* file, int line)
 {
-    typedef typename underlying_type<ATYPE>::type valuetype;
+    using valuetype = typename underlying_type<ATYPE>::type;
     if (valuetype(expected) == valuetype(actual)) {
         ++_passedCount;
     }

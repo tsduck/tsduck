@@ -71,7 +71,7 @@ namespace ts {
         //!
         //! Selector byte layout when protocol_id == MHP_PROTO_HTTP.
         //!
-        typedef std::list<HTTPEntry> HTTP;
+        using HTTP = std::list<HTTPEntry>;
 
         // TransportProtocolDescriptor public members:
         uint16_t  protocol_id = 0;               //!< Transport protocol id, one of MHP_PROTO_* values.
