@@ -210,10 +210,10 @@ namespace ts {
     //!
     //! Vector of IPv6 addresses.
     //!
-    typedef std::vector<IPv6Address> IPv6AddressVector;
+    using IPv6AddressVector = std::vector<IPv6Address>;
 
     //!
     //! Set of IPv6 addresses.
     //!
-    typedef std::set<IPv6Address> IPv6AddressSet;
+    using IPv6AddressSet = std::set<IPv6Address>;
 }

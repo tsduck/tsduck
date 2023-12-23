@@ -19,19 +19,19 @@ namespace ts {
     //! Declaration of a boolean predicate with two arguments.
     //! @ingroup cpp
     //!
-    typedef bool (*BoolPredicate)(bool, bool);
+    using BoolPredicate = bool (*)(bool, bool);
 
     //!
     //! Declaration of a boolean predicate with one argument.
     //! @ingroup cpp
     //!
-    typedef bool (*MonoBoolPredicate)(bool);
+    using MonoBoolPredicate = bool (*)(bool);
 
     //!
     //! Declaration of a boolean predicate with a variable number of arguments.
     //! @ingroup cpp
     //!
-    typedef bool (*MultiBoolPredicate)(std::initializer_list<bool>);
+    using MultiBoolPredicate = bool (*)(std::initializer_list<bool>);
 
     //!
     //! MonoBoolPredicate identity.

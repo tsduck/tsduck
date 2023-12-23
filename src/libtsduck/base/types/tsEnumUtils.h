@@ -20,8 +20,8 @@ namespace ts {
     // Implementation tools for underlying_type.
     //
     //! @cond nodoxygen
-    template<bool ISENUM, typename T> struct underlying_type_1 { typedef T type; };
-    template<typename T> struct underlying_type_1<true, T> { typedef typename std::underlying_type<T>::type type; };
+    template<bool ISENUM, typename T> struct underlying_type_1 { using type = T; };
+    template<typename T> struct underlying_type_1<true, T> { using type = typename std::underlying_type<T>::type; };
     //! @endcond
 
     //!
@@ -32,7 +32,7 @@ namespace ts {
     template<typename T>
     struct underlying_type {
         //! The underlying integer type.
-        typedef typename underlying_type_1<std::is_enum<T>::value, T>::type type;
+        using type = typename underlying_type_1<std::is_enum<T>::value, T>::type;
     };
 
     //!
@@ -64,17 +64,19 @@ namespace ts {
 //! e ^= B | C;
 //! @endcode
 //!
-#define TS_ENABLE_BITMASK_OPERATORS(T)           \
-    namespace ts {                               \
-        /** Template specialization on type T */ \
-        template<>                               \
-        struct EnableBitMaskOperators<T>         \
-        {                                        \
-            /** Enable bitmask operators on T */ \
-            static constexpr bool value = true;  \
-        };                                       \
-    }                                            \
-    typedef int TS_UNIQUE_NAME(for_trailing_semicolon)
+#define TS_ENABLE_BITMASK_OPERATORS(T)                 \
+    namespace ts {                                     \
+        /** Template specialization on type T */       \
+        template<>                                     \
+        struct EnableBitMaskOperators<T>               \
+        {                                              \
+            /** Enable bitmask operators on T */       \
+            static constexpr bool value = true;        \
+        };                                             \
+    }                                                  \
+    /** @cond nodoxygen */                             \
+    using TS_UNIQUE_NAME(for_trailing_semicolon) = int \
+    /** @endcond */
 
 //!
 //! Bitmask "not" unary operator on enumeration types.

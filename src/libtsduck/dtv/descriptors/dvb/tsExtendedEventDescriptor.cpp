@@ -54,7 +54,7 @@ void ts::ExtendedEventDescriptor::clearContent()
 
 void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck, uint8_t* desc_base, size_t desc_size)
 {
-    typedef std::map<UString, size_t> SizeMap; // key=language_code
+    using SizeMap = std::map<UString, size_t>; // key=language_code
     SizeMap desc_last;
     SizeMap desc_index;
 

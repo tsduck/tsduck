@@ -65,7 +65,7 @@ namespace ts {
         //!
         //! Reference to the superclass.
         //!
-        typedef TCPSocket SuperClass;
+        using SuperClass = TCPSocket;
 
         //!
         //! Constructor

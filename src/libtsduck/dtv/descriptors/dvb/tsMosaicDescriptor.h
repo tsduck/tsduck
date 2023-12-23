@@ -44,7 +44,7 @@ namespace ts {
         //!
         //! List of Cell entries.
         //!
-        typedef std::list<Cell> CellList;
+        using CellList = std::list<Cell>;
 
         // MosaicDescriptor public members:
         bool     mosaic_entry_point = false;                 //!< Top-level mosaic.

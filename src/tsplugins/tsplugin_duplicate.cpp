@@ -33,8 +33,8 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        typedef SafePtr<TSPacket> TSPacketPtr;
-        typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
+        using TSPacketPtr = SafePtr<TSPacket>;
+        using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
         bool             _silentDrop = false;  // Silently drop packets on overflow.
         size_t           _maxBuffered = 0;     // Max buffered packets.

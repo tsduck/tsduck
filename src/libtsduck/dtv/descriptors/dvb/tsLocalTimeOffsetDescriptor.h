@@ -40,7 +40,7 @@ namespace ts {
         //!
         //! Vector of region descriptions.
         //!
-        typedef std::vector<Region> RegionVector;
+        using RegionVector = std::vector<Region>;
 
         //!
         //! Maximum number of regions per descriptor.

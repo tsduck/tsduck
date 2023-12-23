@@ -13,7 +13,7 @@
 
 // Operations on 64-bit areas.
 
-typedef uint64_t* uint64_ptr;
+using uint64_ptr = uint64_t*;
 
 #define clear_8(x)        (*(uint64_ptr(x)) = 0)
 #define memcpy_8(dst,src) (*(uint64_ptr(dst)) = *(uint64_ptr(src)))

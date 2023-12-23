@@ -29,7 +29,7 @@ namespace ts {
         //! A map of 32-bit UTC time values, indexed by 8-bit component tags.
         //! Used when the program is splice component by component, not as a whole.
         //!
-        typedef std::map<uint8_t, uint32_t> UTCByComponent;
+        using UTCByComponent = std::map<uint8_t, uint32_t>;
 
         //!
         //! A SpliceSchedule command is made of a list of events.
@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! A list of splice Event structures.
         //!
-        typedef std::list<Event> EventList;
+        using EventList = std::list<Event>;
 
         // Public members, derived from SCTE 35 standard.
         EventList events {};  //!< The events in the SpliceSchedule command.

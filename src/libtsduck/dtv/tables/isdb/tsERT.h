@@ -51,7 +51,7 @@ namespace ts {
         //!
         //! List of relations.
         //!
-        typedef EntryWithDescriptorsList<Relation> RelationList;
+        using RelationList = EntryWithDescriptorsList<Relation>;
 
         // ERT public members:
         uint16_t     event_relation_id = 0;        //!< Event relation id.

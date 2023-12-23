@@ -63,7 +63,7 @@ namespace ts {
         //!
         //! List of devices.
         //!
-        typedef EntryWithDescriptorsList<Device> DeviceList;
+        using DeviceList = EntryWithDescriptorsList<Device>;
 
         // INT public members:
         uint8_t        action_type = 0;       //!< Action type.

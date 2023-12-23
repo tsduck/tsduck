@@ -43,7 +43,7 @@ namespace ts {
             //! Profile of a function which creates a TablesLogger section filter.
             //! @return A pointer to an instance of a concrete subclass of TablesLoggerFilterInterface.
             //!
-            typedef TablesLoggerFilterInterface* (*FilterFactory)();
+            using FilterFactory = TablesLoggerFilterInterface* (*)();
             //!
             //! The constructor registers a section filter factory.
             //! @param [in] factory Function which creates a section filter.

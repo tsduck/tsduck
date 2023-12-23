@@ -27,7 +27,7 @@ namespace ts {
             //!
             //! Profile of a Python callback which receives log messages.
             //!
-            typedef void* (*LogCallback)(int severity, const UChar* message, size_t message_bytes);
+            using LogCallback = void* (*)(int severity, const UChar* message, size_t message_bytes);
 
             //!
             //! Constructor.

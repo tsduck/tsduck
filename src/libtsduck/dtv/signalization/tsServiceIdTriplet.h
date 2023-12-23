@@ -127,6 +127,6 @@ namespace ts {
     };
 
     // Containers:
-    typedef std::set<ServiceIdTriplet> ServiceIdTripletSet;        //!< Set of ServiceIdTriplet.
-    typedef std::vector<ServiceIdTriplet> ServiceIdTripletVector;  //!< Vector of ServiceIdTriplet.
+    using ServiceIdTripletSet = std::set<ServiceIdTriplet>;        //!< Set of ServiceIdTriplet.
+    using ServiceIdTripletVector = std::vector<ServiceIdTriplet>;  //!< Vector of ServiceIdTriplet.
 }

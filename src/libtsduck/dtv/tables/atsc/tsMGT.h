@@ -51,7 +51,7 @@ namespace ts {
         //!
         //! List of table types.
         //!
-        typedef EntryWithDescriptorsList<TableType> TableTypeList;
+        using TableTypeList = EntryWithDescriptorsList<TableType>;
 
         // MGT public members:
         uint8_t        protocol_version = 0;  //!< ATSC protocol version.

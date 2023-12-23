@@ -119,8 +119,8 @@ namespace ts {
             int     severity;
             UString message;
         };
-        typedef SafePtr<LogMessage, ts::null_mutex> LogMessagePtr;
-        typedef MessageQueue<LogMessage, ts::null_mutex> LogMessageQueue;
+        using LogMessagePtr = SafePtr<LogMessage, ts::null_mutex>;
+        using LogMessageQueue = MessageQueue<LogMessage, ts::null_mutex>;
 
         // Private members:
         LogMessageQueue _log_queue {};

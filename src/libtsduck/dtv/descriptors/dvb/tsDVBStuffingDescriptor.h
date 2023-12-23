@@ -54,5 +54,5 @@ namespace ts {
     //!
     //! Legacy name for a DVB stuffing_descriptor.
     //!
-    typedef DVBStuffingDescriptor StuffingDescriptor;
+    using StuffingDescriptor = DVBStuffingDescriptor;
 }

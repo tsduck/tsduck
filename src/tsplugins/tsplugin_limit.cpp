@@ -42,8 +42,8 @@ namespace ts {
     private:
         // Context per PID in the TS.
         class PIDContext;
-        typedef SafePtr<PIDContext, ts::null_mutex> PIDContextPtr;
-        typedef std::map<PID, PIDContextPtr> PIDContextMap;
+        using PIDContextPtr = SafePtr<PIDContext, ts::null_mutex>;
+        using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Plugin fields.
         bool          _useWallClock = false;

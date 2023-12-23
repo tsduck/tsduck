@@ -21,8 +21,8 @@
 TS_MAIN(MainCode);
 
 // To avoid long prefixes
-typedef ts::CyclingPacketizer::StuffingPolicy StuffPolicy;
-typedef ts::SectionFile::FileType FType;
+using StuffPolicy = ts::CyclingPacketizer::StuffingPolicy;
+using FType = ts::SectionFile::FileType;
 
 
 //----------------------------------------------------------------------------

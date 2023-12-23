@@ -357,22 +357,22 @@ namespace ts {
         //---------------------------------------------------------------------
 
         struct TSDUCKDLL Traits {
-            typedef emmgmux::Tags     Tags;       //!< Actual set of tags for this protocol.
-            typedef emmgmux::Errors   Errors;     //!< Actual set of error codes for this protocol.
-            typedef emmgmux::Protocol Protocol;   //!< Actual protocol description.
+            using Tags = emmgmux::Tags;           //!< Actual set of tags for this protocol.
+            using Errors = emmgmux::Errors;       //!< Actual set of error codes for this protocol.
+            using Protocol = emmgmux::Protocol;   //!< Actual protocol description.
 
-            typedef emmgmux::ChannelSetup  ChannelSetup;   //!< Actual ChannelSetup message for this protocol.
-            typedef emmgmux::ChannelTest   ChannelTest;    //!< Actual ChannelTest message for this protocol.
-            typedef emmgmux::ChannelStatus ChannelStatus;  //!< Actual ChannelStatus message for this protocol.
-            typedef emmgmux::ChannelClose  ChannelClose;   //!< Actual ChannelClose message for this protocol.
-            typedef emmgmux::ChannelError  ChannelError;   //!< Actual ChannelError message for this protocol.
+            using ChannelSetup = emmgmux::ChannelSetup;    //!< Actual ChannelSetup message for this protocol.
+            using ChannelTest = emmgmux::ChannelTest;      //!< Actual ChannelTest message for this protocol.
+            using ChannelStatus = emmgmux::ChannelStatus;  //!< Actual ChannelStatus message for this protocol.
+            using ChannelClose = emmgmux::ChannelClose;    //!< Actual ChannelClose message for this protocol.
+            using ChannelError = emmgmux::ChannelError;    //!< Actual ChannelError message for this protocol.
 
-            typedef emmgmux::StreamSetup         StreamSetup;         //!< Actual StreamSetup message for this protocol.
-            typedef emmgmux::StreamTest          StreamTest;          //!< Actual StreamTest message for this protocol.
-            typedef emmgmux::StreamStatus        StreamStatus;        //!< Actual StreamStatus message for this protocol.
-            typedef emmgmux::StreamCloseRequest  StreamCloseRequest;  //!< Actual StreamCloseRequest message for this protocol.
-            typedef emmgmux::StreamCloseResponse StreamCloseResponse; //!< Actual StreamCloseResponse message for this protocol.
-            typedef emmgmux::StreamError         StreamError;         //!< Actual StreamError message for this protocol.
+            using StreamSetup = emmgmux::StreamSetup;                 //!< Actual StreamSetup message for this protocol.
+            using StreamTest = emmgmux::StreamTest;                   //!< Actual StreamTest message for this protocol.
+            using StreamStatus = emmgmux::StreamStatus;               //!< Actual StreamStatus message for this protocol.
+            using StreamCloseRequest = emmgmux::StreamCloseRequest;   //!< Actual StreamCloseRequest message for this protocol.
+            using StreamCloseResponse = emmgmux::StreamCloseResponse; //!< Actual StreamCloseResponse message for this protocol.
+            using StreamError = emmgmux::StreamError;                 //!< Actual StreamError message for this protocol.
         };
     }
 }

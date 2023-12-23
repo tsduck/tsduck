@@ -22,7 +22,7 @@
     class classname : public std::map<key_type, value_type> \
     {                                                       \
         TS_DECLARE_SINGLETON(classname);                    \
-        typedef std::map<key_type, value_type> SuperClass;  \
+        using SuperClass = std::map<key_type, value_type>;  \
     };                                                      \
     TS_DEFINE_SINGLETON(classname)
 

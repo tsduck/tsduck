@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! List of recording labels.
         //!
-        typedef std::list<RecodingLabel> RecodingLabelList;
+        using RecodingLabelList = std::list<RecodingLabel>;
 
         // ApplicationRecordingDescriptor public members:
         bool      scheduled_recording = false;  //!< Accept scheduled recording.

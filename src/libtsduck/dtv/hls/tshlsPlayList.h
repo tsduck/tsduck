@@ -429,9 +429,9 @@ namespace ts {
 
         private:
             // We need to access lists of media, with index access and fast insert at beginning and end.
-            typedef std::deque<MediaSegment> MediaSegmentQueue;
-            typedef std::deque<MediaPlayList> MediaPlayListQueue;
-            typedef std::deque<AltPlayList> AltPlayListQueue;
+            using MediaSegmentQueue = std::deque<MediaSegment>;
+            using MediaPlayListQueue = std::deque<MediaPlayList>;
+            using AltPlayListQueue = std::deque<AltPlayList>;
 
             bool               _valid = false;       // Content loaded and valid.
             int                _version = 1;         // Playlist format version.

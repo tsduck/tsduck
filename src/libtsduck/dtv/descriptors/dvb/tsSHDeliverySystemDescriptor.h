@@ -73,7 +73,7 @@ namespace ts {
         //!
         //! List of modulations.
         //!
-        typedef std::list<Modulation> ModulationList;
+        using ModulationList = std::list<Modulation>;
 
         // SHDeliverySystemDescriptor public members:
         uint8_t        diversity_mode = 0;   //!< 4 bits, diversity mode.

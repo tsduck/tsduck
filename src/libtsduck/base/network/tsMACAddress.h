@@ -150,5 +150,5 @@ namespace ts {
     //!
     //! Vector of MAC addresses.
     //!
-    typedef std::vector<MACAddress> MACAddressVector;
+    using MACAddressVector = std::vector<MACAddress>;
 }

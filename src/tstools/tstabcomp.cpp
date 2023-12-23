@@ -180,7 +180,7 @@ namespace {
 namespace {
     bool ProcessFile(Options& opt, const ts::UString& infile)
     {
-        typedef ts::SectionFile::FileType FType;
+        using FType = ts::SectionFile::FileType;
 
         const FType inType = opt.fromJSON ? FType::JSON : ts::SectionFile::GetFileType(infile);
         const bool useStdIn = infile.empty() || infile == u"-";

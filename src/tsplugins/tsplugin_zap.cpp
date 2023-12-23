@@ -58,8 +58,8 @@ namespace ts {
             // Constructor:
             ServiceContext(DuckContext& duck, const UString& parameter);
         };
-        typedef SafePtr<ServiceContext> ServiceContextPtr;
-        typedef std::vector<ServiceContextPtr> ServiceContextVector;
+        using ServiceContextPtr = SafePtr<ServiceContext>;
+        using ServiceContextVector = std::vector<ServiceContextPtr>;
 
         // Each PID is described by one byte
         enum : uint8_t {

@@ -28,18 +28,18 @@ namespace ts {
         //!
         //! Explicit reference to the public superclass.
         //!
-        typedef std::basic_ostream<char> SuperClass;
+        using SuperClass = std::basic_ostream<char>;
 
         // These types are declared by std::basic_ostream and are inherited.
         // But the same names are also declared by the private base class basic_streambuf.
         // Because of this conflict, they are hidden. We restore here the visibility
         // of the names which are inherited by the public base class.
 #if !defined(DOXYGEN)
-        typedef SuperClass::char_type char_type;
-        typedef SuperClass::traits_type traits_type;
-        typedef SuperClass::int_type int_type;
-        typedef SuperClass::pos_type pos_type;
-        typedef SuperClass::off_type off_type;
+        using char_type = SuperClass::char_type;
+        using traits_type = SuperClass::traits_type;
+        using int_type = SuperClass::int_type;
+        using pos_type = SuperClass::pos_type;
+        using off_type = SuperClass::off_type;
 #endif
 
         //!

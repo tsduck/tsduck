@@ -193,7 +193,7 @@ namespace ts {
 
     private:
         // List of control words
-        typedef std::list<ByteBlock> CWList;
+        using CWList = std::list<ByteBlock>;
 
         Report&          _report;
         uint8_t          _scrambling_type {SCRAMBLING_RESERVED};

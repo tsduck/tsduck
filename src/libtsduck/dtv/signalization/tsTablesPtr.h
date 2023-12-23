@@ -30,54 +30,54 @@ namespace ts {
     //!
     //! Safe pointer for AbstractDescriptor (not thread-safe).
     //!
-    typedef SafePtr<AbstractDescriptor, ts::null_mutex> AbstractDescriptorPtr;
+    using AbstractDescriptorPtr = SafePtr<AbstractDescriptor, ts::null_mutex>;
 
     //!
     //! Vector of AbstractDescriptor pointers
     //!
-    typedef std::vector<AbstractDescriptorPtr> AbstractDescriptorPtrVector;
+    using AbstractDescriptorPtrVector = std::vector<AbstractDescriptorPtr>;
 
     //!
     //! Safe pointer for AbstractTable (not thread-safe)
     //!
-    typedef SafePtr<AbstractTable, ts::null_mutex> AbstractTablePtr;
+    using AbstractTablePtr = SafePtr<AbstractTable, ts::null_mutex>;
 
     //!
     //! Safe pointer for Section (not thread-safe).
     //!
-    typedef SafePtr<Section, ts::null_mutex> SectionPtr;
+    using SectionPtr = SafePtr<Section, ts::null_mutex>;
 
     //!
     //! Vector of Section pointers.
     //!
-    typedef std::vector<SectionPtr> SectionPtrVector;
+    using SectionPtrVector = std::vector<SectionPtr>;
 
     //!
     //! Vector of BinaryTable pointers
     //!
-    typedef std::vector<AbstractTablePtr> AbstractTablePtrVector;
+    using AbstractTablePtrVector = std::vector<AbstractTablePtr>;
 
     //!
     //! Safe pointer for BinaryTable (not thread-safe)
     //!
-    typedef SafePtr<BinaryTable, ts::null_mutex> BinaryTablePtr;
+    using BinaryTablePtr = SafePtr<BinaryTable, ts::null_mutex>;
 
     //!
     //! Vector of BinaryTable pointers
     //!
-    typedef std::vector<BinaryTablePtr> BinaryTablePtrVector;
+    using BinaryTablePtrVector = std::vector<BinaryTablePtr>;
 
     //!
     //! Safe pointer for Descriptor (not thread-safe)
     //!
-    typedef SafePtr<Descriptor, ts::null_mutex> DescriptorPtr;
+    using DescriptorPtr = SafePtr<Descriptor, ts::null_mutex>;
 
     //!
     //! Vector of Descriptor pointers
     //! Use class DescriptorList for advanced features.
     //! @see DescriptorList
     //!
-    typedef std::vector<DescriptorPtr> DescriptorPtrVector;
+    using DescriptorPtrVector = std::vector<DescriptorPtr>;
 
     //!
     //! Profile of a function to display a section.
@@ -92,7 +92,7 @@ namespace ts {
     //! not have to worry about those extraneous data.
     //! @param [in] margin Left margin content.
     //!
-    typedef void (*DisplaySectionFunction)(TablesDisplay& display, const Section& section, PSIBuffer& payload, const UString& margin);
+    using DisplaySectionFunction = void (*)(TablesDisplay& display, const Section& section, PSIBuffer& payload, const UString& margin);
 
     //!
     //! Profile of a function to display a brief overview ("log") of a section on one line.
@@ -102,7 +102,7 @@ namespace ts {
     //! @param [in] max_bytes Maximum number of bytes to log from the section. 0 means unlimited.
     //! @return A one-line brief summary of the table.
     //!
-    typedef UString (*LogSectionFunction)(const Section& section, size_t max_bytes);
+    using LogSectionFunction = UString (*)(const Section& section, size_t max_bytes);
 
     //!
     //! Profile of a function to display a descriptor.
@@ -122,7 +122,7 @@ namespace ts {
     //! vary depending on the table that they are in.
     //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
     //!
-    typedef void (*DisplayDescriptorFunction)(TablesDisplay& display, PSIBuffer& payload, const UString& margin, DID did, TID tid, PDS pds);
+    using DisplayDescriptorFunction = void (*)(TablesDisplay& display, PSIBuffer& payload, const UString& margin, DID did, TID tid, PDS pds);
 
     //!
     //! Profile of a function to display the private part of a CA_descriptor.
@@ -132,7 +132,7 @@ namespace ts {
     //! @param [in] margin Left margin content.
     //! @param [in] tid Table id of table containing the descriptors (typically CAT or PMT).
     //!
-    typedef void (*DisplayCADescriptorFunction)(TablesDisplay& display, PSIBuffer& private_part, const UString& margin, TID tid);
+    using DisplayCADescriptorFunction = void (*)(TablesDisplay& display, PSIBuffer& private_part, const UString& margin, TID tid);
 }
 
 //!

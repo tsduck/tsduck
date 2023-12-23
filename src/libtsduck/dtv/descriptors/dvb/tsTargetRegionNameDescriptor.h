@@ -39,7 +39,7 @@ namespace ts {
         //!
         //! List of Region entries.
         //!
-        typedef std::list<Region> RegionList;
+        using RegionList = std::list<Region>;
 
         // TargetRegionNameDescriptor public members:
         UString    country_code {};           //!< 3-character country code.

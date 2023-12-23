@@ -26,7 +26,7 @@ namespace ts {
         //!
         //! Explicit reference to the SuperClass
         //!
-        typedef std::map<UString, UString> SuperClass;
+        using SuperClass = std::map<UString, UString>;
 
         //!
         //! Constructor from an optional macOS XML PList file.

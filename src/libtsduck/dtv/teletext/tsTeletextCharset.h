@@ -97,7 +97,7 @@ namespace ts {
         //!
         //! G0 charsets data.
         //!
-        typedef UChar G0CharsetData[G0_COUNT][CHAR_COUNT];
+        using G0CharsetData = UChar[G0_COUNT][CHAR_COUNT];
 
         //!
         //! Initial base content of a charset.

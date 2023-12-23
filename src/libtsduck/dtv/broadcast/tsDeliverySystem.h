@@ -146,7 +146,7 @@ namespace ts {
     //!
     //! An ordered list of delivery system values (ts::DeliverySystem).
     //!
-    typedef std::list<DeliverySystem> DeliverySystemList;
+    using DeliverySystemList = std::list<DeliverySystem>;
 
     // GCC: error: base class 'class std::set<ts::DeliverySystem>' has accessible non-virtual destructor
     // This is harmless here since the subclass does not allocate own resources.
@@ -164,7 +164,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef std::set<DeliverySystem> SuperClass;
+        using SuperClass = std::set<DeliverySystem>;
 
         //! Check if a delivery system is present in the set.
         //! @param [in] ds The delivery system to check.

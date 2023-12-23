@@ -26,12 +26,12 @@ namespace ts {
     //!
     //! Smart pointer to a GitHubRelease (not thread-safe).
     //!
-    typedef SafePtr<GitHubRelease, ts::null_mutex> GitHubReleasePtr;
+    using GitHubReleasePtr = SafePtr<GitHubRelease, ts::null_mutex>;
 
     //!
     //! Vector of smart pointers to GitHubRelease objects.
     //!
-    typedef std::vector<GitHubReleasePtr> GitHubReleaseVector;
+    using GitHubReleaseVector = std::vector<GitHubReleasePtr>;
 
     //!
     //! This class holds information from GitHub about a release of a project.
@@ -87,7 +87,7 @@ namespace ts {
         //!
         //! List of assets.
         //!
-        typedef std::list<Asset> AssetList;
+        using AssetList = std::list<Asset>;
 
         //!
         //! Get the Git tag name of the release.

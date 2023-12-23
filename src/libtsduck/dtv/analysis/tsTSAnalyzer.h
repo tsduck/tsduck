@@ -201,17 +201,17 @@ namespace ts {
         //!
         //! Safe pointer to a ServiceContext (not thread-safe).
         //!
-        typedef SafePtr<ServiceContext, ts::null_mutex> ServiceContextPtr;
+        using ServiceContextPtr = SafePtr<ServiceContext, ts::null_mutex>;
 
         //!
         //! Map of ServiceContext, indexed by service id.
         //!
-        typedef std::map<uint16_t, ServiceContextPtr> ServiceContextMap;
+        using ServiceContextMap = std::map<uint16_t, ServiceContextPtr>;
 
         //!
         //! Set of service ids.
         //!
-        typedef std::set<uint16_t> ServiceIdSet;
+        using ServiceIdSet = std::set<uint16_t>;
 
         //!
         //! Get a service context.
@@ -259,12 +259,12 @@ namespace ts {
         //!
         //! Safe pointer to an ETIDContext (not thread-safe).
         //!
-        typedef SafePtr<ETIDContext, ts::null_mutex> ETIDContextPtr;
+        using ETIDContextPtr = SafePtr<ETIDContext, ts::null_mutex>;
 
         //!
         //! Map of ETIDContext, indexed by ETID.
         //!
-        typedef std::map<ETID, ETIDContextPtr> ETIDContextMap;
+        using ETIDContextMap = std::map<ETID, ETIDContextPtr>;
 
         //!
         //! Get an ETID context.
@@ -389,7 +389,7 @@ namespace ts {
                 bool optional;
                 bool sections;
             };
-            typedef std::map<PID, KnownPID> KnownPIDMap;
+            using KnownPIDMap = std::map<PID, KnownPID>;
             static KnownPIDMap::value_type KPID(PID, const UChar* name, bool optional = true, bool sections = true);
             static const KnownPIDMap KNOWN_PIDS;
         };
@@ -397,12 +397,12 @@ namespace ts {
         //!
         //! Safe pointer to a PIDContext (not thread-safe).
         //!
-        typedef SafePtr<PIDContext, ts::null_mutex> PIDContextPtr;
+        using PIDContextPtr = SafePtr<PIDContext, ts::null_mutex>;
 
         //!
         //! Map of PIDContext, indexed by PID.
         //!
-        typedef std::map<PID, PIDContextPtr> PIDContextMap;
+        using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         //!
         //! Check if a PID context exists.

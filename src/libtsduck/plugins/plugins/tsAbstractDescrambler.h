@@ -181,7 +181,7 @@ namespace ts {
         };
 
         // Map of scrambled streams in the service, indexed by PID.
-        typedef std::map<PID, ScrambledStream> ScrambledStreamMap;
+        using ScrambledStreamMap = std::map<PID, ScrambledStream>;
 
         // Description of an ECM stream
         class ECMStream
@@ -205,8 +205,8 @@ namespace ts {
             // -- end of protected area --
         };
 
-        typedef SafePtr<ECMStream, ts::null_mutex> ECMStreamPtr;
-        typedef std::map<PID, ECMStreamPtr> ECMStreamMap;
+        using ECMStreamPtr = SafePtr<ECMStream, ts::null_mutex>;
+        using ECMStreamMap = std::map<PID, ECMStreamPtr>;
 
         // ECM deciphering thread
         class ECMThread : public Thread

@@ -266,7 +266,7 @@ namespace {
 
     int TestData::_instanceCount = 0;
 
-    typedef std::optional<TestData> TestVariable;
+    using TestVariable = std::optional<TestData>;
 
     TestVariable NewInstance(int value, int expectedCount)
     {

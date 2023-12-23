@@ -69,7 +69,7 @@ void MessageQueueTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-typedef ts::MessageQueue<int, std::mutex> TestQueue;
+using TestQueue = ts::MessageQueue<int, std::mutex>;
 
 // Test case: Constructor
 void MessageQueueTest::testConstructor()
@@ -182,7 +182,7 @@ void MessageQueueTest::testPriorityQueue()
         bool operator<(const Message& other) const { return a < other.a; }
     };
 
-    typedef ts::MessagePriorityQueue<Message, std::mutex> Queue;
+    using Queue = ts::MessagePriorityQueue<Message, std::mutex>;
     Queue queue;
     Queue::MessagePtr msg;
 

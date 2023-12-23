@@ -116,7 +116,7 @@ namespace ts {
         };
 
         // Map of key=PID to value=PIDDescription.
-        typedef std::map<PID,PIDDescription> PIDDescriptionMap;
+        using PIDDescriptionMap = std::map<PID,PIDDescription>;
 
         // Explore a descriptor list and record EMM and ECM PID's.
         void analyzeCADescriptors(const DescriptorList& descs, bool is_ecm);

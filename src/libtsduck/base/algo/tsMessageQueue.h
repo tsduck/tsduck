@@ -39,7 +39,7 @@ namespace ts {
         //! again from the queue into the consumer thread, the copied data is always a
         //! safe-pointer to the actual message content.
         //!
-        typedef SafePtr<MSG, MUTEX> MessagePtr;
+        using MessagePtr = SafePtr<MSG, MUTEX>;
 
         //!
         //! Constructor.
@@ -167,7 +167,7 @@ namespace ts {
         //!
         //! Queues are implemented as list of smart pointers to messages.
         //!
-        typedef std::list<MessagePtr> MessageList;
+        using MessageList = std::list<MessagePtr>;
 
         //!
         //! This virtual protected method performs placement in the message queue.

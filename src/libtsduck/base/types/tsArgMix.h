@@ -233,7 +233,7 @@ namespace ts {
         //!
         //! Type of an argument, used as bitmask.
         //!
-        typedef uint16_t TypeFlags;
+        using TypeFlags = uint16_t;
 
         //!
         //! Anonymous enum, used as bitmask.
@@ -328,14 +328,14 @@ namespace ts {
         struct storage_type {
 
             // The meta-type "type" is the storage type, namely one of int32_t, uint32_t, int64_t, uint64_t.
-            typedef typename std::conditional<
+            using type = typename std::conditional<
                 std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<(sizeof(T) > 4), int64_t, int32_t>::type,
                 typename std::conditional<(sizeof(T) > 4), uint64_t, uint32_t>::type
-            >::type type;
+            >::type;
 
             // The meta-type "type_constant" defines the ArgMix type flags value for the type T.
-            typedef typename std::conditional<
+            using type_constant = typename std::conditional<
                 std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<
                     (sizeof(T) > 4),
@@ -347,7 +347,7 @@ namespace ts {
                     std::integral_constant<TypeFlags, INTEGER | BIT64>,
                     std::integral_constant<TypeFlags, INTEGER | BIT32>
                 >::type
-            >::type type_constant;
+            >::type;
 
             // The "value" is the ArgMix type flags value for the type T.
             static constexpr TypeFlags value = type_constant::value;
@@ -359,14 +359,14 @@ namespace ts {
         struct reference_type {
 
             // The meta-type "type" is the storage type.
-            typedef typename std::conditional<
+            using type = typename std::conditional<
                 std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<(sizeof(T) > 4), int64_t, std::conditional<(sizeof(T) > 2), int32_t, std::conditional<(sizeof(T) > 1), int16_t, int8_t>>>::type,
                 typename std::conditional<(sizeof(T) > 4), uint64_t, std::conditional<(sizeof(T) > 2), uint32_t, std::conditional<(sizeof(T) > 1), uint16_t, uint8_t>>>::type
-            >::type type;
+            >::type;
 
             // The meta-type "type_constant" defines the ArgMix type flags value for the type T.
-            typedef typename std::conditional<
+            using type_constant = typename std::conditional<
                 std::is_signed<typename ts::underlying_type<T>::type>::value,
                 typename std::conditional<
                     (sizeof(T) > 4),
@@ -394,7 +394,7 @@ namespace ts {
                         >::type
                     >::type
                 >::type
-            >::type type_constant;
+            >::type;
 
             // The "value" is the ArgMix type flags value for the type T.
             static constexpr TypeFlags value = type_constant::value;

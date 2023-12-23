@@ -37,7 +37,7 @@ namespace ts {
         //!
         //! List of subcell entries.
         //!
-        typedef std::list<Subcell> SubcellList;
+        using SubcellList = std::list<Subcell>;
 
         //!
         //! Description of a cell.
@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! List of cell entries.
         //!
-        typedef std::list<Cell> CellList;
+        using CellList = std::list<Cell>;
 
         // T2DeliverySystemDescriptor public members:
         uint8_t   plp_id = 0;               //!< PLP id.

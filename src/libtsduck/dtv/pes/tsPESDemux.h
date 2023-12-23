@@ -34,7 +34,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef TimeTrackerDemux SuperClass;
+        using SuperClass = TimeTrackerDemux;
 
         //!
         //! Constructor.
@@ -196,7 +196,7 @@ namespace ts {
 
         // Map of PID contexts, indexed by PID.
         // One context is created per demuxed PES PID.
-        typedef std::map<PID,PIDContext> PIDContextMap;
+        using PIDContextMap = std::map<PID,PIDContext>;
 
         // This internal structure describes the content of one PID.
         struct PIDType
@@ -210,7 +210,7 @@ namespace ts {
 
         // Map of PID types, indexed by PID.
         // All known PID's are referenced here, not only demuxed PES PID's.
-        typedef std::map<PID,PIDType> PIDTypeMap;
+        using PIDTypeMap = std::map<PID,PIDType>;
 
         // Feed the demux with a TS packet (PID already filtered).
         void processPacket(const TSPacket&);

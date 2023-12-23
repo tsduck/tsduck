@@ -22,7 +22,7 @@ namespace ts {
     //!
     //! UTF-16 character.
     //!
-    typedef char16_t UChar;
+    using UChar = char16_t;
 
     //!
     //! Case sensitivity used on string operations.

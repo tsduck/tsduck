@@ -108,8 +108,8 @@ namespace ts {
         };
 
         // A map of PMT contexts, indexed by PMT PID.
-        typedef SafePtr<PMTContext> PMTContextPtr;
-        typedef std::map<PID,PMTContextPtr> PMTContextMap;
+        using PMTContextPtr = SafePtr<PMTContext>;
+        using PMTContextMap = std::map<PID,PMTContextPtr>;
         PMTContextPtr getPMTContext(PID pmt_pid, bool create);
 
         // File cleaner private fields:

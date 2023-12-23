@@ -27,12 +27,12 @@ namespace ts {
     //!
     //! Safe pointer to a tuner (not thread-safe).
     //!
-    typedef SafePtr<TunerBase, ts::null_mutex> TunerPtr;
+    using TunerPtr = SafePtr<TunerBase, ts::null_mutex>;
 
     //!
     //! Vector of safe pointers to tuners (not thread-safe).
     //!
-    typedef std::vector<TunerPtr> TunerPtrVector;
+    using TunerPtrVector = std::vector<TunerPtr>;
 
     //!
     //! Base class for Digital TV tuners.

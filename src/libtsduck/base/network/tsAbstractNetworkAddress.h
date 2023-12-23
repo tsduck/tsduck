@@ -31,7 +31,7 @@ namespace ts {
         //!
         //! The concept of port is used by TCP and UDP over IP networks.
         //!
-        typedef uint16_t Port;
+        using Port = uint16_t;
 
         //!
         //! Wildcard integer value for "any port" or "no port".

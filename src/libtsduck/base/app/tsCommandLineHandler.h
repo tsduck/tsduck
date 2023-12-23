@@ -45,5 +45,5 @@ namespace ts {
     //! @param [in,out] args Command line arguments.
     //! @return Status of the execution of the command.
     //!
-    typedef CommandStatus (CommandLineHandler::*CommandLineMethod)(const UString& command, Args& args);
+    using CommandLineMethod = CommandStatus (CommandLineHandler::*)(const UString& command, Args& args);
 }

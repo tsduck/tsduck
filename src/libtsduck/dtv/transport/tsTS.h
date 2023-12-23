@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! PID value (13 bits).
     //!
-    typedef uint16_t PID;
+    using PID = uint16_t;
 
     //!
     //! MPEG TS packet size in bytes.
@@ -79,7 +79,7 @@ namespace ts {
     //! be insufficient: at 100 Mb/s, 2^32 188-byte packets will take
     //! only 17 hours to transmit.
     //!
-    typedef uint64_t PacketCounter;
+    using PacketCounter = uint64_t;
 
     //!
     //! A impossible value for PacketCounter, meaning "undefined".
@@ -89,7 +89,7 @@ namespace ts {
     //!
     //! Number of sections.
     //!
-    typedef uint64_t SectionCounter;
+    using SectionCounter = uint64_t;
 
     //!
     //! Value of a sync byte (first byte in a TS packet).
@@ -110,7 +110,7 @@ namespace ts {
     //! A bit mask for PID values.
     //! Useful to implement PID filtering.
     //!
-    typedef std::bitset<PID_MAX> PIDSet;
+    using PIDSet = std::bitset<PID_MAX>;
 
     //!
     //! PIDSet constant with no PID set.

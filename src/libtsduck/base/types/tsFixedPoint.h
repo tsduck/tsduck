@@ -40,7 +40,7 @@ namespace ts {
         //!
         //! The underlying signed integer type.
         //!
-        typedef INT_T int_t;
+        using int_t = INT_T;
 
         //!
         //! The precision of the fixed number type (number of decimal digits).

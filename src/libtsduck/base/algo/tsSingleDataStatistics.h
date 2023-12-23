@@ -31,12 +31,12 @@ namespace ts {
         //!
         //! The signed type for @a NUMBER.
         //!
-        typedef typename ts::make_signed<NUMBER>::type SIGNED;
+        using SIGNED = typename ts::make_signed<NUMBER>::type;
 
         //!
         //! The floating-point type for @a NUMBER finer results.
         //!
-        typedef typename std::conditional<std::is_floating_point<NUMBER>::value, NUMBER, DEFAULT_FLOAT>::type FLOAT;
+        using FLOAT = typename std::conditional<std::is_floating_point<NUMBER>::value, NUMBER, DEFAULT_FLOAT>::type;
 
         //!
         //! Reset the statistics collection.

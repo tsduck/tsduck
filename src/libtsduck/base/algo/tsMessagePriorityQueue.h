@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        typedef MessageQueue<MSG, MUTEX> SuperClass;
+        using SuperClass = MessageQueue<MSG, MUTEX>;
 
         //!
         //! This virtual protected method performs placement in the message queue.

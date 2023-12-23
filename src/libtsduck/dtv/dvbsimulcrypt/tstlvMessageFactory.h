@@ -23,7 +23,7 @@ namespace ts {
         //!
         //! Safe pointer for MessageFactory (not thread-safe).
         //!
-        typedef SafePtr <MessageFactory, ts::null_mutex> MessageFactoryPtr;
+        using MessageFactoryPtr = SafePtr <MessageFactory, ts::null_mutex>;
 
         //!
         //! Factory class for TLV messages
@@ -314,7 +314,7 @@ namespace ts {
             TAG             _command_tag = 0;
 
             // Location of actual parameters. Point into the message block.
-            typedef std::multimap <TAG, ExtParameter> ParameterMultimap;
+            using ParameterMultimap = std::multimap <TAG, ExtParameter>;
             ParameterMultimap _params {};
 
             // Analyze the TLV message, called by constructors.

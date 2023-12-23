@@ -38,7 +38,7 @@ namespace ts {
         //!
         //! List of CRID entries.
         //!
-        typedef std::list<CRID> CRIDList;
+        using CRIDList = std::list<CRID>;
 
         // ContentIdentifierDescriptor public members:
         CRIDList crids {};  //!< The list of CRID entries.

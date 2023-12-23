@@ -26,9 +26,9 @@ namespace ts {
         //
         // Basic meta-data in DVB TLV protocols
         //
-        typedef uint8_t  VERSION;  //!< Type for TLV protocol version (8 bits).
-        typedef uint16_t TAG;      //!< Type for TLV tags (16 bits).
-        typedef uint16_t LENGTH;   //!< Type for TLV length fields (16 bits).
+        using VERSION = uint8_t;   //!< Type for TLV protocol version (8 bits).
+        using TAG     = uint16_t;  //!< Type for TLV tags (16 bits).
+        using LENGTH  = uint16_t;  //!< Type for TLV length fields (16 bits).
 
         //!
         //! This tag is not used by DVB and can serve as "no value".
