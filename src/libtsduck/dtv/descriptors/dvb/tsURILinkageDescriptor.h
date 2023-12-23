@@ -27,12 +27,12 @@ namespace ts {
     public:
         class TSDUCKDLL DVB_I_Info
         {
-            TS_DEFAULT_COPY_MOVE(DVB_I_Info);
+        //!
+        //! DVB-I_info() structure conveyed in private_data when uri_linkage_type = 0x03
+        //
+        TS_DEFAULT_COPY_MOVE(DVB_I_Info);
         public:
-            //!
-            //! DVB-I_info() structure conveyed in private_data when uri_linkage_type = 0x03
-            //
-            // DVB_I_Info public members:
+             // DVB_I_Info public members:
             uint8_t                end_point_type = 0;              //!< type of list signalled by the URI
             std::optional<UString> service_list_name {};            //!< name of the service list referenced by the uri
             std::optional<UString> service_list_provider_name {};   //!< name of the provider of the service list referenced by the uri
@@ -42,11 +42,10 @@ namespace ts {
             //!
             DVB_I_Info();
             //!
-            //! Constructor from a binary descriptor.
-            //! @param [in,out] duck TSDuck execution context.
-            //! @param [in] bin A binary descriptor to deserialize.
+            //! Constructor from binary descriptor data.
+            //! @param [in] buf A binary descriptor to deserialize.
             //!
-            DVB_I_Info(PSIBuffer& buf) : DVB_I_Info() { deserialize(buf); };
+            DVB_I_Info(PSIBuffer& buf) : DVB_I_Info() { deserialize(buf); }
 
             //! @cond nodoxygen
             void clearContent(void);
