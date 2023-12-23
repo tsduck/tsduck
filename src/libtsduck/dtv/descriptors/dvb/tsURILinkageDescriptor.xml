@@ -6,6 +6,10 @@
         uri_linkage_type="uint8, required"
         uri="string, required"
         min_polling_interval="uint16, optional">
+      <DVB_I_linkage
+        end_point_type="uint8, required"
+        service_list_name="string, optional"
+        service_list_provider_name="string, optional"/>
       <private_data>
         Hexadecimal content
       </private_data>

@@ -3,6 +3,16 @@ Bits = 8
 0x00 = Online SDT (OSDT) for CI Plus
 0x01 = DVB-IPTV SD&S
 0x02 = Material Resolution Server (MRS) for companion screen applications
-0x03-0x5F = Reserved for registration to DVB specifications
+0x03 = DVB-I
+0x04-0x5F = Reserved for registration to DVB specifications
 0x60-0x7F = Reserved for registration to standardised systems through the DVB Project Office
 0x80-0xFF =  user defined
+
+[URI_linkage_descriptor.DVB_I_Endpoint_type]
+Bits = 8
+# DVB A177, ETSI TS 103 770 table 2
+0x00 = Not Used
+0x01 = DVB-I Service List
+0x02 = DVB-I Service List Registry query
+0x03 = DVB-I Service List with list name and provider name
+0x04-0xFF = Reserved for future use
