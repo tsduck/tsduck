@@ -237,7 +237,7 @@ bool ts::URILinkageDescriptor::DVB_I_Info::fromXML(const xml::Element* element)
     }
     if (ok) {
         if ((end_point_type != END_POINT_SERVICE_LIST_EXTENDED) && (service_list_name.has_value() || service_list_provider_name.has_value())) {
-            element->report().error(u"service_list_name and service_list_provider_name only permitted when end_point_type=0x0X in <%s>, line %d", {END_POINT_SERVICE_LIST_EXTENDED, element->name(), element->lineNumber()});
+            element->report().error(u"service_list_name and service_list_provider_name only permitted when end_point_type=0x%X in <%s>, line %d", {END_POINT_SERVICE_LIST_EXTENDED, element->name(), element->lineNumber()});
             ok = false;
         }
     }
