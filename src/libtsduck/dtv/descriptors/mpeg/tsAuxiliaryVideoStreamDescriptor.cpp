@@ -346,10 +346,6 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::parallax_params_type::
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::toXML(xml::Element* root) const
 {
     root->setIntAttribute(u"payload_type", payload_type.value(), true);
-
-//    payload_type.toXML(root->addElement(u"payload_type"));
-//    payload_size.toXML(root->addElement(u"payload_size"));
-
     if ((payload_type.value() == 0) || (payload_type.value() == 1)) {
         if (generic_params.has_value()) {
             generic_params.value().toXML(root->addElement(u"generic_params"));
@@ -467,7 +463,6 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::fromXML(const xml::Ele
     if (ok) {
         payload_type.set_value(ptype);
     }
-
     if ((payload_type.value() == 0) || (payload_type.value() == 1)) {
         generic_params_type gp;
         if (gp.fromXML(element)) {
