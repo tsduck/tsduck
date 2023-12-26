@@ -123,6 +123,7 @@ void XMLTest::testDocument()
     ts::xml::Element* root = doc.rootElement();
     TSUNIT_ASSERT(root != nullptr);
     TSUNIT_ASSERT(root->hasChildren());
+    TSUNIT_ASSERT(root->hasChildElement(u"node3"));
     TSUNIT_EQUAL(4, root->childrenCount());
     TSUNIT_ASSERT(root->hasAttribute(u"attr1"));
     TSUNIT_ASSERT(root->hasAttribute(u"AttR1"));

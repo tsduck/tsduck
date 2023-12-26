@@ -109,6 +109,13 @@ namespace ts {
             bool getChildren(ElementVector& children, const UString& name, size_t minCount = 0, size_t maxCount = UNLIMITED) const;
 
             //!
+            //! Check if the element contains at least 1 named child element, case-insensitive.
+            //! @param [in] name Name of the child element to search.
+            //! @return True if present, false if not present.
+            //!
+            bool hasChildElement(const UString& name) const;
+
+            //!
             //! Get text in a child of an element.
             //! @param [out] data The content of the text in the child element.
             //! @param [in] name Name of the child element to search.

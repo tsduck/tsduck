@@ -111,6 +111,22 @@ bool ts::xml::Element::getChildren(ElementVector& children, const UString& searc
     }
 }
 
+//-------------------------------------------------------------------------------
+// Check if named child elements are present in an XML element, case-insensitive.
+//-------------------------------------------------------------------------------
+
+bool ts::xml::Element::hasChildElement(const UString& searchName) const
+{
+    bool found = false;
+
+    // Loop on all children.
+    for (const Element* child = firstChildElement(); !found && (child != nullptr); child = child->nextSiblingElement()) {
+        if (searchName.similar(child->name())) {
+            found = true;
+        }
+    }
+    return found;
+}
 
 //----------------------------------------------------------------------------
 // Get text in a child of an element.
