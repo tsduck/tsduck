@@ -264,15 +264,15 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::depth_params_type::dis
     uint8_t _nkfar = buf.getUInt8();
     uint8_t _nknear = buf.getUInt8();
     disp << margin << UString::Format(u"kfar: %.5f (numerator=%d), knear: %.5f (numberator=%d)", 
-        { (float(_nkfar) / 16), _nkfar, (float(_nknear) / 16), _nknear }) << std::endl;
+        { (double(_nkfar) / 16), _nkfar, (double(_nknear) / 16), _nknear }) << std::endl;
 }
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::parallax_params_type::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     disp << margin << "Parallax zero: " << buf.getUInt16();
     disp << ", scale: " << buf.getUInt16() << std::endl;
-    disp << margin << "wref: " << buf.getUInt16() << "cm, vref: ";
-    disp << buf.getUInt16() << std::endl;
+    disp << margin << "wref: " << buf.getUInt16() << "cm, dref: ";
+    disp << buf.getUInt16() << "cm" << std::endl;
 }
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)

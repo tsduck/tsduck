@@ -168,8 +168,8 @@ namespace ts {
             public: 
                 uint16_t parallax_zero = 0;     //!< the value for which the parallax is null.
                 uint16_t parallax_scale = 0;    //!< scaling factor that defines the dynamic range of the decoded parallax values.
-                uint16_t dref = 0;              //!< the reference spectator’s monitor width given in cm.
-                uint16_t wref = 0;              //!< the reference spectator’s viewing distance given in cm.
+                uint16_t dref = 0;              //!< the reference spectator's viewing distance given in cm.
+                uint16_t wref = 0;              //!< the reference spectator's monitor width given in cm.
 
                 //!
                 //! Default constructor.
@@ -224,7 +224,7 @@ namespace ts {
         uint8_t     aux_video_codestreamtype = 0;       //!< 8 bits, compression coding type
         //!
         //! From ISO/IEC 13818-1, clause 2.6.75
-        //! si_rbsp() – Supplemental information RBSP as defined in ISO/IEC 23002-3. It shall contain 
+        //! si_rbsp() - Supplemental information RBSP as defined in ISO/IEC 23002-3. It shall contain 
         //! at least one auxiliary video supplemental information (AVSI) message (also defined in ISO/IEC 23002-3). 
         //! The type of auxiliary video is inferred from si_rbsp(). The total size of si_rbsp() 
         //! shall not exceed 254 bytes.
