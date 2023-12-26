@@ -51,11 +51,9 @@ namespace ts {
 
             class iso23002_2_value_coding {
                 TS_DEFAULT_COPY_MOVE(iso23002_2_value_coding);
-
             private:
                 uint16_t numFF_bytes = 0;  //!< number of FF bytes in the coded type
                 uint8_t  last_byte = 0;    //!< last byte value (not FF) of the codec type
-
             public:
                 //!
                 //! Default constructor.
@@ -95,7 +93,6 @@ namespace ts {
 
             class generic_params_type {
                 TS_DEFAULT_COPY_MOVE(generic_params_type);
-
             public:
                 //! 
                 //! If it is TRUE, the auxiliary video data corresponds only to the bottom field of the primary video. 
@@ -135,6 +132,7 @@ namespace ts {
                 void display(TablesDisplay&, PSIBuffer&, const UString&);
                 //! @endcond
             };
+
             class depth_params_type {
                 TS_DEFAULT_COPY_MOVE(depth_params_type);
             public:
@@ -143,7 +141,7 @@ namespace ts {
                 //! picture relatively to W. W represents the screen width at the receiver side. W and zp is expressed 
                 //! using the same distance units.
                 uint8_t nkfar = 0;  //!< the numerator of the parameter kfar.
-                uint8_t nknear = 0;//!< the numerator of the parameter knear.
+                uint8_t nknear = 0; //!< the numerator of the parameter knear.
 
                 //!
                 //! Default constructor.
@@ -164,6 +162,7 @@ namespace ts {
                 void display(TablesDisplay&, PSIBuffer&, const UString&);
                 //! @endcond
             };
+
             class parallax_params_type {
                 TS_DEFAULT_COPY_MOVE(parallax_params_type);
             public: 
@@ -218,35 +217,18 @@ namespace ts {
             bool fromXML(const xml::Element*);
             void display(TablesDisplay&, PSIBuffer&, const UString&);
             //! @endcond
-        private:
-            //!
-            //! convert a byte block to an internal representation (number of leading 0xFF bytes and last_byte) according to ISO/IEC 23002-3
-            //! @param [in] block the byte block from the XML document
-            //! @param [in] childname the name of the element in the XML document, for any error reporting
-            //! @param [in] element the element containing the child element block, for any error reporting
-            //! @param [in,out] FFcount the number of leading 0xFF bytes in the block
-            //! @param [in,out] last_byte the value byte from the block
-            //! @returns true if the format of the hexadecimal data is correct, otherwise false
-            bool long_representation(const ByteBlock block, const UString& childname, const xml::Element* element, uint16_t& FFcount, uint8_t& last_byte);
-            //! 
-            //! obtain the payload type value from the coded representation
-            //! @returns the paload type
-//            uint64_t payload_type() const;
-            //!
-            //! obtain the payload size value from the coded representation
-            //! @returns the paload size
- //           uint64_t payload_size() const; 
         };
+
     public:
         // public members:
-        uint8_t     aux_video_codestreamtype;   //!< 8 bits, compression coding type
+        uint8_t     aux_video_codestreamtype = 0;       //!< 8 bits, compression coding type
         //!
         //! From ISO/IEC 13818-1, clause 2.6.75
         //! si_rbsp() – Supplemental information RBSP as defined in ISO/IEC 23002-3. It shall contain 
         //! at least one auxiliary video supplemental information (AVSI) message (also defined in ISO/IEC 23002-3). 
         //! The type of auxiliary video is inferred from si_rbsp(). The total size of si_rbsp() 
         //! shall not exceed 254 bytes.
-        std::vector<si_message_type>   si_messages;
+        std::vector<si_message_type> si_messages {};
 
         //!
         //! Default constructor.
