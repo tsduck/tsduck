@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <auxiliary_video_stream_descriptor aux_video_codestreamtype="uint8, required">
+      <si_message payload_type="uint32, required">
+        <generic_params
+          aux_is_bottom_field="bool, optional"
+          aux_is_interlaced="bool, optional"
+          position_offset_h="uint8, required"
+          position_offset_v="uint8, required"/>
+        <depth_params
+          kfar_numerator="uint8, required"
+          knear_numerator="uint8, required"/>
+        <parallax_params
+          parallax_zero="uint16, required"
+          parallax_scale="uint16, required"
+          dref="uint16, required"
+          wref="uint16, required"/>
+        <reserved_si_message>
+          Hexadecinal data
+        </reserved_si_message>
+      </si_message>
+    </auxiliary_video_stream_descriptor>
+
+  </_descriptors>
+</tsduck>
