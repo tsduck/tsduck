@@ -1113,18 +1113,7 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
 
         // Segments between last midnight and current time shall be regenerated as well (one empty section).
         auto seg_iter = srv.segments.begin();
-        while (seg_iter != srv.segments.end() && (*seg_iter)->start_time + EIT::SEGMENT_DURATION <= now) {
-            ESegment& seg(**seg_iter);
-            seg.events.clear();
-            if (seg.sections.size() != 1 || seg.sections.front()->section->payloadSize() != EIT::EIT_PAYLOAD_FIXED_SIZE) {
-                // There are more than one section or the unique section contains events.
-                _regenerate = srv.regenerate = seg.regenerate = true;
-            }
-            ++seg_iter;
-        }
-
-        // Remove obsolete events in the segment containing "now".
-        if (seg_iter != srv.segments.end()) {
+        while (seg_iter != srv.segments.end() && (*seg_iter)->start_time <= now) {
             ESegment& seg(**seg_iter);
             while (!seg.events.empty() && seg.events.front()->end_time <= now) {
                 seg.events.pop_front();
@@ -1133,6 +1122,7 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
                     _regenerate = srv.regenerate = seg.regenerate = true;
                 }
             }
+            ++seg_iter;
         }
 
         // Discard events too far in the future.
