@@ -323,14 +323,14 @@ namespace ts {
             //! @return A new node or zero either at end of document or before a "</" sequence.
             //! The returned node, when not zero, is not yet linked to its parent and siblings.
             //! When the returned node is not zero, the parser is located after the tag which
-            //! identified the node ("<?", "<!--", etc.)
+            //! identified the node ("<?", "<!- -", etc.)
             //!
             Node* identifyNextNode(TextParser& parser);
 
             //!
             //! Parse the node.
             //! @param [in,out] parser The document parser. On input, the current position of the
-            //! parser after the tag which identified the node ("<?", "<!--", etc.) On output, it
+            //! parser after the tag which identified the node ("<?", "<!- -", etc.) On output, it
             //! must be after the last character of the node.
             //! @param [in] parent Candidate parent node, for information only, do not modify. Can be null.
             //! @return True on success, false on error.
