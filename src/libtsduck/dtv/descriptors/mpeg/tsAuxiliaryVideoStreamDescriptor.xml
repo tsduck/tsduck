@@ -18,7 +18,7 @@
           dref="uint16, required"
           wref="uint16, required"/>
         <reserved_si_message>
-          Hexadecinal data
+          Hexadecimal data
         </reserved_si_message>
       </si_message>
     </auxiliary_video_stream_descriptor>

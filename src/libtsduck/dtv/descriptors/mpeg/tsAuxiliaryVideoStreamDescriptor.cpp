@@ -1,29 +1,8 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2023-, Paul Higgs
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// Copyright (c) 2022-2023, Paul Higgs
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -61,7 +40,6 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::clear()
 ts::AuxiliaryVideoStreamDescriptor::AuxiliaryVideoStreamDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
-    clearContent();
 }
 
 ts::AuxiliaryVideoStreamDescriptor::AuxiliaryVideoStreamDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -164,7 +142,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::serialize(PSIBuffer& b
 void ts::AuxiliaryVideoStreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(aux_video_codestreamtype);
-    for (auto si : si_messages) {
+    for (const auto& si : si_messages) {
         si.serialize(buf);
     }
 }
@@ -263,7 +241,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::depth_params_type::dis
 {
     uint8_t _nkfar = buf.getUInt8();
     uint8_t _nknear = buf.getUInt8();
-    disp << margin << UString::Format(u"kfar: %.5f (numerator=%d), knear: %.5f (numberator=%d)", 
+    disp << margin << UString::Format(u"kfar: %.5f (numerator=%d), knear: %.5f (numberator=%d)",
         { (double(_nkfar) / 16), _nkfar, (double(_nknear) / 16), _nknear }) << std::endl;
 }
 
@@ -371,7 +349,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::toXML(xml::Element* ro
 void ts::AuxiliaryVideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"aux_video_codestreamtype", aux_video_codestreamtype, true);
-    for (auto m : si_messages) {
+    for (const auto& m : si_messages) {
         m.toXML(root->addElement(u"si_message"));
     }
 }
@@ -512,7 +490,7 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::fromXML(const xml::Ele
             reserved_si_message = bb;
             payload_size.set_value(uint32_t(bb.size()));
         }
-        else {        
+        else {
             ok = false;
         }
     }
