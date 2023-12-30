@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2023, Thierry Lelegard
+// Copyright (c) 2005-2023, Thierry Lelegard, Paul Higgs
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
@@ -22,33 +22,10 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
-enum {
-    //!< ETSI TS 101 162: uri_linkage_type
-    URI_LINKAGE_ONLINE_SDT = 0x00,  // Online SDT (OSDT) for CI Plus, ETSI TS 102 606-2
-    URI_LINKAGE_IPTV_SDnS  = 0x01,  // DVB-IPTV SD&S, ETSI TS 102 034
-    URI_LINKAGE_MRS        = 0x02,  // Material Resolution Server (MRS) for companion screen applications, CENELEC EN 50221
-    URI_LINKAGE_DVB_I      = 0x03,  // DVB-I, DVB Bluebook A177, ETSI TS 193 770
-};
-
-enum {
-    //!< DVB-I_Info() end_point_types
-    END_POINT_SERVICE_LIST          = 0x01, // URI is a service list document
-    END_POINT_SERVICE_LIST_REGISTRY = 0x02, // URI is a servic list registry query
-    END_POINT_SERVICE_LIST_EXTENDED = 0x03, // URI us a service list document with additional information
-
-    END_POINT_MIN = END_POINT_SERVICE_LIST,
-    END_POINT_MAX = END_POINT_SERVICE_LIST_EXTENDED,
-};
-
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
-
-ts::URILinkageDescriptor::DVB_I_Info::DVB_I_Info()
-{
-    clearContent();
-}
 
 ts::URILinkageDescriptor::URILinkageDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
