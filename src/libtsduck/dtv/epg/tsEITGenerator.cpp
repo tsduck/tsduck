@@ -1111,18 +1111,17 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
             _regenerate = srv.regenerate = true;
         }
 
-        // Segments between last midnight and current time shall be regenerated as well (one empty section).
-        auto seg_iter = srv.segments.begin();
-        while (seg_iter != srv.segments.end() && (*seg_iter)->start_time <= now) {
+        // Segments between last midnight and current time shall be regenerated as well.
+        // Segments before current one will now have one empty section, except if events are still in progress.
+        for (auto seg_iter = srv.segments.begin(); seg_iter != srv.segments.end() && (*seg_iter)->start_time <= now; ++seg_iter) {
             ESegment& seg(**seg_iter);
             while (!seg.events.empty() && seg.events.front()->end_time <= now) {
                 seg.events.pop_front();
-                // Regenerate the segment, unless we use the lazy update mode.
-                if (!(_options & EITOptions::LAZY_SCHED_UPDATE)) {
+                // Regenerate the segment, unless this is the current segment and we use the lazy update mode.
+                if (seg.start_time < now || !(_options & EITOptions::LAZY_SCHED_UPDATE)) {
                     _regenerate = srv.regenerate = seg.regenerate = true;
                 }
             }
-            ++seg_iter;
         }
 
         // Discard events too far in the future.

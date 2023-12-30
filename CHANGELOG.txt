@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3556
+VERSION 3.37-3558
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -14,6 +14,8 @@ VERSION 3.37-3556
 
   * Fixed issue #1389: Because of a recent regression, the plugin "mpe" crashed
     when analyzing its command line options.
+  * PR #1397: In plugin "eitinject", events still running were discarded from
+    EIT schedule when they started in a previous segment.
 
 -------------------------------------------------------------------------------
 
