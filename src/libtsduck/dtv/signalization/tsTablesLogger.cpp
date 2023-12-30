@@ -150,6 +150,9 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.option(u"max-tables", 'x', Args::POSITIVE);
     args.help(u"max-tables", u"Maximum number of tables to dump. Stop logging tables when this limit is reached.");
 
+    args.option(u"meta-sections");
+    args.help(u"meta-sections", u"Add hexadecimal dump of each section in XML and JSON metadata.");
+
     args.option(u"multiple-files", 'm');
     args.help(u"multiple-files",
               u"Create multiple binary output files, one per section. "
@@ -308,6 +311,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(_max_tables, u"max-tables", 0);
     _time_stamp = args.present(u"time-stamp");
     _packet_index = args.present(u"packet-index");
+    _meta_sections = args.present(u"meta-sections");
     _logger = args.present(u"log");
     args.getIntValue(_log_size, u"log-size", DEFAULT_LOG_SIZE);
     _no_duplicate = args.present(u"no-duplicate");
@@ -340,6 +344,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _xml_options.setPID = true;
     _xml_options.setLocalTime = _time_stamp;
     _xml_options.setPackets = _packet_index;
+    _xml_options.setSections = _meta_sections;
     return _xml_tweaks.loadArgs(duck, args);
 }
 
