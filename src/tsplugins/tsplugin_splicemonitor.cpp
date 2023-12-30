@@ -83,6 +83,7 @@ namespace ts {
         MilliSecond      _max_preroll = 0;        // Maximum pre-roll time in milliseconds.
         json::OutputArgs _json_args {};           // JSON output.
         std::bitset<256> _log_cmds {};            // List of splice commands to display.
+        BinaryTable::XMLOptions _xml_options;     // Options to format XML and JSON tables.
 
         // Working data:
         TablesDisplay               _display {duck};             // Display engine for splice information tables.
@@ -165,6 +166,9 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"Specify a maximum pre-roll time in milliseconds for splice commands. "
          u"See option --alarm-command for non-nominal cases.");
 
+    option(u"meta-sections");
+    help(u"meta-sections", u"Add hexadecimal dump of each section in XML and JSON metadata.");
+
     option(u"min-repetition", 0, POSITIVE);
     help(u"min-repetition",
          u"Specify a minimum number of repetitions for each splice command. "
@@ -214,8 +218,10 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
 bool ts::SpliceMonitorPlugin::getOptions()
 {
     _json_args.loadArgs(duck, *this);
-    _packet_index = present(u"packet-index");
-    _time_stamp = present(u"time-stamp");
+    _xml_options.setPID = true;
+    _xml_options.setPackets = _packet_index = present(u"packet-index");
+    _xml_options.setLocalTime = _time_stamp = present(u"time-stamp");
+    _xml_options.setSections = present(u"meta-sections");
     _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
@@ -557,11 +563,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
             // Format the SCTE-35 table using JSON. First, build an XML document with the table.
             xml::Document doc(*tsp);
             doc.initialize(u"tsduck");
-            BinaryTable::XMLOptions xml;
-            xml.setPID = true;
-            xml.setPackets = _packet_index;
-            xml.setLocalTime = _time_stamp;
-            table.toXML(duck, doc.rootElement(), xml);
+            table.toXML(duck, doc.rootElement(), _xml_options);
             // Convert the XML document into JSON and get the first (and only) table.
             _json_args.report(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"), _json_doc, *tsp);
         }

@@ -499,16 +499,16 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
             node->setBoolAttribute(u"private", _sections[0]->isPrivateSection());
 
             // Add each section in binary format.
-            for (size_t index = 0; index < _sections.size(); ++index) {
-                if (!_sections[index].isNull() && _sections[index]->isValid()) {
-                    node->addElement(u"section")->addHexaText(_sections[index]->payload(), _sections[index]->payloadSize());
+            for (const auto& sec : _sections) {
+                if (!sec.isNull() && sec->isValid()) {
+                    node->addHexaTextChild(u"section", sec->payload(), sec->payloadSize());
                 }
             }
         }
     }
 
     // Add optional metadata.
-    if ((opt.setPID && _source_pid != PID_NULL) || opt.setLocalTime || opt.setPackets) {
+    if ((opt.setPID && _source_pid != PID_NULL) || opt.setLocalTime || opt.setPackets || opt.setSections) {
         // Add <metadata> element as first child of the table.
         // This element is not part of the table but describes how the table was collected.
         xml::Element* meta = new xml::Element(node, u"metadata", CASE_INSENSITIVE, false); // first position
@@ -521,6 +521,13 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
         if (opt.setPackets) {
             meta->setIntAttribute(u"first_ts_packet", firstTSPacketIndex());
             meta->setIntAttribute(u"last_ts_packet", lastTSPacketIndex());
+        }
+        if (opt.setSections) {
+            for (const auto& sec : _sections) {
+                if (!sec.isNull() && sec->isValid()) {
+                    meta->addHexaTextChild(u"section", sec->content(), sec->size());
+                }
+            }
         }
     }
 
