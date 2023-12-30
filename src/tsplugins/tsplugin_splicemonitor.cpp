@@ -83,7 +83,7 @@ namespace ts {
         MilliSecond      _max_preroll = 0;        // Maximum pre-roll time in milliseconds.
         json::OutputArgs _json_args {};           // JSON output.
         std::bitset<256> _log_cmds {};            // List of splice commands to display.
-        BinaryTable::XMLOptions _xml_options;     // Options to format XML and JSON tables.
+        BinaryTable::XMLOptions _xml_options {};  // Options to format XML and JSON tables.
 
         // Working data:
         TablesDisplay               _display {duck};             // Display engine for splice information tables.
