@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3558
+VERSION 3.37-3562
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -16,6 +16,8 @@ VERSION 3.37-3558
     when analyzing its command line options.
   * PR #1397: In plugin "eitinject", events still running were discarded from
     EIT schedule when they started in a previous segment.
+  * Fixed issue #1398: A corrupted sync byte in a TS packet caused "tsp" to
+    loop forever.
 
 -------------------------------------------------------------------------------
 
