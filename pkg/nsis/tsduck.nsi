@@ -1,7 +1,7 @@
 ;-----------------------------------------------------------------------------
 ;
 ;  TSDuck - The MPEG Transport Stream Toolkit
-;  Copyright (c) 2005-2023, Thierry Lelegard
+;  Copyright (c) 2005-2024, Thierry Lelegard
 ;  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 ;
 ;  NSIS script to build the TSDuck binary installer for Windows.
@@ -45,7 +45,7 @@ VIAddVersionKey ProductName "TSDuck"
 VIAddVersionKey ProductVersion "${Version}"
 VIAddVersionKey Comments "TSDuck - The MPEG Transport Stream Toolkit"
 VIAddVersionKey CompanyName "Thierry Lelegard"
-VIAddVersionKey LegalCopyright "Copyright (c) 2005-2023, Thierry Lelegard"
+VIAddVersionKey LegalCopyright "Copyright (c) 2005-2024, Thierry Lelegard"
 VIAddVersionKey FileVersion "${VersionInfo}"
 VIAddVersionKey FileDescription "TSDuck - The MPEG Transport Stream Toolkit"
 

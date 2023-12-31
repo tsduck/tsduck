@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2023, Thierry Lelegard
+// Copyright (c) 2005-2024, Thierry Lelegard
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
 //
 // This program is used to manipulate the system Path on Windows. it is
