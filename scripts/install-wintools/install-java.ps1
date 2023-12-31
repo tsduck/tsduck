@@ -1,6 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-#  Copyright (c) 2022, Thierry Lelegard
+#  Copyright (c) 2022-2024, Thierry Lelegard
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Download and install Java for Windows (AdoptOpenJDK community project).
