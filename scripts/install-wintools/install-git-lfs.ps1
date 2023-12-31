@@ -1,7 +1,7 @@
 ﻿#-----------------------------------------------------------------------------
 #
 #  Copyright (c) 2022, Thierry Lelegard
-#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#  BSD-2-Clause license, see LICENSE.txt file
 #
 #  Download and install Git LFS extension (Large File Storage) for Windows.
 #  See parameters documentation in install-common.ps1.
