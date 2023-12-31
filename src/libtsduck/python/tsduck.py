@@ -1695,7 +1695,7 @@ class VersionMismatch(Exception):
 ## @cond nodoxygen
 
 __author__ = 'Thierry Lelegard'
-__copyright__ = '2005-2022, Thierry Lelegard'
+__copyright__ = '2005-2024, Thierry Lelegard'
 __version__ = version()
 
 # Minimum required version for TSDuck library. Must be incremented when

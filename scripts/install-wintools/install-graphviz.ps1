@@ -1,7 +1,7 @@
 ﻿#-----------------------------------------------------------------------------
 #
 #  Copyright (c) 2022, Thierry Lelegard
-#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#  BSD-2-Clause license, see LICENSE.txt file
 #
 #  Download and install Graphviz for Windows (Graphviz is used by Doxygen).
 #  See parameters documentation in install-common.ps1.
