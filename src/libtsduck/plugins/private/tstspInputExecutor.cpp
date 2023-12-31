@@ -216,6 +216,7 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
 {
     // If synchronization lost, report an error
     if (_in_sync_lost) {
+        _plugin_completed = true;
         return 0;
     }
 
