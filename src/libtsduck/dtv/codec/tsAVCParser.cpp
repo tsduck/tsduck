@@ -104,7 +104,7 @@ bool ts::AVCParser::rbspTrailingBits()
 // Advance pointer to next byte boundary.
 //----------------------------------------------------------------------------
 
-void ts::AVCParser::nextByte()
+void ts::AVCParser::skipToNextByte()
 {
     // Internal method, must be called when next byte is available.
     assert(_byte >= _base);
@@ -130,13 +130,13 @@ void ts::AVCParser::nextByte()
 // Advance pointer by one bit and return the bit value
 //----------------------------------------------------------------------------
 
-uint8_t ts::AVCParser::nextBit()
+uint8_t ts::AVCParser::readNextBit()
 {
     ts_avcparser_assert_consistent();
 
     uint8_t b = (*_byte >> (7 - _bit)) & 0x01;
     if (++_bit > 7) {
-        nextByte();
+        skipToNextByte();
     }
     return b;
 }

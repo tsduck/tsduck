@@ -57,12 +57,16 @@ namespace ts {
 
         //!
         //! Get number of remaining bytes (rounded down).
+        //! This is the remaining bytes in the input raw binary data.
+        //! The remaining number of bytes to read can be lower, especially in case of "start code emulation prevention".
         //! @return The number of remaining bytes (rounded down).
         //!
         size_t remainingBytes() const;
 
         //!
         //! Get number of remaining bits.
+        //! This is the remaining bits in the input raw binary data.
+        //! The remaining number of bits to read can be lower, especially in case of "start code emulation prevention".
         //! @return The number of remaining bits.
         //!
         size_t remainingBits() const;
@@ -180,10 +184,10 @@ namespace ts {
         //! @endcond
 
         // Advance pointer to next byte boundary.
-        void nextByte();
+        void skipToNextByte();
 
-        // Advance pointer by one bit and return the bit value
-        uint8_t nextBit();
+        // Advance pointer by one bit and return the bit value.
+        uint8_t readNextBit();
 
         // Extract Exp-Golomb-coded value using n bits.
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
@@ -219,28 +223,37 @@ bool ts::AVCParser::readBits(INT& val, size_t n)
 
     val = 0;
 
-    // Check that there are enough bits
-    if (remainingBits() < n) {
+    // Check end of stream. We cannot predict in advance if enough bits will be available until
+    // we read them because of "start code emulation prevention" in the input raw data.
+    if (n > 0 && _byte >= _end) {
         return false;
     }
 
-    // Read leading bits up to byte boundary
+    // Read leading bits up to byte boundary.
     while (n > 0 && _bit != 0) {
-        val = INT(val << 1) | nextBit();
+        val = INT(val << 1) | readNextBit();
         --n;
     }
 
-    // Read complete bytes
+    // Read complete bytes.
     while (n > 7) {
+        if (_byte >= _end) {
+            return false;
+        }
         val = INT(val << 8) | *_byte;
-        nextByte();
+        skipToNextByte();
         n -= 8;
     }
 
     // Read trailing bits
-    while (n > 0) {
-        val = INT(val << 1) | nextBit();
-        --n;
+    if (n > 0) {
+        if (_byte >= _end) {
+            return false;
+        }
+        while (n > 0) {
+            val = INT(val << 1) | readNextBit();
+            --n;
+        }
     }
 
     return true;
@@ -259,7 +272,7 @@ bool ts::AVCParser::expColomb(INT& val)
         if (_byte >= _end) {
             return false;
         }
-        b = nextBit();
+        b = readNextBit();
     }
     if (!readBits(val, leading_zero_bits)) {
         return false;
