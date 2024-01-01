@@ -229,12 +229,12 @@ void ts::TeletextDemux::handlePESPacket(const PESPacket& packet)
         plSize -= 2;
         pl += 2;
 
-        // Filter Teletext packets.
-        if (unitSize <= plSize &&
-            unitSize == TELETEXT_PACKET_SIZE &&
-            (unitId == TeletextDataUnitId::NON_SUBTITLE || unitId == TeletextDataUnitId::SUBTITLE))
-        {
-            // Reverse bitwise endianess of each data byte via lookup table, ETS 300 706, chapter 7.1.
+        if (unitSize > plSize) {
+            // Invalid length, drop end of PES packet.
+            break;
+        }
+        else if (unitSize == TELETEXT_PACKET_SIZE && (unitId == TeletextDataUnitId::NON_SUBTITLE || unitId == TeletextDataUnitId::SUBTITLE)) {
+            // Teletext packet. Reverse bitwise endianess of each data byte via lookup table, ETS 300 706, chapter 7.1.
             uint8_t pkt[TELETEXT_PACKET_SIZE];
             for (int i = 0; i < unitSize; ++i) {
                 pkt[i] = REVERSE_8[pl[i]];
