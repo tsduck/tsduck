@@ -95,7 +95,7 @@ ts::Args::IOption::IOption(Args*           parent,
             if (max_value == 0) {
                 max_value = bounded_cast<int64_t>(std::numeric_limits<size_t>::max());
             }
-            TS_FALLTHROUGH
+            [[fallthrough]];
         case INTEGER:
         case ANUMBER:
         case CHRONO:

@@ -553,7 +553,10 @@ namespace ts {
         //! @param [in] wstr Address of a nul-terminated "wide string". Can be null.
         //! @return A reference to this object.
         //!
-        UString& assignFromWChar(const wchar_t* wstr);
+        UString& assignFromWChar(const wchar_t* wstr)
+        {
+            return assignFromWChar(wstr, wstr == nullptr ? 0 : ::wcslen(wstr));
+        }
 
         //!
         //! Convert a C++ "wide string" into this object.
@@ -2349,6 +2352,23 @@ namespace ts {
 #endif
 
     private:
+        // Internal helper for assignFromWChar(), depending on the size of wchar_t.
+        template<size_type WCHAR_SIZE>
+        void assignFromWCharHelper(const wchar_t* wstr, size_type count);
+
+        // Specialization for sizeof(wchar_t) == 1 : Convert from UTF-8.
+        template<> void assignFromWCharHelper<1>(const wchar_t* wstr, size_type count)
+        {
+            assignFromUTF8(reinterpret_cast<const char*>(wstr), count);
+        }
+
+        // Specialization for sizeof(wchar_t) == 2 : Already in UTF-16, direct binary copy.
+        template<> void assignFromWCharHelper<2>(const wchar_t* wstr, size_type count)
+        {
+            resize(count);
+            std::memcpy(&(*this)[0], wstr, 2 * count);
+        }
+
         // Internal helpers for toInteger(), signed and unsigned versions.
         // Work on trimmed strings, with leading '+' skipped.
         template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
@@ -2668,6 +2688,23 @@ template <typename CHARTYPE, std::size_t SIZE>
 ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr)
 {
     return assign(arr, arr.size());
+}
+
+template <ts::UString::size_type WCHAR_SIZE>
+void ts::UString::assignFromWCharHelper(const wchar_t* wstr, size_type count)
+{
+    // General case, outside specializations for sizeof(wchar_t) == 1 or 2.
+    // Assume that wchar_t is a full Unicode code point.
+    while (count-- > 0) {
+        const char32_t cp = *wstr++;
+        if (NeedSurrogate(cp)) {
+            append(LeadingSurrogate(cp));
+            append(TrailingSurrogate(cp));
+        }
+        else {
+            append(UChar(cp));
+        }
+    }
 }
 
 

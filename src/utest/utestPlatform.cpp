@@ -61,32 +61,11 @@ void PlatformTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-// These overload shall be accepted is size_t is not a predefined integer type.
-#if !defined(TS_SIZE_T_IS_STDINT)
-namespace {
-    void Overload32(uint32_t) {}
-    void Overload64(uint64_t) {}
-    void OverloadSizeT(size_t) {}
-}
-#endif
-
 // Test case: predefined integer types.
 void PlatformTest::testIntegerTypes()
 {
-    // To avoid compilation warnings when not referenced.
-#if !defined(TS_SIZE_T_IS_STDINT)
-    Overload32(0);
-    Overload64(0);
-    OverloadSizeT(0);
-#endif
-
     debug()
         << "PlatformTest: TS_ADDRESS_BITS = " << TS_ADDRESS_BITS << std::endl
-        << "PlatformTest: TS_SIZE_T_IS_STDINT is"
-#if !defined(TS_SIZE_T_IS_STDINT)
-        << " NOT"
-#endif
-        << " defined" << std::endl
         << "PlatformTest: sizeof(int) = " << sizeof(int)
         << ", sizeof(long) = " << sizeof(long)
         << ", sizeof(long long) = " << sizeof(long long)
@@ -94,7 +73,7 @@ void PlatformTest::testIntegerTypes()
         << "PlatformTest: sizeof(char) = " << sizeof(char)
         << ", sizeof(unsigned char) = " << sizeof(unsigned char)
         << ", is_signed(char) = " << std::is_signed<char>::value << std::endl
-        << "PlatformTest: TS_WCHAR_SIZE = " << TS_WCHAR_SIZE << std::endl
+        << "PlatformTest: sizeof(wchar_t) = " << sizeof(wchar_t) << std::endl
         << "PlatformTest: sizeof(fs::path::value_type) = " << sizeof(fs::path::value_type) << std::endl
         << "std::numeric_limits<int64_t>::max() = " << std::numeric_limits<int64_t>::max() << std::endl
         << "std::numeric_limits<int64_t>::digits10 = " << std::numeric_limits<int64_t>::digits10 << std::endl
@@ -128,8 +107,6 @@ void PlatformTest::testIntegerTypes()
     TSUNIT_ASSERT(!std::numeric_limits<uint16_t>::is_signed);
     TSUNIT_ASSERT(!std::numeric_limits<uint32_t>::is_signed);
     TSUNIT_ASSERT(!std::numeric_limits<uint64_t>::is_signed);
-
-    TSUNIT_EQUAL(sizeof(wchar_t), TS_WCHAR_SIZE);
 
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(2, sizeof(fs::path::value_type));
