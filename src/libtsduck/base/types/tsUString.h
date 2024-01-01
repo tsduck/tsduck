@@ -2356,19 +2356,6 @@ namespace ts {
         template<size_type WCHAR_SIZE>
         void assignFromWCharHelper(const wchar_t* wstr, size_type count);
 
-        // Specialization for sizeof(wchar_t) == 1 : Convert from UTF-8.
-        template<> void assignFromWCharHelper<1>(const wchar_t* wstr, size_type count)
-        {
-            assignFromUTF8(reinterpret_cast<const char*>(wstr), count);
-        }
-
-        // Specialization for sizeof(wchar_t) == 2 : Already in UTF-16, direct binary copy.
-        template<> void assignFromWCharHelper<2>(const wchar_t* wstr, size_type count)
-        {
-            resize(count);
-            std::memcpy(&(*this)[0], wstr, 2 * count);
-        }
-
         // Internal helpers for toInteger(), signed and unsigned versions.
         // Work on trimmed strings, with leading '+' skipped.
         template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
@@ -2688,6 +2675,19 @@ template <typename CHARTYPE, std::size_t SIZE>
 ts::UString& ts::UString::assign(const std::array<CHARTYPE, SIZE>& arr)
 {
     return assign(arr, arr.size());
+}
+
+template<> inline void ts::UString::assignFromWCharHelper<1>(const wchar_t* wstr, size_type count)
+{
+    // Specialization for sizeof(wchar_t) == 1 : Convert from UTF-8.
+    assignFromUTF8(reinterpret_cast<const char*>(wstr), count);
+}
+
+template<> inline void ts::UString::assignFromWCharHelper<2>(const wchar_t* wstr, size_type count)
+{
+    // Specialization for sizeof(wchar_t) == 2 : Already in UTF-16, direct binary copy.
+    resize(count);
+    std::memcpy(&(*this)[0], wstr, 2 * count);
 }
 
 template <ts::UString::size_type WCHAR_SIZE>
