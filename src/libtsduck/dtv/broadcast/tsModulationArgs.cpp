@@ -164,7 +164,7 @@ void ts::ModulationArgs::setDefaultValues()
             set_default(isi, DEFAULT_ISI);
             set_default(pls_code, DEFAULT_PLS_CODE);
             set_default(pls_mode, DEFAULT_PLS_MODE);
-            TS_FALLTHROUGH
+            [[fallthrough]];
         case DS_DVB_S_TURBO:
         case DS_DVB_S:
             // DVB-S2, DVB-S/Turbo and DVB-S common options.
@@ -180,7 +180,7 @@ void ts::ModulationArgs::setDefaultValues()
         case DS_DVB_T2:
             // DVB-S2 specific options.
             set_default(plp, DEFAULT_PLP);
-            TS_FALLTHROUGH
+            [[fallthrough]];
         case DS_DVB_T:
             // DVB-T2 and DVB-T common options.
             set_default(frequency, 0);
@@ -198,7 +198,7 @@ void ts::ModulationArgs::setDefaultValues()
             // DVB-C annex A,C common options (don't apply to annex B).
             set_default(inner_fec, DEFAULT_INNER_FEC);
             set_default(symbol_rate, DEFAULT_SYMBOL_RATE_DVBC);
-            TS_FALLTHROUGH
+            [[fallthrough]];
         case DS_DVB_C_ANNEX_B:
             // DVB-C annex A,B,C common options.
             set_default(frequency, 0);

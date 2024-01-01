@@ -371,6 +371,6 @@ void OptionalTest::testClass()
 void OptionalTest::testUninitialized()
 {
     std::optional<int> vi;
-    TS_UNUSED int i = vi.value();
+    [[maybe_unused]] int i = vi.value();
     TSUNIT_FAIL("variable is not initialized, should not get there");
 }

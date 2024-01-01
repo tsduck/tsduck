@@ -127,7 +127,7 @@ void ts::DTGGuidanceDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     switch (guidance_type) {
         case 0x01:
             root->setBoolAttribute(u"guidance_mode", guidance_mode);
-            TS_FALLTHROUGH
+            [[fallthrough]];
         case 0x00:
             root->setAttribute(u"ISO_639_language_code", ISO_639_language_code);
             root->setAttribute(u"text", text);

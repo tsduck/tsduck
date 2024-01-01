@@ -670,19 +670,6 @@
 // Compiler warnings
 //----------------------------------------------------------------------------
 
-//!
-//! This macro should preceed an intentional fallthrough in a switch expression.
-//!
-#if defined(TS_LLVM)
-    #define TS_FALLTHROUGH [[clang::fallthrough]];
-#elif defined(__GNUC__) && (__GNUC__ >= 7)
-    #define TS_FALLTHROUGH __attribute__((fallthrough));
-#elif defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 193431933) && defined(_MSVC_LANG) && (_MSVC_LANG >= 201703)
-    #define TS_FALLTHROUGH [[fallthrough]];
-#else
-    #define TS_FALLTHROUGH /* fall through */
-#endif
-
 #if defined(DOXYGEN)
     //!
     //! Helper macro for the C++11 keyword @c _Pragma.
@@ -873,45 +860,16 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 #include "tsAfterStandardHeaders.h"
 
-//! Namespace @c is a shortcut for @c std::filesystem.
+//! Namespace @c fs is a shortcut for @c std::filesystem.
 namespace fs = std::filesystem;
 
-//! Namespace @c cn a shortcut for @c std::chrono.
+//! Namespace @c cn is a shortcut for @c std::chrono.
 namespace cn = std::chrono;
 
 
 //----------------------------------------------------------------------------
 // Basic preprocessing features
 //----------------------------------------------------------------------------
-
-//!
-//! Attribute for explicitly unused variables.
-//!
-//! It is sometimes required to declare unused variables. This may be temporary,
-//! before completing the code and using the variable later, or for any other
-//! reason. When the compiler is used in "paranoid" warning mode, declaring
-//! unused variables may trigger a warning or an error.
-//!
-//! When you know that you need to declare an unused variable, the special macro
-//! @c TS_UNUSED shall be used as an @e attribute of the variable. Using this
-//! attribute, the compiler will no longer complain that the variable is unused.
-//!
-//! Example:
-//! @code
-//! TS_UNUSED int i;
-//! @endcode
-//!
-#if defined(DOXYGEN)
-    #define TS_UNUSED platform_specific
-#elif defined(TS_GCC)
-    #define TS_UNUSED __attribute__ ((unused))
-#elif defined(TS_MSC)
-    // With MS compiler, there is no such attribute. The unused warnings must be disabled exactly once.
-    // warning C4189: 'xxx' : local variable is initialized but not referenced
-    #define TS_UNUSED __pragma(warning(suppress:4189))
-#else
-    #error "New unknown compiler, please update TS_UNUSED in tsPlatform.h"
-#endif
 
 //!
 //! Attribute to explicitly disable optimization in a function.
@@ -1082,47 +1040,6 @@ namespace cn = std::chrono;
     #define TS_UNEQUAL_OPERATOR(classname) bool operator!=(const classname& other) const { return ! operator==(other); }
 #else
     #define TS_UNEQUAL_OPERATOR(classname)
-#endif
-
-
-//----------------------------------------------------------------------------
-// Properties of some integer types.
-//----------------------------------------------------------------------------
-
-//!
-//! Defined is @c size_t is an exact overload of some predefined @c uintXX_t.
-//! In that case, it is not possible to declare distinct overloads of a function
-//! with @c size_t and @c uint32_t or @c uint64_t for instance.
-//!
-#if defined(DOXYGEN)
-    #define TS_SIZE_T_IS_STDINT
-#elif (defined(TS_GCC_ONLY) || defined(TS_MSC)) && !defined(TS_SIZE_T_IS_STDINT)
-    #define TS_SIZE_T_IS_STDINT 1
-#endif
-
-//!
-//! Size of @c wchar_t in bytes.
-//!
-#if defined(DOXYGEN)
-    #define TS_WCHAR_SIZE
-#elif defined(__SIZEOF_WCHAR_T__) && !defined(TS_WCHAR_SIZE)
-    // Typically gcc and clang.
-    #define TS_WCHAR_SIZE __SIZEOF_WCHAR_T__
-#elif (defined(__WCHAR_MAX__) && __WCHAR_MAX__ < 0x10000) && !defined(TS_WCHAR_SIZE)
-    #define TS_WCHAR_SIZE 2
-#elif (defined(__WCHAR_MAX__) && __WCHAR_MAX__ >= 0x10000) && !defined(TS_WCHAR_SIZE)
-    // Assume that wchar_t is 32-bit if larger than 16-bit
-    #define TS_WCHAR_SIZE 4
-#elif (defined(WCHAR_MAX) && WCHAR_MAX < 0x10000) && !defined(TS_WCHAR_SIZE)
-    #define TS_WCHAR_SIZE 2
-#elif (defined(WCHAR_MAX) && WCHAR_MAX >= 0x10000) && !defined(TS_WCHAR_SIZE)
-    // Assume that wchar_t is 32-bit if larger than 16-bit
-    #define TS_WCHAR_SIZE 4
-#elif defined(TS_MSC)
-    // Microsoft compiler used to use 16-bit "wide characters".
-    #define TS_WCHAR_SIZE 2
-#else
-    #error "size of wchar_t is unknown on this platform"
 #endif
 
 
