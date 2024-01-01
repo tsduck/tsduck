@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3562
+VERSION 3.37-3567
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -18,6 +18,7 @@ VERSION 3.37-3562
     EIT schedule when they started in a previous segment.
   * Fixed issue #1398: A corrupted sync byte in a TS packet caused "tsp" to
     loop forever.
+  * Fixed issue #1400: A corrupted PES packet crashed plugin "teletext".
 
 -------------------------------------------------------------------------------
 
