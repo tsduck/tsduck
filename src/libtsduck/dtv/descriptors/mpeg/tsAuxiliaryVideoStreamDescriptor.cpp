@@ -160,7 +160,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::iso23002_2_value_codin
         if (b == 0xFF) {
             numFF_bytes++;
         }
-    } while (b == 0xFF);
+    } while (b == 0xFF && !buf.readError());
     last_byte = b;
 }
 
