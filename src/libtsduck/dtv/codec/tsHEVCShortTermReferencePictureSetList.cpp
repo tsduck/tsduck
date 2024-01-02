@@ -32,14 +32,22 @@ void ts::HEVCShortTermReferencePictureSetList::clear()
     list.clear();
 }
 
-void ts::HEVCShortTermReferencePictureSetList::reset(uint32_t num_short_term_ref_pic_sets)
+bool ts::HEVCShortTermReferencePictureSetList::reset(uint32_t num_short_term_ref_pic_sets)
 {
     // Make sure that the list is properly cleared first.
     clear();
-    list.resize(size_t(num_short_term_ref_pic_sets));
-    // The global 'valid' of the list becomes true but the individual 'valid' in elements
-    // remain false until they are successfully parsed.
-    valid = true;
+    // According to ITU-T Rec. H.265, section 7.4.3.2.1, "The value of num_short_term_ref_pic_sets shall be
+    // in the range of 0 to 64, inclusive". Filter incorrect values which may come with corrupted input.
+    if (num_short_term_ref_pic_sets > 64) {
+        valid = false;
+    }
+    else {
+        list.resize(size_t(num_short_term_ref_pic_sets));
+        // The global 'valid' of the list becomes true but the individual 'valid' in elements
+        // remain false until they are successfully parsed.
+        valid = true;
+    }
+    return valid;
 }
 
 void ts::HEVCShortTermReferencePictureSetList::ShortTermReferencePictureSet::clear()

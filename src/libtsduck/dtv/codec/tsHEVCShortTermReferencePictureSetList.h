@@ -66,8 +66,9 @@ namespace ts {
         //!
         //! Reset this object, makes it valid, resize the vector with empty st_ref_pic_set structures.
         //! @param [in] num_short_term_ref_pic_sets The corresponding HEVC parameter.
+        //! @return True on success, false on invalid size.
         //!
-        void reset(uint32_t num_short_term_ref_pic_sets);
+        bool reset(uint32_t num_short_term_ref_pic_sets);
 
         //!
         //! Get the @a num_short_term_ref_pic_sets parameter of the list of st_ref_pic_set structures.

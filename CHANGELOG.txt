@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3568
+VERSION 3.37-3571
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -20,6 +20,8 @@ VERSION 3.37-3568
     loop forever.
   * Fixed issue #1400: A corrupted PES packet crashed plugin "teletext".
   * Fixed issue #1401: A corrupted PES packet crashed plugin "pes".
+  * Fixed issue #1405: A corrupted HEVC sequence parameter set caused memory
+    allocation failures in various tools and plugins ("analyze", "pes", etc.)
 
 -------------------------------------------------------------------------------
 
