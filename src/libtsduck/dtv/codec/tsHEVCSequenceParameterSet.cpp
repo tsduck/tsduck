@@ -176,8 +176,7 @@ bool ts::HEVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer
                 parser.u(pcm_loop_filter_disabled_flag, 1);
     }
 
-    valid = valid && parser.ue(num_short_term_ref_pic_sets);
-    st_ref_pic_set.reset(num_short_term_ref_pic_sets);
+    valid = valid && parser.ue(num_short_term_ref_pic_sets) && st_ref_pic_set.reset(num_short_term_ref_pic_sets);
     for (uint32_t i = 0; valid && i < num_short_term_ref_pic_sets; i++) {
         valid = st_ref_pic_set.parse(parser, {i});
     }
