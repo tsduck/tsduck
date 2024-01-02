@@ -26,11 +26,13 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
+    void testConstructors();
     void testFind();
     void testAppend();
     void testFile();
 
     TSUNIT_TEST_BEGIN(ByteBlockTest);
+    TSUNIT_TEST(testConstructors);
     TSUNIT_TEST(testFind);
     TSUNIT_TEST(testAppend);
     TSUNIT_TEST(testFile);
@@ -66,6 +68,45 @@ void ByteBlockTest::afterTest()
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
+
+namespace {
+    class Test1
+    {
+    public:
+        ts::ByteBlock a = ts::ByteBlock(12);
+        ts::ByteBlock b = ts::ByteBlock(13, 42);
+    };
+}
+void ByteBlockTest::testConstructors()
+{
+    ts::ByteBlock v1;
+    TSUNIT_ASSERT(v1.empty());
+    TSUNIT_EQUAL(0, v1.size());
+
+    ts::ByteBlock v2(16);
+    TSUNIT_ASSERT(!v2.empty());
+    TSUNIT_EQUAL(16, v2.size());
+    for (auto x : v2) {
+        TSUNIT_EQUAL(0, x);
+    }
+
+    ts::ByteBlock v3(32, 27);
+    TSUNIT_ASSERT(!v3.empty());
+    TSUNIT_EQUAL(32, v3.size());
+    for (auto x : v3) {
+        TSUNIT_EQUAL(27, x);
+    }
+
+    Test1 t1;
+    TSUNIT_EQUAL(12, t1.a.size());
+    TSUNIT_EQUAL(13, t1.b.size());
+    for (auto x : t1.a) {
+        TSUNIT_EQUAL(0, x);
+    }
+    for (auto x : t1.b) {
+        TSUNIT_EQUAL(42, x);
+    }
+}
 
 void ByteBlockTest::testFind()
 {
