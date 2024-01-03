@@ -21,7 +21,6 @@
 #include "tsPMT.h"
 #include "tsSDT.h"
 #include "tsTS.h"
-#include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 TS_MAIN(MainCode);
 
@@ -462,8 +461,8 @@ int MainCode(int argc, char *argv[])
     ts::FileCleanOptions opt(argc, argv);
     bool success = true;
 
-    for (size_t i = 0; i < opt.in_files.size(); ++i) {
-        ts::FileCleaner fclean(opt, opt.in_files[i]);
+    for (const auto& file : opt.in_files) {
+        ts::FileCleaner fclean(opt, file);
         success = success && fclean.success();
     }
 

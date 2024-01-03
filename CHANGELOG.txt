@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3572
+VERSION 3.37-3573
+
+[NEW] New commands and plugins:
+
+  * Added "tsfuzz" and plugin "fuzz": introduce random corruptions in transport
+    streams. Can be used to run fuzzing attacks on receivers or TSDuck itself.
 
 [IMP] Improvements on existing commands and plugins:
 
