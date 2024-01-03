@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHEVCHRDParameters.h"
+#include "tsHEVC.h"
 
 
 //----------------------------------------------------------------------------
@@ -63,7 +64,11 @@ bool ts::HEVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint3
     if (valid) {
         auto iparams = params.begin();
         common_inf_present_flag = bool(*iparams++);
-        sub_layers.resize(size_t(*iparams) + 1);
+        const size_t maxNumSubLayersMinus1 = size_t(*iparams);
+        valid = maxNumSubLayersMinus1 <= HEVC_MAX_MAXNUMSUBLAYERSMINUS1;
+        if (valid) {
+            sub_layers.resize(maxNumSubLayersMinus1 + 1);
+        }
     }
     HEVC_TRACE(u"----- HEVCHRDParameters::parse(), common_inf_present_flag=%d, sub_layers.size()=%d", common_inf_present_flag, sub_layers.size());
 
@@ -110,7 +115,7 @@ bool ts::HEVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint3
             valid = parser.u(sl.low_delay_hrd_flag, 1);
         }
         if (valid && sl.low_delay_hrd_flag == 0) {
-            valid = parser.ue(sl.cpb_cnt_minus1);
+            valid = parser.ue(sl.cpb_cnt_minus1) && sl.cpb_cnt_minus1 <= HEVC_MAX_CPB_CNT_MINUS1;
         }
         else {
             sl.cpb_cnt_minus1 = 0;

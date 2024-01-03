@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHEVCShortTermReferencePictureSetList.h"
+#include "tsHEVC.h"
 
 
 //----------------------------------------------------------------------------
@@ -36,9 +37,7 @@ bool ts::HEVCShortTermReferencePictureSetList::reset(uint32_t num_short_term_ref
 {
     // Make sure that the list is properly cleared first.
     clear();
-    // According to ITU-T Rec. H.265, section 7.4.3.2.1, "The value of num_short_term_ref_pic_sets shall be
-    // in the range of 0 to 64, inclusive". Filter incorrect values which may come with corrupted input.
-    if (num_short_term_ref_pic_sets > 64) {
+    if (num_short_term_ref_pic_sets > HEVC_MAX_NUM_SHORT_TERM_REF_PIC_SETS) {
         valid = false;
     }
     else {
@@ -106,8 +105,11 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
         st.valid = parser.u(st.inter_ref_pic_set_prediction_flag, 1);
     }
     HEVC_TRACE(u"----- HEVCShortTermReferencePictureSetList::parse(), stRpsIdx=%d, st.inter_ref_pic_set_prediction_flag=%d", stRpsIdx, st.inter_ref_pic_set_prediction_flag);
+    if (!st.valid) {
+        return false;
+    }
 
-    if (st.valid && st.inter_ref_pic_set_prediction_flag) {
+    if (st.inter_ref_pic_set_prediction_flag) {
         // This picture is predicted from a reference picture.
         if (stRpsIdx == num_short_term_ref_pic_sets()) {
             // The ShortTermReferencePictureSet index 0 to num_short_term_ref_pic_sets - 1 are stored
@@ -126,6 +128,11 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
         const int32_t deltaRps = (st.delta_rps_sign ? -1 : 1) * (int32_t(st.abs_delta_rps_minus1) + 1);
 
         HEVC_TRACE(u"st.abs_delta_rps_minus1=%d, RefRpsIdx=%d, NumDeltaPocs(RefRpsIdx)=%d, deltaRps=%d", st.abs_delta_rps_minus1, RefRpsIdx, ref.NumDeltaPocs, deltaRps);
+        st.valid = st.valid && ref.NumDeltaPocs <= HEVC_MAX_NUMDELTAPOCS;
+        if (!st.valid) {
+            return false;
+        }
+
         st.used_by_curr_pic_flag.resize(ref.NumDeltaPocs + 1);
         st.use_delta_flag.resize(ref.NumDeltaPocs + 1, 0);
         for (uint32_t j = 0; st.valid && j <= ref.NumDeltaPocs; j++) {
@@ -211,9 +218,16 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
         st.NumPositivePics = uint32_t(st.DeltaPocS1.size());
         assert(st.NumPositivePics == st.UsedByCurrPicS1.size());
     }
-    else if (st.valid) {
+    else {
         // This picture is not predicted, there is no reference picture.
-        st.valid = parser.ue(st.num_negative_pics) && parser.ue(st.num_positive_pics);
+        st.valid = parser.ue(st.num_negative_pics) &&
+                   parser.ue(st.num_positive_pics) &&
+                   st.num_negative_pics < HEVC_MAX_NUM_PICS &&
+                   st.num_positive_pics < HEVC_MAX_NUM_PICS;
+        if (!st.valid) {
+            return false;
+        }
+
         st.delta_poc_s0_minus1.resize(st.num_negative_pics);
         st.used_by_curr_pic_s0_flag.resize(st.num_negative_pics);
         for (uint32_t i = 0; st.valid && i < st.num_negative_pics; i++) {
