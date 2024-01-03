@@ -4,7 +4,7 @@ George Adams
 Moritz Barsnick
 Richie Chang
 Amos Cheung
-Ruben O. Chiavone
+Ruben Chiavone
 Karol Čisarik
 Tristan Claverie
 Oliver Collyer
@@ -22,6 +22,7 @@ Harald Jordan
 Thierry Lelégard (original author, current maintainer)
 Jérôme Lévèque
 Aaron Levinson
+Sergey Lobanov
 Christophe Massiot
 Athanasios Oikonomou
 Masayuki Nagamachi
