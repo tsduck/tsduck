@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsHEVCProfileTierLevel.h"
+#include "tsHEVC.h"
 
 
 //----------------------------------------------------------------------------
@@ -97,6 +98,7 @@ bool ts::HEVCProfileTierLevel::parse(AVCParser& parser, std::initializer_list<ui
         auto iparams = params.begin();
         profile_present_flag = bool(*iparams++);
         maxNumSubLayersMinus1 = *iparams;
+        valid = maxNumSubLayersMinus1 <= HEVC_MAX_MAXNUMSUBLAYERSMINUS1;
     }
 
     if (valid && profile_present_flag) {
@@ -128,10 +130,12 @@ bool ts::HEVCProfileTierLevel::parse(AVCParser& parser, std::initializer_list<ui
 
     valid = valid && parser.u(general_level_idc, 8);
 
-    sub_layers.resize(maxNumSubLayersMinus1);
-    for (size_t i = 0; valid && i < maxNumSubLayersMinus1; ++i) {
-        valid = parser.u(sub_layers[i].sub_layer_profile_present_flag, 1) &&
-                parser.u(sub_layers[i].sub_layer_level_present_flag, 1);
+    if (valid) {
+        sub_layers.resize(maxNumSubLayersMinus1);
+        for (size_t i = 0; valid && i < maxNumSubLayersMinus1; ++i) {
+            valid = parser.u(sub_layers[i].sub_layer_profile_present_flag, 1) &&
+                    parser.u(sub_layers[i].sub_layer_level_present_flag, 1);
+        }
     }
 
     if (valid && maxNumSubLayersMinus1 > 0) {
