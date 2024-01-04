@@ -24,7 +24,7 @@ bool ts::TSFuzzing::start(const TSFuzzingArgs& options)
     // If no fixed seed is provided, use a random one.
     if (_opt.seed.empty()) {
         SystemRandomGenerator sysrng;
-        if (!sysrng.readByteBlock(_opt.seed, ReproducibleRandomGenerator::MIN_SEED_SIZE)) {
+        if (!sysrng.readByteBlock(_opt.seed, Xoshiro256ss::MIN_SEED_SIZE)) {
             _duck.report().error(u"system PRNG error");
             return false;
         }
@@ -35,7 +35,7 @@ bool ts::TSFuzzing::start(const TSFuzzingArgs& options)
     }
 
     // Reseed the PRNG until ready.
-    for (size_t foolproof = ReproducibleRandomGenerator::MIN_SEED_SIZE; !_prng.ready() && foolproof > 0; --foolproof) {
+    for (size_t foolproof = Xoshiro256ss::MIN_SEED_SIZE; !_prng.ready() && foolproof > 0; --foolproof) {
         if (!_prng.seed(_opt.seed.data(), _opt.seed.size())) {
             _duck.report().error(u"error seeding reproducible PRNG");
             return false;
@@ -52,8 +52,6 @@ bool ts::TSFuzzing::start(const TSFuzzingArgs& options)
 
 bool ts::TSFuzzing::processPacket(TSPacket& pkt)
 {
-    using prob_t = decltype(_opt.probability)::int_t;
-
     // Corrupt only packets from specified PID's.
     if (_opt.pids.test(pkt.getPID())) {
 
@@ -61,14 +59,8 @@ bool ts::TSFuzzing::processPacket(TSPacket& pkt)
         for (size_t i = _opt.sync_byte ? 0 : 1; i < PKT_SIZE; ++i) {
 
             // Check if random value is less than probability
-            prob_t prob = 0;
-            if (!_prng.readInt(prob)) {
-                return false;
-            }
-            if ((prob % _opt.probability.denominator()) < _opt.probability.numerator()) {
-                if (!_prng.readInt(pkt.b[i])) {
-                    return false;
-                }
+            if ((_prng.read64() % _opt.probability.denominator()) < _opt.probability.numerator()) {
+                pkt.b[i] = uint8_t(_prng.read64());
             }
         }
     }

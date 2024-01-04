@@ -14,7 +14,7 @@
 #pragma once
 #include "tsTSFuzzingArgs.h"
 #include "tsTSPacket.h"
-#include "tsReproducibleRandomGenerator.h"
+#include "tsXoshiro256ss.h"
 
 namespace ts {
     //!
@@ -47,8 +47,8 @@ namespace ts {
         bool processPacket(TSPacket& pkt);
 
     private:
-        DuckContext&                _duck;
-        TSFuzzingArgs               _opt {};
-        ReproducibleRandomGenerator _prng {};
+        DuckContext&  _duck;
+        TSFuzzingArgs _opt {};
+        Xoshiro256ss  _prng {};
     };
 }

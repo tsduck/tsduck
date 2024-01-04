@@ -14,7 +14,6 @@
 // Return to initial state, not seeded.
 //----------------------------------------------------------------------------
 
-
 void ts::ReproducibleRandomGenerator::reset()
 {
     _ready = false;
