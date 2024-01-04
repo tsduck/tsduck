@@ -79,9 +79,12 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
     }
 
     // Define thread name and stack size.
+    // Exit application when a thread terminates on an exception. This is required because
+    // a dead plugin thread will block the processing chain and the application will hang.
     ThreadAttributes attr(attributes);
     attr.setName(_name);
     attr.setStackSize(stackSize);
+    attr.setExitOnException(true);
     Thread::setAttributes(attr);
 }
 

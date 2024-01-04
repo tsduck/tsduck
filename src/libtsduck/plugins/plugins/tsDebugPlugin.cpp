@@ -23,8 +23,17 @@ ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
              u"By default, a debug-level message is displayed for each packet. "
              u"Use --only-label to select packets to debug.");
 
+    option(u"bad-alloc");
+    help(u"bad-alloc", u"Simulate a memory allocation failure on the first debugged packet.");
+
+    option(u"exception");
+    help(u"exception", u"Throw an exception on the first debugged packet.");
+
     option(u"exit", 0, INT32);
     help(u"exit", u"Exit application with the specified integer code on the first debugged packet.");
+
+    option(u"packet", 'p', UNSIGNED);
+    help(u"packet", u"Index of the first debugged packet. Zero by default.");
 
     option(u"segfault");
     help(u"segfault", u"Simulate a segmentation fault on the first debugged packet.");
@@ -42,9 +51,12 @@ ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
 
 bool ts::DebugPlugin::getOptions()
 {
+    _bad_alloc = present(u"bad-alloc");
     _segfault = present(u"segfault");
+    _exception = present(u"exception");
     _exit = present(u"exit");
     getIntValue(_exit_code, u"exit", EXIT_SUCCESS);
+    getIntValue(_packet, u"packet", 0);
     getValue(_tag, u"tag");
     if (!_tag.empty()) {
         _tag += u": ";
@@ -59,8 +71,20 @@ bool ts::DebugPlugin::getOptions()
 
 ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    if (tsp->pluginPackets() < _packet) {
+        return TSP_OK; // not yet the first debugged packet
+    }
+    if (_exception) {
+        throw std::exception();
+    }
     if (_segfault) {
         *_null = 0;
+    }
+    if (_bad_alloc) {
+        tsp->info(u"simulating a memory allocation failure");
+        for (;;) {
+            new std::vector<uint8_t>(1'000'000'000);
+        }
     }
     if (_exit) {
         std::exit(_exit_code);

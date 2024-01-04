@@ -346,6 +346,10 @@ void ts::Thread::mainWrapper()
     }
     catch (const std::exception& e) {
         std::cerr << "*** Internal error, thread aborted: " << e.what() << std::endl;
+        if (_attributes.getExitOnException()) {
+            std::cerr << "*** Aborting application" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
     }
 }
 

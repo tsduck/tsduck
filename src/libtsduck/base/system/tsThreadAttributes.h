@@ -121,6 +121,34 @@ namespace ts {
         }
 
         //!
+        //! Set the <i>exit on exception flag</i> for the thread.
+        //!
+        //! The <i>exit on exception flag</i> is used to automatically
+        //! exit the application when the thread terminates on exception.
+        //!
+        //! The default value for this flag is @c false.
+        //!
+        //! @param [in] eoe Exit on exception flag for the thread.
+        //! @return A reference to this object.
+        //!
+        ThreadAttributes& setExitOnException(bool eoe)
+        {
+            _exitOnException = eoe;
+            return *this;
+        }
+
+        //!
+        //! Get the <i>exit on exception flag</i> for the thread.
+        //!
+        //! @return The exit on exception flag for the thread.
+        //! @see setDeleteWhenTerminated()
+        //!
+        bool getExitOnException() const
+        {
+            return _exitOnException;
+        }
+
+        //!
         //! Set the priority for the thread.
         //!
         //! This class tries to present a system independent view of thread priorities.
@@ -243,6 +271,7 @@ namespace ts {
     private:
         size_t  _stackSize = 0;
         bool    _deleteWhenTerminated = false;
+        bool    _exitOnException = false;
         int     _priority = 0;
         UString _name {};
 
