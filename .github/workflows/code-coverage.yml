@@ -1,0 +1,91 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2024, Thierry Lelegard
+#  Copyright (c) 2024, Sergey Lobanov
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#
+#  GitHub Actions configuration file : Code Coverage
+#
+#  The workflow is triggered on push or pull request, for master branch only.
+#  Manual dispatch from the GitHub UI is also allowed.
+#
+#  TSDuck is built on Ubuntu, using C++17 and C++20 levels of standards.
+#
+#  This workflow does the same as 'continious-integration', but it compiles
+#  tsduck with coverage flags and generates coverage reports.
+#
+#-----------------------------------------------------------------------------
+
+name: Code Coverage
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build_unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        compiler: [gcc]
+        std: [20]
+    name: Coverage on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
+    runs-on: ${{ matrix.os }}
+    env:
+      BINDIR: bin
+      CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
+      ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      REFERENCE_REPO: tsduck/tsduck
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Install dependencies
+        run: |
+          scripts/install-prerequisites.sh
+          ${{ matrix.compiler }} --version
+          scripts/java-config.sh
+      - name: Install gcovr
+        run: sudo pip3 install gcovr || sudo pip3 install gcovr --break-system-packages 
+      - name: Build TSDuck
+        run: make -j5 gcov
+      - name: Check built version
+        run: make show-version
+      - name: Run unitary tests
+        run: make test || exit 0
+      - name: Download test suite
+        run: |
+          # Try to download '<repo>-test' from the pull request owner, if there is one.
+          if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+              echo "Downloaded test suite from $ORIGIN_REPO"
+          else
+              curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
+              echo "Downloaded test suite from $REFERENCE_REPO"
+          fi
+          mkdir -p ../tsduck-test
+          tar -C ../tsduck-test -x -z -f test.tgz --strip 1
+      - name: Run test suite
+        run: |
+          make test-suite || exit 0
+      - name: Create folders for coverage reports
+        run: |
+          mkdir coverage
+          mkdir coverage/libtsduck
+          mkdir coverage/tstools
+          mkdir coverage/tsplugins
+      - name: Coverage report for libtsduck
+        run: gcovr --root=src/libtsduck --object-directory=bin/objs-libtsduck --html-details=coverage/libtsduck/index.html -s
+      - name: Coverage report for tstools
+        run: gcovr --root=src/tstools --object-directory=bin/objs-tstools --html-details=coverage/tstools/index.html -s
+      - name: Coverage report for tsplugins
+        run: gcovr --root=src/tsplugins --object-directory=bin/objs-tsplugins --html-details=coverage/tsplugins/index.html -s
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: tsduck-coverage-report-on-${{ matrix.os }}-${{ matrix.compiler }}-cpp-${{ matrix.std }}
+          path: coverage
+          if-no-files-found: error
