@@ -1,18 +1,14 @@
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2024, Thierry Lelegard
-#  Copyright (c) 2024, Sergey Lobanov
+#  Copyright (c) 2005-2024, Thierry Lelegard, Sergey Lobanov
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  GitHub Actions configuration file : Code Coverage
 #
-#  The workflow is triggered on push or pull request, for master branch only.
-#  Manual dispatch from the GitHub UI is also allowed.
+#  It is executed on Ubuntu, using manual dispatch.
 #
-#  TSDuck is built on Ubuntu, using C++17 and C++20 levels of standards.
-#
-#  This workflow does the same as 'continious-integration', but it compiles
+#  This workflow does the same as 'continuous-integration', but it compiles
 #  tsduck with coverage flags and generates coverage reports.
 #
 #-----------------------------------------------------------------------------
@@ -20,10 +16,6 @@
 name: Code Coverage
 
 on:
-  push:
-    branches: [master, main]
-  pull_request:
-    branches: [master, main]
   workflow_dispatch:
 
 jobs:
@@ -47,10 +39,9 @@ jobs:
       - name: Install dependencies
         run: |
           scripts/install-prerequisites.sh
+          sudo apt install -y gcovr
           ${{ matrix.compiler }} --version
           scripts/java-config.sh
-      - name: Install gcovr
-        run: sudo pip3 install gcovr || sudo pip3 install gcovr --break-system-packages 
       - name: Build TSDuck
         run: make -j5 gcov
       - name: Check built version
@@ -71,21 +62,21 @@ jobs:
       - name: Run test suite
         run: |
           make test-suite || exit 0
-      - name: Create folders for coverage reports
-        run: |
-          mkdir coverage
-          mkdir coverage/libtsduck
-          mkdir coverage/tstools
-          mkdir coverage/tsplugins
       - name: Coverage report for libtsduck
-        run: gcovr --root=src/libtsduck --object-directory=bin/objs-libtsduck --html-details=coverage/libtsduck/index.html -s
+        run: |
+          mkdir -p bin/coverage/libtsduck
+          gcovr --root=src/libtsduck --object-directory=bin/objs-libtsduck --html-details=bin/coverage/libtsduck/index.html -s
       - name: Coverage report for tstools
-        run: gcovr --root=src/tstools --object-directory=bin/objs-tstools --html-details=coverage/tstools/index.html -s
+        run: |
+          mkdir -p bin/coverage/tstools
+          gcovr --root=src/tstools --object-directory=bin/objs-tstools --html-details=bin/coverage/tstools/index.html -s
       - name: Coverage report for tsplugins
-        run: gcovr --root=src/tsplugins --object-directory=bin/objs-tsplugins --html-details=coverage/tsplugins/index.html -s
+        run: |
+          mkdir -p bin/coverage/tsplugins
+          gcovr --root=src/tsplugins --object-directory=bin/objs-tsplugins --html-details=bin/coverage/tsplugins/index.html -s
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tsduck-coverage-report-on-${{ matrix.os }}-${{ matrix.compiler }}-cpp-${{ matrix.std }}
-          path: coverage
+          path: bin/coverage
           if-no-files-found: error
