@@ -569,7 +569,13 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 
         // Check that video packets start with either 00 00 01 (ISO 11172-2, MPEG-1, or ISO 13818-2, MPEG-2)
         // or 00 00 00 .. 01 (ISO 14496-10, MPEG-4 AVC). Don't know how ISO 14496-2 (MPEG-4 video) should start.
-        if (IsVideoSID(pkt.getStreamId()) && !pkt.isMPEG2Video() && !pkt.isAVC() && !pkt.isHEVC()) {
+        if (IsVideoSID(pkt.getStreamId()) &&
+            !pkt.isMPEG2Video() &&
+            !pkt.isAVC() &&
+            !pkt.isHEVC() &&
+            !pkt.isVVC() &&
+            !PESPacket::HasCommonVideoHeader(pkt.payload(), pkt.payloadSize()))
+        {
             *_out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.sourcePID()})
                   << UString::Dump(pkt.payload(), std::min<size_t> (8, pkt.payloadSize()), UString::SINGLE_LINE)
                   << std::endl;
