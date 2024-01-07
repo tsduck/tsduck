@@ -37,8 +37,8 @@ void ts::BasicLocalEventDescriptor::clearContent()
     segmentation_mode = 0;
     start_time_NPT = 0;
     end_time_NPT = 0;
-    start_time = 0;
-    duration = 0;
+    start_time = cn::milliseconds::zero();
+    duration = cn::milliseconds::zero();
     reserved_data.clear();
     component_tags.clear();
 }
@@ -68,12 +68,12 @@ void ts::BasicLocalEventDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBits(end_time_NPT, 33);
     }
     else if (segmentation_mode < 6) {
-        buf.putSecondsBCD(start_time / 1000); // from milliseconds to seconds
-        buf.putSecondsBCD(duration / 1000);
-        if (start_time % 1000 != 0 || duration % 1000 != 0) {
-            buf.putBCD(start_time % 1000, 3);
+        buf.putSecondsBCD(start_time);
+        buf.putSecondsBCD(duration);
+        if (start_time.count() % 1000 != 0 || duration.count() % 1000 != 0) {
+            buf.putBCD(start_time.count() % 1000, 3);
             buf.putBits(0xFF, 4);
-            buf.putBCD(duration % 1000, 3);
+            buf.putBCD(duration.count() % 1000, 3);
             buf.putBits(0xFF, 4);
         }
     }
@@ -103,12 +103,12 @@ void ts::BasicLocalEventDescriptor::deserializePayload(PSIBuffer& buf)
         buf.getBits(end_time_NPT, 33);
     }
     else if (segmentation_mode < 6) {
-        start_time = buf.getSecondsBCD() * 1000; // from seconds to milliseconds
-        duration = buf.getSecondsBCD() * 1000;
+        buf.getSecondsBCD(start_time);
+        buf.getSecondsBCD(duration);
         if (buf.canRead()) {
-            start_time += buf.getBCD<MilliSecond>(3);
+            start_time += cn::milliseconds(buf.getBCD<cn::milliseconds::rep>(3));
             buf.skipBits(4);
-            duration += buf.getBCD<MilliSecond>(3);
+            duration += cn::milliseconds(buf.getBCD<cn::milliseconds::rep>(3));
             buf.skipBits(4);
         }
     }
@@ -188,11 +188,11 @@ void ts::BasicLocalEventDescriptor::buildXML(DuckContext& duck, xml::Element* ro
         root->setIntAttribute(u"end_time_NPT", end_time_NPT, true);
     }
     else if (segmentation_mode < 6) {
-        root->setTimeAttribute(u"start_time", start_time / 1000);
-        root->setTimeAttribute(u"duration", duration / 1000);
-        if (start_time % 1000 != 0 || duration % 1000 != 0) {
-            root->setAttribute(u"start_time_extension", UString::Format(u"%03d", {start_time % 1000}));
-            root->setAttribute(u"duration_extension", UString::Format(u"%03d", {duration % 1000}));
+        root->setTimeAttribute(u"start_time", start_time);
+        root->setTimeAttribute(u"duration", duration);
+        if (start_time.count() % 1000 != 0 || duration.count() % 1000 != 0) {
+            root->setAttribute(u"start_time_extension", UString::Format(u"%03d", {start_time.count() % 1000}));
+            root->setAttribute(u"duration_extension", UString::Format(u"%03d", {duration.count() % 1000}));
         }
     }
     else {
@@ -211,8 +211,8 @@ void ts::BasicLocalEventDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 bool ts::BasicLocalEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector xcomp;
-    MilliSecond start_time_extension = 0;
-    MilliSecond duration_extension = 0;
+    cn::milliseconds::rep start_time_extension = 0;
+    cn::milliseconds::rep duration_extension = 0;
     bool ok =
         element->getIntAttribute(segmentation_mode, u"segmentation_mode", true, 0, 0x00, 0x0F) &&
         element->getIntAttribute(start_time_NPT, u"start_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
@@ -225,8 +225,8 @@ bool ts::BasicLocalEventDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
         element->getChildren(xcomp, u"component");
 
     // Convert seconds to milliseconds.
-    start_time = 1000 * start_time + start_time_extension;
-    duration = 1000 * duration + duration_extension;
+    start_time += cn::milliseconds(start_time_extension);
+    duration += cn::milliseconds(duration_extension);
 
     for (auto it = xcomp.begin(); ok && it != xcomp.end(); ++it) {
         uint8_t tag = 0;

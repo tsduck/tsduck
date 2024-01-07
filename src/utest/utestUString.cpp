@@ -86,6 +86,7 @@ public:
     void testSuperCompare();
     void testChronoUnit();
     void testChrono();
+    void testPercentage();
 
     TSUNIT_TEST_BEGIN(UStringTest);
     TSUNIT_TEST(testIsSpace);
@@ -145,6 +146,7 @@ public:
     TSUNIT_TEST(testSuperCompare);
     TSUNIT_TEST(testChronoUnit);
     TSUNIT_TEST(testChrono);
+    TSUNIT_TEST(testPercentage);
     TSUNIT_TEST_END();
 
 private:
@@ -2279,4 +2281,13 @@ void UStringTest::testChrono()
     TSUNIT_EQUAL(u"12,345 nanoseconds", ts::UString::Chrono(cn::nanoseconds(12345)));
     TSUNIT_EQUAL(u"1 second", ts::UString::Chrono(cn::seconds(1)));
     TSUNIT_EQUAL(u"250 ms", ts::UString::Chrono(cn::milliseconds(250), true));
+}
+
+void UStringTest::testPercentage()
+{
+    TSUNIT_EQUAL(u"?", ts::UString::Percentage(2, -1));
+    TSUNIT_EQUAL(u"0.00%", ts::UString::Percentage(2, 0));
+    TSUNIT_EQUAL(u"0.00%", ts::UString::Percentage(0, 34));
+    TSUNIT_EQUAL(u"50.00%", ts::UString::Percentage(200, 400));
+    TSUNIT_EQUAL(u"50.00%", ts::UString::Percentage(cn::milliseconds(500), cn::seconds(1)));
 }

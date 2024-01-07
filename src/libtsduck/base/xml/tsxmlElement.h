@@ -421,7 +421,8 @@ namespace ts {
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
             //!
-            void setTimeAttribute(const UString& name, Second value)
+            template <class Rep, class Period>
+            void setTimeAttribute(const UString& name, const cn::duration<Rep,Period>& value)
             {
                 refAttribute(name).setTime(value);
             }
@@ -782,10 +783,24 @@ namespace ts {
             //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
             //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @return True on success, false on error.
+            //!
+            template <class Rep, class Period>
+            bool getTimeAttribute(cn::duration<Rep,Period>& value, const UString& name, bool required = false) const
+            {
+                return getTimeAttribute(value, name, required, cn::duration<Rep,Period>::zero());
+            }
+
+            //!
+            //! Get a time attribute of an XML element in "hh:mm:ss" format.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            bool getTimeAttribute(Second& value, const UString& name, bool required = false, Second defValue = 0) const;
+            template <class Rep1, class Period1, class Rep2, class Period2>
+            bool getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& defValue) const;
 
             //!
             //! Get an IPv4 address attribute of an XML element in "x.x.x.x" format or host name.
@@ -1029,4 +1044,25 @@ bool ts::xml::Element::getOptionalFloatAttribute(std::optional<FLT>& value, cons
         value.reset();
         return false;
     }
+}
+
+// Get a time attribute of an XML element in "hh:mm:ss" format.
+template <class Rep1, class Period1, class Rep2, class Period2>
+bool ts::xml::Element::getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& defValue) const
+{
+    UString str;
+    if (!getAttribute(str, name, required)) {
+        return false;
+    }
+    if (!required && str.empty()) {
+        value = cn::duration_cast<cn::duration<Rep1,Period1>>(defValue);
+        return true;
+    }
+
+    // Analyze the time string.
+    const bool ok = Attribute::TimeFromString(value, str);
+    if (!ok) {
+        report().error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+    }
+    return ok;
 }

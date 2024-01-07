@@ -230,6 +230,18 @@ namespace ts {
     }
 
     //!
+    //! Compute the number of packets transmitted during a given duration.
+    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
+    //! @param [in] duration A duration in any std::chrono::duration units.
+    //! @return Number of packets during @a duration.
+    //!
+    template <class Rep, class Period>
+    inline PacketCounter PacketDistance(const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
+    {
+        return PacketCounter(((bitrate * Period::num * (duration.count() >= 0 ? duration.count() : -duration.count())) / (Period::den * PKT_SIZE_BITS)).toInt());
+    }
+
+    //!
     //! Compute the bitrate from a number of packets transmitted during a given duration in milliseconds.
     //! @param [in] packets Number of packets during @a duration milliseconds.
     //! @param [in] duration Number of milliseconds.
@@ -238,6 +250,18 @@ namespace ts {
     TSDUCKDLL inline BitRate PacketBitRate(PacketCounter packets, MilliSecond duration)
     {
         return duration == 0 ? 0 : BitRate(packets * MilliSecPerSec * PKT_SIZE_BITS) / BitRate(duration);
+    }
+
+    //!
+    //! Compute the bitrate from a number of packets transmitted during a given duration.
+    //! @param [in] packets Number of packets during @a duration.
+    //! @param [in] duration A duration in any std::chrono::duration units.
+    //! @return TS bitrate in bits/second, based on 188-byte packets.
+    //!
+    template <class Rep, class Period>
+    inline BitRate PacketBitRate(PacketCounter packets, const cn::duration<Rep, Period>& duration)
+    {
+        return duration.count() == 0 ? 0 : BitRate(packets * Period::den * PKT_SIZE_BITS) / (Period::num * BitRate(duration.count()));
     }
 
     //!

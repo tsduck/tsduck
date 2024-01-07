@@ -1106,6 +1106,13 @@ namespace ts {
 #endif
 
     //!
+    //! A derivative of std::chrono::duration for deciseconds (1/10 of a second).
+    //! @see std::chrono::milliseonds
+    //! @see std::chrono::seonds
+    //!
+    using deciseconds = cn::duration<cn::milliseconds::rep, std::deci>;
+
+    //!
     //! This integer type is used to represent any sub-quantity of seconds.
     //!
     //! This type is mostly used as parent for all other representations
@@ -1280,4 +1287,16 @@ namespace std {
         lock_guard(ts::null_mutex&, std::adopt_lock_t) {}
     };
 }
+//! @endcond
+
+// Define missing std::chrono::duration types in C++17.
+//! @cond nodoxygen
+#if !defined(TS_CXX20)
+namespace std::chrono {
+    using days   = duration<hours::rep, ratio_multiply<ratio<24>, hours::period>>;
+    using weeks  = duration<hours::rep, ratio_multiply<ratio<7>, days::period>>;
+    using years  = duration<hours::rep, ratio_multiply<ratio<146097, 400>, days::period>>;
+    using months = duration<hours::rep, ratio_divide<years::period, ratio<12>>>;
+}
+#endif
 //! @endcond

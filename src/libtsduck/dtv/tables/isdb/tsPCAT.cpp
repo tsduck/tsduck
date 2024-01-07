@@ -117,7 +117,7 @@ void ts::PCAT::deserializePayload(PSIBuffer& buf, const Section& section)
             // indicates the duration of the partial contents announcement by hours, minutes, and seconds."
             // It does not say if this is binary or BCD. We assume here the same format as in EIT, ie. BCD.
             sched.start_time = buf.getFullMJD();
-            sched.duration = buf.getSecondsBCD();
+            buf.getSecondsBCD(sched.duration);
             cv.schedules.push_back(sched);
         }
 

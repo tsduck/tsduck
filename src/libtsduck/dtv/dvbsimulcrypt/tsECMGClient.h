@@ -83,7 +83,7 @@ namespace ts {
                          const ByteBlock& current_cw,
                          const ByteBlock& next_cw,
                          const ByteBlock& ac,
-                         uint16_t cp_duration,
+                         const ts::deciseconds& cp_duration,
                          ecmgscs::ECMResponse& response);
 
         //!
@@ -104,7 +104,7 @@ namespace ts {
                        const ByteBlock& current_cw,
                        const ByteBlock& next_cw,
                        const ByteBlock& ac,
-                       uint16_t cp_duration,
+                       const ts::deciseconds& cp_duration,
                        ECMGClientHandlerInterface* handler);
 
         //!
@@ -162,7 +162,7 @@ namespace ts {
                               const ByteBlock& current_cw,
                               const ByteBlock& next_cw,
                               const ByteBlock& ac,
-                              uint16_t cp_duration);
+                              const ts::deciseconds& cp_duration);
 
         // Receiver thread main code
         virtual void main() override;

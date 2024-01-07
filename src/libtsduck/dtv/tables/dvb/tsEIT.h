@@ -134,11 +134,11 @@ namespace ts {
             TS_DEFAULT_ASSIGMENTS(Event);
         public:
             // Public members
-            uint16_t event_id = 0;           //!< Event id.
-            Time     start_time {};          //!< Event start_time in UTC (or JST in Japan).
-            Second   duration = 0;           //!< Event duration in seconds.
-            uint8_t  running_status = 0;     //!< Running status code.
-            bool     CA_controlled = false;  //!< Controlled by a CA_system.
+            uint16_t    event_id = 0;           //!< Event id.
+            Time        start_time {};          //!< Event start_time in UTC (or JST in Japan).
+            cn::seconds duration {0};           //!< Event duration in seconds.
+            uint8_t     running_status = 0;     //!< Running status code.
+            bool        CA_controlled = false;  //!< Controlled by a CA_system.
 
             //!
             //! Constructor.

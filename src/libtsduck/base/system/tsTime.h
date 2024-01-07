@@ -93,7 +93,7 @@ namespace ts {
         template <class Rep, class Period>
         Time operator+(const cn::duration<Rep,Period>& duration) const
         {
-            return Time(_value + Ticks(duration).count());
+            return Time(_value + cn::duration_cast<Ticks>(duration).count());
         }
 
         //!
@@ -114,7 +114,7 @@ namespace ts {
         template <class Rep, class Period>
         Time operator-(const cn::duration<Rep,Period>& duration) const
         {
-            return Time(_value - Ticks(duration).count());
+            return Time(_value - cn::duration_cast<Ticks>(duration).count());
         }
 
         //!
@@ -136,7 +136,7 @@ namespace ts {
         template <class Rep, class Period>
         Time& operator+=(const cn::duration<Rep,Period>& duration)
         {
-            _value += Ticks(duration).count();
+            _value += cn::duration_cast<Ticks>(duration).count();
             return *this;
         }
 
@@ -159,7 +159,7 @@ namespace ts {
         template <class Rep, class Period>
         Time& operator-=(const cn::duration<Rep,Period>& duration)
         {
-            _value -= Ticks(duration).count();
+            _value -= cn::duration_cast<Ticks>(duration).count();
             return *this;
         }
 

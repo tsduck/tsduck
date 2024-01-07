@@ -134,7 +134,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     stream_setup.channel_id = args.ecm_channel_id;
     stream_setup.stream_id = args.ecm_stream_id;
     stream_setup.ECM_id = args.ecm_id;
-    stream_setup.nominal_CP_duration = uint16_t(args.cp_duration / 100); // unit is 1/10 second
+    stream_setup.nominal_CP_duration = uint16_t(args.cp_duration.count()); // unit is 1/10 second
     if (!_connection.send(stream_setup, _logger)) {
         return abortConnection();
     }
@@ -219,14 +219,14 @@ void ts::ECMGClient::buildCWProvision(ecmgscs::CWProvision& msg,
                                       const ByteBlock& current_cw,
                                       const ByteBlock& next_cw,
                                       const ByteBlock& ac,
-                                      uint16_t cp_duration)
+                                      const ts::deciseconds& cp_duration)
 {
     msg.channel_id = _stream_status.channel_id;
     msg.stream_id = _stream_status.stream_id;
     msg.CP_number = cp_number;
     msg.has_CW_encryption = false;
-    msg.has_CP_duration = cp_duration != 0;
-    msg.CP_duration = cp_duration;
+    msg.has_CP_duration = cp_duration.count() != 0;
+    msg.CP_duration = uint16_t(cp_duration.count());
     msg.has_access_criteria = !ac.empty();
     msg.access_criteria = ac;
 
@@ -248,7 +248,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
                                  const ByteBlock& current_cw,
                                  const ByteBlock& next_cw,
                                  const ByteBlock& ac,
-                                 uint16_t cp_duration,
+                                 const ts::deciseconds& cp_duration,
                                  ecmgscs::ECMResponse& ecm_response)
 {
     // Build a CW_provision message
@@ -299,7 +299,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
                                const ByteBlock& current_cw,
                                const ByteBlock& next_cw,
                                const ByteBlock& ac,
-                               uint16_t cp_duration,
+                               const ts::deciseconds& cp_duration,
                                ECMGClientHandlerInterface* ecm_handler)
 {
     // Build a CW_provision message

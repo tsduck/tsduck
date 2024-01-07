@@ -103,7 +103,7 @@ namespace ts {
     //! @return The CPU time of the process in milliseconds.
     //! @throw ts::Exception on error.
     //!
-    TSDUCKDLL MilliSecond GetProcessCpuTime();
+    TSDUCKDLL cn::milliseconds GetProcessCpuTime();
 
     //!
     //! Get the virtual memory size of the process in bytes.

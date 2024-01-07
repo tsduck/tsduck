@@ -84,12 +84,12 @@ void ts::SystemMonitor::main()
     Time start_next_period(start_time + period->duration);
 
     // Get initial system metrics.
-    const MilliSecond start_cpu_time = GetProcessCpuTime();
+    const cn::milliseconds start_cpu_time = GetProcessCpuTime();
     const size_t start_vmem_size = GetProcessVirtualSize();
 
     // Time and metrics at the last interval.
     Time last_time(start_time);
-    MilliSecond last_cpu_time = start_cpu_time;
+    cn::milliseconds last_cpu_time = start_cpu_time;
     size_t last_vmem_size = start_vmem_size;
 
     // Time and value of last virtual memory size increase.
@@ -131,7 +131,7 @@ void ts::SystemMonitor::main()
 
         // Get current process metrics
         Time current_time(Time::CurrentLocalTime());
-        const MilliSecond cpu_time = GetProcessCpuTime();
+        const cn::milliseconds cpu_time = GetProcessCpuTime();
         const size_t vmem_size = GetProcessVirtualSize();
 
         // Build the monitoring message.
@@ -151,9 +151,9 @@ void ts::SystemMonitor::main()
 
         // Format CPU load.
         message += u", CPU:";
-        message += UString::Percentage(cpu_time - last_cpu_time, current_time - last_time);
+        message += UString::Percentage((cpu_time - last_cpu_time).count(), current_time - last_time);
         message += u" (average:";
-        message += UString::Percentage(cpu_time - start_cpu_time, current_time - start_time);
+        message += UString::Percentage((cpu_time - start_cpu_time).count(), current_time - start_time);
         message += u")";
 
         // Display monitoring message if allowed in this period or if vmem has increased.
@@ -162,7 +162,7 @@ void ts::SystemMonitor::main()
         }
 
         // Compute CPU percentage during last period.
-        const int cpu = current_time <= last_time ? 0 : int((100 * (cpu_time - last_cpu_time)) / (current_time - last_time));
+        const int cpu = current_time <= last_time ? 0 : int((100 * (cpu_time - last_cpu_time).count()) / (current_time - last_time));
 
         // Raise an alarm if the CPU usage is above defined limit for this period.
         if (cpu > period->max_cpu) {

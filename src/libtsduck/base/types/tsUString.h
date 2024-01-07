@@ -1385,6 +1385,15 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         static UString Percentage(INT value, INT total);
 
+        //!
+        //! Format a percentage string between duration values.
+        //! @param [in] value A duration value, a portion of @a total.
+        //! @param [in] total The total duration value.
+        //! @return A string representing the percentage of @a value in @a total.
+        //!
+        template <class Rep1, class Period1, class Rep2, class Period2>
+        static UString Percentage(const cn::duration<Rep1,Period1>& value, const cn::duration<Rep2,Period2>& total);
+
         //--------------------------------------------------------------------
         // Comparison operations
         //--------------------------------------------------------------------
@@ -3560,6 +3569,13 @@ ts::UString ts::UString::Percentage(INT value, INT total)
         const int p2 = int(((10000 * uint64_t(value)) / uint64_t(total)) % 100);
         return Format(u"%d.%02d%%", {p1, p2});
     }
+}
+
+template <class Rep1, class Period1, class Rep2, class Period2>
+ts::UString ts::UString::Percentage(const cn::duration<Rep1,Period1>& value, const cn::duration<Rep2,Period2>& total)
+{
+    using common = typename std::common_type<decltype(value), decltype(total)>::type;
+    return Percentage(cn::duration_cast<common>(value).count(), cn::duration_cast<common>(total).count());
 }
 
 
