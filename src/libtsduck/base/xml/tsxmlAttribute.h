@@ -232,12 +232,14 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Convert a time (without date) into a string, as required in attributes.
+//! @cond nodoxygen
 template <class Rep, class Period>
 ts::UString ts::xml::Attribute::TimeToString(const cn::duration<Rep,Period>& value)
 {
     const cn::seconds::rep sec = cn::duration_cast<cn::seconds>(value).count();
     return UString::Format(u"%02d:%02d:%02d", {sec / 3600, (sec / 60) % 60, sec % 60});
 }
+//! @endcond
 
 // Convert a string into a time, as required in attributes.
 template <class Rep, class Period>
