@@ -217,7 +217,7 @@ bool ts::IsPrivilegedUser()
 // Get the CPU time of the process in milliseconds.
 //----------------------------------------------------------------------------
 
-ts::MilliSecond ts::GetProcessCpuTime()
+cn::milliseconds ts::GetProcessCpuTime()
 {
 #if defined(TS_WINDOWS)
 
@@ -225,7 +225,7 @@ ts::MilliSecond ts::GetProcessCpuTime()
     if (::GetProcessTimes(::GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time) == 0) {
         throw ts::Exception(u"GetProcessTimes error", ::GetLastError());
     }
-    return ts::Time::Win32FileTimeToMilliSecond(kernel_time) + ts::Time::Win32FileTimeToMilliSecond(user_time);
+    return cn::milliseconds(ts::Time::Win32FileTimeToMilliSecond(kernel_time) + ts::Time::Win32FileTimeToMilliSecond(user_time));
 
 #else
 
@@ -234,10 +234,8 @@ ts::MilliSecond ts::GetProcessCpuTime()
     if (::getrusage(RUSAGE_SELF, &usage) < 0) {
         throw ts::Exception(u"getrusage error", errno);
     }
-    return MilliSecond(usage.ru_stime.tv_sec) * MilliSecPerSec +
-           MilliSecond(usage.ru_stime.tv_usec) / MicroSecPerMilliSec +
-           MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
-           MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
+    using rep = cn::milliseconds::rep;
+    return cn::milliseconds(rep(usage.ru_stime.tv_sec) * 1000 + rep(usage.ru_stime.tv_usec) / 1000 + rep(usage.ru_utime.tv_sec) * 1000 + rep(usage.ru_utime.tv_usec) / 1000);
 
 #endif
 }

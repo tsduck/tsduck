@@ -154,7 +154,11 @@ namespace ts {
             //! Set a time attribute of an XML element in "hh:mm:ss" format.
             //! @param [in] value Attribute value.
             //!
-            void setTime(Second value);
+            template <class Rep, class Period>
+            void setTime(const cn::duration<Rep,Period>& value)
+            {
+                setString(TimeToString(value));
+            }
 
             //!
             //! Convert a date/time into a string, as required in attributes.
@@ -171,11 +175,12 @@ namespace ts {
             static UString DateToString(const Time& value);
 
             //!
-            //! Convert a time into a string, as required in attributes.
+            //! Convert a time (without date) into a string, as required in attributes.
             //! @param [in] value Time value.
             //! @return The corresponding string.
             //!
-            static UString TimeToString(Second value);
+            template <class Rep, class Period>
+            static UString TimeToString(const cn::duration<Rep,Period>& value);
 
             //!
             //! Convert a string into a date/time, as required in attributes.
@@ -199,7 +204,8 @@ namespace ts {
             //! @param [in] str Time value as a string.
             //! @return True on success, false on error.
             //!
-            static bool TimeFromString(Second& value, const UString& str);
+            template <class Rep, class Period>
+            static bool TimeFromString(cn::duration<Rep,Period>& value, const UString& str);
 
             //!
             //! A constant static invalid instance.
@@ -218,4 +224,34 @@ namespace ts {
             static std::atomic_size_t _allocator;
         };
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Convert a time (without date) into a string, as required in attributes.
+template <class Rep, class Period>
+ts::UString ts::xml::Attribute::TimeToString(const cn::duration<Rep,Period>& value)
+{
+    const cn::seconds::rep sec = cn::duration_cast<cn::seconds>(value).count();
+    return UString::Format(u"%02d:%02d:%02d", {sec / 3600, (sec / 60) % 60, sec % 60});
+}
+
+// Convert a string into a time, as required in attributes.
+template <class Rep, class Period>
+bool ts::xml::Attribute::TimeFromString(cn::duration<Rep,Period>& value, const UString& str)
+{
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+    const bool ok = str.scan(u"%d:%d:%d", {&hours, &minutes, &seconds}) &&
+                    hours   >= 0 && hours   <= 23 &&
+                    minutes >= 0 && minutes <= 59 &&
+                    seconds >= 0 && seconds <= 59;
+    if (ok) {
+        value = cn::seconds((hours * 3600) + (minutes * 60) + seconds);
+    }
+    return ok;
 }

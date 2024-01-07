@@ -41,7 +41,7 @@ void ts::STCReferenceDescriptor::clearContent()
     external_network_id = 0;
     NPT_reference = 0;
     STC_reference = 0;
-    time_reference = 0;
+    time_reference = cn::milliseconds::zero();
     reserved_data.clear();
 }
 
@@ -75,8 +75,8 @@ void ts::STCReferenceDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBits(STC_reference, 33);
     }
     else if (STC_reference_mode == 3 || STC_reference_mode == 5) {
-        buf.putSecondsBCD(time_reference / 1000); // from milliseconds to seconds
-        buf.putBCD(time_reference % 1000, 3);
+        buf.putSecondsBCD(time_reference); // from milliseconds to seconds
+        buf.putBCD(time_reference.count() % 1000, 3);
         buf.putBits(0xFF, 11);
         buf.putBits(STC_reference, 33);
     }
@@ -109,8 +109,8 @@ void ts::STCReferenceDescriptor::deserializePayload(PSIBuffer& buf)
         buf.getBits(STC_reference, 33);
     }
     else if (STC_reference_mode == 3 || STC_reference_mode == 5) {
-        time_reference = buf.getSecondsBCD() * 1000; // from seconds to milliseconds
-        time_reference += buf.getBCD<MilliSecond>(3);
+        buf.getSecondsBCD(time_reference);
+        time_reference += cn::milliseconds(buf.getBCD<cn::milliseconds::rep>(3));
         buf.skipBits(11);
         buf.getBits(STC_reference, 33);
     }
@@ -182,8 +182,8 @@ void ts::STCReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root)
         root->setIntAttribute(u"STC_reference", STC_reference, true);
     }
     else if (STC_reference_mode == 3 || STC_reference_mode == 5) {
-        root->setTimeAttribute(u"time_reference", time_reference / 1000);
-        root->setAttribute(u"time_reference_extension", UString::Format(u"%03d", {time_reference % 1000}));
+        root->setTimeAttribute(u"time_reference", time_reference);
+        root->setAttribute(u"time_reference_extension", UString::Format(u"%03d", {time_reference.count() % 1000}));
         root->setIntAttribute(u"STC_reference", STC_reference, true);
     }
     else {
@@ -198,7 +198,7 @@ void ts::STCReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::STCReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    MilliSecond time_reference_extension = 0;
+    cn::milliseconds::rep time_reference_extension = 0;
 
     external_event =
         element->hasAttribute(u"external_event_id") ||
@@ -217,6 +217,6 @@ bool ts::STCReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
         element->getHexaTextChild(reserved_data, u"reserved_data", false);
 
     // Convert seconds to milliseconds.
-    time_reference = 1000 * time_reference + time_reference_extension;
+    time_reference += cn::milliseconds(time_reference_extension);
     return ok;
 }

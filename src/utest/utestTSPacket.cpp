@@ -34,6 +34,7 @@ public:
     void testSetPayloadSize();
     void testFlags();
     void testPrivateData();
+    void testBitRate();
 
     TSUNIT_TEST_BEGIN(TSPacketTest);
     TSUNIT_TEST(testPacket);
@@ -44,6 +45,7 @@ public:
     TSUNIT_TEST(testSetPayloadSize);
     TSUNIT_TEST(testFlags);
     TSUNIT_TEST(testPrivateData);
+    TSUNIT_TEST(testBitRate);
     TSUNIT_TEST_END();
 };
 
@@ -401,7 +403,6 @@ void TSPacketTest::testFlags()
     TSUNIT_ASSERT(pkt.getESPI());
 }
 
-
 void TSPacketTest::testPrivateData()
 {
     ts::ByteBlock data;
@@ -520,4 +521,20 @@ void TSPacketTest::testPrivateData()
     TSUNIT_ASSERT(std::memcmp(pkt.getPayload(), refPayload.data(), refPayload.size()) == 0);
     pkt.getPrivateData(data);
     TSUNIT_ASSERT(data.empty());
+}
+
+void TSPacketTest::testBitRate()
+{
+    TSUNIT_EQUAL(8 * 188 * 1000, ts::PacketBitRate(1000, cn::seconds(1)).toInt64());
+    TSUNIT_EQUAL(8 * 188 * 1000, ts::PacketBitRate(1000, cn::milliseconds(1000)).toInt64());
+
+    TSUNIT_EQUAL(1000, ts::PacketDistance(8 * 188 * 1000, cn::seconds(1)));
+    TSUNIT_EQUAL(1000, ts::PacketDistance(8 * 188 * 1000, cn::milliseconds(1000)));
+
+    using tq = cn::duration<std::intmax_t, std::ratio<3,4>>;
+    TSUNIT_EQUAL(8 * 188 * 1000, ts::PacketBitRate(3000, tq(4)).toInt64());
+    TSUNIT_EQUAL(3000, ts::PacketDistance(8 * 188 * 1000, tq(4)));
+
+    cn::milliseconds ms = cn::milliseconds(2500);
+    TSUNIT_EQUAL(25, std::chrono::duration_cast<ts::deciseconds>(ms).count());
 }

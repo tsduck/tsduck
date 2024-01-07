@@ -24,7 +24,7 @@ void ts::ECMGClientArgs::defineArgs(Args& args)
     args.option(u"channel-id", 0, Args::UINT16);
     args.help(u"channel-id", u"Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).");
 
-    args.option(u"cp-duration", 'd', Args::POSITIVE);
+    args.option<cn::seconds>(u"cp-duration", 'd');
     args.help(u"cp-duration", u"seconds", u"Specifies the crypto-period duration in seconds (default: 10).");
 
     args.option(u"ecm-id", 'i', Args::UINT16);
@@ -70,7 +70,7 @@ bool ts::ECMGClientArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(ecm_channel_id, u"channel-id", 1);
     args.getIntValue(ecm_stream_id, u"stream-id", 1);
     args.getIntValue(ecm_id, u"ecm-id", 1);
-    cp_duration = MilliSecPerSec * args.intValue<MilliSecond>(u"cp-duration", 10);
+    args.getChronoValue(cp_duration, u"cp-duration", cn::seconds(10));
     log_protocol = args.present(u"log-protocol") ? args.intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
     log_data = args.present(u"log-data") ? args.intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
     args.getIntValue(dvbsim_version, u"ecmg-scs-version", 2);

@@ -31,9 +31,9 @@ namespace ts {
         class TSDUCKDLL Schedule
         {
         public:
-            Schedule() = default;  //!< Constructor
-            Time   start_time {};  //!< Event start_time in UTC (or JST in Japan).
-            Second duration = 0;   //!< Event duration in seconds.
+            Schedule() = default;       //!< Constructor
+            Time        start_time {};  //!< Event start_time in UTC (or JST in Japan).
+            cn::seconds duration {0};   //!< Event duration in seconds.
         };
 
         //!

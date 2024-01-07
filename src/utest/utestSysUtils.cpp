@@ -607,9 +607,9 @@ void SysUtilsTest::testHomeDirectory()
 
 void SysUtilsTest::testProcessCpuTime()
 {
-    const ts::MilliSecond t1 = ts::GetProcessCpuTime();
-    debug() << "SysUtilsTest: CPU time (1) = " << t1 << " ms" << std::endl;
-    TSUNIT_ASSERT(t1 >= 0);
+    const cn::milliseconds t1 = ts::GetProcessCpuTime();
+    debug() << "SysUtilsTest: CPU time (1) = " << ts::UString::Chrono(t1) << std::endl;
+    TSUNIT_ASSERT(t1.count() >= 0);
 
     // Consume some milliseconds of CPU time
     uint64_t counter = 7;
@@ -617,9 +617,9 @@ void SysUtilsTest::testProcessCpuTime()
         counter = counter * counter;
     }
 
-    const ts::MilliSecond t2 = ts::GetProcessCpuTime();
-    debug() << "SysUtilsTest: CPU time (2) = " << t2 << " ms" << std::endl;
-    TSUNIT_ASSERT(t2 >= 0);
+    const cn::milliseconds t2 = ts::GetProcessCpuTime();
+    debug() << "SysUtilsTest: CPU time (2) = " << ts::UString::Chrono(t2) << " ms" << std::endl;
+    TSUNIT_ASSERT(t2.count() >= 0);
     TSUNIT_ASSERT(t2 >= t1);
 }
 

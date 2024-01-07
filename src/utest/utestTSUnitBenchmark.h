@@ -51,10 +51,10 @@ namespace utest {
         void report(const ts::UString& test_name);
 
     private:
-        bool            _started = false;
-        ts::MilliSecond _start = 0;        // Process CPU time on start().
-        ts::MilliSecond _accumulated = 0;  // Accumulated CPU times.
-        size_t          _sequences = 0;    // Number of sequences
+        bool             _started = false;
+        cn::milliseconds _start {0};        // Process CPU time on start().
+        cn::milliseconds _accumulated {0};  // Accumulated CPU times.
+        size_t           _sequences = 0;    // Number of sequences
 
         static size_t GetIterations(const ts::UString& env_name);
     };

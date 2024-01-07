@@ -106,11 +106,6 @@ void ts::xml::Attribute::setDate(const Time& value)
     setString(DateToString(value));
 }
 
-void ts::xml::Attribute::setTime(Second value)
-{
-    setString(TimeToString(value));
-}
-
 
 //----------------------------------------------------------------------------
 // Static date/time conversions.
@@ -128,11 +123,6 @@ ts::UString ts::xml::Attribute::DateToString(const Time& value)
     return UString::Format(u"%04d-%02d-%02d", {f.year, f.month, f.day});
 }
 
-ts::UString ts::xml::Attribute::TimeToString(Second value)
-{
-    return UString::Format(u"%02d:%02d:%02d", {value / 3600, (value / 60) % 60, value % 60});
-}
-
 bool ts::xml::Attribute::DateTimeFromString(Time& value, const UString& str)
 {
     // We are tolerant on syntax, decode 6 fields, regardless of separators.
@@ -143,22 +133,4 @@ bool ts::xml::Attribute::DateFromString(Time& value, const UString& str)
 {
     // We are tolerant on syntax, decode 3 fields, regardless of separators.
     return value.decode(str, Time::YEAR | Time::MONTH | Time::DAY);
-}
-
-bool ts::xml::Attribute::TimeFromString(Second& value, const UString& str)
-{
-    Second hours = 0;
-    Second minutes = 0;
-    Second seconds = 0;
-
-    const bool ok = str.scan(u"%d:%d:%d", {&hours, &minutes, &seconds}) &&
-        hours   >= 0 && hours   <= 23 &&
-        minutes >= 0 && minutes <= 59 &&
-        seconds >= 0 && seconds <= 59;
-
-    if (ok) {
-        value = (hours * 3600) + (minutes * 60) + seconds;
-    }
-
-    return ok;
 }

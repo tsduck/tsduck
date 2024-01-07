@@ -13,7 +13,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsBCD.h"
 #include "tsMJD.h"
 
 #define MY_XML_NAME u"network_change_notify_descriptor"
@@ -100,7 +99,7 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
             ch.network_change_id = buf.getUInt8();
             ch.network_change_version = buf.getUInt8();
             ch.start_time_of_change = buf.getMJD(MJD_SIZE);
-            ch.change_duration = buf.getSecondsBCD();
+            buf.getSecondsBCD(ch.change_duration);
             buf.getBits(ch.receiver_category, 3);
             const bool invariant_ts_present = buf.getBool();
             buf.getBits(ch.change_type, 4);

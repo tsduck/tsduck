@@ -265,7 +265,7 @@ void ts::EIT::deserializePayload(PSIBuffer& buf, const Section& section)
         Event& event(events.newEntry());
         event.event_id = buf.getUInt16();
         event.start_time = buf.getFullMJD();
-        event.duration = buf.getSecondsBCD();
+        buf.getSecondsBCD(event.duration);
         buf.getBits(event.running_status, 3);
         event.CA_controlled = buf.getBool();
         buf.getDescriptorListWithLength(event.descs);

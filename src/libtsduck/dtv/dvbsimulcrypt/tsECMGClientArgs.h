@@ -37,7 +37,7 @@ namespace ts {
         IPv4SocketAddress ecmg_address {};      //!< -\-ecmg, ECMG socket address (required or optional)
         uint32_t          super_cas_id = 0;     //!< -\-super-cas-id, CA system & subsystem id
         ByteBlock         access_criteria {};   //!< -\-access-criteria
-        MilliSecond       cp_duration = 0;      //!< -\-cp-duration, crypto-period duration
+        ts::deciseconds   cp_duration {0};      //!< -\-cp-duration, crypto-period duration, converted to 100 ms units
         tlv::VERSION      dvbsim_version = 0;   //!< -\-ecmg-scs-version
         uint16_t          ecm_channel_id = 0;   //!< -\-channel-id
         uint16_t          ecm_stream_id = 0;    //!< -\-stream-id

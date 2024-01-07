@@ -604,30 +604,6 @@ bool ts::xml::Element::getDateAttribute(Time& value, const UString& name, bool r
 
 
 //----------------------------------------------------------------------------
-// Get a time attribute of an XML element in "hh:mm:ss" format.
-//----------------------------------------------------------------------------
-
-bool ts::xml::Element::getTimeAttribute(Second& value, const UString& name, bool required, Second defValue) const
-{
-    UString str;
-    if (!getAttribute(str, name, required)) {
-        return false;
-    }
-    if (!required && str.empty()) {
-        value = defValue;
-        return true;
-    }
-
-    // Analyze the time string.
-    const bool ok = Attribute::TimeFromString(value, str);
-    if (!ok) {
-        report().error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
-    }
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
 // Get an IPv4/v6 or MAC address attribute of an XML element.
 //----------------------------------------------------------------------------
 

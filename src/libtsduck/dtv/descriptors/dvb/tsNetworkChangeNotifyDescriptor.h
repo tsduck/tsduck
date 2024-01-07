@@ -29,14 +29,14 @@ namespace ts {
         //!
         struct TSDUCKDLL Change
         {
-            Change() = default;                   //!< Default constructor.
-            uint8_t  network_change_id = 0;       //!< Network change id.
-            uint8_t  network_change_version = 0;  //!< Network change version.
-            Time     start_time_of_change {};     //!< Start time of change.
-            Second   change_duration = 0;         //!< Change duration in seconds (must be less than 12 hours)?
-            uint8_t  receiver_category = 0;       //!< 3 bits, 0 for all, 1 for T2/S2/C2.
-            uint8_t  change_type = 0;             //!< 4 bits, type of change.
-            uint8_t  message_id = 0;              //!< Message id.
+            Change() = default;                      //!< Default constructor.
+            uint8_t     network_change_id = 0;       //!< Network change id.
+            uint8_t     network_change_version = 0;  //!< Network change version.
+            Time        start_time_of_change {};     //!< Start time of change.
+            cn::seconds change_duration {0};         //!< Change duration in seconds (must be less than 12 hours)?
+            uint8_t     receiver_category = 0;       //!< 3 bits, 0 for all, 1 for T2/S2/C2.
+            uint8_t     change_type = 0;             //!< 4 bits, type of change.
+            uint8_t     message_id = 0;              //!< Message id.
             std::optional<uint16_t> invariant_ts_tsid {};  //!< Optional invariant TS id.
             std::optional<uint16_t> invariant_ts_onid {};  //!< Original network id of optional invariant TS.
         };

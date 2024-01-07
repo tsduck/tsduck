@@ -155,7 +155,7 @@ int MainCode(int argc, char *argv[])
 
     // Request the ECM (synchronous operation).
     ts::ecmgscs::ECMResponse response(opt.ecmgscs);
-    if (!ecmg.generateECM(opt.cpNumber, opt.cwCurrent, opt.cwNext, opt.ecmg.access_criteria, uint16_t(opt.ecmg.cp_duration / 100), response)) {
+    if (!ecmg.generateECM(opt.cpNumber, opt.cwCurrent, opt.cwNext, opt.ecmg.access_criteria, opt.ecmg.cp_duration, response)) {
         ecmg.disconnect();
         return EXIT_FAILURE;
     }
