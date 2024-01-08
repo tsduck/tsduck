@@ -14,7 +14,6 @@
 #include "tsPluginRepository.h"
 #include "tsEITProcessor.h"
 #include "tsAlgorithm.h"
-#include "tsAbstractSignalization.h"
 #include "tsTime.h"
 #include "tsMJD.h"
 #include "tsBCD.h"

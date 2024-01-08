@@ -48,19 +48,13 @@ namespace ts {
         //! Activate or deactivate the font color tags in the output text.
         //! @param [in] addColors If true, font colors tags will be inserted in the output text.
         //!
-        void setAddColors(bool addColors)
-        {
-            _addColors = addColors;
-        }
+        void setAddColors(bool addColors) { _addColors = addColors; }
 
         //!
         //! Check if font colors tags are inserted in the output text.
         //! @return True when font colors tags are inserted in the output text.
         //!
-        bool getAddColors() const
-        {
-            return _addColors;
-        }
+        bool getAddColors() const { return _addColors; }
 
         //!
         //! Flush any pending Teletext message.
@@ -73,10 +67,7 @@ namespace ts {
         //! Replace the Teletext handler.
         //! @param [in] handler The Teletext handler.
         //!
-        void setTeletextHandler(TeletextHandlerInterface* handler)
-        {
-            _txtHandler = handler;
-        }
+        void setTeletextHandler(TeletextHandlerInterface* handler) { _txtHandler = handler; }
 
         //!
         //! Get the number of Teletext frames found in a given page.
@@ -108,21 +99,21 @@ namespace ts {
         class TeletextPage
         {
         public:
-            uint32_t        frameCount;    //!< Number of produced frames in this page.
-            MilliSecond     showTimestamp; //!< Show at timestamp (in ms).
-            MilliSecond     hideTimestamp; //!< Hide at timestamp (in ms).
-            bool            tainted;       //!< True if text variable contains any data.
-            TeletextCharset charset;       //!< Charset to use.
-            UChar           text[25][40];  //!< 25 lines x 40 cols (1 screen/page) of wide chars.
+            uint32_t         frameCount = 0;      //!< Number of produced frames in this page.
+            cn::milliseconds showTimestamp {0};   //!< Show at timestamp (in ms).
+            cn::milliseconds hideTimestamp {0};   //!< Hide at timestamp (in ms).
+            bool             tainted = false;     //!< True if text variable contains any data.
+            TeletextCharset  charset {};          //!< Charset to use.
+            UChar            text[25][40] {{0}};  //!< 25 lines x 40 cols (1 screen/page) of wide chars.
             //!
             //! Default constructor.
             //!
-            TeletextPage();
+            TeletextPage() = default;
             //!
             //! Reset to a new page with a new starting timestamp.
             //! @param [in] timestamp New starting timestamp.
             //!
-            void reset(MilliSecond timestamp);
+            void reset(const cn::milliseconds& timestamp);
         };
 
         //!
@@ -136,14 +127,14 @@ namespace ts {
         class PIDContext
         {
         public:
-            bool            receivingData;  //!< Incoming data should be processed or ignored.
-            TransMode       transMode;      //!< Teletext transmission mode.
-            int             currentPage;    //!< Current Teletext page number.
-            TeletextPageMap pages;          //!< Working Teletext page buffers, indexed by page number.
+            bool            receivingData = false;        //!< Incoming data should be processed or ignored.
+            TransMode       transMode = TRANSMODE_SERIAL; //!< Teletext transmission mode.
+            int             currentPage = 0;              //!< Current Teletext page number.
+            TeletextPageMap pages {};                     //!< Working Teletext page buffers, indexed by page number.
             //!
             //! Default constructor.
             //!
-            PIDContext();
+            PIDContext() = default;
         };
 
         //!
@@ -189,20 +180,14 @@ namespace ts {
         //! @param [in] page Teletext page.
         //! @return The Teletext magazine number.
         //!
-        static int magazineOf(int page)
-        {
-            return (page >> 8) & 0x0F;
-        }
+        static int magazineOf(int page) { return (page >> 8) & 0x0F; }
 
         //!
         //! Extract Teletext page number from Teletext page.
         //! @param [in] page Teletext page.
         //! @return The Teletext page number.
         //!
-        static int pageOf(int page)
-        {
-            return page & 0xFF;
-        }
+        static int pageOf(int page) { return page & 0xFF; }
 
         //!
         //! Converts a page number from BCD to binary.
@@ -221,8 +206,8 @@ namespace ts {
         static int pageBinaryToBcd(int bin);
 
         // Private members:
-        TeletextHandlerInterface* _txtHandler;    //!< User handler.
-        PIDContextMap             _pids;          //!< Map of PID analysis contexts.
-        bool                      _addColors;     //!< Add font color tags.
+        TeletextHandlerInterface* _txtHandler = nullptr;  //!< User handler.
+        PIDContextMap             _pids {};               //!< Map of PID analysis contexts.
+        bool                      _addColors = false;     //!< Add font color tags.
     };
 }

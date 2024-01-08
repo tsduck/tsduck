@@ -41,7 +41,7 @@ namespace {
         ts::ecmgscs::Protocol ecmgscs {};
         uint32_t              super_cas_id = 0;
         ts::ByteBlock         access_criteria {};
-        ts::Second            cp_duration = 0;
+        ts::deciseconds       cp_duration {};  // unit is 100 ms
         cn::seconds           stat_interval {};
         ts::tlv::VERSION      dvbsim_version = 0;
         uint16_t              channel_count = 0;
@@ -51,7 +51,7 @@ namespace {
         uint16_t              first_ecm_id = 0;
         size_t                cw_size = 0;
         size_t                max_ecm = 0;
-        ts::Second            max_seconds = 0;
+        cn::seconds           max_seconds {};
         int                   log_protocol = 0;
         int                   log_data = 0;
     };
@@ -78,8 +78,8 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
          u"There is one TCP connection to the ECMG per channel. "
          u"The default is 10.");
 
-    option(u"cp-duration", 0, Args::POSITIVE);
-    help(u"cp-duration", u"seconds",
+    option<cn::seconds>(u"cp-duration");
+    help(u"cp-duration",
          u"Specify the crypto-period duration in seconds. "
          u"The default is 10 seconds.");
 
@@ -128,8 +128,8 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
          u"Stop the test after generating the specified number of ECM's. "
          u"By default, the test endlessly runs.");
 
-    option(u"max-seconds", 0, Args::UNSIGNED);
-    help(u"max-seconds", u"seconds",
+    option<cn::seconds>(u"max-seconds");
+    help(u"max-seconds",
          u"Stop the test after the specified number of seconds. "
          u"By default, the test endlessly runs.");
 
@@ -163,10 +163,10 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
     getIntValue(cw_size, u"cw-size", 8);
     getIntValue(super_cas_id, u"super-cas-id");
     getHexaValue(access_criteria, u"access-criteria");
-    getIntValue(cp_duration, u"cp-duration", 10);
+    getChronoValue(cp_duration, u"cp-duration", cn::seconds(10));
     getChronoValue(stat_interval, u"statistics-interval", cn::seconds(10));
     getIntValue(max_ecm, u"max-ecm");
-    getIntValue(max_seconds, u"max-seconds");
+    getChronoValue(max_seconds, u"max-seconds");
     log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
     log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
 
@@ -249,14 +249,15 @@ EventQueue::EventQueue(const CmdOptions& opt, ts::Report& report) :
     _report(report)
 {
     // If a max duration is specified, pre-enqueue a termination event.
-    if (_opt.max_seconds > 0) {
-        postTermination(ts::Time::CurrentUTC() + _opt.max_seconds * ts::MilliSecPerSec);
+    if (_opt.max_seconds > cn::seconds::zero()) {
+        postTermination(ts::Time::CurrentUTC() + _opt.max_seconds);
     }
 }
 
 // Enqueue an event.
 void EventQueue::enqueue(const Event& event)
 {
+    _report.debug(u"enqueue event, due: %s, term: %s, channel: %d, stream: %d", {event.due, event.terminate, event.channel_id, event.stream_id});
     std::lock_guard<std::mutex> lock(_mutex);
 
     // Keep an ordered list of events by due time, most future first.
@@ -320,7 +321,7 @@ namespace {
 
         // Provide statistics.
         void oneRequest() { _request_count.fetch_add(1); }
-        void oneResponse(ts::MilliSecond time);
+        void oneResponse(const cn::milliseconds& time);
 
         // Thread main code.
         virtual void main() override;
@@ -329,7 +330,7 @@ namespace {
         void terminate();
 
     private:
-        using ResponseStat = ts::SingleDataStatistics<ts::MilliSecond>;
+        using ResponseStat = ts::SingleDataStatistics<cn::milliseconds>;
 
         const CmdOptions&          _opt;
         ts::Report&                _report;
@@ -360,7 +361,7 @@ CmdStatistics::~CmdStatistics()
 }
 
 // Provide statistics.
-void CmdStatistics::oneResponse(ts::MilliSecond time)
+void CmdStatistics::oneResponse(const cn::milliseconds& time)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     _instant_response.feed(time);
@@ -372,7 +373,7 @@ void CmdStatistics::reportStatistics(const ResponseStat& stat)
 {
     _report.info(u"req: %'d, ecm: %'d, response mean: %s ms, min: %d, max: %d, dev: %s",
                  {_request_count.load(), _global_response.count(),
-                  stat.meanString(0, 3), stat.minimum(), stat.maximum(),
+                  stat.meanString(0, 3), stat.minimum().count(), stat.maximum().count(),
                   stat.standardDeviationString(0, 3)});
 }
 
@@ -624,7 +625,7 @@ bool ECMGConnection::sendStreamSetup(uint16_t stream_id)
         msg.channel_id = _channel_id;
         msg.stream_id = stream_id;
         msg.ECM_id = uint16_t(_first_ecm_id + index);
-        msg.nominal_CP_duration = uint16_t(_opt.cp_duration * 10); // unit is 100 ms
+        msg.nominal_CP_duration = uint16_t(_opt.cp_duration.count()); // unit is 100 ms
         return _conn.send(msg, _logger);
     }
 }
@@ -750,9 +751,9 @@ void ECMGConnection::main()
                     }
                     else {
                         // Log current request response time.
-                        _stat.oneResponse(ts::Time::CurrentUTC() - stream.start_request);
+                        _stat.oneResponse(cn::milliseconds(ts::Time::CurrentUTC() - stream.start_request));
                         // Schedule next request.
-                        _events.postRequest(stream.start_request + _opt.cp_duration * ts::MilliSecPerSec, mp->channel_id, mp->stream_id);
+                        _events.postRequest(stream.start_request + _opt.cp_duration, mp->channel_id, mp->stream_id);
                         stream.start_request = ts::Time::Epoch;
                     }
                 }
