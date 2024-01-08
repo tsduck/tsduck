@@ -68,7 +68,7 @@ void ts::TSFileOutputArgs::defineArgs(Args& args)
               u"With --reopen-on-error, specify the maximum number of times the file is reopened on error. "
               u"By default, the file is indefinitely reopened.");
 
-    args.option(u"max-duration", 0, Args::POSITIVE);
+    args.option<cn::seconds>(u"max-duration");
     args.help(u"max-duration",
               u"Specify a maximum duration in seconds during which an output file is written. "
               u"After the specified duration, the output file is closed and another one is created. "
@@ -109,9 +109,9 @@ bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
     args.getIntValue(_max_files, u"max-files", 0);
     args.getIntValue(_max_size, u"max-size", 0);
-    args.getIntValue(_max_duration, u"max-duration", 0);
+    args.getChronoValue(_max_duration, u"max-duration", 0);
     _file_format = LoadTSPacketFormatOutputOption(args);
-    _multiple_files = _max_size > 0 || _max_duration > 0;
+    _multiple_files = _max_size > 0 || _max_duration > cn::seconds::zero();
 
     _flags = TSFile::WRITE | TSFile::SHARED;
     if (args.present(u"append")) {
@@ -121,7 +121,7 @@ bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
         _flags |= TSFile::KEEP;
     }
 
-    if (_max_size > 0 && _max_duration > 0) {
+    if (_max_size > 0 && _max_duration > cn::seconds::zero()) {
         args.error(u"--max-duration and --max-size are mutually exclusive");
         return false;
     }
@@ -146,7 +146,7 @@ bool ts::TSFileOutputArgs::open(Report& report, AbortInterface* abort)
     if (_max_size > 0) {
         _name_gen.initCounter(_name);
     }
-    else if (_max_duration > 0) {
+    else if (_max_duration > cn::seconds::zero()) {
         _name_gen.initDateTime(_name);
     }
     _next_open_time = Time::CurrentUTC();
@@ -201,8 +201,8 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
         // In case of success or no retry, return now.
         if (success || !_reopen || (abort != nullptr && abort->aborting())) {
             _current_size = 0;
-            if (_max_duration > 0) {
-                _next_open_time += _max_duration * MilliSecPerSec;
+            if (_max_duration > cn::seconds::zero()) {
+                _next_open_time += _max_duration;
             }
             return success;
         }
@@ -269,7 +269,7 @@ bool ts::TSFileOutputArgs::write(const TSPacket* buffer, const TSPacketMetadata*
     for (;;) {
 
         // Close and reopen file when necessary (multiple output files).
-        if ((_max_size > 0 && _current_size >= _max_size) || (_max_duration > 0 && Time::CurrentUTC() >= _next_open_time)) {
+        if ((_max_size > 0 && _current_size >= _max_size) || (_max_duration > cn::seconds::zero() && Time::CurrentUTC() >= _next_open_time)) {
             closeAndCleanup(report);
             if (!openAndRetry(false, retry_allowed, report, abort)) {
                 return false;

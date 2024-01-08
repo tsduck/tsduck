@@ -21,10 +21,11 @@ namespace ts {
     //! Statistics over a single set of data (integer or floating point).
     //! @ingroup cpp
     //! @tparam NUMBER Integer or floating point data type.
+    //! A specialization is available for std::chrono::duration types.
     //! @tparam DEFAULT_FLOAT Default floating point type for finer results.
     //! Ignored if @a NUMBER is a floating point type.
     //!
-    template <typename NUMBER, typename DEFAULT_FLOAT = double>
+    template <typename NUMBER, typename DEFAULT_FLOAT = double, class = void>
     class SingleDataStatistics
     {
     public:
@@ -130,6 +131,24 @@ namespace ts {
         SIGNED _var_ex = 0;   // Variance: Ex accumulation (see [1])
         SIGNED _var_ex2 = 0;  // Variance: Ex2 accumulation (see [1])
     };
+
+    // Specialization for std::chrono::duration types.
+    //! @cond nodoxygen
+    template <class DURATION>
+    class SingleDataStatistics<DURATION, double, typename std::enable_if<std::is_arithmetic<typename DURATION::rep>::value>::type> :
+        public SingleDataStatistics<typename DURATION::rep, double>
+    {
+    private:
+        using Rep = typename DURATION::rep;
+        using SuperClass = SingleDataStatistics<typename DURATION::rep, double>;
+    public:
+        template <class Rep2, class Period2>
+        void feed(const cn::duration<Rep2,Period2>& value) { SuperClass::feed(cn::duration_cast<DURATION>(value).count()); }
+        DURATION minimum() const { return DURATION(SuperClass::minimum()); }
+        DURATION maximum() const { return DURATION(SuperClass::maximum()); }
+        DURATION meanRound() const { return DURATION(SuperClass::meanRound()); }
+    };
+    //! @endcond
 }
 
 
@@ -138,8 +157,8 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Reset the statistics collection.
-template <typename NUMBER, typename DEFAULT_FLOAT>
-void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::reset()
+template <typename NUMBER, typename DEFAULT_FLOAT, class N>
+void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::reset()
 {
     _count = 0;
     _min = 0;
@@ -151,8 +170,8 @@ void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::reset()
 
 
 // Accumulate one more data sample.
-template <typename NUMBER, typename DEFAULT_FLOAT>
-void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::feed(NUMBER value)
+template <typename NUMBER, typename DEFAULT_FLOAT, class N>
+void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::feed(NUMBER value)
 {
     if (_count == 0) {
         _min = _max = value;
@@ -171,37 +190,37 @@ void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::feed(NUMBER value)
 
 
 // Get the mean.
-template <typename NUMBER, typename DEFAULT_FLOAT>
-typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::mean() const
+template <typename NUMBER, typename DEFAULT_FLOAT, class N>
+typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::mean() const
 {
     return _count == 0 ? 0.0 : FLOAT(_var_k) + FLOAT(_var_ex) / FLOAT(_count);
 }
 
 // Get the variance.
-template <typename NUMBER, typename DEFAULT_FLOAT>
-typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::variance() const
+template <typename NUMBER, typename DEFAULT_FLOAT, class N>
+typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::variance() const
 {
     // See reference [1] in file header.
     return _count < 2 ? 0.0 : (FLOAT(_var_ex2) - FLOAT(_var_ex * _var_ex) / FLOAT(_count)) / FLOAT(_count - 1);
 }
 
 // Get the mean as strings.
-template <typename NUMBER, typename DEFAULT_FLOAT>
-ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::meanString(size_t width, size_t precision) const
+template <typename NUMBER, typename DEFAULT_FLOAT, class N>
+ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::meanString(size_t width, size_t precision) const
 {
     return UString::Format(u"%*.*f", {width, precision, mean()});
 }
 
 // Get the variance as string.
-template <typename NUMBER, typename DEFAULT_FLOAT>
-ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::varianceString(size_t width, size_t precision) const
+template <typename NUMBER, typename DEFAULT_FLOAT, class N>
+ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::varianceString(size_t width, size_t precision) const
 {
     return UString::Format(u"%*.*f", {width, precision, variance()});
 }
 
 // Get the standard deviation as string.
-template <typename NUMBER, typename DEFAULT_FLOAT>
-ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::standardDeviationString(size_t width, size_t precision) const
+template <typename NUMBER, typename DEFAULT_FLOAT, class N>
+ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::standardDeviationString(size_t width, size_t precision) const
 {
     return UString::Format(u"%*.*f", {width, precision, standardDeviation()});
 }

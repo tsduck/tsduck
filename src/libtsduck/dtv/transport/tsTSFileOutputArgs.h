@@ -95,7 +95,7 @@ namespace ts {
         size_t            _start_stuffing = 0;
         size_t            _stop_stuffing = 0;
         uint64_t          _max_size = 0;
-        Second            _max_duration = 0;
+        cn::seconds       _max_duration {0};
         size_t            _max_files = 0;
         bool              _multiple_files = false;
 

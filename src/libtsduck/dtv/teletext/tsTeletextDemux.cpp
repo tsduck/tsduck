@@ -140,9 +140,7 @@ int ts::TeletextDemux::pageBinaryToBcd(int bin)
 
 ts::TeletextDemux::TeletextDemux(DuckContext& duck, TeletextHandlerInterface* handler, const PIDSet& pidFilter) :
     SuperClass(duck, nullptr, pidFilter),
-    _txtHandler(handler),
-    _pids(),
-    _addColors(false)
+    _txtHandler(handler)
 {
 }
 
@@ -151,30 +149,12 @@ ts::TeletextDemux::~TeletextDemux()
     flushTeletext();
 }
 
-ts::TeletextDemux::TeletextPage::TeletextPage() :
-    frameCount(0),
-    showTimestamp(0),
-    hideTimestamp(0),
-    tainted(false),
-    charset()
-{
-    TS_ZERO(text);
-}
-
-void ts::TeletextDemux::TeletextPage::reset(MilliSecond timestamp)
+void ts::TeletextDemux::TeletextPage::reset(const cn::milliseconds& timestamp)
 {
     showTimestamp = timestamp;
-    hideTimestamp = 0;
+    hideTimestamp = cn::milliseconds::zero();
     tainted = false;
     TS_ZERO(text);
-}
-
-ts::TeletextDemux::PIDContext::PIDContext() :
-    receivingData(false),
-    transMode(TRANSMODE_SERIAL),
-    currentPage(0),
-    pages()
-{
 }
 
 
@@ -308,7 +288,7 @@ void ts::TeletextDemux::processTeletextPacket(PID pid, PIDContext& pc, TeletextD
         TeletextPage& page(pc.pages[pageNumber]);
         if (page.tainted) {
             // It would not be nice if subtitle hides previous video frame, so we contract 40 ms (1 frame @25 fps)
-            page.hideTimestamp = pidDuration(pid) - 40;
+            page.hideTimestamp = pidDuration(pid) - cn::milliseconds(40);
             processTeletextPage(pid, pc, pageNumber);
         }
 
@@ -593,7 +573,7 @@ void ts::TeletextDemux::flushTeletext()
         for (auto& itPage : itPid.second.pages) {
             if (itPage.second.tainted) {
                 // Use the last timestamp (ms) for end of message.
-                const MilliSecond ms = pidDuration(itPid.first);
+                const cn::milliseconds ms = pidDuration(itPid.first);
 
                 // This time, we do not subtract any frames, there will be no more frames.
                 itPage.second.hideTimestamp = ms;

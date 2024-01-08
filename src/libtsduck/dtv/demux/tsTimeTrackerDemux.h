@@ -46,7 +46,7 @@ namespace ts {
         //! were found on this PID, use PCR's from another PID. Return zero is no
         //! timing information was found.
         //!
-        MilliSecond pidDuration(PID pid) const;
+        cn::milliseconds pidDuration(PID pid) const;
 
         // Inherited methods
         virtual void feedPacket(const TSPacket& pkt) override;

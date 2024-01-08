@@ -912,16 +912,6 @@ namespace cn = std::chrono;
 
 //!
 //! @hideinitializer
-//! On Windows, this attribute exports a symbol out of a DLL
-//!
-#if defined(TS_WINDOWS)
-    #define TS_DLL_EXPORT __declspec(dllexport)
-#else
-    #define TS_DLL_EXPORT
-#endif
-
-//!
-//! @hideinitializer
 //! Attribute to declare a class or function from tsduck.dll on Windows.
 //!
 //! When building tsduck.dll on Windows, define _TSDUCKDLL_IMPL in the project options.
@@ -1272,7 +1262,7 @@ namespace ts {
     // Specialization for monothread.
     //! @cond nodoxygen
     template<> struct ThreadSafetyMutex<ThreadSafety::None> {
-        using type = null_mutex;
+        using type = ts::null_mutex;
     };
     //! @endcond
 }

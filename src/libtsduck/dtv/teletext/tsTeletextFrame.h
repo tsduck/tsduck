@@ -24,7 +24,11 @@ namespace ts {
     {
     public:
         //!
-        //! Constructor.
+        //! Default constructor.
+        TeletextFrame() = default;
+
+        //!
+        //! Full constructor.
         //! @param [in] pid PID number.
         //! @param [in] page Teletext page number.
         //! @param [in] frameCount Frame counter in this page, starting at 1.
@@ -32,82 +36,85 @@ namespace ts {
         //! @param [in] hideTimestamp Hide frame at this timestamp (in ms from start of stream)
         //! @param [in] lines Text lines.
         //!
-        TeletextFrame(PID                pid           = 0,
-                      int                page          = 0,
-                      int                frameCount    = 0,
-                      MilliSecond        showTimestamp = 0,
-                      MilliSecond        hideTimestamp = 0,
-                      const UStringList& lines         = UStringList());
+        template <class Rep1, class Period1, class Rep2, class Period2>
+        TeletextFrame(PID pid,
+                      int page,
+                      int frameCount,
+                      const cn::duration<Rep1,Period1>& showTimestamp,
+                      const cn::duration<Rep2,Period2>& hideTimestamp,
+                      const UStringList& lines = UStringList());
 
         //!
         //! Get the text lines. May contain embedded HTML tags.
-        //! @return The text lines.
+        //! @return A constant reference to the text lines.
         //!
-        UStringList lines() const
-        {
-            return _lines;
-        }
+        const UStringList& lines() const { return _lines; }
 
         //!
         //! Add a line of text to the frame.
         //! @param [in] line Text line to add.
         //!
-        void addLine(const UString& line)
-        {
-            _lines.push_back(line);
-        }
+        void addLine(const UString& line) { _lines.push_back(line); }
 
         //!
         //! Get the PID from which the frame originates.
         //! @return The PID from which the frame originates.
         //!
-        PID pid() const
-        {
-            return _pid;
-        }
+        PID pid() const { return _pid; }
 
         //!
         //! Get the Teletext page number.
         //! @return The Teletext page number.
         //!
-        int page() const
-        {
-            return _page;
-        }
+        int page() const { return _page; }
 
         //!
         //! Get the frame number in this page, starting at 1.
         //! @return The frame number in this page, starting at 1.
         //!
-        int frameCount() const
-        {
-            return _frameCount;
-        }
+        int frameCount() const { return _frameCount; }
 
         //!
         //! Get the "show" timestamp in ms from start of stream.
         //! @return The "show" timestamp in ms from start of stream.
         //!
-        MilliSecond showTimestamp() const
-        {
-            return _showTimestamp;
-        }
+        cn::milliseconds showTimestamp() const { return _showTimestamp; }
 
         //!
         //! Get the "hide" timestamp in ms from start of stream.
         //! @return The "hide" timestamp in ms from start of stream.
         //!
-        MilliSecond hideTimestamp() const
-        {
-            return _hideTimestamp;
-        }
+        cn::milliseconds hideTimestamp() const { return _hideTimestamp; }
 
 private:
-        PID         _pid;            //!< PID number.
-        int         _page;           //!< Teletext page number.
-        int         _frameCount;     //!< Frame counter in this page, starting at 1.
-        MilliSecond _showTimestamp;  //!< Show frame at this timestamp (in ms from start of stream)
-        MilliSecond _hideTimestamp;  //!< Hide frame at this timestamp (in ms from start of stream)
-        UStringList _lines;          //!< Text lines. May contain embedded HTML tags.
+        PID              _pid = PID_NULL;     //!< PID number.
+        int              _page = 0;           //!< Teletext page number.
+        int              _frameCount = 0;     //!< Frame counter in this page, starting at 1.
+        cn::milliseconds _showTimestamp {0};  //!< Show frame at this timestamp (in ms from start of stream)
+        cn::milliseconds _hideTimestamp {0};  //!< Hide frame at this timestamp (in ms from start of stream)
+        UStringList      _lines {};           //!< Text lines. May contain embedded HTML tags.
     };
 }
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
+
+template <class Rep1, class Period1, class Rep2, class Period2>
+ts::TeletextFrame::TeletextFrame(PID pid, int page, int frameCount,
+                                 const cn::duration<Rep1,Period1>& showTimestamp,
+                                 const cn::duration<Rep2,Period2>& hideTimestamp,
+                                 const UStringList& lines) :
+    _pid(pid),
+    _page(page),
+    _frameCount(frameCount),
+    _showTimestamp(showTimestamp),
+    _hideTimestamp(hideTimestamp),
+    _lines(lines)
+{
+}
+
+#endif // DOXYGEN
