@@ -183,7 +183,7 @@ ts::ProcessorPlugin::Status ts::PCREditPlugin::processPacket(TSPacket& pkt, TSPa
         }
         else {
             if (_add_pcr != 0 && pkt.hasPCR()) {
-                pkt.setPCR((int64_t(pkt.getPCR()) + adjust(_add_pcr)) % PCR_SCALE);
+                pkt.setPCR(AddPCR(pkt.getPCR(), adjust(_add_pcr)));
             }
             if (_add_pts != 0 && pkt.hasPTS()) {
                 pkt.setPTS((int64_t(pkt.getPTS()) + adjust(_add_pts)) & PTS_DTS_MASK);

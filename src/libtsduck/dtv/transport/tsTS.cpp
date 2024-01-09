@@ -81,6 +81,27 @@ uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, const BitRate& b
 
 
 //----------------------------------------------------------------------------
+// Add a signed offset to a PCR.
+//----------------------------------------------------------------------------
+
+uint64_t ts::AddPCR(uint64_t pcr, int64_t offset)
+{
+    if (pcr > MAX_PCR) {
+        return INVALID_PCR;
+    }
+    else {
+        // Beware of signed / unsigned conversions.
+        // If the final value is negative, the '%' operation differs on the signedness of the modulus type.
+        // - If the modulus is unsigned (as PCR_SCALE is), the negative lhs is first converted to unsigned and the result is absurd.
+        // - If the modulus is signed, the result is currect but also negative and must be adjusted.
+        // So, let's compute everything in signed form and adjust negative results.
+        const int64_t res = (int64_t(pcr) + offset) % int64_t(PCR_SCALE);
+        return res < 0 ? uint64_t(int64_t(PCR_SCALE) + res) : uint64_t(res);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Compute the difference between PCR2 and PCR1.
 //----------------------------------------------------------------------------
 
