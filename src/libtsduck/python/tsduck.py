@@ -151,6 +151,57 @@ M2TS_HEADER_SIZE = 4
 ## Size in bytes of an TS packet in M2TS files (Blu-ray disc).
 PKT_M2TS_SIZE = M2TS_HEADER_SIZE + PKT_SIZE
 
+# MPEG clock representation:
+# - PCR (Program Clock Reference)
+# - PTS (Presentation Time Stamp)
+# - DTS (Decoding Time Stamp)
+
+## MPEG-2 System Clock frequency in Hz, used by PCR (27 Mb/s).
+SYSTEM_CLOCK_FREQ = 27000000
+
+## Subfactor of MPEG-2 System Clock subfrequency, used by PTS and DTS.
+SYSTEM_CLOCK_SUBFACTOR = 300
+
+## MPEG-2 System Clock subfrequency in Hz, used by PTS and DTS (90 Kb/s).
+SYSTEM_CLOCK_SUBFREQ = SYSTEM_CLOCK_FREQ / SYSTEM_CLOCK_SUBFACTOR
+
+## Size in bits of a PCR (Program Clock Reference).
+## Warning: A PCR value is not a linear value mod 2^42.
+## It is split into PCR_base and PCR_ext (see ISO 13818-1, 2.4.2.2).
+PCR_BIT_SIZE = 42
+
+## Size in bits of a PTS (Presentation Time Stamp) or DTS (Decoding Time Stamp).
+## Unlike PCR, PTS and DTS are regular 33-bit binary values, wrapping up at 2^33.
+PTS_DTS_BIT_SIZE = 33
+
+## Scale factor for PTS and DTS values (wrap up at 2^33).
+PTS_DTS_SCALE = 1 << PTS_DTS_BIT_SIZE
+
+## Mask for PTS and DTS values (wrap up at 2^33).
+PTS_DTS_MASK = PTS_DTS_SCALE - 1
+
+## The maximum value possible for a PTS/DTS value.
+MAX_PTS_DTS = PTS_DTS_SCALE - 1
+
+## Scale factor for PCR values.
+## This is not a power of 2, it does not wrap up at a number of bits.
+## The PCR_base part is equivalent to a PTS/DTS and wraps up at 2**33.
+## The PCR_ext part is a mod 300 value. Note that, since this not a
+## power of 2, there is no possible PCR_MASK value.
+PCR_SCALE = PTS_DTS_SCALE * SYSTEM_CLOCK_SUBFACTOR
+
+## The maximum value possible for a PCR (Program Clock Reference) value.
+MAX_PCR = PCR_SCALE - 1
+
+## An invalid PCR (Program Clock Reference) value, can be used as a marker.
+INVALID_PCR = 0xFFFFFFFFFFFFFFFF
+
+## An invalid PTS value, can be used as a marker.
+INVALID_PTS = 0xFFFFFFFFFFFFFFFF
+
+## An invalid DTS value, can be used as a marker.
+INVALID_DTS = 0xFFFFFFFFFFFFFFFF
+
 
 #-----------------------------------------------------------------------------
 # TSDuck library general information.
