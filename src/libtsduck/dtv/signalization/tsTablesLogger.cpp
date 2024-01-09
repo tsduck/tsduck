@@ -815,7 +815,7 @@ void ts::TablesLogger::handleInvalidSection(SectionDemux& demux, const DemuxedDa
     if (sec_size > 0 && sec_size != size) {
         reason.format(u"invalid section size: %d, data size: %d", {sec_size, size});
     }
-    else if (is_long && sec_size > 4 && CRC32(data, sec_size - 4) != GetUInt32(data + sec_size)) {
+    else if (is_long && sec_size > 4 && CRC32(data, sec_size - 4) != GetUInt32(data + sec_size - 4)) {
         reason = u"invalid CRC32, corrupted section";
     }
     else if (is_long && data[6] > data[7]) {
