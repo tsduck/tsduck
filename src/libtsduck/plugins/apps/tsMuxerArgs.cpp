@@ -55,10 +55,10 @@ void ts::MuxerArgs::defineArgs(Args& args)
               u"The default is " + UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" packets. "
               u"The size of the output buffer is the sum of all input buffers sizes.");
 
-    args.option(u"cadence", 0, Args::POSITIVE);
-    args.help(u"cadence", u"microseconds",
+    args.option<cn::microseconds>(u"cadence", 0, Args::POSITIVE);
+    args.help(u"cadence",
               u"Specify the internal polling cadence in microseconds. "
-              u"The default is " + UString::Decimal(DEFAULT_CADENCE) + u" microseconds.");
+              u"The default is " + UString::Chrono(DEFAULT_CADENCE) + u".");
 
     args.option<BitRate>(u"cat-bitrate", 0, 0, 0, MIN_PSI_BITRATE);
     args.help(u"cat-bitrate",
@@ -158,7 +158,7 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     args.getValue(outputBitRate, u"bitrate");
     args.getChronoValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
     outputRestartDelay = inputRestartDelay;
-    args.getIntValue(cadence, u"cadence", DEFAULT_CADENCE);
+    args.getChronoValue(cadence, u"cadence", DEFAULT_CADENCE);
     args.getIntValue(inBufferPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
     args.getIntValue(maxInputPackets, u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS);
     args.getIntValue(maxOutputPackets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);

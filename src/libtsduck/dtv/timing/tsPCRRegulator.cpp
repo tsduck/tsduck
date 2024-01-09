@@ -47,24 +47,6 @@ void ts::PCRRegulator::setReferencePID(PID pid)
 
 
 //----------------------------------------------------------------------------
-// Set the minimum wait interval.
-//----------------------------------------------------------------------------
-
-void ts::PCRRegulator::setMinimimWait(NanoSecond ns)
-{
-    if (ns != _wait_min && ns > 0) {
-        // Request at least this precision.
-        const NanoSecond precision = Monotonic::SetPrecision(2000000); // 2 milliseconds in nanoseconds
-
-        // We must wait at least the returned precision.
-        _wait_min = std::max(ns, precision);
-
-        _report->log(_log_level, u"minimum wait: %'d nano-seconds, using %'d ns", {precision, _wait_min});
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Re-initialize state.
 //----------------------------------------------------------------------------
 
@@ -116,14 +98,13 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
         if (!_started) {
             // Initialize regulation at the first PCR.
             _started = true;
-            _clock_first.getSystemTime();
-            _clock_last = _clock_first;
+            _clock_first = _clock_last = monotonic_time::clock::now();
             _pcr_first = pcr;
             _pcr_offset = 0;
 
             // Compute minimum wait is none is set.
-            if (_wait_min <= 0) {
-                setMinimimWait();
+            if (_wait_min <= cn::microseconds::zero()) {
+                setMinimimWait(DEFAULT_MIN_WAIT);
             }
         }
         else {
@@ -146,14 +127,14 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             const NanoSecond ns = (NanoSecPerMicroSec * pcru) / (SYSTEM_CLOCK_FREQ / MicroSecPerSec);
 
             // Compute due system clock, the expected system time for this PCR.
-            Monotonic clock_due(_clock_first);
-            clock_due += ns;
+            monotonic_time clock_due(_clock_first);
+            clock_due += cn::nanoseconds(ns);
 
             // Do not wait less than the user-specified minimum.
             if (clock_due - _clock_last >= _wait_min) {
                 // Wait until system time for current PCR.
                 _clock_last = clock_due;
-                _clock_last.wait();
+                std::this_thread::sleep_until(_clock_last);
                 // Always flush after wait.
                 flush = true;
             }

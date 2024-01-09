@@ -1103,6 +1103,11 @@ namespace ts {
     using deciseconds = cn::duration<cn::milliseconds::rep, std::deci>;
 
     //!
+    //! Definition of a monotonic time.
+    //!
+    using monotonic_time = cn::time_point<cn::steady_clock>;
+
+    //!
     //! This integer type is used to represent any sub-quantity of seconds.
     //!
     //! This type is mostly used as parent for all other representations

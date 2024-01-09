@@ -14,7 +14,6 @@
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsBinaryTable.h"
-#include "tsMonotonic.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 
@@ -46,23 +45,23 @@ namespace ts {
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Plugin fields.
-        bool          _useWallClock = false;
-        BitRate       _maxBitrate = 0;
-        PacketCounter _threshold1 = 0;
-        PacketCounter _threshold2 = 0;
-        PacketCounter _threshold3 = 0;
-        PacketCounter _threshold4 = 0;
-        PacketCounter _thresholdAV = 0;     // Threshold for audio/video packets.
-        BitRate       _curBitrate = 0;      // Instant bitrate (between to consecutive PCR).
-        PacketCounter _currentPacket = 0;   // Total number of packets so far in the TS.
-        PacketCounter _excessPoint = 0;     // Last packet from which we computed excess packets.
-        PacketCounter _excessPackets = 0;   // Number of packets in excess (to drop).
-        PacketCounter _excessBits = 0;      // Number of bits in excess, in addition to packets.
-        PIDSet        _pids1 {};            // PIDs to sacrifice at threshold 1.
-        SectionDemux  _demux {duck, this};  // Demux to collect PAT and PMT's.
-        PIDContextMap _pidContexts {};      // One context per PID in the TS.
-        Monotonic     _clock {};            // Monotonic clock for live streams.
-        size_t        _bitsSecond = 0;      // Number of bits in current second.
+        bool           _useWallClock = false;
+        BitRate        _maxBitrate = 0;
+        PacketCounter  _threshold1 = 0;
+        PacketCounter  _threshold2 = 0;
+        PacketCounter  _threshold3 = 0;
+        PacketCounter  _threshold4 = 0;
+        PacketCounter  _thresholdAV = 0;     // Threshold for audio/video packets.
+        BitRate        _curBitrate = 0;      // Instant bitrate (between to consecutive PCR).
+        PacketCounter  _currentPacket = 0;   // Total number of packets so far in the TS.
+        PacketCounter  _excessPoint = 0;     // Last packet from which we computed excess packets.
+        PacketCounter  _excessPackets = 0;   // Number of packets in excess (to drop).
+        PacketCounter  _excessBits = 0;      // Number of bits in excess, in addition to packets.
+        PIDSet         _pids1 {};            // PIDs to sacrifice at threshold 1.
+        SectionDemux   _demux {duck, this};  // Demux to collect PAT and PMT's.
+        PIDContextMap  _pidContexts {};      // One context per PID in the TS.
+        monotonic_time _clock {};            // Monotonic clock for live streams.
+        size_t         _bitsSecond = 0;      // Number of bits in current second.
 
         // Context per PID in the TS.
         class PIDContext
@@ -300,7 +299,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
 
     // Get system clock at first packet.
     if (_currentPacket == 0) {
-        _clock.getSystemTime();
+        _clock = monotonic_time::clock::now();
     }
 
     // Filter sections to process.
@@ -313,13 +312,13 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
     if (_useWallClock) {
         // Compute bitrates from wall clock.
         // Reset the monotonic clock every second.
-        const NanoSecond duration = Monotonic(true) - _clock;
-        if (duration >= NanoSecPerSec) {
+        const auto duration = monotonic_time::clock::now() - _clock;
+        if (duration >= cn::seconds(1)) {
             // More than one second elapsed, reset.
             _bitsSecond = 0;
-            if (duration < 2 * NanoSecPerSec) {
+            if (duration < cn::seconds(2)) {
                 // Slightly more than 1 second, keep a monotonic behaviour.
-                _clock += NanoSecPerSec;
+                _clock += cn::seconds(1);
             }
             else {
                 // More than 1 second, probably a hole in broadcast, missed next

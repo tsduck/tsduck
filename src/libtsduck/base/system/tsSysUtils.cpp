@@ -397,6 +397,66 @@ void ts::IgnorePipeSignal()
 
 
 //----------------------------------------------------------------------------
+// Request a minimum resolution, in nano-seconds, for the system timers.
+//----------------------------------------------------------------------------
+
+cn::nanoseconds::rep ts::_SetTimersPrecisionNanoSecond(cn::nanoseconds::rep requested)
+{
+#if defined(TS_WINDOWS)
+
+    // Windows implementation
+
+    // Timer precisions use milliseconds on Windows. Convert requested value in ms.
+    ::UINT good = std::max(::UINT(1), ::UINT(requested / 1000000));
+
+    // Try requested value
+    if (::timeBeginPeriod(good) == TIMERR_NOERROR) {
+        return std::max(requested, 1000000 * NanoSecond(good));
+    }
+
+    // Requested value failed. Try doubling the value repeatedly.
+    // If timer value excesses one second, there must be a problem.
+    ::UINT fail = good;
+    do {
+        if (good >= 1000) { // 1000 ms = 1 s
+            throw Exception(u"cannot get system timer precision");
+        }
+        good = 2 * good;
+    } while (::timeBeginPeriod(good) != TIMERR_NOERROR);
+
+    // Now, repeatedly try to divide between 'fail' and 'good'. At most 10 tries.
+    for (size_t count = 10; count > 0 && good > fail + 1; --count) {
+        ::UINT val = fail + (good - fail) / 2;
+        if (::timeBeginPeriod(val) == TIMERR_NOERROR) {
+            ::timeEndPeriod(good);
+            good = val;
+        }
+        else {
+            fail = val;
+        }
+    }
+
+    // Return last good value in nanoseconds
+    return 1000000 * cn::nanoseconds::rep(good);
+
+#elif defined(TS_UNIX)
+
+    // POSIX implementation
+
+    // The timer precision cannot be changed. Simply get the smallest delay.
+    unsigned long jps = sysconf(_SC_CLK_TCK); // jiffies per second
+    if (jps <= 0) {
+        throw Exception(u"system error: cannot get clock tick");
+    }
+    return std::max(requested, cn::nanoseconds::rep(NanoSecPerSec / jps));
+
+#else
+    #error "Unimplemented operating system"
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Put standard input / output stream in binary mode.
 //----------------------------------------------------------------------------
 

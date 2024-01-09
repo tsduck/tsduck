@@ -43,23 +43,23 @@ namespace ts {
         using ContextMap = std::map<size_t, ContextPtr>;
 
         // Command line options.
-        bool       _track_pids = true;       // Track PID's, not labels.
-        bool       _log = false;             // Report statistics through the logger, not files.
-        bool       _csv = false;             // Use CSV format for statistics.
-        bool       _header = false;          // Display header lines.
-        bool       _multiple_output = false; // Don't rewrite output files with --interval.
-        UString    _csv_separator {DEFAULT_CSV_SEPARATOR}; // Separator character in CSV lines.
-        fs::path   _output_name {};          // Output file name.
-        NanoSecond _output_interval = 0;     // Recreate output at this time interval.
-        PIDSet     _pids {};                 // List of PID's to track.
-        TSPacketLabelSet _labels {};         // List of labels to track.
+        bool             _track_pids = true;       // Track PID's, not labels.
+        bool             _log = false;             // Report statistics through the logger, not files.
+        bool             _csv = false;             // Use CSV format for statistics.
+        bool             _header = false;          // Display header lines.
+        bool             _multiple_output = false; // Don't rewrite output files with --interval.
+        UString          _csv_separator {DEFAULT_CSV_SEPARATOR}; // Separator character in CSV lines.
+        fs::path         _output_name {};          // Output file name.
+        cn::nanoseconds  _output_interval {};      // Recreate output at this time interval.
+        PIDSet           _pids {};                 // List of PID's to track.
+        TSPacketLabelSet _labels {};               // List of labels to track.
 
         // Working data.
         std::ofstream     _output_stream {};  // Output file stream.
         std::ostream*     _output = nullptr;  // Point to actual output stream.
         ContextMap        _ctx_map {};        // Description of all tracked categories of packets.
         TSSpeedMetrics    _metrics {};        // Timing to synchronize next output files.
-        NanoSecond        _next_report = 0;   // Next time to create next output.
+        cn::nanoseconds   _next_report {};   // Next time to create next output.
         FileNameGenerator _name_gen {};       // Generate multiple output file names.
 
         // Get or create the description of a tracked PID or label.
@@ -101,8 +101,8 @@ ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
          u"All values are reported in decimal. "
          u"It is suitable for later analysis using tools such as Microsoft Excel.");
 
-    option(u"interval", 'i', POSITIVE);
-    help(u"interval", u"seconds",
+    option<cn::seconds>(u"interval", 'i');
+    help(u"interval",
          u"Produce a new output file at regular intervals. "
          u"The interval value is in seconds. "
          u"After outputting a file, the statistics are reset, "
@@ -157,7 +157,7 @@ bool ts::StatsPlugin::getOptions()
     _csv = present(u"csv");
     _header = !present(u"noheader");
     _multiple_output = present(u"multiple-files");
-    _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
+    getChronoValue(_output_interval, u"interval");
     getValue(_csv_separator, u"separator", DEFAULT_CSV_SEPARATOR);
     getPathValue(_output_name, u"output-file");
     getIntValues(_pids, u"pid");
@@ -196,7 +196,7 @@ bool ts::StatsPlugin::start()
     // method and could be created there. However, if the file cannot be
     // created, we do not want to wait all along the analysis and finally fail.
     _output = _output_name.empty() ? &std::cout : &_output_stream;
-    if (_output_interval == 0 && !openOutput()) {
+    if (_output_interval <= cn::nanoseconds::zero() && !openOutput()) {
         return false;
     }
 
@@ -344,7 +344,7 @@ ts::ProcessorPlugin::Status ts::StatsPlugin::processPacket(TSPacket& pkt, TSPack
     }
 
     // With --interval, check if it is time to produce a report
-    if (_output_interval > 0 && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
+    if (_output_interval > cn::nanoseconds::zero() && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
         // Time to produce a report.
         if (!produceReport()) {
             return TSP_END;

@@ -12,7 +12,7 @@
 
 #include "tsMessageQueue.h"
 #include "tsMessagePriorityQueue.h"
-#include "tsMonotonic.h"
+#include "tsSysUtils.h"
 #include "tsTime.h"
 #include "tsunit.h"
 #include "utestTSUnitThread.h"
@@ -38,8 +38,7 @@ public:
     TSUNIT_TEST(testPriorityQueue);
     TSUNIT_TEST_END();
 private:
-    ts::NanoSecond  _nsPrecision = 0;
-    ts::MilliSecond _msPrecision = 0;
+    cn::milliseconds _precision {};
 };
 
 TSUNIT_REGISTER(MessageQueueTest);
@@ -52,11 +51,9 @@ TSUNIT_REGISTER(MessageQueueTest);
 // Test suite initialization method.
 void MessageQueueTest::beforeTest()
 {
-    _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
-    _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
-
-    // Request 2 milliseconds as system time precision.
-    debug() << "MonotonicTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
+    _precision = cn::milliseconds(2);
+    ts::SetTimersPrecision(_precision);
+    debug() << "MessageQueueTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
 }
 
 // Test suite cleanup method.
@@ -163,7 +160,7 @@ void MessageQueueTest::testQueue()
     const ts::MilliSecond duration = ts::Time::CurrentUTC() - start;
     debug() << "MessageQueueTest: main thread: enqueue = " << ts::UString::TrueFalse(enqueued) << ", duration = " << ts::UString::Decimal(duration) << " ms" << std::endl;
     TSUNIT_ASSERT(enqueued);
-    TSUNIT_ASSUME(duration >= 500 - 20 * _msPrecision); // imprecisions accumulate on Windows
+    TSUNIT_ASSUME(duration >= 500 - 20 * _precision.count()); // imprecisions accumulate on Windows
 
     // Enqueue exit request
     debug() << "MessageQueueTest: main thread: force enqueueing -1" << std::endl;

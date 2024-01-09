@@ -35,7 +35,7 @@ namespace ts {
     private:
         // Command line options:
         fs::path          _output_name {};
-        NanoSecond        _output_interval = 0;
+        cn::nanoseconds   _output_interval {};
         bool              _multiple_output = false;
         bool              _cumulative = false;
         TSAnalyzerOptions _analyzer_options {};
@@ -44,7 +44,7 @@ namespace ts {
         std::ofstream     _output_stream {};
         std::ostream*     _output = nullptr;
         TSSpeedMetrics    _metrics {};
-        NanoSecond        _next_report = 0;
+        cn::nanoseconds   _next_report {};
         TSAnalyzerReport  _analyzer {duck};
         FileNameGenerator _name_gen {};
 
@@ -77,8 +77,8 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
          u"With this option, each new report is an analysis from the beginning of the stream. "
          u"By default, the analyzed data are reset after each report.");
 
-    option(u"interval", 'i', POSITIVE);
-    help(u"interval", u"seconds",
+    option<cn::seconds>(u"interval", 'i');
+    help(u"interval",
          u"Produce a new output file at regular intervals. "
          u"The interval value is in seconds. "
          u"After outputting a file, the analysis context is reset, "
@@ -107,7 +107,7 @@ bool ts::AnalyzePlugin::getOptions()
     duck.loadArgs(*this);
     _analyzer_options.loadArgs(duck, *this);
     getPathValue(_output_name, u"output-file");
-    _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
+    getChronoValue(_output_interval, u"interval");
     _multiple_output = present(u"multiple-files");
     _cumulative = present(u"cumulative");
     return true;
@@ -132,7 +132,7 @@ bool ts::AnalyzePlugin::start()
     // Create the output file. Note that this file is used only in the stop
     // method and could be created there. However, if the file cannot be
     // created, we do not want to wait all along the analysis and finally fail.
-    if (_output_interval == 0 && !openOutput()) {
+    if (_output_interval <= cn::nanoseconds::zero() && !openOutput()) {
         return false;
     }
 
@@ -155,7 +155,7 @@ bool ts::AnalyzePlugin::openOutput()
     const UString name(_multiple_output ? _name_gen.newFileName() : _output_name);
 
     // Create the file
-    _output_stream.open(name.toUTF8().c_str());
+    _output_stream.open(name);
     if (_output_stream) {
         return true;
     }
@@ -220,7 +220,7 @@ ts::ProcessorPlugin::Status ts::AnalyzePlugin::processPacket(TSPacket& pkt, TSPa
     _analyzer.feedPacket(pkt);
 
     // With --interval, check if it is time to produce a report
-    if (_output_interval > 0 && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
+    if (_output_interval > cn::nanoseconds::zero() && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {
         // Time to produce a report.
         if (!produceReport()) {
             return TSP_END;

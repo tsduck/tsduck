@@ -16,7 +16,6 @@
 #include "tsEMMGClient.h"
 #include "tsUDPSocket.h"
 #include "tsPacketizer.h"
-#include "tsMonotonic.h"
 #include "tsSectionFile.h"
 #include "tsTSPacket.h"
 TS_MAIN(MainCode);
@@ -31,7 +30,7 @@ namespace {
     static constexpr cn::milliseconds DEFAULT_UDP_END_WAIT = cn::milliseconds(100);
 
     // Minimum interval between two send operations.
-    static const ts::NanoSecond MIN_SEND_INTERVAL = 4 * ts::NanoSecPerMilliSec; // 4 ms
+    static constexpr cn::milliseconds MIN_SEND_INTERVAL = cn::milliseconds(4);
 
     // Values for --type option.
     const ts::Enumeration DataTypeEnum({
@@ -77,7 +76,7 @@ namespace {
         uint64_t              maxBytes = 0;              // Stop after injecting that number of bytes.
         ts::BitRate           dataBitrate = 0;           // Actual data bitrate.
         size_t                bytesPerSend = 0;          // Approximate size of each send.
-        ts::NanoSecond        sendInterval = 0;          // Interval between two send operations.
+        cn::milliseconds      sendInterval {};           // Interval between two send operations.
         cn::milliseconds      udpEndWait {};             // Number of ms to wait between last UDP message and stream close.
 
         // Adjust the various rates and delays according to the allocated bandwidth.
@@ -312,19 +311,19 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
     info(u"Target data bitrate: %'d b/s", {dataBitrate});
 
     // Compute interval between two send operations in nanoseconds.
-    sendInterval = std::max<ts::NanoSecond>(MIN_SEND_INTERVAL, ((bytesPerSend * 8 * ts::NanoSecPerSec) / dataBitrate).toInt());
+    sendInterval = std::max(MIN_SEND_INTERVAL, cn::milliseconds(cn::milliseconds::rep(((bytesPerSend * 8 * ts::MilliSecPerSec) / dataBitrate).toInt())));
 
     // Make sure we can have that precision from the system if less than 100 ms.
-    if (sendInterval < 100 * ts::NanoSecPerMilliSec) {
-        const ts::NanoSecond actualInterval = ts::Monotonic::SetPrecision(sendInterval);
+    if (sendInterval < cn::milliseconds(100)) {
+        cn::milliseconds actualInterval = sendInterval;
+        ts::SetTimersPrecision(actualInterval);
         if (actualInterval > sendInterval) {
             // Cannot get that precision from the system.
-            debug(u"requesting %'d ns between send, can get only %'d ns", {sendInterval, actualInterval});
+            debug(u"requesting %s between send, can get only %s", {ts::UString::Chrono(sendInterval), ts::UString::Chrono(actualInterval)});
             sendInterval = actualInterval;
         }
     }
-    info(u"Send interval: %'d milliseconds", {sendInterval / ts::NanoSecPerMilliSec});
-
+    info(u"Send interval: %s", {ts::UString::Chrono(sendInterval)});
     return true;
 }
 
@@ -451,10 +450,10 @@ int MainCode(int argc, char *argv[])
     ts::Packetizer packetizer(opt.duck, ts::PID_NULL, &sectionProvider);
 
     // Start time.
-    ts::Monotonic startTime(true);
+    ts::monotonic_time startTime = ts::monotonic_time::clock::now();
 
     // This clock will be our reference.
-    ts::Monotonic currentTime(startTime);
+    ts::monotonic_time currentTime(startTime);
 
     // Send data as long as the maximum is not reached.
     bool ok = true;
@@ -462,9 +461,9 @@ int MainCode(int argc, char *argv[])
 
         // Compute the number of bytes we need to send now.
         // Use microseconds instead of nanoseconds to avoid too frequent overflows
-        // (the difference between two Monotonic clock values are in nanoseconds).
+        // if the difference between two steady clock values are in nanoseconds.
         uint64_t targetBytes = 0;
-        ts::MicroSecond duration = (currentTime - startTime) / ts::NanoSecPerMicroSec;
+        cn::microseconds::rep duration = cn::duration_cast<cn::microseconds>(currentTime - startTime).count();
         if (duration <= 0) {
             // First interval, send initial burst.
             targetBytes = opt.bytesPerSend;
@@ -479,7 +478,7 @@ int MainCode(int argc, char *argv[])
         }
         else {
             // Overflow if we count from the beginning, restart the count.
-            opt.debug(u"overflow in bitrate computation, resetting bitrate accumulation, bitrate: %'d b/s, duration: %'d ns", {opt.dataBitrate, duration});
+            opt.debug(u"overflow in bitrate computation, resetting bitrate accumulation, bitrate: %'d b/s, duration: %'d microsec", {opt.dataBitrate, duration});
             startTime = currentTime;
             targetBytes = opt.bytesPerSend;
         }
@@ -533,7 +532,7 @@ int MainCode(int argc, char *argv[])
         // Wait for the next send operation.
         if (ok && client.totalBytes() < opt.maxBytes) {
             currentTime += opt.sendInterval;
-            currentTime.wait();
+            std::this_thread::sleep_until(currentTime);
         }
     }
 

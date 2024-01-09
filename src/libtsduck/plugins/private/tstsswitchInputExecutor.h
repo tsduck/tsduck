@@ -15,7 +15,6 @@
 #include "tstsswitchPluginExecutor.h"
 #include "tsInputSwitcherArgs.h"
 #include "tsInputPlugin.h"
-#include "tsMonotonic.h"
 
 namespace ts {
     namespace tsswitch {
@@ -114,7 +113,7 @@ namespace ts {
             bool                   _terminated = false;   // Terminate thread.
             size_t                 _outFirst = 0;         // Index of first packet to output in _buffer.
             size_t                 _outCount = 0;         // Number of packets to output, not always contiguous, may wrap up.
-            Monotonic              _start_time {true};    // Creation time in a monotonic clock, initialized with current system time.
+            monotonic_time         _start_time {monotonic_time::clock::now()}; // Creation time, initialized with current system time.
 
             // Implementation of Thread.
             virtual void main() override;

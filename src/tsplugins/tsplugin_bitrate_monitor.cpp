@@ -17,7 +17,6 @@
 #include "tsjsonArray.h"
 #include "tsxmlAttribute.h"
 #include "tsTime.h"
-#include "tsMonotonic.h"
 #include "tsSingleDataStatistics.h"
 
 
@@ -50,15 +49,15 @@ namespace ts {
         class Period
         {
         public:
-            NanoSecond    duration = 0;  // Actual duration in nanoseconds.
-            PacketCounter packets = 0;   // Total number of packets.
-            PacketCounter non_null = 0;  // Total number of non-null packets.
+            cn::nanoseconds duration {0};  // Actual duration in nanoseconds.
+            PacketCounter   packets = 0;   // Total number of packets.
+            PacketCounter   non_null = 0;  // Total number of non-null packets.
 
             // Constructor.
             Period() = default;
 
             // Clear content.
-            void clear() { duration = 0; packets = non_null = 0; }
+            void clear() { duration = cn::nanoseconds::zero(); packets = non_null = 0; }
         };
 
         // Command line options.
@@ -90,7 +89,7 @@ namespace ts {
         Second              _bitrate_countdown = 0;   // Countdown to report bitrate.
         Second              _command_countdown = 0;   // Countdown to run alarm command.
         RangeStatus         _last_bitrate_status = LOWER; // Status of the last bitrate, regarding allowed range.
-        Monotonic           _last_second {};          // System time at last measurement point.
+        monotonic_time      _last_second {};          // System time at last measurement point.
         bool                _startup = false;         // Measurement in progress.
         size_t              _periods_index = 0;       // Index for packet number array.
         std::vector<Period> _periods {};              // Number of packets received during last time window, second per second.
@@ -296,7 +295,8 @@ bool ts::BitrateMonitorPlugin::getOptions()
 bool ts::BitrateMonitorPlugin::start()
 {
     // Try to get 2 milliseconds as timer precision (if possible).
-    Monotonic::SetPrecision(2 * NanoSecPerMilliSec);
+    cn::milliseconds precision = cn::milliseconds(2);
+    SetTimersPrecision(precision);
 
     // Initialize array packets count.
     _periods.resize(_window_size);
@@ -309,7 +309,7 @@ bool ts::BitrateMonitorPlugin::start()
     _bitrate_countdown = _periodic_bitrate;
     _command_countdown = _periodic_command;
     _last_bitrate_status = IN_RANGE;
-    _last_second.getSystemTime();
+    _last_second = monotonic_time::clock::now();
     _startup = true;
     _stats.reset();
     _net_stats.reset();
@@ -375,7 +375,7 @@ void ts::BitrateMonitorPlugin::jsonLine(const UChar* status, int64_t bitrate, in
 void ts::BitrateMonitorPlugin::computeBitrate()
 {
     // Compute total duration and packets.
-    NanoSecond duration = 0;
+    cn::nanoseconds duration {0};
     PacketCounter total_pkt_count = 0;
     PacketCounter non_null_count = 0;
     for (auto& p : _periods) {
@@ -386,12 +386,12 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
     // Nanoseconds is an unusually large precision which may lead to overflows.
     // Using seconds is not precise enough. Use microseconds.
-    duration /= NanoSecPerMicroSec;
+    const cn::microseconds::rep microsec = cn::duration_cast<cn::microseconds>(duration).count();
     BitRate bitrate(0);
     BitRate net_bitrate(0);
-    if (duration > 0) {
-        bitrate = (BitRate(total_pkt_count) * PKT_SIZE_BITS * MicroSecPerSec) / duration;
-        net_bitrate = (BitRate(non_null_count) * PKT_SIZE_BITS * MicroSecPerSec) / duration;
+    if (microsec > 0) {
+        bitrate = (BitRate(total_pkt_count) * PKT_SIZE_BITS * MicroSecPerSec) / microsec;
+        net_bitrate = (BitRate(non_null_count) * PKT_SIZE_BITS * MicroSecPerSec) / microsec;
     }
 
     // Accumulate statistics for the final report.
@@ -488,11 +488,11 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 void ts::BitrateMonitorPlugin::checkTime()
 {
     // Current system time.
-    Monotonic now(true);
-    const NanoSecond since_last_second = now - _last_second;
+    monotonic_time now = monotonic_time::clock::now();
+    const auto since_last_second = now - _last_second;
 
     // New second : compute the bitrate for the last time window
-    if (since_last_second >= NanoSecPerSec) {
+    if (since_last_second >= cn::seconds(1)) {
 
         // Exact duration of the last period and restart a new period.
         _periods[_periods_index].duration = since_last_second;
