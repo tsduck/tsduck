@@ -35,6 +35,7 @@ public:
     void testFlags();
     void testPrivateData();
     void testBitRate();
+    void testPCR();
 
     TSUNIT_TEST_BEGIN(TSPacketTest);
     TSUNIT_TEST(testPacket);
@@ -46,6 +47,7 @@ public:
     TSUNIT_TEST(testFlags);
     TSUNIT_TEST(testPrivateData);
     TSUNIT_TEST(testBitRate);
+    TSUNIT_TEST(testPCR);
     TSUNIT_TEST_END();
 };
 
@@ -537,4 +539,13 @@ void TSPacketTest::testBitRate()
 
     cn::milliseconds ms = cn::milliseconds(2500);
     TSUNIT_EQUAL(25, std::chrono::duration_cast<ts::deciseconds>(ms).count());
+}
+
+void TSPacketTest::testPCR()
+{
+    TSUNIT_EQUAL(1100, ts::AddPCR(1000, 100));
+    TSUNIT_EQUAL(900, ts::AddPCR(1000, -100));
+    TSUNIT_EQUAL(10, ts::AddPCR(ts::PCR_SCALE - 90, 100));
+    TSUNIT_EQUAL(ts::PCR_SCALE - 90, ts::AddPCR(10, -100));
+    TSUNIT_EQUAL(ts::INVALID_PCR, ts::AddPCR(ts::PCR_SCALE, 100));
 }

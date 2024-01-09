@@ -464,6 +464,14 @@ namespace ts {
     TSDUCKDLL uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, const BitRate& bitrate);
 
     //!
+    //! Add a signed offset to a PCR.
+    //! @param [in] pcr Initial PCR value.
+    //! @param [in] offset Signed offset.
+    //! @return The adjusted PCR value or INVALID_PCR if a parameter is incorrect.
+    //!
+    TSDUCKDLL uint64_t AddPCR(uint64_t pcr, int64_t offset);
+
+    //!
     //! Compute the difference between PCR2 and PCR1.
     //! @param [in] pcr1 First PCR.
     //! @param [in] pcr2 Second PCR.
