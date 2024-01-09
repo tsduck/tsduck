@@ -246,9 +246,9 @@ void ts::tsswitch::InputExecutor::main()
             // Fill input time stamps with monotonic clock if none was provided by the input plugin.
             // Only check the first returned packet. Assume that the input plugin generates time stamps for all or none.
             if (!_metadata[inFirst].hasInputTimeStamp()) {
-                const NanoSecond current = Monotonic(true) - _start_time;
+                const cn::nanoseconds current = monotonic_time::clock::now() - _start_time;
                 for (size_t n = 0; n < inCount; ++n) {
-                    _metadata[inFirst + n].setInputTimeStamp(current, NanoSecPerSec, TimeSource::TSP);
+                    _metadata[inFirst + n].setInputTimeStamp(current.count(), NanoSecPerSec, TimeSource::TSP);
                 }
             }
 

@@ -20,7 +20,6 @@
 #include "tsSysInfo.h"
 #include "tsErrCodeReport.h"
 #include "tsRegistry.h"
-#include "tsMonotonic.h"
 #include "tsTime.h"
 #include "tsUID.h"
 #include "tsunit.h"
@@ -89,9 +88,8 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    ts::NanoSecond  _nsPrecision = 0;
-    ts::MilliSecond _msPrecision = 0;
-};
+    cn::milliseconds _precision {};
+ };
 
 TSUNIT_REGISTER(SysUtilsTest);
 
@@ -103,12 +101,9 @@ TSUNIT_REGISTER(SysUtilsTest);
 // Test suite initialization method.
 void SysUtilsTest::beforeTest()
 {
-    _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
-    _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
-
-    // Request 2 milliseconds as system time precision.
-    debug() << "SysUtilsTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, "
-            << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
+    _precision = cn::milliseconds(2);
+    ts::SetTimersPrecision(_precision);
+    debug() << "SysUtilsTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
 }
 
 // Test suite cleanup method.

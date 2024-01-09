@@ -41,7 +41,7 @@ namespace ts {
         bool                ignoreConflicts = false;                       //!< Ignore PID or service conflicts (inconsistent stream).
         cn::milliseconds    inputRestartDelay = DEFAULT_RESTART_DELAY;     //!< When an input start fails, retry after that delay.
         cn::milliseconds    outputRestartDelay = DEFAULT_RESTART_DELAY;    //!< When the output start fails, retry after that delay.
-        MicroSecond         cadence = DEFAULT_CADENCE;                     //!< Internal polling cadence in microseconds.
+        cn::microseconds    cadence = DEFAULT_CADENCE;                     //!< Internal polling cadence in microseconds.
         size_t              inBufferPackets = DEFAULT_BUFFERED_PACKETS;    //!< Input buffer size in packets.
         size_t              outBufferPackets = DEFAULT_BUFFERED_PACKETS;   //!< Output buffer size in packets (default: N x inBufferPackets).
         size_t              maxInputPackets = DEFAULT_MAX_INPUT_PACKETS;   //!< Maximum input packets to read at a time.
@@ -61,8 +61,8 @@ namespace ts {
         static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;       //!< Default input size buffer in packets.
         static constexpr size_t MIN_BUFFERED_PACKETS = 16;            //!< Minimum input size buffer in packets.
         static constexpr size_t DEFAULT_LOSSY_INPUT_PACKETS = 16;     //!< Default number of oldest input packets to drop with lossy input.
-        static constexpr cn::milliseconds DEFAULT_RESTART_DELAY = cn::milliseconds(2000);  //!< Default input and output restart delay.
-        static constexpr MicroSecond DEFAULT_CADENCE = 10000;         //!< Default cadence in microseconds.
+        static constexpr cn::milliseconds DEFAULT_RESTART_DELAY = cn::seconds(2);  //!< Default input and output restart delay.
+        static constexpr cn::microseconds DEFAULT_CADENCE = cn::milliseconds(10);  //!< Default cadence.
         static constexpr BitRate::int_t MIN_PSI_BITRATE = 100;        //!< Minimum bitrate for global PSI/SI PID's.
         static constexpr BitRate::int_t DEFAULT_PSI_BITRATE = 15000;  //!< Default bitrate for global PSI/SI PID's.
 

@@ -14,7 +14,6 @@
 #pragma once
 #include "tsTS.h"
 #include "tsReport.h"
-#include "tsMonotonic.h"
 
 namespace ts {
     //!
@@ -82,24 +81,24 @@ namespace ts {
         class Period
         {
         public:
-            Monotonic start {};
-            int64_t   bits = 0;
+            monotonic_time start {};
+            int64_t        bits = 0;
         };
 
         // Private members.
-        Report*       _report = nullptr;
-        int           _log_level = Severity::Info;
-        bool          _starting = false;    // Starting, no packet processed so far
-        bool          _regulated = false;   // Currently regulated at known bitrate
-        PacketCounter _opt_burst = 0;       // Number of packets to burst at a time
-        BitRate       _opt_bitrate = 0;     // Bitrate option, zero means use input
-        BitRate       _cur_bitrate = 0;     // Current bitrate
-        NanoSecond    _burst_min = 0;       // Minimum delay between two bursts
-        NanoSecond    _burst_duration = 0;  // Delay between two bursts
-        Monotonic     _burst_end {};        // End of current burst
-        Period        _periods[2] {};       // Last two measurement periods, accumulating packets
-        NanoSecond    _period_duration = NanoSecPerSec; // Duration of a period of packet measurement, default: 1 second
-        size_t        _cur_period = 0;      // Current period index, 0 or 1
+        Report*         _report = nullptr;
+        int             _log_level = Severity::Info;
+        bool            _starting = false;    // Starting, no packet processed so far
+        bool            _regulated = false;   // Currently regulated at known bitrate
+        PacketCounter   _opt_burst = 0;       // Number of packets to burst at a time
+        BitRate         _opt_bitrate = 0;     // Bitrate option, zero means use input
+        BitRate         _cur_bitrate = 0;     // Current bitrate
+        cn::nanoseconds _burst_min {0};       // Minimum delay between two bursts
+        cn::nanoseconds _burst_duration {0};  // Delay between two bursts
+        monotonic_time  _burst_end {};        // End of current burst
+        Period          _periods[2] {};       // Last two measurement periods, accumulating packets
+        cn::nanoseconds _period_duration {cn::seconds(1)}; // Duration of a period of packet measurement, default: 1 second
+        size_t          _cur_period = 0;      // Current period index, 0 or 1
 
         // Current and other period.
         Period& currentPeriod() { return _periods[_cur_period & 1]; }

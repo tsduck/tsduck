@@ -13,7 +13,7 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::TSSpeedMetrics::TSSpeedMetrics(PacketCounter packets, NanoSecond nanosecs, size_t intervals) :
+ts::TSSpeedMetrics::TSSpeedMetrics(PacketCounter packets, cn::nanoseconds nanosecs, size_t intervals) :
     _min_packets(packets),
     _min_nanosecs(nanosecs),
     _max_intervals_num(intervals)
@@ -37,11 +37,11 @@ void ts::TSSpeedMetrics::start()
     _total.clear();
 
     // Get initial time reference.
-    _session_start.getSystemTime();
+    _session_start = monotonic_time::clock::now();
     _clock = _session_start;
 
     // Initialize first interval.
-    _start_interval = 0;
+    _start_interval = cn::nanoseconds::zero();
     _count_interval = 0;
     _remain_interval = _min_packets;
 }
@@ -62,9 +62,9 @@ bool ts::TSSpeedMetrics::processedPacket(PacketCounter count)
 
     if (get_clock) {
         // Yes, fetch system clock.
-        _clock.getSystemTime();
-        const NanoSecond in_session = _clock - _session_start;
-        const NanoSecond in_interval = in_session - _start_interval;
+        _clock = monotonic_time::clock::now();
+        const cn::nanoseconds in_session = _clock - _session_start;
+        const cn::nanoseconds in_interval = in_session - _start_interval;
 
         if (in_interval < _min_nanosecs) {
             // Not enough time for an interval, precision would be affected.
@@ -105,5 +105,5 @@ bool ts::TSSpeedMetrics::processedPacket(PacketCounter count)
 
 ts::BitRate ts::TSSpeedMetrics::bitrate() const
 {
-    return _total.duration == 0 ? 0 : BitRate(_total.packets * PKT_SIZE_BITS * NanoSecPerSec) / _total.duration;
+    return _total.duration.count() == 0 ? 0 : BitRate(_total.packets * PKT_SIZE_BITS * NanoSecPerSec) / _total.duration.count();
 }

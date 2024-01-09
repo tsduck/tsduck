@@ -128,6 +128,24 @@ namespace ts {
     //!
     TSDUCKDLL void IgnorePipeSignal();
 
+    // Implementation of SetTimersPrecision() using nanoseconds.
+    //! @cond nodoxygen
+    TSDUCKDLL cn::nanoseconds::rep _SetTimersPrecisionNanoSecond(cn::nanoseconds::rep precision);
+    //! @endcond
+
+    //!
+    //! Request a minimum resolution for the system timers.
+    //! @param [in,out] precision On input, specify the requested minimum resolution in any std::chrono::duration units.
+    //! On output, return the obtained guaranteed minimum resolution. The guaranteed precision value can be equal to or
+    //! greater than the requested value. The default system resolution is 20 ms on Win32, which can be too long for applications.
+    //!
+    template <class Rep, class Period>
+    TSDUCKDLL void SetTimersPrecision(cn::duration<Rep,Period>& precision)
+    {
+        const cn::nanoseconds::rep ns_in = cn::duration_cast<cn::nanoseconds>(precision).count();
+        precision = cn::duration_cast<cn::duration<Rep,Period>>(cn::nanoseconds(_SetTimersPrecisionNanoSecond(ns_in)));
+    }
+
     //!
     //! Check if the standard input is a terminal.
     //! @return True if the standard input is a terminal.

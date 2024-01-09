@@ -14,7 +14,6 @@
 #pragma once
 #include "tsReport.h"
 #include "tsTSPacket.h"
-#include "tsMonotonic.h"
 
 namespace ts {
     //!
@@ -59,15 +58,16 @@ namespace ts {
         PID getReferencePID() const { return _pid; }
 
         //!
-        //! Default minimum wait interval in nano-seconds.
+        //! Default minimum wait interval.
         //!
-        static const NanoSecond DEFAULT_MIN_WAIT_NS = 50 * NanoSecPerMilliSec;
+        static constexpr cn::milliseconds DEFAULT_MIN_WAIT = cn::milliseconds(50);
 
         //!
         //! Set the minimum wait interval.
-        //! @param [in] ns Minimum duration interval in nano-seconds.
+        //! @param [in] d Minimum duration interval.
         //!
-        void setMinimimWait(NanoSecond ns = DEFAULT_MIN_WAIT_NS);
+        template <class Rep, class Period>
+        void setMinimimWait(const cn::duration<Rep,Period>& d);
 
         //!
         //! Re-initialize state.
@@ -83,18 +83,40 @@ namespace ts {
         bool regulate(const TSPacket& pkt);
 
     private:
-        Report*       _report = nullptr;
-        int           _log_level = Severity::Info;
-        PID           _user_pid = PID_NULL;     // User-specified reference PID.
-        PID           _pid = PID_NULL;          // Current reference PID.
-        PacketCounter _opt_burst = 0;           // Number of packets to burst at a time
-        PacketCounter _burst_pkt_cnt = 0;       // Number of packets in current burst
-        NanoSecond    _wait_min = 0;            // Minimum delay between two waits (ns)
-        bool          _started = false;         // First PCR found, regulation started.
-        uint64_t      _pcr_first = INVALID_PCR; // First PCR value.
-        uint64_t      _pcr_last = INVALID_PCR;  // Last PCR value.
-        uint64_t      _pcr_offset = 0;          // Offset to add to PCR value, accumulate all PCR wrap-down sequences.
-        Monotonic     _clock_first {};          // System time at first PCR.
-        Monotonic     _clock_last {};           // System time at last wait
+        Report*          _report = nullptr;
+        int              _log_level = Severity::Info;
+        PID              _user_pid = PID_NULL;      // User-specified reference PID.
+        PID              _pid = PID_NULL;           // Current reference PID.
+        PacketCounter    _opt_burst = 0;            // Number of packets to burst at a time
+        PacketCounter    _burst_pkt_cnt = 0;        // Number of packets in current burst
+        cn::microseconds _wait_min {};              // Minimum delay between two waits
+        bool             _started = false;          // First PCR found, regulation started.
+        uint64_t         _pcr_first = INVALID_PCR;  // First PCR value.
+        uint64_t         _pcr_last = INVALID_PCR;   // Last PCR value.
+        uint64_t         _pcr_offset = 0;           // Offset to add to PCR value, accumulate all PCR wrap-down sequences.
+        monotonic_time   _clock_first {};           // System time at first PCR.
+        monotonic_time   _clock_last {};            // System time at last wait
     };
 }
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
+
+// Set the minimum wait interval.
+template <class Rep, class Period>
+void ts::PCRRegulator::setMinimimWait(const cn::duration<Rep,Period>& d)
+{
+    using duration = cn::duration<Rep,Period>;
+    if (d != _wait_min && d > duration::zero()) {
+        cn::microseconds precision = cn::milliseconds(2);
+        SetTimersPrecision(precision);
+        _wait_min = std::max(cn::duration_cast<cn::microseconds>(d), precision);
+        _report->log(_log_level, u"minimum wait: %s, using %s", {UString::Chrono(precision), UString::Chrono(_wait_min)});
+    }
+}
+
+#endif // DOXYGEN

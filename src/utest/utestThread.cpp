@@ -12,7 +12,6 @@
 
 #include "tsThread.h"
 #include "tsTime.h"
-#include "tsMonotonic.h"
 #include "tsSysUtils.h"
 #include "utestTSUnitThread.h"
 #include "tsunit.h"
@@ -40,8 +39,7 @@ public:
     TSUNIT_TEST(testMutexTimeout);
     TSUNIT_TEST_END();
 private:
-    ts::NanoSecond  _nsPrecision = 0;
-    ts::MilliSecond _msPrecision = 0;
+    cn::milliseconds _precision {};
 };
 
 TSUNIT_REGISTER(ThreadTest);
@@ -54,11 +52,9 @@ TSUNIT_REGISTER(ThreadTest);
 // Test suite initialization method.
 void ThreadTest::beforeTest()
 {
-    _nsPrecision = ts::Monotonic::SetPrecision(2 * ts::NanoSecPerMilliSec);
-    _msPrecision = (_nsPrecision + ts::NanoSecPerMilliSec - 1) / ts::NanoSecPerMilliSec;
-
-    // Request 2 milliseconds as system time precision.
-    debug() << "ThreadTest: timer precision = " << ts::UString::Decimal(_nsPrecision) << " ns, " << ts::UString::Decimal(_msPrecision) << " ms" << std::endl;
+    _precision = cn::milliseconds(2);
+    ts::SetTimersPrecision(_precision);
+    debug() << "ThreadTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
 }
 
 // Test suite cleanup method.
@@ -116,13 +112,13 @@ namespace {
     private:
         volatile bool&   _report;
         cn::milliseconds _delay;
-        ts::MilliSecond  _msPrecision;
+        cn::milliseconds _precision;
     public:
-        ThreadTermination(volatile bool& report, cn::milliseconds delay, ts::MilliSecond msPrecision) :
+        ThreadTermination(volatile bool& report, cn::milliseconds delay, cn::milliseconds precision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000)),
             _report(report),
             _delay(delay),
-            _msPrecision(msPrecision)
+            _precision(precision)
         {
         }
         virtual ~ThreadTermination() override
@@ -136,7 +132,7 @@ namespace {
             std::this_thread::sleep_for(_delay);
             const ts::Time after(ts::Time::CurrentUTC());
             tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay.count() << ", after - before = " << (after - before) << std::endl;
-            TSUNIT_ASSERT(after >= before + _delay - _msPrecision);
+            TSUNIT_ASSERT(after >= before + _delay - _precision);
             _report = true;
         }
     };
@@ -147,12 +143,12 @@ void ThreadTest::testTermination()
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
     {
-        ThreadTermination thread(report, cn::milliseconds(200), _msPrecision);
+        ThreadTermination thread(report, cn::milliseconds(200), _precision);
         TSUNIT_ASSERT(thread.start());
         TSUNIT_ASSERT(!thread.isCurrentThread());
     }
     const ts::Time after(ts::Time::CurrentUTC());
-    TSUNIT_ASSERT(after >= before + 200 - _msPrecision);
+    TSUNIT_ASSERT(after >= before + 200 - _precision);
     TSUNIT_ASSERT(report);
 }
 
@@ -167,13 +163,13 @@ namespace {
     private:
         volatile bool&   _report;
         cn::milliseconds _delay;
-        ts::MilliSecond  _msPrecision;
+        cn::milliseconds _precision;
     public:
-        ThreadDeleteWhenTerminated(volatile bool& report, cn::milliseconds delay, ts::MilliSecond msPrecision) :
+        ThreadDeleteWhenTerminated(volatile bool& report, cn::milliseconds delay, cn::milliseconds precision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000).setDeleteWhenTerminated(true)),
             _report(report),
             _delay(delay),
-            _msPrecision(msPrecision)
+            _precision(precision)
         {
         }
         virtual ~ThreadDeleteWhenTerminated() override
@@ -187,7 +183,7 @@ namespace {
             const ts::Time before(ts::Time::CurrentUTC());
             std::this_thread::sleep_for(_delay);
             const ts::Time after(ts::Time::CurrentUTC());
-            TSUNIT_ASSERT(after >= before + _delay - _msPrecision);
+            TSUNIT_ASSERT(after >= before + _delay - _precision);
         }
     };
 }
@@ -196,7 +192,7 @@ void ThreadTest::testDeleteWhenTerminated()
 {
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
-    ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, cn::milliseconds(100), _msPrecision);
+    ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, cn::milliseconds(100), _precision);
     TSUNIT_ASSERT(thread->start());
     int counter = 100;
     while (!report && counter-- > 0) {
@@ -271,8 +267,8 @@ void ThreadTest::testMutexTimeout()
 
     // Now, the thread holds the mutex for 100 ms.
     const ts::Time start(ts::Time::CurrentUTC());
-    const ts::Time dueTime1(start + 50 - _msPrecision);
-    const ts::Time dueTime2(start + 100 - _msPrecision);
+    const ts::Time dueTime1(start + 50 - _precision);
+    const ts::Time dueTime2(start + 100 - _precision);
 
     // Use assumptions instead of assertions for time-dependent checks.
     // Timing can be very weird on virtual machines which are used for unitary tests.

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxCore.h"
-#include "tsMonotonic.h"
 #include "tsFatal.h"
 #include "tsAlgorithm.h"
 #include "tsBinaryTable.h"
@@ -197,11 +196,11 @@ void ts::tsmux::Core::main()
     PacketCounter next_sdt_packet = 0;
 
     // Insertion is cadenced using a monotonic clock.
-    const Monotonic start(true);
-    Monotonic clock(start);
+    const monotonic_time start(monotonic_time::clock::now());
+    monotonic_time clock(start);
 
     // The unit of Monotonic operations is the nanosecond, the command line option is in microseconds.
-    const NanoSecond cadence = _opt.cadence * NanoSecPerMicroSec;
+    const cn::nanoseconds cadence = _opt.cadence;
 
     // Keep track of terminated input plugins.
     _terminated_inputs.clear();
@@ -222,7 +221,8 @@ void ts::tsmux::Core::main()
         clock += cadence;
 
         // Number of packets which should have been sent by the end of the time interval.
-        const PacketCounter expected_packets = (((clock - start) * _bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
+        const cn::nanoseconds duration = clock - start;
+        const PacketCounter expected_packets = ((duration.count() * _bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
 
         // Number of packets to send by the end of the time interval.
         PacketCounter packet_count = expected_packets < _output_packets ? 0 : expected_packets - _output_packets;
@@ -276,7 +276,7 @@ void ts::tsmux::Core::main()
 
         // Wait until next muxing period.
         if (!_terminate) {
-            clock.wait();
+            std::this_thread::sleep_until(clock);
         }
     }
 

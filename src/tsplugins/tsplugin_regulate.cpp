@@ -35,11 +35,11 @@ namespace ts {
 
     private:
         // Command line options:
-        bool          _pcr_synchronous = false;
-        BitRate       _bitrate = 0;
-        PacketCounter _burst = 0;
-        MilliSecond   _wait_min = 0;
-        PID           _pid_pcr = PID_NULL;
+        bool             _pcr_synchronous = false;
+        BitRate          _bitrate = 0;
+        PacketCounter    _burst = 0;
+        cn::milliseconds _wait_min {};
+        PID              _pid_pcr = PID_NULL;
 
         // Working data:
         BitRateRegulator _bitrate_regulator {tsp, Severity::Verbose};
@@ -79,10 +79,10 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
          u"With --pcr-synchronous, specify the reference PID for PCR's. By default, "
          u"use the first PID containing PCR's.");
 
-    option(u"wait-min", 'w', POSITIVE);
+    option<cn::milliseconds>(u"wait-min", 'w');
     help(u"wait-min",
          u"With --pcr-synchronous, specify the minimum wait time in milli-seconds. "
-         u"The default is " + UString::Decimal(PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec) + u" ms.");
+         u"The default is " + UString::Chrono(PCRRegulator::DEFAULT_MIN_WAIT) + u"");
 }
 
 
@@ -94,7 +94,7 @@ bool ts::RegulatePlugin::getOptions()
 {
     getValue(_bitrate, u"bitrate", 0);
     getIntValue(_burst, u"packet-burst", DEF_PACKET_BURST);
-    getIntValue(_wait_min, u"wait-min", PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec);
+    getChronoValue(_wait_min, u"wait-min", PCRRegulator::DEFAULT_MIN_WAIT);
     getIntValue(_pid_pcr, u"pid-pcr", PID_NULL);
     _pcr_synchronous = present(u"pcr-synchronous");
 
