@@ -38,6 +38,7 @@ void ts::URILinkageDescriptor::DVB_I_Info::clearContent()
     end_point_type = 0;
     service_list_name.reset();
     service_list_provider_name.reset();
+    private_data.clear();
 }
 
 void ts::URILinkageDescriptor::clearContent()
@@ -74,6 +75,7 @@ void ts::URILinkageDescriptor::DVB_I_Info::serialize(PSIBuffer& buf) const
     buf.putUInt8(end_point_type);
     buf.putStringWithByteLength(service_list_name.value_or(u""));
     buf.putStringWithByteLength(service_list_provider_name.value_or(u""));
+    buf.putBytes(private_data);
 }
 
 void ts::URILinkageDescriptor::serializePayload(PSIBuffer& buf) const
@@ -108,6 +110,7 @@ void ts::URILinkageDescriptor::DVB_I_Info::deserialize(PSIBuffer& buf)
     if (!t.empty()) {
         service_list_provider_name = t;
     }
+    buf.getBytes(private_data);
 }
 
 void ts::URILinkageDescriptor::deserializePayload(PSIBuffer& buf)
@@ -144,6 +147,7 @@ void ts::URILinkageDescriptor::DVB_I_Info::display(TablesDisplay& disp, PSIBuffe
     if (!provider_name.empty()) {
         disp << margin << "Service list provider name: " << provider_name << std::endl;
     }
+    disp.displayPrivateData(u"Private data", buf, NPOS, margin);
 }
 
 void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
@@ -180,6 +184,9 @@ void ts::URILinkageDescriptor::DVB_I_Info::toXML(xml::Element* root) const
     if (service_list_provider_name.has_value()) {
         root->setAttribute(u"service_list_provider_name", service_list_provider_name.value());
     }
+    if (!private_data.empty()) {
+        root->addHexaTextChild(u"private_data", private_data);
+    }
 }
 
 void ts::URILinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
@@ -205,7 +212,8 @@ void ts::URILinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::URILinkageDescriptor::DVB_I_Info::fromXML(const xml::Element* element)
 {
-    bool ok = element->getIntAttribute(end_point_type, u"end_point_type", true, END_POINT_SERVICE_LIST, END_POINT_MIN, END_POINT_MAX);
+    bool ok = element->getIntAttribute(end_point_type, u"end_point_type", true, END_POINT_SERVICE_LIST, END_POINT_MIN, END_POINT_MAX) &&
+              element->getHexaTextChild(private_data, u"private_data", false);
     if (ok && (end_point_type == END_POINT_SERVICE_LIST_EXTENDED)) {
         UString slName;
         ok = element->getAttribute(slName, u"service_list_name", true) &&

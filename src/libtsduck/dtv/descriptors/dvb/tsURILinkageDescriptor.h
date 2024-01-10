@@ -25,7 +25,7 @@ namespace ts {
         URI_LINKAGE_ONLINE_SDT = 0x00,  //!< Online SDT (OSDT) for CI Plus, ETSI TS 102 606-2
         URI_LINKAGE_IPTV_SDnS  = 0x01,  //!< DVB-IPTV SD&S, ETSI TS 102 034
         URI_LINKAGE_MRS        = 0x02,  //!< Material Resolution Server (MRS) for companion screen applications, CENELEC EN 50221
-        URI_LINKAGE_DVB_I      = 0x03,  //!< DVB-I, DVB Bluebook A177, ETSI TS 193 770
+        URI_LINKAGE_DVB_I      = 0x03,  //!< DVB-I, DVB Bluebook A177, ETSI TS 103 770
     };
 
     //!
@@ -59,6 +59,7 @@ namespace ts {
             uint8_t                end_point_type = 0;              //!< type of list signalled by the URI
             std::optional<UString> service_list_name {};            //!< name of the service list referenced by the uri
             std::optional<UString> service_list_provider_name {};   //!< name of the provider of the service list referenced by the uri
+            ByteBlock              private_data {};                 //!< Private data.
 
             //!
             //! Default constructor.
