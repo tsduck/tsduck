@@ -17,7 +17,9 @@
     #include <intrin.h>
     #include <io.h>
     #include <psapi.h>
+    #include <mmsystem.h>
     #include "tsAfterStandardHeaders.h"
+    #pragma comment(lib, "winmm.lib")  // timeBeginPeriod
 #elif defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
     #include <sys/resource.h>
