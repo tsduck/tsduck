@@ -140,7 +140,7 @@ namespace ts {
     //! greater than the requested value. The default system resolution is 20 ms on Win32, which can be too long for applications.
     //!
     template <class Rep, class Period>
-    TSDUCKDLL void SetTimersPrecision(cn::duration<Rep,Period>& precision)
+    void SetTimersPrecision(cn::duration<Rep,Period>& precision)
     {
         const cn::nanoseconds::rep ns_in = cn::duration_cast<cn::nanoseconds>(precision).count();
         precision = cn::duration_cast<cn::duration<Rep,Period>>(cn::nanoseconds(_SetTimersPrecisionNanoSecond(ns_in)));
