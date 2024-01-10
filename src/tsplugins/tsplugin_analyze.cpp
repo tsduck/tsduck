@@ -152,7 +152,7 @@ bool ts::AnalyzePlugin::openOutput()
     }
 
     // Build file name in case of --multiple-files
-    const UString name(_multiple_output ? _name_gen.newFileName() : _output_name);
+    const fs::path name(_multiple_output ? _name_gen.newFileName() : _output_name);
 
     // Create the file
     _output_stream.open(name);
