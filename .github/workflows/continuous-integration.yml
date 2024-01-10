@@ -50,6 +50,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
         std: [17, 20]
+        asan: [false, true]
         include:
         - os: ubuntu-latest
           compiler: clang
@@ -59,13 +60,27 @@ jobs:
           # between steps or even the middle of a step. This breaks the naming scheme
           # of the build directory for binaries. As a consequence, we force BINDIR=bin.
           bindir: bin
+        - asan: true
+          asan_flag: true
+          # set compiler flag (asan_flag)
         exclude:
         - os: macos-latest
           compiler: gcc
           # Don't use gcc on macOS.
-    name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
+        - os: macos-latest
+          asan: true
+          # Exlude asan build on macOS
+        - os: ubuntu-latest
+          asan: true
+          std: 17
+          # Exlude asan build on ubuntu with C++17 standard
+    name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}, asan=${{ matrix.asan }}
     runs-on: ${{ matrix.os }}
     env:
+      ASAN: ${{ matrix.asan_flag }}
+      # ASAN env var is used as Makefile flag to build tsduck
+      ASAN_RUN: ${{ matrix.asan_flag }}
+      # ASAN_RUN env var is used to disable tests not compatible with asan
       LLVM: ${{ matrix.llvm }}
       BINDIR: ${{ matrix.bindir }}
       CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
