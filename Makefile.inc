@@ -511,6 +511,16 @@ else
     LDFLAGS_DEBUG =
 endif
 
+# Compilation flags for code sanitizing using asan with default optimization.
+
+ifneq ($(ASAN),)
+    CXXFLAGS_ASAN = -fsanitize=address -g3
+    LDFLAGS_ASAN = -fsanitize=address -g3
+else
+    CXXFLAGS_ASAN =
+    LDFLAGS_ASAN =
+endif
+
 # Compilation flags for code coverage using gcov.
 
 ifneq ($(GCOV),)
@@ -543,10 +553,10 @@ LDLIBS += -lstdc++ -lpthread $(if $(MACOS)$(OPENBSD),,-lrt) -lm
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
 
-CXXFLAGS = $(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
+CXXFLAGS = $(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_ASAN) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
            $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_TARGET) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) \
            $(CXXFLAGS_CROSS) $(CXXFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) \
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_ASAN) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) \
            $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
