@@ -121,6 +121,7 @@ jobs:
         done
         exit $status
     - name: Build sample applications
+      if: ${{ matrix.asan == false }}
       run: |
         # Fake installation in a temporary directory.
         export PREFIX=$(pwd)/bin/systest
