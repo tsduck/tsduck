@@ -320,10 +320,10 @@ fs::path ts::TempFile(const UString& suffix)
 ts::Time ts::GetFileModificationTimeUTC(const UString& path)
 {
 #if defined(TS_WINDOWS)
-    ::WIN32_FILE_ATTRIBUTE_DATA info;
+    ::WIN32_FILE_ATTRIBUTE_DATA info {};
     return ::GetFileAttributesExW(path.wc_str(), ::GetFileExInfoStandard, &info) == 0 ? Time::Epoch : Time::Win32FileTimeToUTC(info.ftLastWriteTime);
 #else
-    struct stat st;
+    struct stat st {};
     return ::stat(path.toUTF8().c_str(), &st) < 0 ? Time::Epoch : Time::UnixTimeToUTC(st.st_mtime);
 #endif
 }
