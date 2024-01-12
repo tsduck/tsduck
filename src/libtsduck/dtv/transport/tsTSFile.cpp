@@ -352,7 +352,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     }
 
     // Check if this is a regular file.
-    struct stat st;
+    struct stat st {};
     if (::fstat(_fd, &st) < 0) {
         report.log(_severity, u"cannot stat input file %s: %s", {getDisplayFileName(), SysErrorCodeMessage()});
         if (!_std_inout) {
