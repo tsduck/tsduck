@@ -511,7 +511,7 @@ else
     LDFLAGS_DEBUG =
 endif
 
-# Compilation flags for code sanitizing using asan with default optimization.
+# Compilation flags for code sanitizing using AddressSanitizer with default optimization.
 
 ifneq ($(ASAN),)
     CXXFLAGS_ASAN = -fsanitize=address -g3
