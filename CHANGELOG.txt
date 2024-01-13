@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3573
+VERSION 3.37-3602
 
 [NEW] New commands and plugins:
 
@@ -27,6 +27,9 @@ VERSION 3.37-3573
   * Fixed issue #1401: A corrupted PES packet crashed plugin "pes".
   * Fixed issues #1405 and #1407: A corrupted HEVC sequence caused memory
     allocation failures in various tools and plugins ("analyze", "pes", etc.)
+  * Fixed issue #1416: Using plugin `pcrcopy` without `--reference-label`,
+    when label 0 was set by prevous plugins, the reference PID could be
+    incorrectly switched.
 
 -------------------------------------------------------------------------------
 
