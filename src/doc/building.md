@@ -169,6 +169,16 @@ contains scripts to rebuild these packages.
 Once the RIST library is installed (with its development package), rebuilding
 TSDuck automatically includes RIST support.
 
+## Building with specific debug capabilities {#builddebug}
+
+The following additional `make` variables can be defined to enable specific debug capabilities:
+
+- `DEBUG` : Compile with debug information and no optimization.
+- `GPROF` : Compile with code profiling using `gprof`.
+- `GCOV`  : Compile with code coverage using `gcov`.
+- `ASAN`  : Compile with code sanitizing using AddressSanitizer with default optimization.
+- `UBSAN` : Compile with code sanitizing using UndefinedBehaviorSanitizer with default optimization.
+
 ## Building the TSDuck installation packages {#buildinst}
 
 Execute the command `make installer` at top level to build all packages.
