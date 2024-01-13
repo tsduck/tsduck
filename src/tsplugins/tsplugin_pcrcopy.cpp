@@ -166,13 +166,13 @@ ts::ProcessorPlugin::Status ts::PCRCopyPlugin::processPacket(TSPacket& pkt, TSPa
     const PID pid = pkt.getPID();
 
     // Process PID switching according to labels.
-    if (pkt_data.hasLabel(_ref_label) && pid != _ref_pid && pid != PID_NULL) {
+    if ((_ref_label != (TSPacketLabelSet::MAX + 1)) && pkt_data.hasLabel(_ref_label) && pid != _ref_pid && pid != PID_NULL) {
         // Switch to a new reference PID.
         tsp->verbose(u"using PID 0x%X (%<d) as PCR reference", {pid});
         _ref_pid = pid;
         _ref_pcr = INVALID_PCR;
     }
-    if (pkt_data.hasLabel(_target_label) && pid != _target_pid && pid != PID_NULL) {
+    if ((_target_label != (TSPacketLabelSet::MAX + 1)) && pkt_data.hasLabel(_target_label) && pid != _target_pid && pid != PID_NULL) {
         // Switch to a new target PID.
         tsp->verbose(u"using PID 0x%X (%<d) to insert copied PCR", {pid});
         _target_pid = pid;
