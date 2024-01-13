@@ -521,6 +521,16 @@ else
     LDFLAGS_ASAN =
 endif
 
+# Compilation flags for code sanitizing using UndefinedBehaviorSanitizer with default optimization.
+
+ifneq ($(UBSAN),)
+    CXXFLAGS_UBSAN = -fsanitize=undefined -fno-sanitize=unsigned-integer-overflow -fno-sanitize=alignment -g3
+    LDFLAGS_UBSAN = -fsanitize=undefined -fno-sanitize=unsigned-integer-overflow -fno-sanitize=alignment -g3
+else
+    CXXFLAGS_UBSAN =
+    LDFLAGS_UBSAN =
+endif
+
 # Compilation flags for code coverage using gcov.
 
 ifneq ($(GCOV),)
@@ -553,10 +563,10 @@ LDLIBS += -lstdc++ -lpthread $(if $(MACOS)$(OPENBSD),,-lrt) -lm
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
 
-CXXFLAGS = $(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_ASAN) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
+CXXFLAGS = $(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_ASAN) $(CXXFLAGS_UBSAN) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
            $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_TARGET) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) \
            $(CXXFLAGS_CROSS) $(CXXFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_ASAN) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) \
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_ASAN) $(LDFLAGS_UBSAN) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) \
            $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
