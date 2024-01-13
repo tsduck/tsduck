@@ -365,6 +365,10 @@
     //! Defined when the target processor architecture is MIPS architecture.
     //!
     #define TS_MIPS
+    //!
+    //! Defined when the target processor architecture is 64-bit RISC-V.
+    //!
+    #define TS_RISCV64
 
 #elif defined(__i386__) || defined(TS_I386) || defined(_M_IX86)
     #if !defined(TS_I386)
@@ -444,6 +448,13 @@
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 32
     #endif
+#elif defined(__riscv) && defined(__riscv_xlen) && (__riscv_xlen == 64)
+    #if !defined(TS_RISCV64)
+        #define TS_RISCV64 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
+    #endif
 #else
     #error "New unknown processor, please update tsPlatform.h"
 #endif
@@ -462,7 +473,7 @@
 
 // Byte order
 
-#if (defined(TS_I386) || defined(TS_X86_64) || defined(TS_IA64) || defined(TS_ALPHA)) && !defined(TS_LITTLE_ENDIAN)
+#if (defined(TS_I386) || defined(TS_X86_64) || defined(TS_IA64) || defined(TS_ALPHA) || defined(TS_RISCV64)) && !defined(TS_LITTLE_ENDIAN)
     #define TS_LITTLE_ENDIAN 1
 #elif (defined(TS_SPARC) || defined(TS_POWERPC) || defined(TS_POWERPC64)) && !defined(TS_BIG_ENDIAN)
     #define TS_BIG_ENDIAN 1
