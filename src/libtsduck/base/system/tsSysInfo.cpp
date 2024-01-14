@@ -86,6 +86,8 @@ ts::SysInfo::SysInfo() :
     _cpuName(u"PowerPC-64"),
 #elif defined(TS_POWERPC)
     _cpuName(u"PowerPC"),
+#elif defined(TS_RISCV64)
+    _cpuName(u"RISCV-64"),
 #else
     _cpuName(u"unknown CPU"),
 #endif
