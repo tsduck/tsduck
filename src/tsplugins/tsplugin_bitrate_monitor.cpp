@@ -72,8 +72,8 @@ namespace ts {
         UString          _json_prefix {};        // Prefix before JSON line.
         BitRate          _min_bitrate = 0;       // Minimum allowed bitrate.
         BitRate          _max_bitrate = 0;       // Maximum allowed bitrate.
-        Second           _periodic_bitrate = 0;  // Report bitrate at regular intervals, even if in range.
-        Second           _periodic_command = 0;  // Run alarm command at regular intervals, even if in range.
+        cn::seconds      _periodic_bitrate {};   // Report bitrate at regular intervals, even if in range.
+        cn::seconds      _periodic_command {};   // Run alarm command at regular intervals, even if in range.
         size_t           _window_size = 0;       // Size (in seconds) of the time window, used to compute bitrate.
         UString          _alarm_command {};      // Alarm command name.
         UString          _alarm_prefix {};       // Prefix for alarm messages.
@@ -86,8 +86,8 @@ namespace ts {
         TSPacketLabelSet _labels_go_above {};    // Set these labels on one packet when bitrate goes above normal.
 
         // Working data.
-        Second              _bitrate_countdown = 0;   // Countdown to report bitrate.
-        Second              _command_countdown = 0;   // Countdown to run alarm command.
+        cn::seconds         _bitrate_countdown {};    // Countdown to report bitrate.
+        cn::seconds         _command_countdown {};    // Countdown to run alarm command.
         RangeStatus         _last_bitrate_status = LOWER; // Status of the last bitrate, regarding allowed range.
         monotonic_time      _last_second {};          // System time at last measurement point.
         bool                _startup = false;         // Measurement in progress.
@@ -156,11 +156,11 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
          u"Set maximum allowed value for bitrate (bits/s). "
          u"Default: " + UString::Decimal(DEFAULT_BITRATE_MAX) + u" b/s.");
 
-    option(u"periodic-bitrate", 'p', POSITIVE);
+    option<cn::seconds>(u"periodic-bitrate", 'p');
     help(u"periodic-bitrate",
          u"Always report bitrate at the specific intervals in seconds, even if the bitrate is in range.");
 
-    option(u"periodic-command", 0, POSITIVE);
+    option<cn::seconds>(u"periodic-command");
     help(u"periodic-command",
          u"Run the --alarm-command at the specific intervals in seconds, even if the bitrate is in range. "
          u"With this option, the alarm command is run on state change and at periodic intervals.");
@@ -243,8 +243,8 @@ bool ts::BitrateMonitorPlugin::getOptions()
     getValue(_max_bitrate, u"max", DEFAULT_BITRATE_MAX);
     _json_line = present(u"json-line");
     getValue(_json_prefix, u"json-line");
-    getIntValue(_periodic_bitrate, u"periodic-bitrate", 0);
-    getIntValue(_periodic_command, u"periodic-command", 0);
+    getChronoValue(_periodic_bitrate, u"periodic-bitrate");
+    getChronoValue(_periodic_command, u"periodic-command");
     getIntValues(_labels_below, u"set-label-below");
     getIntValues(_labels_normal, u"set-label-normal");
     getIntValues(_labels_above, u"set-label-above");
@@ -256,9 +256,9 @@ bool ts::BitrateMonitorPlugin::getOptions()
         tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", {_min_bitrate, _max_bitrate});
         ok = false;
     }
-    if (_periodic_command > 0 && _alarm_command.empty()) {
+    if (_periodic_command > cn::seconds::zero() && _alarm_command.empty()) {
         tsp->warning(u"no --alarm-command set, --periodic-command ignored");
-        _periodic_command = 0;
+        _periodic_command = cn::seconds::zero();
     }
 
     // Prefix for alarm messages.
@@ -417,7 +417,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     }
 
     // Periodic bitrate display.
-    if (_periodic_bitrate > 0 && --_bitrate_countdown <= 0) {
+    if (_periodic_bitrate > cn::seconds::zero() && (_bitrate_countdown -= cn::seconds(1)) <= cn::seconds::zero()) {
         _bitrate_countdown = _periodic_bitrate;
         if (_json_line) {
             jsonLine(alarm_status, bitrate.toInt64(), net_bitrate.toInt64());
@@ -432,7 +432,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
     // Periodic command launch.
     bool run_command = false;
-    if (_periodic_command > 0 && --_command_countdown <= 0) {
+    if (_periodic_command > cn::seconds::zero() && (_command_countdown -= cn::seconds(1)) <= cn::seconds::zero()) {
         _command_countdown = _periodic_command;
         run_command = true;
     }
