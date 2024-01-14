@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsXoshiro256ss.h"
+#include "tsMemory.h"
 
 
 //----------------------------------------------------------------------------
@@ -55,16 +56,18 @@ bool ts::Xoshiro256ss::ready() const
 
 uint64_t ts::Xoshiro256ss::read64()
 {
-    const uint64_t result = c_rol64(_state[1] * 5, 7) * 9;
-    const uint64_t t = _state[1] << 17;
+    // The state values are interpreted in little endian order.
+    const uint64_t result = c_rol64(GetUInt64LE(_state + 1) * 5, 7) * 9;
+    const uint64_t t = GetUInt64LE(_state + 1) << 17;
 
+    // 64-bit xor is endian neutral.
     _state[2] ^= _state[0];
     _state[3] ^= _state[1];
     _state[1] ^= _state[2];
     _state[0] ^= _state[3];
 
-    _state[2] ^= t;
-    _state[3] = c_rol64(_state[3], 45);
+    _state[2] ^= CondByteSwap64LE(t);
+    PutUInt64LE(_state + 3, c_rol64(GetUInt64LE(_state + 3), 45));
 
     return result;
 }
@@ -112,13 +115,13 @@ bool ts::Xoshiro256ss::read(void* buffer, size_t size)
     // Read full 64-bit chunks.
     uint64_t* out64 = reinterpret_cast<uint64_t*>(buffer);
     while (size >= sizeof(uint64_t)) {
-        *out64++ = read64();
+        PutUInt64LE(out64++, read64());
         size -= sizeof(uint64_t);
     }
 
     // Remaining bytes.
     if (size > 0) {
-        const uint64_t last = read64();
+        const uint64_t last = CondByteSwap64LE(read64());
         std::memcpy(out64, &last, size);
     }
     return true;
