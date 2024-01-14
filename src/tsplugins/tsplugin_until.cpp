@@ -31,19 +31,19 @@ namespace ts {
 
     private:
         // Command line options:
-        bool           _exclude_last = false;     // Exclude packet which triggers the condition
-        PacketCounter  _pack_max = 0;             // Stop at Nth packet
-        PacketCounter  _unit_start_max = 0;       // Stop at Nth packet with payload unit start
-        PacketCounter  _null_seq_max = 0;         // Stop at Nth sequence of null packets
-        MilliSecond    _msec_max = 0;             // Stop after N milli-seconds
+        bool             _exclude_last = false;  // Exclude packet which triggers the condition
+        PacketCounter    _pack_max = 0;          // Stop at Nth packet
+        PacketCounter    _unit_start_max = 0;    // Stop at Nth packet with payload unit start
+        PacketCounter    _null_seq_max = 0;      // Stop at Nth sequence of null packets
+        cn::milliseconds _msec_max {};           // Stop after N milli-seconds
 
         // Working data:
-        PacketCounter  _unit_start_cnt = 0;       // Payload unit start counter
-        PacketCounter  _null_seq_cnt = 0;         // Sequence of null packets counter
-        Time           _start_time {};            // Time of first packet reception
-        PID            _previous_pid = PID_NULL;  // PID of previous packet
-        bool           _terminated = false;       // Final condition is met
-        bool           _transparent = false;      // Pass all packets, no longer check conditions
+        PacketCounter _unit_start_cnt = 0;       // Payload unit start counter
+        PacketCounter _null_seq_cnt = 0;         // Sequence of null packets counter
+        Time          _start_time {};            // Time of first packet reception
+        PID           _previous_pid = PID_NULL;  // PID of previous packet
+        bool          _terminated = false;       // Final condition is met
+        bool          _transparent = false;      // Pass all packets, no longer check conditions
     };
 }
 
@@ -68,7 +68,7 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
          u"When the final condition is triggered, perform a \"joint termination\" instead of unconditional termination. "
          u"See \"tsp --help\" for more details on \"joint termination\".");
 
-    option(u"milli-seconds", 'm', UNSIGNED);
+    option<cn::milliseconds>(u"milli-seconds", 'm');
     help(u"milli-seconds",
          u"Stop the specified number of milli-seconds after receiving the first packet.");
 
@@ -79,7 +79,7 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
     option(u"packets", 'p', UNSIGNED);
     help(u"packets", u"Stop after the specified number of packets.");
 
-    option(u"seconds", 's', UNSIGNED);
+    option<cn::seconds>(u"seconds", 's');
     help(u"seconds", u"Stop the specified number of seconds after receiving the first packet.");
 
     option(u"unit-start-count", 'u', UNSIGNED);
@@ -95,10 +95,13 @@ ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
 bool ts::UntilPlugin::getOptions()
 {
     _exclude_last = present(u"exclude-last");
-    _pack_max = intValue<PacketCounter>(u"packets", (intValue<PacketCounter>(u"bytes") + PKT_SIZE - 1) / PKT_SIZE);
-    _unit_start_max = intValue<PacketCounter>(u"unit-start-count");
-    _null_seq_max = intValue<PacketCounter>(u"null-sequence-count");
-    _msec_max = intValue<MilliSecond>(u"milli-seconds", intValue<MilliSecond>(u"seconds") * MilliSecPerSec);
+    getIntValue(_unit_start_max,u"unit-start-count");
+    getIntValue(_null_seq_max, u"null-sequence-count");
+    getIntValue(_pack_max, u"packets", (intValue<PacketCounter>(u"bytes") + PKT_SIZE - 1) / PKT_SIZE);
+    cn::milliseconds sec, msec;
+    getChronoValue(sec, u"seconds");
+    getChronoValue(msec, u"milli-seconds");
+    _msec_max = std::max(sec, msec);
     tsp->useJointTermination(present(u"joint-termination"));
     return true;
 }
@@ -156,11 +159,10 @@ ts::ProcessorPlugin::Status ts::UntilPlugin::processPacket(TSPacket& pkt, TSPack
     }
 
     // Check if the packet matches one of the selected conditions.
-    _terminated =
-        (_pack_max > 0 && tsp->pluginPackets() + 1 >= _pack_max) ||
-        (_null_seq_max > 0 && _null_seq_cnt >= _null_seq_max) ||
-        (_unit_start_max > 0 && _unit_start_cnt >= _unit_start_max) ||
-        (_msec_max > 0 && Time::CurrentUTC() - _start_time >= _msec_max);
+    _terminated = (_pack_max > 0 && tsp->pluginPackets() + 1 >= _pack_max) ||
+                  (_null_seq_max > 0 && _null_seq_cnt >= _null_seq_max) ||
+                  (_unit_start_max > 0 && _unit_start_cnt >= _unit_start_max) ||
+                  (_msec_max > cn::milliseconds::zero() && Time::CurrentUTC() >= _start_time + _msec_max);
 
     // Update context information for next packet.
     _previous_pid = pkt.getPID();

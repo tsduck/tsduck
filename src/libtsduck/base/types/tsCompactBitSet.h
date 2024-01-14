@@ -34,7 +34,7 @@ namespace ts {
     //!
     //! @tparam BITS Number of bits. Must be in the range 0 to 64.
     //!
-    template <const size_t BITS>
+    template <const size_t BITS, typename std::enable_if<(BITS > 0)>::type* = nullptr>
     class CompactBitSet final
     {
     public:
@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Maximum value for bit position.
         //!
-        static constexpr size_t MAX = BITS == 0 ? 0 : BITS - 1;
+        static constexpr size_t MAX = BITS - 1; // BITS always > O, see template declaration
 
         //!
         //! The underlying unsigned integer type to represent the bit set.

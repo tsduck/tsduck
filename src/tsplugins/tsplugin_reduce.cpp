@@ -41,20 +41,20 @@ namespace ts {
         enum class Error {NONE, PKT_OVERFLOW, NO_BITRATE, USE_PREVIOUS, LOW_BITRATE};
 
         // Command line parameters:
-        BitRate       _target_bitrate = 0;   // Target bitrate to read, zero if fixed proportion is used.
-        BitRate       _input_bitrate = 0;    // User-sepcified input bitrate.
-        MilliSecond   _window_ms = 0;        // Packet window size in milliseconds.
-        PacketCounter _window_pkts = 0;      // Packet window size in packets.
-        bool          _pcr_based = false;        // Use PCR's in packet window to compute the number f packets to remove.
-        PIDSet        _pcr_pids {};         // Reference PCR PID's.
-        PacketCounter _fixed_rempkt = 0;     // rempkt parameter, zero if target
-        PacketCounter _fixed_inpkt = 0;      // inpkt parameter
+        BitRate          _target_bitrate = 0;   // Target bitrate to read, zero if fixed proportion is used.
+        BitRate          _input_bitrate = 0;    // User-sepcified input bitrate.
+        cn::milliseconds _window_ms {};         // Packet window size in milliseconds.
+        PacketCounter    _window_pkts = 0;      // Packet window size in packets.
+        bool             _pcr_based = false;    // Use PCR's in packet window to compute the number f packets to remove.
+        PIDSet           _pcr_pids {};          // Reference PCR PID's.
+        PacketCounter    _fixed_rempkt = 0;     // rempkt parameter, zero if target
+        PacketCounter    _fixed_inpkt = 0;      // inpkt parameter
 
         // Working data:
         PacketCounter _pkt_to_remove = 0;    // Current number of packets to remove
         uint64_t      _bits_to_remove = 0;   // Current number of bits to remove
         BitRate       _previous_bitrate = 0; // Bitrate from previous packet window.
-        Error         _error = Error::NONE;            // Last error code.
+        Error         _error = Error::NONE;  // Last error code.
 
         // Compute bitrate in a packet window.
         BitRate computeBitRate(const TSPacketWindow& win) const;
@@ -69,19 +69,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"reduce", ts::ReducePlugin);
 //----------------------------------------------------------------------------
 
 ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Reduce the TS bitrate by removing stuffing packets", u"[options]"),
-    _target_bitrate(0),
-    _input_bitrate(0),
-    _window_ms(0),
-    _window_pkts(0),
-    _pcr_based(false),
-    _pcr_pids(),
-    _fixed_rempkt(0),
-    _fixed_inpkt(0),
-    _pkt_to_remove(0),
-    _bits_to_remove(0),
-    _previous_bitrate(0),
-    _error()
+    ProcessorPlugin(tsp_, u"Reduce the TS bitrate by removing stuffing packets", u"[options]")
 {
     // Legacy parameters, now in --fixed-proportion.
     option(u"", 0, POSITIVE, 0, 2);
@@ -131,8 +119,8 @@ ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
          u"Using the target bitrate method introduces an uncompressable latency in the stream, "
          u"see options --time-window and --packet-window.");
 
-    option(u"time-window", 0, POSITIVE);
-    help(u"time-window", u"milli-seconds",
+    option<cn::milliseconds>(u"time-window", 0);
+    help(u"time-window",
          u"With --target-bitrate, define the latency period over which packets are analyzed and "
          u"extra packets are removed. To use this method, the bitrate must be known during the "
          u"starting phase so that it can be turned into a number of packets. "
@@ -151,7 +139,7 @@ bool ts::ReducePlugin::getOptions()
     getValue(_target_bitrate, u"target-bitrate");
     getValue(_input_bitrate, u"input-bitrate");
     getIntValue(_window_pkts, u"packet-window", DEFAULT_PACKET_WINDOW);
-    getIntValue(_window_ms, u"time-window");
+    getChronoValue(_window_ms, u"time-window");
     getIntValues(_pcr_pids, u"reference-pcr-pid", true);
     _pcr_based = present(u"pcr-based");
 
@@ -203,7 +191,7 @@ size_t ts::ReducePlugin::getPacketWindowSize()
         return 0;
     }
 
-    if (_window_ms == 0) {
+    if (_window_ms == cn::milliseconds::zero()) {
         // Packet window was specified in packets.
         assert(_window_pkts > 0);
         return size_t(_window_pkts);
