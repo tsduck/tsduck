@@ -1331,7 +1331,7 @@ bool ts::Buffer::getUTFWithLengthInternal(UString& result, size_t length_bits, b
 // Put a string using UTF format.
 //----------------------------------------------------------------------------
 
-size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, int pad, bool utf8)
+size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, uint16_t pad, bool utf8)
 {
     // Normalize start and count within allowed bounds.
     start = std::min(start, str.size());
@@ -1384,7 +1384,7 @@ size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count
         // Fixed-size serialization, pad if necessary and return "true".
         if (utf8) {
             // Pad with 8-bit values.
-            MemSet(out, pad, out_end - out);
+            MemSet(out, uint8_t(pad), out_end - out);
             _state.wbyte = out_end - cbuffer;
         }
         else {
