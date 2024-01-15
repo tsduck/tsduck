@@ -1416,7 +1416,7 @@ namespace ts {
         UString outStringToResult(size_t param, bool (Buffer::*method)(UString&, size_t));
         bool getUTFInternal(UString& result, size_t bytes, bool utf8);
         bool getUTFWithLengthInternal(UString& result, size_t length_bits, bool utf8);
-        size_t putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, int pad, bool utf8);
+        size_t putUTFInternal(const UString& str, size_t start, size_t count, bool partial, size_t fixed_size, uint16_t pad, bool utf8);
         size_t putUTFWithLengthInternal(const UString& str, size_t start, size_t count, size_t length_bits, bool partial, bool utf8);
 
         // Reason for the creation of a buffer state.
