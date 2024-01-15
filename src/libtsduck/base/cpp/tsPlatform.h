@@ -369,6 +369,10 @@
     //! Defined when the target processor architecture is 64-bit RISC-V.
     //!
     #define TS_RISCV64
+    //!
+    //! Defined when the target processor architecture is S390X.
+    //!
+    #define TS_S390X
 
 #elif defined(__i386__) || defined(TS_I386) || defined(_M_IX86)
     #if !defined(TS_I386)
@@ -455,6 +459,13 @@
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 64
     #endif
+#elif defined(__s390x__)
+    #if !defined(TS_S390X)
+        #define TS_S390X 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
+    #endif
 #else
     #error "New unknown processor, please update tsPlatform.h"
 #endif
@@ -475,7 +486,7 @@
 
 #if (defined(TS_I386) || defined(TS_X86_64) || defined(TS_IA64) || defined(TS_ALPHA) || defined(TS_RISCV64)) && !defined(TS_LITTLE_ENDIAN)
     #define TS_LITTLE_ENDIAN 1
-#elif (defined(TS_SPARC) || defined(TS_POWERPC) || defined(TS_POWERPC64)) && !defined(TS_BIG_ENDIAN)
+#elif (defined(TS_SPARC) || defined(TS_POWERPC) || defined(TS_POWERPC64) || defined(TS_S390X)) && !defined(TS_BIG_ENDIAN)
     #define TS_BIG_ENDIAN 1
 #endif
 
