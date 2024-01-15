@@ -88,7 +88,7 @@ bool ts::Xoshiro256ss::seed(const void* data, size_t size)
 
         while (size > 0) {
             const size_t chunk = std::min(size, max - _next_seed);
-            std::memcpy(out + _next_seed, in, chunk);
+            MemCopy(out + _next_seed, in, chunk);
             size -= chunk;
             in += chunk;
             _next_seed += chunk;
@@ -122,7 +122,7 @@ bool ts::Xoshiro256ss::read(void* buffer, size_t size)
     // Remaining bytes.
     if (size > 0) {
         const uint64_t last = CondByteSwap64LE(read64());
-        std::memcpy(out64, &last, size);
+        MemCopy(out64, &last, size);
     }
     return true;
 }

@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPacketEncapsulation.h"
+#include "tsMemory.h"
 
 
 //----------------------------------------------------------------------------
@@ -466,7 +467,7 @@ void ts::PacketEncapsulation::fillPacket(ts::TSPacket& pkt, size_t& pktIndex)
 
     // Copy part of output payload from the first queued packet.
     const size_t size = std::min(PKT_SIZE - pktIndex, PKT_SIZE - _lateIndex);
-    std::memcpy(pkt.b + pktIndex, _latePackets.front()->b + _lateIndex, size);
+    MemCopy(pkt.b + pktIndex, _latePackets.front()->b + _lateIndex, size);
     pktIndex += size;
     _lateIndex += size;
 

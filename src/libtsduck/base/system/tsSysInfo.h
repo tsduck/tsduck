@@ -111,6 +111,16 @@ namespace ts {
         //!
         bool isArm64() const { return _isArm64; }
         //!
+        //! Check if the CPU is 64-bit RISC-V.
+        //! @return True if the CPU 64-bit RISC-V.
+        //!
+        bool isRISCV64() const { return _isRISCV64; }
+        //!
+        //! Check if the CPU is 64-bit IBM s390x.
+        //! @return True if the CPU 64-bit IBM s390x.
+        //!
+        bool isS390x() const { return _isS390x; }
+        //!
         //! Check if the CPU supports accelerated instructions for CRC32 computation.
         //! @return True if the CPU supports CRC32 instructions.
         //!
@@ -185,6 +195,8 @@ namespace ts {
         bool    _isIntel64 = false;
         bool    _isArm32 = false;
         bool    _isArm64 = false;
+        bool    _isRISCV64 = false;
+        bool    _isS390x = false;
         bool    _crcInstructions = false;
         bool    _aesInstructions = false;
         bool    _sha1Instructions = false;

@@ -328,11 +328,11 @@ bool ts::CraftInput::getOptions()
             }
             if (!privateData.empty()) {
                 *data++ = uint8_t(privateData.size());
-                std::memcpy(data, privateData.data(), privateData.size());
+                MemCopy(data, privateData.data(), privateData.size());
                 data += privateData.size();
             }
             // Potential stuffing if a small payload size was specified.
-            std::memset(data, 0xFF, _packet.b + 4 + afSize - data);
+            MemSet(data, 0xFF, _packet.b + 4 + afSize - data);
         }
     }
 
@@ -342,7 +342,7 @@ bool ts::CraftInput::getOptions()
         uint8_t* data = _packet.b + 4 + afSize;
         while (data < _packet.b + PKT_SIZE) {
             const size_t size = std::min<size_t>(payloadPattern.size(), _packet.b + PKT_SIZE - data);
-            std::memcpy(data, payloadPattern.data(), size);
+            MemCopy(data, payloadPattern.data(), size);
             data += size;
         }
     }
@@ -798,7 +798,7 @@ void ts::CraftPlugin::packPESHeader(TSPacket& pkt)
         }
 
         // Shift the start of the TS payload to compress the PES header.
-        std::memmove(pl + stuffSize, pl, std::min(headerSize, plSize) - stuffSize);
+        MemCopy(pl + stuffSize, pl, std::min(headerSize, plSize) - stuffSize);
 
         // Now resize the TS payload
         pkt.setPayloadSize(plSize - stuffSize, false);

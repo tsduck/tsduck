@@ -21,7 +21,7 @@ bool tsDektecVPDIsEmpty = true; // Avoid warning about empty module.
 
 void ts::DektecVPD::clearOne(char* data)
 {
-    ts::Zero(data, ts::DektecVPD::VPD_SIZE);
+    ts::MemZero(data, ts::DektecVPD::VPD_SIZE);
 }
 
 

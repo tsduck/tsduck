@@ -8,6 +8,7 @@
 
 #include "tsDTVProperties.h"
 #include "tsUString.h"
+#include "tsMemory.h"
 
 
 //-----------------------------------------------------------------------------
@@ -16,7 +17,7 @@
 
 ts::DTVProperties::DTVProperties()
 {
-    std::memset(_prop_buffer, 0xFF, sizeof(_prop_buffer));
+    MemSet(_prop_buffer, 0xFF, sizeof(_prop_buffer));
 }
 
 

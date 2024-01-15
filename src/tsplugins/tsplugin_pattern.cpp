@@ -116,7 +116,7 @@ ts::ProcessorPlugin::Status ts::PatternPlugin::processPacket(TSPacket& pkt, TSPa
     // Replace the payload with the pattern
     while (remain > 0) {
         int cursize = std::min(remain, int(_pattern.size()));
-        std::memcpy(pl, _pattern.data(), cursize);  // Flawfinder: ignore: memcpy()
+        MemCopy(pl, _pattern.data(), cursize);
         pl += cursize;
         remain -= cursize;
     }

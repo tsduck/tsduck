@@ -15,6 +15,7 @@
 #include "tspySyncReport.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
+#include "tsMemory.h"
 
 //-----------------------------------------------------------------------------
 // Build a report header from a severity.
@@ -25,7 +26,7 @@ TSDUCKPY void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_siz
     if (buffer != nullptr && buffer_size != nullptr) {
         const ts::UString str(ts::Severity::Header(severity));
         *buffer_size = 2 * std::min(*buffer_size / 2, str.size());
-        std::memcpy(buffer, str.data(), *buffer_size);
+        ts::MemCopy(buffer, str.data(), *buffer_size);
     }
 }
 

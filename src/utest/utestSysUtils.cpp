@@ -665,6 +665,8 @@ void SysUtilsTest::testSysInfo()
             << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isIntel64()) << std::endl
             << "    isArm32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isArm32()) << std::endl
             << "    isArm64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isArm64()) << std::endl
+            << "    isRISCV64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isRISCV64()) << std::endl
+            << "    isS390x = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isS390x()) << std::endl
             << "    systemVersion = \"" << ts::SysInfo::Instance().systemVersion() << '"' << std::endl
             << "    systemMajorVersion = " << ts::SysInfo::Instance().systemMajorVersion() << std::endl
             << "    systemName = \"" << ts::SysInfo::Instance().systemName() << '"' << std::endl

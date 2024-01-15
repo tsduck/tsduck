@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tspy.h"
+#include "tsMemory.h"
 
 
 //-----------------------------------------------------------------------------
@@ -64,7 +65,7 @@ void ts::py::FromString(const UString& str, uint8_t* buffer, size_t* size)
         }
         else {
             *size = std::min(*size, 2 * str.length()) & ~1;
-            std::memcpy(buffer, str.data(), *size);
+            MemCopy(buffer, str.data(), *size);
         }
     }
 }

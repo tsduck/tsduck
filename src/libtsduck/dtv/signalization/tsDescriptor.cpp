@@ -36,7 +36,7 @@ ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
     if (!_data.isNull()) {
         (*_data)[0] = tag;
         (*_data)[1] = uint8_t(size);
-        std::memcpy(_data->data() + 2, data, size);
+        MemCopy(_data->data() + 2, data, size);
     }
 }
 
@@ -196,7 +196,7 @@ void ts::Descriptor::resizePayload(size_t new_size)
         _data->resize (new_size + 2);
         // If payload extended, zero additional bytes
         if (new_size > old_size) {
-            Zero(_data->data() + 2 + old_size, new_size - old_size);
+            MemZero(_data->data() + 2 + old_size, new_size - old_size);
         }
         // Adjust descriptor size
         (*_data)[1] = uint8_t (_data->size() - 2);

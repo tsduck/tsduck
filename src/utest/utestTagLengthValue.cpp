@@ -130,7 +130,7 @@ void TagLengthValueTest::testECMG()
                  << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
-    TSUNIT_EQUAL(0, std::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(0, ts::MemCompare(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
@@ -198,7 +198,7 @@ void TagLengthValueTest::testEMMG()
             << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
-    TSUNIT_EQUAL(0, std::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(0, ts::MemCompare(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
@@ -254,7 +254,7 @@ void TagLengthValueTest::testECMGError()
                  << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
-    TSUNIT_EQUAL(0, std::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(0, ts::MemCompare(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
@@ -312,7 +312,7 @@ void TagLengthValueTest::testEMMGError()
             << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
-    TSUNIT_EQUAL(0, std::memcmp(refData, data->data(), sizeof(data)));
+    TSUNIT_EQUAL(0, ts::MemCompare(refData, data->data(), sizeof(data)));
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());

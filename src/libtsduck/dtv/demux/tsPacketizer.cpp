@@ -124,7 +124,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     while (remain_in_packet > 0) {
         // Copy a part of the current section in the packet
         size_t length = remain_in_section < remain_in_packet ? remain_in_section : remain_in_packet;
-        std::memcpy(data, _section->content() + _next_byte, length);  // Flawfinder: ignore: memcpy()
+        MemCopy(data, _section->content() + _next_byte, length);
         // Advance pointers
         data += length;
         remain_in_packet -= length;
@@ -169,13 +169,8 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
     }
 
     // Do packet stuffing if necessary.
-    // Note: the following test is normally useless since memset() works fine when
-    // the size is zero. However, GCC 4.8.x erroneously deduces that remain_in_packet
-    // is always zero (which is not true) and complains that memset() is always useless.
-    // The test fixes this GCC error. However, it has not yet been tested if the behaviour
-    // of the compiled code is correct with this version of GCC.
     if (remain_in_packet > 0) {
-        std::memset(data, 0xFF, remain_in_packet);
+        MemSet(data, 0xFF, remain_in_packet);
     }
     return true;
 }

@@ -788,7 +788,7 @@ bool ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
         }
     }
     else if (sec->section->payloadSize() != EIT::EIT_PAYLOAD_FIXED_SIZE + event->event_data.size() ||
-             std::memcmp(sec->section->payload() + EIT::EIT_PAYLOAD_FIXED_SIZE, event->event_data.data(), event->event_data.size()) != 0)
+             !MemEqual(sec->section->payload() + EIT::EIT_PAYLOAD_FIXED_SIZE, event->event_data.data(), event->event_data.size()))
     {
         // The section already exists. It must be already in an injection queue.
         // The event is not the same as the one in the section, update the section.
@@ -909,7 +909,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                         while (section_still_valid && pl_size > 0 && ev_iter != seg.events.end()) {
                             const uint8_t* ev = (*ev_iter)->event_data.data();
                             const size_t ev_size = (*ev_iter)->event_data.size();
-                            section_still_valid = pl_size >= ev_size && std::memcmp(pl, ev, ev_size) == 0;
+                            section_still_valid = pl_size >= ev_size && MemEqual(pl, ev, ev_size);
                             if (section_still_valid) {
                                 ++ev_iter;
                                 pl += ev_size;

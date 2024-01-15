@@ -11,6 +11,7 @@
 #include "tsT2MIDescriptor.h"
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
+#include "tsMemory.h"
 #include "tsFatal.h"
 
 
@@ -312,7 +313,7 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
 
         // Build the TS packet.
         TSPacket tsPkt;
-        std::memcpy(tsPkt.b, &plpp->ts[plpp->ts_next], PKT_SIZE);
+        MemCopy(tsPkt.b, &plpp->ts[plpp->ts_next], PKT_SIZE);
         plpp->ts_next += PKT_SIZE;
 
         // Notify the application. Note that we are already in a protected section.

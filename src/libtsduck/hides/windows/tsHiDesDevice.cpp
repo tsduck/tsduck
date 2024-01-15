@@ -141,7 +141,7 @@ ts::HiDesDevice::Guts::Guts() :
 {
     TS_ZERO(overlapped);
     assert(sizeof(kslist) == sizeof(kslist_template));
-    std::memcpy(kslist, kslist_template, sizeof(kslist));
+    MemCopy(kslist, kslist_template, sizeof(kslist));
 }
 
 ts::HiDesDevice::Guts::~Guts()
@@ -874,7 +874,7 @@ bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report&
         // Copy a chunk of packets in the transmission control block.
         const size_t count = std::min<size_t>(packet_count, IT95X_TX_BLOCK_PKTS);
         ioc.size = uint32_t(count * PKT_SIZE);
-        std::memcpy(ioc.data, packets, ioc.size);
+        MemCopy(ioc.data, packets, ioc.size);
 
         report.log(2, u"HiDesDevice: calling IOCTL_IT95X_SEND_TS_DATA, size = %d, packets: %d", {ioc.size, count});
 

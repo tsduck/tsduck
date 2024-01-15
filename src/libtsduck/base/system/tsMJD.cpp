@@ -77,7 +77,7 @@ bool ts::EncodeMJD(const Time& time, uint8_t* mjd, size_t mjd_size)
 
     // Cannot represent dates earlier than MJD epoch
     if (time_ms < Time::JulianEpochOffset) {
-        Zero(mjd, mjd_size);
+        MemZero(mjd, mjd_size);
         return false;
     }
 

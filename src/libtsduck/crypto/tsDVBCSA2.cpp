@@ -724,7 +724,7 @@ bool ts::DVBCSA2::encryptImpl(const void* plain, size_t plain_length, void* ciph
         return false;
     }
     else {
-        std::memcpy(cipher, plain, plain_length);
+        MemCopy(cipher, plain, plain_length);
         return encryptInPlaceImpl(cipher, plain_length, cipher_length);
     }
 }
@@ -735,7 +735,7 @@ bool ts::DVBCSA2::decryptImpl(const void* cipher, size_t cipher_length, void* pl
         return false;
     }
     else {
-        std::memcpy(plain, cipher, cipher_length);
+        MemCopy(plain, cipher, cipher_length);
         return decryptInPlaceImpl(plain, cipher_length, plain_length);
     }
 }

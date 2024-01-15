@@ -20,7 +20,7 @@
 //! Do not use with instances of C++ classes.
 //! @param [out] var Name of a variable.
 //!
-#define TS_ZERO(var) ts::Zero(&(var), sizeof(var))
+#define TS_ZERO(var) ts::MemZero(&(var), sizeof(var))
 
 namespace ts {
     //!
@@ -28,12 +28,69 @@ namespace ts {
     //! @param [out] addr Address of a memory area to fill with zeroes.
     //! @param [in] size Size in bytes of the memory area.
     //!
-    TSDUCKDLL inline void Zero(void* addr, size_t size) {
+    TSDUCKDLL inline void MemZero(void* addr, size_t size)
+    {
+        if (size > 0) {
 #if defined(TS_WINDOWS)
-        ::SecureZeroMemory(addr, size);
+            ::SecureZeroMemory(addr, size);
 #else
-        std::memset(addr, 0, size);
+            std::memset(addr, 0, size);
 #endif
+        }
+    }
+
+    //!
+    //! Setting a memory area.
+    //! Similar to std::memset() but explicitly does nothing on zero size.
+    //! @param [out] addr Address of a memory area to fill with @a value.
+    //! @param [in] value Byte value to set in all area.
+    //! @param [in] size Size in bytes of the memory area.
+    //!
+    TSDUCKDLL inline void MemSet(void* addr, uint8_t value, size_t size)
+    {
+        if (size > 0) {
+            std::memset(addr, value, size);
+        }
+    }
+
+    //!
+    //! Copying a memory area.
+    //! Similar to std::memcpy() and std::memmove() but explicitly does nothing on zero size.
+    //! Overlapping source and destination are allowed, as with std::memmove().
+    //! @param [out] dest Base address of destination area.
+    //! @param [in] src Base address of source area.
+    //! @param [in] size Size in bytes of the memory area.
+    //!
+    TSDUCKDLL inline void MemCopy(void* dest, const void* src, size_t size)
+    {
+        if (size > 0) {
+            std::memmove(dest, src, size);
+        }
+    }
+
+    //!
+    //! Comparing two memory areas.
+    //! Similar to std::memcmp() but explicitly does nothing on zero size.
+    //! @param [in] addr1 Base address of first area.
+    //! @param [in] addr2 Base address of second area.
+    //! @param [in] size Size in bytes of the memory area.
+    //! @return Same as std::memcmp(). Zero when the twa areas are equal or @a size is zero.
+    //!
+    TSDUCKDLL inline int MemCompare(const void* addr1, const void* addr2, size_t size)
+    {
+        return size == 0 ? 0 : std::memcmp(addr1, addr2, size);
+    }
+
+    //!
+    //! Check if two memory areas are identical.
+    //! @param [in] addr1 Base address of first area.
+    //! @param [in] addr2 Base address of second area.
+    //! @param [in] size Size in bytes of the memory area.
+    //! @return True if the twa areas are equal or @a size is zero, false otherwise.
+    //!
+    TSDUCKDLL inline bool MemEqual(const void* addr1, const void* addr2, size_t size)
+    {
+        return size == 0 || std::memcmp(addr1, addr2, size) == 0;
     }
 
     //!

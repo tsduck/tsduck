@@ -314,7 +314,7 @@ ts::UString ts::UString::FromUTF8(const char* utf8, size_type count)
 
 ts::UString& ts::UString::assignFromUTF8(const char* utf8)
 {
-    return assignFromUTF8(utf8, utf8 == nullptr ? 0 : ::strlen(utf8));
+    return assignFromUTF8(utf8, utf8 == nullptr ? 0 : std::strlen(utf8));
 }
 
 ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)

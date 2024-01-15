@@ -196,7 +196,7 @@ bool ts::SHA512::add(const void* data, size_t size)
         else {
             // Partial block, Accumulate input data in internal buffer.
             size_t n = std::min(size, (BLOCK_SIZE - _curlen));
-            std::memcpy(_buf + _curlen, in, n);
+            MemCopy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
             size -= n;
@@ -231,14 +231,14 @@ bool ts::SHA512::getHash(void* hash, size_t bufsize, size_t* retsize)
     // Pad with zeroes and append 128-bit message length in bits.
     // If the length is currently above 112 bytes (no room for message length), append zeroes then compress.
     if (_curlen > 112) {
-        Zero(_buf + _curlen, 128 - _curlen);
+        MemZero(_buf + _curlen, 128 - _curlen);
         compress(_buf);
         _curlen = 0;
     }
 
     // Pad up to 120 bytes with zeroes and append 64-bit message length in bits.
     // Note: zeroes from 112 to 120 are the 64 MSB of the length. We assume that you won't hash > 2^64 bits of data.
-    Zero(_buf + _curlen, 120 - _curlen);
+    MemZero(_buf + _curlen, 120 - _curlen);
     PutUInt64(_buf + 120, _length);
     compress(_buf);
 

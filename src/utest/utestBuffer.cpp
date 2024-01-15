@@ -1132,7 +1132,7 @@ void BufferTest::testGetInt64LE()
 void BufferTest::testGetBitsSigned()
 {
     uint8_t mem[10];
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
 
     b.putBits(2, 3);
@@ -1162,7 +1162,7 @@ void BufferTest::testGetBitsSigned()
 void BufferTest::testPutBCD()
 {
     uint8_t mem[10];
-    std::memset(mem, 0xFF, sizeof(mem));
+    ts::MemSet(mem, 0xFF, sizeof(mem));
     ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_EQUAL(0, b.currentWriteByteOffset());
@@ -1402,7 +1402,7 @@ void BufferTest::testGetUTF16WithLength()
 void BufferTest::testPutUTF8()
 {
     uint8_t mem[10];
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_EQUAL(0, b.currentWriteByteOffset());
@@ -1428,7 +1428,7 @@ void BufferTest::testPutUTF8()
 void BufferTest::testPutFixedUTF8()
 {
     uint8_t mem[10];
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_EQUAL(0, b.currentWriteByteOffset());
@@ -1454,7 +1454,7 @@ void BufferTest::testPutFixedUTF8()
 void BufferTest::testPutPartialUTF8()
 {
     uint8_t mem[5];
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_EQUAL(0, b.currentWriteByteOffset());
@@ -1478,7 +1478,7 @@ void BufferTest::testPutPartialUTF8()
 void BufferTest::testPutUTF8WithLength()
 {
     uint8_t mem[10];
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_EQUAL(0, b.currentWriteByteOffset());
@@ -1532,7 +1532,7 @@ void BufferTest::testPutUTF8WithLength()
 void BufferTest::testPutPartialUTF8WithLength()
 {
     uint8_t mem[10];
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
     TSUNIT_EQUAL(0, b.currentWriteByteOffset());
@@ -1565,7 +1565,7 @@ void BufferTest::testPutUTF16()
     uint8_t mem[20];
 
     // Run the test in big endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     b.setBigEndian();
 
@@ -1595,7 +1595,7 @@ void BufferTest::testPutUTF16()
     TSUNIT_EQUAL(10, b.currentWriteByteOffset());
 
     // Run the test in little endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     b.reset(mem, sizeof(mem));
     b.setLittleEndian();
 
@@ -1630,7 +1630,7 @@ void BufferTest::testPutFixedUTF16()
     uint8_t mem[20];
 
     // Run the test in big endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     b.setBigEndian();
 
@@ -1661,7 +1661,7 @@ void BufferTest::testPutFixedUTF16()
     TSUNIT_EQUAL(11, b.currentWriteByteOffset());
 
     // Run the test in little endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     b.reset(mem, sizeof(mem));
     b.setLittleEndian();
 
@@ -1697,7 +1697,7 @@ void BufferTest::testPutPartialUTF16()
     uint8_t mem[11];
 
     // Run the test in big endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     b.setBigEndian();
 
@@ -1725,7 +1725,7 @@ void BufferTest::testPutPartialUTF16()
     TSUNIT_EQUAL('l',  mem[9]);
 
     // Run the test in little endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     b.reset(mem, sizeof(mem));
     b.setLittleEndian();
 
@@ -1758,7 +1758,7 @@ void BufferTest::testPutUTF16WithLength()
     uint8_t mem[20];
 
     // Run the test in big endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     b.setBigEndian();
 
@@ -1816,7 +1816,7 @@ void BufferTest::testPutUTF16WithLength()
     TSUNIT_EQUAL(11, b.currentWriteByteOffset());
 
     // Run the test in little endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     b.reset(mem, sizeof(mem));
     b.setLittleEndian();
 
@@ -1879,7 +1879,7 @@ void BufferTest::testPutPartialUTF16WithLength()
     uint8_t mem[20];
 
     // Run the test in big endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     ts::Buffer b(mem, sizeof(mem));
     b.setBigEndian();
 
@@ -1918,7 +1918,7 @@ void BufferTest::testPutPartialUTF16WithLength()
     TSUNIT_EQUAL('3',  mem[18]);
 
     // Run the test in little endian.
-    std::memset(mem, 0, sizeof(mem));
+    TS_ZERO(mem);
     b.reset(mem, sizeof(mem));
     b.setLittleEndian();
 

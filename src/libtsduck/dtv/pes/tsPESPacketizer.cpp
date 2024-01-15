@@ -80,7 +80,7 @@ bool ts::PESPacketizer::getNextPacket(TSPacket& pkt)
     }
 
     // Copy the PES data in the TS payload.
-    std::memcpy(pkt.getPayload(), _pes->content() + _next_byte, count);
+    MemCopy(pkt.getPayload(), _pes->content() + _next_byte, count);
     _next_byte += count;
 
     // Get rid of current packet when completed.

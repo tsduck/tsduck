@@ -423,7 +423,7 @@ void TSPacketTest::testPrivateData()
     const ts::ByteBlock refPrivate2({0x60, 0x61, 0x62});
 
     uint8_t* pl = pkt.getPayload();
-    std::memcpy(pl, refPayload.data(), refPayload.size());
+    ts::MemCopy(pl, refPayload.data(), refPayload.size());
 
     TSUNIT_ASSERT(!pkt.setPrivateData(refPrivate1, false));
 
@@ -443,10 +443,10 @@ void TSPacketTest::testPrivateData()
     TSUNIT_EQUAL(0, pkt.getAFStuffingSize());
     TSUNIT_EQUAL(171, pkt.getPayloadSize());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 13);
-    TSUNIT_ASSERT(std::memcmp(pkt.getPayload(), refPayload.data(), refPayload.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
     TSUNIT_EQUAL(ts::UString::Dump(refPrivate1, ts::UString::SINGLE_LINE),
                  ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_ASSERT(std::memcmp(pkt.getPrivateData(), refPrivate1.data(), refPrivate1.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate1.data(), refPrivate1.size()));
     pkt.getPrivateData(data);
     TSUNIT_ASSERT(data == refPrivate1);
 
@@ -459,10 +459,10 @@ void TSPacketTest::testPrivateData()
     TSUNIT_EQUAL(7, pkt.getAFStuffingSize());
     TSUNIT_EQUAL(171, pkt.getPayloadSize());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 13);
-    TSUNIT_ASSERT(std::memcmp(pkt.getPayload(), refPayload.data(), refPayload.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
     TSUNIT_EQUAL(ts::UString::Dump(refPrivate2, ts::UString::SINGLE_LINE),
                  ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_ASSERT(std::memcmp(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()));
     pkt.getPrivateData(data);
     TSUNIT_ASSERT(data == refPrivate2);
 
@@ -477,10 +477,10 @@ void TSPacketTest::testPrivateData()
     TSUNIT_EQUAL(171, pkt.getPayloadSize());
     TSUNIT_EQUAL(0x000000126789ABCD, pkt.getPCR());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 13);
-    TSUNIT_ASSERT(std::memcmp(pkt.getPayload(), refPayload.data(), refPayload.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
     TSUNIT_EQUAL(ts::UString::Dump(refPrivate2, ts::UString::SINGLE_LINE),
                  ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_ASSERT(std::memcmp(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()));
     data.clear();
     pkt.getPrivateData(data);
     TSUNIT_ASSERT(data == refPrivate2);
@@ -499,10 +499,10 @@ void TSPacketTest::testPrivateData()
     TSUNIT_EQUAL(0x000000126789ABCD, pkt.getPCR());
     TSUNIT_EQUAL(0x000000AB67925678, pkt.getOPCR());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 18);
-    TSUNIT_ASSERT(std::memcmp(pkt.getPayload(), refPayload.data(), refPayload.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
     TSUNIT_EQUAL(ts::UString::Dump(refPrivate2, ts::UString::SINGLE_LINE),
                                   ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_ASSERT(std::memcmp(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()));
     data.clear();
     pkt.getPrivateData(data);
     TSUNIT_ASSERT(data == refPrivate2);
@@ -520,7 +520,7 @@ void TSPacketTest::testPrivateData()
     TSUNIT_EQUAL(0x000000126789ABCD, pkt.getPCR());
     TSUNIT_EQUAL(0x000000AB67925678, pkt.getOPCR());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 18);
-    TSUNIT_ASSERT(std::memcmp(pkt.getPayload(), refPayload.data(), refPayload.size()) == 0);
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
     pkt.getPrivateData(data);
     TSUNIT_ASSERT(data.empty());
 }

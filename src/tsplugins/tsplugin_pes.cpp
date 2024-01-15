@@ -748,7 +748,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
         bool found = false;
         for (auto it = _sei_uuid_filter.begin(); !found && it != _sei_uuid_filter.end(); ++it) {
             assert(it->size() == AVC_SEI_UUID_SIZE);
-            found = std::memcmp(it->data(), pkt.payload() + offset, AVC_SEI_UUID_SIZE) == 0;
+            found = MemEqual(it->data(), pkt.payload() + offset, AVC_SEI_UUID_SIZE);
         }
         if (!found) {
             // We don't want to dump this one.

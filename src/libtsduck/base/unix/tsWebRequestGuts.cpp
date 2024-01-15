@@ -652,7 +652,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
     // Now transfer data to the user.
     const size_t size = buffer == nullptr ? 0 : std::min(_data.size(), maxSize);
     if (size > 0) {
-        std::memcpy(buffer, _data.data(), size);
+        MemCopy(buffer, _data.data(), size);
         if (size >= _data.size()) {
             _data.clear();
         }

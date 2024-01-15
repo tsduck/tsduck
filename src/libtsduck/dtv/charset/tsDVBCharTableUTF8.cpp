@@ -8,6 +8,7 @@
 
 #include "tsDVBCharTableUTF8.h"
 #include "tsUString.h"
+#include "tsMemory.h"
 
 
 //----------------------------------------------------------------------------
@@ -71,7 +72,7 @@ size_t ts::DVBCharTableUTF8::encode(uint8_t*& buffer, size_t& size, const UStrin
                 *buffer = uint8_t(utf8[0]);
             }
             else {
-                std::memcpy(buffer, utf8.data(), len);
+                MemCopy(buffer, utf8.data(), len);
             }
             buffer += len;
             size -= len;

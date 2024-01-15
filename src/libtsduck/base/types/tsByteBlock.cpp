@@ -38,7 +38,7 @@ ts::ByteBlock::ByteBlock(const void* data, size_type size) :
     ByteVector(size)
 {
     if (size > 0) {
-        std::memcpy(&(*this)[0], data, size);  // Flawfinder: ignore: memcpy()
+        MemCopy(&(*this)[0], data, size);
     }
 }
 
@@ -47,10 +47,10 @@ ts::ByteBlock::ByteBlock(const void* data, size_type size) :
 //----------------------------------------------------------------------------
 
 ts::ByteBlock::ByteBlock(const char* str) :
-    ByteVector(::strlen(str))  // Flawfinder: ignore: strlen()
+    ByteVector(std::strlen(str))
 {
     if (size() > 0) {
-        std::memcpy(data(), str, size());  // Flawfinder: ignore: memcpy()
+        MemCopy(data(), str, size());
     }
 }
 
@@ -85,7 +85,7 @@ void ts::ByteBlock::copy(const void* data_, size_type size_)
 {
     resize(data_ == nullptr ? 0 : size_);
     if (size() > 0) {
-        std::memcpy(data(), data_, size());  // Flawfinder: ignore: memcpy()
+        MemCopy(data(), data_, size());
     }
 }
 
