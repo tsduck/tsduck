@@ -133,7 +133,7 @@ ts::UString ts::WinDeviceName(::HANDLE handle)
     // Could not find a useful name with GetFinalPathNameByHandle.
     // Try GetFileInformationByHandleEx (which uses an untyped buffer).
     uint8_t buf[2048];
-    std::memset(buf, 0, sizeof(buf));
+    TS_ZERO(buf);
 
     // With FileNameInfo, the buffer is a FILE_NAME_INFO structure.
     PFILE_NAME_INFO info = PFILE_NAME_INFO(&buf);

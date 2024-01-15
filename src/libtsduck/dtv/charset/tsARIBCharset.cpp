@@ -95,6 +95,7 @@
 
 #include "tsARIBCharset.h"
 #include "tsUString.h"
+#include "tsMemory.h"
 
 // Define single instance
 const ts::ARIBCharset ts::ARIBCharset::B24({u"ARIB-STD-B24", u"ARIB"});
@@ -813,7 +814,7 @@ bool ts::ARIBCharset::Encoder::selectCharSet(uint8_t*& out, size_t& out_size, ui
     }
     if (seq_size > 0) {
         assert(seq_size < sizeof(seq));
-        std::memcpy(out, seq, seq_size);
+        MemCopy(out, seq, seq_size);
         out += seq_size;
         out_size -= seq_size;
     }

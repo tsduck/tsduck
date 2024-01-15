@@ -313,7 +313,7 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
         pkt.setPayloadSize(size);
         // Copy the new paylaod from the start of the shift buffer.
         if (size > 0) {
-            std::memcpy(pkt.getPayload(), _shift_buffer.data(), size);
+            MemCopy(pkt.getPayload(), _shift_buffer.data(), size);
             _shift_buffer.erase(0, size);
             if (_shift_pusi == 0) {
                 // The PUSI has moved from the shift buffer to the packet.

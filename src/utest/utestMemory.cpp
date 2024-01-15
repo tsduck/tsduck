@@ -311,63 +311,63 @@ void MemoryTest::testPutUInt8()
 {
     uint8_t out[16];
     ts::PutUInt8(out, 0x78);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x78, 1));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x78, 1));
 }
 
 void MemoryTest::testPutUInt16BE()
 {
     uint8_t out[16];
     ts::PutUInt16BE(out, 0x898A);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 2));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 2));
 }
 
 void MemoryTest::testPutUInt16LE()
 {
     uint8_t out[16];
     ts::PutUInt16LE(out, 0x8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 2));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 2));
 }
 
 void MemoryTest::testPutUInt24BE()
 {
     uint8_t out[16];
     ts::PutUInt24BE(out, 0x898A8B);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 3));
 }
 
 void MemoryTest::testPutUInt24LE()
 {
     uint8_t out[16];
     ts::PutUInt24LE(out, 0x8B8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 3));
 }
 
 void MemoryTest::testPutUInt32BE()
 {
     uint8_t out[16];
     ts::PutUInt32BE(out, 0x56575859);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x56, 4));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x56, 4));
 }
 
 void MemoryTest::testPutUInt32LE()
 {
     uint8_t out[16];
     ts::PutUInt32LE(out, 0x59585756);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x56, 4));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x56, 4));
 }
 
 void MemoryTest::testPutUInt64BE()
 {
     uint8_t out[16];
     ts::PutUInt64BE(out, 0x898A8B8C8D8E8F90);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 8));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 8));
 }
 
 void MemoryTest::testPutUInt64LE()
 {
     uint8_t out[16];
     ts::PutUInt64LE(out, 0x908F8E8D8C8B8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 8));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 8));
 }
 
 
@@ -375,14 +375,14 @@ void MemoryTest::testPutUInt48BE()
 {
     uint8_t out[16];
     ts::PutUInt48BE(out, 0x0000898A8B8C8D8E);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 6));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 6));
 }
 
 void MemoryTest::testPutUInt48LE()
 {
     uint8_t out[16];
     ts::PutUInt48LE(out, 0x00008E8D8C8B8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 6));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 6));
 }
 
 
@@ -390,67 +390,67 @@ void MemoryTest::testPutInt8()
 {
     uint8_t out[16];
     ts::PutInt8(out, -2);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0xFE, 1));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xFE, 1));
 }
 
 void MemoryTest::testPutInt16BE()
 {
     uint8_t out[16];
     ts::PutInt16BE(out, -12593); // 0xCECF
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0xCE, 2));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCE, 2));
 }
 
 void MemoryTest::testPutInt16LE()
 {
     uint8_t out[16];
     ts::PutInt16LE(out, -12338); // 0xCFCE
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0xCE, 2));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCE, 2));
 }
 
 void MemoryTest::testPutInt24BE()
 {
     uint8_t out[16];
     ts::PutInt24BE(out, -3223600); // 0xFFCECFD0
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0xCE, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCE, 3));
     ts::PutInt24BE(out, 0x101112);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x10, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x10, 3));
 }
 
 void MemoryTest::testPutInt24LE()
 {
     uint8_t out[16];
     ts::PutInt24LE(out, -3092530); // 0xFFD0CFCE
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0xCE, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCE, 3));
     ts::PutInt24LE(out, 0x121110);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x10, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x10, 3));
 }
 
 void MemoryTest::testPutInt32BE()
 {
     uint8_t out[16];
     ts::PutInt32BE(out, -2122153084); // 0x81828384
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x81, 4));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x81, 4));
 }
 
 void MemoryTest::testPutInt32LE()
 {
     uint8_t out[16];
     ts::PutInt32LE(out, -2071756159); // 0x84838281
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x81, 4));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x81, 4));
 }
 
 void MemoryTest::testPutInt64BE()
 {
     uint8_t out[16];
     ts::PutInt64BE(out, -3689065127789604141); // 0xCCCDCECFD0D1D2D3
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0xCC, 8));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCC, 8));
 }
 
 void MemoryTest::testPutInt64LE()
 {
     uint8_t out[16];
     ts::PutInt64LE(out, -3183251291827679796); // 0xD3D2D1D0CFCECDCC
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0xCC, 8));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCC, 8));
 }
 
 void MemoryTest::testGetIntVarBE()
@@ -481,32 +481,32 @@ void MemoryTest::testPutIntVarBE()
 {
     uint8_t out[16];
     ts::PutIntVarBE(out, 1, 0x78);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x78, 1));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x78, 1));
     ts::PutIntVarBE(out, 2, 0x898A);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 2));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 2));
     ts::PutIntVarBE(out, 3, 0x898A8B);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 3));
     ts::PutIntVarBE(out, 4, 0x56575859);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x56, 4));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x56, 4));
     ts::PutIntVarBE(out, 6, 0x0000898A8B8C8D8E);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 6));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 6));
     ts::PutIntVarBE(out, 8, 0x898A8B8C8D8E8F90);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 8));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 8));
 }
 
 void MemoryTest::testPutIntVarLE()
 {
     uint8_t out[16];
     ts::PutIntVarLE(out, 1, 0x78);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x78, 1));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x78, 1));
     ts::PutIntVarLE(out, 2, 0x8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 2));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 2));
     ts::PutIntVarLE(out, 3, 0x8B8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 3));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 3));
     ts::PutIntVarLE(out, 4, 0x59585756);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x56, 4));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x56, 4));
     ts::PutIntVarLE(out, 6, 0x00008E8D8C8B8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 6));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 6));
     ts::PutIntVarLE(out, 8, 0x908F8E8D8C8B8A89);
-    TSUNIT_EQUAL(0, std::memcmp(out, _bytes + 0x89, 8));
+    TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 8));
 }

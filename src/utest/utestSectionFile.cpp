@@ -137,7 +137,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
     const std::string sections(strm.str());
 
     // In debug mode, analyze data before failing.
-    if (debugMode() && (ref_sections_size != sections.size() || std::memcmp(ref_sections, sections.data(), ref_sections_size) != 0)) {
+    if (debugMode() && (ref_sections_size != sections.size() || !ts::MemEqual(ref_sections, sections.data(), ref_sections_size))) {
         const size_t size = std::min(ref_sections_size, sections.size());
         // Search index of first differing byte.
         size_t diff = 0;
@@ -163,7 +163,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
 
     // Compare serialized section data to reference section data.
     TSUNIT_EQUAL(ref_sections_size, sections.size());
-    TSUNIT_EQUAL(0, std::memcmp(ref_sections, sections.data(), ref_sections_size));
+    TSUNIT_EQUAL(0, ts::MemCompare(ref_sections, sections.data(), ref_sections_size));
 
     // Convert binary tables to XML.
     TSUNIT_EQUAL(ref_xml, xml.toXML());
@@ -727,15 +727,15 @@ void SectionFileTest::testMemory()
     ts::ByteBlock output(3);
     TSUNIT_EQUAL(87, sf1.saveBuffer(output));
     TSUNIT_EQUAL(90, output.size());
-    TSUNIT_EQUAL(0, std::memcmp(&output[3], psi_pat1_sections, sizeof(psi_pat1_sections)));
-    TSUNIT_EQUAL(0, std::memcmp(&output[3 + 32], psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections)));
+    TSUNIT_EQUAL(0, ts::MemCompare(&output[3], psi_pat1_sections, sizeof(psi_pat1_sections)));
+    TSUNIT_EQUAL(0, ts::MemCompare(&output[3 + 32], psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections)));
 
     uint8_t out1[40];
     TSUNIT_EQUAL(32, sf1.saveBuffer(out1, sizeof(out1)));
-    TSUNIT_EQUAL(0, std::memcmp(out1, psi_pat1_sections, sizeof(psi_pat1_sections)));
+    TSUNIT_EQUAL(0, ts::MemCompare(out1, psi_pat1_sections, sizeof(psi_pat1_sections)));
 
     uint8_t out2[100];
     TSUNIT_EQUAL(87, sf1.saveBuffer(out2, sizeof(out2)));
-    TSUNIT_EQUAL(0, std::memcmp(out2, psi_pat1_sections, sizeof(psi_pat1_sections)));
-    TSUNIT_EQUAL(0, std::memcmp(out2 + 32, psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections)));
+    TSUNIT_EQUAL(0, ts::MemCompare(out2, psi_pat1_sections, sizeof(psi_pat1_sections)));
+    TSUNIT_EQUAL(0, ts::MemCompare(out2 + 32, psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections)));
 }

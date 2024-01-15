@@ -15,12 +15,7 @@
 
 bool ts::StartsWith(const void* area, size_t area_size, const void* prefix, size_t prefix_size)
 {
-    if (prefix_size == 0 || area_size < prefix_size) {
-        return false;
-    }
-    else {
-        return std::memcmp(area, prefix, prefix_size) == 0;
-    }
+    return area_size >= prefix_size && MemEqual(area, prefix, prefix_size);
 }
 
 
@@ -34,7 +29,7 @@ const uint8_t* ts::LocatePattern(const void* area, size_t area_size, const void*
         const uint8_t* a = reinterpret_cast<const uint8_t*>(area);
         const uint8_t* p = reinterpret_cast<const uint8_t*>(pattern);
         while (area_size >= pattern_size) {
-            if (*a == *p && std::memcmp(a, p, pattern_size) == 0) {
+            if (*a == *p && MemEqual(a, p, pattern_size)) {
                 return a;
             }
             ++a;

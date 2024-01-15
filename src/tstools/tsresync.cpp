@@ -340,7 +340,7 @@ int MainCode(int argc, char *argv[])
         }
         else {
             sync_pre_size = sync_end - start;
-            std::memmove(sync_buf, start, sync_pre_size);
+            ts::MemCopy(sync_buf, start, sync_pre_size);
         }
 
         // If more than one packet left, out of sync

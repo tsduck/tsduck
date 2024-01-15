@@ -349,7 +349,7 @@ namespace ts {
             // Comparator for containers, no real semantic
             bool operator<(const POCS<STRUCT>& other) const
             {
-                return std::memcmp(&data, &other.data, sizeof(data)) < 0;
+                return MemCompare(&data, &other.data, sizeof(data)) < 0;
             }
         };
 

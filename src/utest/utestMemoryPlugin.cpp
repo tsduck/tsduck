@@ -230,6 +230,6 @@ void MemoryPluginTest::testAll()
     tsp.waitForTermination();
 
     TSUNIT_EQUAL(REF_PACKETS_COUNT, output_packets.size());
-    TSUNIT_EQUAL(0, std::memcmp(&output_packets[0], REF_PACKETS, ts::PKT_SIZE * REF_PACKETS_COUNT));
+    TSUNIT_EQUAL(0, ts::MemCompare(&output_packets[0], REF_PACKETS, ts::PKT_SIZE * REF_PACKETS_COUNT));
     TSUNIT_EQUAL(u"", log_buffer);
 }

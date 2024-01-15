@@ -171,10 +171,9 @@ bool ts::CTR<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* 
     }
 
     // work[0] = iv
-    std::memcpy(this->work.data(), this->iv.data(), this->block_size);
+    MemCopy(this->work.data(), this->iv.data(), this->block_size);
 
     // Loop on all blocks, including last truncated one.
-
     const uint8_t* pt = reinterpret_cast<const uint8_t*>(plain);
     uint8_t* ct = reinterpret_cast<uint8_t*>(cipher);
 

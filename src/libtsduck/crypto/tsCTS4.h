@@ -97,7 +97,6 @@ bool ts::CTS4<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
     uint8_t* ct = reinterpret_cast<uint8_t*> (cipher);
 
     // Process in ECB mode, except the last 2 blocks
-
     while (plain_length > 2 * this->block_size) {
         if (!this->algo->encrypt(pt, this->block_size, ct, this->block_size)) {
             return false;
@@ -108,23 +107,17 @@ bool ts::CTS4<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
     }
 
     // Process final two blocks.
-
     assert(plain_length > this->block_size);
     const size_t residue_size = plain_length - this->block_size;
-
-    // Flawfinder: ignore: memcpy()
-    std::memcpy(this->work.data(), pt + residue_size, this->block_size - residue_size);
-    // Flawfinder: ignore: memcpy()
-    std::memcpy(this->work.data() + this->block_size - residue_size, pt + this->block_size, residue_size);
+    MemCopy(this->work.data(), pt + residue_size, this->block_size - residue_size);
+    MemCopy(this->work.data() + this->block_size - residue_size, pt + this->block_size, residue_size);
 
     if (!this->algo->encrypt(this->work.data(), this->block_size, ct + residue_size, this->block_size)) {
         return false;
     }
 
-    // Flawfinder: ignore: memcpy()
-    std::memcpy(this->work.data(), pt, residue_size);
-    // Flawfinder: ignore: memcpy()
-    std::memcpy(this->work.data() + residue_size, ct + residue_size, this->block_size - residue_size);
+    MemCopy(this->work.data(), pt, residue_size);
+    MemCopy(this->work.data() + residue_size, ct + residue_size, this->block_size - residue_size);
 
     if (!this->algo->encrypt(this->work.data(), this->block_size, ct, this->block_size)) {
         return false;
@@ -156,7 +149,6 @@ bool ts::CTS4<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
     uint8_t* pt = reinterpret_cast<uint8_t*> (plain);
 
     // Process in ECB mode, except the last block
-
     while (cipher_length > this->block_size) {
         if (!this->algo->decrypt(ct, this->block_size, pt, this->block_size)) {
             return false;
@@ -167,13 +159,9 @@ bool ts::CTS4<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
     }
 
     // Process final block
-
     assert(cipher_length <= this->block_size);
-
-    // Flawfinder: ignore: memcpy()
-    std::memcpy(this->work.data(), pt - this->block_size + cipher_length, this->block_size - cipher_length);
-    // Flawfinder: ignore: memcpy()
-    std::memcpy(this->work.data() + this->block_size - cipher_length, ct, cipher_length);
+    MemCopy(this->work.data(), pt - this->block_size + cipher_length, this->block_size - cipher_length);
+    MemCopy(this->work.data() + this->block_size - cipher_length, ct, cipher_length);
 
     if (!this->algo->decrypt(this->work.data(), this->block_size, pt - this->block_size + cipher_length, this->block_size)) {
         return false;

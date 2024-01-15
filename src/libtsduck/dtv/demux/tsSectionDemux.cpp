@@ -462,7 +462,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                 // At this point, the version is necessarily identical. If this was another version,
                 // ts->init() was called and tc->sects[section_number] is null.
                 assert(old.version() == version);
-                if (section_length != old.size() || std::memcmp(ts_start, old.content(), section_length) != 0) {
+                if (section_length != old.size() || !MemEqual(ts_start, old.content(), section_length)) {
                     _duck.report().log(_ts_error_level, u"section updated without version update, PID 0x%X (%<d), TID 0x%X (%<d), section %d, version %d, packet index %'d", {pid, tid, section_number, version, _packet_count});
                     // Reset the previous content of the section and make sure the table will be notified again.
                     tc->sects[section_number].clear();

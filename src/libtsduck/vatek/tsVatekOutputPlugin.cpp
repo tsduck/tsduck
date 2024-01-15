@@ -87,7 +87,7 @@ ts::VatekOutputPlugin::Guts::Guts(VatekOutputPlugin* vop) :
     plugin(vop),
     tsp(vop->tsp)
 {
-    memset(&m_param, 0, sizeof(usbstream_param));
+    MemZero(&m_param, sizeof(usbstream_param));
     m_param.r2param.freqkhz = 473000;
     m_param.mode = ustream_mode_async;
     m_param.remux = ustream_remux_pcr;
@@ -547,7 +547,7 @@ bool ts::VatekOutputPlugin::Guts::send(const TSPacket* pkts, const TSPacketMetad
                     pktnums = remain;
                 }
                 size_t pktsize = pktnums * TS_PACKET_LEN;
-                memcpy(m_slicebuf->ptrbuf, data, pktsize);
+                MemCopy(m_slicebuf->ptrbuf, data, pktsize);
                 m_slicebuf->ptrbuf += pktsize;
                 data += pktsize;
                 m_slicebuf->packet_pos += int32_t(pktnums);

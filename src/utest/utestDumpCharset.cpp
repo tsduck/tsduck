@@ -11,7 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDumpCharset.h"
-#include "tsByteBlock.h"
+#include "tsMemory.h"
 #include "tsunit.h"
 
 
@@ -87,7 +87,7 @@ void DumpCharsetTest::testEncode()
     uint8_t buffer[20];
     uint8_t* data = buffer;
     size_t size = sizeof(buffer);
-    std::memset(buffer, 0, sizeof(buffer));
+    TS_ZERO(buffer);
 
     TSUNIT_EQUAL(0, cset.encode(data, size, u""));
     TSUNIT_EQUAL(buffer, data);
@@ -95,7 +95,7 @@ void DumpCharsetTest::testEncode()
 
     data = buffer;
     size = sizeof(buffer);
-    std::memset(buffer, 0, sizeof(buffer));
+    TS_ZERO(buffer);
 
     TSUNIT_EQUAL(14, cset.encode(data, size, u"  01 0211 e a zz 01"));
     TSUNIT_EQUAL(buffer + 4, data);

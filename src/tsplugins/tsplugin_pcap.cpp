@@ -329,7 +329,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
 
             // Now we have a valid UDP packet.
             ret_size = std::min(ip.protocolDataSize(), buffer_size);
-            std::memmove(buffer, ip.protocolData(), ret_size);
+            MemCopy(buffer, ip.protocolData(), ret_size);
         }
 
         // List all source addresses as they appear.
@@ -451,7 +451,7 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
                 return 0;
             }
             const size_t dsize = std::min(buffer_size - ret_size, data->size());
-            std::memcpy(buffer + ret_size, data->data(), dsize);
+            MemCopy(buffer + ret_size, data->data(), dsize);
             ret_size += dsize;
         }
     }
@@ -552,7 +552,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
 
         if (_data_next + PKT_SIZE <= _data.size() && _data[_data_next] == SYNC_BYTE) {
             // Found one TS packet.
-            std::memcpy(buffer, _data.data() + _data_next, PKT_SIZE);
+            MemCopy(buffer, _data.data() + _data_next, PKT_SIZE);
             _data_next += PKT_SIZE;
             buffer += PKT_SIZE;
             buffer_size -= PKT_SIZE;

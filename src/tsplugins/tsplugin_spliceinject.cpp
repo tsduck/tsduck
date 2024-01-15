@@ -713,7 +713,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         }
         else {
             // We need to search a bit more. First, skip UTF-8 BOM if present.
-            if (size >= UString::UTF8_BOM_SIZE && std::memcmp(addr, UString::UTF8_BOM, UString::UTF8_BOM_SIZE) == 0) {
+            if (size >= UString::UTF8_BOM_SIZE && MemEqual(addr, UString::UTF8_BOM, UString::UTF8_BOM_SIZE)) {
                 addr += UString::UTF8_BOM_SIZE;
                 size -= UString::UTF8_BOM_SIZE;
             }

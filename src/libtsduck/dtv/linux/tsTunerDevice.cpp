@@ -1641,7 +1641,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
             _duck.report().error(u"tuner packet synchronization lost, dropping %'d bytes", {resync_offset - offset});
 
             // Pack rest of buffer
-            std::memmove(data + offset, data + resync_offset, got_size - resync_offset);
+            MemCopy(data + offset, data + resync_offset, got_size - resync_offset);
             got_size -= resync_offset - offset;
         }
     }

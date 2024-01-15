@@ -74,7 +74,7 @@ void DVBCharsetTest::testRepository()
 void DVBCharsetTest::testDVB()
 {
     static const char s1[]= "abCD 89#()";
-    TSUNIT_EQUAL(u"abCD 89#()", ts::DVBCharset::DVB.decoded(reinterpret_cast<const uint8_t*>(s1), ::strlen(s1)));
+    TSUNIT_EQUAL(u"abCD 89#()", ts::DVBCharset::DVB.decoded(reinterpret_cast<const uint8_t*>(s1), std::strlen(s1)));
 
     static const uint8_t dvb1[] = {0x30, 0xC2, 0x65, 0xC3, 0x75};
     const ts::UString str1{u'0', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE, ts::LATIN_SMALL_LETTER_U_WITH_CIRCUMFLEX};

@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTeletextCharset.h"
+#include "tsMemory.h"
 
 
 //-----------------------------------------------------------------------------
@@ -322,7 +323,7 @@ ts::TeletextCharset::TeletextCharset() :
     _g0x28(UNDEFINED),
     _g0Default(LATIN)
 {
-    std::memcpy(&_G0, G0Base, sizeof(_G0));
+    MemCopy(&_G0, G0Base, sizeof(_G0));
 }
 
 

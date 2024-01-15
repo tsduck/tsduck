@@ -118,7 +118,7 @@ namespace ts {
         void append(const void* data, size_type size)
         {
             if (size > 0 && data != nullptr) {
-                std::memcpy(enlarge(size), data, size);  // Flawfinder: ignore: memcpy()
+                MemCopy(enlarge(size), data, size);
             }
         }
 
@@ -160,7 +160,7 @@ namespace ts {
         void append(uint8_t i, size_type size)
         {
             if (size > 0) {
-                std::memset(enlarge(size), i, size);
+                MemSet(enlarge(size), i, size);
             }
         }
 

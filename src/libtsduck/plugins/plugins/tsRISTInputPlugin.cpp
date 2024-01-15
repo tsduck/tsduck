@@ -171,7 +171,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
         tsp->debug(u"read data from remaining %d bytes in the buffer", {_guts->buffer.size()});
         assert(_guts->buffer.size() % PKT_SIZE == 0);
         pkt_count = std::min(_guts->buffer.size() / PKT_SIZE, max_packets);
-        std::memcpy(pkt_buffer->b, _guts->buffer.data(), pkt_count * PKT_SIZE);
+        MemCopy(pkt_buffer->b, _guts->buffer.data(), pkt_count * PKT_SIZE);
         _guts->buffer.erase(0, pkt_count * PKT_SIZE);
     }
     else {
@@ -223,7 +223,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
 
                 // Return the packets which fit in the caller's buffer.
                 pkt_count = std::min(total_pkt_count, max_packets);
-                std::memcpy(pkt_buffer->b, data_addr, pkt_count * PKT_SIZE);
+                MemCopy(pkt_buffer->b, data_addr, pkt_count * PKT_SIZE);
 
                 // Copy the rest, if any, in the local buffer.
                 if (pkt_count < total_pkt_count) {

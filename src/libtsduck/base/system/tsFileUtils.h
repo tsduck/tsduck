@@ -15,6 +15,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsEnvironment.h"
+#include "tsMemory.h"
 #include "tsTime.h"
 #include "tsErrCodeReport.h"
 
@@ -319,7 +320,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
 #elif defined(TS_UNIX)
 
     ::glob_t gl;
-    std::memset(&gl, 0, sizeof (gl));
+    TS_ZERO(gl);
     int status = ::glob(pattern.toUTF8().c_str(), 0, nullptr, &gl);
     if (status == 0) {
         for (size_t n = 0; n < gl.gl_pathc; n++) {

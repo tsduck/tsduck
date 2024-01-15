@@ -86,7 +86,7 @@ bool ts::ReproducibleRandomGenerator::read(void* buffer, size_t size)
 
         // read bytes from state1
         const size_t chunk_size = std::min(size, STATE1_SIZE - _next);
-        ::memcpy(out, _state + _next, chunk_size);
+        MemCopy(out, _state + _next, chunk_size);
         out += chunk_size;
         size -= chunk_size;
         _next += chunk_size;

@@ -192,7 +192,7 @@ namespace ts {
         //! @param [in] other Another instance to compare with.
         //! @return True if both object contains the same address, false otherwise.
         //!
-        bool operator==(const IPv6Address& other) const { return std::memcmp(_bytes, other._bytes, sizeof(_bytes)) == 0; }
+        bool operator==(const IPv6Address& other) const { return MemEqual(_bytes, other._bytes, sizeof(_bytes)); }
         TS_UNEQUAL_OPERATOR(IPv6Address)
 
         //!
@@ -201,7 +201,7 @@ namespace ts {
         //! @param [in] other Other instance to compare.
         //! @return True if this instance is less than to @a other.
         //!
-        bool operator<(const IPv6Address& other) const { return std::memcmp(_bytes, other._bytes, sizeof(_bytes)) < 0; }
+        bool operator<(const IPv6Address& other) const { return MemCompare(_bytes, other._bytes, sizeof(_bytes)) < 0; }
 
     private:
         uint8_t _bytes[BYTES]; // Raw content of the IPv6 address.

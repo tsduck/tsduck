@@ -67,7 +67,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
 
     if (status == SCARD_S_SUCCESS) {
         size_t len;
-        for (const char* p = names; (len = ::strlen(p)) != 0; p += len + 1) {  // Flawfinder: ignore: strlen()
+        for (const char* p = names; (len = std::strlen(p)) != 0; p += len + 1) {
             readers.push_back(UString::FromUTF8(p));
         }
     }
@@ -97,12 +97,10 @@ bool ts::pcsc::Success(::LONG status, Report& report)
         c_states[i].szReader = utf8Names[i].c_str();
         c_states[i].dwCurrentState = states[i].current_state;
         c_states[i].cbAtr = ::DWORD(std::min(sizeof(c_states[i].rgbAtr), states[i].atr.size()));
-        // Flawfinder: ignore: memcpy()
-        std::memcpy(c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
+        MemCopy(c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
     }
 
     // Check status of all smartcard readers
-
     ::LONG status = ::SCardGetStatusChange(context, ::DWORD(timeout_ms), c_states, ::DWORD(states.size()));
 
     if (status == SCARD_S_SUCCESS) {

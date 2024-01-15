@@ -68,6 +68,12 @@ ts::SysInfo::SysInfo() :
 #if defined(TS_ARM64)
     _isArm64(true),
 #endif
+#if defined(TS_RISCV64)
+    _isRISCV64(true),
+#endif
+#if defined(TS_S390X)
+    _isS390x(true),
+#endif
 #if defined(TS_I386)
     _cpuName(u"Intel x86"),
 #elif defined(TS_X86_64)

@@ -14,6 +14,7 @@
 #pragma once
 #include "tsUChar.h"
 #include "tsArgMix.h"
+#include "tsMemory.h"
 
 namespace ts {
 
@@ -2696,7 +2697,7 @@ template<> inline void ts::UString::assignFromWCharHelper<2>(const wchar_t* wstr
 {
     // Specialization for sizeof(wchar_t) == 2 : Already in UTF-16, direct binary copy.
     resize(count);
-    std::memcpy(&(*this)[0], wstr, 2 * count);
+    MemCopy(&(*this)[0], wstr, 2 * count);
 }
 
 template <ts::UString::size_type WCHAR_SIZE>

@@ -199,7 +199,7 @@ bool ts::SHA1::add(const void* data, size_t size)
         else {
             // Partial block, Accumulate input data in internal buffer.
             const size_t n = std::min(size, (BLOCK_SIZE - _curlen));
-            std::memcpy(_buf + _curlen, in, n);
+            MemCopy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
             size -= n;
@@ -234,13 +234,13 @@ bool ts::SHA1::getHash(void* hash, size_t bufsize, size_t* retsize)
     // Pad with zeroes and append 64-bit message length in bits.
     // If the length is currently above 56 bytes (no room for message length), append zeroes then compress.
     if (_curlen > 56) {
-        Zero(_buf + _curlen, 64 - _curlen);
+        MemZero(_buf + _curlen, 64 - _curlen);
         compress(_buf);
         _curlen = 0;
     }
 
     // Pad up to 56 bytes with zeroes and append 64-bit message length in bits.
-    Zero(_buf + _curlen, 56 - _curlen);
+    MemZero(_buf + _curlen, 56 - _curlen);
     PutUInt64(_buf + 56, _length);
     compress(_buf);
 

@@ -9,6 +9,7 @@
 #include "tspyPluginEventHandler.h"
 #include "tsPluginEventData.h"
 #include "tspy.h"
+#include "tsMemory.h"
 
 
 //----------------------------------------------------------------------------
@@ -33,7 +34,7 @@ TSDUCKPY void tspyPyPluginEventHandlerUpdateData(void* obj, void* data, size_t s
     if (event_data != nullptr) {
         uint8_t* buffer = event_data->outputData();
         if (buffer != nullptr && data != nullptr && size <= event_data->maxSize()) {
-            std::memcpy(buffer, data, size);
+            ts::MemCopy(buffer, data, size);
             event_data->updateSize(size);
         }
         else {

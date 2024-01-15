@@ -102,7 +102,7 @@ void MPEPacketTest::testBuild()
     TSUNIT_EQUAL(4654, mpe.destinationUDPPort());
     TSUNIT_EQUAL(sizeof(ref), mpe.udpMessageSize());
     TSUNIT_ASSERT(mpe.udpMessage() != nullptr);
-    TSUNIT_EQUAL(0, std::memcmp(mpe.udpMessage(), ref, mpe.udpMessageSize()));
+    TSUNIT_EQUAL(0, ts::MemCompare(mpe.udpMessage(), ref, mpe.udpMessageSize()));
 
     ts::Section sect;
     mpe.createSection(sect);
@@ -118,5 +118,5 @@ void MPEPacketTest::testBuild()
     TSUNIT_EQUAL(4654, mpe2.destinationUDPPort());
     TSUNIT_EQUAL(sizeof(ref), mpe2.udpMessageSize());
     TSUNIT_ASSERT(mpe2.udpMessage() != nullptr);
-    TSUNIT_EQUAL(0, std::memcmp(mpe2.udpMessage(), ref, mpe2.udpMessageSize()));
+    TSUNIT_EQUAL(0, ts::MemCompare(mpe2.udpMessage(), ref, mpe2.udpMessageSize()));
 }

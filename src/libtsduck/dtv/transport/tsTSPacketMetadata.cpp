@@ -128,7 +128,7 @@ void ts::TSPacketMetadata::serialize(ByteBlock& bin) const
 size_t ts::TSPacketMetadata::serialize(void* bin, size_t size) const
 {
     if (size < SERIALIZATION_SIZE) {
-        Zero(bin, size);
+        MemZero(bin, size);
         return 0; // too short
     }
     else {
