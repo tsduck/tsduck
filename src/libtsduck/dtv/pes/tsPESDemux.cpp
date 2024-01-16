@@ -517,7 +517,7 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
     else if (pes.isMPEG2Video()) {
         // Locate all start codes and invoke handler.
         // The beginning of the payload is already a start code prefix.
-        for (size_t offset = 0; offset < pl_size; ) {
+        for (size_t offset = 0; offset + 4 < pl_size; ) {
             // Look for next start code
             static const uint8_t StartCodePrefix[] = {0x00, 0x00, 0x01};
             const uint8_t* pnext = LocatePattern(pl_data + offset + 1, pl_size - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
