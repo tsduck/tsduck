@@ -2154,7 +2154,7 @@ void ts::UString::ArgMixInContext::processArg()
         // Reuse previous argument value, do not advance in argument list.
         argit = _prev;
     }
-    else {
+    else if (_arg != _end) {
         // Absorb the inserted argument.
         _prev = _arg++;
     }
