@@ -306,11 +306,11 @@ std::ostream& ts::HEVCShortTermReferencePictureSetList::display(std::ostream& ou
                 else if (st.valid) {
                     DISP(num_negative_pics);
                     DISP(num_positive_pics);
-                    for (uint32_t i = 0; st.valid && i < st.num_negative_pics; i++) {
+                    for (uint32_t i = 0; i < st.num_negative_pics && i < st.delta_poc_s0_minus1.size() && i < st.used_by_curr_pic_s0_flag.size(); i++) {
                         DISPsub(delta_poc_s0_minus1, i);
                         DISPsub(used_by_curr_pic_s0_flag, i);
                     }
-                    for (uint32_t i = 0; st.valid && i < st.num_positive_pics; i++) {
+                    for (uint32_t i = 0; i < st.num_positive_pics && i < st.delta_poc_s1_minus1.size() && i < st.used_by_curr_pic_s1_flag.size(); i++) {
                         DISPsub(delta_poc_s1_minus1, i);
                         DISPsub(used_by_curr_pic_s1_flag, i);
                     }

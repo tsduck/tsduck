@@ -260,7 +260,7 @@ std::ostream& ts::HEVCSequenceParameterSet::display(std::ostream& out, const USt
         DISP(log2_max_pic_order_cnt_lsb_minus4);
         DISP(sps_sub_layer_ordering_info_present_flag);
 
-        for (size_t i = (sps_sub_layer_ordering_info_present_flag ? 0 : sps_max_sub_layers_minus1); valid && i <= sps_max_sub_layers_minus1; i++) {
+        for (size_t i = (sps_sub_layer_ordering_info_present_flag ? 0 : sps_max_sub_layers_minus1); i <= sps_max_sub_layers_minus1 && i < sps_max.size(); i++) {
 #define DISPsub(i,n) out << margin << #n << "[" << i << "] = " << int64_t(sps_max[i].n) << std::endl
             DISPsub(i, sps_max_dec_pic_buffering_minus1);
             DISPsub(i, sps_max_num_reorder_pics);
@@ -301,7 +301,7 @@ std::ostream& ts::HEVCSequenceParameterSet::display(std::ostream& out, const USt
         DISP(long_term_ref_pics_present_flag);
         if (long_term_ref_pics_present_flag) {
             DISP(num_long_term_ref_pics_sps);
-            for (uint32_t i = 0; i < num_long_term_ref_pics_sps; i++) {
+            for (uint32_t i = 0; i < num_long_term_ref_pics_sps && i < lt_ref.size(); i++) {
 #define DISPsub(i,n) out << margin << #n << "[" << i << "] = " << int64_t(lt_ref[i].n) << std::endl
                 DISPsub(i, lt_ref_pic_poc_lsb_sps);
                 DISPsub(i, used_by_curr_pic_lt_sps_flag);
