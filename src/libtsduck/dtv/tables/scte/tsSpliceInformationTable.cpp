@@ -151,11 +151,20 @@ void ts::SpliceInformationTable::deserializePayload(PSIBuffer& buf, const Sectio
 
     // Encrypted sections cannot be deserialized.
     if (encrypted) {
+        buf.setUserError();
         return;
     }
 
     // Decode splice command. Remember that the command length can be unspecified (0x0FFF).
-    const size_t max_length = command_length == 0x0FFF ? buf.remainingReadBytes() : command_length;
+    size_t max_length = command_length;
+    if (max_length == 0x0FFF) {
+        max_length = buf.remainingReadBytes();
+    }
+    else if (max_length > buf.remainingReadBytes()) {
+        // Invalid length.
+        buf.setUserError();
+        return;
+    }
     int actual_length = -1;
     switch (splice_command_type) {
         case SPLICE_NULL:
@@ -413,7 +422,8 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
                  << std::endl;
 
             // If the command length is the legacy value 0x0FFF, it means unspecified. See deserializePayload().
-            const size_t max_length = cmd_length == 0x0FFF ? buf.remainingReadBytes() : cmd_length;
+            // If the length is 0x0FFF or invalid (too large), use remaining bytes only.
+            const size_t max_length = std::min(cmd_length, buf.remainingReadBytes());
             int actual_length = -1;
 
             switch (cmd_type) {
@@ -465,7 +475,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
                     // Skipped what was already displayed.
                     buf.skipBytes(size_t(actual_length));
                 }
-                const size_t extra = cmd_length - std::min(cmd_length, actual_length < 0 ? 0 : size_t(actual_length));
+                const size_t extra = max_length - std::min(max_length, actual_length < 0 ? 0 : size_t(actual_length));
                 disp.displayPrivateData(u"Remaining command content", buf, extra, margin);
             }
             else if (actual_length < 0) {
