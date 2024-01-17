@@ -268,17 +268,18 @@ bool ts::AVCParser::expColomb(INT& val)
     // See ISO/IEC 14496-10 section 9.1
     val = 0;
     int leading_zero_bits = -1;
-    for (uint8_t b = 0; b == 0; leading_zero_bits++) {
+    for (uint8_t b = 0; b == 0; b = readNextBit()) {
         if (_byte >= _end) {
             return false;
         }
-        b = readNextBit();
+        leading_zero_bits++;
     }
     if (!readBits(val, leading_zero_bits)) {
         return false;
     }
-
-    val += (INT (1) << leading_zero_bits) - 1;
+    if (leading_zero_bits < int(8 * sizeof(INT))) {
+        val += (INT(1) << leading_zero_bits) - 1;
+    }
     return true;
 }
 
