@@ -95,7 +95,7 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
     args.instuff_start = size_t(pyargs->add_start_stuffing);
     args.instuff_stop = size_t(pyargs->add_stop_stuffing);
     args.fixed_bitrate = ts::BitRate(pyargs->bitrate);
-    args.bitrate_adj = ts::MilliSecond(pyargs->bitrate_adjust_interval);
+    args.bitrate_adj = cn::milliseconds(cn::milliseconds::rep(pyargs->bitrate_adjust_interval));
     args.receive_timeout = cn::milliseconds(cn::milliseconds::rep(pyargs->receive_timeout));
     args.log_plugin_index = bool(pyargs->log_plugin_index);
 

@@ -9,19 +9,12 @@
 #include "tsTS.h"
 
 
-//----------------------------------------------------------------------------
 // These PID sets respectively contains no PID and all PID's.
 // The default constructor for PIDSet (std::bitset) sets all bits to 0.
-//----------------------------------------------------------------------------
-
 const ts::PIDSet ts::NoPID;
-const ts::PIDSet ts::AllPIDs (~NoPID);
+const ts::PIDSet ts::AllPIDs(~NoPID);
 
-
-//----------------------------------------------------------------------------
 // Enumeration description of ts::PIDClass.
-//----------------------------------------------------------------------------
-
 const ts::Enumeration ts::PIDClassEnum({
     {u"undefined", ts::PIDClass::UNDEFINED},
     {u"PSI/SI",    ts::PIDClass::PSI},
@@ -33,6 +26,10 @@ const ts::Enumeration ts::PIDClassEnum({
     {u"data",      ts::PIDClass::DATA},
     {u"stuffing",  ts::PIDClass::STUFFING},
 });
+
+// Our std::cn::chrono::duration types for transport streams.
+TS_REGISTER_CHRONO_UNIT(ts::pcr_units, u"PCR", u"PCR", u"PCR");
+TS_REGISTER_CHRONO_UNIT(ts::pts_dts_units, u"PTS/DTS", u"PTS/DTS", u"PTS/DTS");
 
 
 //----------------------------------------------------------------------------

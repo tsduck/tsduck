@@ -40,7 +40,7 @@ namespace ts {
         size_t            instuff_start = 0;        //!< Add input stuffing: add @a instuff_start null packets before actual input.
         size_t            instuff_stop = 0;         //!< Add input stuffing: add @a instuff_end null packets after end of actual input.
         BitRate           fixed_bitrate = 0;        //!< Fixed input bitrate (user-specified).
-        MilliSecond       bitrate_adj = DEFAULT_BITRATE_INTERVAL; //!< Bitrate adjust interval.
+        cn::milliseconds  bitrate_adj = DEFAULT_BITRATE_INTERVAL; //!< Bitrate adjust interval.
         PacketCounter     init_bitrate_adj = DEFAULT_INIT_BITRATE_PKT_INTERVAL; //!< As long as input bitrate is unknown, reevaluate periodically.
         Tristate          realtime = Tristate::Maybe; //!< Use real-time options.
         cn::milliseconds  receive_timeout {}; //!< Timeout on input operations.
@@ -57,9 +57,9 @@ namespace ts {
 
         static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;               //!< Default size in bytes of global TS buffer.
         static constexpr size_t MIN_BUFFER_SIZE = 18800;                          //!< Minimum size in bytes of global TS buffer.
-        static constexpr cn::milliseconds DEFAULT_CONTROL_TIMEOUT = cn::milliseconds(5000); //!< Default control command reception timeout, in milliseconds.
-        static constexpr MilliSecond DEFAULT_BITRATE_INTERVAL = 5000;             //!< Default bitrate adjustment interval, in milliseconds.
         static constexpr PacketCounter DEFAULT_INIT_BITRATE_PKT_INTERVAL = 1000;  //!< Default initial bitrate reevaluation interval, in packets.
+        static constexpr cn::milliseconds DEFAULT_BITRATE_INTERVAL = cn::milliseconds(5000);  //!< Default bitrate adjustment interval, in milliseconds.
+        static constexpr cn::milliseconds DEFAULT_CONTROL_TIMEOUT = cn::milliseconds(5000);   //!< Default control command reception timeout, in milliseconds.
 
         //!
         //! Constructor.

@@ -1843,6 +1843,27 @@ namespace ts {
         //!
         static UString ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format = false, bool plural = false);
 
+        //!
+        //! A class to register new std::chrono::duration units.
+        //! The registration is performed using constructors.
+        //! Thus, it is possible to perform a registration in a source file, outside any code.
+        //! @see TS_REGISTER_CHRONO_UNIT
+        //!
+        class TSDUCKDLL RegisterChronoUnit
+        {
+            TS_NOBUILD_NOCOPY(RegisterChronoUnit);
+        public:
+            //!
+            //! The constructor registers a new std::chrono::duration unit name.
+            //! @param [in] num Ratio numerator.
+            //! @param [in] den Ratio denominator.
+            //! @param [in] sname The short name to assign to the corresponding std::chrono::duration type.
+            //! @param [in] lname The long name to assign to the corresponding std::chrono::duration type. Default: same as @a lname.
+            //! @param [in] pname The plural form of long name. Default: add "s" to @a lname.
+            //!
+            RegisterChronoUnit(std::intmax_t num, std::intmax_t den, const UChar* sname, const UChar* lname = nullptr, const UChar* pname = nullptr);
+        };
+
         //--------------------------------------------------------------------
         // String formatting (freely inspired from printf)
         //--------------------------------------------------------------------
@@ -2496,6 +2517,14 @@ namespace ts {
         };
     };
 }
+
+//!
+//! @hideinitializer
+//! Registration of a new std::chrono::duration unit name.
+//! @param classname An instance of std::chrono::duration.
+//!
+#define TS_REGISTER_CHRONO_UNIT(classname, ...) \
+    static ts::UString::RegisterChronoUnit TS_UNIQUE_NAME(_Registrar)(classname::period::num, classname::period::den, __VA_ARGS__)
 
 //!
 //! Output operator for ts::UString on standard text streams with UTF-8 conversion.
