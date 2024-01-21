@@ -149,6 +149,9 @@ void PlatformTest::testIntegerTypes()
     TSUNIT_ASSERT(ui32 > 0);
     TSUNIT_ASSERT(ui64 > 0);
 
+    TSUNIT_ASSERT(sizeof(std::intmax_t) >= sizeof(uint64_t));
+    TSUNIT_ASSERT(std::is_signed<std::intmax_t>::value);
+
     uint8_t  aui8[10];
     uint16_t aui16[10];
     uint32_t aui32[10];

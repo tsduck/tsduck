@@ -413,7 +413,7 @@ cn::nanoseconds::rep ts::_SetTimersPrecisionNanoSecond(cn::nanoseconds::rep requ
 
     // Try requested value
     if (::timeBeginPeriod(good) == TIMERR_NOERROR) {
-        return std::max(requested, 1000000 * NanoSecond(good));
+        return std::max(requested, cn::nanoseconds::rep(1000000 * std::intmax_t(good)));
     }
 
     // Requested value failed. Try doubling the value repeatedly.

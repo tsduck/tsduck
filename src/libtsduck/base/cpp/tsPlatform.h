@@ -1143,7 +1143,7 @@ namespace ts {
     //! Note that this is a signed type. A number of sub-quantities of seconds
     //! can be negative, indicating a duration backward.
     //!
-    using SubSecond = int64_t;
+    using SubSecond = std::intmax_t;
     //!
     //! This integer type is used to represent a number of seconds.
     //! Should be explicitly used for clarity when a variable contains a number of seconds.

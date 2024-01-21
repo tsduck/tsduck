@@ -14,9 +14,6 @@
 #include "tsPluginRepository.h"
 #include "tsTimeShiftBuffer.h"
 
-#define DEF_EVAL_MS       1000  // Default initial evaluation duration in milliseconds.
-#define MAX_EVAL_PACKETS 30000  // Max number of packets after which the bitrate must be known.
-
 
 //----------------------------------------------------------------------------
 // Plugin definition
@@ -35,16 +32,19 @@ namespace ts {
 
     private:
         // Command line options:
-        bool            _ignore_errors = false;  // Ignore evaluation errors.
-        size_t          _shift_packets = 0;      // Shift buffer size in packets.
-        MilliSecond     _shift_ms = 0;           // Shift buffer size in milliseconds.
-        MilliSecond     _eval_ms = 0;            // Initial evaluation phase duration in milliseconds.
-        PIDSet          _pids {};                // List of PID's to shift forward.
+        bool             _ignore_errors = false;  // Ignore evaluation errors.
+        size_t           _shift_packets = 0;      // Shift buffer size in packets.
+        cn::milliseconds _shift_ms {};            // Shift buffer size in milliseconds.
+        cn::milliseconds _eval_ms {};             // Initial evaluation phase duration in milliseconds.
+        PIDSet           _pids {};                // List of PID's to shift forward.
 
         // Working data:
-        bool            _pass_all = false;       // Pass all packets after an error.
-        PacketCounter   _init_packets = 0;       // Count packets in PID's to shift during initial evaluation phase.
-        TimeShiftBuffer _buffer {};              // The timeshift buffer logic.
+        bool             _pass_all = false;       // Pass all packets after an error.
+        PacketCounter    _init_packets = 0;       // Count packets in PID's to shift during initial evaluation phase.
+        TimeShiftBuffer  _buffer {};              // The timeshift buffer logic.
+
+        static constexpr cn::milliseconds DEF_EVAL_MS = cn::milliseconds(1000);  // Default initial evaluation duration in milliseconds.
+        static constexpr PacketCounter MAX_EVAL_PACKETS = 30000;                 // Max number of packets after which the bitrate must be known.
     };
 }
 
@@ -74,8 +74,8 @@ ts::PIDShiftPlugin::PIDShiftPlugin (TSP* tsp_) :
          u"There is no default, the size of the buffer shall be specified either using --packets or --time. "
          u"Using --packets is less intuitive than --time but allows starting the shift from the beginning.");
 
-    option(u"time", 't', POSITIVE);
-    help(u"time", u"milliseconds",
+    option<cn::milliseconds>(u"time", 't');
+    help(u"time",
          u"Specify the size of the shift buffer in milliseconds. "
          u"During an initial evaluation phase (see option --initial-evaluation), "
          u"the global bitrate of all PID's to shift forward is evaluated. "
@@ -84,11 +84,11 @@ ts::PIDShiftPlugin::PIDShiftPlugin (TSP* tsp_) :
          u"Actual shifting the PID's starts at the end of this evaluation phase. "
          u"There is no default, the size of the buffer shall be specified either using --packets or --time.");
 
-    option(u"initial-evaluation", 'i', POSITIVE);
-    help(u"initial-evaluation", u"milliseconds",
+    option<cn::milliseconds>(u"initial-evaluation", 'i');
+    help(u"initial-evaluation",
          u"With --time, specify the duration of the initial evaluation phase in milliseconds. "
          u"This is a transport stream playout duration, not a wall-clock duration. "
-         u"The default is " + UString::Decimal(DEF_EVAL_MS) + u" milliseconds.");
+         u"The default is " + UString::Chrono(DEF_EVAL_MS) + u".");
 
     option(u"ignore-errors");
     help(u"ignore-errors",
@@ -119,8 +119,8 @@ bool ts::PIDShiftPlugin::getOptions()
 {
     _ignore_errors = present(u"ignore-errors");
     getIntValue(_shift_packets, u"packets", 0);
-    getIntValue(_shift_ms, u"time", 0);
-    getIntValue(_eval_ms, u"initial-evaluation", DEF_EVAL_MS);
+    getChronoValue(_shift_ms, u"time");
+    getChronoValue(_eval_ms, u"initial-evaluation", DEF_EVAL_MS);
     getIntValues(_pids, u"pid");
 
     _buffer.setBackupDirectory(value(u"directory"));
@@ -131,7 +131,7 @@ bool ts::PIDShiftPlugin::getOptions()
         _pids.flip();
     }
 
-    if ((_shift_packets > 0 && _shift_ms > 0) || (_shift_packets == 0 && _shift_ms == 0)) {
+    if ((_shift_packets > 0 && _shift_ms > cn::milliseconds::zero()) || (_shift_packets == 0 && _shift_ms == cn::milliseconds::zero())) {
         tsp->error(u"specify exactly one of --packets and --time for shift buffer sizing");
         return false;
     }
@@ -194,15 +194,15 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
         // Evaluate the duration from the beginning of the TS (zero if bitrate is unknown).
         const BitRate ts_bitrate = tsp->bitrate();
         const PacketCounter ts_packets = tsp->pluginPackets() + 1;
-        const MilliSecond ms = PacketInterval(ts_bitrate, ts_packets);
+        const cn::milliseconds ms = cn::milliseconds(PacketInterval(ts_bitrate, ts_packets));
 
         if (ms >= _eval_ms) {
             // The evaluation phase is completed.
             // Global bitrate of the selected PID's = ts_bitrate * _init_packet / ts_packets
             // Compute the amount of packets to shift in the selected PID's:
-            const PacketCounter count = ((ts_bitrate * _init_packets * _shift_ms) / (ts_packets * MilliSecPerSec * PKT_SIZE_BITS)).toInt();
+            const PacketCounter count = ((ts_bitrate * _init_packets * _shift_ms.count()) / (ts_packets * MilliSecPerSec * PKT_SIZE_BITS)).toInt();
 
-            tsp->debug(u"TS bitrate: %'d b/s, TS packets: %'d, selected: %'d, duration: %'d ms, shift: %'d packets", {ts_bitrate, ts_packets, _init_packets, ms, count});
+            tsp->debug(u"TS bitrate: %'d b/s, TS packets: %'d, selected: %'d, duration: %'d ms, shift: %'d packets", {ts_bitrate, ts_packets, _init_packets, ms.count(), count});
 
             // We can do that only if we have seen some packets from them.
             if (count < TimeShiftBuffer::MIN_TOTAL_PACKETS) {

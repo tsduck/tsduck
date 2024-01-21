@@ -53,7 +53,7 @@ namespace ts {
         bool              _replace = false;           // Replace existing PID content
         bool              _terminate = false;         // Terminate processing when insertion is complete
         bool              _poll_files = false;        // Poll the presence of input files at regular intervals
-        MilliSecond       _poll_files_ms = DEF_POLL_FILE_MS; // Interval in milliseconds between two file polling
+        cn::milliseconds  _poll_files_ms = cn::milliseconds(DEF_POLL_FILE_MS); // Interval in milliseconds between two file polling, currently hard-coded
         size_t            _repeat_count = 0;          // Repeat cycle, zero means infinite
         BitRate           _pid_bitrate = 0;           // Target bitrate for new PID
         PacketCounter     _pid_inter_pkt = 0;         // # TS packets between 2 new PID packets
