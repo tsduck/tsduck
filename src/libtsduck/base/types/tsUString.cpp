@@ -1355,8 +1355,8 @@ ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool for
 namespace {
     struct Ratio
     {
-        const std::intmax_t num;
-        const std::intmax_t den;
+        std::intmax_t num;
+        std::intmax_t den;
         bool operator<(const Ratio& other) const { return num < other.num || (num == other.num && den < other.den); }
     };
     struct UnitNames
