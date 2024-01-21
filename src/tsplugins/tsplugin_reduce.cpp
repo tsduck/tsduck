@@ -119,7 +119,7 @@ ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
          u"Using the target bitrate method introduces an uncompressable latency in the stream, "
          u"see options --time-window and --packet-window.");
 
-    option<cn::milliseconds>(u"time-window", 0);
+    option<cn::milliseconds>(u"time-window");
     help(u"time-window",
          u"With --target-bitrate, define the latency period over which packets are analyzed and "
          u"extra packets are removed. To use this method, the bitrate must be known during the "

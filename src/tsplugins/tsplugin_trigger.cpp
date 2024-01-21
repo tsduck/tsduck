@@ -36,7 +36,7 @@ namespace ts {
     private:
         // Command line options:
         PacketCounter    _minInterPacket = 0;  // Minimum interval in packets between two actions.
-        MilliSecond      _minInterTime = 0;    // Minimum interval in milliseconds between two actions.
+        cn::milliseconds _minInterTime {};     // Minimum interval in milliseconds between two actions.
         UString          _execute {};          // Command to execute on trigger.
         UString          _udpDestination {};   // UDP/IP destination address:port.
         UString          _udpLocal {};         // Name of outgoing local address (empty if unspecified).
@@ -95,8 +95,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
          u"Specify the minimum number of packets between two triggered actions. "
          u"Actions which should be triggered in the meantime are ignored.");
 
-    option(u"min-inter-time", 0, UNSIGNED);
-    help(u"min-inter-time", u"milliseconds",
+    option<cn::milliseconds>(u"min-inter-time");
+    help(u"min-inter-time",
          u"Specify the minimum time, in milliseconds, between two triggered actions. "
          u"Actions which should be triggered in the meantime are ignored.");
 
@@ -139,7 +139,7 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
 
 bool ts::TriggerPlugin::getOptions()
 {
-    getIntValue(_minInterTime, u"min-inter-time");
+    getChronoValue(_minInterTime, u"min-inter-time");
     getIntValue(_minInterPacket, u"min-inter-packet");
     getValue(_execute, u"execute");
     getValue(_udpDestination, u"udp");
@@ -220,7 +220,7 @@ ts::ProcessorPlugin::Status ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPa
     const bool select =
         (_allPackets || (_allLabels && pkt_data.hasAllLabels(_labels)) || (!_allLabels && pkt_data.hasAnyLabel(_labels))) &&
         (_minInterPacket == 0 || _lastPacket == INVALID_PACKET_COUNTER || tsp->pluginPackets() >= _lastPacket + _minInterPacket) &&
-        (_minInterTime == 0 || _lastTime == Time::Epoch || (now = Time::CurrentUTC()) >= _lastTime + _minInterTime);
+        (_minInterTime == cn::milliseconds::zero() || _lastTime == Time::Epoch || (now = Time::CurrentUTC()) >= _lastTime + _minInterTime);
 
     if (select) {
         // The packet shall be selected.

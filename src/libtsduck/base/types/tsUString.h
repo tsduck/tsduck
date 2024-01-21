@@ -1378,13 +1378,12 @@ namespace ts {
 
         //!
         //! Format a percentage string.
-        //! @tparam INT An integer type.
         //! @param [in] value An integer value, a portion of @a total.
         //! @param [in] total The total value.
         //! @return A string representing the percentage of @a value in @a total.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        static UString Percentage(INT value, INT total);
+        template <typename Int1, typename Int2, typename std::enable_if<std::is_integral<Int1>::value && std::is_integral<Int2>::value>::type* = nullptr>
+        static UString Percentage(Int1 value, Int2 total);
 
         //!
         //! Format a percentage string between duration values.
@@ -3554,8 +3553,8 @@ ts::UString ts::UString::HexaMin(INT svalue,
 // Format a percentage string.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-ts::UString ts::UString::Percentage(INT value, INT total)
+template <typename Int1, typename Int2, typename std::enable_if<std::is_integral<Int1>::value && std::is_integral<Int2>::value>::type*>
+ts::UString ts::UString::Percentage(Int1 value, Int2 total)
 {
     if (total < 0) {
         return u"?";
@@ -3565,9 +3564,9 @@ ts::UString ts::UString::Percentage(INT value, INT total)
     }
     else {
         // Integral percentage
-        const int p1 = int((100 * uint64_t(value)) / uint64_t(total));
+        const int p1 = int(std::abs((100 * std::intmax_t(value)) / std::intmax_t(total)));
         // Percentage first 2 decimals
-        const int p2 = int(((10000 * uint64_t(value)) / uint64_t(total)) % 100);
+        const int p2 = int(std::abs((10000 * std::intmax_t(value)) / std::intmax_t(total)) % 100);
         return Format(u"%d.%02d%%", {p1, p2});
     }
 }

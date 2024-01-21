@@ -55,7 +55,7 @@ void ts::MuxerArgs::defineArgs(Args& args)
               u"The default is " + UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" packets. "
               u"The size of the output buffer is the sum of all input buffers sizes.");
 
-    args.option<cn::microseconds>(u"cadence", 0, Args::POSITIVE);
+    args.option<cn::microseconds>(u"cadence");
     args.help(u"cadence",
               u"Specify the internal polling cadence in microseconds. "
               u"The default is " + UString::Chrono(DEFAULT_CADENCE) + u".");

@@ -384,6 +384,16 @@ namespace ts {
     constexpr uint32_t SYSTEM_CLOCK_SUBFREQ = SYSTEM_CLOCK_FREQ / SYSTEM_CLOCK_SUBFACTOR;
 
     //!
+    //! Definition of a number of PCR units as a std::chrono::duration type.
+    //!
+    using pcr_units = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_FREQ>>;
+
+    //!
+    //! Definition of a number of PTS or DTS units as a std::chrono::duration type.
+    //!
+    using pts_dts_units = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_SUBFREQ>>;
+
+    //!
     //! Size in bits of a PCR (Program Clock Reference).
     //! Warning: A PCR value is not a linear value mod 2^42.
     //! It is split into PCR_base and PCR_ext (see ISO 13818-1, 2.4.2.2).

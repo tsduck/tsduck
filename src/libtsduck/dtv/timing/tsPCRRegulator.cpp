@@ -119,16 +119,10 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             }
 
             // Compute the number of PCR units since the first PCR.
-            const uint64_t pcru = _pcr_offset + pcr - _pcr_first;
-
-            // Compute the number of nano-seconds since the first PCR.
-            // In an uint64_t value, we can accumulate 292 years in nano-seconds units.
-            // Coded to avoid arithmetic overflow, don't change without thinking twice.
-            const NanoSecond ns = (NanoSecPerMicroSec * pcru) / (SYSTEM_CLOCK_FREQ / MicroSecPerSec);
+            const ts::pcr_units pcru = ts::pcr_units(_pcr_offset + pcr - _pcr_first);
 
             // Compute due system clock, the expected system time for this PCR.
-            monotonic_time clock_due(_clock_first);
-            clock_due += cn::nanoseconds(ns);
+            const monotonic_time clock_due(_clock_first + cn::duration_cast<monotonic_time::duration>(pcru));
 
             // Do not wait less than the user-specified minimum.
             if (clock_due - _clock_last >= _wait_min) {
