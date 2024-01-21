@@ -46,11 +46,11 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"Specify the input bitrate, in bits/seconds. By default, the input "
               u"bitrate is provided by the input plugin or by analysis of the PCR.");
 
-    args.option(u"bitrate-adjust-interval", 0, Args::POSITIVE);
+    args.option<cn::seconds>(u"bitrate-adjust-interval");
     args.help(u"bitrate-adjust-interval",
               u"Specify the interval in seconds between bitrate adjustments, "
               u"ie. when the output bitrate is adjusted to the input one. "
-              u"The default is " + UString::Decimal(DEFAULT_BITRATE_INTERVAL / MilliSecPerSec) + u" seconds. "
+              u"The default is " + UString::Chrono(cn::duration_cast<cn::seconds>(DEFAULT_BITRATE_INTERVAL)) + u". "
               u"Some output processors ignore this setting. Typically, ASI "
               u"or modulator devices use it, while file devices ignore it. "
               u"This option is ignored if --bitrate is specified. ");
@@ -170,7 +170,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     log_plugin_index = args.present(u"log-plugin-index");
     ts_buffer_size = args.intValue<size_t>(u"buffer-size-mb", DEFAULT_BUFFER_SIZE);
     args.getValue(fixed_bitrate, u"bitrate", 0);
-    bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEFAULT_BITRATE_INTERVAL / MilliSecPerSec);
+    args.getChronoValue(bitrate_adj, u"bitrate-adjust-interval", DEFAULT_BITRATE_INTERVAL);
     args.getIntValue(max_flush_pkt, u"max-flushed-packets", 0);
     args.getIntValue(max_input_pkt, u"max-input-packets", 0);
     args.getIntValue(max_output_pkt, u"max-output-packets", NPOS); // unlimited by default

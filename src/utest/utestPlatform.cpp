@@ -30,12 +30,14 @@ public:
     void test64bitLiterals();
     void testStringify();
     void testVersion();
+    void testChrono();
 
     TSUNIT_TEST_BEGIN(PlatformTest);
     TSUNIT_TEST(testIntegerTypes);
     TSUNIT_TEST(test64bitLiterals);
     TSUNIT_TEST(testStringify);
     TSUNIT_TEST(testVersion);
+    TSUNIT_TEST(testChrono);
     TSUNIT_TEST_END();
 };
 
@@ -206,4 +208,42 @@ void PlatformTest::testVersion()
     TSUNIT_EQUAL(ts::VersionInfo::GetVersion(), ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT));
     TSUNIT_ASSERT(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) != ts::VersionInfo::GetVersion(ts::VersionInfo::Format::LONG));
     TSUNIT_ASSERT(ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) != ts::VersionInfo::GetVersion(ts::VersionInfo::Format::NSIS));
+}
+
+// Test case: std::chrono::duration
+void PlatformTest::testChrono()
+{
+    debug() << "PlatformTest: cn::nanoseconds: " << sizeof(cn::nanoseconds) << " bytes, rep: " << sizeof(cn::nanoseconds::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::microseconds: " << sizeof(cn::microseconds) << " bytes, rep: " << sizeof(cn::microseconds::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::milliseconds: " << sizeof(cn::milliseconds) << " bytes, rep: " << sizeof(cn::milliseconds::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::seconds: " << sizeof(cn::seconds) << " bytes, rep: " << sizeof(cn::seconds::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::minutes: " << sizeof(cn::minutes) << " bytes, rep: " << sizeof(cn::minutes::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::hours: " << sizeof(cn::hours) << " bytes, rep: " << sizeof(cn::hours::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::days: " << sizeof(cn::days) << " bytes, rep: " << sizeof(cn::days::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::weeks: " << sizeof(cn::weeks) << " bytes, rep: " << sizeof(cn::weeks::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::months: " << sizeof(cn::months) << " bytes, rep: " << sizeof(cn::months::rep) << " bytes" << std::endl
+            << "PlatformTest: cn::years: " << sizeof(cn::years) << " bytes, rep: " << sizeof(cn::years::rep) << " bytes" << std::endl;
+
+    TSUNIT_ASSERT(8 * sizeof(cn::nanoseconds::rep) >= 64);
+    TSUNIT_ASSERT(8 * sizeof(cn::microseconds::rep) >= 55);
+    TSUNIT_ASSERT(8 * sizeof(cn::milliseconds::rep) >= 45);
+    TSUNIT_ASSERT(8 * sizeof(cn::seconds::rep) >= 35);
+    TSUNIT_ASSERT(8 * sizeof(cn::minutes::rep) >= 29);
+    TSUNIT_ASSERT(8 * sizeof(cn::hours::rep) >= 23);
+    TSUNIT_ASSERT(8 * sizeof(cn::days::rep) >= 25);
+    TSUNIT_ASSERT(8 * sizeof(cn::weeks::rep) >= 22);
+    TSUNIT_ASSERT(8 * sizeof(cn::months::rep) >= 20);
+    TSUNIT_ASSERT(8 * sizeof(cn::years::rep) >= 17);
+
+    // Check if optimal implementation.
+    TSUNIT_ASSUME(sizeof(cn::nanoseconds) == sizeof(cn::nanoseconds::rep));
+    TSUNIT_ASSUME(sizeof(cn::microseconds) == sizeof(cn::microseconds::rep));
+    TSUNIT_ASSUME(sizeof(cn::milliseconds) == sizeof(cn::milliseconds::rep));
+    TSUNIT_ASSUME(sizeof(cn::seconds) == sizeof(cn::seconds::rep));
+    TSUNIT_ASSUME(sizeof(cn::minutes) == sizeof(cn::minutes::rep));
+    TSUNIT_ASSUME(sizeof(cn::hours) == sizeof(cn::hours::rep));
+    TSUNIT_ASSUME(sizeof(cn::days) == sizeof(cn::days::rep));
+    TSUNIT_ASSUME(sizeof(cn::weeks) == sizeof(cn::weeks::rep));
+    TSUNIT_ASSUME(sizeof(cn::months) == sizeof(cn::months::rep));
+    TSUNIT_ASSUME(sizeof(cn::years) == sizeof(cn::years::rep));
 }

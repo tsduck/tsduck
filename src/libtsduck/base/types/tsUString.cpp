@@ -1351,55 +1351,59 @@ ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool for
 // Format the name of an instance of std::chrono::duration based on its ratio.
 //----------------------------------------------------------------------------
 
+// A static instance of a map from num/den to string.
 namespace {
     struct Ratio
     {
-        std::intmax_t num;
-        std::intmax_t den;
+        const std::intmax_t num;
+        const std::intmax_t den;
         bool operator<(const Ratio& other) const { return num < other.num || (num == other.num && den < other.den); }
     };
     struct UnitNames
     {
-        const ts::UChar* nshort;
-        const ts::UChar* nlong;
+        const ts::UChar* sname;
+        const ts::UChar* lname;
+        const ts::UChar* pname;
     };
     using UnitMap = std::map<Ratio,UnitNames>;
 }
+TS_STATIC_INSTANCE(UnitMap, (), ChronoUnitMap);
 
-#if defined(TS_CXX20)
-#define TS_CXX20_CHRONO                                                                       \
-    {{cn::days::period::num,   cn::days::period::den},   {u"d", u"day"}},   \
-    {{cn::weeks::period::num,  cn::weeks::period::den},  {u"w", u"week"}},  \
-    {{cn::months::period::num, cn::months::period::den}, {u"m", u"month"}}, \
-    {{cn::years::period::num,  cn::years::period::den},  {u"y", u"year"}}
-#else
-#define TS_CXX20_CHRONO
-#endif
+// The constructor registers a new std::chrono::duration unit name.
+ts::UString::RegisterChronoUnit::RegisterChronoUnit(std::intmax_t num, std::intmax_t den, const UChar* sname, const UChar* lname, const UChar* pname)
+{
+    ChronoUnitMap::Instance().insert(std::make_pair<Ratio, UnitNames>({num, den}, {sname, lname, pname}));
+}
 
-TS_STATIC_INSTANCE(UnitMap, ({
-        {{cn::seconds::period::num,      cn::seconds::period::den},      {u"s",  u"second"}},
-        {{cn::milliseconds::period::num, cn::milliseconds::period::den}, {u"ms", u"millisecond"}},
-        {{cn::microseconds::period::num, cn::microseconds::period::den}, {u"us", u"microsecond"}},
-        {{cn::nanoseconds::period::num,  cn::nanoseconds::period::den},  {u"ns", u"nanosecond"}},
-        {{cn::minutes::period::num,      cn::minutes::period::den},      {u"mn", u"minute"}},
-        {{cn::hours::period::num,        cn::hours::period::den},        {u"h",  u"hour"}},
-        TS_CXX20_CHRONO
-    }), ChronoUnitMap);
+// Standard std::cn::chrono::duration types.
+TS_REGISTER_CHRONO_UNIT(cn::seconds, u"s", u"second");
+TS_REGISTER_CHRONO_UNIT(cn::milliseconds, u"ms", u"millisecond");
+TS_REGISTER_CHRONO_UNIT(cn::microseconds, u"us", u"microsecond");
+TS_REGISTER_CHRONO_UNIT(cn::nanoseconds, u"ns", u"nanosecond");
+TS_REGISTER_CHRONO_UNIT(cn::minutes, u"mn", u"minute");
+TS_REGISTER_CHRONO_UNIT(cn::hours, u"h",  u"hour");
+TS_REGISTER_CHRONO_UNIT(cn::days, u"d", u"day");
+TS_REGISTER_CHRONO_UNIT(cn::weeks, u"w", u"week");
+TS_REGISTER_CHRONO_UNIT(cn::months, u"m", u"month");
+TS_REGISTER_CHRONO_UNIT(cn::years, u"y", u"year");
 
+// Public interface to get the chrono unit names
 ts::UString ts::UString::ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format, bool plural)
 {
     const auto it = ChronoUnitMap::Instance().find({num, den});
     if (it != ChronoUnitMap::Instance().end()) {
         if (short_format) {
-            return it->second.nshort;
+            return UString(it->second.sname);
+        }
+        else if (plural && it->second.pname != nullptr && it->second.pname[0] != u'\0') {
+            return UString(it->second.pname);
         }
         else {
-            UString u(it->second.nlong);
-            // Currently, all plural forms are just "s".
+            UString name(it->second.lname != nullptr && it->second.lname[0] != u'\0' ? it->second.lname : it->second.sname);
             if (plural) {
-                u.append('s');
+                name.append('s');
             }
-            return u;
+            return name;
         }
     }
     else if (den == 1) {
