@@ -282,7 +282,7 @@ bool ts::SRTSocket::peerDisconnected() const { return false; }
 bool ts::SRTSocket::loadArgs(DuckContext&, Args&) { return true; }
 bool ts::SRTSocket::send(const void*, size_t, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::receive(void*, size_t, size_t&, Report& report) NOSRT_ERROR
-bool ts::SRTSocket::receive(void*, size_t, size_t&, MicroSecond&, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::receive(void*, size_t, size_t&, cn::microseconds&, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::reportStatistics(SRTStatMode, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::getSockOpt(int, const char*, void*, int&, Report& report) const NOSRT_ERROR
 int  ts::SRTSocket::getSocket() const { return -1; }
