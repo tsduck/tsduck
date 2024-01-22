@@ -193,7 +193,8 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
         PIDContext next_pc;
         next_pc.pcr_value = pkt.getPCR();
         next_pc.pcr_packet = tsp->pluginPackets();
-        next_pc.pcr_timestamp = pkt_data.getInputTimeStamp(); // in PCR units, INVALID_PCR if there is no timestamp
+        const ts::pcr_units pkt_timestamp = pkt_data.getInputTimeStamp();
+        next_pc.pcr_timestamp = pkt_timestamp < ts::pcr_units::zero() ? INVALID_PCR : pkt_data.getInputTimeStamp().count();
         next_pc.pcr_timesource = pkt_data.getInputTimeSource();
 
         // Current bitrate is needed if not --input-synchronous. Use signed 64-bit for jitter computation.

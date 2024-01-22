@@ -248,7 +248,7 @@ void ts::tsswitch::InputExecutor::main()
             if (!_metadata[inFirst].hasInputTimeStamp()) {
                 const cn::nanoseconds current = monotonic_time::clock::now() - _start_time;
                 for (size_t n = 0; n < inCount; ++n) {
-                    _metadata[inFirst + n].setInputTimeStamp(current.count(), NanoSecPerSec, TimeSource::TSP);
+                    _metadata[inFirst + n].setInputTimeStamp(current, TimeSource::TSP);
                 }
             }
 

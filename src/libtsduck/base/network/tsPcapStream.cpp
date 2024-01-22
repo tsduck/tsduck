@@ -13,7 +13,7 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PcapStream::DataBlock::DataBlock(const IPv4Packet& pkt, MicroSecond tstamp) :
+ts::PcapStream::DataBlock::DataBlock(const IPv4Packet& pkt, cn::microseconds tstamp) :
     sequence(pkt.tcpSequenceNumber()),
     start(pkt.tcpSYN()),
     end(pkt.tcpFIN() || pkt.tcpRST()),
@@ -87,7 +87,7 @@ bool ts::PcapStream::Stream::dataAvailable() const
 // Store the content of an IP packet in a stream.
 //----------------------------------------------------------------------------
 
-void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
+void ts::PcapStream::Stream::store(const IPv4Packet& pkt, cn::microseconds tstamp)
 {
     // Allocate a new data block.
     const DataBlockPtr ptr(new DataBlock(pkt, tstamp));
@@ -188,7 +188,7 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
 bool ts::PcapStream::readStreams(size_t& source, Report& report)
 {
     IPv4Packet pkt;
-    MicroSecond timestamp = -1;
+    cn::microseconds timestamp = cn::microseconds(-1);
     size_t pkt_source = NPOS;
 
     // Loop on reading packet, return on error or packet found.
@@ -256,11 +256,11 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
 // Read data from the TCP session, any direction.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t& size, MicroSecond& timestamp, Report& report)
+bool ts::PcapStream::readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report)
 {
     size_t remain = size;
     size = 0;
-    timestamp = -1;
+    timestamp = cn::microseconds(-1);
 
     // Check the direction of the requested stream.
     size_t peer_number = NPOS;

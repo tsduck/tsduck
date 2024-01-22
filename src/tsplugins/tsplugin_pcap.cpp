@@ -34,7 +34,7 @@ namespace ts {
 
     protected:
         // Implementation of AbstractDatagramInputPlugin.
-        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp) override;
+        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp) override;
 
     private:
         // Command line options:
@@ -54,7 +54,7 @@ namespace ts {
         // Working data:
         PcapFilter           _pcap_udp {};          // Pcap file, in UDP mode.
         PcapStream           _pcap_tcp {};          // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
-        MicroSecond          _first_tstamp = 0;     // Time stamp of first datagram.
+        cn::microseconds     _first_tstamp {};      // Time stamp of first datagram.
         IPv4SocketAddress    _actual_dest {};       // Actual destination UDP socket address.
         IPv4SocketAddress    _actual_source {};     // Actual source TCP socket address for HTTP mode.
         IPv4SocketAddressSet _all_sources {};       // All source addresses.
@@ -62,12 +62,12 @@ namespace ts {
         ByteBlock            _data {};              // Session data buffer, for HTTP mode.
         size_t               _data_next = 0;        // Next index in _data.
         bool                 _data_error = false;   // Content of _data is invalid.
-        bool (PcapInputPlugin::*_receive)(uint8_t*, size_t, size_t&, MicroSecond&) = nullptr; // Receive handler.
+        bool (PcapInputPlugin::*_receive)(uint8_t*, size_t, size_t&, cn::microseconds&) = nullptr; // Receive handler.
 
         // Internal receive methods.
-        bool receiveUDP(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp);
-        bool receiveEMMG(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp);
-        bool receiveHTTP(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp);
+        bool receiveUDP(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp);
+        bool receiveEMMG(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp);
+        bool receiveHTTP(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp);
 
         // Identify and extract TS packets from an EMMG/PDG <=> MUX data_provision message.
         bool isDataProvision(const uint8_t* data, size_t size);
@@ -192,7 +192,7 @@ bool ts::PcapInputPlugin::getOptions()
 
 bool ts::PcapInputPlugin::start()
 {
-    _first_tstamp = -1;
+    _first_tstamp = cn::microseconds(-1);
     _actual_dest = _destination;
     _actual_source = _source;
     _all_sources.clear();
@@ -248,7 +248,7 @@ bool ts::PcapInputPlugin::stop()
 // Input method
 //----------------------------------------------------------------------------
 
-bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
+bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp)
 {
     // Dispatch on appropriate receive handler.
     return (this->*_receive)(buffer, buffer_size, ret_size, timestamp);
@@ -259,7 +259,7 @@ bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, s
 // UDP input method
 //----------------------------------------------------------------------------
 
-bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, MicroSecond &timestamp)
+bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, cn::microseconds &timestamp)
 {
     IPv4Packet ip;
 
@@ -340,11 +340,11 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
         }
 
         // Adjust time stamps according to first one.
-        if (timestamp >= 0) {
-            if (_first_tstamp < 0) {
+        if (timestamp >= cn::microseconds::zero()) {
+            if (_first_tstamp < cn::microseconds::zero()) {
                 // This is the first time stamp, the origin.
                 _first_tstamp = timestamp;
-                timestamp = 0;
+                timestamp = cn::microseconds::zero();
             }
             else {
                 // Return a relative value from first timestamp.
@@ -362,7 +362,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
 // EMMG/PDG <=> MUX protocol TCP input method
 //----------------------------------------------------------------------------
 
-bool ts::PcapInputPlugin::receiveEMMG(uint8_t *buffer, size_t buffer_size, size_t &ret_size, MicroSecond &timestamp)
+bool ts::PcapInputPlugin::receiveEMMG(uint8_t *buffer, size_t buffer_size, size_t &ret_size, cn::microseconds& timestamp)
 {
     // Read all TCP sessions matching the source and destination until eof or read TS packets.
     ret_size = 0;
@@ -463,7 +463,7 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
 // HTTP input method
 //----------------------------------------------------------------------------
 
-bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, MicroSecond& timestamp)
+bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, cn::microseconds& timestamp)
 {
     ret_size = 0;
 

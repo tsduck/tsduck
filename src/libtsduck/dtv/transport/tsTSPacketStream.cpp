@@ -36,7 +36,7 @@ void ts::TSPacketStream::resetPacketStream(TSPacketFormat format, AbstractReadSt
     _format = format;
     _reader = reader;
     _writer = writer;
-    _last_timestamp = 0;
+    _last_timestamp = ts::pcr_units::zero();
     _trail_size = 0;
 }
 
@@ -109,7 +109,8 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
         }
         else if (buffer->b[4] == SYNC_BYTE) {
             _format = TSPacketFormat::M2TS;
-            mdata.setInputTimeStamp(GetUInt32(buffer) & 0x3FFFFFFF, SYSTEM_CLOCK_FREQ, TimeSource::M2TS);
+            // M2TS timestamps are in PCR units.
+            mdata.setInputTimeStamp(ts::pcr_units(GetUInt32(buffer) & 0x3FFFFFFF), TimeSource::M2TS);
         }
         else if (buffer->b[0] == TSPacketMetadata::SERIALIZATION_MAGIC && buffer->b[TSPacketMetadata::SERIALIZATION_SIZE] == SYNC_BYTE) {
             _format = TSPacketFormat::DUCK;
@@ -220,8 +221,9 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                         max_packets--;
                         if (metadata != nullptr) {
                             if (_format == TSPacketFormat::M2TS) {
+                                // M2TS timestamps are in PCR units.
                                 metadata->reset();
-                                metadata->setInputTimeStamp(GetUInt32(header) & 0x3FFFFFFF, SYSTEM_CLOCK_FREQ, TimeSource::M2TS);
+                                metadata->setInputTimeStamp(ts::pcr_units(GetUInt32(header) & 0x3FFFFFFF), TimeSource::M2TS);
                             }
                             else {
                                 metadata->deserialize(header, TSPacketMetadata::SERIALIZATION_SIZE);
@@ -295,7 +297,7 @@ bool ts::TSPacketStream::writePackets(const TSPacket *buffer, const TSPacketMeta
                 // Build header.
                 if (_format == TSPacketFormat::M2TS) {
                     // 30-bit time stamp in PCR units (2 most-significant bits are copy-control).
-                    PutUInt32(header, uint32_t(_last_timestamp & 0x3FFFFFFF));
+                    PutUInt32(header, uint32_t(_last_timestamp.count()) & 0x3FFFFFFF);
                 }
                 else if (metadata != nullptr) {
                     // DUCK format with application-provided metadata.

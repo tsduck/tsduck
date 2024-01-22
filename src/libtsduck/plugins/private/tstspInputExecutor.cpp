@@ -243,7 +243,7 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
     if (count > 0 && !data[0].hasInputTimeStamp()) {
         const cn::nanoseconds current = monotonic_time::clock::now() - _start_time;
         for (size_t n = 0; n < count; ++n) {
-            data[n].setInputTimeStamp(current.count(), NanoSecPerSec, TimeSource::TSP);
+            data[n].setInputTimeStamp(current, TimeSource::TSP);
         }
     }
 

@@ -160,7 +160,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report = CERR);
+        bool receive(void* data, size_t max_size, size_t& ret_size, cn::microseconds& timestamp, Report& report = CERR);
 
         //!
         //! Get the total number of sent bytes since the socket was opened.

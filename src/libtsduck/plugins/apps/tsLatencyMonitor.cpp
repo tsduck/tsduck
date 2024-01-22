@@ -102,17 +102,17 @@ void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacket
         uint64_t pcr = pkt[i].getPCR();
         const bool has_pcr = pcr != INVALID_PCR;
         if (has_pcr) {
-            uint64_t timestamp = metadata[i].getInputTimeStamp();
+            const ts::pcr_units timestamp = metadata[i].getInputTimeStamp();
             // Checking to see if the buffer time has been reached, and pop back element (oldest element) if the buffer time has been reached
-            while (!timingDataList.empty() && (timestamp - timingDataList.back().timestamp) / SYSTEM_CLOCK_FREQ  >= _args.bufferTime) {
+            while (!timingDataList.empty() && (timestamp - timingDataList.back().timestamp) >= _args.bufferTime) {
                 timingDataList.pop_back();
             }
             timingDataList.push_front(TimingData{pcr, timestamp});
         }
     }
 
-    // Check whether the elapsed time since the last output exceeds the output interval (in seconds)
-    uint64_t timeDiff = (Time::CurrentUTC() - _last_output_time) / 1000;
+    // Check whether the elapsed time since the last output exceeds the output interval.
+    const cn::milliseconds timeDiff = cn::milliseconds(Time::CurrentUTC() - _last_output_time);
     if (timeDiff >= _args.outputInterval) {
         // Set output timer to current time
         _last_output_time = Time::CurrentUTC();
@@ -175,8 +175,8 @@ void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
 
             if (refTimingData.pcr == shiftTimingData.pcr) {
                 // Calculate the PCR delta if the PCR matches
-                int64_t pcrDelta = std::abs(int64_t(refTimingData.timestamp) - int64_t(shiftTimingData.timestamp));
-                double latency = double(pcrDelta) / SYSTEM_CLOCK_FREQ * 1000;
+                const ts::pcr_units::rep pcrDelta = std::abs(refTimingData.timestamp.count() - shiftTimingData.timestamp.count());
+                const double latency = double(pcrDelta) / SYSTEM_CLOCK_FREQ * 1000;
                 _max_latency = std::max(_max_latency, latency);
 
                 *_output_file << (refTimingDataList == &timingDataList1 ? refTimingData.pcr : shiftTimingData.pcr) << DEFAULT_CSV_SEPARATOR

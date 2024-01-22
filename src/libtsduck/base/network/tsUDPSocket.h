@@ -326,7 +326,7 @@ namespace ts {
                              IPv4SocketAddress& destination,
                              const AbortInterface* abort = nullptr,
                              Report& report = CERR,
-                             MicroSecond* timestamp = nullptr);
+                             cn::microseconds* timestamp = nullptr);
 
         // Implementation of Socket interface.
         virtual bool open(Report& report = CERR) override;
@@ -391,7 +391,7 @@ namespace ts {
         MReqSet           _mcast {};    // Current set of multicast memberships
 
         // Perform one receive operation. Hide the system mud. Return a system socket error code.
-        int receiveOne(void* data, size_t max_size, size_t& ret_size, IPv4SocketAddress& sender, IPv4SocketAddress& destination, Report& report, MicroSecond* timestamp);
+        int receiveOne(void* data, size_t max_size, size_t& ret_size, IPv4SocketAddress& sender, IPv4SocketAddress& destination, Report& report, cn::microseconds* timestamp);
 
         // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)

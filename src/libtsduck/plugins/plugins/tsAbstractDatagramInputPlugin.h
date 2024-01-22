@@ -68,19 +68,19 @@ namespace ts {
         //! @param [out] timestamp Receive timestamp in micro-seconds or -1 if not available.
         //! @return True on success, false on error.
         //!
-        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp) = 0;
+        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp) = 0;
 
     private:
         // Order of priority for input timestamps. SYSTEM means lower layer from subclass (UDP, SRT, etc).
         enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
 
         // Configuration and command line options.
-        bool          _real_time = false;              // Real-time reception.
-        MilliSecond   _eval_time = 0;                  // Bitrate evaluation interval in milli-seconds
-        MilliSecond   _display_time = 0;               // Bitrate display interval in milli-seconds
-        Enumeration   _time_priority_enum {};          // Enumeration values for _time_priority
-        TimePriority  _time_priority {RTP_TSP};        // Priority of time stamps sources.
-        TimePriority  _default_time_priority{RTP_TSP}; // Priority of time stamps sources.
+        bool             _real_time = false;               // Real-time reception.
+        cn::milliseconds _eval_time {};                    // Bitrate evaluation interval in milli-seconds
+        cn::milliseconds _display_time {};                 // Bitrate display interval in milli-seconds
+        Enumeration      _time_priority_enum {};           // Enumeration values for _time_priority
+        TimePriority     _time_priority = RTP_TSP;         // Priority of time stamps sources.
+        TimePriority     _default_time_priority = RTP_TSP; // Priority of time stamps sources.
 
         // Working data.
         Time          _next_display {};     // Next bitrate display time

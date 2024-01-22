@@ -253,6 +253,18 @@ namespace ts {
     }
 
     //!
+    //! Compute the bitrate from a number of bytes transmitted during a given duration.
+    //! @param [in] bytes Number of bytes during @a duration.
+    //! @param [in] duration A duration in any std::chrono::duration units.
+    //! @return TS bitrate in bits/second, based on 188-byte packets.
+    //!
+    template <class Rep, class Period>
+    inline BitRate BytesBitRate(uint64_t bytes, const cn::duration<Rep, Period>& duration)
+    {
+        return duration.count() == 0 ? 0 : BitRate(bytes * 8 * Period::den) / (Period::num * BitRate(duration.count()));
+    }
+
+    //!
     //! Compute the bitrate from a number of packets transmitted during a given duration.
     //! @param [in] packets Number of packets during @a duration.
     //! @param [in] duration A duration in any std::chrono::duration units.
@@ -261,7 +273,7 @@ namespace ts {
     template <class Rep, class Period>
     inline BitRate PacketBitRate(PacketCounter packets, const cn::duration<Rep, Period>& duration)
     {
-        return duration.count() == 0 ? 0 : BitRate(packets * Period::den * PKT_SIZE_BITS) / (Period::num * BitRate(duration.count()));
+        return BytesBitRate(packets * PKT_SIZE, duration);
     }
 
     //!
