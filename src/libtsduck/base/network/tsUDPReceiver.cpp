@@ -347,7 +347,7 @@ bool ts::UDPReceiver::receive(void* data,
                               ts::IPv4SocketAddress& destination,
                               const ts::AbortInterface* abort,
                               ts::Report& report,
-                              MicroSecond* timestamp)
+                              cn::microseconds* timestamp)
 {
     // Loop on packet reception until one matching filtering criteria is found.
     for (;;) {
@@ -360,7 +360,7 @@ bool ts::UDPReceiver::receive(void* data,
         // Debug (level 2) message for each message.
         if (report.maxSeverity() >= 2) {
             // Prior report level checking to avoid evaluating parameters when not necessary.
-            report.log(2, u"received UDP packet, source: %s, destination: %s, timestamp: %'d", {sender, destination, timestamp != nullptr ? *timestamp : -1});
+            report.log(2, u"received UDP packet, source: %s, destination: %s, timestamp: %'d", {sender, destination, timestamp != nullptr ? timestamp->count() : -1});
         }
 
         // Check the destination address to exclude packets from other streams.

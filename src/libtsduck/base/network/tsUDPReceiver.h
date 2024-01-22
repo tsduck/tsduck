@@ -117,7 +117,7 @@ namespace ts {
                              IPv4SocketAddress& destination,
                              const AbortInterface* abort = nullptr,
                              Report& report = CERR,
-                             MicroSecond* timestamp = nullptr) override;
+                             cn::microseconds* timestamp = nullptr) override;
 
     private:
         bool              _dest_is_parameter = true;   // Destination address is a command line parameter, not an option.

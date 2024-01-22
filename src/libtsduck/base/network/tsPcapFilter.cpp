@@ -23,8 +23,8 @@ void ts::PcapFilter::defineArgs(Args& args)
          u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
          u"This is the same value as seen on Wireshark in the leftmost column.");
 
-    args.option(u"first-timestamp", 0, Args::UNSIGNED);
-    args.help(u"first-timestamp", u"micro-seconds",
+    args.option<cn::microseconds>(u"first-timestamp");
+    args.help(u"first-timestamp",
          u"Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture. "
          u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
 
@@ -38,8 +38,8 @@ void ts::PcapFilter::defineArgs(Args& args)
          u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
          u"This is the same value as seen on Wireshark in the leftmost column.");
 
-    args.option(u"last-timestamp", 0, Args::UNSIGNED);
-    args.help(u"last-timestamp", u"micro-seconds",
+    args.option<cn::microseconds>(u"last-timestamp");
+    args.help(u"last-timestamp",
          u"Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture. "
          u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
 
@@ -53,23 +53,23 @@ void ts::PcapFilter::defineArgs(Args& args)
 // Get a date option and return it as micro-seconds since Unix epoch.
 //----------------------------------------------------------------------------
 
-ts::MicroSecond ts::PcapFilter::getDate(Args& args, const ts::UChar* arg_name, ts::MicroSecond def_value)
+cn::microseconds ts::PcapFilter::getDate(Args& args, const ts::UChar* arg_name, cn::microseconds def_value)
 {
-    ts::Time date;
+    Time date;
     const ts::UString str(args.value(arg_name));
     if (str.empty()) {
         return def_value;
     }
-    else if (!date.decode(str, ts::Time::ALL)) {
+    else if (!date.decode(str, Time::ALL)) {
         args.error(u"invalid date \"%s\", use format \"YYYY/MM/DD:hh:mm:ss.mmm\"", {str});
         return def_value;
     }
-    else if (date < ts::Time::UnixEpoch) {
-        args.error(u"invalid date %s, must be after %s", {str, ts::Time::UnixEpoch});
+    else if (date < Time::UnixEpoch) {
+        args.error(u"invalid date %s, must be after %s", {str, Time::UnixEpoch});
         return def_value;
     }
     else {
-        return (date - ts::Time::UnixEpoch) * ts::MicroSecPerMilliSec;
+        return cn::duration_cast<cn::microseconds>(cn::milliseconds(date - ts::Time::UnixEpoch));
     }
 }
 
@@ -82,10 +82,10 @@ bool ts::PcapFilter::loadArgs(DuckContext& duck, Args& args)
 {
     args.getIntValue(_opt_first_packet, u"first-packet", 0);
     args.getIntValue(_opt_last_packet, u"last-packet", std::numeric_limits<size_t>::max());
-    args.getIntValue(_opt_first_time_offset, u"first-timestamp", 0);
-    args.getIntValue(_opt_last_time_offset, u"last-timestamp", std::numeric_limits<ts::MicroSecond>::max());
-    _opt_first_time = getDate(args, u"first-date", 0);
-    _opt_last_time = getDate(args, u"last-date", std::numeric_limits<ts::MicroSecond>::max());
+    args.getChronoValue(_opt_first_time_offset, u"first-timestamp", cn::microseconds::zero());
+    args.getChronoValue(_opt_last_time_offset, u"last-timestamp", cn::microseconds::max());
+    _opt_first_time = getDate(args, u"first-date", cn::microseconds::zero());
+    _opt_last_time = getDate(args, u"last-date", cn::microseconds::max());
     return true;
 }
 
@@ -198,7 +198,7 @@ bool ts::PcapFilter::open(const fs::path& filename, Report& report)
 // Read an IPv4 packet, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFilter::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report)
+bool ts::PcapFilter::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Report& report)
 {
     // Read packets until one which matches all filters.
     for (;;) {
@@ -256,7 +256,7 @@ bool ts::PcapFilter::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report
             report.log(_display_addresses_severity, u"selected stream %s %s %s", {_source, _bidirectional_filter ? u"<->" : u"->", _destination});
         }
 
-        report.log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'d", {packet.size(), packet.protocolDataSize(), timestamp});
+        report.log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'d", {packet.size(), packet.protocolDataSize(), timestamp.count()});
         return true;
     }
 }

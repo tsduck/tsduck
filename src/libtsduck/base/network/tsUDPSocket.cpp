@@ -17,7 +17,7 @@
 
 // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)
-    volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = 0;
+    volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = nullptr;
 #endif
 
 
@@ -429,9 +429,6 @@ bool ts::UDPSocket::send(const void* data, size_t size, const IPv4SocketAddress&
 
 //----------------------------------------------------------------------------
 // Receive a message.
-// If abort interface is non-zero, invoke it when I/O is interrupted
-// (in case of user-interrupt, return, otherwise retry).
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::UDPSocket::receive(void* data,
@@ -441,11 +438,11 @@ bool ts::UDPSocket::receive(void* data,
                             IPv4SocketAddress& destination,
                             const AbortInterface* abort,
                             Report& report,
-                            MicroSecond* timestamp)
+                            cn::microseconds* timestamp)
 {
     // Clear timestamp if specified.
     if (timestamp != nullptr) {
-        *timestamp = -1;
+        *timestamp = cn::microseconds(-1);
     }
 
     // Loop on unsollicited interrupts
@@ -496,7 +493,7 @@ int ts::UDPSocket::receiveOne(void* data,
                               IPv4SocketAddress& sender,
                               IPv4SocketAddress& destination,
                               Report& report,
-                              MicroSecond* timestamp)
+                              cn::microseconds* timestamp)
 {
     // Clear returned values
     ret_size = 0;
@@ -519,8 +516,8 @@ int ts::UDPSocket::receiveOne(void* data,
 #if defined(TS_WINDOWS)
 
     // First, get the address of WSARecvMsg the first time we use it.
-    if (_wsaRevcMsg == 0) {
-        ::LPFN_WSARECVMSG funcAddress = 0;
+    if (_wsaRevcMsg == nullptr) {
+        ::LPFN_WSARECVMSG funcAddress = nullptr;
         ::GUID guid = WSAID_WSARECVMSG;
         ::DWORD dwBytes = 0;
         const ::SOCKET sock = ::socket(AF_INET, SOCK_DGRAM, 0);
@@ -626,13 +623,13 @@ int ts::UDPSocket::receiveOne(void* data,
 
         // On Linux, look for receive timestamp.
 #if defined(TS_LINUX)
-        else if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMPNS && cmsg->cmsg_len >= sizeof(::timespec)) {
+        if (timestamp != nullptr && cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SO_TIMESTAMPNS && cmsg->cmsg_len >= sizeof(::timespec)) {
             // System time stamp in nanosecond.
             const ::timespec* ts = reinterpret_cast<const ::timespec*>(CMSG_DATA(cmsg));
-            const NanoSecond nano = NanoSecond(ts->tv_sec) * NanoSecPerSec + NanoSecond(ts->tv_nsec);
+            const cn::nanoseconds::rep nano = cn::nanoseconds::rep(ts->tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(ts->tv_nsec);
             // System time stamp is valid when not zero, convert it to micro-seconds.
             if (nano != 0) {
-                *timestamp = nano / NanoSecPerMicroSec;
+                *timestamp = cn::duration_cast<cn::microseconds>(cn::nanoseconds(nano));
             }
         }
 #endif

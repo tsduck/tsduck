@@ -88,7 +88,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error or end of file.
         //!
-        bool readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t& size, MicroSecond& timestamp, Report& report);
+        bool readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report);
 
         //!
         //! Check if the next data to read is at start of TCP session.
@@ -144,14 +144,14 @@ namespace ts {
         {
         public:
             DataBlock() = default;
-            DataBlock(const IPv4Packet& pkt, MicroSecond tstamp);
+            DataBlock(const IPv4Packet& pkt, cn::microseconds tstamp);
 
-            ByteBlock   data {};         // TCP payload
-            size_t      index = 0;       // index of next byte to read in data
-            uint64_t    sequence = 0;    // TCP sequence number at start of data, expanded for
-            bool        start = false;   // start of TCP stream.
-            bool        end = false;     // end of TCP stream.
-            MicroSecond timestamp = -1;  // capture time stamp.
+            ByteBlock        data {};         // TCP payload
+            size_t           index = 0;       // index of next byte to read in data
+            uint64_t         sequence = 0;    // TCP sequence number at start of data, expanded for
+            bool             start = false;   // start of TCP stream.
+            bool             end = false;     // end of TCP stream.
+            cn::microseconds timestamp = cn::microseconds(-1);  // capture time stamp.
         };
         using DataBlockPtr = SafePtr<DataBlock>;
         using DataBlockQueue = std::list<DataBlockPtr>;
@@ -170,7 +170,7 @@ namespace ts {
             bool dataAvailable() const;
 
             // Store the content of an IP packet at the right place in the queue.
-            void store(const IPv4Packet& pkt, MicroSecond tstamp);
+            void store(const IPv4Packet& pkt, cn::microseconds tstamp);
         };
 
         // Maximum number of out-of-sequence TCP segments after a segment is declared missing.

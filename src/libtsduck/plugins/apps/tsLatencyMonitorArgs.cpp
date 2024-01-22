@@ -20,12 +20,12 @@ void ts::LatencyMonitorArgs::defineArgs(Args& args)
     args.help(u"output-file", u"filename",
               u"Output file name for CSV reporting (standard error by default).");
 
-    args.option(u"buffer-time", 'b', Args::POSITIVE);
+    args.option<cn::seconds>(u"buffer-time", 'b');
     args.help(u"buffer-time",
               u"Specify the buffer time of timing data list in seconds. "
               u"By default, the buffer time is 1 seconds.");
 
-    args.option(u"output-interval", 0, Args::POSITIVE);
+    args.option<cn::seconds>(u"output-interval");
     args.help(u"output-interval",
               u"Specify the time interval between each output in seconds. "
               u"The default is 1 second.");
@@ -40,8 +40,8 @@ bool ts::LatencyMonitorArgs::loadArgs(Args& args)
 {
     appName = args.appName();
     args.getPathValue(outputName, u"output-file");
-    args.getIntValue(bufferTime, u"buffer-time", 1);
-    args.getIntValue(outputInterval, u"output-interval", 1);
+    args.getChronoValue(bufferTime, u"buffer-time", cn::seconds(1));
+    args.getChronoValue(outputInterval, u"output-interval", cn::seconds(1));
 
     // Load all plugin descriptions. Default output is the standard output file.
     ArgsWithPlugins* pargs = dynamic_cast<ArgsWithPlugins*>(&args);

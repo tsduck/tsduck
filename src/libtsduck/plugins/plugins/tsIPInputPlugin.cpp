@@ -91,7 +91,7 @@ bool ts::IPInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 // Datagram reception method.
 //----------------------------------------------------------------------------
 
-bool ts::IPInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
+bool ts::IPInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp)
 {
     IPv4SocketAddress sender;
     IPv4SocketAddress destination;

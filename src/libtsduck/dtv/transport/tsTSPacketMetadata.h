@@ -191,7 +191,7 @@ namespace ts {
         //!   various PCR in the transport stream. You can compare time stamp differences, not
         //!   absolute values.
         //!
-        uint64_t getInputTimeStamp() const { return _input_time; }
+        ts::pcr_units getInputTimeStamp() const { return ts::pcr_units(_input_time); }
 
         //!
         //! Get the identification of the source of the input time stamp.
@@ -212,17 +212,12 @@ namespace ts {
 
         //!
         //! Set the optional input time stamp of the packet.
-        //! @param [in] time_stamp Input time stamp value. This value should be taken from a
-        //! monotonic clock. The time unit is specified in @a ticks_per_second.
-        //! @param [in] ticks_per_second Base unit of the @a time_stamp value.
-        //! This is the number of units per second. For instance, @a ticks_per_second
-        //! should be 1000 when @a time_stamp is in milliseconds and it should be
-        //! @link SYSTEM_CLOCK_FREQ @endlink when @a time_stamp is in PCR units.
-        //! If @a ticks_per_second is zero, then the input time stamp is cleared.
+        //! @param [in] time_stamp Input time stamp value. This value should be taken from a monotonic clock.
         //! @param [in] source Identification of time stamp source.
         //! @see getInputTimeStamp()
         //!
-        void setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second, TimeSource source);
+        template <class Rep, class Period>
+        void setInputTimeStamp(const cn::duration<Rep,Period>& time_stamp, TimeSource source);
 
         //!
         //! Get the input time stamp as a string, typically for debug messages.
@@ -323,3 +318,24 @@ namespace ts {
     //!
     using PacketMetadataBuffer = ResidentBuffer<TSPacketMetadata>;
 }
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
+
+// Set the optional input time stamp of the packet.
+template <class Rep, class Period>
+void ts::TSPacketMetadata::setInputTimeStamp(const cn::duration<Rep,Period>& time_stamp, TimeSource source)
+{
+    _time_source = source;
+    const ts::pcr_units pcr = cn::duration_cast<ts::pcr_units>(time_stamp);
+    // Make sure we remain in the usual PCR range.
+    // This can create an issue if the input value wraps up at 2^64.
+    // In which case, the PCR value will warp at another value than PCR_SCALE.
+    _input_time = uint64_t(pcr.count() % PCR_SCALE);
+}
+
+#endif // DOXYGEN

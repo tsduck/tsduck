@@ -55,8 +55,8 @@ bool ts::PcapFile::open(const fs::path& filename, Report& report)
     _ipv4_packet_count = 0;
     _packets_size = 0;
     _ipv4_packets_size = 0;
-    _first_timestamp = -1;
-    _last_timestamp = -1;
+    _first_timestamp = cn::microseconds(-1);
+    _last_timestamp = cn::microseconds(-1);
 
     // Open the file.
     if (filename.empty() || filename == u"-") {
@@ -214,7 +214,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
             ifd.fcs_size = data[0];
         }
         else if (tag == PCAPNG_IF_TSOFFSET && len == 8) {
-            ifd.time_offset = MicroSecPerSec * get64(data);
+            ifd.time_offset = cn::seconds(cn::seconds::rep(get64(data)));
         }
         else if (tag == PCAPNG_IF_TSRESOL && len == 1) {
             if ((data[0] & 0x80) == 0) {
@@ -230,7 +230,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
     }
 
     report.debug(u"pcap-ng interface#%d: link type: %d, time units/second: %'d, time offset: %'d microsec, FCS length: %d bytes",
-                 {_if.size(), ifd.link_type, ifd.time_units, ifd.time_offset, ifd.fcs_size});
+                 {_if.size(), ifd.link_type, ifd.time_units, ifd.time_offset.count(), ifd.fcs_size});
 
     // Add the interface description.
     _if.push_back(ifd);
@@ -302,11 +302,11 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
 // Read the next IPv4 packet (headers included).
 //----------------------------------------------------------------------------
 
-bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report)
+bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Report& report)
 {
     // Clear output values.
     packet.clear();
-    timestamp = -1;
+    timestamp = cn::microseconds(-1);
 
     // Check that the file is open.
     if (_in == nullptr) {
@@ -329,7 +329,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
         size_t cap_size = 0;   // captured packet size
         size_t orig_size = 0;  // original packet size (on network)
         size_t if_index = 0;   // interface index
-        timestamp = -1;
+        timestamp = cn::microseconds(-1);
 
         // We are at the beginning of a data block.
         if (_ng) {
@@ -369,19 +369,19 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
                     // Take care to overflow in tstamp * MilliSecPerSec. Sometimes, the timestamp is a full time
                     // since 1970 with time unit being 1,000,000,000. The value is close to the 64-bit max.
                     if (units == MicroSecPerSec) {
-                        timestamp = tstamp;
+                        timestamp = cn::microseconds(tstamp);
                     }
                     else if (units > MicroSecPerSec && units % MicroSecPerSec == 0) {
-                        timestamp = tstamp / (units / MicroSecPerSec);
+                        timestamp = cn::microseconds(tstamp / (units / MicroSecPerSec));
                     }
                     else if (units < MicroSecPerSec && MicroSecPerSec % units == 0) {
-                        timestamp = tstamp * (MicroSecPerSec / units);
+                        timestamp = cn::microseconds(tstamp * (MicroSecPerSec / units));
                     }
                     else if (mul_overflow(tstamp, MicroSecPerSec, tstamp * MicroSecPerSec)) {
-                        timestamp = SubSecond((double(tstamp) * double(MicroSecPerSec)) / double(units));
+                        timestamp = cn::microseconds(cn::microseconds::rep((double(tstamp) * double(MicroSecPerSec)) / double(units)));
                     }
                     else {
-                        timestamp = (tstamp * MicroSecPerSec) / units;
+                        timestamp = cn::microseconds((tstamp * MicroSecPerSec) / units);
                     }
                 }
             }
@@ -408,8 +408,10 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
             cap_size = get32(header + 8);
             orig_size = get32(header + 12);
 
-            // Compute time stamp. Time units is never null in pcap format.
-            timestamp = (MicroSecond(tstamp) * MicroSecPerSec) + (SubSecond(sub_tstamp) * MicroSecPerSec) / _if[0].time_units;
+            // Compute time stamp. Time units should never be null in pcap format.
+            timestamp = _if[0].time_units < 0 ?
+                cn::microseconds(-1) :
+                cn::microseconds((cn::microseconds::rep(tstamp) * MicroSecPerSec) + (cn::microseconds::rep(sub_tstamp) * MicroSecPerSec) / _if[0].time_units);
 
             // Read packet data.
             buffer.resize(cap_size);
@@ -430,9 +432,9 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
         if (if_index < _if.size()) {
             ifd = _if[if_index];
         }
-        if (timestamp >= 0) {
+        if (timestamp >= cn::microseconds::zero()) {
             timestamp += ifd.time_offset;
-            if (_first_timestamp < 0) {
+            if (_first_timestamp < cn::microseconds::zero()) {
                 _first_timestamp = timestamp;
             }
             _last_timestamp = timestamp;

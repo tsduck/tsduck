@@ -86,7 +86,7 @@ bool ts::SRTInputPlugin::abortInput()
 // Datagram reception method.
 //----------------------------------------------------------------------------
 
-bool ts::SRTInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
+bool ts::SRTInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp)
 {
     return _sock.receive(buffer, buffer_size, ret_size, timestamp, *tsp);
 }

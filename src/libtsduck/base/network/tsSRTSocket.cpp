@@ -1055,14 +1055,14 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAd
 
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Report& report)
 {
-    MicroSecond timestamp = 0; // unused
+    cn::microseconds timestamp {}; // unused
     return receive(data, max_size, ret_size, timestamp, report);
 }
 
-bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report)
+bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, cn::microseconds& timestamp, Report& report)
 {
     ret_size = 0;
-    timestamp = -1;
+    timestamp = cn::microseconds(-1);
 
     // If socket was disconnected or aborted, silently fail.
     if (_guts->disconnected || _guts->sock == SRT_INVALID_SOCK) {
@@ -1087,7 +1087,7 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Micro
         return false;
     }
     if (ctrl.srctime != 0) {
-        timestamp = MicroSecond(ctrl.srctime);
+        timestamp = cn::microseconds(cn::microseconds::rep(ctrl.srctime));
     }
     ret_size = size_t(ret);
     _guts->total_received_bytes += ret_size;

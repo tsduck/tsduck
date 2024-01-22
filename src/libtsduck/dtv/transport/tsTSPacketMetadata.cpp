@@ -71,38 +71,6 @@ ts::UString ts::TSPacketMetadata::labelsString(const UString& separator, const U
 // Input time stamp operations
 //----------------------------------------------------------------------------
 
-void ts::TSPacketMetadata::setInputTimeStamp(uint64_t time_stamp, uint64_t ticks_per_second, TimeSource source)
-{
-    _time_source = source;
-
-    if (ticks_per_second == 0) {
-        // Clear the time stamp.
-        _input_time = INVALID_PCR;
-    }
-    else {
-        // Convert into PCR units only when needed.
-        if (ticks_per_second != SYSTEM_CLOCK_FREQ) {
-            // Generic conversion: (time_stamp / ticks_per_second) * SYSTEM_CLOCK_FREQ;
-            // Try to avoid losing intermediate accuracy and avoid intermediate overflow at the same time.
-            const uint64_t intermediate = time_stamp * SYSTEM_CLOCK_FREQ;
-            if (intermediate >= time_stamp) {
-                // No intermediate overflow. No accuracy is lost.
-                time_stamp = intermediate / ticks_per_second;
-            }
-            else {
-                // Intermediate overflow. Do it the opposite way, possibly loosing intermediate accuracy.
-                // But, because there was an overflow, the time_stamp value but be already very large,
-                // reducing the impact of intermediate accuracy loss.
-                time_stamp = (time_stamp / ticks_per_second) * SYSTEM_CLOCK_FREQ;
-            }
-        }
-        // Make sure we remain in the usual PCR range.
-        // This can create an issue if the input value wraps up at 2^64.
-        // In which case, the PCR value will warp at another value than PCR_SCALE.
-        _input_time = time_stamp % PCR_SCALE;
-    }
-}
-
 void ts::TSPacketMetadata::clearInputTimeStamp()
 {
     _input_time = INVALID_PCR;
