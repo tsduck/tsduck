@@ -81,11 +81,11 @@ void ts::TDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     if (buf.canReadBytes(5)) {
         // The time reference is UTC as defined by DVB, but can be non-standard.
         const UString zone(disp.duck().timeReferenceName());
-        const MilliSecond offset = disp.duck().timeReferenceOffset();
+        const cn::milliseconds offset = disp.duck().timeReferenceOffset();
         const Time time(buf.getFullMJD());
 
         disp << margin << zone << " time: " << time.format(Time::DATETIME);
-        if (offset != 0) {
+        if (offset != cn::minutes::zero()) {
             disp << " (UTC: " << (time - offset).format(Time::DATETIME) << ")";
         }
         disp << std::endl;

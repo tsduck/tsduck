@@ -88,24 +88,24 @@ namespace ts {
         //! Number of days for all EIT schedule of one type (actual or other).
         //! All EIT schedule cover events for 64 complete days max.
         //!
-        static constexpr size_t TOTAL_DAYS = 64;
+        static constexpr cn::days TOTAL_DAYS = cn::days(64);
         //!
         //! Number of milliseconds per logical segments in EIT schedule.
         //! EIT schedule are logically divided into 32 segments.
         //! Each segment contains the events for a duration of 3 hours.
         //!
-        static constexpr MilliSecond SEGMENT_DURATION = 3 * MilliSecPerHour;
+        static constexpr cn::milliseconds SEGMENT_DURATION = cn::hours(3);
         //!
         //! Number of milliseconds per EIT schedule table id.
         //! EIT schedule are logically divided into 32 segments of 3 hours each.
         //! One table id consequently covers events for 4 complete days.
         //!
-        static constexpr MilliSecond TABLE_DURATION = SEGMENTS_PER_TABLE * SEGMENT_DURATION;
+        static constexpr cn::milliseconds TABLE_DURATION = SEGMENTS_PER_TABLE * SEGMENT_DURATION;
         //!
         //! Number of milliseconds for all EIT schedule of one type (actual or other).
         //! All EIT schedule cover events for 64 complete days max.
         //!
-        static constexpr MilliSecond TOTAL_DURATION = TOTAL_SEGMENTS_COUNT * SEGMENT_DURATION;
+        static constexpr cn::milliseconds TOTAL_DURATION = TOTAL_SEGMENTS_COUNT * SEGMENT_DURATION;
         //!
         //! Section header size of an EIT section.
         //!

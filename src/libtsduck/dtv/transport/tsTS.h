@@ -206,27 +206,43 @@ namespace ts {
     }
 
     //!
-    //! Compute the interval, in milliseconds, between two packets.
+    //! Compute the interval, in duration, between two bytes in the transport stream.
+    //! @tparam DURATION An instance of std::chrono::duration (by default, milliseconds).
     //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
-    //! @param [in] distance Distance between the two packets: 0 for the same
-    //! packet, 1 for the next packet (the default), etc.
-    //! @return Interval in milliseconds between the first byte of the first packet
-    //! and the first byte of the second packet.
+    //! @param [in] distance Distance between the two bytes.
+    //! @return Interval in DURATION units between the two bytes.
     //!
-    TSDUCKDLL inline MilliSecond PacketInterval(const BitRate& bitrate, PacketCounter distance = 1)
+    template <class DURATION = cn::milliseconds, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+    inline DURATION ByteInterval(const BitRate& bitrate, std::intmax_t distance)
     {
-        return bitrate == 0 ? 0 : ((distance * PKT_SIZE_BITS * MilliSecPerSec) / bitrate).toInt();
+        return DURATION(typename DURATION::rep(bitrate == 0 ? 0 : ((distance * 8 * DURATION::period::den) / (DURATION::period::num * bitrate)).toInt()));
     }
 
     //!
-    //! Compute the number of packets transmitted during a given duration in milliseconds.
+    //! Compute the interval, in duration, between two packets.
+    //! @tparam DURATION An instance of std::chrono::duration (by default, milliseconds).
     //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
-    //! @param [in] duration Number of milliseconds.
-    //! @return Number of packets during @a duration milliseconds.
+    //! @param [in] distance Distance between the two packets: 0 for the same
+    //! packet, 1 for the next packet, etc.
+    //! @return Interval in DURATION units between the first byte of the first packet
+    //! and the first byte of the second packet.
     //!
-    TSDUCKDLL inline PacketCounter PacketDistance(const BitRate& bitrate, MilliSecond duration)
+    template <class DURATION = cn::milliseconds, typename std::enable_if<std::is_integral<typename DURATION::rep>::value, int>::type = 0>
+    inline DURATION PacketInterval(const BitRate& bitrate, PacketCounter distance)
     {
-        return PacketCounter(((bitrate * (duration >= 0 ? duration : -duration)) / (MilliSecPerSec * PKT_SIZE_BITS)).toInt());
+        return ByteInterval<DURATION>(bitrate, distance * PKT_SIZE);
+    }
+
+    //!
+    //! Compute the number of bytes transmitted during a given duration.
+    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
+    //! @param [in] duration A duration in any std::chrono::duration units.
+    //! @return Number of bytes during @a duration.
+    //!
+    template <class Rep, class Period>
+    inline uint64_t ByteDistance(const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
+    {
+        return uint64_t(((bitrate * Period::num * (duration.count() >= 0 ? duration.count() : -duration.count())) / (Period::den * 8)).toInt());
     }
 
     //!
@@ -239,17 +255,6 @@ namespace ts {
     inline PacketCounter PacketDistance(const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
     {
         return PacketCounter(((bitrate * Period::num * (duration.count() >= 0 ? duration.count() : -duration.count())) / (Period::den * PKT_SIZE_BITS)).toInt());
-    }
-
-    //!
-    //! Compute the bitrate from a number of packets transmitted during a given duration in milliseconds.
-    //! @param [in] packets Number of packets during @a duration milliseconds.
-    //! @param [in] duration Number of milliseconds.
-    //! @return TS bitrate in bits/second, based on 188-byte packets.
-    //!
-    TSDUCKDLL inline BitRate PacketBitRate(PacketCounter packets, MilliSecond duration)
-    {
-        return duration == 0 ? 0 : BitRate(packets * MilliSecPerSec * PKT_SIZE_BITS) / BitRate(duration);
     }
 
     //!
@@ -575,20 +580,6 @@ namespace ts {
     //! @return The formatted string.
     //!
     TSDUCKDLL UString PTSToString(uint64_t pts, bool hexa = true, bool decimal = true, bool ms = true);
-
-    //!
-    //! Convert a PCR value to milliseconds.
-    //! @param [in] pcr The PCR value.
-    //! @return The corresponding number of milliseconds or -1 on invalid value.
-    //!
-    TSDUCKDLL MilliSecond PCRToMilliSecond(uint64_t pcr);
-
-    //!
-    //! Convert a PTS or DTS value to milliseconds.
-    //! @param [in] pts The PTS or DTS value.
-    //! @return The corresponding number of milliseconds or -1 on invalid value.
-    //!
-    TSDUCKDLL MilliSecond PTSToMilliSecond(uint64_t pts);
 
     //---------------------------------------------------------------------
     //! Adaptation field descriptor tags.

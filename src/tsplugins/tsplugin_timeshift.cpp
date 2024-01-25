@@ -31,9 +31,9 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool            _drop_initial = false;  // Drop initial packets instead of null.
-        MilliSecond     _time_shift_ms = 0;     // Time-shift in milliseconds.
-        TimeShiftBuffer _buffer {};             // The timeshift buffer logic.
+        bool             _drop_initial = false;  // Drop initial packets instead of null.
+        cn::milliseconds _time_shift_ms {};      // Time-shift in milliseconds.
+        TimeShiftBuffer  _buffer {};             // The timeshift buffer logic.
 
         // Try to initialize the buffer using the time as size.
         // Return false on fatal error only.
@@ -76,8 +76,8 @@ ts::TimeShiftPlugin::TimeShiftPlugin (TSP* tsp_) :
          u"Specify the size of the time-shift buffer in packets. "
          u"There is no default, the size of the buffer shall be specified either using --packets or --time.");
 
-    option(u"time", 't', UNSIGNED);
-    help(u"time", u"milliseconds",
+    option<cn::milliseconds>(u"time", 't');
+    help(u"time",
          u"Specify the size of the time-shift buffer in milliseconds. "
          u"The initial bitrate is used to convert this duration in number "
          u"of packets and this value is used as fixed-size for the buffer. "
@@ -93,12 +93,12 @@ ts::TimeShiftPlugin::TimeShiftPlugin (TSP* tsp_) :
 bool ts::TimeShiftPlugin::getOptions()
 {
     _drop_initial = present(u"drop-initial");
-    _time_shift_ms = intValue<MilliSecond>(u"time", 0);
+    getChronoValue(_time_shift_ms, u"time");
     const size_t packets = intValue<size_t>(u"packets", 0);
     _buffer.setBackupDirectory(value(u"directory"));
     _buffer.setMemoryPackets(intValue<size_t>(u"memory-packets", TimeShiftBuffer::DEFAULT_MEMORY_PACKETS));
 
-    if ((packets > 0 && _time_shift_ms > 0) || (packets == 0 && _time_shift_ms == 0)) {
+    if ((packets > 0 && _time_shift_ms > cn::milliseconds::zero()) || (packets == 0 && _time_shift_ms == cn::milliseconds::zero())) {
         tsp->error(u"specify exactly one of --packets and --time for time-shift buffer sizing");
         return false;
     }
@@ -118,7 +118,7 @@ bool ts::TimeShiftPlugin::getOptions()
 bool ts::TimeShiftPlugin::initBufferByTime()
 {
     // Try to open only when the buffer is not yet open and --time was specified.
-    if (!_buffer.isOpen() && _time_shift_ms > 0) {
+    if (!_buffer.isOpen() && _time_shift_ms > cn::milliseconds::zero()) {
         const BitRate bitrate = tsp->bitrate();
         if (bitrate > 0) {
             const PacketCounter packets = PacketDistance(bitrate, _time_shift_ms);
@@ -143,7 +143,7 @@ bool ts::TimeShiftPlugin::initBufferByTime()
 bool ts::TimeShiftPlugin::start()
 {
     // Initialize the buffer only when its size is specified in packets or the bitrate is already known.
-    return _time_shift_ms == 0 ? _buffer.open(*tsp) : initBufferByTime();
+    return _time_shift_ms == cn::milliseconds::zero() ? _buffer.open(*tsp) : initBufferByTime();
 }
 
 

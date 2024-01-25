@@ -15,7 +15,6 @@
 #include "tsVersionInfo.h"
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
-#include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsErrCodeReport.h"
@@ -284,7 +283,7 @@ namespace {
             ts::GitHubRelease::AssetList assets;
             it->getAssets(assets);
             const ts::Time startDate(it->publishDate());
-            const int days = int((endDate - startDate) / ts::MilliSecPerDay);
+            const cn::days::rep days = cn::duration_cast<cn::days>(endDate - startDate).count();
             const int downloads = it->assetDownloadCount();
             const int dlPerDay = days <= 0 ? downloads : downloads / days;
             std::cout << it->version().toJustifiedLeft(versionWidth) << "  "

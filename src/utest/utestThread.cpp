@@ -131,7 +131,7 @@ namespace {
             const ts::Time before(ts::Time::CurrentUTC());
             std::this_thread::sleep_for(_delay);
             const ts::Time after(ts::Time::CurrentUTC());
-            tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay.count() << ", after - before = " << (after - before) << std::endl;
+            tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay.count() << ", after - before = " << (after - before).count() << std::endl;
             TSUNIT_ASSERT(after >= before + _delay - _precision);
             _report = true;
         }
@@ -148,7 +148,7 @@ void ThreadTest::testTermination()
         TSUNIT_ASSERT(!thread.isCurrentThread());
     }
     const ts::Time after(ts::Time::CurrentUTC());
-    TSUNIT_ASSERT(after >= before + 200 - _precision);
+    TSUNIT_ASSERT(after >= before + cn::milliseconds(200) - _precision);
     TSUNIT_ASSERT(report);
 }
 
@@ -200,10 +200,10 @@ void ThreadTest::testDeleteWhenTerminated()
     }
     const ts::Time after(ts::Time::CurrentUTC());
     if (counter > 0) {
-        debug() << "ThreadTest::testDeleteWhenTerminated: ThreadDeleteWhenTerminated deleted after " << (after - before) << " milliseconds" << std::endl;
+        debug() << "ThreadTest::testDeleteWhenTerminated: ThreadDeleteWhenTerminated deleted after " << (after - before).count() << " milliseconds" << std::endl;
     }
     else {
-        TSUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", {after - before}).toUTF8());
+        TSUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", {(after - before).count()}).toUTF8());
     }
 }
 
@@ -267,8 +267,8 @@ void ThreadTest::testMutexTimeout()
 
     // Now, the thread holds the mutex for 100 ms.
     const ts::Time start(ts::Time::CurrentUTC());
-    const ts::Time dueTime1(start + 50 - _precision);
-    const ts::Time dueTime2(start + 100 - _precision);
+    const ts::Time dueTime1(start + cn::milliseconds(50) - _precision);
+    const ts::Time dueTime2(start + cn::milliseconds(100) - _precision);
 
     // Use assumptions instead of assertions for time-dependent checks.
     // Timing can be very weird on virtual machines which are used for unitary tests.

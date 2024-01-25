@@ -92,7 +92,7 @@ void ts::ATSCEIT::deserializePayload(PSIBuffer& buf, const Section& section)
         Event& event(events.newEntry());
         buf.skipBits(2);
         buf.getBits(event.event_id, 14);
-        event.start_time = Time::GPSSecondsToUTC(buf.getUInt32());
+        event.start_time = Time::GPSSecondsToUTC(cn::seconds(buf.getUInt32()));
         buf.skipBits(2);
         buf.getBits(event.ETM_location, 2);
         buf.getBits(event.length_in_seconds, 20);
@@ -140,7 +140,7 @@ void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // Serialize the event definition.
         buf.putBits(0xFF, 2);
         buf.putBits(event.event_id, 14);
-        buf.putUInt32(uint32_t(event.start_time.toGPSSeconds()));
+        buf.putUInt32(uint32_t(event.start_time.toGPSSeconds().count()));
         buf.putBits(0xFF, 2);
         buf.putBits(event.ETM_location, 2);
         buf.putBits(event.length_in_seconds, 20);
@@ -176,10 +176,10 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section
         while (buf.canReadBytes(8) && event_count-- > 0) {
             buf.skipBits(2);
             disp << margin << UString::Format(u"- Event Id: 0x%X (%<d)", {buf.getBits<uint16_t>(14)}) << std::endl;
-            disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+            disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(cn::seconds(buf.getUInt32())).format(Time::DATETIME) << std::endl;
             buf.skipBits(2);
             disp << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
-            disp << margin << UString::Format(u"  Duration: %d seconds", {buf.getBits<Second>(20)}) << std::endl;
+            disp << margin << UString::Format(u"  Duration: %d seconds", {buf.getBits<uint32_t>(20)}) << std::endl;
             disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Title text: ");
             disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
         }
@@ -202,7 +202,7 @@ void ts::ATSCEIT::buildXML(DuckContext& duck, xml::Element* root) const
         e->setIntAttribute(u"event_id", it.second.event_id, true);
         e->setDateTimeAttribute(u"start_time", it.second.start_time);
         e->setIntAttribute(u"ETM_location", it.second.ETM_location, true);
-        e->setIntAttribute(u"length_in_seconds", it.second.length_in_seconds, false);
+        e->setChronoAttribute(u"length_in_seconds", it.second.length_in_seconds, false);
         it.second.title_text.toXML(duck, e, u"title_text", true);
         it.second.descs.toXML(duck, e);
     }
@@ -229,7 +229,7 @@ bool ts::ATSCEIT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = xevent[i]->getIntAttribute(event.event_id, u"event_id", true, 0, 0, 0x3FFF) &&
              xevent[i]->getDateTimeAttribute(event.start_time, u"start_time", true) &&
              xevent[i]->getIntAttribute(event.ETM_location, u"ETM_location", true, 0, 0, 3) &&
-             xevent[i]->getIntAttribute<Second>(event.length_in_seconds, u"length_in_seconds", true, 0, 0, 0x000FFFFF) &&
+             xevent[i]->getChronoAttribute(event.length_in_seconds, u"length_in_seconds", true, cn::seconds::zero(), cn::seconds::zero(), cn::seconds(0x000FFFFF)) &&
              event.descs.fromXML(duck, xtitle, xevent[i], u"title_text") &&
              (xtitle.empty() || event.title_text.fromXML(duck, xtitle[0]));
     }

@@ -118,8 +118,7 @@ ts::BitRate ts::AbstractDatagramInputPlugin::getBitrate()
     else {
         // Evaluate bitrate since start of previous evaluation period.
         // The current period may be too short for correct evaluation.
-        const MilliSecond ms = Time::CurrentUTC() - _start_0;
-        return ms == 0 ? 0 : BitRate(_packets_0 * PKT_SIZE_BITS * MilliSecPerSec) / ms;
+        return PacketBitRate(_packets_0, Time::CurrentUTC() - _start_0);
     }
 }
 
@@ -239,10 +238,10 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
         // Check if evaluated bitrate should be displayed
         if (_display_time > cn::milliseconds::zero() && now >= _next_display) {
             _next_display += _display_time;
-            const MilliSecond ms_current = Time::CurrentUTC() - _start_0;
-            const MilliSecond ms_total = Time::CurrentUTC() - _start;
-            const BitRate br_current = ms_current == 0 ? 0 : BitRate(_packets_0 * PKT_SIZE_BITS * MilliSecPerSec) / ms_current;
-            const BitRate br_average = ms_total == 0 ? 0 : BitRate(_packets * PKT_SIZE_BITS * MilliSecPerSec) / ms_total;
+            const cn::milliseconds ms_current = Time::CurrentUTC() - _start_0;
+            const cn::milliseconds ms_total = Time::CurrentUTC() - _start;
+            const BitRate br_current = PacketBitRate(_packets_0, ms_current);
+            const BitRate br_average = PacketBitRate(_packets, ms_total);
             tsp->info(u"input bitrate: %s, average: %s", {
                 br_current == 0 ? u"undefined" : br_current.toString() + u" b/s",
                 br_average == 0 ? u"undefined" : br_average.toString() + u" b/s"});

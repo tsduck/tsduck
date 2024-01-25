@@ -505,7 +505,7 @@ void SysUtilsTest::testFileTime()
     // SysUtilsTest:      file local:  2020/08/27 11:23:25.000
 
     ts::Time::Fields beforeFields(before);
-    const ts::MilliSecond adjustment = beforeFields.millisecond < 100 ? ts::MilliSecPerSec : 0;
+    const cn::milliseconds adjustment = cn::milliseconds(beforeFields.millisecond < 100 ? 1009 : 0);
     beforeFields.millisecond = 0;
     ts::Time beforeBase(beforeFields);
     beforeBase -= adjustment;

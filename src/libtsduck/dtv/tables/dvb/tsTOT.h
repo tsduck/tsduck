@@ -73,7 +73,7 @@ namespace ts {
         //! @param minutes A time offset in minutes.
         //! @return A string like "+hh:mm" or "-hh:mm".
         //!
-        static UString timeOffsetFormat(int minutes);
+        static UString timeOffsetFormat(cn::minutes minutes);
 
         // Inherited methods
         DeclareDisplaySection();
@@ -92,6 +92,6 @@ namespace ts {
         void addDescriptors(DuckContext& duck, const DescriptorList& dlist);
 
         // Last encountered offset from UTC in the context, typically for ISDB.
-        mutable MilliSecond _time_reference_offset;
+        mutable cn::milliseconds _time_reference_offset;
     };
 }

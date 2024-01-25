@@ -40,7 +40,7 @@ namespace ts {
         //! @param [in] timeout Execution timeout in milliseconds.
         //! @param [in] pat_only If true, only collect the PAT, do not wait for more information.
         //!
-        TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, bool pat_only = false);
+        TSScanner(DuckContext& duck, Tuner& tuner, cn::milliseconds timeout, bool pat_only = false);
 
         //!
         //! Get the list of services.
@@ -53,38 +53,38 @@ namespace ts {
         //! Get the tuner parameters of the transport stream.
         //! @param [out] tp Returned safe pointer to the tuner parameters.
         //!
-        void getTunerParameters(ModulationArgs& tp) const {tp = _tparams;}
+        void getTunerParameters(ModulationArgs& tp) const { tp = _tparams; }
 
         //!
         //! Get the PAT of the transport stream.
         //! @param [out] pat Returned safe pointer to the PAT.
         //!
-        void getPAT(SafePtr<PAT>& pat) const {pat = _pat;}
+        void getPAT(SafePtr<PAT>& pat) const { pat = _pat; }
 
         //!
         //! Get the DVB SDT of the transport stream.
         //! @param [out] sdt Returned safe pointer to the DVB SDT.
         //!
-        void getSDT(SafePtr<SDT>& sdt) const {sdt = _sdt;}
+        void getSDT(SafePtr<SDT>& sdt) const { sdt = _sdt; }
 
         //!
         //! Get the DVB NIT of the transport stream.
         //! @param [out] nit Returned safe pointer to the DVB NIT.
         //!
-        void getNIT(SafePtr<NIT>& nit) const {nit = _nit;}
+        void getNIT(SafePtr<NIT>& nit) const { nit = _nit; }
 
         //!
         //! Get the ATSC MGT of the transport stream.
         //! @param [out] mgt Returned safe pointer to the ATSC MGT.
         //!
-        void getMGT(SafePtr<MGT>& mgt) const {mgt = _mgt;}
+        void getMGT(SafePtr<MGT>& mgt) const { mgt = _mgt; }
 
         //!
         //! Get the ATSC VCT of the transport stream.
         //! @param [out] vct Returned safe pointer to the ATSC VCT.
         //! The actual table is eiter a TVCT or a CVCT.
         //!
-        void getVCT(SafePtr<VCT>& vct) const {vct = _vct;}
+        void getVCT(SafePtr<VCT>& vct) const { vct = _vct; }
 
     private:
         DuckContext&   _duck;

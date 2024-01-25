@@ -126,7 +126,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_DuckContext_setTimeReferenceOffset(JNIEnv*
 {
     ts::DuckContext* duck = ts::jni::GetPointerField<ts::DuckContext>(env, obj, "nativeObject");
     if (duck != nullptr) {
-        duck->setTimeReferenceOffset(ts::MilliSecond(offset));
+        duck->setTimeReferenceOffset(cn::milliseconds(cn::milliseconds::rep(offset)));
     }
 }
 

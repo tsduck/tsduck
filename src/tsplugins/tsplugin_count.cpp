@@ -259,10 +259,10 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, TSPack
             }
 
             // Compute bitrates.
-            const MilliSecond duration = now.start - _last_report.start;
+            const cn::milliseconds duration = now.start - _last_report.start;
             BitRate countedBitRate = 0;
             BitRate totalBitRate = 0;
-            if (duration > 0) {
+            if (duration > cn::milliseconds::zero()) {
                 countedBitRate = PacketBitRate(now.counted_packets - _last_report.counted_packets, duration);
                 totalBitRate = PacketBitRate(now.total_packets - _last_report.total_packets, duration);
             }

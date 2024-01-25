@@ -314,7 +314,7 @@ namespace ts {
         // Fill packet payload with data from the first queued packet.
         void fillPacket(TSPacket& pkt, size_t& pktIndex);
 
-        // Compute the PCR distance from this packe to last PCR.
-        uint64_t getPCRDistance() { return (PacketInterval(_bitrate, _currentPacket - _pcrLastPacket) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec; }
+        // Compute the PCR distance from this packet to last PCR.
+        uint64_t getPCRDistance() { return PacketInterval<ts::pcr_units>(_bitrate, _currentPacket - _pcrLastPacket).count(); }
     };
 }

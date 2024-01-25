@@ -173,8 +173,7 @@ bool ts::TimePlugin::start()
 
 
 //----------------------------------------------------------------------------
-// Add time events in the list fro one option.
-// Return false if a time string is invalid
+// Add time events in the list for one option.
 //----------------------------------------------------------------------------
 
 bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
@@ -188,13 +187,13 @@ bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
             _status = status;
         }
         else if (_relative) {
-            // Decode relative time string (a number of seconds)
-            MilliSecond milliSeconds = 0;
+            // Decode relative time string (a number of seconds) into milliseconds.
+            cn::milliseconds::rep milliSeconds;
             if (!timeString.toInteger(milliSeconds, UString(), 3)) {
                 tsp->error(u"invalid relative number of seconds: %s", {timeString});
                 return false;
             }
-            _events.push_back(TimeEvent(status, start_time + milliSeconds));
+            _events.push_back(TimeEvent(status, start_time + cn::milliseconds(milliSeconds)));
         }
         else {
             // Decode an absolute time string

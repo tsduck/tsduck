@@ -459,7 +459,7 @@ namespace ts {
         Packetizer           _packetizer;                // Packetizer for generated EIT's.
         EServiceMap          _services {};               // Map of services -> segments -> events and sections.
         ESectionListArray    _injects {};                // Arrays of sections for injection.
-        MilliSecond          _section_gap = 30;          // Minimum gap between sections of the same tid/tidext, DVB specifies at least 25 ms.
+        cn::milliseconds     _section_gap = cn::milliseconds(30);  // Minimum gap between sections of the same tid/tidext, DVB specifies at least 25 ms.
         TID                  _last_tid = TID_NULL;       // TID of last injected section, or 0.
         uint16_t             _last_tidext = 0;           // TIDEXT of last injected section.
         size_t               _last_index = 0;            // Queue index of last injected section.

@@ -25,7 +25,7 @@ void ts::hls::PlayList::clear()
     _fileBase.clear();
     _isURL = false;
     _url.clear();
-    _targetDuration = 0;
+    _targetDuration = cn::seconds::zero();
     _mediaSequence = 0;
     _endList = false;
     _utcDownload = Time::Epoch;
@@ -134,7 +134,7 @@ bool ts::hls::PlayList::setTypeMedia(Report& report)
 // Set various properties in the playlist.
 //----------------------------------------------------------------------------
 
-bool ts::hls::PlayList::setTargetDuration(ts::Second duration, Report& report)
+bool ts::hls::PlayList::setTargetDuration(cn::seconds duration, Report& report)
 {
     if (setTypeMedia(report)) {
         _targetDuration = duration;
@@ -723,7 +723,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 }
                 case Tag::TARGETDURATION: {
                     // #EXT-X-TARGETDURATION:s
-                    if (!tagParams.toInteger(_targetDuration) && strict) {
+                    if (!tagParams.toChrono(_targetDuration) && strict) {
                         report.error(u"invalid target duration in %s", {line});
                         _valid = false;
                     }
@@ -982,8 +982,8 @@ ts::UString ts::hls::PlayList::toString() const
             str.format(u", %d alternative rendition playlists", {_altPlaylists.size()});
         }
     }
-    if (_targetDuration > 0) {
-        str.format(u", %d seconds/segment", {_targetDuration});
+    if (_targetDuration > cn::seconds::zero()) {
+        str.format(u", %d seconds/segment", {_targetDuration.count()});
     }
     return str;
 }
@@ -1130,7 +1130,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
     }
     else if (isMedia()) {
         // Global tags.
-        text.format(u"#%s:%d\n", {TagNames.name(Tag::TARGETDURATION), _targetDuration});
+        text.format(u"#%s:%d\n", {TagNames.name(Tag::TARGETDURATION), _targetDuration.count()});
         text.format(u"#%s:%d\n", {TagNames.name(Tag::MEDIA_SEQUENCE), _mediaSequence});
         if (_type == PlayListType::VOD) {
             text.format(u"#%s:VOD\n", {TagNames.name(Tag::PLAYLIST_TYPE)});
@@ -1142,7 +1142,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
         // Loop on all media segments.
         for (const auto& seg : _segments) {
             if (!seg.relativeURI.empty()) {
-                text.format(u"#%s:%d.%03d,%s\n", {TagNames.name(Tag::EXTINF), seg.duration / MilliSecPerSec, seg.duration % MilliSecPerSec, seg.title});
+                text.format(u"#%s:%d.%03d,%s\n", {TagNames.name(Tag::EXTINF), seg.duration.count() / 1000, seg.duration.count() % 1000, seg.title});
                 if (seg.bitrate > 1024) {
                     text.format(u"#%s:%d\n", {TagNames.name(Tag::BITRATE), (seg.bitrate / 1024).toInt()});
                 }

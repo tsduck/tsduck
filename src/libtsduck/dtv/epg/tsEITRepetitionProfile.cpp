@@ -14,26 +14,26 @@
 //----------------------------------------------------------------------------
 
 const ts::EITRepetitionProfile ts::EITRepetitionProfile::SatelliteCable{
-    8,       // prime_days
-    {        // cycle_seconds
-        2,   // PF_ACTUAL
-        10,  // PF_OTHER
-        10,  // SCHED_ACTUAL_PRIME
-        10,  // SCHED_OTHER_PRIME
-        30,  // SCHED_ACTUAL_LATER
-        30   // SCHED_OTHER_LATER
+    cn::days(8),          // prime_days
+    {                     // cycle_seconds
+        cn::seconds(2),   // PF_ACTUAL
+        cn::seconds(10),  // PF_OTHER
+        cn::seconds(10),  // SCHED_ACTUAL_PRIME
+        cn::seconds(10),  // SCHED_OTHER_PRIME
+        cn::seconds(30),  // SCHED_ACTUAL_LATER
+        cn::seconds(30)   // SCHED_OTHER_LATER
     }
 };
 
 const ts::EITRepetitionProfile ts::EITRepetitionProfile::Terrestrial{
-    1,       // prime_days
-    {        // cycle_seconds
-        2,   // PF_ACTUAL
-        20,  // PF_OTHER
-        10,  // SCHED_ACTUAL_PRIME
-        60,  // SCHED_OTHER_PRIME
-        30,  // SCHED_ACTUAL_LATER
-        300  // SCHED_OTHER_LATER
+    cn::days(1),          // prime_days
+    {                     // cycle_seconds
+        cn::seconds(2),   // PF_ACTUAL
+        cn::seconds(20),  // PF_OTHER
+        cn::seconds(10),  // SCHED_ACTUAL_PRIME
+        cn::seconds(60),  // SCHED_OTHER_PRIME
+        cn::seconds(30),  // SCHED_ACTUAL_LATER
+        cn::seconds(300)  // SCHED_OTHER_LATER
     }
 };
 
@@ -42,12 +42,11 @@ const ts::EITRepetitionProfile ts::EITRepetitionProfile::Terrestrial{
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::EITRepetitionProfile::EITRepetitionProfile(size_t days, std::initializer_list<size_t> cycles) :
-    prime_days(std::min(days, EIT::TOTAL_DAYS)),
-    cycle_seconds()
+ts::EITRepetitionProfile::EITRepetitionProfile(cn::days days, std::initializer_list<cn::seconds> cycles) :
+    prime_days(std::min(days, EIT::TOTAL_DAYS))
 {
     auto it = cycles.begin();
-    size_t previous = 10;  // default cycle
+    cn::seconds previous = cn::seconds(10);  // default cycle
     for (size_t index = 0; index < cycle_seconds.size(); ++index) {
         if (it != cycles.end()) {
             previous = *it++;
@@ -63,17 +62,17 @@ ts::EITRepetitionProfile::EITRepetitionProfile(size_t days, std::initializer_lis
 
 ts::Time ts::EITRepetitionProfile::laterPeriod(const Time& now) const
 {
-    return now.thisDay() + std::min(prime_days, EIT::TOTAL_DAYS) * MilliSecPerDay;
+    return now.thisDay() + std::min(prime_days, EIT::TOTAL_DAYS);
 }
 
 ts::TID ts::EITRepetitionProfile::laterTableId(bool actual) const
 {
-    return EIT::SegmentToTableId(actual, prime_days * EIT::SEGMENTS_PER_DAY);
+    return EIT::SegmentToTableId(actual, prime_days.count() * EIT::SEGMENTS_PER_DAY);
 }
 
 uint8_t ts::EITRepetitionProfile::laterSectionNumber() const
 {
-    return EIT::SegmentToSection(prime_days * EIT::SEGMENTS_PER_DAY);
+    return EIT::SegmentToSection(prime_days.count() * EIT::SEGMENTS_PER_DAY);
 }
 
 
@@ -97,7 +96,7 @@ ts::EITProfile ts::EITRepetitionProfile::sectionToProfile(const Section& section
     }
 }
 
-size_t ts::EITRepetitionProfile::repetitionSeconds(const Section& section)
+cn::seconds ts::EITRepetitionProfile::repetitionSeconds(const Section& section)
 {
     return cycle_seconds[size_t(sectionToProfile(section))];
 }

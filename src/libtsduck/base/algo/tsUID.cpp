@@ -31,7 +31,7 @@ ts::UID::UID()
 #else
         ::getpid();
 #endif
-    _next_uid = (process << 40) | ((uint64_t(Time::CurrentUTC() - Time::Epoch) & 0x00FFFFFF) << 16);
+    _next_uid = (process << 40) | ((uint64_t((Time::CurrentUTC() - Time::Epoch).count()) & 0x00FFFFFF) << 16);
 }
 
 // Generate a new UID

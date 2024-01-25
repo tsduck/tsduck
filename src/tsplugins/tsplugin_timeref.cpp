@@ -43,7 +43,7 @@ namespace ts {
         bool              _use_timeref = false;     // Use a new time reference
         bool              _system_sync = false;     // Synchronous with system clock.
         bool              _update_local = false;    // Update local time info, not only UTC
-        MilliSecond       _add_milliseconds = 0;    // Add this to all time values
+        cn::milliseconds  _add_milliseconds {};     // Add this to all time values
         Time              _startref {};             // Starting value of new time reference
         int               _local_offset = INT_MAX;  // Local time offset in minutes (INT_MAX if unspecified)
         int               _next_offset = INT_MAX;   // Next time offset after DST change, in minutes (INT_MAX if unspecified)
@@ -75,8 +75,8 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"timeref", ts::TimeRefPlugin);
 ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Update TDT and TOT with a new time reference", u"[options]")
 {
-    option(u"add", 'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-    help(u"add", u"seconds",
+    option<cn::seconds>(u"add", 'a', 0, 0, std::numeric_limits<int64_t>::min(), std::numeric_limits<int64_t>::max());
+    help(u"add",
          u"Add the specified number of seconds to all UTC time. Specify a negative "
          u"value to make the time reference go backward.");
 
@@ -160,12 +160,12 @@ bool ts::TimeRefPlugin::getOptions()
     _update_eit = _eit_date_only || present(u"eit");
     _system_sync = present(u"system-synchronous");
     _use_timeref = _system_sync || present(u"start");
-    _add_milliseconds = MilliSecPerSec * intValue<int>(u"add", 0);
-    _local_offset = intValue<int>(u"local-time-offset", INT_MAX);
-    _next_offset = intValue<int>(u"next-time-offset", INT_MAX);
+    getChronoValue(_add_milliseconds, u"add");
+    getIntValue(_local_offset, u"local-time-offset", INT_MAX);
+    getIntValue(_next_offset, u"next-time-offset", INT_MAX);
     getIntValues(_only_regions, u"only-region");
 
-    if (_add_milliseconds != 0 && _use_timeref) {
+    if (_add_milliseconds != cn::milliseconds::zero() && _use_timeref) {
         tsp->error(u"--add cannot be used with --start or --system-synchronous");
         return false;
     }
@@ -175,7 +175,7 @@ bool ts::TimeRefPlugin::getOptions()
         // Decode an absolute time string (or "system", implicit with --system-synchronous).
         if (start.empty() || start == u"system") {
             _startref = Time::CurrentUTC();
-            _add_milliseconds = 0; // for --system-synchronous
+            _add_milliseconds = cn::milliseconds::zero(); // for --system-synchronous
             tsp->verbose(u"current system clock is %s", {_startref});
         }
         else if (!_startref.decode(start)) {
@@ -222,7 +222,7 @@ bool ts::TimeRefPlugin::start()
     _timeref = _startref;
     _timeref_pkt = 0;
     _eit_processor.reset();
-    _eit_active = _update_eit && _add_milliseconds != 0;
+    _eit_active = _update_eit && _add_milliseconds != cn::milliseconds::zero();
     if (_eit_active) {
         _eit_processor.addStartTimeOffet(_add_milliseconds, _eit_date_only);
     }
@@ -344,8 +344,8 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
 
         // Configure EIT processor if time offset not yet known.
         if (_update_eit && !_eit_active) {
-            const MilliSecond add = _timeref - time;
-            tsp->verbose(u"adding %'d milliseconds to all event start time in EIT's", {add});
+            const cn::milliseconds add = _timeref - time;
+            tsp->verbose(u"adding %'d milliseconds to all event start time in EIT's", {add.count()});
             _eit_processor.addStartTimeOffet(add, _eit_date_only);
             _eit_active = true;
         }

@@ -12,8 +12,8 @@
 #include "tsDVBCharTableUTF8.h"
 #include "tsARIBCharset.h"
 #include "tsHFBand.h"
-#include "tsTime.h"
 #include "tsCerrReport.h"
+#include "tsTime.h"
 #include "tsArgs.h"
 
 
@@ -67,7 +67,7 @@ void ts::DuckContext::reset()
     _defaultPDS = 0;
     _cmdStandards = _accStandards = Standards::NONE;
     _hfDefaultRegion.clear();
-    _timeReference = 0;
+    _timeReference = cn::milliseconds::zero();
 }
 
 
@@ -234,11 +234,11 @@ bool ts::DuckContext::setTimeReference(const UString& name)
     str.convertToUpper();
     str.remove(SPACE);
 
-    if (str == u"UTC") {
-        _timeReference = 0;
+    if (str.similar(u"UTC")) {
+        _timeReference = cn::milliseconds::zero();
         return true;
     }
-    else if (str == u"JST") {
+    else if (str.similar(u"JST")) {
         _timeReference = Time::JSTOffset;
         return true;
     }
@@ -246,8 +246,8 @@ bool ts::DuckContext::setTimeReference(const UString& name)
     size_t count = 0;
     size_t last = 0;
     UChar sign = CHAR_NULL;
-    SubSecond hours = 0;
-    SubSecond minutes = 0;
+    cn::hours::rep hours = 0;
+    cn::minutes::rep minutes = 0;
 
     str.scan(count, last, u"UTC%c%d:%d", {&sign, &hours, &minutes});
     if ((count == 2 || count == 3) &&
@@ -256,7 +256,7 @@ bool ts::DuckContext::setTimeReference(const UString& name)
         hours >= 0 && hours <= 12 &&
         minutes >= 0 && minutes <= 59)
     {
-        _timeReference = (sign == u'+' ? +1 : -1) * (hours * MilliSecPerHour + minutes * MilliSecPerMin);
+        _timeReference = (sign == u'+' ? +1 : -1) * (cn::hours(hours) + cn::minutes(minutes));
         return true;
     }
     else {
@@ -272,21 +272,20 @@ bool ts::DuckContext::setTimeReference(const UString& name)
 
 ts::UString ts::DuckContext::timeReferenceName() const
 {
-    if (_timeReference == 0) {
+    if (_timeReference == cn::minutes::zero()) {
         return u"UTC";  // no offset
     }
     else if (_timeReference == Time::JSTOffset) {
         return u"JST";
     }
     else {
-        const UChar sign = _timeReference < 0 ? u'-' : u'+';
-        const SubSecond hours = std::abs(_timeReference) / MilliSecPerHour;
-        const SubSecond minutes = (std::abs(_timeReference) / MilliSecPerMin) % 60;
-        if (minutes == 0) {
-            return UString::Format(u"UTC%c%d", {sign, hours});
+        const UChar sign = _timeReference < cn::minutes::zero() ? u'-' : u'+';
+        const cn::minutes::rep minutes = std::abs(cn::duration_cast<cn::minutes>(_timeReference).count());
+        if (minutes % 60 == 0) {
+            return UString::Format(u"UTC%c%d", {sign, minutes / 60});
         }
         else {
-            return UString::Format(u"UTC%c%d:%02d", {sign, hours, minutes});
+            return UString::Format(u"UTC%c%d:%02d", {sign, minutes / 60, minutes % 60});
         }
     }
 }
@@ -664,10 +663,10 @@ bool ts::DuckContext::loadArgs(Args& args)
             _timeReference = Time::JSTOffset;
         }
         else if (args.present(u"brazil")) {
-            _timeReference = -3 * MilliSecPerHour; // UTC-3
+            _timeReference = cn::hours(-3); // UTC-3
         }
         else if (args.present(u"philippines")) {
-            _timeReference = 8 * MilliSecPerHour; // UTC+8
+            _timeReference = cn::hours(+8); // UTC+8
         }
     }
 
@@ -681,18 +680,6 @@ bool ts::DuckContext::loadArgs(Args& args)
 //----------------------------------------------------------------------------
 // An opaque class to save all command line options, as loaded by loadArgs().
 //----------------------------------------------------------------------------
-
-ts::DuckContext::SavedArgs::SavedArgs() :
-    _definedCmdOptions(0),
-    _cmdStandards(Standards::NONE),
-    _charsetInName(),
-    _charsetOutName(),
-    _casId(CASID_NULL),
-    _defaultPDS(0),
-    _hfDefaultRegion(),
-    _timeReference(0)
-{
-}
 
 void ts::DuckContext::saveArgs(SavedArgs& args) const
 {

@@ -354,7 +354,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
         // Download the CA certificate file from CURL if requested.
         const bool certFileExists = certState != CERT_NONE && fs::exists(_certFile);
-        if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < MilliSecPerDay) {
+        if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < cn::days(1)) {
             // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
             certState = CERT_DOWNLOAD;
             _request._report.debug(u"reusing recent CA cert file %s", {_certFile});

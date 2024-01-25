@@ -80,7 +80,7 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
         event_size = std::min(size, EIT::EIT_EVENT_FIXED_SIZE + (GetUInt16(data + 10) & 0x0FFF));
         event_id = GetUInt16(data);
         DecodeMJD(data + 2, 5, start_time);
-        end_time = start_time + (MilliSecPerHour * DecodeBCD(data[7])) + (MilliSecPerMin * DecodeBCD(data[8])) + (MilliSecPerSec * DecodeBCD(data[9]));
+        end_time = start_time + cn::hours(DecodeBCD(data[7])) + cn::minutes(DecodeBCD(data[8])) + cn::seconds(DecodeBCD(data[9]));
         event_data.copy(data, event_size);
     }
 
@@ -232,7 +232,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
         }
 
         // Discard events too far in the future.
-        if (now != Time::Epoch && ev->start_time >= ref_midnight + EIT::TOTAL_DAYS * MilliSecPerDay) {
+        if (now != Time::Epoch && ev->start_time >= ref_midnight + EIT::TOTAL_DAYS) {
             _duck.report().verbose(u"discard event id 0x%X (%<d), %s, starting %s, too far in the future", {ev->event_id, service_id, ev->start_time});
             continue;
         }
@@ -1125,7 +1125,7 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
         }
 
         // Discard events too far in the future.
-        while (!srv.segments.empty() && srv.segments.back()->start_time >= last_midnight + EIT::TOTAL_DAYS * MilliSecPerDay) {
+        while (!srv.segments.empty() && srv.segments.back()->start_time >= last_midnight + EIT::TOTAL_DAYS) {
             srv.segments.pop_back();
         }
 
@@ -1210,7 +1210,7 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
                 sec->injected = true;
 
                 // Requeue next iteration of that section.
-                enqueueInjectSection(sec, now + _profile.repetitionSeconds(*sec->section) * MilliSecPerSec, false);
+                enqueueInjectSection(sec, now + _profile.repetitionSeconds(*sec->section), false);
                 _duck.report().log(2, u"inject section TID 0x%X (%<d), service 0x%X (%<d), at %s, requeue for %s",
                                    {section->tableId(), section->tableIdExtension(), now, sec->next_inject});
                 _last_tid = section->tableId();
@@ -1393,7 +1393,7 @@ void ts::EITGenerator::dumpSection(int lev, const UString& margin, const ESectio
         const size_t ev_size = std::min(size, EIT::EIT_EVENT_FIXED_SIZE + (GetUInt16(data + 10) & 0x0FFF));
         Time start;
         DecodeMJD(data + 2, 5, start);
-        Time end(start + (MilliSecPerHour * DecodeBCD(data[7])) + (MilliSecPerMin * DecodeBCD(data[8])) + (MilliSecPerSec * DecodeBCD(data[9])));
+        Time end(start + cn::hours(DecodeBCD(data[7])) + cn::minutes(DecodeBCD(data[8])) + cn::seconds(DecodeBCD(data[9])));
         rep.log(lev, u"%sevent id: 0x%X, start: %s, end: %s, %d bytes", {space, GetUInt16(data), start, end, ev_size});
         data += ev_size;
         size -= ev_size;

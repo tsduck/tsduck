@@ -374,7 +374,7 @@ namespace ts {
         //! @param [in] offset Offset from UTC in milli-seconds. Can be positive or negative.
         //! The default offset is zero, meaning plain UTC time.
         //!
-        void setTimeReferenceOffset(MilliSecond offset) { _timeReference = offset; }
+        void setTimeReferenceOffset(cn::milliseconds offset) { _timeReference = offset; }
 
         //!
         //! Set a non-standard time reference offset using a name.
@@ -389,7 +389,7 @@ namespace ts {
         //! Get the non-standard time reference offset.
         //! @return The offset from UTC in milli-seconds. Can be positive or negative.
         //!
-        MilliSecond timeReferenceOffset() const { return _timeReference; }
+        cn::milliseconds timeReferenceOffset() const { return _timeReference; }
 
         //!
         //! Get the non-standard time reference offset as a string.
@@ -473,17 +473,17 @@ namespace ts {
         {
         public:
             //! Default constructor.
-            SavedArgs();
+            SavedArgs() = default;
         private:
             friend class DuckContext;
-            int         _definedCmdOptions; // Defined command line options, indicate which fields are valid.
-            Standards   _cmdStandards;      // Forced standards from the command line.
-            UString     _charsetInName;     // Character set to interpret strings without prefix code.
-            UString     _charsetOutName;    // Preferred character set to generate strings.
-            uint16_t    _casId;             // Preferred CAS id.
-            PDS         _defaultPDS;        // Default PDS value if undefined.
-            UString     _hfDefaultRegion;   // Default region for UHF/VHF band.
-            MilliSecond _timeReference;     // Time reference in milli-seconds from UTC (used in ISDB variants).
+            int         _definedCmdOptions = 0;  // Defined command line options, indicate which fields are valid.
+            Standards   _cmdStandards = Standards::NONE;  // Forced standards from the command line.
+            UString     _charsetInName {};       // Character set to interpret strings without prefix code.
+            UString     _charsetOutName {};      // Preferred character set to generate strings.
+            uint16_t    _casId = CASID_NULL;     // Preferred CAS id.
+            PDS         _defaultPDS = 0;         // Default PDS value if undefined.
+            UString     _hfDefaultRegion {};     // Default region for UHF/VHF band.
+            cn::milliseconds _timeReference{};   // Time reference in milli-seconds from UTC (used in ISDB variants).
         };
 
         //!
@@ -499,23 +499,23 @@ namespace ts {
         void restoreArgs(const SavedArgs& args);
 
     private:
-        Report*        _report;        // Pointer to a report for error messages. Never null.
-        std::ostream*  _initial_out;   // Initial text output stream. Never null.
-        std::ostream*  _out;           // Pointer to text output stream. Never null.
-        std::ofstream  _outFile {};    // Open stream when redirected to a file by name.
-        const Charset* _charsetIn;     // DVB character set to interpret strings without prefix code.
-        const Charset* _charsetOut;    // Preferred DVB character set to generate strings.
-        uint16_t       _casId {CASID_NULL};              // Preferred CAS id.
-        PDS            _defaultPDS = 0;                  // Default PDS value if undefined.
-        bool           _useLeapSeconds = true;           // Explicit use of leap seconds.
-        Standards      _cmdStandards {Standards::NONE};  // Forced standards from the command line.
-        Standards      _accStandards {Standards::NONE};  // Accumulated list of standards in the context.
-        UString        _hfDefaultRegion {};              // Default region for UHF/VHF band.
-        MilliSecond    _timeReference = 0;               // Time reference in milli-seconds from UTC (used in ISDB variants).
-        UString        _timeRefConfig {};                // Time reference name from TSDuck configuration file.
-        int            _definedCmdOptions = 0;           // Mask of defined command line options (CMD_xxx below).
-        uint32_t       _lastRegistrationId = REGID_NULL; // Last encountered registration id in a registration descriptor.
-        std::set<uint32_t> _registrationIds {};          // Set of all registration ids.
+        Report*            _report;        // Pointer to a report for error messages. Never null.
+        std::ostream*      _initial_out;   // Initial text output stream. Never null.
+        std::ostream*      _out;           // Pointer to text output stream. Never null.
+        std::ofstream      _outFile {};    // Open stream when redirected to a file by name.
+        const Charset*     _charsetIn;     // DVB character set to interpret strings without prefix code.
+        const Charset*     _charsetOut;    // Preferred DVB character set to generate strings.
+        uint16_t           _casId {CASID_NULL};              // Preferred CAS id.
+        PDS                _defaultPDS = 0;                  // Default PDS value if undefined.
+        bool               _useLeapSeconds = true;           // Explicit use of leap seconds.
+        Standards          _cmdStandards {Standards::NONE};  // Forced standards from the command line.
+        Standards          _accStandards {Standards::NONE};  // Accumulated list of standards in the context.
+        UString            _hfDefaultRegion {};              // Default region for UHF/VHF band.
+        cn::milliseconds   _timeReference {};                // Time reference in milli-seconds from UTC (used in ISDB variants).
+        UString            _timeRefConfig {};                // Time reference name from TSDuck configuration file.
+        int                _definedCmdOptions = 0;           // Mask of defined command line options (CMD_xxx below).
+        uint32_t           _lastRegistrationId = REGID_NULL; // Last encountered registration id in a registration descriptor.
+        std::set<uint32_t> _registrationIds {};              // Set of all registration ids.
         const std::map<uint16_t, const UChar*> _predefined_cas {};  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.

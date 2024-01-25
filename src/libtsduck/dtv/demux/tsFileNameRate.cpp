@@ -15,7 +15,7 @@
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::FileNameRate::FileNameRate(const UString& name, MilliSecond rep) :
+ts::FileNameRate::FileNameRate(const UString& name, cn::milliseconds rep) :
     file_name(name),
     display_name(xml::Document::DisplayFileName(file_name)),
     inline_xml(xml::Document::IsInlineXML(file_name)),

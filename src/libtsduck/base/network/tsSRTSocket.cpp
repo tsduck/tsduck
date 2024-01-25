@@ -231,8 +231,8 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"packets that have no chance to be delivered in time. It is automatically enabled "
               u"in sender if receiver supports it.");
 
-    args.option(u"statistics-interval", 0, Args::POSITIVE);
-    args.help(u"statistics-interval", u"milliseconds",
+    args.option<cn::milliseconds>(u"statistics-interval");
+    args.help(u"statistics-interval",
               u"Report SRT usage statistics at regular intervals, in milliseconds. "
               u"The specified interval is a minimum value, actual reporting can occur "
               u"only when data are exchanged over the SRT socket.");
@@ -458,8 +458,8 @@ public:
      bool        final_stats = false;
      bool        json_line = false;
      UString     json_prefix {};
-     MilliSecond stats_interval = 0;
-     SRTStatMode stats_mode = SRTStatMode::ALL;
+     cn::milliseconds stats_interval = cn::milliseconds(0);
+     SRTStatMode      stats_mode = SRTStatMode::ALL;
 private:
      // Callback which is called on any incoming connection.
      static int listenCallback(void* param, SRTSOCKET ns, int hsversion, const ::sockaddr* peeraddr, const char* streamid);
@@ -577,7 +577,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
 
     // Reset send/receive statistics.
     _guts->total_sent_bytes = _guts->total_received_bytes = 0;
-    if (_guts->stats_interval > 0) {
+    if (_guts->stats_interval > cn::milliseconds::zero()) {
         _guts->next_stats = Time::CurrentUTC() + _guts->stats_interval;
     }
 
@@ -634,7 +634,7 @@ bool ts::SRTSocket::close(Report& report)
 bool ts::SRTSocket::Guts::reportStats(Report& report)
 {
     bool status = true;
-    if (stats_interval > 0) {
+    if (stats_interval > cn::milliseconds::zero()) {
         const Time now(Time::CurrentUTC());
         if (now >= next_stats) {
             next_stats = now + stats_interval;
@@ -780,8 +780,8 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(_guts->sndbuf, u"sndbuf", -1);
     args.getIntValue(_guts->udp_rcvbuf, u"udp-rcvbuf", -1);
     args.getIntValue(_guts->udp_sndbuf, u"udp-sndbuf", -1);
-    args.getIntValue(_guts->stats_interval, u"statistics-interval", 0);
-    _guts->final_stats = _guts->stats_interval > 0 || args.present(u"final-statistics");
+    args.getChronoValue(_guts->stats_interval, u"statistics-interval");
+    _guts->final_stats = _guts->stats_interval > cn::milliseconds::zero() || args.present(u"final-statistics");
     _guts->json_line = args.present(u"json-line");
     args.getValue(_guts->json_prefix, u"json-line");
 

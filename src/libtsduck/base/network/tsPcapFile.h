@@ -165,7 +165,7 @@ namespace ts {
             InterfaceDesc() = default;
             uint16_t         link_type {LINKTYPE_UNKNOWN};
             size_t           fcs_size = 0;     // Number of Frame Cyclic Sequences bytes after each packet.
-            SubSecond        time_units = 0;   // Time units per second.
+            std::intmax_t    time_units = 0;   // Time units per second.
             cn::microseconds time_offset {0};  // Offset to add to all time stamps.
         };
 

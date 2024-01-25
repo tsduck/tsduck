@@ -21,7 +21,7 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, bool pat_only):
+ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, cn::milliseconds timeout, bool pat_only):
     _duck(duck),
     _pat_only(pat_only)
 {

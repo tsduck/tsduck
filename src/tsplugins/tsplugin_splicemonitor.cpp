@@ -79,8 +79,8 @@ namespace ts {
         UString          _alarm_command {};       // Alarm command name.
         size_t           _min_repetition = 0;     // Minimum number of occurrences per command.
         size_t           _max_repetition = 0;     // Maximum number of occurrences per command.
-        MilliSecond      _min_preroll = 0;        // Minimum pre-roll time in milliseconds.
-        MilliSecond      _max_preroll = 0;        // Maximum pre-roll time in milliseconds.
+        cn::milliseconds _min_preroll {};         // Minimum pre-roll time in milliseconds.
+        cn::milliseconds _max_preroll {};         // Maximum pre-roll time in milliseconds.
         json::OutputArgs _json_args {};           // JSON output.
         std::bitset<256> _log_cmds {};            // List of splice commands to display.
         BinaryTable::XMLOptions _xml_options {};  // Options to format XML and JSON tables.
@@ -107,7 +107,7 @@ namespace ts {
         void initJSON(json::Object& obj, PID splice_pid, uint32_t event_id, const UString& progress, const SpliceContext& ctx, const SpliceEvent* evt);
 
         // Compute time between current packet and event. Return false if not possible to compute.
-        bool timeToEvent(MilliSecond& tte, uint64_t event_pts, const SpliceContext& ctx);
+        bool timeToEvent(cn::milliseconds& tte, uint64_t event_pts, const SpliceContext& ctx);
 
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -156,12 +156,12 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"do not try to adjust the time using the distance between the last PTS and the splice command. "
          u"By default, use the bitrate to adjust the supposed PTS of the splice command itself.");
 
-    option(u"min-pre-roll-time", 0, POSITIVE);
+    option<cn::milliseconds>(u"min-pre-roll-time");
     help(u"min-pre-roll-time",
          u"Specify a minimum pre-roll time in milliseconds for splice commands. "
          u"See option --alarm-command for non-nominal cases.");
 
-    option(u"max-pre-roll-time", 0, POSITIVE);
+    option<cn::milliseconds>(u"max-pre-roll-time");
     help(u"max-pre-roll-time",
          u"Specify a maximum pre-roll time in milliseconds for splice commands. "
          u"See option --alarm-command for non-nominal cases.");
@@ -227,8 +227,8 @@ bool ts::SpliceMonitorPlugin::getOptions()
     getIntValue(_pts_pid, u"time-pid", PID_NULL);
     getPathValue(_output_file, u"output-file");
     getValue(_alarm_command, u"alarm-command");
-    getIntValue(_min_preroll, u"min-pre-roll-time");
-    getIntValue(_max_preroll, u"max-pre-roll-time");
+    getChronoValue(_min_preroll, u"min-pre-roll-time");
+    getChronoValue(_max_preroll, u"max-pre-roll-time");
     getIntValue(_min_repetition, u"min-repetition");
     getIntValue(_max_repetition, u"max-repetition");
     getIntValues(_log_cmds, u"select-commands");
@@ -409,9 +409,9 @@ void ts::SpliceMonitorPlugin::initJSON(json::Object& obj, PID splice_pid, uint32
         obj.add(u"event-type", evt->event_out ? u"out" : u"in");
         obj.add(u"event-pts", int64_t(evt->event_pts));
         obj.add(u"count", int64_t(evt->event_count));
-        MilliSecond time_to_event = 0;
+        cn::milliseconds time_to_event = cn::milliseconds::zero();
         if (timeToEvent(time_to_event, evt->event_pts, ctx)) {
-            obj.add(u"time-to-event-ms", time_to_event);
+            obj.add(u"time-to-event-ms", time_to_event.count());
             if (_time_stamp) {
                 obj.add(u"event-time", xml::Attribute::DateTimeToString(now + time_to_event));
             }
@@ -424,7 +424,7 @@ void ts::SpliceMonitorPlugin::initJSON(json::Object& obj, PID splice_pid, uint32
 // Compute time between current packet and event.
 //----------------------------------------------------------------------------
 
-bool ts::SpliceMonitorPlugin::timeToEvent(MilliSecond& tte, uint64_t event_pts, const SpliceContext& ctx)
+bool ts::SpliceMonitorPlugin::timeToEvent(cn::milliseconds& tte, uint64_t event_pts, const SpliceContext& ctx)
 {
     if (ctx.last_pts == INVALID_PTS) {
         // No possible to compute a time to event.
@@ -440,7 +440,7 @@ bool ts::SpliceMonitorPlugin::timeToEvent(MilliSecond& tte, uint64_t event_pts, 
                 current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
             }
         }
-        tte = current_pts > event_pts ? -PTSToMilliSecond(current_pts - event_pts) : PTSToMilliSecond(event_pts - current_pts);
+        tte = cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(event_pts - current_pts));
         return true;
     }
 }
@@ -510,13 +510,13 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
         else {
             // Format time to event.
             UString time;
-            MilliSecond time_to_event = 0;
+            cn::milliseconds time_to_event;
             if (timeToEvent(time_to_event, event_pts, ctx)) {
-                if (time_to_event < 0) {
-                    time.format(u", event is in the past by %'d ms", {-time_to_event});
+                if (time_to_event < cn::milliseconds::zero()) {
+                    time.format(u", event is in the past by %'d ms", {-time_to_event.count()});
                 }
                 else {
-                    time.format(u", time to event: %'d ms", {time_to_event});
+                    time.format(u", time to event: %'d ms", {time_to_event.count()});
                 }
             }
             display(message(splice_pid, event_id, u"occurrence #%d%s", {evt->second.event_count, time}));
@@ -607,19 +607,19 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
             if (evt.event_id != SpliceInsert::INVALID_EVENT_ID && evt.event_pts != INVALID_PTS && ctx.last_pts >= evt.event_pts) {
 
                 // Evaluate time since first command. Assume constant bitrate since then.
-                const MilliSecond preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - evt.first_cmd_packet);
+                const cn::milliseconds preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - evt.first_cmd_packet);
 
                 // Check if outside nominal range.
                 const bool alarm =
-                    (_min_preroll != 0 && preroll != 0 && preroll < _min_preroll) ||
-                    (_max_preroll != 0 && preroll > _max_preroll) ||
+                    (_min_preroll != cn::milliseconds::zero() && preroll != cn::milliseconds::zero() && preroll < _min_preroll) ||
+                    (_max_preroll != cn::milliseconds::zero() && preroll > _max_preroll) ||
                     (_min_repetition != 0 && evt.event_count < _min_repetition) ||
                     (_max_repetition != 0 && evt.event_count > _max_repetition);
 
                 // Build a one-line message.
                 UString line(message(spid, evt.event_id, u"occurred"));
-                if (preroll > 0) {
-                    line.format(u", actual pre-roll time: %'d ms", {preroll});
+                if (preroll > cn::milliseconds::zero()) {
+                    line.format(u", actual pre-roll time: %'d ms", {preroll.count()});
                 }
 
                 // Display the event.
@@ -627,7 +627,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                     json::Object obj;
                     initJSON(obj, spid, evt.event_id, u"occurred", ctx, &evt);
                     obj.add(u"status", alarm ? u"alarm" : u"normal");
-                    obj.add(u"pre-roll-ms", preroll);
+                    obj.add(u"pre-roll-ms", preroll.count());
                     _json_args.report(obj, _json_doc, *tsp);
                 }
                 else {
@@ -637,7 +637,8 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                 // Raise alarm if outside nominal range.
                 if (!_alarm_command.empty() && alarm) {
                     UString command;
-                    command.format(u"%s \"%s\" %d %d %s %d %d %d", {_alarm_command, line, spid, evt.event_id, evt.event_out ? u"out" : u"in", evt.event_pts, preroll, evt.event_count});
+                    command.format(u"%s \"%s\" %d %d %s %d %d %d",
+                                   {_alarm_command, line, spid, evt.event_id, evt.event_out ? u"out" : u"in", evt.event_pts, preroll.count(), evt.event_count});
                     ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
                 }
 

@@ -27,29 +27,29 @@ bool ts::DecodeMJD(const uint8_t* mjd, size_t mjd_size, Time& time)
     }
 
     // Get day since MJD epoch.
-    const uint64_t day = uint64_t(GetUInt16(mjd));
+    const cn::days::rep day = cn::days::rep(GetUInt16(mjd));
     bool valid = day != 0xFFFF; // Often used as invalid date.
 
     // Compute milliseconds since MJD epoch
-    MilliSecond mjd_ms = day * MilliSecPerDay;
+    cn::milliseconds mjd_ms = cn::duration_cast<cn::milliseconds>(cn::days(day));
     if (mjd_size >= 3 && valid) {
         valid = IsValidBCD(mjd[2]);
-        mjd_ms += DecodeBCD(mjd[2]) * MilliSecPerHour; // Hours
+        mjd_ms += cn::hours(DecodeBCD(mjd[2]));
     }
     if (mjd_size >= 4 && valid) {
         valid = IsValidBCD(mjd[3]);
-        mjd_ms += DecodeBCD(mjd[3]) * MilliSecPerMin; // Minutes
+        mjd_ms += cn::minutes(DecodeBCD(mjd[3]));
     }
     if (mjd_size >= 5 && valid) {
         valid = IsValidBCD(mjd[4]);
-        mjd_ms += DecodeBCD(mjd[4]) * MilliSecPerSec; // Seconds
+        mjd_ms += cn::seconds(DecodeBCD(mjd[4]));
     }
     if (!valid) {
         return false;
     }
 
     // Rebuild time depending on MJD and Time epoch
-    if (Time::JulianEpochOffset >= 0 || mjd_ms >= - Time::JulianEpochOffset) {
+    if (Time::JulianEpochOffset >= cn::milliseconds::zero() || mjd_ms >= - Time::JulianEpochOffset) {
         // MJD epoch is after Time epoch or else
         // MJD time is after Time epoch, fine
         time = Time::Epoch + (mjd_ms + Time::JulianEpochOffset);
@@ -72,16 +72,17 @@ bool ts::EncodeMJD(const Time& time, uint8_t* mjd, size_t mjd_size)
         return false;
     }
 
-    // Compute milliseconds since Time epoch
-    MilliSecond time_ms = time - Time::Epoch;
+    // Compute seconds since Time epoch.
+    cn::seconds time_sec = cn::duration_cast<cn::seconds>(time - Time::Epoch);
 
     // Cannot represent dates earlier than MJD epoch
-    if (time_ms < Time::JulianEpochOffset) {
+    if (time_sec < Time::JulianEpochOffset) {
         MemZero(mjd, mjd_size);
         return false;
     }
 
-    const uint64_t d = (time_ms - Time::JulianEpochOffset) / 1000; // seconds since MJD epoch
+    // Conput seconds since MJD epoch
+    const cn::seconds::rep d = cn::duration_cast<cn::seconds>(time_sec - Time::JulianEpochOffset).count();
     PutUInt16(mjd, uint16_t(d / (24 * 3600))); // days
     if (mjd_size >= 3) {
         mjd[2] = EncodeBCD(int((d / 3600) % 24)); // hours

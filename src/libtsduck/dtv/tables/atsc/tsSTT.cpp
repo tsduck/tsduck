@@ -89,8 +89,8 @@ size_t ts::STT::maxPayloadSize() const
 void ts::STT::clearContent()
 {
     protocol_version = 0;
-    system_time = 0;
-    GPS_UTC_offset = 0;
+    system_time = cn::seconds::zero();
+    GPS_UTC_offset = cn::seconds::zero();
     DS_status = 0;
     DS_day_of_month = 0;
     DS_hour = 0;
@@ -104,14 +104,14 @@ void ts::STT::clearContent()
 
 ts::Time ts::STT::utcTime() const
 {
-    if (system_time == 0) {
+    if (system_time == cn::seconds::zero()) {
         // Time is unset.
         return Time::Epoch;
     }
     else {
-        // Add difference between 1970 and 180 to convert from GPS to UTC.
+        // Add difference between 1970 and 1980 to convert from GPS to UTC.
         // Then substract GPS-UTC offset (see ATSC A/65 section 6.1).
-        return Time::UnixTimeToUTC(system_time + Time::UnixEpochToGPS - GPS_UTC_offset);
+        return Time::UnixTimeToUTC(cn::seconds(system_time + Time::UnixEpochToGPS - GPS_UTC_offset).count());
     }
 }
 
@@ -123,8 +123,8 @@ ts::Time ts::STT::utcTime() const
 void ts::STT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
     protocol_version = buf.getUInt8();
-    system_time = buf.getUInt32();
-    GPS_UTC_offset = buf.getUInt8();
+    buf.getBits(system_time, 32);
+    buf.getBits(GPS_UTC_offset, 8);
     DS_status = buf.getBool();
     buf.skipBits(2);
     buf.getBits(DS_day_of_month, 5);
@@ -141,8 +141,8 @@ void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // An STT is not allowed to use more than one section, see A/65, section 6.1.
     buf.putUInt8(protocol_version);
-    buf.putUInt32(system_time);
-    buf.putUInt8(GPS_UTC_offset);
+    buf.putBits(system_time, 32);
+    buf.putBits(GPS_UTC_offset, 8);
     buf.putBit(DS_status);
     buf.putBits(0xFF, 2);
     buf.putBits(DS_day_of_month, 5);
@@ -161,7 +161,7 @@ void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
         const uint32_t time = buf.getUInt32();
         const uint8_t offset = buf.getUInt8();
-        const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS - offset));
+        const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS.count() - offset));
         disp << margin << UString::Format(u"System time: 0x%X (%<d), GPS-UTC offset: 0x%X (%<d)", {time, offset}) << std::endl;
         disp << margin << "Corresponding UTC time: " << (time == 0 ? u"none" : utc.format(Time::DATETIME)) << std::endl;
         disp << margin << "Daylight saving time: " << UString::YesNo(buf.getBool());
@@ -180,8 +180,8 @@ void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 void ts::STT::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"protocol_version", protocol_version);
-    root->setIntAttribute(u"system_time", system_time);
-    root->setIntAttribute(u"GPS_UTC_offset", GPS_UTC_offset);
+    root->setChronoAttribute(u"system_time", system_time);
+    root->setChronoAttribute(u"GPS_UTC_offset", GPS_UTC_offset);
     root->setBoolAttribute(u"DS_status", DS_status);
     if (DS_day_of_month > 0) {
         root->setIntAttribute(u"DS_day_of_month", DS_day_of_month & 0x1F);
@@ -200,8 +200,8 @@ void ts::STT::buildXML(DuckContext& duck, xml::Element* root) const
 bool ts::STT::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getIntAttribute(protocol_version, u"protocol_version", false, 0) &&
-           element->getIntAttribute(system_time, u"system_time", true) &&
-           element->getIntAttribute(GPS_UTC_offset, u"GPS_UTC_offset", true) &&
+           element->getChronoAttribute(system_time, u"system_time", true) &&
+           element->getChronoAttribute(GPS_UTC_offset, u"GPS_UTC_offset", true) &&
            element->getBoolAttribute(DS_status, u"DS_status", true) &&
            element->getIntAttribute(DS_day_of_month, u"DS_day_of_month", false, 0, 0, 31) &&
            element->getIntAttribute(DS_hour, u"DS_hour", false, 0, 0, 23) &&

@@ -450,7 +450,7 @@ cn::nanoseconds::rep ts::_SetTimersPrecisionNanoSecond(cn::nanoseconds::rep requ
     if (jps <= 0) {
         throw Exception(u"system error: cannot get clock tick");
     }
-    return std::max(requested, cn::nanoseconds::rep(NanoSecPerSec / jps));
+    return std::max(requested, cn::nanoseconds::rep(std::nano::den / jps));
 
 #else
     #error "Unimplemented operating system"

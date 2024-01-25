@@ -740,6 +740,14 @@ namespace ts {
         void getBits(std::optional<INT>& value, size_t bits);
 
         //!
+        //! Read the next n bits as a std::chrono::duration value and advance the read pointer.
+        //! @param [out] value The value of the next @a bits.
+        //! @param [in] bits Number of bits to read.
+        //!
+        template <class Rep, class Period>
+        void getBits(cn::duration<Rep,Period>& value, size_t bits);
+
+        //!
         //! Put the next n bits from an integer value and advance the write pointer.
         //! @tparam INT An integer type.
         //! @param [in] value Integer value to write.
@@ -749,6 +757,14 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool putBits(INT value, size_t bits);
 
+        //!
+        //! Put the next n bits from a std::chrono::duration value and advance the write pointer.
+        //! @param [in] value Integer value to write.
+        //! @param [in] bits Number of bits to write.
+        //! @return True on success, false on error (read only or no more space to write).
+        //!
+        template <class Rep, class Period>
+        bool putBits(cn::duration<Rep,Period> value, size_t bits) { return putBits(value.count(), bits); }
 
         //!
         //! Serialize the number of reserved '1' bits
@@ -1488,6 +1504,12 @@ void ts::Buffer::getBits(std::optional<INT>& value, size_t bits)
     else {
         value = getBits<INT>(bits);
     }
+}
+
+template <class Rep, class Period>
+void ts::Buffer::getBits(cn::duration<Rep,Period>& value, size_t bits)
+{
+    value = cn::duration<Rep,Period>(getBits<Rep>(bits));
 }
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>

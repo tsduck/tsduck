@@ -31,7 +31,7 @@ size_t ts::FileNameRateList::scanFiles(size_t retry, Report& report)
 // optional repetition rates in milliseconds.
 //----------------------------------------------------------------------------
 
-bool ts::FileNameRateList::getArgs(Args& args, const UChar* option_name, MilliSecond default_rate)
+bool ts::FileNameRateList::getArgs(Args& args, const UChar* option_name, cn::milliseconds default_rate)
 {
     // Get the string values
     UStringVector strings;
@@ -53,7 +53,7 @@ bool ts::FileNameRateList::getArgs(Args& args, const UChar* option_name, MilliSe
         else {
             // A repetition rate is specified after '='.
             file.file_name = strings[i].substr(0, eq);
-            if (!strings[i].substr(eq + 1).toInteger(file.repetition) || file.repetition <= 0) {
+            if (!strings[i].substr(eq + 1).toChrono(file.repetition) || file.repetition <= cn::milliseconds::zero()) {
                 args.error(u"invalid repetition rate for file " + file.file_name);
                 success = false;
             }

@@ -126,6 +126,23 @@ namespace ts {
                 }
             }
 
+            //!
+            //! Get the value of a String in milli-units of a std::chrono::duration type.
+            //! @param [out] value Decoded value. If the value is an integer, return this value times 1000.
+            //! If the value is a decimal one, use 3 decimal digits. Examples: "90" -> 90000,
+            //! "1.12" -> 1120, "32.1234" -> 32123.
+            //! @param [in] str String to decode.
+            //! @return True on success, false on error.
+            //!
+            template <class Rep, class Period>
+            static bool ToMilliValue(cn::duration<Rep,Period>& value, const UString& str)
+            {
+                Rep ivalue = value.count();
+                const bool result = ToMilliValue(ivalue, str);
+                value = cn::duration<Rep,Period>(ivalue);
+                return result;
+            }
+
         private:
             std::map<UString, UString> _map {};
         };

@@ -162,10 +162,8 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         // If previous PCR is known, compute bitrate. Ignore PCR value wrap-up.
         if (_pcrLastValue != INVALID_PCR && _pcrLastValue < pcr) {
             assert(_pcrLastPacket < _currentPacket);
-            // Duration in milliseconds since last PCR.
-            const MilliSecond ms = ((pcr - _pcrLastValue) * MilliSecPerSec) / SYSTEM_CLOCK_FREQ;
             // Compute TS bitrate since last PCR.
-            _bitrate = PacketBitRate(_currentPacket - _pcrLastPacket, ms);
+            _bitrate = PacketBitRate(_currentPacket - _pcrLastPacket, ts::pcr_units(pcr - _pcrLastValue));
             // Insert PCR in output PID asap after a PCR on reference PID when the bitrate is known.
             _insertPCR = true;
         }
@@ -389,9 +387,8 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
                     pkt.b[pes_pointer-1+13] = uint8_t(PKT_SIZE - pes_pointer - 13); // AU cell data length
 
                     // Calculate the PTS based on PCR + Offset (positive/negative) without wrapping up.
-                    uint64_t pts = (_pcrLastValue + getPCRDistance()) / 300;
-                    if (pts != 0 && _pcrLastValue != INVALID_PCR && _pcrLastValue != 0 &&
-                         getPCRDistance() != 0 && (_pesOffset + pts) > 0) {
+                    uint64_t pts = (_pcrLastValue + getPCRDistance()) / SYSTEM_CLOCK_SUBFACTOR;
+                    if (pts != 0 && _pcrLastValue != INVALID_PCR && _pcrLastValue != 0 && getPCRDistance() != 0 && (_pesOffset + pts) > 0) {
                         pts += _pesOffset;
                     }
                     else {

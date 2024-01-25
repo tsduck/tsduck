@@ -132,7 +132,7 @@ Options::Options(int argc, char *argv[]) :
 
     // If any non-zero repetition rate is specified, make sure that a bitrate is specified.
     for (const auto& it : infiles) {
-        if (it.repetition != 0 && bitrate == 0) {
+        if (it.repetition != cn::milliseconds::zero() && bitrate == 0) {
             error(u"the PID bitrate must be specified when repetition rates are used");
             break;
         }
@@ -179,8 +179,8 @@ int MainCode(int argc, char *argv[])
             pzer.addSections(file.sections(), it.repetition);
             if (opt.verbose()) {
                 std::cerr << "* Loaded " << file.sections().size() << " sections from " << it.display_name;
-                if (it.repetition > 0) {
-                    std::cerr << ", repetition rate: " << ts::UString::Decimal(it.repetition) << " ms";
+                if (it.repetition > cn::milliseconds::zero()) {
+                    std::cerr << ", repetition rate: " << ts::UString::Chrono(it.repetition, true);
                 }
                 std::cerr << std::endl;
             }

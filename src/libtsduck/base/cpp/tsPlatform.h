@@ -1169,14 +1169,6 @@ namespace ts {
     //!
     constexpr NanoSecond NanoSecPerSec = 1'000'000'000;
     //!
-    //! Number of nanoseconds per millisecond
-    //!
-    constexpr NanoSecond NanoSecPerMilliSec = 1'000'000;
-    //!
-    //! Number of nanoseconds per microsecond
-    //!
-    constexpr NanoSecond NanoSecPerMicroSec = 1'000;
-    //!
     //! Number of microseconds per second
     //!
     constexpr MicroSecond MicroSecPerSec = 1'000'000;

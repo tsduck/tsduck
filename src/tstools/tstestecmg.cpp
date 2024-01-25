@@ -300,7 +300,7 @@ bool EventQueue::waitEvent(uint16_t& channel_id, uint16_t& stream_id)
         }
         else {
             // Wait until last event time (or explicitly signalled).
-            _condition.wait_for(lock, cn::milliseconds(cn::milliseconds::rep(_events.back().due - now)));
+            _condition.wait_for(lock, _events.back().due - now);
         }
     }
 }

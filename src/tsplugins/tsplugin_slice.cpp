@@ -46,14 +46,14 @@ namespace ts {
         using SliceEventVector = std::vector<SliceEvent>;
 
         // SlicePlugin private members
-        bool              _use_time = false;     // Use milliseconds in SliceEvent::value
-        bool              _ignore_pcr = false;   // Do not use PCR's, rely on previous plugins' bitrate
-        Status            _status = TSP_OK;       // Current packet status to return
-        PacketCounter     _packet_cnt = 0;   // Packet counter
-        uint64_t          _time_factor = 0;  // Factor to apply to get milli-seconds
-        PCRAnalyzer       _pcr_analyzer {}; // PCR analyzer for time stamping
-        SliceEventVector  _events {};       // Sorted list of time events to apply
-        size_t            _next_index = 0;   // Index of next SliceEvent to apply
+        bool              _use_time = false;    // Use milliseconds in SliceEvent::value
+        bool              _ignore_pcr = false;  // Do not use PCR's, rely on previous plugins' bitrate
+        Status            _status = TSP_OK;     // Current packet status to return
+        PacketCounter     _packet_cnt = 0;      // Packet counter
+        uint64_t          _time_factor = 0;     // Factor to apply to get milli-seconds
+        PCRAnalyzer       _pcr_analyzer {};     // PCR analyzer for time stamping
+        SliceEventVector  _events {};           // Sorted list of time events to apply
+        size_t            _next_index = 0;      // Index of next SliceEvent to apply
 
         // Add event in the list from one option.
         void addEvents(const UChar* option, Status status);
@@ -198,7 +198,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
             return TSP_END;
         }
         // Compute time in milli-seconds since beginning
-        current_value = PacketInterval(bitrate, _packet_cnt);
+        current_value = PacketInterval(bitrate, _packet_cnt).count();
     }
 
     // Is it time to change the action?

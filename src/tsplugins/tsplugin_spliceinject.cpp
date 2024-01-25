@@ -38,10 +38,10 @@ namespace {
     const cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
 
     // Default start delay for non-immediate splice_insert() and time_signal() commands.
-    const ts::MilliSecond DEFAULT_START_DELAY = 2000;
+    const cn::milliseconds DEFAULT_START_DELAY = cn::milliseconds(2000);
 
     // Default inject interval for non-immediate splice_insert() and time_signal() commands.
-    const ts::MilliSecond DEFAULT_INJECT_INTERVAL = 800;
+    const cn::milliseconds DEFAULT_INJECT_INTERVAL = cn::milliseconds(800);
 
     // Default inject count for non-immediate splice_insert() and time_signal() commands.
     const size_t DEFAULT_INJECT_COUNT = 2;
@@ -89,8 +89,8 @@ namespace ts {
         IPv4SocketAddress _server_address {};
         size_t            _sock_buf_size = 0;
         size_t            _inject_count = 0;
-        MilliSecond       _inject_interval = 0;
-        MilliSecond       _start_delay = 0;
+        cn::milliseconds  _inject_interval {};
+        cn::milliseconds  _start_delay = {};
         cn::milliseconds  _poll_interval {};
         cn::milliseconds  _min_stable_delay {};
         std::uintmax_t    _max_file_size = 0;
@@ -112,12 +112,12 @@ namespace ts {
         public:
             SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec);
 
-            SpliceInformationTable sit {};                  // The analyzed Splice Information Table.
-            SectionPtr             section {};              // The binary SIT section.
-            uint64_t               next_pts = INVALID_PTS;  // Next PTS after which the section shall be inserted (INVALID_PTS means immediate).
-            uint64_t               last_pts = INVALID_PTS;  // PTS after which the section shall no longer be inserted (INVALID_PTS means never).
-            uint64_t               interval = (_plugin->_inject_interval * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec;  // Interval between two insertions in PTS units.
-            size_t                 count = 1;               // Remaining number of injections.
+            SpliceInformationTable sit {};      // The analyzed Splice Information Table.
+            SectionPtr section {};              // The binary SIT section.
+            uint64_t   next_pts = INVALID_PTS;  // Next PTS after which the section shall be inserted (INVALID_PTS means immediate).
+            uint64_t   last_pts = INVALID_PTS;  // PTS after which the section shall no longer be inserted (INVALID_PTS means never).
+            uint64_t   interval = cn::duration_cast<ts::pts_dts_units>(_plugin->_inject_interval).count(); // Interval between two insertions in PTS units.
+            size_t     count = 1;               // Remaining number of injections.
 
             // A comparison function to sort commands in the queues.
             bool operator<(const SpliceCommand& other) const;
@@ -275,11 +275,11 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          UString::Decimal(DEFAULT_INJECT_COUNT) + u". "
          u"Other splice commands are injected once only.");
 
-    option(u"inject-interval", 0, UNSIGNED);
+    option<cn::milliseconds>(u"inject-interval");
     help(u"inject-interval",
-         u"For non-immediate splice_insert() and time_signal() commands, specifies the interval in "
-         u"milliseconds between two insertions of the same splice information "
-         u"section. The default is " + UString::Decimal(DEFAULT_INJECT_INTERVAL) + u" ms.");
+         u"For non-immediate splice_insert() and time_signal() commands, specifies the interval "
+         u"in milliseconds between two insertions of the same splice information section. "
+         u"The default is " + UString::Chrono(DEFAULT_INJECT_INTERVAL) + u".");
 
     option(u"max-file-size", 0, UNSIGNED);
     help(u"max-file-size",
@@ -351,11 +351,11 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"If the input TS does not contain an SDT, use service ids only. "
          u"If no service is specified, the options --pid and --pts-pid must be specified (--pcr-pid is optional).");
 
-    option(u"start-delay", 0, UNSIGNED);
+    option<cn::milliseconds>(u"start-delay");
     help(u"start-delay",
          u"For non-immediate splice_insert() commands, start to insert the first "
-         u"section this number of milliseconds before the specified splice PTS "
-         u"value. The default is " + UString::Decimal(DEFAULT_START_DELAY) + u" ms.");
+         u"section this number of milliseconds before the specified splice PTS value. "
+         u"The default is " + UString::Chrono(DEFAULT_START_DELAY) + u".");
 
     option(u"udp", 'u', IPSOCKADDR_OA);
     help(u"udp",
@@ -393,8 +393,8 @@ bool ts::SpliceInjectPlugin::getOptions()
     _reuse_port = !present(u"no-reuse-port");
     getIntValue(_sock_buf_size, u"buffer-size");
     getIntValue(_inject_count, u"inject-count", DEFAULT_INJECT_COUNT);
-    getIntValue(_inject_interval, u"inject-interval", DEFAULT_INJECT_INTERVAL);
-    getIntValue(_start_delay, u"start-delay", DEFAULT_START_DELAY);
+    getChronoValue(_inject_interval, u"inject-interval", DEFAULT_INJECT_INTERVAL);
+    getChronoValue(_start_delay, u"start-delay", DEFAULT_START_DELAY);
     getIntValue(_max_file_size, u"max-file-size", DEFAULT_MAX_FILE_SIZE);
     getChronoValue(_poll_interval, u"poll-interval", DEFAULT_POLL_INTERVAL);
     getChronoValue(_min_stable_delay, u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
@@ -838,7 +838,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
             last_pts = (last_pts + sit.pts_adjustment) & PTS_DTS_MASK;
             count = _plugin->_inject_count;
             // Preceding delay for injection in PTS units.
-            const uint64_t preceding = (_plugin->_start_delay * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec;
+            const uint64_t preceding = cn::duration_cast<ts::pts_dts_units>(_plugin->_start_delay).count();
             // Compute the first PTS time for injection.
             next_pts = (last_pts - preceding) & PTS_DTS_MASK;
         }

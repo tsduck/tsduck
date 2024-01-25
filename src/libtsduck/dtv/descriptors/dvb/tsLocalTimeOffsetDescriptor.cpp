@@ -8,7 +8,6 @@
 
 #include "tsLocalTimeOffsetDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsBCD.h"
 #include "tsMJD.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -55,7 +54,7 @@ void ts::LocalTimeOffsetDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putLanguageCode(it.country);
         buf.putBits(it.region_id, 6);
         buf.putBit(1);
-        buf.putBit(it.time_offset < 0);
+        buf.putBit(it.time_offset < cn::minutes::zero());
         buf.putMinutesBCD(it.time_offset);
         buf.putMJD(it.next_change, MJD_SIZE);
         buf.putMinutesBCD(it.next_time_offset);
@@ -75,9 +74,11 @@ void ts::LocalTimeOffsetDescriptor::deserializePayload(PSIBuffer& buf)
         buf.getBits(region.region_id, 6);
         buf.skipBits(1);
         const int polarity = buf.getBool() ? -1 : 1;
-        region.time_offset = polarity * int(buf.getMinutesBCD());
+        buf.getMinutesBCD(region.time_offset);
+        region.time_offset *= polarity;
         region.next_change = buf.getMJD(MJD_SIZE);
-        region.next_time_offset = polarity * int(buf.getMinutesBCD());
+        buf.getMinutesBCD(region.next_time_offset);
+        region.next_time_offset *= polarity;
         regions.push_back(region);
     }
 }
@@ -115,9 +116,9 @@ void ts::LocalTimeOffsetDescriptor::buildXML(DuckContext& duck, xml::Element* ro
         xml::Element* e = root->addElement(u"region");
         e->setAttribute(u"country_code", it.country);
         e->setIntAttribute(u"country_region_id", it.region_id);
-        e->setIntAttribute(u"local_time_offset", it.time_offset);
+        e->setChronoAttribute(u"local_time_offset", it.time_offset);
         e->setDateTimeAttribute(u"time_of_change", it.next_change);
-        e->setIntAttribute(u"next_time_offset", it.next_time_offset);
+        e->setChronoAttribute(u"next_time_offset", it.next_time_offset);
     }
 }
 
@@ -135,9 +136,9 @@ bool ts::LocalTimeOffsetDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
         Region region;
         ok = children[index]->getAttribute(region.country, u"country_code", true, u"", 3, 3) &&
              children[index]->getIntAttribute<unsigned int>(region.region_id, u"country_region_id", true, 0, 0, 63) &&
-             children[index]->getIntAttribute(region.time_offset, u"local_time_offset", true, 0, -780, 780) &&
+             children[index]->getChronoAttribute(region.time_offset, u"local_time_offset", true, cn::minutes::zero(), cn::minutes(-780), cn::minutes(780)) &&
              children[index]->getDateTimeAttribute(region.next_change, u"time_of_change", true) &&
-             children[index]->getIntAttribute(region.next_time_offset, u"next_time_offset", true, 0, -780, 780);
+             children[index]->getChronoAttribute(region.next_time_offset, u"next_time_offset", true, cn::minutes::zero(), cn::minutes(-780), cn::minutes(780));
         regions.push_back(region);
     }
     return ok;

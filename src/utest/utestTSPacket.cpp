@@ -539,6 +539,14 @@ void TSPacketTest::testBitRate()
 
     cn::milliseconds ms = cn::milliseconds(2500);
     TSUNIT_EQUAL(25, std::chrono::duration_cast<ts::deciseconds>(ms).count());
+
+    ts::BitRate br = 14'800'000;
+    ts::PacketCounter pk = 200;
+    debug() << "TSPacketTest::testBitRate: intervals: "
+            << ts::PacketInterval<ts::pcr_units>(br, pk).count() << "  "
+            << ts::PacketInterval(br, pk).count() << "  "
+            << ((ts::PacketInterval(br, pk).count() * ts::SYSTEM_CLOCK_FREQ) / ts::MilliSecPerSec)
+            << std::endl;
 }
 
 void TSPacketTest::testPCR()
