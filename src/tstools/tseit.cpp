@@ -395,7 +395,7 @@ ts::CommandStatus ts::EITCommand::process(const UString& command, Args& args)
 
 ts::CommandStatus ts::EITCommand::generate(const UString& command, Args& args)
 {
-    size_t packet_count = 0;
+    PacketCounter packet_count = 0;
     Time until;
 
     if (!getDurationOptions(packet_count, until, args)) {
