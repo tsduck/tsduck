@@ -515,7 +515,7 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::i
 
     // Convert pkt number in playback time when necessary.
     if (_use_milliseconds) {
-        pkt = PacketInterval(tsp->bitrate(), pkt);
+        pkt = PacketInterval(tsp->bitrate(), pkt).count();
     }
 
     // Then report the message.

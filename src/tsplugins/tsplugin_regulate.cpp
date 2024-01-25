@@ -122,7 +122,7 @@ bool ts::RegulatePlugin::start()
         _pcr_regulator.reset();
         _pcr_regulator.setBurstPacketCount(_burst);
         _pcr_regulator.setReferencePID(_pid_pcr);
-        _pcr_regulator.setMinimimWait(_wait_min * NanoSecPerMilliSec);
+        _pcr_regulator.setMinimimWait(_wait_min);
     }
     else {
         tsp->debug(u"starting bitrate-based regulation");

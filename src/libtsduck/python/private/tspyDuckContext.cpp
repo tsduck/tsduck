@@ -83,7 +83,7 @@ TSDUCKPY void tspyDuckContextSetTimeReferenceOffset(void* duck_ptr, int64_t offs
 {
     ts::DuckContext* duck = reinterpret_cast<ts::DuckContext*>(duck_ptr);
     if (duck != nullptr) {
-        duck->setTimeReferenceOffset(ts::MilliSecond(offset));
+        duck->setTimeReferenceOffset(cn::milliseconds(cn::milliseconds::rep(offset)));
     }
 }
 

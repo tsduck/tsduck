@@ -386,13 +386,9 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
     // Nanoseconds is an unusually large precision which may lead to overflows.
     // Using seconds is not precise enough. Use microseconds.
-    const cn::microseconds::rep microsec = cn::duration_cast<cn::microseconds>(duration).count();
-    BitRate bitrate(0);
-    BitRate net_bitrate(0);
-    if (microsec > 0) {
-        bitrate = (BitRate(total_pkt_count) * PKT_SIZE_BITS * MicroSecPerSec) / microsec;
-        net_bitrate = (BitRate(non_null_count) * PKT_SIZE_BITS * MicroSecPerSec) / microsec;
-    }
+    const cn::microseconds microsec = cn::duration_cast<cn::microseconds>(duration);
+    const BitRate bitrate = PacketBitRate(total_pkt_count, microsec);
+    const BitRate net_bitrate = PacketBitRate(non_null_count, microsec);
 
     // Accumulate statistics for the final report.
     if (_summary) {

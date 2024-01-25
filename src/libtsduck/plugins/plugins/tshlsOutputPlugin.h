@@ -53,8 +53,8 @@ namespace ts {
             hls::PlayListType  _playlistType = hls::PlayListType::UNKNOWN;
             size_t             _liveDepth = 0;              // Number of simultaneous segments in live streams.
             size_t             _liveExtraDepth = 0;         // Number of additional segments to keep in live streams.
-            Second             _targetDuration = 0;         // Segment target duration in seconds.
-            Second             _maxExtraDuration = 0;       // Segment target max extra duration in seconds when intra image is not found.
+            cn::seconds        _targetDuration {};          // Segment target duration in seconds.
+            cn::seconds        _maxExtraDuration {};        // Segment target max extra duration in seconds when intra image is not found.
             PacketCounter      _fixedSegmentSize = 0;       // Optional fixed segment size in packets.
             size_t             _initialMediaSeq = 0;        // Initial media sequence value.
             UStringVector      _customTags {};              // Additional custom tags.
@@ -76,6 +76,11 @@ namespace ts {
             PCRAnalyzer        _pcrAnalyzer {1, 4};         // PCR analyzer to compute bitrates. Minimum required: 1 PID, 4 PCR.
             BitRate            _previousBitrate = 0;        // Bitrate of previous segment.
             ContinuityAnalyzer _ccFixer;                    // To fix continuity counters in PAT and PMT PID's.
+
+            static constexpr cn::seconds DEFAULT_OUT_DURATION      = cn::seconds(10); // Default segment target duration for output streams.
+            static constexpr cn::seconds DEFAULT_OUT_LIVE_DURATION = cn::seconds(5);  // Default segment target duration for output live streams.
+            static constexpr cn::seconds DEFAULT_EXTRA_DURATION    = cn::seconds(2);  // Default segment extra duration when intra image is not found.
+            static constexpr size_t      DEFAULT_LIVE_EXTRA_DEPTH  = 1;               // Default additional segments to keep in live streams.
 
             // Create the next segment file (also close the previous one if necessary).
             bool createNextSegment();

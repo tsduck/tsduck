@@ -284,30 +284,11 @@ namespace ts {
         //!
         //! Put (serialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
         //! Generate a write error when the buffer is not large enough.
-        //! @param [in] duration A number of minutes.
-        //! @return True on success, false if there is not enough space to write (and set write error flag).
-        //!
-        bool putMinutesBCD(SubSecond duration);
-
-        //!
-        //! Put (serialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
-        //! Generate a write error when the buffer is not large enough.
         //! @param [in] duration A duration in any std::chrono::duration type.
         //! @return True on success, false if there is not enough space to write (and set write error flag).
         //!
         template <class Rep, class Period>
-        bool putMinutesBCD(const cn::duration<Rep,Period>& duration)
-        {
-            return putMinutesBCD(cn::duration_cast<cn::minutes>(duration).count());
-        }
-
-        //!
-        //! Put (serialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
-        //! Generate a write error when the buffer is not large enough.
-        //! @param [in] duration A number of seconds.
-        //! @return True on success, false if there is not enough space to write (and set write error flag).
-        //!
-        bool putSecondsBCD(Second duration);
+        bool putMinutesBCD(const cn::duration<Rep,Period>& duration);
 
         //!
         //! Put (serialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
@@ -316,17 +297,7 @@ namespace ts {
         //! @return True on success, false if there is not enough space to write (and set write error flag).
         //!
         template <class Rep, class Period>
-        bool putSecondsBCD(const cn::duration<Rep,Period>& duration)
-        {
-            return putSecondsBCD(cn::duration_cast<cn::seconds>(duration).count());
-        }
-
-        //!
-        //! Get (deserialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
-        //! Generate a read error when there is not enough bytes.
-        //! @return The duration in minutes.
-        //!
-        SubSecond getMinutesBCD();
+        bool putSecondsBCD(const cn::duration<Rep,Period>& duration);
 
         //!
         //! Get (deserialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
@@ -334,17 +305,7 @@ namespace ts {
         //! @param [out] duration Returned duration, converted in any std::chrono::duration type.
         //!
         template <class Rep, class Period>
-        void getMinutesBCD(cn::duration<Rep,Period>& duration)
-        {
-            duration = cn::duration_cast<cn::duration<Rep,Period>>(cn::minutes(cn::minutes::rep(getMinutesBCD())));
-        }
-
-        //!
-        //! Get (deserialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
-        //! Generate a read error when there is not enough bytes.
-        //! @return The duration in minutes.
-        //!
-        Second getSecondsBCD();
+        void getMinutesBCD(cn::duration<Rep,Period>& duration);
 
         //!
         //! Get (deserialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
@@ -352,10 +313,7 @@ namespace ts {
         //! @param [out] duration Returned duration, converted in any std::chrono::duration type.
         //!
         template <class Rep, class Period>
-        void getSecondsBCD(cn::duration<Rep,Period>& duration)
-        {
-            duration = cn::duration_cast<cn::duration<Rep,Period>>(cn::seconds(cn::seconds::rep(getSecondsBCD())));
-        }
+        void getSecondsBCD(cn::duration<Rep,Period>& duration);
 
         //!
         //! Get (deserialize) an integer value in "vluimsbf5" format.
@@ -539,4 +497,48 @@ namespace ts {
         // When partial == false, return 1 on success, 0 on error.
         size_t putStringCommon(const UString& str, size_t start, size_t count, EncodeMethod em, bool partial, size_t min_req_size, const Charset*);
     };
+}
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Put (serialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
+template <class Rep, class Period>
+bool ts::PSIBuffer::putMinutesBCD(const cn::duration<Rep,Period>& duration)
+{
+    const cn::minutes::rep mn = cn::duration_cast<cn::minutes>(duration).count();
+    return putBCD(std::abs(mn) / 60, 2) &&
+           putBCD(std::abs(mn) % 60, 2);
+}
+
+// Put (serialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
+template <class Rep, class Period>
+bool ts::PSIBuffer::putSecondsBCD(const cn::duration<Rep,Period>& duration)
+{
+    const cn::seconds::rep sec = cn::duration_cast<cn::seconds>(duration).count();
+    return putBCD(std::abs(sec) / 3600, 2) &&
+           putBCD((std::abs(sec) / 60) % 60, 2) &&
+           putBCD(std::abs(sec) % 60, 2);
+}
+
+// Get (deserialize) a duration in minutes as 4 BCD digits (HHMM), 2 bytes.
+template <class Rep, class Period>
+void ts::PSIBuffer::getMinutesBCD(cn::duration<Rep,Period>& duration)
+{
+    const cn::hours hours = cn::hours(getBCD<cn::hours::rep>(2));
+    const cn::minutes minutes = cn::minutes(getBCD<cn::minutes::rep>(2));
+    duration = hours + minutes;
+}
+
+
+// Get (deserialize) a duration in seconds as 6 BCD digits (HHMMSS), 3 bytes.
+template <class Rep, class Period>
+void ts::PSIBuffer::getSecondsBCD(cn::duration<Rep,Period>& duration)
+{
+    const cn::hours hours = cn::hours(getBCD<cn::hours::rep>(2));
+    const cn::minutes minutes = cn::minutes(getBCD<cn::minutes::rep>(2));
+    const cn::seconds seconds = cn::seconds(getBCD<cn::seconds::rep>(2));
+    duration = hours + minutes + seconds;
 }

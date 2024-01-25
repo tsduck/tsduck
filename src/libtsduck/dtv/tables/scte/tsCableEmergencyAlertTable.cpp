@@ -139,8 +139,8 @@ void ts::CableEmergencyAlertTable::deserializePayload(PSIBuffer& buf, const Sect
     buf.getUTF8WithLength(EAS_event_code);
     buf.getMultipleStringWithLength(nature_of_activation_text);
     alert_message_time_remaining = buf.getUInt8();
-    const uint32_t start = buf.getUInt32();
-    event_start_time = start == 0 ? Time::Epoch : Time::GPSSecondsToUTC(start);
+    const cn::seconds start = cn::seconds(buf.getUInt32());
+    event_start_time = start == cn::seconds::zero() ? Time::Epoch : Time::GPSSecondsToUTC(start);
     event_duration = buf.getUInt16();
     buf.skipBits(12);
     buf.getBits(alert_priority, 4);
@@ -207,7 +207,7 @@ void ts::CableEmergencyAlertTable::serializePayload(BinaryTable& table, PSIBuffe
     buf.putUTF8WithLength(EAS_event_code);
     buf.putMultipleStringWithLength(nature_of_activation_text);
     buf.putUInt8(alert_message_time_remaining);
-    buf.putUInt32(event_start_time == Time::Epoch ? 0 : uint32_t(event_start_time.toGPSSeconds()));
+    buf.putUInt32(event_start_time == Time::Epoch ? 0 : uint32_t(event_start_time.toGPSSeconds().count()));
     buf.putUInt16(event_duration);
     buf.putBits(0xFFFF, 12);
     buf.putBits(alert_priority, 4);
@@ -391,8 +391,8 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
 
     if (buf.canReadBytes(17)) {
         disp << margin << UString::Format(u"Remaining: %d seconds", {buf.getUInt8()});
-        const uint32_t start = buf.getUInt32();
-        disp << ", start time: " << (start == 0 ? u"immediate" : Time::GPSSecondsToUTC(start).format(Time::DATETIME));
+        const cn::seconds start = cn::seconds(buf.getUInt32());
+        disp << ", start time: " << (start == cn::seconds::zero() ? u"immediate" : Time::GPSSecondsToUTC(start).format(Time::DATETIME));
         disp << UString::Format(u", duration: %d minutes", {buf.getUInt16()}) << std::endl;
         buf.skipBits(12);
         disp << margin << UString::Format(u"Alert priority: %d", {buf.getBits<uint8_t>(4)}) << std::endl;

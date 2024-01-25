@@ -30,7 +30,7 @@ const ts::Time ts::Time::Apocalypse(0x7FFFFFFFFFFFFFFF);
 const ts::Time ts::Time::UnixEpoch
 #if defined(TS_WINDOWS)
     // Windows epoch is 1 Jan 1601 00:00:00, 134774 days before UNIX epoch.
-    (134774 * MilliSecPerDay * TICKS_PER_MS);
+    (134774 * TICKS_PER_DAY);
 #elif defined(TS_UNIX)
     (0);
 #else
@@ -40,13 +40,13 @@ const ts::Time ts::Time::UnixEpoch
 // This constant is: Julian epoch - Time epoch.
 // The Julian epoch is 17 Nov 1858 00:00:00.
 // If negative, the Julian epoch cannot be represented as a Time.
-const ts::MilliSecond ts::Time::JulianEpochOffset =
+const cn::milliseconds ts::Time::JulianEpochOffset =
 #if defined(TS_WINDOWS)
     // Windows epoch is 1 Jan 1601 00:00:00, 94187 days before Julian epoch.
-    94187 * MilliSecPerDay;
+    cn::milliseconds(94187 * MS_PER_DAY);
 #elif defined(TS_UNIX)
     // UNIX epoch is 1 Jan 1970 00:00:00, 40587 days after Julian epoch
-    -40587 * MilliSecPerDay;
+    cn::milliseconds(-40587 * MS_PER_DAY);
 #else
     #error "unsupported operating system"
 #endif
@@ -292,7 +292,7 @@ bool ts::Time::decode(const ts::UString& str, int fields)
 // Get the number of leap seconds between two UTC dates.
 //----------------------------------------------------------------------------
 
-ts::Second ts::Time::leapSecondsTo(const Time& end) const
+cn::seconds ts::Time::leapSecondsTo(const Time& end) const
 {
     return TimeConfigurationFile::Instance().leapSeconds(*this, end);
 }
@@ -394,7 +394,7 @@ ts::Time ts::Time::JSTToUTC() const
         return *this;
     }
     else {
-        return Time(_value - JSTOffset * TICKS_PER_MS);
+        return *this - JSTOffset;
     }
 }
 
@@ -404,7 +404,7 @@ ts::Time ts::Time::UTCToJST() const
         return *this;
     }
     else {
-        return Time(_value + JSTOffset * TICKS_PER_MS);
+        return *this + JSTOffset;
     }
 }
 
@@ -434,15 +434,15 @@ ts::Time ts::Time::CurrentUTC()
 
 
 //----------------------------------------------------------------------------
-// This static routine converts a Win32 FILETIME to MilliSecond
+// This static routine converts a Win32 FILETIME to cn::milliseconds
 //----------------------------------------------------------------------------
 
 #if defined(TS_WINDOWS)
-ts::MilliSecond ts::Time::Win32FileTimeToMilliSecond(const ::FILETIME& ft)
+cn::milliseconds ts::Time::Win32FileTimeToMilliSecond(const ::FILETIME& ft)
 {
     FileTime ftime;
     ftime.ft = ft;
-    return ftime.i / TICKS_PER_MS;
+    return cn::duration_cast<cn::milliseconds>(Ticks(ftime.i));
 }
 #endif
 
@@ -462,34 +462,23 @@ ts::Time ts::Time::Win32FileTimeToUTC(const ::FILETIME& ft)
 
 
 //----------------------------------------------------------------------------
-// Converts with UNIX time_t
+// Converts with UNIX time_t and GPS time
 //----------------------------------------------------------------------------
 
 ts::Time ts::Time::UnixTimeToUTC(const uint64_t t)
 {
     // The value t is a number of seconds since Jan 1st 1970.
-    return Time(UnixEpoch._value + (Second(t) * 1000 * TICKS_PER_MS));
+    return UnixEpoch + cn::seconds(cn::seconds::rep(t));
 }
 
 uint64_t ts::Time::toUnixTime() const
 {
-    return _value < UnixEpoch._value ? 0 : (_value - UnixEpoch._value) / (1000 * TICKS_PER_MS);
+    return std::max(cn::seconds::zero(), cn::duration_cast<cn::seconds>(*this - UnixEpoch)).count();
 }
 
-
-//----------------------------------------------------------------------------
-// Converts with GPS time.
-//----------------------------------------------------------------------------
-
-ts::Time ts::Time::GPSSecondsToUTC(Second gps)
+cn::seconds ts::Time::toGPSSeconds() const
 {
-    // The value t is a number of seconds since Jan 6th 1980.
-    return Time(GPSEpoch._value + (gps * 1000 * TICKS_PER_MS));
-}
-
-ts::Second ts::Time::toGPSSeconds() const
-{
-    return _value < GPSEpoch._value ? 0 : (_value - GPSEpoch._value) / (1000 * TICKS_PER_MS);
+    return std::max(cn::seconds::zero(), cn::duration_cast<cn::seconds>(*this - GPSEpoch));
 }
 
 
@@ -499,7 +488,7 @@ ts::Second ts::Time::toGPSSeconds() const
 
 #if defined(TS_UNIX)
 
-ts::NanoSecond ts::Time::UnixClockNanoSeconds(clockid_t clock, const MilliSecond& delay)
+cn::nanoseconds ts::Time::UnixClockNanoSeconds(clockid_t clock, const cn::milliseconds& delay)
 {
     // Get current time using the specified clock.
     // Minimum resolution is a nanosecond, but much more in fact.
@@ -509,23 +498,23 @@ ts::NanoSecond ts::Time::UnixClockNanoSeconds(clockid_t clock, const MilliSecond
     }
 
     // Current time in nano-seconds:
-    const NanoSecond nanoseconds = NanoSecond(result.tv_nsec) + NanoSecond(result.tv_sec) * NanoSecPerSec;
+    const cn::nanoseconds nanoseconds = cn::nanoseconds(cn::nanoseconds::rep(result.tv_nsec) + cn::nanoseconds::rep(result.tv_sec) * std::nano::den);
 
     // Last possible integer time value:
-    constexpr SubSecond MAX = std::numeric_limits<SubSecond>::max();
+    constexpr cn::nanoseconds MAX = cn::nanoseconds::max();
 
     // Delay in nano-seconds:
-    const NanoSecond nsDelay = (delay < MAX / NanoSecPerMilliSec) ? delay * NanoSecPerMilliSec : MAX;
+    const cn::nanoseconds nsDelay = cn::duration_cast<cn::nanoseconds>(delay);
 
     // Current time + delay in nano-seconds:
     return (nanoseconds < MAX - nsDelay) ? nanoseconds + nsDelay : MAX;
 }
 
-void ts::Time::GetUnixClock(::timespec& result, clockid_t clock, const MilliSecond& delay)
+void ts::Time::GetUnixClock(::timespec& result, clockid_t clock, const cn::milliseconds& delay)
 {
-    const NanoSecond nanoseconds = UnixClockNanoSeconds(clock, delay);
-    result.tv_nsec = long(nanoseconds % NanoSecPerSec);
-    result.tv_sec = time_t(nanoseconds / NanoSecPerSec);
+    const cn::nanoseconds nanoseconds = UnixClockNanoSeconds(clock, delay);
+    result.tv_nsec = long(nanoseconds.count() % std::nano::den);
+    result.tv_sec = time_t(nanoseconds.count() / std::nano::den);
 }
 
 #endif

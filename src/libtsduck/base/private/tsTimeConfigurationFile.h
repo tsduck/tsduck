@@ -32,15 +32,15 @@ namespace ts {
         //! @return The number of leap seconds between @a start and @a end.
         //! Return zero if @a start is after @a end.
         //!
-        Second leapSeconds(const Time& start, const Time& end) const;
+        cn::seconds leapSeconds(const Time& start, const Time& end) const;
 
     private:
         // Definition of a <leap_second> entry.
         class LeapSecond
         {
         public:
-            Time   after {};   // Insert leap seconds right after the second in this time.
-            Second count = 0;  // Number of leap second to add (could be negative if necessary).
+            Time        after {};  // Insert leap seconds right after the second in this time.
+            cn::seconds count {};  // Number of leap second to add (could be negative if necessary).
 
             // Constructor.
             LeapSecond() = default;
@@ -50,7 +50,7 @@ namespace ts {
         };
 
         // TimeConfigurationFile private fields.
-        Second initial_seconds = 0;               // Initial leap seconds before first leap second.
-        std::vector<LeapSecond> leap_seconds {};  // Sorted list of defined leap seconds.
+        cn::seconds             initial_seconds {};  // Initial leap seconds before first leap second.
+        std::vector<LeapSecond> leap_seconds {};     // Sorted list of defined leap seconds.
     };
 }

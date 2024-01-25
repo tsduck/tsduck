@@ -332,9 +332,9 @@ bool ts::SpliceSchedule::analyzeXML(DuckContext& duck, const xml::Element* eleme
 
 ts::Time ts::SpliceSchedule::ToUTCTime(const DuckContext& duck, uint32_t value)
 {
-    Time utc(Time::GPSEpoch + Second(value) * MilliSecPerSec);
+    Time utc(Time::GPSEpoch + cn::seconds(value));
     if (duck.useLeapSeconds()) {
-        utc -= Time::GPSEpoch.leapSecondsTo(utc) * MilliSecPerSec;
+        utc -= Time::GPSEpoch.leapSecondsTo(utc);
     }
     return utc;
 }
@@ -344,9 +344,9 @@ uint32_t ts::SpliceSchedule::FromUTCTime(const DuckContext& duck, const Time& va
     if (value < Time::GPSEpoch) {
         return 0;
     }
-    Second utc = (value - Time::GPSEpoch) / MilliSecPerSec;
+    cn::seconds utc = cn::duration_cast<cn::seconds>(value - Time::GPSEpoch);
     if (duck.useLeapSeconds()) {
         utc += Time::GPSEpoch.leapSecondsTo(value);
     }
-    return uint32_t(utc);
+    return uint32_t(utc.count());
 }

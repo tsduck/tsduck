@@ -26,7 +26,7 @@ ts::CyclingPacketizer::~CyclingPacketizer()
 {
 }
 
-ts::CyclingPacketizer::SectionDesc::SectionDesc(const SectionPtr& sec, MilliSecond rep) :
+ts::CyclingPacketizer::SectionDesc::SectionDesc(const SectionPtr& sec, cn::milliseconds rep) :
     section(sec),
     repetition(rep)
 {
@@ -37,7 +37,7 @@ ts::CyclingPacketizer::SectionDesc::SectionDesc(const SectionPtr& sec, MilliSeco
 // Add sections into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addSections(const SectionPtrVector& sects, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addSections(const SectionPtrVector& sects, cn::milliseconds rep_rate)
 {
     for (const auto& it : sects) {
         addSection(it, rep_rate);
@@ -49,7 +49,7 @@ void ts::CyclingPacketizer::addSections(const SectionPtrVector& sects, MilliSeco
 // Add all sections of a table into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addTable(const BinaryTable& table, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addTable(const BinaryTable& table, cn::milliseconds rep_rate)
 {
     for (size_t i = 0; i < table.sectionCount(); ++i) {
         addSection(table.sectionAt(i), rep_rate);
@@ -61,7 +61,7 @@ void ts::CyclingPacketizer::addTable(const BinaryTable& table, MilliSecond rep_r
 // Add all sections of a table into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addTable(DuckContext& duck, const AbstractTable& table, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addTable(DuckContext& duck, const AbstractTable& table, cn::milliseconds rep_rate)
 {
     BinaryTable bin;
     table.serialize(duck, bin);
@@ -132,12 +132,12 @@ void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 // Add a section into the packetizer.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::addSection(const SectionPtr& sect, MilliSecond rep_rate)
+void ts::CyclingPacketizer::addSection(const SectionPtr& sect, cn::milliseconds rep_rate)
 {
     if (!sect.isNull() && sect->isValid()) {
         SectionDescPtr desc(new SectionDesc(sect, rep_rate));
 
-        if (rep_rate == 0 || _bitrate == 0) {
+        if (rep_rate == cn::milliseconds::zero() || _bitrate == 0) {
             // Unschedule section, simply add it at end of queue
             _other_sections.push_back(desc);
         }
@@ -259,7 +259,7 @@ void ts::CyclingPacketizer::setBitRate(const BitRate& new_bitrate)
         // out of list of unscheduled sections.
         const PacketCounter current_packet(packetCount());
         for (auto it = _other_sections.begin(); it != _other_sections.end(); ) {
-            if ((*it)->repetition == 0) {
+            if ((*it)->repetition == cn::milliseconds::zero()) {
                 // Not a scheduled section
                 ++it;
             }
@@ -395,12 +395,11 @@ bool ts::CyclingPacketizer::atCycleBoundary() const
 
 std::ostream& ts::CyclingPacketizer::SectionDesc::display(const DuckContext& duck, std::ostream& strm) const
 {
-    return strm
-        << "    - " << names::TID(duck, section->tableId()) << std::endl
-        << "      Repetition rate: " << repetition << " ms" << std::endl
-        << "      Last provided at cycle: " << last_cycle << std::endl
-        << "      Last provided at packet: " << last_packet << std::endl
-        << "      Due packet: " << due_packet << std::endl;
+    return strm << "    - " << names::TID(duck, section->tableId()) << std::endl
+                << "      Repetition rate: " << UString::Chrono(repetition, true) << std::endl
+                << "      Last provided at cycle: " << last_cycle << std::endl
+                << "      Last provided at packet: " << last_packet << std::endl
+                << "      Due packet: " << due_packet << std::endl;
 }
 
 

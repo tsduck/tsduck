@@ -22,7 +22,6 @@
 #include "tsNIT.h"
 #include "tsTransportStreamId.h"
 #include "tsDescriptorList.h"
-#include "tsFileUtils.h"
 TS_MAIN(MainCode);
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms
@@ -56,7 +55,7 @@ namespace {
         bool              show_modulation = false;
         bool              list_services = false;
         bool              global_services = false;
-        ts::MilliSecond   psi_timeout = 0;
+        cn::milliseconds  psi_timeout {};
         const ts::HFBand* hfband = nullptr;
         ts::UString       channel_file {};
         bool              update_channel_file = false;
@@ -148,8 +147,8 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"With this option, tsscan checks all offsets and reports that the signal is at offset +1. "
          u"By default, tsscan reports that the signal is found at the central frequency of the channel (offset zero).");
 
-    option(u"psi-timeout", 0, UNSIGNED);
-    help(u"psi-timeout", u"milliseconds",
+    option<cn::milliseconds>(u"psi-timeout");
+    help(u"psi-timeout",
          u"Specifies the timeout, in milli-seconds, for PSI/SI table collection. "
          u"Useful only with --service-list. The default is " +
          ts::UString::Decimal(DEFAULT_PSI_TIMEOUT) + u" milli-seconds.");
@@ -202,16 +201,22 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     hfband = vhf_scan ? duck.vhfBand() : duck.uhfBand();
 
     use_best_strength = present(u"best-strength");
-    first_channel     = intValue(u"first-channel", hfband->firstChannel());
-    last_channel      = intValue(u"last-channel", hfband->lastChannel());
-    show_modulation   = present(u"show-modulation");
-    no_offset         = !present(u"use-offsets");
-    first_offset      = no_offset ? 0 : intValue(u"first-offset", hfband->firstOffset(first_channel));
-    last_offset       = no_offset ? 0 : intValue(u"last-offset", hfband->lastOffset(first_channel));
-    min_strength      = intValue(u"min-strength", DEFAULT_MIN_STRENGTH);
-    list_services     = present(u"service-list");
-    global_services   = present(u"global-service-list");
-    psi_timeout       = intValue<ts::MilliSecond>(u"psi-timeout", DEFAULT_PSI_TIMEOUT);
+    list_services = present(u"service-list");
+    global_services = present(u"global-service-list");
+    show_modulation = present(u"show-modulation");
+    no_offset = !present(u"use-offsets");
+
+    getIntValue(first_channel, u"first-channel", hfband->firstChannel());
+    getIntValue(last_channel, u"last-channel", hfband->lastChannel());
+    getIntValue(min_strength, u"min-strength", DEFAULT_MIN_STRENGTH);
+    getChronoValue(psi_timeout, u"psi-timeout", cn::milliseconds(DEFAULT_PSI_TIMEOUT));
+    if (no_offset) {
+        first_offset = last_offset = 0;
+    }
+    else {
+        getIntValue(first_offset, u"first-offset", hfband->firstOffset(first_channel));
+        getIntValue(last_offset, u"last-offset", hfband->lastOffset(first_channel));
+    }
 
     const bool save_channel_file = present(u"save-channels");
     update_channel_file = present(u"update-channels");

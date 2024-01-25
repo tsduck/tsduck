@@ -90,7 +90,7 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(24, pl.playListCount());
     TSUNIT_EQUAL(5, pl.altPlayListCount());
-    TSUNIT_EQUAL(0, pl.targetDuration());
+    TSUNIT_EQUAL(0, pl.targetDuration().count());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
@@ -146,7 +146,7 @@ void HLSTest::testMasterPlaylistWithAlternate()
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(7, pl.playListCount());
     TSUNIT_EQUAL(2, pl.altPlayListCount());
-    TSUNIT_EQUAL(0, pl.targetDuration());
+    TSUNIT_EQUAL(0, pl.targetDuration().count());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
@@ -212,20 +212,20 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_EQUAL(100, pl.segmentCount());
     TSUNIT_EQUAL(0, pl.playListCount());
     TSUNIT_EQUAL(0, pl.altPlayListCount());
-    TSUNIT_EQUAL(6, pl.targetDuration());
+    TSUNIT_EQUAL(6, pl.targetDuration().count());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(pl.endList());
 
     TSUNIT_EQUAL(u"fileSequence0.ts", pl.segment(0).relativeURI);
     TSUNIT_EQUAL(u"", pl.segment(0).title);
     TSUNIT_EQUAL(2060 * 1024, pl.segment(0).bitrate.toInt());
-    TSUNIT_EQUAL(6000, pl.segment(0).duration);
+    TSUNIT_EQUAL(6000, pl.segment(0).duration.count());
     TSUNIT_ASSERT(!pl.segment(0).gap);
 
     TSUNIT_EQUAL(u"fileSequence99.ts", pl.segment(99).relativeURI);
     TSUNIT_EQUAL(u"", pl.segment(99).title);
     TSUNIT_EQUAL(2055 * 1024, pl.segment(99).bitrate.toInt());
-    TSUNIT_EQUAL(6000, pl.segment(99).duration);
+    TSUNIT_EQUAL(6000, pl.segment(99).duration.count());
     TSUNIT_ASSERT(!pl.segment(99).gap);
 
     ts::hls::MediaSegment seg;
@@ -235,7 +235,7 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_EQUAL(u"fileSequence0.ts", seg.relativeURI);
     TSUNIT_EQUAL(u"", seg.title);
     TSUNIT_EQUAL(2060 * 1024, seg.bitrate.toInt());
-    TSUNIT_EQUAL(6000, seg.duration);
+    TSUNIT_EQUAL(6000, seg.duration.count());
     TSUNIT_ASSERT(!seg.gap);
 }
 
@@ -302,7 +302,7 @@ void HLSTest::testBuildMediaPlaylist()
     TSUNIT_EQUAL(0, pl.playListCount());
 
     TSUNIT_ASSERT(pl.setMediaSequence(7));
-    TSUNIT_ASSERT(pl.setTargetDuration(5));
+    TSUNIT_ASSERT(pl.setTargetDuration(cn::seconds(5)));
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_ASSERT(pl.setEndList(true));
     TSUNIT_ASSERT(pl.endList());
@@ -312,13 +312,13 @@ void HLSTest::testBuildMediaPlaylist()
     ts::hls::MediaSegment seg1;
     seg1.relativeURI = u"/c/test/path/segments/seg-0001.ts";
     seg1.title = u"Segment1";
-    seg1.duration = 4920;
+    seg1.duration = cn::milliseconds(4920);
     seg1.bitrate = 1233920;
     TSUNIT_ASSERT(pl.addSegment(seg1));
 
     ts::hls::MediaSegment seg2;
     seg2.relativeURI = u"/c/test/path/segments/seg-0002.ts";
-    seg2.duration = 4971;
+    seg2.duration = cn::milliseconds(4971);
     seg2.bitrate = 1653760;
     TSUNIT_ASSERT(pl.addSegment(seg2));
 
@@ -343,7 +343,7 @@ void HLSTest::testBuildMediaPlaylist()
 
     ts::hls::MediaSegment seg3;
     seg3.relativeURI = u"/c/test/path/segments/seg-0003.ts";
-    seg3.duration = 4984;
+    seg3.duration = cn::milliseconds(4984);
     seg3.bitrate = 1653760;
     TSUNIT_ASSERT(pl.addSegment(seg3));
 

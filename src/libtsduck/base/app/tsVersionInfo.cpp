@@ -133,7 +133,7 @@ void ts::VersionInfo::startNewVersionDetection()
     const UString dirname(DirectoryName(filename));
     const Time lasttime(GetFileModificationTimeUTC(filename));
     const Time curtime(Time::CurrentUTC());
-    if (lasttime != Time::Epoch && curtime != Time::Epoch && curtime >= lasttime && (curtime - lasttime) < MilliSecPerDay) {
+    if (lasttime != Time::Epoch && curtime != Time::Epoch && curtime >= lasttime && curtime < lasttime + cn::days(1)) {
         // Last check was done less than one day ago, don't try again.
         _debug.debug(u"last new version check done %s, not done again", {lasttime.UTCToLocal()});
         return;

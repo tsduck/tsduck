@@ -19,15 +19,6 @@
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
 
-// There is a bug in GCC version 6 and 7 which prevents some template methods in this file from
-// compiling correctly. This is specific to GCC 6 and 7. There is no issue with GCC 4.9, 8.x, 9.x
-// as well as MSVC and clang. The error typically appears on Debian/Raspbian 10, Ubuntu 18.04,
-// as well as obsolete versions of other distros.
-
-#if defined(TS_GCC_ONLY) && !defined(TS_IGNORE_GCC6_BUG) && (__GNUC__ == 6 || __GNUC__ == 7) && !defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG)
-    #define TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG 1
-#endif
-
 namespace ts {
     namespace xml {
 
@@ -326,6 +317,18 @@ namespace ts {
             }
 
             //!
+            //! Set an attribute with a std::chrono::duration value to a node.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //! @param [in] hexa If true, use an hexadecimal representation (0x...).
+            //!
+            template <class Rep, class Period>
+            void setChronoAttribute(const UString& name, cn::duration<Rep,Period> value, bool hexa = false)
+            {
+                refAttribute(name).setInteger<Rep>(value.count(), hexa);
+            }
+
+            //!
             //! Set an attribute with a floating-point value to a node.
             //! @tparam FLT A floating-point type.
             //! @param [in] name Attribute name.
@@ -552,7 +555,6 @@ namespace ts {
                                  INT2 minValue = std::numeric_limits<INT>::min(),
                                  INT3 maxValue = std::numeric_limits<INT>::max()) const;
 
-#if !defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG) || defined(DOXYGEN)
             //!
             //! Get an integer attribute of an XML element in an enum type.
             //! @tparam ENUM An enumeration type.
@@ -574,7 +576,6 @@ namespace ts {
                                  ENUM defValue = 0,
                                  INT1 minValue = static_cast<typename ts::underlying_type<ENUM>::type>(0),
                                  INT2 maxValue = std::numeric_limits<typename ts::underlying_type<ENUM>::type>::max()) const;
-#endif
 
             //!
             //! Get an optional integer attribute of an XML element.
@@ -759,6 +760,23 @@ namespace ts {
             }
 
             //!
+            //! Get a std::chrono::duration attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <class Rep, class Period>
+            bool getChronoAttribute(cn::duration<Rep, Period>& value,
+                                    const UString& name,
+                                    bool required = false,
+                                    const cn::duration<Rep, Period>& defValue = cn::duration<Rep, Period>::zero(),
+                                    const cn::duration<Rep, Period>& minValue = cn::duration<Rep, Period>::min(),
+                                    const cn::duration<Rep, Period>& maxValue = cn::duration<Rep, Period>::max()) const;
+            //!
             //! Get a date/time attribute of an XML element.
             //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
@@ -928,7 +946,6 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
 }
 
 // Get an integer attribute of an XML element.
-#if !defined(TSXML_GCC_TEMPLATE_SUBSTITUTION_BUG)
 template <typename ENUM, typename INT1, typename INT2, typename std::enable_if<std::is_enum<ENUM>::value>::type*, typename INT>
 bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool required, ENUM defValue, INT1 minValue, INT2 maxValue) const
 {
@@ -939,8 +956,6 @@ bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool re
     }
     return ok;
 }
-#endif
-
 
 // Get an optional integer attribute of an XML element.
 template <typename INT, typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT>::value>::type*>
@@ -1064,5 +1079,21 @@ bool ts::xml::Element::getTimeAttribute(cn::duration<Rep1,Period1>& value, const
     if (!ok) {
         report().error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
     }
+    return ok;
+}
+
+// Get a std::chrono::duration attribute of an XML element.
+template <class Rep, class Period>
+bool ts::xml::Element::getChronoAttribute(cn::duration<Rep, Period>& value,
+                                          const UString& name,
+                                          bool required,
+                                          const cn::duration<Rep, Period>& defValue,
+                                          const cn::duration<Rep, Period>& minValue,
+                                          const cn::duration<Rep, Period>& maxValue) const
+{
+    using Duration = cn::duration<Rep, Period>;
+    typename Duration::rep ivalue = 0;
+    const bool ok = getIntAttribute(ivalue, name, required, defValue.count(), minValue.count(), maxValue.count());
+    value = Duration(ivalue);
     return ok;
 }

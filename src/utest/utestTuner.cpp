@@ -135,7 +135,7 @@ void TunerTest::testScanDVBT()
         debug() << "  tuning options: " << args.toPluginOptions() << std::endl;
 
         TSUNIT_ASSERT(tuner.tune(args));
-        ts::TSScanner scan(duck, tuner, 5000);
+        ts::TSScanner scan(duck, tuner, cn::milliseconds(5000));
 
         ts::ServiceList services;
         scan.getServices(services);

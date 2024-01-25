@@ -85,7 +85,7 @@ ts::Time ts::TOT::localTime(const Region& reg) const
     // Add local time offset in milliseconds.
     // In case of non-standard time reference, the offset in the descriptor
     // is an offset from the non-standard time reference, not from UTC.
-    return utc_time + _time_reference_offset + MilliSecond(reg.time_offset) * 60 * MilliSecPerSec;
+    return utc_time + _time_reference_offset + reg.time_offset;
 }
 
 
@@ -93,9 +93,9 @@ ts::Time ts::TOT::localTime(const Region& reg) const
 // Format a time offset in minutes
 //----------------------------------------------------------------------------
 
-ts::UString ts::TOT::timeOffsetFormat(int minutes)
+ts::UString ts::TOT::timeOffsetFormat(cn::minutes minutes)
 {
-    return UString::Format(u"%s%02d:%02d", {minutes < 0 ? u"-" : u"", std::abs(minutes) / 60, std::abs(minutes) % 60});
+    return UString::Format(u"%s%02d:%02d", {minutes < cn::minutes::zero() ? u"-" : u"", std::abs(minutes.count()) / 60, std::abs(minutes.count()) % 60});
 }
 
 

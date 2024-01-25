@@ -124,8 +124,8 @@ void ts::DCCT::deserializePayload(PSIBuffer& buf, const Section& section)
         buf.skipBits(4);
         buf.getBits(test.dcc_to_major_channel_number, 10);
         buf.getBits(test.dcc_to_minor_channel_number, 10);
-        test.dcc_start_time = Time::GPSSecondsToUTC(buf.getUInt32());
-        test.dcc_end_time = Time::GPSSecondsToUTC(buf.getUInt32());
+        test.dcc_start_time = Time::GPSSecondsToUTC(cn::seconds(buf.getUInt32()));
+        test.dcc_end_time = Time::GPSSecondsToUTC(cn::seconds(buf.getUInt32()));
 
         // Loop on all inner-level definitions.
         size_t dcc_term_count = buf.getUInt8();
@@ -173,8 +173,8 @@ void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         buf.putBits(0xFF, 4);
         buf.putBits(test.dcc_to_major_channel_number, 10);
         buf.putBits(test.dcc_to_minor_channel_number, 10);
-        buf.putUInt32(uint32_t(test.dcc_start_time.toGPSSeconds()));
-        buf.putUInt32(uint32_t(test.dcc_end_time.toGPSSeconds()));
+        buf.putUInt32(uint32_t(test.dcc_start_time.toGPSSeconds().count()));
+        buf.putUInt32(uint32_t(test.dcc_end_time.toGPSSeconds().count()));
 
         if (test.terms.size() > 255) {
             buf.setUserError();
@@ -224,8 +224,8 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             buf.skipBits(4);
             disp << " to channel " << buf.getBits<uint16_t>(10);
             disp << "." << buf.getBits<uint16_t>(10) << std::endl;
-            disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
-            disp << margin << "  End UTC:   " << Time::GPSSecondsToUTC(buf.getUInt32()).format(Time::DATETIME) << std::endl;
+            disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(cn::seconds(buf.getUInt32())).format(Time::DATETIME) << std::endl;
+            disp << margin << "  End UTC:   " << Time::GPSSecondsToUTC(cn::seconds(buf.getUInt32())).format(Time::DATETIME) << std::endl;
 
             size_t dcc_term_count = buf.getUInt8();
             disp << margin << "  Number of DCC selection terms: " << dcc_term_count << std::endl;

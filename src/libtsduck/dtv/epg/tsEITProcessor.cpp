@@ -31,7 +31,7 @@ ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
 
 void ts::EITProcessor::reset()
 {
-    _start_time_offset = 0;
+    _start_time_offset = cn::milliseconds::zero();
     _date_only = false;
     _demux.reset();
     _packetizer.reset();
@@ -260,7 +260,7 @@ void ts::EITProcessor::removePresentFollowing()
 // Add an offset to all start times of all events in all EIT's.
 //----------------------------------------------------------------------------
 
-void ts::EITProcessor::addStartTimeOffet(MilliSecond offset, bool date_only)
+void ts::EITProcessor::addStartTimeOffet(cn::milliseconds offset, bool date_only)
 {
     _start_time_offset = offset;
     _date_only = date_only;
@@ -362,7 +362,7 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
         }
 
         // Update all events start times.
-        if (_start_time_offset != 0) {
+        if (_start_time_offset != cn::milliseconds::zero()) {
             uint8_t* data = const_cast<uint8_t*>(sp->payload() + 6);
             const uint8_t* const end = sp->payload() + sp->payloadSize();
             while (data + 12 <= end) {

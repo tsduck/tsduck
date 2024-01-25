@@ -37,11 +37,11 @@ ts::TimeConfigurationFile::TimeConfigurationFile()
 
     // Get leap seconds configuration.
     xml::ElementVector xleap;
-    xleap_root->getIntAttribute(initial_seconds, u"initial", true, 0);
+    xleap_root->getChronoAttribute(initial_seconds, u"initial", true);
     xleap_root->getChildren(xleap, u"leap");
     for (const auto& it : xleap) {
         LeapSecond ls;
-        if (it->getDateTimeAttribute(ls.after, u"after", true) && it->getIntAttribute(ls.count, u"count", true)) {
+        if (it->getDateTimeAttribute(ls.after, u"after", true) && it->getChronoAttribute(ls.count, u"count", true)) {
             leap_seconds.push_back(ls);
         }
     }
@@ -55,9 +55,9 @@ ts::TimeConfigurationFile::TimeConfigurationFile()
 // Get the number of leap seconds between two UTC dates.
 //-----------------------------------------------------------------------------
 
-ts::Second ts::TimeConfigurationFile::leapSeconds(const Time& start, const Time& end) const
+cn::seconds ts::TimeConfigurationFile::leapSeconds(const Time& start, const Time& end) const
 {
-    Second total = 0;
+    cn::seconds total = cn::seconds::zero();
     if (!leap_seconds.empty() && start < end) {
 
         // Find index of first leap_seconds entry after start.

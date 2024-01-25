@@ -109,7 +109,7 @@ void ts::SystemMonitor::main()
             period_index++;
             start_next_period += period->duration;
             mute_reported = false;
-            _report.debug(u"starting monitoring period #%d, duration: %'d ms, interval: %'d ms", {period_index, period->duration, period->interval});
+            _report.debug(u"starting monitoring period #%d, duration: %'d ms, interval: %'d ms", {period_index, period->duration.count(), period->interval.count()});
         }
 
         // Wait until due time or termination request
@@ -151,9 +151,9 @@ void ts::SystemMonitor::main()
 
         // Format CPU load.
         message += u", CPU:";
-        message += UString::Percentage((cpu_time - last_cpu_time).count(), current_time - last_time);
+        message += UString::Percentage(cpu_time - last_cpu_time, current_time - last_time);
         message += u" (average:";
-        message += UString::Percentage((cpu_time - start_cpu_time).count(), current_time - start_time);
+        message += UString::Percentage(cpu_time - start_cpu_time, current_time - start_time);
         message += u")";
 
         // Display monitoring message if allowed in this period or if vmem has increased.
@@ -162,7 +162,7 @@ void ts::SystemMonitor::main()
         }
 
         // Compute CPU percentage during last period.
-        const int cpu = current_time <= last_time ? 0 : int((100 * (cpu_time - last_cpu_time).count()) / (current_time - last_time));
+        const int cpu = current_time <= last_time ? 0 : int((100 * (cpu_time - last_cpu_time).count()) / (current_time - last_time).count());
 
         // Raise an alarm if the CPU usage is above defined limit for this period.
         if (cpu > period->max_cpu) {
@@ -242,12 +242,13 @@ bool ts::SystemMonitor::loadConfigurationFile(const UString& config)
     // Parse all <period> entries.
     for (auto it = periods.begin(); ok && it != periods.end(); ++it) {
         Period period;
-        ok = (*it)->getIntAttribute(period.duration, u"duration", false, std::numeric_limits<MilliSecond>::max(), 1) &&
-             (*it)->getIntAttribute(period.interval, u"interval", true, 0, 1) &&
-             loadConfig(period, *it, &defconfig);
         // XML values are in seconds, we use milliseconds internally.
-        period.duration *= MilliSecPerSec;
-        period.interval *= MilliSecPerSec;
+        cn::seconds xduration {}, xinterval {};
+        ok = (*it)->getChronoAttribute(xduration, u"duration", false, cn::seconds::max(), cn::seconds(1)) &&
+             (*it)->getChronoAttribute(xinterval, u"interval", true, cn::seconds::zero(), cn::seconds(1)) &&
+             loadConfig(period, *it, &defconfig);
+        period.duration = cn::duration_cast<cn::milliseconds>(xduration);
+        period.interval = cn::duration_cast<cn::milliseconds>(xinterval);
         _periods.push_back(period);
     }
 

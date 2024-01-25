@@ -76,34 +76,14 @@ namespace ts {
         }
 
         //!
-        //! Operator Time + MilliSecond => Time.
-        //! @param [in] duration A number of milliseconds.
-        //! @return A @c Time object representing this object plus the specified number of milliseconds.
-        //!
-        Time operator+(const MilliSecond& duration) const
-        {
-            return Time(_value + duration * TICKS_PER_MS);
-        }
-
-        //!
         //! Operator Time + std::chrono::duration => Time.
         //! @param [in] duration A duration.
         //! @return A @c Time object representing this object plus the specified duration.
         //!
         template <class Rep, class Period>
-        Time operator+(const cn::duration<Rep,Period>& duration) const
+        Time operator+(cn::duration<Rep,Period> duration) const
         {
             return Time(_value + cn::duration_cast<Ticks>(duration).count());
-        }
-
-        //!
-        //! Operator Time - MilliSecond => Time.
-        //! @param [in] duration A number of milliseconds.
-        //! @return A @c Time object representing this object minus the specified number of milliseconds.
-        //!
-        Time operator-(const MilliSecond& duration) const
-        {
-            return Time(_value - duration * TICKS_PER_MS);
         }
 
         //!
@@ -112,20 +92,9 @@ namespace ts {
         //! @return A @c Time object representing this object minus the specified duration.
         //!
         template <class Rep, class Period>
-        Time operator-(const cn::duration<Rep,Period>& duration) const
+        Time operator-(cn::duration<Rep,Period> duration) const
         {
             return Time(_value - cn::duration_cast<Ticks>(duration).count());
-        }
-
-        //!
-        //! Operator Time += MilliSecond
-        //! @param [in] duration A number of milliseconds to add to this object.
-        //! @return A reference to this object.
-        //!
-        Time& operator+=(const MilliSecond& duration)
-        {
-            _value += duration * TICKS_PER_MS;
-            return *this;
         }
 
         //!
@@ -134,20 +103,9 @@ namespace ts {
         //! @return A reference to this object.
         //!
         template <class Rep, class Period>
-        Time& operator+=(const cn::duration<Rep,Period>& duration)
+        Time& operator+=(cn::duration<Rep,Period> duration)
         {
             _value += cn::duration_cast<Ticks>(duration).count();
-            return *this;
-        }
-
-        //!
-        //! Operator Time -= MilliSecond
-        //! @param [in] duration A number of milliseconds to substract from this object.
-        //! @return A reference to this object.
-        //!
-        Time& operator-=(const MilliSecond& duration)
-        {
-            _value -= duration * TICKS_PER_MS;
             return *this;
         }
 
@@ -157,20 +115,20 @@ namespace ts {
         //! @return A reference to this object.
         //!
         template <class Rep, class Period>
-        Time& operator-=(const cn::duration<Rep,Period>& duration)
+        Time& operator-=(cn::duration<Rep,Period> duration)
         {
             _value -= cn::duration_cast<Ticks>(duration).count();
             return *this;
         }
 
         //!
-        //! Operator: Time - Time => MilliSecond.
+        //! Operator: Time - Time => cn::milliseconds.
         //! @param [in] other Another time to substract from this object.
         //! @return The duration, in milliseconds, between this object and the @a other object.
         //!
-        MilliSecond operator-(const Time& other) const
+        cn::milliseconds operator-(const Time& other) const
         {
-            return (_value - other._value) / TICKS_PER_MS;
+            return cn::duration_cast<cn::milliseconds>(Ticks(_value - other._value));
         }
 
         //!
@@ -301,10 +259,10 @@ namespace ts {
         Time UTCToJST() const;
 
         //!
-        //! Offset of a JST (Japan Standard Time) value from UTC in seconds.
+        //! Offset of a JST (Japan Standard Time) value from UTC in milliseconds.
         //! JST is defined as UTC+9.
         //!
-        static constexpr MilliSecond JSTOffset = +9 * MilliSecPerHour;
+        static constexpr cn::milliseconds JSTOffset = cn::hours(+9);
 
         //!
         //! Flags indicating the list of time fields to display.
@@ -382,7 +340,7 @@ namespace ts {
         //! @see https://en.wikipedia.org/wiki/Leap_second
         //! @see https://en.wikipedia.org/wiki/International_Atomic_Time
         //!
-        Second leapSecondsTo(const Time& end) const;
+        cn::seconds leapSecondsTo(const Time& end) const;
 
         //!
         //! Static method returning the current UTC time.
@@ -396,7 +354,7 @@ namespace ts {
         //! @return The current local time.
         //! @throw ts::Time::TimeError In case of operating system time error.
         //!
-        static Time CurrentLocalTime() {return CurrentUTC().UTCToLocal();}
+        static Time CurrentLocalTime() { return CurrentUTC().UTCToLocal(); }
 
         //!
         //! Get the beginning of the current hour.
@@ -412,7 +370,7 @@ namespace ts {
         //!
         Time nextHour() const
         {
-            return thisHour() + MilliSecPerHour;
+            return thisHour() + cn::hours(1);
         }
 
         //!
@@ -429,7 +387,7 @@ namespace ts {
         //!
         Time nextDay() const
         {
-            return thisDay() + MilliSecPerDay;
+            return thisDay() + cn::days(1);
         }
 
         //!
@@ -660,7 +618,7 @@ namespace ts {
         //! If this constant is negative, the Julian epoch if before the time
         //! epoch and cannot be represented as a @c Time object.
         //!
-        static const MilliSecond JulianEpochOffset;
+        static const cn::milliseconds JulianEpochOffset;
 
         //!
         //! Number of seconds between 1970-01-01 and 1980-01-06.
@@ -668,11 +626,10 @@ namespace ts {
         //! The ATSC system time is the number of GPS seconds since 00:00:00 UTC, January 6th, 1980.
         //! This value can be displayed on a Linux system using the command: `date +%s --date 1980-01-06utc`
         //!
-        static const Second UnixEpochToGPS = 315964800;
+        static constexpr cn::seconds UnixEpochToGPS = cn::seconds(315964800);
 
         //!
         //! This static routine converts a UNIX @c time_t to a UTC time.
-        //!
         //! @param [in] unixTime A UNIX @c time_t value. Must be unsigned. Can be 32 or 64 bits.
         //! @return The corresponding UTC time.
         //!
@@ -680,29 +637,26 @@ namespace ts {
 
         //!
         //! Convert this time in a UNIX @c time_t.
-        //!
         //! @return The corresponding Unix time on 64 bits.
         //!
         uint64_t toUnixTime() const;
 
         //!
         //! This static routine converts a number of GPS seconds to a UTC time.
-        //!
         //! @param [in] gps The number of seconds since the GPS Epoch (1980-01-06).
         //! @return The corresponding UTC time.
         //!
-        static Time GPSSecondsToUTC(Second gps);
+        static Time GPSSecondsToUTC(cn::seconds gps) { return GPSEpoch + gps; }
 
         //!
         //! Convert this time to a number of seconds since 1980-01-06, the GPS epoch.
+        //! @return The corresponding number of secondss.
         //!
-        //! @return The corresponding number of seconds on 64 bits.
-        //!
-        Second toGPSSeconds() const;
+        cn::seconds toGPSSeconds() const;
 
 #if defined(TS_WINDOWS) || defined(DOXYGEN)
         //!
-        //! This static routine converts a Win32 @c FILETIME to @c MilliSecond (Microsoft Windows only).
+        //! This static routine converts a Win32 @c FILETIME to @c cn::milliseconds (Microsoft Windows only).
         //!
         //! This function is available on Microsoft Windows systems only
         //! and should not be used on portable software.
@@ -710,7 +664,7 @@ namespace ts {
         //! @param [in] fileTime A Win32 @c FILETIME value.
         //! @return The corresponding number of milliseconds.
         //!
-        static MilliSecond Win32FileTimeToMilliSecond(const ::FILETIME& fileTime);
+        static cn::milliseconds Win32FileTimeToMilliSecond(const ::FILETIME& fileTime);
 
         //!
         //! This static routine converts a Win32 @c FILETIME to a UTC time (Microsoft Windows only).
@@ -735,7 +689,7 @@ namespace ts {
         //! @param [in] delay Number of milliseconds to add to the current clock.
         //! @return Absolute time in nanoseconds according to @a clock.
         //!
-        static NanoSecond UnixClockNanoSeconds(clockid_t clock, const MilliSecond& delay = 0);
+        static cn::nanoseconds UnixClockNanoSeconds(clockid_t clock, const cn::milliseconds& delay = cn::milliseconds::zero());
 
         //!
         //! This static routine gets a system clock and adds a delay in milliseconds (UNIX systems only).
@@ -747,7 +701,7 @@ namespace ts {
         //! @param [in] clock Clock id, usually @c CLOCK_REALTIME or @c CLOCK_MONOTONIC.
         //! @param [in] delay Number of milliseconds to add to the current real time clock.
         //!
-        static void GetUnixClock(::timespec& result, clockid_t clock, const MilliSecond& delay = 0);
+        static void GetUnixClock(::timespec& result, clockid_t clock, const cn::milliseconds& delay = cn::milliseconds::zero());
 #endif
 
     private:
@@ -760,8 +714,8 @@ namespace ts {
         // Static private routine: Build the 64-bit value from fields
         static int64_t ToInt64(int year, int month, int day, int hour, int minute, int second, int millisecond);
 
-        // Number of clock ticks per millisecond:
-        static const int64_t TICKS_PER_MS =
+        // Number of clock ticks per millisecond.
+        static constexpr int64_t TICKS_PER_MS =
 #if defined(TS_WINDOWS)
             // On Win32, a FILETIME is a 64-bit value representing the number
             // of 100-nanosecond intervals since January 1, 1601.
@@ -773,8 +727,12 @@ namespace ts {
             1000;
 #endif
 
-        // The std::chrono::duration type with natural clock ticks.
-        using Ticks = cn::duration<std::intmax_t, std::ratio<1, MilliSecPerSec * TICKS_PER_MS>>;
+        // Number of clock ticks per day.
+        static constexpr int64_t MS_PER_DAY = 1000 * 3600 * 24;
+        static constexpr int64_t TICKS_PER_DAY = TICKS_PER_MS * MS_PER_DAY;
+
+        // The std::chrono::duration type with natural clock ticks. The ratio contains the number of ticks per second.
+        using Ticks = cn::duration<std::intmax_t, std::ratio<1, 1'000 * TICKS_PER_MS>>;
 
         // On Win32, a the FILETIME structure is binary-compatible with a 64-bit integer.
 #if defined(TS_WINDOWS)

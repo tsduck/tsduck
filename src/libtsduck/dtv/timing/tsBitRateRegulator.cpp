@@ -73,12 +73,12 @@ void ts::BitRateRegulator::handleNewBitrate()
 
     // Compute corresponding duration (in nano-seconds) between two bursts.
     assert(_cur_bitrate > 0);
-    _burst_duration = cn::nanoseconds(((NanoSecPerSec * PKT_SIZE_BITS * burst_pkt_max) / _cur_bitrate).toInt());
+    _burst_duration = PacketInterval<cn::nanoseconds>(_cur_bitrate, burst_pkt_max);
 
     // If the result is too small for the time precision of the operating system, recompute a larger burst duration.
     if (_burst_duration < _burst_min) {
         _burst_duration = _burst_min;
-        burst_pkt_max = ((_burst_duration.count() * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
+        burst_pkt_max = PacketDistance(_cur_bitrate, _burst_duration);
     }
 
     // New end of burst sequence.

@@ -48,9 +48,9 @@ namespace ts {
             ~ServiceDesc() override;
 
             // Public fields
-            SectionCounter eitpf_count = 0;
-            SectionCounter eits_count = 0;
-            MilliSecond    max_time = 0;    // Max time ahead of current time for EIT
+            SectionCounter   eitpf_count = 0;
+            SectionCounter   eits_count = 0;
+            cn::milliseconds max_time {};   // Max time ahead of current time for EIT
         };
 
         // Combination of TS id / service id into one 32-bit index
@@ -83,7 +83,7 @@ namespace ts {
         virtual void handleSection(SectionDemux&, const Section&) override;
 
         // Number of days in a duration, used for EPG depth
-        static int Days(const MilliSecond& ms) { return int((ms + MilliSecPerDay - 1) / MilliSecPerDay); }
+        static cn::days::rep Days(cn::milliseconds ms) { return cn::duration_cast<cn::days>(ms).count(); }
     };
 }
 
@@ -205,13 +205,13 @@ bool ts::EITPlugin::stop()
     int scount_eitpf_oth = 0;
     int scount_eits_act = 0;
     int scount_eits_oth = 0;
-    MilliSecond max_time_act = 0;
-    MilliSecond max_time_oth = 0;
+    cn::milliseconds max_time_act = cn::milliseconds::zero();
+    cn::milliseconds max_time_oth = cn::milliseconds::zero();
     size_t name_width = 0;
     for (const auto& it : _services) {
         const ServiceDesc& serv(it.second);
         name_width = std::max(name_width, serv.getName().width());
-        if (_ts_id.has_value() && serv.hasTSId (_ts_id.value())) {
+        if (_ts_id.has_value() && serv.hasTSId(_ts_id.value())) {
             // Actual TS
             scount_act++;
             if (serv.eitpf_count != 0) {

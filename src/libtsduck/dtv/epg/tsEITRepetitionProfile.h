@@ -74,13 +74,13 @@ namespace ts {
         //! EIT schedule for events in the prime period (i.e. the next few days)
         //! are repeated more often than for later events.
         //!
-        size_t prime_days {EIT::TOTAL_DAYS};
+        cn::days prime_days = EIT::TOTAL_DAYS;
 
         //!
         //! Cycle time in seconds of each EIT sections repetition profile.
         //! The array is indexed by EITProfile.
         //!
-        std::array <size_t, PROFILE_COUNT> cycle_seconds {};
+        std::array <cn::seconds, PROFILE_COUNT> cycle_seconds {};
 
         //!
         //! Standard EIT repetition profile for satellite and cable networks.
@@ -100,7 +100,7 @@ namespace ts {
         //! @param [in] cycles Up to 6 cycles in seconds. Missing values are replaced by the
         //! last value in the list. If the list is empty, all cycles are 10 seconds long.
         //!
-        EITRepetitionProfile(size_t days = 1, std::initializer_list<size_t> cycles = std::initializer_list<size_t>());
+        EITRepetitionProfile(cn::days days = cn::days(1), std::initializer_list<cn::seconds> cycles = std::initializer_list<cn::seconds>());
 
         //!
         //! Compute the starting date of the "later" period.
@@ -139,6 +139,6 @@ namespace ts {
         //! @return The repetition cycle in seconds of @a section.
         //! Undefined if the section is not a valid EIT.
         //!
-        size_t repetitionSeconds(const Section& section);
+        cn::seconds repetitionSeconds(const Section& section);
     };
 }

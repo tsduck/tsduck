@@ -229,7 +229,8 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
     grid.subSection();
 
     grid.setLayout({grid.bothTruncateLeft(73, u'.')});
-    grid.putLayout({{u"Broadcast time:", _duration == 0 ? u"Unknown" : UString::Format(u"%d sec (%d min %d sec)", {_duration / 1000, _duration / 60000, (_duration / 1000) % 60})}});
+    const cn::milliseconds::rep ms = _duration.count();
+    grid.putLayout({{u"Broadcast time:", ms == 0 ? u"Unknown" : UString::Format(u"%d sec (%d min %d sec)", {ms / 1000, ms / 60000, (ms / 1000) % 60})}});
     if (_first_tdt != Time::Epoch || _first_tot != Time::Epoch || !_country_code.empty()) {
         // This looks like a DVB stream.
         reportTimeStamp(grid, u"First TDT UTC time stamp:", _first_tdt);
@@ -588,9 +589,9 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
             uint64_t rep, min_rep, max_rep;
             if (_ts_bitrate != 0) {
                 unit = u" ms";
-                rep = PacketInterval(_ts_bitrate, etc.repetition_ts);
-                min_rep = PacketInterval(_ts_bitrate, etc.min_repetition_ts);
-                max_rep = PacketInterval(_ts_bitrate, etc.max_repetition_ts);
+                rep = PacketInterval(_ts_bitrate, etc.repetition_ts).count();
+                min_rep = PacketInterval(_ts_bitrate, etc.min_repetition_ts).count();
+                max_rep = PacketInterval(_ts_bitrate, etc.max_repetition_ts).count();
             }
             else {
                 unit = u" pkt";
@@ -780,7 +781,7 @@ void ts::TSAnalyzerReport::reportNormalizedTime(std::ostream& stm, const Time& t
         stm << type << ":"
             << UString::Format(u"date=%02d/%02d/%04d:", {f.day, f.month, f.year})
             << UString::Format(u"time=%02dh%02dm%02ds:", {f.hour, f.minute, f.second})
-            << "secondsince2000=" << ((time - Time(2000, 1, 1, 0, 0, 0)) / MilliSecPerSec) << ":";
+            << "secondsince2000=" << cn::duration_cast<cn::seconds>(time - Time(2000, 1, 1, 0, 0, 0)).count() << ":";
         if (!country.empty()) {
             stm << "country=" << country << ":";
         }
@@ -825,7 +826,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         << "userbitrate204=" << ToBitrate204(_ts_user_bitrate).toInt() << ":"
         << "pcrbitrate=" << _ts_pcr_bitrate_188.toInt() << ":"
         << "pcrbitrate204=" << _ts_pcr_bitrate_204.toInt() << ":"
-        << "duration=" << (_duration / 1000) << ":";
+        << "duration=" << cn::duration_cast<cn::seconds>(_duration).count() << ":";
     if (!_country_code.empty()) {
         stm << "country=" << _country_code << ":";
     }
@@ -1056,9 +1057,9 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
                 << "minrepetitionpkt=" << etc.min_repetition_ts << ":"
                 << "maxrepetitionpkt=" << etc.max_repetition_ts << ":";
             if (_ts_bitrate != 0) {
-                stm << "repetitionms=" << PacketInterval(_ts_bitrate, etc.repetition_ts) << ":"
-                    << "minrepetitionms=" << PacketInterval(_ts_bitrate, etc.min_repetition_ts) << ":"
-                    << "maxrepetitionms=" << PacketInterval(_ts_bitrate, etc.max_repetition_ts) << ":";
+                stm << "repetitionms=" << PacketInterval(_ts_bitrate, etc.repetition_ts).count() << ":"
+                    << "minrepetitionms=" << PacketInterval(_ts_bitrate, etc.min_repetition_ts).count() << ":"
+                    << "maxrepetitionms=" << PacketInterval(_ts_bitrate, etc.max_repetition_ts).count() << ":";
             }
             if (etc.versions.any()) {
                 stm << "firstversion=" << int(etc.first_version) << ":"
@@ -1107,7 +1108,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     root.query(u"ts", true).add(u"user-bitrate-204", ToBitrate204(_ts_user_bitrate).toInt());
     root.query(u"ts", true).add(u"pcr-bitrate", _ts_pcr_bitrate_188.toInt());
     root.query(u"ts", true).add(u"pcr-bitrate-204", _ts_pcr_bitrate_204.toInt());
-    root.query(u"ts", true).add(u"duration", _duration / 1000);
+    root.query(u"ts", true).add(u"duration", cn::duration_cast<cn::seconds>(_duration).count());
     if (!_country_code.empty()) {
         root.query(u"ts", true).add(u"country", _country_code);
     }
@@ -1315,9 +1316,9 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
             jv.add(u"min-repetition-pkt", etc.min_repetition_ts);
             jv.add(u"max-repetition-pkt", etc.max_repetition_ts);
             if (_ts_bitrate != 0) {
-                jv.add(u"repetition-ms", PacketInterval(_ts_bitrate, etc.repetition_ts));
-                jv.add(u"min-repetition-ms", PacketInterval(_ts_bitrate, etc.min_repetition_ts));
-                jv.add(u"max-repetition-ms", PacketInterval(_ts_bitrate, etc.max_repetition_ts));
+                jv.add(u"repetition-ms", PacketInterval(_ts_bitrate, etc.repetition_ts).count());
+                jv.add(u"min-repetition-ms", PacketInterval(_ts_bitrate, etc.min_repetition_ts).count());
+                jv.add(u"max-repetition-ms", PacketInterval(_ts_bitrate, etc.max_repetition_ts).count());
             }
             if (etc.versions.any()) {
                 jv.add(u"first-version", etc.first_version);
@@ -1346,7 +1347,7 @@ void ts::TSAnalyzerReport::jsonTime(json::Value& parent, const UString& path, co
         json::Value& tm(parent.query(path, true));
         tm.add(u"date", time.format(Time::DATE));
         tm.add(u"time", time.format(Time::TIME | Time::MILLISECOND));
-        tm.add(u"seconds-since-2000", (time - Time(2000, 1, 1, 0, 0, 0)) / MilliSecPerSec);
+        tm.add(u"seconds-since-2000", cn::duration_cast<cn::seconds>(time - Time(2000, 1, 1, 0, 0, 0)).count());
         if (!country.empty()) {
             tm.add(u"country", country);
         }

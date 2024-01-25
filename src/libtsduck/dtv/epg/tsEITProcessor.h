@@ -193,7 +193,7 @@ namespace ts {
         //! @param [in] offset The number of milliseconds to add to each start time. Can be negative.
         //! @param [in] date_only If true, update the date field only, do not modify the hour/minute/second.
         //!
-        void addStartTimeOffet(MilliSecond offset, bool date_only = false);
+        void addStartTimeOffet(cn::milliseconds offset, bool date_only = false);
 
         //!
         //! Set the maximum number of buffered sections.
@@ -242,7 +242,7 @@ namespace ts {
         DuckContext&          _duck;
         PIDSet                _input_pids {};
         PID                   _output_pid = PID_NULL;
-        MilliSecond           _start_time_offset = 0;
+        cn::milliseconds      _start_time_offset {};
         bool                  _date_only = false;
         size_t                _max_buffered_sections {DEFAULT_BUFFERED_SECTIONS};
         SectionDemux          _demux;

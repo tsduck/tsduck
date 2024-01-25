@@ -116,9 +116,9 @@ void PacketizerTest::testPacketizer()
     const ts::BitRate bitrate = ts::PKT_SIZE_BITS * 10; // 10 packets per second
 
     ts::CyclingPacketizer pzer(duck, ts::PID_PAT, ts::CyclingPacketizer::StuffingPolicy::ALWAYS, bitrate);
-    pzer.addTable(duck, pat);        // unscheduled
-    pzer.addTable(duck, pmt, 1000);  // 1000 ms => 1 table / second
-    pzer.addTable(duck, sdt, 250);   // 250 ms => 4 tables / second
+    pzer.addTable(duck, pat);                          // unscheduled
+    pzer.addTable(duck, pmt, cn::milliseconds(1000));  // 1000 ms => 1 table / second
+    pzer.addTable(duck, sdt, cn::milliseconds(250));   // 250 ms => 4 tables / second
 
     debug() << "PacketizerTest: Packetizer state before packetization: " << std::endl << pzer;
 

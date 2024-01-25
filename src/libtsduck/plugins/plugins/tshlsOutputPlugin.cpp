@@ -9,18 +9,12 @@
 #include "tshlsOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsOneShotPacketizer.h"
-#include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsPESPacket.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
-
-#define DEFAULT_OUT_DURATION      10  // Default segment target duration for output streams.
-#define DEFAULT_OUT_LIVE_DURATION  5  // Default segment target duration for output live streams.
-#define DEFAULT_EXTRA_DURATION     2  // Default segment extra duration when intra image is not found.
-#define DEFAULT_LIVE_EXTRA_DEPTH   1  // Default additional segments to keep in live streams.
 
 
 //----------------------------------------------------------------------------
@@ -58,11 +52,11 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"The specified string shall start with '#'. If omitted, the leading '#' is automatically added. "
          u"Several --custom-tag can be specified. Each tag is added as an independent tag line.");
 
-    option(u"duration", 'd', POSITIVE);
+    option<cn::seconds>(u"duration", 'd');
     help(u"duration",
          u"Specify the target duration in seconds of media segments. "
-         u"The default is " TS_STRINGIFY(DEFAULT_OUT_DURATION) u" seconds per segment for VoD streams "
-         u"and " TS_STRINGIFY(DEFAULT_OUT_LIVE_DURATION) u" seconds for live streams.");
+         u"The default is " + UString::Chrono(DEFAULT_OUT_DURATION) + u" per segment for VoD streams "
+         u"and " + UString::Chrono(DEFAULT_OUT_LIVE_DURATION) + u" for live streams.");
 
     option(u"event", 'e');
     help(u"event",
@@ -103,13 +97,13 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     help(u"live-extra-segments",
          u"In a live stream, specify the number of unreferenced segments to keep on disk before deleting them. "
          u"The extra segments were recently referenced in the playlist and can be downloaded by clients after their removal from the playlist. "
-         u"The default is " TS_STRINGIFY(DEFAULT_LIVE_EXTRA_DEPTH) u" segments.");
+         u"The default is " + UString::Decimal(DEFAULT_LIVE_EXTRA_DEPTH) + u" segments.");
 
-    option(u"max-extra-duration", 'm', POSITIVE);
+    option<cn::seconds>(u"max-extra-duration", 'm');
     help(u"max-extra-duration",
          u"With --intra-close, specify the maximum additional duration in seconds after which "
          u"the segment is closed on the next video PES packet, even if no intra-coded image is found. "
-         u"The default is to wait a maximum of " TS_STRINGIFY(DEFAULT_EXTRA_DURATION) u" additional seconds "
+         u"The default is to wait a maximum of an additional " + UString::Chrono(DEFAULT_EXTRA_DURATION) + u" "
          u"for an intra-coded image.");
 
     option(u"no-bitrate");
@@ -161,8 +155,8 @@ bool ts::hls::OutputPlugin::getOptions()
     _sliceOnly = present(u"slice-only");
     getIntValue(_liveDepth, u"live");
     getIntValue(_liveExtraDepth, u"live-extra-segments", DEFAULT_LIVE_EXTRA_DEPTH);
-    getIntValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
-    getIntValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
+    getChronoValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
+    getChronoValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
     _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
     getIntValue(_initialMediaSeq, u"start-media-sequence", 0);
     getIntValues(_closeLabels, u"label-close");
@@ -546,10 +540,10 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
                 }
                 else if (_pcrAnalyzer.bitrateIsValid()) {
                     // The segment file shall be closed when the estimated duration exceeds the target duration.
-                    const MilliSecond segDuration = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.writePacketsCount());
-                    _segClosePending = segDuration >= _targetDuration * MilliSecPerSec;
+                    const cn::milliseconds segDuration = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.writePacketsCount());
+                    _segClosePending = segDuration >= _targetDuration;
                     // With --intra-close, force renew on next PES packet if extra duration is exceeded.
-                    renewOnPUSI = segDuration >= (_targetDuration + _maxExtraDuration) * MilliSecPerSec;
+                    renewOnPUSI = segDuration >= _targetDuration + _maxExtraDuration;
                 }
             }
 
@@ -566,7 +560,7 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
                         renewNow = true;
                     }
                     else if (renewOnPUSI) {
-                        tsp->debug(u"no I-frame found in last %d seconds, starting new segment on new PES packet", {_maxExtraDuration});
+                        tsp->debug(u"no I-frame found in last %d seconds, starting new segment on new PES packet", {_maxExtraDuration.count()});
                         renewNow = true;
                     }
                     else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {

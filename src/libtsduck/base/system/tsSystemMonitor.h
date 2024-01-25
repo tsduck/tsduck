@@ -82,8 +82,8 @@ namespace ts {
         {
         public:
             Period() = default;
-            MilliSecond duration = 0;   // Period duration in milliseconds.
-            MilliSecond interval = 0;   // Monitoring interval in that period.
+            cn::milliseconds duration {};   // Period duration in milliseconds.
+            cn::milliseconds interval {};   // Monitoring interval in that period.
         };
         using PeriodList = std::list<Period>;
 

@@ -223,7 +223,7 @@ namespace ts {
             //! Get the segment target duration (informative, in media playlist).
             //! @return The segment target duration in seconds.
             //!
-            Second targetDuration() const { return _targetDuration; }
+            cn::seconds targetDuration() const { return _targetDuration; }
 
             //!
             //! Set the segment target duration in a media playlist.
@@ -231,7 +231,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool setTargetDuration(Second duration, Report& report = CERR);
+            bool setTargetDuration(cn::seconds duration, Report& report = CERR);
 
             //!
             //! Get the sequence number of first segment (in media playlist).
@@ -440,7 +440,7 @@ namespace ts {
             UString            _fileBase {};         // Base file path to resolve relative URI's (when original is a file name).
             bool               _isURL = false;       // The base is an URL, not a directory name.
             URL                _url {};              // Original URL.
-            Second             _targetDuration = 0;  // Segment target duration (media playlist).
+            cn::seconds        _targetDuration {};   // Segment target duration (media playlist).
             size_t             _mediaSequence = 0;   // Sequence number of first segment (media playlist).
             bool               _endList = false;     // End of list indicator (media playlist).
             Time               _utcDownload {};      // UTC time of download.

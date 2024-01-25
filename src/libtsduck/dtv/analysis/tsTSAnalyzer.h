@@ -460,7 +460,7 @@ namespace ts {
         BitRate              _ts_user_bitrate = 0;    //!< User-specified TS bitrate (if any).
         BitRateConfidence    _ts_user_br_confidence = BitRateConfidence::LOW;  //!< Confidence in user-specified TS bitrate.
         BitRate              _ts_bitrate = 0;         //!< TS bitrate (either from PCR or options).
-        MilliSecond          _duration = 0;           //!< Total broadcast duration.
+        cn::milliseconds     _duration {};            //!< Total broadcast duration.
         Time                 _first_utc {};           //!< First system UTC time (first packet).
         Time                 _last_utc {};            //!< Last system UTC time (recomputeStatistics).
         Time                 _first_local {};         //!< First system local time (first packet).

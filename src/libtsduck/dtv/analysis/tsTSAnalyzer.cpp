@@ -76,7 +76,7 @@ void ts::TSAnalyzer::reset()
     _ts_user_bitrate = 0;
     _ts_user_br_confidence = BitRateConfidence::LOW;
     _ts_bitrate = 0;
-    _duration = 0;
+    _duration = cn::milliseconds::zero();
     _first_utc = Time::Epoch;
     _last_utc = Time::Epoch;
     _first_local = Time::Epoch;
@@ -1604,7 +1604,7 @@ void ts::TSAnalyzer::recomputeStatistics()
     _ts_bitrate = SelectBitrate(_ts_user_bitrate, _ts_user_br_confidence, _ts_pcr_bitrate_188, BitRateConfidence::PCR_AVERAGE);
 
     // Compute broadcast duration.
-    _duration = _ts_bitrate == 0 ? 0 : ((MilliSecPerSec * PKT_SIZE_BITS * _ts_pkt_cnt) / _ts_bitrate).toInt();
+    _duration = PacketInterval(_ts_bitrate, _ts_pkt_cnt);
 
     // Reinitialize all service information that will be updated PID by PID
     for (auto& srv : _services) {

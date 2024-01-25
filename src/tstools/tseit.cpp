@@ -103,7 +103,7 @@ ts::EITMainOptions::EITMainOptions(int argc, char *argv[]) :
     cmd->help(u"bytes", u"Size of the TS file in bytes.");
     cmd->option(u"packets", 'p', POSITIVE);
     cmd->help(u"packets", u"Number of TS packets to generate.");
-    cmd->option(u"seconds", 's', POSITIVE);
+    cmd->option<cn::seconds>(u"seconds", 's');
     cmd->help(u"seconds", u"Duration in seconds of the file to generate.");
     cmd->option(u"until", 'u', STRING);
     cmd->help(u"until", u"year/month/day:hour:minute:second.millisecond", u"Process up to the specified date in the stream.");
@@ -115,7 +115,7 @@ ts::EITMainOptions::EITMainOptions(int argc, char *argv[]) :
     cmd->help(u"bytes", u"Size of the TS file in bytes.");
     cmd->option(u"packets", 'p', POSITIVE);
     cmd->help(u"packets", u"Number of TS packets to generate.");
-    cmd->option(u"seconds", 's', POSITIVE);
+    cmd->option<cn::seconds>(u"seconds", 's');
     cmd->help(u"seconds", u"Duration in seconds of the file to generate.");
     cmd->option(u"until", 'u', STRING);
     cmd->help(u"until", u"year/month/day:hour:minute:second.millisecond", u"Process up to the specified date in the stream.");
@@ -233,7 +233,7 @@ namespace ts {
         bool getTimeOptions(Time& time, Args& args, const UChar* name);
 
         // Get processing duration options. Return false on error. Set to zero and Epoch if unspecified.
-        bool getDurationOptions(size_t& packet_count, Time& until, Args& args);
+        bool getDurationOptions(PacketCounter& packet_count, Time& until, Args& args);
 
         // Command handlers.
         CommandStatus load(const UString&, Args&);
@@ -306,9 +306,12 @@ bool ts::EITCommand::getTimeOptions(Time& time, Args& args, const UChar* name)
 // Get processing duration options.
 //----------------------------------------------------------------------------
 
-bool ts::EITCommand::getDurationOptions(size_t& packet_count, Time& until, Args& args)
+bool ts::EITCommand::getDurationOptions(PacketCounter& packet_count, Time& until, Args& args)
 {
     packet_count = 0;
+    until = Time::Epoch;
+    size_t bytes = 0;
+    cn::seconds seconds;
 
     if (_ts_bitrate == 0 && (args.present(u"until") || args.present(u"seconds"))) {
         args.error(u"TS bitrate is unknow, --until or --seconds cannot be used");
@@ -321,15 +324,18 @@ bool ts::EITCommand::getDurationOptions(size_t& packet_count, Time& until, Args&
         args.error(u"specify at most one of --bytes, --packets, --seconds");
         return false;
     }
-    if (args.present(u"bytes")) {
-        packet_count = args.intValue<size_t>(u"bytes") / PKT_SIZE;
+
+    args.getIntValue(packet_count, u"packets");
+    args.getIntValue(bytes, u"bytes");
+    args.getChronoValue(seconds, u"seconds");
+
+    if (bytes > 0) {
+        packet_count = bytes / PKT_SIZE;
     }
-    else if (args.present(u"packets")) {
-        packet_count = args.intValue<size_t>(u"packets");
+    else if (seconds > cn::seconds::zero()) {
+        packet_count = PacketDistance(_ts_bitrate, seconds);
     }
-    else if (args.present(u"seconds")) {
-        packet_count = size_t(PacketDistance(_ts_bitrate, MilliSecPerSec * args.intValue<Second>(u"seconds")));
-    }
+
     return true;
 }
 
@@ -362,7 +368,7 @@ ts::CommandStatus ts::EITCommand::process(const UString& command, Args& args)
     const UString outfile_name(outputFileName(args.value(u"", u"", 1)));
     const uint64_t start_offset = args.intValue<uint64_t>(u"start-offset", 0);
     const size_t repeat_count = args.intValue<size_t>(u"repeat", args.present(u"infinite") ? 0 : 1);
-    size_t packet_count = 0;
+    PacketCounter packet_count = 0;
     Time until;
     TSFile infile;
     TSFile outfile;
@@ -375,7 +381,7 @@ ts::CommandStatus ts::EITCommand::process(const UString& command, Args& args)
         return CommandStatus::ERROR;
     }
 
-    for (size_t count = 0;
+    for (PacketCounter count = 0;
          (packet_count == 0 || count < packet_count) && (until == Time::Epoch || _eit_gen.getCurrentTime() < until) && infile.readPackets(&pkt, nullptr, 1, args);
          ++count)
     {

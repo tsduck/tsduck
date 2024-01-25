@@ -36,11 +36,11 @@ namespace ts {
             TS_DEFAULT_ASSIGMENTS(Event);
         public:
             // Public members
-            uint16_t           event_id = 0;           //!< Event id, 14 bits.
-            Time               start_time {};          //!< Event start_time.
-            uint8_t            ETM_location = 0;       //!< Location of extended text message, 2 bits.
-            Second             length_in_seconds = 0;  //!< Event duration in seconds, 20 bits.
-            ATSCMultipleString title_text {};          //!< Multi-lingual event title.
+            uint16_t           event_id = 0;          //!< Event id, 14 bits.
+            Time               start_time {};         //!< Event start_time.
+            uint8_t            ETM_location = 0;      //!< Location of extended text message, 2 bits.
+            cn::seconds        length_in_seconds {};  //!< Event duration in seconds, 20 bits.
+            ATSCMultipleString title_text {};         //!< Multi-lingual event title.
 
             //!
             //! Constructor.

@@ -353,9 +353,9 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
             TSUNIT_ASSERT(tot.descs.count() == 0);
             TSUNIT_ASSERT(tot.regions[0].country == u"FRA");
             TSUNIT_ASSERT(tot.regions[0].region_id == 0);
-            TSUNIT_ASSERT(tot.regions[0].time_offset == 60);
+            TSUNIT_ASSERT(tot.regions[0].time_offset == cn::minutes(60));
             TSUNIT_ASSERT(tot.regions[0].next_change == ts::Time(2008, 3, 30, 1, 0, 0));
-            TSUNIT_ASSERT(tot.regions[0].next_time_offset == 120);
+            TSUNIT_ASSERT(tot.regions[0].next_time_offset == cn::minutes(120));
             tot.serialize(duck, table2);
             break;
         }

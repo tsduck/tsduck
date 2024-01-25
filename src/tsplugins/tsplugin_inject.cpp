@@ -244,7 +244,7 @@ bool ts::InjectPlugin::getOptions()
     _specific_rates = false;
     _undefined_rates = false;
     for (const auto& it : _infiles) {
-        if (it.repetition == 0) {
+        if (it.repetition == cn::milliseconds::zero()) {
             _undefined_rates = true;
         }
         else {
@@ -328,15 +328,15 @@ bool ts::InjectPlugin::reloadFiles()
             tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
                          {file.sections().size(),
                           xml::Document::IsInlineXML(it.file_name) ? u"inlined XML" : it.file_name,
-                          it.repetition > 0 ? UString::Decimal(it.repetition) + u" ms" : u"unspecified"});
+                          it.repetition > cn::milliseconds::zero() ? UString::Chrono(it.repetition, true) : u"unspecified"});
 
             if (_use_files_bitrate) {
-                assert(it.repetition != 0);
+                assert(it.repetition != cn::milliseconds::zero());
                 // Number of TS packets of all sections after packetization.
                 const uint64_t packets = Section::PacketCount(file.sections(), _stuffing_policy != StuffPolicy::ALWAYS);
                 // Contribution of this file in bits every 1000 seconds.
                 // The repetition rate is in milliseconds.
-                bits_per_1000s += (packets * PKT_SIZE_BITS * MilliSecPerSec * 1000) / it.repetition;
+                bits_per_1000s += (packets * PKT_SIZE_BITS * MilliSecPerSec * 1000) / it.repetition.count();
             }
         }
     }

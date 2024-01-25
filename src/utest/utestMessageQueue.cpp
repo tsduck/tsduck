@@ -157,10 +157,10 @@ void MessageQueueTest::testQueue()
     // Enqueue message, should take at least 500 ms
     debug() << "MessageQueueTest: main thread: enqueueing " << message << " (10 s. timeout)" << std::endl;
     const bool enqueued = queue.enqueue(new int(message++), cn::milliseconds(10000));
-    const ts::MilliSecond duration = ts::Time::CurrentUTC() - start;
-    debug() << "MessageQueueTest: main thread: enqueue = " << ts::UString::TrueFalse(enqueued) << ", duration = " << ts::UString::Decimal(duration) << " ms" << std::endl;
+    const cn::milliseconds duration = ts::Time::CurrentUTC() - start;
+    debug() << "MessageQueueTest: main thread: enqueue = " << ts::UString::TrueFalse(enqueued) << ", duration = " << ts::UString::Chrono(duration) << std::endl;
     TSUNIT_ASSERT(enqueued);
-    TSUNIT_ASSUME(duration >= 500 - 20 * _precision.count()); // imprecisions accumulate on Windows
+    TSUNIT_ASSUME(duration >= cn::milliseconds(500) - 20 * _precision); // imprecisions accumulate on Windows
 
     // Enqueue exit request
     debug() << "MessageQueueTest: main thread: force enqueueing -1" << std::endl;

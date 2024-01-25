@@ -40,7 +40,7 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
          u"Create a new empty " + _table_name + u" if none was received after one second. This is "
          u"equivalent to --create-after 1000.");
 
-    option(u"create-after", 0, POSITIVE);
+    option<cn::milliseconds>(u"create-after");
     help(u"create-after",
          u"Create a new empty " + _table_name + u" if none was received after the specified number "
          u"of milliseconds. If the actual " + _table_name + u" is received later, it will be used "
@@ -70,9 +70,9 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
 
 bool ts::AbstractTablePlugin::getOptions()
 {
-    _incr_version = present(u"increment-version");
-    _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond>(u"create-after", 0);
     _set_version = present(u"new-version");
+    _incr_version = present(u"increment-version");
+    getChronoValue(_create_after_ms, u"create-after", cn::seconds(present(u"create") ? 1 : 0));
     getValue(_bitrate, u"bitrate", _default_bitrate);
     getIntValue(_inter_pkt, u"inter-packet", 0);
     getIntValue(_new_version, u"new-version", 0);
@@ -236,11 +236,11 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
     _demux.feedPacket(pkt);
 
     // Determine when a new table shall be created. Executed only once, when the bitrate is known
-    if (!_found_table && _create_after_ms > 0 && _pkt_create == 0) {
+    if (!_found_table && _create_after_ms > cn::milliseconds::zero() && _pkt_create == 0) {
         const BitRate ts_bitrate = tsp->bitrate();
         if (ts_bitrate > 0) {
             _pkt_create = PacketDistance(ts_bitrate, _create_after_ms);
-            tsp->debug(u"will create %s after %'d packets, %'d ms (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms, ts_bitrate});
+            tsp->debug(u"will create %s after %'d packets, %'d ms (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms.count(), ts_bitrate});
         }
     }
 

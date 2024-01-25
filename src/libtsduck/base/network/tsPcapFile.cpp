@@ -156,7 +156,7 @@ bool ts::PcapFile::readHeader(uint32_t magic, Report& report)
             _minor = get16(header + 2);
             _if.resize(1); // only one interface in pcap files
             _if[0].link_type = get16(header + 18);
-            _if[0].time_units = magic == PCAP_MAGIC_BE || magic == PCAP_MAGIC_LE ? MicroSecPerSec : NanoSecPerSec;
+            _if[0].time_units = magic == PCAP_MAGIC_BE || magic == PCAP_MAGIC_LE ? std::micro::den : std::nano::den;
             _if[0].fcs_size = (header[16] & 0x10) == 0 ? 0 : 2 * ((header[16] >> 5) & 0x07);
             break;
         }
@@ -195,7 +195,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
 
     InterfaceDesc ifd;
     ifd.link_type = get16(data);
-    ifd.time_units = MicroSecPerSec;
+    ifd.time_units = std::micro::den;
 
     // Loop on options. Each option has 16-bit tag and 16-bit length.
     const uint8_t* end = data + size;
@@ -364,24 +364,24 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
                 orig_size = get32(buffer.data() + 16);
                 if_index = type == PCAPNG_OBSOLETE_PACKET ? get16(buffer.data()) : get32(buffer.data());
                 if (if_index < _if.size() && _if[if_index].time_units != 0) {
-                    const SubSecond units = _if[if_index].time_units;
-                    const SubSecond tstamp = SubSecond(uint64_t(get32(buffer.data() + 4)) << 32) + SubSecond(get32(buffer.data() + 8));
+                    const std::intmax_t units = _if[if_index].time_units;
+                    const std::intmax_t tstamp = std::intmax_t(uint64_t(get32(buffer.data() + 4)) << 32) + get32(buffer.data() + 8);
                     // Take care to overflow in tstamp * MilliSecPerSec. Sometimes, the timestamp is a full time
                     // since 1970 with time unit being 1,000,000,000. The value is close to the 64-bit max.
-                    if (units == MicroSecPerSec) {
+                    if (units == std::micro::den) {
                         timestamp = cn::microseconds(tstamp);
                     }
-                    else if (units > MicroSecPerSec && units % MicroSecPerSec == 0) {
-                        timestamp = cn::microseconds(tstamp / (units / MicroSecPerSec));
+                    else if (units > std::micro::den && units % std::micro::den == 0) {
+                        timestamp = cn::microseconds(tstamp / (units / std::micro::den));
                     }
-                    else if (units < MicroSecPerSec && MicroSecPerSec % units == 0) {
-                        timestamp = cn::microseconds(tstamp * (MicroSecPerSec / units));
+                    else if (units < std::micro::den && std::micro::den % units == 0) {
+                        timestamp = cn::microseconds(tstamp * (std::micro::den / units));
                     }
-                    else if (mul_overflow(tstamp, MicroSecPerSec, tstamp * MicroSecPerSec)) {
-                        timestamp = cn::microseconds(cn::microseconds::rep((double(tstamp) * double(MicroSecPerSec)) / double(units)));
+                    else if (mul_overflow(tstamp, std::micro::den, tstamp * std::micro::den)) {
+                        timestamp = cn::microseconds(cn::microseconds::rep((double(tstamp) * double(std::micro::den)) / double(units)));
                     }
                     else {
-                        timestamp = cn::microseconds((tstamp * MicroSecPerSec) / units);
+                        timestamp = cn::microseconds((tstamp * std::micro::den) / units);
                     }
                 }
             }
@@ -411,7 +411,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
             // Compute time stamp. Time units should never be null in pcap format.
             timestamp = _if[0].time_units < 0 ?
                 cn::microseconds(-1) :
-                cn::microseconds((cn::microseconds::rep(tstamp) * MicroSecPerSec) + (cn::microseconds::rep(sub_tstamp) * MicroSecPerSec) / _if[0].time_units);
+                cn::microseconds((cn::microseconds::rep(tstamp) * std::micro::den) + (cn::microseconds::rep(sub_tstamp) * std::micro::den) / _if[0].time_units);
 
             // Read packet data.
             buffer.resize(cap_size);

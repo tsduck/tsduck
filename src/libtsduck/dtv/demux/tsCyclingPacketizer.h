@@ -91,7 +91,7 @@ namespace ts {
         //! Get the TS packet stuffing policy at end of packet.
         //! @return TS packet stuffing policy at end of packet.
         //!
-        StuffingPolicy stuffingPolicy() const {return _stuffing;}
+        StuffingPolicy stuffingPolicy() const { return _stuffing; }
 
         //!
         //! Set the bitrate of the generated PID.
@@ -113,7 +113,7 @@ namespace ts {
         //! @param [in] repetition_rate Repetition rate of the section in milliseconds.
         //! If zero, simply packetize sections one after the other.
         //!
-        void addSection(const SectionPtr& section, MilliSecond repetition_rate = 0);
+        void addSection(const SectionPtr& section, cn::milliseconds repetition_rate = cn::milliseconds::zero());
 
         //!
         //! Add some sections into the packetizer.
@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
         //! If zero, simply packetize sections one after the other.
         //!
-        void addSections(const SectionPtrVector& sections, MilliSecond repetition_rate = 0);
+        void addSections(const SectionPtrVector& sections, cn::milliseconds repetition_rate = cn::milliseconds::zero());
 
         //!
         //! Add all sections of a binary table into the packetizer.
@@ -132,7 +132,7 @@ namespace ts {
         //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
         //! If zero, simply packetize sections one after the other.
         //!
-        void addTable(const BinaryTable& table, MilliSecond repetition_rate = 0);
+        void addTable(const BinaryTable& table, cn::milliseconds repetition_rate = cn::milliseconds::zero());
 
         //!
         //! Add all sections of a typed table into the packetizer.
@@ -141,7 +141,7 @@ namespace ts {
         //! @param [in] repetition_rate Repetition rate of the sections in milliseconds.
         //! If zero, simply packetize sections one after the other.
         //!
-        void addTable(DuckContext& duck, const AbstractTable& table, MilliSecond repetition_rate = 0);
+        void addTable(DuckContext& duck, const AbstractTable& table, cn::milliseconds repetition_rate = cn::milliseconds::zero());
 
         //!
         //! Remove all sections with the specified table id.
@@ -177,10 +177,7 @@ namespace ts {
         //! Get the number of stored sections to packetize.
         //! @return The number of stored sections to packetize.
         //!
-        SectionCounter storedSectionCount() const
-        {
-            return _section_count;
-        }
+        SectionCounter storedSectionCount() const { return _section_count; }
 
         //!
         //! Check if the last generated packet was the last packet in the cycle.
@@ -200,14 +197,14 @@ namespace ts {
         {
         public:
             // Public fields
-            SectionPtr     section {};      // Pointer to section
-            MilliSecond    repetition = 0;  // Repetition rate, zero if none
-            PacketCounter  last_packet = 0; // Packet index of last time the section was sent
-            PacketCounter  due_packet = 0;  // Packet index of next time
-            SectionCounter last_cycle = 0;  // Cycle index of last time the section was sent
+            SectionPtr       section {};      // Pointer to section
+            cn::milliseconds repetition {};   // Repetition rate, zero if none
+            PacketCounter    last_packet = 0; // Packet index of last time the section was sent
+            PacketCounter    due_packet = 0;  // Packet index of next time
+            SectionCounter   last_cycle = 0;  // Cycle index of last time the section was sent
 
             // Constructor
-            SectionDesc(const SectionPtr& sec, MilliSecond rep);
+            SectionDesc(const SectionPtr& sec, cn::milliseconds rep);
 
             // Check if this section shall be inserted after some other one.
             bool insertAfter(const SectionDesc& other) const;
@@ -223,7 +220,7 @@ namespace ts {
         using SectionDescList = std::list <SectionDescPtr>;
 
         // Private members:
-        StuffingPolicy  _stuffing {StuffingPolicy::NEVER};
+        StuffingPolicy  _stuffing = StuffingPolicy::NEVER;
         BitRate         _bitrate = 0;
         size_t          _section_count = 0;      // Number of sections in the 2 lists
         SectionDescList _sched_sections {};      // Scheduled sections, with repetition rates
@@ -231,9 +228,9 @@ namespace ts {
         PacketCounter   _sched_packets = 0;      // Size in TS packets of all sections in _sched_sections
         SectionCounter  _current_cycle {1};      // Cycle number (start at 1, always increasing)
         size_t          _remain_in_cycle = 0;    // Number of unsent sections in this cycle
-        SectionCounter  _cycle_end {UNDEFINED};  // At end of cycle, contains the index of last section
+        SectionCounter  _cycle_end = UNDEFINED;  // At end of cycle, contains the index of last section
 
-        static constexpr SectionCounter UNDEFINED = ~SectionCounter(0);
+        static constexpr SectionCounter UNDEFINED = std::numeric_limits<SectionCounter>::max();
 
         // Insert a scheduled section in the list, sorted by due_packet.
         void addScheduledSection(const SectionDescPtr&);

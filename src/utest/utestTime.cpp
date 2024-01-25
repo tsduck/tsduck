@@ -120,20 +120,20 @@ void TimeTest::testOperators()
     TSUNIT_ASSERT(t2 >= t1);
     TSUNIT_ASSERT(t1 < t2);
     TSUNIT_ASSERT(t2 > t1);
-    TSUNIT_ASSERT(t1 + 1 == t2);
-    TSUNIT_ASSERT(t2 - 1 == t1);
-    TSUNIT_ASSERT(t2 - t1 == 1);
-    TSUNIT_ASSERT(t1 - t2 == -1);
+    TSUNIT_ASSERT(t1 + cn::milliseconds(1) == t2);
+    TSUNIT_ASSERT(t2 - cn::milliseconds(1) == t1);
+    TSUNIT_ASSERT(t2 - t1 == cn::milliseconds(1));
+    TSUNIT_ASSERT(t1 - t2 == cn::milliseconds(-1));
 
     TSUNIT_ASSERT(t1 + cn::milliseconds(1) == t2);
     TSUNIT_ASSERT(t2 - cn::milliseconds(1) == t1);
     TSUNIT_ASSERT(t1 + cn::microseconds(1000) == t2);
     TSUNIT_ASSERT(t2 - cn::microseconds(1000) == t1);
 
-    t3 += 1;
+    t3 += cn::milliseconds(1);
     TSUNIT_ASSERT(t3 == t2);
 
-    t3 -= 1;
+    t3 -= cn::milliseconds(1);
     TSUNIT_ASSERT(t3 == t1);
 }
 
@@ -149,14 +149,14 @@ void TimeTest::testLocalTime()
 
     debug() << "TimeTest: Current local time: " << nowLocal << std::endl;
     debug() << "TimeTest: Current UTC time: " << nowUtc << std::endl;
-    debug() << "TimeTest: Local time offset: " << (nowLocal - nowUtc) / ts::MilliSecPerSec << " seconds" << std::endl;
-    debug() << "TimeTest: Julian Epoch offset: " << ts::Time::JulianEpochOffset / ts::MilliSecPerDay << " days" << std::endl;
+    debug() << "TimeTest: Local time offset: " << ts::UString::Chrono(cn::duration_cast<cn::seconds>(nowLocal - nowUtc)) << std::endl;
+    debug() << "TimeTest: Julian Epoch offset: " << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time::JulianEpochOffset)) << std::endl;
 
     TSUNIT_ASSERT(nowUtc > ts::Time::Epoch);
     TSUNIT_ASSERT(nowUtc < ts::Time::Apocalypse);
     TSUNIT_ASSERT(nowLocal > ts::Time::Epoch);
     TSUNIT_ASSERT(nowLocal < ts::Time::Apocalypse);
-    TSUNIT_ASSERT(std::abs(nowUtc - nowLocal) < ts::MilliSecPerDay);
+    TSUNIT_ASSERT(cn::abs(nowUtc - nowLocal) < cn::days(1));
 }
 
 void TimeTest::testThisNext()
@@ -266,10 +266,10 @@ void TimeTest::testEpoch()
 void TimeTest::testUnixTime()
 {
     debug()
-        << "TimeTest: UNIX Epoch at " << ((ts::Time::UnixEpoch - ts::Time::Epoch) / ts::MilliSecPerDay) << " days from Epoch" << std::endl
+        << "TimeTest: UNIX Epoch at " << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time::UnixEpoch - ts::Time::Epoch)) << " from Epoch" << std::endl
         << "TimeTest: UNIX Epoch: " << ts::Time::UnixEpoch << std::endl
         << "TimeTest: " << ts::Time(2018, 4, 13, 12, 54, 34) << " is "
-        << ((ts::Time(2018, 4, 13, 12, 54, 34) - ts::Time::Epoch) / ts::MilliSecPerDay) << " days from Epoch" << std::endl
+        << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time(2018, 4, 13, 12, 54, 34) - ts::Time::Epoch)) << " from Epoch" << std::endl
         << "          and " <<(1523624074 / (24 * 3600)) << " days from UNIX Epoch" << std::endl;
 
     TSUNIT_ASSERT(ts::Time::UnixTimeToUTC(0) == ts::Time::UnixEpoch);
@@ -442,21 +442,21 @@ void TimeTest::testJST()
 
 void TimeTest::testLeapSeconds()
 {
-    TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time::Epoch));
-    TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time(1971, 1, 1, 0, 0, 0)));
-    TSUNIT_EQUAL(0, ts::Time(1971, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1972, 1, 1, 0, 0, 0)));
-    TSUNIT_EQUAL(11, ts::Time(1971, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1972, 7, 1, 0, 0, 0)));
-    TSUNIT_EQUAL(37, ts::Time::Epoch.leapSecondsTo(ts::Time(2021, 1, 1, 0, 0, 0)));
-    TSUNIT_EQUAL(18, ts::Time::GPSEpoch.leapSecondsTo(ts::Time(2021, 1, 1, 0, 0, 0)));
-    TSUNIT_EQUAL(5, ts::Time(1985, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1992, 7, 1, 0, 0, 0)));
+    TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time::Epoch).count());
+    TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time(1971, 1, 1, 0, 0, 0)).count());
+    TSUNIT_EQUAL(0, ts::Time(1971, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1972, 1, 1, 0, 0, 0)).count());
+    TSUNIT_EQUAL(11, ts::Time(1971, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1972, 7, 1, 0, 0, 0)).count());
+    TSUNIT_EQUAL(37, ts::Time::Epoch.leapSecondsTo(ts::Time(2021, 1, 1, 0, 0, 0)).count());
+    TSUNIT_EQUAL(18, ts::Time::GPSEpoch.leapSecondsTo(ts::Time(2021, 1, 1, 0, 0, 0)).count());
+    TSUNIT_EQUAL(5, ts::Time(1985, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1992, 7, 1, 0, 0, 0)).count());
 
     // Check that system time does NOT include leap seconds.
-    const ts::MilliSecond year = 365 * ts::MilliSecPerDay;
-    const ts::MilliSecond leap_year = 366 * ts::MilliSecPerDay;
-    TSUNIT_EQUAL(year, ts::Time(1987, 1, 1, 0, 0) - ts::Time(1986, 1, 1, 0, 0));
-    TSUNIT_EQUAL(year, ts::Time(1988, 1, 1, 0, 0) - ts::Time(1987, 1, 1, 0, 0));
-    TSUNIT_EQUAL(leap_year, ts::Time(1989, 1, 1, 0, 0) - ts::Time(1988, 1, 1, 0, 0));
-    TSUNIT_EQUAL(year, ts::Time(1990, 1, 1, 0, 0) - ts::Time(1989, 1, 1, 0, 0));
-    TSUNIT_EQUAL(year, ts::Time(1991, 1, 1, 0, 0) - ts::Time(1990, 1, 1, 0, 0));
-    TSUNIT_EQUAL(year, ts::Time(1992, 1, 1, 0, 0) - ts::Time(1991, 1, 1, 0, 0));
+    const cn::milliseconds year = cn::days(365);
+    const cn::milliseconds leap_year = cn::days(366);
+    TSUNIT_ASSERT(year == ts::Time(1987, 1, 1, 0, 0) - ts::Time(1986, 1, 1, 0, 0));
+    TSUNIT_ASSERT(year == ts::Time(1988, 1, 1, 0, 0) - ts::Time(1987, 1, 1, 0, 0));
+    TSUNIT_ASSERT(leap_year == ts::Time(1989, 1, 1, 0, 0) - ts::Time(1988, 1, 1, 0, 0));
+    TSUNIT_ASSERT(year == ts::Time(1990, 1, 1, 0, 0) - ts::Time(1989, 1, 1, 0, 0));
+    TSUNIT_ASSERT(year == ts::Time(1991, 1, 1, 0, 0) - ts::Time(1990, 1, 1, 0, 0));
+    TSUNIT_ASSERT(year == ts::Time(1992, 1, 1, 0, 0) - ts::Time(1991, 1, 1, 0, 0));
 }

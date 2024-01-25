@@ -114,7 +114,7 @@ namespace ts {
         bool              _found_table = false;   // Found an instance of the target table.
         PacketCounter     _pkt_create = 0;        // Packet# after which a new table shall be created
         PacketCounter     _pkt_insert = 0;        // Packet# after which a PID packet shall be inserted
-        MilliSecond       _create_after_ms = 0;   // Create a new table if none found after that time.
+        cn::milliseconds  _create_after_ms {};    // Create a new table if none found after that time.
         BitRate           _bitrate = 0;           // PID's bitrate (if no previous table found).
         PacketCounter     _inter_pkt = 0;         // Packet interval between two PID packets.
         bool              _incr_version = false;  // Increment table version.

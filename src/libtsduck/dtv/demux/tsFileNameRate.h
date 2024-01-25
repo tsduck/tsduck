@@ -24,19 +24,19 @@ namespace ts {
     class TSDUCKDLL FileNameRate
     {
     public:
-        UString     file_name {};        //!< File name.
-        UString     display_name {};     //!< File name in display form.
-        bool        inline_xml = false;  //!< File name contains inline XML text (not a real file name).
-        Time        file_date {};        //!< Last modification date of file.
-        MilliSecond repetition = 0;      //!< Repetition rate in milliseconds.
-        size_t      retry_count {1};     //!< Number of allowed retry in case of error when using the file.
+        UString          file_name {};        //!< File name.
+        UString          display_name {};     //!< File name in display form.
+        bool             inline_xml = false;  //!< File name contains inline XML text (not a real file name).
+        Time             file_date {};        //!< Last modification date of file.
+        cn::milliseconds repetition {};       //!< Repetition rate in milliseconds.
+        size_t           retry_count = 1;     //!< Number of allowed retry in case of error when using the file.
 
         //!
         //! Default constructor.
         //! @param [in] name File name.
         //! @param [in] rep  Repetition rate in milliseconds.
         //!
-        explicit FileNameRate(const UString& name = UString(), MilliSecond rep = 0);
+        explicit FileNameRate(const UString& name = UString(), cn::milliseconds rep = cn::milliseconds::zero());
 
         //!
         //! Comparison operator.
