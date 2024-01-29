@@ -111,7 +111,7 @@ get-object()
     [[ -d "$(get-dtapi)/Lib" ]] || return 0
 
     # Get gcc executable from external $GCC or default.
-    GCC=${GCC:-$(which gcc 2>/dev/null)}
+    GCC=${GCC:-${CXX:-${CC:-$(which gcc 2>/dev/null)}}}
     [[ -z "$GCC" ]] && return 0
 
     # Get gcc version from external $GCC_VERSION or $GCCVERSION.

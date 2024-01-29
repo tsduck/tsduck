@@ -80,6 +80,15 @@ Older versions of other distros such as Ubuntu, Debian and others have equivalen
 alternative packages for GCC 11, with different names, when they come with an older
 version of GCC.
 
+If there is no `enable` script (as in the example above) to setup the environment,
+you need to define the following variables, either as environment variables or on
+the make command line. The provided values are examples only and may be different
+in specific environments.
+
+~~~
+$ make CXX=g++-11 CC=gcc-11 GCC=gcc-11 CPP="gcc-11 -E" AR=gcc-ar-11 ...
+~~~
+
 If your distro is too old and doesn't provide any GCC 11 package, then you
 cannot build TSDuck version 3.36 and higher. On such systems, the highest
 TSDuck version which can be built is 3.35. This is the cost of obsolescence...
