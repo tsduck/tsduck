@@ -152,6 +152,7 @@ namespace ts {
         BitRate           _ecm_bitrate = 0;             // ECM PID's bitrate
         PID               _ecm_pid = PID_NULL;          // PID for ECM
         PacketCounter     _partial_scrambling = 0;      // Do not scramble all packets if > 1
+        ts::deciseconds   _clear_period {0};            // Clear period before scrambling commences
         ECMGClientArgs    _ecmg_args {};                // Parameters for ECMG client
         tlv::Logger       _logger {Severity::Debug, tsp};  // Message logger for ECMG <=> SCS protocol
         ecmgscs::Protocol      _ecmgscs {};                // ECMG <=> SCS protocol instance.
@@ -165,6 +166,7 @@ namespace ts {
         PacketCounter     _packet_count = 0;            // Complete TS packet counter
         PacketCounter     _scrambled_count = 0;         // Summary of scrambled packets
         PacketCounter     _partial_clear = 0;           // How many clear packets to keep clear
+        PacketCounter     _pkt_clear_period = 0;        // How many packets in initial clear period
         PacketCounter     _pkt_insert_ecm = 0;          // Insertion point for next ECM packet.
         PacketCounter     _pkt_change_cw = 0;           // Transition point for next CW change
         PacketCounter     _pkt_change_ecm = 0;          // Transition point for next ECM change
@@ -236,6 +238,11 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     help(u"bitrate-ecm",
          u"Specifies the bitrate for ECM PID's in bits / second. The default is " +
          UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.");
+
+    option<cn::seconds>(u"clear-period", 'd');
+    help(u"clear-period", u"count",
+         u"Sets the size of the initial clear period, in seconds. "
+         u"The default value is 0, meaning that all packets are scrambled. ");
 
     option(u"component-level");
     help(u"component-level",
@@ -326,6 +333,7 @@ bool ts::ScramblerPlugin::getOptions()
     _scramble_subtitles = present(u"subtitles");
     _ignore_scrambled = present(u"ignore-scrambled");
     _pre_reduce_cw = present(u"pre-reduce-cw");
+    getChronoValue(_clear_period, u"clear-period", cn::seconds(0));
     getIntValue(_partial_scrambling, u"partial-scrambling", 1);
     getIntValue(_ecm_pid, u"pid-ecm", PID_NULL);
     getValue(_ecm_bitrate, u"bitrate-ecm", DEFAULT_ECM_BITRATE);
@@ -381,6 +389,7 @@ bool ts::ScramblerPlugin::start()
     _degraded_mode = false;
     _ts_bitrate = 0;
     _partial_clear = 0;
+    _pkt_clear_period = 0;
     _update_pmt = false;
     _delay_start = cn::milliseconds(0);
     _current_cw = 0;
@@ -562,6 +571,9 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
 void ts::ScramblerPlugin::initializeScheduling()
 {
     assert(_ts_bitrate != 0);
+
+    // Initial clear period
+    _pkt_clear_period = PacketDistance(_ts_bitrate, _clear_period);
 
     // Next crypto-period.
     if (_need_cp) {
@@ -798,8 +810,8 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TS
         return TSP_OK;
     }
 
-    // If the packet has no payload or its PID is not to be scrambled, there is nothing to do.
-    if (!pkt.hasPayload() || !_scrambled_pids.test(pid)) {
+    // If the packet has no payload, or its PID is not to be scrambled, or in the clear period, there is nothing to do.
+    if (!pkt.hasPayload() || !_scrambled_pids.test(pid) || _packet_count < _pkt_clear_period) {
         return TSP_OK;
     }
 
