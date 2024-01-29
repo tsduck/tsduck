@@ -336,7 +336,7 @@ bool ts::InjectPlugin::reloadFiles()
                 const uint64_t packets = Section::PacketCount(file.sections(), _stuffing_policy != StuffPolicy::ALWAYS);
                 // Contribution of this file in bits every 1000 seconds.
                 // The repetition rate is in milliseconds.
-                bits_per_1000s += (packets * PKT_SIZE_BITS * MilliSecPerSec * 1000) / it.repetition.count();
+                bits_per_1000s += (packets * PKT_SIZE_BITS * 1000 * 1000) / it.repetition.count();
             }
         }
     }

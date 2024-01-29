@@ -138,14 +138,14 @@ bool ts::PCREditPlugin::getOptions()
             _add_pcr *= SYSTEM_CLOCK_SUBFACTOR;
             break;
         case UNIT_MILLISEC:
-            _add_pcr = (_add_pcr * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
-            _add_pts = (_add_pts * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec;
-            _add_dts = (_add_dts * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec;
+            _add_pcr = cn::duration_cast<ts::pcr_units>(cn::milliseconds(cn::milliseconds::rep(_add_pcr))).count();
+            _add_pts = cn::duration_cast<ts::pts_dts_units>(cn::milliseconds(cn::milliseconds::rep(_add_pts))).count();
+            _add_dts = cn::duration_cast<ts::pts_dts_units>(cn::milliseconds(cn::milliseconds::rep(_add_dts))).count();
             break;
         case UNIT_NANOSEC:
-            _add_pcr = (_add_pcr * SYSTEM_CLOCK_FREQ) / NanoSecPerSec;
-            _add_pts = (_add_pts * SYSTEM_CLOCK_SUBFREQ) / NanoSecPerSec;
-            _add_dts = (_add_dts * SYSTEM_CLOCK_SUBFREQ) / NanoSecPerSec;
+            _add_pcr = cn::duration_cast<ts::pcr_units>(cn::nanoseconds(cn::nanoseconds::rep(_add_pcr))).count();
+            _add_pts = cn::duration_cast<ts::pts_dts_units>(cn::nanoseconds(cn::nanoseconds::rep(_add_pts))).count();
+            _add_dts = cn::duration_cast<ts::pts_dts_units>(cn::nanoseconds(cn::nanoseconds::rep(_add_dts))).count();
             break;
         default:
             break;
