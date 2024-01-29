@@ -194,13 +194,13 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
         // Evaluate the duration from the beginning of the TS (zero if bitrate is unknown).
         const BitRate ts_bitrate = tsp->bitrate();
         const PacketCounter ts_packets = tsp->pluginPackets() + 1;
-        const cn::milliseconds ms = cn::milliseconds(PacketInterval(ts_bitrate, ts_packets));
+        const cn::milliseconds ms = PacketInterval(ts_bitrate, ts_packets);
 
         if (ms >= _eval_ms) {
             // The evaluation phase is completed.
             // Global bitrate of the selected PID's = ts_bitrate * _init_packet / ts_packets
             // Compute the amount of packets to shift in the selected PID's:
-            const PacketCounter count = ((ts_bitrate * _init_packets * _shift_ms.count()) / (ts_packets * MilliSecPerSec * PKT_SIZE_BITS)).toInt();
+            const PacketCounter count = PacketDistance((ts_bitrate * _init_packets) / ts_packets, _shift_ms);
 
             tsp->debug(u"TS bitrate: %'d b/s, TS packets: %'d, selected: %'d, duration: %'d ms, shift: %'d packets", {ts_bitrate, ts_packets, _init_packets, ms.count(), count});
 

@@ -57,9 +57,9 @@ namespace ts {
         std::map<PID,PIDContext> _stats {};              // Per-PID statistics
 
         // PCR units per micro-second.
-        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t(SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
+        static constexpr int64_t PCR_PER_MICRO_SEC = int64_t(SYSTEM_CLOCK_FREQ) / cn::microseconds::period::den;
         static constexpr int64_t DEFAULT_JITTER_MAX_US = 1000; // 1000 us = 1 ms
-        static constexpr int64_t DEFAULT_JITTER_UNREAL_US = 10 * MicroSecPerSec; // 10 seconds
+        static constexpr int64_t DEFAULT_JITTER_UNREAL_US = 10 * cn::microseconds::period::den; // 10 seconds
         static constexpr int64_t DEFAULT_JITTER_MAX = DEFAULT_JITTER_MAX_US * PCR_PER_MICRO_SEC;
         static constexpr int64_t DEFAULT_JITTER_UNREAL = DEFAULT_JITTER_UNREAL_US * PCR_PER_MICRO_SEC;
     };
@@ -107,7 +107,7 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
          u"otherwise it is in micro-seconds. The default is " +
          UString::Decimal(DEFAULT_JITTER_UNREAL) + u" PCR units or " +
          UString::Decimal(DEFAULT_JITTER_UNREAL_US) + u" micro-seconds (" +
-         UString::Decimal(DEFAULT_JITTER_UNREAL_US / MicroSecPerSec) + u" seconds).");
+         UString::Decimal(DEFAULT_JITTER_UNREAL_US / cn::microseconds::period::den) + u" seconds).");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",

@@ -82,6 +82,12 @@ namespace ts {
             return (type == PTS || type == DTS) ? SYSTEM_CLOCK_SUBFACTOR : 1;
         }
 
+        // Get the number of ticks per millisecond for a given data type.
+        static std::intmax_t ticksPerMS(DataType type)
+        {
+            return ((type == PTS || type == DTS) ? ts::pts_dts_units::period::den : ts::pcr_units::period::den) / 1000;
+        }
+
         // Description of one type of data in a PID: PCR, OPCR, PTS, DTS.
         class PIDData
         {
@@ -410,6 +416,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
     PIDData& data(ctx.*pdata);
     const UString name(_type_names.name(data.type));
     const uint32_t pcr_subfactor = pcrSubfactor(data.type);
+    const std::intmax_t ticks = ticksPerMS(data.type);
 
     // Count values and remember first value.
     if (data.count++ == 0) {
@@ -438,14 +445,9 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
     // Report in log format.
     if (_log_format && report_it) {
         // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
-        const uint32_t frequency = SYSTEM_CLOCK_FREQ / pcr_subfactor;
         const size_t width = pcr_subfactor == 1 ? 11 : 9;
-        tsp->info(u"PID: 0x%X (%d), %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)", {
-                  ctx.pid, ctx.pid,
-                  name, width, value,
-                  width, since_start,
-                  (since_start * MilliSecPerSec) / frequency,
-                  (since_previous * MilliSecPerSec) / frequency});
+        tsp->info(u"PID: 0x%X (%d), %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)",
+                  {ctx.pid, ctx.pid, name, width, value, width, since_start, since_start / ticks, since_previous / ticks});
     }
 
     // Remember last value.
@@ -641,7 +643,8 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
         msg += UString::Format(u", exec at PTS 0x%09X", {command_pts});
         if (service_pts != INVALID_PTS && service_pts < command_pts) {
             // Add real time difference.
-            msg += UString::Format(u", in %'d ms", {(MilliSecPerSec * (command_pts - service_pts)) / SYSTEM_CLOCK_SUBFREQ});
+            msg += u", in ";
+            msg += UString::Chrono(cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(command_pts - service_pts)), true);
         }
     }
 

@@ -234,15 +234,28 @@ namespace ts {
     }
 
     //!
+    //! Compute the number of "data structures" (bytes, packets, etc) transmitted during a given duration.
+    //! @param [in] bits Number of bits in the data structure.
+    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
+    //! @param [in] duration A duration in any std::chrono::duration units.
+    //! @return Number of data structures of size @bits bits during @a duration.
+    //!
+    template <class Rep, class Period>
+    inline int64_t BitDistance(size_t bits, const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
+    {
+        return int64_t(((bitrate * Period::num * (duration.count() >= 0 ? duration.count() : -duration.count())) / (Period::den * bits)).toInt());
+    }
+
+    //!
     //! Compute the number of bytes transmitted during a given duration.
     //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
     //! @param [in] duration A duration in any std::chrono::duration units.
     //! @return Number of bytes during @a duration.
     //!
     template <class Rep, class Period>
-    inline uint64_t ByteDistance(const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
+    inline int64_t ByteDistance(const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
     {
-        return uint64_t(((bitrate * Period::num * (duration.count() >= 0 ? duration.count() : -duration.count())) / (Period::den * 8)).toInt());
+        return BitDistance(8, bitrate, duration);
     }
 
     //!
@@ -254,7 +267,7 @@ namespace ts {
     template <class Rep, class Period>
     inline PacketCounter PacketDistance(const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
     {
-        return PacketCounter(((bitrate * Period::num * (duration.count() >= 0 ? duration.count() : -duration.count())) / (Period::den * PKT_SIZE_BITS)).toInt());
+        return PacketCounter(BitDistance(PKT_SIZE_BITS, bitrate, duration));
     }
 
     //!
@@ -513,17 +526,6 @@ namespace ts {
     //! @return The difference between the two values or INVALID_PCR if a parameter is incorrect.
     //!
     TSDUCKDLL uint64_t AbsDiffPCR(uint64_t pcr1, uint64_t pcr2);
-
-    //!
-    //! Compute the number of packets transmitted during a given duration in PCR units.
-    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
-    //! @param [in] pcr Number of PCR units.
-    //! @return Number of packets during @a pcr time.
-    //!
-    TSDUCKDLL inline PacketCounter PacketDistanceFromPCR(BitRate bitrate, uint64_t pcr)
-    {
-        return PacketCounter(((bitrate * pcr) / (SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS)).toInt());
-    }
 
     //!
     //! Check if PTS2 follows PTS1 after wrap up.

@@ -14,6 +14,7 @@
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsEIT.h"
+#include "tsTS.h"
 
 
 //----------------------------------------------------------------------------
@@ -222,7 +223,7 @@ void ts::tsmux::Core::main()
 
         // Number of packets which should have been sent by the end of the time interval.
         const cn::nanoseconds duration = clock - start;
-        const PacketCounter expected_packets = ((duration.count() * _bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
+        const PacketCounter expected_packets = PacketDistance(_bitrate, duration);
 
         // Number of packets to send by the end of the time interval.
         PacketCounter packet_count = expected_packets < _output_packets ? 0 : expected_packets - _output_packets;
@@ -482,7 +483,8 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
             const uint64_t packet_pcr = pkt.getPCR();
             if (packet_pcr < clock->second.pcr_value && !WrapUpPCR(clock->second.pcr_value, packet_pcr)) {
                 const uint64_t back = DiffPCR(packet_pcr, clock->second.pcr_value);
-                _core._log.verbose(u"input #%d, PID 0x%X (%<d), late packet by PCR %'d, %'s ms", {_plugin_index, pid, back, (back * MilliSecPerSec) / SYSTEM_CLOCK_FREQ});
+                _core._log.verbose(u"input #%d, PID 0x%X (%<d), late packet by PCR %'d, %'s ms",
+                                   {_plugin_index, pid, back, cn::duration_cast<cn::milliseconds>(ts::pcr_units(back)).count()});
             }
             else {
                 // Compute current PCR for previous packet in the output TS.
@@ -495,7 +497,7 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
                 // one second, we consider that the PCR progression is valid and we synchronize on it.
                 if (AbsDiffPCR(packet_pcr, output_pcr) < SYSTEM_CLOCK_FREQ) {
                     // Compute the theoretical position of the packet in the output stream.
-                    const PacketCounter target_packet = clock->second.pcr_packet + PacketDistanceFromPCR(_core._bitrate, DiffPCR(clock->second.pcr_value, packet_pcr));
+                    const PacketCounter target_packet = clock->second.pcr_packet + PacketDistance(_core._bitrate, ts::pcr_units(DiffPCR(clock->second.pcr_value, packet_pcr)));
                     if (target_packet > _core._output_packets) {
                         // This packet will be inserted later.
                         _core._log.debug(u"input #%d, PID 0x%X (%<d), output packet %'d, delay packet by %'d packets", {_plugin_index, pid, _core._output_packets, target_packet - _core._output_packets});

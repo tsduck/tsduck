@@ -102,7 +102,7 @@ void ts::BitRateRegulator::regulatePacket(bool& flush)
     cn::nanoseconds duration = cn::duration_cast<cn::nanoseconds>(now - otherPeriod().start);
 
     // Allowed bits in the total measurement period.
-    int64_t max_bits = ((_cur_bitrate * duration.count()) / NanoSecPerSec).toInt();
+    int64_t max_bits = BitDistance(1, _cur_bitrate, duration);
 
     // While not enough bit credit for one packet, wait until end of current burst.
     while (otherPeriod().bits + currentPeriod().bits + int64_t(PKT_SIZE_BITS) > max_bits) {
@@ -115,7 +115,7 @@ void ts::BitRateRegulator::regulatePacket(bool& flush)
         // Update measurement period and bit credit.
         now = monotonic_time::clock::now();
         duration = cn::duration_cast<cn::nanoseconds>(now - otherPeriod().start);
-        max_bits = ((_cur_bitrate * duration.count()) / NanoSecPerSec).toInt();
+        max_bits = BitDistance(1, _cur_bitrate, duration);
     }
 
     // Switch measurement period when necessary.
@@ -123,7 +123,7 @@ void ts::BitRateRegulator::regulatePacket(bool& flush)
         // The "other" period will disappear.
         // Credit unused bits from the other period to the current period.
         cn::nanoseconds cur_duration = cn::duration_cast<cn::nanoseconds>(currentPeriod().start - otherPeriod().start);
-        currentPeriod().bits -= ((_cur_bitrate * cur_duration.count()) / NanoSecPerSec).toInt() - otherPeriod().bits;
+        currentPeriod().bits -= BitDistance(1, _cur_bitrate, cur_duration) - otherPeriod().bits;
         // Current period becomes the other period.
         _cur_period ^= 1;
         // Reset the new current period.

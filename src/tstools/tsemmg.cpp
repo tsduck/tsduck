@@ -311,7 +311,7 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
     info(u"Target data bitrate: %'d b/s", {dataBitrate});
 
     // Compute interval between two send operations in nanoseconds.
-    sendInterval = std::max(MIN_SEND_INTERVAL, cn::milliseconds(cn::milliseconds::rep(((bytesPerSend * 8 * ts::MilliSecPerSec) / dataBitrate).toInt())));
+    sendInterval = std::max(MIN_SEND_INTERVAL, ts::ByteInterval(dataBitrate, bytesPerSend));
 
     // Make sure we can have that precision from the system if less than 100 ms.
     if (sendInterval < cn::milliseconds(100)) {
@@ -468,9 +468,9 @@ int MainCode(int argc, char *argv[])
             // First interval, send initial burst.
             targetBytes = opt.bytesPerSend;
         }
-        else if (!opt.dataBitrate.mulOverflow(duration) && !(opt.dataBitrate * duration).divOverflow(8 * ts::MicroSecPerSec)) {
+        else if (!opt.dataBitrate.mulOverflow(duration) && !(opt.dataBitrate * duration).divOverflow(8 * cn::microseconds::period::den)) {
             // Compute the theoretical number of bytes we should have sent up to now. No overflow.
-            const uint64_t allBytes = ((opt.dataBitrate * duration) / (8 * ts::MicroSecPerSec)).toInt();
+            const uint64_t allBytes = ((opt.dataBitrate * duration) / (8 * cn::microseconds::period::den)).toInt();
             // We need to send the difference.
             if (allBytes > client.totalBytes()) {
                 targetBytes = allBytes - client.totalBytes();

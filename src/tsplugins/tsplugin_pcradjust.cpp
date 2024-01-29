@@ -152,8 +152,8 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
          u"By default, on scrambled PID's, the PCR's are modified but not the PTS and DTS since they are scrambled. "
          u"This may result in problems when playing video and audio.");
 
-    option(u"min-ms-interval", 0, POSITIVE);
-    help(u"min-ms-interval", u"milliseconds",
+    option<cn::milliseconds>(u"min-ms-interval");
+    help(u"min-ms-interval",
          u"Specify the minimum interval between two PCR's in milliseconds. "
          u"On a given PID, if the interval between two PCR's is larger than the minimum, "
          u"the next null packet will be replaced with an empty packet with a PCR for that PID.");
@@ -176,7 +176,9 @@ bool ts::PCRAdjustPlugin::getOptions()
     _ignore_dts = present(u"ignore-dts");
     _ignore_pts = present(u"ignore-pts");
     _ignore_scrambled = present(u"ignore-scrambled");
-    _min_pcr_interval = (intValue<uint64_t>(u"min-ms-interval", 0) * SYSTEM_CLOCK_FREQ) / MilliSecPerSec;
+    ts::pcr_units min_pcr;
+    getChronoValue(min_pcr, u"min-ms-interval");
+    _min_pcr_interval = min_pcr.count();
     return true;
 }
 

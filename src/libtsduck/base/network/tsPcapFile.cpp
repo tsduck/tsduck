@@ -366,8 +366,8 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
                 if (if_index < _if.size() && _if[if_index].time_units != 0) {
                     const std::intmax_t units = _if[if_index].time_units;
                     const std::intmax_t tstamp = std::intmax_t(uint64_t(get32(buffer.data() + 4)) << 32) + get32(buffer.data() + 8);
-                    // Take care to overflow in tstamp * MilliSecPerSec. Sometimes, the timestamp is a full time
-                    // since 1970 with time unit being 1,000,000,000. The value is close to the 64-bit max.
+                    // Take care to overflow in tstamp. Sometimes, the timestamp is a full time since 1970
+                    // with time unit being 1,000,000,000. The value is close to the 64-bit max.
                     if (units == std::micro::den) {
                         timestamp = cn::microseconds(tstamp);
                     }

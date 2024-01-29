@@ -331,7 +331,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         }
         else {
             // Completely unknown bitrate, we build a fake one based on the target duration.
-            seg.duration = _targetDuration * MilliSecPerSec;
+            seg.duration = cn::duration_cast<cn::milliseconds>(_targetDuration);
             seg.bitrate = _useBitrateTag ? PacketBitRate(segPackets, seg.duration) : 0;
         }
         _playlist.addSegment(seg, *tsp);

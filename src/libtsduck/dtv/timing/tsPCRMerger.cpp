@@ -121,9 +121,9 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
         // Update the PCR in the packet if required.
         if (update_pcr) {
             // Compute the offset between the adjusted PCR (ctx->last_pcr) and the PCR from the packet (pcr).
-            const SubSecond moved = SubSecond(ctx->last_pcr) - SubSecond(pcr);
+            const std::intmax_t moved = std::intmax_t(ctx->last_pcr) - std::intmax_t(pcr);
             // If the jump is too high (1 second), there must be some discontinuity in the original PCR.
-            if (std::abs(moved) >= SubSecond(SYSTEM_CLOCK_FREQ)) {
+            if (std::abs(moved) >= std::intmax_t(SYSTEM_CLOCK_FREQ)) {
                 // Too high, reset PCR adjustment.
                 ctx->first_pcr = ctx->last_pcr = pcr;
                 ctx->first_pcr_pkt = ctx->last_pcr_pkt = main_packet_index;
@@ -135,7 +135,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
                 // This may go back and forth around zero but should never diverge (--pcr-reset-backwards case).
                 // Report it at debug level 2 only since it occurs on almost all merged packets with PCR.
                 if (_duck.report().maxSeverity() >= 2) {
-                    _duck.report().log(2, u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid});
+                    _duck.report().log(2, u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, cn::duration_cast<cn::milliseconds>(ts::pcr_units(moved)).count(), pid});
                 }
             }
         }
