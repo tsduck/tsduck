@@ -13,6 +13,7 @@ Maciej Czyżkowski
 Eric De Jong
 William del Strother
 Anthony Delannoy
+Gareth Fenn
 Martin Frétigné
 Thomas Göttgens
 Max Halldén

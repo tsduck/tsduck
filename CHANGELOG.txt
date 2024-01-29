@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3607
+VERSION 3.37-3622
 
 [NEW] New commands and plugins:
 
@@ -16,6 +16,7 @@ VERSION 3.37-3607
   * New options in existing commands and plugins:
     - Options --meta-sections, --time-stamp in plugin "splicemonitor".
     - Option --meta-sections in "tstables", plugin "tables".
+    - Option --clear-period in plugin "scrambler".
 
 [BUG] Bug fixes:
 
