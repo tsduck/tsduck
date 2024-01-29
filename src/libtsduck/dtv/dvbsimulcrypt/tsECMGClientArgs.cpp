@@ -25,7 +25,7 @@ void ts::ECMGClientArgs::defineArgs(Args& args)
     args.help(u"channel-id", u"Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).");
 
     args.option<cn::seconds>(u"cp-duration", 'd');
-    args.help(u"cp-duration", u"seconds", u"Specifies the crypto-period duration in seconds (default: 10).");
+    args.help(u"cp-duration", u"Specifies the crypto-period duration in seconds (default: 10).");
 
     args.option(u"ecm-id", 'i', Args::UINT16);
     args.help(u"ecm-id", u"Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).");

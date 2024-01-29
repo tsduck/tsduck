@@ -152,7 +152,7 @@ namespace ts {
         BitRate           _ecm_bitrate = 0;             // ECM PID's bitrate
         PID               _ecm_pid = PID_NULL;          // PID for ECM
         PacketCounter     _partial_scrambling = 0;      // Do not scramble all packets if > 1
-        ts::deciseconds   _clear_period {0};            // Clear period before scrambling commences
+        cn::seconds       _clear_period {0};            // Clear period before scrambling commences
         ECMGClientArgs    _ecmg_args {};                // Parameters for ECMG client
         tlv::Logger       _logger {Severity::Debug, tsp};  // Message logger for ECMG <=> SCS protocol
         ecmgscs::Protocol      _ecmgscs {};                // ECMG <=> SCS protocol instance.
@@ -239,10 +239,10 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"Specifies the bitrate for ECM PID's in bits / second. The default is " +
          UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.");
 
-    option<cn::seconds>(u"clear-period", 'd');
-    help(u"clear-period", u"count",
-         u"Sets the size of the initial clear period, in seconds. "
-         u"The default value is 0, meaning that all packets are scrambled. ");
+    option<cn::seconds>(u"clear-period");
+    help(u"clear-period",
+         u"Set the size of the initial clear period, in seconds. "
+         u"The default value is 0, meaning that all packets are scrambled.");
 
     option(u"component-level");
     help(u"component-level",
