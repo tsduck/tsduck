@@ -36,7 +36,7 @@ void ts::TSPacketStream::resetPacketStream(TSPacketFormat format, AbstractReadSt
     _format = format;
     _reader = reader;
     _writer = writer;
-    _last_timestamp = ts::pcr_units::zero();
+    _last_timestamp = PCR::zero();
     _trail_size = 0;
 }
 
@@ -110,7 +110,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
         else if (buffer->b[4] == SYNC_BYTE) {
             _format = TSPacketFormat::M2TS;
             // M2TS timestamps are in PCR units.
-            mdata.setInputTimeStamp(ts::pcr_units(GetUInt32(buffer) & 0x3FFFFFFF), TimeSource::M2TS);
+            mdata.setInputTimeStamp(PCR(GetUInt32(buffer) & 0x3FFFFFFF), TimeSource::M2TS);
         }
         else if (buffer->b[0] == TSPacketMetadata::SERIALIZATION_MAGIC && buffer->b[TSPacketMetadata::SERIALIZATION_SIZE] == SYNC_BYTE) {
             _format = TSPacketFormat::DUCK;
@@ -223,7 +223,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                             if (_format == TSPacketFormat::M2TS) {
                                 // M2TS timestamps are in PCR units.
                                 metadata->reset();
-                                metadata->setInputTimeStamp(ts::pcr_units(GetUInt32(header) & 0x3FFFFFFF), TimeSource::M2TS);
+                                metadata->setInputTimeStamp(PCR(GetUInt32(header) & 0x3FFFFFFF), TimeSource::M2TS);
                             }
                             else {
                                 metadata->deserialize(header, TSPacketMetadata::SERIALIZATION_SIZE);

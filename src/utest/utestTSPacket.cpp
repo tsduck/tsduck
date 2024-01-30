@@ -543,7 +543,7 @@ void TSPacketTest::testBitRate()
     ts::BitRate br = 14'800'000;
     ts::PacketCounter pk = 200;
     debug() << "TSPacketTest::testBitRate: intervals: "
-            << ts::PacketInterval<ts::pcr_units>(br, pk).count() << "  "
+            << ts::PacketInterval<ts::PCR>(br, pk).count() << "  "
             << ts::PacketInterval(br, pk).count()
             << std::endl;
 }

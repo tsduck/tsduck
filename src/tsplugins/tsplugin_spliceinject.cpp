@@ -116,7 +116,7 @@ namespace ts {
             SectionPtr section {};              // The binary SIT section.
             uint64_t   next_pts = INVALID_PTS;  // Next PTS after which the section shall be inserted (INVALID_PTS means immediate).
             uint64_t   last_pts = INVALID_PTS;  // PTS after which the section shall no longer be inserted (INVALID_PTS means never).
-            uint64_t   interval = cn::duration_cast<ts::pts_dts_units>(_plugin->_inject_interval).count(); // Interval between two insertions in PTS units.
+            uint64_t   interval = cn::duration_cast<PTS>(_plugin->_inject_interval).count(); // Interval between two insertions in PTS units.
             size_t     count = 1;               // Remaining number of injections.
 
             // A comparison function to sort commands in the queues.
@@ -838,7 +838,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
             last_pts = (last_pts + sit.pts_adjustment) & PTS_DTS_MASK;
             count = _plugin->_inject_count;
             // Preceding delay for injection in PTS units.
-            const uint64_t preceding = cn::duration_cast<ts::pts_dts_units>(_plugin->_start_delay).count();
+            const uint64_t preceding = cn::duration_cast<ts::PTS>(_plugin->_start_delay).count();
             // Compute the first PTS time for injection.
             next_pts = (last_pts - preceding) & PTS_DTS_MASK;
         }

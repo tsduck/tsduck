@@ -136,8 +136,8 @@ namespace ts {
         TSPacketFormat                _format = TSPacketFormat::TS;
         AbstractReadStreamInterface*  _reader = nullptr;
         AbstractWriteStreamInterface* _writer = nullptr;
-        ts::pcr_units _last_timestamp {};              // Last write time stamp in PCR units (M2TS files).
-        size_t        _trail_size = 0;                 // Number of meaningful bytes in _trail
-        uint8_t       _trail[MAX_TRAILER_SIZE+1] {};   // Transient buffer for auto-detection of trailer
+        PCR     _last_timestamp {};              // Last write time stamp in PCR units (M2TS files).
+        size_t  _trail_size = 0;                 // Number of meaningful bytes in _trail
+        uint8_t _trail[MAX_TRAILER_SIZE+1] {};   // Transient buffer for auto-detection of trailer
     };
 }

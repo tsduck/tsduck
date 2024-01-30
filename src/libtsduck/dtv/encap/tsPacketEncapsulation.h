@@ -315,6 +315,6 @@ namespace ts {
         void fillPacket(TSPacket& pkt, size_t& pktIndex);
 
         // Compute the PCR distance from this packet to last PCR.
-        uint64_t getPCRDistance() { return PacketInterval<ts::pcr_units>(_bitrate, _currentPacket - _pcrLastPacket).count(); }
+        uint64_t getPCRDistance() { return PacketInterval<PCR>(_bitrate, _currentPacket - _pcrLastPacket).count(); }
     };
 }

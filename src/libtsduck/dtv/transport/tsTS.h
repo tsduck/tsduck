@@ -238,7 +238,7 @@ namespace ts {
     //! @param [in] bits Number of bits in the data structure.
     //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
     //! @param [in] duration A duration in any std::chrono::duration units.
-    //! @return Number of data structures of size @bits bits during @a duration.
+    //! @return Number of data structures of size @a bits bits during @a duration.
     //!
     template <class Rep, class Period>
     inline int64_t BitDistance(size_t bits, const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
@@ -416,12 +416,19 @@ namespace ts {
     //!
     //! Definition of a number of PCR units as a std::chrono::duration type.
     //!
-    using pcr_units = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_FREQ>>;
+    using PCR = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_FREQ>>;
 
     //!
-    //! Definition of a number of PTS or DTS units as a std::chrono::duration type.
+    //! Definition of a number of PTS units as a std::chrono::duration type.
+    //! Same as DTS.
     //!
-    using pts_dts_units = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_SUBFREQ>>;
+    using PTS = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_SUBFREQ>>;
+
+    //!
+    //! Definition of a number of DTS units as a std::chrono::duration type.
+    //! Same as PTS.
+    //!
+    using DTS = cn::duration<std::intmax_t, std::ratio<1, SYSTEM_CLOCK_SUBFREQ>>;
 
     //!
     //! Size in bits of a PCR (Program Clock Reference).

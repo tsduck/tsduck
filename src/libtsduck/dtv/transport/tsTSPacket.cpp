@@ -1194,7 +1194,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
             if (dts != INVALID_DTS) {
                 strm << UString::Format(u"DTS: 0x%09X", {dts});
                 if (pcr != INVALID_PCR) {
-                    const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(dts)) - cn::duration_cast<cn::milliseconds>(ts::pcr_units(pcr));
+                    const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(DTS(dts)) - cn::duration_cast<cn::milliseconds>(PCR(pcr));
                     strm << UString::Format(u" (PCR%+'d ms)", {delta.count()});
                 }
                 if (pts != INVALID_PTS) {
@@ -1207,14 +1207,14 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
                     strm << " (";
                 }
                 if (dts != INVALID_DTS) {
-                    const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(pts)) - cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(dts));
+                    const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(PTS(pts)) - cn::duration_cast<cn::milliseconds>(DTS(dts));
                     strm << UString::Format(u"DTS%+'d ms", {delta.count()});
                 }
                 if (dts != INVALID_DTS && pcr != INVALID_PCR) {
                     strm << ", ";
                 }
                 if (pcr != INVALID_PCR) {
-                    const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(pts)) - cn::duration_cast<cn::milliseconds>(ts::pcr_units(pcr));
+                    const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(PTS(pts)) - cn::duration_cast<cn::milliseconds>(PCR(pcr));
                     strm << UString::Format(u"PCR%+'d ms", {delta.count()});
                 }
                 if (dts != INVALID_DTS || pcr != INVALID_PCR) {

@@ -102,7 +102,7 @@ void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacket
         uint64_t pcr = pkt[i].getPCR();
         const bool has_pcr = pcr != INVALID_PCR;
         if (has_pcr) {
-            const ts::pcr_units timestamp = metadata[i].getInputTimeStamp();
+            const PCR timestamp = metadata[i].getInputTimeStamp();
             // Checking to see if the buffer time has been reached, and pop back element (oldest element) if the buffer time has been reached
             while (!timingDataList.empty() && (timestamp - timingDataList.back().timestamp) >= _args.bufferTime) {
                 timingDataList.pop_back();
@@ -175,14 +175,14 @@ void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
 
             if (refTimingData.pcr == shiftTimingData.pcr) {
                 // Calculate the PCR delta if the PCR matches
-                const ts::pcr_units::rep pcrDelta = std::abs(refTimingData.timestamp.count() - shiftTimingData.timestamp.count());
+                const PCR::rep pcrDelta = std::abs(refTimingData.timestamp.count() - shiftTimingData.timestamp.count());
                 const double latency = double(pcrDelta) / SYSTEM_CLOCK_FREQ * 1000;
                 _max_latency = std::max(_max_latency, latency);
 
                 *_output_file << (refTimingDataList == &timingDataList1 ? refTimingData.pcr : shiftTimingData.pcr) << DEFAULT_CSV_SEPARATOR
                               << (refTimingDataList == &timingDataList2 ? refTimingData.pcr : shiftTimingData.pcr) << DEFAULT_CSV_SEPARATOR
                               << latency << DEFAULT_CSV_SEPARATOR
-                            << _max_latency << std::endl;
+                              << _max_latency << std::endl;
 
                 return;
             }

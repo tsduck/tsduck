@@ -123,7 +123,7 @@ void TSFileTest::testM2TS()
     packet = ts::NullPacket;
     for (size_t i = 0; i < 5; ++i) {
         packet.setPID(ts::PID(200 + i));
-        mdata.setInputTimeStamp(ts::pcr_units(2 * i), ts::TimeSource::UNDEFINED);
+        mdata.setInputTimeStamp(ts::PCR(2 * i), ts::TimeSource::UNDEFINED);
         TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
     }
     TSUNIT_EQUAL(5, file.writePacketsCount());
@@ -176,14 +176,14 @@ void TSFileTest::testDuck()
     packet.setPID(ts::PID(300));
     mdata.setLabel(1);
     mdata.setLabel(3);
-    mdata.setInputTimeStamp(ts::pcr_units(0x212345678), ts::TimeSource::KERNEL);
+    mdata.setInputTimeStamp(ts::PCR(0x212345678), ts::TimeSource::KERNEL);
     TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
 
     packet.setPID(ts::PID(400));
     mdata.reset();
     mdata.setLabel(2);
     mdata.setLabel(4);
-    mdata.setInputTimeStamp(ts::pcr_units(0x223456789), ts::TimeSource::PCR);
+    mdata.setInputTimeStamp(ts::PCR(0x223456789), ts::TimeSource::PCR);
     TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
 
     TSUNIT_EQUAL(2, file.writePacketsCount());

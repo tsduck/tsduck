@@ -163,7 +163,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         if (_pcrLastValue != INVALID_PCR && _pcrLastValue < pcr) {
             assert(_pcrLastPacket < _currentPacket);
             // Compute TS bitrate since last PCR.
-            _bitrate = PacketBitRate(_currentPacket - _pcrLastPacket, ts::pcr_units(pcr - _pcrLastValue));
+            _bitrate = PacketBitRate(_currentPacket - _pcrLastPacket, PCR(pcr - _pcrLastValue));
             // Insert PCR in output PID asap after a PCR on reference PID when the bitrate is known.
             _insertPCR = true;
         }

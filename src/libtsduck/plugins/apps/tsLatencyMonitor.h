@@ -62,7 +62,7 @@ namespace ts {
         struct TimingData
         {
             uint64_t pcr;
-            ts::pcr_units timestamp;
+            PCR      timestamp;
         };
         using TimingDataList = std::list<TimingData>;
 

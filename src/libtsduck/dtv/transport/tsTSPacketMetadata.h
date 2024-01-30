@@ -191,7 +191,7 @@ namespace ts {
         //!   various PCR in the transport stream. You can compare time stamp differences, not
         //!   absolute values.
         //!
-        ts::pcr_units getInputTimeStamp() const { return ts::pcr_units(_input_time); }
+        PCR getInputTimeStamp() const { return PCR(_input_time); }
 
         //!
         //! Get the identification of the source of the input time stamp.
@@ -331,7 +331,7 @@ template <class Rep, class Period>
 void ts::TSPacketMetadata::setInputTimeStamp(const cn::duration<Rep,Period>& time_stamp, TimeSource source)
 {
     _time_source = source;
-    const ts::pcr_units pcr = cn::duration_cast<ts::pcr_units>(time_stamp);
+    const PCR pcr = cn::duration_cast<PCR>(time_stamp);
     // Make sure we remain in the usual PCR range.
     // This can create an issue if the input value wraps up at 2^64.
     // In which case, the PCR value will warp at another value than PCR_SCALE.
