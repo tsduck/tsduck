@@ -13,8 +13,16 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsTS.h" // required by GCC, see comment below
 
 namespace ts {
+
+    // GCC complains that PCR, DTS, PTS shadow the global types of the same name.
+    // However this is irrelevant because TimeSource is an enum class and the declared
+    // identifiers must be prefixed. ts::TimeSource::PCR is an enum identifier, ts::PCR
+    // is a type, without ambiguity.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(shadow)
     //!
     //! Sources of time information for transport streams.
     //!
@@ -30,6 +38,7 @@ namespace ts {
         DTS,            //!< DTS (Decoding Time Stamp), in a video or audio stream.
         PTS,            //!< PTS (Presentation Time Stamp), in a video or audio stream.
     };
+    TS_POP_WARNING()
 
     //!
     //! Enumeration description of ts::TimeSource.
