@@ -2282,8 +2282,9 @@ void UStringTest::testChrono()
     TSUNIT_EQUAL(u"12,345 nanoseconds", ts::UString::Chrono(cn::nanoseconds(12345)));
     TSUNIT_EQUAL(u"1 second", ts::UString::Chrono(cn::seconds(1)));
     TSUNIT_EQUAL(u"250 ms", ts::UString::Chrono(cn::milliseconds(250), true));
-    TSUNIT_EQUAL(u"8,512 PCR", ts::UString::Chrono(ts::pcr_units(8512), true));
-    TSUNIT_EQUAL(u"25 PTS/DTS", ts::UString::Chrono(ts::pts_dts_units(25)));
+    TSUNIT_EQUAL(u"8,512 PCR", ts::UString::Chrono(ts::PCR(8512), true));
+    TSUNIT_EQUAL(u"25 PTS/DTS", ts::UString::Chrono(ts::PTS(25)));
+    TSUNIT_EQUAL(u"25 PTS/DTS", ts::UString::Chrono(ts::DTS(25)));
 }
 
 void UStringTest::testPercentage()

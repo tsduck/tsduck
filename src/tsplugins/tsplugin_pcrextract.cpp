@@ -85,7 +85,7 @@ namespace ts {
         // Get the number of ticks per millisecond for a given data type.
         static std::intmax_t ticksPerMS(DataType type)
         {
-            return ((type == PTS || type == DTS) ? ts::pts_dts_units::period::den : ts::pcr_units::period::den) / 1000;
+            return ((type == PTS || type == DTS) ? PTS::period::den : PCR::period::den) / 1000;
         }
 
         // Description of one type of data in a PID: PCR, OPCR, PTS, DTS.
@@ -644,7 +644,7 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
         if (service_pts != INVALID_PTS && service_pts < command_pts) {
             // Add real time difference.
             msg += u", in ";
-            msg += UString::Chrono(cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(command_pts - service_pts)), true);
+            msg += UString::Chrono(cn::duration_cast<cn::milliseconds>(ts::PTS(command_pts - service_pts)), true);
         }
     }
 

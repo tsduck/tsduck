@@ -176,7 +176,7 @@ bool ts::PCRAdjustPlugin::getOptions()
     _ignore_dts = present(u"ignore-dts");
     _ignore_pts = present(u"ignore-pts");
     _ignore_scrambled = present(u"ignore-scrambled");
-    ts::pcr_units min_pcr;
+    PCR min_pcr;
     getChronoValue(min_pcr, u"min-ms-interval");
     _min_pcr_interval = min_pcr.count();
     return true;

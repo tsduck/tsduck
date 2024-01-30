@@ -882,12 +882,6 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 #include "tsAfterStandardHeaders.h"
 
-//! Namespace @c fs is a shortcut for @c std::filesystem.
-namespace fs = std::filesystem;
-
-//! Namespace @c cn is a shortcut for @c std::chrono.
-namespace cn = std::chrono;
-
 
 //----------------------------------------------------------------------------
 // Basic preprocessing features
@@ -1083,9 +1077,6 @@ namespace cn = std::chrono;
 
 namespace ts {
 
-    // Make sure that standard chrono literals such as 10ms or 3s can be used inside namespace ts.
-    using namespace std::chrono_literals;
-
     // Some common pointer types, typically for casting.
     using char_ptr = char*;                    //!< Pointer to @c char
     using int8_ptr = int8_t*;                  //!< Pointer to @c int8_t
@@ -1118,23 +1109,6 @@ namespace ts {
 #endif
 
     //!
-    //! A derivative of std::chrono::duration for deciseconds (1/10 of a second).
-    //! @see std::chrono::milliseonds
-    //! @see std::chrono::seonds
-    //!
-    using deciseconds = cn::duration<cn::milliseconds::rep, std::deci>;
-
-    //!
-    //! Definition of a monotonic time.
-    //!
-    using monotonic_time = cn::time_point<cn::steady_clock>;
-
-    //!
-    //! This error code is returned by some functions in std::filesystem.
-    //!
-    constexpr std::uintmax_t FS_ERROR = static_cast<std::uintmax_t>(-1);
-
-    //!
     //! Enumeration type used to indicate if the data referenced by a pointer shall be copied or shared.
     //!
     enum class ShareMode {
@@ -1163,7 +1137,14 @@ namespace ts {
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     Tristate ToTristate(INT i) { return Tristate(std::max<INT>(-1, std::min<INT>(1, i))); }
+}
 
+
+//----------------------------------------------------------------------------
+// Optional value, extending C++17 mechanisms.
+//----------------------------------------------------------------------------
+
+namespace ts {
     //!
     //! Set a default value in a std::optional object, if there is none.
     //! @tparam T The type of the optional object.
@@ -1178,7 +1159,70 @@ namespace ts {
             opt = value;
         }
     }
+}
 
+
+//----------------------------------------------------------------------------
+// File systems, extending C++11 mechanisms.
+//----------------------------------------------------------------------------
+
+//!
+//! Namespace @c fs is a shortcut for @c std::filesystem.
+//!
+namespace fs = std::filesystem;
+
+namespace ts {
+    //!
+    //! This error code is returned by some functions in std::filesystem.
+    //!
+    constexpr std::uintmax_t FS_ERROR = static_cast<std::uintmax_t>(-1);
+}
+
+
+//----------------------------------------------------------------------------
+// Time and duration, extending C++11 and C++17 mechanisms.
+//----------------------------------------------------------------------------
+
+//!
+//! Namespace @c cn is a shortcut for @c std::chrono.
+//!
+namespace cn = std::chrono;
+
+namespace ts {
+    // Make sure that standard chrono literals such as 10ms or 3s can be used inside namespace ts.
+    using namespace std::chrono_literals;
+
+    //!
+    //! A derivative of std::chrono::duration for deciseconds (1/10 of a second).
+    //! @see std::chrono::milliseonds
+    //! @see std::chrono::seonds
+    //!
+    using deciseconds = cn::duration<cn::milliseconds::rep, std::deci>;
+
+    //!
+    //! Definition of a monotonic time.
+    //!
+    using monotonic_time = cn::time_point<cn::steady_clock>;
+}
+
+// Define missing std::chrono::duration types in C++17.
+//! @cond nodoxygen
+#if !defined(TS_CXX20)
+namespace std::chrono {
+    using days   = duration<hours::rep, ratio_multiply<ratio<24>, hours::period>>;
+    using weeks  = duration<hours::rep, ratio_multiply<ratio<7>, days::period>>;
+    using years  = duration<hours::rep, ratio_multiply<ratio<146097, 400>, days::period>>;
+    using months = duration<hours::rep, ratio_divide<years::period, ratio<12>>>;
+}
+#endif
+//! @endcond
+
+
+//----------------------------------------------------------------------------
+// Locking and thread-safety, extending C++11 mechanisms.
+//----------------------------------------------------------------------------
+
+namespace ts {
     //!
     //! A null_mutex class which can be used to replace @c std::mutex or @c std::recursive_mutex.
     //! Used to instantiate synchronized template classes in a mono-thread environment.
@@ -1232,16 +1276,4 @@ namespace std {
         lock_guard(ts::null_mutex&, std::adopt_lock_t) {}
     };
 }
-//! @endcond
-
-// Define missing std::chrono::duration types in C++17.
-//! @cond nodoxygen
-#if !defined(TS_CXX20)
-namespace std::chrono {
-    using days   = duration<hours::rep, ratio_multiply<ratio<24>, hours::period>>;
-    using weeks  = duration<hours::rep, ratio_multiply<ratio<7>, days::period>>;
-    using years  = duration<hours::rep, ratio_multiply<ratio<146097, 400>, days::period>>;
-    using months = duration<hours::rep, ratio_divide<years::period, ratio<12>>>;
-}
-#endif
 //! @endcond

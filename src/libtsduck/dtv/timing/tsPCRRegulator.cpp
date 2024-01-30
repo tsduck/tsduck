@@ -119,7 +119,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             }
 
             // Compute the number of PCR units since the first PCR.
-            const ts::pcr_units pcru = ts::pcr_units(_pcr_offset + pcr - _pcr_first);
+            const PCR pcru = PCR(_pcr_offset + pcr - _pcr_first);
 
             // Compute due system clock, the expected system time for this PCR.
             const monotonic_time clock_due(_clock_first + cn::duration_cast<monotonic_time::duration>(pcru));

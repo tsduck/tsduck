@@ -28,8 +28,8 @@ const ts::Enumeration ts::PIDClassEnum({
 });
 
 // Our std::cn::chrono::duration types for transport streams.
-TS_REGISTER_CHRONO_UNIT(ts::pcr_units, u"PCR", u"PCR", u"PCR");
-TS_REGISTER_CHRONO_UNIT(ts::pts_dts_units, u"PTS/DTS", u"PTS/DTS", u"PTS/DTS");
+TS_REGISTER_CHRONO_UNIT(ts::PCR, u"PCR", u"PCR", u"PCR");
+TS_REGISTER_CHRONO_UNIT(ts::PTS, u"PTS/DTS", u"PTS/DTS", u"PTS/DTS");
 
 
 //----------------------------------------------------------------------------

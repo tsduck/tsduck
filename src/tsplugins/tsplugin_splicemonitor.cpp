@@ -440,7 +440,7 @@ bool ts::SpliceMonitorPlugin::timeToEvent(cn::milliseconds& tte, uint64_t event_
                 current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
             }
         }
-        tte = cn::duration_cast<cn::milliseconds>(ts::pts_dts_units(event_pts - current_pts));
+        tte = cn::duration_cast<cn::milliseconds>(PTS(event_pts - current_pts));
         return true;
     }
 }
