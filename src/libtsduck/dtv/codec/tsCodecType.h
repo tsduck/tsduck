@@ -15,8 +15,16 @@
 #pragma once
 #include "tsEnumeration.h"
 #include "tsNamesFile.h"
+#include "tsTS.h" // required by GCC, see comment below
 
 namespace ts {
+
+    // GCC complains that DTS shadows the global type of the same name.
+    // However this is irrelevant because CodecType is an enum class and the declared
+    // identifiers must be prefixed. ts::CodecType::DTS is an enum identifier, ts::DTS
+    // is a type, without ambiguity.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(shadow)
     //!
     //! Known video, audio or data encoding formats.
     //! Commonly found in PES packets.
@@ -48,6 +56,7 @@ namespace ts {
         DVB_SUBTITLES, //!< DVB subtitles, ETSI EN 300 743.
         AVS3,          //!< AVS3 video (AVS is Chinese Audio Video Standards).
     };
+    TS_POP_WARNING()
 
     //!
     //! Enumeration description of ts::CodecType (display).
