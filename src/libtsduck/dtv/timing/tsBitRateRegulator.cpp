@@ -87,7 +87,7 @@ void ts::BitRateRegulator::handleNewBitrate()
     // Measurement period is one second by default but must be larger than 2 bursts.
     _period_duration = std::max(cn::nanoseconds(cn::seconds(1)), 2 * _burst_duration);
 
-    _report->debug(u"new regulation, burst: %'d nano-seconds, %'d packets, measurement period: %'d nano-seconds", {_burst_duration.count(), burst_pkt_max, _period_duration.count()});
+    _report->debug(u"new regulation, burst: %'s, %'d packets, measurement period: %'s", {_burst_duration, burst_pkt_max, _period_duration});
 }
 
 

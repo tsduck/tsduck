@@ -39,7 +39,7 @@ bool ts::AbstractHTTPInputPlugin::getOptions()
 
 bool ts::AbstractHTTPInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
-    if (timeout.count() > 0) {
+    if (timeout > cn::milliseconds::zero()) {
         webArgs.receiveTimeout = webArgs.connectionTimeout = timeout;
     }
     return true;

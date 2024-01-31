@@ -116,7 +116,7 @@ void ts::WatchDog::main()
         // Wait for the condition to be signaled. Get protected data while under mutex protection.
         {
             std::unique_lock<std::mutex> lock(_mutex);
-            if (!_active || _timeout.count() == 0) {
+            if (!_active || _timeout <= cn::milliseconds::zero()) {
                 _condition.wait(lock);
             }
             else {

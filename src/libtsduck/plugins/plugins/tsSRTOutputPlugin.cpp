@@ -126,7 +126,7 @@ bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size, Report&
         }
         // Multiple sessions, close socket and re-open to acquire another receiver.
         stop();
-        if (_restart_delay.count() > 0) {
+        if (_restart_delay > cn::milliseconds::zero()) {
             std::this_thread::sleep_for(_restart_delay);
         }
         if (!start()) {

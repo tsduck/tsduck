@@ -109,7 +109,7 @@ void ts::SystemMonitor::main()
             period_index++;
             start_next_period += period->duration;
             mute_reported = false;
-            _report.debug(u"starting monitoring period #%d, duration: %'d ms, interval: %'d ms", {period_index, period->duration.count(), period->interval.count()});
+            _report.debug(u"starting monitoring period #%d, duration: %'!s, interval: %'!s", {period_index, period->duration, period->interval});
         }
 
         // Wait until due time or termination request

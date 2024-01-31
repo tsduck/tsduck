@@ -1377,6 +1377,7 @@ ts::UString::RegisterChronoUnit::RegisterChronoUnit(std::intmax_t num, std::intm
 
 // Standard std::cn::chrono::duration types.
 TS_REGISTER_CHRONO_UNIT(cn::seconds, u"s", u"second");
+TS_REGISTER_CHRONO_UNIT(ts::deciseconds, u"ds", u"decisecond");
 TS_REGISTER_CHRONO_UNIT(cn::milliseconds, u"ms", u"millisecond");
 TS_REGISTER_CHRONO_UNIT(cn::microseconds, u"us", u"microsecond");
 TS_REGISTER_CHRONO_UNIT(cn::nanoseconds, u"ns", u"nanosecond");

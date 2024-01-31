@@ -248,7 +248,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
 
 void ts::UDPReceiver::setReceiveTimeoutArg(cn::milliseconds timeout)
 {
-    if (timeout.count() > 0) {
+    if (timeout > cn::milliseconds::zero()) {
         _recv_timeout = timeout;
     }
 }
@@ -306,7 +306,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
         setReceiveTimestamps(_recv_timestamps, report) &&
         setMulticastLoop(_mc_loopback, report) &&
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
-        (_recv_timeout.count() < 0 || setReceiveTimeout(_recv_timeout, report)) &&
+        (_recv_timeout < cn::milliseconds::zero() || setReceiveTimeout(_recv_timeout, report)) &&
         bind(local_addr, report);
 
     // Optional SSM source address.

@@ -560,7 +560,7 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
                         renewNow = true;
                     }
                     else if (renewOnPUSI) {
-                        tsp->debug(u"no I-frame found in last %d seconds, starting new segment on new PES packet", {_maxExtraDuration.count()});
+                        tsp->debug(u"no I-frame found in last %s, starting new segment on new PES packet", {_maxExtraDuration});
                         renewNow = true;
                     }
                     else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {

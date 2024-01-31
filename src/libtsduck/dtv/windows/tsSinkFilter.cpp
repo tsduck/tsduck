@@ -259,7 +259,7 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, cn::milliseconds t
     TRACE(2, u"SinkFilter::Read");
     size_t remain = buffer_size;
     char* data = reinterpret_cast<char*>(buffer);
-    const bool infinite = timeout.count() <= 0;
+    const bool infinite = timeout <= cn::milliseconds::zero();
     const auto end = cn::steady_clock::now() + timeout;
 
     std::unique_lock<std::timed_mutex> lock(_mutex);
@@ -271,7 +271,7 @@ size_t ts::SinkFilter::Read(void* buffer, size_t buffer_size, cn::milliseconds t
     while (remain >= PKT_SIZE && (infinite || cn::steady_clock::now() < end)) {
 
         // Wait for the queue not being empty
-        TRACE(5, u"SinkFilter::Read, waiting for packets, timeout = %d milliseconds", {timeout.count()});
+        TRACE(5, u"SinkFilter::Read, waiting for packets, timeout = %s", {timeout});
         if (infinite) {
             _not_empty.wait(lock, [this]() { return !_queue.empty(); });
         }

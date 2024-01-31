@@ -102,7 +102,7 @@ bool ts::HTTPInputPlugin::openURL(WebRequest& request)
         }
 
         // Wait between reconnections.
-        if (_reconnect_delay.count() > 0) {
+        if (_reconnect_delay > cn::milliseconds::zero()) {
             std::this_thread::sleep_for(_reconnect_delay);
         }
     }

@@ -181,10 +181,10 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
     if (!args.userAgent.empty()) {
         setUserAgent(args.userAgent);
     }
-    if (args.connectionTimeout.count() > 0) {
+    if (args.connectionTimeout > cn::milliseconds::zero()) {
         setConnectionTimeout(args.connectionTimeout);
     }
-    if (args.receiveTimeout.count() > 0) {
+    if (args.receiveTimeout > cn::milliseconds::zero()) {
         setReceiveTimeout(args.receiveTimeout);
     }
     if (args.useCookies) {

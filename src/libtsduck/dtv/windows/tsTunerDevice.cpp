@@ -423,11 +423,11 @@ bool ts::TunerDevice::start()
     sink->Flush();
 
     // If a signal timeout was specified, read a packet with timeout
-    if (_signal_timeout.count() > 0) {
+    if (_signal_timeout > cn::milliseconds::zero()) {
         TSPacket pack;
         if (sink->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
             if (!_signal_timeout_silent) {
-                _duck.report().error(u"no input DVB signal after %s", {UString::Chrono(_signal_timeout)});
+                _duck.report().error(u"no input DVB signal after %s", {_signal_timeout});
             }
             return false;
         }
