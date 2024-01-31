@@ -1393,7 +1393,7 @@ void UStringTest::testArgMixIn()
     enum : int8_t {EC = 4, ED = 8};
     const ts::IPv4SocketAddress sock(ts::IPv4Address(10, 20, 30, 40), 12345);
 
-    testArgMixInCalled2({12, u8, i16, -99ll, "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock, fs::path(ts::UString(u"foo.bar"))});
+    testArgMixInCalled2({12, u8, i16, -99ll, "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock, fs::path(ts::UString(u"foo.bar")), cn::milliseconds(-27), cn::days(12)});
 }
 
 void UStringTest::testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list)
@@ -1403,7 +1403,7 @@ void UStringTest::testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list)
 
 void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
 {
-    TSUNIT_EQUAL(15, list.size());
+    TSUNIT_EQUAL(17, list.size());
 
     auto it = list.begin();
 
@@ -1419,6 +1419,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(4, it->size());
     TSUNIT_EQUAL(12, it->toInt32());
     TSUNIT_EQUAL(12, it->toUInt32());
@@ -1428,6 +1429,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // u8 = 23
@@ -1442,6 +1445,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(1, it->size());
     TSUNIT_EQUAL(23, it->toInt32());
     TSUNIT_EQUAL(23, it->toUInt32());
@@ -1451,6 +1455,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // i16 = -432
@@ -1465,6 +1471,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(2, it->size());
     TSUNIT_EQUAL(-432, it->toInt32());
     TSUNIT_EQUAL(-432, it->toInt64());
@@ -1472,6 +1479,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // -99ll
@@ -1486,6 +1495,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(8, it->size());
     TSUNIT_EQUAL(-99, it->toInt32());
     TSUNIT_EQUAL(-99, it->toInt64());
@@ -1493,6 +1503,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // "foo"
@@ -1507,6 +1519,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(0, it->size());
     TSUNIT_EQUAL(0, it->toInt32());
     TSUNIT_EQUAL(0, it->toUInt32());
@@ -1516,6 +1529,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"foo", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"foo", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // ok = "ok"
@@ -1530,6 +1545,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(0, it->size());
     TSUNIT_EQUAL(0, it->toInt32());
     TSUNIT_EQUAL(0, it->toUInt32());
@@ -1539,6 +1555,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"ok", it->toUCharPtr());
     TSUNIT_EQUAL("ok", it->toString());
     TSUNIT_EQUAL(u"ok", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // u"bar"
@@ -1553,6 +1571,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(0, it->size());
     TSUNIT_EQUAL(0, it->toInt32());
     TSUNIT_EQUAL(0, it->toUInt32());
@@ -1562,6 +1581,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"bar", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"bar", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // us = u"an UString"
@@ -1576,6 +1597,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(0, it->size());
     TSUNIT_EQUAL(0, it->toInt32());
     TSUNIT_EQUAL(0, it->toUInt32());
@@ -1585,6 +1607,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"an UString", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"an UString", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // ok + " 2"
@@ -1599,6 +1623,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(0, it->size());
     TSUNIT_EQUAL(0, it->toInt32());
     TSUNIT_EQUAL(0, it->toUInt32());
@@ -1608,6 +1633,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"ok 2", it->toUCharPtr());
     TSUNIT_EQUAL("ok 2", it->toString());
     TSUNIT_EQUAL(u"ok 2", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // us + u" 2"
@@ -1622,6 +1649,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(0, it->size());
     TSUNIT_EQUAL(0, it->toInt32());
     TSUNIT_EQUAL(0, it->toUInt32());
@@ -1631,6 +1659,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"an UString 2", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"an UString 2", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // sz = 8 (size_t)
@@ -1645,6 +1675,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(TS_ADDRESS_BITS / 8, it->size());
     TSUNIT_EQUAL(8, it->toInt32());
     TSUNIT_EQUAL(8, it->toUInt32());
@@ -1654,6 +1685,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // EB (48, uint16_t)
@@ -1668,6 +1701,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(2, it->size());
     TSUNIT_EQUAL(48, it->toInt32());
     TSUNIT_EQUAL(48, it->toUInt32());
@@ -1677,6 +1711,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // EC (4, int8_t)
@@ -1691,6 +1727,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(1, it->size());
     TSUNIT_EQUAL(4, it->toInt32());
     TSUNIT_EQUAL(4, it->toUInt32());
@@ -1700,6 +1737,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // IPv4SocketAddress (ts::IPv4Address(10, 20, 30, 40), 12345);
@@ -1714,6 +1753,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isString());
     TSUNIT_ASSERT(!it->isUCharPtr());
     TSUNIT_ASSERT(it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL(0, it->size());
     TSUNIT_EQUAL(0, it->toInt32());
     TSUNIT_EQUAL(0, it->toUInt32());
@@ -1723,6 +1763,8 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"10.20.30.40:12345", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
     TSUNIT_EQUAL(u"10.20.30.40:12345", it->toUString());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
     ++it;
 
     // fs::path(u"foo.bar")
@@ -1742,6 +1784,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_ASSERT(!it->isAnyString16());
     TSUNIT_ASSERT(it->isString());
     TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(!it->isChrono());
     TSUNIT_EQUAL("foo.bar", it->toCharPtr());
 #endif
     TSUNIT_EQUAL(u"foo.bar", it->toUCharPtr());
@@ -1754,6 +1797,56 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(0, it->toUInt32());
     TSUNIT_EQUAL(0, it->toInt64());
     TSUNIT_EQUAL(0, it->toUInt64());
+    TSUNIT_EQUAL(0, it->num());
+    TSUNIT_EQUAL(0, it->den());
+    ++it;
+
+    // cn::milliseconds(-27)
+    TSUNIT_ASSERT(!it->isOutputInteger());
+    TSUNIT_ASSERT(it->isInteger());
+    TSUNIT_ASSERT(it->isSigned());
+    TSUNIT_ASSERT(!it->isUnsigned());
+    TSUNIT_ASSERT(!it->isAnyString());
+    TSUNIT_ASSERT(!it->isAnyString8());
+    TSUNIT_ASSERT(!it->isAnyString16());
+    TSUNIT_ASSERT(!it->isCharPtr());
+    TSUNIT_ASSERT(!it->isString());
+    TSUNIT_ASSERT(!it->isUCharPtr());
+    TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(it->isChrono());
+    TSUNIT_EQUAL(8, it->size());
+    TSUNIT_EQUAL(-27, it->toInt32());
+    TSUNIT_EQUAL(-27, it->toInt64());
+    TSUNIT_EQUAL("", it->toCharPtr());
+    TSUNIT_EQUAL(u"", it->toUCharPtr());
+    TSUNIT_EQUAL("", it->toString());
+    TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(cn::milliseconds::period::num, it->num());
+    TSUNIT_EQUAL(cn::milliseconds::period::den, it->den());
+    ++it;
+
+    // cn::days(12)
+    TSUNIT_ASSERT(!it->isOutputInteger());
+    TSUNIT_ASSERT(it->isInteger());
+    TSUNIT_ASSERT(it->isSigned());
+    TSUNIT_ASSERT(!it->isUnsigned());
+    TSUNIT_ASSERT(!it->isAnyString());
+    TSUNIT_ASSERT(!it->isAnyString8());
+    TSUNIT_ASSERT(!it->isAnyString16());
+    TSUNIT_ASSERT(!it->isCharPtr());
+    TSUNIT_ASSERT(!it->isString());
+    TSUNIT_ASSERT(!it->isUCharPtr());
+    TSUNIT_ASSERT(!it->isUString());
+    TSUNIT_ASSERT(it->isChrono());
+    TSUNIT_EQUAL(8, it->size());
+    TSUNIT_EQUAL(12, it->toInt32());
+    TSUNIT_EQUAL(12, it->toInt64());
+    TSUNIT_EQUAL("", it->toCharPtr());
+    TSUNIT_EQUAL(u"", it->toUCharPtr());
+    TSUNIT_EQUAL("", it->toString());
+    TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(cn::days::period::num, it->num());
+    TSUNIT_EQUAL(cn::days::period::den, it->den());
     ++it;
 
     TSUNIT_ASSERT(it == list.end());
@@ -1865,6 +1958,16 @@ void UStringTest::testFormat()
     TSUNIT_EQUAL(u"1 1 2", ts::UString::Format(u"%d %<d %d", {1, 2}));
     TSUNIT_EQUAL(u" 1 2", ts::UString::Format(u"%<d %d %d", {1, 2}));
     TSUNIT_EQUAL(u"   1   1 2", ts::UString::Format(u"%*d %<*d %d", {4, 1, 3, 2}));
+
+    // std::chrono::duration values.
+    TSUNIT_EQUAL(u"-1234 milliseconds", ts::UString::Format(u"%s", {cn::milliseconds(-1234)}));
+    TSUNIT_EQUAL(u"1,234 ms", ts::UString::Format(u"%'!s", {cn::milliseconds(1234)}));
+    TSUNIT_EQUAL(u"-1 millisecond", ts::UString::Format(u"%s", {cn::milliseconds(-1)}));
+    TSUNIT_EQUAL(u"|    1,234 ms|", ts::UString::Format(u"|%12'!s|", {cn::milliseconds(1234)}));
+    TSUNIT_EQUAL(u"|1,234 ms|", ts::UString::Format(u"|%6'!s|", {cn::milliseconds(1234)}));
+    TSUNIT_EQUAL(u"1 PCR", ts::UString::Format(u"%s", {ts::PCR(1)}));
+    TSUNIT_EQUAL(u"12345 PCR", ts::UString::Format(u"%!s", {ts::PCR(12345)}));
+    TSUNIT_EQUAL(u"+12,345 microseconds", ts::UString::Format(u"%+'s", {cn::microseconds(12345)}));
 }
 
 void UStringTest::testArgMixOut()

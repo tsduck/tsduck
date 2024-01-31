@@ -21,6 +21,8 @@ ts::ArgMix::ArgMix() :
     _type(0),
     _size(0),
     _value(int32_t(0)),
+    _num(0),
+    _den(0),
     _aux(nullptr)
 {
 }
@@ -29,6 +31,8 @@ ts::ArgMix::ArgMix(const ts::ArgMix& other) :
     _type(other._type),
     _size(other._size),
     _value(other._value),
+    _num(other._num),
+    _den(other._den),
     _aux(other._aux == nullptr ? nullptr : new UString(*other._aux))
 {
 }
@@ -37,15 +41,19 @@ ts::ArgMix::ArgMix(ts::ArgMix&& other) :
     _type(other._type),
     _size(other._size),
     _value(other._value),
+    _num(other._num),
+    _den(other._den),
     _aux(other._aux)
 {
     other._aux = nullptr;
 }
 
-ts::ArgMix::ArgMix(TypeFlags type, size_t size, const Value value) :
+ts::ArgMix::ArgMix(TypeFlags type, size_t size, const Value value, std::intmax_t num, std::intmax_t den) :
     _type(type),
     _size(uint8_t(size)),
     _value(value),
+    _num(num),
+    _den(den),
     _aux(nullptr)
 {
 }

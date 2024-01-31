@@ -391,13 +391,13 @@ bool ts::EITInjectPlugin::start()
         _eit_gen.setCurrentTime(_start_time);
     }
 
-    tsp->debug(u"cycle for EIT p/f actual: %d sec", {_eit_profile.cycle_seconds[size_t(EITProfile::PF_ACTUAL)].count()});
-    tsp->debug(u"cycle for EIT p/f other: %d sec", {_eit_profile.cycle_seconds[size_t(EITProfile::PF_OTHER)].count()});
-    tsp->debug(u"cycle for EIT sched actual: %d sec (prime), %d sec (later)", {_eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_PRIME)].count(),
-                                                                               _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_LATER)].count()});
-    tsp->debug(u"cycle for EIT sched other: %d sec (prime), %d sec (later)", {_eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_PRIME)].count(),
-                                                                              _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)].count()});
-    tsp->debug(u"EIT prime period: %d days", {_eit_profile.prime_days.count()});
+    tsp->debug(u"cycle for EIT p/f actual: %s", {_eit_profile.cycle_seconds[size_t(EITProfile::PF_ACTUAL)]});
+    tsp->debug(u"cycle for EIT p/f other: %s", {_eit_profile.cycle_seconds[size_t(EITProfile::PF_OTHER)]});
+    tsp->debug(u"cycle for EIT sched actual: %s (prime), %s (later)", {_eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_PRIME)],
+                                                                       _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_LATER)]});
+    tsp->debug(u"cycle for EIT sched other: %s (prime), %s (later)", {_eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_PRIME)],
+                                                                      _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)]});
+    tsp->debug(u"EIT prime period: %s", {_eit_profile.prime_days});
 
     // Clear the "first batch of events received" flag.
     _wfb_received = false;

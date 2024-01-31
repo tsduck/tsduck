@@ -412,8 +412,8 @@ void FileAnalysis::displaySummary(std::ostream& out, const StatBlock& stats)
         const ts::Time start(ts::PcapFile::ToTime(stats.first_timestamp));
         const ts::Time end(ts::PcapFile::ToTime(stats.last_timestamp));
         const cn::microseconds duration = stats.last_timestamp - stats.first_timestamp;
-        out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"Start time:", start, _file.timeOffset(stats.first_timestamp).count()}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"End time:", end, _file.timeOffset(stats.last_timestamp).count()}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %s (%+'s)", {hwidth, u"Start time:", start, _file.timeOffset(stats.first_timestamp)}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %s (%+'s)", {hwidth, u"End time:", end, _file.timeOffset(stats.last_timestamp)}) << std::endl;
         if (duration > cn::microseconds::zero()) {
             out << ts::UString::Format(u"  %-*s %s", {hwidth, u"Duration:", ts::UString::Chrono(duration)}) << std::endl;
             out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"IP bitrate:", ts::BytesBitRate(stats.total_ip_size, duration)}) << std::endl;

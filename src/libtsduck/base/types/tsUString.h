@@ -1882,6 +1882,7 @@ namespace ts {
         //!
         //! The available '\%' sequences are:
         //! - @c \%s : String. Treated as @c \%d if the argument is an integer. Print @c true or @c false if the argument is a @c bool.
+        //!            With @c std::chrono::duration value, add the unit (e.g. "seconds", "milliseconds", etc.)
         //! - @c \%c : Character. Use integer argument as Unicode code point. Treated as @c \%s if the argument is a string.
         //! - @c \%d : Integer in decimal. Treated as @c \%s if the argument is a string.
         //!            If argument os a fixed point value, print its integral part.
@@ -1900,6 +1901,7 @@ namespace ts {
         //!   (e.g. 8 digits for a @c uint32_t value without thousands separator).
         //! - @c . @e digits : Starting with a dot. Maximum field width for strings or precision for floating point values. Ignored for integers.
         //! - @c ' : For integer conversions, use a separator for groups of thousands.
+        //! - @c ! : Short format. With @c std::chrono::duration value, use "ms" instead of "milliseconds", etc.
         //! - @c * : Can be used instead of @e digits. The integer value is taken from the argument list.
         //!
         //! Since the argument list is typed, it is possible to mix integers and strings of various types and sizes.
