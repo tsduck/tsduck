@@ -1356,7 +1356,7 @@ bool ts::TunerDevice::start()
         return false;
     }
     else if (!signal_ok) {
-        _duck.report().log(_signal_timeout_silent ? Severity::Debug : Severity::Error, u"no input signal lock after %s", {UString::Chrono(_signal_timeout)});
+        _duck.report().log(_signal_timeout_silent ? Severity::Debug : Severity::Error, u"no input signal lock after %s", {_signal_timeout});
         return false;
     }
     else {

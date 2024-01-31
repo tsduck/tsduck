@@ -338,7 +338,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
     size_t retries = 0;
     cn::milliseconds retryInterval;
     LibCurlInit::Instance().getRetry(_request._originalURL, retries, retryInterval);
-    _request._report.debug(u"curl retries: %d, interval: %s", {retries, UString::Chrono(retryInterval, true)});
+    _request._report.debug(u"curl retries: %d, interval: %!s", {retries, retryInterval});
 
     // Loop until all retries are exhausted.
     for (;;) {
@@ -529,7 +529,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
         else if (_canRetry) {
             // No data received and some remaining retries.
-            _request._report.debug(u"cannot start transfer, retrying after %s", {UString::Chrono(retryInterval)});
+            _request._report.debug(u"cannot start transfer, retrying after %s", {retryInterval});
             retries--;
             std::this_thread::sleep_for(retryInterval);
         }

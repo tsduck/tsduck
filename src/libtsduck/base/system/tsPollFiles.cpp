@@ -17,8 +17,7 @@
 
 void ts::PollFiles::pollRepeatedly()
 {
-    _report.debug(u"Starting PollFiles on %s, poll interval = %d, min stable delay = %d",
-                  {_files_wildcard, UString::Chrono(_poll_interval, true), UString::Chrono(_min_stable_delay, true)});
+    _report.debug(u"Starting PollFiles on %s, poll interval = %!s, min stable delay = %!s", {_files_wildcard, _poll_interval, _min_stable_delay});
 
     // Loop on poll for files.
     while (pollOnce()) {

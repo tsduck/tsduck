@@ -1808,14 +1808,16 @@ namespace ts {
         //! @param [in] short_format When true, use short unit format (e.g. "ms").
         //! By default, use a full unit name (e.g. "millisecond").
         //! @param [in] separator Separator string for groups of thousands, a comma by default.
+        //! @param [in] force_sign If true, force a '+' sign for positive values.
         //! @return The formatted string.
         //!
         template <class Rep, class Period>
         static UString Chrono(const cn::duration<Rep, Period>& value,
                               bool short_format = false,
-                              const UString& separator = DEFAULT_THOUSANDS_SEPARATOR)
+                              const UString& separator = DEFAULT_THOUSANDS_SEPARATOR,
+                              bool force_sign = false)
         {
-            return Decimal(value.count(), 0, true, separator) + u" " + ChronoUnit(Period::num, Period::den, short_format, value.count() > 1);
+            return Decimal(value.count(), 0, true, separator, force_sign) + u" " + ChronoUnit(Period::num, Period::den, short_format, value.count() > 1);
         }
 
         //!

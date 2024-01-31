@@ -123,7 +123,7 @@ bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
 
 bool ts::Socket::setReceiveTimeout(cn::milliseconds timeout, Report& report)
 {
-    report.debug(u"setting socket receive timeout to %s", {UString::Chrono(timeout)});
+    report.debug(u"setting socket receive timeout to %s", {timeout});
 
 #if defined(TS_WINDOWS)
     ::DWORD param = ::DWORD(timeout.count());

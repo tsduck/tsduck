@@ -115,7 +115,7 @@ void ts::PCRRegulator::setMinimimWait(const cn::duration<Rep,Period>& d)
         cn::microseconds precision = cn::milliseconds(2);
         SetTimersPrecision(precision);
         _wait_min = std::max(cn::duration_cast<cn::microseconds>(d), precision);
-        _report->log(_log_level, u"minimum wait: %s, using %s", {UString::Chrono(precision), UString::Chrono(_wait_min)});
+        _report->log(_log_level, u"minimum wait: %s, using %s", {precision, _wait_min});
     }
 }
 
