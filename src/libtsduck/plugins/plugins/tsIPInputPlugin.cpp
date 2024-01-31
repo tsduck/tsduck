@@ -80,7 +80,7 @@ bool ts::IPInputPlugin::abortInput()
 
 bool ts::IPInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
-    if (timeout.count() > 0) {
+    if (timeout > cn::milliseconds::zero()) {
         _sock.setReceiveTimeoutArg(timeout);
     }
     return true;

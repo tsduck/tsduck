@@ -513,10 +513,10 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
             cn::milliseconds time_to_event;
             if (timeToEvent(time_to_event, event_pts, ctx)) {
                 if (time_to_event < cn::milliseconds::zero()) {
-                    time.format(u", event is in the past by %'d ms", {-time_to_event.count()});
+                    time.format(u", event is in the past by %'!s", {-time_to_event});
                 }
                 else {
-                    time.format(u", time to event: %'d ms", {time_to_event.count()});
+                    time.format(u", time to event: %'!s", {time_to_event});
                 }
             }
             display(message(splice_pid, event_id, u"occurrence #%d%s", {evt->second.event_count, time}));
@@ -619,7 +619,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                 // Build a one-line message.
                 UString line(message(spid, evt.event_id, u"occurred"));
                 if (preroll > cn::milliseconds::zero()) {
-                    line.format(u", actual pre-roll time: %'d ms", {preroll.count()});
+                    line.format(u", actual pre-roll time: %'!s", {preroll});
                 }
 
                 // Display the event.

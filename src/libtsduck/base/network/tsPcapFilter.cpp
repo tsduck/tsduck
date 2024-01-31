@@ -256,7 +256,7 @@ bool ts::PcapFilter::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, R
             report.log(_display_addresses_severity, u"selected stream %s %s %s", {_source, _bidirectional_filter ? u"<->" : u"->", _destination});
         }
 
-        report.log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'d", {packet.size(), packet.protocolDataSize(), timestamp.count()});
+        report.log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'!s", {packet.size(), packet.protocolDataSize(), timestamp});
         return true;
     }
 }

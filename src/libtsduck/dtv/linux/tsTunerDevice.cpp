@@ -1334,7 +1334,7 @@ bool ts::TunerDevice::start()
     // Wait for input signal locking if a non-zero timeout is specified.
 
     bool signal_ok = true;
-    for (cn::milliseconds remain_ms = _signal_timeout; remain_ms.count() > 0; remain_ms -= _signal_poll) {
+    for (cn::milliseconds remain_ms = _signal_timeout; remain_ms > cn::milliseconds::zero(); remain_ms -= _signal_poll) {
 
         // Read the frontend status
         ::fe_status_t status = FE_ZERO;
@@ -1410,7 +1410,7 @@ namespace {
 
 bool ts::TunerDevice::setReceiveTimeout(cn::milliseconds timeout)
 {
-    if (timeout.count() > 0) {
+    if (timeout > cn::milliseconds::zero()) {
         // Set an actual receive timer.
         if (_rt_signal < 0) {
             // Allocate one real-time signal.
@@ -1515,7 +1515,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
 
     // Set deadline if receive timeout in effect
     Time time_limit;
-    if (_receive_timeout.count() > 0) {
+    if (_receive_timeout > cn::milliseconds::zero()) {
         assert(_rt_timer_valid);
         // Arm the receive timer.
         // Note that _receive_timeout is in milliseconds and ::itimerspec is in nanoseconds.
@@ -1581,7 +1581,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
         // triggered between this test and the start of the next read, the
         // next read will not be interrupted and the receive timer will not
         // apply to this read.
-        if (_receive_timeout.count() > 0 && Time::CurrentLocalTime() >= time_limit) {
+        if (_receive_timeout > cn::milliseconds::zero() && Time::CurrentLocalTime() >= time_limit) {
             if (got_size == 0) {
                 _duck.report().error(u"receive timeout on %s", {_device_name});
             }
@@ -1590,7 +1590,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
     }
 
     // Disarm the receive timer.
-    if (_receive_timeout.count() > 0) {
+    if (_receive_timeout > cn::milliseconds::zero()) {
         ::itimerspec timeout;
         timeout.it_value.tv_sec = 0;
         timeout.it_value.tv_nsec = 0;

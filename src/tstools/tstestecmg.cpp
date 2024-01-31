@@ -373,7 +373,7 @@ void CmdStatistics::reportStatistics(const ResponseStat& stat)
 {
     _report.info(u"req: %'d, ecm: %'d, response mean: %s ms, min: %d, max: %d, dev: %s",
                  {_request_count.load(), _global_response.count(),
-                  stat.meanString(0, 3), stat.minimum().count(), stat.maximum().count(),
+                  stat.meanString(0, 3), stat.minimum(), stat.maximum(),
                   stat.standardDeviationString(0, 3)});
 }
 
@@ -382,7 +382,7 @@ void CmdStatistics::main()
 {
     while (!_terminate) {
         std::unique_lock<std::mutex> lock(_mutex);
-        if (_opt.stat_interval.count() <= 0) {
+        if (_opt.stat_interval <= cn::seconds::zero()) {
             _condition.wait(lock);
         }
         else {

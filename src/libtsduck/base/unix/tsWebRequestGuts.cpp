@@ -436,13 +436,13 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
 
         // Set the connection timeout.
-        if (status == ::CURLE_OK && _request._connectionTimeout.count() > 0) {
+        if (status == ::CURLE_OK && _request._connectionTimeout > cn::milliseconds::zero()) {
             status = ::curl_easy_setopt(_curl, CURLOPT_CONNECTTIMEOUT_MS, long(_request._connectionTimeout.count()));
         }
 
         // Set the receive timeout. There is no such parameter in libcurl.
         // We set this timeout to the max duration of low speed = 1 B/s.
-        if (status == ::CURLE_OK && _request._receiveTimeout.count() > 0) {
+        if (status == ::CURLE_OK && _request._receiveTimeout > cn::milliseconds::zero()) {
             // The LOW_SPEED_TIME option is in seconds. Round to higher.
             const long timeout = long((_request._receiveTimeout.count() + 999) / 1000);
             status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_TIME, timeout);

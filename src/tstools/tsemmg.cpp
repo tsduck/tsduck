@@ -537,7 +537,7 @@ int MainCode(int argc, char *argv[])
     }
 
     // With UDP data_provision message, optionally wait before closing the session.
-    if (opt.udpMuxAddress.hasPort() && opt.udpEndWait.count() > 0) {
+    if (opt.udpMuxAddress.hasPort() && opt.udpEndWait > cn::milliseconds::zero()) {
         std::this_thread::sleep_for(opt.udpEndWait);
     }
 

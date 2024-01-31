@@ -423,10 +423,10 @@ bool ts::ScramblerPlugin::start()
             // Validate delay start (limit to half the crypto-period).
             _delay_start = cn::milliseconds(_channel_status.delay_start);
             if (_delay_start > _ecmg_args.cp_duration / 2 || _delay_start < -_ecmg_args.cp_duration / 2) {
-                tsp->error(u"crypto-period too short for this CAS, must be at least %'d ms.", {2 * std::abs(_delay_start.count())});
+                tsp->error(u"crypto-period too short for this CAS, must be at least %'!s", {2 * cn::abs(_delay_start)});
                 return false;
             }
-            tsp->debug(u"crypto-period duration: %'d ms, delay start: %'d ms", {_ecmg_args.cp_duration.count() * 100, _delay_start.count()});
+            tsp->debug(u"crypto-period duration: %'!s, delay start: %'!s", {cn::duration_cast<cn::milliseconds>(_ecmg_args.cp_duration), _delay_start});
 
             // Create first and second crypto-periods
             _cp[0].initCycle(this, 0);
@@ -586,7 +586,7 @@ void ts::ScramblerPlugin::initializeScheduling()
         _pkt_insert_ecm = _packet_count;
 
         // Next ECM may start before or after next crypto-period
-        _pkt_change_ecm = _delay_start.count() > 0 ?
+        _pkt_change_ecm = _delay_start > cn::milliseconds::zero() ?
                     _pkt_change_cw + PacketDistance(_ts_bitrate, _delay_start) :
                     _pkt_change_cw - PacketDistance(_ts_bitrate, _delay_start);
     }
@@ -648,7 +648,7 @@ bool ts::ScramblerPlugin::tryExitDegradedMode()
     _degraded_mode = false;
 
     // Compute next CW and ECM change.
-    if (_delay_start.count() < 0) {
+    if (_delay_start < cn::milliseconds::zero()) {
         // Start broadcasting ECM before beginning of crypto-period, ie. now
         changeECM();
         // Postpone CW change

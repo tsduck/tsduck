@@ -983,7 +983,7 @@ ts::UString ts::hls::PlayList::toString() const
         }
     }
     if (_targetDuration > cn::seconds::zero()) {
-        str.format(u", %d seconds/segment", {_targetDuration.count()});
+        str.format(u", %s/segment", {_targetDuration});
     }
     return str;
 }

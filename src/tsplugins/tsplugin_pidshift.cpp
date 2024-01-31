@@ -202,7 +202,7 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
             // Compute the amount of packets to shift in the selected PID's:
             const PacketCounter count = PacketDistance((ts_bitrate * _init_packets) / ts_packets, _shift_ms);
 
-            tsp->debug(u"TS bitrate: %'d b/s, TS packets: %'d, selected: %'d, duration: %'d ms, shift: %'d packets", {ts_bitrate, ts_packets, _init_packets, ms.count(), count});
+            tsp->debug(u"TS bitrate: %'d b/s, TS packets: %'d, selected: %'d, duration: %'!s, shift: %'d packets", {ts_bitrate, ts_packets, _init_packets, ms, count});
 
             // We can do that only if we have seen some packets from them.
             if (count < TimeShiftBuffer::MIN_TOTAL_PACKETS) {

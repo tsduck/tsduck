@@ -135,7 +135,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
                 // This may go back and forth around zero but should never diverge (--pcr-reset-backwards case).
                 // Report it at debug level 2 only since it occurs on almost all merged packets with PCR.
                 if (_duck.report().maxSeverity() >= 2) {
-                    _duck.report().log(2, u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, cn::duration_cast<cn::milliseconds>(PCR(moved)).count(), pid});
+                    _duck.report().log(2, u"adjusted PCR by %+'d (%+'!s) in PID 0x%X (%<d)", {moved, cn::duration_cast<cn::milliseconds>(PCR(moved)), pid});
                 }
             }
         }

@@ -345,7 +345,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
         // Configure EIT processor if time offset not yet known.
         if (_update_eit && !_eit_active) {
             const cn::milliseconds add = _timeref - time;
-            tsp->verbose(u"adding %'d milliseconds to all event start time in EIT's", {add.count()});
+            tsp->verbose(u"adding %'s to all event start time in EIT's", {add});
             _eit_processor.addStartTimeOffet(add, _eit_date_only);
             _eit_active = true;
         }

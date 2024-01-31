@@ -100,7 +100,7 @@ bool ts::RISTInputPlugin::getOptions()
 
 bool ts::RISTInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 {
-    if (timeout.count() > 0) {
+    if (timeout > cn::milliseconds::zero()) {
         _guts->timeout = timeout;
     }
     return true;
@@ -182,14 +182,14 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
         // Here, we poll every few seconds when no timeout is specified and check for abort.
         for (;;) {
             // The returned value is: number of buffers remaining on queue +1 (0 if no buffer returned), -1 on error.
-            const int queue_size = ::rist_receiver_data_read2(_guts->rist.ctx, &dblock, _guts->timeout.count() == 0 ? 5000 : int(_guts->timeout.count()));
+            const int queue_size = ::rist_receiver_data_read2(_guts->rist.ctx, &dblock, _guts->timeout == cn::milliseconds::zero() ? 5000 : int(_guts->timeout.count()));
             if (queue_size < 0) {
                 tsp->error(u"reception error");
                 return 0;
             }
             else if (queue_size == 0 || dblock == nullptr) {
                 // No data block returned but not an error, must be a timeout.
-                if (_guts->timeout.count() > 0) {
+                if (_guts->timeout > cn::milliseconds::zero()) {
                     // This is a user-specified timeout.
                     tsp->error(u"reception timeout");
                     return 0;

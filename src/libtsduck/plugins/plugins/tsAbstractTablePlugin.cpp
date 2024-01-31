@@ -240,7 +240,7 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
         const BitRate ts_bitrate = tsp->bitrate();
         if (ts_bitrate > 0) {
             _pkt_create = PacketDistance(ts_bitrate, _create_after_ms);
-            tsp->debug(u"will create %s after %'d packets, %'d ms (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms.count(), ts_bitrate});
+            tsp->debug(u"will create %s after %'d packets, %'!s (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms, ts_bitrate});
         }
     }
 

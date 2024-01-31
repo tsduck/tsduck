@@ -229,8 +229,8 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
         data += round_up<uint16_t>(len, 4);
     }
 
-    report.debug(u"pcap-ng interface#%d: link type: %d, time units/second: %'d, time offset: %'d microsec, FCS length: %d bytes",
-                 {_if.size(), ifd.link_type, ifd.time_units, ifd.time_offset.count(), ifd.fcs_size});
+    report.debug(u"pcap-ng interface#%d: link type: %d, time units/second: %'d, time offset: %'!s, FCS length: %d bytes",
+                 {_if.size(), ifd.link_type, ifd.time_units, ifd.time_offset, ifd.fcs_size});
 
     // Add the interface description.
     _if.push_back(ifd);

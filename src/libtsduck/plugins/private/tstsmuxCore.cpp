@@ -483,8 +483,7 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
             const uint64_t packet_pcr = pkt.getPCR();
             if (packet_pcr < clock->second.pcr_value && !WrapUpPCR(clock->second.pcr_value, packet_pcr)) {
                 const uint64_t back = DiffPCR(packet_pcr, clock->second.pcr_value);
-                _core._log.verbose(u"input #%d, PID 0x%X (%<d), late packet by PCR %'d, %'s ms",
-                                   {_plugin_index, pid, back, cn::duration_cast<cn::milliseconds>(PCR(back)).count()});
+                _core._log.verbose(u"input #%d, PID 0x%X (%<d), late packet by PCR %'d, %'!s", {_plugin_index, pid, back, cn::duration_cast<cn::milliseconds>(PCR(back))});
             }
             else {
                 // Compute current PCR for previous packet in the output TS.

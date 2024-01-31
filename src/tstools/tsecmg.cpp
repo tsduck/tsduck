@@ -647,7 +647,7 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         }
 
         // Emulate the computation time of a real ECMG.
-        if (_opt.ecmCompTime.count() > 0) {
+        if (_opt.ecmCompTime > cn::milliseconds::zero()) {
             std::this_thread::sleep_for(_opt.ecmCompTime);
         }
 
