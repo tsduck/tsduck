@@ -319,11 +319,11 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
         ts::SetTimersPrecision(actualInterval);
         if (actualInterval > sendInterval) {
             // Cannot get that precision from the system.
-            debug(u"requesting %s between send, can get only %s", {ts::UString::Chrono(sendInterval), ts::UString::Chrono(actualInterval)});
+            debug(u"requesting %s between send, can get only %s", {sendInterval, actualInterval});
             sendInterval = actualInterval;
         }
     }
-    info(u"Send interval: %s", {ts::UString::Chrono(sendInterval)});
+    info(u"Send interval: %s", {sendInterval});
     return true;
 }
 

@@ -1401,7 +1401,7 @@ ts::UString ts::UString::ChronoUnit(std::intmax_t num, std::intmax_t den, bool s
         else {
             UString name(it->second.lname != nullptr && it->second.lname[0] != u'\0' ? it->second.lname : it->second.sname);
             if (plural) {
-                name.append('s');
+                name.append(u's');
             }
             return name;
         }

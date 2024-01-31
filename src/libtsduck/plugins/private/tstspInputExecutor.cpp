@@ -368,7 +368,7 @@ void ts::tsp::InputExecutor::passInputPackets(size_t pkt_count, bool input_end)
             pkt_count = 0;
         }
         // Wait the specified number of milliseconds or forever if zero.
-        debug(u"final wait after end of input: %s", {UString::Chrono(_options.final_wait, true)});
+        debug(u"final wait after end of input: %s", {_options.final_wait});
         if (_options.final_wait.count() > 0) {
             std::this_thread::sleep_for(_options.final_wait);
         }
