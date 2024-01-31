@@ -2082,6 +2082,7 @@ void ts::UString::ArgMixInContext::processArg()
     //  digits : Minimum field width.
     // .digits : Maximum field width or precision for floating/fixed point values.
     //       ' : For integer conversions, use a separator for groups of thousands.
+    //       ! : Short format.
     //       * : Can be used instead of @e digits. The integer value is taken from the argument list.
 
     bool leftJustified = false;
@@ -2089,6 +2090,7 @@ void ts::UString::ArgMixInContext::processArg()
     bool useSeparator = false;
     bool reusePrevious = false;
     bool hasDot = false;
+    bool shortFormat = false;
     UChar pad = u' ';
     size_t minWidth = 0;
     size_t maxWidth = std::numeric_limits<size_t>::max();
@@ -2122,6 +2124,10 @@ void ts::UString::ArgMixInContext::processArg()
     }
     if (*_fmt == u'\'') {
         useSeparator = true;
+        _fmt++;
+    }
+    if (*_fmt == u'!') {
+        shortFormat = true;
         _fmt++;
     }
 
@@ -2172,7 +2178,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // Now, the command is valid, process it.
-    if (argit->isAnyString() || (argit->isBool() && cmd == u's')) {
+    if (argit->isAnyString() || ((argit->isBool() || argit->isChrono()) && cmd == u's')) {
         // String arguments are always treated as %s, regardless of the % command.
         // Also if a bool is specified as %s, print true or false.
         if (cmd != u's' && debugActive()) {
@@ -2188,6 +2194,14 @@ void ts::UString::ArgMixInContext::processArg()
         }
         else if (argit->isBool()) {
             value.assign(TrueFalse(argit->toBool()));
+        }
+        else if (argit->isChrono()) {
+            const int64_t ivalue = argit->toInt64();
+            UString units(1, u' ');
+            units.append(ChronoUnit(argit->num(), argit->den(), shortFormat, std::abs(ivalue) > 1));
+            const size_t ulen = units.length();
+            value.assign(Decimal(ivalue, minWidth < ulen ? 0 : minWidth - ulen, !leftJustified, separator, forceSign, pad));
+            value.append(units);
         }
         else {
             // Not a string, should not get there.

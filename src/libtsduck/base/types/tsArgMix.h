@@ -133,6 +133,11 @@ namespace ts {
         //!
         bool isAbstractNumber() const { return (_type & ANUMBER) == ANUMBER; }
         //!
+        //! Check if the argument value is a std::chrono::duration value.
+        //! @return True if the argument value is a std::chrono::duration value.
+        //!
+        bool isChrono() const { return (_type & CHRONO) == CHRONO; }
+        //!
         //! Get the original integer size in bytes of the argument data.
         //! @return The original integer size in bytes of the argument data or zero for a string or double.
         //!
@@ -202,7 +207,18 @@ namespace ts {
         //! @return Reference to the AbstractNumber.
         //!
         const AbstractNumber& toAbstractNumber() const;
-
+        //!
+        //! In the case of a std::chrono::duration value, return the numerator of the ratio.
+        //! The chrono count is obtained using tsInt64().
+        //! @return The numerator of the ratio for a std::chrono::duration value, zero otherwise.
+        //!
+        std::intmax_t num() const { return _num; }
+        //!
+        //! In the case of a std::chrono::duration value, return the denominator of the ratio.
+        //! The chrono count is obtained using tsInt64().
+        //! @return The denominator of the ratio for a std::chrono::duration value, zero otherwise.
+        //!
+        std::intmax_t den() const { return _den; }
         //!
         //! Store an integer value in the argument data, for pointers to integer.
         //! @tparam INT An integer type.
@@ -253,6 +269,7 @@ namespace ts {
             PATH      = 0x0800,  //!< A pointer to a StringifyInterface object.
             DOUBLE    = 0x1000,  //!< Double floating point type.
             ANUMBER   = 0x2000,  //!< A pointer to an AbstractNumber object.
+            CHRONO    = 0x4000,  //!< A instance of std::chrono::duration.
         };
 
         //!
@@ -314,8 +331,10 @@ namespace ts {
         //! @param [in] type Indicate which overlay to use in _value.
         //! @param [in] size Original size for integer type.
         //! @param [in] value Actual value of the argument.
+        //! @param [in] num Numerator of the ratio in the case of a std::chrono::duration value.
+        //! @param [in] den Denominator of the ratio in the case of a std::chrono::duration value.
         //!
-        ArgMix(TypeFlags type, size_t size, const Value value);
+        ArgMix(TypeFlags type, size_t size, const Value value, std::intmax_t num = 0, std::intmax_t den = 0);
 
 #if !defined(DOXYGEN)
         // Warning: The rest of this class is carefully crafted template meta-programming (aka. Black Magic).
@@ -403,10 +422,12 @@ namespace ts {
 
     private:
         // Implementation of an ArgMix.
-        const TypeFlags  _type;      //!< Indicate which overlay to use in _value.
-        const uint8_t    _size;      //!< Original size for integer type (not greater than 8).
-        const Value      _value;     //!< Actual value of the argument.
-        mutable UString* _aux;       //!< Auxiliary string (for StringifyInterface and character pointers).
+        const TypeFlags     _type;      //!< Indicate which overlay to use in _value.
+        const uint8_t       _size;      //!< Original size for integer type (not greater than 8).
+        const Value         _value;     //!< Actual value of the argument.
+        const std::intmax_t _num;       //!< Ratio numerator for chrono types.
+        const std::intmax_t _den;       //!< Ratio denominator for chrono types.
+        mutable UString*    _aux;       //!< Auxiliary string (for StringifyInterface and character pointers).
 
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
@@ -498,6 +519,13 @@ namespace ts {
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value, int>::type = 0>
         ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
+        //!
+        //! Constructor from a std::chrono::duration value.
+        //! @param [in] d A std::chrono::duration value.
+        //!
+        template <class Rep, class Period>
+        ArgMixIn(const cn::duration<Rep, Period>& d) :
+            ArgMix(storage_type<int64_t>::value | CHRONO, sizeof(int64_t), int64_t(d.count()), Period::num, Period::den) {}
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.
@@ -565,6 +593,7 @@ INT ts::ArgMix::toInteger(bool raw) const
         case INTEGER | BIT32:
             return static_cast<INT>(_value.uint32);
         case INTEGER | BIT64 | SIGNED:
+        case INTEGER | BIT64 | SIGNED | CHRONO:
             return static_cast<INT>(_value.int64);
         case INTEGER | BIT64:
             return static_cast<INT>(_value.uint64);
