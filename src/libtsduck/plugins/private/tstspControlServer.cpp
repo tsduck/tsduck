@@ -115,7 +115,7 @@ void ts::tsp::ControlServer::main()
     _log.debug(u"control command thread started");
 
     // Get accept errors in a buffer since some errors are normal.
-    ReportBuffer<ts::null_mutex> error(_log.maxSeverity());
+    ReportBuffer<ThreadSafety::None> error(_log.maxSeverity());
 
     // Client address and connection.
     IPv4SocketAddress source;

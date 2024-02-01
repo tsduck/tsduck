@@ -33,7 +33,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using TSPacketPtr = SafePtr<TSPacket>;
+        using TSPacketPtr = SafePtr<TSPacket,ThreadSafety::None>;
         using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
         bool             _silentDrop = false;  // Silently drop packets on overflow.

@@ -129,7 +129,7 @@ namespace ts {
         // Splice commands are passed from the server threads to the plugin thread using a message queue.
         // The next pts field is used as sort criteria. In the queue, all immediate commands come first.
         // Then, the non-immediate commands come in order of next_pts.
-        using CommandQueue = MessagePriorityQueue<SpliceCommand, std::mutex>;
+        using CommandQueue = MessagePriorityQueue<SpliceCommand, ThreadSafety::Full>;
 
         // Message queues enqueue smart pointers to the message type.
         using CommandPtr = CommandQueue::MessagePtr;
@@ -1023,7 +1023,7 @@ void ts::SpliceInjectPlugin::UDPListener::main()
     IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<ts::null_mutex> error(_tsp->maxSeverity());
+    ReportBuffer<ThreadSafety::None> error(_tsp->maxSeverity());
 
     // Loop on incoming messages.
     while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _tsp, error)) {

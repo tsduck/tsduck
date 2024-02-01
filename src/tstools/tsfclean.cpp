@@ -107,7 +107,7 @@ namespace ts {
         };
 
         // A map of PMT contexts, indexed by PMT PID.
-        using PMTContextPtr = SafePtr<PMTContext>;
+        using PMTContextPtr = SafePtr<PMTContext, ThreadSafety::None>;
         using PMTContextMap = std::map<PID,PMTContextPtr>;
         PMTContextPtr getPMTContext(PID pmt_pid, bool create);
 

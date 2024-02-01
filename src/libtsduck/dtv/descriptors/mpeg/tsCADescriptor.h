@@ -105,5 +105,5 @@ namespace ts {
     //!
     //! Safe pointer to a CADescriptor (thread-safe).
     //!
-    using CADescriptorPtr = SafePtr<CADescriptor, std::mutex>;
+    using CADescriptorPtr = SafePtr<CADescriptor, ThreadSafety::Full>;
 }

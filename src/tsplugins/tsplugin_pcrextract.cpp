@@ -41,12 +41,12 @@ namespace ts {
     private:
         // Description of one PID carrying PCR, PTS or DTS.
         class PIDContext;
-        using PIDContextPtr = SafePtr<PIDContext>;
+        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
         using PIDContextMap = std::map<PID,PIDContextPtr>;
 
         // Description of one PID carrying SCTE 35 splice information.
         class SpliceContext;
-        using SpliceContextPtr = SafePtr<SpliceContext>;
+        using SpliceContextPtr = SafePtr<SpliceContext, ThreadSafety::None>;
         using SpliceContextMap = std::map<PID,SpliceContextPtr>;
 
         // Command line options:

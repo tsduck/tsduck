@@ -39,7 +39,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using CommandQueue = MessageQueue<UString, std::mutex>;
+        using CommandQueue = MessageQueue<UString, ThreadSafety::Full>;
 
         // Plugin private fields.
         volatile bool    _terminate = false;
@@ -209,7 +209,7 @@ void ts::CutoffPlugin::main()
     IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<ts::null_mutex> error(tsp->maxSeverity());
+    ReportBuffer<ts::ThreadSafety::None> error(tsp->maxSeverity());
 
     // Loop on incoming messages.
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, tsp, error)) {

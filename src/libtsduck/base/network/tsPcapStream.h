@@ -153,7 +153,7 @@ namespace ts {
             bool             end = false;     // end of TCP stream.
             cn::microseconds timestamp = cn::microseconds(-1);  // capture time stamp.
         };
-        using DataBlockPtr = SafePtr<DataBlock>;
+        using DataBlockPtr = SafePtr<DataBlock, ThreadSafety::None>;
         using DataBlockQueue = std::list<DataBlockPtr>;
 
         // Description of a one-directional stream.

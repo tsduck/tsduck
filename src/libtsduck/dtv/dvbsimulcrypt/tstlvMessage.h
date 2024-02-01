@@ -303,12 +303,12 @@ namespace ts {
         //!
         //! Safe pointer for TLV messages (not thread-safe).
         //!
-        using MessagePtr = SafePtr<Message, ts::null_mutex>;
+        using MessagePtr = SafePtr<Message, ThreadSafety::None>;
 
         //!
         //! Safe pointer for TLV messages (thread-safe).
         //!
-        using MessagePtrMT = SafePtr<Message, std::mutex>;
+        using MessagePtrMT = SafePtr<Message, ThreadSafety::Full>;
     }
 }
 

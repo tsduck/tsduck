@@ -23,11 +23,9 @@ namespace ts {
         //!
         //! TCP connection using TLV messages.
         //! @ingroup net
+        //! @tparam SAFETY The required type of thread-safety.
         //!
-        //! @tparam MUTEX Mutex type for synchronization.
-        //! (typically std::mutex for thread-safe usage, ts::null_mutex for mono-thread usage).
-        //!
-        template <class MUTEX>
+        template <ThreadSafety SAFETY>
         class Connection: public ts::TCPConnection
         {
             TS_NOBUILD_NOCOPY(Connection);
@@ -36,6 +34,11 @@ namespace ts {
             //! Reference to superclass.
             //!
             using SuperClass = ts::TCPConnection;
+
+            //!
+            //! Generic definition of the mutex for this class.
+            //!
+            using MutexType = typename ThreadSafetyMutex<SAFETY>::type;
 
             //!
             //! Constructor.
@@ -127,8 +130,8 @@ namespace ts {
             bool            _auto_error_response = false;
             size_t          _max_invalid_msg = 0;
             size_t          _invalid_msg_count = 0;
-            MUTEX           _send_mutex {};
-            MUTEX           _receive_mutex {};
+            MutexType       _send_mutex {};
+            MutexType       _receive_mutex {};
         };
     }
 }
@@ -139,8 +142,8 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Constructor.
-template <class MUTEX>
-ts::tlv::Connection<MUTEX>::Connection(const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg) :
+template <ts::ThreadSafety SAFETY>
+ts::tlv::Connection<SAFETY>::Connection(const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg) :
     ts::TCPConnection(),
     _protocol(protocol),
     _auto_error_response(auto_error_response),
@@ -153,8 +156,8 @@ ts::tlv::Connection<MUTEX>::Connection(const Protocol& protocol, bool auto_error
 // warning C4505: 'ts::tlv::Connection<ts::Mutex>::handleConnected': unreferenced local function has been removed
 TS_PUSH_WARNING()
 TS_MSC_NOWARNING(4505)
-template <class MUTEX>
-void ts::tlv::Connection<MUTEX>::handleConnected(Report& report)
+template <ts::ThreadSafety SAFETY>
+void ts::tlv::Connection<SAFETY>::handleConnected(Report& report)
 {
     SuperClass::handleConnected(report);
     _invalid_msg_count = 0;
@@ -162,16 +165,16 @@ void ts::tlv::Connection<MUTEX>::handleConnected(Report& report)
 TS_POP_WARNING()
 
 // Serialize and send a TLV message.
-template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Report& report)
+template <ts::ThreadSafety SAFETY>
+bool ts::tlv::Connection<SAFETY>::send(const Message& msg, Report& report)
 {
     tlv::Logger logger(Severity::Debug, &report);
     return send(msg, logger);
 }
 
 // Serialize and send a TLV message.
-template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Logger& logger)
+template <ts::ThreadSafety SAFETY>
+bool ts::tlv::Connection<SAFETY>::send(const Message& msg, Logger& logger)
 {
     logger.log(msg, u"sending message to " + peerName());
 
@@ -179,21 +182,21 @@ bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Logger& logger)
     Serializer serial(bbp);
     msg.serialize(serial);
 
-    std::lock_guard<MUTEX> lock(_send_mutex);
+    std::lock_guard<MutexType> lock(_send_mutex);
     return SuperClass::send(bbp->data(), bbp->size(), logger.report());
 }
 
 // Receive a TLV message (wait for the message, deserialize it and validate it)
-template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* abort, Report& report)
+template <ts::ThreadSafety SAFETY>
+bool ts::tlv::Connection<SAFETY>::receive(MessagePtr& msg, const AbortInterface* abort, Report& report)
 {
     tlv::Logger logger(Severity::Debug, &report);
     return receive(msg, abort, logger);
 }
 
 // Receive a TLV message (wait for the message, deserialize it and validate it)
-template <class MUTEX>
-bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
+template <ts::ThreadSafety SAFETY>
+bool ts::tlv::Connection<SAFETY>::receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
 {
     const bool has_version(_protocol.hasVersion());
     const size_t header_size(has_version ? 5 : 4);
@@ -205,7 +208,7 @@ bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* 
 
         // Receive complete message
         {
-            std::lock_guard<MUTEX> lock(_receive_mutex);
+            std::lock_guard<MutexType> lock(_receive_mutex);
 
             // Read message header
             if (!SuperClass::receive(bb.data(), header_size, abort, logger.report())) {

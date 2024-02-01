@@ -71,7 +71,7 @@ namespace ts {
     //!
     //! A safe pointer to TablesLogger section filter (not thread-safe).
     //!
-    using TablesLoggerFilterPtr = SafePtr<TablesLoggerFilterInterface>;
+    using TablesLoggerFilterPtr = SafePtr<TablesLoggerFilterInterface, ThreadSafety::None>;
 
     //!
     //! A vector of safe pointers to TablesLogger section filters.

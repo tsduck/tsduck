@@ -188,10 +188,10 @@ namespace ts {
         uint64_t                    _total_bytes = 0;
         const AbortInterface*       _abort = nullptr;
         tlv::Logger                 _logger {};
-        tlv::Connection<std::mutex> _connection {_protocol, true, 3};  // connection with MUX server
-        UDPSocket                   _udp_socket {};                    // where to send data_provision if UDP is used
-        emmgmux::ChannelStatus      _channel_status {_protocol};       // automatic response to channel_test
-        emmgmux::StreamStatus       _stream_status {_protocol};        // automatic response to stream_test
+        tlv::Connection<ThreadSafety::Full> _connection {_protocol, true, 3};  // connection with MUX server
+        UDPSocket                   _udp_socket {};              // where to send data_provision if UDP is used
+        emmgmux::ChannelStatus      _channel_status {_protocol}; // automatic response to channel_test
+        emmgmux::StreamStatus       _stream_status {_protocol};  // automatic response to stream_test
         std::recursive_mutex        _mutex {};            // exclusive access to protected fields
         std::condition_variable_any _work_to_do {};       // notify receiver thread to do some work
         std::condition_variable_any _got_response {};     // notify application thread that a response arrived

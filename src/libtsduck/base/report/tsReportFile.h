@@ -20,15 +20,19 @@ namespace ts {
     //! A subclass of ts::Report which outputs messages in a text file.
     //! @ingroup log
     //!
-    //! Reentrancy is supported though the template parameter @a MUTEX.
+    //! Reentrancy is supported though the template parameter @a SAFETY.
     //!
-    //! @tparam MUTEX A mutex class to synchronize access to the object
-    //! (typically std::mutex for thread-safe usage, ts::null_mutex for mono-thread usage).
+    //! @tparam SAFETY The required type of thread-safety.
     //!
-    template <class MUTEX>
+    template <ThreadSafety SAFETY>
     class ReportFile: public Report
     {
     public:
+        //!
+        //! Generic definition of the mutex for this class.
+        //!
+        using MutexType = typename ThreadSafetyMutex<SAFETY>::type;
+
         //!
         //! Constructor using a named file.
         //!
@@ -39,7 +43,7 @@ namespace ts {
         //! If false (the default), overwrite the file if it already existed.
         //! @param [in] max_severity Maximum debug level to display. None by default.
         //!
-        ReportFile(const UString& file_name, bool append = false, int max_severity = Severity::Info);
+        ReportFile(const fs::path& file_name, bool append = false, int max_severity = Severity::Info);
 
         //!
         //! Constructor using an open file stream.
@@ -60,10 +64,10 @@ namespace ts {
         virtual void writeLog(int severity, const UString& message) override;
 
     private:
-        mutable MUTEX _mutex {};       // Synchronization.
-        std::string   _file_name {};   // File name in UTF-8.
-        std::ofstream _named_file {};  // Explicitly created file.
-        std::ostream& _file;           // Reference to actual file stream.
+        mutable MutexType _mutex {};       // Synchronization.
+        fs::path          _file_name {};   // File name in UTF-8.
+        std::ofstream     _named_file {};  // Explicitly created file.
+        std::ostream&     _file;           // Reference to actual file stream.
     };
 }
 
@@ -73,11 +77,11 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 // Constructor using a named file.
-template <class MUTEX>
-ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, int max_severity) :
+template <ts::ThreadSafety SAFETY>
+ts::ReportFile<SAFETY>::ReportFile(const fs::path& file_name, bool append, int max_severity) :
     Report(max_severity),
-    _file_name(file_name.toUTF8()),
-    _named_file(_file_name.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out),
+    _file_name(file_name),
+    _named_file(_file_name, append ? (std::ios::out | std::ios::app) : std::ios::out),
     _file(_named_file)
 {
     // Process error when creating the file
@@ -87,8 +91,8 @@ ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, int max
 }
 
 // Constructor using an open file stream.
-template <class MUTEX>
-ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, int max_severity) :
+template <ts::ThreadSafety SAFETY>
+ts::ReportFile<SAFETY>::ReportFile(std::ostream& stream, int max_severity) :
     Report(max_severity),
     _file(stream)
 {
@@ -97,10 +101,10 @@ ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, int max_severity) :
 // Destructor
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(dtor-name)
-template <class MUTEX>
-ts::ReportFile<MUTEX>::~ReportFile()
+template <ts::ThreadSafety SAFETY>
+ts::ReportFile<SAFETY>::~ReportFile()
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     // Close the file if it was explicitly open by constructor
     if (_named_file.is_open()) {
         _named_file.close();
@@ -109,9 +113,9 @@ ts::ReportFile<MUTEX>::~ReportFile()
 TS_POP_WARNING()
 
 // Message processing handler, must be implemented in actual classes.
-template <class MUTEX>
-void ts::ReportFile<MUTEX>::writeLog(int severity, const UString& message)
+template <ts::ThreadSafety SAFETY>
+void ts::ReportFile<SAFETY>::writeLog(int severity, const UString& message)
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     _file << Severity::Header(severity) << message << std::endl;
 }

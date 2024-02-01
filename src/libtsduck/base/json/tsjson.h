@@ -29,7 +29,7 @@ namespace ts {
         //!
         //! Safe pointer to a JSON value (not thread-safe).
         //!
-        using ValuePtr = SafePtr<Value, ts::null_mutex>;
+        using ValuePtr = SafePtr<Value, ThreadSafety::None>;
 
         //!
         //! A vector of safe pointers to JSON values.

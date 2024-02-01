@@ -168,7 +168,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            SafePtr<PAT> pat(new PAT(_duck, table));
+            SafePtr<PAT,ThreadSafety::None> pat(new PAT(_duck, table));
             if (pat->isValid()) {
                 _pat = pat;
                 if (_pat->nit_pid != PID_NULL && _pat->nit_pid != PID_NIT) {
@@ -181,7 +181,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_SDT_ACT: {
-            SafePtr<SDT> sdt(new SDT(_duck, table));
+            SafePtr<SDT,ThreadSafety::None> sdt(new SDT(_duck, table));
             if (sdt->isValid()) {
                 _sdt = sdt;
             }
@@ -189,7 +189,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_NIT_ACT: {
-            SafePtr<NIT> nit(new NIT(_duck, table));
+            SafePtr<NIT,ThreadSafety::None> nit(new NIT(_duck, table));
             if (nit->isValid()) {
                 _nit = nit;
             }
@@ -197,7 +197,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_MGT: {
-            SafePtr<MGT> mgt(new MGT(_duck, table));
+            SafePtr<MGT,ThreadSafety::None> mgt(new MGT(_duck, table));
             if (mgt->isValid()) {
                 _mgt = mgt;
                 // Intercept TVCT and CVCT, they contain the service names.
@@ -216,7 +216,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_TVCT: {
-            SafePtr<VCT> vct(new TVCT(_duck, table));
+            SafePtr<VCT,ThreadSafety::None> vct(new TVCT(_duck, table));
             if (vct->isValid()) {
                 _vct = vct;
             }
@@ -224,7 +224,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_CVCT: {
-            SafePtr<VCT> vct(new CVCT(_duck, table));
+            SafePtr<VCT,ThreadSafety::None> vct(new CVCT(_duck, table));
             if (vct->isValid()) {
                 _vct = vct;
             }

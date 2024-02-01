@@ -72,7 +72,7 @@ namespace {
 
     int TestData::_instanceCount = 0;
 
-    using TestDataPtr = ts::SafePtr<TestData>;
+    using TestDataPtr = ts::SafePtr<TestData, ts::ThreadSafety::None>;
 }
 
 
@@ -302,8 +302,8 @@ namespace {
         explicit SubTestData2 (int value) : TestData (value) {}
     };
 
-    using SubTestData1Ptr = ts::SafePtr<SubTestData1>;
-    using SubTestData2Ptr = ts::SafePtr<SubTestData2>;
+    using SubTestData1Ptr = ts::SafePtr<SubTestData1, ts::ThreadSafety::None>;
+    using SubTestData2Ptr = ts::SafePtr<SubTestData2, ts::ThreadSafety::None>;
 }
 
 // Test case: check downcasts
@@ -351,11 +351,11 @@ void SafePtrTest::testUpcast()
 void SafePtrTest::testChangeMutex()
 {
     TSUNIT_ASSERT(TestData::InstanceCount() == 0);
-    ts::SafePtr<TestData, ts::null_mutex> pn(new TestData (888));
+    ts::SafePtr<TestData, ts::ThreadSafety::None> pn(new TestData (888));
     TSUNIT_ASSERT(TestData::InstanceCount() == 1);
     TSUNIT_ASSERT(!pn.isNull());
 
-    ts::SafePtr<TestData, std::mutex> pt(pn.changeMutex<std::mutex>());
+    ts::SafePtr<TestData, ts::ThreadSafety::Full> pt(pn.changeThreadSafety<ts::ThreadSafety::Full>());
     TSUNIT_ASSERT(!pt.isNull());
     TSUNIT_ASSERT(pn.isNull());
     TSUNIT_ASSERT(TestData::InstanceCount() == 1);

@@ -1270,7 +1270,7 @@ namespace ts {
         };
 
         // For AbstractNumber options, we keep one dummy instance of the actual type as a safe pointer.
-        using AbstractNumberPtr = SafePtr<AbstractNumber>;
+        using AbstractNumberPtr = SafePtr<AbstractNumber, ThreadSafety::None>;
 
         // Internal representation of Option
         class TSDUCKDLL IOption

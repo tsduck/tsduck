@@ -25,13 +25,16 @@ namespace ts {
     //! priority are dequeued in their enqueueing order.
     //!
     //! @tparam MSG The type of the messages to exchange.
-    //! @tparam MUTEX The type of mutex for synchronization
-    //! (typically std::mutex for thread-safe usage, ts::null_mutex for mono-thread usage).
+    //! @tparam SAFETY The required type of thread-safety for message pointers.
+    //! The message queue itself is always thread-safe by definition. The @a SAFETY
+    //! template parameter only applies to the safe pointers which are passed in the
+    //! queue. This thread-safety only applies to the way those message pointers are
+    //! used outside the message queue.
     //! @tparam COMPARE A function object to sort @a MSG instances. By default,
     //! the '<' operator on @a MSG is used.
     //!
-    template <typename MSG, class MUTEX, class COMPARE = std::less<MSG>>
-    class MessagePriorityQueue: public MessageQueue<MSG, MUTEX>
+    template <typename MSG, ThreadSafety SAFETY, class COMPARE = std::less<MSG>>
+    class MessagePriorityQueue: public MessageQueue<MSG, SAFETY>
     {
         TS_NOCOPY(MessagePriorityQueue);
     public:
@@ -52,7 +55,7 @@ namespace ts {
         //!
         //! Explicit reference to superclass.
         //!
-        using SuperClass = MessageQueue<MSG, MUTEX>;
+        using SuperClass = MessageQueue<MSG, SAFETY>;
 
         //!
         //! This virtual protected method performs placement in the message queue.
@@ -70,8 +73,8 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename MSG, class MUTEX, class COMPARE>
-ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessagePriorityQueue(size_t maxMessages) :
+template <typename MSG, ts::ThreadSafety SAFETY, class COMPARE>
+ts::MessagePriorityQueue<MSG, SAFETY, COMPARE>::MessagePriorityQueue(size_t maxMessages) :
     SuperClass(maxMessages)
 {
 }
@@ -81,9 +84,9 @@ ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessagePriorityQueue(size_t maxMe
 // Placement in the message queue (virtual protected methods).
 //----------------------------------------------------------------------------
 
-template <typename MSG, class MUTEX, class COMPARE>
-typename ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::SuperClass::MessageList::iterator
-ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::enqueuePlacement(const typename SuperClass::MessagePtr& msg, typename SuperClass::MessageList& list)
+template <typename MSG, ts::ThreadSafety SAFETY, class COMPARE>
+typename ts::MessagePriorityQueue<MSG, SAFETY, COMPARE>::SuperClass::MessageList::iterator
+ts::MessagePriorityQueue<MSG, SAFETY, COMPARE>::enqueuePlacement(const typename SuperClass::MessagePtr& msg, typename SuperClass::MessageList& list)
 {
     auto loc = list.end();
 

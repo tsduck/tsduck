@@ -1194,8 +1194,8 @@ namespace ts {
 
     //!
     //! A derivative of std::chrono::duration for deciseconds (1/10 of a second).
-    //! @see std::chrono::milliseonds
-    //! @see std::chrono::seonds
+    //! @see std::chrono::milliseconds
+    //! @see std::chrono::seconds
     //!
     using deciseconds = cn::duration<cn::milliseconds::rep, std::deci>;
 

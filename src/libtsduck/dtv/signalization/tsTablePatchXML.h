@@ -124,7 +124,7 @@ namespace ts {
         bool applyPatches(SectionPtr& section) const;
 
     private:
-        using PatchDocumentPtr = ts::SafePtr<ts::xml::PatchDocument>;
+        using PatchDocumentPtr = SafePtr<ts::xml::PatchDocument, ThreadSafety::None>;
         using PatchDocumentVector = std::vector<PatchDocumentPtr>;
 
         DuckContext&        _duck;           // TSDuck execution context.

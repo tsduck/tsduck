@@ -418,8 +418,8 @@ void CmdStatistics::terminate()
 namespace {
 
     class ECMGConnection;
-    using ECMGConnectionPtr = ts::SafePtr<ECMGConnection, std::mutex>;
-    using Connection = ts::tlv::Connection<std::mutex>;
+    using ECMGConnectionPtr = ts::SafePtr<ECMGConnection, ts::ThreadSafety::Full>;
+    using Connection = ts::tlv::Connection<ts::ThreadSafety::Full>;
 
     class ECMGConnection: public ts::Thread
     {
