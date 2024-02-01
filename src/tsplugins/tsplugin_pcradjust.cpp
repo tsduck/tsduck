@@ -70,7 +70,7 @@ namespace ts {
     private:
         // Description of PID's. Map of safe pointers to PID contexts, indexed by PID.
         class PIDContext;
-        using PIDContextPtr = SafePtr<PIDContext>;
+        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // PCRAdjustPlugin private members

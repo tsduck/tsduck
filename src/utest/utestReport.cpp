@@ -74,7 +74,7 @@ void ReportTest::afterTest()
 //----------------------------------------------------------------------------
 
 namespace {
-    using TestBuffer = ts::ReportBuffer<std::mutex>;
+    using TestBuffer = ts::ReportBuffer<ts::ThreadSafety::Full>;
 }
 
 // Test case: set/get severity
@@ -252,7 +252,7 @@ void ReportTest::testPrintf()
 void ReportTest::testByName()
 {
     {
-        ts::ReportFile<std::mutex> log(_fileName, false, false);
+        ts::ReportFile<ts::ThreadSafety::Full> log(_fileName, false, false);
         log.info(u"info 1");
         log.error(u"error 1");
     }
@@ -266,7 +266,7 @@ void ReportTest::testByName()
     TSUNIT_ASSERT(value == ref);
 
     {
-        ts::ReportFile<std::mutex> log(_fileName, true, false);
+        ts::ReportFile<ts::ThreadSafety::Full> log(_fileName, true, false);
         log.info(u"info 2");
         log.error(u"error 2");
     }
@@ -285,7 +285,7 @@ void ReportTest::testByStream()
     TSUNIT_ASSERT(stream.is_open());
 
     {
-        ts::ReportFile<std::mutex> log(stream);
+        ts::ReportFile<ts::ThreadSafety::Full> log(stream);
         log.info(u"info 1");
         log.error(u"error 1");
     }

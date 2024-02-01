@@ -77,7 +77,7 @@ namespace ts {
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
 
         // Keep a map of all PMT's per service id.
-        using PMTPtr = SafePtr<PMT>;
+        using PMTPtr = SafePtr<PMT, ThreadSafety::None>;
         using PMTMap = std::map<uint16_t, PMTPtr>;
 
         // We record here all MPE PID's from the IP/MAC Notification Table (INT).

@@ -65,7 +65,7 @@ namespace ts {
         TSPacketLabelSet _reset_labels {};              // Labels to reset on output packets.
 
         // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
-        using TSForkPipePtr = SafePtr<TSForkPipe>;
+        using TSForkPipePtr = SafePtr<TSForkPipe, ThreadSafety::None>;
 
         // Working data.
         bool          _got_eof = false;    // Got end of merged stream.

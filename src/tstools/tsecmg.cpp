@@ -37,8 +37,8 @@ namespace {
     static constexpr size_t CLIENT_STACK_SIZE = 128 * 1024;
 
     // Instantiation of a TCP connection in a multi-thread context for TLV messages.
-    using ECMGConnection = ts::tlv::Connection<std::mutex>;
-    using ECMGConnectionPtr = ts::SafePtr<ECMGConnection, std::mutex>;
+    using ECMGConnection = ts::tlv::Connection<ts::ThreadSafety::Full>;
+    using ECMGConnectionPtr = ts::SafePtr<ECMGConnection, ts::ThreadSafety::Full>;
 }
 
 

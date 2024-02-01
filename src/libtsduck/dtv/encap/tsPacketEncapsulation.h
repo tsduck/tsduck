@@ -283,7 +283,7 @@ namespace ts {
 
     private:
         using PIDCCMap = std::map<PID,uint8_t>;  // map of continuity counters, indexed by PID
-        using TSPacketPtr = SafePtr<TSPacket>;
+        using TSPacketPtr = SafePtr<TSPacket, ThreadSafety::None>;
         using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
         bool             _packing = false;         // Packing mode.

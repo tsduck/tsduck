@@ -26,7 +26,7 @@ namespace ts {
     //!
     //! Smart pointer to a GitHubRelease (not thread-safe).
     //!
-    using GitHubReleasePtr = SafePtr<GitHubRelease, ts::null_mutex>;
+    using GitHubReleasePtr = SafePtr<GitHubRelease, ThreadSafety::None>;
 
     //!
     //! Vector of smart pointers to GitHubRelease objects.

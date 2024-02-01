@@ -58,7 +58,7 @@ namespace ts {
             // Constructor:
             ServiceContext(DuckContext& duck, const UString& parameter);
         };
-        using ServiceContextPtr = SafePtr<ServiceContext>;
+        using ServiceContextPtr = SafePtr<ServiceContext, ThreadSafety::None>;
         using ServiceContextVector = std::vector<ServiceContextPtr>;
 
         // Each PID is described by one byte

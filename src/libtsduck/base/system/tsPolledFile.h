@@ -88,7 +88,7 @@ namespace ts {
     //!
     //! Safe pointer to a PolledFile (not thread-safe).
     //!
-    using PolledFilePtr = SafePtr<PolledFile, ts::null_mutex>;
+    using PolledFilePtr = SafePtr<PolledFile, ThreadSafety::None>;
 
     //!
     //! List of safe pointers to PolledFile (not thread-safe).

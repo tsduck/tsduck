@@ -23,7 +23,7 @@ namespace ts {
         //!
         //! Safe pointer for MessageFactory (not thread-safe).
         //!
-        using MessageFactoryPtr = SafePtr <MessageFactory, ts::null_mutex>;
+        using MessageFactoryPtr = SafePtr <MessageFactory, ThreadSafety::None>;
 
         //!
         //! Factory class for TLV messages

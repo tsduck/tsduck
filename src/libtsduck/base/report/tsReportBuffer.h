@@ -20,15 +20,18 @@ namespace ts {
     //! A subclass of ts::Report which logs all messages in an internal buffer.
     //! @ingroup log
     //!
-    //! Reentrancy is supported though the template parameter @a MUTEX.
+    //! Reentrancy is supported though the template parameter @a SAFETY.
     //!
-    //! @tparam MUTEX A mutex class to synchronize access to the buffer
-    //! (typically std::mutex for thread-safe usage, ts::null_mutex for mono-thread usage).
+    //! @tparam SAFETY The required type of thread-safety.
     //!
-    template <class MUTEX>
+    template <ThreadSafety SAFETY>
     class ReportBuffer: public Report
     {
     public:
+        //!
+        //! Generic definition of the mutex for this class.
+        //!
+        using MutexType = typename ThreadSafetyMutex<SAFETY>::type;
 
         //!
         //! Constructor.
@@ -62,8 +65,8 @@ namespace ts {
         virtual void writeLog(int severity, const UString& message) override;
 
     private:
-        mutable MUTEX _mutex {};
-        UString       _buffer {};
+        mutable MutexType _mutex {};
+        UString _buffer {};
     };
 }
 
@@ -73,8 +76,8 @@ namespace ts {
 //! @param [in] log A @link ts::ReportBuffer @endlink object.
 //! @return A reference to the @a strm object.
 //!
-template <class MUTEX>
-inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTEX>& log)
+template <ts::ThreadSafety SAFETY>
+inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<SAFETY>& log)
 {
     return strm << log.messages();
 }
@@ -85,34 +88,34 @@ inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTE
 //----------------------------------------------------------------------------
 
 // Reset the content of the internal buffer.
-template <class MUTEX>
-void ts::ReportBuffer<MUTEX>::clear()
+template <ts::ThreadSafety SAFETY>
+void ts::ReportBuffer<SAFETY>::clear()
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     _buffer.clear();
 }
 
 // Check if the content of the internal buffer is empty.
-template <class MUTEX>
-bool ts::ReportBuffer<MUTEX>::empty() const
+template <ts::ThreadSafety SAFETY>
+bool ts::ReportBuffer<SAFETY>::empty() const
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     return _buffer.empty();
 }
 
 // Get the content of the internal buffer.
-template <class MUTEX>
-ts::UString ts::ReportBuffer<MUTEX>::messages() const
+template <ts::ThreadSafety SAFETY>
+ts::UString ts::ReportBuffer<SAFETY>::messages() const
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     return _buffer;
 }
 
 // Message processing handler, add the message in the buffer.
-template <class MUTEX>
-void ts::ReportBuffer<MUTEX>::writeLog(int severity, const UString& message)
+template <ts::ThreadSafety SAFETY>
+void ts::ReportBuffer<SAFETY>::writeLog(int severity, const UString& message)
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     if (!_buffer.empty()) {
         _buffer.append(u'\n');
     }

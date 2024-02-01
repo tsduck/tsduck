@@ -47,8 +47,8 @@ namespace ts {
 
     private:
         // TS packets or sections are passed from the server thread to the plugin thread using a message queue.
-        using PacketQueue = MessageQueue<TSPacket, std::mutex>;
-        using SectionQueue = MessageQueue<Section, std::mutex>;
+        using PacketQueue = MessageQueue<TSPacket, ThreadSafety::Full>;
+        using SectionQueue = MessageQueue<Section, ThreadSafety::Full>;
 
         // Message queues enqueue smart pointers to the message type (MT = Multi-Thread).
         using PacketPtrMT = PacketQueue::MessagePtr;
@@ -69,9 +69,9 @@ namespace ts {
             virtual void main() override;
 
         private:
-            DataInjectPlugin* const     _plugin;
-            SwitchableReport            _report;
-            tlv::Connection<std::mutex> _client;
+            DataInjectPlugin* const _plugin;
+            SwitchableReport _report;
+            tlv::Connection<ThreadSafety::Full> _client;
         };
 
         // UDP listener thread.
@@ -410,7 +410,7 @@ void ts::DataInjectPlugin::provideSection(SectionCounter counter, SectionPtr& se
     SectionPtrMT mt_section;
     if (_section_queue.dequeue(mt_section, cn::milliseconds::zero())) {
         // A section was dequeue. Change the mutex of the safe pointer.
-        section = mt_section.changeMutex<SectionPtr::MutexType>();
+        section = mt_section.changeThreadSafety<SectionPtr::Safety>();
     }
     else {
         // No section available.

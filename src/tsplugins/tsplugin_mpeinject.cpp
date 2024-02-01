@@ -43,12 +43,12 @@ namespace ts {
     private:
         // Each UDP receiver is executed in a thread. There is a vector of receiver threads.
         class ReceiverThread;
-        using ReceiverPtr = SafePtr<ReceiverThread>;
+        using ReceiverPtr = SafePtr<ReceiverThread, ThreadSafety::None>;
         using ReceiverVector = std::vector<ReceiverPtr>;
 
         // Each receiver thread builds DSM-CC sections from the received UDP datagrams.
         // Sections from all receivers are multiplexed into one single thread-safe queue.
-        using SectionQueue = MessageQueue<Section, std::mutex>;
+        using SectionQueue = MessageQueue<Section, ThreadSafety::Full>;
 
         // Command line options.
         PID        _mpe_pid = PID_NULL;     // PID into insert the MPE datagrams.
@@ -337,7 +337,7 @@ void ts::MPEInjectPlugin::provideSection(SectionCounter counter, SectionPtr& sec
         // Got a valid section. Transfer the section pointer ownership.
         // We need an ownership transfer because SectionQueue::MessagePtr uses
         // a real Mutex while SectionPtr uses a ts::null_mutex (unsynchronized).
-        section = ptr.changeMutex<ts::null_mutex>();
+        section = ptr.changeThreadSafety<SectionPtr::Safety>();
     }
     else {
         // No section available. Clear returned pointer, just in case.

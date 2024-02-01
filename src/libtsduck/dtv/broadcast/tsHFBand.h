@@ -266,7 +266,7 @@ namespace ts {
 
         // Safe pointer to an HBBand object.
         // Not thread-safe since these objects are loaded once and remain constant.
-        using HFBandPtr = SafePtr<HFBand, ts::null_mutex>;
+        using HFBandPtr = SafePtr<HFBand, ThreadSafety::None>;
 
         // HFBand members.
         const UString     _band_name {};       // Type of HF band.

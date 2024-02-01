@@ -212,7 +212,7 @@ void WebRequestTest::testNoRedirection()
 
 void WebRequestTest::testNonExistentHost()
 {
-    ts::ReportBuffer<ts::null_mutex> rep;
+    ts::ReportBuffer<ts::ThreadSafety::None> rep;
     ts::WebRequest request(rep);
 
     ts::ByteBlock data;
@@ -223,7 +223,7 @@ void WebRequestTest::testNonExistentHost()
 
 void WebRequestTest::testInvalidURL()
 {
-    ts::ReportBuffer<ts::null_mutex> rep;
+    ts::ReportBuffer<ts::ThreadSafety::None> rep;
     ts::WebRequest request(rep);
 
     ts::ByteBlock data;

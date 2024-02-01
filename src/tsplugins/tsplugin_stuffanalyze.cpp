@@ -50,7 +50,7 @@ namespace ts {
             UString toString() const;
         };
 
-        using PIDContextPtr = SafePtr<PIDContext, ts::null_mutex>;
+        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Plugin private fields.

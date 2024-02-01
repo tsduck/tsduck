@@ -486,9 +486,9 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
         tparams.polarity = saved_polarity;
     }
 
-    ts::SafePtr<ts::PAT> pat;
-    ts::SafePtr<ts::SDT> sdt;
-    ts::SafePtr<ts::NIT> nit;
+    ts::SafePtr<ts::PAT,ts::ThreadSafety::None> pat;
+    ts::SafePtr<ts::SDT,ts::ThreadSafety::None> sdt;
+    ts::SafePtr<ts::NIT,ts::ThreadSafety::None> nit;
 
     info.getPAT(pat);
     info.getSDT(sdt);
@@ -586,7 +586,7 @@ void ScanContext::nitScan()
     ts::TSScanner info(_opt.duck, _tuner, _opt.psi_timeout, false);
 
     // Get the collected NIT
-    ts::SafePtr<ts::NIT> nit;
+    ts::SafePtr<ts::NIT,ts::ThreadSafety::None> nit;
     info.getNIT(nit);
     if (nit.isNull()) {
         _opt.error(u"cannot scan network, no NIT found on specified transponder");

@@ -39,7 +39,7 @@ namespace ts {
         // Each category of packets (PID or lable) is described by a structure like this.
         // The map is indexed by PID or label.
         class Context;
-        using ContextPtr = SafePtr<Context>;
+        using ContextPtr = SafePtr<Context, ThreadSafety::None>;
         using ContextMap = std::map<size_t, ContextPtr>;
 
         // Command line options.

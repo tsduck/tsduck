@@ -214,7 +214,7 @@ namespace ts {
         };
 
         // Safe pointer for SectionDesc (not thread-safe)
-        using SectionDescPtr = SafePtr <SectionDesc, ts::null_mutex>;
+        using SectionDescPtr = SafePtr <SectionDesc, ThreadSafety::None>;
 
         // List of sections
         using SectionDescList = std::list <SectionDescPtr>;

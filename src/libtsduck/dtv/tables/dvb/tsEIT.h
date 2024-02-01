@@ -442,7 +442,7 @@ namespace ts {
         };
 
         // Safe pointer to BinaryEvent.
-        using BinaryEventPtr = SafePtr<BinaryEvent>;
+        using BinaryEventPtr = SafePtr<BinaryEvent, ThreadSafety::None>;
         using BinaryEventPtrVector = std::vector<BinaryEventPtr>;
 
         // Events from a set of EIT sections are sorted according to service, then start time.

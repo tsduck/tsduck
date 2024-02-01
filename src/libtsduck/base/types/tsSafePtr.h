@@ -50,18 +50,12 @@ namespace ts {
     //! use comparisons such as <code>p == nullptr</code>, the result will be incorrect.
     //!
     //! The ts::SafePtr template class can be made thread-safe using a mutex.
-    //! The type of mutex to use is given by the template parameter @a MUTEX
-    //! which must be either std::mutex or ts::null_mutex. By default,
-    //! ts::null_mutex is used. The default implementation is consequently
-    //! not thread-safe but there is no synchronization overhead. To use
-    //! safe pointers in a multi-thread environment, specify an actual
-    //! mutex implementation for the target environment.
+    //! The type of mutex to use is deduced from the template parameter @a SAFETY.
     //!
     //! @tparam T The type of the pointed object. Cannot be an array type.
-    //! @tparam MUTEX Either std::mutex or ts::null_mutex, used to
-    //! synchronize access to the safe pointer internal state.
+    //! @tparam SAFETY The required type of thread-safety.
     //!
-    template <typename T, class MUTEX = ts::null_mutex>
+    template <typename T, ThreadSafety SAFETY>
     class SafePtr
     {
     public:
@@ -73,7 +67,12 @@ namespace ts {
         //!
         //! Generic definition of the mutex for this safe pointer.
         //!
-        using MutexType = MUTEX;
+        using MutexType = typename ThreadSafetyMutex<SAFETY>::type;
+
+        //!
+        //! The tyoe of thread-safety which is used by this class.
+        //!
+        static constexpr ThreadSafety Safety = SAFETY;
 
         //!
         //! Default constructor using an optional unmanaged object.
@@ -109,14 +108,14 @@ namespace ts {
         //!
         //! @param [in] other Another safe pointer instance.
         //!
-        SafePtr(const SafePtr<T,MUTEX>& other) : _shared(other._shared->attach()) {}
+        SafePtr(const SafePtr<T,SAFETY>& other) : _shared(other._shared->attach()) {}
 
         //!
         //! Move constructor.
         //!
         //! @param [in,out] other Another safe pointer instance.
         //!
-        SafePtr(SafePtr<T,MUTEX>&& other) noexcept : _shared(other._shared) { other._shared = nullptr; }
+        SafePtr(SafePtr<T,SAFETY>&& other) noexcept : _shared(other._shared) { other._shared = nullptr; }
 
         //!
         //! Destructor.
@@ -139,7 +138,7 @@ namespace ts {
         //! @param [in] other The value to assign.
         //! @return A reference to this object.
         //!
-        SafePtr<T,MUTEX>& operator=(const SafePtr<T,MUTEX>& other);
+        SafePtr<T,SAFETY>& operator=(const SafePtr<T,SAFETY>& other);
 
         //!
         //! Move assignment between safe pointers.
@@ -147,7 +146,7 @@ namespace ts {
         //! @param [in,out] other The value to assign.
         //! @return A reference to this object.
         //!
-        SafePtr<T,MUTEX>& operator=(SafePtr<T,MUTEX>&& other) noexcept;
+        SafePtr<T,SAFETY>& operator=(SafePtr<T,SAFETY>&& other) noexcept;
 
         //!
         //! Assignment from a standard pointer @c T*.
@@ -171,7 +170,7 @@ namespace ts {
         //! @exception std::bad_alloc Thrown if insufficient memory
         //! is available for internal safe pointer management.
         //!
-        SafePtr<T,MUTEX>& operator=(T* p);
+        SafePtr<T,SAFETY>& operator=(T* p);
 
         //!
         //! Equality operator.
@@ -188,7 +187,7 @@ namespace ts {
         //! @return True if both safe pointers reference the same object
         //! and false otherwise.
         //!
-        bool operator==(const SafePtr<T,MUTEX>& other) const { return other._shared == this->_shared; }
+        bool operator==(const SafePtr<T,SAFETY>& other) const { return other._shared == this->_shared; }
         TS_UNEQUAL_OPERATOR(SafePtr)
 
         //!
@@ -307,10 +306,10 @@ namespace ts {
         //! @tparam ST A super-class of @a T (immediate or indirect).
         //! @return If this object is not the null pointer, return a safe pointer to the
         //! same object, interpreted as @a ST. Otherwise, return the null pointer. The
-        //! @a MUTEX type of the returned safe pointer is the same as used in this object.
+        //! thread-safety of the returned safe pointer is the same as used in this object.
         //!
-        template <typename ST, typename std::enable_if<std::is_base_of<ST, T>::value>::type* = nullptr>
-        SafePtr<ST,MUTEX> upcast()
+        template <typename ST, typename std::enable_if<std::is_base_of<ST,T>::value>::type* = nullptr>
+        SafePtr<ST,SAFETY> upcast()
         {
             return _shared->template upcast<ST>();
         }
@@ -335,34 +334,34 @@ namespace ts {
         //! @tparam ST A subclass of @a T (immediate or indirect).
         //! @return If this object is not the null pointer and points to an instance of @a ST,
         //! return a safe pointer to the same object, interpreted as @a ST. Otherwise, return
-        //! the null pointer. The @a MUTEX type of the returned safe pointer is the same as
+        //! the null pointer. The thread-safety of the returned safe pointer is the same as
         //! used in this object.
         //!
         template <typename ST, typename std::enable_if<std::is_base_of<T, ST>::value>::type* = nullptr>
-        SafePtr<ST,MUTEX> downcast()
+        SafePtr<ST,SAFETY> downcast()
         {
             return _shared->template downcast<ST>();
         }
 
         //!
-        //! Change mutex type.
+        //! Change thread-safety type.
         //!
         //! This method converts a safe pointer to an object of class @a T into a safe
-        //! pointer to the same class @a T with a different class of mutex.
+        //! pointer to the same class @a T with a different class of thread-safety.
         //!
         //! If this object is not the null pointer, the ownership of the pointed object
         //! is @e transfered to a new safe pointer. This new safe pointer is returned.
         //! This object and all other safe pointers of the same class which pointed to
         //! the same object become null pointers.
         //!
-        //! @tparam NEWMUTEX Another subclass of ts::MutexInterface which is used to
+        //! @tparam NEWSAFETY Another thread-safety policy which is used to
         //! synchronize access to the new safe pointer internal state.
         //! @return A safe pointer to the same object.
         //!
-        template <typename NEWMUTEX>
-        SafePtr<T,NEWMUTEX> changeMutex()
+        template <ThreadSafety NEWSAFETY>
+        SafePtr<T,NEWSAFETY> changeThreadSafety()
         {
-            return _shared->template changeMutex<NEWMUTEX>();
+            return _shared->template changeMutex<NEWSAFETY>();
         }
 
         //!
@@ -397,9 +396,9 @@ namespace ts {
             TS_NOBUILD_NOCOPY(SafePtrShared);
         private:
             // Private members:
-            T*    _ptr;        // pointer to actual object
-            int   _ref_count;  // reference counter
-            MUTEX _mutex;      // protect the SafePtrShared
+            T*        _ptr;        // pointer to actual object
+            int       _ref_count;  // reference counter
+            MutexType _mutex;      // protect the SafePtrShared
 
         public:
             // Constructor. Initial reference count is 1.
@@ -429,33 +428,33 @@ namespace ts {
             // separate definitions.
 
             // Perform a class downcast (cast to a subclass).
-            template <typename ST> SafePtr<ST,MUTEX> downcast()
+            template <typename ST> SafePtr<ST,SAFETY> downcast()
             {
-                std::lock_guard<MUTEX> lock(_mutex);
+                std::lock_guard<MutexType> lock(_mutex);
                 ST* sp = dynamic_cast<ST*>(_ptr);
                 if (sp != nullptr) {
                     // Successful downcast, the original safe pointer must be released.
                     _ptr = nullptr;
                 }
-                return SafePtr<ST,MUTEX>(sp);
+                return SafePtr<ST,SAFETY>(sp);
             }
 
             // Perform a class upcast.
-            template <typename ST> SafePtr<ST,MUTEX> upcast()
+            template <typename ST> SafePtr<ST,SAFETY> upcast()
             {
-                std::lock_guard<MUTEX> lock(_mutex);
+                std::lock_guard<MutexType> lock(_mutex);
                 ST* sp = _ptr;
                 _ptr = nullptr;
-                return SafePtr<ST,MUTEX>(sp);
+                return SafePtr<ST,SAFETY>(sp);
             }
 
-            // Change mutex type.
-            template <typename NEWMUTEX> SafePtr<T,NEWMUTEX> changeMutex()
+            // Change thread-safety type.
+            template <ThreadSafety NEWSAFETY> SafePtr<T,NEWSAFETY> changeMutex()
             {
-                std::lock_guard<MUTEX> lock(_mutex);
+                std::lock_guard<MutexType> lock(_mutex);
                 T* sp = _ptr;
                 _ptr = nullptr;
-                return SafePtr<T,NEWMUTEX>(sp);
+                return SafePtr<T,NEWSAFETY>(sp);
             }
         };
 
@@ -472,18 +471,20 @@ namespace ts {
 // Destructor.
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(dtor-name)
-template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>::~SafePtr()
+
+template <typename T, ts::ThreadSafety SAFETY>
+ts::SafePtr<T,SAFETY>::~SafePtr()
 {
     if (_shared != nullptr && _shared->detach()) {
         _shared = nullptr;
     }
 }
+
 TS_POP_WARNING()
 
 // Assignment between safe pointers.
-template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(const SafePtr<T,MUTEX>& other)
+template <typename T, ts::ThreadSafety SAFETY>
+ts::SafePtr<T,SAFETY>& ts::SafePtr<T,SAFETY>::operator=(const SafePtr<T,SAFETY>& other)
 {
     if (_shared != other._shared) {
         _shared->detach();
@@ -493,8 +494,8 @@ ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(const SafePtr<T,MUTEX>& ot
 }
 
 // Assignment between safe pointers.
-template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(SafePtr<T,MUTEX>&& other) noexcept
+template <typename T, ts::ThreadSafety SAFETY>
+ts::SafePtr<T,SAFETY>& ts::SafePtr<T,SAFETY>::operator=(SafePtr<T,SAFETY>&& other) noexcept
 {
     if (_shared != other._shared) {
         if (_shared != nullptr) {
@@ -507,8 +508,8 @@ ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(SafePtr<T,MUTEX>&& other) 
 }
 
 // Assignment from a standard pointer T*.
-template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(T* p)
+template <typename T, ts::ThreadSafety SAFETY>
+ts::SafePtr<T,SAFETY>& ts::SafePtr<T,SAFETY>::operator=(T* p)
 {
     _shared->detach();
     _shared = new SafePtrShared(p);
@@ -516,8 +517,8 @@ ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(T* p)
 }
 
 // Destructor. Deallocate actual object (if any).
-template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>::SafePtrShared::~SafePtrShared()
+template <typename T, ts::ThreadSafety SAFETY>
+ts::SafePtr<T,SAFETY>::SafePtrShared::~SafePtrShared()
 {
     if (_ptr != nullptr) {
         delete _ptr;
@@ -526,20 +527,20 @@ ts::SafePtr<T,MUTEX>::SafePtrShared::~SafePtrShared()
 }
 
 // Sets the pointer value to 0 and returns its old value. Do not deallocate the object.
-template <typename T, class MUTEX>
-T* ts::SafePtr<T,MUTEX>::SafePtrShared::release()
+template <typename T, ts::ThreadSafety SAFETY>
+T* ts::SafePtr<T,SAFETY>::SafePtrShared::release()
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     T* previous = _ptr;
     _ptr = nullptr;
     return previous;
 }
 
 // Deallocate previous pointer and sets the pointer to specified value.
-template <typename T, class MUTEX>
-void ts::SafePtr<T,MUTEX>::SafePtrShared::reset(T* p)
+template <typename T, ts::ThreadSafety SAFETY>
+void ts::SafePtr<T,SAFETY>::SafePtrShared::reset(T* p)
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     if (_ptr != nullptr) {
         delete _ptr;
     }
@@ -547,18 +548,18 @@ void ts::SafePtr<T,MUTEX>::SafePtrShared::reset(T* p)
 }
 
 // Get the pointer value.
-template <typename T, class MUTEX>
-T* ts::SafePtr<T,MUTEX>::SafePtrShared::pointer()
+template <typename T, ts::ThreadSafety SAFETY>
+T* ts::SafePtr<T,SAFETY>::SafePtrShared::pointer()
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     return _ptr;
 }
 
 // Get the reference count value.
-template <typename T, class MUTEX>
-int ts::SafePtr<T,MUTEX>::SafePtrShared::count()
+template <typename T, ts::ThreadSafety SAFETY>
+int ts::SafePtr<T,SAFETY>::SafePtrShared::count()
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     // Bug in GCC 12 on Arm64: it reports an incorrect "use after free" error here,
     // quoting the "delete this" in SafePtrShared::detach() -> gcc bug.
     TS_PUSH_WARNING()
@@ -568,29 +569,29 @@ int ts::SafePtr<T,MUTEX>::SafePtrShared::count()
 }
 
 // Check for null pointer on SafePtr object
-template <typename T, class MUTEX>
-bool ts::SafePtr<T,MUTEX>::SafePtrShared::isNull()
+template <typename T, ts::ThreadSafety SAFETY>
+bool ts::SafePtr<T,SAFETY>::SafePtrShared::isNull()
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     return _ptr == nullptr;
 }
 
 // Increment reference count and return this.
-template <typename T, class MUTEX>
-typename ts::SafePtr<T,MUTEX>::SafePtrShared* ts::SafePtr<T,MUTEX>::SafePtrShared::attach()
+template <typename T, ts::ThreadSafety SAFETY>
+typename ts::SafePtr<T,SAFETY>::SafePtrShared* ts::SafePtr<T,SAFETY>::SafePtrShared::attach()
 {
-    std::lock_guard<MUTEX> lock(_mutex);
+    std::lock_guard<MutexType> lock(_mutex);
     _ref_count++;
     return this;
 }
 
 // Decrement reference count and deallocate this if needed.
-template <typename T, class MUTEX>
-bool ts::SafePtr<T,MUTEX>::SafePtrShared::detach()
+template <typename T, ts::ThreadSafety SAFETY>
+bool ts::SafePtr<T,SAFETY>::SafePtrShared::detach()
 {
     int refcount = 0;
     {
-        std::lock_guard<MUTEX> lock(_mutex);
+        std::lock_guard<MutexType> lock(_mutex);
         refcount = --_ref_count;
     }
     if (refcount == 0) {
