@@ -449,13 +449,13 @@ elif [[ -f /etc/alpine-release ]]; then
 
 elif [[ -f /etc/gentoo-release ]]; then
 
-    PKGLIST+=(sys-devel/gcc dev-vcs/git dev-vcs/git-lfs dev-util/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python)
+    PKGLIST+=(sys-devel/gcc dev-vcs/git dev-vcs/git-lfs dev-build/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(dev-libs/libedit)
     [[ -z $NOPCSC     ]] && PKGLIST+=(sys-apps/pcsc-lite)
     [[ -z $NOSRT      ]] && PKGLIST+=(net-libs/srt)
     [[ -z $NOVATEK    ]] && PKGLIST+=(dev-libs/libusb)
     [[ -z $NOJAVA     ]] && PKGLIST+=(dev-java/openjdk)
-    [[ -z $NODOXYGEN  ]] && PKGLIST+=(app-doc/doxygen media-gfx/graphviz)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(app-text/doxygen media-gfx/graphviz)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
