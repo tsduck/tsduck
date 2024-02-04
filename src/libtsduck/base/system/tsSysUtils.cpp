@@ -38,7 +38,9 @@
 #elif defined(TS_BSD)
     #include "tsSysCtl.h"
     #include "tsBeforeStandardHeaders.h"
-    #include <sys/user.h>
+    #if !defined(TS_NETBSD)
+        #include <sys/user.h>
+    #endif
     #include <sys/resource.h>
     #include <kvm.h>
     #include <signal.h>
