@@ -266,7 +266,7 @@ if [[ -n "$VMX_FILE" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null
+            ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
@@ -317,7 +317,7 @@ elif [[ -n "$PRL_NAME" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null
+            ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
@@ -381,7 +381,7 @@ elif [[ -n "$VBOX_NAME" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null
+            ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
@@ -396,10 +396,11 @@ fi
 
 # Check accessibility of remote host.
 [[ -z "$HOST_NAME" ]] && error "no remote host specified"
-ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
+ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
 # Build remote installers.
 BACKUP_DIR=
+BACKUP_MARK='##BACKUPDIR## '
 LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
 (
     if $REMOTE_WIN; then
@@ -455,7 +456,12 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
             scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
             # Copy the installed in the backup directory if one is specified.
             BACKUP_DIR=$(get-backup-dir "$f")
-            [[ -n "$BACKUP_DIR" ]] && cp "$ROOTDIR/pkg/installers/$f" "$BACKUP_DIR/"
+            if [[ -n "$BACKUP_DIR" ]]; then
+                cp -v "$ROOTDIR/pkg/installers/$f" "$BACKUP_DIR/"
+                # The build executes in a subshell and BACKUP_DIR won't be propagated in the parent shell.
+                # Save it in the log file where the parent shell will retrieve it.
+                echo "$BACKUP_MARK$BACKUP_DIR"
+            fi
         done
 
         # Delete the temporary timestamp.
@@ -463,8 +469,11 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
     fi
 ) &>"$LOGFILE"
 
+# Grab the backup directory path from the log file.
+BACKUP_DIR=$(grep "^$BACKUP_MARK" "$LOGFILE" | head -1 | sed -e "s/^$BACKUP_MARK//")
+
 # Copy the build log in the backup directory if one is specified.
-[[ -n "$BACKUP_DIR" ]] && cp "$LOGFILE" "$BACKUP_DIR/logs/"
+[[ -n "$BACKUP_DIR" ]] && cp -v "$LOGFILE" "$BACKUP_DIR/logs/"
 
 # Shutdown the VM if we booted it.
 if $VMX_SHUTDOWN; then
