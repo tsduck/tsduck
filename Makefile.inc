@@ -558,7 +558,7 @@ LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
 
 # External libraries
 
-LDLIBS += -lstdc++ -lpthread $(if $(MACOS)$(OPENBSD),,-lrt) -lm
+LDLIBS += -lpthread $(if $(MACOS)$(OPENBSD),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
@@ -780,8 +780,10 @@ ifneq ($(NOCURL),)
 else
     ifeq ($(CURL_DONE),)
         export CXXFLAGS_CURL := $(shell curl-config --cflags)
-	export LDLIBS_CURL := $(shell curl-config --libs)
+        export LDLIBS_CURL := $(shell curl-config --libs)
         export CURL_DONE := true
+        # Remove useless explicit references to /usr/lib which break usage of alternative compilers
+        export LDLIBS_CURL := $(patsubst -L/usr/lib,,$(patsubst -Wl$(COMMA)-R/usr/lib,,$(LDLIBS_CURL)))
     endif
     LIBTSDUCK_CXXFLAGS_INCLUDES += $(CXXFLAGS_CURL)
     LIBTSDUCK_LDLIBS += $(LDLIBS_CURL)

@@ -54,6 +54,8 @@ be wise to run `scripts/install-prerequisites.sh` again and retry.
 
 ### C++ compiler requirements {#cpprequnix}
 
+#### C++ language version
+
 TSDuck now requires a C++17 compliant compiler. GCC is supposed to support
 C++17 from version 8 onwards. Clang needs version 5 at least.
 
@@ -62,8 +64,34 @@ the compiler. C++17 support in GCC really works starting with version 11.
 
 All recent Linux distros use GCC 11, 12 or 13. Some older distros which come
 with older GCC versions may propose alternative GCC packages with more recent
-versions. For instance, RedHat Entreprise Linux 8.8 comes with GCC 8.5.0.
-However, you can install and use GCC 11 using the following commands:
+versions.
+
+If your distro is too old and doesn't provide any GCC 11 or clang 5 package, then you
+cannot build TSDuck version 3.36 and higher. On such systems, the highest
+TSDuck version which can be built is 3.35. This is the cost of obsolescence...
+
+#### Using clang as an alternative to GCC
+
+Another alternative is to use LLVM/clang. Most distros with old versions of GCC
+provide decently recent versions of clang. To force a build with LLVM/clang
+instead of GCC, defined the `make` variable `LLVM`:
+
+~~~
+$ make LLVM=1 ....
+~~~
+
+However, when the installed GCC is really old (typically before GCC 8), using clang
+may not work either because clang uses the GCC C/C++ standard libraries and their
+header files. If the GCC issue is a compilation issue on GCC 8 to 10, using clang
+may work. With older versions of GCC, using clang probably does not work because the
+corresponding standard library does not contain the C++17 features.
+
+#### RedHat example
+
+Starting with RedHat Entreprise Linux 9, all GCC versions correctly support C++17.
+
+However, RedHat Entreprise Linux 8.8 comes with GCC 8.5.0. You can install and use
+GCC 11 using the following commands:
 
 ~~~
 $ sudo dnf install gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel
@@ -75,6 +103,8 @@ The first command installs the GCC 11 packages. The second command defines the
 required environment variables in the current process. The last one builds TSDuck.
 Note that the GCC 11 packages are available in the AppStream repository.
 Make sure to have activated it first.
+
+#### Other Linux distros
 
 Older versions of other distros such as Ubuntu, Debian and others have equivalent
 alternative packages for GCC 11, with different names, when they come with an older
@@ -89,9 +119,21 @@ in specific environments.
 $ make CXX=g++-11 CC=gcc-11 GCC=gcc-11 CPP="gcc-11 -E" AR=gcc-ar-11 ...
 ~~~
 
-If your distro is too old and doesn't provide any GCC 11 package, then you
-cannot build TSDuck version 3.36 and higher. On such systems, the highest
-TSDuck version which can be built is 3.35. This is the cost of obsolescence...
+#### NetBSD example
+
+As of this writing, the most recent version of NetBSD is 9.3, which comes with
+GCC 7.5. More recent GCC packages are available. To install GCC 13:
+
+~~~
+$ sudo pkgin install gcc13
+~~~
+
+The compilation environment is installed in `/usr/pkg/gcc13`. Using GCC 13 is
+simply enabled by adding `/usr/pkg/gcc13/bin` at the beginning of the `PATH`:
+
+~~~
+$ export PATH="/usr/pkg/gcc13/bin:$PATH"
+~~~
 
 ### Hardware device libraries {#hwlibunix}
 
