@@ -119,6 +119,10 @@ in specific environments.
 $ make CXX=g++-11 CC=gcc-11 GCC=gcc-11 CPP="gcc-11 -E" AR=gcc-ar-11 ...
 ~~~
 
+Since `make` uses the environment for the initial values of its variables,
+it is also possibe to define them as environment variables in some initialization
+script instead of using such a complex `make` command..
+
 #### NetBSD example
 
 As of this writing, the most recent version of NetBSD is 9.3, which comes with
@@ -134,6 +138,29 @@ simply enabled by adding `/usr/pkg/gcc13/bin` at the beginning of the `PATH`:
 ~~~
 $ export PATH="/usr/pkg/gcc13/bin:$PATH"
 ~~~
+
+#### DragonFlyBSD example
+
+As of this writing, the most recent version of DragonFlyBSD is 6.4.0, which comes with
+GCC 8.3. Even though DragonFlyBSD is supposed to be based on FreeBSD, its GCC version
+is way behind FreeBSD version 14.0 which comes with GCC 12.2.
+
+More recent GCC packages are available for DragonFlyBSD. To install GCC 13:
+
+~~~
+$ sudo pkg install gcc13
+~~~
+
+However, because all *BSD systems are carefully incompatible between each other,
+using the alternative compiler is very different from NetBSD. Building TSDuck:
+
+~~~
+$ gmake CXX=g++13 CC=gcc13 GCC=gcc13 CPP="gcc13 -E" AR=gcc-ar13 LDFLAGS_EXTRA="-Wl,-rpath=/usr/local/lib/gcc13" ...
+~~~
+
+Since `make` uses the environment for the initial values of its variables,
+it is also possibe to define them as environment variables in some initialization
+script instead of using such a complex `make` command..
 
 ### Hardware device libraries {#hwlibunix}
 
