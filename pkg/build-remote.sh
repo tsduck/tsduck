@@ -35,10 +35,12 @@ USER_NAME=$(id -un)
 HOST_NAME=
 VMX_FILE=
 PRL_NAME=
+VBOX_NAME=
 SSH_TIMEOUT=5
 SSH_PORT=22
 BOOT_TIMEOUT=500
-
+SHUTDOWN_TIMEOUT=200
+BACKUP_ROOT=
 
 #-----------------------------------------------------------------------------
 # Display help text
@@ -53,6 +55,10 @@ Build the TSDuck installers on a remote system and get them back.
 Usage: $SCRIPT [options]
 
 Options:
+
+  --backup directory
+      Specify a directory where all installers are copied. An intermediate
+      subdirectory is created with the version name.
 
   --boot-timeout seconds
       Virtual machine boot timeout. Default: $BOOT_TIMEOUT seconds.
@@ -86,6 +92,11 @@ Options:
   --user name
       User name to use with ssh on the remote host. Default: $USER_NAME
 
+  --vbox filename
+      Use the VirtualBox virtual machine with the specified name. If the VM
+      is not currently running, it is booted first and shut down after building
+      the installers.
+
   --vmware filename
       Use the VMWare virtual machine from the specified .vmx file. If the VM
       is not currently running, it is booted first and shut down after building
@@ -99,47 +110,54 @@ EOF
     exit 1
 }
 
-
 #-----------------------------------------------------------------------------
 # Decode command line arguments
 #-----------------------------------------------------------------------------
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --backup)
+            [[ $# -gt 1 ]] || usage; shift
+            BACKUP_ROOT="$1"
+            ;;
         --boot-timeout)
             [[ $# -gt 1 ]] || usage; shift
-            BOOT_TIMEOUT=$1
+            BOOT_TIMEOUT="$1"
             ;;
         -d|--directory)
             [[ $# -gt 1 ]] || usage; shift
-            REMOTE_DIR=$1
+            REMOTE_DIR="$1"
             ;;
         --help)
             showhelp
             ;;
         -h|--host)
             [[ $# -gt 1 ]] || usage; shift
-            HOST_NAME=$1
+            HOST_NAME="$1"
             ;;
         --parallels)
             [[ $# -gt 1 ]] || usage; shift
-            PRL_NAME=$1
+            PRL_NAME="$1"
             ;;
         -p|--port)
             [[ $# -gt 1 ]] || usage; shift
-            SSH_PORT=$1
+            SSH_PORT="$1"
             ;;
         -t|--timeout)
             [[ $# -gt 1 ]] || usage; shift
-            SSH_TIMEOUT=$1
+            SSH_TIMEOUT="$1"
             ;;
         -u|--user)
             [[ $# -gt 1 ]] || usage; shift
-            USER_NAME=$1
+            USER_NAME="$1"
+            ;;
+        --vbox)
+            [[ $# -gt 1 ]] || usage; shift
+            VBOX_NAME="$1"
             ;;
         --vmware)
             [[ $# -gt 1 ]] || usage; shift
-            VMX_FILE=$1
+            VMX_FILE="$1"
             ;;
         -w|--windows)
             REMOTE_WIN=true
@@ -151,6 +169,51 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+#-----------------------------------------------------------------------------
+# Initialization stuff.
+#-----------------------------------------------------------------------------
+
+# Detect Windows.
+case $(uname -s) in
+    CYGWIN*) WINDOWS=true; SYSROOT=/cygdrive ;;
+    MINGW*) WINDOWS=true; SYSROOT= ;;
+    *) WINDOWS=false; SYSROOT= ;;
+esac
+
+if $WINDOWS; then
+    # Make sure that PuTTY is installed (for SSH access).
+    PLINK=$(which plink.exe)
+    if [[ -z "$PLINK" ]]; then
+        # Not found in the path, look into probable locations.
+        PLINK=$(find $SYSROOT/c/Program*/PuTTY -iname plink.exe 2>/dev/null | head -1)
+    fi
+    [[ -z "$PLINK" ]] && error "PuTTY not installed, cannot SSH"
+    # Enforce PuTTY for git ssh access.
+    export GIT_SSH=$(cygpath -w "$PLINK")
+    # Make sure that PuTTY Pageant is running for SSH authentication.
+    [[ -z $(PowerShell -Command "(Get-Process -Name pageant).Name" 2>/dev/null) ]] && error "PuTTY Pageant not running, cannot SSH"
+fi
+
+# Get the current date and time in normalized format.
+curdate() {
+    date +%Y%m%d-%H%M
+}
+
+# Extract the TSDuck version from an installer file name.
+get-ts-version() {
+    basename "$1" | sed -e 's/^.*\([0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*\).*$/\1/'
+}
+
+# Name of backup directory for an installer. Create it if necessary.
+# Also create a directory for the build logs.
+get-backup-dir() {
+    [[ -z "$BACKUP_ROOT" ]] && return
+    local version=$(get-ts-version "$1")
+    [[ -z "$version" ]] && return
+    local dir="$BACKUP_ROOT/v$version"
+    [[ -d "$dir/logs" ]] || mkdir -p "$dir/logs"
+    [[ -d "$dir" ]] && echo "$dir"
+}
 
 #-----------------------------------------------------------------------------
 # Remote build.
@@ -160,11 +223,10 @@ SSH_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -p $SSH_PORT"
 SCP_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -P $SSH_PORT"
 NAME="$HOST_NAME"
 
-curdate()  { date +%Y%m%d-%H%M; }
-
 # Process virtual machines startup.
 VMX_SHUTDOWN=false
 PRL_SHUTDOWN=false
+VBOX_SHUTDOWN=false
 if [[ -n "$VMX_FILE" ]]; then
 
     # Locate vmrun, the VMWare command line.
@@ -270,6 +332,66 @@ elif [[ -n "$PRL_NAME" ]]; then
     # Use the IP address if no host name is provided.
     [[ -z "$HOST_NAME" ]] && HOST_NAME="$IP"
 
+elif [[ -n "$VBOX_NAME" ]]; then
+
+    # Locate VBoxManage, the VirtualBox command line.
+    if ! $WINDOW || [[ $(which VBoxManage 2>/dev/null) ]]; then
+        # Not on Windows or VBoxManage already in the path.
+        VBOX=VBoxManage
+    else
+        # Search VBoxManage.
+        VBOX=$(find $SYSROOT/c/Program*/Oracle/VirtualBox -iname VBoxManage.exe 2>/dev/null | head -1)
+        [[ -z "$VBOX" ]] && error "VirtualBox not installed"
+    fi
+
+    # Function to get a property of a VM.
+    vbox-get() {
+        "$VBOX" guestproperty get "$1" "$2" 2>/dev/null | grep -i 'Value:' | sed -e 's/^Value: *//'
+    }
+
+    # Name for log file.
+    [[ -z "$HOST_NAME" ]] && NAME="$VBOX_NAME" || NAME="$HOST_NAME"
+
+    # Check if the VM is already running.
+    if "$VBOX" list runningvms | grep -q "\"$VBOX_NAME\""; then
+        true # already running
+    else
+        # Start the VM.
+        echo "Booting $VBOX_NAME"
+        "$VBOX" startvm "$VBOX_NAME" --type=headless
+
+        # Wait until we can get the IP address of the VM.
+        # We only get "host-only" IP addresses.
+        HOST_SUBNET='192.168.56.'
+        if [[ -z "$HOST_NAME" ]]; then
+            maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
+            while [[ $(date +%s) -lt $maxdate ]]; do
+                IP=$("$VBOX" guestproperty enumerate "$VBOX_NAME" "/VirtualBox/GuestInfo/Net/*/V4/IP" |
+                         grep "$HOST_SUBNET" | head -1 | sed -e "s/^.* *= *'//" -e "s/'.*$//")
+                [[ "$IP" == *.*.*.* ]] && break
+                sleep 5
+            done
+            [[ "$IP" == *.*.*.* ]] || error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
+            echo "IP address for $NAME is $IP, trying to ssh..."
+            HOST_NAME="$IP"
+        fi
+
+        # Wait that the machine is accessible using ssh.
+        # Don't wait once for boot timeout, sometimes it hangs.
+        maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
+        ok=1
+        while [[ $(date +%s) -lt $maxdate ]]; do
+            ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null
+            ok=$?
+            [[ $ok -eq 0 ]] && break
+            sleep 5
+        done
+        [[ $ok -ne 0 ]] && error "cannot contact VM $BOOT_TIMEOUT seconds after boot, aborting"
+        echo "SSH ok for $HOST_NAME"
+
+        # We need to shutdown the VM after building the installers.
+        VBOX_SHUTDOWN=true
+    fi
 fi
 
 # Check accessibility of remote host.
@@ -277,6 +399,8 @@ fi
 ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
 # Build remote installers.
+BACKUP_DIR=
+LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
 (
     if $REMOTE_WIN; then
         # Build on Windows. Important: assume PowerShell by default.
@@ -329,22 +453,51 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
         for f in $files; do
             echo "Fetching $f"
             scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
+            # Copy the installed in the backup directory if one is specified.
+            BACKUP_DIR=$(get-backup-dir "$f")
+            [[ -n "$BACKUP_DIR" ]] && cp "$ROOTDIR/pkg/installers/$f" "$BACKUP_DIR/"
         done
 
         # Delete the temporary timestamp.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" rm -f "$REMOTE_DIR/pkg/installers/timestamp.tmp"
     fi
-) &>"$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
+) &>"$LOGFILE"
 
+# Copy the build log in the backup directory if one is specified.
+[[ -n "$BACKUP_DIR" ]] && cp "$LOGFILE" "$BACKUP_DIR/logs/"
 
 # Shutdown the VM if we booted it.
 if $VMX_SHUTDOWN; then
     echo "Shutting down" $(basename "$VMX_FILE")
     "$VMRUN" stop "$VMX_FILE" soft
-fi
-if $PRL_SHUTDOWN; then
+elif $PRL_SHUTDOWN; then
     echo "Shutting down $PRL_NAME"
     prlctl stop "$PRL_NAME"
+elif $VBOX_SHUTDOWN; then
+    # Proper shutdown if the guest additions are running, poweroff otherwise.
+    # It is not possible to detect if the guest additions are _currently_ running.
+    # Getting the guest OS version works if the guest additions had run once.
+    # At least, we eliminate OS for which there is not guest addition (Alpine Linux, BSD).
+    if [[ -z $(vbox-get "$VBOX_NAME" /VirtualBox/GuestInfo/OS/Version) ]]; then
+        echo "Power off $VBOX_NAME"
+        "$VBOX" controlvm "$VBOX_NAME" poweroff
+    else
+        echo "Shutting down $VBOX_NAME"
+        "$VBOX" controlvm "$VBOX_NAME" shutdown --force
+        # Wait until the VM disappear, power off after timeout.
+        maxdate=$(( $(date +%s) + $SHUTDOWN_TIMEOUT ))
+        while [[ $(date +%s) -lt $maxdate ]]; do
+            if "$VBOX" list runningvms | grep -q "\"$VBOX_NAME\""; then
+                sleep 5 # VM is still there
+            else
+                break
+            fi
+        done
+        if "$VBOX" list runningvms | grep -q "\"$VBOX_NAME\""; then
+            echo "Shutdown failed, power off"
+            "$VBOX" controlvm "$VBOX_NAME" poweroff
+        fi
+    fi
 fi
 
 exit 0
