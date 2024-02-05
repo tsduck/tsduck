@@ -31,6 +31,7 @@ usage() { echo >&2 "invalid command, try \"$SCRIPT --help\""; exit 1; }
 
 REMOTE_DIR=tsduck
 REMOTE_WIN=false
+LOCAL_BUILD=false
 USER_NAME=$(id -un)
 HOST_NAME=
 VMX_FILE=
@@ -74,6 +75,10 @@ Options:
   -h name
   --host name
       Build on this remote host. Mandatory for remote hosts. Optional for VM's.
+
+  --local
+      No remote build, build locally. Useful for OS-independent script and
+      support for --backup after build.
 
   --parallels name
       Use the Parallels Desktop virtual machine with the specified name. If the
@@ -135,6 +140,9 @@ while [[ $# -gt 0 ]]; do
             [[ $# -gt 1 ]] || usage; shift
             HOST_NAME="$1"
             ;;
+        --local)
+            LOCAL_BUILD=true
+            ;;
         --parallels)
             [[ $# -gt 1 ]] || usage; shift
             PRL_NAME="$1"
@@ -180,8 +188,9 @@ case $(uname -s) in
     *) WINDOWS=false; SYSROOT= ;;
 esac
 
-if $WINDOWS; then
-    # Make sure that PuTTY is installed (for SSH access).
+# Use PuTTY for SSH access on remote builds from Windows.
+if $WINDOWS && ! $LOCAL_BUILD; then
+    # Make sure that PuTTY is installed.
     PLINK=$(which plink.exe)
     if [[ -z "$PLINK" ]]; then
         # Not found in the path, look into probable locations.
@@ -219,6 +228,8 @@ get-backup-dir() {
 # Remote build.
 #-----------------------------------------------------------------------------
 
+$LOCAL_BUILD && [[ -n "$HOST_NAME$VMX_FILE$PRL_NAME$VBOX_NAME" ]] && error "cannot specify remote with --local"
+
 SSH_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -p $SSH_PORT"
 SCP_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -P $SSH_PORT"
 NAME="$HOST_NAME"
@@ -227,7 +238,16 @@ NAME="$HOST_NAME"
 VMX_SHUTDOWN=false
 PRL_SHUTDOWN=false
 VBOX_SHUTDOWN=false
-if [[ -n "$VMX_FILE" ]]; then
+if $LOCAL_BUILD && [[ -z "$HOST_NAME" ]]; then
+
+    if $WINDOWS; then
+        HOST_NAME=windows
+    else
+        HOST_NAME=$(hostname)
+        [[ -z "$HOST_NAME" ]] && HOST_NAME=linux
+    fi
+
+elif [[ -n "$VMX_FILE" ]]; then
 
     # Locate vmrun, the VMWare command line.
     # Try in PATH and then VMWare Fusion installation path on macOS.
@@ -346,7 +366,11 @@ elif [[ -n "$VBOX_NAME" ]]; then
 
     # Function to get a property of a VM.
     vbox-get() {
-        "$VBOX" guestproperty get "$1" "$2" 2>/dev/null | grep -i 'Value:' | sed -e 's/^Value: *//'
+        local host="$1"
+        local name="$2"
+        local value=$("$VBOX" guestproperty get "$host" "$name" 2>/dev/null | grep -i '^Value:' | sed -e 's/^Value: *//')
+        [[ -z "$value" ]] && value=$("$VBOX" guestproperty enumerate "$host" | grep "^$name " | head -1 | sed -e "s|$name *= *'||" -e "s|'.*\$||")
+        [[ -n "$value" ]] && echo "$value"
     }
 
     # Name for log file.
@@ -395,16 +419,41 @@ elif [[ -n "$VBOX_NAME" ]]; then
 fi
 
 # Check accessibility of remote host.
-[[ -z "$HOST_NAME" ]] && error "no remote host specified"
-ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
+if ! $LOCAL_BUILD; then
+    [[ -z "$HOST_NAME" ]] && error "no remote host specified"
+    ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
+fi
 
 # Build remote installers.
 BACKUP_DIR=
 BACKUP_MARK='##BACKUPDIR## '
 LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
 (
-    if $REMOTE_WIN; then
-        # Build on Windows. Important: assume PowerShell by default.
+    INSTALLERS=()
+
+    if $LOCAL_BUILD; then
+        # Local build, either Windows or Linux.
+        (
+            cd "$ROOTDIR"
+            if $WINDOWS; then
+                PowerShell -Command ". scripts/cleanup.ps1 -NoPause"
+                touch pkg/installers/timestamp.tmp
+                PowerShell -Command ". pkg/nsis/build-installer.ps1 -GitPull -NoPause"
+            else
+                make clean
+                git fetch origin && git checkout master && git pull origin master
+                touch pkg/installers/timestamp.tmp
+                make installer
+            fi
+        )
+        # Get all files from installers directory which are newer than the time stamp.
+        for f in $(find "$ROOTDIR/pkg/installers" -maxdepth 1 -type f ! -iname '*.log' -newer "$ROOTDIR/pkg/installers/timestamp.tmp" -printf "%f "); do
+            INSTALLERS+=("$f")
+        done
+        rm -f "$ROOTDIR/pkg/installers/timestamp.tmp"
+
+    elif $REMOTE_WIN; then
+        # Remote build on Windows. Important: assume PowerShell by default in SSH session.
         # Cleanup repository, rebuild from scratch.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             ". '$REMOTE_DIR/scripts/cleanup.ps1' -NoPause"
@@ -427,6 +476,7 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
         # Copy all installers files.
         for f in $files; do
             echo "Fetching $f"
+            INSTALLERS+=("$f")
             scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
         done
 
@@ -434,7 +484,7 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             "[void](Remove-Item -Force '$REMOTE_DIR/pkg/installers/timestamp.tmp' -ErrorAction Ignore)"
     else
-        # Build on Unix.
+        # Remote build on Unix.
         # Create a remote timestamp. Newer files will be the installers we build.
         # Build installers from scratch after updating the repository.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
@@ -442,7 +492,7 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
             git fetch origin '&&' \
             git checkout master '&&' \
             git pull origin master '&&' \
-            make distclean ';' \
+            make clean ';' \
             touch "pkg/installers/timestamp.tmp" '&&' \
             make installer
 
@@ -453,20 +503,25 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
         # Copy all files from installers directory which are newer than the time stamp.
         for f in $files; do
             echo "Fetching $f"
+            INSTALLERS+=("$f")
             scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
-            # Copy the installed in the backup directory if one is specified.
-            BACKUP_DIR=$(get-backup-dir "$f")
-            if [[ -n "$BACKUP_DIR" ]]; then
-                cp -v "$ROOTDIR/pkg/installers/$f" "$BACKUP_DIR/"
-                # The build executes in a subshell and BACKUP_DIR won't be propagated in the parent shell.
-                # Save it in the log file where the parent shell will retrieve it.
-                echo "$BACKUP_MARK$BACKUP_DIR"
-            fi
         done
 
         # Delete the temporary timestamp.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" rm -f "$REMOTE_DIR/pkg/installers/timestamp.tmp"
     fi
+
+    # Copy the installers in the backup directory if one is specified.
+    for f in "${INSTALLERS[@]}"; do
+        BACKUP_DIR=$(get-backup-dir "$f")
+        if [[ -n "$BACKUP_DIR" ]]; then
+            cp -v "$ROOTDIR/pkg/installers/$f" "$BACKUP_DIR/"
+            # The build executes in a subshell and BACKUP_DIR won't be propagated in the parent shell.
+            # Save it in the log file where the parent shell will retrieve it.
+            echo "$BACKUP_MARK$BACKUP_DIR"
+        fi
+    done
+
 ) &>"$LOGFILE"
 
 # Grab the backup directory path from the log file.
