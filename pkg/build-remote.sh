@@ -224,6 +224,14 @@ get-backup-dir() {
     [[ -d "$dir" ]] && echo "$dir"
 }
 
+# When on a Windows host, run a PowerShell command after cleaning up the Path.
+# When this shell-script is run from Cygwin or MinGW, the Path contains Cygwin/MinGW-specific
+# directories with commands which interfere with PowerShell (most notably: python).
+powershell-cmd() {
+    PATH=$(sed <<<":$PATH:" -e 's|:/usr/[^:]*||g' -e 's|:/bin[^:]*||g' -e 's|:/sbin[^:]*||g' -e 's|^:*||' -e 's|:*$||') \
+        PowerShell -Command "$@"
+}
+
 #-----------------------------------------------------------------------------
 # Remote build.
 #-----------------------------------------------------------------------------
@@ -436,9 +444,9 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
         (
             cd "$ROOTDIR"
             if $WINDOWS; then
-                PowerShell -Command ". scripts/cleanup.ps1 -NoPause"
+                powershell-cmd ". scripts/cleanup.ps1 -NoPause"
                 touch pkg/installers/timestamp.tmp
-                PowerShell -Command ". pkg/nsis/build-installer.ps1 -GitPull -NoPause"
+                powershell-cmd ". pkg/nsis/build-installer.ps1 -GitPull -NoPause"
             else
                 make clean
                 git fetch origin && git checkout master && git pull origin master
