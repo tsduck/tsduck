@@ -80,9 +80,13 @@ done
 # System description. Versions are empty if lsb_release is not present.
 SYSTEM=$(uname -s)
 DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
-MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
-MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*\.//')
-VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
+MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//' -e 's/[^0-9]//g')
+MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*\.//' -e 's/[^0-9]//g')
+
+# Assume last version (999.0) if not available.
+MAJOR=${MAJOR:-999}
+MINOR=${MINOR:-0}
+VERSION=$(($MAJOR * 100 + $MINOR))
 
 #-----------------------------------------------------------------------------
 # == macOS == (with HomeBrew as open source packager)

@@ -26,6 +26,7 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
+    void testEndianness();
     void testIntegerTypes();
     void test64bitLiterals();
     void testStringify();
@@ -33,6 +34,7 @@ public:
     void testChrono();
 
     TSUNIT_TEST_BEGIN(PlatformTest);
+    TSUNIT_TEST(testEndianness);
     TSUNIT_TEST(testIntegerTypes);
     TSUNIT_TEST(test64bitLiterals);
     TSUNIT_TEST(testStringify);
@@ -62,6 +64,31 @@ void PlatformTest::afterTest()
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
+
+// Test case: verify endianness.
+void PlatformTest::testEndianness()
+{
+    uint32_t i = 0x01020304;
+    char* c = reinterpret_cast<char*>(&i);
+
+#if defined(TS_LITTLE_ENDIAN)
+    TSUNIT_ASSERT(TS_LITTLE_ENDIAN_BOOL);
+    TSUNIT_ASSERT(!TS_BIG_ENDIAN_BOOL);
+    TSUNIT_EQUAL(4, c[0]);
+    TSUNIT_EQUAL(3, c[1]);
+    TSUNIT_EQUAL(2, c[2]);
+    TSUNIT_EQUAL(1, c[3]);
+#endif
+
+#if defined(TS_BIG_ENDIAN)
+    TSUNIT_ASSERT(!TS_LITTLE_ENDIAN_BOOL);
+    TSUNIT_ASSERT(TS_BIG_ENDIAN_BOOL);
+    TSUNIT_EQUAL(1, c[0]);
+    TSUNIT_EQUAL(2, c[1]);
+    TSUNIT_EQUAL(3, c[2]);
+    TSUNIT_EQUAL(4, c[3]);
+#endif
+}
 
 // Test case: predefined integer types.
 void PlatformTest::testIntegerTypes()
