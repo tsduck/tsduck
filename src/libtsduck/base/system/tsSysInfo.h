@@ -97,6 +97,7 @@ namespace ts {
         bool isIntel32() const { return _isIntel32; }
         //!
         //! Check if the CPU is the 64-bit extension of the IA-32 architecture, also known as AMD-64 or Intel x86-64.
+        //! On Windows, this describes the actual CPU. The compiled code can be 32-bit, running on a 64-bit system.
         //! @return True if the CPU is the 64-bit extension of IA-32.
         //!
         bool isIntel64() const { return _isIntel64; }

@@ -740,7 +740,9 @@ void SysUtilsTest::testSysInfo()
 #endif
 
 #if defined(TS_I386)
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isIntel32());
+    // TS_I386 means 32-bit compiled code.
+    // Win32 code can run on Win32 or Win64 systems.
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isIntel32() || ts::SysInfo::Instance().isIntel64());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
