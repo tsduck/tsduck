@@ -1,6 +1,6 @@
 # Building TSDuck   {#building}
 
-TSDuck can be built on Windows, Linux, macOS and BSD systems (FreeBSD, OpenBSD, NetBSD, DragonFlyBSD).
+TSDuck can be built on Windows, Linux, macOS and BSD systems.
 
 Support for Dektec devices, DVB tuners and HiDes modulators is implemented only
 on Windows and Linux. MacOS and BSD systems can only support files and networking
@@ -8,6 +8,32 @@ for TS input and output.
 
 Some protocols such as SRT and RIST require external libraries which may
 not be available on all platforms or all versions of a specific distro.
+
+TSDuck has been tested on the following operating systems on at least one CPU architecture.
+
+| OS      | Variants
+| ------- | --------
+| macOS   |
+| Windows |
+| Linux   | Ubuntu, Debian, Raspbian, Mint, Fedora, Red Hat, CentOS, Rocky, Alma, openSUSE, Arch, Alpine, Gentoo
+| BSD     | FreeBSD, OpenBSD, NetBSD, DragonFlyBSD
+
+TSDuck has been tested on the following CPU architectures on at least one operating system.
+
+| Architecture | Bits | Endian
+| ------------ | :--: | ------
+| Intel x86    |  32  | Little
+| Intel x86-64 |  64  | Little
+| Armv7        |  32  | Little
+| Armv8        |  64  | Little
+| MIPS         |  32  | Little
+| RISC-V       |  64  | Little
+| PowerPC      |  64  | Big
+| IBM s390x    |  64  | Big
+
+Note: Some tests were done by contributors and were not verified. Some tests were
+performed using `qemu`, on an emulated platform, not a physical CPU. This is the
+case for RISC-V, PowerPC, IBM s390x.
 
 # Unix systems (Linux, macOS, BSD) {#unixbuild}
 
@@ -28,10 +54,6 @@ supported exclusion options are `NOJAVA=1 NODOXYGEN=1`.
 
 Currently, the script supports the following operating systems:
 - macOS
-- FreeBSD
-- OpenBSD
-- NetBSD
-- DragonFlyBSD
 - Ubuntu
 - Debian
 - Raspbian (Debian for Raspberry Pi)
@@ -45,6 +67,10 @@ Currently, the script supports the following operating systems:
 - Alpine Linux
 - Gentoo
 - Linux Mint
+- FreeBSD
+- OpenBSD
+- NetBSD
+- DragonFlyBSD
 
 Since all packages are pulled from the standard repositories of each distro,
 there is generally no need to re-run this script later. The packages will be

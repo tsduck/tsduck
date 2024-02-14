@@ -64,10 +64,16 @@ def distro():
     if os.uname().sysname == 'Darwin':
         version = re.sub(r'\s', '', run(['sw_vers', '-productVersion']))
         return 'macos' + re.sub(r'\..*', '', version)
-    name = re.sub(r'\s', '', run(['lsb_release', '-si'], None)).lower().replace('linuxmint', 'mint')
+    name = re.sub(r'\s', '', run(['lsb_release', '-si'])).lower().replace('linuxmint', 'mint')
     if name != '':
-        version = re.sub(r'\s', '', run(['lsb_release', '-sr'], None))
-        return name + re.sub(r'\..*', '', version)
+        version = re.sub(r'[^0-9]', '', re.sub(r'\..*', '', re.sub(r'\s', '', run(['lsb_release', '-sr']))))
+        if version == '' and os.path.exists('/etc/debian_version'):
+            # Debian versions:
+            n2v = {'jessie': 8, 'stretch': 9, 'buster': 10, 'bullseye': 11, 'bookworm': 12, 'trixie': 13, 'forky': 14}
+            dv = re.sub(r'/.*', '', read('/etc/debian_version').lower().strip())
+            if dv in n2v:
+                version = str(n2v[dv])
+        return name + version
     if os.path.exists('/etc/fedora-release'):
         match = re.search(r' release (\d+)', read('/etc/fedora-release'), re.MULTILINE | re.DOTALL | re.IGNORECASE)
         return 'fc' + ('' if match is None else match.group(1))
@@ -82,9 +88,7 @@ def distro():
 # Get a description of the operating system and distro as a file suffix.
 def distro_suffix():
     suffix = distro()
-    if suffix != '':
-        suffix = '.' + suffix
-    return suffix
+    return '.' + suffix if suffix != '' else ''
 
 # Write a standard source header in an output file.
 def write_source_header(comment_prefix, description=None, file=sys.stdout):

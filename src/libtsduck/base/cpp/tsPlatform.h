@@ -484,19 +484,25 @@
 
 // Byte order
 
+// These architectures are mono-endian. Only one possible endianness.
 #if (defined(TS_I386) || defined(TS_X86_64) || defined(TS_IA64) || defined(TS_ALPHA) || defined(TS_RISCV64)) && !defined(TS_LITTLE_ENDIAN)
     #define TS_LITTLE_ENDIAN 1
-#elif (defined(TS_SPARC) || defined(TS_POWERPC) || defined(TS_POWERPC64) || defined(TS_S390X)) && !defined(TS_BIG_ENDIAN)
+#elif (defined(TS_SPARC) || defined(TS_S390X)) && !defined(TS_BIG_ENDIAN)
     #define TS_BIG_ENDIAN 1
 #endif
 
-#if defined(TS_ARM32) || defined(TS_ARM64) || defined(TS_MIPS)
+// These architectures are bi-endian. Need to check from the compiler.
+#if (defined(TS_ARM32) || defined(TS_ARM64) || defined(TS_MIPS) || defined(TS_POWERPC) || defined(TS_POWERPC64)) && !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
     #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         #define TS_LITTLE_ENDIAN 1
     #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
         #define TS_BIG_ENDIAN 1
+    #elif defined(__LITTLE_ENDIAN__)
+        #define TS_LITTLE_ENDIAN 1
+    #elif defined(__BIG_ENDIAN__)
+        #define TS_BIG_ENDIAN 1
     #else
-        #error "ARM endianness not defined"
+        #error "unknow endianness, __BYTE_ORDER__ not defined"
     #endif
 #endif
 
@@ -507,7 +513,7 @@
     #define TS_LITTLE_ENDIAN_BOOL false
     #define TS_BIG_ENDIAN_BOOL true
 #else
-    #error "unknow endian, please update this header file"
+    #error "unknow endianness, please update this header file"
 #endif
 
 #if !defined(TS_ADDRESS_BITS)

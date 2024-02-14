@@ -667,6 +667,8 @@ void SysUtilsTest::testSysInfo()
             << "    isArm64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isArm64()) << std::endl
             << "    isRISCV64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isRISCV64()) << std::endl
             << "    isS390x = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isS390x()) << std::endl
+            << "    isPPC32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isPPC32()) << std::endl
+            << "    isPPC64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isPPC64()) << std::endl
             << "    systemVersion = \"" << ts::SysInfo::Instance().systemVersion() << '"' << std::endl
             << "    systemMajorVersion = " << ts::SysInfo::Instance().systemMajorVersion() << std::endl
             << "    systemName = \"" << ts::SysInfo::Instance().systemName() << '"' << std::endl
@@ -737,6 +739,80 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(ts::SysInfo::Instance().isDragonFlyBSD());
 #endif
 
+#if defined(TS_I386)
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+#elif defined(TS_X86_64)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+#elif defined(TS_ARM32)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+#elif defined(TS_ARM64)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+#elif defined(TS_POWERPC)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+#elif defined(TS_POWERPC64)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isPPC64());
+#elif defined(TS_RISCV64)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+#elif defined(TS_S390X)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+#endif
+
     // We can't predict the memory page size, except that it must be a multiple of 256.
     TSUNIT_ASSERT(ts::SysInfo::Instance().memoryPageSize() > 0);
     TSUNIT_ASSERT(ts::SysInfo::Instance().memoryPageSize() % 256 == 0);
@@ -757,7 +833,6 @@ void SysUtilsTest::testIsAbsoluteFilePath()
 #endif
 }
 
-
 void SysUtilsTest::testAbsoluteFilePath()
 {
 #if defined(TS_WINDOWS)
@@ -770,7 +845,6 @@ void SysUtilsTest::testAbsoluteFilePath()
     TSUNIT_EQUAL(u"/foo/ab/cd", ts::AbsoluteFilePath(u"../ab/cd", u"/foo/bar"));
 #endif
 }
-
 
 void SysUtilsTest::testCleanupFilePath()
 {
@@ -790,7 +864,6 @@ void SysUtilsTest::testCleanupFilePath()
     TSUNIT_EQUAL(u"/cd/ef", ts::CleanupFilePath(u"/../cd/ef"));
 #endif
 }
-
 
 void SysUtilsTest::testRelativeFilePath()
 {
