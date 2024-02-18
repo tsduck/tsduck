@@ -167,7 +167,10 @@ bool ts::json::Object::splitPath(const UString& path, UString& field, UString& n
         while (end < path.size() && path[end] == u'.') {
             ++end;
         }
-        next = path.substr(end);
+        // The next test is normally useless but serves as a workaround for GCC bug on s390x platforms.
+        if (end < path.size()) {
+            next = path.substr(end);
+        }
         return true;
     }
 }
