@@ -162,7 +162,10 @@ bool ts::json::Array::splitPath(const UString& path, size_t& index, UString& nex
         // Skip separators, point to next field name or array index.
         while (++end < path.size() && path[end] == u'.') {
         }
-        next = path.substr(end);
+        // The next test is normally useless but serves as a workaround for GCC bug on s390x platforms.
+        if (end < path.size()) {
+            next = path.substr(end);
+        }
         return true;
     }
 }
