@@ -80,6 +80,12 @@ ts::SysInfo::SysInfo() :
 #if defined(TS_POWERPC64)
     _isPPC64(true),
 #endif
+#if defined(TS_MIPS)
+    _isMIPS32(true),
+#endif
+#if defined(TS_MIPS64)
+    _isMIPS64(true),
+#endif
 #if defined(TS_I386)
     _cpuName(u"Intel x86"),
 #elif defined(TS_X86_64)
@@ -88,6 +94,8 @@ ts::SysInfo::SysInfo() :
     _cpuName(u"Arm-64"),
 #elif defined(TS_ARM32)
     _cpuName(u"Arm-32"),
+#elif defined(TS_MIPS64)
+    _cpuName(u"MIPS64"),
 #elif defined(TS_MIPS)
     _cpuName(u"MIPS"),
 #elif defined(TS_SPARC)

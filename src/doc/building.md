@@ -22,20 +22,30 @@ TSDuck has been tested on the following operating systems on at least one CPU ar
 
 TSDuck has been tested on the following CPU architectures on at least one operating system.
 
-| Architecture | Bits | Endian |
-| ------------ | :--: | :----: |
-| Intel x86    |  32  | Little |
-| Intel x86-64 |  64  | Little |
-| Armv7        |  32  | Little |
-| Armv8        |  64  | Little |
-| MIPS         |  32  | Little |
-| RISC-V       |  64  | Little |
-| PowerPC      |  64  | Big    |
-| IBM s390x    |  64  | Big    |
+| Architecture | Bits   | Endian |
+| ------------ | :----: | :----: |
+| Intel x86    | 32     | Little |
+| Intel x86-64 | 64     | Little |
+| Armv7        | 32     | Little |
+| Armv8        | 64     | Little |
+| MIPS         | 32, 64 | Little |
+| RISC-V       | 64     | Little |
+| PowerPC      | 64     | Big    |
+| IBM s390x    | 64     | Big    |
 
 Note: Some tests were done by contributors and were not verified. Some tests were
 performed using `qemu`, on an emulated platform, not a physical CPU. This is the
 case for RISC-V, PowerPC, IBM s390x.
+
+TSDuck has been tested with the following compilers on at least one operating system.
+
+| Compiler | OS           | Minimum version         |
+| -------- | ------------ | ----------------------- |
+| GCC      | Linux, BSD   | 11.0                    |
+| Clang    | Linux, macOS | 5.0                     |
+| MSVC     | Windows      | Visual Studio 2017 15.8 |
+
+The minimum version of each compiler is driven by a correct implementation of C++17.
 
 # Unix systems (Linux, macOS, BSD) {#unixbuild}
 

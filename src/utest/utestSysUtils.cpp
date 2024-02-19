@@ -749,6 +749,8 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
 #elif defined(TS_X86_64)
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
     TSUNIT_ASSERT(ts::SysInfo::Instance().isIntel64());
@@ -758,6 +760,8 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
 #elif defined(TS_ARM32)
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
@@ -767,6 +771,8 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
 #elif defined(TS_ARM64)
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
@@ -776,6 +782,8 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
 #elif defined(TS_POWERPC)
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
@@ -785,6 +793,8 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
 #elif defined(TS_POWERPC64)
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
@@ -794,6 +804,30 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+#elif defined(TS_MIPS)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+#elif defined(TS_MIPS64)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().isMIPS64());
 #elif defined(TS_RISCV64)
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
@@ -803,6 +837,8 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
 #elif defined(TS_S390X)
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
@@ -812,6 +848,8 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(ts::SysInfo::Instance().isS390x());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
     TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
 #endif
 
     // We can't predict the memory page size, except that it must be a multiple of 256.

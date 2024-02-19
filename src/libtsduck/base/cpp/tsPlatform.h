@@ -362,9 +362,13 @@
     //!
     #define TS_SPARC
     //!
-    //! Defined when the target processor architecture is MIPS architecture.
+    //! Defined when the target processor architecture is 32-bit MIPS architecture.
     //!
     #define TS_MIPS
+    //!
+    //! Defined when the target processor architecture is 64-bit MIPS architecture.
+    //!
+    #define TS_MIPS64
     //!
     //! Defined when the target processor architecture is 64-bit RISC-V.
     //!
@@ -445,6 +449,13 @@
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 32
     #endif
+#elif defined(__mips64)
+    #if !defined(TS_MIPS64)
+        #define TS_MIPS64 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 64
+    #endif
 #elif defined(__mips__)
     #if !defined(TS_MIPS)
         #define TS_MIPS 1
@@ -492,7 +503,7 @@
 #endif
 
 // These architectures are bi-endian. Need to check from the compiler.
-#if (defined(TS_ARM32) || defined(TS_ARM64) || defined(TS_MIPS) || defined(TS_POWERPC) || defined(TS_POWERPC64)) && !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
+#if (defined(TS_ARM32) || defined(TS_ARM64) || defined(TS_MIPS) || defined(TS_MIPS64) || defined(TS_POWERPC) || defined(TS_POWERPC64)) && !defined(TS_LITTLE_ENDIAN) && !defined(TS_BIG_ENDIAN)
     #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         #define TS_LITTLE_ENDIAN 1
     #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
