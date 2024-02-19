@@ -132,6 +132,16 @@ namespace ts {
         //!
         bool isPPC64() const { return _isPPC64; }
         //!
+        //! Check if the CPU is 32-bit MIPS.
+        //! @return True if the CPU is 32-bit MIPS.
+        //!
+        bool isMIPS32() const { return _isMIPS32; }
+        //!
+        //! Check if the CPU is 64-bit MIPS.
+        //! @return True if the CPU is 64-bit MIPS.
+        //!
+        bool isMIPS64() const { return _isMIPS64; }
+        //!
         //! Check if the CPU supports accelerated instructions for CRC32 computation.
         //! @return True if the CPU supports CRC32 instructions.
         //!
@@ -210,6 +220,8 @@ namespace ts {
         bool    _isS390x = false;
         bool    _isPPC32 = false;
         bool    _isPPC64 = false;
+        bool    _isMIPS32 = false;
+        bool    _isMIPS64 = false;
         bool    _crcInstructions = false;
         bool    _aesInstructions = false;
         bool    _sha1Instructions = false;
