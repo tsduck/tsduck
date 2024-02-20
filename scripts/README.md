@@ -35,6 +35,15 @@ files in XML format).
 
 ## Build scripts on Windows
 
+Note on PowerShell scripts: A Windows PowerShell script file name has a `.ps1`
+extension. Default action for double-click on a script file in Windows Explorer
+is to edit the script file using notepad. This is not convenient for developers.
+It is recommended to modify this so that double-clicking on a `.ps1` file executes
+the script. You can enable this the first time you want to run a PowerShell script
+from the Windows Explorer: Right-click on the `.ps1` file, click on "Open with",
+then "Choose another app", select (simple click, don't double-click)
+"Windows PowerShell" and finally click on "Always".
+
 - `msvc` : A subdirectory containing all project files for Visual Studio. All
   project files were manually carfted to be generic for all versions of Visual
   Studio to avoid multiple versions of the same project.
@@ -66,13 +75,9 @@ files in XML format).
 - `install-wintools` : This directory contains scripts to install individual
   prerequisites. They are all invoked by `install-prerequisites.ps1`.
 
-- `WindowsPowerShell.reg` : A registry file which add definitions to run a
-  PowerShell script by double-clicking on it (the default action is to edit
-  script files with notepad).
-
 - `WindowsCompileLowPriority.reg` : A registry file which add definitions to
   force compilation and link processes to run with a lower priority to avoid
-  killing the system while compiling using Visual Studio.
+  killing the system while compiling.
 
 The following scripts are just conveniences to run the corresponding `.py`
 scripts from the Windows explorer:
