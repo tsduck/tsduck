@@ -77,8 +77,7 @@ TSDUCK_H = $(BINDIR)/include/tsduck.h
 .PHONY: headers
 headers: $(TSDUCK_H)
 $(TSDUCK_H): $(wildcard *.h */*.h */*/*.h */*/*/*.h)
-	@echo '  [GEN] $(notdir $@)'; \
-	mkdir -p $(dir $@); \
+	$(call LOG,[GEN] $(notdir $@)) mkdir -p $(dir $@); \
 	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py $@
 
 $(OBJDIR)/tsduck.o: $(TSDUCK_H)
@@ -127,9 +126,8 @@ libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 # otherwise the command line is too long when the directory path is long.
 
 $(SHARED_LIBTSDUCK): $(OBJS) $(DTAPI_OBJECT)
-	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
-	echo '  [LD] $@'; \
-	cd $(OBJDIR); \
+	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'
+	$(call LOG,[LD] $@) cd $(OBJDIR); \
 	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
@@ -158,13 +156,13 @@ OBJ_ALLCHARS  = $(OBJDIR)/allcharsets.o
 OBJ_ALLPLUGS  = $(OBJDIR)/allplugins.o
 
 $(OBJ_ALLTABLES): $(OBJS_TABLES)
-	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+	$(call LOG,[LD] $@) $(LD) -r $^ -o $@
 $(OBJ_ALLDESCS): $(OBJS_DESCS)
-	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+	$(call LOG,[LD] $@) $(LD) -r $^ -o $@
 $(OBJ_ALLCHARS): $(OBJS_CHARS)
-	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+	$(call LOG,[LD] $@) $(LD) -r $^ -o $@
 $(OBJ_ALLPLUGS): $(OBJS_PLUGS)
-	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+	$(call LOG,[LD] $@) $(LD) -r $^ -o $@
 
 OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tsduck.o $(OBJS_TABLES) $(OBJS_DESCS) $(OBJS_CHARS) $(OBJS_PLUGS),$(OBJS)) \
     $(OBJ_ALLTABLES) $(OBJ_ALLDESCS) $(OBJ_ALLCHARS) $(OBJ_ALLPLUGS)
@@ -177,8 +175,7 @@ endif
 # otherwise the command line is too long when the directory path is long.
 
 $(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB) $(DTAPI_OBJECT)
-	@echo '  [AR] $@'; \
-	cd $(OBJDIR); \
+	$(call LOG,[AR] $@) cd $(OBJDIR); \
 	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB)) $(DTAPI_OBJECT)
 
 # Installation targets.

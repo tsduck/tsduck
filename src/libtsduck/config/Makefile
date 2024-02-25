@@ -34,23 +34,18 @@ post-build: $(TABLES_DEST)
 # Copy TSDuck configuration files in output bin directory.
 
 $(BINDIR)/%: %
-	@echo '  [COPY] $<'; \
-	mkdir -p $(BINDIR); \
-	cp $< $@
+	$(call LOG,[COPY] $<) mkdir -p $(BINDIR); cp $< $@
 
 # Generate the complete configuration files from separate files.
 
 $(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(BINDIR)/tsxml
-	@echo '  [GEN] $(notdir $@)'; \
-	$(TSXML) --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
+	$(call LOG,[GEN] $(notdir $@)) $(TSXML) --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
 
 $(NAMES_DEST): $(NAMES_SRC)
-	@echo '  [GEN] $(notdir $@)'; \
-	$(PYTHON) $(SCRIPTSDIR)/build-dtv-names.py $@ $^
+	$(call LOG,[GEN] $(notdir $@)) $(PYTHON) $(SCRIPTSDIR)/build-dtv-names.py $@ $^
 
 $(DEKTEC_DEST): $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
-	@echo '  [GEN] $(notdir $@)'; \
-	$(PYTHON) $(SCRIPTSDIR)/build-dektec-names.py $(if $<,$<,/dev/null) $@
+	$(call LOG,[GEN] $(notdir $@)) $(PYTHON) $(SCRIPTSDIR)/build-dektec-names.py $(if $<,$<,/dev/null) $@
 
 # Install configuration files.
 

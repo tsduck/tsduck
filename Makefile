@@ -20,6 +20,7 @@
 #  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
 #  - NOHWACCEL  : Disable hardware acceleration such as crypto instructions.
 #  - NOPCSTD    : Remove the std=c++17 flag from libtsduck's pkg-config file.
+#  - VERBOSE    : Display full commands. Can be abbreviated as V.
 #
 #  Options to define the representation of bitrates:
 #

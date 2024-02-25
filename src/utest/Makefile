@@ -26,18 +26,17 @@ $(BINDIR)/utest: $(OBJS) $(SHARED_LIBTSDUCK)
 # 2) Using static library. Skip plugin tests since they use the shared object.
 # Add libraries which are otherwise only used by the libtsduck shared object.
 $(BINDIR)/utest_static: $(filter-out $(OBJDIR)/utestPluginRepository.o,$(OBJS)) $(STATIC_LIBTSDUCK)
-	@echo '  [LD] $@'; \
-	$(CXX) $(LDFLAGS) $^ $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -o $@
+	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS) $^ $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 
 # Run tests.
 # Use make UTESTFLAGS="-d -t ClassTest::testName" for one single test in debug mode.
 .PHONY: test
 test: execs
-	@echo '  [UTEST] $(BINDIR)/utest $(UTESTFLAGS)'; \
+	$(call LOG,[UTEST] $(BINDIR)/utest $(UTESTFLAGS)) \
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
 	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
 	$(BINDIR)/utest $(UTESTFLAGS)
-	@echo '  [UTEST] $(BINDIR)/utest_static $(UTESTFLAGS)'; \
+	$(call LOG,[UTEST] $(BINDIR)/utest_static $(UTESTFLAGS)) \
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
 	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
 	$(BINDIR)/utest_static $(UTESTFLAGS)

@@ -45,7 +45,8 @@ TSDuck has been tested with the following compilers on at least one operating sy
 | Clang    | Linux, macOS | 5.0                     |
 | MSVC     | Windows      | Visual Studio 2017 15.8 |
 
-The minimum version of each compiler is driven by a correct implementation of C++17.
+The required minimum version of each compiler depends on a correct implementation of C++17.
+Previous versions of each compiler have no or buggy C++17 support.
 
 # Unix systems (Linux, macOS, BSD) {#unixbuild}
 
@@ -64,25 +65,7 @@ If you intend to use exclusion options in the `make` command line (for instance
 This will prevent the installation of unused libraries. Additional
 supported exclusion options are `NOJAVA=1 NODOXYGEN=1`.
 
-Currently, the script supports the following operating systems:
-- macOS
-- Ubuntu
-- Debian
-- Raspbian (Debian for Raspberry Pi)
-- Fedora
-- Red Hat Enterprise Linux
-- CentOS
-- Alma Linux
-- Rocky Linux
-- openSUSE Linux
-- Arch Linux
-- Alpine Linux
-- Gentoo
-- Linux Mint
-- FreeBSD
-- OpenBSD
-- NetBSD
-- DragonFlyBSD
+Currently, the script supports all Unix operating systems which were listed above.
 
 Since all packages are pulled from the standard repositories of each distro,
 there is generally no need to re-run this script later. The packages will be
@@ -234,9 +217,9 @@ You can also override the build directory using `make BINDIR=...`.
 
 Note that TSDuck contains thousands of source files and building it can take time.
 However, since most machines have multiple CPU's, all makefiles are designed for
-parallel builds. On a quad-core machine, for instance, the command `make -j10`
-is recommended (10 parallel compilations), reducing the total build time to a
-few minutes.
+parallel builds. On a quad-core machine with hyperthreading (8 logical cores),
+for instance, the command `make -j10` is recommended (10 parallel compilations),
+reducing the total build time to a few minutes.
 
 To cleanup the repository tree and return to a pristine source state,
 execute `make clean` at the top level.
@@ -268,23 +251,6 @@ to `pcsc-lite`, `libcurl` and Dektec DTAPI:
 make NOPCSC=1 NOCURL=1 NODEKTEC=1
 ~~~
 
-## Building with RIST support on Linux {#buildrist}
-
-By default, TSDuck is built with RIST support on macOS, FreeBSD, DragonFlyBSD and Windows.
-
-As of this writing, RIST (Reliable Internet Stream Transport) is not available
-in the standard repositories of most Linux distros. Currently, only Ubuntu 22.10,
-Debian 12 and Alpine Linux 3.16 support RIST. On other distros, to
-rebuild TSDuck with RIST support, you must either manually rebuild and install
-[librist](https://code.videolan.org/rist/librist) or get
-[pre-built packages for various Linux distros here](https://github.com/tsduck/rist-installer/releases).
-If you use other versions of rpm-based or deb-based distros,
-the [rist-installer project](https://github.com/tsduck/rist-installer)
-contains scripts to rebuild these packages.
-
-Once the RIST library is installed (with its development package), rebuilding
-TSDuck automatically includes RIST support.
-
 ## Building with specific debug capabilities {#builddebug}
 
 The following additional `make` variables can be defined to enable specific debug capabilities:
@@ -294,6 +260,30 @@ The following additional `make` variables can be defined to enable specific debu
 - `GCOV`  : Compile with code coverage using `gcov`.
 - `ASAN`  : Compile with code sanitizing using AddressSanitizer with default optimization.
 - `UBSAN` : Compile with code sanitizing using UndefinedBehaviorSanitizer with default optimization.
+
+## Displaying full commands {#buildverbose}
+
+Because of the number of include directories and warning options, the compilation
+commands are very long, typically more than 4000 characters, 30 to 50 lines on a
+terminal window. If the `make` commands displays all commands, the output is messy.
+It is difficult to identify the progression of the build. Error messages are not
+clearly identified.
+
+Therefore, the `make` command only displays a synthetic line for each command such as:
+ 
+~~~
+[CXX] dtv/tables/dvb/tsAIT.cpp
+[CXX] dtv/tables/atsc/tsATSCEIT.cpp
+[CXX] dtv/tables/tsAbstractDescriptorsTable.cpp
+~~~
+
+In some cases, if can be useful to display the full compilation commands. To do this,
+define the variable `VERBOSE` as follow:
+~~~
+make VERBOSE=1
+~~~
+
+For convenience and compatibility with some tradition, `V` can be used instead of `VERBOSE`.
 
 ## Building the TSDuck installation packages {#buildinst}
 

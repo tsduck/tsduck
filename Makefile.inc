@@ -599,18 +599,18 @@ else ifneq ($(MACOS),)
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
+# Display synthetic or full commands.
+
+LOG = $(if $(VERBOSE)$(V),,@echo '  $(1)';)
+
 # Compilation rules
 
 $(OBJDIR)/%.o: %.cpp
-	@echo '  [CXX] $<'; \
-	mkdir -p $(OBJDIR); \
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(call LOG,[CXX] $<) mkdir -p $(OBJDIR); $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 $(BINDIR)/%: $(OBJDIR)/%.o
-	@echo '  [LD] $@'; \
-	$(CXX) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -o $@
+	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
-	@echo '  [LD] $@'; \
-	$(CXX) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	$(call LOG,[LD] $@) $(CXX) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 #-----------------------------------------------------------------------------
 # Static linking.
@@ -875,10 +875,8 @@ endif
 #-----------------------------------------------------------------------------
 
 $(OBJDIR)/%.dep: %.cpp
-	@echo '  [DEP] $<'; \
-	mkdir -p $(OBJDIR); \
-	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
-	rm -f $@
+	$(call LOG,[DEP] $<) mkdir -p $(OBJDIR); \
+	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || rm -f $@
 
 NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
           flawfinder cloc listvars scan-build unixify

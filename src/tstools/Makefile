@@ -17,8 +17,7 @@ default: $(EXECS) tsduck-completion.bash
 	@true
 
 tsduck-completion.bash: $(addsuffix .cpp,$(ALLTOOLS))
-	@echo '  [GEN] $@'; \
-	$(SED) -i -e 's/^__ts_cmds=(.*$$/__ts_cmds=($(ALLTOOLS))/' $@
+	$(call LOG,[GEN] $@) $(SED) -i -e 's/^__ts_cmds=(.*$$/__ts_cmds=($(ALLTOOLS))/' $@
 
 ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.
