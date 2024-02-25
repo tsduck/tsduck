@@ -39,21 +39,16 @@ JSOURCES := $(wildcard src/io/tsduck/*.java)
 JCLASSES := $(patsubst src/%.java,$(CLASSDIR)/%.class,$(JSOURCES))
 
 $(CLASSDIR)/%.class: src/%.java
-	@echo '  [JAVAC] $<'; \
-	mkdir -p $(CLASSDIR); \
-	cd src; $(JAVAC) $(JAVAC_FLAGS) -d $(CLASSDIR) $(patsubst src/%,%,$<)
+	$(call LOG,[JAVAC] $<) mkdir -p $(CLASSDIR); cd src; $(JAVAC) $(JAVAC_FLAGS) -d $(CLASSDIR) $(patsubst src/%,%,$<)
 
 default: $(JARFILE)
 	@true
 
 $(JARFILE): $(JCLASSES) $(MANIFEST)
-	@echo '  [JAR] $@'; \
-	$(JAR) cfm $@ $(MANIFEST) $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
+	$(call LOG,[JAR] $@) $(JAR) cfm $@ $(MANIFEST) $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
 
 $(MANIFEST): Manifest.txt ../tsVersion.h
-	@echo '  [GEN] $@'; \
-	mkdir -p $(dir $@); \
-	$(SED) -e 's|{{VERSION}}|$(shell $(GET_VERSION))|' Manifest.txt >$@
+	$(call LOG,[GEN] $@) mkdir -p $(dir $@); $(SED) -e 's|{{VERSION}}|$(shell $(GET_VERSION))|' Manifest.txt >$@
 
 install-tools: $(JARFILE)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
