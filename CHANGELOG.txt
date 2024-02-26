@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3622
+VERSION 3.37-3648
 
 [NEW] New commands and plugins:
 
@@ -11,12 +11,13 @@ VERSION 3.37-3622
 
 [IMP] Improvements on existing commands and plugins:
 
-  * TSDuck is now supported on 64-bit RISC-V and IBM s390x (big endian).
-    On s390x, use the clang compiler (gcc has a code generation bug).
+  * TSDuck is now supported on 64-bit RISC-V, 64-bit PowerPC, and IBM s390x
+    (big endian). On s390x, use clang (gcc has a code generation bug).
   * New options in existing commands and plugins:
     - Options --meta-sections, --time-stamp in plugin "splicemonitor".
     - Option --meta-sections in "tstables", plugin "tables".
     - Option --clear-period in plugin "scrambler".
+    - Option --plp0-tsrate in output plugin "dektec".
 
 [BUG] Bug fixes:
 

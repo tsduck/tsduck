@@ -360,7 +360,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"For DTA-115, QAM, the valid range is -35.0 to 0.0 dBm. "
          u"For DTA-115, OFDM, ISDB-T, the valid range is -38.0 to -3.0 dBm.");
 
-    option(u"lnb", 0, Args::STRING);
+    option(u"lnb", 0, STRING);
     help(u"lnb", u"name",
          u"DVB-S/S2 modulators: description of the LNB which is used to convert the "
          u"--satellite-frequency into an intermediate frequency. This option is "
@@ -540,13 +540,15 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 
     option(u"plp0-null-packet-deletion");
     help(u"plp0-null-packet-deletion",
-         u"DVB-T2 modulators: indicate that null-packet deletion is active in "
-         u"PLP #0. Otherwise it is not active.");
+         u"DVB-T2 modulators: indicate that null-packet deletion is active in PLP #0. Otherwise it is not active.");
 
     option(u"plp0-rotation");
     help(u"plp0-rotation",
-         u"DVB-T2 modulators: indicate that constellation rotation is used for "
-         u"PLP #0. Otherwise not.");
+         u"DVB-T2 modulators: indicate that constellation rotation is used for PLP #0. Otherwise not.");
+
+    option(u"plp0-tsrate", 0, UNSIGNED);
+    help(u"plp0-tsrate",
+         u"DVB-T2 modulators: PLP #0 bitrate. The default is 0 (all available).");
 
     option(u"plp0-type", 0, Enumeration({
         {u"COMMON", DTAPI_DVBT2_PLP_TYPE_COMM},
@@ -1436,6 +1438,8 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             pars.m_Plps[0].m_Hem = present(u"plp0-high-efficiency");
             pars.m_Plps[0].m_Npd = present(u"plp0-null-packet-deletion");
             pars.m_Plps[0].m_Issy = intValue<int>(u"plp0-issy", DTAPI_DVBT2_ISSY_NONE);
+            pars.m_Plps[0].m_IssyBufs = (pars.m_Plps[0].m_Issy == DTAPI_DVBT2_ISSY_NONE) ? 0 : 2 * 1024 * 1024;
+            pars.m_Plps[0].m_TsRate = intValue<int>(u"plp0-tsrate", 0);
             pars.m_Plps[0].m_Id = intValue<int>(u"plp0-id", 0);
             pars.m_Plps[0].m_GroupId = intValue<int>(u"plp0-group-id", 0);
             pars.m_Plps[0].m_Type = intValue<int>(u"plp0-type", DTAPI_DVBT2_PLP_TYPE_COMM);
