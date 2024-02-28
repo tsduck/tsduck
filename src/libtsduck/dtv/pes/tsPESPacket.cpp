@@ -527,8 +527,8 @@ size_t ts::PESPacket::FindIntraImage(const uint8_t* data, size_t size, uint8_t s
         // The beginning of the PES payload is already a start code prefix in MPEG-1/2.
         while (pl_size > 0) {
             // Look for next start code
-            static const uint8_t StartCodePrefix[] = {0x00, 0x00, 0x01};
-            const uint8_t* pl_next = LocatePattern(pl_data + 1, pl_size - 1, StartCodePrefix, sizeof(StartCodePrefix));
+            constexpr uint8_t StartCodePrefixThird = 0x01;
+            const uint8_t* pl_next = LocateZeroZero(pl_data + 1, pl_size - 1, StartCodePrefixThird);
             if (pl_next == nullptr) {
                 // No next start code, current one extends up to the end of the payload.
                 pl_next = pl_data + pl_size;

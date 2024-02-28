@@ -15,7 +15,7 @@ default: execs
 
 # One source file per executable (setpath is Windows-only, tsprofiling is a test program).
 
-EXECS := $(addprefix $(BINDIR)/,$(filter-out setpath $(if $(NOTEST),tsprofiling,),$(sort $(notdir $(basename $(wildcard *.cpp))))))
+EXECS := $(addprefix $(BINDIR)/,$(filter-out setpath $(if $(NOTEST)$(NOSTATIC),tsprofiling,),$(sort $(notdir $(basename $(wildcard *.cpp))))))
 
 .PHONY: execs
 execs: $(EXECS)

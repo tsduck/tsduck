@@ -631,6 +631,7 @@ ifeq ($(STATIC),)
 else ifneq ($(MACOS),)
     $(error static linking is not supported on macOS)
 else
+    $(if $(NOSTATIC),$(error cannot define STATIC and NOSTATIC together))
     NOCURL     = true
     NOPCSC     = true
     NODTAPI    = true
