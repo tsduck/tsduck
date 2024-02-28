@@ -25,18 +25,58 @@ bool ts::StartsWith(const void* area, size_t area_size, const void* prefix, size
 
 const uint8_t* ts::LocatePattern(const void* area, size_t area_size, const void* pattern, size_t pattern_size)
 {
-    if (pattern_size > 0) {
+    // Warning: this function emerged as a bottleneck in perfomance analysis on TSDuck.
+    // Some optimizations have been added to improve this. Think twice before modifying it.
+    if (pattern_size == 0) {
+        return nullptr;
+    }
+    else if (pattern_size == 1) {
+        const uint8_t val = *reinterpret_cast<const uint8_t*>(pattern);
+        return reinterpret_cast<const uint8_t*>(std::memchr(area, val, area_size));
+    }
+    else {
         const uint8_t* a = reinterpret_cast<const uint8_t*>(area);
-        const uint8_t* p = reinterpret_cast<const uint8_t*>(pattern);
+        const uint8_t* const p = reinterpret_cast<const uint8_t*>(pattern);
+        const uint8_t* const p1 = p + 1;
+        const size_t last = pattern_size - 1;
+        const size_t sublen = pattern_size - 2;
         while (area_size >= pattern_size) {
-            if (*a == *p && MemEqual(a, p, pattern_size)) {
+            if (*a == *p && a[last] == p[last] && MemEqual(a + 1, p1, sublen)) {
                 return a;
             }
             ++a;
             --area_size;
         }
+        return nullptr; // not found
     }
-    return nullptr; // not found
+}
+
+
+//----------------------------------------------------------------------------
+// Locate a 3-byte pattern 00 00 XY into a memory area.
+//----------------------------------------------------------------------------
+
+const uint8_t* ts::LocateZeroZero(const void* area, size_t area_size, uint8_t third)
+{
+    const uint8_t* a = reinterpret_cast<const uint8_t*>(area);
+    while (area_size >= 3) {
+        const uint8_t* next = reinterpret_cast<const uint8_t*>(std::memchr(a, 0x00, area_size - 2));
+        if (next == nullptr) {
+            return nullptr;
+        }
+        else if (next[1] != 0x00) {
+            area_size -= (next - a) + 2;
+            a = next + 2;
+        }
+        else if (next[2] == third) {
+            return next;
+        }
+        else {
+            area_size -= (next - a) + 1;
+            a = next + 1;
+        }
+    }
+    return nullptr;
 }
 
 
@@ -44,15 +84,17 @@ const uint8_t* ts::LocatePattern(const void* area, size_t area_size, const void*
 // Check if a memory area contains all identical byte values.
 //----------------------------------------------------------------------------
 
-bool ts::IdenticalBytes(const void * area, size_t area_size)
+bool ts::IdenticalBytes(const void* area, size_t area_size)
 {
     if (area_size < 2) {
         return false;
     }
     else {
-        const uint8_t* d = reinterpret_cast<const uint8_t*>(area);
-        for (size_t i = 0; i < area_size - 1; ++i) {
-            if (d[i] != d[i + 1]) {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(area);
+        const uint8_t* const end = p + area_size;
+        const uint8_t val = *p++;
+        while (p < end) {
+            if (*p++ != val) {
                 return false;
             }
         }

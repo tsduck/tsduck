@@ -9,6 +9,7 @@
 #  Additional options which can be defined:
 #
 #  - NOTEST     : Do not build unitary tests.
+#  - NOSTATIC   : Do not build the static library and the static tests.
 #  - NODEKTEC   : No Dektec device support, remove dependency to DTAPI.
 #  - NOHIDES    : No HiDes device support.
 #  - NOVATEK    : No Vatek-based device support.

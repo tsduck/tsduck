@@ -119,7 +119,7 @@ CXXFLAGS_INCLUDES += $(addprefix -I,$(PRIVATE_INCLUDES))
 # only build the static library.
 
 .PHONY: libs
-libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
+libs: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 
 # The shared library contains all modules.
 # We change the current directory to OBJDIR and use object file names without directory,
@@ -190,10 +190,10 @@ install-tools: $(SHARED_LIBTSDUCK)
 
 PRECONFIG = $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsPreConfiguration.h
 
-install-devel: $(STATIC_LIBTSDUCK) $(TSDUCK_H)
+install-devel: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(TSDUCK_H)
 	rm -rf $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
-	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
+	$(if $(NOSTATIC),,install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR))
 	install -m 644 $(addsuffix /*.h,$(PUBLIC_INCLUDES)) $(TSDUCK_H) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	$(if $(NOPCSC), echo '#define TS_NO_PCSC 1' >>$(PRECONFIG))
 	$(if $(NOGITHUB), echo '#define TS_NO_GITHUB 1' >>$(PRECONFIG))

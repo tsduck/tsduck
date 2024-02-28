@@ -519,8 +519,8 @@ void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
         // The beginning of the payload is already a start code prefix.
         for (size_t offset = 0; offset + 4 < pl_size; ) {
             // Look for next start code
-            static const uint8_t StartCodePrefix[] = {0x00, 0x00, 0x01};
-            const uint8_t* pnext = LocatePattern(pl_data + offset + 1, pl_size - offset - 1, StartCodePrefix, sizeof(StartCodePrefix));
+            constexpr uint8_t StartCodePrefixThird = 0x01;
+            const uint8_t* pnext = LocateZeroZero(pl_data + offset + 1, pl_size - offset - 1, StartCodePrefixThird);
             size_t next = pnext == nullptr ? pl_size : pnext - pl_data;
             // Invoke handler
             _pes_handler->handleVideoStartCode(*this, pes, pl_data[offset + 3], offset, next - offset);
