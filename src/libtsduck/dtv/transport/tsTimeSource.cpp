@@ -19,4 +19,5 @@ const ts::Enumeration ts::TimeSourceEnum({
     {u"PCR",       ts::TimeSource::PCR},
     {u"DTS",       ts::TimeSource::DTS},
     {u"PTS",       ts::TimeSource::PTS},
+    {u"PCAP",      ts::TimeSource::PCAP},
 });

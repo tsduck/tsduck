@@ -37,6 +37,7 @@ namespace ts {
         PCR,            //!< PCR (Program Clock Reference), the transport stream system clock.
         DTS,            //!< DTS (Decoding Time Stamp), in a video or audio stream.
         PTS,            //!< PTS (Presentation Time Stamp), in a video or audio stream.
+        PCAP,           //!< Timestamp from a pcap or pcap-ng file.
     };
     TS_POP_WARNING()
 

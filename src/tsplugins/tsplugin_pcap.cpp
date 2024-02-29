@@ -34,7 +34,7 @@ namespace ts {
 
     protected:
         // Implementation of AbstractDatagramInputPlugin.
-        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp) override;
+        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource) override;
 
     private:
         // Command line options:
@@ -248,9 +248,10 @@ bool ts::PcapInputPlugin::stop()
 // Input method
 //----------------------------------------------------------------------------
 
-bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp)
+bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource)
 {
     // Dispatch on appropriate receive handler.
+    timesource = TimeSource::PCAP;
     return (this->*_receive)(buffer, buffer_size, ret_size, timestamp);
 }
 
