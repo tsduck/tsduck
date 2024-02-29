@@ -179,7 +179,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
 
     option(u"input-timestamp", 'i');
     help(u"input-timestamp",
-         u"Add an input timestamp of the corresponging TS packet, if available. "
+         u"Add an input timestamp of the corresponding TS packet, if available. "
          u"This can be an RTP, SRT, kernel timestamp. It is always converted in PCR units.");
 
     option(u"log", 'l');
