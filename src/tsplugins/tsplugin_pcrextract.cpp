@@ -73,9 +73,18 @@ namespace ts {
         SpliceContextMap _splices {};             // Per-PID splice information
         SectionDemux     _demux {duck, this};     // Section demux for service and SCTE 35 analysis
 
+        // GCC complains that PCR, DTS, PTS shadow the global types of the same name.
+        // However this is irrelevant because DataType is an enum class and the declared
+        // identifiers must be prefixed. ts::DataType::PCR is an enum identifier, ts::PCR
+        // is a type, without ambiguity.
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(shadow)
+
         // Types of time stamps.
         enum class DataType {PCR, OPCR, PTS, DTS};
         static const Enumeration _type_names;
+
+        TS_POP_WARNING()
 
         // Get the subfactor from PCR for a given data type.
         static uint32_t pcrSubfactor(DataType type)
