@@ -136,6 +136,7 @@ ts::BitRateConfidence ts::AbstractDatagramInputPlugin::getBitrateConfidence()
 size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
     cn::microseconds timestamp = cn::microseconds(-1);
+    TimeSource timesource = TimeSource::UNDEFINED;
 
     // Check if we receive new packets or process remain of previous buffer.
     bool new_packets = false;
@@ -146,7 +147,7 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
 
         // Wait for a datagram message
         size_t insize = 0;
-        if (!receiveDatagram(_inbuf.data(), _inbuf.size(), insize, timestamp)) {
+        if (!receiveDatagram(_inbuf.data(), _inbuf.size(), insize, timestamp, timesource)) {
             return 0;
         }
 
@@ -194,7 +195,7 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
                     _mdata[i].setInputTimeStamp(rtp_timestamp, TimeSource::RTP);
                 }
                 else if (use_kernel) {
-                    _mdata[i].setInputTimeStamp(timestamp, TimeSource::KERNEL);
+                    _mdata[i].setInputTimeStamp(timestamp, timesource);
                 }
                 else {
                     _mdata[i].clearInputTimeStamp();

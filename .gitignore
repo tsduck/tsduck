@@ -67,3 +67,4 @@ vgcore.*
 .vs
 x64
 *.zip
+perf.data*

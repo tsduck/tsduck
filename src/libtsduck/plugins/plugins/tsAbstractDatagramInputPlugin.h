@@ -66,9 +66,10 @@ namespace ts {
         //! @param [in] buffer_size Size in bytes of the reception buffer.
         //! @param [out] ret_size Size in bytes of the received message. Will never be larger than @a buffer_size.
         //! @param [out] timestamp Receive timestamp in micro-seconds or -1 if not available.
+        //! @param [out] timesource Type of timestamp.
         //! @return True on success, false on error.
         //!
-        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp) = 0;
+        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource) = 0;
 
     private:
         // Order of priority for input timestamps. SYSTEM means lower layer from subclass (UDP, SRT, etc).

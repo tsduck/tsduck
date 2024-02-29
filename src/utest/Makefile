@@ -28,9 +28,10 @@ $(BINDIR)/utest: $(OBJS) $(SHARED_LIBTSDUCK)
 $(BINDIR)/utest_static: $(filter-out $(OBJDIR)/utestPluginRepository.o,$(OBJS)) $(STATIC_LIBTSDUCK)
 	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS) $^ $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 
-# Run tests.
+# Run tests. We need to serialize them because they use common resources.
 # Use make UTESTFLAGS="-d -t ClassTest::testName" for one single test in debug mode.
 .PHONY: test test-shared test-static
+.NOTPARALLEL: test
 test: test-shared $(if $(NOSTATIC),,test-static)
 test-shared: $(BINDIR)/utest
 	$(call LOG,[UTEST] $(BINDIR)/utest $(UTESTFLAGS)) \

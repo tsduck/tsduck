@@ -33,7 +33,7 @@ namespace ts {
 
     protected:
         // Implementation of AbstractDatagramInputPlugin.
-        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp) override;
+        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource) override;
 
     private:
         UDPReceiver _sock; // Incoming socket with associated command line options.
