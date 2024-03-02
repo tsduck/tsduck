@@ -20,4 +20,5 @@ const ts::Enumeration ts::TimeSourceEnum({
     {u"DTS",       ts::TimeSource::DTS},
     {u"PTS",       ts::TimeSource::PTS},
     {u"PCAP",      ts::TimeSource::PCAP},
+    {u"RIST",      ts::TimeSource::RIST},
 });

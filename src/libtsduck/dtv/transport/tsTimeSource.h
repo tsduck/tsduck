@@ -38,6 +38,7 @@ namespace ts {
         DTS,            //!< DTS (Decoding Time Stamp), in a video or audio stream.
         PTS,            //!< PTS (Presentation Time Stamp), in a video or audio stream.
         PCAP,           //!< Timestamp from a pcap or pcap-ng file.
+        RIST,           //!< RIST (Reliable Internet Stream Transport) source time.
     };
     TS_POP_WARNING()
 

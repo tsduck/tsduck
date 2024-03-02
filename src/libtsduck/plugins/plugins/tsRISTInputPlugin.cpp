@@ -53,13 +53,15 @@ class ts::RISTInputPlugin::Guts
     TS_NOBUILD_NOCOPY(Guts);
 public:
     RISTPluginData   rist;
+    bool             ignore_ntp = false;   // ignore NTP time stamps from RIST library.
     cn::milliseconds timeout {};           // receive timeout.
     ByteBlock        buffer {};            // data in excess from last input.
+    cn::nanoseconds  buffer_ntp = cn::nanoseconds(0); // time stamp of all packets in buffer.
     int              last_qsize = 0;       // last queue size in data blocks.
     bool             qsize_warned = false; // a warning was reporting on heavy queue size.
 
     // Constructor.
-    Guts(Args* args, TSP* tsp) : rist(*tsp) {}
+    Guts(TSP* tsp) : rist(*tsp) {}
 };
 
 
@@ -69,10 +71,15 @@ public:
 
 ts::RISTInputPlugin::RISTInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options] url [url...]"),
-    _guts(new Guts(this, tsp))
+    _guts(new Guts(tsp))
 {
     CheckNonNull(_guts);
     _guts->rist.defineArgs(*this);
+
+    option(u"ignore-rist-timestamps");
+    help(u"ignore-rist-timestamps",
+         u"Ignore source timestamps, use reception time as packet timestamps. "
+         u"By default, use the source timestamps from the sender as packet timestamp.");
 }
 
 ts::RISTInputPlugin::~RISTInputPlugin()
@@ -90,6 +97,7 @@ ts::RISTInputPlugin::~RISTInputPlugin()
 
 bool ts::RISTInputPlugin::getOptions()
 {
+    _guts->ignore_ntp = present(u"ignore-rist-timestamps");
     return _guts->rist.loadArgs(duck, *this);
 }
 
@@ -173,6 +181,13 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
         pkt_count = std::min(_guts->buffer.size() / PKT_SIZE, max_packets);
         MemCopy(pkt_buffer->b, _guts->buffer.data(), pkt_count * PKT_SIZE);
         _guts->buffer.erase(0, pkt_count * PKT_SIZE);
+        if (!_guts->ignore_ntp && _guts->buffer_ntp > cn::nanoseconds::zero()) {
+            // Set the time stamp of all packets.
+            for (size_t i = 0; i < pkt_count; ++i) {
+                pkt_data[i].setInputTimeStamp(_guts->buffer_ntp, TimeSource::RIST);
+            }
+            _guts->buffer_ntp = cn::nanoseconds::zero();
+        }
     }
     else {
         // Read one data block. Allocated in the library, must be freed later.
@@ -221,13 +236,32 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
                                  {dblock->payload_len, dblock->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]});
                 }
 
+                // Get the input RIST timestamp. This value is in NTP units (Network Time Protocol).
+                // NTP represents 64-bit times as a uniform 64-bit integer value, a number of "units",
+                // where the seconds are in the upper 32 bits. Therefore, the "unit" is such that
+                // 2^32 units = 1 second, meaning 1 unit = 232 picoseconds.
+                // See https://datatracker.ietf.org/doc/html/rfc5905#section-6
+                // The NTP Epoch is Jan 1 1900. This means that all NTP dates after Jan 1 1968 are
+                // "negative" when the 64-bit value is interpreted as signed. It is therefore
+                // impossible to represent NTP units with cn::duration types.
+                // We immediately convert the time stamp into nanoseconds.
+                const cn::nanoseconds timestamp = cn::nanoseconds(dblock->ts_ntp == 0 ? 0 : 232 * (dblock->ts_ntp / 1000));
+
                 // Return the packets which fit in the caller's buffer.
                 pkt_count = std::min(total_pkt_count, max_packets);
                 MemCopy(pkt_buffer->b, data_addr, pkt_count * PKT_SIZE);
 
+                // Set the time stamp of all packets.
+                if (!_guts->ignore_ntp && timestamp > cn::nanoseconds::zero()) {
+                    for (size_t i = 0; i < pkt_count; ++i) {
+                        pkt_data[i].setInputTimeStamp(timestamp, TimeSource::RIST);
+                    }
+                }
+
                 // Copy the rest, if any, in the local buffer.
                 if (pkt_count < total_pkt_count) {
                     _guts->buffer.copy(data_addr + (pkt_count * PKT_SIZE), (total_pkt_count - pkt_count) * PKT_SIZE);
+                    _guts->buffer_ntp = timestamp;
                 }
 
                 // Free returned data block.
