@@ -47,8 +47,8 @@ $DocIn = "$DocDir\tsduck.docx"
 $DocOut = "$DocDir\tsduck.pdf"
 
 # Get TSDuck version. Increment commit count since we are going to create a new version.
-$Version = (& "$RootDir\scripts\get-version-from-sources.py" --main)
-$Commit = [int](& "$RootDir\scripts\get-version-from-sources.py" --commit) + 1
+$Version = (python "$RootDir\scripts\get-version-from-sources.py" --main)
+$Commit = [int](python "$RootDir\scripts\get-version-from-sources.py" --commit) + 1
 $Version = "${Version}-${Commit}"
 
 # The following properties are set in the document:
