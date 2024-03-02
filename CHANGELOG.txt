@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3650
+VERSION 3.37-3653
 
 [NEW] New commands and plugins:
 
@@ -19,6 +19,7 @@ VERSION 3.37-3650
     - Option --clear-period in plugin "scrambler".
     - Option --plp0-tsrate in output plugin "dektec".
     - Option --input-timestamp in plugin "pcrextract".
+    - Option --ignore-rist-timestamps in input plugin "rist".
 
 [BUG] Bug fixes:
 
