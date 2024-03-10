@@ -7,7 +7,7 @@ environment.
 Main subdirectories:
 
   - base   : Base C++ library, data structures, system support.
-  - crypto : Cryptographic code, mostly extracted from LibTomCrypt.
+  - crypto : Cryptographic code.
   - dtv    : Digital TV classes, transport streams, signalization, tuning.
   - plugin : Integration of plugins in TSDuck.
 

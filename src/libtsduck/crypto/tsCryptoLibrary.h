@@ -22,7 +22,18 @@
         #pragma comment(lib, "bcrypt.lib")
     #endif
 #else
-    //@@@@@@
+    #include <openssl/opensslv.h>
+    #include <openssl/evp.h>
+    #include <openssl/err.h>
+    #if !defined(OPENSSL_VERSION_MAJOR) // before v3
+        #define OPENSSL_VERSION_MAJOR (OPENSSL_VERSION_NUMBER >> 28)
+    #endif
+    #if !defined(OPENSSL_VERSION_MINOR) // before v3
+        #define OPENSSL_VERSION_MINOR ((OPENSSL_VERSION_NUMBER >> 20) & 0xFF)
+    #endif
+    #if OPENSSL_VERSION_MAJOR >= 3
+        #include <openssl/core_names.h>
+    #endif
 #endif
 
 namespace ts {
@@ -31,5 +42,5 @@ namespace ts {
     //! @return The cryptographic library name and version.
     //! @ingroup crypto
     //!
-    UString GetCryptographicLibraryVersion();
+    TSDUCKDLL UString GetCryptographicLibraryVersion();
 }

@@ -311,26 +311,5 @@ ts::SysInfo::SysInfo() :
                 _aesInstructions = tsAESIsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_AES");
             #endif
         }
-        if (GetEnvironment(u"TS_NO_SHA1_INSTRUCTIONS").empty()) {
-            #if defined(TS_LINUX) && defined(HWCAP_SHA1)
-                _sha1Instructions = tsSHA1IsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_SHA1) != 0;
-            #elif defined(TS_MAC)
-                _sha1Instructions = tsSHA1IsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_SHA1");
-            #endif
-        }
-        if (GetEnvironment(u"TS_NO_SHA256_INSTRUCTIONS").empty()) {
-            #if defined(TS_LINUX) && defined(HWCAP_SHA2)
-                _sha256Instructions = tsSHA256IsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_SHA2) != 0;
-            #elif defined(TS_MAC)
-                _sha256Instructions = tsSHA256IsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_SHA256");
-            #endif
-        }
-        if (GetEnvironment(u"TS_NO_SHA512_INSTRUCTIONS").empty()) {
-            #if defined(TS_LINUX) && defined(HWCAP_SHA512)
-                _sha512Instructions = tsSHA512IsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_SHA512) != 0;
-            #elif defined(TS_MAC)
-                _sha512Instructions = tsSHA512IsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_SHA512");
-            #endif
-        }
     }
 }

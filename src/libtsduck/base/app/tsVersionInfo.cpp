@@ -11,6 +11,7 @@
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
 #include "tsErrCodeReport.h"
+#include "tsCryptoLibrary.h"
 #include "tsVatekUtils.h"
 #include "tsSysInfo.h"
 #include "tsSysUtils.h"
@@ -44,6 +45,7 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
     {u"acceleration", ts::VersionInfo::Format::ACCELERATION},
     {u"bitrate",      ts::VersionInfo::Format::BITRATE},
     {u"nsis",         ts::VersionInfo::Format::NSIS},
+    {u"crypto",       ts::VersionInfo::Format::CRYPTO},
     {u"dektec",       ts::VersionInfo::Format::DEKTEC},
     {u"http",         ts::VersionInfo::Format::HTTP},
     {u"srt",          ts::VersionInfo::Format::SRT},
@@ -313,12 +315,16 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             return UString::Format(u"!define tsduckVersion \"%s\"\n!define tsduckVersionInfo \"%d.%d.%d.0\"",
                                    {GetVersion(Format::SHORT), TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT});
         }
+        case Format::CRYPTO: {
+            // The version of the cryptographiclibrary.
+            return ts::GetCryptographicLibraryVersion();
+        }
         case Format::DEKTEC: {
             // The version of Dektec components.
             return GetDektecVersions();
         }
         case Format::VATEK: {
-            // The version of Dektec components.
+            // The version of the Vatek library.
             return ts::GetVatekVersion();
         }
         case Format::HTTP: {
@@ -335,12 +341,9 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         }
         case Format::ACCELERATION: {
             // Support for accelerated instructions.
-            return UString::Format(u"CRC32: %s, AES: %s, SHA-1: %s, SHA-256: %s, SHA-512: %s", {
+            return UString::Format(u"CRC32: %s, AES: %s", {
                 UString::YesNo(SysInfo::Instance().crcInstructions()),
-                UString::YesNo(SysInfo::Instance().aesInstructions()),
-                UString::YesNo(SysInfo::Instance().sha1Instructions()),
-                UString::YesNo(SysInfo::Instance().sha256Instructions()),
-                UString::YesNo(SysInfo::Instance().sha512Instructions())
+                UString::YesNo(SysInfo::Instance().aesInstructions())
             });
         }
         case Format::ALL: {
@@ -352,6 +355,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
                 u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
                 u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
                 u"VATek: " + GetVersion(Format::VATEK) + LINE_FEED +
+                u"Cryptographic library: " + GetVersion(Format::CRYPTO) + LINE_FEED +
                 u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
                 u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
                 u"RIST library: " + GetVersion(Format::RIST);

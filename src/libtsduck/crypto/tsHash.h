@@ -23,6 +23,7 @@ namespace ts {
     //!
     class TSDUCKDLL Hash
     {
+        TS_NOCOPY(Hash);
     public:
         //!
         //! Algorithm name (informational only).
@@ -86,7 +87,7 @@ namespace ts {
 
         //!
         //! Default constructor
-        //! 
+        //!
         Hash() = default;
 
         //!
@@ -95,16 +96,23 @@ namespace ts {
         virtual ~Hash();
 
     protected:
+        //! @cond nodoxygen
 #if defined(TS_WINDOWS) && !defined(DOXYGEN)
         // Get the algorithm id.
-        virtual ::LPCWSTR algorithmId() const = 0;  
+        virtual ::LPCWSTR algorithmId() const = 0;
+#else
+        // Get reference hash context.
+        virtual const EVP_MD_CTX* referenceContext() const = 0;
 #endif
+        //! @endcond
 
     private:
 #if defined(TS_WINDOWS)
         ::BCRYPT_ALG_HANDLE _algo = nullptr;
         ::BCRYPT_HASH_HANDLE _hash = nullptr;
         ByteBlock _obj {};
+#else
+        EVP_MD_CTX* _context = nullptr;
 #endif
     };
 }

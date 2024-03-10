@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.37-3653
+VERSION 3.37-3656
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,11 @@ VERSION 3.37-3653
 
 [IMP] Improvements on existing commands and plugins:
 
+  * Standard crypto operations (AES, DES, SHA) are now delegated to a system
+    library, OpenSSL on Unix, BCrypt on Windows. Previously, TSDuck included
+    old code from LibTomCrypt. Using a system-provided library increases the
+    probability to take advantage of accelerated instruction on the current
+    platform.
   * TSDuck is now supported on 64-bit RISC-V, 64-bit PowerPC, and IBM s390x
     (big endian). On s390x, use clang (gcc has a code generation bug).
   * New options in existing commands and plugins:
