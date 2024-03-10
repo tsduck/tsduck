@@ -747,9 +747,6 @@ endif
 ifneq ($(NOHWACCEL),)
     CXXFLAGS_INCLUDES += -DTS_NO_ARM_CRC32_INSTRUCTIONS
     CXXFLAGS_INCLUDES += -DTS_NO_ARM_AES_INSTRUCTIONS
-    CXXFLAGS_INCLUDES += -DTS_NO_ARM_SHA1_INSTRUCTIONS
-    CXXFLAGS_INCLUDES += -DTS_NO_ARM_SHA256_INSTRUCTIONS
-    CXXFLAGS_INCLUDES += -DTS_NO_ARM_SHA512_INSTRUCTIONS
 endif
 
 # These variables are used when building the TSDuck library, not in the
@@ -757,7 +754,7 @@ endif
 # when linking applications against the TSDuck static library.
 
 LIBTSDUCK_CXXFLAGS_INCLUDES +=
-LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),-lkvm) $(if $(LINUX),-latomic)
+LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),-lkvm) $(if $(LINUX),-latomic) -lcrypto
 
 ifneq ($(NODTAPI),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1

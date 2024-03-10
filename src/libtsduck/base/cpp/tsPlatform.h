@@ -552,27 +552,6 @@
     #define TS_NO_ARM_AES_INSTRUCTIONS
 #endif
 
-//!
-//! Define TS_NO_ARM_SHA1_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 SHA-1 instructions.
-//!
-#if defined(DOXYGEN)
-    #define TS_NO_ARM_SHA1_INSTRUCTIONS
-#endif
-
-//!
-//! Define TS_NO_ARM_SHA256_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 SHA-256 instructions.
-//!
-#if defined(DOXYGEN)
-    #define TS_NO_ARM_SHA256_INSTRUCTIONS
-#endif
-
-//!
-//! Define TS_NO_ARM_SHA512_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 SHA-512 instructions.
-//!
-#if defined(DOXYGEN)
-    #define TS_NO_ARM_SHA512_INSTRUCTIONS
-#endif
-
 
 //----------------------------------------------------------------------------
 // Static linking.

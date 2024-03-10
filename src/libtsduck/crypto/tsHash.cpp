@@ -25,6 +25,11 @@ ts::Hash::~Hash()
         ::BCryptCloseAlgorithmProvider(_algo, 0);
         _algo = nullptr;
     }
+#else
+    if (_context != nullptr) {
+        EVP_MD_CTX_free(_context);
+        _context = nullptr;
+    }
 #endif
 }
 
@@ -64,8 +69,15 @@ bool ts::Hash::init()
 
 #else
 
-    // Must be implemented in subclass.
-    return false;    
+    // Create the hash context the first time.
+    if (_context == nullptr && (_context = EVP_MD_CTX_new()) == nullptr) {
+        return false;
+    }
+    // Copy the content of the reference context. This is much faster than fetching the algo again.
+    if (!EVP_MD_CTX_copy_ex(_context, referenceContext())) {
+        return false;
+    }
+    return true;
 
 #endif
 }
@@ -83,15 +95,11 @@ bool ts::Hash::add(const void* data, size_t size)
 
 #if defined(TS_WINDOWS)
 
-    if (_hash == nullptr || ::BCryptHashData(_hash, ::PUCHAR(data), ::ULONG(size), 0) < 0) {
-        return false;
-    }
-    return true;
+    return _hash != nullptr && ::BCryptHashData(_hash, ::PUCHAR(data), ::ULONG(size), 0) >= 0;
 
 #else
 
-    // Must be implemented in subclass.
-    return false;
+    return _context != nullptr && EVP_DigestUpdate(_context, data, size);
 
 #endif
 }
@@ -124,8 +132,7 @@ bool ts::Hash::getHash(void* hash, size_t bufsize, size_t* retsize)
 
 #else
 
-    // Must be implemented in subclass.
-    return false;
+    return _context != nullptr && EVP_DigestFinal_ex(_context, reinterpret_cast<unsigned char*>(hash), nullptr);
 
 #endif
 }

@@ -132,8 +132,8 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
 
     option(u"iv", 'i', HEXADATA, 0, Args::UNLIMITED_COUNT, AES128::BLOCK_SIZE, AES128::BLOCK_SIZE);
     help(u"iv",
-         u"Specifies the initialization vector. Must be a string of 32 hexadecimal "
-         u"digits. Must not be used in ECB mode. The default IV is all zeroes.");
+         u"Specifies the initialization vector. Must be a string of 32 hexadecimal digits. "
+         u"Must not be used in ECB, CTS3, CTS4 modes. The default IV is all zeroes.");
 
     option(u"key", 'k', HEXADATA, 1, 1, AES128::KEY_SIZE, AES256::KEY_SIZE);
     help(u"key",

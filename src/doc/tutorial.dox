@@ -234,18 +234,9 @@ is *not* a cryptographic library and will never be. Cryptography is a serious
 matter which should be left to cryptographers.
 
 Some transport stream processing operations require some cryptography, essentially
-block ciphers and hash functions. To do that, the TSDuck library includes a few
-cryptographic functions which were originally copied from the
-<a href="http://www.libtom.net/LibTomCrypt/">LibTomCrypt library</a>.
-
-This copy is allowed by the very liberal license of LibTomCrypt.
-Copying code from LibTomCrypt inside TSDuck instead of referencing it
-has the following advantages:
-
-- Encapsulate the C API of LibTomCrypt into higher-level C++ classes.
-- Automatically manage the resources using C++ constructors and destructors.
-- Allow a portable usage of the cryptographic functions without rebuilding LibTomCrypt.
-- Remove a dependency to an external library.
+block ciphers and hash functions. Standard cryptographic primitives use the standard
+system libraries (OpenSSL on Unix, BCrypt on Windows). Less standard primitives are
+directly implemented in TSDuck.
 
 The abstract class ts::BlockCipher is the root of a hierarchy of symmetric cryptography
 classes, including chaining modes. The main block cipher classes are ts::AES,

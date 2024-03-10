@@ -18,6 +18,3 @@
 // modules are compiled with accelerated instructions.
 extern const bool tsCRC32IsAccelerated;
 extern const bool tsAESIsAccelerated;
-extern const bool tsSHA1IsAccelerated;
-extern const bool tsSHA256IsAccelerated;
-extern const bool tsSHA512IsAccelerated;

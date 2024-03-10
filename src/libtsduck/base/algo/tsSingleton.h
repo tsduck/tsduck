@@ -39,11 +39,18 @@
     public:                                                         \
         /** Get the instance of the singleton of this class. */     \
         /** @return The instance of the singleton of this class. */ \
-        static classname& Instance();                               \
+        static classname& Instance()                                \
+        {                                                           \
+            if (_instance == nullptr) {                             \
+                InitInstance();                                     \
+            }                                                       \
+            return *_instance;                                      \
+        }                                                           \
     private:                                                        \
         static classname* volatile _instance;                       \
         static std::once_flag _once_flag;                           \
         classname(); /* default constructor */                      \
+        static void InitInstance();                                 \
         static void CleanupSingleton()
 
 //!
@@ -66,15 +73,12 @@
 //! @see TS_DECLARE_SINGLETON()
 //!
 #define TS_DEFINE_SINGLETON(fullclassname)                       \
-    fullclassname& fullclassname::Instance()                     \
+    void fullclassname::InitInstance()                           \
     {                                                            \
-        if (_instance == nullptr) {                              \
-            std::call_once(_once_flag, []() {                    \
-                _instance = new fullclassname;                   \
-                std::atexit(fullclassname::CleanupSingleton);    \
-          });                                                    \
-        }                                                        \
-        return *_instance;                                       \
+        std::call_once(_once_flag, []() {                        \
+            _instance = new fullclassname;                       \
+            std::atexit(fullclassname::CleanupSingleton);        \
+        });                                                      \
     }                                                            \
     void fullclassname::CleanupSingleton()                       \
     {                                                            \
