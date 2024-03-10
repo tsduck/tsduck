@@ -97,9 +97,9 @@ namespace ts {
 
     protected:
         //! @cond nodoxygen
-#if defined(TS_WINDOWS) && !defined(DOXYGEN)
-        // Get the algorithm id.
-        virtual ::LPCWSTR algorithmId() const = 0;
+#if defined(TS_WINDOWS)
+        // Get the algorithm handle and subobject size.
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const = 0;
 #else
         // Get reference hash context.
         virtual const EVP_MD_CTX* referenceContext() const = 0;

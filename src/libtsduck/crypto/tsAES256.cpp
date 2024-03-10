@@ -7,33 +7,59 @@
 //----------------------------------------------------------------------------
 
 #include "tsAES256.h"
+#include "tsSingleton.h"
+#include "tsInitCryptoLibrary.h"
 
 
 //----------------------------------------------------------------------------
 // Implementation of BlockCipher interface:
 //----------------------------------------------------------------------------
 
+ts::AES256::AES256()
+{
+    InitCryptographicLibrary();
+}
+
 ts::UString ts::AES256::name() const
 {
     return u"AES-256";
 }
+
 size_t ts::AES256::blockSize() const
 {
     return BLOCK_SIZE;
 }
+
 size_t ts::AES256::minKeySize() const
 {
     return KEY_SIZE;
 }
+
 size_t ts::AES256::maxKeySize() const
 {
     return KEY_SIZE;
 }
+
 bool ts::AES256::isValidKeySize (size_t size) const
 {
     return size == KEY_SIZE;
 }
 
+
+//----------------------------------------------------------------------------
+// System-specific implementation.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+
+TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), Fetch);
+
+void ts::AES256::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
+{
+    Fetch::Instance().getAlgorithm(algo, length);
+}
+
+#else
 
 //----------------------------------------------------------------------------
 // Schedule a new key. If rounds is zero, the default is used.
@@ -78,3 +104,5 @@ bool ts::AES256::decryptImpl(const void* cipher, size_t cipher_length, void* pla
     }
     return _aes.decrypt(cipher, cipher_length, plain, plain_maxsize, plain_length);
 }
+
+#endif

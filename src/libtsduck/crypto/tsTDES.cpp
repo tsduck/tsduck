@@ -1,19 +1,66 @@
 //----------------------------------------------------------------------------
 //
-//  TSDuck - The MPEG Transport Stream Toolkit
-//
-//  Triple-DES (EDE) block cipher
-//
-//  Implementation based on LibTomCrypt (http://www.libtom.org/)
-//  by Tom St Denis (tomstdenis@gmail.com)
-//
-//  Usage in TSDuck allowed based on LibTomCrypt licence:
-//    << LibTomCrypt is public domain. The library is free for >>
-//    << all purposes without any express guarantee it works.  >>
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
 #include "tsTDES.h"
+#include "tsSingleton.h"
+#include "tsInitCryptoLibrary.h"
+
+
+//----------------------------------------------------------------------------
+// Implementation of BlockCipher interface:
+//----------------------------------------------------------------------------
+
+ts::TDES::TDES()
+{
+    InitCryptographicLibrary();
+}
+
+ts::UString ts::TDES::name() const
+{
+    return u"TDES";
+}
+
+size_t ts::TDES::blockSize() const
+{
+    return BLOCK_SIZE;
+}
+
+size_t ts::TDES::minKeySize() const
+{
+    return KEY_SIZE;
+}
+
+size_t ts::TDES::maxKeySize() const
+{
+    return KEY_SIZE;
+}
+
+bool ts::TDES::isValidKeySize(size_t size) const
+{
+    return size == KEY_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
+// System-specific implementation.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+
+TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), Fetch);
+
+void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
+{
+    Fetch::Instance().getAlgorithm(algo, length);
+}
+
+#else
+
 #include "tsDES.h"
 
 
@@ -98,28 +145,4 @@ bool ts::TDES::decryptImpl(const void* cipher, size_t cipher_length, void* plain
     return true;
 }
 
-
-//----------------------------------------------------------------------------
-// Implementation of BlockCipher interface:
-//----------------------------------------------------------------------------
-
-ts::UString ts::TDES::name() const
-{
-    return u"TDES";
-}
-size_t ts::TDES::blockSize() const
-{
-    return BLOCK_SIZE;
-}
-size_t ts::TDES::minKeySize() const
-{
-    return KEY_SIZE;
-}
-size_t ts::TDES::maxKeySize() const
-{
-    return KEY_SIZE;
-}
-bool ts::TDES::isValidKeySize (size_t size) const
-{
-    return size == KEY_SIZE;
-}
+#endif

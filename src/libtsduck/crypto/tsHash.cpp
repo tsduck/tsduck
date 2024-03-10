@@ -21,10 +21,7 @@ ts::Hash::~Hash()
         ::BCryptDestroyHash(_hash);
         _hash = nullptr;
     }
-    if (_algo != nullptr) {
-        ::BCryptCloseAlgorithmProvider(_algo, 0);
-        _algo = nullptr;
-    }
+    _algo = nullptr;
 #else
     if (_context != nullptr) {
         EVP_MD_CTX_free(_context);
@@ -42,19 +39,15 @@ bool ts::Hash::init()
 {
 #if defined(TS_WINDOWS)
 
-    // Open algorithm provider the first time.
+    // Get a reference to algorithm provider the first time.
     if (_algo == nullptr) {
-        if (::BCryptOpenAlgorithmProvider(&_algo, algorithmId(), nullptr, 0) < 0) {
+        size_t objlength = 0;
+        getAlgorithm(_algo, objlength);
+        if (_algo == nullptr) {
             return false;
         }
-        // BCrypt needs a "hash object", get its size.
-        ::DWORD objlength = 0;
-        ::ULONG retsize = 0;
-        if (::BCryptGetProperty(_algo, BCRYPT_OBJECT_LENGTH, ::PUCHAR(&objlength), sizeof(objlength), &retsize, 0) < 0) {
-            return false;
-        }
-        // And allocate the "hash object" for the rest of the life of this Hash instance.
-        _obj.resize(size_t(objlength));
+        // Allocate the "hash object" for the rest of the life of this Hash instance.
+        _obj.resize(objlength);
     }
     // Terminate previous hash if not yet done.
     if (_hash != nullptr) {

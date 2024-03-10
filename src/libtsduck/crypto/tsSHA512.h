@@ -23,20 +23,17 @@ namespace ts {
     {
         TS_NOCOPY(SHA512);
     public:
-        //! SHA-512 hash size in bytes (512 bits).
-        static constexpr size_t HASH_SIZE = 512/8;
+        SHA512();                                   //!< Constructor
+        static constexpr size_t HASH_SIZE = 512/8;  //!< SHA-512 hash size in bytes (512 bits).
 
         // Implementation of Hash interface:
         virtual UString name() const override;
         virtual size_t hashSize() const override;
 
-        //! Constructor
-        SHA512();
-
     protected:
         //! @cond nodoxygen
 #if defined(TS_WINDOWS)
-        virtual ::LPCWSTR algorithmId() const override;
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
 #else
         virtual const EVP_MD_CTX* referenceContext() const override;
 #endif

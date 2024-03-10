@@ -37,9 +37,11 @@ size_t ts::SHA256::hashSize() const
 
 #if defined(TS_WINDOWS)
 
-::LPCWSTR ts::SHA256::algorithmId() const
+TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_SHA256_ALGORITHM), Fetch);
+
+void ts::SHA256::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 {
-    return BCRYPT_SHA256_ALGORITHM;
+    Fetch::Instance().getAlgorithm(algo, length);
 }
 
 #else
