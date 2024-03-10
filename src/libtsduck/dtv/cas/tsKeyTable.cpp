@@ -79,16 +79,16 @@ bool ts::KeyTable::getKey(const UString& id, ByteBlock& value) const
 // Retrieve a key in the table and initialize a block cipher engine.
 //----------------------------------------------------------------------------
 
-bool ts::KeyTable::setKey(BlockCipher& cipher, const ByteBlock& id, size_t rounds) const
+bool ts::KeyTable::setKey(BlockCipher& cipher, const ByteBlock& id) const
 {
     ByteBlock value;
-    return getKey(id, value) && cipher.setKey(value.data(), value.size(), rounds);
+    return getKey(id, value) && cipher.setKey(value.data(), value.size());
 }
 
-bool ts::KeyTable::setKey(BlockCipher& cipher, const UString& id, size_t rounds) const
+bool ts::KeyTable::setKey(BlockCipher& cipher, const UString& id) const
 {
     ByteBlock bid;
-    return id.hexaDecode(bid) && setKey(cipher, bid, rounds);
+    return id.hexaDecode(bid) && setKey(cipher, bid);
 }
 
 

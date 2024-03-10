@@ -23,22 +23,31 @@ namespace ts {
     {
         TS_NOCOPY(SHA256);
     public:
-        // Sizes in bytes
-        static constexpr size_t HASH_SIZE  = 32;  //!< SHA-256 hash size in bytes.
-        static constexpr size_t BLOCK_SIZE = 64;  //!< SHA-256 block size in bytes.
+        //! SHA-256 hash size in bytes (256 bits).
+        static constexpr size_t HASH_SIZE = 256/8;
 
         // Implementation of Hash interface:
         virtual UString name() const override;
         virtual size_t hashSize() const override;
-        virtual size_t blockSize() const override;
+
+#if !defined(TS_WINDOWS)
         virtual bool init() override;
         virtual bool add(const void* data, size_t size) override;
         virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = nullptr) override;
+#endif
 
         //! Constructor
         SHA256();
 
+    protected:
+#if defined(TS_WINDOWS) && !defined(DOXYGEN)
+        virtual ::LPCWSTR algorithmId() const override;
+#endif
+
     private:
+#if !defined(TS_WINDOWS)
+        static constexpr size_t BLOCK_SIZE = 64;  //!< SHA-256 block size in bytes.
+
         uint64_t _length = 0;               // Total message size in bits (already hashed, ie. excluding _buf)
         size_t   _curlen = 0;               // Used bytes in _buf
         uint32_t _state[HASH_SIZE / 4] {};  // Current hash value (256 bits, 32 bytes, 8 uint32)
@@ -56,5 +65,6 @@ namespace ts {
 
         // Accelerated versions, compiled in a separated module.
         void compressAccel(const uint8_t* buf);
+#endif
     };
 }

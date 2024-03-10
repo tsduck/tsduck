@@ -33,9 +33,6 @@ namespace ts {
         virtual size_t minKeySize() const override;
         virtual size_t maxKeySize() const override;
         virtual bool isValidKeySize(size_t size) const override;
-        virtual size_t minRounds() const override;
-        virtual size_t maxRounds() const override;
-        virtual size_t defaultRounds() const override;
 
         //!
         //! Set a new initialization vector.
@@ -92,7 +89,7 @@ namespace ts {
                        size_t work_blocks = 1);
 
         // Implementation of BlockCipher interface:
-        virtual bool setKeyImpl(const void* key, size_t key_length, size_t rounds) override;
+        virtual bool setKeyImpl(const void* key, size_t key_length) override;
     };
 
     //!

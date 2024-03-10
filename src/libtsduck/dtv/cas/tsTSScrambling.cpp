@@ -169,7 +169,7 @@ void ts::TSScrambling::defineArgs(Args &args)
               u"Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the "
               u"default). The control words are 16-byte long instead of 8-byte.");
 
-    args.option(u"iv", 0, Args::HEXADATA, 0, Args::UNLIMITED_COUNT, AES::BLOCK_SIZE, AES::BLOCK_SIZE);
+    args.option(u"iv", 0, Args::HEXADATA, 0, Args::UNLIMITED_COUNT, AES128::BLOCK_SIZE, AES128::BLOCK_SIZE);
     args.help(u"iv",
               u"With --aes-cbc or --aes-ctr, specifies a fixed initialization vector for all TS packets. "
               u"The value must be a string of 32 hexadecimal digits. "
@@ -260,7 +260,7 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
     setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
 
     // Set AES-CBC/CTR initialization vector. The default is all zeroes.
-    const ByteBlock iv(args.hexaValue(u"iv", ByteBlock(AES::BLOCK_SIZE, 0x00)));
+    const ByteBlock iv(args.hexaValue(u"iv", ByteBlock(AES128::BLOCK_SIZE, 0x00)));
     if (!_aescbc[0].setIV(iv.data(), iv.size()) ||
         !_aescbc[1].setIV(iv.data(), iv.size()) ||
         !_aesctr[0].setIV(iv.data(), iv.size()) ||

@@ -21,9 +21,9 @@
 // Schedule a new key. If rounds is zero, the default is used.
 //----------------------------------------------------------------------------
 
-bool ts::TDES::setKeyImpl(const void* key, size_t key_length, size_t rounds)
+bool ts::TDES::setKeyImpl(const void* key, size_t key_length)
 {
-    if (key_length != KEY_SIZE || (rounds != 0 && rounds != ROUNDS)) {
+    if (key_length != KEY_SIZE) {
         return false;
     }
 
@@ -122,16 +122,4 @@ size_t ts::TDES::maxKeySize() const
 bool ts::TDES::isValidKeySize (size_t size) const
 {
     return size == KEY_SIZE;
-}
-size_t ts::TDES::minRounds() const
-{
-    return ROUNDS;
-}
-size_t ts::TDES::maxRounds() const
-{
-    return ROUNDS;
-}
-size_t ts::TDES::defaultRounds() const
-{
-    return ROUNDS;
 }

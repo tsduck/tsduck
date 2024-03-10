@@ -16,6 +16,9 @@
 //
 //----------------------------------------------------------------------------
 
+// @@@@@@ DEPRECATED FILE
+// @@@@@@ We will be deleted when transition to OpenSSL/BCrypt is completed.
+
 #include "tsAES.h"
 #include "tsByteSwap.h"
 #include "tsCryptoAcceleration.h"

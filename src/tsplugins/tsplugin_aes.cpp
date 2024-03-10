@@ -19,7 +19,8 @@
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
-#include "tsAES.h"
+#include "tsAES128.h"
+#include "tsAES256.h"
 #include "tsECB.h"
 #include "tsCBC.h"
 #include "tsCTS1.h"
@@ -44,23 +45,18 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        using CipherPtr = SafePtr<CipherChaining, ThreadSafety::None>;
+
         // Command line options:
-        bool            _descramble = false; // Descramble instead of scramble
-        Service         _service_arg {};     // Service name & id
-        PIDSet          _scrambled {};       // List of PID's to (de)scramble
-        ECB<AES>        _ecb {};             // AES cipher in ECB mode
-        CBC<AES>        _cbc {};             // AES cipher in CBC mode
-        CTS1<AES>       _cts1 {};            // AES cipher in CTS mode, RFC 2040 definition
-        CTS2<AES>       _cts2 {};            // AES cipher in CTS mode, NIST definition
-        CTS3<AES>       _cts3 {};            // AES cipher in ECB-CTS mode
-        CTS4<AES>       _cts4 {};            // AES cipher in ECB-CTS mode (ST version)
-        DVS042<AES>     _dvs042 {};          // AES cipher in DVS 042 mode
-        CipherChaining* _chain = nullptr;    // Selected cipher chaining mode
+        bool      _descramble = false; // Descramble instead of scramble
+        Service   _service_arg {};     // Service name & id
+        PIDSet    _scrambled {};       // List of PID's to (de)scramble
+        CipherPtr _chain {};           // Selected cipher chaining mode
 
         // Working data:
-        bool            _abort = false;      // Error (service not found, etc)
-        Service         _service {};         // Service name & id
-        SectionDemux    _demux {duck, this}; // Section demux
+        bool         _abort = false;      // Error (service not found, etc)
+        Service      _service {};         // Service name & id
+        SectionDemux _demux {duck, this}; // Section demux
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -134,12 +130,12 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
          u"part of the packet payload, shorter than 16 bytes) is left clear. "
          u"This is the default mode.");
 
-    option(u"iv", 'i', HEXADATA, 0, Args::UNLIMITED_COUNT, AES::BLOCK_SIZE, AES::BLOCK_SIZE);
+    option(u"iv", 'i', HEXADATA, 0, Args::UNLIMITED_COUNT, AES128::BLOCK_SIZE, AES128::BLOCK_SIZE);
     help(u"iv",
          u"Specifies the initialization vector. Must be a string of 32 hexadecimal "
          u"digits. Must not be used in ECB mode. The default IV is all zeroes.");
 
-    option(u"key", 'k', HEXADATA, 1, 1, AES::MIN_KEY_SIZE, AES::MAX_KEY_SIZE);
+    option(u"key", 'k', HEXADATA, 1, 1, AES128::KEY_SIZE, AES256::KEY_SIZE);
     help(u"key",
          u"Specifies a fixed and constant AES key for all TS packets. The value "
          u"must be a string of 32 or 64 hexadecimal digits. This is a mandatory "
@@ -165,35 +161,35 @@ bool ts::AESPlugin::getOptions()
         _service_arg.set(value(u""));
     }
 
-    // Get chaining mode.
+    // Get key and chaining mode.
+    const ByteBlock key(hexaValue(u"key"));
     if (present(u"ecb") + present(u"cbc") + present(u"cts1") + present(u"cts2") + present(u"cts3") + present(u"cts4") + present(u"dvs042") > 1) {
         tsp->error(u"options --cbc, --cts1, --cts2, --cts3, --cts4, --dvs042 and --ecb are mutually exclusive");
         return false;
     }
     if (present(u"cbc")) {
-        _chain = &_cbc;
+        _chain = key.size() == AES128::KEY_SIZE ? CipherPtr(new CBC<AES128>) : CipherPtr(new CBC<AES256>);
     }
     else if (present(u"cts1")) {
-        _chain = &_cts1;
+        _chain = key.size() == AES128::KEY_SIZE ? CipherPtr(new CTS1<AES128>) : CipherPtr(new CTS1<AES256>);
     }
     else if (present(u"cts2")) {
-        _chain = &_cts2;
+        _chain = key.size() == AES128::KEY_SIZE ? CipherPtr(new CTS2<AES128>) : CipherPtr(new CTS2<AES256>);
     }
     else if (present(u"cts3")) {
-        _chain = &_cts3;
+        _chain = key.size() == AES128::KEY_SIZE ? CipherPtr(new CTS3<AES128>) : CipherPtr(new CTS3<AES256>);
     }
     else if (present(u"cts4")) {
-        _chain = &_cts4;
+        _chain = key.size() == AES128::KEY_SIZE ? CipherPtr(new CTS4<AES128>) : CipherPtr(new CTS4<AES256>);
     }
     else if (present(u"dvs042")) {
-        _chain = &_dvs042;
+        _chain = key.size() == AES128::KEY_SIZE ? CipherPtr(new DVS042<AES128>) : CipherPtr(new DVS042<AES256>);
     }
     else {
-        _chain = &_ecb;
+        _chain = key.size() == AES128::KEY_SIZE ? CipherPtr(new ECB<AES128>) : CipherPtr(new ECB<AES256>);
     }
 
     // Get AES key
-    const ByteBlock key(hexaValue(u"key"));
     if (!_chain->isValidKeySize(key.size())) {
         tsp->error(u"%d bytes is an invalid AES key size", {key.size()});
         return false;

@@ -19,7 +19,7 @@
 #include "tsByteBlock.h"
 #include "tsUString.h"
 #include "tsSHA256.h"
-#include "tsAES.h"
+#include "tsAES128.h"
 
 namespace ts {
     //!
@@ -38,9 +38,9 @@ namespace ts {
     //!
     //! Description of post-processing, added to the sytem PRNG:
     //! - R1 = read SystemRandomGenerator
-    //! - R2 = AES[K] R1
+    //! - R2 = AES-128[K] (R1)
     //! - R3 = R2 xor state
-    //! - R4 = AES[K] R3
+    //! - R4 = AES-128[K] (R3)
     //! - R4 ==> output of BetterSystemRandomGenerator
     //! - R5 = read SystemRandomGenerator
     //! - state = SHA-256 (R5 xor R4 xor state)
@@ -64,7 +64,7 @@ namespace ts {
         Report*   _report = nullptr;  // Where to report errors.
         bool      _ready = true;      // Fully initialized.
         UString   _state_file;        // Name of the entropy state file.
-        AES       _aes {};            // AES engine.
+        AES128    _aes {};            // AES engine.
         SHA256    _sha {};            // SHA-256 engine.
         size_t    _index;             // Next index in _pool.
         ByteBlock _state {};          // Entropy state.

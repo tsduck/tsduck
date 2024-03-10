@@ -1403,9 +1403,9 @@ void ts::DES::desfunc(uint32_t* block, const uint32_t* keys)
 // Schedule a new key. If rounds is zero, the default is used.
 //----------------------------------------------------------------------------
 
-bool ts::DES::setKeyImpl(const void* key, size_t key_length, size_t rounds)
+bool ts::DES::setKeyImpl(const void* key, size_t key_length)
 {
-    if (key_length != KEY_SIZE || (rounds != 0 && rounds != ROUNDS)) {
+    if (key_length != KEY_SIZE) {
         return false;
     }
 
@@ -1493,16 +1493,4 @@ size_t ts::DES::maxKeySize() const
 bool ts::DES::isValidKeySize (size_t size) const
 {
     return size == KEY_SIZE;
-}
-size_t ts::DES::minRounds() const
-{
-    return ROUNDS;
-}
-size_t ts::DES::maxRounds() const
-{
-    return ROUNDS;
-}
-size_t ts::DES::defaultRounds() const
-{
-    return ROUNDS;
 }

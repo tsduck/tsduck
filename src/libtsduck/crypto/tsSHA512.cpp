@@ -14,6 +14,40 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA512.h"
+
+
+//----------------------------------------------------------------------------
+// Implementation of Hash interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::SHA512::name() const
+{
+    return u"SHA-512";
+}
+size_t ts::SHA512::hashSize() const
+{
+    return HASH_SIZE;
+}
+
+#if defined(TS_WINDOWS)
+::LPCWSTR ts::SHA512::algorithmId() const
+{
+    return BCRYPT_SHA512_ALGORITHM;
+}
+#endif
+
+#if defined(TS_WINDOWS)
+
+//----------------------------------------------------------------------------
+// Constructor, destructor
+//----------------------------------------------------------------------------
+
+ts::SHA512::SHA512()
+{
+}
+
+#else
+
 #include "tsMemory.h"
 #include "tsRotate.h"
 #include "tsSysInfo.h"
@@ -75,24 +109,6 @@ ts::SHA512::SHA512()
 
     // Initialize internal state.
     SHA512::init();
-}
-
-
-//----------------------------------------------------------------------------
-// Implementation of Hash interface:
-//----------------------------------------------------------------------------
-
-ts::UString ts::SHA512::name() const
-{
-    return u"SHA-512";
-}
-size_t ts::SHA512::hashSize() const
-{
-    return HASH_SIZE;
-}
-size_t ts::SHA512::blockSize() const
-{
-    return BLOCK_SIZE;
 }
 
 
@@ -253,3 +269,5 @@ bool ts::SHA512::getHash(void* hash, size_t bufsize, size_t* retsize)
     }
     return true;
 }
+
+#endif

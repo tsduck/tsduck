@@ -16,6 +16,7 @@
 #include "tsBeforeStandardHeaders.h"
 #include <errors.h>
 #include <shellapi.h>
+#include <setupapi.h>
 #include <WinInet.h>
 #include <dshowasf.h>
 #include <ks.h>
@@ -304,13 +305,12 @@ ts::UString ts::GetStringPropertyBag(::IMoniker* object_moniker, const ::OLECHAR
         return UString();
     }
 
-    // Get property from property bag
-
+    // Get property from property bag. Return empty string if property name not found.
     UString value;
     ::VARIANT var;
     ::VariantInit(&var);
     hr = pbag->Read(property_name, &var, 0);
-    if (ComSuccess(hr, u"IPropertyBag::Read", report)) {
+    if (hr != ERROR_KEY_DOES_NOT_EXIST && ComSuccess(hr, u"IPropertyBag::Read", report)) {
         value = ToString(var);
     }
     ::VariantClear(&var);

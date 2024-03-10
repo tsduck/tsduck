@@ -565,7 +565,7 @@ void ts::DVBCSA2::BlockCipher::encipher (const uint8_t *bd, uint8_t *ib)
 // Set the control word for subsequent encrypt/decrypt operations
 //----------------------------------------------------------------------------
 
-bool ts::DVBCSA2::setKeyImpl(const void* key, size_t key_length, size_t rounds)
+bool ts::DVBCSA2::setKeyImpl(const void* key, size_t key_length)
 {
     // Only one possible key size.
     if (key == nullptr || key_length != KEY_SIZE) {
@@ -789,16 +789,4 @@ size_t ts::DVBCSA2::maxKeySize() const
 bool ts::DVBCSA2::isValidKeySize(size_t size) const
 {
     return size == KEY_SIZE;
-}
-size_t ts::DVBCSA2::minRounds() const
-{
-    return 8;
-}
-size_t ts::DVBCSA2::maxRounds() const
-{
-    return 8;
-}
-size_t ts::DVBCSA2::defaultRounds() const
-{
-    return 8;
 }

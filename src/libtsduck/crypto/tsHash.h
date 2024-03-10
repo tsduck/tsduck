@@ -13,6 +13,8 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsByteBlock.h"
+#include "tsCryptoLibrary.h"
 
 namespace ts {
     //!
@@ -35,17 +37,10 @@ namespace ts {
         virtual size_t hashSize() const = 0;
 
         //!
-        //! Size in bytes of the block used by the algorithm.
-        //! @return The size in bytes of the block used by the algorithm.
-        //! Informational only. Can be zero if non significant.
-        //!
-        virtual size_t blockSize() const = 0;
-
-        //!
         //! Reinitialize the computation of the hash.
         //! @return True on success, false on error.
         //!
-        virtual bool init() = 0;
+        virtual bool init();
 
         //!
         //! Add some part of the message to hash.
@@ -54,7 +49,7 @@ namespace ts {
         //! @param [in] size Size in bytes of message part.
         //! @return True on success, false on error.
         //!
-        virtual bool add(const void* data, size_t size) = 0;
+        virtual bool add(const void* data, size_t size);
 
         //!
         //! Get the resulting hash value.
@@ -64,7 +59,7 @@ namespace ts {
         //! the actual returned hash size. Can be a null pointer (ignored).
         //! @return True on success, false on error.
         //!
-        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = nullptr) = 0;
+        virtual bool getHash(void* hash, size_t bufsize, size_t* retsize = nullptr);
 
         //!
         //! Compute a hash in one operation.
@@ -90,8 +85,26 @@ namespace ts {
         bool hash(const void* data, size_t data_size, ByteBlock& hash);
 
         //!
+        //! Default constructor
+        //! 
+        Hash() = default;
+
+        //!
         //! Virtual destructor.
         //!
         virtual ~Hash();
+
+    protected:
+#if defined(TS_WINDOWS) && !defined(DOXYGEN)
+        // Get the algorithm id.
+        virtual ::LPCWSTR algorithmId() const = 0;  
+#endif
+
+    private:
+#if defined(TS_WINDOWS)
+        ::BCRYPT_ALG_HANDLE _algo = nullptr;
+        ::BCRYPT_HASH_HANDLE _hash = nullptr;
+        ByteBlock _obj {};
+#endif
     };
 }

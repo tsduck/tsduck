@@ -69,31 +69,12 @@ namespace ts {
         virtual bool isValidKeySize(size_t size) const = 0;
 
         //!
-        //! Minimum number of rounds for the algorithm.
-        //! @return The minimum number of rounds for the algorithm.
-        //!
-        virtual size_t minRounds() const = 0;
-
-        //!
-        //! Maximum number of rounds for the algorithm.
-        //! @return The maximum number of rounds for the algorithm.
-        //!
-        virtual size_t maxRounds() const = 0;
-
-        //!
-        //! Default number of rounds for the algorithm.
-        //! @return The default number of rounds for the algorithm.
-        //!
-        virtual size_t defaultRounds() const = 0;
-
-        //!
         //! Schedule a new key.
         //! @param [in] key Address of key value.
         //! @param [in] key_length Key length in bytes.
-        //! @param [in] rounds Requested number of rounds. If zero, the default is used.
         //! @return True on success, false on error.
         //!
-        bool setKey(const void* key, size_t key_length, size_t rounds = 0);
+        bool setKey(const void* key, size_t key_length);
 
         //!
         //! Get the current key.
@@ -238,10 +219,9 @@ namespace ts {
         //! Schedule a new key (implementation of algorithm-specific part).
         //! @param [in] key Address of key value.
         //! @param [in] key_length Key length in bytes.
-        //! @param [in] rounds Requested number of rounds. If zero, the default is used.
         //! @return True on success, false on error.
         //!
-        virtual bool setKeyImpl(const void* key, size_t key_length, size_t rounds) = 0;
+        virtual bool setKeyImpl(const void* key, size_t key_length) = 0;
 
         //!
         //! Encrypt one block of data (implementation of algorithm-specific part).

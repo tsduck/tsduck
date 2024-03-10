@@ -10,7 +10,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsAES.h"
+#include "tsAES128.h"
+#include "tsAES256.h"
 #include "tsDES.h"
 #include "tsTDES.h"
 #include "tsSHA1.h"
@@ -335,27 +336,40 @@ void CryptoTest::testHash(utest::TSUnitBenchmark& bench,
 
 void CryptoTest::testAES()
 {
-    ts::AES aes;
+    ts::AES128 aes128;
+    ts::AES256 aes256;
 
-    TSUNIT_ASSERT(aes.blockSize()  == 16);
-    TSUNIT_ASSERT(aes.minKeySize() == 16);
-    TSUNIT_ASSERT(aes.maxKeySize() == 32);
-    TSUNIT_ASSERT(!aes.isValidKeySize(0));
-    TSUNIT_ASSERT(!aes.isValidKeySize(8));
-    TSUNIT_ASSERT(aes.isValidKeySize(16));
-    TSUNIT_ASSERT(aes.isValidKeySize(24));
-    TSUNIT_ASSERT(aes.isValidKeySize(32));
-    TSUNIT_ASSERT(!aes.isValidKeySize(64));
-    TSUNIT_ASSERT(aes.minRounds() == 10);
-    TSUNIT_ASSERT(aes.maxRounds() == 14);
-    TSUNIT_ASSERT(aes.defaultRounds() == 10);
+    TSUNIT_ASSERT(aes128.blockSize()  == 16);
+    TSUNIT_ASSERT(aes128.minKeySize() == 16);
+    TSUNIT_ASSERT(aes128.maxKeySize() == 16);
+    TSUNIT_ASSERT(!aes128.isValidKeySize(0));
+    TSUNIT_ASSERT(!aes128.isValidKeySize(8));
+    TSUNIT_ASSERT(aes128.isValidKeySize(16));
+    TSUNIT_ASSERT(!aes128.isValidKeySize(24));
+    TSUNIT_ASSERT(!aes128.isValidKeySize(32));
+    TSUNIT_ASSERT(!aes128.isValidKeySize(64));
+
+    TSUNIT_ASSERT(aes256.blockSize() == 16);
+    TSUNIT_ASSERT(aes256.minKeySize() == 32);
+    TSUNIT_ASSERT(aes256.maxKeySize() == 32);
+    TSUNIT_ASSERT(!aes256.isValidKeySize(0));
+    TSUNIT_ASSERT(!aes256.isValidKeySize(8));
+    TSUNIT_ASSERT(!aes256.isValidKeySize(16));
+    TSUNIT_ASSERT(!aes256.isValidKeySize(24));
+    TSUNIT_ASSERT(aes256.isValidKeySize(32));
+    TSUNIT_ASSERT(!aes256.isValidKeySize(64));
 
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_ITERATIONS");
 
     const size_t tv_count = sizeof(tv_aes) / sizeof(TV_AES);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES* tv = tv_aes + tvi;
-        testCipher(bench, aes, tvi, tv_count, tv->key, tv->key_size, tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
+        if (tv->key_size == ts::AES128::KEY_SIZE) {
+            testCipher(bench, aes128, tvi, tv_count, tv->key, tv->key_size, tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
+        }
+        else if (tv->key_size == ts::AES256::KEY_SIZE) {
+            testCipher(bench, aes256, tvi, tv_count, tv->key, tv->key_size, tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
+        }
     }
 
     bench.report(u"CryptoTest::testAES");
@@ -365,11 +379,18 @@ void CryptoTest::testAES_ECB()
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_ECB_ITERATIONS");
 
-    ts::ECB<ts::AES> ecb_aes;
+    ts::ECB<ts::AES128> ecb_aes128;
+    ts::ECB<ts::AES256> ecb_aes256;
+
     const size_t tv_count = sizeof(tv_ecb_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_ecb_aes + tvi;
-        testChaining(bench, ecb_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        if (tv->key_size == ts::AES128::KEY_SIZE) {
+            testChaining(bench, ecb_aes128, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
+        else if (tv->key_size == ts::AES256::KEY_SIZE) {
+            testChaining(bench, ecb_aes256, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
     }
 
     bench.report(u"CryptoTest::testAES_ECB");
@@ -379,11 +400,18 @@ void CryptoTest::testAES_CBC()
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_CBC_ITERATIONS");
 
-    ts::CBC<ts::AES> cbc_aes;
+    ts::CBC<ts::AES128> cbc_aes128;
+    ts::CBC<ts::AES256> cbc_aes256;
+
     const size_t tv_count = sizeof(tv_cbc_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_cbc_aes + tvi;
-        testChaining(bench, cbc_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        if (tv->key_size == ts::AES128::KEY_SIZE) {
+            testChaining(bench, cbc_aes128, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
+        else if (tv->key_size == ts::AES256::KEY_SIZE) {
+            testChaining(bench, cbc_aes256, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
     }
 
     bench.report(u"CryptoTest::testAES_CBC");
@@ -393,11 +421,18 @@ void CryptoTest::testAES_CTR()
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_CTR_ITERATIONS");
 
-    ts::CTR<ts::AES> ctr_aes;
+    ts::CTR<ts::AES128> ctr_aes128;
+    ts::CTR<ts::AES256> ctr_aes256;
+
     const size_t tv_count = sizeof(tv_ctr_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_ctr_aes + tvi;
-        testChaining(bench, ctr_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        if (tv->key_size == ts::AES128::KEY_SIZE) {
+            testChaining(bench, ctr_aes128, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
+        else if (tv->key_size == ts::AES256::KEY_SIZE) {
+            testChaining(bench, ctr_aes256, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
     }
 
     bench.report(u"CryptoTest::testAES_CTR");
@@ -407,11 +442,18 @@ void CryptoTest::testAES_CTS1()
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_CTS1_ITERATIONS");
 
-    ts::CTS1<ts::AES> cts1_aes;
+    ts::CTS1<ts::AES128> cts1_aes128;
+    ts::CTS1<ts::AES256> cts1_aes256;
+
     const size_t tv_count = sizeof(tv_cts_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_cts_aes + tvi;
-        testChaining(bench, cts1_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        if (tv->key_size == ts::AES128::KEY_SIZE) {
+            testChaining(bench, cts1_aes128, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
+        else if (tv->key_size == ts::AES256::KEY_SIZE) {
+            testChaining(bench, cts1_aes256, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        }
     }
 
     bench.report(u"CryptoTest::testAES_CTS1");
@@ -419,26 +461,34 @@ void CryptoTest::testAES_CTS1()
 
 void CryptoTest::testAES_CTS2()
 {
-    ts::CTS2<ts::AES> cts2_aes;
-    testChainingSizes(cts2_aes, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    ts::CTS2<ts::AES128> aes128;
+    ts::CTS2<ts::AES256> aes256;
+    testChainingSizes(aes128, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    testChainingSizes(aes256, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
 void CryptoTest::testAES_CTS3()
 {
-    ts::CTS3<ts::AES> cts3_aes;
-    testChainingSizes(cts3_aes, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    ts::CTS3<ts::AES128> aes128;
+    ts::CTS3<ts::AES256> aes256;
+    testChainingSizes(aes128, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    testChainingSizes(aes256, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
 void CryptoTest::testAES_CTS4()
 {
-    ts::CTS4<ts::AES> cts4_aes;
-    testChainingSizes(cts4_aes, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    ts::CTS4<ts::AES128> aes128;
+    ts::CTS4<ts::AES256> aes256;
+    testChainingSizes(aes128, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    testChainingSizes(aes256, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
 void CryptoTest::testAES_DVS042()
 {
-    ts::DVS042<ts::AES> dvs042_aes;
-    testChainingSizes(dvs042_aes, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    ts::DVS042<ts::AES128> aes128;
+    ts::DVS042<ts::AES256> aes256;
+    testChainingSizes(aes128, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
+    testChainingSizes(aes256, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
 void CryptoTest::testDES()
@@ -451,9 +501,6 @@ void CryptoTest::testDES()
     TSUNIT_ASSERT(des.isValidKeySize(8));
     TSUNIT_ASSERT(!des.isValidKeySize(0));
     TSUNIT_ASSERT(!des.isValidKeySize(16));
-    TSUNIT_ASSERT(des.minRounds() == 16);
-    TSUNIT_ASSERT(des.maxRounds() == 16);
-    TSUNIT_ASSERT(des.defaultRounds() == 16);
 
     utest::TSUnitBenchmark bench(u"TSUNIT_DES_ITERATIONS");
 
@@ -477,9 +524,6 @@ void CryptoTest::testTDES()
     TSUNIT_ASSERT(!tdes.isValidKeySize(0));
     TSUNIT_ASSERT(!tdes.isValidKeySize(8));
     TSUNIT_ASSERT(!tdes.isValidKeySize(16));
-    TSUNIT_ASSERT(tdes.minRounds() == 16);
-    TSUNIT_ASSERT(tdes.maxRounds() == 16);
-    TSUNIT_ASSERT(tdes.defaultRounds() == 16);
 
     utest::TSUnitBenchmark bench(u"TSUNIT_TDES_ITERATIONS");
 
@@ -503,9 +547,6 @@ void CryptoTest::testTDES_CBC()
     TSUNIT_ASSERT(!cbc_tdes.isValidKeySize(0));
     TSUNIT_ASSERT(!cbc_tdes.isValidKeySize(8));
     TSUNIT_ASSERT(!cbc_tdes.isValidKeySize(16));
-    TSUNIT_ASSERT(cbc_tdes.minRounds() == 16);
-    TSUNIT_ASSERT(cbc_tdes.maxRounds() == 16);
-    TSUNIT_ASSERT(cbc_tdes.defaultRounds() == 16);
 
     utest::TSUnitBenchmark bench(u"TSUNIT_TDES_CBC_ITERATIONS");
 
@@ -600,7 +641,6 @@ void CryptoTest::testSHA1()
 {
     ts::SHA1 sha1;
     TSUNIT_ASSERT(sha1.hashSize() == 20);
-    TSUNIT_ASSERT(sha1.blockSize() == 64);
 
     utest::TSUnitBenchmark bench(u"TSUNIT_SHA1_ITERATIONS");
 
@@ -617,7 +657,6 @@ void CryptoTest::testSHA256()
 {
     ts::SHA256 sha256;
     TSUNIT_ASSERT(sha256.hashSize() == 32);
-    TSUNIT_ASSERT(sha256.blockSize() == 64);
 
     utest::TSUnitBenchmark bench(u"TSUNIT_SHA256_ITERATIONS");
 
@@ -634,7 +673,6 @@ void CryptoTest::testSHA512()
 {
     ts::SHA512 sha512;
     TSUNIT_ASSERT(sha512.hashSize() == 64);
-    TSUNIT_ASSERT(sha512.blockSize() == 128);
 
     utest::TSUnitBenchmark bench(u"TSUNIT_SHA512_ITERATIONS");
 

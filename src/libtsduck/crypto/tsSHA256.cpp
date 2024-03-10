@@ -14,6 +14,40 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA256.h"
+
+
+//----------------------------------------------------------------------------
+// Implementation of Hash interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::SHA256::name() const
+{
+    return u"SHA-256";
+}
+size_t ts::SHA256::hashSize() const
+{
+    return HASH_SIZE;
+}
+
+#if defined(TS_WINDOWS)
+::LPCWSTR ts::SHA256::algorithmId() const
+{
+    return BCRYPT_SHA256_ALGORITHM;
+}
+#endif
+
+#if defined(TS_WINDOWS)
+
+//----------------------------------------------------------------------------
+// Constructor, destructor
+//----------------------------------------------------------------------------
+
+ts::SHA256::SHA256()
+{
+}
+
+#else
+
 #include "tsMemory.h"
 #include "tsRotate.h"
 #include "tsSysInfo.h"
@@ -71,24 +105,6 @@ ts::SHA256::SHA256()
 
     // Initialize internal state.
     SHA256::init();
-}
-
-
-//----------------------------------------------------------------------------
-// Implementation of Hash interface:
-//----------------------------------------------------------------------------
-
-ts::UString ts::SHA256::name() const
-{
-    return u"SHA-256";
-}
-size_t ts::SHA256::hashSize() const
-{
-    return HASH_SIZE;
-}
-size_t ts::SHA256::blockSize() const
-{
-    return BLOCK_SIZE;
 }
 
 
@@ -302,3 +318,5 @@ bool ts::SHA256::getHash(void* hash, size_t bufsize, size_t* retsize)
     }
     return true;
 }
+
+#endif
