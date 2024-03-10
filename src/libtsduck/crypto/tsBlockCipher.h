@@ -14,6 +14,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsByteBlock.h"
+#include "tsCryptoLibrary.h"
 
 namespace ts {
 
@@ -217,14 +218,16 @@ namespace ts {
     protected:
         //!
         //! Schedule a new key (implementation of algorithm-specific part).
+        //! Must be implemented by the subclass if it does not use the system-provided cryptographic library.
         //! @param [in] key Address of key value.
         //! @param [in] key_length Key length in bytes.
         //! @return True on success, false on error.
         //!
-        virtual bool setKeyImpl(const void* key, size_t key_length) = 0;
+        virtual bool setKeyImpl(const void* key, size_t key_length);
 
         //!
         //! Encrypt one block of data (implementation of algorithm-specific part).
+        //! Must be implemented by the subclass if it does not use the system-provided cryptographic library.
         //! @param [in] plain Address of plain text.
         //! @param [in] plain_length Plain text length in bytes.
         //! @param [out] cipher Address of buffer for cipher text.
@@ -232,10 +235,11 @@ namespace ts {
         //! @param [out] cipher_length Returned actual size of cipher text. Ignored if zero.
         //! @return True on success, false on error.
         //!
-        virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) = 0;
+        virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length);
 
         //!
         //! Decrypt one block of data (implementation of algorithm-specific part).
+        //! Must be implemented by the subclass if it does not use the system-provided cryptographic library.
         //! @param [in] cipher Address of cipher text.
         //! @param [in] cipher_length Cipher text length in bytes.
         //! @param [out] plain Address of buffer for plain text.
@@ -243,7 +247,7 @@ namespace ts {
         //! @param [out] plain_length Returned actual size of plain text. Ignored if zero.
         //! @return True on success, false on error.
         //!
-        virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) = 0;
+        virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length);
 
         //!
         //! Encrypt one block of data in place (implementation of algorithm-specific part).
@@ -273,6 +277,13 @@ namespace ts {
         //!
         virtual bool decryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length);
 
+        //! @cond nodoxygen
+#if defined(TS_WINDOWS)
+        // Get the algorithm handle and subobject size. Only when the algorithm is implemented in BCrypt library.
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const;
+#endif
+        //! @endcond
+
     private:
         bool      _key_set = false;                   // Current key successfully set.
         int       _cipher_id = 0;                     // Cipher identity (from application).
@@ -286,5 +297,12 @@ namespace ts {
         // Check if encryption or decryption is allowed. Increment counters.
         bool allowEncrypt();
         bool allowDecrypt();
+
+        // System-specific cryptographic library.
+#if defined(TS_WINDOWS)
+        ::BCRYPT_ALG_HANDLE _algo = nullptr;
+        ::BCRYPT_KEY_HANDLE _hkey = nullptr;
+        ByteBlock _obj {};
+#endif
     };
 }

@@ -37,9 +37,11 @@ size_t ts::SHA512::hashSize() const
 
 #if defined(TS_WINDOWS)
 
-::LPCWSTR ts::SHA512::algorithmId() const
+TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_SHA512_ALGORITHM), Fetch);
+
+void ts::SHA512::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 {
-    return BCRYPT_SHA512_ALGORITHM;
+    Fetch::Instance().getAlgorithm(algo, length);
 }
 
 #else
