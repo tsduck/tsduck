@@ -34,11 +34,11 @@ bool ts::BlockCipher::getKey(ByteBlock& key) const
 // Schedule a new key.
 //----------------------------------------------------------------------------
 
-bool ts::BlockCipher::setKey(const void* key, size_t key_length, size_t rounds)
+bool ts::BlockCipher::setKey(const void* key, size_t key_length)
 {
     _key_encrypt_count = _key_decrypt_count = 0;
     _current_key.copy(key, key_length);
-    _key_set = setKeyImpl(key, key_length, rounds);
+    _key_set = setKeyImpl(key, key_length);
     return _key_set;
 }
 

@@ -17,6 +17,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA512.h"
+#if !defined(TS_WINDOWS)
+
 #include "tsCryptoAcceleration.h"
 
 // Check if Arm-64 SHA-256 instructions can be used in asm() directives and intrinsics.
@@ -220,3 +222,5 @@ void ts::SHA512::compressAccel(const uint8_t* buf)
     assert(false);
 #endif
 }
+
+#endif

@@ -5,22 +5,20 @@
 // BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsCryptoLibrary.h"
+
+
+//----------------------------------------------------------------------------
+// Get the name and version of the underlying cryptographic library.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 37
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 3655
+ts::UString ts::GetCryptographicLibraryVersion()
+{
+#if defined(TS_WINDOWS)
+    // Don't know how to get the version of BCrypt library.
+    return u"Microsoft BCrypt";
+#else
+    return u"@@@@@ TBC";
+#endif
+}

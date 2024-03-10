@@ -26,7 +26,6 @@ namespace ts {
         TDES() = default;                        //!< Constructor.
         static constexpr size_t BLOCK_SIZE = 8;  //!< TDES block size in bytes.
         static constexpr size_t KEY_SIZE = 24;   //!< TDES key size in bytes.
-        static constexpr size_t ROUNDS = 16;     //!< TDES number of rounds.
 
         // Implementation of BlockCipher interface:
         virtual UString name() const override;
@@ -34,13 +33,10 @@ namespace ts {
         virtual size_t minKeySize() const override;
         virtual size_t maxKeySize() const override;
         virtual bool isValidKeySize (size_t size) const override;
-        virtual size_t minRounds() const override;
-        virtual size_t maxRounds() const override;
-        virtual size_t defaultRounds() const override;
 
     protected:
         // Implementation of BlockCipher interface:
-        virtual bool setKeyImpl(const void* key, size_t key_length, size_t rounds) override;
+        virtual bool setKeyImpl(const void* key, size_t key_length) override;
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
 

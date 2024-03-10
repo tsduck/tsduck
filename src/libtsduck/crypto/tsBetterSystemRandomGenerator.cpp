@@ -27,13 +27,13 @@ namespace {
 
 ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
     _state_file(UserHomeDirectory() + fs::path::preferred_separator + u".tsseed"),
-    _index(AES::BLOCK_SIZE), // at end of block, will need update
-    _pool(AES::BLOCK_SIZE)
+    _index(AES128::BLOCK_SIZE), // at end of block, will need update
+    _pool(AES128::BLOCK_SIZE)
 {
     // Read the previous content of the seed file.
-    if (!_state.loadFromFile(_state_file, AES::BLOCK_SIZE) || _state.size() != AES::BLOCK_SIZE) {
+    if (!_state.loadFromFile(_state_file, AES128::BLOCK_SIZE) || _state.size() != AES128::BLOCK_SIZE) {
         // Can't read seed file, maybe first access, read random data and writes it once.
-        _state.resize(AES::BLOCK_SIZE);
+        _state.resize(AES128::BLOCK_SIZE);
         if (SystemRandomGenerator::read(_state.data(), _state.size())) {
             // Got new random data, write seed file. Do not check errors here (?)
             _state.saveToFile(_state_file);
@@ -78,8 +78,8 @@ bool ts::BetterSystemRandomGenerator::ready() const
 
 bool ts::BetterSystemRandomGenerator::updatePool()
 {
-    uint8_t r1[AES::BLOCK_SIZE];
-    uint8_t r2[AES::BLOCK_SIZE];
+    uint8_t r1[AES128::BLOCK_SIZE];
+    uint8_t r2[AES128::BLOCK_SIZE];
 
     // R1 = read SystemRandomGenerator
     // R2 = AES[K] R1
@@ -88,12 +88,12 @@ bool ts::BetterSystemRandomGenerator::updatePool()
     }
 
     // R1 = R2 xor state
-    for (size_t i = 0; i < AES::BLOCK_SIZE; ++i) {
+    for (size_t i = 0; i < AES128::BLOCK_SIZE; ++i) {
         r1[i] = r2[i] ^ _state[i];
     }
 
     // pool = AES[K] R1 ==> output of BetterSystemRandomGenerator
-    assert(_pool.size() == AES::BLOCK_SIZE);
+    assert(_pool.size() == AES128::BLOCK_SIZE);
     if (!_aes.encrypt(r1, sizeof(r1), _pool.data(), _pool.size())) {
         return false;
     }
@@ -104,7 +104,7 @@ bool ts::BetterSystemRandomGenerator::updatePool()
     }
 
     // R2 = R1 xor pool xor state.
-    for (size_t i = 0; i < AES::BLOCK_SIZE; ++i) {
+    for (size_t i = 0; i < AES128::BLOCK_SIZE; ++i) {
         r2[i] = r1[i] ^ _pool[i] ^ _state[i];
     }
 
@@ -116,7 +116,7 @@ bool ts::BetterSystemRandomGenerator::updatePool()
 
     // state = truncated h
     assert(_state.size() <= sizeof(h));
-    _state.copy(h, AES::BLOCK_SIZE);
+    _state.copy(h, AES128::BLOCK_SIZE);
 
     // Save state file.
     if (!_state.saveToFile(_state_file, _report)) {

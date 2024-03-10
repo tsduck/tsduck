@@ -83,9 +83,11 @@ bool ts::DirectShowFilterCategory::getAllFiltersInstance(const ::GUID& category)
         flt.name = GetStringPropertyBag(flt.moniker.pointer(), L"FriendlyName", _report);
 
         // Create an instance of this filter from moniker.
-        flt.filter.bindToObject(flt.moniker.pointer(), ::IID_IBaseFilter, _report);
-        if (!flt.filter.isNull()) {
-            _filters.push_back(flt);
+        if (!flt.name.empty()) {
+            flt.filter.bindToObject(flt.moniker.pointer(), ::IID_IBaseFilter, _report);
+            if (!flt.filter.isNull()) {
+                _filters.push_back(flt);
+            }
         }
     }
     return true;

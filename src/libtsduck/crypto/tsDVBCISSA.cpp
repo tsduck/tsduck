@@ -13,8 +13,7 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::DVBCISSA::DVBCISSA() :
-    CBC<AES>()
+ts::DVBCISSA::DVBCISSA()
 {
     // The IV is defined by the standard and not modifiable.
     static const uint8_t ivs[16] = {0x44, 0x56, 0x42, 0x54, 0x4d, 0x43, 0x50, 0x54, 0x41, 0x45, 0x53, 0x43, 0x49, 0x53, 0x53, 0x41};
@@ -35,5 +34,5 @@ bool ts::DVBCISSA::setIV(const void* iv_, size_t iv_length)
 {
     // The IV is defined by the standard and not modifiable.
     // This method is hidden (private) but redirected to its super class.
-    return CBC<AES>::setIV(iv_, iv_length);
+    return CBC<AES128>::setIV(iv_, iv_length);
 }

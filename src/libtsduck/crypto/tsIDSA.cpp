@@ -13,8 +13,7 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::IDSA::IDSA() :
-    DVS042<AES>()
+ts::IDSA::IDSA()
 {
     // The IV are defined by the standard and not modifiable.
     static const uint8_t iv_zero[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -35,12 +34,12 @@ bool ts::IDSA::setIV(const void* iv_, size_t iv_length)
 {
     // The IV are defined by the standard and not modifiable.
     // This method is hidden (private) but redirected to its super class.
-    return DVS042<AES>::setIV(iv_, iv_length);
+    return DVS042<AES128>::setIV(iv_, iv_length);
 }
 
 bool ts::IDSA::setShortIV(const void* iv_, size_t iv_length)
 {
     // The IV are defined by the standard and not modifiable.
     // This method is hidden (private) but redirected to its super class.
-    return DVS042<AES>::setShortIV(iv_, iv_length);
+    return DVS042<AES128>::setShortIV(iv_, iv_length);
 }

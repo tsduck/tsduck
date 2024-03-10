@@ -112,19 +112,17 @@ namespace ts {
         //! Retrieve a key in the table and initialize a block cipher engine.
         //! @param [in,out] cipher The block cipher engine into which the key shall be loaded.
         //! @param [in] id The key id to retrieve.
-        //! @param [in] rounds Requested number of key scheduling rounds. If zero, the default is used.
         //! @return True on success, false otherwise.
         //!
-        bool setKey(BlockCipher& cipher, const ByteBlock& id, size_t rounds = 0) const;
+        bool setKey(BlockCipher& cipher, const ByteBlock& id) const;
 
         //!
         //! Retrieve a key in the table and initialize a block cipher engine.
         //! @param [in,out] cipher The block cipher engine into which the key shall be loaded.
         //! @param [in] id The key id to retrieve as a string of hexadecimal digits.
-        //! @param [in] rounds Requested number of key scheduling rounds. If zero, the default is used.
         //! @return True on success, false otherwise.
         //!
-        bool setKey(BlockCipher& cipher, const UString& id, size_t rounds = 0) const;
+        bool setKey(BlockCipher& cipher, const UString& id) const;
 
         //!
         //! Load all keys from an XML file and add them in the key table.

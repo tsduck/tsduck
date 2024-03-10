@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsCBC.h"
-#include "tsAES.h"
+#include "tsAES128.h"
 
 namespace ts {
     //!
@@ -22,7 +22,7 @@ namespace ts {
     //! @ingroup crypto
     //! @see ETSI TS 103 127, chapter 6
     //!
-    class TSDUCKDLL DVBCISSA : public CBC<AES>
+    class TSDUCKDLL DVBCISSA: public CBC<AES128>
     {
         TS_NOCOPY(DVBCISSA);
     public:

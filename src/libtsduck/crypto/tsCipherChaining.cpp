@@ -63,24 +63,9 @@ bool ts::CipherChaining::isValidKeySize(size_t size) const
     return algo == nullptr ? 0 : algo->isValidKeySize(size);
 }
 
-size_t ts::CipherChaining::minRounds() const
+bool ts::CipherChaining::setKeyImpl(const void* key, size_t key_length)
 {
-    return algo == nullptr ? 0 : algo->minRounds();
-}
-
-size_t ts::CipherChaining::maxRounds() const
-{
-    return algo == nullptr ? 0 : algo->maxRounds();
-}
-
-size_t ts::CipherChaining::defaultRounds() const
-{
-    return algo == nullptr ? 0 : algo->defaultRounds();
-}
-
-bool ts::CipherChaining::setKeyImpl(const void* key, size_t key_length, size_t rounds)
-{
-    return algo != nullptr && algo->setKey(key, key_length, rounds);
+    return algo != nullptr && algo->setKey(key, key_length);
 }
 
 

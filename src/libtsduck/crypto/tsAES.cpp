@@ -13,6 +13,9 @@
 //
 //----------------------------------------------------------------------------
 
+// @@@@@@ DEPRECATED FILE
+// @@@@@@ We will be deleted when transition to OpenSSL/BCrypt is completed.
+
 #include "tsAES.h"
 #include "tsByteSwap.h"
 #include "tsRotate.h"
@@ -72,18 +75,6 @@ size_t ts::AES::maxKeySize() const
 bool ts::AES::isValidKeySize (size_t size) const
 {
     return size == 16 || size == 24 || size == 32;
-}
-size_t ts::AES::minRounds() const
-{
-    return MIN_ROUNDS;
-}
-size_t ts::AES::maxRounds() const
-{
-    return MAX_ROUNDS;
-}
-size_t ts::AES::defaultRounds() const
-{
-    return DEFAULT_ROUNDS;
 }
 
 
@@ -733,7 +724,7 @@ namespace {
 // Schedule a new key. If rounds is zero, the default is used.
 //----------------------------------------------------------------------------
 
-bool ts::AES::setKeyImpl(const void* key_data, size_t key_length, size_t rounds)
+bool ts::AES::setKeyImpl(const void* key_data, size_t key_length)
 {
     // The key schedule operation does not use AES accelerated instructions.
     // At the end of this method, we prepare the scheduled keys for use
@@ -746,9 +737,6 @@ bool ts::AES::setKeyImpl(const void* key_data, size_t key_length, size_t rounds)
 
     // Expected number of rounds for key size
     size_t exp_rounds = 10 + ((key_length / 8) - 2) * 2;
-    if (rounds != 0 && rounds != exp_rounds) {
-        return false;
-    }
     _nrounds = int(exp_rounds);
     _kbits = key_length * 8;
 

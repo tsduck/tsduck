@@ -14,6 +14,40 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA1.h"
+
+
+//----------------------------------------------------------------------------
+// Implementation of Hash interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::SHA1::name() const
+{
+    return u"SHA-1";
+}
+size_t ts::SHA1::hashSize() const
+{
+    return HASH_SIZE;
+}
+
+#if defined(TS_WINDOWS)
+::LPCWSTR ts::SHA1::algorithmId() const
+{
+    return BCRYPT_SHA1_ALGORITHM;
+}
+#endif
+
+#if defined(TS_WINDOWS)
+
+//----------------------------------------------------------------------------
+// Constructor, destructor
+//----------------------------------------------------------------------------
+
+ts::SHA1::SHA1()
+{
+}
+
+#else
+
 #include "tsMemory.h"
 #include "tsRotate.h"
 #include "tsSysInfo.h"
@@ -41,24 +75,6 @@ ts::SHA1::SHA1()
 
     // Initialize internal state.
     SHA1::init();
-}
-
-
-//----------------------------------------------------------------------------
-// Implementation of Hash interface:
-//----------------------------------------------------------------------------
-
-ts::UString ts::SHA1::name() const
-{
-    return u"SHA-1";
-}
-size_t ts::SHA1::hashSize() const
-{
-    return HASH_SIZE;
-}
-size_t ts::SHA1::blockSize() const
-{
-    return BLOCK_SIZE;
 }
 
 
@@ -257,3 +273,5 @@ bool ts::SHA1::getHash(void* hash, size_t bufsize, size_t* retsize)
     }
     return true;
 }
+
+#endif

@@ -7,32 +7,34 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  DES block cipher
+//!  AES-256 block cipher
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsBlockCipher.h"
+#include "tsAES.h"
 
 namespace ts {
     //!
-    //! DES block cipher.
+    //! AES-256 block cipher
     //! @ingroup crypto
     //!
-    class TSDUCKDLL DES: public BlockCipher
+    class TSDUCKDLL AES256: public BlockCipher
     {
-        TS_NOCOPY(DES);
+        TS_NOCOPY(AES256);
     public:
-        DES() = default;                         //!< Constructor.
-        static constexpr size_t BLOCK_SIZE = 8;  //!< DES block size in bytes.
-        static constexpr size_t KEY_SIZE = 8;    //!< DES key size in bytes.
+        AES256() = default;                           //!< Constructor.
+        virtual ~AES256() override = default;         //!< Destructor.
+        static constexpr size_t BLOCK_SIZE = 16;      //!< AES-256 block size in bytes.
+        static constexpr size_t KEY_SIZE = 32;        //!< AES-256 key size in bytes.
 
         // Implementation of BlockCipher interface:
         virtual UString name() const override;
         virtual size_t blockSize() const override;
         virtual size_t minKeySize() const override;
         virtual size_t maxKeySize() const override;
-        virtual bool isValidKeySize (size_t size) const override;
+        virtual bool isValidKeySize(size_t size) const override;
 
     protected:
         // Implementation of BlockCipher interface:
@@ -41,15 +43,6 @@ namespace ts {
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
 
     private:
-        uint32_t _ek[32] {};  // Encryption keys
-        uint32_t _dk[32] {};  // Decryption keys
-
-        // Computation static methods, shared with TDES
-        friend class TDES;
-        static const uint16_t EN0 = 0;
-        static const uint16_t DE1 = 1;
-        static void cookey(const uint32_t* raw1, uint32_t* keyout);
-        static void deskey(const uint8_t* key, uint16_t edf, uint32_t* keyout);
-        static void desfunc(uint32_t* block, const uint32_t* keys);
+        AES _aes {};
     };
 }

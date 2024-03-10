@@ -18,7 +18,7 @@
 #include "tsPSI.h"
 #include "tsDVBCSA2.h"
 #include "tsDVBCISSA.h"
-#include "tsAES.h"
+#include "tsAES128.h"
 #include "tsCBC.h"
 #include "tsCTR.h"
 #include "tsIDSA.h"
@@ -207,8 +207,8 @@ namespace ts {
         DVBCSA2          _dvbcsa[2] {};            // Index 0 = even key, 1 = odd key.
         DVBCISSA         _dvbcissa[2] {};
         IDSA             _idsa[2] {};
-        CBC<AES>         _aescbc[2] {};
-        CTR<AES>         _aesctr[2] {};
+        CBC<AES128>      _aescbc[2] {};
+        CTR<AES128>      _aesctr[2] {};
         CipherChaining*  _scrambler[2] {nullptr, nullptr};
 
         // Set the next fixed control word as scrambling key.
