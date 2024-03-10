@@ -22,9 +22,11 @@
         #pragma comment(lib, "bcrypt.lib")
     #endif
 #else
+    #include "tsBeforeStandardHeaders.h"
     #include <openssl/opensslv.h>
     #include <openssl/evp.h>
     #include <openssl/err.h>
+    #include "tsAfterStandardHeaders.h"
     #if !defined(OPENSSL_VERSION_MAJOR) // before v3
         #define OPENSSL_VERSION_MAJOR (OPENSSL_VERSION_NUMBER >> 28)
     #endif
