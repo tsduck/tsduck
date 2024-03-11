@@ -15,6 +15,20 @@
 #pragma once
 #include "tsPlatform.h"
 
+//!
+//! Build a string literal for fatal error messages.
+//! @param literal 8-bit string literal
+//!
+#define TS_FATALMSG(literal) "\n\n*** " literal ", aborting...\n\n"
+
+//!
+//! @hideinitializer
+//! Abort the application with a fatal error message.
+//! @param literal 8-bit string literal error message.
+//! @see ts::FatalError
+//!
+#define TS_FATAL(literal) ts::FatalError(TS_FATALMSG(literal), sizeof(TS_FATALMSG(literal)) - 1)
+
 namespace ts {
     //!
     //! Handle a fatal error.

@@ -17,4 +17,3 @@
 // Some global constant private booleans which are defined when the accelerated
 // modules are compiled with accelerated instructions.
 extern const bool tsCRC32IsAccelerated;
-extern const bool tsAESIsAccelerated;

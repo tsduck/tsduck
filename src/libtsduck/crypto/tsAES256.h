@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsBlockCipher.h"
-#include "tsAES.h"
 
 namespace ts {
     //!
@@ -40,16 +39,8 @@ namespace ts {
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
 #else
-        virtual bool setKeyImpl(const void* key, size_t key_length) override;
-        virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
-        virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        virtual const EVP_CIPHER* getAlgorithm() const override;
 #endif
         //! @endcond
-
-
-#if !defined(TS_WINDOWS)
-    private:
-        AES _aes {};
-#endif
     };
 }

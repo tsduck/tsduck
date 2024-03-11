@@ -61,48 +61,11 @@ void ts::AES256::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 
 #else
 
-//----------------------------------------------------------------------------
-// Schedule a new key. If rounds is zero, the default is used.
-//----------------------------------------------------------------------------
+TS_STATIC_INSTANCE(ts::PresetCipherAlgorithm, ("AES-256-ECB"), Algo);
 
-bool ts::AES256::setKeyImpl(const void* key_data, size_t key_length)
+const EVP_CIPHER* ts::AES256::getAlgorithm() const
 {
-    if (key_length != KEY_SIZE) {
-        return false;
-    }
-    return _aes.setKey(key_data, key_length);
-}
-
-
-//----------------------------------------------------------------------------
-// Encryption in ECB mode.
-//----------------------------------------------------------------------------
-
-bool ts::AES256::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
-{
-    if (plain_length != BLOCK_SIZE || cipher_maxsize < BLOCK_SIZE) {
-        return false;
-    }
-    if (cipher_length != nullptr) {
-        *cipher_length = BLOCK_SIZE;
-    }
-    return _aes.encrypt(plain, plain_length, cipher, cipher_maxsize, cipher_length);
-}
-
-
-//----------------------------------------------------------------------------
-// Decryption in ECB mode.
-//----------------------------------------------------------------------------
-
-bool ts::AES256::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
-{
-    if (cipher_length != BLOCK_SIZE || plain_maxsize < BLOCK_SIZE) {
-        return false;
-    }
-    if (plain_length != nullptr) {
-        *plain_length = BLOCK_SIZE;
-    }
-    return _aes.decrypt(cipher, cipher_length, plain, plain_maxsize, plain_length);
+    return Algo::Instance().algorithm();
 }
 
 #endif

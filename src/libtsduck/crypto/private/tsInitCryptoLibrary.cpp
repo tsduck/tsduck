@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsInitCryptoLibrary.h"
+#include "tsEnvironment.h"
 
 
 //----------------------------------------------------------------------------
@@ -58,6 +59,7 @@ ts::InitCryptoLibrary::InitCryptoLibrary()
 {
     ERR_load_crypto_strings();
     OpenSSL_add_all_algorithms();
+    _debug = !GetEnvironment(u"TS_DEBUG_OPENSSL").empty();
 }
 
 // Cleanup OpenSSL.
@@ -70,14 +72,15 @@ ts::InitCryptoLibrary::~InitCryptoLibrary()
 // A class to create a singleton with a preset hash context for OpenSSL.
 ts::PresetHashContext::PresetHashContext(const char* algo)
 {
-    _md = EVP_MD_fetch(nullptr, algo, nullptr);
-    if (_md != nullptr) {
+    _algo = EVP_MD_fetch(nullptr, algo, nullptr);
+    if (_algo != nullptr) {
         _context = EVP_MD_CTX_new();
-        if (_context != nullptr && !EVP_DigestInit_ex(_context, _md, nullptr)) {
+        if (_context != nullptr && !EVP_DigestInit_ex(_context, _algo, nullptr)) {
             EVP_MD_CTX_free(_context);
             _context = nullptr;
         }
     }
+    PrintCryptographicLibraryErrors();
 }
 
 // Cleanup hash context for OpenSSL.
@@ -87,9 +90,25 @@ ts::PresetHashContext::~PresetHashContext()
         EVP_MD_CTX_free(_context);
         _context = nullptr;
     }
-    if (_md != nullptr) {
-        EVP_MD_free(_md);
-        _md = nullptr;
+    if (_algo != nullptr) {
+        EVP_MD_free(_algo);
+        _algo = nullptr;
+    }
+}
+
+// A class to create a singleton with a preset cipher algorithm for OpenSSL.
+ts::PresetCipherAlgorithm::PresetCipherAlgorithm(const char* algo, const char* properties)
+{
+    _algo = EVP_CIPHER_fetch(nullptr, algo, properties);
+    PrintCryptographicLibraryErrors();
+}
+
+// Cleanup cipher algorithm for OpenSSL.
+ts::PresetCipherAlgorithm::~PresetCipherAlgorithm()
+{
+    if (_algo != nullptr) {
+        EVP_CIPHER_free(_algo);
+        _algo = nullptr;
     }
 }
 

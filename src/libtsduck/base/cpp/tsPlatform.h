@@ -545,13 +545,6 @@
     #define TS_NO_ARM_CRC32_INSTRUCTIONS
 #endif
 
-//!
-//! Define TS_NO_ARM_AES_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 AES instructions.
-//!
-#if defined(DOXYGEN)
-    #define TS_NO_ARM_AES_INSTRUCTIONS
-#endif
-
 
 //----------------------------------------------------------------------------
 // Static linking.

@@ -44,6 +44,9 @@ namespace ts {
         TS_DECLARE_SINGLETON(InitCryptoLibrary);
     public:
         ~InitCryptoLibrary();
+        bool debug() const { return _debug; }
+    private:
+        bool _debug = false;
     };
 
     // A class to create a singleton with a preset hash context for OpenSSL.
@@ -56,8 +59,20 @@ namespace ts {
         ~PresetHashContext();
         const EVP_MD_CTX* context() const { return _context; }
     private:
-        EVP_MD*     _md = nullptr;
+        EVP_MD* _algo = nullptr;
         EVP_MD_CTX* _context = nullptr;
+    };
+
+    // A class to create a singleton with a preset cipher algorithm for OpenSSL.
+    class PresetCipherAlgorithm
+    {
+        TS_NOBUILD_NOCOPY(PresetCipherAlgorithm);
+    public:
+        PresetCipherAlgorithm(const char* algo, const char* properties = nullptr);
+        ~PresetCipherAlgorithm();
+        const EVP_CIPHER* algorithm() const { return _algo; }
+    private:
+        EVP_CIPHER* _algo = nullptr;
     };
 
 #endif
@@ -68,6 +83,16 @@ namespace ts {
     {
 #if !defined(TS_WINDOWS)
         InitCryptoLibrary::Instance();
+#endif
+    }
+
+    // Internal function to display errors from the underlying cryptographic library on standard error.
+    inline void PrintCryptographicLibraryErrors()
+    {
+#if !defined(TS_WINDOWS)
+        if (InitCryptoLibrary::Instance().debug()) {
+            ERR_print_errors_fp(stderr);
+        }
 #endif
     }
 }
