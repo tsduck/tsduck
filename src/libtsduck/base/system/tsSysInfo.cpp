@@ -304,12 +304,5 @@ ts::SysInfo::SysInfo() :
                 _crcInstructions = tsCRC32IsAccelerated && SysCtrlBool("hw.optional.armv8_crc32");
             #endif
         }
-        if (GetEnvironment(u"TS_NO_AES_INSTRUCTIONS").empty()) {
-            #if defined(TS_LINUX) && defined(HWCAP_AES)
-                _aesInstructions = tsAESIsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_AES) != 0;
-            #elif defined(TS_MAC)
-                _aesInstructions = tsAESIsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_AES");
-            #endif
-        }
     }
 }

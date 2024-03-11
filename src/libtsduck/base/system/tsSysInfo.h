@@ -147,11 +147,6 @@ namespace ts {
         //!
         bool crcInstructions() const { return _crcInstructions; }
         //!
-        //! Check if the CPU supports accelerated instructions for AES.
-        //! @return True if the CPU supports AES instructions.
-        //!
-        bool aesInstructions() const { return _aesInstructions; }
-        //!
         //! Get the operating system version.
         //! @return The operating system version.
         //!
@@ -208,7 +203,6 @@ namespace ts {
         bool    _isMIPS32 = false;
         bool    _isMIPS64 = false;
         bool    _crcInstructions = false;
-        bool    _aesInstructions = false;
         int     _systemMajorVersion {-1};
         UString _systemVersion {};
         UString _systemName {};

@@ -281,6 +281,9 @@ namespace ts {
 #if defined(TS_WINDOWS)
         // Get the algorithm handle and subobject size. Only when the algorithm is implemented in BCrypt library.
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const;
+#else
+        // Get EVP for algorithm. Only when the algorithm is implemented in OpenSSL.
+        virtual const EVP_CIPHER* getAlgorithm() const;
 #endif
         //! @endcond
 
@@ -303,6 +306,10 @@ namespace ts {
         ::BCRYPT_ALG_HANDLE _algo = nullptr;
         ::BCRYPT_KEY_HANDLE _hkey = nullptr;
         ByteBlock _obj {};
+#else
+        const EVP_CIPHER* _algo = nullptr;
+        EVP_CIPHER_CTX* _encrypt = nullptr;
+        EVP_CIPHER_CTX* _decrypt = nullptr;
 #endif
     };
 }

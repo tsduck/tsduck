@@ -341,10 +341,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         }
         case Format::ACCELERATION: {
             // Support for accelerated instructions.
-            return UString::Format(u"CRC32: %s, AES: %s", {
-                UString::YesNo(SysInfo::Instance().crcInstructions()),
-                UString::YesNo(SysInfo::Instance().aesInstructions())
-            });
+            return UString::Format(u"CRC32: %s", {UString::YesNo(SysInfo::Instance().crcInstructions())});
         }
         case Format::ALL: {
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +
