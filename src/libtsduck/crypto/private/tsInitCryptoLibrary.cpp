@@ -69,10 +69,29 @@ ts::InitCryptoLibrary::~InitCryptoLibrary()
     ERR_free_strings();
 }
 
-// A class to create a singleton with a preset hash context for OpenSSL.
-ts::PresetHashContext::PresetHashContext(const char* algo)
+// Load an OpenSSL provider if not yet loaded.
+void ts::FetchBase::loadProvider(const char* provider)
 {
-    _algo = EVP_MD_fetch(nullptr, algo, nullptr);
+    if (provider != nullptr &&
+        provider[0] != '\0' &&
+        !OSSL_PROVIDER_available(nullptr, provider) &&
+        OSSL_PROVIDER_load(nullptr, provider) == nullptr)
+    {
+        PrintCryptographicLibraryErrors();
+    }
+}
+
+// Get the properies string from an OpenSSL provider.
+std::string ts::FetchBase::providerProperties(const char* provider)
+{
+    return provider == nullptr || provider[0] == '\0' ? std::string() : std::string("provider=") + provider;
+}
+
+// A class to create a singleton with a preset hash context for OpenSSL.
+ts::FetchHashAlgorithm::FetchHashAlgorithm(const char* algo, const char* provider)
+{
+    loadProvider(provider);
+    _algo = EVP_MD_fetch(nullptr, algo, providerProperties(provider).c_str());
     if (_algo != nullptr) {
         _context = EVP_MD_CTX_new();
         if (_context != nullptr && !EVP_DigestInit_ex(_context, _algo, nullptr)) {
@@ -84,7 +103,7 @@ ts::PresetHashContext::PresetHashContext(const char* algo)
 }
 
 // Cleanup hash context for OpenSSL.
-ts::PresetHashContext::~PresetHashContext()
+ts::FetchHashAlgorithm::~FetchHashAlgorithm()
 {
     if (_context != nullptr) {
         EVP_MD_CTX_free(_context);
@@ -97,14 +116,15 @@ ts::PresetHashContext::~PresetHashContext()
 }
 
 // A class to create a singleton with a preset cipher algorithm for OpenSSL.
-ts::PresetCipherAlgorithm::PresetCipherAlgorithm(const char* algo, const char* properties)
+ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* provider)
 {
-    _algo = EVP_CIPHER_fetch(nullptr, algo, properties);
+    loadProvider(provider);
+    _algo = EVP_CIPHER_fetch(nullptr, algo, providerProperties(provider).c_str());
     PrintCryptographicLibraryErrors();
 }
 
 // Cleanup cipher algorithm for OpenSSL.
-ts::PresetCipherAlgorithm::~PresetCipherAlgorithm()
+ts::FetchCipherAlgorithm::~FetchCipherAlgorithm()
 {
     if (_algo != nullptr) {
         EVP_CIPHER_free(_algo);

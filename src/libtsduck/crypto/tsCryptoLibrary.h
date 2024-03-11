@@ -24,6 +24,7 @@
 #else
     #include "tsBeforeStandardHeaders.h"
     #include <openssl/opensslv.h>
+    #include <openssl/provider.h>
     #include <openssl/evp.h>
     #include <openssl/err.h>
     #include "tsAfterStandardHeaders.h"
