@@ -37,7 +37,7 @@ namespace ts {
     protected:
         //! @cond nodoxygen
 #if defined(TS_WINDOWS)
-Ò        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
 #else
         virtual const EVP_CIPHER* getAlgorithm() const override;
 #endif
