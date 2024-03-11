@@ -61,7 +61,7 @@ void ts::AES128::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 
 #else
 
-TS_STATIC_INSTANCE(ts::PresetCipherAlgorithm, ("AES-128-ECB"), Algo);
+TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("AES-128-ECB"), Algo);
 
 const EVP_CIPHER* ts::AES128::getAlgorithm() const
 {

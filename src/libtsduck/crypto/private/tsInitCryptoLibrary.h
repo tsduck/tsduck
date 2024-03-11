@@ -49,27 +49,35 @@ namespace ts {
         bool _debug = false;
     };
 
+    // Common base for Fetch___ classes.
+    class FetchBase
+    {
+    protected:
+        static void loadProvider(const char* provider);
+        static std::string providerProperties(const char* provider);
+    };
+
     // A class to create a singleton with a preset hash context for OpenSSL.
     // This method speeds up the creation of hash context (the standard EVP scenario is too slow).
-    class PresetHashContext
+    class FetchHashAlgorithm : private FetchBase
     {
-        TS_NOBUILD_NOCOPY(PresetHashContext);
+        TS_NOBUILD_NOCOPY(FetchHashAlgorithm);
     public:
-        PresetHashContext(const char* algo);
-        ~PresetHashContext();
-        const EVP_MD_CTX* context() const { return _context; }
+        FetchHashAlgorithm(const char* algo, const char* provider = nullptr);
+        ~FetchHashAlgorithm();
+        const EVP_MD_CTX* referenceContext() const { return _context; }
     private:
         EVP_MD* _algo = nullptr;
         EVP_MD_CTX* _context = nullptr;
     };
 
     // A class to create a singleton with a preset cipher algorithm for OpenSSL.
-    class PresetCipherAlgorithm
+    class FetchCipherAlgorithm : private FetchBase
     {
-        TS_NOBUILD_NOCOPY(PresetCipherAlgorithm);
+        TS_NOBUILD_NOCOPY(FetchCipherAlgorithm);
     public:
-        PresetCipherAlgorithm(const char* algo, const char* properties = nullptr);
-        ~PresetCipherAlgorithm();
+        FetchCipherAlgorithm(const char* algo, const char* provider = nullptr);
+        ~FetchCipherAlgorithm();
         const EVP_CIPHER* algorithm() const { return _algo; }
     private:
         EVP_CIPHER* _algo = nullptr;

@@ -61,7 +61,7 @@ void ts::DES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 
 #else
 
-TS_STATIC_INSTANCE(ts::PresetCipherAlgorithm, ("DES-ECB", "provider=legacy"), Algo);
+TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-ECB", "legacy"), Algo);
 
 const EVP_CIPHER* ts::DES::getAlgorithm() const
 {

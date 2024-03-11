@@ -61,7 +61,7 @@ void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 
 #else
 
-TS_STATIC_INSTANCE(ts::PresetCipherAlgorithm, ("DES-EDE3-ECB"), Algo);
+TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-EDE3-ECB"), Algo);
 
 const EVP_CIPHER* ts::TDES::getAlgorithm() const
 {

@@ -46,11 +46,11 @@ void ts::SHA1::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 
 #else
 
-TS_STATIC_INSTANCE(ts::PresetHashContext, ("SHA1"), Preset);
+TS_STATIC_INSTANCE(ts::FetchHashAlgorithm, ("SHA1"), Preset);
 
 const EVP_MD_CTX* ts::SHA1::referenceContext() const
 {
-    return Preset::Instance().context();
+    return Preset::Instance().referenceContext();
 }
 
 #endif
