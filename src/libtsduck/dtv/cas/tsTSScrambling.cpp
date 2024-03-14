@@ -363,10 +363,8 @@ bool ts::TSScrambling::handleBlockCipherAlert(BlockCipher& cipher, AlertReason r
         case FIRST_ENCRYPTION:
         case FIRST_DECRYPTION: {
             // First usage of a new CW. Report it on debug and add it in --output-cw-file when necessary.
-            ByteBlock key;
-            cipher.getKey(key);
-            if (!key.empty()) {
-                const UString key_string(UString::Dump(key, UString::SINGLE_LINE));
+            if (cipher.hasKey()) {
+                const UString key_string(UString::Dump(cipher.currentKey(), UString::SINGLE_LINE));
                 _report.debug(u"starting using CW %s (%s)", {key_string, cipher.cipherId() == 0 ? u"even" : u"odd"});
                 if (_out_cw_file.is_open()) {
                     _out_cw_file << key_string << std::endl;
@@ -428,7 +426,7 @@ bool ts::TSScrambling::setNextFixedCW(int parity)
 
 bool ts::TSScrambling::setCW(const ByteBlock& cw, int parity)
 {
-    CipherChaining* algo = _scrambler[parity & 1];
+    BlockCipher* algo = _scrambler[parity & 1];
     assert(algo != nullptr);
 
     if (algo->setKey(cw.data(), cw.size())) {
@@ -481,7 +479,7 @@ bool ts::TSScrambling::encrypt(TSPacket& pkt)
 
     // Select scrambling algo.
     assert(_encrypt_scv == SC_EVEN_KEY || _encrypt_scv == SC_ODD_KEY);
-    CipherChaining* algo = _scrambler[_encrypt_scv & 1];
+    BlockCipher* algo = _scrambler[_encrypt_scv & 1];
     assert(algo != nullptr);
 
     // Check if the residue shall be included in the scrambling.
@@ -492,8 +490,8 @@ bool ts::TSScrambling::encrypt(TSPacket& pkt)
         psize -= psize % algo->blockSize();
     }
 
-    // Encrypt the packet.
-    const bool ok = psize == 0 || algo->encryptInPlace(pkt.getPayload(), psize);
+    // Encrypt the packet. Encrypting "in place" is handled by the API.
+    const bool ok = psize == 0 || algo->encrypt(pkt.getPayload(), psize, pkt.getPayload(), psize);
     if (ok) {
         pkt.setScrambling(_encrypt_scv);
     }
@@ -526,7 +524,7 @@ bool ts::TSScrambling::decrypt(TSPacket& pkt)
     }
 
     // Select descrambling algo.
-    CipherChaining* algo = _scrambler[_decrypt_scv & 1];
+    BlockCipher* algo = _scrambler[_decrypt_scv & 1];
     assert(algo != nullptr);
 
     // Check if the residue shall be included in the scrambling.
@@ -537,8 +535,8 @@ bool ts::TSScrambling::decrypt(TSPacket& pkt)
         psize -= psize % algo->blockSize();
     }
 
-    // Decrypt the packet.
-    const bool ok = psize == 0 || algo->decryptInPlace(pkt.getPayload(), psize);
+    // Decrypt the packet. Decrypting "in place" is handled by the API.
+    const bool ok = psize == 0 || algo->decrypt(pkt.getPayload(), psize, pkt.getPayload(), psize);
     if (ok) {
         pkt.setScrambling(SC_CLEAR);
     }

@@ -388,8 +388,8 @@ template <class MSG>
 void ts::tlv::MessageFactory::getCompound(TAG tag, MSG& param) const
 {
     MessagePtr gen;
-    getCompound (tag, gen);
-    MSG* msg = dynamic_cast<MSG*> (gen.pointer());
+    getCompound(tag, gen);
+    MSG* msg = dynamic_cast<MSG*>(gen.pointer());
     if (msg == 0) {
         throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for parameter 0x%X", {tag}));
     }
@@ -412,7 +412,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MSG>& param) cons
         else {
             MessagePtr gen;
             it->second.compound->factory(gen);
-            MSG* msg = dynamic_cast<MSG*> (gen.pointer());
+            MSG* msg = dynamic_cast<MSG*>(gen.pointer());
             if (msg == 0) {
                 throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for occurence %d of parameter 0x%X", {i, tag}));
             }

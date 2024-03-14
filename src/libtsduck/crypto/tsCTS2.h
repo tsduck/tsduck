@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCipherChaining.h"
+#include "tsBlockCipher.h"
 
 namespace ts {
     //!
@@ -27,24 +27,17 @@ namespace ts {
     //!
     //!  @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
-    template <class CIPHER>
-    class CTS2: public CipherChainingTemplate<CIPHER>
+    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    class CTS2: public CIPHER
     {
         TS_NOCOPY(CTS2);
     public:
-        //!
-        //! Constructor.
-        //!
-        CTS2() : CipherChainingTemplate<CIPHER>(1, 1, 1) {}
-
-        // Implementation of CipherChaining interface.
-        virtual size_t minMessageSize() const override;
-        virtual bool residueAllowed() const override;
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
+        //! Default constructor.
+        CTS2();
 
     protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CTS2);
+
         // Implementation of BlockCipher interface.
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
@@ -56,38 +49,26 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-size_t ts::CTS2<CIPHER>::minMessageSize() const
-{
-    return this->block_size;
-}
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTS2, CTS2, (CIPHER::PROPERTIES(), u"CTS2", true, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE));
 
-template<class CIPHER>
-bool ts::CTS2<CIPHER>::residueAllowed() const
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+ts::CTS2<CIPHER,N>::CTS2() : CIPHER(CTS2::PROPERTIES())
 {
-    return true;
-}
-
-template<class CIPHER>
-ts::UString ts::CTS2<CIPHER>::name() const
-{
-    return this->algo == nullptr ? UString() : this->algo->name() + u"-CTS2";
 }
 
 
 //----------------------------------------------------------------------------
 // Encryption in CTS mode.
+// The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-bool ts::CTS2<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+bool ts::CTS2<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
-    if (this->algo == nullptr ||
-        this->iv.size() != this->block_size ||
-        this->work.size() < this->block_size ||
-        plain_length < this->block_size ||
-        cipher_maxsize < plain_length)
-    {
+    const size_t bsize = this->properties.block_size;
+    uint8_t* work1 = this->work.data();
+
+    if (this->currentIV().size() != bsize || plain_length < bsize || cipher_maxsize < plain_length) {
         return false;
     }
     if (cipher_length != nullptr) {
@@ -95,41 +76,34 @@ bool ts::CTS2<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
     }
 
     // Encrypt all blocks in CBC mode, except the last one if partial
+    const uint8_t* previous = this->currentIV().data();
+    const uint8_t* pt = reinterpret_cast<const uint8_t*>(plain);
+    uint8_t* ct = reinterpret_cast<uint8_t*>(cipher);
 
-    uint8_t* previous = this->iv.data();
-    const uint8_t* pt = reinterpret_cast<const uint8_t*> (plain);
-    uint8_t* ct = reinterpret_cast<uint8_t*> (cipher);
-
-    while (plain_length >= this->block_size) {
+    while (plain_length >= bsize) {
         // work = previous-cipher XOR plain-text
-        for (size_t i = 0; i < this->block_size; ++i) {
-            this->work[i] = previous[i] ^ pt[i];
-        }
+        MemXor(work1, previous, pt, bsize);
         // cipher-text = encrypt (work)
-        if (!this->algo->encrypt (this->work.data(), this->block_size, ct, this->block_size)) {
+        if (!CIPHER::encryptImpl(work1, bsize, ct, bsize, nullptr)) {
             return false;
         }
         // previous-cipher = cipher-text
         previous = ct;
         // advance one block
-        ct += this->block_size;
-        pt += this->block_size;
-        plain_length -= this->block_size;
+        ct += bsize;
+        pt += bsize;
+        plain_length -= bsize;
     }
 
     // Process final block if incomplete
-
+    uint8_t* const previous_ct = ct - bsize;
     if (plain_length > 0) {
         // work = Cn-1 XOR Pn, truncated
-        for (size_t i = 0; i < plain_length; ++i) {
-            this->work[i] = previous[i] ^ pt[i];
-        }
+        MemXor(work1, previous_ct, pt, plain_length);
         // pad with tail of Cn-1
-        for (size_t i = plain_length; i < this->block_size; ++i) {
-            this->work[i] = previous[i];
-        }
+        MemCopy(work1 + plain_length, previous_ct + plain_length, bsize - plain_length);
         // Cn = encrypt (work), truncating Cn-1
-        if (!this->algo->encrypt (this->work.data(), this->block_size, previous + plain_length, this->block_size)) {
+        if (!CIPHER::encryptImpl(work1, bsize, previous_ct + plain_length, bsize, nullptr)) {
             return false;
         }
     }
@@ -139,17 +113,18 @@ bool ts::CTS2<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
 
 //----------------------------------------------------------------------------
 // Decryption in CTS mode.
+// The algorithm needs to specifically process overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-bool ts::CTS2<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+bool ts::CTS2<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
-    if (this->algo == nullptr ||
-        this->iv.size() != this->block_size ||
-        this->work.size() < this->block_size ||
-        cipher_length < this->block_size ||
-        plain_maxsize < cipher_length)
-    {
+    const size_t bsize = this->properties.block_size;
+    uint8_t* work1 = this->work.data();
+    uint8_t* work2 = this->work.data() + bsize;
+    uint8_t* work3 = this->work.data() + 2 * bsize;
+
+    if (this->currentIV().size() != bsize || cipher_length < bsize || plain_maxsize < cipher_length) {
         return false;
     }
     if (plain_length != nullptr) {
@@ -159,28 +134,35 @@ bool ts::CTS2<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
     // Decrypt blocks in CBC mode. If the last block is partial,
     // stop before the last two blocks (complete one + partial one).
 
-    const uint8_t* previous = this->iv.data();
-    const uint8_t* ct = reinterpret_cast<const uint8_t*> (cipher);
-    uint8_t* pt = reinterpret_cast<uint8_t*> (plain);
+    const uint8_t* previous = this->currentIV().data();
+    const uint8_t* ct = reinterpret_cast<const uint8_t*>(cipher);
+    uint8_t* pt = reinterpret_cast<uint8_t*>(plain);
 
-    const size_t residue_size = cipher_length % this->block_size;
-    const size_t trick_size = residue_size == 0 ? 0 : this->block_size + residue_size;
+    const size_t residue_size = cipher_length % bsize;
+    const size_t trick_size = residue_size == 0 ? 0 : bsize + residue_size;
 
     while (cipher_length > trick_size) {
         // work = decrypt (cipher-text)
-        if (!this->algo->decrypt (ct, this->block_size, this->work.data(), this->block_size)) {
+        if (!CIPHER::decryptImpl(ct, bsize, work1, bsize, nullptr)) {
             return false;
         }
-        // plain-text = previous-cipher XOR work
-        for (size_t i = 0; i < this->block_size; ++i) {
-            pt[i] = previous[i] ^ this->work[i];
-        }
+        // plain-text = previous-cipher XOR work.
         // previous-cipher = cipher-text
-        previous = ct;
+        if (pt == ct) {
+            // With overlapping buffer, need to save current cipher.
+            MemCopy(work2, ct, bsize);
+            MemXor(pt, previous, work1, bsize);
+            previous = work2;
+            std::swap(work2, work3);
+        }
+        else {
+            MemXor(pt, previous, work1, bsize);
+            previous = ct;
+        }
         // advance one block
-        ct += this->block_size;
-        pt += this->block_size;
-        cipher_length -= this->block_size;
+        ct += bsize;
+        pt += bsize;
+        cipher_length -= bsize;
     }
 
     // Process final two blocks.
@@ -192,23 +174,19 @@ bool ts::CTS2<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
         // Say that the last ciphertext is Cn and the previous one is Cn-1.
 
         // work = decrypt (Cn)
-        if (!this->algo->decrypt(ct + residue_size, this->block_size, this->work.data(), this->block_size)) {
+        if (!CIPHER::decryptImpl(ct + residue_size, bsize, work1, bsize, nullptr)) {
             return false;
         }
         // Pn(truncated) = work(truncated) xor Cn-1(truncated)
-        for (size_t i = 0; i < residue_size; ++i) {
-            pt[this->block_size + i] = ct[i] ^ this->work[i];
-        }
+        MemXor(pt + bsize, ct, work1, residue_size);
         // Rebuild Cn-1 in work
-        MemCopy(this->work.data(), ct, residue_size);
+        MemCopy(work1, ct, residue_size);
         // Pn-1 = decrypt (Cn-1)
-        if (!this->algo->decrypt(this->work.data(), this->block_size, pt, this->block_size)) {
+        if (!CIPHER::decryptImpl(work1, bsize, pt, bsize, nullptr)) {
             return false;
         }
         // Pn-1 = Pn-1 xor previous cipher
-        for (size_t i = 0; i < this->block_size; ++i) {
-            pt[i] ^= previous[i];
-        }
+        MemXor(pt, pt, previous, bsize);
     }
     return true;
 }

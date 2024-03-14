@@ -12,19 +12,20 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCipherChaining.h"
+#include "tsBlockCipher.h"
 
 namespace ts {
     //!
     //! DVB CSA-2 (Digital Video Broadcasting Common Scrambling Algorithm).
     //! @ingroup crypto
     //!
-    class TSDUCKDLL DVBCSA2 : public CipherChaining
+    class TSDUCKDLL DVBCSA2 : public BlockCipher
     {
         TS_NOCOPY(DVBCSA2);
     public:
         static constexpr size_t KEY_BITS = 64;             //!< DVB CSA-2 control words size in bits.
         static constexpr size_t KEY_SIZE = KEY_BITS / 8;   //!< DVB CSA-2 control words size in bytes.
+        static constexpr size_t BLOCK_SIZE = 8;            //!< DVB CSA-2 block size in bytes (informational only, not relevant to scrambling).
 
         //!
         //! Control word entropy reduction.
@@ -67,31 +68,17 @@ namespace ts {
         //!
         static bool IsReducedCW(const uint8_t *cw);
 
-        // Implementation of CipherChaining interface. Cannot set IV with DVB CSA.
-        virtual bool setIV(const void*, size_t) override;
-        virtual size_t minIVSize() const override;
-        virtual size_t maxIVSize() const override;
-        virtual size_t minMessageSize() const override;
-        virtual bool residueAllowed() const override;
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
-        virtual size_t blockSize() const override;
-        virtual size_t minKeySize() const override;
-        virtual size_t maxKeySize() const override;
-        virtual bool isValidKeySize(size_t size) const override;
-
     protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(DVBCSA2);
+
         // Implementation of BlockCipher interface.
-        virtual bool setKeyImpl(const void* key, size_t key_length) override;
+        virtual bool setKeyImpl() override;
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
-        virtual bool encryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length) override;
-        virtual bool decryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length) override;
 
     private:
         // Block cipher data
-        class BlockCipher
+        class DVBBlockCipher
         {
         private:
             int _kk[57]; // 56..1: scheduled keys, index 0 unused
@@ -102,7 +89,7 @@ namespace ts {
         };
 
         // Stream cipher data
-        class StreamCipher
+        class DVBStreamCipher
         {
         private:
             int A[11];
@@ -122,10 +109,10 @@ namespace ts {
         };
 
         // DVB-CSA scrambling data
-        bool         _init = false;
-        EntropyMode  _mode {REDUCE_ENTROPY};
-        uint8_t      _key[KEY_SIZE] {};
-        BlockCipher  _block {};
-        StreamCipher _stream {};
+        bool            _init = false;
+        EntropyMode     _mode = REDUCE_ENTROPY;
+        uint8_t         _key[KEY_SIZE] {};
+        DVBBlockCipher  _block {};
+        DVBStreamCipher _stream {};
     };
 }

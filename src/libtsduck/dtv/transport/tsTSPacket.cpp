@@ -1003,7 +1003,7 @@ std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& re
 std::ostream& ts::TSPacket::write(std::ostream& strm, Report& report) const
 {
     if (strm) {
-        strm.write(reinterpret_cast <const char*> (b), PKT_SIZE);
+        strm.write(reinterpret_cast<const char*>(b), PKT_SIZE);
         if (!strm) {
             report.error(u"error writing TS packet into binary stream");
         }

@@ -27,20 +27,17 @@ namespace ts {
         static constexpr size_t BLOCK_SIZE = 8;  //!< DES block size in bytes.
         static constexpr size_t KEY_SIZE = 8;    //!< DES key size in bytes.
 
-        // Implementation of BlockCipher interface:
-        virtual UString name() const override;
-        virtual size_t blockSize() const override;
-        virtual size_t minKeySize() const override;
-        virtual size_t maxKeySize() const override;
-        virtual bool isValidKeySize (size_t size) const override;
-
     protected:
-        //! @cond nodoxygen
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(DES);
+
+        //! Constructor for subclasses which add some properties, such as chaining mode.
+        //! @param [in] props Constant reference to a block of properties of this block cipher.
+        DES(const BlockCipherProperties& props);
+
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
 #else
         virtual const EVP_CIPHER* getAlgorithm() const override;
 #endif
-        //! @endcond
     };
 }

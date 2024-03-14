@@ -10,31 +10,6 @@
 #include "tsSingleton.h"
 #include "tsInitCryptoLibrary.h"
 
-
-//----------------------------------------------------------------------------
-// Implementation of Hash interface:
-//----------------------------------------------------------------------------
-
-ts::SHA512::SHA512()
-{
-    InitCryptographicLibrary();
-}
-
-ts::UString ts::SHA512::name() const
-{
-    return u"SHA-512";
-}
-
-size_t ts::SHA512::hashSize() const
-{
-    return HASH_SIZE;
-}
-
-
-//----------------------------------------------------------------------------
-// System-specific implementation.
-//----------------------------------------------------------------------------
-
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_SHA512_ALGORITHM), Fetch);

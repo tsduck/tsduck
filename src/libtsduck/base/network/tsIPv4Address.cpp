@@ -53,7 +53,7 @@ void ts::IPv4Address::copy(::sockaddr& s, uint16_t port) const
 {
     TS_ZERO(s);
     assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
-    ::sockaddr_in* sp = reinterpret_cast<::sockaddr_in*> (&s);
+    ::sockaddr_in* sp = reinterpret_cast<::sockaddr_in*>(&s);
     sp->sin_family = AF_INET;
     sp->sin_addr.s_addr = htonl(_addr);
     sp->sin_port = htons(port);
@@ -177,7 +177,7 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
     }
     if (ai != nullptr) {
         assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
-        const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*> (ai->ai_addr);
+        const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*>(ai->ai_addr);
         _addr = ntohl(sp->sin_addr.s_addr);
     }
     else {

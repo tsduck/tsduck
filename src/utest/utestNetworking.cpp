@@ -122,16 +122,16 @@ void NetworkingTest::testIPv4AddressConstructors()
 
     ::sockaddr sa5;
     TSUNIT_ASSERT(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
-    ::sockaddr_in* sai5 = reinterpret_cast< ::sockaddr_in*> (&sa5);
+    ::sockaddr_in* sai5 = reinterpret_cast<::sockaddr_in*>(&sa5);
     sai5->sin_family = AF_INET;
-    sai5->sin_addr.s_addr = htonl (0x01020304);
+    sai5->sin_addr.s_addr = htonl(0x01020304);
     sai5->sin_port = 0;
     ts::IPv4Address a5 (sa5);
     TSUNIT_ASSERT(a5.address() == 0x01020304);
 
     ::sockaddr_in sa6;
     sa6.sin_family = AF_INET;
-    sa6.sin_addr.s_addr = htonl (0x01020304);
+    sa6.sin_addr.s_addr = htonl(0x01020304);
     sa6.sin_port = 0;
     ts::IPv4Address a6 (sa6);
     TSUNIT_ASSERT(a6.address() == 0x01020304);
@@ -177,15 +177,15 @@ void NetworkingTest::testIPv4Address()
 
     ::sockaddr sa;
     a1.copy (sa, 80);
-    const ::sockaddr_in* saip = reinterpret_cast<const ::sockaddr_in*> (&sa);
+    const ::sockaddr_in* saip = reinterpret_cast<const ::sockaddr_in*>(&sa);
     TSUNIT_ASSERT(saip->sin_family == AF_INET);
-    TSUNIT_ASSERT(saip->sin_addr.s_addr == htonl (0x01020304));
+    TSUNIT_ASSERT(saip->sin_addr.s_addr == htonl(0x01020304));
     TSUNIT_ASSERT(saip->sin_port == htons (80));
 
     ::sockaddr_in sai;
     a1.copy (sai, 80);
     TSUNIT_ASSERT(sai.sin_family == AF_INET);
-    TSUNIT_ASSERT(sai.sin_addr.s_addr == htonl (0x01020304));
+    TSUNIT_ASSERT(sai.sin_addr.s_addr == htonl(0x01020304));
     TSUNIT_ASSERT(sai.sin_port == htons (80));
 
     TSUNIT_ASSERT(a1.resolve(u"2.3.4.5", CERR));
@@ -345,9 +345,9 @@ void NetworkingTest::testIPv4SocketAddressConstructors()
 
     ::sockaddr sa5;
     TSUNIT_ASSERT(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
-    ::sockaddr_in* sai5 = reinterpret_cast< ::sockaddr_in*> (&sa5);
+    ::sockaddr_in* sai5 = reinterpret_cast<::sockaddr_in*>(&sa5);
     sai5->sin_family = AF_INET;
-    sai5->sin_addr.s_addr = htonl (0x01020304);
+    sai5->sin_addr.s_addr = htonl(0x01020304);
     sai5->sin_port = htons (80);
     ts::IPv4SocketAddress a5 (sa5);
     TSUNIT_ASSERT(a5.address() == 0x01020304);
@@ -433,7 +433,7 @@ void NetworkingTest::testIPv4SocketAddress()
 
     ::sockaddr sa;
     a1.copy(sa);
-    const ::sockaddr_in* saip = reinterpret_cast<const ::sockaddr_in*> (&sa);
+    const ::sockaddr_in* saip = reinterpret_cast<const ::sockaddr_in*>(&sa);
     TSUNIT_ASSERT(saip->sin_family == AF_INET);
     TSUNIT_ASSERT(saip->sin_addr.s_addr == htonl(0x01020304));
     TSUNIT_ASSERT(saip->sin_port == htons(80));

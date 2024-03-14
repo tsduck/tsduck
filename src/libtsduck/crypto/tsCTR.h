@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCipherChaining.h"
+#include "tsBlockCipher.h"
 #include "tsMemory.h"
 
 namespace ts {
@@ -24,8 +24,8 @@ namespace ts {
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
-    template <class CIPHER>
-    class CTR: public CipherChainingTemplate<CIPHER>
+    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    class CTR: public CIPHER
     {
         TS_NOCOPY(CTR);
     public:
@@ -52,26 +52,21 @@ namespace ts {
         //!
         size_t counterBits() const {return _counter_bits;}
 
-        // Implementation of CipherChaining interface.
-        virtual size_t minMessageSize() const override;
-        virtual bool residueAllowed() const override;
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
-
     protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CTR);
+
         // Implementation of BlockCipher interface.
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
 
     private:
-        size_t _counter_bits; // size in bits of the counter part.
+        size_t _counter_bits = 0; // size in bits of the counter part.
 
         // We need two work blocks.
         // The first one contains the "input block" or counter.
         // The second one contains the "output block", the encrypted counter.
         // This private method increments the counter block.
-        bool incrementCounter();
+        void incrementCounter();
     };
 }
 
@@ -80,30 +75,12 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-ts::CTR<CIPHER>::CTR(size_t counter_bits) :
-    CipherChainingTemplate<CIPHER>(1, 1, 2),
-    _counter_bits(0)
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTR, CTR, (CIPHER::PROPERTIES(), u"CTR", true, 0, 2, CIPHER::BLOCK_SIZE));
+
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+ts::CTR<CIPHER,N>::CTR(size_t counter_bits) : CIPHER(CTR::PROPERTIES())
 {
     setCounterBits(counter_bits);
-}
-
-template<class CIPHER>
-size_t ts::CTR<CIPHER>::minMessageSize() const
-{
-    return 0;
-}
-
-template<class CIPHER>
-bool ts::CTR<CIPHER>::residueAllowed() const
-{
-    return true;
-}
-
-template<class CIPHER>
-ts::UString ts::CTR<CIPHER>::name() const
-{
-    return this->algo == nullptr ? UString() : this->algo->name() + u"-CTR";
 }
 
 
@@ -111,16 +88,16 @@ ts::UString ts::CTR<CIPHER>::name() const
 // Set counter size in bits.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-void ts::CTR<CIPHER>::setCounterBits(size_t counter_bits)
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+void ts::CTR<CIPHER,N>::setCounterBits(size_t counter_bits)
 {
     if (counter_bits == 0) {
         // Default size is half the block size in bits.
-        this->_counter_bits = this->block_size * 4;
+        _counter_bits = this->properties.block_size * 4;
     }
     else {
         // Counter cannot be larger than the block size.
-        this->_counter_bits = std::min(counter_bits, this->block_size * 8);
+        _counter_bits = std::min(counter_bits, this->properties.block_size * 8);
     }
 }
 
@@ -129,69 +106,62 @@ void ts::CTR<CIPHER>::setCounterBits(size_t counter_bits)
 // Increment the counter in the first work block.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-bool ts::CTR<CIPHER>::incrementCounter()
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+void ts::CTR<CIPHER,N>::incrementCounter()
 {
-    // We must have two work blocks.
-    if (this->work.size() < 2 * this->block_size) {
-        return false;
-    }
-
+    const size_t bsize = this->properties.block_size;
+    uint8_t* work1 = this->work.data();
     size_t bits = _counter_bits;
     bool carry = true; // initial increment.
 
     // The first work block contains the "input block" or counter to increment.
-    for (uint8_t* b = this->work.data() + this->block_size - 1; carry && bits > 0 && b > this->work.data(); --b) {
+    for (uint8_t* b = work1 + bsize - 1; carry && bits > 0 && b > work1; --b) {
         const size_t bits_in_byte = std::min<size_t>(bits, 8);
         bits -= bits_in_byte;
         const uint8_t mask = uint8_t(0xFF >> (8 - bits_in_byte));
         *b = (*b & ~mask) | (((*b & mask) + 1) & mask);
         carry = (*b & mask) == 0x00;
     }
-    return true;
 }
 
 
 //----------------------------------------------------------------------------
 // Encryption in CTR mode.
+// The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-bool ts::CTR<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+bool ts::CTR<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
-    if (this->algo == nullptr ||
-        this->iv.size() != this->block_size ||
-        this->work.size() < 2 * this->block_size ||
-        cipher_maxsize < plain_length)
-    {
+    const size_t bsize = this->properties.block_size;
+    uint8_t* work1 = this->work.data();
+    uint8_t* work2 = this->work.data() + bsize;
+
+    if (plain_length % bsize != 0 || this->currentIV().size() != bsize || cipher_maxsize < plain_length) {
         return false;
     }
     if (cipher_length != nullptr) {
         *cipher_length = plain_length;
     }
 
-    // work[0] = iv
-    MemCopy(this->work.data(), this->iv.data(), this->block_size);
+    // work1 = iv
+    MemCopy(work1, this->currentIV().data(), bsize);
 
     // Loop on all blocks, including last truncated one.
     const uint8_t* pt = reinterpret_cast<const uint8_t*>(plain);
     uint8_t* ct = reinterpret_cast<uint8_t*>(cipher);
 
     while (plain_length > 0) {
-        // work[1] = encrypt(work[0])
-        if (!this->algo->encrypt(this->work.data(), this->block_size, this->work.data() + this->block_size, this->block_size)) {
+        // work2 = encrypt(work1)
+        if (!CIPHER::encryptImpl(work1, bsize, work2, bsize, nullptr)) {
             return false;
         }
         // This block size:
-        const size_t size = std::min(plain_length, this->block_size);
-        // cipher-text = plain-text XOR work[1]
-        for (size_t i = 0; i < size; ++i) {
-            ct[i] = this->work[this->block_size + i] ^ pt[i];
-        }
-        // work[0] += 1
-        if (!incrementCounter()) {
-            return false;
-        }
+        const size_t size = std::min(plain_length, bsize);
+        // cipher-text = plain-text XOR work2
+        MemXor(ct, work2, pt, size);
+        // work1 += 1
+        incrementCounter();
         // advance one block
         ct += size;
         pt += size;
@@ -205,9 +175,9 @@ bool ts::CTR<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* 
 // Decryption in CTR mode.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-bool ts::CTR<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+bool ts::CTR<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
     // With CTR, the encryption and decryption are identical operations.
-    return this->encryptImpl(cipher, cipher_length, plain, plain_maxsize, plain_length);
+    return encryptImpl(cipher, cipher_length, plain, plain_maxsize, plain_length);
 }

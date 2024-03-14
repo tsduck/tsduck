@@ -235,7 +235,7 @@ bool ts::Registry::SetValue(const UString& key, const UString& value_name, uint3
                                  value_name.wc_str(),
                                  0, // reserved
                                  REG_DWORD,
-                                 reinterpret_cast<const ::BYTE*> (&value),
+                                 reinterpret_cast<const ::BYTE*>(&value),
                                  sizeof(value));
 
     const bool success = hr == ERROR_SUCCESS;

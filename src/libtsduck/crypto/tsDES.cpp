@@ -10,45 +10,16 @@
 #include "tsSingleton.h"
 #include "tsInitCryptoLibrary.h"
 
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::DES, DES, (u"DES", ts::DES::BLOCK_SIZE, ts::DES::KEY_SIZE));
 
-//----------------------------------------------------------------------------
-// Implementation of BlockCipher interface:
-//----------------------------------------------------------------------------
-
-ts::DES::DES()
+ts::DES::DES() : BlockCipher(DES::PROPERTIES())
 {
-    InitCryptographicLibrary();
 }
 
-ts::UString ts::DES::name() const
+ts::DES::DES(const BlockCipherProperties& props) : BlockCipher(props)
 {
-    return u"DES";
+    props.assertCompatibleBase(DES::PROPERTIES());
 }
-
-size_t ts::DES::blockSize() const
-{
-    return BLOCK_SIZE;
-}
-
-size_t ts::DES::minKeySize() const
-{
-    return KEY_SIZE;
-}
-
-size_t ts::DES::maxKeySize() const
-{
-    return KEY_SIZE;
-}
-
-bool ts::DES::isValidKeySize(size_t size) const
-{
-    return size == KEY_SIZE;
-}
-
-
-//----------------------------------------------------------------------------
-// System-specific implementation.
-//----------------------------------------------------------------------------
 
 #if defined(TS_WINDOWS)
 

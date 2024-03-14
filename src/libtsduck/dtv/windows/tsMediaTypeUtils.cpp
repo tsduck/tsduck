@@ -17,11 +17,11 @@
 // Extracted from DirectShow base classes in Windows SDK.
 //-----------------------------------------------------------------------------
 
-void ts::DeleteMediaType (::AM_MEDIA_TYPE* pmt)
+void ts::DeleteMediaType(::AM_MEDIA_TYPE* pmt)
 {
     if (pmt != nullptr) {
-        ts::FreeMediaType (*pmt);
-        ::CoTaskMemFree (pmt);
+        ts::FreeMediaType(*pmt);
+        ::CoTaskMemFree(pmt);
     }
 }
 
@@ -30,10 +30,10 @@ void ts::DeleteMediaType (::AM_MEDIA_TYPE* pmt)
 // Free an existing media type (ie free resources it holds)
 //-----------------------------------------------------------------------------
 
-void ts::FreeMediaType (::AM_MEDIA_TYPE& mt)
+void ts::FreeMediaType(::AM_MEDIA_TYPE& mt)
 {
     if (mt.cbFormat != 0) {
-        ::CoTaskMemFree (mt.pbFormat);
+        ::CoTaskMemFree(mt.pbFormat);
         mt.cbFormat = 0;
         mt.pbFormat = nullptr;
     }
@@ -48,13 +48,13 @@ void ts::FreeMediaType (::AM_MEDIA_TYPE& mt)
 // Copy a media type to another
 //-----------------------------------------------------------------------------
 
-::HRESULT ts::CopyMediaType (::AM_MEDIA_TYPE& dst, const ::AM_MEDIA_TYPE& src)
+::HRESULT ts::CopyMediaType(::AM_MEDIA_TYPE& dst, const ::AM_MEDIA_TYPE& src)
 {
-    assert (&src != &dst);
+    assert(&src != &dst);
     dst = src;
     if (src.cbFormat != 0) {
-        assert (src.pbFormat != nullptr);
-        dst.pbFormat = reinterpret_cast<::BYTE*> (::CoTaskMemAlloc (src.cbFormat));
+        assert(src.pbFormat != nullptr);
+        dst.pbFormat = reinterpret_cast<::BYTE*>(::CoTaskMemAlloc(src.cbFormat));
         if (dst.pbFormat == nullptr) {
             dst.cbFormat = 0;
             return E_OUTOFMEMORY;
@@ -73,7 +73,7 @@ void ts::FreeMediaType (::AM_MEDIA_TYPE& mt)
 // Initialize a media type with "null" values
 //-----------------------------------------------------------------------------
 
-void ts::InitMediaType (::AM_MEDIA_TYPE& mt)
+void ts::InitMediaType(::AM_MEDIA_TYPE& mt)
 {
     mt.majortype = GUID_NULL;
     mt.subtype = GUID_NULL;

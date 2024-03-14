@@ -23,20 +23,21 @@ namespace ts {
     {
         TS_NOCOPY(SHA1);
     public:
-        SHA1();                                     //!< Constructor
-        static constexpr size_t HASH_SIZE = 160/8;  //!< SHA-1 hash size in bytes (160 bits).
+        //!
+        //! Constructor.
+        //!
+        SHA1() : Hash(u"SHA-1", HASH_SIZE) {}
 
-        // Implementation of Hash interface:
-        virtual UString name() const override;
-        virtual size_t hashSize() const override;
+        //!
+        //! SHA-1 hash size in bytes (160 bits).
+        //!
+        static constexpr size_t HASH_SIZE = 160/8;
 
     protected:
-        //! @cond nodoxygen
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
 #else
         virtual const EVP_MD_CTX* referenceContext() const override;
 #endif
-        //! @endcond
     };
 }

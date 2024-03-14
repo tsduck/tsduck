@@ -180,12 +180,12 @@ void ScramblingTest::testScrambling()
 
         // Descrambling test
         pkt = vec->cipher;
-        TSUNIT_ASSERT(scrambler.decryptInPlace(pkt.b + header_size, payload_size));
+        TSUNIT_ASSERT(scrambler.decrypt(pkt.b + header_size, payload_size, pkt.b + header_size, payload_size));
         TSUNIT_EQUAL(0, ts::MemCompare(pkt.b + header_size, vec->plain.b + header_size, payload_size));
 
         // Scrambling test
         pkt = vec->plain;
-        TSUNIT_ASSERT(scrambler.encryptInPlace(pkt.b + header_size, payload_size));
+        TSUNIT_ASSERT(scrambler.encrypt(pkt.b + header_size, payload_size, pkt.b + header_size, payload_size));
         TSUNIT_EQUAL(0, ts::MemCompare(pkt.b + header_size, vec->cipher.b + header_size, payload_size));
     }
 }

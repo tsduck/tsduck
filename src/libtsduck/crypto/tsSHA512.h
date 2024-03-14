@@ -23,20 +23,21 @@ namespace ts {
     {
         TS_NOCOPY(SHA512);
     public:
-        SHA512();                                   //!< Constructor
-        static constexpr size_t HASH_SIZE = 512/8;  //!< SHA-512 hash size in bytes (512 bits).
+        //!
+        //! Constructor.
+        //!
+        SHA512() : Hash(u"SHA-512", HASH_SIZE) {}
 
-        // Implementation of Hash interface:
-        virtual UString name() const override;
-        virtual size_t hashSize() const override;
+        //!
+        //! SHA-512 hash size in bytes (512 bits).
+        //!
+        static constexpr size_t HASH_SIZE = 512/8;
 
     protected:
-        //! @cond nodoxygen
 #if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
 #else
         virtual const EVP_MD_CTX* referenceContext() const override;
 #endif
-        //! @endcond
     };
 }

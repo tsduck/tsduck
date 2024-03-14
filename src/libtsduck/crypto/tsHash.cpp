@@ -15,8 +15,16 @@
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
+ts::Hash::Hash(const UChar* name, size_t hash_size) :
+    _name(name),
+    _hash_size(hash_size)
+{
+    InitCryptographicLibrary();
+}
+
 ts::Hash::~Hash()
 {
+    // Cleanup system-specific crypto library resources, if used.
 #if defined(TS_WINDOWS)
     if (_hash != nullptr) {
         ::BCryptDestroyHash(_hash);
@@ -33,7 +41,31 @@ ts::Hash::~Hash()
 
 
 //----------------------------------------------------------------------------
+// Get parameters for system-specific crypto library.
+// Default implementation, when thislibrary is not used.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS)
+
+void ts::Hash::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
+{
+    algo = nullptr;
+    length = 0;
+}
+
+#else
+
+const EVP_MD_CTX* ts::Hash::referenceContext() const
+{
+    return nullptr;
+}
+
+#endif
+
+
+//----------------------------------------------------------------------------
 // Reinitialize the computation of the hash.
+// Default implementation, using the system-specific crypto library.
 //----------------------------------------------------------------------------
 
 bool ts::Hash::init()
@@ -81,6 +113,7 @@ bool ts::Hash::init()
 
 //----------------------------------------------------------------------------
 // Add some part of the message to hash. Can be called several times.
+// Default implementation, using the system-specific crypto library.
 //----------------------------------------------------------------------------
 
 bool ts::Hash::add(const void* data, size_t size)
@@ -105,6 +138,7 @@ bool ts::Hash::add(const void* data, size_t size)
 
 //----------------------------------------------------------------------------
 // Get the resulting hash value.
+// Default implementation, using the system-specific crypto library.
 //----------------------------------------------------------------------------
 
 bool ts::Hash::getHash(void* hash, size_t bufsize, size_t* retsize)

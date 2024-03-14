@@ -10,31 +10,6 @@
 #include "tsSingleton.h"
 #include "tsInitCryptoLibrary.h"
 
-
-//----------------------------------------------------------------------------
-// Implementation of Hash interface:
-//----------------------------------------------------------------------------
-
-ts::SHA256::SHA256()
-{
-    InitCryptographicLibrary();
-}
-
-ts::UString ts::SHA256::name() const
-{
-    return u"SHA-256";
-}
-
-size_t ts::SHA256::hashSize() const
-{
-    return HASH_SIZE;
-}
-
-
-//----------------------------------------------------------------------------
-// System-specific implementation.
-//----------------------------------------------------------------------------
-
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_SHA256_ALGORITHM), Fetch);

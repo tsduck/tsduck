@@ -24,21 +24,11 @@ namespace ts {
     {
         TS_NOCOPY(IDSA);
     public:
-        //!
-        //! ATIS-IDSA control words size in bytes (AES-128 key size).
-        //!
-        static constexpr size_t KEY_SIZE = 16;
-
-        //!
-        //! Constructor.
-        //!
+        //! Default constructor.
         IDSA();
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
-
-    private:
-        virtual bool setIV(const void* iv_, size_t iv_length) override;
-        virtual bool setShortIV(const void* iv_, size_t iv_length) override;
+        //! Destructor.
+        virtual ~IDSA() override;
+    protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(IDSA);
     };
 }
