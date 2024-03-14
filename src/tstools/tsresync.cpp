@@ -185,7 +185,7 @@ size_t Resynchronizer::readData(uint8_t* buf, size_t size)
     std::streamsize got = 0;
     std::streamsize remain = std::streamsize(size);
     while (remain > 0) {
-        if (std::cin.read(reinterpret_cast <char*> (buf + got), remain)) {
+        if (std::cin.read(reinterpret_cast<char*>(buf + got), remain)) {
             const std::streamsize count = std::cin.gcount();
             got += count;
             remain -= count;

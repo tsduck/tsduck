@@ -31,17 +31,12 @@ namespace ts {
     {
         TS_NOCOPY(SCTE52_2003);
     public:
-        //!
         //! Constructor.
-        //!
-        SCTE52_2003() = default;
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
-
-    private:
-        // The IV are identical, there is no specific IV for short blocks.
-        virtual bool setShortIV(const void* iv_, size_t iv_length) override;
+        SCTE52_2003();
+        //! Destructor.
+        virtual ~SCTE52_2003() override;
+    protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(SCTE52);
     };
 
     //!
@@ -59,12 +54,11 @@ namespace ts {
     {
         TS_NOCOPY(SCTE52_2008);
     public:
-        //!
         //! Constructor.
-        //!
-        SCTE52_2008() = default;
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
+        SCTE52_2008();
+        //! Destructor.
+        virtual ~SCTE52_2008() override;
+    protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(SCTE52);
     };
 }

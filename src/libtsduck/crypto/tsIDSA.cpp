@@ -8,38 +8,17 @@
 
 #include "tsIDSA.h"
 
-
-//----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::IDSA::IDSA()
-{
-    // The IV are defined by the standard and not modifiable.
-    static const uint8_t iv_zero[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    setIV(iv_zero, sizeof(iv_zero));
+namespace {
+    // The IV is defined by the standard and not modifiable.
+    const uint8_t iv_zero[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 }
 
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::IDSA, IDSA, (DVS042<AES128>::PROPERTIES(), u"ATIS-IDSA", iv_zero, sizeof(iv_zero)));
 
-//----------------------------------------------------------------------------
-// Simple virtual methods.
-//----------------------------------------------------------------------------
-
-ts::UString ts::IDSA::name() const
+ts::IDSA::IDSA() : DVS042<AES128>(IDSA::PROPERTIES(), true)
 {
-    return u"ATIS-IDSA";
 }
 
-bool ts::IDSA::setIV(const void* iv_, size_t iv_length)
+ts::IDSA::~IDSA()
 {
-    // The IV are defined by the standard and not modifiable.
-    // This method is hidden (private) but redirected to its super class.
-    return DVS042<AES128>::setIV(iv_, iv_length);
-}
-
-bool ts::IDSA::setShortIV(const void* iv_, size_t iv_length)
-{
-    // The IV are defined by the standard and not modifiable.
-    // This method is hidden (private) but redirected to its super class.
-    return DVS042<AES128>::setShortIV(iv_, iv_length);
 }

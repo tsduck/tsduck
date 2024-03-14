@@ -10,45 +10,16 @@
 #include "tsSingleton.h"
 #include "tsInitCryptoLibrary.h"
 
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::AES128, AES128, (u"AES-128", ts::AES128::BLOCK_SIZE, ts::AES128::KEY_SIZE));
 
-//----------------------------------------------------------------------------
-// Implementation of BlockCipher interface:
-//----------------------------------------------------------------------------
-
-ts::AES128::AES128()
+ts::AES128::AES128() : BlockCipher(AES128::PROPERTIES())
 {
-    InitCryptographicLibrary();
 }
 
-ts::UString ts::AES128::name() const
+ts::AES128::AES128(const BlockCipherProperties& props) : BlockCipher(props)
 {
-    return u"AES-128";
+    props.assertCompatibleBase(AES128::PROPERTIES());
 }
-
-size_t ts::AES128::blockSize() const
-{
-    return BLOCK_SIZE;
-}
-
-size_t ts::AES128::minKeySize() const
-{
-    return KEY_SIZE;
-}
-
-size_t ts::AES128::maxKeySize() const
-{
-    return KEY_SIZE;
-}
-
-bool ts::AES128::isValidKeySize (size_t size) const
-{
-    return size == KEY_SIZE;
-}
-
-
-//----------------------------------------------------------------------------
-// System-specific implementation.
-//----------------------------------------------------------------------------
 
 #if defined(TS_WINDOWS)
 

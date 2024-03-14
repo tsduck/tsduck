@@ -104,6 +104,36 @@ bool ts::IdenticalBytes(const void* area, size_t area_size)
 
 
 //----------------------------------------------------------------------------
+// Compute an exclusive or over memory areas.
+//----------------------------------------------------------------------------
+
+void ts::MemXor(void* dest, const void* src1, const void* src2, size_t size)
+{
+    while (size >= 8) {
+        *reinterpret_cast<uint64_t*>(dest) = *reinterpret_cast<const uint64_t*>(src1) ^ *reinterpret_cast<const uint64_t*>(src2);
+        dest = reinterpret_cast<uint8_t*>(dest) + 8;
+        src1 = reinterpret_cast<const uint8_t*>(src1) + 8;
+        src2 = reinterpret_cast<const uint8_t*>(src2) + 8;
+        size -= 8;
+    }
+    if (size >= 4) {
+        *reinterpret_cast<uint32_t*>(dest) = *reinterpret_cast<const uint32_t*>(src1) ^ *reinterpret_cast<const uint32_t*>(src2);
+        dest = reinterpret_cast<uint8_t*>(dest) + 4;
+        src1 = reinterpret_cast<const uint8_t*>(src1) + 4;
+        src2 = reinterpret_cast<const uint8_t*>(src2) + 4;
+        size -= 4;
+    }
+    while (size > 0) {
+        *reinterpret_cast<uint8_t*>(dest) = *reinterpret_cast<const uint8_t*>(src1) ^ *reinterpret_cast<const uint8_t*>(src2);
+        dest = reinterpret_cast<uint8_t*>(dest) + 1;
+        src1 = reinterpret_cast<const uint8_t*>(src1) + 1;
+        src2 = reinterpret_cast<const uint8_t*>(src2) + 1;
+        size -= 1;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Memory accesses with non-natural sizes
 //----------------------------------------------------------------------------
 

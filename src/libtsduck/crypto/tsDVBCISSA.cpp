@@ -8,31 +8,17 @@
 
 #include "tsDVBCISSA.h"
 
-
-//----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::DVBCISSA::DVBCISSA()
-{
+namespace {
     // The IV is defined by the standard and not modifiable.
-    static const uint8_t ivs[16] = {0x44, 0x56, 0x42, 0x54, 0x4d, 0x43, 0x50, 0x54, 0x41, 0x45, 0x53, 0x43, 0x49, 0x53, 0x53, 0x41};
-    setIV(ivs, sizeof(ivs));
+    const uint8_t ivs[16] = {0x44, 0x56, 0x42, 0x54, 0x4d, 0x43, 0x50, 0x54, 0x41, 0x45, 0x53, 0x43, 0x49, 0x53, 0x53, 0x41};
 }
 
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::DVBCISSA, DVBCISSA, (CBC<AES128>::PROPERTIES(), u"DVB-CISSA", ivs, sizeof(ivs)));
 
-//----------------------------------------------------------------------------
-// Simple virtual methods.
-//----------------------------------------------------------------------------
-
-ts::UString ts::DVBCISSA::name() const
+ts::DVBCISSA::DVBCISSA() : CBC<AES128>(DVBCISSA::PROPERTIES())
 {
-    return u"DVB-CISSA";
 }
 
-bool ts::DVBCISSA::setIV(const void* iv_, size_t iv_length)
+ts::DVBCISSA::~DVBCISSA()
 {
-    // The IV is defined by the standard and not modifiable.
-    // This method is hidden (private) but redirected to its super class.
-    return CBC<AES128>::setIV(iv_, iv_length);
 }

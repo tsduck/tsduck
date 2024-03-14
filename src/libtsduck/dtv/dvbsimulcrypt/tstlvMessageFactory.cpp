@@ -266,7 +266,7 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<bool>& param) const
     // Fill vector with parameter values
     const auto last = _params.upper_bound(tag);
     for (auto it = _params.lower_bound(tag); it != last; ++it) {
-        checkParamSize<uint8_t> (tag, it);
+        checkParamSize<uint8_t>(tag, it);
         param.push_back(GetUInt8(it->second.addr) != 0);
     }
 }

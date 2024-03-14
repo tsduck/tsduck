@@ -144,7 +144,7 @@ size_t ts::MPEG2VideoAttributes::FRDiv(uint8_t code)
 
 bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
 {
-    const uint8_t* data = reinterpret_cast <const uint8_t*> (udata);
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(udata);
 
     // Check start code
     if (size < 4 || data[0] != 0 || data[1] != 0 || data[2] != 1) {

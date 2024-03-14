@@ -577,7 +577,7 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
             !PESPacket::HasCommonVideoHeader(pkt.payload(), pkt.payloadSize()))
         {
             *_out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.sourcePID()})
-                  << UString::Dump(pkt.payload(), std::min<size_t> (8, pkt.payloadSize()), UString::SINGLE_LINE)
+                  << UString::Dump(pkt.payload(), std::min<size_t>(8, pkt.payloadSize()), UString::SINGLE_LINE)
                   << std::endl;
         }
 

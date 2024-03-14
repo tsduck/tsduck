@@ -16,8 +16,19 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
+ts::BlockCipher::BlockCipher(const BlockCipherProperties& props) :
+    properties(props),
+    work(props.work_blocks * props.block_size)
+{
+    InitCryptographicLibrary();
+    if (props.fixed_iv != nullptr) {
+        _current_iv.copy(props.fixed_iv, props.fixed_iv_size);
+    }
+}
+
 ts::BlockCipher::~BlockCipher()
 {
+    // Cleanup system-specific crypto library resources, if used.
 #if defined(TS_WINDOWS)
     if (_hkey != nullptr) {
         ::BCryptDestroyKey(_hkey);
@@ -35,6 +46,45 @@ ts::BlockCipher::~BlockCipher()
     }
     _algo = nullptr;
 #endif
+}
+
+
+//----------------------------------------------------------------------------
+// Algorithm name (informational only).
+//----------------------------------------------------------------------------
+
+ts::UString ts::BlockCipher::name() const
+{
+    UString n(properties.name);
+    if (properties.chaining && properties.chaining_name != nullptr && properties.chaining_name[0] != '\0') {
+        if (!n.empty()) {
+            n.append(u"-");
+        }
+        n.append(properties.chaining_name);
+    }
+    return n;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a size in bytes is a valid key size.
+// Default implementation, when all key sizes are allowed in min..max.
+//----------------------------------------------------------------------------
+
+bool ts::BlockCipher::isValidKeySize(size_t size) const
+{
+    return size >= properties.min_key_size && size <= properties.max_key_size;
+}
+
+bool ts::BlockCipher::isValidIVSize(size_t size) const
+{
+    if (!properties.chaining || properties.fixed_iv != nullptr) {
+        // No explicit IV is allowed.
+        return size == 0;
+    }
+    else {
+        return size >= properties.min_iv_size && size <= properties.max_iv_size;
+    }
 }
 
 
@@ -62,29 +112,57 @@ const EVP_CIPHER* ts::BlockCipher::getAlgorithm() const
 
 
 //----------------------------------------------------------------------------
-// Get the current key.
+// Schedule a new key.
 //----------------------------------------------------------------------------
 
-bool ts::BlockCipher::getKey(ByteBlock& key) const
+bool ts::BlockCipher::setKey(const void* key, size_t key_length, const void* iv, size_t iv_length)
 {
-    key = _current_key;
-    return _key_set && isValidKeySize(key.size());
+    // Setting the key is mandatory.
+    if (key == nullptr || !isValidKeySize(key_length)) {
+        return false;
+    }
+
+    // Setting the IV is optional.
+    const bool valid_iv = isValidIVSize(iv_length) && (iv != nullptr || iv_length == 0);
+    if (iv != nullptr && !valid_iv) {
+        return false;
+    }
+
+    _key_encrypt_count = _key_decrypt_count = 0;
+    _current_key.copy(key, key_length);
+
+    if (valid_iv || !_current_iv.empty()) {
+        // Schedule the key now, the IV is either valid or unused or previously set.
+        if (valid_iv && properties.fixed_iv == nullptr) {
+            _current_iv.copy(iv, iv_length);
+        }
+        _key_set = setKeyImpl();
+        return _key_set;
+    }
+    else {
+        // Schedule the key later, when an IV is set
+        return true;
+    }
 }
 
 
 //----------------------------------------------------------------------------
-// Schedule a new key.
+// Set a new initialization vector without changing the key
 //----------------------------------------------------------------------------
 
-bool ts::BlockCipher::setKey(const void* key, size_t key_length)
+bool ts::BlockCipher::setIV(const void* iv, size_t iv_length)
 {
-    if (key == nullptr || !isValidKeySize(key_length)) {
+    if ((iv == nullptr && iv_length > 0) || !isValidIVSize(iv_length)) {
         return false;
     }
+    _current_iv.copy(iv, iv_length);
+    if (_current_key.empty()) {
+        // No key set, nothing else to do.
+        return true;
+    }
     else {
-        _key_encrypt_count = _key_decrypt_count = 0;
-        _current_key.copy(key, key_length);
-        _key_set = setKeyImpl(key, key_length);
+        // A key was already set, set it again, in case IV is used here.
+        _key_set = setKeyImpl();
         return _key_set;
     }
 }
@@ -96,8 +174,8 @@ bool ts::BlockCipher::setKey(const void* key, size_t key_length)
 
 bool ts::BlockCipher::allowEncrypt()
 {
-    // Check that a key was successfully set.
-    if (!_key_set) {
+    // Check that a key and IV were successfully set.
+    if (!_key_set || _current_iv.size() < properties.min_iv_size || _current_iv.size() > properties.max_iv_size) {
         return false;
     }
 
@@ -122,8 +200,8 @@ bool ts::BlockCipher::allowEncrypt()
 
 bool ts::BlockCipher::allowDecrypt()
 {
-    // Check that a key was successfully set.
-    if (!_key_set) {
+    // Check that a key and IV were successfully set.
+    if (!_key_set || _current_iv.size() < properties.min_iv_size || _current_iv.size() > properties.max_iv_size) {
         return false;
     }
 
@@ -153,7 +231,18 @@ bool ts::BlockCipher::allowDecrypt()
 
 bool ts::BlockCipher::encrypt(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
-    return allowEncrypt() && encryptImpl(plain, plain_length, cipher, cipher_maxsize, cipher_length);
+    if (!allowEncrypt()) {
+        return false;
+    }
+    // With Windows BCrypt and OpenSSL, overlapping is possible without extra copy.
+    if (plain == cipher && !_can_process_in_place && !useSystemCryptoLib()) {
+        // Disjoint overlapping buffers.
+        const ByteBlock plain2(plain, plain_length);
+        return encryptImpl(plain2.data(), plain2.size(), cipher, cipher_maxsize, cipher_length);
+    }
+    else {
+        return encryptImpl(plain, plain_length, cipher, cipher_maxsize, cipher_length);
+    }
 }
 
 
@@ -163,61 +252,18 @@ bool ts::BlockCipher::encrypt(const void* plain, size_t plain_length, void* ciph
 
 bool ts::BlockCipher::decrypt(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
-    return allowDecrypt() && decryptImpl(cipher, cipher_length, plain, plain_maxsize, plain_length);
-}
-
-
-//----------------------------------------------------------------------------
-// Encrypt one block of data in place.
-//----------------------------------------------------------------------------
-
-bool ts::BlockCipher::encryptInPlace(void* data, size_t data_length, size_t* max_actual_length)
-{
-    return allowEncrypt() && encryptInPlaceImpl(data, data_length, max_actual_length);
-}
-
-bool ts::BlockCipher::encryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length)
-{
-    const size_t cipher_max_size = max_actual_length != nullptr ? *max_actual_length : data_length;
-
-    // With Windows BCrypt and OpenSSL, overlapping is possible without extra copy.
-#if defined(TS_WINDOWS)
-    if (_hkey != nullptr) {
-#else
-    if (_encrypt != nullptr) {
-#endif
-        return encryptImpl(data, data_length, data, cipher_max_size, max_actual_length);
+    if (!allowDecrypt()) {
+        return false;
     }
-
-    const ByteBlock plain(data, data_length);
-    return encryptImpl(plain.data(), plain.size(), data, cipher_max_size, max_actual_length);
-}
-
-
-//----------------------------------------------------------------------------
-// Decrypt one block of data in place.
-//----------------------------------------------------------------------------
-
-bool ts::BlockCipher::decryptInPlace(void* data, size_t data_length, size_t* max_actual_length)
-{
-    return allowDecrypt() && decryptInPlaceImpl(data, data_length, max_actual_length);
-}
-
-bool ts::BlockCipher::decryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length)
-{
-    const size_t plain_max_size = max_actual_length != nullptr ? *max_actual_length : data_length;
-
     // With Windows BCrypt and OpenSSL, overlapping is possible without extra copy.
-#if defined(TS_WINDOWS)
-    if (_hkey != nullptr) {
-#else
-    if (_decrypt != nullptr) {
-#endif
-        return decryptImpl(data, data_length, data, plain_max_size, max_actual_length);
+    if (plain == cipher && !_can_process_in_place && !useSystemCryptoLib()) {
+        // Disjoint overlapping buffers.
+        const ByteBlock cipher2(cipher, cipher_length);
+        return decryptImpl(cipher2.data(), cipher2.size(), plain, plain_maxsize, plain_length);
     }
-
-    const ByteBlock cipher(data, data_length);
-    return decryptImpl(cipher.data(), cipher.size(), data, plain_max_size, max_actual_length);
+    else {
+        return decryptImpl(cipher, cipher_length, plain, plain_maxsize, plain_length);
+    }
 }
 
 
@@ -226,7 +272,7 @@ bool ts::BlockCipher::decryptInPlaceImpl(void* data, size_t data_length, size_t*
 // Default implementation for the system-provided cryptographic library.
 //----------------------------------------------------------------------------
 
-bool ts::BlockCipher::setKeyImpl(const void* key, size_t key_length)
+bool ts::BlockCipher::setKeyImpl()
 {
 #if defined(TS_WINDOWS)
 

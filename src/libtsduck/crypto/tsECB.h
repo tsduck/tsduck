@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCipherChaining.h"
+#include "tsBlockCipher.h"
 
 namespace ts {
     //!
@@ -24,24 +24,23 @@ namespace ts {
     //!
     //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
-    template <class CIPHER>
-    class ECB: public CipherChainingTemplate<CIPHER>
+    template <class CIPHER, typename std::enable_if<std::is_base_of<BlockCipher, CIPHER>::value>::type* = nullptr>
+    class ECB: public CIPHER
     {
         TS_NOCOPY(ECB);
     public:
         //!
         //! Constructor.
         //!
-        ECB() : CipherChainingTemplate<CIPHER>(0, 0, 0) {}
-
-        // Implementation of CipherChaining interface.
-        virtual size_t minMessageSize() const override;
-        virtual bool residueAllowed() const override;
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
+        ECB();
 
     protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(ECB);
+
+        //! Constructor for subclasses which add some properties, such as fixed IV.
+        //! @param [in] props Constant reference to a block of properties of this block cipher.
+        ECB(const BlockCipherProperties& props);
+
         // Implementation of BlockCipher interface.
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
@@ -53,33 +52,31 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-size_t ts::ECB<CIPHER>::minMessageSize() const
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::ECB, ECB, (CIPHER::PROPERTIES(), u"ECB", false, CIPHER::BLOCK_SIZE, 0, 0));
+
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+ts::ECB<CIPHER,N>::ECB() : CIPHER(ECB::PROPERTIES())
 {
-    return this->block_size;
 }
 
-template<class CIPHER>
-bool ts::ECB<CIPHER>::residueAllowed() const
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+ts::ECB<CIPHER,N>::ECB(const BlockCipherProperties& props) : CIPHER(props)
 {
-    return false;
-}
-
-template<class CIPHER>
-ts::UString ts::ECB<CIPHER>::name() const
-{
-    return this->algo == nullptr ? UString() : this->algo->name() + u"-ECB";
+    props.assertCompatibleChaining(ECB::PROPERTIES());
 }
 
 
 //----------------------------------------------------------------------------
 // Encryption in ECB mode.
+// The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-bool ts::ECB<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+bool ts::ECB<CIPHER,N>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
 {
-    if (this->algo == nullptr || plain_length % this->block_size != 0 || cipher_maxsize < plain_length) {
+    const size_t bsize = this->properties.block_size;
+
+    if (plain_length % bsize != 0 || cipher_maxsize < plain_length) {
         return false;
     }
     if (cipher_length != nullptr) {
@@ -90,12 +87,12 @@ bool ts::ECB<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* 
     uint8_t* ct = reinterpret_cast<uint8_t*>(cipher);
 
     while (plain_length > 0) {
-        if (!this->algo->encrypt(pt, this->block_size, ct, this->block_size)) {
+        if (!CIPHER::encryptImpl(pt, bsize, ct, bsize, nullptr)) {
             return false;
         }
-        ct += this->block_size;
-        pt += this->block_size;
-        plain_length -= this->block_size;
+        ct += bsize;
+        pt += bsize;
+        plain_length -= bsize;
     }
 
     return true;
@@ -104,12 +101,15 @@ bool ts::ECB<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* 
 
 //----------------------------------------------------------------------------
 // Decryption in ECB mode.
+// The algorithm is safe with overlapping buffers.
 //----------------------------------------------------------------------------
 
-template<class CIPHER>
-bool ts::ECB<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
+bool ts::ECB<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
 {
-    if (this->algo == nullptr || cipher_length % this->block_size != 0 || plain_maxsize < cipher_length) {
+    const size_t bsize = this->properties.block_size;
+
+    if (cipher_length % bsize != 0 || plain_maxsize < cipher_length) {
         return false;
     }
     if (plain_length != nullptr) {
@@ -120,12 +120,12 @@ bool ts::ECB<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void
     uint8_t* pt = reinterpret_cast<uint8_t*>(plain);
 
     while (cipher_length > 0) {
-        if (!this->algo->decrypt(ct, this->block_size, pt, this->block_size)) {
+        if (!CIPHER::decryptImpl(ct, bsize, pt, bsize, nullptr)) {
             return false;
         }
-        ct += this->block_size;
-        pt += this->block_size;
-        cipher_length -= this->block_size;
+        ct += bsize;
+        pt += bsize;
+        cipher_length -= bsize;
     }
 
     return true;

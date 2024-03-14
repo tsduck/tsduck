@@ -8,19 +8,21 @@
 
 #include "tsSCTE52.h"
 
-ts::UString ts::SCTE52_2003::name() const
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::SCTE52_2003, SCTE52, (DVS042<DES>::PROPERTIES(), u"ANSI/SCTE 52 (2003)", nullptr, 0));
+TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::SCTE52_2008, SCTE52, (DVS042<DES>::PROPERTIES(), u"ANSI/SCTE 52 (2008)", nullptr, 0));
+
+ts::SCTE52_2003::SCTE52_2003() : DVS042<DES>(SCTE52_2003::PROPERTIES(), true)
 {
-    return u"ANSI/SCTE 52 (2003)";
 }
 
-ts::UString ts::SCTE52_2008::name() const
+ts::SCTE52_2003::~SCTE52_2003()
 {
-    return u"ANSI/SCTE 52 (2008)";
 }
 
-bool ts::SCTE52_2003::setShortIV(const void* iv_, size_t iv_length)
+ts::SCTE52_2008::SCTE52_2008() : DVS042<DES>(SCTE52_2008::PROPERTIES())
 {
-    // In the 2003 version, the IV are identical, there is no specific IV for short blocks.
-    // Override this one to make it private.
-    return DVS042<DES>::setShortIV(iv_, iv_length);
+}
+
+ts::SCTE52_2008::~SCTE52_2008()
+{
 }

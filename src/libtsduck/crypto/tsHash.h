@@ -18,24 +18,24 @@
 
 namespace ts {
     //!
-    //! Abstract interface of hash functions.
+    //! Base class for all hash functions.
     //! @ingroup crypto
     //!
     class TSDUCKDLL Hash
     {
-        TS_NOCOPY(Hash);
+        TS_NOBUILD_NOCOPY(Hash);
     public:
         //!
         //! Algorithm name (informational only).
         //! @return The algorithm name.
         //!
-        virtual UString name() const = 0;
+        UString name() const { return _name; }
 
         //!
         //! Size in bytes of the resulting hash.
         //! @return The size in bytes of the resulting hash.
         //!
-        virtual size_t hashSize() const = 0;
+        size_t hashSize() const { return _hash_size; }
 
         //!
         //! Reinitialize the computation of the hash.
@@ -86,27 +86,38 @@ namespace ts {
         bool hash(const void* data, size_t data_size, ByteBlock& hash);
 
         //!
-        //! Default constructor
-        //!
-        Hash() = default;
-
-        //!
         //! Virtual destructor.
         //!
         virtual ~Hash();
 
     protected:
-        //! @cond nodoxygen
-#if defined(TS_WINDOWS)
-        // Get the algorithm handle and subobject size.
-        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const = 0;
-#else
-        // Get reference hash context.
-        virtual const EVP_MD_CTX* referenceContext() const = 0;
+        //!
+        //! Constructor for subclasses.
+        //! @param [in] name Algorithm name.
+        //! @param [in] hash_size Size in bytes of the hash value.
+        //!
+        Hash(const UChar* name, size_t hash_size);
+
+#if defined(TS_WINDOWS) || defined(DOXYGEN)
+        //!
+        //! Get the algorithm handle and subobject size, when the subclass uses Microsoft BCrypt library.
+        //! @param [out] algo Handle to hash algorithm.
+        //! @param [out] length Length in bytes of the subobject to allocate.
+        //!
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const;
 #endif
-        //! @endcond
+
+#if !defined(TS_WINDOWS) || defined(DOXYGEN)
+        //!
+        //! Get reference hash context, when the subclass uses OpenSSL.
+        //! @return Reference EVP hash context. To be copied into each new hash object.
+        //!
+        virtual const EVP_MD_CTX* referenceContext() const;
+#endif
 
     private:
+        const UChar* const _name;
+        const size_t _hash_size;
 #if defined(TS_WINDOWS)
         ::BCRYPT_ALG_HANDLE _algo = nullptr;
         ::BCRYPT_HASH_HANDLE _hash = nullptr;

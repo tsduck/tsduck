@@ -45,7 +45,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using CipherPtr = SafePtr<CipherChaining, ThreadSafety::None>;
+        using CipherPtr = SafePtr<BlockCipher, ThreadSafety::None>;
 
         // Command line options:
         bool      _descramble = false; // Descramble instead of scramble

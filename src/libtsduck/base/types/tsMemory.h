@@ -94,6 +94,16 @@ namespace ts {
     }
 
     //!
+    //! Compute an exclusive or over memory areas.
+    //! The input and output areas can overlap only if they start at the same address.
+    //! @param [out] dest Destination start address.
+    //! @param [in] src1 Start address of the first area.
+    //! @param [in] src2 Start address of the second area.
+    //! @param [in] size Size in bytes of the memory areas.
+    //!
+    TSDUCKDLL void MemXor(void* dest, const void* src1, const void* src2, size_t size);
+
+    //!
     //! Check if a memory area starts with the specified prefix.
     //! @param [in] area Address of a memory area to check.
     //! @param [in] area_size Size in bytes of the memory area.

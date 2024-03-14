@@ -26,20 +26,11 @@ namespace ts {
     {
         TS_NOCOPY(DVBCISSA);
     public:
-        //!
-        //! DVB-CISSA control words size in bytes (AES-128 key size).
-        //!
-        static constexpr size_t KEY_SIZE = 16;
-
-        //!
-        //! Constructor.
-        //!
+        //! Default constructor.
         DVBCISSA();
-
-        // Implementation of BlockCipher interface.
-        virtual UString name() const override;
-
-    private:
-        virtual bool setIV(const void* iv_, size_t iv_length) override;
+        //! Destructor.
+        virtual ~DVBCISSA() override;
+    protected:
+        TS_BLOCK_CIPHER_DECLARE_PROPERTIES(DVBCISSA);
     };
 }
