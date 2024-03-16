@@ -10,25 +10,34 @@
 #include "tsSingleton.h"
 #include "tsInitCryptoLibrary.h"
 
+
+//----------------------------------------------------------------------------
+// Basic implementation (one block)
+//----------------------------------------------------------------------------
+
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::TDES, TDES, (u"TDES", ts::TDES::BLOCK_SIZE, ts::TDES::KEY_SIZE));
 
 ts::TDES::TDES() : BlockCipher(TDES::PROPERTIES())
 {
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
 
 ts::TDES::TDES(const BlockCipherProperties& props) : BlockCipher(props)
 {
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     props.assertCompatibleBase(TDES::PROPERTIES());
     canProcessInPlace(true);
 }
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), Fetch);
-void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
+TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), FetchECB);
+void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    Fetch::Instance().getAlgorithm(algo, length);
+    FetchECB::Instance().getAlgorithm(algo, length);
+    // This is ECB mode, ignore IV which may be used by a upper chaining mode.
+    ignore_iv = true;
 }
 
 #else
@@ -39,40 +48,81 @@ const EVP_CIPHER* ts::TDES::getAlgorithm() const
     return Algo::Instance().algorithm();
 }
 
+#endif
+
+
+//----------------------------------------------------------------------------
+// Template specialization for ECB mode.
+//----------------------------------------------------------------------------
+
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::ECB<ts::TDES>, ECB, (ts::TDES::PROPERTIES(), u"ECB", false, ts::TDES::BLOCK_SIZE, 0, 0));
 ts::ECB<ts::TDES>::ECB() : TDES(ts::ECB<ts::TDES>::PROPERTIES())
 {
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
+
 ts::ECB<ts::TDES>::ECB(const BlockCipherProperties& props) : TDES(props)
 {
     props.assertCompatibleChaining(ts::ECB<ts::TDES>::PROPERTIES());
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
+
+#if defined(TS_WINDOWS)
+
+void ts::ECB<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
+{
+    FetchECB::Instance().getAlgorithm(algo, length);
+    // This is ECB mode, ignore IV which may be used by a upper chaining mode.
+    ignore_iv = true;
+}
+
+#else
+
 const EVP_CIPHER* ts::ECB<ts::TDES>::getAlgorithm() const
 {
     return Algo::Instance().algorithm();
 }
+
 #endif
+
+
+//----------------------------------------------------------------------------
+// Template specialization for CBC mode.
+//----------------------------------------------------------------------------
 
 // Specialization for CBC is currently disabled, see:
 // https://stackoverflow.com/questions/78172656/openssl-how-to-encrypt-new-message-with-same-key-without-evp-encryptinit-ex-a
-#if 0
+#if defined(TS_WINDOWS)
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::CBC<ts::TDES>, CBC, (ts::TDES::PROPERTIES(), u"CBC", false, ts::TDES::BLOCK_SIZE, 0, ts::TDES::BLOCK_SIZE));
 ts::CBC<ts::TDES>::CBC() : TDES(ts::CBC<ts::TDES>::PROPERTIES())
 {
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
+
 ts::CBC<ts::TDES>::CBC(const BlockCipherProperties& props) : TDES(props)
 {
     props.assertCompatibleChaining(ts::CBC<ts::TDES>::PROPERTIES());
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
+
+TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC), FetchCBC);
+void ts::CBC<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
+{
+    FetchCBC::Instance().getAlgorithm(algo, length);
+    ignore_iv = false;
+}
+
+#if 0  // OpenSSL future implementation?
 TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-EDE3-CBC"), AlgoCBC);
 const EVP_CIPHER* ts::CBC<ts::TDES>::getAlgorithm() const
 {
     return AlgoCBC::Instance().algorithm();
 }
+#endif
 
 #endif
