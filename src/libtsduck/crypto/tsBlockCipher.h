@@ -283,6 +283,7 @@ namespace ts {
         //!
 #define TS_BLOCK_CIPHER_DECLARE_PROPERTIES(Prefix)                  \
         /** Properties of this algorithm. */                        \
+        /** @return A constant reference to the properties. */      \
         static const BlockCipherProperties& PROPERTIES()            \
         {                                                           \
             return Prefix##_PropertiesSingleton::Instance();        \
@@ -411,6 +412,7 @@ namespace ts {
         //! Get the algorithm handle and subobject size, when the subclass uses Microsoft BCrypt library.
         //! @param [out] algo Handle to hash algorithm.
         //! @param [out] length Length in bytes of the subobject to allocate.
+        //! @param [out] ignore_iv The IV shall not be passed to BCrypt.
         //!
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const;
 #endif

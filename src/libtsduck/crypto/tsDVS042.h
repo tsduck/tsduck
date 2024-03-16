@@ -77,8 +77,10 @@ namespace ts {
         DVS042(const BlockCipherProperties& props, bool ignore_short_iv = false);
 
         // Implementation of BlockCipher interface.
+        //! @cond nodoxygen
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        //! @endcond
 
     private:
         bool _ignore_short_iv = false;
@@ -90,6 +92,8 @@ namespace ts {
 //----------------------------------------------------------------------------
 // Template definitions.
 //----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
 
 TS_PUSH_WARNING()
 TS_MSC_NOWARNING(4505) // warning C4505: 'ts::DVS042<ts::AES>::encrypt': unreferenced local function has been removed
@@ -250,3 +254,5 @@ bool ts::DVS042<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length,
 }
 
 TS_POP_WARNING()
+
+#endif

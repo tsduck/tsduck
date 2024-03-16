@@ -39,8 +39,10 @@ namespace ts {
         TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CTS2);
 
         // Implementation of BlockCipher interface.
+        //! @cond nodoxygen
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        //! @endcond
     };
 }
 
@@ -48,6 +50,8 @@ namespace ts {
 //----------------------------------------------------------------------------
 // Template definitions.
 //----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTS2, CTS2, (CIPHER::PROPERTIES(), u"CTS2", true, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE));
 
@@ -190,3 +194,5 @@ bool ts::CTS2<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, v
     }
     return true;
 }
+
+#endif
