@@ -56,8 +56,10 @@ namespace ts {
         TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CTR);
 
         // Implementation of BlockCipher interface.
+        //! @cond nodoxygen
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        //! @endcond
 
     private:
         size_t _counter_bits = 0; // size in bits of the counter part.
@@ -74,6 +76,8 @@ namespace ts {
 //----------------------------------------------------------------------------
 // Template definitions.
 //----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CTR, CTR, (CIPHER::PROPERTIES(), u"CTR", true, 0, 2, CIPHER::BLOCK_SIZE));
 
@@ -181,3 +185,5 @@ bool ts::CTR<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, vo
     // With CTR, the encryption and decryption are identical operations.
     return encryptImpl(cipher, cipher_length, plain, plain_maxsize, plain_length);
 }
+
+#endif

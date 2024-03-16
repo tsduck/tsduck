@@ -42,8 +42,10 @@ namespace ts {
         ECB(const BlockCipherProperties& props);
 
         // Implementation of BlockCipher interface.
+        //! @cond nodoxygen
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        //! @endcond
     };
 }
 
@@ -51,6 +53,8 @@ namespace ts {
 //----------------------------------------------------------------------------
 // Template definitions.
 //----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
 
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::ECB, ECB, (CIPHER::PROPERTIES(), u"ECB", false, CIPHER::BLOCK_SIZE, 0, 0));
 
@@ -130,3 +134,5 @@ bool ts::ECB<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, vo
 
     return true;
 }
+
+#endif

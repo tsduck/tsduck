@@ -92,21 +92,21 @@ const EVP_CIPHER* ts::ECB<ts::DES>::getAlgorithm() const
 // Template specialization for CBC mode.
 //----------------------------------------------------------------------------
 
-// Specialization for CBC is currently disabled, see:
-// https://stackoverflow.com/questions/78172656/openssl-how-to-encrypt-new-message-with-same-key-without-evp-encryptinit-ex-a
-#if defined(TS_WINDOWS)
-
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::CBC<ts::DES>, CBC, (ts::DES::PROPERTIES(), u"CBC", false, ts::DES::BLOCK_SIZE, 0, ts::DES::BLOCK_SIZE));
 ts::CBC<ts::DES>::CBC() : DES(ts::CBC<ts::DES>::PROPERTIES())
 {
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
 
 ts::CBC<ts::DES>::CBC(const BlockCipherProperties& props) : DES(props)
 {
     props.assertCompatibleChaining(ts::CBC<ts::DES>::PROPERTIES());
+    // OpenSSL and Windows BCrypt can encrypt/decrypt in place.
     canProcessInPlace(true);
 }
+
+#if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_DES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC), FetchCBC);
 void ts::CBC<ts::DES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
@@ -115,12 +115,12 @@ void ts::CBC<ts::DES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, b
     ignore_iv = false;
 }
 
-#if 0  // OpenSSL future implementation?
+#else
+
 TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-CBC", "legacy"), AlgoCBC);
 const EVP_CIPHER* ts::CBC<ts::DES>::getAlgorithm() const
 {
     return AlgoCBC::Instance().algorithm();
 }
-    #endif
 
 #endif

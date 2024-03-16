@@ -396,7 +396,7 @@ bool ts::BlockCipher::encryptImpl(const void* plain, size_t plain_length, void* 
             PrintCryptographicLibraryErrors();
             return false;
         }
-        if (EVP_EncryptInit(_encrypt, _algo, _current_key.data(), _current_iv.empty() ? nullptr : _current_iv.data()) <= 0 ||
+        if (EVP_EncryptInit_ex(_encrypt, _algo, nullptr, _current_key.data(), nullptr) <= 0 ||
             EVP_CIPHER_CTX_set_padding(_encrypt, 0) <= 0)
         {
             EVP_CIPHER_CTX_free(_encrypt);
@@ -406,13 +406,17 @@ bool ts::BlockCipher::encryptImpl(const void* plain, size_t plain_length, void* 
         }
     }
 
+    // Set the IV before each encryption.
+    if (!_current_iv.empty() && EVP_EncryptInit_ex(_encrypt, nullptr, nullptr, nullptr, _current_iv.data()) <= 0) {
+        return false;
+    }
     // Perform complete encryption.
     const unsigned char* input = reinterpret_cast<const unsigned char*>(plain);
     unsigned char* output = reinterpret_cast<unsigned char*>(cipher);
     int output_len = 0;
     int final_len = 0;
     if (EVP_EncryptUpdate(_encrypt, output, &output_len, input, int(plain_length)) <= 0 ||
-        EVP_EncryptFinal(_encrypt, output + output_len, &final_len) <= 0)
+        EVP_EncryptFinal_ex(_encrypt, output + output_len, &final_len) <= 0)
     {
         PrintCryptographicLibraryErrors();
         return false;
@@ -469,7 +473,7 @@ bool ts::BlockCipher::decryptImpl(const void* cipher, size_t cipher_length, void
             PrintCryptographicLibraryErrors();
             return false;
         }
-        if (EVP_DecryptInit(_decrypt, _algo, _current_key.data(), _current_iv.empty() ? nullptr : _current_iv.data()) <= 0 ||
+        if (EVP_DecryptInit_ex(_decrypt, _algo, nullptr, _current_key.data(), nullptr) <= 0 ||
             EVP_CIPHER_CTX_set_padding(_decrypt, 0) <= 0)
         {
             EVP_CIPHER_CTX_free(_decrypt);
@@ -479,13 +483,17 @@ bool ts::BlockCipher::decryptImpl(const void* cipher, size_t cipher_length, void
         }
     }
 
+    // Set the IV before each decryption.
+    if (!_current_iv.empty() && EVP_DecryptInit_ex(_decrypt, nullptr, nullptr, nullptr, _current_iv.data()) <= 0) {
+        return false;
+    }
     // Perform complete decryption.
     const unsigned char* input = reinterpret_cast<const unsigned char*>(cipher);
     unsigned char* output = reinterpret_cast<unsigned char*>(plain);
     int output_len = 0;
     int final_len = 0;
     if (EVP_DecryptUpdate(_decrypt, output, &output_len, input, int(cipher_length)) <= 0 ||
-        EVP_DecryptFinal(_decrypt, output + output_len, &final_len) <= 0)
+        EVP_DecryptFinal_ex(_decrypt, output + output_len, &final_len) <= 0)
     {
         PrintCryptographicLibraryErrors();
         return false;

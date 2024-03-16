@@ -92,10 +92,6 @@ const EVP_CIPHER* ts::ECB<ts::AES256>::getAlgorithm() const
 // Template specialization for CBC mode.
 //----------------------------------------------------------------------------
 
-// Specialization for CBC is currently disabled, see:
-// https://stackoverflow.com/questions/78172656/openssl-how-to-encrypt-new-message-with-same-key-without-evp-encryptinit-ex-a
-#if defined(TS_WINDOWS)
-
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES(ts::CBC<ts::AES256>, CBC, (ts::AES256::PROPERTIES(), u"CBC", false, ts::AES256::BLOCK_SIZE, 0, ts::AES256::BLOCK_SIZE));
 ts::CBC<ts::AES256>::CBC() : AES256(ts::CBC<ts::AES256>::PROPERTIES())
 {
@@ -108,6 +104,8 @@ ts::CBC<ts::AES256>::CBC(const BlockCipherProperties& props) : AES256(props)
     canProcessInPlace(true);
 }
 
+#if defined(TS_WINDOWS)
+
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC), FetchCBC);
 void ts::CBC<ts::AES256>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
@@ -115,12 +113,12 @@ void ts::CBC<ts::AES256>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length
     ignore_iv = false;
 }
 
-#if 0  // OpenSSL future implementation?
+#else
+
 TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("AES-256-CBC"), AlgoCBC);
 const EVP_CIPHER* ts::CBC<ts::AES256>::getAlgorithm() const
 {
     return AlgoCBC::Instance().algorithm();
 }
-#endif
 
 #endif

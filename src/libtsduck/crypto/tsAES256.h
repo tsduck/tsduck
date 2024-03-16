@@ -64,9 +64,6 @@ namespace ts {
     };
     //! @endcond
 
-    // Specialization for CBC is currently disabled on OpenSSL, see:
-    // https://stackoverflow.com/questions/78172656/openssl-how-to-encrypt-new-message-with-same-key-without-evp-encryptinit-ex-a
-#if defined(TS_WINDOWS)
     //! @cond nodoxygen
     template<>
     class TSDUCKDLL CBC<AES256>: public AES256
@@ -77,9 +74,11 @@ namespace ts {
     protected:
         TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CBC);
         CBC(const BlockCipherProperties& props);
+#if defined(TS_WINDOWS)
         virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
+#else
+        virtual const EVP_CIPHER* getAlgorithm() const override;
+#endif
     };
     //! @endcond
-
-#endif
 }

@@ -40,8 +40,10 @@ namespace ts {
         CBC(const BlockCipherProperties& props);
 
         // Implementation of BlockCipher interface.
+        //! @cond nodoxygen
         virtual bool encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length) override;
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
+        //! @endcond
     };
 }
 
@@ -50,8 +52,9 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-// Need 3 work blocks. The last 2 are only used with "in place" decryption.
+#if !defined(DOXYGEN)
 
+// Need 3 work blocks. The last 2 are only used with "in place" decryption.
 TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(ts::CBC, CBC, (CIPHER::PROPERTIES(), u"CBC", false, CIPHER::BLOCK_SIZE, 3, CIPHER::BLOCK_SIZE));
 
 template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>
@@ -157,3 +160,5 @@ bool ts::CBC<CIPHER,N>::decryptImpl(const void* cipher, size_t cipher_length, vo
 
     return true;
 }
+
+#endif
