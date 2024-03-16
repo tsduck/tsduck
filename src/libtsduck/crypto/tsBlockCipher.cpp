@@ -235,7 +235,7 @@ bool ts::BlockCipher::encrypt(const void* plain, size_t plain_length, void* ciph
         return false;
     }
     // With Windows BCrypt and OpenSSL, overlapping is possible without extra copy.
-    if (plain == cipher && !_can_process_in_place && !useSystemCryptoLib()) {
+    if (plain == cipher && !_can_process_in_place) {
         // Disjoint overlapping buffers.
         const ByteBlock plain2(plain, plain_length);
         return encryptImpl(plain2.data(), plain2.size(), cipher, cipher_maxsize, cipher_length);
@@ -256,7 +256,7 @@ bool ts::BlockCipher::decrypt(const void* cipher, size_t cipher_length, void* pl
         return false;
     }
     // With Windows BCrypt and OpenSSL, overlapping is possible without extra copy.
-    if (plain == cipher && !_can_process_in_place && !useSystemCryptoLib()) {
+    if (plain == cipher && !_can_process_in_place) {
         // Disjoint overlapping buffers.
         const ByteBlock cipher2(cipher, cipher_length);
         return decryptImpl(cipher2.data(), cipher2.size(), plain, plain_maxsize, plain_length);
@@ -379,7 +379,7 @@ bool ts::BlockCipher::encryptImpl(const void* plain, size_t plain_length, void* 
             PrintCryptographicLibraryErrors();
             return false;
         }
-        if (EVP_EncryptInit(_encrypt, _algo, _current_key.data(), nullptr) <= 0 ||
+        if (EVP_EncryptInit(_encrypt, _algo, _current_key.data(), _current_iv.empty() ? nullptr : _current_iv.data()) <= 0 ||
             EVP_CIPHER_CTX_set_padding(_encrypt, 0) <= 0)
         {
             EVP_CIPHER_CTX_free(_encrypt);
@@ -445,7 +445,7 @@ bool ts::BlockCipher::decryptImpl(const void* cipher, size_t cipher_length, void
             PrintCryptographicLibraryErrors();
             return false;
         }
-        if (EVP_DecryptInit(_decrypt, _algo, _current_key.data(), nullptr) <= 0 ||
+        if (EVP_DecryptInit(_decrypt, _algo, _current_key.data(), _current_iv.empty() ? nullptr : _current_iv.data()) <= 0 ||
             EVP_CIPHER_CTX_set_padding(_decrypt, 0) <= 0)
         {
             EVP_CIPHER_CTX_free(_decrypt);
