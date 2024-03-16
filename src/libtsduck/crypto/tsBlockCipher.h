@@ -452,9 +452,5 @@ namespace ts {
         EVP_CIPHER_CTX* _encrypt = nullptr;
         EVP_CIPHER_CTX* _decrypt = nullptr;
 #endif
-
-        // Check if the system-specific cryptographic library is used.
-        // The field _algo exists in both systems and is a pointer which is initialized by setKey().
-        bool useSystemCryptoLib() const { return _algo != nullptr; }
     };
 }
