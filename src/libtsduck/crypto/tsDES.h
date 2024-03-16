@@ -37,7 +37,7 @@ namespace ts {
         DES(const BlockCipherProperties& props);
 
 #if defined(TS_WINDOWS)
-        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const override;
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
 #else
         virtual const EVP_CIPHER* getAlgorithm() const override;
 #endif
@@ -47,10 +47,8 @@ namespace ts {
     // Chaining blocks specializations, when implemented in the system cryptographic library.
     //
     //! @cond nodoxygen
-#if !defined(TS_WINDOWS)
-
     template<>
-    class ECB<DES>: public DES
+    class TSDUCKDLL ECB<DES>: public DES
     {
         TS_NOCOPY(ECB);
     public:
@@ -58,15 +56,20 @@ namespace ts {
     protected:
         TS_BLOCK_CIPHER_DECLARE_PROPERTIES(ECB);
         ECB(const BlockCipherProperties& props);
+#if defined(TS_WINDOWS)
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
+#else
         virtual const EVP_CIPHER* getAlgorithm() const override;
-    };
 #endif
+    };
+    //! @endcond
 
-    // Specialization for CBC is currently disabled, see:
+    // Specialization for CBC is currently disabled on OpenSSL, see:
     // https://stackoverflow.com/questions/78172656/openssl-how-to-encrypt-new-message-with-same-key-without-evp-encryptinit-ex-a
-#if 0
+#if defined(TS_WINDOWS)
+    //! @cond nodoxygen
     template<>
-    class CBC<DES>: public DES
+    class TSDUCKDLL CBC<DES>: public DES
     {
         TS_NOCOPY(CBC);
     public:
@@ -74,9 +77,9 @@ namespace ts {
     protected:
         TS_BLOCK_CIPHER_DECLARE_PROPERTIES(CBC);
         CBC(const BlockCipherProperties& props);
-        virtual const EVP_CIPHER* getAlgorithm() const override;
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const override;
     };
+    //! @endcond
 
 #endif
-    //! @endcond
 }

@@ -412,7 +412,7 @@ namespace ts {
         //! @param [out] algo Handle to hash algorithm.
         //! @param [out] length Length in bytes of the subobject to allocate.
         //!
-        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const;
+        virtual void getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const;
 #endif
 
 #if !defined(TS_WINDOWS) || defined(DOXYGEN)
@@ -447,6 +447,8 @@ namespace ts {
         ::BCRYPT_ALG_HANDLE _algo = nullptr;
         ::BCRYPT_KEY_HANDLE _hkey = nullptr;
         ByteBlock _obj {};
+        ByteBlock _work_iv {}; // BCrypt update the IV for reuse, use this one preserve _current_iv
+        bool _ignore_iv = false;
 #else
         const EVP_CIPHER* _algo = nullptr;
         EVP_CIPHER_CTX* _encrypt = nullptr;

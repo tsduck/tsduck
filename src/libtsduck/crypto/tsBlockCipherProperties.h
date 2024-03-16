@@ -19,7 +19,7 @@ namespace ts {
     //! Properties of a block cipher.
     //! @ingroup crypto
     //!
-    class BlockCipherProperties
+    class TSDUCKDLL BlockCipherProperties
     {
         BlockCipherProperties() = delete;
         TS_DEFAULT_COPY_MOVE(BlockCipherProperties);

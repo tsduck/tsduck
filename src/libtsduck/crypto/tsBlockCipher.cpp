@@ -23,6 +23,9 @@ ts::BlockCipher::BlockCipher(const BlockCipherProperties& props) :
     InitCryptographicLibrary();
     if (props.fixed_iv != nullptr) {
         _current_iv.copy(props.fixed_iv, props.fixed_iv_size);
+#if defined(TS_WINDOWS)
+        _work_iv.resize(_current_iv.size());
+#endif
     }
 }
 
@@ -90,15 +93,16 @@ bool ts::BlockCipher::isValidIVSize(size_t size) const
 
 //----------------------------------------------------------------------------
 // Get the algorithm handle. This is the default implementation, for
-// subclasses not using BCrypt or OpenSSL.
+// subclasses not using OpenSSL or Windows BCrypt.
 //----------------------------------------------------------------------------
 
 #if defined(TS_WINDOWS)
 
-void ts::BlockCipher::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
+void ts::BlockCipher::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
     algo = nullptr;
     length = 0;
+    ignore_iv = false;
 }
 
 #else
@@ -135,6 +139,9 @@ bool ts::BlockCipher::setKey(const void* key, size_t key_length, const void* iv,
         // Schedule the key now, the IV is either valid or unused or previously set.
         if (valid_iv && properties.fixed_iv == nullptr) {
             _current_iv.copy(iv, iv_length);
+#if defined(TS_WINDOWS)
+            _work_iv.resize(iv_length);
+#endif
         }
         _key_set = setKeyImpl();
         return _key_set;
@@ -156,6 +163,9 @@ bool ts::BlockCipher::setIV(const void* iv, size_t iv_length)
         return false;
     }
     _current_iv.copy(iv, iv_length);
+#if defined(TS_WINDOWS)
+    _work_iv.resize(iv_length);
+#endif
     if (_current_key.empty()) {
         // No key set, nothing else to do.
         return true;
@@ -279,7 +289,7 @@ bool ts::BlockCipher::setKeyImpl()
     // Get a reference to algorithm provider the first time.
     if (_algo == nullptr) {
         size_t objlength = 0;
-        getAlgorithm(_algo, objlength);
+        getAlgorithm(_algo, objlength, _ignore_iv);
         if (_algo == nullptr) {
             return false;
         }
@@ -294,12 +304,12 @@ bool ts::BlockCipher::setKeyImpl()
     }
 
     // Build a key data blob (header, followed by key).
-    ByteBlock key_data(sizeof(::BCRYPT_KEY_DATA_BLOB_HEADER) + key_length);
+    ByteBlock key_data(sizeof(::BCRYPT_KEY_DATA_BLOB_HEADER) + _current_key.size());
     ::BCRYPT_KEY_DATA_BLOB_HEADER* header = reinterpret_cast<::BCRYPT_KEY_DATA_BLOB_HEADER*>(key_data.data());
     header->dwMagic = BCRYPT_KEY_DATA_BLOB_MAGIC;
     header->dwVersion = BCRYPT_KEY_DATA_BLOB_VERSION1;
-    header->cbKeyData = ::ULONG(key_length);
-    MemCopy(key_data.data() + sizeof(::BCRYPT_KEY_DATA_BLOB_HEADER), key, key_length);
+    header->cbKeyData = ::ULONG(_current_key.size());
+    MemCopy(key_data.data() + sizeof(::BCRYPT_KEY_DATA_BLOB_HEADER), _current_key.data(), _current_key.size());
 
     // Create a new key handle.
     if (::BCryptImportKey(_algo, nullptr, BCRYPT_KEY_DATA_BLOB, &_hkey, _obj.data(), ::ULONG(_obj.size()), ::PUCHAR(key_data.data()), ::ULONG(key_data.size()), 0) < 0) {
@@ -348,7 +358,14 @@ bool ts::BlockCipher::encryptImpl(const void* plain, size_t plain_length, void* 
 #if defined(TS_WINDOWS)
 
     ::ULONG retsize = 0;
-    if (_hkey == nullptr || ::BCryptEncrypt(_hkey, ::PUCHAR(plain), ::ULONG(plain_length), nullptr, nullptr, 0, ::PUCHAR(cipher), ::ULONG(cipher_maxsize), &retsize, 0) < 0) {
+    const ::PUCHAR iv = _ignore_iv || _current_iv.empty() ? nullptr : ::PUCHAR(_work_iv.data());
+    const ::ULONG  ivlen = ::ULONG(_current_iv.size());
+    if (iv != nullptr) {
+        // Preserve _current_iv, the IV is updated by BCryptEncrypt
+        assert(_current_iv.size() == _work_iv.size());
+        MemCopy(_work_iv.data(), _current_iv.data(), _work_iv.size());
+    }
+    if (_hkey == nullptr || ::BCryptEncrypt(_hkey, ::PUCHAR(plain), ::ULONG(plain_length), nullptr, iv, ivlen, ::PUCHAR(cipher), ::ULONG(cipher_maxsize), &retsize, 0) < 0) {
         return false;
     }
     if (cipher_length != nullptr) {
@@ -424,7 +441,14 @@ bool ts::BlockCipher::decryptImpl(const void* cipher, size_t cipher_length, void
 #if defined(TS_WINDOWS)
 
     ::ULONG retsize = 0;
-    if (_hkey == nullptr || ::BCryptDecrypt(_hkey, ::PUCHAR(cipher), ::ULONG(cipher_length), nullptr, nullptr, 0, ::PUCHAR(plain), ::ULONG(plain_maxsize), &retsize, 0) < 0) {
+    const ::PUCHAR iv = _ignore_iv || _current_iv.empty() ? nullptr : ::PUCHAR(_work_iv.data());
+    const ::ULONG  ivlen = ::ULONG(_current_iv.size());
+    if (iv != nullptr) {
+        // Preserve _current_iv, the IV is updated by BCryptEncrypt
+        assert(_current_iv.size() == _work_iv.size());
+        MemCopy(_work_iv.data(), _current_iv.data(), _work_iv.size());
+    }
+    if (_hkey == nullptr || ::BCryptDecrypt(_hkey, ::PUCHAR(cipher), ::ULONG(cipher_length), nullptr, iv, ivlen, ::PUCHAR(plain), ::ULONG(plain_maxsize), &retsize, 0) < 0) {
         return false;
     }
     if (plain_length != nullptr) {
