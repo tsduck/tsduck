@@ -54,9 +54,9 @@ jobs:
           - src/utest
           query-filters:
           - exclude:
+            # CWE-327: Use of a broken or risky cryptographic algorithm
             # We use DES for SCTE52, this is history, not a security alert
-            tags contain:
-            - weak-cryptographic-algorithm
+            tags: /cwe-327/
 
     - if: matrix.language == 'cpp'
       name: Custom build (C++)
