@@ -245,11 +245,11 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
         // No value or value is optional and shall not be documented.
         return UString();
     }
-    else if ((flags & IOPT_OPTVALUE) != 0) {
-        return (ctx == LONG ? u"[=" : u"[") + desc + u"]";
-    }
     else if (ctx == ALONE) {
         return desc;
+    }
+    else if ((flags & IOPT_OPTVALUE) != 0) {
+        return (ctx == LONG ? u"[=" : u"[") + desc + u"]";
     }
     else {
         return SPACE + desc;
@@ -384,7 +384,7 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
 
     // Document all possible values for enumeration types.
     if (!enumeration.empty() && (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) != (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
-        text += HelpLines(indent_desc, u"Must be one of " + optionNames(u", ") + u".", line_width);
+        text += HelpLines(indent_desc, u"The '" + valueDescription(IOption::ALONE) + u"' must be one of " + optionNames(u", ") + u".", line_width);
     }
 
     // Document decimal values (with a decimal point).
@@ -485,8 +485,8 @@ void ts::Args::adjustPredefinedOptions()
         _iopts.erase(u"version");
     }
     else if (!Contains(_iopts, u"version")) {
-        addOption(IOption(this, u"version", 0,  VersionInfo::FormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP));
-        help(u"version", u"Display the TSDuck version number.");
+        addOption(IOption(this, u"version", 0,  VersionInfo::FormatEnum, 0, 1, IOPT_PREDEFINED | IOPT_OPTVALUE));
+        help(u"version", u"name", u"Display the TSDuck version number.");
     }
 
     // Option --verbose.
