@@ -47,7 +47,16 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
-        config-file: .github/codeql/codeql-config.yml
+        config: |
+          paths:
+          - src
+          paths-ignore:
+          - src/utest
+          query-filters:
+          - exclude:
+            # We use DES for SCTE52, this is history, not a security alert
+            tags contain:
+            - weak-cryptographic-algorithm
 
     - if: matrix.language == 'cpp'
       name: Custom build (C++)
