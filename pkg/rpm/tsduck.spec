@@ -11,6 +11,8 @@ BuildRequires:  gcc-c++
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  binutils
+Requires:       openssl-libs
+BuildRequires:  openssl-devel
 %if 0%{!?noeditline:1}
 Requires:       libedit
 BuildRequires:  libedit-devel
@@ -49,6 +51,7 @@ process MPEG Transport Streams (TS), either as recorded files or live streams.
 Summary:        Development files for %{name}
 Group:          Development/Libraries
 Requires:       %{name} = %{version}-%{release}
+Requires:       openssl-devel
 %if 0%{!?noeditline:1}
 Requires:       libedit-devel
 %endif

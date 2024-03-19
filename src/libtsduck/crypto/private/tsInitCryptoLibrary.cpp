@@ -72,6 +72,7 @@ ts::InitCryptoLibrary::~InitCryptoLibrary()
 // Load an OpenSSL provider if not yet loaded.
 void ts::FetchBase::loadProvider(const char* provider)
 {
+#if OPENSSL_VERSION_MAJOR >= 3
     if (provider != nullptr &&
         provider[0] != '\0' &&
         !OSSL_PROVIDER_available(nullptr, provider) &&
@@ -79,6 +80,7 @@ void ts::FetchBase::loadProvider(const char* provider)
     {
         PrintCryptographicLibraryErrors();
     }
+#endif
 }
 
 // Get the properies string from an OpenSSL provider.
@@ -90,8 +92,12 @@ std::string ts::FetchBase::providerProperties(const char* provider)
 // A class to create a singleton with a preset hash context for OpenSSL.
 ts::FetchHashAlgorithm::FetchHashAlgorithm(const char* algo, const char* provider)
 {
+#if OPENSSL_VERSION_MAJOR >= 3
     loadProvider(provider);
     _algo = EVP_MD_fetch(nullptr, algo, providerProperties(provider).c_str());
+#else
+    _algo = EVP_get_digestbyname(algo);
+#endif
     if (_algo != nullptr) {
         _context = EVP_MD_CTX_new();
         if (_context != nullptr && !EVP_DigestInit_ex(_context, _algo, nullptr)) {
@@ -109,27 +115,37 @@ ts::FetchHashAlgorithm::~FetchHashAlgorithm()
         EVP_MD_CTX_free(_context);
         _context = nullptr;
     }
+#if OPENSSL_VERSION_MAJOR >= 3
+    // With OpenSSL v1, this is a predefined context which shall not be freeed.
     if (_algo != nullptr) {
-        EVP_MD_free(_algo);
+        EVP_MD_free(const_cast<EVP_MD*>(_algo));
         _algo = nullptr;
     }
+#endif
 }
 
 // A class to create a singleton with a preset cipher algorithm for OpenSSL.
 ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* provider)
 {
+#if OPENSSL_VERSION_MAJOR >= 3
     loadProvider(provider);
     _algo = EVP_CIPHER_fetch(nullptr, algo, providerProperties(provider).c_str());
+#else
+    _algo = EVP_get_cipherbyname(algo);
+#endif
     PrintCryptographicLibraryErrors();
 }
 
 // Cleanup cipher algorithm for OpenSSL.
 ts::FetchCipherAlgorithm::~FetchCipherAlgorithm()
 {
+#if OPENSSL_VERSION_MAJOR >= 3
+    // With OpenSSL v1, this is a predefined context which shall not be freeed.
     if (_algo != nullptr) {
-        EVP_CIPHER_free(_algo);
+        EVP_CIPHER_free(const_cast<EVP_CIPHER*>(_algo));
         _algo = nullptr;
     }
+#endif
 }
 
 #endif

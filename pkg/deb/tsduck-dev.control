@@ -6,6 +6,7 @@ Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
 Depends: tsduck,
+ libssl-dev,
  libsrt-dev,
  librist-dev,
  libedit-dev,
