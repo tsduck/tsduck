@@ -754,7 +754,10 @@ endif
 # when linking applications against the TSDuck static library.
 
 LIBTSDUCK_CXXFLAGS_INCLUDES +=
-LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),-lkvm) $(if $(LINUX),-latomic) -lcrypto
+LIBTSDUCK_LDLIBS += -lcrypto $(LDLIBS_PCSC) \
+    $(if $(FREEBSD),-lprocstat) \
+    $(if $(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),-lkvm) \
+    $(if $(LINUX),-latomic)
 
 ifneq ($(NODTAPI),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1

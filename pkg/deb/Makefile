@@ -60,6 +60,7 @@ deb-tools-control:
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
+	    -e 's/ libssl,/ $(call F_GETSODPKG,libcrypto)/' \
 	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt,/ $(call F_GETSODPKG,libsrt)/') \
 	    $(if $(NORIST),-e '/librist/d',-e 's/ librist,/ $(call F_GETSODPKG,librist)/') \
 	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit,/ $(call F_GETSODPKG,libedit)/') \

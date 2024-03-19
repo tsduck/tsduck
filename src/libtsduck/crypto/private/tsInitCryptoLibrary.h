@@ -67,7 +67,8 @@ namespace ts {
         ~FetchHashAlgorithm();
         const EVP_MD_CTX* referenceContext() const { return _context; }
     private:
-        EVP_MD* _algo = nullptr;
+        // With OpenSSL 3, this should not be const because of EVP_MD_free.
+        const EVP_MD* _algo = nullptr;
         EVP_MD_CTX* _context = nullptr;
     };
 
@@ -80,7 +81,8 @@ namespace ts {
         ~FetchCipherAlgorithm();
         const EVP_CIPHER* algorithm() const { return _algo; }
     private:
-        EVP_CIPHER* _algo = nullptr;
+        // With OpenSSL 3, this should not be const because of EVP_CIPHER_free.
+        const EVP_CIPHER* _algo = nullptr;
     };
 
 #endif

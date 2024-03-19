@@ -6,6 +6,7 @@ Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
 Depends: libc6,
+ libssl,
  libsrt,
  librist,
  libedit,

@@ -319,6 +319,14 @@ TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replaci
     #define ZERO__APPLE__ 1
 #endif
 
+#include <srt/version.h>
+
+// On earlier versions, the header srt.h uses a [[deprecated]] attribute on a typedef, which is incorrect.
+// Disable using [[deprecated]].
+#if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
+    #define SRT_NO_DEPRECATED 1
+#endif
+
 #include <srt/srt.h>
 
 // The header access_control.h was introduced in version 1.4.2.

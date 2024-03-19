@@ -24,7 +24,6 @@
 #else
     #include "tsBeforeStandardHeaders.h"
     #include <openssl/opensslv.h>
-    #include <openssl/provider.h>
     #include <openssl/evp.h>
     #include <openssl/err.h>
     #include "tsAfterStandardHeaders.h"
@@ -35,7 +34,10 @@
         #define OPENSSL_VERSION_MINOR ((OPENSSL_VERSION_NUMBER >> 20) & 0xFF)
     #endif
     #if OPENSSL_VERSION_MAJOR >= 3
+        #include "tsBeforeStandardHeaders.h"
         #include <openssl/core_names.h>
+        #include <openssl/provider.h>
+        #include "tsAfterStandardHeaders.h"
     #endif
 #endif
 
