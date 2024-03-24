@@ -148,6 +148,13 @@ namespace ts {
         bool seek(const Position& pos);
 
         //!
+        //! Check if we are at the specified position in the document.
+        //! @param [in] pos Previous position to check.
+        //! @return True if still at this position.
+        //!
+        bool isAtPosition(const Position& pos) const;
+
+        //!
         //! Get the current line number.
         //! @return The current line number.
         //!

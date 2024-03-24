@@ -229,6 +229,20 @@ size_t ts::xml::Node::depth() const
 
 
 //----------------------------------------------------------------------------
+// Check if the node or one of its ancestors has xml:space="preserve".
+//----------------------------------------------------------------------------
+
+bool ts::xml::Node::preserveSpace() const
+{
+    bool pres = _preserveSpace;
+    for (const Node* n = this; !pres && n->_parent != nullptr; n = n->_parent) {
+        pres = n->_preserveSpace;
+    }
+    return pres;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the current XML parsing and formatting tweaks for this node.
 //----------------------------------------------------------------------------
 
@@ -354,9 +368,23 @@ ts::xml::Node* ts::xml::Node::identifyNextNode(TextParser& parser)
     // Skip all white spaces until next token.
     parser.skipWhiteSpace();
 
-    // Stop at end of document or before "</".
-    if (parser.eof() || parser.match(u"</", false)) {
+    // Stop at end of document.
+    if (parser.eof()) {
         return nullptr;
+    }
+
+    // Stop before "</", this is the end of the current element.
+    if (parser.match(u"</", false)) {
+        if (!parser.isAtPosition(previous) && preserveSpace()) {
+            // There is some white space (not at the same position as before space) which must be preserved.
+            // This is a text node with spaces only.
+            parser.seek(previous);
+            return new Text(_report, parser.lineNumber(), false);
+        }
+        else {
+            // No space before end of element or contains only spaces which don't need to be preserved.
+            return nullptr;
+        }
     }
 
     // Check each expected token.

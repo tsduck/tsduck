@@ -115,8 +115,13 @@ bool ts::TextParser::saveStream(std::ostream& strm)
 
 
 //----------------------------------------------------------------------------
-// Restore a previous position in the document.
+// Check or restore a previous position in the document.
 //----------------------------------------------------------------------------
+
+bool ts::TextParser::isAtPosition(const Position& pos) const
+{
+    return pos._lines == _pos._lines && pos._curLine == _pos._curLine && pos._curIndex == _pos._curIndex;
+}
 
 bool ts::TextParser::seek(const Position& pos)
 {

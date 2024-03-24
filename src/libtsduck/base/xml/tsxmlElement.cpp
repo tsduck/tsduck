@@ -929,6 +929,10 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
             }
             else {
                 _attributes[attributeKey(attrName)] = Attribute(attrName, attrValue, line);
+                // When attribute is xml:space="preserve", spaces shall be preserved in that hierarchy.
+                if (attrName == u"xml:space" && attrValue == u"preserve") {
+                    setPreserveSpace(true);
+                }
             }
         }
         else {
