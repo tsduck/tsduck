@@ -8,6 +8,7 @@
 
 #include "tsInitCryptoLibrary.h"
 #include "tsEnvironment.h"
+#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -65,26 +66,35 @@ ts::InitCryptoLibrary::InitCryptoLibrary()
 // Cleanup OpenSSL.
 ts::InitCryptoLibrary::~InitCryptoLibrary()
 {
+#if OPENSSL_VERSION_MAJOR >= 3
+    for (const auto& prov : _providers) {
+        OSSL_PROVIDER_unload(prov.second);
+    }
+    _providers.clear();
+#endif
     EVP_cleanup();
     ERR_free_strings();
 }
 
 // Load an OpenSSL provider if not yet loaded.
-void ts::FetchBase::loadProvider(const char* provider)
+void ts::InitCryptoLibrary::loadProvider(const char* provider)
 {
 #if OPENSSL_VERSION_MAJOR >= 3
-    if (provider != nullptr &&
-        provider[0] != '\0' &&
-        !OSSL_PROVIDER_available(nullptr, provider) &&
-        OSSL_PROVIDER_load(nullptr, provider) == nullptr)
-    {
-        PrintCryptographicLibraryErrors();
+    const std::string name(provider != nullptr ? provider : "");
+    if (!name.empty() && !Contains(_providers, name)) {
+        OSSL_PROVIDER* prov = OSSL_PROVIDER_load(nullptr, provider);
+        if (prov != nullptr) {
+            _providers[name] = prov;
+        }
+        else {
+            PrintCryptographicLibraryErrors();
+        }
     }
 #endif
 }
 
 // Get the properies string from an OpenSSL provider.
-std::string ts::FetchBase::providerProperties(const char* provider)
+std::string ts::InitCryptoLibrary::providerProperties(const char* provider)
 {
     return provider == nullptr || provider[0] == '\0' ? std::string() : std::string("provider=") + provider;
 }
@@ -93,8 +103,8 @@ std::string ts::FetchBase::providerProperties(const char* provider)
 ts::FetchHashAlgorithm::FetchHashAlgorithm(const char* algo, const char* provider)
 {
 #if OPENSSL_VERSION_MAJOR >= 3
-    loadProvider(provider);
-    _algo = EVP_MD_fetch(nullptr, algo, providerProperties(provider).c_str());
+    InitCryptoLibrary::Instance().loadProvider(provider);
+    _algo = EVP_MD_fetch(nullptr, algo, InitCryptoLibrary::providerProperties(provider).c_str());
 #else
     _algo = EVP_get_digestbyname(algo);
 #endif
@@ -128,8 +138,8 @@ ts::FetchHashAlgorithm::~FetchHashAlgorithm()
 ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* provider)
 {
 #if OPENSSL_VERSION_MAJOR >= 3
-    loadProvider(provider);
-    _algo = EVP_CIPHER_fetch(nullptr, algo, providerProperties(provider).c_str());
+    InitCryptoLibrary::Instance().loadProvider(provider);
+    _algo = EVP_CIPHER_fetch(nullptr, algo, InitCryptoLibrary::providerProperties(provider).c_str());
 #else
     _algo = EVP_get_cipherbyname(algo);
 #endif

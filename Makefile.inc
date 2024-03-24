@@ -269,6 +269,12 @@ endif
 ifneq ($(GPROF),)
     BINDIR_SUFFIX += -gprof
 endif
+ifneq ($(ASAN),)
+    BINDIR_SUFFIX += -asan
+endif
+ifneq ($(UBSAN),)
+    BINDIR_SUFFIX += -ubsan
+endif
 ifneq ($(LLVM),)
     BINDIR_SUFFIX += -clang
 endif

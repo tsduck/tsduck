@@ -44,22 +44,26 @@ namespace ts {
         TS_DECLARE_SINGLETON(InitCryptoLibrary);
     public:
         ~InitCryptoLibrary();
+
+        // Check if environment variable TS_DEBUG_OPENSSL was defined.
         bool debug() const { return _debug; }
+
+        // Load an OpenSSL provider if not yet loaded.
+        void loadProvider(const char* provider);
+
+        // Get the properies string from an OpenSSL provider.
+        static std::string providerProperties(const char* provider);
+
     private:
         bool _debug = false;
-    };
-
-    // Common base for Fetch___ classes.
-    class FetchBase
-    {
-    protected:
-        static void loadProvider(const char* provider);
-        static std::string providerProperties(const char* provider);
+    #if OPENSSL_VERSION_MAJOR >= 3
+        std::map<std::string,OSSL_PROVIDER*> _providers {};
+    #endif
     };
 
     // A class to create a singleton with a preset hash context for OpenSSL.
     // This method speeds up the creation of hash context (the standard EVP scenario is too slow).
-    class FetchHashAlgorithm : private FetchBase
+    class FetchHashAlgorithm
     {
         TS_NOBUILD_NOCOPY(FetchHashAlgorithm);
     public:
@@ -73,7 +77,7 @@ namespace ts {
     };
 
     // A class to create a singleton with a preset cipher algorithm for OpenSSL.
-    class FetchCipherAlgorithm : private FetchBase
+    class FetchCipherAlgorithm
     {
         TS_NOBUILD_NOCOPY(FetchCipherAlgorithm);
     public:
