@@ -45,6 +45,7 @@ public:
     void testSort();
     void testGetFloat();
     void testSetFloat();
+    void testPreserveSpace();
 
     TSUNIT_TEST_BEGIN(XMLTest);
     TSUNIT_TEST(testDocument);
@@ -60,6 +61,7 @@ public:
     TSUNIT_TEST(testSort);
     TSUNIT_TEST(testGetFloat);
     TSUNIT_TEST(testSetFloat);
+    TSUNIT_TEST(testPreserveSpace);
     TSUNIT_TEST_END();
 
 private:
@@ -749,5 +751,39 @@ void XMLTest::testSetFloat()
         u"<root>\n"
         u"  <node a=\"12.340000\" b=\"4.500000e-13\"/>\n"
         u"</root>\n",
+        doc.toString());
+}
+
+void XMLTest::testPreserveSpace()
+{
+    static const ts::UChar* const document =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<w:document>\n"
+        u"  <w:t xml:space=\"preserve\"> </w:t>\n"
+        u"  <w:t xml:space=\"preserve\">   </w:t>\n"
+        u"  <w:t xml:space=\"preserve\"></w:t>\n"
+        u"  <w:t> </w:t>\n"
+        u"  <w:t>    </w:t>\n"
+        u"  <w:t></w:t>\n"
+        u"  <w:t xml:space=\"preserve\">  a  b  </w:t>\n"
+        u"  <w:t>  a  b  </w:t>\n"
+        u"</w:document>\n";
+
+    ts::xml::Document doc(report());
+    TSUNIT_ASSERT(doc.parse(document));
+    TSUNIT_EQUAL(2, doc.childrenCount());
+
+    TSUNIT_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<w:document>\n"
+        u"  <w:t xml:space=\"preserve\"> </w:t>\n"
+        u"  <w:t xml:space=\"preserve\">   </w:t>\n"
+        u"  <w:t xml:space=\"preserve\"/>\n"
+        u"  <w:t/>\n"
+        u"  <w:t/>\n"
+        u"  <w:t/>\n"
+        u"  <w:t xml:space=\"preserve\">  a  b  </w:t>\n"
+        u"  <w:t>  a  b  </w:t>\n"
+        u"</w:document>\n",
         doc.toString());
 }

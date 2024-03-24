@@ -82,7 +82,7 @@ namespace ts {
 
             //!
             //! Get the parent's node.
-            //! @return The parent's node or zero if this is a top-level document.
+            //! @return The parent's node or a null pointer if this is a top-level document.
             //!
             const Node* parent() const { return _parent; }
 
@@ -116,6 +116,12 @@ namespace ts {
             //! @return The depth of the element, ie. the number of ancestors.
             //!
             size_t depth() const;
+
+            //!
+            //! Check if the node or one of its ancestors has attribute xml:space="preserve".
+            //! @return True if spaces shall be preserved.
+            //!
+            bool preserveSpace() const;
 
             //!
             //! Check if the node has children.
@@ -345,12 +351,20 @@ namespace ts {
             //!
             virtual bool parseChildren(TextParser& parser);
 
+            //!
+            //! Called by the subclass when its spaces shall be preserved.
+            //! Typically called when xml:space="preserve" is encountered.
+            //! @param [in] on True is spaces shall be preserved.
+            //!
+            void setPreserveSpace(bool on) { _preserveSpace = on; }
+
         private:
             Report& _report;                // Where to report errors.
             UString _value {};              // Value of the node, depend on the node type.
             Node*   _parent = nullptr;      // Parent node, null for a document.
             Node*   _firstChild = nullptr;  // First child, can be null, other children are linked through the RingNode.
             size_t  _inputLineNum = 0;      // Line number in input document, zero if build programmatically.
+            bool    _preserveSpace = false; // Has attribute xml:space="preserve".
 
             // Default XML tweaks for orphan nodes.
             static const Tweaks defaultTweaks;
