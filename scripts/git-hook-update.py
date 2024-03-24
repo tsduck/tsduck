@@ -28,22 +28,6 @@ githooks_list = ('pre-commit', 'pre-merge-commit', 'post-merge')
 if not os.path.isdir(githooks_dir):
     exit(0)
 
-# Activate Git LFS at user level.
-if 'filter.lfs' not in tsbuild.run(['git', 'config', '--list', '--global'], cwd=os.getenv('HOME')):
-    print('Activating Git LFS at user level')
-    tsbuild.run(['git', 'lfs', 'install'])
-
-# Activate Git LFS in repo (replace some Git hooks).
-lfs_set = False
-for filename in os.listdir(githooks_dir):
-    file = githooks_dir + os.sep + filename
-    if os.path.isfile(file) and 'git lfs' in tsbuild.read(file):
-        lfs_set = True
-        break;
-if not lfs_set:
-    print('Activating Git LFS at repository level')
-    tsbuild.run(['git', 'lfs', 'update', '--force'], cwd=root_dir)
-
 # Update all hooks.
 for hook in githooks_list:
     file = githooks_dir + os.sep + hook

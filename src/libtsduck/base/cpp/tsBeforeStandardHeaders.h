@@ -48,7 +48,7 @@
     #endif
 #endif
 
-// Large file system (LFS) support on Linux.
+// Large file support on Linux.
 #if defined(TS_LINUX) && !defined(DOXYGEN)
     TS_PUSH_WARNING()
     TS_LLVM_NOWARNING(reserved-id-macro)
