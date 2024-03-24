@@ -55,7 +55,6 @@ if (-not $NoInstaller) {
     & "$InsDir\install-nsis.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 }
 & "$InsDir\install-git.ps1"     -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-git-lfs.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-python.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-libsrt.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-librist.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions

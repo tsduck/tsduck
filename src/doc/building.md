@@ -434,7 +434,6 @@ to build TSDuck on Windows.
 If you prefer to collect the various installers yourself, follow the links to
 [NSIS downloads](http://nsis.sourceforge.net/Download),
 [Git downloads](https://git-scm.com/download/win),
-[Git LFS downloads](https://git-lfs.github.com/),
 [SRT downloads](https://github.com/tsduck/srt-win-installer/releases/latest),
 [RIST downloads](https://github.com/tsduck/rist-installer/releases/latest),
 [Dektec downloads](https://www.dektec.com/downloads/SDK),
