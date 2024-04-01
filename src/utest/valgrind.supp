@@ -1,0 +1,20 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2024, Thierry Lelegard
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#
+#  Suppressions file for valgrind.
+#  List "expected" or non-significant memory leaks.
+#
+#-----------------------------------------------------------------------------
+
+# When loading shared libraries, dlopen() keeps a few memory blocks. Because we never unload
+# shared libraries, this is expected and not significant for the application memory management.
+{
+   Ignore dlopen bug.
+   Memcheck:Leak
+   ...
+   fun:_dl_open
+   ...
+}
