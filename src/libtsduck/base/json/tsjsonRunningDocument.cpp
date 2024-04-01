@@ -31,7 +31,7 @@ bool ts::json::RunningDocument::open(const ValuePtr& root, const fs::path& fileN
 
     // Locate the array that must remain open.
     ValuePtrVector path;
-    if (!root.isNull() && !searchArray(root, path)) {
+    if (root != nullptr && !searchArray(root, path)) {
         _text.report().error(u"internal error, no array in JSON tree, cannot build a dynamic JSON document");
         return false;
     }
@@ -45,7 +45,7 @@ bool ts::json::RunningDocument::open(const ValuePtr& root, const fs::path& fileN
     }
 
     // Print all open objects up to the open array.
-    if (root.isNull()) {
+    if (root == nullptr) {
         // Emulate empty array.
         _text << "[" << ts::indent;
         _empty_array = true;
@@ -172,7 +172,7 @@ bool ts::json::RunningDocument::searchArray(const ValuePtr& root, ValuePtrVector
         root->getNames(names);
         for (const auto& it : names) {
             const ValuePtr val(root->valuePtr(it));
-            if (!val.isNull() && searchArray(val, path)) {
+            if (val != nullptr && searchArray(val, path)) {
                 // Found an array in that branch.
                 return true;
             }

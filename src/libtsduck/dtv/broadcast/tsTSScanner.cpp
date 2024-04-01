@@ -75,12 +75,12 @@ bool ts::TSScanner::getServices(ServiceList& services) const
 {
     services.clear();
 
-    if (_pat.isNull()) {
+    if (_pat == nullptr) {
         _duck.report().warning(u"No PAT found, services are unknown");
         return false;
     }
 
-    if (_sdt.isNull() && _vct.isNull() && !_pat_only) {
+    if (_sdt == nullptr && _vct == nullptr && !_pat_only) {
         _duck.report().warning(u"No SDT or VCT found, services names are unknown");
         // do not return, collect service ids.
     }
@@ -95,7 +95,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
         srv.setTSId(_pat->ts_id);
 
         // Original netw. id, service type, name and provider are extracted from the SDT.
-        if (!_sdt.isNull()) {
+        if (_sdt != nullptr) {
             srv.setONId(_sdt->onetw_id);
             // Search service in the SDT
             const auto sit = _sdt->services.find(srv.getId());
@@ -120,7 +120,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
         }
 
         // ATSC service descriptions are extracted from the VCT.
-        if (!_vct.isNull()) {
+        if (_vct != nullptr) {
             // Search service in the VCT
             const auto sit = _vct->findService(srv.getId());
             if (sit != _vct->channels.end()) {
@@ -146,7 +146,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
     }
 
     // Logical channel numbers are extracted from the NIT.
-    if (!_nit.isNull()) {
+    if (_nit != nullptr) {
         LogicalChannelNumbers lcn_store(_duck);
         lcn_store.addFromNIT(*_nit);
         lcn_store.updateServices(services, Replacement::UPDATE);
@@ -168,7 +168,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            SafePtr<PAT,ThreadSafety::None> pat(new PAT(_duck, table));
+            std::shared_ptr<PAT> pat(new PAT(_duck, table));
             if (pat->isValid()) {
                 _pat = pat;
                 if (_pat->nit_pid != PID_NULL && _pat->nit_pid != PID_NIT) {
@@ -181,7 +181,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_SDT_ACT: {
-            SafePtr<SDT,ThreadSafety::None> sdt(new SDT(_duck, table));
+            std::shared_ptr<SDT> sdt(new SDT(_duck, table));
             if (sdt->isValid()) {
                 _sdt = sdt;
             }
@@ -189,7 +189,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_NIT_ACT: {
-            SafePtr<NIT,ThreadSafety::None> nit(new NIT(_duck, table));
+            std::shared_ptr<NIT> nit(new NIT(_duck, table));
             if (nit->isValid()) {
                 _nit = nit;
             }
@@ -197,7 +197,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_MGT: {
-            SafePtr<MGT,ThreadSafety::None> mgt(new MGT(_duck, table));
+            std::shared_ptr<MGT> mgt(new MGT(_duck, table));
             if (mgt->isValid()) {
                 _mgt = mgt;
                 // Intercept TVCT and CVCT, they contain the service names.
@@ -216,7 +216,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_TVCT: {
-            SafePtr<VCT,ThreadSafety::None> vct(new TVCT(_duck, table));
+                std::shared_ptr<VCT> vct(new TVCT(_duck, table));
             if (vct->isValid()) {
                 _vct = vct;
             }
@@ -224,7 +224,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_CVCT: {
-            SafePtr<VCT,ThreadSafety::None> vct(new CVCT(_duck, table));
+            std::shared_ptr<VCT> vct(new CVCT(_duck, table));
             if (vct->isValid()) {
                 _vct = vct;
             }
@@ -237,5 +237,5 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
     }
 
     // When all tables are ready, stop collection
-    _completed = !_pat.isNull() && (_pat_only || (!_sdt.isNull() && !_nit.isNull()) || (!_mgt.isNull() && !_vct.isNull()));
+    _completed = _pat != nullptr && (_pat_only || (_sdt != nullptr && _nit != nullptr) || (_mgt != nullptr && _vct != nullptr));
 }

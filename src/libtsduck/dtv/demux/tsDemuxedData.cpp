@@ -28,7 +28,7 @@ ts::DemuxedData::DemuxedData(const DemuxedData& pp, ShareMode mode) :
             _data = pp._data;
             break;
         case ShareMode::COPY:
-            _data = new ByteBlock(*pp._data);
+            _data = ByteBlockPtr(new ByteBlock(*pp._data));
             break;
         default:
             // should not get there
@@ -75,7 +75,7 @@ void ts::DemuxedData::clear()
 {
     _first_pkt = 0;
     _last_pkt = 0;
-    _data.clear();
+    _data.reset();
 }
 
 
@@ -87,14 +87,14 @@ void ts::DemuxedData::reload(const void* content, size_t content_size, PID sourc
 {
     _source_pid = source_pid;
     _first_pkt = _last_pkt = 0;
-    _data = new ByteBlock(content, content_size);
+    _data = ByteBlockPtr(new ByteBlock(content, content_size));
 }
 
 void ts::DemuxedData::reload(const ByteBlock& content, PID source_pid)
 {
     _source_pid = source_pid;
     _first_pkt = _last_pkt = 0;
-    _data = new ByteBlock(content);
+    _data = ByteBlockPtr(new ByteBlock(content));
 }
 
 void ts::DemuxedData::reload(const ByteBlockPtr& content_ptr, PID source_pid)
@@ -141,7 +141,7 @@ ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& pp)
 {
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
-    _data = pp._data.isNull() ? nullptr : new ByteBlock(*pp._data);
+    _data = pp._data == nullptr ? nullptr : ByteBlockPtr(new ByteBlock(*pp._data));
     return *this;
 }
 
@@ -152,7 +152,7 @@ ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& pp)
 
 bool ts::DemuxedData::operator==(const DemuxedData& pp) const
 {
-    return !_data.isNull() && !pp._data.isNull() && (_data == pp._data || *_data == *pp._data);
+    return _data != nullptr && pp._data != nullptr && (_data == pp._data || *_data == *pp._data);
 }
 
 
@@ -162,25 +162,25 @@ bool ts::DemuxedData::operator==(const DemuxedData& pp) const
 
 const uint8_t* ts::DemuxedData::content() const
 {
-    return _data.isNull() ? nullptr : _data->data();
+    return _data == nullptr ? nullptr : _data->data();
 }
 
 size_t ts::DemuxedData::size() const
 {
     // Virtual method, typically overridden by subclasses.
-    return _data.isNull() ? 0 : _data->size();
+    return _data == nullptr ? 0 : _data->size();
 }
 
 size_t ts::DemuxedData::rawDataSize() const
 {
     // Non-virtual method, always the same result.
-    return _data.isNull() ? 0 : _data->size();
+    return _data == nullptr ? 0 : _data->size();
 }
 
 void ts::DemuxedData::rwResize(size_t s)
 {
-    if (_data.isNull()) {
-        _data = new ByteBlock(s);
+    if (_data == nullptr) {
+        _data = ByteBlockPtr(new ByteBlock(s));
     }
     else {
         _data->resize(s);
@@ -189,8 +189,8 @@ void ts::DemuxedData::rwResize(size_t s)
 
 void ts::DemuxedData::rwAppend(const void* data, size_t dsize)
 {
-    if (_data.isNull()) {
-        _data = new ByteBlock(data, dsize);
+    if (_data == nullptr) {
+        _data = ByteBlockPtr(new ByteBlock(data, dsize));
     }
     else {
         _data->append(data, dsize);
@@ -205,7 +205,7 @@ void ts::DemuxedData::rwAppend(const void* data, size_t dsize)
 bool ts::DemuxedData::matchContent(const ByteBlock& pattern, const ByteBlock& mask) const
 {
     // Must be at least the same size.
-    if (_data.isNull() || _data->size() < pattern.size()) {
+    if (_data == nullptr || _data->size() < pattern.size()) {
         return false;
     }
     for (size_t i = 0; i < pattern.size(); ++i) {

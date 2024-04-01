@@ -94,9 +94,9 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
 
     // Get / create PID context.
     PIDContextPtr& pc(_pids[pid]);
-    if (pc.isNull()) {
-        pc = new PIDContext;
-        CheckNonNull(pc.pointer());
+    if (pc == nullptr) {
+        pc = PIDContextPtr(new PIDContext);
+        CheckNonNull(pc.get());
     }
 
     // Ignore packets without a payload (their CC should not be incremented, no need to check the synchronization).
@@ -269,9 +269,9 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
     // Get / create PLP context.
     const uint8_t plp = pkt.plp();
     PLPContextPtr& plpp(pc.plps[plp]);
-    if (plpp.isNull()) {
-        plpp = new PLPContext;
-        CheckNonNull(plpp.pointer());
+    if (plpp == nullptr) {
+        plpp = PLPContextPtr(new PLPContext);
+        CheckNonNull(plpp.get());
     }
 
     if (syncd == 0xFFFF) {
@@ -383,7 +383,7 @@ void ts::T2MIDemux::processPMT(const PMT& pmt)
         const PID pid = it.first;
         const DescriptorList& dlist(it.second.descs);
         for (size_t index = dlist.search(DID_DVB_EXTENSION); index < dlist.count(); index = dlist.search(DID_DVB_EXTENSION, index + 1)) {
-            if (!dlist[index].isNull()) {
+            if (dlist[index] != nullptr) {
                 const T2MIDescriptor desc(_duck, *dlist[index]);
                 if (desc.isValid() && _handler != nullptr) {
                     // Invoke the user-defined handler to signal the new PID.

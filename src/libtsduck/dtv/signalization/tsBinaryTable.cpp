@@ -57,11 +57,11 @@ ts::BinaryTable::BinaryTable(const BinaryTable& other, ShareMode mode) :
         case ShareMode::COPY: {
             _sections.resize(other._sections.size());
             for (size_t i = 0; i < _sections.size(); ++i) {
-                if (other._sections[i].isNull()) {
-                    _sections[i].clear();
+                if (other._sections[i] == nullptr) {
+                    _sections[i].reset();
                 }
                 else {
-                    _sections[i] = new Section(*other._sections[i], ShareMode::COPY);
+                    _sections[i] = SectionPtr(new Section(*other._sections[i], ShareMode::COPY));
                 }
             }
             break;
@@ -143,11 +143,11 @@ ts::BinaryTable& ts::BinaryTable::copy(const BinaryTable& table)
     _missing_count = table._missing_count;
     _sections.resize(table._sections.size());
     for (size_t i = 0; i < _sections.size(); ++i) {
-        if (table._sections[i].isNull()) {
-            _sections[i].clear();
+        if (table._sections[i] == nullptr) {
+            _sections[i].reset();
         }
         else {
-            _sections[i] = new Section(*table._sections[i], ShareMode::COPY);
+            _sections[i] = SectionPtr(new Section(*table._sections[i], ShareMode::COPY));
         }
     }
     return *this;
@@ -169,7 +169,7 @@ bool ts::BinaryTable::operator==(const BinaryTable& table) const
         _sections.size() == table._sections.size();
 
     for (size_t i = 0; equal && i < _sections.size(); ++i) {
-        equal = !_sections[i].isNull() && !table._sections[i].isNull() && *_sections[i] == *table._sections[i];
+        equal = _sections[i] != nullptr && table._sections[i] != nullptr && *_sections[i] == *table._sections[i];
     }
 
     return equal;
@@ -205,7 +205,7 @@ void ts::BinaryTable::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 {
     _tid_ext = tid_ext;
     for (const auto& it : _sections) {
-        if (!it.isNull()) {
+        if (it != nullptr) {
             it->setTableIdExtension(tid_ext, recompute_crc);
         }
     }
@@ -215,7 +215,7 @@ void ts::BinaryTable::setVersion(uint8_t version, bool recompute_crc)
 {
     _version = version;
     for (const auto& it : _sections) {
-        if (!it.isNull()) {
+        if (it != nullptr) {
             it->setVersion(version, recompute_crc);
         }
     }
@@ -225,7 +225,7 @@ void ts::BinaryTable::setSourcePID(PID pid)
 {
     _source_pid = pid;
     for (const auto& it : _sections) {
-        if (!it.isNull()) {
+        if (it != nullptr) {
             it->setSourcePID(pid);
         }
     }
@@ -241,7 +241,7 @@ ts::PacketCounter ts::BinaryTable::firstTSPacketIndex() const
     bool found = false;
     PacketCounter first = std::numeric_limits<PacketCounter>::max();
     for (const auto& it : _sections) {
-        if (!it.isNull()) {
+        if (it != nullptr) {
             found = true;
             first = std::min(first, it->firstTSPacketIndex());
         }
@@ -253,7 +253,7 @@ ts::PacketCounter ts::BinaryTable::lastTSPacketIndex() const
 {
     PacketCounter last = 0;
     for (const auto& it : _sections) {
-        if (!it.isNull()) {
+        if (it != nullptr) {
             last = std::max(last, it->lastTSPacketIndex());
         }
     }
@@ -286,7 +286,7 @@ size_t ts::BinaryTable::totalSize() const
 {
     size_t size = 0;
     for (const auto& it : _sections) {
-        if (!it.isNull() && it->isValid()) {
+        if (it != nullptr && it->isValid()) {
             size += it->size();
         }
     }
@@ -327,7 +327,7 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
 {
     // Reject invalid sections
 
-    if (sect.isNull() || !sect->isValid()) {
+    if (sect == nullptr || !sect->isValid()) {
         return false;
     }
 
@@ -366,7 +366,7 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
             assert(index < int(_sections.size()));
             // Modify all previously entered sections
             for (int si = 0; si < int(_sections.size()); ++si) {
-                if (!_sections[si].isNull()) {
+                if (_sections[si] != nullptr) {
                     _sections[si]->setLastSectionNumber(sect->lastSectionNumber());
                 }
             }
@@ -375,7 +375,7 @@ bool ts::BinaryTable::addSection(const SectionPtr& sect, bool replace, bool grow
 
     // Now add the section
 
-    if (_sections[index].isNull()) {
+    if (_sections[index] == nullptr) {
         // The section was not present, add it
         _sections[index] = sect;
         _missing_count--;
@@ -413,7 +413,7 @@ bool ts::BinaryTable::packSections()
 
         // Pack all section pointers.
         for (size_t n = 0; n < _sections.size(); ++n) {
-            if (!_sections[n].isNull()) {
+            if (_sections[n] != nullptr) {
                 if (next_section != n) {
                     _sections[next_section] = _sections[n];
                 }
@@ -428,7 +428,7 @@ bool ts::BinaryTable::packSections()
 
         // Now patch section numbers.
         for (size_t n = 0; n < _sections.size(); ++n) {
-            assert(!_sections[n].isNull());
+            assert(_sections[n] != nullptr);
             assert(next_section > 0);
             _sections[n]->setSectionNumber(uint8_t(n), false);
             _sections[n]->setLastSectionNumber(uint8_t(next_section - 1), true);
@@ -444,7 +444,7 @@ bool ts::BinaryTable::packSections()
 
 bool ts::BinaryTable::isShortSection() const
 {
-    return _sections.size() == 1 && !_sections[0].isNull() && _sections[0]->isShortSection();
+    return _sections.size() == 1 && _sections[0] != nullptr && _sections[0]->isShortSection();
 }
 
 
@@ -455,7 +455,7 @@ bool ts::BinaryTable::isShortSection() const
 ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent, const XMLOptions& opt) const
 {
     // Filter invalid tables.
-    if (!_is_valid || _sections.size() == 0 || _sections[0].isNull()) {
+    if (!_is_valid || _sections.size() == 0 || _sections[0] == nullptr) {
         return nullptr;
     }
 
@@ -469,7 +469,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
         if (fac != nullptr) {
             // We know how to deserialize this table.
             AbstractTablePtr tp = fac();
-            if (!tp.isNull()) {
+            if (tp != nullptr) {
                 // Deserialize from binary to object.
                 tp->deserialize(duck, *this);
                 if (tp->isValid()) {
@@ -500,7 +500,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
 
             // Add each section in binary format.
             for (const auto& sec : _sections) {
-                if (!sec.isNull() && sec->isValid()) {
+                if (sec != nullptr && sec->isValid()) {
                     node->addHexaTextChild(u"section", sec->payload(), sec->payloadSize());
                 }
             }
@@ -524,7 +524,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
         }
         if (opt.setSections) {
             for (const auto& sec : _sections) {
-                if (!sec.isNull() && sec->isValid()) {
+                if (sec != nullptr && sec->isValid()) {
                     meta->addHexaTextChild(u"section", sec->content(), sec->size());
                 }
             }
@@ -555,10 +555,10 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
     if (fac != nullptr) {
         // Create a table instance of the right type.
         AbstractTablePtr table = fac();
-        if (!table.isNull()) {
+        if (table != nullptr) {
             table->fromXML(duck, node);
         }
-        if (!table.isNull() && table->isValid()) {
+        if (table != nullptr && table->isValid()) {
             // Serialize the table.
             table->serialize(duck, *this);
             if (!isValid()) {

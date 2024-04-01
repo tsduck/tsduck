@@ -174,7 +174,7 @@ ts::PCRMerger::PIDContextPtr ts::PCRMerger::getContext(PID pid)
     }
     else {
         PIDContextPtr ptr(new PIDContext(pid));
-        CheckNonNull(ptr.pointer());
+        CheckNonNull(ptr.get());
         _pid_ctx[pid] = ptr;
         return ptr;
     }

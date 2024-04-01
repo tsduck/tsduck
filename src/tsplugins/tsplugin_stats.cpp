@@ -16,7 +16,6 @@
 #include "tsSingleDataStatistics.h"
 #include "tsFileNameGenerator.h"
 #include "tsFileUtils.h"
-#include "tsSafePtr.h"
 #include "tsFatal.h"
 
 
@@ -39,7 +38,7 @@ namespace ts {
         // Each category of packets (PID or lable) is described by a structure like this.
         // The map is indexed by PID or label.
         class Context;
-        using ContextPtr = SafePtr<Context, ThreadSafety::None>;
+        using ContextPtr = std::shared_ptr<Context>;
         using ContextMap = std::map<size_t, ContextPtr>;
 
         // Command line options.
@@ -371,7 +370,7 @@ ts::StatsPlugin::ContextPtr ts::StatsPlugin::getContext(size_t index)
     }
     else {
         ContextPtr ptr(new Context);
-        CheckNonNull(ptr.pointer());
+        CheckNonNull(ptr.get());
         _ctx_map[index] = ptr;
         return ptr;
     }

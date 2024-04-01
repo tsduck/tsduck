@@ -42,13 +42,13 @@ void ts::json::Object::clear()
 ts::json::ValuePtr ts::json::Object::valuePtr(const UString& name)
 {
     const auto it = _fields.find(name);
-    return it == _fields.end() || it->second.isNull() ? ValuePtr() : it->second;
+    return it == _fields.end() || it->second == nullptr ? ValuePtr() : it->second;
 }
 
 const ts::json::Value& ts::json::Object::value(const UString& name) const
 {
     const auto it = _fields.find(name);
-    if (it == _fields.end() || it->second.isNull()) {
+    if (it == _fields.end() || it->second == nullptr) {
         return NullValue;
     }
     else {
@@ -59,7 +59,7 @@ const ts::json::Value& ts::json::Object::value(const UString& name) const
 ts::json::Value& ts::json::Object::value(const UString& name, bool create, Type type)
 {
     const auto it = _fields.find(name);
-    if (it != _fields.end() && !it->second.isNull()) {
+    if (it != _fields.end() && it->second != nullptr) {
         return *it->second;
     }
     else if (create) {
@@ -91,7 +91,7 @@ ts::json::ValuePtr ts::json::Object::extract(const UString& name)
 void ts::json::Object::addValue(const UString& name, const ValuePtr& value)
 {
     // If the pointer is null, explicitly create a "null" value.
-    _fields[name] = value.isNull() ? ValuePtr(new Null) : value;
+    _fields[name] = value == nullptr ? ValuePtr(new Null) : value;
 }
 
 void ts::json::Object::addInteger(const UString& name, int64_t value)
@@ -193,7 +193,7 @@ const ts::json::Value& ts::json::Object::query(const UString& path) const
     else {
         // Search first field.
         const auto it = _fields.find(field);
-        if (it == _fields.end() || it->second.isNull()) {
+        if (it == _fields.end() || it->second == nullptr) {
             return NullValue; // field does not exist
         }
         else {
@@ -220,7 +220,7 @@ ts::json::Value& ts::json::Object::query(const UString& path, bool create, Type 
     else {
         // Search first field.
         const auto it = _fields.find(field);
-        if (it != _fields.end() && !it->second.isNull()) {
+        if (it != _fields.end() && it->second != nullptr) {
             return it->second->query(next, create, type); // recursive query
         }
         else if (create) {

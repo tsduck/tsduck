@@ -269,9 +269,9 @@ bool ts::TSAnalyzer::pidExists(PID pid) const
 ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& description)
 {
     const PIDContextPtr p(_pids[pid]);
-    if (p.isNull()) {
+    if (p == nullptr) {
         // The PID was not yet used, map entry just created.
-        return _pids[pid] = new PIDContext(pid, description);
+        return _pids[pid] = PIDContextPtr(new PIDContext(pid, description));
     }
     else {
         // If the PID was marked as unreferenced, now use actual description.
@@ -290,9 +290,9 @@ ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& des
 ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService(uint16_t service_id)
 {
     ServiceContextPtr p(_services[service_id]);
-    if (p.isNull()) {
+    if (p == nullptr) {
         // The service was not yet used, map entry just created.
-        return _services[service_id] = new ServiceContext(service_id);
+        return _services[service_id] = ServiceContextPtr(new ServiceContext(service_id));
     }
     else {
         return p;
@@ -552,7 +552,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
     }
 
     // Process "program info" list of descriptors.
-    analyzeDescriptors(pmt.descs, svp.pointer());
+    analyzeDescriptors(pmt.descs, svp.get());
 
     // Some broadcasters incorrectly place the service_descriptor in the PMT instead of the SDT.
     svp->update(_duck, pmt.descs);
@@ -580,7 +580,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
         }
 
         ps->description = names::StreamType(stream.stream_type, NamesFlags::NAME, regid);
-        analyzeDescriptors(stream.descs, svp.pointer(), ps.pointer());
+        analyzeDescriptors(stream.descs, svp.get(), ps.get());
     }
 }
 

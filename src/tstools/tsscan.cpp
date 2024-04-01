@@ -486,9 +486,9 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
         tparams.polarity = saved_polarity;
     }
 
-    ts::SafePtr<ts::PAT,ts::ThreadSafety::None> pat;
-    ts::SafePtr<ts::SDT,ts::ThreadSafety::None> sdt;
-    ts::SafePtr<ts::NIT,ts::ThreadSafety::None> nit;
+    std::shared_ptr<ts::PAT> pat;
+    std::shared_ptr<ts::SDT> sdt;
+    std::shared_ptr<ts::NIT> nit;
 
     info.getPAT(pat);
     info.getSDT(sdt);
@@ -497,11 +497,11 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
     // Get network and TS Id.
     uint16_t ts_id = 0;
     uint16_t net_id = 0;
-    if (!pat.isNull()) {
+    if (pat != nullptr) {
         ts_id = pat->ts_id;
         strm << margin << ts::UString::Format(u"Transport stream id: %d, 0x%X", {ts_id, ts_id}) << std::endl;
     }
-    if (!nit.isNull()) {
+    if (nit != nullptr) {
         net_id = nit->network_id;
     }
 
@@ -511,7 +511,7 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
         ts::ChannelFile::NetworkPtr net_info(_channels.networkGetOrCreate(net_id, ts::TunerTypeOf(tparams.delivery_system.value_or(ts::DS_UNDEFINED))));
         ts_info = net_info->tsGetOrCreate(ts_id);
         ts_info->clear(); // reset all services in TS.
-        ts_info->onid = sdt.isNull() ? 0 : sdt->onetw_id;
+        ts_info->onid = sdt == nullptr ? 0 : sdt->onetw_id;
         ts_info->tune = tparams;
     }
 
@@ -521,10 +521,10 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
     }
 
     // Display or collect services
-    if (get_services || !ts_info.isNull()) {
+    if (get_services || ts_info != nullptr) {
         ts::ServiceList srvlist;
         if (info.getServices(srvlist)) {
-            if (!ts_info.isNull()) {
+            if (ts_info != nullptr) {
                 // Add all services in the channels info.
                 ts_info->addServices(srvlist);
             }
@@ -586,9 +586,9 @@ void ScanContext::nitScan()
     ts::TSScanner info(_opt.duck, _tuner, _opt.psi_timeout, false);
 
     // Get the collected NIT
-    ts::SafePtr<ts::NIT,ts::ThreadSafety::None> nit;
+    std::shared_ptr<ts::NIT> nit;
     info.getNIT(nit);
-    if (nit.isNull()) {
+    if (nit == nullptr) {
         _opt.error(u"cannot scan network, no NIT found on specified transponder");
         return;
     }

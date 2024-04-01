@@ -25,16 +25,11 @@ namespace ts {
     //! priority are dequeued in their enqueueing order.
     //!
     //! @tparam MSG The type of the messages to exchange.
-    //! @tparam SAFETY The required type of thread-safety for message pointers.
-    //! The message queue itself is always thread-safe by definition. The @a SAFETY
-    //! template parameter only applies to the safe pointers which are passed in the
-    //! queue. This thread-safety only applies to the way those message pointers are
-    //! used outside the message queue.
     //! @tparam COMPARE A function object to sort @a MSG instances. By default,
     //! the '<' operator on @a MSG is used.
     //!
-    template <typename MSG, ThreadSafety SAFETY, class COMPARE = std::less<MSG>>
-    class MessagePriorityQueue: public MessageQueue<MSG, SAFETY>
+    template <typename MSG, class COMPARE = std::less<MSG>>
+    class MessagePriorityQueue: public MessageQueue<MSG>
     {
         TS_NOCOPY(MessagePriorityQueue);
     public:
@@ -49,13 +44,13 @@ namespace ts {
         //! bounded somehow, otherwise the queue may exhaust all the process
         //! memory.
         //!
-        MessagePriorityQueue(size_t maxMessages = 0);
+        MessagePriorityQueue(size_t maxMessages = 0) : SuperClass(maxMessages) {}
 
     protected:
         //!
         //! Explicit reference to superclass.
         //!
-        using SuperClass = MessageQueue<MSG, SAFETY>;
+        using SuperClass = MessageQueue<MSG>;
 
         //!
         //! This virtual protected method performs placement in the message queue.
@@ -73,25 +68,15 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY, class COMPARE>
-ts::MessagePriorityQueue<MSG, SAFETY, COMPARE>::MessagePriorityQueue(size_t maxMessages) :
-    SuperClass(maxMessages)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Placement in the message queue (virtual protected methods).
-//----------------------------------------------------------------------------
-
-template <typename MSG, ts::ThreadSafety SAFETY, class COMPARE>
-typename ts::MessagePriorityQueue<MSG, SAFETY, COMPARE>::SuperClass::MessageList::iterator
-ts::MessagePriorityQueue<MSG, SAFETY, COMPARE>::enqueuePlacement(const typename SuperClass::MessagePtr& msg, typename SuperClass::MessageList& list)
+template <typename MSG, class COMPARE>
+typename ts::MessagePriorityQueue<MSG, COMPARE>::SuperClass::MessageList::iterator
+ts::MessagePriorityQueue<MSG, COMPARE>::enqueuePlacement(const typename SuperClass::MessagePtr& msg, typename SuperClass::MessageList& list)
 {
     auto loc = list.end();
 
     // Null pointers are stored at end (anywhere else would be probably fine).
-    if (msg.isNull()) {
+    if (msg == nullptr) {
         return loc;
     }
 
@@ -99,7 +84,7 @@ ts::MessagePriorityQueue<MSG, SAFETY, COMPARE>::enqueuePlacement(const typename 
     while (loc != list.begin()) {
         const auto cur = loc;
         --loc;
-        if (!loc->isNull() && !COMPARE()(*msg, **loc)) {
+        if (*loc != nullptr && !COMPARE()(*msg, **loc)) {
             return cur;
         }
     }

@@ -210,7 +210,7 @@ bool ts::PMT::Stream::isSubtitles(const DuckContext& duck) const
 
     for (size_t index = 0; index < descs.count(); ++index) {
         const DescriptorPtr& dsc(descs[index]);
-        if (!dsc.isNull() && dsc->isValid()) {
+        if (dsc != nullptr && dsc->isValid()) {
             const DID did = dsc->tag();
             if (did == DID_SUBTITLING || (atsc && did == DID_ATSC_CAPTION)) {
                 // Always indicate a subtitle stream.
@@ -315,7 +315,7 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
     for (size_t index = 0; index < descs.count(); ++index) {
         const PDS pds = descs.privateDataSpecifier(index);
         const DescriptorPtr& dsc(descs[index]);
-        if (!dsc.isNull() && dsc->isValid()) {
+        if (dsc != nullptr && dsc->isValid()) {
             switch (dsc->tag()) {
                 case DID_AVC_VIDEO:
                     return CodecType::AVC;
@@ -409,7 +409,7 @@ bool ts::PMT::Stream::getComponentTag(uint8_t& tag) const
 {
     // Loop on all stream_identifier_descriptors until a valid one is found.
     for (size_t i = descs.search(DID_STREAM_ID); i < descs.count(); i = descs.search(DID_STREAM_ID, i + 1)) {
-        if (!descs[i].isNull() && descs[i]->payloadSize() >= 1) {
+        if (descs[i] != nullptr && descs[i]->payloadSize() >= 1) {
             // The payload of the stream_identifier_descriptor contains only one byte, the component tag.
             tag = descs[i]->payload()[0];
             return true;
@@ -432,7 +432,7 @@ ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
         // Loop on all stream_identifier_descriptors.
         for (size_t i = stream.descs.search(DID_STREAM_ID); i < stream.descs.count(); i = stream.descs.search(DID_STREAM_ID, i + 1)) {
             // The payload of the stream_identifier_descriptor contains only one byte, the component tag.
-            if (!stream.descs[i].isNull() && stream.descs[i]->payloadSize() >= 1 && stream.descs[i]->payload()[0] == tag) {
+            if (stream.descs[i] != nullptr && stream.descs[i]->payloadSize() >= 1 && stream.descs[i]->payload()[0] == tag) {
                 return pid;
             }
         }

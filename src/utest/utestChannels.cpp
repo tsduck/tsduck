@@ -103,11 +103,11 @@ void ChannelsTest::testText()
 
     TSUNIT_ASSERT(channels.searchService(net, ts, srv, u"foochannel", false));
 
-    TSUNIT_ASSERT(!net.isNull());
+    TSUNIT_ASSERT(net != nullptr);
     TSUNIT_EQUAL(0x1234, net->id);
     TSUNIT_EQUAL(ts::TT_ATSC, net->type);
 
-    TSUNIT_ASSERT(!ts.isNull());
+    TSUNIT_ASSERT(ts != nullptr);
     TSUNIT_EQUAL(0x5678, ts->id);
     TSUNIT_EQUAL(0x9ABC, ts->onid);
     TSUNIT_ASSERT(ts->tune.hasModulationArgs());
@@ -116,7 +116,7 @@ void ChannelsTest::testText()
     TSUNIT_ASSERT(ts->tune.modulation.has_value());
     TSUNIT_EQUAL(ts::VSB_16, ts->tune.modulation.value());
 
-    TSUNIT_ASSERT(!srv.isNull());
+    TSUNIT_ASSERT(srv != nullptr);
     TSUNIT_EQUAL(2, srv->id);
     TSUNIT_EQUAL(u"Foo Channel", srv->name);
     TSUNIT_EQUAL(u"Foo Provider", srv->provider);
@@ -131,11 +131,11 @@ void ChannelsTest::testText()
 
     TSUNIT_ASSERT(channels.searchService(net, ts, srv, ts::DeliverySystemSet({ts::DS_DVB_S, ts::DS_DVB_S2}), u"foochannel", false));
 
-    TSUNIT_ASSERT(!net.isNull());
+    TSUNIT_ASSERT(net != nullptr);
     TSUNIT_EQUAL(0x8753, net->id);
     TSUNIT_EQUAL(ts::TT_DVB_S, net->type);
 
-    TSUNIT_ASSERT(!ts.isNull());
+    TSUNIT_ASSERT(ts != nullptr);
     TSUNIT_EQUAL(0x8793, ts->id);
     TSUNIT_EQUAL(0x5896, ts->onid);
     TSUNIT_ASSERT(ts->tune.hasModulationArgs());
@@ -156,7 +156,7 @@ void ChannelsTest::testText()
     TSUNIT_ASSERT(ts->tune.roll_off.has_value());
     TSUNIT_EQUAL(ts::ROLLOFF_35, ts->tune.roll_off.value());
 
-    TSUNIT_ASSERT(!srv.isNull());
+    TSUNIT_ASSERT(srv != nullptr);
     TSUNIT_EQUAL(0x4591, srv->id);
     TSUNIT_EQUAL(u"Foo Channel", srv->name);
     TSUNIT_EQUAL(u"", srv->provider);
@@ -166,18 +166,18 @@ void ChannelsTest::testText()
     TSUNIT_ASSERT(!srv->cas.has_value());
 
     TSUNIT_ASSERT(!channels.searchService(net, ts, srv, u"foo", false, NULLREP));
-    TSUNIT_ASSERT(net.isNull());
-    TSUNIT_ASSERT(ts.isNull());
-    TSUNIT_ASSERT(srv.isNull());
+    TSUNIT_ASSERT(net == nullptr);
+    TSUNIT_ASSERT(ts == nullptr);
+    TSUNIT_ASSERT(srv == nullptr);
 
     // Search by ATSC major.minor
     TSUNIT_ASSERT(channels.searchService(net, ts, srv, u"1.4", false));
 
-    TSUNIT_ASSERT(!net.isNull());
+    TSUNIT_ASSERT(net != nullptr);
     TSUNIT_EQUAL(0x1234, net->id);
     TSUNIT_EQUAL(ts::TT_ATSC, net->type);
 
-    TSUNIT_ASSERT(!ts.isNull());
+    TSUNIT_ASSERT(ts != nullptr);
     TSUNIT_EQUAL(0x5678, ts->id);
     TSUNIT_EQUAL(0x9ABC, ts->onid);
     TSUNIT_ASSERT(ts->tune.hasModulationArgs());
@@ -186,7 +186,7 @@ void ChannelsTest::testText()
     TSUNIT_ASSERT(ts->tune.modulation.has_value());
     TSUNIT_EQUAL(ts::VSB_16, ts->tune.modulation.value());
 
-    TSUNIT_ASSERT(!srv.isNull());
+    TSUNIT_ASSERT(srv != nullptr);
     TSUNIT_EQUAL(2, srv->id);
     TSUNIT_EQUAL(u"Foo Channel", srv->name);
     TSUNIT_EQUAL(u"Foo Provider", srv->provider);
@@ -204,9 +204,9 @@ void ChannelsTest::testText()
     TSUNIT_EQUAL(4, srv->atscMinorId.value());
 
     TSUNIT_ASSERT(!channels.searchService(net, ts, srv, u"1.5", false, NULLREP));
-    TSUNIT_ASSERT(net.isNull());
-    TSUNIT_ASSERT(ts.isNull());
-    TSUNIT_ASSERT(srv.isNull());
+    TSUNIT_ASSERT(net == nullptr);
+    TSUNIT_ASSERT(ts == nullptr);
+    TSUNIT_ASSERT(srv == nullptr);
 
     TSUNIT_EQUAL(document, channels.toXML());
 }

@@ -234,13 +234,13 @@ namespace ts {
         //! @return Address of the binary content of the complete network datagram.
         //! May be invalidated after modification in section.
         //!
-        const uint8_t* datagram() const { return _is_valid && !_datagram.isNull() ? _datagram->data() : nullptr; }
+        const uint8_t* datagram() const { return _is_valid && _datagram != nullptr ? _datagram->data() : nullptr; }
 
         //!
         //! Size of the binary content of the complete network datagram.
         //! @return Size of the binary content of the complete network datagram.
         //!
-        size_t datagramSize() const { return _is_valid && !_datagram.isNull() ? _datagram->size() : 0; }
+        size_t datagramSize() const { return _is_valid && _datagram != nullptr ? _datagram->size() : 0; }
 
         //!
         //! Replace the binary content of the UDP message.

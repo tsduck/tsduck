@@ -126,7 +126,7 @@ void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_secti
 
     // Mark all section entries as unused
     for (size_t i = 0; i < sect_expected; i++) {
-        sects[i].clear();
+        sects[i].reset();
     }
 }
 
@@ -457,7 +457,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             }
 
             // Track invalid section version numbers.
-            if (section_ok && _track_invalid_version && long_header && tc != nullptr && !tc->sects[section_number].isNull()) {
+            if (section_ok && _track_invalid_version && long_header && tc != nullptr && tc->sects[section_number] != nullptr) {
                 const Section& old(*tc->sects[section_number]);
                 // At this point, the version is necessarily identical. If this was another version,
                 // ts->init() was called and tc->sects[section_number] is null.
@@ -465,7 +465,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                 if (section_length != old.size() || !MemEqual(ts_start, old.content(), section_length)) {
                     _duck.report().log(_ts_error_level, u"section updated without version update, PID 0x%X (%<d), TID 0x%X (%<d), section %d, version %d, packet index %'d", {pid, tid, section_number, version, _packet_count});
                     // Reset the previous content of the section and make sure the table will be notified again.
-                    tc->sects[section_number].clear();
+                    tc->sects[section_number].reset();
                     assert(tc->sect_received > 0);
                     tc->sect_received--;
                     tc->notified = false;
@@ -477,8 +477,8 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             // hendler is registered or if this is a new section).
             SectionPtr sect_ptr;
 
-            if (section_ok && (_section_handler != nullptr || (tc != nullptr && tc->sects[section_number].isNull()))) {
-                sect_ptr = new Section(ts_start, section_length, pid, CRC32::CHECK);
+            if (section_ok && (_section_handler != nullptr || (tc != nullptr && tc->sects[section_number] == nullptr))) {
+                sect_ptr = SectionPtr(new Section(ts_start, section_length, pid, CRC32::CHECK));
                 sect_ptr->setFirstTSPacketIndex(pusi_pkt_index);
                 sect_ptr->setLastTSPacketIndex(_packet_count);
                 if (!sect_ptr->isValid()) {
@@ -499,7 +499,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                 }
 
                 // Save the section in the TID context if this is a new one.
-                if (section_ok && tc != nullptr && tc->sects[section_number].isNull()) {
+                if (section_ok && tc != nullptr && tc->sects[section_number] == nullptr) {
 
                     // Save the section
                     tc->sects[section_number] = sect_ptr;

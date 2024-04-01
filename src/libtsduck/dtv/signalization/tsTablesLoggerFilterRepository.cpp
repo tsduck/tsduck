@@ -47,7 +47,7 @@ void ts::TablesLoggerFilterRepository::createFilters(TablesLoggerFilterVector& f
     for (size_t i = 0; i < _factories.size(); ++i) {
         if (_factories[i] != nullptr) {
             TablesLoggerFilterPtr ptr(_factories[i]());
-            if (!ptr.isNull()) {
+            if (ptr != nullptr) {
                 filters.push_back(ptr);
             }
         }

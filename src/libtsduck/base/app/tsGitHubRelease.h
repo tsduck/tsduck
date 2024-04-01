@@ -14,7 +14,6 @@
 #pragma once
 #include "tsReport.h"
 #include "tsTime.h"
-#include "tsSafePtr.h"
 #include "tsUString.h"
 #include "tsCerrReport.h"
 #include "tsjsonValue.h"
@@ -26,7 +25,7 @@ namespace ts {
     //!
     //! Smart pointer to a GitHubRelease (not thread-safe).
     //!
-    using GitHubReleasePtr = SafePtr<GitHubRelease, ThreadSafety::None>;
+    using GitHubReleasePtr = std::shared_ptr<GitHubRelease>;
 
     //!
     //! Vector of smart pointers to GitHubRelease objects.

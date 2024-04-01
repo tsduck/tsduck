@@ -555,7 +555,7 @@ ts::PacketCounter ts::Section::PacketCount(const CONTAINER& container, bool pack
         bool has_pf = false;        // current TS packet has a pointer field.
 
         for (const auto& sec : container) {
-            if (!sec.isNull() && sec->isValid()) {
+            if (sec != nullptr && sec->isValid()) {
 
                 // Total section size.
                 size_t size = sec->size();
@@ -601,7 +601,7 @@ ts::PacketCounter ts::Section::PacketCount(const CONTAINER& container, bool pack
     else {
         // Stuff end of sections. Each section use its own TS packets.
         for (const auto& sec : container) {
-            if (!sec.isNull() && sec->isValid()) {
+            if (sec != nullptr && sec->isValid()) {
                 pkt_count += sec->packetCount();
             }
         }

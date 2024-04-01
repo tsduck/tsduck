@@ -901,7 +901,7 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
     // on its PID because we found that PID in the PAT. At that time, all
     // services from the PAT were registered in _services.
     auto srv(getServiceContext(pmt.service_id, CreateService::NEVER));
-    if (srv.isNull()) {
+    if (srv == nullptr) {
         return;
     }
 
@@ -1023,7 +1023,7 @@ void ts::SignalizationDemux::handleSDT(const SDT& sdt, PID pid)
             // Find existing services (the PAT is known) or may exist (the PAT is not yet known).
             // When the PAT is received later and the service does not exist, it will be removed.
             const auto srv(getServiceContext(sdt_it.first, CreateService::IF_MAY_EXIST));
-            if (!srv.isNull()) {
+            if (srv != nullptr) {
                 sdt_it.second.updateService(_duck, srv->service);
                 // If the service description changed, notify the application.
                 if (_handler != nullptr && srv->service.isModified()) {
@@ -1072,7 +1072,7 @@ void ts::SignalizationDemux::handleVCT(const XVCT& vct, PID pid, void (Signaliza
         // Find existing services (the PAT is known) or may exist (the PAT is not yet known).
         // When the PAT is received later and the service does not exist, it will be removed.
         const auto srv(getServiceContext(vct_it.second.program_number, CreateService::IF_MAY_EXIST));
-        if (!srv.isNull()) {
+        if (srv != nullptr) {
             vct_it.second.updateService(srv->service);
             // If the service description changed, notify the application.
             if (_handler != nullptr && srv->service.isModified()) {
@@ -1106,7 +1106,7 @@ void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID 
     // Loop on all descriptors
     for (size_t index = 0; index < dlist.size(); ++index) {
         const DescriptorPtr& ptr(dlist[index]);
-        if (!ptr.isNull() && ptr->isValid()) {
+        if (ptr != nullptr && ptr->isValid()) {
             const DID did = ptr->tag();
 
             // Extract descriptor-dependent information.
@@ -1203,7 +1203,7 @@ ts::SignalizationDemux::ServiceContext::ServiceContext(uint16_t service_id)
 void ts::SignalizationDemux::ServiceContextMapView::push_back(const Service& srv)
 {
     if (_tsid != 0xFFFF && (!srv.hasTSId() || srv.hasTSId(_tsid)) && (_onid == 0xFFFF || !srv.hasONId() || srv.hasONId(_onid))) {
-        if (_svmap[srv.getId()].isNull()) {
+        if (_svmap[srv.getId()] == nullptr) {
             _svmap[srv.getId()] = ServiceContextPtr(new ServiceContext(srv.getId()));
         }
         _svmap[srv.getId()]->service = srv;

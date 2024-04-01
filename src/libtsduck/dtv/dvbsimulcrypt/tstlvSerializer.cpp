@@ -144,7 +144,7 @@ void ts::tlv::Serializer::put(TAG tag, const std::vector<std::string>& val)
 ts::UString ts::tlv::Serializer::toString() const
 {
     UString prefix;
-    if (_bb.isNull()) {
+    if (_bb == nullptr) {
         return u"(null)";
     }
     prefix = UString::Format(u"{%d bytes, ", {_bb->size()});

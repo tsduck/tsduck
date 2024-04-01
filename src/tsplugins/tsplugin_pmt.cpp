@@ -54,7 +54,8 @@ namespace ts {
         };
 
         // Map of new descriptors to add per component.
-        using DescriptorListByPID = std::map<PID, SafePtr<DescriptorList, ThreadSafety::None>>;
+        using DescriptorListPtr = std::shared_ptr<DescriptorList>;
+        using DescriptorListByPID = std::map<PID, DescriptorListPtr>;
 
         // PMTPlugin instance fields
         ServiceDiscovery     _service {duck, nullptr};   // Service of PMT to modify
@@ -253,8 +254,8 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
 void ts::PMTPlugin::addComponentDescriptor(PID pid, const AbstractDescriptor& desc)
 {
     // Get or create descriptor list for the component.
-    if (_add_pid_descs[pid].isNull()) {
-        _add_pid_descs[pid] = new DescriptorList(nullptr);
+    if (_add_pid_descs[pid] == nullptr) {
+        _add_pid_descs[pid] = DescriptorListPtr(new DescriptorList(nullptr));
     }
 
     // Add the new descriptor.

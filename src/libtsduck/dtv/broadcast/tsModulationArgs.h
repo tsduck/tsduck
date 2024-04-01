@@ -29,7 +29,7 @@ namespace ts {
     //!
     //! Safe pointer for ModulationArgs (thread-safe).
     //!
-    using ModulationArgsPtr = SafePtr<ModulationArgs, ThreadSafety::Full>;
+    using ModulationArgsPtr = std::shared_ptr<ModulationArgs>;
 
     //!
     //! Modulation parameters for tuners and their command-line definitions.

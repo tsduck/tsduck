@@ -50,7 +50,7 @@ namespace ts {
             UString toString() const;
         };
 
-        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
+        using PIDContextPtr = std::shared_ptr<PIDContext>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Plugin private fields.
@@ -169,7 +169,7 @@ bool ts::StuffAnalyzePlugin::stop()
     for (const auto& it : _pid_contexts) {
         const PID pid = it.first;
         const PIDContextPtr& ctx(it.second);
-        if (!ctx.isNull()) {
+        if (ctx != nullptr) {
             (*_output) << UString::Format(u"%4d (0x%04<X) ", {pid}) << ctx->toString() << std::endl;
         }
     }
@@ -243,10 +243,10 @@ void ts::StuffAnalyzePlugin::handleSection(SectionDemux& demux, const Section& s
     // Locate the PID context.
     const PID pid = section.sourcePID();
     PIDContextPtr ctx(_pid_contexts[pid]);
-    if (ctx.isNull()) {
+    if (ctx == nullptr) {
         // First section on this PID, allocate a context.
         // Note that the new context becomes managed by the safe pointer (assignment magic).
-        ctx = new PIDContext;
+        ctx = PIDContextPtr(new PIDContext);
         _pid_contexts[pid] = ctx;
     }
 

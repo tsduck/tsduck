@@ -115,18 +115,18 @@ namespace ts {
         //! Check if a descriptor has valid content.
         //! @return True if a descriptor has valid content.
         //!
-        bool isValid() const { return !_data.isNull(); }
+        bool isValid() const { return _data != nullptr; }
 
         //!
         //! Invalidate descriptor content.
         //!
-        void invalidate() { _data.clear(); }
+        void invalidate() { _data.reset(); }
 
         //!
         //! Get the descriptor tag.
         //! @return The descriptor tag or the reserved value 0 if the descriptor is invalid.
         //!
-        DID tag() const { return _data.isNull() ? 0 : _data->at(0); }
+        DID tag() const { return _data == nullptr ? 0 : _data->at(0); }
 
         //!
         //! Get the extended descriptor id.
@@ -148,31 +148,31 @@ namespace ts {
         //! Access to the full binary content of the descriptor.
         //! @return Address of the full binary content of the descriptor.
         //!
-        const uint8_t* content() const { return _data->data(); }
+        const uint8_t* content() const { return _data == nullptr ? nullptr : _data->data(); }
 
         //!
         //! Size of the binary content of the descriptor.
         //! @return Size of the binary content of the descriptor.
         //!
-        size_t size() const { return _data->size(); }
+        size_t size() const { return _data == nullptr ? 0 : _data->size(); }
 
         //!
         //! Access to the payload of the descriptor.
         //! @return Address of the payload of the descriptor.
         //!
-        const uint8_t* payload() const { return _data->data() + 2; }
+        const uint8_t* payload() const { return _data == nullptr ? nullptr : _data->data() + 2; }
 
         //!
         //! Access to the payload of the descriptor.
         //! @return Address of the payload of the descriptor.
         //!
-        uint8_t* payload() { return _data->data() + 2; }
+        uint8_t* payload() { return _data == nullptr ? nullptr : _data->data() + 2; }
 
         //!
         //! Size of the payload of the descriptor.
         //! @return Size in bytes of the payload of the descriptor.
         //!
-        size_t payloadSize() const { return _data->size() - 2; }
+        size_t payloadSize() const { return _data == nullptr ? 0 : _data->size() - 2; }
 
         //!
         //! Replace the payload of the descriptor.

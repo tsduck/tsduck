@@ -19,7 +19,6 @@
 #include "tsCAT.h"
 #include "tsPMT.h"
 #include "tsCADescriptor.h"
-#include "tsSafePtr.h"
 
 
 //----------------------------------------------------------------------------
@@ -37,7 +36,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using CyclingPacketizerPtr = SafePtr<CyclingPacketizer, ThreadSafety::None>;
+        using CyclingPacketizerPtr = std::shared_ptr<CyclingPacketizer>;
         using PacketizerMap = std::map<PID, CyclingPacketizerPtr>;
 
         bool          _update_psi = false;  // Update all PSI
@@ -242,7 +241,7 @@ ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket(TSPacket& pkt, TSPack
 
         // Rebuild PSI packets
         const CyclingPacketizerPtr pzer = getPacketizer(pid, false);
-        if (!pzer.isNull()) {
+        if (pzer != nullptr) {
             // This is a PSI PID, its content may haved changed
             pzer->getNextPacket(pkt);
         }

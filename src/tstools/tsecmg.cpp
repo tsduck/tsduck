@@ -38,7 +38,7 @@ namespace {
 
     // Instantiation of a TCP connection in a multi-thread context for TLV messages.
     using ECMGConnection = ts::tlv::Connection<ts::ThreadSafety::Full>;
-    using ECMGConnectionPtr = ts::SafePtr<ECMGConnection, ts::ThreadSafety::Full>;
+    using ECMGConnectionPtr = std::shared_ptr<ECMGConnection>;
 }
 
 
@@ -354,25 +354,25 @@ void ECMGClientHandler::main()
     while (ok && _conn->receive(msg, nullptr, _shared->logger())) {
         switch (msg->tag()) {
             case ts::ecmgscs::Tags::channel_setup:
-                ok = handleChannelSetup(dynamic_cast<ts::ecmgscs::ChannelSetup*>(msg.pointer()));
+                ok = handleChannelSetup(dynamic_cast<ts::ecmgscs::ChannelSetup*>(msg.get()));
                 break;
             case ts::ecmgscs::Tags::channel_test:
-                ok = handleChannelTest(dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.pointer()));
+                ok = handleChannelTest(dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.get()));
                 break;
             case ts::ecmgscs::Tags::channel_close:
-                ok = handleChannelClose(dynamic_cast<ts::ecmgscs::ChannelClose*>(msg.pointer()));
+                ok = handleChannelClose(dynamic_cast<ts::ecmgscs::ChannelClose*>(msg.get()));
                 break;
             case ts::ecmgscs::Tags::stream_setup:
-                ok = handleStreamSetup(dynamic_cast<ts::ecmgscs::StreamSetup*>(msg.pointer()));
+                ok = handleStreamSetup(dynamic_cast<ts::ecmgscs::StreamSetup*>(msg.get()));
                 break;
             case ts::ecmgscs::Tags::stream_test:
-                ok = handleStreamTest(dynamic_cast<ts::ecmgscs::StreamTest*>(msg.pointer()));
+                ok = handleStreamTest(dynamic_cast<ts::ecmgscs::StreamTest*>(msg.get()));
                 break;
             case ts::ecmgscs::Tags::stream_close_request:
-                ok = handleStreamCloseRequest(dynamic_cast<ts::ecmgscs::StreamCloseRequest*>(msg.pointer()));
+                ok = handleStreamCloseRequest(dynamic_cast<ts::ecmgscs::StreamCloseRequest*>(msg.get()));
                 break;
             case ts::ecmgscs::Tags::CW_provision:
-                ok = handleCWProvision(dynamic_cast<ts::ecmgscs::CWProvision*>(msg.pointer()));
+                ok = handleCWProvision(dynamic_cast<ts::ecmgscs::CWProvision*>(msg.get()));
                 break;
             case ts::ecmgscs::Tags::channel_status:
             case ts::ecmgscs::Tags::stream_status:
@@ -382,7 +382,7 @@ void ECMGClientHandler::main()
                 break;
             default:
                 // Received an invalid message for ECMG.
-                ok = sendErrorResponse(msg.pointer(), ts::ecmgscs::Errors::inv_message);
+                ok = sendErrorResponse(msg.get(), ts::ecmgscs::Errors::inv_message);
                 break;
         }
     }
@@ -690,7 +690,7 @@ int MainCode(int argc, char *argv[])
         // Accept one incoming connection.
         ts::IPv4SocketAddress clientAddress;
         ECMGConnectionPtr conn(new ECMGConnection(opt.ecmgscs, true, 3));
-        ts::CheckNonNull(conn.pointer());
+        ts::CheckNonNull(conn.get());
         if (!server.accept(*conn, clientAddress, shared.report())) {
             break;
         }

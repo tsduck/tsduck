@@ -47,12 +47,12 @@ namespace ts {
 
     private:
         // TS packets or sections are passed from the server thread to the plugin thread using a message queue.
-        using PacketQueue = MessageQueue<TSPacket, ThreadSafety::Full>;
-        using SectionQueue = MessageQueue<Section, ThreadSafety::Full>;
+        using PacketQueue = MessageQueue<TSPacket>;
+        using SectionQueue = MessageQueue<Section>;
 
-        // Message queues enqueue smart pointers to the message type (MT = Multi-Thread).
-        using PacketPtrMT = PacketQueue::MessagePtr;
-        using SectionPtrMT = SectionQueue::MessagePtr;
+        // Message queues enqueue smart pointers to the message type.
+        using PacketPtr = PacketQueue::MessagePtr;
+        using SectionPtr = SectionQueue::MessagePtr;
 
         // TCP listener thread.
         class TCPListener : public Thread
@@ -373,7 +373,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
             }
             else {
                 // Packet mode: Dequeue a packet immediately.
-                PacketPtrMT pp;
+                PacketPtr pp;
                 got_packet = _packet_queue.dequeue(pp, cn::milliseconds::zero());
                 if (got_packet) {
                     pkt = *pp;
@@ -407,14 +407,9 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
 void ts::DataInjectPlugin::provideSection(SectionCounter counter, SectionPtr& section)
 {
     // Try to dequeue a section immediately.
-    SectionPtrMT mt_section;
-    if (_section_queue.dequeue(mt_section, cn::milliseconds::zero())) {
-        // A section was dequeue. Change the mutex of the safe pointer.
-        section = mt_section.changeThreadSafety<SectionPtr::Safety>();
-    }
-    else {
+    if (!_section_queue.dequeue(section, cn::milliseconds::zero())) {
         // No section available.
-        section.clear();
+        section.reset();
     }
 }
 
@@ -426,7 +421,7 @@ void ts::DataInjectPlugin::provideSection(SectionCounter counter, SectionPtr& se
 bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& request, emmgmux::StreamBWAllocation& response)
 {
     // Interpret the message as a stream_BW_request.
-    emmgmux::StreamBWRequest* m = dynamic_cast<emmgmux::StreamBWRequest*>(request.pointer());
+    emmgmux::StreamBWRequest* m = dynamic_cast<emmgmux::StreamBWRequest*>(request.get());
     if (m == nullptr) {
         tsp->error(u"incorrect message, expected stream_BW_request");
         return false;
@@ -465,7 +460,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
 bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 {
     // Interpret the message as a stream_BW_request.
-    emmgmux::DataProvision* m = dynamic_cast<emmgmux::DataProvision*>(msg.pointer());
+    emmgmux::DataProvision* m = dynamic_cast<emmgmux::DataProvision*>(msg.get());
     if (m == nullptr) {
         tsp->error(u"incorrect message, expected data_provision");
         return false;
@@ -494,7 +489,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
     if (_section_mode) {
         // Section mode, one section per datagram parameter, enqueue them.
         for (size_t i = 0; i < m->datagram.size(); ++i) {
-            SectionPtrMT sp(new Section(m->datagram[i]));
+            SectionPtr sp(new Section(m->datagram[i]));
             if (sp->isValid()) {
                 processPacketLoss(u"sections", _section_queue.enqueue(sp, cn::milliseconds::zero()));
             }
@@ -513,7 +508,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                     tsp->error(u"invalid TS packet");
                 }
                 else {
-                    PacketPtrMT p(new TSPacket());
+                    PacketPtr p(new TSPacket());
                     p->copyFrom(data);
                     processPacketLoss(u"packets", _packet_queue.enqueue(p, cn::milliseconds::zero()));
                     data += PKT_SIZE;
@@ -607,7 +602,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         ok = false;
                     }
                     else {
-                        emmgmux::ChannelSetup* m = dynamic_cast<emmgmux::ChannelSetup*>(msg.pointer());
+                        emmgmux::ChannelSetup* m = dynamic_cast<emmgmux::ChannelSetup*>(msg.get());
                         assert (m != nullptr);
                         // First, declare the channel as established.
                         {
@@ -654,7 +649,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         ok = false;
                     }
                     else {
-                        emmgmux::StreamSetup* m = dynamic_cast<emmgmux::StreamSetup*>(msg.pointer());
+                        emmgmux::StreamSetup* m = dynamic_cast<emmgmux::StreamSetup*>(msg.get());
                         assert(m != nullptr);
                         // First, declare the stream as established.
                         {
@@ -698,7 +693,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         }
                         // Send the stream_close_response
                         emmgmux::StreamCloseResponse resp(_plugin->_protocol);
-                        emmgmux::StreamCloseRequest* m = dynamic_cast<emmgmux::StreamCloseRequest*>(msg.pointer());
+                        emmgmux::StreamCloseRequest* m = dynamic_cast<emmgmux::StreamCloseRequest*>(msg.get());
                         assert (m != nullptr);
                         resp.channel_id = m->channel_id;
                         resp.stream_id = m->stream_id;
@@ -781,7 +776,7 @@ void ts::DataInjectPlugin::UDPListener::main()
         tlv::MessageFactory mf(inbuf, insize, _plugin->_protocol);
         const tlv::MessagePtr msg(mf.factory());
 
-        if (mf.errorStatus() != tlv::OK || msg.isNull()) {
+        if (mf.errorStatus() != tlv::OK || msg == nullptr) {
             _report.error(u"received invalid message from %s, %d bytes", {sender, insize});
         }
         else {

@@ -14,14 +14,10 @@
 #include "tsDuckContext.h"
 #include "tsTablePatchXML.h"
 #include "tsxmlElement.h"
-#include "tsxmlModelDocument.h"
 #include "tsxmlJSONConverter.h"
-#include "tsjsonValue.h"
 #include "tsjsonOutputArgs.h"
-#include "tsTextFormatter.h"
 #include "tsSectionFile.h"
 #include "tsOutputRedirector.h"
-#include "tsSafePtr.h"
 TS_MAIN(MainCode);
 
 #define DEFAULT_INDENT 2

@@ -20,7 +20,6 @@
 #include "tsNIT.h"
 #include "tsMGT.h"
 #include "tsVCT.h"
-#include "tsSafePtr.h"
 
 namespace ts {
     //!
@@ -59,32 +58,32 @@ namespace ts {
         //! Get the PAT of the transport stream.
         //! @param [out] pat Returned safe pointer to the PAT.
         //!
-        void getPAT(SafePtr<PAT,ThreadSafety::None>& pat) const { pat = _pat; }
+        void getPAT(std::shared_ptr<PAT>& pat) const { pat = _pat; }
 
         //!
         //! Get the DVB SDT of the transport stream.
         //! @param [out] sdt Returned safe pointer to the DVB SDT.
         //!
-        void getSDT(SafePtr<SDT,ThreadSafety::None>& sdt) const { sdt = _sdt; }
+        void getSDT(std::shared_ptr<SDT>& sdt) const { sdt = _sdt; }
 
         //!
         //! Get the DVB NIT of the transport stream.
         //! @param [out] nit Returned safe pointer to the DVB NIT.
         //!
-        void getNIT(SafePtr<NIT,ThreadSafety::None>& nit) const { nit = _nit; }
+        void getNIT(std::shared_ptr<NIT>& nit) const { nit = _nit; }
 
         //!
         //! Get the ATSC MGT of the transport stream.
         //! @param [out] mgt Returned safe pointer to the ATSC MGT.
         //!
-        void getMGT(SafePtr<MGT,ThreadSafety::None>& mgt) const { mgt = _mgt; }
+        void getMGT(std::shared_ptr<MGT>& mgt) const { mgt = _mgt; }
 
         //!
         //! Get the ATSC VCT of the transport stream.
         //! @param [out] vct Returned safe pointer to the ATSC VCT.
         //! The actual table is eiter a TVCT or a CVCT.
         //!
-        void getVCT(SafePtr<VCT,ThreadSafety::None>& vct) const { vct = _vct; }
+        void getVCT(std::shared_ptr<VCT>& vct) const { vct = _vct; }
 
     private:
         DuckContext&   _duck;
@@ -92,11 +91,11 @@ namespace ts {
         bool           _completed = false;
         SectionDemux   _demux {_duck, this};
         ModulationArgs _tparams {};
-        SafePtr<PAT,ThreadSafety::None> _pat {};
-        SafePtr<SDT,ThreadSafety::None> _sdt {};
-        SafePtr<NIT,ThreadSafety::None> _nit {};
-        SafePtr<MGT,ThreadSafety::None> _mgt {};
-        SafePtr<VCT,ThreadSafety::None> _vct {};
+        std::shared_ptr<PAT> _pat {};
+        std::shared_ptr<SDT> _sdt {};
+        std::shared_ptr<NIT> _nit {};
+        std::shared_ptr<MGT> _mgt {};
+        std::shared_ptr<VCT> _vct {};
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

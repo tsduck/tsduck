@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSafePtr.h"
+#include "tsPlatform.h"
 
 namespace ts {
 
@@ -21,7 +21,7 @@ namespace ts {
     //!
     //! Safe pointer for Object (thread-safe).
     //!
-    using ObjectPtr = SafePtr<Object, ThreadSafety::Full>;
+    using ObjectPtr = std::shared_ptr<Object>;
 
     //!
     //! General-purpose base class for polymophic objects.

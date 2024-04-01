@@ -127,7 +127,7 @@ void ts::EITProcessor::provideSection(SectionCounter counter, SectionPtr& sectio
 {
     if (_sections.empty()) {
         // No section to provide.
-        section.clear();
+        section.reset();
     }
     else {
         // Remove one section from the queue for insertion.
@@ -335,7 +335,7 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
     // At this point, we need to keep the section.
     // Build a copy of it for insertion in the queue.
     const SectionPtr sp(new Section(section, ShareMode::COPY));
-    CheckNonNull(sp.pointer());
+    CheckNonNull(sp.get());
 
     // Update the section if this is an EIT.
     if (is_eit) {

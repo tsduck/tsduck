@@ -120,7 +120,7 @@ bool ts::EIT::BinaryEvent::operator<(const BinaryEvent& other) const
 
 bool ts::EIT::LessBinaryEventPtr(const BinaryEventPtr& ev1, const BinaryEventPtr& ev2)
 {
-    return !ev1.isNull() && !ev2.isNull() && *ev1 < *ev2;
+    return ev1 != nullptr && ev2 != nullptr && *ev1 < *ev2;
 }
 
 
@@ -375,7 +375,7 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
     // Search meaningful content for empty payload and other parameters.
     for (size_t si = 0; si < table.sectionCount(); si++) {
         const SectionPtr& sec(table.sectionAt(si));
-        if (!sec.isNull() && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {
+        if (sec != nullptr && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {
             // Get a copy of a valid empty payload from the first valid section.
             if (!got_empty_payload) {
                 MemCopy(empty_payload, sec->payload(), EIT_PAYLOAD_FIXED_SIZE);
@@ -409,19 +409,19 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
         const uint8_t seg_last = segment_last_section_number[seg];
 
         // Process non-existent section.
-        if (sec.isNull()) {
+        if (sec == nullptr) {
             // Create an empty section if required.
             if (mode > FILL_SEGMENTS || si > seg_last) {
                 empty_payload[4] = seg_last;
-                table.addSection(new Section(tid,
-                                             is_private,
-                                             table.tableIdExtension(),
-                                             table.version(),
-                                             is_current,
-                                             uint8_t(si),  // section_number
-                                             last_section, // last_section_number
-                                             empty_payload,
-                                             EIT_PAYLOAD_FIXED_SIZE));
+                table.addSection(SectionPtr(new Section(tid,
+                                                        is_private,
+                                                        table.tableIdExtension(),
+                                                        table.version(),
+                                                        is_current,
+                                                        uint8_t(si),  // section_number
+                                                        last_section, // last_section_number
+                                                        empty_payload,
+                                                        EIT_PAYLOAD_FIXED_SIZE)));
 
             }
         }
@@ -587,14 +587,14 @@ ts::EIT::BinaryEvent::BinaryEvent(TID tid, const uint8_t*& data, size_t& size) :
 
 
 //----------------------------------------------------------------------------
-// Build an empty EIT section for a given service. Return null pointer on error.
+// Build an empty EIT section for a given service. Return null get on error.
 //----------------------------------------------------------------------------
 
 ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const ServiceIdTriplet& serv, SectionPtrVector& sections)
 {
     // Build section data.
     ByteBlockPtr section_data(new ByteBlock(LONG_SECTION_HEADER_SIZE + EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE));
-    CheckNonNull(section_data.pointer());
+    CheckNonNull(section_data.get());
     uint8_t* data = section_data->data();
 
     // Section header
@@ -702,7 +702,7 @@ void ts::EIT::ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, 
     // Non-EIT sections are copied into the output vector of sections.
     for (size_t isec = 0; isec < sections.size(); ++isec) {
         const SectionPtr& sec(sections[isec]);
-        if (!sec.isNull() && sec->isValid()) {
+        if (sec != nullptr && sec->isValid()) {
             if (IsEIT(sec->tableId())) {
                 // This is a valid EIT section. Use TS id from first EIT actual to define the TS id.
                 eit_gen.loadEvents(*sec, true);

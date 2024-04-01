@@ -16,7 +16,6 @@
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsCodecType.h"
-#include "tsSafePtr.h"
 #include "tsAlgorithm.h"
 #include "tsTime.h"
 #include "tsPAT.h"
@@ -415,7 +414,7 @@ namespace ts {
             // Register a CAS type from a table.
             void setCAS(const AbstractTable* table, uint16_t cas_id);
         };
-        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
+        using PIDContextPtr = std::shared_ptr<PIDContext>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Description of a Service.
@@ -429,7 +428,7 @@ namespace ts {
             // Constructor.
             ServiceContext(uint16_t service_id);
         };
-        using ServiceContextPtr = SafePtr<ServiceContext, ThreadSafety::None>;
+        using ServiceContextPtr = std::shared_ptr<ServiceContext>;
         using ServiceContextMap = std::map<uint16_t, ServiceContextPtr>;
 
         // A view of ServiceContextMap which iterates over Service fields.

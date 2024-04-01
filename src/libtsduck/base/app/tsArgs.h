@@ -13,10 +13,8 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsException.h"
 #include "tsEnumeration.h"
 #include "tsByteBlock.h"
-#include "tsSafePtr.h"
 #include "tsAbstractNumber.h"
 #include "tsCompactBitSet.h"
 #include "tsIPv4SocketAddress.h"
@@ -1270,7 +1268,7 @@ namespace ts {
         };
 
         // For AbstractNumber options, we keep one dummy instance of the actual type as a safe pointer.
-        using AbstractNumberPtr = SafePtr<AbstractNumber, ThreadSafety::None>;
+        using AbstractNumberPtr = std::shared_ptr<AbstractNumber>;
 
         // Internal representation of Option
         class TSDUCKDLL IOption

@@ -376,7 +376,7 @@ void ts::tsmux::Core::provideSection(SectionCounter counter, SectionPtr& section
 {
     if (_eits.empty()) {
         // No EIT section to provide.
-        section.clear();
+        section.reset();
     }
     else {
         // Remove one EIT section from the queue for insertion.
@@ -846,7 +846,7 @@ void ts::tsmux::Core::Input::handleSection(SectionDemux& demux, const Section& s
 
         // Create a copy of the EIT section object (shared section data).
         const SectionPtr sp(new Section(section, ShareMode::SHARE));
-        CheckNonNull(sp.pointer());
+        CheckNonNull(sp.get());
 
         // If this is an EIT-Actual, patch the EIT with output TS id.
         if (is_actual && sp->payloadSize() >= 4) {

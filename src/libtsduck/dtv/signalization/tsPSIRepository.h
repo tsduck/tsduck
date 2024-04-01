@@ -371,7 +371,7 @@ namespace ts {
 //! @cond nodoxygen
 #define _TS_FACTORY_NAME                  TS_UNIQUE_NAME(_Factory)
 #define _TS_REGISTRAR_NAME                TS_UNIQUE_NAME(_Registrar)
-#define _TS_FACTORY(rettype,classname)    namespace { rettype _TS_FACTORY_NAME() {return new classname;} }
+#define _TS_FACTORY(rettype,classname)    namespace { rettype _TS_FACTORY_NAME() { return rettype(new classname); } }
 #define _TS_TABLE_FACTORY(classname)      _TS_FACTORY(ts::AbstractTablePtr, classname)
 #define _TS_DESCRIPTOR_FACTORY(classname) _TS_FACTORY(ts::AbstractDescriptorPtr, classname)
 //! @endcond

@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsProcessorPlugin.h"
-#include "tsSafePtr.h"
 #include "tsSection.h"
 #include "tsServiceDiscovery.h"
 #include "tsTSScrambling.h"
@@ -205,7 +204,7 @@ namespace ts {
             // -- end of protected area --
         };
 
-        using ECMStreamPtr = SafePtr<ECMStream, ThreadSafety::None>;
+        using ECMStreamPtr = std::shared_ptr<ECMStream>;
         using ECMStreamMap = std::map<PID, ECMStreamPtr>;
 
         // ECM deciphering thread

@@ -39,7 +39,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using CommandQueue = MessageQueue<UString, ThreadSafety::Full>;
+        using CommandQueue = MessageQueue<UString>;
 
         // Plugin private fields.
         volatile bool    _terminate = false;
@@ -158,7 +158,7 @@ ts::ProcessorPlugin::Status ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPac
     // Process all enqueued commands from the UDP listener thread.
     CommandQueue::MessagePtr cmd;
     while (_command_queue.dequeue(cmd, cn::milliseconds::zero())) {
-        if (!cmd.isNull()) {
+        if (cmd != nullptr) {
             // Split the command from spaces.
             UStringVector argv;
             cmd->split(argv, SPACE, true, true);

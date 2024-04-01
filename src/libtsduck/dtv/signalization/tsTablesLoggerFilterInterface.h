@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSafePtr.h"
 #include "tsTS.h"
 
 namespace ts {
@@ -71,7 +70,7 @@ namespace ts {
     //!
     //! A safe pointer to TablesLogger section filter (not thread-safe).
     //!
-    using TablesLoggerFilterPtr = SafePtr<TablesLoggerFilterInterface, ThreadSafety::None>;
+    using TablesLoggerFilterPtr = std::shared_ptr<TablesLoggerFilterInterface>;
 
     //!
     //! A vector of safe pointers to TablesLogger section filters.

@@ -147,7 +147,7 @@ void ts::MPEDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
 
         case TID_PMT: {
             PMTPtr pmt(new PMT(_duck, table));
-            if (!pmt.isNull() && pmt->isValid()) {
+            if (pmt != nullptr && pmt->isValid()) {
                 // Keep track of all PMT's in the TS.
                 _pmts[pmt->service_id] = pmt;
                 // Process content of the PMT.
@@ -185,7 +185,7 @@ void ts::MPEDemux::processPMT(const PMT& pmt)
 
         // Loop on all data_broadcast_id_descriptors for the component.
         for (size_t i = stream.descs.search(DID_DATA_BROADCAST_ID); i < stream.descs.count(); i = stream.descs.search(DID_DATA_BROADCAST_ID, i + 1)) {
-            if (!stream.descs[i].isNull()) {
+            if (stream.descs[i] != nullptr) {
                 const DataBroadcastIdDescriptor desc(_duck, *stream.descs[i]);
                 if (desc.isValid()) {
                     // Found a valid data_broadcast_id_descriptor.

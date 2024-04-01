@@ -41,7 +41,7 @@ void ts::PESStreamPacketizer::reset()
 void ts::PESStreamPacketizer::providePESPacket(PacketCounter counter, PESPacketPtr& pes)
 {
     if (_pes_queue.empty()) {
-        pes.clear();
+        pes.reset();
     }
     else {
         pes = _pes_queue.front();

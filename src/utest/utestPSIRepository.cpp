@@ -92,7 +92,7 @@ void PSIRepositoryTest::testSharedTID()
     ts::PSIRepository::TableFactory factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::ATSC);
     TSUNIT_ASSERT(factory != nullptr);
     ts::AbstractTablePtr table(factory());
-    TSUNIT_ASSERT(!table.isNull());
+    TSUNIT_ASSERT(table != nullptr);
     TSUNIT_EQUAL(ts::TID_MGT, table->tableId());
     TSUNIT_EQUAL(ts::Standards::ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());
@@ -100,7 +100,7 @@ void PSIRepositoryTest::testSharedTID()
     factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::ISDB);
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
-    TSUNIT_ASSERT(!table.isNull());
+    TSUNIT_ASSERT(table != nullptr);
     TSUNIT_EQUAL(ts::TID_LDT, table->tableId());
     TSUNIT_EQUAL(ts::Standards::ISDB, table->definingStandards());
     TSUNIT_EQUAL(u"LDT", table->xmlName());
@@ -108,7 +108,7 @@ void PSIRepositoryTest::testSharedTID()
     factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::NONE, ts::PID_PSIP);
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
-    TSUNIT_ASSERT(!table.isNull());
+    TSUNIT_ASSERT(table != nullptr);
     TSUNIT_EQUAL(ts::TID_MGT, table->tableId());
     TSUNIT_EQUAL(ts::Standards::ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());

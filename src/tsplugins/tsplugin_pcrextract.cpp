@@ -41,12 +41,12 @@ namespace ts {
     private:
         // Description of one PID carrying PCR, PTS or DTS.
         class PIDContext;
-        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
+        using PIDContextPtr = std::shared_ptr<PIDContext>;
         using PIDContextMap = std::map<PID,PIDContextPtr>;
 
         // Description of one PID carrying SCTE 35 splice information.
         class SpliceContext;
-        using SpliceContextPtr = SafePtr<SpliceContext, ThreadSafety::None>;
+        using SpliceContextPtr = std::shared_ptr<SpliceContext>;
         using SpliceContextMap = std::map<PID,SpliceContextPtr>;
 
         // Command line options:
@@ -504,9 +504,9 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
 ts::PCRExtractPlugin::PIDContextPtr ts::PCRExtractPlugin::getPIDContext(PID pid)
 {
     PIDContextPtr& pc(_stats[pid]);
-    if (pc.isNull()) {
-        pc = new PIDContext(pid);
-        CheckNonNull(pc.pointer());
+    if (pc == nullptr) {
+        pc = PIDContextPtr(new PIDContext(pid));
+        CheckNonNull(pc.get());
     }
     return pc;
 }
@@ -519,10 +519,10 @@ ts::PCRExtractPlugin::PIDContextPtr ts::PCRExtractPlugin::getPIDContext(PID pid)
 ts::PCRExtractPlugin::SpliceContextPtr ts::PCRExtractPlugin::getSpliceContext(PID pid)
 {
     SpliceContextPtr& pc(_splices[pid]);
-    if (pc.isNull()) {
+    if (pc == nullptr) {
         // Found a new splicing info PID.
-        pc = new SpliceContext;
-        CheckNonNull(pc.pointer());
+        pc = SpliceContextPtr(new SpliceContext);
+        CheckNonNull(pc.get());
 
         // Add this PID to the demux.
         _demux.addPID(pid);

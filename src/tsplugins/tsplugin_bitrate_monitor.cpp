@@ -275,7 +275,7 @@ bool ts::BitrateMonitorPlugin::getOptions()
         _alarm_prefix.format(u"PID 0x%X (%<d)", {_first_pid});
         _alarm_target.format(u"%d", {_first_pid});
         if (_json_line) {
-            _json_pids = new json::Array;
+            _json_pids = json::ValuePtr(new json::Array);
             for (size_t pid = 0; pid < _pids.size(); ++pid) {
                 if (_pids.test(pid)) {
                     _json_pids->set(pid);

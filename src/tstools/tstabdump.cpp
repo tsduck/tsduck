@@ -153,7 +153,7 @@ namespace {
                     else {
                         // Complete table not available, dump as individual sections.
                         for (auto it = sections.begin(); opt.max_tables > 0 && it != sections.end(); ++it) {
-                            if (!it->isNull()) {
+                            if (*it != nullptr) {
                                 opt.display.displaySection(**it);
                                 opt.display.out() << std::endl;
                                 opt.max_tables--;

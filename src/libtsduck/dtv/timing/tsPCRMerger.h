@@ -106,7 +106,7 @@ namespace ts {
     private:
         // Each PID in the merged stream is described by a structure like this. The map is indexed by PID.
         class PIDContext;
-        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
+        using PIDContextPtr = std::shared_ptr<PIDContext>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Private fields.

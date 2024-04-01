@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsMemory.h"
-#include "tsSafePtr.h"
 
 namespace ts {
 
@@ -548,9 +547,9 @@ namespace ts {
 #endif
 
     //!
-    //! Safe pointer for ByteBlock, not thread-safe.
+    //! Safe pointer for ByteBlock.
     //!
-    using ByteBlockPtr = SafePtr<ByteBlock, ThreadSafety::None>;
+    using ByteBlockPtr = std::shared_ptr<ByteBlock>;
 
     //!
     //! Vector of ByteBlock.

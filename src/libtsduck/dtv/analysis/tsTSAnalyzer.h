@@ -29,7 +29,6 @@
 #include "tsSTT.h"
 #include "tsTime.h"
 #include "tsUString.h"
-#include "tsSafePtr.h"
 
 namespace ts {
     //!
@@ -201,7 +200,7 @@ namespace ts {
         //!
         //! Safe pointer to a ServiceContext (not thread-safe).
         //!
-        using ServiceContextPtr = SafePtr<ServiceContext, ThreadSafety::None>;
+        using ServiceContextPtr = std::shared_ptr<ServiceContext>;
 
         //!
         //! Map of ServiceContext, indexed by service id.
@@ -259,7 +258,7 @@ namespace ts {
         //!
         //! Safe pointer to an ETIDContext (not thread-safe).
         //!
-        using ETIDContextPtr = SafePtr<ETIDContext, ThreadSafety::None>;
+        using ETIDContextPtr = std::shared_ptr<ETIDContext>;
 
         //!
         //! Map of ETIDContext, indexed by ETID.
@@ -397,7 +396,7 @@ namespace ts {
         //!
         //! Safe pointer to a PIDContext (not thread-safe).
         //!
-        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
+        using PIDContextPtr = std::shared_ptr<PIDContext>;
 
         //!
         //! Map of PIDContext, indexed by PID.

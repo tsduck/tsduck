@@ -348,7 +348,7 @@ bool ts::EMMGClient::dataProvision(const ByteBlockPtr& data)
 
 bool ts::EMMGClient::dataProvision(const void* data, size_t size)
 {
-    return dataProvision(new ByteBlock(data, size));
+    return dataProvision(ByteBlockPtr(new ByteBlock(data, size)));
 }
 
 bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
@@ -363,7 +363,7 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
 
     // Eliminate null pointers, count total data bytes.
     for (auto it = request.datagram.begin(); it != request.datagram.end(); ) {
-        if (it->isNull()) {
+        if (*it == nullptr) {
             it = request.datagram.erase(it);
         }
         else {
@@ -415,8 +415,8 @@ bool ts::EMMGClient::dataProvision(const SectionPtrVector& sections)
         // Send data in section format.
         std::vector<ByteBlockPtr> chunks;
         for (size_t i = 0; i < sections.size(); ++i) {
-            if (!sections[i].isNull()) {
-                chunks.push_back(new ByteBlock(sections[i]->content(), sections[i]->size()));
+            if (sections[i] != nullptr) {
+                chunks.push_back(ByteBlockPtr(new ByteBlock(sections[i]->content(), sections[i]->size())));
             }
         }
         return dataProvision(chunks);
@@ -486,7 +486,7 @@ void ts::EMMGClient::main()
                 }
                 case emmgmux::Tags::stream_BW_allocation: {
                     // Store returned bandwidth.
-                    emmgmux::StreamBWAllocation* const resp = dynamic_cast<emmgmux::StreamBWAllocation*>(msg.pointer());
+                        emmgmux::StreamBWAllocation* const resp = dynamic_cast<emmgmux::StreamBWAllocation*>(msg.get());
                     assert(resp != nullptr);
                     {
                         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -496,7 +496,7 @@ void ts::EMMGClient::main()
                 }
                 case emmgmux::Tags::stream_error: {
                     // Store returned error.
-                    emmgmux::StreamError* const resp = dynamic_cast<emmgmux::StreamError*>(msg.pointer());
+                        emmgmux::StreamError* const resp = dynamic_cast<emmgmux::StreamError*>(msg.get());
                     assert(resp != nullptr);
                     {
                         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -507,7 +507,7 @@ void ts::EMMGClient::main()
                 }
                 case emmgmux::Tags::channel_error: {
                     // Store returned error.
-                    emmgmux::ChannelError* const resp = dynamic_cast<emmgmux::ChannelError*>(msg.pointer());
+                        emmgmux::ChannelError* const resp = dynamic_cast<emmgmux::ChannelError*>(msg.get());
                     assert(resp != nullptr);
                     {
                         std::lock_guard<std::recursive_mutex> lock(_mutex);

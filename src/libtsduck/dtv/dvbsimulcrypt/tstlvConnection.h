@@ -228,7 +228,7 @@ bool ts::tlv::Connection<SAFETY>::receive(MessagePtr& msg, const AbortInterface*
         if (mf.errorStatus() == tlv::OK) {
             _invalid_msg_count = 0;
             mf.factory(msg);
-            if (!msg.isNull()) {
+            if (msg != nullptr) {
                 logger.log(*msg, u"received message from " + peerName());
             }
             return true;

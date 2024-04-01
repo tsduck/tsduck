@@ -391,7 +391,7 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
     if (decimals > 0) {
         text += HelpLines(indent_desc, UString::Format(u"The value may include up to %d meaningful decimal digits.", {decimals}), line_width);
     }
-    if (type == ANUMBER && !anumber.isNull()) {
+    if (type == ANUMBER && anumber != nullptr) {
         const UString desc(anumber->description());
         if (!desc.empty()) {
             text += HelpLines(indent_desc, UString::Format(u"The value must be a %s.", {desc}), line_width);
@@ -1238,7 +1238,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
     }
     else if (opt.type == ANUMBER) {
         // We keep the arg as a string value after validation and will parse it again when the value is queried later.
-        if (opt.anumber.isNull()) {
+        if (opt.anumber == nullptr) {
             error(u"internal error, option %s has no abstract number instance for validation", {opt.display()});
             return false;
         }

@@ -23,7 +23,7 @@ namespace ts {
     //!
     //! Safe pointer for T2MIPacket (not thread-safe).
     //!
-    using T2MIPacketPtr = SafePtr<T2MIPacket, ThreadSafety::None>;
+    using T2MIPacketPtr = std::shared_ptr<T2MIPacket>;
 
     //!
     //! Vector of T2MIPacket safe pointers.

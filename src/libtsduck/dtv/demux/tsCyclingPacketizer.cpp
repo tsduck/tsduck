@@ -134,7 +134,7 @@ void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 
 void ts::CyclingPacketizer::addSection(const SectionPtr& sect, cn::milliseconds rep_rate)
 {
-    if (!sect.isNull() && sect->isValid()) {
+    if (sect != nullptr && sect->isValid()) {
         SectionDescPtr desc(new SectionDesc(sect, rep_rate));
 
         if (rep_rate == cn::milliseconds::zero() || _bitrate == 0) {
@@ -281,7 +281,7 @@ void ts::CyclingPacketizer::setBitRate(const BitRate& new_bitrate)
         SectionDescList tmp_list;
         tmp_list.swap(_sched_sections);
         while (!tmp_list.empty()) {
-            SectionDesc* sp(tmp_list.back().pointer());
+            SectionDesc* sp(tmp_list.back().get());
             sp->due_packet = sp->last_packet + PacketDistance(new_bitrate, sp->repetition);
             addScheduledSection(tmp_list.back());
             tmp_list.pop_back();
@@ -318,7 +318,7 @@ void ts::CyclingPacketizer::provideSection(SectionCounter counter, SectionPtr& s
         // if there are sections in both lists...
         !_other_sections.empty() && !_sched_sections.empty() &&
         // .. and either previous unscheduled sections not passed in current cycle ...
-        ((spp = _other_sections.back().pointer())->last_cycle != _current_cycle ||
+        ((spp = _other_sections.back().get())->last_cycle != _current_cycle ||
          // .. or previous unscheduled section passed in this cycle a long time ago
          spp->last_packet + spp->section->packetCount() + _sched_packets < current_packet);
 
@@ -339,9 +339,9 @@ void ts::CyclingPacketizer::provideSection(SectionCounter counter, SectionPtr& s
         _other_sections.push_back(sp);
     }
 
-    if (sp.isNull()) {
+    if (sp == nullptr) {
         // No section to provide
-        sect.clear();
+        sect.reset();
     }
     else {
         // Provide this section

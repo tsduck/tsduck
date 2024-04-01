@@ -14,7 +14,6 @@
 #pragma once
 #include "tsBinaryTable.h"
 #include "tsUString.h"
-#include "tsSafePtr.h"
 #include "tsxmlPatchDocument.h"
 #include "tsxmlTweaks.h"
 
@@ -124,7 +123,7 @@ namespace ts {
         bool applyPatches(SectionPtr& section) const;
 
     private:
-        using PatchDocumentPtr = SafePtr<ts::xml::PatchDocument, ThreadSafety::None>;
+        using PatchDocumentPtr = std::shared_ptr<ts::xml::PatchDocument>;
         using PatchDocumentVector = std::vector<PatchDocumentPtr>;
 
         DuckContext&        _duck;           // TSDuck execution context.

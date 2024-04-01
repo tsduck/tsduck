@@ -347,7 +347,7 @@ namespace ts {
             Event(const uint8_t*& data, size_t& size);
         };
 
-        using EventPtr = SafePtr<Event, ThreadSafety::None>;
+        using EventPtr = std::shared_ptr<Event>;
         using EventList = std::list<EventPtr>;
 
         // -----------------------------
@@ -377,7 +377,7 @@ namespace ts {
             void updateVersion(EITGenerator* gen, bool recompute_crc);
         };
 
-        using ESectionPtr = SafePtr<ESection, ThreadSafety::None>;
+        using ESectionPtr = std::shared_ptr<ESection>;
         using ESectionList = std::list<ESectionPtr>;      // a list of EIT schedule sections
         using ESectionPair = std::array<ESectionPtr, 2>;  // a pair of EIT p/f sections
 
@@ -399,7 +399,7 @@ namespace ts {
             ESegment(const Time& seg_start_time) : start_time(seg_start_time) {}
         };
 
-        using ESegmentPtr = SafePtr<ESegment, ThreadSafety::None>;
+        using ESegmentPtr = std::shared_ptr<ESegment>;
         using ESegmentList = std::list<ESegmentPtr>;
 
         // ------------------------

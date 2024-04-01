@@ -713,7 +713,7 @@ void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const 
 
     for (size_t i = 0; i < list.count(); ++i) {
         const DescriptorPtr& desc(list[i]);
-        if (!desc.isNull()) {
+        if (desc != nullptr) {
             const PDS pds = list.privateDataSpecifier(i);
             strm << margin << "- Descriptor " << i << ": "
                  << names::DID(desc->tag(), _duck.actualPDS(pds), tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "

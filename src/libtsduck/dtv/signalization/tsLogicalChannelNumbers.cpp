@@ -57,7 +57,7 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
     size_t count = 0;
     for (size_t index = 0; index < descs.size(); ++index) {
         const DescriptorPtr& ptr(descs[index]);
-        if (!ptr.isNull() && ptr->isValid()) {
+        if (ptr != nullptr && ptr->isValid()) {
 
             // Most LCN descriptors are private descriptors. Get tag and PDS.
             const DID tag = ptr->tag();

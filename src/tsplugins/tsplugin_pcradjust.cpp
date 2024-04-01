@@ -50,7 +50,6 @@
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
-#include "tsSafePtr.h"
 
 
 //----------------------------------------------------------------------------
@@ -70,7 +69,7 @@ namespace ts {
     private:
         // Description of PID's. Map of safe pointers to PID contexts, indexed by PID.
         class PIDContext;
-        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
+        using PIDContextPtr = std::shared_ptr<PIDContext>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // PCRAdjustPlugin private members
@@ -248,7 +247,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPCR(PacketCounter packet_index,
 uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index, const BitRate& bitrate, uint64_t original_pdts)
 {
     // If the PCR PID is unknown, we cannot compute anything and keep the original PTS/DTS.
-    if (pcr_ctx.isNull()) {
+    if (pcr_ctx == nullptr) {
         return original_pdts;
     }
 
@@ -296,7 +295,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
 ts::PCRAdjustPlugin::PIDContextPtr ts::PCRAdjustPlugin::getContext(PID pid)
 {
     const PIDContextPtr ptr = _pid_contexts[pid];
-    return ptr.isNull() ? (_pid_contexts[pid] = new PIDContext(pid)) : ptr;
+    return ptr == nullptr ? (_pid_contexts[pid] = PIDContextPtr(new PIDContext(pid))) : ptr;
 }
 
 
@@ -405,7 +404,7 @@ ts::ProcessorPlugin::Status ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TS
         for (const auto& it : _pid_contexts) {
             const PIDContextPtr& cur_ctx(it.second);
             // Consider only PID's which contain PCR, ie. which are their own PCR reference.
-            if (!cur_ctx.isNull() && !cur_ctx->pcr_ctx.isNull() && cur_ctx->pid == cur_ctx->pcr_ctx->pid) {
+            if (cur_ctx != nullptr && cur_ctx->pcr_ctx != nullptr && cur_ctx->pid == cur_ctx->pcr_ctx->pid) {
                 const uint64_t last_pcr = cur_ctx->lastPCR();
                 const uint64_t updated_pcr = cur_ctx->updatedPCR(current_packet, bitrate);
                 if (last_pcr != INVALID_PCR && updated_pcr != INVALID_PCR && updated_pcr > last_pcr) {
@@ -421,7 +420,7 @@ ts::ProcessorPlugin::Status ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TS
         }
 
         // Create an empty packet if a PID is late.
-        if (!pcr_ctx.isNull()) {
+        if (pcr_ctx != nullptr) {
             tsp->debug(u"adding PCR in PID 0x%X (%d)", {pcr_ctx->pid, pcr_ctx->pid});
 
             // Build an empty packet with a PCR.

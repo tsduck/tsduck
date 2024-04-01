@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsPlatform.h"
-#include "tsSafePtr.h"
 
 namespace ts {
     //!
@@ -24,13 +23,8 @@ namespace ts {
     //! access to a shared queue of generic messages.
     //!
     //! @tparam MSG The type of the messages to exchange.
-    //! @tparam SAFETY The required type of thread-safety for message pointers.
-    //! The message queue itself is always thread-safe by definition. The @a SAFETY
-    //! template parameter only applies to the safe pointers which are passed in the
-    //! queue. This thread-safety only applies to the way those message pointers are
-    //! used outside the message queue.
     //!
-    template <typename MSG, ThreadSafety SAFETY>
+    template <typename MSG>
     class MessageQueue
     {
         TS_NOCOPY(MessageQueue);
@@ -40,9 +34,9 @@ namespace ts {
         //!
         //! Since data are copied from the producer thread into the queue and later copied
         //! again from the queue into the consumer thread, the copied data is always a
-        //! safe-pointer to the actual message content.
+        //! shared pointer to the actual message content.
         //!
-        using MessagePtr = SafePtr<MSG,SAFETY>;
+        using MessagePtr = std::shared_ptr<MSG>;
 
         //!
         //! Constructor.
@@ -213,16 +207,16 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-ts::MessageQueue<MSG,SAFETY>::MessageQueue(size_t maxMessages) :
+template <typename MSG>
+ts::MessageQueue<MSG>::MessageQueue(size_t maxMessages) :
     _maxMessages(maxMessages)
 {
 }
 
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(dtor-name)
-template <typename MSG, ts::ThreadSafety SAFETY>
-ts::MessageQueue<MSG,SAFETY>::~MessageQueue()
+template <typename MSG>
+ts::MessageQueue<MSG>::~MessageQueue()
 {
 }
 TS_POP_WARNING()
@@ -232,15 +226,15 @@ TS_POP_WARNING()
 // Access max allowed messages in queue (0 means unlimited)
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-size_t ts::MessageQueue<MSG,SAFETY>::getMaxMessages() const
+template <typename MSG>
+size_t ts::MessageQueue<MSG>::getMaxMessages() const
 {
     std::lock_guard<std::mutex> lock(_mutex);
     return _maxMessages;
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::setMaxMessages(size_t max)
+template <typename MSG>
+void ts::MessageQueue<MSG>::setMaxMessages(size_t max)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     _maxMessages = max;
@@ -251,18 +245,18 @@ void ts::MessageQueue<MSG,SAFETY>::setMaxMessages(size_t max)
 // Placement in the message queue (virtual protected methods).
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-typename ts::MessageQueue<MSG,SAFETY>::MessageList::iterator
-ts::MessageQueue<MSG,SAFETY>::enqueuePlacement(const MessagePtr& msg, MessageList& list)
+template <typename MSG>
+typename ts::MessageQueue<MSG>::MessageList::iterator
+ts::MessageQueue<MSG>::enqueuePlacement(const MessagePtr& msg, MessageList& list)
 {
     // The default placement is pushing at the back of the queue.
     return list.end();
 
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-typename ts::MessageQueue<MSG,SAFETY>::MessageList::iterator
-ts::MessageQueue<MSG,SAFETY>::dequeuePlacement(MessageList& list)
+template <typename MSG>
+typename ts::MessageQueue<MSG>::MessageList::iterator
+ts::MessageQueue<MSG>::dequeuePlacement(MessageList& list)
 {
     // The default placement is fetching from the head of the queue.
     return list.begin();
@@ -273,15 +267,15 @@ ts::MessageQueue<MSG,SAFETY>::dequeuePlacement(MessageList& list)
 // Enqueue/dequeue a safe pointer in the list and signal the condition.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::enqueuePtr(const MessagePtr& ptr)
+template <typename MSG>
+void ts::MessageQueue<MSG>::enqueuePtr(const MessagePtr& ptr)
 {
     _queue.insert(enqueuePlacement(ptr, _queue), ptr);
     _enqueued.notify_all();
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-bool ts::MessageQueue<MSG,SAFETY>::dequeuePtr(MessagePtr& ptr)
+template <typename MSG>
+bool ts::MessageQueue<MSG>::dequeuePtr(MessagePtr& ptr)
 {
     const auto it = dequeuePlacement(_queue);
     if (it == _queue.end()) {
@@ -304,16 +298,16 @@ bool ts::MessageQueue<MSG,SAFETY>::dequeuePtr(MessagePtr& ptr)
 // Wait for free space in the queue using a specific timeout.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::waitFreeSpace(std::unique_lock<std::mutex>& lock)
+template <typename MSG>
+void ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock)
 {
     if (_maxMessages != 0) {
         _dequeued.wait(lock, [this]() { return _queue.size() < _maxMessages; });
     }
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-bool ts::MessageQueue<MSG,SAFETY>::waitFreeSpace(std::unique_lock<std::mutex>& lock, cn::milliseconds timeout)
+template <typename MSG>
+bool ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock, cn::milliseconds timeout)
 {
     return _maxMessages == 0 || _dequeued.wait_for(lock, timeout, [this]() { return _queue.size() < _maxMessages; });
 }
@@ -323,28 +317,22 @@ bool ts::MessageQueue<MSG,SAFETY>::waitFreeSpace(std::unique_lock<std::mutex>& l
 // Insert a message.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::enqueue(MessagePtr& msg)
+template <typename MSG>
+void ts::MessageQueue<MSG>::enqueue(MessagePtr& msg)
 {
     std::unique_lock<std::mutex> lock(_mutex);
     waitFreeSpace(lock);
-    {
-        // Transfer ownership of the pointed object inside a code block which guarantees
-        // that the new safe pointer will be destructed before releasing the lock.
-        const MessagePtr transferred(msg.release());
-        enqueuePtr(transferred);
-    }
+    enqueuePtr(msg);
+    msg.reset();
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-bool ts::MessageQueue<MSG,SAFETY>::enqueue(MessagePtr& msg, cn::milliseconds timeout)
+template <typename MSG>
+bool ts::MessageQueue<MSG>::enqueue(MessagePtr& msg, cn::milliseconds timeout)
 {
     std::unique_lock<std::mutex> lock(_mutex);
     if (waitFreeSpace(lock, timeout)) {
-        // Transfer ownership of the pointed object inside a code block which guarantees
-        // that the new safe pointer will be destructed before releasing the lock.
-        const MessagePtr transferred(msg.release());
-        enqueuePtr(transferred);
+        enqueuePtr(msg);
+        msg.reset();
         return true;
     }
     else {
@@ -353,28 +341,20 @@ bool ts::MessageQueue<MSG,SAFETY>::enqueue(MessagePtr& msg, cn::milliseconds tim
     }
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::enqueue(MSG* msg)
+template <typename MSG>
+void ts::MessageQueue<MSG>::enqueue(MSG* msg)
 {
     std::unique_lock<std::mutex> lock(_mutex);
     waitFreeSpace(lock);
-    {
-        // Create a safe pointer to the pointed object inside a code block which guarantees
-        // that the safe pointer will be destructed before releasing the lock.
-        const MessagePtr ptr(msg);
-        enqueuePtr(ptr);
-    }
+    enqueuePtr(MessagePtr(msg));
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-bool ts::MessageQueue<MSG,SAFETY>::enqueue(MSG* msg, cn::milliseconds timeout)
+template <typename MSG>
+bool ts::MessageQueue<MSG>::enqueue(MSG* msg, cn::milliseconds timeout)
 {
     std::unique_lock<std::mutex> lock(_mutex);
     if (waitFreeSpace(lock, timeout)) {
-        // Create a safe pointer to the pointed object inside a code block which guarantees
-        // that the safe pointer will be destructed before releasing the lock.
-        const MessagePtr ptr(msg);
-        enqueuePtr(ptr);
+        enqueuePtr(MessagePtr(msg));
         return true;
     }
     else {
@@ -389,28 +369,19 @@ bool ts::MessageQueue<MSG,SAFETY>::enqueue(MSG* msg, cn::milliseconds timeout)
 // Insert a message in the queue, even if the queue is full.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::forceEnqueue(MessagePtr& msg)
+template <typename MSG>
+void ts::MessageQueue<MSG>::forceEnqueue(MessagePtr& msg)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    {
-        // Transfer ownership of the pointed object inside a code block which guarantees
-        // that the new safe pointer will be destructed before releasing the lock.
-        const MessagePtr transfered(msg.release());
-        enqueuePtr(transfered);
-    }
+    enqueuePtr(msg);
+    msg.reset();
 }
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::forceEnqueue(MSG* msg)
+template <typename MSG>
+void ts::MessageQueue<MSG>::forceEnqueue(MSG* msg)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    {
-        // Create a safe pointer to the pointed object inside a code block which guarantees
-        // that the safe pointer will be destructed before releasing the lock.
-        const MessagePtr ptr(msg);
-        enqueuePtr(ptr);
-    }
+    enqueuePtr(MessagePtr(msg));
 }
 
 
@@ -418,20 +389,20 @@ void ts::MessageQueue<MSG,SAFETY>::forceEnqueue(MSG* msg)
 // Remove a message from the queue.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::dequeue(MessagePtr& msg)
+template <typename MSG>
+void ts::MessageQueue<MSG>::dequeue(MessagePtr& msg)
 {
     std::unique_lock<std::mutex> lock(_mutex);
     _enqueued.wait(lock, [this]() { return !_queue.empty(); });
     if (!dequeuePtr(msg)) {
         // Queue cannot be empty at end of wait without timeout.
-        msg.clear();
+        msg.reset();
     }
 }
 
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-bool ts::MessageQueue<MSG,SAFETY>::dequeue(MessagePtr& msg, cn::milliseconds timeout)
+template <typename MSG>
+bool ts::MessageQueue<MSG>::dequeue(MessagePtr& msg, cn::milliseconds timeout)
 {
     std::unique_lock<std::mutex> lock(_mutex);
     _enqueued.wait_for(lock, timeout, [this]() { return !_queue.empty(); });
@@ -443,8 +414,8 @@ bool ts::MessageQueue<MSG,SAFETY>::dequeue(MessagePtr& msg, cn::milliseconds tim
 // Peek the next message from the queue, without dequeueing it.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-typename ts::MessageQueue<MSG,SAFETY>::MessagePtr ts::MessageQueue<MSG,SAFETY>::peek()
+template <typename MSG>
+typename ts::MessageQueue<MSG>::MessagePtr ts::MessageQueue<MSG>::peek()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     const auto it = dequeuePlacement(_queue);
@@ -456,8 +427,8 @@ typename ts::MessageQueue<MSG,SAFETY>::MessagePtr ts::MessageQueue<MSG,SAFETY>::
 // Clear the queue.
 //----------------------------------------------------------------------------
 
-template <typename MSG, ts::ThreadSafety SAFETY>
-void ts::MessageQueue<MSG,SAFETY>::clear()
+template <typename MSG>
+void ts::MessageQueue<MSG>::clear()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     if (!_queue.empty()) {
