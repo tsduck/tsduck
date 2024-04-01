@@ -132,10 +132,10 @@ bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners)
 
         const size_t index = tuners.size();
         tuners.resize(index + 1);
-        tuners[index] = new TunerDevice(duck);
+        tuners[index] = TunerPtr(new TunerDevice(duck));
         if (!tuners[index]->open(tuner_name, true)) {
             ok = false;
-            tuners[index].clear();
+            tuners[index].reset();
             tuners.resize(index);
         }
     }

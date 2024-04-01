@@ -43,3 +43,19 @@ test-static: $(BINDIR)/utest_static
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
 	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
 	$(BINDIR)/utest_static $(UTESTFLAGS)
+
+# Same unitary tests under valgrind control
+.PHONY: valgrind valgrind-shared valgrind-static
+.NOTPARALLEL: valgrind
+VGFLAGS += --quiet --leak-check=full --show-leak-kinds=all --suppressions=valgrind.supp
+valgrind: valgrind-shared $(if $(NOSTATIC),,valgrind-static)
+valgrind-shared: $(BINDIR)/utest
+	$(call LOG,[VALGRIND] $(BINDIR)/utest $(UTESTFLAGS)) \
+	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
+	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
+	valgrind $(VGFLAGS) $(BINDIR)/utest $(UTESTFLAGS)
+valgrind-static: $(BINDIR)/utest_static
+	$(call LOG,[VALGRIND] $(BINDIR)/utest_static $(UTESTFLAGS)) \
+	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
+	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
+	valgrind $(VGFLAGS) $(BINDIR)/utest_static $(UTESTFLAGS)

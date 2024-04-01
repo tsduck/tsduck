@@ -47,9 +47,16 @@ test-all: test test-suite
 
 # Build and run unitary tests.
 
-.PHONY: test
-test: default
+.PHONY: test test-static test-shared
+test test-static test-shared: default
 	@$(MAKE) -C src/utest $@
+
+# Build and run unitary tests under valgrind control.
+
+.PHONY: valgrind valgrind-shared valgrind-static
+valgrind valgrind-shared valgrind-static:
+	@$(MAKE) DEBUG=true
+	@$(MAKE) DEBUG=true -C src/utest $@
 
 # Execute the TSDuck test suite from a sibling directory, if present.
 

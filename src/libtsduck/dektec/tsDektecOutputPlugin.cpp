@@ -23,7 +23,6 @@ bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsDVBT2ParamsEvaluator.h"
 #include "tsModulation.h"
 #include "tsIntegerUtils.h"
-#include "tsSysUtils.h"
 #include "tsFatal.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);
@@ -1156,7 +1155,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
     const ObjectPtr input_params(use_input_modulation ? ObjectRepository::Instance().retrieve(u"tsp.dvb.params") : nullptr);
-    const ModulationArgs* input = dynamic_cast<const ModulationArgs*>(input_params.pointer());
+    const ModulationArgs* input = dynamic_cast<const ModulationArgs*>(input_params.get());
     ModulationArgs other_args;
 
     // Modulation type is initially unknown.
