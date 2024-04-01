@@ -43,7 +43,7 @@ ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid, EITOptions options, c
 // Reset the EIT generator to default state.
 //----------------------------------------------------------------------------
 
-void ts::EITGenerator::reset()
+void ts::EITGenerator::reset(PID pid)
 {
     _actual_ts_id = 0;
     _actual_ts_id_set = false;
@@ -55,9 +55,6 @@ void ts::EITGenerator::reset()
     _ref_time_pkt = 0;
     _eit_inter_pkt = 0;
     _last_eit_pkt = 0;
-    _demux.reset();
-    _demux.addPID(PID_PAT);
-    _packetizer.reset();
     _services.clear();
     for (size_t i = 0; i < _injects.size(); ++i) {
         _injects[i].clear();
@@ -65,6 +62,19 @@ void ts::EITGenerator::reset()
     _last_tid = TID_NULL;
     _obsolete_count = 0;
     _versions.clear();
+
+    // Reset the demux state. Calling reset() does not change the PID filters.
+    _demux.reset();
+    if (pid != _eit_pid && bool(_options & EITOptions::LOAD_INPUT)) {
+        _demux.removePID(_eit_pid);
+        _demux.addPID(pid);
+    }
+    _demux.addPID(PID_PAT);
+    _eit_pid = pid;
+
+    // Reset the packetizer, update the PID with potentially new value.
+    _packetizer.reset();
+    _packetizer.setPID(_eit_pid);
 }
 
 

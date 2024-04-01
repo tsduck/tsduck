@@ -175,7 +175,14 @@ namespace ts {
         //! Reset the EIT generator to default state.
         //! The EPG content is deleted. The TS id and current time are forgotten.
         //!
-        void reset();
+        void reset() { reset(_eit_pid); }
+
+        //!
+        //! Reset the EIT generator to default state.
+        //! The EPG content is deleted. The TS id and current time are forgotten.
+        //! @param [in] pid The PID containing EIT's to insert.
+        //!
+        void reset(PID pid);
 
         //!
         //! Set new EIT generation options.
@@ -442,7 +449,7 @@ namespace ts {
         // ---------------------------
 
         DuckContext&         _duck;                      // TSDuck execution context.
-        const PID            _eit_pid;                   // PID for input and generated EIT's.
+        PID                  _eit_pid;                   // PID for input and generated EIT's.
         uint16_t             _actual_ts_id = 0;          // Actual transport stream id (to differentiate EIT actual and others).
         bool                 _actual_ts_id_set = false;  // Boolean: value in _actual_ts_id is valid.
         bool                 _regenerate = false;        // Some segments must be regenerated in some services.

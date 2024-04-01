@@ -19,10 +19,10 @@
 
 namespace {
     // Default interval in milliseconds between two poll operations.
-    const cn::milliseconds DEFAULT_POLL_INTERVAL = cn::milliseconds(500);
+    constexpr cn::milliseconds DEFAULT_POLL_INTERVAL = cn::milliseconds(500);
 
     // Default minimum file stability delay.
-    const cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
+    constexpr cn::milliseconds DEFAULT_MIN_STABLE_DELAY = cn::milliseconds(500);
 
     // Stack size of listener threads.
     constexpr size_t SERVER_THREAD_STACK_SIZE = 128 * 1024;
@@ -73,6 +73,7 @@ namespace ts {
         bool             _wait_first_batch = false;
         bool             _use_system_time = false;
         Time             _start_time {};
+        PID              _eit_pid = PID_EIT;
         EITOptions       _eit_options = EITOptions::GEN_ALL;
         BitRate          _eit_bitrate = 0;
         UString          _files {};
@@ -82,8 +83,8 @@ namespace ts {
         EITRepetitionProfile _eit_profile {};
 
         // Working data.
-        FileListener  _file_listener;
-        EITGenerator  _eit_gen;
+        FileListener  _file_listener {this};
+        EITGenerator  _eit_gen {duck, PID_EIT};
         volatile bool _check_files = false;    // there are files in _polled_files
         std::mutex    _polled_files_mutex {};  // exclusive access to _polled_files
         UStringList   _polled_files {};        // accessed by two threads, protected by mutex above.
@@ -113,9 +114,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"eitinject", ts::EITInjectPlugin);
 //----------------------------------------------------------------------------
 
 ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Generate and inject EIT's in a transport stream", u"[options]"),
-    _file_listener(this),
-    _eit_gen(duck, PID_EIT)
+    ProcessorPlugin(tsp_, u"Generate and inject EIT's in a transport stream", u"[options]")
 {
     duck.defineArgsForCharset(*this);
 
@@ -207,6 +206,10 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"This prevents too frequent poll notifications when a file is being written and his size modified at each poll. "
          u"The default is " + UString::Chrono(DEFAULT_MIN_STABLE_DELAY, true) + u".");
 
+    option(u"pid", 'p', PIDVAL);
+    help(u"pid",
+         u"Specify the PID for EIT injection. The default is " + UString::Decimal(PID_EIT) + u".");
+
     option(u"other");
     help(u"other",
          u"Generate EIT other. Same as --other-pf --other-schedule.");
@@ -292,6 +295,7 @@ bool ts::EITInjectPlugin::getOptions()
     getChronoValue(_poll_interval, u"poll-interval", DEFAULT_POLL_INTERVAL);
     getChronoValue(_min_stable_delay, u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
     getIntValue(_ts_id, u"ts-id", -1);
+    getIntValue(_eit_pid, u"pid", PID_EIT);
     _delete_files = present(u"delete-files");
     _wait_first_batch = present(u"wait-first-batch");
 
@@ -377,7 +381,7 @@ bool ts::EITInjectPlugin::getOptions()
 bool ts::EITInjectPlugin::start()
 {
     // Initialize the EIT generator.
-    _eit_gen.reset();
+    _eit_gen.reset(_eit_pid);
     _eit_gen.setOptions(_eit_options);
     _eit_gen.setProfile(_eit_profile);
     _eit_gen.setMaxBitRate(_eit_bitrate);

@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.38-3679
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Option --pid in plugin "eitinject".
+
+-------------------------------------------------------------------------------
+
 VERSION 3.37-3656
 
 [NEW] New commands and plugins:

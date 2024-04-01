@@ -1712,7 +1712,7 @@ namespace ts {
         //! @param [in] pad The padding character to adjust the width.
         //! @return The formatted string.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
         static UString Decimal(INT value,
                                size_type min_width = 0,
                                bool right_justified = true,
@@ -1728,7 +1728,7 @@ namespace ts {
         //! @param [in] force_sign If true, force a '+' sign for positive values.
         //! @return The formatted string.
         //!
-        template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type* = nullptr>
+        template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value || std::is_enum<typename CONTAINER::value_type>::value>::type* = nullptr>
         static UString Decimal(const CONTAINER& values,
                                const UString& separator = UString(u", "),
                                bool force_sign = false);
@@ -3330,7 +3330,7 @@ CONTAINER& ts::UString::Append(CONTAINER& container, int argc, const char* const
 // Format a string containing a decimal value.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
 ts::UString ts::UString::Decimal(INT value,
                                  size_type min_width,
                                  bool right_justified,
@@ -3338,9 +3338,11 @@ ts::UString ts::UString::Decimal(INT value,
                                  bool force_sign,
                                  UChar pad)
 {
+    using type_t = typename underlying_type<INT>::type;
+
     // We build the result string in s.
     UString s;
-    DecimalHelper(s, value, separator, force_sign);
+    DecimalHelper(s, type_t(value), separator, force_sign);
 
     // Adjust string width.
     if (s.size() < min_width) {
@@ -3361,13 +3363,15 @@ ts::UString ts::UString::Decimal(INT value,
 // Format a string containing a list of decimal values.
 //----------------------------------------------------------------------------
 
-template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type*>
+template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value || std::is_enum<typename CONTAINER::value_type>::value>::type*>
 ts::UString ts::UString::Decimal(const CONTAINER& values, const UString& separator, bool force_sign)
 {
+    using type_t = typename underlying_type<typename CONTAINER::value_type>::type;
+
     UString result;
-    for (const typename CONTAINER::value_type& val : values) {
+    for (typename CONTAINER::value_type val : values) {
         UString s;
-        DecimalHelper(s, val, u"", force_sign);
+        DecimalHelper(s, type_t(val), u"", force_sign);
         if (!result.empty()) {
             result.append(separator);
         }
