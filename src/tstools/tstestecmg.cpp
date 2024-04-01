@@ -418,7 +418,7 @@ void CmdStatistics::terminate()
 namespace {
 
     class ECMGConnection;
-    using ECMGConnectionPtr = ts::SafePtr<ECMGConnection, ts::ThreadSafety::Full>;
+    using ECMGConnectionPtr = std::shared_ptr<ECMGConnection>;
     using Connection = ts::tlv::Connection<ts::ThreadSafety::Full>;
 
     class ECMGConnection: public ts::Thread
@@ -681,7 +681,7 @@ void ECMGConnection::main()
         switch (msg->tag()) {
 
             case ts::ecmgscs::Tags::channel_status: {
-                ts::ecmgscs::ChannelStatus* const mp = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.pointer());
+                    ts::ecmgscs::ChannelStatus* const mp = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.get());
                 if (checkChannelMessage(mp, u"channel_status")) {
                     // Received a valid channel_status, keep it for reference.
                     channel_status = *mp;
@@ -695,7 +695,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::channel_test: {
-                ts::ecmgscs::ChannelTest* const mp = dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.pointer());
+                    ts::ecmgscs::ChannelTest* const mp = dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.get());
                 if (checkChannelMessage(mp, u"channel_test")) {
                     // Automatic reply to channel_test
                     ok = _conn.send(channel_status, _logger);
@@ -704,7 +704,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::stream_status: {
-                ts::ecmgscs::StreamStatus* const mp = dynamic_cast<ts::ecmgscs::StreamStatus*>(msg.pointer());
+                    ts::ecmgscs::StreamStatus* const mp = dynamic_cast<ts::ecmgscs::StreamStatus*>(msg.get());
                 if (checkStreamMessage(mp, u"stream_status")) {
                     std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
@@ -723,7 +723,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::stream_test: {
-                ts::ecmgscs::StreamTest* const mp = dynamic_cast<ts::ecmgscs::StreamTest*>(msg.pointer());
+                    ts::ecmgscs::StreamTest* const mp = dynamic_cast<ts::ecmgscs::StreamTest*>(msg.get());
                 if (checkStreamMessage(mp, u"stream_test")) {
                     // Automatic reply to stream_test
                     ts::ecmgscs::StreamStatus resp(_opt.ecmgscs);
@@ -742,7 +742,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::ECM_response: {
-                ts::ecmgscs::ECMResponse* const mp = dynamic_cast<ts::ecmgscs::ECMResponse*>(msg.pointer());
+                    ts::ecmgscs::ECMResponse* const mp = dynamic_cast<ts::ecmgscs::ECMResponse*>(msg.get());
                 if (checkStreamMessage(mp, u"ECM_response")) {
                     std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
@@ -761,7 +761,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::stream_close_response: {
-                ts::ecmgscs::StreamCloseResponse* const mp = dynamic_cast<ts::ecmgscs::StreamCloseResponse*>(msg.pointer());
+                    ts::ecmgscs::StreamCloseResponse* const mp = dynamic_cast<ts::ecmgscs::StreamCloseResponse*>(msg.get());
                 if (checkStreamMessage(mp, u"stream_close_response")) {
                     std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);

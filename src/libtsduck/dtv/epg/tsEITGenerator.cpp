@@ -97,7 +97,7 @@ ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& 
 {
     // Build section data.
     ByteBlockPtr section_data(new ByteBlock(LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE));
-    CheckNonNull(section_data.pointer());
+    CheckNonNull(section_data.get());
     uint8_t* data = section_data->data();
 
     // Section header
@@ -115,9 +115,9 @@ ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& 
     PutUInt8(data + 13, tid);                  // last table id in this service
 
     // Build a section from the binary data.
-    section = new Section(section_data, PID_NULL, CRC32::IGNORE);
+    section = SectionPtr(new Section(section_data, PID_NULL, CRC32::IGNORE));
     updateVersion(gen, false);
-    CheckNonNull(section.pointer());
+    CheckNonNull(section.get());
 }
 
 
@@ -128,10 +128,10 @@ ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& 
 void ts::EITGenerator::ESection::startModifying()
 {
     // Do something only if the section is maybe still used in a packetizer.
-    if (injected && !section.isNull()) {
+    if (injected && section != nullptr) {
         // Duplicate the section. The previous section data is maybe still
         // referenced inside the packetizer and will be deleted later.
-        section = new Section(*section, ShareMode::COPY);
+        section = SectionPtr(new Section(*section, ShareMode::COPY));
     }
     // Mark the new section data as no longer used by a packetizer.
     injected = false;
@@ -144,7 +144,7 @@ void ts::EITGenerator::ESection::startModifying()
 
 void ts::EITGenerator::ESection::toggleActual(bool actual)
 {
-    if (!section.isNull() && EIT::IsActual(section->tableId()) != actual) {
+    if (section != nullptr && EIT::IsActual(section->tableId()) != actual) {
         startModifying();
         section->setTableId(EIT::ToggleActual(section->tableId(), actual), true);
     }
@@ -158,7 +158,7 @@ void ts::EITGenerator::ESection::toggleActual(bool actual)
 void ts::EITGenerator::ESection::updateVersion(EITGenerator* gen, bool recompute_crc)
 {
     // Does nothing when option SYNC_VERSIONS is set (versions are separately updated later).
-    if (!section.isNull() && !(gen->_options & EITOptions::SYNC_VERSIONS)) {
+    if (section != nullptr && !(gen->_options & EITOptions::SYNC_VERSIONS)) {
         assert(section->payloadSize() >= EIT::EIT_PAYLOAD_FIXED_SIZE);
         startModifying();
         // ServiceIdTriplet: svid, tsid, onetid
@@ -255,7 +255,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
             // The segment does not exist, create it.
             _duck.report().debug(u"creating EIT segment starting at %s for %s", {seg_start_time, service_id});
             const ESegmentPtr seg(new ESegment(seg_start_time));
-            CheckNonNull(seg.pointer());
+            CheckNonNull(seg.get());
             seg_iter = srv->segments.insert(seg_iter, seg);
         }
         ESegment& seg(**seg_iter);
@@ -316,7 +316,7 @@ bool ts::EITGenerator::loadEvents(const SectionPtrVector& sections, bool get_act
 {
     bool success = true;
     for (size_t i = 0; i < sections.size(); ++i) {
-        if (!sections[i].isNull()) {
+        if (sections[i] != nullptr) {
             success = loadEvents(*sections[i], get_actual_ts) && success;
         }
     }
@@ -368,7 +368,7 @@ void ts::EITGenerator::saveEITs(SectionPtrVector& sections)
     // Loop on all services, saving all EIT p/f.
     for (const auto& it1 : _services) {
         for (size_t i = 0; i < it1.second.pf.size(); ++i) {
-            if (!it1.second.pf[i].isNull()) {
+            if (it1.second.pf[i] != nullptr) {
                 sections.push_back(it1.second.pf[i]->section);
                 pf_count++;
             }
@@ -430,7 +430,7 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
 
             // Process EIT p/f.
             if ((new_actual && bool(_options & EITOptions::GEN_ACTUAL_PF)) || (new_other && bool(_options & EITOptions::GEN_OTHER_PF))) {
-                if (need_eit && (srv.pf[0].isNull() || srv.pf[1].isNull())) {
+                if (need_eit && (srv.pf[0] == nullptr || srv.pf[1] == nullptr)) {
                     // At least one EIT p/f shall be rebuilt.
                     regeneratePresentFollowing(srv_iter.first, srv_iter.second, now);
                 }
@@ -438,13 +438,13 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
                     // Loop on EIT p & f sections.
                     for (size_t i = 0; i < srv.pf.size(); ++i) {
                         if (need_eit) {
-                            assert(!srv.pf[i].isNull());
+                            assert(srv.pf[i] != nullptr);
                             srv.pf[i]->toggleActual(new_actual);
                         }
-                        else if (!srv.pf[i].isNull()) {
+                        else if (srv.pf[i] != nullptr) {
                             // The existing section is no longer needed.
                             markObsoleteSection(*srv.pf[i]);
-                            srv.pf[i].clear();
+                            srv.pf[i].reset();
                         }
                     }
                 }
@@ -529,13 +529,13 @@ void ts::EITGenerator::setOptions(EITOptions options)
                 if (!need_eit || !(_options & GEN_PF)) {
                     // Remove existing EIT p/f sections.
                     for (size_t i = 0; i < srv.pf.size(); ++i) {
-                        if (!srv.pf[i].isNull()) {
+                        if (srv.pf[i] != nullptr) {
                             markObsoleteSection(*srv.pf[i]);
-                            srv.pf[i].clear();
+                            srv.pf[i].reset();
                         }
                     }
                 }
-                else if (srv.pf[0].isNull() || srv.pf[1].isNull()) {
+                else if (srv.pf[0] == nullptr || srv.pf[1] == nullptr) {
                     // At least one EIT p/f shall be rebuilt.
                     regeneratePresentFollowing(service_id, srv, now);
                 }
@@ -709,9 +709,9 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
     if (!(_options & GEN_PF)) {
         // This type of EIT cannot be (no time ref) or shall not be (excluded) generated. If sections exist, delete them.
         for (size_t i = 0; i < srv.pf.size(); ++i) {
-            if (!srv.pf[i].isNull()) {
+            if (srv.pf[i] != nullptr) {
                 markObsoleteSection(*srv.pf[i]);
-                srv.pf[i].clear();
+                srv.pf[i].reset();
             }
         }
     }
@@ -727,9 +727,9 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
         }
 
         // If the first event is not yet current, make it the "following" one.
-        if (!events[0].isNull() && now < events[0]->start_time) {
+        if (events[0] != nullptr && now < events[0]->start_time) {
             events[1] = events[0];
-            events[0].clear();
+            events[0].reset();
         }
 
         // Rebuild the two sections when necessary.
@@ -758,12 +758,12 @@ bool ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
                                                          const EventPtr& event,
                                                          const Time&inject_time)
 {
-    if (sec.isNull()) {
+    if (sec == nullptr) {
         // The section did not exist, create it.
-        sec = new ESection(this, service_id, tid, section_number, 1);
-        CheckNonNull(sec.pointer());
+        sec = ESectionPtr(new ESection(this, service_id, tid, section_number, 1));
+        CheckNonNull(sec.get());
         // The initial state of the section is: no event, no CRC.
-        if (!event.isNull()) {
+        if (event != nullptr) {
             // Append the event in the payload.
             sec->section->appendPayload(event->event_data, false);
         }
@@ -775,7 +775,7 @@ bool ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
         // Section was modified.
         return true;
     }
-    else if (event.isNull()) {
+    else if (event == nullptr) {
         // The section already exists. It must be already in an injection queue.
         // There is no more event, truncate the section payload to remove the event (if any is present).
         if (sec->section->tableId() != tid || sec->section->payloadSize() != EIT::EIT_PAYLOAD_FIXED_SIZE) {
@@ -863,7 +863,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             if (srv.segments.empty() || srv.segments.front()->start_time != last_midnight) {
                 _duck.report().debug(u"creating EIT segment starting at %s for %s", {last_midnight, service_id});
                 const ESegmentPtr seg(new ESegment(last_midnight));
-                CheckNonNull(seg.pointer());
+                CheckNonNull(seg.get());
                 srv.segments.push_front(seg);
             }
 
@@ -877,7 +877,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                     _duck.report().debug(u"creating EIT segment starting at %s for %s", {segment_start_time, service_id});
                     assert((*seg_iter)->start_time > segment_start_time);
                     const ESegmentPtr seg(new ESegment(segment_start_time));
-                    CheckNonNull(seg.pointer());
+                    CheckNonNull(seg.get());
                     seg_iter = srv.segments.insert(seg_iter, seg);
                 }
                 ESegment& seg(**seg_iter);
@@ -931,7 +931,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
 
                         // The section is no longer valid or does not exist, rebuild it.
                         const ESectionPtr sec(new ESection(this, service_id, table_id, section_number, section_number));
-                        CheckNonNull(sec.pointer());
+                        CheckNonNull(sec.get());
                         if (sec_iter != seg.sections.end()) {
                             // Existing section, invalidate it and replace it.
                             markObsoleteSection(**sec_iter);
@@ -981,7 +981,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                     // We need at least one section, possibly empty, in each segment.
                     if (seg.sections.empty()) {
                         const ESectionPtr sec(new ESection(this, service_id, table_id, first_section_number, first_section_number));
-                        CheckNonNull(sec.pointer());
+                        CheckNonNull(sec.get());
                         seg.sections.push_back(sec);
                         enqueueInjectSection(sec, getCurrentTime(), true);
                     }
@@ -1222,7 +1222,7 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
     }
 
     // No section is ready for injection.
-    section.clear();
+    section.reset();
 }
 
 
@@ -1357,7 +1357,7 @@ void ts::EITGenerator::dumpSection(int lev, const UString& margin, const ESectio
     Report& rep(_duck.report());
 
     // Eliminate null ESection.
-    if (sec.isNull()) {
+    if (sec == nullptr) {
         rep.log(lev, u"%s(null)", {margin});
         return;
     }
@@ -1365,7 +1365,7 @@ void ts::EITGenerator::dumpSection(int lev, const UString& margin, const ESectio
     // Eliminate null Section in ESection.
     const UString space(margin.size(), SPACE);
     const UString desc(UString::Format(u"next inject: %s, obsolete: %s, injected: %s", {sec->next_inject, sec->obsolete, sec->injected}));
-    if (sec->section.isNull()) {
+    if (sec->section == nullptr) {
         rep.log(lev, u"%s(null section)", {margin});
         rep.log(lev, u"%s%s", {space, desc});
         return;

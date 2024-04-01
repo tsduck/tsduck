@@ -33,7 +33,7 @@ ts::Descriptor::Descriptor(const ByteBlock& bb) :
 ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
     _data(size < 256 ? new ByteBlock(size + 2) : nullptr)
 {
-    if (!_data.isNull()) {
+    if (_data != nullptr) {
         (*_data)[0] = tag;
         (*_data)[1] = uint8_t(size);
         MemCopy(_data->data() + 2, data, size);
@@ -43,7 +43,7 @@ ts::Descriptor::Descriptor(DID tag, const void* data, size_t size) :
 ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
     _data(data.size() < 256 ? new ByteBlock(2) : nullptr)
 {
-    if (!_data.isNull()) {
+    if (_data != nullptr) {
         (*_data)[0] = tag;
         (*_data)[1] = uint8_t(data.size());
         _data->append(data);
@@ -52,13 +52,13 @@ ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
 
 ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, ShareMode mode)
 {
-    if (!bbp.isNull() && bbp->size() >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
+    if (bbp != nullptr && bbp->size() >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
         switch (mode) {
             case ShareMode::SHARE:
                 _data = bbp;
                 break;
             case ShareMode::COPY:
-                _data = new ByteBlock(*bbp);
+                _data = ByteBlockPtr(new ByteBlock(*bbp));
                 break;
             default:
                 // should not get there
@@ -74,7 +74,7 @@ ts::Descriptor::Descriptor(const Descriptor& desc, ShareMode mode)
             _data = desc._data;
             break;
         case ShareMode::COPY:
-            _data = new ByteBlock(*desc._data);
+            _data = ByteBlockPtr(new ByteBlock(*desc._data));
             break;
         default:
             // should not get there
@@ -111,7 +111,7 @@ ts::Descriptor& ts::Descriptor::operator=(Descriptor&& desc) noexcept
 ts::Descriptor& ts::Descriptor::copy(const Descriptor& desc)
 {
     if (&desc != this) {
-        _data = new ByteBlock(*desc._data);
+        _data = ByteBlockPtr(new ByteBlock(*desc._data));
     }
     return *this;
 }
@@ -164,9 +164,9 @@ void ts::Descriptor::replacePayload(const void* addr, size_t size)
 {
     if (size > 255) {
         // Payload size too long, invalidate descriptor
-        _data.clear();
+        _data.reset();
     }
-    else if (!_data.isNull()) {
+    else if (_data != nullptr) {
         assert(_data->size() >= 2);
         // Erase previous payload
         _data->erase(2, _data->size() - 2);
@@ -188,9 +188,9 @@ void ts::Descriptor::resizePayload(size_t new_size)
 {
     if (new_size > 255) {
         // Payload size too long, invalidate descriptor
-        _data.clear();
+        _data.reset();
     }
-    else if (!_data.isNull()) {
+    else if (_data != nullptr) {
         assert(_data->size() >= 2);
         size_t old_size = _data->size() - 2;
         _data->resize (new_size + 2);
@@ -211,8 +211,8 @@ void ts::Descriptor::resizePayload(size_t new_size)
 bool ts::Descriptor::operator== (const Descriptor& desc) const
 {
     return _data == desc._data ||
-        (_data.isNull() && desc._data.isNull()) ||
-        (!_data.isNull() && !desc._data.isNull() && *_data == *desc._data);
+        (_data == nullptr && desc._data == nullptr) ||
+        (_data != nullptr && desc._data != nullptr && *_data == *desc._data);
 }
 
 
@@ -232,7 +232,7 @@ ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, PDS pds
     if (fac != nullptr) {
         // We know how to deserialize it.
         AbstractDescriptorPtr dp(fac());
-        if (!dp.isNull()) {
+        if (dp != nullptr) {
             // Deserialize from binary to object.
             dp->deserialize(duck, *this);
             if (dp->isValid()) {
@@ -262,7 +262,7 @@ ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent,
     // Try to generate a specialized XML structure.
     if (!forceGeneric) {
         const AbstractDescriptorPtr dp(deserialize(duck, pds, tid));
-        if (!dp.isNull()) {
+        if (dp != nullptr) {
             // Serialize from object to XML.
             node = dp->toXML(duck, parent);
         }
@@ -307,10 +307,10 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
     if (fac != nullptr) {
         // Create a descriptor instance of the right type.
         AbstractDescriptorPtr desc = fac();
-        if (!desc.isNull()) {
+        if (desc != nullptr) {
             desc->fromXML(duck, node);
         }
-        if (!desc.isNull() && desc->isValid()) {
+        if (desc != nullptr && desc->isValid()) {
             // Serialize the descriptor.
             desc->serialize(duck, *this);
         }
@@ -324,7 +324,7 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
         ByteBlock payload;
         if (node->getIntAttribute<DID>(tag, u"tag", true, 0xFF, 0x00, 0xFF) && node->getHexaText(payload, 0, 255)) {
             // Build descriptor.
-            _data = new ByteBlock(2);
+            _data = ByteBlockPtr(new ByteBlock(2));
             (*_data)[0] = tag;
             (*_data)[1] = uint8_t(payload.size());
             _data->append(payload);

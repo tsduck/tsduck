@@ -154,7 +154,7 @@ namespace ts {
         std::recursive_mutex        _mutex {};                        // exclusive access to protected fields
         std::condition_variable_any _work_to_do {};                   // notify receiver thread to do some work
         AsyncRequests               _async_requests {};
-        MessageQueue<tlv::Message,ThreadSafety::None> _response_queue {RESPONSE_QUEUE_SIZE};
+        MessageQueue<tlv::Message>  _response_queue {RESPONSE_QUEUE_SIZE};
 
         // Build a CW_provision message.
         void buildCWProvision(ecmgscs::CWProvision& msg,

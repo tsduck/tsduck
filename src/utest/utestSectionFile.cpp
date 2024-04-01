@@ -238,7 +238,7 @@ void SectionFileTest::testGenericShortTable()
     static const uint8_t refData[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
 
     const ts::SectionPtr refSection(new ts::Section(0xAB, false, refData, sizeof(refData)));
-    TSUNIT_ASSERT(!refSection.isNull());
+    TSUNIT_ASSERT(refSection != nullptr);
     TSUNIT_ASSERT(refSection->isValid());
 
     ts::DuckContext duck;
@@ -284,7 +284,7 @@ void SectionFileTest::testGenericShortTable()
     TSUNIT_EQUAL(1, tab.sectionCount());
 
     ts::SectionPtr sec(tab.sectionAt(0));
-    TSUNIT_ASSERT(!sec.isNull());
+    TSUNIT_ASSERT(sec != nullptr);
     TSUNIT_ASSERT(sec->isValid());
     TSUNIT_EQUAL(0xAB, sec->tableId());
     TSUNIT_ASSERT(sec->isShortSection());
@@ -300,8 +300,8 @@ void SectionFileTest::testGenericLongTable()
 
     ts::DuckContext duck;
     ts::BinaryTable refTable;
-    refTable.addSection(new ts::Section(0xCD, true, 0x1234, 7, true, 0, 0, refData0, sizeof(refData0)));
-    refTable.addSection(new ts::Section(0xCD, true, 0x1234, 7, true, 1, 1, refData1, sizeof(refData1)));
+    refTable.addSection(ts::SectionPtr(new ts::Section(0xCD, true, 0x1234, 7, true, 0, 0, refData0, sizeof(refData0))));
+    refTable.addSection(ts::SectionPtr(new ts::Section(0xCD, true, 0x1234, 7, true, 1, 1, refData1, sizeof(refData1))));
     TSUNIT_ASSERT(refTable.isValid());
     TSUNIT_ASSERT(!refTable.isShortSection());
     TSUNIT_EQUAL(0xCD, refTable.tableId());
@@ -351,7 +351,7 @@ void SectionFileTest::testGenericLongTable()
     TSUNIT_EQUAL(2, tab.sectionCount());
 
     ts::SectionPtr sec(tab.sectionAt(0));
-    TSUNIT_ASSERT(!sec.isNull());
+    TSUNIT_ASSERT(sec != nullptr);
     TSUNIT_ASSERT(sec->isValid());
     TSUNIT_EQUAL(0xCD, sec->tableId());
     TSUNIT_EQUAL(0x1234, sec->tableIdExtension());
@@ -363,7 +363,7 @@ void SectionFileTest::testGenericLongTable()
     TSUNIT_ASSERT(ts::ByteBlock(sec->payload(), sec->payloadSize()) == ts::ByteBlock(refData0, sizeof(refData0)));
 
     sec = tab.sectionAt(1);
-    TSUNIT_ASSERT(!sec.isNull());
+    TSUNIT_ASSERT(sec != nullptr);
     TSUNIT_ASSERT(sec->isValid());
     TSUNIT_EQUAL(0xCD, sec->tableId());
     TSUNIT_EQUAL(0x1234, sec->tableIdExtension());
@@ -388,7 +388,7 @@ void SectionFileTest::testBuildSections()
 
     // Serialize the PAT.
     ts::BinaryTablePtr patBin(new(ts::BinaryTable));
-    TSUNIT_ASSERT(!patBin.isNull());
+    TSUNIT_ASSERT(patBin != nullptr);
     pat.serialize(duck, *patBin);
     TSUNIT_ASSERT(patBin->isValid());
     TSUNIT_EQUAL(2, patBin->sectionCount());
@@ -415,7 +415,7 @@ void SectionFileTest::testBuildSections()
     ts::TDT tdt(tdtTime);
 
     ts::BinaryTablePtr tdtBin(new(ts::BinaryTable));
-    TSUNIT_ASSERT(!tdtBin.isNull());
+    TSUNIT_ASSERT(tdtBin != nullptr);
     tdt.serialize(duck, *tdtBin);
     TSUNIT_ASSERT(tdtBin->isValid());
     TSUNIT_EQUAL(1, tdtBin->sectionCount());

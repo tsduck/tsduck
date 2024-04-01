@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsSafePtr.h"
 #include "tsTextParser.h"
 #include "tsNullReport.h"
 #include "tsEnumeration.h"
@@ -29,7 +28,7 @@ namespace ts {
         //!
         //! Safe pointer to a JSON value (not thread-safe).
         //!
-        using ValuePtr = SafePtr<Value, ThreadSafety::None>;
+        using ValuePtr = std::shared_ptr<Value>;
 
         //!
         //! A vector of safe pointers to JSON values.

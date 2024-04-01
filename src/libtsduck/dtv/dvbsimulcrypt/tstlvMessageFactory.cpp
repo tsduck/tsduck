@@ -47,7 +47,7 @@ void ts::tlv::MessageFactory::factory(MessagePtr& msg) const
         _protocol.factory(*this, msg);
     }
     else {
-        msg.clear();
+        msg.reset();
     }
 }
 
@@ -61,7 +61,7 @@ ts::tlv::MessagePtr ts::tlv::MessageFactory::factory() const
 void ts::tlv::MessageFactory::buildErrorResponse(MessagePtr& msg) const
 {
     if (_error_status == OK) {
-        msg.clear(); // no error
+        msg.reset(); // no error
     }
     else {
         _protocol.buildErrorResponse(*this, msg);
@@ -300,7 +300,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, MessagePtr& param) const
     if (it == _params.end()) {
         throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", {tag}));
     }
-    else if (it->second.compound.isNull()) {
+    else if (it->second.compound == nullptr) {
         throw DeserializationInternalError(UString::Format(u"Parameter 0x%X is not a compound TLV", {tag}));
     }
     else {
@@ -322,7 +322,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MessagePtr>& para
     auto it = _params.lower_bound(tag);
     const auto last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
-        if (it->second.compound.isNull()) {
+        if (it->second.compound == nullptr) {
             throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));
         }
         else {

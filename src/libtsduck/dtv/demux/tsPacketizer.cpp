@@ -34,7 +34,7 @@ ts::Packetizer::~Packetizer()
 void ts::Packetizer::reset()
 {
     AbstractPacketizer::reset();
-    _section.clear();
+    _section.reset();
     _next_byte = 0;
 }
 
@@ -46,16 +46,16 @@ void ts::Packetizer::reset()
 bool ts::Packetizer::getNextPacket(TSPacket& pkt)
 {
     // If there is no current section, get the next one.
-    if (_section.isNull() && _provider != nullptr) {
+    if (_section == nullptr && _provider != nullptr) {
         _provider->provideSection(_section_in_count, _section);
         _next_byte = 0;
-        if (!_section.isNull()) {
+        if (_section != nullptr) {
             _section_in_count++;
         }
     }
 
     // If there is still no current section, return a null packet
-    if (_section.isNull()) {
+    if (_section == nullptr) {
         configurePacket(pkt, true);
         return false;
     }
@@ -80,7 +80,7 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
             // No stuffing before next section => get next section.
             // Note that _provider cannot be null here.
             _provider->provideSection(_section_in_count, next_section);
-            if (next_section.isNull()) {
+            if (next_section == nullptr) {
                 // If no next section, do stuffing anyway.
                 do_stuffing = true;
             }
@@ -137,20 +137,20 @@ bool ts::Packetizer::getNextPacket(TSPacket& pkt)
             // Remember next section if known
             _section = next_section;
             _next_byte = 0;
-            next_section.clear();
+            next_section.reset();
             // If stuffing required at the end of packet, don't use next section
             if (do_stuffing) {
                 break;
             }
             // If next section unknown, get it now
-            if (_section.isNull()) {
+            if (_section == nullptr) {
                 // If stuffing required before this section, give up
                 if (_provider == nullptr || _provider->doStuffing()) {
                     break;
                 }
                 _provider->provideSection(_section_in_count, _section);
                 // If no next section, stuff the end of packet
-                if (_section.isNull()) {
+                if (_section == nullptr) {
                     break;
                 }
                 else {
@@ -186,6 +186,6 @@ std::ostream& ts::Packetizer::display(std::ostream& strm) const
         << UString::Format(u"  Output sections: %'d", {_section_out_count}) << std::endl
         << UString::Format(u"  Provided sections: %'d", {_section_in_count}) << std::endl
         << "  Current section: "
-        << (_section.isNull() ? UString(u"none") : UString::Format(u"%s, offset %d", {names::TID(duck(), _section->tableId()), _next_byte}))
+        << (_section == nullptr ? UString(u"none") : UString::Format(u"%s, offset %d", {names::TID(duck(), _section->tableId()), _next_byte}))
         << std::endl;
 }

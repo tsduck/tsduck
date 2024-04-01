@@ -129,7 +129,7 @@ namespace ts {
         // Splice commands are passed from the server threads to the plugin thread using a message queue.
         // The next pts field is used as sort criteria. In the queue, all immediate commands come first.
         // Then, the non-immediate commands come in order of next_pts.
-        using CommandQueue = MessagePriorityQueue<SpliceCommand, ThreadSafety::Full>;
+        using CommandQueue = MessagePriorityQueue<SpliceCommand>;
 
         // Message queues enqueue smart pointers to the message type.
         using CommandPtr = CommandQueue::MessagePtr;
@@ -602,7 +602,7 @@ void ts::SpliceInjectPlugin::handlePMT(const PMT& pmt, PID)
 void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& section)
 {
     // The default is to return no section, meaning do not insert splice information.
-    section.clear();
+    section.reset();
 
     // If injection PID is unknown or if we have no time reference, do nothing.
     if (_inject_pid_act == PID_NULL || _last_pts == INVALID_PTS) {
@@ -614,7 +614,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
 
         // Get next splice command from the queue.
         CommandPtr cmd(_queue.peek());
-        if (cmd.isNull()) {
+        if (cmd == nullptr) {
             // No splice command available, nothing to do.
             break;
         }
@@ -668,7 +668,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
     }
 
     // Inject null splice commands when necessary to fill the PID.
-    if (section.isNull() && _inter_packet > 0 && tsp->pluginPackets() >= _last_inject_pkt + _inter_packet) {
+    if (section == nullptr && _inter_packet > 0 && tsp->pluginPackets() >= _last_inject_pkt + _inter_packet) {
         // It is time to insert a null splice command.
         section = _null_splice;
     }
@@ -755,13 +755,13 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     // Each section is expected to be a splice information section.
     for (auto it = secFile.sections().begin(); it != secFile.sections().end(); ++it) {
         SectionPtr sec(*it);
-        if (!sec.isNull()) {
+        if (sec != nullptr) {
             if (sec->tableId() != TID_SCTE35_SIT) {
                 tsp->error(u"unexpected section, %s, ignored", {names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE)});
             }
             else {
                 CommandPtr cmd(new SpliceCommand(this, sec));
-                if (cmd.isNull() || !cmd->sit.isValid()) {
+                if (cmd == nullptr || !cmd->sit.isValid()) {
                     tsp->error(u"received invalid splice information section, ignored");
                 }
                 else {
@@ -792,7 +792,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
     section(sec)
 {
     // Analyze the section.
-    if (section.isNull() || !section->isValid()) {
+    if (section == nullptr || !section->isValid()) {
         // Not a valid section.
         sit.invalidate();
     }
@@ -878,7 +878,7 @@ bool ts::SpliceInjectPlugin::SpliceCommand::operator<(const SpliceCommand& other
 
 ts::UString ts::SpliceInjectPlugin::SpliceCommand::toString() const
 {
-    if (section.isNull()) {
+    if (section == nullptr) {
         return u"null";
     }
     else if (!sit.isValid()) {

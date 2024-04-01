@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsPcapFilter.h"
-#include "tsSafePtr.h"
 
 namespace ts {
     //!
@@ -153,7 +152,7 @@ namespace ts {
             bool             end = false;     // end of TCP stream.
             cn::microseconds timestamp = cn::microseconds(-1);  // capture time stamp.
         };
-        using DataBlockPtr = SafePtr<DataBlock, ThreadSafety::None>;
+        using DataBlockPtr = std::shared_ptr<DataBlock>;
         using DataBlockQueue = std::list<DataBlockPtr>;
 
         // Description of a one-directional stream.

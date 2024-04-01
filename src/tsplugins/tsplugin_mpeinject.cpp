@@ -43,12 +43,12 @@ namespace ts {
     private:
         // Each UDP receiver is executed in a thread. There is a vector of receiver threads.
         class ReceiverThread;
-        using ReceiverPtr = SafePtr<ReceiverThread, ThreadSafety::None>;
+        using ReceiverPtr = std::shared_ptr<ReceiverThread>;
         using ReceiverVector = std::vector<ReceiverPtr>;
 
         // Each receiver thread builds DSM-CC sections from the received UDP datagrams.
         // Sections from all receivers are multiplexed into one single thread-safe queue.
-        using SectionQueue = MessageQueue<Section, ThreadSafety::Full>;
+        using SectionQueue = MessageQueue<Section>;
 
         // Command line options.
         PID        _mpe_pid = PID_NULL;     // PID into insert the MPE datagrams.
@@ -332,16 +332,9 @@ void ts::MPEInjectPlugin::provideSection(SectionCounter counter, SectionPtr& sec
 {
     // The packetizer needs a new section to packetize. Try to get next section.
     // Do not wait for a section, just do nothing if there is none available.
-    SectionQueue::MessagePtr ptr;
-    if (_section_queue.dequeue(ptr, cn::milliseconds::zero()) && !ptr.isNull() && ptr->isValid()) {
-        // Got a valid section. Transfer the section pointer ownership.
-        // We need an ownership transfer because SectionQueue::MessagePtr uses
-        // a real Mutex while SectionPtr uses a ts::null_mutex (unsynchronized).
-        section = ptr.changeThreadSafety<SectionPtr::Safety>();
-    }
-    else {
+    if (!_section_queue.dequeue(section, cn::milliseconds::zero()) || section == nullptr || !section->isValid()) {
         // No section available. Clear returned pointer, just in case.
-        section.clear();
+        section.reset();
     }
 }
 

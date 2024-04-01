@@ -198,7 +198,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         }
         else {
             // Enqueue the packet.
-            _latePackets.push_back(new TSPacket(pkt));
+            _latePackets.push_back(TSPacketPtr(new TSPacket(pkt)));
             // If this is the first packet in the queue, point to the first byte after 0x47.
             if (_latePackets.size() == 1) {
                 _lateIndex = 1;
@@ -458,7 +458,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
 void ts::PacketEncapsulation::fillPacket(ts::TSPacket& pkt, size_t& pktIndex)
 {
     assert(!_latePackets.empty());
-    assert(!_latePackets.front().isNull());
+    assert(_latePackets.front() != nullptr);
     assert(_lateIndex < PKT_SIZE);
     assert(pktIndex < PKT_SIZE);
 

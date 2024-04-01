@@ -260,7 +260,7 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
         std::lock_guard<std::recursive_mutex> lock1(_global_mutex);
 
         // If there was a previous pending restart operation, cancel it.
-        if (!_restart_data.isNull()) {
+        if (_restart_data != nullptr) {
             std::lock_guard<std::recursive_mutex> lock2(_restart_data->mutex);
             _restart_data->completed = true;
             _restart_data->report.error(u"restart interrupted by another concurrent restart");
@@ -289,7 +289,7 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
 bool ts::tsp::PluginExecutor::pendingRestart()
 {
     std::lock_guard<std::recursive_mutex> lock(_global_mutex);
-    return _restart && !_restart_data.isNull();
+    return _restart && _restart_data != nullptr;
 }
 
 
@@ -306,7 +306,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     std::lock_guard<std::recursive_mutex> lock1(_global_mutex);
 
     // If there is no pending restart, immediate success.
-    if (!_restart || _restart_data.isNull()) {
+    if (!_restart || _restart_data == nullptr) {
         restarted = false;
         return true;
     }
@@ -365,7 +365,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 
     // Clear restart trigger.
     _restart = false;
-    _restart_data.clear();
+    _restart_data.reset();
 
     debug(u"restarted plugin %s, status: %s", {pluginName(), success});
     return success;

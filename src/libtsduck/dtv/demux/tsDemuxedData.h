@@ -205,7 +205,7 @@ namespace ts {
         //! Read/write access to the full binary content of the data for subclasses.
         //! @return Address of the full binary content of the data.
         //!
-        uint8_t* rwContent() { return _data.isNull() ? nullptr : _data->data(); }
+        uint8_t* rwContent() { return _data == nullptr ? nullptr : _data->data(); }
 
         //!
         //! Resize the full binary content of the data for subclasses.

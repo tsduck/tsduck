@@ -96,44 +96,6 @@ Its subclass ts::PSIBuffer provides primitives to serialize and deserialize
 MPEG and DVB structures such as list of descriptors, DVB, ARIB and ATSC strings
 or "Modified Julian Dates".
 
-## Memory management {#memmgmt}
-
-The memory management is entirely based on the _smart pointer design pattern_.
-This is implemented by the template class ts::SafePtr, using internal reference counters.
-
-All dynamically allocated objected are managed using smart pointers.
-Thus, coding in C++ is as simple as in Java: simply allocate objects,
-always use smart pointers to reference them and forget about memory management.
-When an object is no longer referenced, it is automatically deallocated.
-Extensive testing using tools like @e valgrind have proven this to be true.
-
-Be aware, however, that smart pointers are not completely as efficient
-as Java garbage collector. There are a few pathological cases where
-objects are never deallocated. This is the case when two objects reference
-each other but are no longer referenced anywhere else. A true garbage collector
-would detect this pair of objects as collectively inaccessible and will reclaim
-them. Smart pointers, on the contrary, will never deallocate them since their
-reference count is not zero. But such cases are rare and well know.
-So, just pay attention to them.
-
-Smart pointers can be made thread-safe through a @e mutex class as template parameter.
-
-The default mutex class is ts::null_mutex which does nothing. So, by default, smart
-pointers are not thread-safe. All usages of a given instantiation of ts::SafePtr
-shall take place in the same thread (or must be explicitly synchronized). So, using
-smart pointers is fast by default, without synchronization overhead.
-
-To make an instantiation of ts::SafePtr thread-safe, use the class std::mutex as
-template parameter. Smart pointers from this instantiation can be used from
-different threads. Note, however, that the protection does not extend to the
-@e pointed object which must be properly synchronized.
-
-A typical application of thread-safe smart pointers is inter-thread communication
-using message queues. If the messages are polymorph or too big to be copied in the
-message queue, use thread-safe smart pointers to these messages. The message queue
-copies smart pointers, not objects. To implement message queues, you may use the
-template class ts::MessageQueue.
-
 ## Singletons and static data {#singletons}
 
 The _singleton_ design pattern is simple in theory, but not so simple to

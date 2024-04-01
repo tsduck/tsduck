@@ -107,46 +107,46 @@ void ts::emmgmux::Protocol::factory(const tlv::MessageFactory& fact, tlv::Messag
 {
     switch (fact.commandTag()) {
         case Tags::channel_setup:
-            msg = new ChannelSetup(fact);
+            msg = tlv::MessagePtr(new ChannelSetup(fact));
             break;
         case Tags::channel_test:
-            msg = new ChannelTest(fact);
+            msg = tlv::MessagePtr(new ChannelTest(fact));
             break;
         case Tags::channel_status:
-            msg = new ChannelStatus(fact);
+            msg = tlv::MessagePtr(new ChannelStatus(fact));
             break;
         case Tags::channel_close:
-            msg = new ChannelClose(fact);
+            msg = tlv::MessagePtr(new ChannelClose(fact));
             break;
         case Tags::channel_error:
-            msg = new ChannelError(fact);
+            msg = tlv::MessagePtr(new ChannelError(fact));
             break;
         case Tags::stream_setup:
-            msg = new StreamSetup(fact);
+            msg = tlv::MessagePtr(new StreamSetup(fact));
             break;
         case Tags::stream_test:
-            msg = new StreamTest(fact);
+            msg = tlv::MessagePtr(new StreamTest(fact));
             break;
         case Tags::stream_status:
-            msg = new StreamStatus(fact);
+            msg = tlv::MessagePtr(new StreamStatus(fact));
             break;
         case Tags::stream_close_request:
-            msg = new StreamCloseRequest(fact);
+            msg = tlv::MessagePtr(new StreamCloseRequest(fact));
             break;
         case Tags::stream_close_response:
-            msg = new StreamCloseResponse(fact);
+            msg = tlv::MessagePtr(new StreamCloseResponse(fact));
             break;
         case Tags::stream_error:
-            msg = new StreamError(fact);
+            msg = tlv::MessagePtr(new StreamError(fact));
             break;
         case Tags::stream_BW_request:
-            msg = new StreamBWRequest(fact);
+            msg = tlv::MessagePtr(new StreamBWRequest(fact));
             break;
         case Tags::stream_BW_allocation:
-            msg = new StreamBWAllocation(fact);
+            msg = tlv::MessagePtr(new StreamBWAllocation(fact));
             break;
         case Tags::data_provision:
-            msg = new DataProvision(fact);
+            msg = tlv::MessagePtr(new DataProvision(fact));
             break;
         default:
             throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));
@@ -171,7 +171,7 @@ ts::UString ts::emmgmux::Errors::Name(uint16_t status)
 void ts::emmgmux::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create a channel_error message
-    SafePtr<ChannelError,ThreadSafety::None> errmsg(new ChannelError(version()));
+    std::shared_ptr<ChannelError> errmsg(new ChannelError(version()));
 
     // Try to get an data_channel_id from the incoming message.
     try {
@@ -214,7 +214,7 @@ void ts::emmgmux::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
     errmsg->error_information.push_back(fact.errorInformation());
 
     // Transfer ownership of safe ptr
-    msg = errmsg.release();
+    msg = errmsg;
 }
 
 
@@ -622,7 +622,7 @@ ts::emmgmux::DataProvision::DataProvision(const tlv::MessageFactory& fact) :
     fact.get(Tags::datagram, params);
     datagram.resize(params.size());
     for (size_t i = 0; i < params.size(); ++i) {
-        datagram[i] = new ByteBlock(params[i].addr, params[i].length);
+        datagram[i] = ByteBlockPtr(new ByteBlock(params[i].addr, params[i].length));
     }
 }
 
@@ -633,7 +633,7 @@ void ts::emmgmux::DataProvision::serializeParameters(tlv::Serializer& fact) cons
     fact.put(Tags::client_id, client_id);
     fact.put(Tags::data_id, data_id);
     for (size_t i = 0; i < datagram.size(); ++i) {
-        if (!datagram[i].isNull()) {
+        if (datagram[i] != nullptr) {
             fact.put(Tags::datagram, *(datagram[i]));
         }
     }

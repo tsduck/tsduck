@@ -65,7 +65,7 @@ namespace ts {
         TSPacketLabelSet _reset_labels {};              // Labels to reset on output packets.
 
         // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
-        using TSForkPipePtr = SafePtr<TSForkPipe, ThreadSafety::None>;
+        using TSForkPipePtr = std::shared_ptr<TSForkPipe>;
 
         // Working data.
         bool          _got_eof = false;    // Got end of merged stream.
@@ -336,8 +336,8 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
 
     // Allocate the new object. Atomically swap the safe pointer. This action
     // will synchronously deallocate the previous object.
-    _pipe = new TSForkPipe;
-    CheckNonNull(_pipe.pointer());
+    _pipe = TSForkPipePtr(new TSForkPipe);
+    CheckNonNull(_pipe.get());
 
     // Note on buffer size: we use DEFAULT_MAX_QUEUED_PACKETS instead of _max_queue
     // because this is the size of the system pipe buffer (Windows only). This is

@@ -192,7 +192,7 @@ bool ts::PSILogger::open()
     if (_use_json) {
         json::ValuePtr root;
         if (_xml_tweaks.x2jIncludeRoot) {
-            root = new json::Object;
+            root = json::ValuePtr(new json::Object);
             root->add(u"#name", u"tsduck");
             root->add(u"#nodes", json::ValuePtr(new json::Array));
         }

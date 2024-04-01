@@ -265,12 +265,12 @@ const ts::LNB* ts::LNB::LNBRepository::get(const UString& name, Report& report)
     }
     else if (name.empty()) {
         // Get default LNB. Null pointer if repository is empty.
-        return _default_lnb.pointer();
+        return _default_lnb.get();
     }
     else {
         // Lookup by name, lower case, without space.
         const auto it(_lnbs.find(ToIndex(name)));
-        return it == _lnbs.end() ? nullptr : it->second.pointer();
+        return it == _lnbs.end() ? nullptr : it->second.get();
     }
 }
 
@@ -340,7 +340,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
 
         // Allocate LNB object.
         LNBPtr lnb(new LNB);
-        if (lnb.isNull()) {
+        if (lnb == nullptr) {
             success = false;
             break;
         }
@@ -399,7 +399,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
             }
             // The last <lnb> with default="true" is the default one.
             // If there is no explicit default, the first <lnb> is the default one.
-            if (_default_lnb.isNull() || is_default) {
+            if (_default_lnb == nullptr || is_default) {
                 _default_lnb = lnb;
             }
         }

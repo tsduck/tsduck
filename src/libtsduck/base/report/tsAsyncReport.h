@@ -119,8 +119,8 @@ namespace ts {
             int     severity;
             UString message;
         };
-        using LogMessagePtr = SafePtr<LogMessage, ThreadSafety::None>;
-        using LogMessageQueue = MessageQueue<LogMessage, ThreadSafety::None>;
+        using LogMessageQueue = MessageQueue<LogMessage>;
+        using LogMessagePtr = LogMessageQueue::MessagePtr;
 
         // Private members:
         LogMessageQueue _log_queue {};

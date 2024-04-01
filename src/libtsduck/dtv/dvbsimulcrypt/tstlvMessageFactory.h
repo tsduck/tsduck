@@ -23,7 +23,7 @@ namespace ts {
         //!
         //! Safe pointer for MessageFactory (not thread-safe).
         //!
-        using MessageFactoryPtr = SafePtr <MessageFactory, ThreadSafety::None>;
+        using MessageFactoryPtr = std::shared_ptr<MessageFactory>;
 
         //!
         //! Factory class for TLV messages
@@ -285,7 +285,7 @@ namespace ts {
         private:
             // Internal description of a parameter.
             // Include the description of compound TLV parameter.
-            // When compound.isNull(), this is not a compound TLV parameter.
+            // When compound is nullptr, this is not a compound TLV parameter.
             struct ExtParameter : public Parameter
             {
                 // Public fields:
@@ -389,7 +389,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, MSG& param) const
 {
     MessagePtr gen;
     getCompound(tag, gen);
-    MSG* msg = dynamic_cast<MSG*>(gen.pointer());
+    MSG* msg = dynamic_cast<MSG*>(gen.get());
     if (msg == 0) {
         throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for parameter 0x%X", {tag}));
     }
@@ -406,13 +406,13 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MSG>& param) cons
     auto it = _params.lower_bound(tag);
     const auto last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
-        if (it->second.compound.isNull()) {
+        if (it->second.compound == nullptr) {
             throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));
         }
         else {
             MessagePtr gen;
             it->second.compound->factory(gen);
-            MSG* msg = dynamic_cast<MSG*>(gen.pointer());
+            MSG* msg = dynamic_cast<MSG*>(gen.get());
             if (msg == 0) {
                 throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for occurence %d of parameter 0x%X", {i, tag}));
             }

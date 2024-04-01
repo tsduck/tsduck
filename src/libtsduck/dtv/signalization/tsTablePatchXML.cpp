@@ -80,7 +80,7 @@ bool ts::TablePatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
     bool ok = true;
     for (size_t i = 0; i < _patchFiles.size(); ++i) {
         PatchDocumentPtr doc(new xml::PatchDocument(_duck.report()));
-        CheckNonNull(doc.pointer());
+        CheckNonNull(doc.get());
         doc->setTweaks(tweaks);
         if (doc->load(_patchFiles[i], false)) {
             _patches.push_back(doc);
@@ -171,7 +171,7 @@ bool ts::TablePatchXML::applyPatches(ts::SectionPtr& sp) const
     if (_patches.empty()) {
         return true;
     }
-    if (sp.isNull() || !sp->isValid()) {
+    if (sp == nullptr || !sp->isValid()) {
         return false;
     }
 
@@ -197,7 +197,7 @@ bool ts::TablePatchXML::applyPatches(ts::SectionPtr& sp) const
 
     // Check if the section was deleted. This is not an error, return true.
     if (!table.isValid()) {
-        sp.clear();
+        sp.reset();
         return true;
     }
     if (table.sectionCount() == 0) {

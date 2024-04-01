@@ -432,7 +432,7 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
         return 0;
     }
     mf.factory(ptr);
-    emmgmux::DataProvision* dprov = dynamic_cast<emmgmux::DataProvision*>(ptr.pointer());
+    emmgmux::DataProvision* dprov = dynamic_cast<emmgmux::DataProvision*>(ptr.get());
     if (dprov == nullptr) {
         return 0;
     }
@@ -446,7 +446,7 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
     size_t ret_size = 0;
     for (size_t i = 0; ret_size < buffer_size && i < dprov->datagram.size(); ++i) {
         const ByteBlockPtr& data(dprov->datagram[i]);
-        if (!data.isNull() && !data->empty()) {
+        if (data != nullptr && !data->empty()) {
             if ((*data)[0] != SYNC_BYTE || data->size() % PKT_SIZE != 0) {
                 tsp->warning(u"EMMG<=>MUX data_provision not likely TS packets, maybe in section mode");
                 return 0;

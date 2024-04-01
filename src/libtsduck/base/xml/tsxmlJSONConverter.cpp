@@ -75,7 +75,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
 {
     // Build the JSON object for the node.
     json::ValuePtr jobj(new json::Object());
-    CheckNonNull(jobj.pointer());
+    CheckNonNull(jobj.get());
     jobj->add(HashName, source->name());
 
     // Get all attributes of the XML element.
@@ -110,11 +110,11 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
                     // This is a "very negative" value. This is typically a large unsigned hexadecimal value
                     // which will not be handled correctly when reading back the JSON file. We cannot use
                     // hexadecimal literals in JSON (new in JSON 5), so we leave it as a string.
-                    jvalue = new json::String(it.second);
+                    jvalue = json::ValuePtr(new json::String(it.second));
                 }
                 else {
                     // Acceptable integer.
-                    jvalue = new json::Number(intValue);
+                    jvalue = json::ValuePtr(new json::Number(intValue));
                 }
             }
             else {
@@ -132,16 +132,16 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
         }
 
         // Try to enforce integer of boolean value if specified on command line.
-        if (jvalue.isNull() && xml_tweaks.x2jEnforceInteger && !intModel && it.second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-            jvalue = new json::Number(intValue);
+        if (jvalue == nullptr && xml_tweaks.x2jEnforceInteger && !intModel && it.second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+            jvalue = json::ValuePtr(new json::Number(intValue));
         }
-        if (jvalue.isNull() && xml_tweaks.x2jEnforceBoolean && !boolModel && it.second.toBool(boolValue)) {
-            jvalue = json::Bool(boolValue);
+        if (jvalue == nullptr && xml_tweaks.x2jEnforceBoolean && !boolModel && it.second.toBool(boolValue)) {
+            jvalue = json::ValuePtr(json::Bool(boolValue));
         }
 
         // Use a string value by default.
-        if (jvalue.isNull()) {
-            jvalue = new json::String(it.second);
+        if (jvalue == nullptr) {
+            jvalue = json::ValuePtr(new json::String(it.second));
         }
 
         // Add the attribute in the JSON object.
@@ -165,7 +165,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildrenToJSON(const Element* 
 {
     // All JSON children are placed in an array.
     json::ValuePtr jchildren(new json::Array());
-    CheckNonNull(jchildren.pointer());
+    CheckNonNull(jchildren.get());
 
     // Content of the text children in the model.
     UString textModel;

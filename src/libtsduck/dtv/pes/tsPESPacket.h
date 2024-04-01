@@ -22,9 +22,9 @@ namespace ts {
     class PESPacket;
 
     //!
-    //! Safe pointer for PESPacket (not thread-safe).
+    //! Safe pointer for PESPacket.
     //!
-    using PESPacketPtr = SafePtr<PESPacket, ThreadSafety::None>;
+    using PESPacketPtr = std::shared_ptr<PESPacket>;
 
     //!
     //! Vector of PESPacket safe pointers.

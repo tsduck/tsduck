@@ -31,7 +31,7 @@ ts::PESPacketizer::~PESPacketizer()
 
 void ts::PESPacketizer::reset()
 {
-    _pes.clear();
+    _pes.reset();
     _next_byte = 0;
     AbstractPacketizer::reset();
 }
@@ -43,17 +43,17 @@ void ts::PESPacketizer::reset()
 
 bool ts::PESPacketizer::getNextPacket(TSPacket& pkt)
 {
-    // If there is no current section, get the next one.
-    if (_pes.isNull() && _provider != nullptr) {
+    // If there is no current PES packet, get the next one.
+    if (_pes == nullptr && _provider != nullptr) {
         _provider->providePESPacket(_pes_in_count, _pes);
         _next_byte = 0;
-        if (!_pes.isNull()) {
+        if (_pes != nullptr) {
             _pes_in_count++;
         }
     }
 
-    // If there is still no current section, return a null packet
-    if (_pes.isNull()) {
+    // If there is still no current PES packet, return a null packet
+    if (_pes == nullptr) {
         configurePacket(pkt, true);
         return false;
     }
@@ -87,7 +87,7 @@ bool ts::PESPacketizer::getNextPacket(TSPacket& pkt)
     if (_next_byte >= _pes->size()) {
         _pes_out_count++;
         _next_byte = 0;
-        _pes.clear();
+        _pes.reset();
     }
     return true;
 }
@@ -102,5 +102,5 @@ std::ostream& ts::PESPacketizer::display(std::ostream& strm) const
     return AbstractPacketizer::display(strm)
         << UString::Format(u"  Output PES packets: %'d", {_pes_out_count}) << std::endl
         << UString::Format(u"  Provided PES packets: %'d", {_pes_in_count}) << std::endl
-        << UString::Format(u"  Current PES packet: offset %d/%d", {_next_byte, _pes.isNull() ? 0 : _pes->size()}) << std::endl;
+        << UString::Format(u"  Current PES packet: offset %d/%d", {_next_byte, _pes == nullptr ? 0 : _pes->size()}) << std::endl;
 }

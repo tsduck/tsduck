@@ -13,7 +13,6 @@
 
 #include "tsAbstractDuplicateRemapPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSafePtr.h"
 
 #define DEF_MAX_BUFFERED 1024
 
@@ -33,7 +32,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using TSPacketPtr = SafePtr<TSPacket,ThreadSafety::None>;
+        using TSPacketPtr = std::shared_ptr<TSPacket>;
         using TSPacketPtrQueue = std::deque<TSPacketPtr>;
 
         bool             _silentDrop = false;  // Silently drop packets on overflow.

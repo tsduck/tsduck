@@ -40,7 +40,7 @@ void ts::json::Array::clear()
 
 const ts::json::Value& ts::json::Array::at(size_t index) const
 {
-    if (index >= _value.size() || _value[index].isNull()) {
+    if (index >= _value.size() || _value[index] == nullptr) {
         return NullValue;
     }
     else {
@@ -50,7 +50,7 @@ const ts::json::Value& ts::json::Array::at(size_t index) const
 
 ts::json::Value& ts::json::Array::at(size_t index)
 {
-    if (index >= _value.size() || _value[index].isNull()) {
+    if (index >= _value.size() || _value[index] == nullptr) {
         return NullValue;
     }
     else {
@@ -61,7 +61,7 @@ ts::json::Value& ts::json::Array::at(size_t index)
 size_t ts::json::Array::setValue(const ValuePtr& value, size_t index)
 {
     // If the pointer is null, explicitly create a "null" value.
-    const ValuePtr actualValue(value.isNull() ? ValuePtr(new Null) : value);
+    const ValuePtr actualValue(value == nullptr ? ValuePtr(new Null) : value);
 
     if (index < _value.size()) {
         _value[index] = actualValue;
@@ -75,17 +75,17 @@ size_t ts::json::Array::setValue(const ValuePtr& value, size_t index)
 
 size_t ts::json::Array::setInteger(int64_t value, size_t index)
 {
-    return setValue(new Number(value), index);
+    return setValue(json::ValuePtr(new Number(value)), index);
 }
 
 size_t ts::json::Array::setFloat(double value, size_t index)
 {
-    return setValue(new Number(value), index);
+    return setValue(json::ValuePtr(new Number(value)), index);
 }
 
 size_t ts::json::Array::setString(const UString& value, size_t index)
 {
-    return setValue(new String(value), index);
+    return setValue(json::ValuePtr(new String(value)), index);
 }
 
 void ts::json::Array::erase(size_t index, size_t count)
@@ -186,7 +186,7 @@ const ts::json::Value& ts::json::Array::query(const UString& path) const
     else if (!splitPath(path, index, next)) {
         return NullValue; // error
     }
-    else if (index >= _value.size() || _value[index].isNull()) {
+    else if (index >= _value.size() || _value[index] == nullptr) {
         return NullValue; // non existent element.
     }
     else {
@@ -210,7 +210,7 @@ ts::json::Value& ts::json::Array::query(const UString& path, bool create, Type t
     else if (!splitPath(path, index, next)) {
         return NullValue; // error
     }
-    else if (index < _value.size() && !_value[index].isNull()) {
+    else if (index < _value.size() && _value[index] != nullptr) {
         return _value[index]->query(next, create, type); // recursive query
     }
     else if (create) {

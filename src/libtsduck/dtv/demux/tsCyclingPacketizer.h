@@ -213,11 +213,9 @@ namespace ts {
             std::ostream& display(const DuckContext&, std::ostream&) const;
         };
 
-        // Safe pointer for SectionDesc (not thread-safe)
-        using SectionDescPtr = SafePtr <SectionDesc, ThreadSafety::None>;
-
         // List of sections
-        using SectionDescList = std::list <SectionDescPtr>;
+        using SectionDescPtr = std::shared_ptr<SectionDesc>;
+        using SectionDescList = std::list<SectionDescPtr>;
 
         // Private members:
         StuffingPolicy  _stuffing = StuffingPolicy::NEVER;

@@ -24,11 +24,11 @@ ts::ObjectRepository::ObjectRepository()
 // Store a safe pointer to an Object in the repository.
 //----------------------------------------------------------------------------
 
-ts::ObjectPtr ts::ObjectRepository::store(const UString &name, const ObjectPtr &value)
+ts::ObjectPtr ts::ObjectRepository::store(const UString& name, const ObjectPtr& value)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     const ObjectPtr previous = _repository[name];
-    if (value.isNull()) {
+    if (value == nullptr) {
         _repository.erase(name);
     }
     else {
@@ -42,7 +42,7 @@ ts::ObjectPtr ts::ObjectRepository::store(const UString &name, const ObjectPtr &
 // Get the safe pointer to an Object in the repository
 //----------------------------------------------------------------------------
 
-ts::ObjectPtr ts::ObjectRepository::retrieve(const UString &name)
+ts::ObjectPtr ts::ObjectRepository::retrieve(const UString& name)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     const auto pos = _repository.find(name);

@@ -134,9 +134,9 @@ void TagLengthValueTest::testECMG()
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::ecmgscs::Tags::channel_status, msg->tag());
-    ts::ecmgscs::ChannelStatus* ptr = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.pointer());
+    ts::ecmgscs::ChannelStatus* ptr = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.get());
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.section_TSpkt_flag, ptr->section_TSpkt_flag);
@@ -202,9 +202,9 @@ void TagLengthValueTest::testEMMG()
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::emmgmux::Tags::stream_BW_allocation, msg->tag());
-    ts::emmgmux::StreamBWAllocation* ptr = dynamic_cast<ts::emmgmux::StreamBWAllocation*>(msg.pointer());
+    ts::emmgmux::StreamBWAllocation* ptr = dynamic_cast<ts::emmgmux::StreamBWAllocation*>(msg.get());
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);
@@ -258,9 +258,9 @@ void TagLengthValueTest::testECMGError()
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::ecmgscs::Tags::stream_error, msg->tag());
-    ts::ecmgscs::StreamError* ptr = dynamic_cast<ts::ecmgscs::StreamError*>(msg.pointer());
+    ts::ecmgscs::StreamError* ptr = dynamic_cast<ts::ecmgscs::StreamError*>(msg.get());
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);
@@ -316,9 +316,9 @@ void TagLengthValueTest::testEMMGError()
 
     ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_error), msg->tag());
-    ts::emmgmux::StreamError* ptr = dynamic_cast<ts::emmgmux::StreamError*>(msg.pointer());
+    ts::emmgmux::StreamError* ptr = dynamic_cast<ts::emmgmux::StreamError*>(msg.get());
     TSUNIT_ASSERT(ptr != nullptr);
     TSUNIT_EQUAL(refMessage.channel_id, ptr->channel_id);
     TSUNIT_EQUAL(refMessage.stream_id, ptr->stream_id);

@@ -41,7 +41,7 @@ namespace ts {
     private:
         // Context per PID in the TS.
         class PIDContext;
-        using PIDContextPtr = SafePtr<PIDContext, ThreadSafety::None>;
+        using PIDContextPtr = std::shared_ptr<PIDContext>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;
 
         // Plugin fields.

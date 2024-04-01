@@ -14,7 +14,6 @@
 #pragma once
 #include "tstlvSerializer.h"
 #include "tsUString.h"
-#include "tsSafePtr.h"
 
 namespace ts {
     namespace tlv {
@@ -301,14 +300,9 @@ namespace ts {
         };
 
         //!
-        //! Safe pointer for TLV messages (not thread-safe).
+        //! Shared pointer for TLV messages.
         //!
-        using MessagePtr = SafePtr<Message, ThreadSafety::None>;
-
-        //!
-        //! Safe pointer for TLV messages (thread-safe).
-        //!
-        using MessagePtrMT = SafePtr<Message, ThreadSafety::Full>;
+        using MessagePtr = std::shared_ptr<Message>;
     }
 }
 

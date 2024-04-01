@@ -510,7 +510,7 @@ void SimulCryptDump::dumpMessage(std::ostream& out, const uint8_t* data, size_t 
         valid = false;
         if (mf.errorStatus() == ts::tlv::OK) {
             mf.factory(msg);
-            if (!msg.isNull()) {
+            if (msg != nullptr) {
                 valid = true;
                 out << msg->dump(4);
             }

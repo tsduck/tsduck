@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsModulation.h"
-#include "tsSafePtr.h"
 #include "tsCerrReport.h"
 #include "tsSingleton.h"
 #include "tsxml.h"
@@ -266,7 +265,7 @@ namespace ts {
 
         // Safe pointer to an HBBand object.
         // Not thread-safe since these objects are loaded once and remain constant.
-        using HFBandPtr = SafePtr<HFBand, ThreadSafety::None>;
+        using HFBandPtr = std::shared_ptr<HFBand>;
 
         // HFBand members.
         const UString     _band_name {};       // Type of HF band.

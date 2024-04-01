@@ -66,7 +66,7 @@ void MessageQueueTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-using TestQueue = ts::MessageQueue<int, ts::ThreadSafety::Full>;
+using TestQueue = ts::MessageQueue<int>;
 
 // Test case: Constructor
 void MessageQueueTest::testConstructor()
@@ -111,7 +111,7 @@ namespace {
             TestQueue::MessagePtr message;
             do {
                 TSUNIT_ASSERT(_queue.dequeue(message, cn::milliseconds(10000)));
-                TSUNIT_ASSERT(!message.isNull());
+                TSUNIT_ASSERT(message != nullptr);
                 tsunit::Test::debug() << "MessageQueueTest: test thread: received " << *message << std::endl;
                 if (*message >= 0) {
                     TSUNIT_ASSERT(*message == expected);
@@ -179,7 +179,7 @@ void MessageQueueTest::testPriorityQueue()
         bool operator<(const Message& other) const { return a < other.a; }
     };
 
-    using Queue = ts::MessagePriorityQueue<Message, ts::ThreadSafety::Full>;
+    using Queue = ts::MessagePriorityQueue<Message>;
     Queue queue;
     Queue::MessagePtr msg;
 
@@ -193,47 +193,47 @@ void MessageQueueTest::testPriorityQueue()
     TSUNIT_ASSERT(queue.enqueue(new Message(0, 8), cn::milliseconds::zero()));
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(7, msg->b);
 
     msg = queue.peek();
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(8, msg->b);
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(0, msg->a);
     TSUNIT_EQUAL(8, msg->b);
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(1, msg->a);
     TSUNIT_EQUAL(1, msg->b);
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(2, msg->a);
     TSUNIT_EQUAL(3, msg->b);
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(2, msg->a);
     TSUNIT_EQUAL(6, msg->b);
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(3, msg->a);
     TSUNIT_EQUAL(5, msg->b);
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(5, msg->a);
     TSUNIT_EQUAL(2, msg->b);
 
     TSUNIT_ASSERT(queue.dequeue(msg, cn::milliseconds::zero()));
-    TSUNIT_ASSERT(!msg.isNull());
+    TSUNIT_ASSERT(msg != nullptr);
     TSUNIT_EQUAL(6, msg->a);
     TSUNIT_EQUAL(4, msg->b);
 

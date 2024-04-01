@@ -58,7 +58,7 @@ namespace ts {
             // Constructor:
             ServiceContext(DuckContext& duck, const UString& parameter);
         };
-        using ServiceContextPtr = SafePtr<ServiceContext, ThreadSafety::None>;
+        using ServiceContextPtr = std::shared_ptr<ServiceContext>;
         using ServiceContextVector = std::vector<ServiceContextPtr>;
 
         // Each PID is described by one byte
@@ -230,7 +230,7 @@ bool ts::ZapPlugin::getOptions()
     _services.clear();
     _services.resize(count(u""));
     for (size_t i = 0; i < _services.size(); ++i) {
-        _services[i] = new ServiceContext(duck, value(u"", u"", i));
+        _services[i] = ServiceContextPtr(new ServiceContext(duck, value(u"", u"", i)));
     }
 
     getValues(_audio_langs, u"audio");
@@ -645,13 +645,13 @@ void ts::ZapPlugin::handlePMT(PMT& pmt, PID pmt_pid)
 {
     // Filter out any unexpected PMT.
     ServiceContextPtr ctx;
-    for (size_t i = 0; ctx.isNull() && i < _services.size(); ++i) {
+    for (size_t i = 0; ctx == nullptr && i < _services.size(); ++i) {
         const ServiceContextPtr& ci(_services[i]);
         if (ci->id_known && ci->service_id == pmt.service_id) {
             ctx = ci;
         }
     }
-    if (ctx.isNull()) {
+    if (ctx == nullptr) {
         // Not a selected service.
         return;
     }

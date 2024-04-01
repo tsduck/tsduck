@@ -458,7 +458,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
     for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
         // Since the document was validated, we assume that all elements in root are <hfband>.
         HFBandPtr hf(FromXML(node));
-        if (hf.isNull()) {
+        if (hf == nullptr) {
             success = false;
         }
         else {
@@ -518,11 +518,11 @@ const ts::HFBand* ts::HFBand::HFBandRepository::get(const UString& band, const U
     const HFBandIndex index(band, region.empty() ? _default_region : region);
     const auto it = _objects.find(index);
     if (it != _objects.end()) {
-        return it->second.pointer();
+        return it->second.get();
     }
     else {
         report.warning(u"no definition for %s", {index});
-        return _voidBand.pointer();
+        return _voidBand.get();
     }
 }
 

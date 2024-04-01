@@ -102,18 +102,18 @@ void JsonTest::testSimple()
 {
     ts::json::ValuePtr jv;
     TSUNIT_ASSERT(!ts::json::Parse(jv, u"", NULLREP));
-    TSUNIT_ASSERT(jv.isNull());
+    TSUNIT_ASSERT(jv == nullptr);
 
     TSUNIT_ASSERT(ts::json::Parse(jv, u" null  ", CERR));
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_ASSERT(jv->isNull());
 
     TSUNIT_ASSERT(!ts::json::Parse(jv, u"   false  true  ", NULLREP));
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_ASSERT(jv->isFalse());
 
     TSUNIT_ASSERT(ts::json::Parse(jv, u"[ true, {\"ab\":67, \"foo\" : \"bar\"} ]", CERR));
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_ASSERT(jv->isArray());
     TSUNIT_EQUAL(2, jv->size());
     TSUNIT_ASSERT(jv->at(0).isTrue());
@@ -142,7 +142,7 @@ void JsonTest::testNumbers()
 
     ts::json::ValuePtr jv;
     TSUNIT_ASSERT(ts::json::Parse(jv, response, CERR));
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_ASSERT(jv->isObject());
 
     TSUNIT_EQUAL(ts::json::Type::Number, jv->value(u"a").type());
@@ -417,7 +417,7 @@ void JsonTest::testGitHub()
 
     ts::json::ValuePtr jv;
     TSUNIT_ASSERT(ts::json::Parse(jv, response, CERR));
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_ASSERT(jv->isObject());
     TSUNIT_EQUAL(u"v3.5-419", jv->value(u"tag_name").toString());
     TSUNIT_EQUAL(u"https://api.github.com/repos/tsduck/tsduck/tarball/v3.5-419", jv->value(u"tarball_url").toString());
@@ -664,23 +664,23 @@ void JsonTest::testFactory()
     ts::json::ValuePtr jv;
 
     jv = ts::json::Factory(ts::json::Type::True);
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_EQUAL(ts::json::Type::True, jv->type());
     TSUNIT_ASSERT(jv->isTrue());
 
     jv = ts::json::Factory(ts::json::Type::Object);
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_EQUAL(ts::json::Type::Object, jv->type());
     TSUNIT_ASSERT(jv->isObject());
 
     jv = ts::json::Factory(ts::json::Type::String, u"abcdef");
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_EQUAL(ts::json::Type::String, jv->type());
     TSUNIT_ASSERT(jv->isString());
     TSUNIT_EQUAL(u"abcdef", jv->toString());
 
     jv = ts::json::Factory(ts::json::Type::Number, u"1,234");
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
     TSUNIT_ASSERT(jv->isNumber());
     TSUNIT_ASSERT(jv->isInteger());
@@ -689,7 +689,7 @@ void JsonTest::testFactory()
     TSUNIT_EQUAL(u"1234", jv->toString());
 
     jv = ts::json::Factory(ts::json::Type::Number, u"12.450");
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
     TSUNIT_ASSERT(jv->isNumber());
     TSUNIT_ASSERT(!jv->isInteger());
@@ -698,7 +698,7 @@ void JsonTest::testFactory()
     TSUNIT_EQUAL(u"12.45", jv->toString());
 
     jv = ts::json::Factory(ts::json::Type::Number, u"-12.450");
-    TSUNIT_ASSERT(!jv.isNull());
+    TSUNIT_ASSERT(jv != nullptr);
     TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
     TSUNIT_ASSERT(jv->isNumber());
     TSUNIT_ASSERT(!jv->isInteger());
@@ -711,11 +711,11 @@ void JsonTest::testQuery()
 {
     ts::json::Object root;
 
-    root.value(u"obj1", true).value(u"obj2", true).value(u"obj3", true).add(u"num4", new ts::json::Number(123));
-    root.value(u"obj1").value(u"obj2").value(u"obj3").add(u"str4", new ts::json::String(u"abc"));
-    root.value(u"obj1").add(u"arr2", new ts::json::Array());
-    root.value(u"obj1").value(u"arr2").set(new ts::json::Number(456));
-    root.value(u"obj1").value(u"arr2").set(new ts::json::String(u"def"));
+    root.value(u"obj1", true).value(u"obj2", true).value(u"obj3", true).add(u"num4", ts::json::ValuePtr(new ts::json::Number(123)));
+    root.value(u"obj1").value(u"obj2").value(u"obj3").add(u"str4", ts::json::ValuePtr(new ts::json::String(u"abc")));
+    root.value(u"obj1").add(u"arr2", ts::json::ValuePtr(new ts::json::Array()));
+    root.value(u"obj1").value(u"arr2").set(ts::json::ValuePtr(new ts::json::Number(456)));
+    root.value(u"obj1").value(u"arr2").set(ts::json::ValuePtr(new ts::json::String(u"def")));
 
     TSUNIT_EQUAL(
         u"{\n"
@@ -779,7 +779,7 @@ void JsonTest::testRunningDocumentEmpty()
     doc.add(ts::json::String(u"foo"));
     doc.add(ts::json::Number(-23));
     ts::json::Object obj1;
-    obj1.value(u"obj1", true).add(u"arr2", new ts::json::Array());
+    obj1.value(u"obj1", true).add(u"arr2", ts::json::ValuePtr(new ts::json::Array()));
     doc.add(obj1);
     doc.close();
 

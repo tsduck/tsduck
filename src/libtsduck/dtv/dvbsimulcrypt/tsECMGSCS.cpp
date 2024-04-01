@@ -105,43 +105,43 @@ void ts::ecmgscs::Protocol::factory(const tlv::MessageFactory& fact, tlv::Messag
 {
     switch (fact.commandTag()) {
         case Tags::channel_setup:
-            msg = new ChannelSetup(fact);
+            msg = tlv::MessagePtr(new ChannelSetup(fact));
             break;
         case Tags::channel_test:
-            msg = new ChannelTest(fact);
+            msg = tlv::MessagePtr(new ChannelTest(fact));
             break;
         case Tags::channel_status:
-            msg = new ChannelStatus(fact);
+            msg = tlv::MessagePtr(new ChannelStatus(fact));
             break;
         case Tags::channel_close:
-            msg = new ChannelClose(fact);
+            msg = tlv::MessagePtr(new ChannelClose(fact));
             break;
         case Tags::channel_error:
-            msg = new ChannelError(fact);
+            msg = tlv::MessagePtr(new ChannelError(fact));
             break;
         case Tags::stream_setup:
-            msg = new StreamSetup(fact);
+            msg = tlv::MessagePtr(new StreamSetup(fact));
             break;
         case Tags::stream_test:
-            msg = new StreamTest(fact);
+            msg = tlv::MessagePtr(new StreamTest(fact));
             break;
         case Tags::stream_status:
-            msg = new StreamStatus(fact);
+            msg = tlv::MessagePtr(new StreamStatus(fact));
             break;
         case Tags::stream_close_request:
-            msg = new StreamCloseRequest(fact);
+            msg = tlv::MessagePtr(new StreamCloseRequest(fact));
             break;
         case Tags::stream_close_response:
-            msg = new StreamCloseResponse(fact);
+            msg = tlv::MessagePtr(new StreamCloseResponse(fact));
             break;
         case Tags::stream_error:
-            msg = new StreamError(fact);
+            msg = tlv::MessagePtr(new StreamError(fact));
             break;
         case Tags::CW_provision:
-            msg = new CWProvision(fact);
+            msg = tlv::MessagePtr(new CWProvision(fact));
             break;
         case Tags::ECM_response:
-            msg = new ECMResponse(fact);
+            msg = tlv::MessagePtr(new ECMResponse(fact));
             break;
         default:
             throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));
@@ -166,7 +166,7 @@ ts::UString ts::ecmgscs::Errors::Name(uint16_t status)
 void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create a channel_error message
-    SafePtr<ChannelError,ThreadSafety::None> errmsg(new ChannelError(version()));
+    std::shared_ptr<ChannelError> errmsg(new ChannelError(version()));
 
     // Try to get an ECM_channel_id from the incoming message.
     try {
@@ -177,7 +177,7 @@ void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
     }
 
     // Convert general TLV error code into ECMG <=> SCS error_status
-    uint16_t status;
+    uint16_t status = 0;
     switch (fact.errorStatus()) {
         case tlv::OK: // should not happen
         case tlv::InvalidMessage:
@@ -209,7 +209,7 @@ void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
     errmsg->error_information.push_back(fact.errorInformation());
 
     // Transfer ownership of safe ptr
-    msg = errmsg.release();
+    msg = errmsg;
 }
 
 

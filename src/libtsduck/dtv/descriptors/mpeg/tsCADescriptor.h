@@ -15,7 +15,6 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
-#include "tsSafePtr.h"
 #include "tsNullReport.h"
 #include "tsTS.h"
 
@@ -105,5 +104,5 @@ namespace ts {
     //!
     //! Safe pointer to a CADescriptor (thread-safe).
     //!
-    using CADescriptorPtr = SafePtr<CADescriptor, ThreadSafety::Full>;
+    using CADescriptorPtr = std::shared_ptr<CADescriptor>;
 }

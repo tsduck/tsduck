@@ -339,7 +339,7 @@ void ts::PSIMerger::provideSection(SectionCounter counter, SectionPtr& section)
 {
     if (_eits.empty()) {
         // No EIT section to provide.
-        section.clear();
+        section.reset();
     }
     else {
         // Remove one EIT section from the queue for insertion.
@@ -364,7 +364,7 @@ void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
 
         // Create a copy of the section object (shared section data).
         const SectionPtr sp(new Section(section, ShareMode::SHARE));
-        CheckNonNull(sp.pointer());
+        CheckNonNull(sp.get());
 
         if (demux.demuxId() != DEMUX_MERGE_EIT || !is_actual) {
             // Not an EIT-Actual from the merge stream, pass section without modification.

@@ -888,6 +888,11 @@ namespace ts {
     TSDUCKDLL extern const TSPacket EmptyPacket;
 
     //!
+    //! Safe pointer for TSPacket.
+    //!
+    using TSPacketPtr = std::shared_ptr<TSPacket>;
+
+    //!
     //! Vector of packets.
     //!
     using TSPacketVector = std::vector<TSPacket>;

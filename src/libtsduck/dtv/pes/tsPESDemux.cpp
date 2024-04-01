@@ -178,7 +178,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     }
 
     // If at a unit start and the context exists, process previous PES packet in context
-    if (pc_exists && pkt.getPUSI() && pci->second.sync && !pci->second.ts.isNull() && !pci->second.ts->empty()) {
+    if (pc_exists && pkt.getPUSI() && pci->second.sync && pci->second.ts != nullptr && !pci->second.ts->empty()) {
         // Process packet, invoke all handlers
         processPESPacket(pid, pci->second);
         // Recheck PID context in case it was reset by a handler
@@ -284,7 +284,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 void ts::PESDemux::flushUnboundedPES(PID pid)
 {
     const auto pci = _pids.find(pid);
-    if (pci != _pids.end() && pci->second.sync && !pci->second.ts.isNull() && !pci->second.ts->empty()) {
+    if (pci != _pids.end() && pci->second.sync && pci->second.ts != nullptr && !pci->second.ts->empty()) {
         processPESPacket(pid, pci->second);
     }
 }

@@ -235,7 +235,7 @@ namespace ts {
 // each because of the use of __LINE__ to create unique identifiers.
 //
 //! @cond nodoxygen
-#define _TS_PLUGIN_FACTORY(funcname,classname,suffix) namespace { ts::suffix##Plugin* funcname(ts::TSP* tsp) {return new classname(tsp);} }
+#define _TS_PLUGIN_FACTORY(funcname,classname,suffix) namespace { ts::suffix##Plugin* funcname(ts::TSP* tsp) { return new classname(tsp); } }
 #define _TS_REGISTER_PLUGIN(name,classname,suffix) \
     TS_LIBCHECK(); \
     _TS_PLUGIN_FACTORY(TS_UNIQUE_NAME(_F),classname,suffix) static ts::PluginRepository::Register TS_UNIQUE_NAME(_R)(name,&TS_UNIQUE_NAME(_F))

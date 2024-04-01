@@ -17,7 +17,6 @@
 #include "tsCerrReport.h"
 #include "tsModulation.h"
 #include "tsReport.h"
-#include "tsSafePtr.h"
 #include "tsSingleton.h"
 #include "tsxml.h"
 
@@ -203,7 +202,7 @@ namespace ts {
 
         // Safe pointer to an LNB object.
         // Not thread-safe since these objects are loaded once and remain constant.
-        using LNBPtr = SafePtr<LNB, ThreadSafety::None>;
+        using LNBPtr = std::shared_ptr<LNB>;
 
         // The repository of known LNB's.
         class LNBRepository

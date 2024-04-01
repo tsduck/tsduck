@@ -129,7 +129,7 @@ bool ts::json::Parse(ValuePtr& value, const UString& text, Report& report)
 
 bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report)
 {
-    value.clear();
+    value.reset();
 
     UString str;
     int64_t intVal = 0;
@@ -140,33 +140,33 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
 
     // Look for one of the seven possible forms or JSON value.
     if (parser.match(u"null", true)) {
-        value = new Null;
+        value = ValuePtr(new Null);
     }
     else if (parser.match(u"true", true)) {
-        value = new True;
+        value = ValuePtr(new True);
     }
     else if (parser.match(u"false", true)) {
-        value = new False;
+        value = ValuePtr(new False);
     }
     else if (parser.parseJSONStringLiteral(str)) {
-        value = new String(str);
+        value = ValuePtr(new String(str));
     }
     else if (parser.parseNumericLiteral(str, false, true)) {
         if (str.toInteger(intVal, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-            value = new Number(intVal);
+            value = ValuePtr(new Number(intVal));
         }
         else if (str.toFloat(floatVal)) {
-            value = new Number(floatVal);
+            value = ValuePtr(new Number(floatVal));
         }
         else {
             // Invalid integer,
             report.error(u"line %d: JSON floating-point numbers not yet supported, using \"null\" instead", {parser.lineNumber()});
-            value = new Null;
+            value = ValuePtr(new Null);
         }
     }
     else if (parser.match(u"{", true)) {
         // Parse an object.
-        value = new Object;
+        value = ValuePtr(new Object);
         // Loop on all fields of the object.
         for (;;) {
             parser.skipWhiteSpace();
@@ -199,7 +199,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
     }
     else if (parser.match(u"[", true)) {
         // Parse an array.
-        value = new Array;
+        value = ValuePtr(new Array);
         // Loop on all elements of the array.
         for (;;) {
             parser.skipWhiteSpace();

@@ -311,7 +311,7 @@ void ts::SectionsPlugin::provideSection(SectionCounter counter, SectionPtr& sect
 {
     if (_sections.empty()) {
         // No section to provide.
-        section.clear();
+        section.reset();
     }
     else {
         // Remove one section from the queue for insertion.
@@ -349,7 +349,7 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
 
         // Build a copy of it for insertion in the queue.
         SectionPtr sp(new Section(section, ShareMode::SHARE));
-        CheckNonNull(sp.pointer());
+        CheckNonNull(sp.get());
 
         // Process XML patching.
         if (!_patch_xml.applyPatches(sp)) {
@@ -358,7 +358,7 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
         }
 
         // Now insert the section in the queue for the packetizer (if not deleted by the patch file).
-        if (!sp.isNull()) {
+        if (sp != nullptr) {
             _sections.push_back(sp);
         }
     }

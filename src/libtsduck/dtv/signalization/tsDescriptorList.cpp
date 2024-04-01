@@ -76,7 +76,7 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
     for (size_t i = 0; i < _list.size(); ++i) {
         const DescriptorPtr& desc1(_list[i].desc);
         const DescriptorPtr& desc2(other._list[i].desc);
-        if (desc1.isNull() || desc2.isNull() || *desc1 != *desc2) {
+        if (desc1 == nullptr || desc2 == nullptr || *desc1 != *desc2) {
             return false;
         }
     }
@@ -92,7 +92,7 @@ bool ts::DescriptorList::add(const DescriptorPtr& desc)
 {
     PDS pds = 0;
 
-    if (desc.isNull() || !desc->isValid()) {
+    if (desc == nullptr || !desc->isValid()) {
         return false;
     }
 
@@ -124,7 +124,7 @@ bool ts::DescriptorList::add(const DescriptorPtr& desc)
 bool ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 {
     DescriptorPtr pd(new Descriptor);
-    CheckNonNull(pd.pointer());
+    CheckNonNull(pd.get());
     return desc.serialize(duck, *pd) && add(pd);
 }
 
@@ -157,7 +157,7 @@ void ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc
 {
     // Serialize the new descriptor. In case of error, there is nothing we can add.
     DescriptorPtr bindesc(new Descriptor);
-    CheckNonNull(bindesc.pointer());
+    CheckNonNull(bindesc.get());
     desc.serialize(duck, *bindesc);
     if (!bindesc->isValid()) {
         return;
@@ -185,10 +185,10 @@ void ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc
                     // New descriptor shall be merged into old one.
                     // We need to deserialize the previous descriptor first.
                     const AbstractDescriptorPtr dp(_list[index].desc->deserialize(duck, pds, _table));
-                    if (!dp.isNull() && dp->merge(desc)) {
+                    if (dp != nullptr && dp->merge(desc)) {
                         // Descriptor successfully merged. Reserialize it and replace it.
                         DescriptorPtr newdesc(new Descriptor);
-                        CheckNonNull(newdesc.pointer());
+                        CheckNonNull(newdesc.get());
                         dp->serialize(duck, *newdesc);
                         if (newdesc->isValid()) {
                             _list[index].desc = newdesc;
@@ -232,7 +232,7 @@ void ts::DescriptorList::merge(DuckContext& duck, const DescriptorList& other)
         for (size_t index = 0; index < other._list.size(); ++index) {
             // The descriptor from the other list must be deserialized to be merged.
             const AbstractDescriptorPtr dp(other._list[index].desc->deserialize(duck, other._list[index].pds, other._table));
-            if (dp.isNull() || dp->duplicationMode() == DescriptorDuplication::ADD_ALWAYS) {
+            if (dp == nullptr || dp->duplicationMode() == DescriptorDuplication::ADD_ALWAYS) {
                 // Cannot be deserialized or simply add the descriptor.
                 addPrivateDataSpecifier(other._list[index].pds);
                 add(other._list[index].desc);
@@ -264,7 +264,7 @@ const ts::DescriptorPtr& ts::DescriptorList::operator[](size_t index) const
 ts::EDID ts::DescriptorList::edid(size_t index) const
 {
     // Eliminate invalid descriptor, index out of range.
-    if (index >= _list.size() || _list[index].desc.isNull() || !_list[index].desc->isValid()) {
+    if (index >= _list.size() || _list[index].desc == nullptr || !_list[index].desc->isValid()) {
         return EDID(); // invalid value
     }
     else {
@@ -348,7 +348,7 @@ size_t ts::DescriptorList::removeInvalidPrivateDescriptors()
     size_t count = 0;
 
     for (size_t n = 0; n < _list.size(); ) {
-        if (_list[n].pds == 0 && !_list[n].desc.isNull() && _list[n].desc->isValid() && _list[n].desc->tag() >= 0x80) {
+        if (_list[n].pds == 0 && _list[n].desc != nullptr && _list[n].desc->isValid() && _list[n].desc->tag() >= 0x80) {
             _list.erase(_list.begin() + n);
             count++;
         }
@@ -559,7 +559,7 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
     // Seach all known types of descriptors containing languages.
     for (size_t index = start_index; index < _list.size(); index++) {
         const DescriptorPtr& desc(_list[index].desc);
-        if (!desc.isNull() && desc->isValid()) {
+        if (desc != nullptr && desc->isValid()) {
 
             const DID tag = desc->tag();
             const PDS pds = _list[index].pds;
@@ -724,7 +724,7 @@ bool ts::DescriptorList::toXML(DuckContext& duck, xml::Element* parent) const
 {
     bool success = true;
     for (size_t index = 0; index < _list.size(); ++index) {
-        if (_list[index].desc.isNull() || _list[index].desc->toXML(duck, parent, duck.actualPDS(_list[index].pds), tableId() , false) == nullptr) {
+        if (_list[index].desc == nullptr || _list[index].desc->toXML(duck, parent, duck.actualPDS(_list[index].pds), tableId() , false) == nullptr) {
             success = false;
         }
     }
@@ -758,8 +758,8 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
     // Analyze all children nodes.
     for (const xml::Element* node = parent == nullptr ? nullptr : parent->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
 
-        DescriptorPtr bin = new Descriptor;
-        CheckNonNull(bin.pointer());
+        DescriptorPtr bin = DescriptorPtr(new Descriptor);
+        CheckNonNull(bin.get());
 
         // Try to analyze the XML element.
         if (bin->fromXML(duck, node, tableId())) {

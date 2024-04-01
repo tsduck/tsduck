@@ -427,7 +427,7 @@ bool ts::TablesLogger::open()
     if (_use_json && !_rewrite_json) {
         json::ValuePtr root;
         if (_xml_tweaks.x2jIncludeRoot) {
-            root = new json::Object;
+            root = json::ValuePtr(new json::Object);
             root->add(u"#name", u"tsduck");
             root->add(u"#nodes", json::ValuePtr(new json::Array));
         }
@@ -721,7 +721,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // With option --pack-all-sections, force the processing of a complete table.
     if (_pack_all_sections) {
         BinaryTable table;
-        table.addSection(new Section(sect, ShareMode::SHARE));
+        table.addSection(SectionPtr(new Section(sect, ShareMode::SHARE)));
         table.packSections();
         if (table.isValid()) {
             handleTable(demux, table);
@@ -912,7 +912,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
         duck::LogSection msg(_duck_protocol);
         msg.pid = section.sourcePID();
         msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
-        msg.section = new Section(section, ShareMode::SHARE);
+        msg.section = SectionPtr(new Section(section, ShareMode::SHARE));
 
         // Serialize the message.
         ByteBlockPtr bin(new ByteBlock);
@@ -968,13 +968,13 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
         tlv::MessagePtr msg(mf.factory());
 
         // We expected only two possible messages:
-        const duck::LogSection* logSection = dynamic_cast<const duck::LogSection*>(msg.pointer());
-        const duck::LogTable* logTable = dynamic_cast<const duck::LogTable*>(msg.pointer());
+        const duck::LogSection* logSection = dynamic_cast<const duck::LogSection*>(msg.get());
+        const duck::LogTable* logTable = dynamic_cast<const duck::LogTable*>(msg.get());
 
         if (logSection != nullptr) {
             scDate = logSection->timestamp;
             pid = logSection->pid;
-            if (logSection->section.isNull() || !logSection->section->isValid()) {
+            if (logSection->section == nullptr || !logSection->section->isValid()) {
                 return false;
             }
             else {
@@ -994,7 +994,7 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const u
     // Set the PID in all sections.
     if (pid.has_value()) {
         for (auto& it : sections) {
-            if (!it.isNull()) {
+            if (it != nullptr) {
                 it->setSourcePID(pid.value());
             }
         }

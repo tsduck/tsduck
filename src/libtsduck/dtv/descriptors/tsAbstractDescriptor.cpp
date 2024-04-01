@@ -111,7 +111,7 @@ bool ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
     else {
         // Allocate a byte block of the maximum descriptor size.
         ByteBlockPtr bbp(new ByteBlock(MAX_DESCRIPTOR_SIZE));
-        CheckNonNull(bbp.pointer());
+        CheckNonNull(bbp.get());
 
         // Map a serialization buffer over the payload part.
         PSIBuffer buf(duck, bbp->data() + 2, bbp->size() - 2, false);

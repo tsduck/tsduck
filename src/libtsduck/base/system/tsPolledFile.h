@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsEnumeration.h"
-#include "tsSafePtr.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -72,7 +71,7 @@ namespace ts {
         friend class PollFiles;
 
         UString        _name {};          // File name
-        Status         _status {ADDED};   // Status since last report
+        Status         _status = ADDED;   // Status since last report
         std::uintmax_t _file_size = 0;    // File size in bytes
         Time           _file_date {};     // Last file modification date (UTC)
         bool           _pending = true;   // Not yet notified, waiting for stable state
@@ -88,7 +87,7 @@ namespace ts {
     //!
     //! Safe pointer to a PolledFile (not thread-safe).
     //!
-    using PolledFilePtr = SafePtr<PolledFile, ThreadSafety::None>;
+    using PolledFilePtr = std::shared_ptr<PolledFile>;
 
     //!
     //! List of safe pointers to PolledFile (not thread-safe).

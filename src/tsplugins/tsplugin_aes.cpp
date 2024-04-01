@@ -14,8 +14,8 @@
 #include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsSectionDemux.h"
-#include "tsCyclingPacketizer.h"
 #include "tsIntegerUtils.h"
+#include "tsBinaryTable.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
@@ -45,7 +45,7 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        using CipherPtr = SafePtr<BlockCipher, ThreadSafety::None>;
+        using CipherPtr = std::shared_ptr<BlockCipher>;
 
         // Command line options:
         bool      _descramble = false; // Descramble instead of scramble

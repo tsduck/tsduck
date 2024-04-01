@@ -116,7 +116,7 @@ namespace {
                 // Get one section.
                 assert(size <= remain);
                 ts::SectionPtr section(new ts::Section(data, size));
-                if (section.isNull() || !section->isValid()) {
+                if (section == nullptr || !section->isValid()) {
                     opt.error(u"ECMG returned an invalid section");
                     return false;
                 }

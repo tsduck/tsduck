@@ -54,13 +54,13 @@ void ts::duck::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePt
 {
     switch (fact.commandTag()) {
         case Tags::MSG_LOG_SECTION:
-            msg = new LogSection(fact);
+            msg = tlv::MessagePtr(new LogSection(fact));
             break;
         case Tags::MSG_LOG_TABLE:
-            msg = new LogTable(fact);
+            msg = tlv::MessagePtr(new LogTable(fact));
             break;
         case Tags::MSG_ECM:
-            msg = new ClearECM(fact);
+            msg = tlv::MessagePtr(new ClearECM(fact));
             break;
         default:
             throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));
@@ -75,7 +75,7 @@ void ts::duck::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePt
 void ts::duck::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create an error message
-    SafePtr<Error,ThreadSafety::None> errmsg(new Error(version()));
+    std::shared_ptr<Error> errmsg(new Error(version()));
 
     // Convert general TLV error code into protocol error_status
     switch (fact.errorStatus()) {
@@ -105,7 +105,7 @@ void ts::duck::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv
     }
 
     // Transfer ownership of safe ptr
-    msg = errmsg.release();
+    msg = errmsg;
 }
 
 
@@ -128,7 +128,7 @@ namespace {
     // Dump a section.
     ts::UString DumpSection(size_t indent, const ts::SectionPtr& section)
     {
-        if (section.isNull()) {
+        if (section == nullptr) {
             return ts::UString();
         }
         else {
@@ -168,7 +168,7 @@ ts::duck::LogSection::LogSection(const tlv::MessageFactory& fact) :
     assert(1 == fact.count(Tags::PRM_SECTION));
     ByteBlock bb;
     fact.get(Tags::PRM_SECTION, bb);
-    section = new Section(bb);
+    section = SectionPtr(new Section(bb));
 }
 
 void ts::duck::LogSection::serializeParameters(tlv::Serializer& fact) const
@@ -179,7 +179,7 @@ void ts::duck::LogSection::serializeParameters(tlv::Serializer& fact) const
     if (timestamp.has_value()) {
         timestamp.value().put(fact, Tags::PRM_TIMESTAMP);
     }
-    if (!section.isNull()) {
+    if (section != nullptr) {
         fact.put(Tags::PRM_SECTION, section->content(), section->size());
     }
 }
@@ -211,7 +211,7 @@ ts::duck::LogTable::LogTable(const tlv::MessageFactory& fact) :
     std::vector<tlv::MessageFactory::Parameter> params;
     fact.get(Tags::PRM_SECTION, params);
     for (size_t i = 0; i < params.size(); ++i) {
-        sections.push_back(new Section(params[i].addr, params[i].length));
+        sections.push_back(SectionPtr(new Section(params[i].addr, params[i].length)));
     }
 }
 
@@ -224,7 +224,7 @@ void ts::duck::LogTable::serializeParameters(tlv::Serializer& fact) const
         timestamp.value().put(fact, Tags::PRM_TIMESTAMP);
     }
     for (size_t i = 0; i < sections.size(); ++i) {
-        if (!sections[i].isNull()) {
+        if (sections[i] != nullptr) {
             fact.put(Tags::PRM_SECTION, sections[i]->content(), sections[i]->size());
         }
     }
@@ -234,7 +234,7 @@ ts::UString ts::duck::LogTable::dump(size_t indent) const
 {
     UString secDump;
     for (size_t i = 0; i < sections.size(); ++i) {
-        if (!sections[i].isNull()) {
+        if (sections[i] != nullptr) {
             secDump.append(DumpSection(indent, sections[i]));
         }
     }

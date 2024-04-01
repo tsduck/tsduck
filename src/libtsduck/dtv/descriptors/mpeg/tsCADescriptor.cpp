@@ -206,7 +206,7 @@ size_t ts::CADescriptor::SearchByPID(const ts::DescriptorList& dlist, ts::PID pi
     bool found = false;
     for (; !found && start_index < dlist.count(); start_index++) {
         const DescriptorPtr& desc(dlist[start_index]);
-        found = !desc.isNull() &&
+        found = desc != nullptr &&
             desc->isValid() &&
             desc->tag() == DID_CA &&
             desc->payloadSize() >= 4 &&
@@ -225,7 +225,7 @@ size_t ts::CADescriptor::SearchByCAS(const ts::DescriptorList& dlist, uint16_t c
     bool found = false;
     for (; !found && start_index < dlist.count(); start_index++) {
         const DescriptorPtr& desc(dlist[start_index]);
-        found = !desc.isNull() &&
+        found = desc != nullptr &&
             desc->isValid() &&
             desc->tag() == DID_CA &&
             desc->payloadSize() >= 4 &&

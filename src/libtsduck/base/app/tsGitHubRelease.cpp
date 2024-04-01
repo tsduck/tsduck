@@ -49,9 +49,9 @@ ts::GitHubRelease::GitHubRelease(const UString& owner, const UString& repository
 bool ts::GitHubRelease::validate(Report& report)
 {
     // We simply check the presence of a few fields in the object.
-    _isValid = !_root.isNull() &&
-        _root->value(u"name").isString() && !_root->value(u"name").toString().empty() &&
-        _root->value(u"tag_name").isString() && !_root->value(u"tag_name").toString().empty();
+    _isValid = _root != nullptr &&
+               _root->value(u"name").isString() && !_root->value(u"name").toString().empty() &&
+               _root->value(u"tag_name").isString() && !_root->value(u"tag_name").toString().empty();
 
     if (!_isValid) {
         InvalidResponse(_root, report);
@@ -116,7 +116,7 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
     if (!req.downloadTextContent(url, text) || !json::Parse(response, text, report)) {
         return false;
     }
-    assert(!response.isNull());
+    assert(response != nullptr);
 
     // If the response is an object containing a "message" field, this is an error.
     const UString message(response->value(u"message").toString());
@@ -141,7 +141,7 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
 
 bool ts::GitHubRelease::downloadInfo(const UString& owner, const UString& repository, const UString& tag, Report& report)
 {
-    _root.clear();
+    _root.reset();
     _owner = owner;
     _repository = repository;
     _isValid = false;

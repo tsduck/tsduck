@@ -377,14 +377,14 @@ void EMMGSectionProvider::provideSection(ts::SectionCounter counter, ts::Section
         ts::ByteBlock payload(_opt.emmSize - ts::MIN_SHORT_SECTION_SIZE, _payloadData++);
 
         // Create a fake EMM section.
-        section = new ts::Section(_emmTableId, true, payload.data(), payload.size());
+        section = ts::SectionPtr(new ts::Section(_emmTableId, true, payload.data(), payload.size()));
 
         // Compute the next EMM table id.
         _emmTableId = _emmTableId >= _opt.emmMaxTableId ? _opt.emmMinTableId : _emmTableId + 1;
     }
     else if (_opt.maxCycles > 0 && _cycleCount >= _opt.maxCycles) {
         // The total number of cycles has been exhausted.
-        section.clear();
+        section.reset();
     }
     else {
         // Get the next loaded section.
@@ -499,7 +499,7 @@ int MainCode(int argc, char *argv[])
                     ts::SectionPtr sec;
                     sectionProvider.provideSection(0, sec);
                     // Getting a null pointer means end of input.
-                    ok = !sec.isNull();
+                    ok = sec != nullptr;
                     if (ok) {
                         sections.push_back(sec);
                         sendSize += sec->size();

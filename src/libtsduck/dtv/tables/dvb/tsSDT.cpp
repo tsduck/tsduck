@@ -259,7 +259,7 @@ bool ts::SDT::ServiceEntry::locateServiceDescriptor(DuckContext& duck, ServiceDe
         return false;
     }
     else {
-        assert(!descs[index].isNull());
+        assert(descs[index] != nullptr);
         desc.deserialize(duck, *descs[index]);
         return desc.isValid();
     }
@@ -304,7 +304,7 @@ void ts::SDT::ServiceEntry::setString(DuckContext& duck, UString ServiceDescript
         ServiceDescriptor sd(service_type);
         sd.*field = value;
         DescriptorPtr dp(new Descriptor);
-        CheckNonNull(dp.pointer());
+        CheckNonNull(dp.get());
         sd.serialize(duck, *dp);
         if (dp->isValid()) {
             descs.add(dp);
@@ -312,7 +312,7 @@ void ts::SDT::ServiceEntry::setString(DuckContext& duck, UString ServiceDescript
     }
     else {
         // Replace service name in existing descriptor
-        assert(!descs[index].isNull());
+        assert(descs[index] != nullptr);
         ServiceDescriptor sd;
         sd.deserialize(duck, *descs[index]);
         if (sd.isValid()) {

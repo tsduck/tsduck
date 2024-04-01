@@ -50,7 +50,7 @@ void ts::SectionFile::clear()
 
 void ts::SectionFile::add(const AbstractTablePtr& table)
 {
-    if (!table.isNull() && table->isValid()) {
+    if (table != nullptr && table->isValid()) {
         BinaryTablePtr bin(new BinaryTable);
         table->serialize(_duck, *bin);
         if (bin->isValid()) {
@@ -68,7 +68,7 @@ void ts::SectionFile::add(const BinaryTablePtrVector& tables)
 
 void ts::SectionFile::add(const BinaryTablePtr& table)
 {
-    if (!table.isNull()) {
+    if (table != nullptr) {
         if (table->isValid()) {
             // The table is added as a whole.
             // Add the standards from the table in the context.
@@ -103,7 +103,7 @@ void ts::SectionFile::add(const SectionPtrVector& sections)
 
 void ts::SectionFile::add(const SectionPtr& section)
 {
-    if (!section.isNull() && section->isValid()) {
+    if (section != nullptr && section->isValid()) {
         // Add the standards from the section in the context.
         _duck.addStandards(section->definingStandards());
         // Make the section part of the global list of sections.
@@ -126,7 +126,7 @@ size_t ts::SectionFile::packOrphanSections()
 
     // Loop on all orphan sections, locating sets of sections from the same table.
     for (auto first = _orphanSections.begin(); first != _orphanSections.end(); ) {
-        assert(!first->isNull());
+        assert(*first != nullptr);
         assert((*first)->isValid());
 
         // Point after first section.
@@ -144,7 +144,7 @@ size_t ts::SectionFile::packOrphanSections()
 
         // Build a binary table from orphan sections.
         BinaryTablePtr table(new BinaryTable);
-        CheckNonNull(table.pointer());
+        CheckNonNull(table.get());
         table->addSections(first, end, true, true);
 
         // Compress all sections to make a valid table.
@@ -180,7 +180,7 @@ void ts::SectionFile::collectLastTable()
     // Get a iterator to last section.
     auto first = _orphanSections.end();
     --first;
-    assert(!first->isNull());
+    assert(*first != nullptr);
     assert((*first)->isValid());
 
     // A short section should be a table in itself, no need to dive further.
@@ -192,7 +192,7 @@ void ts::SectionFile::collectLastTable()
 
         // Check if all sections are present in order.
         for (uint8_t num = last->lastSectionNumber(); ; --num) {
-            assert(!first->isNull());
+            assert(*first != nullptr);
             assert((*first)->isValid());
 
             // Give up if the section is not the expected one for the table.
@@ -222,7 +222,7 @@ void ts::SectionFile::collectLastTable()
 
     // We have now identified sections for a complete table.
     BinaryTablePtr table(new BinaryTable);
-    CheckNonNull(table.pointer());
+    CheckNonNull(table.get());
     if (!table->addSections(first, _orphanSections.end(), false, false) || !table->isValid()) {
         // Invalid table after all.
         return;
@@ -257,12 +257,12 @@ void ts::SectionFile::rebuildTables()
 
     // Rebuild tables from consecutive sections.
     for (size_t i = 0; i < _sections.size(); ++i) {
-        if (_sections[i].isNull() || !_sections[i]->isValid()) {
+        if (_sections[i] == nullptr || !_sections[i]->isValid()) {
             // Ignore invalid sections.
         }
         else if (_sections[i]->isShortSection()) {
             // Short sections are always full tables.
-            _tables.push_back(new BinaryTable({_sections[i]}));
+            _tables.push_back(BinaryTablePtr(new BinaryTable({_sections[i]})));
         }
         else if (_sections[i]->sectionNumber() != 0 || i + _sections[i]->lastSectionNumber() >= _sections.size()) {
             // Orphan section, not preceded by logically adjacent sections or section #0 without enough following sections.
@@ -283,7 +283,7 @@ void ts::SectionFile::rebuildTables()
             }
             if (ok) {
                 // All sections are present in order, this is a table.
-                _tables.push_back(new BinaryTable(secs));
+                _tables.push_back(BinaryTablePtr(new BinaryTable(secs)));
                 i += count - 1;
             }
             else {
@@ -368,7 +368,7 @@ bool ts::SectionFile::saveBinary(const fs::path& file_name) const
 bool ts::SectionFile::saveBinary(std::ostream& strm, Report& report) const
 {
     for (size_t i = 0; i < _sections.size() && strm.good(); ++i) {
-        if (!_sections[i].isNull() && _sections[i]->isValid()) {
+        if (_sections[i] != nullptr && _sections[i]->isValid()) {
             _sections[i]->write(strm, report);
         }
     }
@@ -390,7 +390,7 @@ bool ts::SectionFile::loadBuffer(const void* buffer, size_t size)
             break;
         }
         SectionPtr sp(new Section(data, section_size, PID_NULL, CRC32::CHECK));
-        if (!sp.isNull() && sp->isValid()) {
+        if (sp != nullptr && sp->isValid()) {
             add(sp);
         }
         else {
@@ -420,7 +420,7 @@ size_t ts::SectionFile::saveBuffer(void* buffer, size_t buffer_size) const
     if (buffer != nullptr) {
         uint8_t* data = reinterpret_cast<uint8_t*>(buffer);
         for (size_t i = 0; i < _sections.size(); ++i) {
-            if (!_sections[i].isNull() && _sections[i]->isValid()) {
+            if (_sections[i] != nullptr && _sections[i]->isValid()) {
                 const size_t size = _sections[i]->size();
                 if (size > buffer_size) {
                     break;
@@ -443,7 +443,7 @@ size_t ts::SectionFile::saveBuffer(ByteBlock& buffer) const
     // Append all sections one by one.
     const size_t initial = buffer.size();
     for (size_t i = 0; i < _sections.size(); ++i) {
-        if (!_sections[i].isNull() && _sections[i]->isValid()) {
+        if (_sections[i] != nullptr && _sections[i]->isValid()) {
             buffer.append(_sections[i]->content(), _sections[i]->size());
         }
     }
@@ -459,7 +459,7 @@ size_t ts::SectionFile::binarySize() const
 {
     size_t size = 0;
     for (size_t i = 0; i < _sections.size(); ++i) {
-        if (!_sections[i].isNull() && _sections[i]->isValid()) {
+        if (_sections[i] != nullptr && _sections[i]->isValid()) {
             size += _sections[i]->size();
         }
     }
@@ -570,7 +570,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
     // Analyze all tables in the document.
     for (const xml::Element* node = root == nullptr ? nullptr : root->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
         BinaryTablePtr bin(new BinaryTable);
-        CheckNonNull(bin.pointer());
+        CheckNonNull(bin.get());
         if (bin->fromXML(_duck, node) && bin->isValid()) {
             add(bin);
         }
@@ -694,7 +694,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
 
     // Format all tables.
     for (auto& table : _tables) {
-        if (!table.isNull()) {
+        if (table != nullptr) {
             table->toXML(_duck, root);
         }
     }

@@ -221,7 +221,7 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
 {
     // Loop on all descriptors
     for (size_t index = 0; index < dlist.count(); ++index) {
-        if (!dlist[index].isNull()) {
+        if (dlist[index] != nullptr) {
 
             // Descriptor payload
             const uint8_t* desc = dlist[index]->payload();
@@ -487,14 +487,14 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
 
     // Locate an ECM stream with a currently valid pair of CW.
     ECMStreamPtr pecm;
-    for (auto it = ss.ecm_pids.begin(); pecm.isNull() && it != ss.ecm_pids.end(); ++it) {
+    for (auto it = ss.ecm_pids.begin(); pecm == nullptr && it != ss.ecm_pids.end(); ++it) {
         pecm = getOrCreateECMStream(*it);
         // Flag cw_valid is "write-protected, read-volatile", no mutex needed.
         if (!pecm->cw_valid) {
-            pecm.clear();
+            pecm.reset();
         }
     }
-    if (pecm.isNull()) {
+    if (pecm == nullptr) {
         // No ECM stream has valid Control Word now, cannot descramble
         return TSP_OK;
     }

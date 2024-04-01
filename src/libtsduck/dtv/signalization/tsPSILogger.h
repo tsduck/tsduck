@@ -168,7 +168,7 @@ namespace ts {
     };
 
     //!
-    //! Safe pointer for PSILogger (not thread-safe).
+    //! Safe pointer for PSILogger.
     //!
-    using PSILoggerPtr = SafePtr<PSILogger, ThreadSafety::None>;
+    using PSILoggerPtr = std::shared_ptr<PSILogger>;
 }

@@ -169,7 +169,7 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
             _pat.clear();
         }
         // Add the current section in the PAT if it was not already there.
-        if (_pat.sectionCount() <= section.sectionNumber() || _pat.sectionAt(section.sectionNumber()).isNull()) {
+        if (_pat.sectionCount() <= section.sectionNumber() || _pat.sectionAt(section.sectionNumber()) == nullptr) {
             _pat.addSection(SectionPtr(new Section(section, ShareMode::SHARE)), true, true);
         }
         // If a new PAT is now available, analyze it to grab PSI/SI information.

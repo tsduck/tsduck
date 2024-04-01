@@ -13,7 +13,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSafePtr.h"
 #include "tsPSI.h"
 
 namespace ts {
@@ -30,7 +29,7 @@ namespace ts {
     //!
     //! Safe pointer for AbstractDescriptor (not thread-safe).
     //!
-    using AbstractDescriptorPtr = SafePtr<AbstractDescriptor, ThreadSafety::None>;
+    using AbstractDescriptorPtr = std::shared_ptr<AbstractDescriptor>;
 
     //!
     //! Vector of AbstractDescriptor pointers
@@ -40,12 +39,12 @@ namespace ts {
     //!
     //! Safe pointer for AbstractTable (not thread-safe)
     //!
-    using AbstractTablePtr = SafePtr<AbstractTable, ThreadSafety::None>;
+    using AbstractTablePtr = std::shared_ptr<AbstractTable>;
 
     //!
     //! Safe pointer for Section (not thread-safe).
     //!
-    using SectionPtr = SafePtr<Section, ThreadSafety::None>;
+    using SectionPtr = std::shared_ptr<Section>;
 
     //!
     //! Vector of Section pointers.
@@ -60,7 +59,7 @@ namespace ts {
     //!
     //! Safe pointer for BinaryTable (not thread-safe)
     //!
-    using BinaryTablePtr = SafePtr<BinaryTable, ThreadSafety::None>;
+    using BinaryTablePtr = std::shared_ptr<BinaryTable>;
 
     //!
     //! Vector of BinaryTable pointers
@@ -70,7 +69,7 @@ namespace ts {
     //!
     //! Safe pointer for Descriptor (not thread-safe)
     //!
-    using DescriptorPtr = SafePtr<Descriptor, ThreadSafety::None>;
+    using DescriptorPtr = std::shared_ptr<Descriptor>;
 
     //!
     //! Vector of Descriptor pointers
