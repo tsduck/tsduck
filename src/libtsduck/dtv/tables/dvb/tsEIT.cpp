@@ -540,6 +540,7 @@ bool ts::EIT::analyzeXML(DuckContext& duck, const xml::Element* element)
 bool ts::EIT::getTableId(const xml::Element* element)
 {
     UString type;
+    uint32_t id = 0;
     bool actual = 0;
 
     if (!element->getAttribute(type, u"type", false, u"pf") || !element->getBoolAttribute(actual, u"actual", false, true)) {
@@ -551,9 +552,9 @@ bool ts::EIT::getTableId(const xml::Element* element)
         _table_id = actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
         return true;
     }
-    else if (type.toInteger(_table_id)) {
+    else if (type.toInteger(id) && id <= (TID_EIT_S_ACT_MAX - TID_EIT_S_ACT_MIN)) {
         // This is an EIT schedule
-        _table_id += actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN;
+        _table_id = (actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN) + TID(id);
         return true;
     }
     else {
