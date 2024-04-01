@@ -32,6 +32,7 @@ public:
     void testStringify();
     void testVersion();
     void testChrono();
+    void testSharedPtr();
 
     TSUNIT_TEST_BEGIN(PlatformTest);
     TSUNIT_TEST(testEndianness);
@@ -40,6 +41,7 @@ public:
     TSUNIT_TEST(testStringify);
     TSUNIT_TEST(testVersion);
     TSUNIT_TEST(testChrono);
+    TSUNIT_TEST(testSharedPtr);
     TSUNIT_TEST_END();
 };
 
@@ -273,4 +275,53 @@ void PlatformTest::testChrono()
     TSUNIT_ASSUME(sizeof(cn::weeks) == sizeof(cn::weeks::rep));
     TSUNIT_ASSUME(sizeof(cn::months) == sizeof(cn::months::rep));
     TSUNIT_ASSUME(sizeof(cn::years) == sizeof(cn::years::rep));
+}
+
+// Test case: std::share_ptr
+void PlatformTest::testSharedPtr()
+{
+    using Ptr = std::shared_ptr<uint64_t>;
+    Ptr ptr1(new uint64_t(0x0123456789ABCDEF));
+
+    if (debugMode()) {
+        // May trigger memory errors depending on implementations.
+        debug() << "PlatformTest: sizeof shared_ptr: " << sizeof(ptr1) << " bytes" << std::endl
+                << "   share_ptr instance: " << ts::UString::Dump(&ptr1, sizeof(ptr1), ts::UString::SINGLE_LINE) << std::endl;
+        void** base = reinterpret_cast<void**>(&ptr1);
+        const size_t count = sizeof(ptr1) / sizeof(void*);
+        for (size_t i = 0; i < count; i++) {
+            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", {2*sizeof(void*), ptrdiff_t(base[i])});
+            if (base[i] != nullptr) {
+                    debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
+            }
+            debug() << std::endl;
+        }
+    }
+
+    TSUNIT_ASSERT(ptr1 != nullptr);
+    TSUNIT_EQUAL(1, ptr1.use_count());
+
+    Ptr ptr2;
+    TSUNIT_ASSERT(ptr2 == nullptr);
+    TSUNIT_EQUAL(1, ptr1.use_count());
+    TSUNIT_EQUAL(0, ptr2.use_count());
+
+    ptr2 = ptr1;
+    TSUNIT_EQUAL(2, ptr1.use_count());
+    TSUNIT_EQUAL(2, ptr2.use_count());
+
+    if (debugMode()) {
+        // May trigger memory errors depending on implementations.
+        debug() << "PlatformTest: sizeof shared_ptr: " << sizeof(ptr1) << " bytes" << std::endl
+                << "   share_ptr instance: " << ts::UString::Dump(&ptr1, sizeof(ptr1), ts::UString::SINGLE_LINE) << std::endl;
+        void** base = reinterpret_cast<void**>(&ptr1);
+        const size_t count = sizeof(ptr1) / sizeof(void*);
+        for (size_t i = 0; i < count; i++) {
+            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", {2*sizeof(void*), ptrdiff_t(base[i])});
+            if (base[i] != nullptr) {
+                debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
+            }
+            debug() << std::endl;
+        }
+    }
 }
