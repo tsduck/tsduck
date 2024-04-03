@@ -117,6 +117,19 @@ namespace ts {
         bool addSection(const SectionPtr& section, bool replace = true, bool grow = true);
 
         //!
+        //! Create a section and add it to a table.
+        //! The section is replaced if it was already present and the table grows when necessary.
+        //! @tparam Args Arguments types for the Section constructor.
+        //! @param [in] args Arguments for the Section constructor.
+        //! @return True on succes, false if @a section could not be added (inconsistent property).
+        //!
+        template<class... Args>
+        bool addNewSection(Args&&... args)
+        {
+            return addSection(std::make_shared<Section>(std::forward<Args>(args)...), true, true);
+        }
+
+        //!
         //! Add several sections to a table.
         //! @param [in] sections An array of smart pointers to sections.
         //! @param [in] replace If true, duplicated sections may be replaced.

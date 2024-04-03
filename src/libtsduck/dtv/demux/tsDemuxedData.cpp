@@ -28,7 +28,7 @@ ts::DemuxedData::DemuxedData(const DemuxedData& pp, ShareMode mode) :
             _data = pp._data;
             break;
         case ShareMode::COPY:
-            _data = ByteBlockPtr(new ByteBlock(*pp._data));
+            _data = std::make_shared<ByteBlock>(*pp._data);
             break;
         default:
             // should not get there
@@ -46,13 +46,13 @@ ts::DemuxedData::DemuxedData(DemuxedData&& pp) noexcept :
 
 ts::DemuxedData::DemuxedData(const void* content, size_t content_size, PID source_pid) :
     _source_pid(source_pid),
-    _data(new ByteBlock(content, content_size))
+    _data(std::make_shared<ByteBlock>(content, content_size))
 {
 }
 
 ts::DemuxedData::DemuxedData(const ByteBlock& content, PID source_pid) :
     _source_pid(source_pid),
-    _data(new ByteBlock(content))
+    _data(std::make_shared<ByteBlock>(content))
 {
 }
 
@@ -87,14 +87,14 @@ void ts::DemuxedData::reload(const void* content, size_t content_size, PID sourc
 {
     _source_pid = source_pid;
     _first_pkt = _last_pkt = 0;
-    _data = ByteBlockPtr(new ByteBlock(content, content_size));
+    _data = std::make_shared<ByteBlock>(content, content_size);
 }
 
 void ts::DemuxedData::reload(const ByteBlock& content, PID source_pid)
 {
     _source_pid = source_pid;
     _first_pkt = _last_pkt = 0;
-    _data = ByteBlockPtr(new ByteBlock(content));
+    _data = std::make_shared<ByteBlock>(content);
 }
 
 void ts::DemuxedData::reload(const ByteBlockPtr& content_ptr, PID source_pid)
@@ -141,7 +141,7 @@ ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& pp)
 {
     _first_pkt = pp._first_pkt;
     _last_pkt = pp._last_pkt;
-    _data = pp._data == nullptr ? nullptr : ByteBlockPtr(new ByteBlock(*pp._data));
+    _data = pp._data == nullptr ? nullptr : std::make_shared<ByteBlock>(*pp._data);
     return *this;
 }
 
@@ -180,7 +180,7 @@ size_t ts::DemuxedData::rawDataSize() const
 void ts::DemuxedData::rwResize(size_t s)
 {
     if (_data == nullptr) {
-        _data = ByteBlockPtr(new ByteBlock(s));
+        _data = std::make_shared<ByteBlock>(s);
     }
     else {
         _data->resize(s);
@@ -190,7 +190,7 @@ void ts::DemuxedData::rwResize(size_t s)
 void ts::DemuxedData::rwAppend(const void* data, size_t dsize)
 {
     if (_data == nullptr) {
-        _data = ByteBlockPtr(new ByteBlock(data, dsize));
+        _data = std::make_shared<ByteBlock>(data, dsize);
     }
     else {
         _data->append(data, dsize);

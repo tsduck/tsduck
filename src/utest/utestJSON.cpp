@@ -711,11 +711,11 @@ void JsonTest::testQuery()
 {
     ts::json::Object root;
 
-    root.value(u"obj1", true).value(u"obj2", true).value(u"obj3", true).add(u"num4", ts::json::ValuePtr(new ts::json::Number(123)));
-    root.value(u"obj1").value(u"obj2").value(u"obj3").add(u"str4", ts::json::ValuePtr(new ts::json::String(u"abc")));
-    root.value(u"obj1").add(u"arr2", ts::json::ValuePtr(new ts::json::Array()));
-    root.value(u"obj1").value(u"arr2").set(ts::json::ValuePtr(new ts::json::Number(456)));
-    root.value(u"obj1").value(u"arr2").set(ts::json::ValuePtr(new ts::json::String(u"def")));
+    root.value(u"obj1", true).value(u"obj2", true).value(u"obj3", true).add(u"num4", std::make_shared<ts::json::Number>(123));
+    root.value(u"obj1").value(u"obj2").value(u"obj3").add(u"str4", std::make_shared<ts::json::String>(u"abc"));
+    root.value(u"obj1").add(u"arr2", std::make_shared<ts::json::Array>());
+    root.value(u"obj1").value(u"arr2").set(std::make_shared<ts::json::Number>(456));
+    root.value(u"obj1").value(u"arr2").set(std::make_shared<ts::json::String>(u"def"));
 
     TSUNIT_EQUAL(
         u"{\n"
@@ -779,7 +779,7 @@ void JsonTest::testRunningDocumentEmpty()
     doc.add(ts::json::String(u"foo"));
     doc.add(ts::json::Number(-23));
     ts::json::Object obj1;
-    obj1.value(u"obj1", true).add(u"arr2", ts::json::ValuePtr(new ts::json::Array()));
+    obj1.value(u"obj1", true).add(u"arr2", std::make_shared<ts::json::Array>());
     doc.add(obj1);
     doc.close();
 

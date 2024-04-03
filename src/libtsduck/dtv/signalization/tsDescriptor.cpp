@@ -58,7 +58,7 @@ ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, ShareMode mode)
                 _data = bbp;
                 break;
             case ShareMode::COPY:
-                _data = ByteBlockPtr(new ByteBlock(*bbp));
+                _data = std::make_shared<ByteBlock>(*bbp);
                 break;
             default:
                 // should not get there
@@ -74,7 +74,7 @@ ts::Descriptor::Descriptor(const Descriptor& desc, ShareMode mode)
             _data = desc._data;
             break;
         case ShareMode::COPY:
-            _data = ByteBlockPtr(new ByteBlock(*desc._data));
+            _data = std::make_shared<ByteBlock>(*desc._data);
             break;
         default:
             // should not get there
@@ -111,7 +111,7 @@ ts::Descriptor& ts::Descriptor::operator=(Descriptor&& desc) noexcept
 ts::Descriptor& ts::Descriptor::copy(const Descriptor& desc)
 {
     if (&desc != this) {
-        _data = ByteBlockPtr(new ByteBlock(*desc._data));
+        _data = std::make_shared<ByteBlock>(*desc._data);
     }
     return *this;
 }
@@ -324,7 +324,7 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
         ByteBlock payload;
         if (node->getIntAttribute<DID>(tag, u"tag", true, 0xFF, 0x00, 0xFF) && node->getHexaText(payload, 0, 255)) {
             // Build descriptor.
-            _data = ByteBlockPtr(new ByteBlock(2));
+            _data = std::make_shared<ByteBlock>(2);
             (*_data)[0] = tag;
             (*_data)[1] = uint8_t(payload.size());
             _data->append(payload);

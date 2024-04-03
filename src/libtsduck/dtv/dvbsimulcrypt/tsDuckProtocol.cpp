@@ -54,13 +54,13 @@ void ts::duck::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePt
 {
     switch (fact.commandTag()) {
         case Tags::MSG_LOG_SECTION:
-            msg = tlv::MessagePtr(new LogSection(fact));
+            msg = std::make_shared<LogSection>(fact);
             break;
         case Tags::MSG_LOG_TABLE:
-            msg = tlv::MessagePtr(new LogTable(fact));
+            msg = std::make_shared<LogTable>(fact);
             break;
         case Tags::MSG_ECM:
-            msg = tlv::MessagePtr(new ClearECM(fact));
+            msg = std::make_shared<ClearECM>(fact);
             break;
         default:
             throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));
@@ -168,7 +168,7 @@ ts::duck::LogSection::LogSection(const tlv::MessageFactory& fact) :
     assert(1 == fact.count(Tags::PRM_SECTION));
     ByteBlock bb;
     fact.get(Tags::PRM_SECTION, bb);
-    section = SectionPtr(new Section(bb));
+    section = std::make_shared<Section>(bb);
 }
 
 void ts::duck::LogSection::serializeParameters(tlv::Serializer& fact) const
@@ -211,7 +211,7 @@ ts::duck::LogTable::LogTable(const tlv::MessageFactory& fact) :
     std::vector<tlv::MessageFactory::Parameter> params;
     fact.get(Tags::PRM_SECTION, params);
     for (size_t i = 0; i < params.size(); ++i) {
-        sections.push_back(SectionPtr(new Section(params[i].addr, params[i].length)));
+        sections.push_back(std::make_shared<Section>(params[i].addr, params[i].length));
     }
 }
 

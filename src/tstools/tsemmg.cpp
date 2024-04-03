@@ -377,7 +377,7 @@ void EMMGSectionProvider::provideSection(ts::SectionCounter counter, ts::Section
         ts::ByteBlock payload(_opt.emmSize - ts::MIN_SHORT_SECTION_SIZE, _payloadData++);
 
         // Create a fake EMM section.
-        section = ts::SectionPtr(new ts::Section(_emmTableId, true, payload.data(), payload.size()));
+        section = std::make_shared<ts::Section>(_emmTableId, true, payload.data(), payload.size());
 
         // Compute the next EMM table id.
         _emmTableId = _emmTableId >= _opt.emmMaxTableId ? _opt.emmMinTableId : _emmTableId + 1;

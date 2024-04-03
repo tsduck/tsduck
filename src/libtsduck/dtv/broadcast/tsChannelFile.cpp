@@ -43,8 +43,7 @@ ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceGetOrCreate
     ServicePtr srv(serviceById(id_));
     if (srv == nullptr) {
         // Not found, create a new service.
-        srv = ServicePtr(new Service(id_));
-        CheckNonNull(srv.get());
+        srv = std::make_shared<Service>(id_);
         _services.push_back(srv);
     }
     return srv;
@@ -88,7 +87,7 @@ bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, ShareMo
         assert(_services[i] != nullptr);
         if (_services[i]->id == srv->id) {
             if (replace) {
-                _services[i] = copy == ShareMode::SHARE ? srv : ServicePtr(new Service(*srv));
+                _services[i] = copy == ShareMode::SHARE ? srv : std::make_shared<Service>(*srv);
                 CheckNonNull(_services[i].get());
                 return true;
             }
@@ -99,7 +98,7 @@ bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, ShareMo
     }
 
     // Add new service.
-    _services.push_back(copy == ShareMode::SHARE ? srv : ServicePtr(new Service(*srv)));
+    _services.push_back(copy == ShareMode::SHARE ? srv : std::make_shared<Service>(*srv));
     CheckNonNull(_services.back().get());
     return true;
 }
@@ -173,8 +172,7 @@ ts::ChannelFile::TransportStreamPtr ts::ChannelFile::Network::tsGetOrCreate(uint
     TransportStreamPtr ts(tsById(id_));
     if (ts == nullptr) {
         // Not found, create a new TS.
-        ts = TransportStreamPtr(new TransportStream(id_));
-        CheckNonNull(ts.get());
+        ts = std::make_shared<TransportStream>(id_);
         _ts.push_back(ts);
     }
     return ts;
@@ -208,8 +206,7 @@ ts::ChannelFile::NetworkPtr ts::ChannelFile::networkGetOrCreate(uint16_t id, Tun
     NetworkPtr net(networkById(id, type));
     if (net == nullptr) {
         // Not found, create a new network.
-        net = NetworkPtr(new Network(id, type));
-        CheckNonNull(net.get());
+        net = std::make_shared<Network>(id, type);
         _networks.push_back(net);
     }
     return net;

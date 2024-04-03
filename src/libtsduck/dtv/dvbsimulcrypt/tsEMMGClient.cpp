@@ -348,7 +348,7 @@ bool ts::EMMGClient::dataProvision(const ByteBlockPtr& data)
 
 bool ts::EMMGClient::dataProvision(const void* data, size_t size)
 {
-    return dataProvision(ByteBlockPtr(new ByteBlock(data, size)));
+    return dataProvision(std::make_shared<ByteBlock>(data, size));
 }
 
 bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
@@ -416,7 +416,7 @@ bool ts::EMMGClient::dataProvision(const SectionPtrVector& sections)
         std::vector<ByteBlockPtr> chunks;
         for (size_t i = 0; i < sections.size(); ++i) {
             if (sections[i] != nullptr) {
-                chunks.push_back(ByteBlockPtr(new ByteBlock(sections[i]->content(), sections[i]->size())));
+                chunks.push_back(std::make_shared<ByteBlock>(sections[i]->content(), sections[i]->size()));
             }
         }
         return dataProvision(chunks);

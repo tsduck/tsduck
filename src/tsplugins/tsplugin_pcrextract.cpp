@@ -20,7 +20,6 @@
 #include "tsRegistrationDescriptor.h"
 #include "tsSCTE35.h"
 #include "tsFileUtils.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -505,8 +504,7 @@ ts::PCRExtractPlugin::PIDContextPtr ts::PCRExtractPlugin::getPIDContext(PID pid)
 {
     PIDContextPtr& pc(_stats[pid]);
     if (pc == nullptr) {
-        pc = PIDContextPtr(new PIDContext(pid));
-        CheckNonNull(pc.get());
+        pc = std::make_shared<PIDContext>(pid);
     }
     return pc;
 }
@@ -521,8 +519,7 @@ ts::PCRExtractPlugin::SpliceContextPtr ts::PCRExtractPlugin::getSpliceContext(PI
     SpliceContextPtr& pc(_splices[pid]);
     if (pc == nullptr) {
         // Found a new splicing info PID.
-        pc = SpliceContextPtr(new SpliceContext);
-        CheckNonNull(pc.get());
+        pc = std::make_shared<SpliceContext>();
 
         // Add this PID to the demux.
         _demux.addPID(pid);

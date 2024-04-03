@@ -414,7 +414,7 @@ ts::FileCleaner::PMTContextPtr ts::FileCleaner::getPMTContext(PID pmt_pid, bool 
         return it->second;
     }
     else if (create) {
-        return _pmts[pmt_pid] = PMTContextPtr(new PMTContext(_opt.duck, pmt_pid));
+        return _pmts[pmt_pid] = std::make_shared<PMTContext>(_opt.duck, pmt_pid);
     }
     else {
         return PMTContextPtr();

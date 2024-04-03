@@ -61,7 +61,7 @@ ts::BinaryTable::BinaryTable(const BinaryTable& other, ShareMode mode) :
                     _sections[i].reset();
                 }
                 else {
-                    _sections[i] = SectionPtr(new Section(*other._sections[i], ShareMode::COPY));
+                    _sections[i] = std::make_shared<Section>(*other._sections[i], ShareMode::COPY);
                 }
             }
             break;
@@ -147,7 +147,7 @@ ts::BinaryTable& ts::BinaryTable::copy(const BinaryTable& table)
             _sections[i].reset();
         }
         else {
-            _sections[i] = SectionPtr(new Section(*table._sections[i], ShareMode::COPY));
+            _sections[i] = std::make_shared<Section>(*table._sections[i], ShareMode::COPY);
         }
     }
     return *this;
@@ -580,7 +580,7 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
             node->getBoolAttribute(priv, u"private", false, true) &&
             node->getHexaText(payload, 0, MAX_PSI_SHORT_SECTION_PAYLOAD_SIZE))
         {
-            addSection(SectionPtr(new Section(tid, priv, payload.data(), payload.size())));
+            addNewSection(tid, priv, payload.data(), payload.size());
         }
         // The XML element name was valid.
         return true;
@@ -604,7 +604,7 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
                 assert(sectionNodes[index] != nullptr);
                 ByteBlock payload;
                 if (sectionNodes[index]->getHexaText(payload, 0, MAX_PSI_LONG_SECTION_PAYLOAD_SIZE)) {
-                    addSection(SectionPtr(new Section(tid, priv, tidExt, version, current, uint8_t(index), uint8_t(index), payload.data(), payload.size())));
+                    addNewSection(tid, priv, tidExt, version, current, uint8_t(index), uint8_t(index), payload.data(), payload.size());
                 }
                 else {
                     // Invalid <section> content.

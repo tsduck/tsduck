@@ -255,7 +255,7 @@ void ts::PMTPlugin::addComponentDescriptor(PID pid, const AbstractDescriptor& de
 {
     // Get or create descriptor list for the component.
     if (_add_pid_descs[pid] == nullptr) {
-        _add_pid_descs[pid] = DescriptorListPtr(new DescriptorList(nullptr));
+        _add_pid_descs[pid] = std::make_shared<DescriptorList>(nullptr);
     }
 
     // Add the new descriptor.

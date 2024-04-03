@@ -244,12 +244,12 @@ ts::tsp::PluginExecutor::RestartData::RestartData(const UStringVector& params, b
 
 void ts::tsp::PluginExecutor::restart(Report& report)
 {
-    restart(RestartDataPtr(new RestartData(UStringVector(), true, report)));
+    restart(std::make_shared<RestartData>(UStringVector(), true, report));
 }
 
 void ts::tsp::PluginExecutor::restart(const UStringVector& params, Report& report)
 {
-    restart(RestartDataPtr(new RestartData(params, false, report)));
+    restart(std::make_shared<RestartData>(params, false, report));
 }
 
 void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)

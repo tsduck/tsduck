@@ -153,13 +153,13 @@ void SectionTest::testPackSections()
 
     static const uint8_t data[] = {0, 1, 2, 3, 4, 5, 6, 7};
 
-    table.addSection(ts::SectionPtr(new ts::Section(150, true, 102, 12, true, 3, 7, data + 1, 2, 2000)));
+    table.addNewSection(150, true, 102, 12, true, 3, 7, data + 1, 2, 2000);
     TSUNIT_ASSERT(!table.isValid());
 
-    table.addSection(ts::SectionPtr(new ts::Section(150, true, 102, 12, true, 5, 7, data + 3, 3, 2000)));
+    table.addNewSection(150, true, 102, 12, true, 5, 7, data + 3, 3, 2000);
     TSUNIT_ASSERT(!table.isValid());
 
-    table.addSection(ts::SectionPtr(new ts::Section(150, true, 102, 12, true, 6, 7, data + 4, 4, 2000)));
+    table.addNewSection(150, true, 102, 12, true, 6, 7, data + 4, 4, 2000);
     TSUNIT_ASSERT(!table.isValid());
 
     table.packSections();
@@ -232,7 +232,7 @@ ts::SectionPtr SectionTest::NewSection(size_t size, uint8_t secnum, ts::TID tid)
 {
     const size_t overhead = ts::LONG_SECTION_HEADER_SIZE + ts::SECTION_CRC32_SIZE;
     ts::ByteBlock payload(size >= overhead ? size - overhead : 0);
-    return ts::SectionPtr(new ts::Section(tid, true, 0x0000, 0, true, secnum, secnum, payload.data(), payload.size()));
+    return std::make_shared<ts::Section>(tid, true, 0x0000, 0, true, secnum, secnum, payload.data(), payload.size());
 }
 
 void SectionTest::testSize()

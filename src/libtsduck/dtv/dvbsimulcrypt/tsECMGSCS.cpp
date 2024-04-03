@@ -105,43 +105,43 @@ void ts::ecmgscs::Protocol::factory(const tlv::MessageFactory& fact, tlv::Messag
 {
     switch (fact.commandTag()) {
         case Tags::channel_setup:
-            msg = tlv::MessagePtr(new ChannelSetup(fact));
+            msg = std::make_shared<ChannelSetup>(fact);
             break;
         case Tags::channel_test:
-            msg = tlv::MessagePtr(new ChannelTest(fact));
+            msg = std::make_shared<ChannelTest>(fact);
             break;
         case Tags::channel_status:
-            msg = tlv::MessagePtr(new ChannelStatus(fact));
+            msg = std::make_shared<ChannelStatus>(fact);
             break;
         case Tags::channel_close:
-            msg = tlv::MessagePtr(new ChannelClose(fact));
+            msg = std::make_shared<ChannelClose>(fact);
             break;
         case Tags::channel_error:
-            msg = tlv::MessagePtr(new ChannelError(fact));
+            msg = std::make_shared<ChannelError>(fact);
             break;
         case Tags::stream_setup:
-            msg = tlv::MessagePtr(new StreamSetup(fact));
+            msg = std::make_shared<StreamSetup>(fact);
             break;
         case Tags::stream_test:
-            msg = tlv::MessagePtr(new StreamTest(fact));
+            msg = std::make_shared<StreamTest>(fact);
             break;
         case Tags::stream_status:
-            msg = tlv::MessagePtr(new StreamStatus(fact));
+            msg = std::make_shared<StreamStatus>(fact);
             break;
         case Tags::stream_close_request:
-            msg = tlv::MessagePtr(new StreamCloseRequest(fact));
+            msg = std::make_shared<StreamCloseRequest>(fact);
             break;
         case Tags::stream_close_response:
-            msg = tlv::MessagePtr(new StreamCloseResponse(fact));
+            msg = std::make_shared<StreamCloseResponse>(fact);
             break;
         case Tags::stream_error:
-            msg = tlv::MessagePtr(new StreamError(fact));
+            msg = std::make_shared<StreamError>(fact);
             break;
         case Tags::CW_provision:
-            msg = tlv::MessagePtr(new CWProvision(fact));
+            msg = std::make_shared<CWProvision>(fact);
             break;
         case Tags::ECM_response:
-            msg = tlv::MessagePtr(new ECMResponse(fact));
+            msg = std::make_shared<ECMResponse>(fact);
             break;
         default:
             throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));

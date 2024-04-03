@@ -45,7 +45,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertToJSON(const Document& source,
 
     if (docRoot == nullptr) {
         report().error(u"invalid XML document, no root element");
-        return json::ValuePtr(new json::Null());
+        return std::make_shared<json::Null>();
     }
     else {
         // Ignore the model if the model root has a different name from the source root.
@@ -110,11 +110,11 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
                     // This is a "very negative" value. This is typically a large unsigned hexadecimal value
                     // which will not be handled correctly when reading back the JSON file. We cannot use
                     // hexadecimal literals in JSON (new in JSON 5), so we leave it as a string.
-                    jvalue = json::ValuePtr(new json::String(it.second));
+                    jvalue = std::make_shared<json::String>(it.second);
                 }
                 else {
                     // Acceptable integer.
-                    jvalue = json::ValuePtr(new json::Number(intValue));
+                    jvalue = std::make_shared<json::Number>(intValue);
                 }
             }
             else {
@@ -133,15 +133,15 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
 
         // Try to enforce integer of boolean value if specified on command line.
         if (jvalue == nullptr && xml_tweaks.x2jEnforceInteger && !intModel && it.second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-            jvalue = json::ValuePtr(new json::Number(intValue));
+            jvalue = std::make_shared<json::Number>(intValue);
         }
         if (jvalue == nullptr && xml_tweaks.x2jEnforceBoolean && !boolModel && it.second.toBool(boolValue)) {
-            jvalue = json::ValuePtr(json::Bool(boolValue));
+            jvalue = json::Bool(boolValue);
         }
 
         // Use a string value by default.
         if (jvalue == nullptr) {
-            jvalue = json::ValuePtr(new json::String(it.second));
+            jvalue = std::make_shared<json::String>(it.second);
         }
 
         // Add the attribute in the JSON object.

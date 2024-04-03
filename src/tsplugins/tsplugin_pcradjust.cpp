@@ -295,7 +295,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
 ts::PCRAdjustPlugin::PIDContextPtr ts::PCRAdjustPlugin::getContext(PID pid)
 {
     const PIDContextPtr ptr = _pid_contexts[pid];
-    return ptr == nullptr ? (_pid_contexts[pid] = PIDContextPtr(new PIDContext(pid))) : ptr;
+    return ptr == nullptr ? (_pid_contexts[pid] = std::make_shared<PIDContext>(pid)) : ptr;
 }
 
 

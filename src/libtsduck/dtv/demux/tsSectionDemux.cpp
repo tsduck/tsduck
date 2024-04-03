@@ -478,7 +478,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             SectionPtr sect_ptr;
 
             if (section_ok && (_section_handler != nullptr || (tc != nullptr && tc->sects[section_number] == nullptr))) {
-                sect_ptr = SectionPtr(new Section(ts_start, section_length, pid, CRC32::CHECK));
+                sect_ptr = std::make_shared<Section>(ts_start, section_length, pid, CRC32::CHECK);
                 sect_ptr->setFirstTSPacketIndex(pusi_pkt_index);
                 sect_ptr->setLastTSPacketIndex(_packet_count);
                 if (!sect_ptr->isValid()) {

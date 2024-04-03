@@ -340,7 +340,7 @@ void ts::SDT::ServiceEntry::setType(uint8_t service_type)
         data[2] = service_type;
         data[3] = 0;            // provider name length
         data[4] = 0;            // service name length
-        descs.add(DescriptorPtr(new Descriptor(data)));
+        descs.add(std::make_shared<Descriptor>(data));
     }
     else if (descs[index]->payloadSize() > 0) {
         // Replace service type in existing descriptor

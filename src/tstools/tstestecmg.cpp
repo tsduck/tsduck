@@ -795,7 +795,7 @@ int MainCode(int argc, char *argv[])
     std::vector<ECMGConnectionPtr> connections;
     connections.reserve(opt.channel_count);
     for (uint16_t index = 0; index < opt.channel_count; ++index) {
-        connections.push_back(ECMGConnectionPtr(new ECMGConnection(opt, stat, events, report, index)));
+        connections.push_back(std::make_shared<ECMGConnection>(opt, stat, events, report, index));
     }
 
     // Send ECM requests based on scheduled dates.

@@ -427,9 +427,9 @@ bool ts::TablesLogger::open()
     if (_use_json && !_rewrite_json) {
         json::ValuePtr root;
         if (_xml_tweaks.x2jIncludeRoot) {
-            root = json::ValuePtr(new json::Object);
+            root = std::make_shared<json::Object>();
             root->add(u"#name", u"tsduck");
-            root->add(u"#nodes", json::ValuePtr(new json::Array));
+            root->add(u"#nodes", std::make_shared<json::Array>());
         }
         if (!_json_doc.open(root, _json_destination, std::cout)) {
             _abort = true;
@@ -721,7 +721,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // With option --pack-all-sections, force the processing of a complete table.
     if (_pack_all_sections) {
         BinaryTable table;
-        table.addSection(SectionPtr(new Section(sect, ShareMode::SHARE)));
+        table.addNewSection(sect, ShareMode::SHARE);
         table.packSections();
         if (table.isValid()) {
             handleTable(demux, table);
@@ -912,7 +912,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
         duck::LogSection msg(_duck_protocol);
         msg.pid = section.sourcePID();
         msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
-        msg.section = SectionPtr(new Section(section, ShareMode::SHARE));
+        msg.section = std::make_shared<Section>(section, ShareMode::SHARE);
 
         // Serialize the message.
         ByteBlockPtr bin(new ByteBlock);

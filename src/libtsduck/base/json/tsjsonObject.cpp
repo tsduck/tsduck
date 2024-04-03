@@ -91,22 +91,22 @@ ts::json::ValuePtr ts::json::Object::extract(const UString& name)
 void ts::json::Object::addValue(const UString& name, const ValuePtr& value)
 {
     // If the pointer is null, explicitly create a "null" value.
-    _fields[name] = value == nullptr ? ValuePtr(new Null) : value;
+    _fields[name] = value == nullptr ? std::make_shared<Null>() : value;
 }
 
 void ts::json::Object::addInteger(const UString& name, int64_t value)
 {
-    addValue(name, ValuePtr(new Number(value)));
+    addValue(name, std::make_shared<Number>(value));
 }
 
 void ts::json::Object::addFloat(const UString& name, double value)
 {
-    addValue(name, ValuePtr(new Number(value)));
+    addValue(name, std::make_shared<Number>(value));
 }
 
 void ts::json::Object::addString(const UString& name, const UString& value)
 {
-    addValue(name, ValuePtr(new String(value)));
+    addValue(name, std::make_shared<String>(value));
 }
 
 void ts::json::Object::getNames(UStringList& names) const

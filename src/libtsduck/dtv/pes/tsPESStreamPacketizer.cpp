@@ -72,7 +72,7 @@ bool ts::PESStreamPacketizer::addPES(const PESPacket& pes, ShareMode mode)
         return false;
     }
     else {
-        _pes_queue.push_back(PESPacketPtr(new PESPacket(pes, mode)));
+        _pes_queue.push_back(std::make_shared<PESPacket>(pes, mode));
         return true;
     }
 }
