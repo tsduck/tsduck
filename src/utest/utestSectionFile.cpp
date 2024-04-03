@@ -300,8 +300,8 @@ void SectionFileTest::testGenericLongTable()
 
     ts::DuckContext duck;
     ts::BinaryTable refTable;
-    refTable.addSection(ts::SectionPtr(new ts::Section(0xCD, true, 0x1234, 7, true, 0, 0, refData0, sizeof(refData0))));
-    refTable.addSection(ts::SectionPtr(new ts::Section(0xCD, true, 0x1234, 7, true, 1, 1, refData1, sizeof(refData1))));
+    refTable.addNewSection(0xCD, true, 0x1234, 7, true, 0, 0, refData0, sizeof(refData0));
+    refTable.addNewSection(0xCD, true, 0x1234, 7, true, 1, 1, refData1, sizeof(refData1));
     TSUNIT_ASSERT(refTable.isValid());
     TSUNIT_ASSERT(!refTable.isShortSection());
     TSUNIT_EQUAL(0xCD, refTable.tableId());

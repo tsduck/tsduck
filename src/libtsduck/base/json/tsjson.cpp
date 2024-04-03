@@ -33,38 +33,43 @@ const ts::Enumeration ts::json::TypeEnum({
 
 ts::json::ValuePtr ts::json::Bool(bool value)
 {
-    return value ? ValuePtr(new True) : ValuePtr(new False);
+    if (value) {
+        return std::make_shared<True>();
+    }
+    else {
+        return std::make_shared<False>();
+    }
 }
 
 ts::json::ValuePtr ts::json::Factory(Type type, const UString& value)
 {
     switch (type) {
         case Type::True:
-            return ValuePtr(new True);
+            return std::make_shared<True>();
         case Type::False:
-            return ValuePtr(new False);
+            return std::make_shared<False>();
         case Type::String:
-            return ValuePtr(new String(value));
+            return std::make_shared<String>(value);
         case Type::Number: {
             int64_t ivalue = 0;
             double fvalue = 0.0;
             if (value.toInteger(ivalue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-                return ValuePtr(new Number(ivalue));
+                return std::make_shared<Number>(ivalue);
             }
             else if (value.toFloat(fvalue)) {
-                return ValuePtr(new Number(fvalue));
+                return std::make_shared<Number>(fvalue);
             }
             else {
-                return ValuePtr(new Null);
+                return std::make_shared<Null>();
             }
         }
         case Type::Object:
-            return ValuePtr(new Object);
+            return std::make_shared<Object>();
         case Type::Array:
-            return ValuePtr(new Array);
+            return std::make_shared<Array>();
         case Type::Null:
         default:
-            return ValuePtr(new Null);
+            return std::make_shared<Null>();
     }
 }
 
@@ -140,33 +145,33 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
 
     // Look for one of the seven possible forms or JSON value.
     if (parser.match(u"null", true)) {
-        value = ValuePtr(new Null);
+        value = std::make_shared<Null>();
     }
     else if (parser.match(u"true", true)) {
-        value = ValuePtr(new True);
+        value = std::make_shared<True>();
     }
     else if (parser.match(u"false", true)) {
-        value = ValuePtr(new False);
+        value = std::make_shared<False>();
     }
     else if (parser.parseJSONStringLiteral(str)) {
-        value = ValuePtr(new String(str));
+        value = std::make_shared<String>(str);
     }
     else if (parser.parseNumericLiteral(str, false, true)) {
         if (str.toInteger(intVal, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-            value = ValuePtr(new Number(intVal));
+            value = std::make_shared<Number>(intVal);
         }
         else if (str.toFloat(floatVal)) {
-            value = ValuePtr(new Number(floatVal));
+            value = std::make_shared<Number>(floatVal);
         }
         else {
             // Invalid integer,
             report.error(u"line %d: JSON floating-point numbers not yet supported, using \"null\" instead", {parser.lineNumber()});
-            value = ValuePtr(new Null);
+            value = std::make_shared<Null>();
         }
     }
     else if (parser.match(u"{", true)) {
         // Parse an object.
-        value = ValuePtr(new Object);
+        value = std::make_shared<Object>();
         // Loop on all fields of the object.
         for (;;) {
             parser.skipWhiteSpace();
@@ -199,7 +204,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
     }
     else if (parser.match(u"[", true)) {
         // Parse an array.
-        value = ValuePtr(new Array);
+        value = std::make_shared<Array>();
         // Loop on all elements of the array.
         for (;;) {
             parser.skipWhiteSpace();

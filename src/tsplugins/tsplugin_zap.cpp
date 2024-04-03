@@ -230,7 +230,7 @@ bool ts::ZapPlugin::getOptions()
     _services.clear();
     _services.resize(count(u""));
     for (size_t i = 0; i < _services.size(); ++i) {
-        _services[i] = ServiceContextPtr(new ServiceContext(duck, value(u"", u"", i)));
+        _services[i] = std::make_shared<ServiceContext>(duck, value(u"", u"", i));
     }
 
     getValues(_audio_langs, u"audio");

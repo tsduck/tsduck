@@ -125,7 +125,7 @@ ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& 
     PutUInt8(data + 13, tid);                  // last table id in this service
 
     // Build a section from the binary data.
-    section = SectionPtr(new Section(section_data, PID_NULL, CRC32::IGNORE));
+    section = std::make_shared<Section>(section_data, PID_NULL, CRC32::IGNORE);
     updateVersion(gen, false);
     CheckNonNull(section.get());
 }
@@ -141,7 +141,7 @@ void ts::EITGenerator::ESection::startModifying()
     if (injected && section != nullptr) {
         // Duplicate the section. The previous section data is maybe still
         // referenced inside the packetizer and will be deleted later.
-        section = SectionPtr(new Section(*section, ShareMode::COPY));
+        section = std::make_shared<Section>(*section, ShareMode::COPY);
     }
     // Mark the new section data as no longer used by a packetizer.
     injected = false;
@@ -770,8 +770,7 @@ bool ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
 {
     if (sec == nullptr) {
         // The section did not exist, create it.
-        sec = ESectionPtr(new ESection(this, service_id, tid, section_number, 1));
-        CheckNonNull(sec.get());
+        sec = std::make_shared<ESection>(this, service_id, tid, section_number, 1);
         // The initial state of the section is: no event, no CRC.
         if (event != nullptr) {
             // Append the event in the payload.

@@ -262,7 +262,7 @@ void ts::SectionFile::rebuildTables()
         }
         else if (_sections[i]->isShortSection()) {
             // Short sections are always full tables.
-            _tables.push_back(BinaryTablePtr(new BinaryTable({_sections[i]})));
+            _tables.push_back(std::make_shared<BinaryTable>(SectionPtrVector{_sections[i]}));
         }
         else if (_sections[i]->sectionNumber() != 0 || i + _sections[i]->lastSectionNumber() >= _sections.size()) {
             // Orphan section, not preceded by logically adjacent sections or section #0 without enough following sections.
@@ -283,7 +283,7 @@ void ts::SectionFile::rebuildTables()
             }
             if (ok) {
                 // All sections are present in order, this is a table.
-                _tables.push_back(BinaryTablePtr(new BinaryTable(secs)));
+                _tables.push_back(std::make_shared<BinaryTable>(secs));
                 i += count - 1;
             }
             else {
@@ -657,7 +657,7 @@ ts::json::ValuePtr ts::SectionFile::convertToJSON()
         return _model.convertToJSON(doc);
     }
     else {
-        return json::ValuePtr(new json::Null);
+        return std::make_shared<json::Null>();
     }
 }
 

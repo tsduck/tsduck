@@ -140,7 +140,7 @@ bool ts::DescriptorList::add(const void* data, size_t size)
     bool success = true;
 
     while (size >= 2 && (length = size_t(desc[1]) + 2) <= size) {
-        success = add(DescriptorPtr(new Descriptor(desc, length))) && success;
+        success = add(std::make_shared<Descriptor>(desc, length)) && success;
         desc += length;
         size -= length;
     }
@@ -332,7 +332,7 @@ void ts::DescriptorList::addPrivateDataSpecifier(PDS pds)
         data[0] = DID_PRIV_DATA_SPECIF;
         data[1] = 4;
         PutUInt32(data + 2, pds);
-        add(DescriptorPtr(new Descriptor(data, sizeof(data))));
+        add(std::make_shared<Descriptor>(data, sizeof(data)));
     }
 }
 
@@ -758,8 +758,7 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
     // Analyze all children nodes.
     for (const xml::Element* node = parent == nullptr ? nullptr : parent->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
 
-        DescriptorPtr bin = DescriptorPtr(new Descriptor);
-        CheckNonNull(bin.get());
+        DescriptorPtr bin = std::make_shared<Descriptor>();
 
         // Try to analyze the XML element.
         if (bin->fromXML(duck, node, tableId())) {

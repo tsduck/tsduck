@@ -61,7 +61,7 @@ ts::json::Value& ts::json::Array::at(size_t index)
 size_t ts::json::Array::setValue(const ValuePtr& value, size_t index)
 {
     // If the pointer is null, explicitly create a "null" value.
-    const ValuePtr actualValue(value == nullptr ? ValuePtr(new Null) : value);
+    const ValuePtr actualValue(value == nullptr ? std::make_shared<Null>() : value);
 
     if (index < _value.size()) {
         _value[index] = actualValue;
@@ -75,17 +75,17 @@ size_t ts::json::Array::setValue(const ValuePtr& value, size_t index)
 
 size_t ts::json::Array::setInteger(int64_t value, size_t index)
 {
-    return setValue(json::ValuePtr(new Number(value)), index);
+    return setValue(std::make_shared<Number>(value), index);
 }
 
 size_t ts::json::Array::setFloat(double value, size_t index)
 {
-    return setValue(json::ValuePtr(new Number(value)), index);
+    return setValue(std::make_shared<Number>(value), index);
 }
 
 size_t ts::json::Array::setString(const UString& value, size_t index)
 {
-    return setValue(json::ValuePtr(new String(value)), index);
+    return setValue(std::make_shared<String>(value), index);
 }
 
 void ts::json::Array::erase(size_t index, size_t count)

@@ -246,7 +246,7 @@ void ts::StuffAnalyzePlugin::handleSection(SectionDemux& demux, const Section& s
     if (ctx == nullptr) {
         // First section on this PID, allocate a context.
         // Note that the new context becomes managed by the safe pointer (assignment magic).
-        ctx = PIDContextPtr(new PIDContext);
+        ctx = std::make_shared<PIDContext>();
         _pid_contexts[pid] = ctx;
     }
 

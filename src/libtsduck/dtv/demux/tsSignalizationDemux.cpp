@@ -1135,7 +1135,7 @@ void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID 
 ts::SignalizationDemux::PIDContextPtr ts::SignalizationDemux::getPIDContext(PID pid)
 {
     auto it = _pids.find(pid);
-    return it != _pids.end() ? it->second : (_pids[pid] = PIDContextPtr(new PIDContext(pid)));
+    return it != _pids.end() ? it->second : (_pids[pid] = std::make_shared<PIDContext>(pid));
 }
 
 // Constructor.
@@ -1184,7 +1184,7 @@ ts::SignalizationDemux::ServiceContextPtr ts::SignalizationDemux::getServiceCont
              (create == CreateService::IF_MAY_EXIST && !_last_pat.isValid()) ||
              (create == CreateService::IF_MAY_EXIST && _last_pat.isValid() && Contains(_last_pat.pmts, service_id)))
     {
-        return _services[service_id] = ServiceContextPtr(new ServiceContext(service_id));
+        return _services[service_id] = std::make_shared<ServiceContext>(service_id);
     }
     else {
         return ServiceContextPtr();
@@ -1204,7 +1204,7 @@ void ts::SignalizationDemux::ServiceContextMapView::push_back(const Service& srv
 {
     if (_tsid != 0xFFFF && (!srv.hasTSId() || srv.hasTSId(_tsid)) && (_onid == 0xFFFF || !srv.hasONId() || srv.hasONId(_onid))) {
         if (_svmap[srv.getId()] == nullptr) {
-            _svmap[srv.getId()] = ServiceContextPtr(new ServiceContext(srv.getId()));
+            _svmap[srv.getId()] = std::make_shared<ServiceContext>(srv.getId());
         }
         _svmap[srv.getId()]->service = srv;
     }

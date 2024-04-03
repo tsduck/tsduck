@@ -192,9 +192,9 @@ bool ts::PSILogger::open()
     if (_use_json) {
         json::ValuePtr root;
         if (_xml_tweaks.x2jIncludeRoot) {
-            root = json::ValuePtr(new json::Object);
+            root = std::make_shared<json::Object>();
             root->add(u"#name", u"tsduck");
-            root->add(u"#nodes", json::ValuePtr(new json::Array));
+            root->add(u"#nodes", std::make_shared<json::Array>());
         }
         if (!_json_doc.open(root, _json_destination, std::cout)) {
             _abort = true;

@@ -198,7 +198,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
         }
         else {
             // Enqueue the packet.
-            _latePackets.push_back(TSPacketPtr(new TSPacket(pkt)));
+            _latePackets.push_back(std::make_shared<TSPacket>(pkt));
             // If this is the first packet in the queue, point to the first byte after 0x47.
             if (_latePackets.size() == 1) {
                 _lateIndex = 1;

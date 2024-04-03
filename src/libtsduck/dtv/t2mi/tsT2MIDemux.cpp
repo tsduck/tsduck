@@ -95,7 +95,7 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
     // Get / create PID context.
     PIDContextPtr& pc(_pids[pid]);
     if (pc == nullptr) {
-        pc = PIDContextPtr(new PIDContext);
+        pc = std::make_shared<PIDContext>();
         CheckNonNull(pc.get());
     }
 
@@ -270,7 +270,7 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
     const uint8_t plp = pkt.plp();
     PLPContextPtr& plpp(pc.plps[plp]);
     if (plpp == nullptr) {
-        plpp = PLPContextPtr(new PLPContext);
+        plpp = std::make_shared<PLPContext>();
         CheckNonNull(plpp.get());
     }
 

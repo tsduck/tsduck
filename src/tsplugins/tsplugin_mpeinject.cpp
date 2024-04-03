@@ -195,7 +195,7 @@ bool ts::MPEInjectPlugin::getOptions()
 
     // There must be at least one receiver.
     do {
-        _receivers.push_back(ReceiverPtr(new ReceiverThread(this)));
+        _receivers.push_back(std::make_shared<ReceiverThread>(this));
         if (!_receivers.back()->getOptions(_receivers.size() - 1)) {
             return false;
         }

@@ -555,7 +555,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
     // Read rest of the section
     if (insize == 3) {
         secsize += GetUInt16(header + 1) & 0x0FFF;
-        secdata = ByteBlockPtr(new ByteBlock(secsize));
+        secdata = std::make_shared<ByteBlock>(secsize);
         CheckNonNull(secdata.get());
         MemCopy(secdata->data(), header, 3);
         strm.read(reinterpret_cast <char*>(secdata->data() + 3), std::streamsize(secsize - 3));

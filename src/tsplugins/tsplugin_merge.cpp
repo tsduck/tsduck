@@ -336,7 +336,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
 
     // Allocate the new object. Atomically swap the safe pointer. This action
     // will synchronously deallocate the previous object.
-    _pipe = TSForkPipePtr(new TSForkPipe);
+    _pipe = std::make_shared<TSForkPipe>();
     CheckNonNull(_pipe.get());
 
     // Note on buffer size: we use DEFAULT_MAX_QUEUED_PACKETS instead of _max_queue

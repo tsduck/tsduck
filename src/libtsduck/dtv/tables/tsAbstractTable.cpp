@@ -207,14 +207,14 @@ void ts::AbstractTable::addOneSectionImpl(BinaryTable &table, PSIBuffer &payload
     // This method is overridden in AbstractLongTable.
     // Always set one single section in short tables.
     if (table.sectionCount() == 0) {
-        const SectionPtr section(new Section(tableId(), isPrivate(), payload.currentReadAddress(), payload.remainingReadBytes()));
+        const SectionPtr section(std::make_shared<Section>(tableId(), isPrivate(), payload.currentReadAddress(), payload.remainingReadBytes()));
         // Add a trailing CRC32 if this table needs it, even though this is a short section.
         if (useTrailingCRC32()) {
             // The CRC must be computed on the section with the final CRC included in the length.
             section->appendPayload(ByteBlock(4));
             section->setUInt32(section->payloadSize() - 4, CRC32(section->content(), section->size() - 4));
         }
-        table.addSection(section, true);
+        table.addSection(section);
     }
     else {
         // More than one section, this is an error.

@@ -342,7 +342,7 @@ bool ts::tsmux::Core::getUTC(Time& utc, const TSPacket& pkt)
                 if (pl_size >= sect_size) {
                     // A complete section is here, make it a binary table.
                     BinaryTable table;
-                    table.addSection(SectionPtr(new Section(pl, sect_size)));
+                    table.addNewSection(pl, sect_size);
                     // Try to interpret it as a TDT or TOT.
                     TDT tdt(_duck, table);
                     if (tdt.isValid()) {

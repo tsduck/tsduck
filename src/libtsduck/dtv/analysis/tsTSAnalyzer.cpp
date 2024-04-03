@@ -271,7 +271,7 @@ ts::TSAnalyzer::PIDContextPtr ts::TSAnalyzer::getPID(PID pid, const UString& des
     const PIDContextPtr p(_pids[pid]);
     if (p == nullptr) {
         // The PID was not yet used, map entry just created.
-        return _pids[pid] = PIDContextPtr(new PIDContext(pid, description));
+        return _pids[pid] = std::make_shared<PIDContext>(pid, description);
     }
     else {
         // If the PID was marked as unreferenced, now use actual description.
@@ -292,7 +292,7 @@ ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService(uint16_t service_id
     ServiceContextPtr p(_services[service_id]);
     if (p == nullptr) {
         // The service was not yet used, map entry just created.
-        return _services[service_id] = ServiceContextPtr(new ServiceContext(service_id));
+        return _services[service_id] = std::make_shared<ServiceContext>(service_id);
     }
     else {
         return p;

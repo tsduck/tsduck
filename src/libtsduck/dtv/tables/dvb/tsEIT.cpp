@@ -413,16 +413,15 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
             // Create an empty section if required.
             if (mode > FILL_SEGMENTS || si > seg_last) {
                 empty_payload[4] = seg_last;
-                table.addSection(SectionPtr(new Section(tid,
-                                                        is_private,
-                                                        table.tableIdExtension(),
-                                                        table.version(),
-                                                        is_current,
-                                                        uint8_t(si),  // section_number
-                                                        last_section, // last_section_number
-                                                        empty_payload,
-                                                        EIT_PAYLOAD_FIXED_SIZE)));
-
+                table.addNewSection(tid,
+                                    is_private,
+                                    table.tableIdExtension(),
+                                    table.version(),
+                                    is_current,
+                                    uint8_t(si),  // section_number
+                                    last_section, // last_section_number
+                                    empty_payload,
+                                    EIT_PAYLOAD_FIXED_SIZE);
             }
         }
         else if (mode == FIX_EXISTING && sec->isValid() && sec->payloadSize() >= EIT_PAYLOAD_FIXED_SIZE) {

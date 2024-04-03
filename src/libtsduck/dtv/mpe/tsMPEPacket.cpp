@@ -29,7 +29,7 @@ ts::MPEPacket::MPEPacket(const MPEPacket& other, ShareMode mode) :
             break;
         case ShareMode::COPY:
             if (other._is_valid) {
-                _datagram = ByteBlockPtr(new ByteBlock(*other._datagram));
+                _datagram = std::make_shared<ByteBlock>(*other._datagram);
             }
             break;
         default:
@@ -57,7 +57,7 @@ ts::MPEPacket::MPEPacket(ByteBlockPtr datagram, ShareMode mode, const MACAddress
                 _datagram = datagram;
                 break;
             case ShareMode::COPY:
-                _datagram = ByteBlockPtr(new ByteBlock(*datagram));
+                _datagram = std::make_shared<ByteBlock>(*datagram);
                 break;
             default:
                 // should not get there
@@ -175,7 +175,7 @@ ts::MPEPacket& ts::MPEPacket::copy(const MPEPacket& other)
         _is_valid = other._is_valid;
         _source_pid = other._source_pid;
         _dest_mac = other._dest_mac;
-        _datagram = other._is_valid ? ByteBlockPtr(new ByteBlock(*other._datagram)) : nullptr;
+        _datagram = other._is_valid ? std::make_shared<ByteBlock>(*other._datagram) : nullptr;
     }
     return *this;
 }
@@ -214,7 +214,7 @@ ts::MPEPacket& ts::MPEPacket::copy(const Section& section)
 
     // Get the datagram from the rest of the section.
     // Do not include trailing 4 bytes (checksum or CRC32).
-    _datagram = ByteBlockPtr(new ByteBlock(data + 12, size - 16));
+    _datagram = std::make_shared<ByteBlock>(data + 12, size - 16);
 
     // Check that the datagram contains a UDP/IP packet.
     _is_valid = true;
@@ -285,7 +285,7 @@ void ts::MPEPacket::configureUDP(bool force, size_t udpSize)
         if (_datagram == nullptr) {
             // Recreate a completely new datagram.
             // Zero is a suitable default for most fields.
-            _datagram = ByteBlockPtr(new ByteBlock(totalSize, 0));
+            _datagram = std::make_shared<ByteBlock>(totalSize, 0);
         }
         else {
             // Simply resize the current packet.
