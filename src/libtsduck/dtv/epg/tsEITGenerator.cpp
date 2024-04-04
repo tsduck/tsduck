@@ -764,13 +764,13 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
 bool ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet& service_id,
                                                          ESectionPtr& sec,
                                                          TID tid,
-                                                         bool section_number,
+                                                         uint8_t section_number,
                                                          const EventPtr& event,
                                                          const Time&inject_time)
 {
     if (sec == nullptr) {
         // The section did not exist, create it.
-        sec = std::make_shared<ESection>(this, service_id, tid, section_number, 1);
+        sec = std::make_shared<ESection>(this, service_id, tid, section_number, uint8_t(1));
         // The initial state of the section is: no event, no CRC.
         if (event != nullptr) {
             // Append the event in the payload.

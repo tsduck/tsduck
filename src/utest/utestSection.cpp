@@ -232,7 +232,7 @@ ts::SectionPtr SectionTest::NewSection(size_t size, uint8_t secnum, ts::TID tid)
 {
     const size_t overhead = ts::LONG_SECTION_HEADER_SIZE + ts::SECTION_CRC32_SIZE;
     ts::ByteBlock payload(size >= overhead ? size - overhead : 0);
-    return std::make_shared<ts::Section>(tid, true, 0x0000, 0, true, secnum, secnum, payload.data(), payload.size());
+    return std::make_shared<ts::Section>(tid, true, uint16_t(0), uint8_t(0), true, secnum, secnum, payload.data(), payload.size());
 }
 
 void SectionTest::testSize()
