@@ -126,7 +126,11 @@ namespace ts {
         template<class... Args>
         bool addNewSection(Args&&... args)
         {
+            // MSVC is unable to correctly forward the arguments.
+            TS_PUSH_WARNING()
+            TS_MSC_NOWARNING(4242) // 'argument': conversion from 'xxxx' to 'yyyy', possible loss of data
             return addSection(std::make_shared<Section>(std::forward<Args>(args)...), true, true);
+            TS_POP_WARNING()
         }
 
         //!

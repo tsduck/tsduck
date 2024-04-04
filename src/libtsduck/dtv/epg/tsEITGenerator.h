@@ -483,7 +483,7 @@ namespace ts {
 
         // Regenerate, if necessary, EIT p/f in a service. Return true if section is modified.
         void regeneratePresentFollowing(const ServiceIdTriplet& service_id, EService& srv, const Time& now);
-        bool regeneratePresentFollowingSection(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event, const Time&inject_time);
+        bool regeneratePresentFollowingSection(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, uint8_t section_number, const EventPtr& event, const Time&inject_time);
 
         // Regenerate all EIT schedule, create missing segments and sections.
         void regenerateSchedule(const Time& now);

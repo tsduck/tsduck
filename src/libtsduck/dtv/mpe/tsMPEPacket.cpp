@@ -285,7 +285,7 @@ void ts::MPEPacket::configureUDP(bool force, size_t udpSize)
         if (_datagram == nullptr) {
             // Recreate a completely new datagram.
             // Zero is a suitable default for most fields.
-            _datagram = std::make_shared<ByteBlock>(totalSize, 0);
+            _datagram = std::make_shared<ByteBlock>(totalSize, uint8_t(0));
         }
         else {
             // Simply resize the current packet.
