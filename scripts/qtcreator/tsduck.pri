@@ -33,18 +33,29 @@ CONFIG -= warn_off
 CONFIG *= warn_on
 
 # Required on macOS to get C++17 features (C++17 standard library no supported before 10.15).
-mac: QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15
+mac: QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15 # $$system(sw_vers --productVersion)
 
 # The other system-specific directories to exclude
 linux: NOSYSDIR = mac
 mac:   NOSYSDIR = linux
 
-# TSDuck configuration files
-TS_CONFIG_FILES += $$system("ls $$SRCROOT/libtsduck/config/*.names $$SRCROOT/libtsduck/config/*.xml")
-
 # Shared object suffix
 linux: SO = .so
 mac:   SO = .dylib
+
+# Locate Python (build is started with minimal environment, clearing current PATH).
+linux: ALLPYTHON = $$files(/usr/bin/python3) \
+                   $$files(/usr/local/bin/python3) \
+                   $$files(/usr/bin/python) \
+                   $$files(/usr/local/bin/python)
+mac:   ALLPYTHON = $$files(/usr/local/bin/python3) \
+                   $$files(/usr/local/bin/python) \
+                   $$files(/opt/homebrew/bin/python3) \
+                   $$files(/opt/homebrew/bin/python) \
+                   $$files(/usr/bin/python3) \
+                   $$files(/usr/bin/python)
+equals(ALLPYTHON, ""): PYTHON = python
+else: PYTHON = $$first(ALLPYTHON)
 
 # Other configuration.
 LIBS += -ledit
@@ -95,13 +106,14 @@ else {
 }
 tstool {
     # TSDuck tools shall use "CONFIG += tstool"
-    CONFIG += libtsduck
+    CONFIG += libtsduck config_files
     TEMPLATE = app
     SOURCES += $$SRCROOT/tstools/$${TARGET}.cpp
 }
 util {
     # TSDuck utils shall use "CONFIG += util"
-    CONFIG += libtsduck
+    CONFIG += libtsduck config_files
+    PRE_TARGETDEPS += ../tsxml/tsxml
     TEMPLATE = app
     SOURCES += $$SRCROOT/utils/$${TARGET}.cpp
 }
@@ -121,6 +133,24 @@ libtsduck {
     LIBS = ../libtsduck/libtsduck$$SO $$LIBS
     PRE_TARGETDEPS += ../libtsduck/libtsduck$$SO
     DEPENDPATH += ../libtsduck
-    INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name bsd ! -name freebsd ! -name netbsd ! -name openbsd ! -name dragonflybsd ! -name $$NOSYSDIR ! -name private ! -name __pycache__")
-    QMAKE_POST_LINK += cp $$TS_CONFIG_FILES . $$escape_expand(\\n\\t)
+    INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name \\*bsd ! -name $$NOSYSDIR ! -name private ! -name __pycache__")
+}
+config_files {
+    QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/config/*.names $$SRCROOT/libtsduck/config/*.xml . $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += rm -f *.skeleton.names *.skeleton.xml $$escape_expand(\\n\\t)
+    DTAPI_HEADER = $$system($$PROJROOT/scripts/dtapi-config.sh --header)
+    equals(DTAPI_HEADER, ''): DTAPI_HEADER = /dev/null
+    QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dektec-names.py $$DTAPI_HEADER tsduck.dektec.names $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dtv-names.py \
+                       tsduck.dtv.names \
+                       $$SRCROOT/libtsduck/config/tsduck.dtv.skeleton.names \
+                       $$SRCROOT/libtsduck/base \
+                       $$SRCROOT/libtsduck/dtv \
+                       $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += ../tsxml/tsxml --merge --sort _tables --sort _descriptors --uncomment \
+                       -o tsduck.tables.model.xml \
+                       $$SRCROOT/libtsduck/config/tsduck.tables.skeleton.xml \
+                       $$SRCROOT/libtsduck/dtv/tables/*/*.xml \
+                       $$SRCROOT/libtsduck/dtv/descriptors/*/*.xml \
+                       $$escape_expand(\\n\\t)
 }
