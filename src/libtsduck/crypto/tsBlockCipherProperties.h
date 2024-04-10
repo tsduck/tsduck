@@ -29,8 +29,8 @@ namespace ts {
         size_t       min_key_size;     //!< Minimum key size in bytes.
         size_t       max_key_size;     //!< Maximum key size in bytes.
         bool         chaining;         //!< If true, includes a chaining mode. If false, can process only one block.
+        bool         residue_allowed;  //!< The chaining mode can process residue after the last multiple of the block size.
         const UChar* chaining_name;    //!< Chaining mode name.
-        size_t       residue_allowed;  //!< The chaining mode can process residue after the last multiple of the block size.
         size_t       min_message_size; //!< Minimum message size. Shorter data cannot be ciphered in this mode (chaining).
         size_t       work_blocks;      //!< Temporary work buffer size in multiples of cipher block size (chaining).
         size_t       min_iv_size;      //!< Minimum initialization vector size in bytes (chaining).

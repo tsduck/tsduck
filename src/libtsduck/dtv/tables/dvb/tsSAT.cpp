@@ -448,8 +448,8 @@ void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
 void ts::SAT::cell_fragment_info_type::deserialize(PSIBuffer& buf)
 {
     cell_fragment_id = buf.getUInt32();
-    first_occurence = buf.getBit();
-    last_occurence = buf.getBit();
+    first_occurence = buf.getBool();
+    last_occurence = buf.getBool();
     if (first_occurence) {
         buf.skipBits(4);
         buf.getBits(center_latitude, 18);
@@ -641,7 +641,7 @@ void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(uint16_t slot_
 
 void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(PSIBuffer& buf)
 {
-    on = buf.getBit();
+    on = buf.getBool();
 }
 
 void ts::SAT::beam_hopping_time_plan_info_type::slot::toXML(xml::Element* root)

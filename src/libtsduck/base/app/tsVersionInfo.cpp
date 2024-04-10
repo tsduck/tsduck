@@ -198,25 +198,25 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 #if defined(_MSC_FULL_VER)
     version.format(u"MSVC %02d.%02d.%05d", _MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000);
     #if defined(_MSC_BUILD)
-        version.append(UString::FormatNew(u".%02d", _MSC_BUILD));
+        version.append(UString::Format(u".%02d", _MSC_BUILD));
     #endif
 #elif defined(_MSC_VER)
     version.format(u"MSVC %02d.%02d", _MSC_VER / 100, _MSC_VER % 100);
     #if defined(_MSC_BUILD)
-        version.append(UString::FormatNew(u".%02d", _MSC_BUILD));
+        version.append(UString::Format(u".%02d", _MSC_BUILD));
     #endif
 #elif defined(__clang_version__)
     version.format(u"Clang %s", __clang_version__);
 #elif defined(__llvm__) || defined(__clang__) || defined(__clang_major__)
     version.assign(u"Clang ");
     #if defined(__clang_major__)
-        version.append(UString::FormatNew(u"%d", __clang_major__));
+        version.append(UString::Format(u"%d", __clang_major__));
     #endif
     #if defined(__clang_minor__)
-        version.append(UString::FormatNew(u".%d", __clang_minor__));
+        version.append(UString::Format(u".%d", __clang_minor__));
     #endif
     #if defined(__clang_patchlevel__)
-        version.append(UString::FormatNew(u".%d", __clang_patchlevel__));
+        version.append(UString::Format(u".%d", __clang_patchlevel__));
     #endif
 #elif defined(__GNUC__)
     version.format(u"GCC %d", __GNUC__);
