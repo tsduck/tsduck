@@ -104,13 +104,19 @@ void ts::Report::log(int severity, const UString& msg)
 void ts::Report::log(int severity, const UChar* fmt, std::initializer_list<ArgMixIn> args)
 {
     if (severity <= _max_severity) {
+        TS_PUSH_WARNING()
+        TS_MSC_NOWARNING(4996)
         log(severity, UString::Format(fmt, args));
+        TS_POP_WARNING()
     }
 }
 
 void ts::Report::log(int severity, const UString& fmt, std::initializer_list<ArgMixIn> args)
 {
     if (severity <= _max_severity) {
+        TS_PUSH_WARNING()
+        TS_MSC_NOWARNING(4996)
         log(severity, UString::Format(fmt, args));
+        TS_POP_WARNING()
     }
 }
