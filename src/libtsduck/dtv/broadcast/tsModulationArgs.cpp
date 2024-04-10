@@ -1129,10 +1129,10 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             break;
         }
         case TT_DVB_C: {
-            opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --modulation %s", {
+            opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --modulation %s",
                                    symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBC),
                                    InnerFECEnum.name(inner_fec.value_or(DEFAULT_INNER_FEC)),
-                                   ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBC))});
+                                   ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBC)));
             break;
         }
         case TT_DVB_T: {
@@ -1142,14 +1142,14 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                    u" --bandwidth %'d"
                                    u" --transmission-mode %s"
                                    u" --guard-interval %s"
-                                   u" --hierarchy %s", {
+                                   u" --hierarchy %s",
                                    ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBT)),
                                    InnerFECEnum.name(fec_hp.value_or(DEFAULT_FEC_HP)),
                                    InnerFECEnum.name(fec_lp.value_or(DEFAULT_FEC_LP)),
                                    bandwidth.value_or(DEFAULT_BANDWIDTH_DVBT),
                                    TransmissionModeEnum.name(transmission_mode.value_or(DEFAULT_TRANSMISSION_MODE_DVBT)),
                                    GuardIntervalEnum.name(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT)),
-                                   HierarchyEnum.name(hierarchy.value_or(DEFAULT_HIERARCHY))});
+                                   HierarchyEnum.name(hierarchy.value_or(DEFAULT_HIERARCHY)));
             if (plp.has_value() && plp != PLP_DISABLE) {
                 opt += UString::Format(u" --plp %d", plp.value());
             }
@@ -1159,15 +1159,15 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             opt += UString::Format(u" --symbol-rate %'d"
                                    u" --fec-inner %s"
                                    u" --polarity %s"
-                                   u" --modulation %s", {
+                                   u" --modulation %s",
                                    symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS),
                                    InnerFECEnum.name(inner_fec.value_or(DEFAULT_INNER_FEC)),
                                    PolarizationEnum.name(polarity.value_or(DEFAULT_POLARITY)),
-                                   ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBS))});
+                                   ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_DVBS)));
             if (delivery_system == DS_DVB_S2) {
-                opt += UString::Format(u" --pilots %s --roll-off %s", {
+                opt += UString::Format(u" --pilots %s --roll-off %s",
                                        PilotEnum.name(pilots.value_or(DEFAULT_PILOTS)),
-                                       RollOffEnum.name(roll_off.value_or(DEFAULT_ROLL_OFF))});
+                                       RollOffEnum.name(roll_off.value_or(DEFAULT_ROLL_OFF)));
             }
             if (isi.has_value() && isi != DEFAULT_ISI) {
                 opt += UString::Format(u" --isi %d", isi.value());
@@ -1187,10 +1187,10 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             break;
         }
         case TT_ISDB_S: {
-            opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --polarity %s", {
+            opt += UString::Format(u" --symbol-rate %'d --fec-inner %s --polarity %s",
                                    symbol_rate.value_or(DEFAULT_SYMBOL_RATE_DVBS),
                                    InnerFECEnum.name(inner_fec.value_or(DEFAULT_INNER_FEC)),
-                                   PolarizationEnum.name(polarity.value_or(DEFAULT_POLARITY))});
+                                   PolarizationEnum.name(polarity.value_or(DEFAULT_POLARITY)));
             if (stream_id.has_value() && stream_id != DEFAULT_STREAM_ID) {
                 opt += UString::Format(u" --stream-id %d", stream_id.value());
             }
@@ -1203,15 +1203,15 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             break;
         }
         case TT_ISDB_T: {
-            opt += UString::Format(u" --bandwidth %'d --transmission-mode %s --guard-interval %s", {
+            opt += UString::Format(u" --bandwidth %'d --transmission-mode %s --guard-interval %s",
                                    bandwidth.value_or(DEFAULT_BANDWIDTH_ISDBT),
                                    TransmissionModeEnum.name(transmission_mode.value_or(DEFAULT_TRANSMISSION_MODE_DVBT)),
-                                   GuardIntervalEnum.name(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT))});
+                                   GuardIntervalEnum.name(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT)));
             if (sound_broadcasting == true) {
-                opt += UString::Format(u" --sound-broadcasting --sb-subchannel-id %d --sb-segment-count %d --sb-segment-index %d", {
+                opt += UString::Format(u" --sound-broadcasting --sb-subchannel-id %d --sb-segment-count %d --sb-segment-index %d",
                                        sb_subchannel_id.value_or(DEFAULT_SB_SUBCHANNEL_ID),
                                        sb_segment_count.value_or(DEFAULT_SB_SEGMENT_COUNT),
-                                       sb_segment_index.value_or(DEFAULT_SB_SEGMENT_INDEX)});
+                                       sb_segment_index.value_or(DEFAULT_SB_SEGMENT_INDEX));
             }
             if (isdbt_partial_reception == true) {
                 opt += u" --isdbt-partial-reception";

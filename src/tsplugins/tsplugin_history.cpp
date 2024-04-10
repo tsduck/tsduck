@@ -15,8 +15,8 @@
 #include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
 #include "tsCASFamily.h"
-#include "tsNames.h"
 #include "tsTime.h"
+#include "tsNames.h"
 #include "tsPES.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
@@ -88,12 +88,45 @@ namespace ts {
         void analyzeCADescriptors(const DescriptorList& dlist, uint16_t service_id);
 
         // Report a history line
-        void report(const UChar* fmt, const std::initializer_list<ArgMixIn> args);
-        void report(PacketCounter, const UChar* fmt, const std::initializer_list<ArgMixIn> args);
+        void report(PacketCounter pkt, const UString& line);
+
+        template <class... Args>
+        void report(const UChar* fmt, Args&&... args)
+        {
+            report(tsp->pluginPackets(), UString::Format(fmt, std::forward<ArgMixIn>(args)...));
+        }
+
+        template <class... Args>
+        void report(PacketCounter pkt, const UChar* fmt, Args&&... args)
+        {
+            report(pkt, UString::Format(fmt, std::forward<ArgMixIn>(args)...));
+        }
     };
 }
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"history", ts::HistoryPlugin);
+
+void ts::HistoryPlugin::report(PacketCounter pkt, const UString& line)
+{
+    // Reports the last TDT if required
+    if (!_time_all && _last_tdt.isValid() && !_last_tdt_reported) {
+        _last_tdt_reported = true;
+        report(_last_tdt_pkt, u"TDT: %s UTC", _last_tdt.utc_time.format(Time::DATETIME));
+    }
+
+    // Convert pkt number in playback time when necessary.
+    if (_use_milliseconds) {
+        pkt = PacketInterval(tsp->bitrate(), pkt).count();
+    }
+
+    // Then report the message.
+    if (_outfile.is_open()) {
+        _outfile << UString::Format(u"%d: ", pkt) << line << std::endl;
+    }
+    else {
+        tsp->info(u"%d: %s", {pkt, line});
+    }
+}
 
 
 //----------------------------------------------------------------------------
@@ -212,7 +245,7 @@ bool ts::HistoryPlugin::stop()
     // Report last packet of each PID
     for (const auto& it : _cpids) {
         if (it.second.pkt_count > 0) {
-            report(it.second.last_pkt, u"PID %d (0x%<X) last packet, %s", {it.first, it.second.scrambling ? u"scrambled" : u"clear"});
+            report(it.second.last_pkt, u"PID %d (0x%<X) last packet, %s", it.first, it.second.scrambling ? u"scrambled" : u"clear");
         }
     }
 
@@ -232,7 +265,7 @@ bool ts::HistoryPlugin::stop()
 void ts::HistoryPlugin::handleSection(SectionDemux& demux, const Section& section)
 {
     if (_report_eit && EIT::IsEIT(section.tableId())) {
-        report(u"%s v%d, service 0x%X", {names::TID(duck, section.tableId()), section.version(), section.tableIdExtension()});
+        report(u"%s v%d, service 0x%X", names::TID(duck, section.tableId()), section.version(), section.tableIdExtension());
     }
 }
 
@@ -249,7 +282,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 
         case TID_PAT: {
             if (table.sourcePID() == PID_PAT) {
-                report(u"PAT v%d, TS 0x%X", {table.version(), table.tableIdExtension()});
+                report(u"PAT v%d, TS 0x%X", table.version(), table.tableIdExtension());
                 PAT pat(duck, table);
                 if (pat.isValid()) {
                     // Filter all PMT PIDs.
@@ -270,7 +303,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
                 _last_tdt_reported = false;
                 // Report TDT only if --time-all
                 if (_time_all && _last_tdt.isValid()) {
-                    report(u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATETIME)});
+                    report(u"TDT: %s UTC", _last_tdt.utc_time.format(Time::DATETIME));
                 }
             }
             break;
@@ -282,10 +315,10 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
                     TOT tot(duck, table);
                     if (tot.isValid()) {
                         if (tot.regions.empty()) {
-                            report(u"TOT: %s UTC", {tot.utc_time.format(Time::DATETIME)});
+                            report(u"TOT: %s UTC", tot.utc_time.format(Time::DATETIME));
                         }
                         else {
-                            report(u"TOT: %s LOCAL", {tot.localTime(tot.regions[0]).format(Time::DATETIME)});
+                            report(u"TOT: %s LOCAL", tot.localTime(tot.regions[0]).format(Time::DATETIME));
                         }
                     }
                 }
@@ -294,7 +327,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         }
 
         case TID_PMT: {
-            report(u"PMT v%d, service 0x%X", {table.version(), table.tableIdExtension()});
+            report(u"PMT v%d, service 0x%X", table.version(), table.tableIdExtension());
             PMT pmt(duck, table);
             if (pmt.isValid()) {
                 // Get components of the service, including ECM PID's
@@ -310,7 +343,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_NIT_ACT:
         case TID_NIT_OTH: {
             if (table.sourcePID() == PID_NIT) {
-                report(u"%s v%d, network 0x%X", {names::TID(duck, table.tableId()), table.version(), table.tableIdExtension()});
+                report(u"%s v%d, network 0x%X", names::TID(duck, table.tableId()), table.version(), table.tableIdExtension());
             }
             break;
         }
@@ -318,14 +351,14 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_SDT_ACT:
         case TID_SDT_OTH: {
             if (table.sourcePID() == PID_SDT) {
-                report(u"%s v%d, TS 0x%X", {names::TID(duck, table.tableId()), table.version(), table.tableIdExtension()});
+                report(u"%s v%d, TS 0x%X", names::TID(duck, table.tableId()), table.version(), table.tableIdExtension());
             }
             break;
         }
 
         case TID_BAT: {
             if (table.sourcePID() == PID_BAT) {
-                report(u"BAT v%d, bouquet 0x%X", {table.version(), table.tableIdExtension()});
+                report(u"BAT v%d, bouquet 0x%X", table.version(), table.tableIdExtension());
             }
             break;
         }
@@ -333,7 +366,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
         case TID_CAT:
         case TID_TSDT: {
             // Long sections without TID extension
-            report(u"%s v%d", {names::TID(duck, table.tableId()), table.version()});
+            report(u"%s v%d", names::TID(duck, table.tableId()), table.version());
             break;
         }
 
@@ -342,7 +375,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
             // Got an ECM
             if (_report_cas && _cpids[pid].last_tid != table.tableId()) {
                 // Got a new ECM
-                report(u"PID %d (0x%X), service 0x%X, new ECM 0x%X", {pid, pid, _cpids[pid].service_id, table.tableId()});
+                report(u"PID %d (0x%X), service 0x%X, new ECM 0x%X", pid, pid, _cpids[pid].service_id, table.tableId());
             }
             break;
         }
@@ -351,10 +384,10 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
             if (!EIT::IsEIT(table.tableId())) {
                 const UString name(names::TID(duck, table.tableId()));
                 if (table.sectionCount() > 0 && table.sectionAt(0)->isLongSection()) {
-                    report(u"%s v%d, TIDext 0x%X", {name, table.version(), table.tableIdExtension()});
+                    report(u"%s v%d, TIDext 0x%X", name, table.version(), table.tableIdExtension());
                 }
                 else {
-                    report(u"%s", {name});
+                    report(u"%s", name);
                 }
             }
             break;
@@ -450,34 +483,34 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     if (cpid.pkt_count == 0) {
         // First packet in a PID
         cpid.first_pkt = tsp->pluginPackets();
-        report(u"PID %d (0x%<X) first packet, %s", {pid, scrambling ? u"scrambled" : u"clear"});
+        report(u"PID %d (0x%<X) first packet, %s", pid, scrambling ? u"scrambled" : u"clear");
     }
     else if (_suspend_after > 0 && cpid.last_pkt + _suspend_after < tsp->pluginPackets()) {
         // Last packet in the PID is so old that we consider the PID as suspended, and now restarted
-        report(cpid.last_pkt, u"PID %d (0x%<X) suspended, %s, service 0x%X", {pid, cpid.scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
-        report(u"PID %d (0x%<X) restarted, %s, service 0x%04X", {pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id});
+        report(cpid.last_pkt, u"PID %d (0x%<X) suspended, %s, service 0x%X", pid, cpid.scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id);
+        report(u"PID %d (0x%<X) restarted, %s, service 0x%04X", pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id);
     }
     else if (!ignore_scrambling && cpid.scrambling == 0 && scrambling != 0) {
         // Clear to scrambled transition
-        report(u"PID %d (0x%<X), clear to scrambled transition, %s key, service 0x%X", {pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id});
+        report(u"PID %d (0x%<X), clear to scrambled transition, %s key, service 0x%X", pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id);
     }
     else if (!ignore_scrambling && cpid.scrambling != 0 && scrambling == 0) {
         // Scrambled to clear transition
-        report(u"PID %d (0x%<X), scrambled to clear transition, service 0x%X", {pid, _cpids[pid].service_id});
+        report(u"PID %d (0x%<X), scrambled to clear transition, service 0x%X", pid, _cpids[pid].service_id);
     }
     else if (!ignore_scrambling && _report_cas && cpid.scrambling != scrambling) {
         // New crypto-period
-        report(u"PID %d (0x%<X), new crypto-period, %s key, service 0x%X", {pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id});
+        report(u"PID %d (0x%<X), new crypto-period, %s key, service 0x%X", pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id);
     }
 
     if (has_pes_start) {
         if (!cpid.pes_strid.has_value()) {
             // Found first PES stream id in the PID.
-            report(u"PID %d (0x%<X), PES stream_id is %s", {pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST)});
+            report(u"PID %d (0x%<X), PES stream_id is %s", pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
         }
         else if (cpid.pes_strid != pes_stream_id && !_ignore_stream_id) {
             // PES stream id has changed in the PID.
-            report(u"PID %d (0x%<X), PES stream_id modified from 0x%X to %s", {pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST)});
+            report(u"PID %d (0x%<X), PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
         }
         cpid.pes_strid = pes_stream_id;
     }
@@ -493,36 +526,4 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     _demux.feedPacket(pkt);
 
     return TSP_OK;
-}
-
-
-//----------------------------------------------------------------------------
-// Report a history line
-//----------------------------------------------------------------------------
-
-void ts::HistoryPlugin::report(const UChar* fmt, const std::initializer_list<ArgMixIn> args)
-{
-    report(tsp->pluginPackets(), fmt, args);
-}
-
-void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::initializer_list<ArgMixIn> args)
-{
-    // Reports the last TDT if required
-    if (!_time_all && _last_tdt.isValid() && !_last_tdt_reported) {
-        _last_tdt_reported = true;
-        report(_last_tdt_pkt, u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATETIME)});
-    }
-
-    // Convert pkt number in playback time when necessary.
-    if (_use_milliseconds) {
-        pkt = PacketInterval(tsp->bitrate(), pkt).count();
-    }
-
-    // Then report the message.
-    if (_outfile.is_open()) {
-        _outfile << UString::Format(u"%d: ", pkt) << UString::Format(fmt, args) << std::endl;
-    }
-    else {
-        tsp->info(u"%d: %s", {pkt, UString::Format(fmt, args)});
-    }
 }

@@ -10,7 +10,7 @@
 
 TEMPLATE = subdirs
 CONFIG += ordered
-TSDIRS = $$system(cd $$_PRO_FILE_PWD_; find . -depth 1 -type d -name ts\\*)
+TSDIRS = $$system(cd $$_PRO_FILE_PWD_; find . -maxdepth 1 -type d -name ts\\*)
 TSDIRS = $$replace(TSDIRS,./,)
 TSDIRS = $$replace(TSDIRS,tsxml,)
 TSDIRS = $$sorted(TSDIRS)

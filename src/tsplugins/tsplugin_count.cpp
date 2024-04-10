@@ -60,7 +60,17 @@ namespace ts {
         PacketCounter  _counters[PID_MAX] {};    // Packet counter per PID
 
         // Report a line
-        void report(const UChar* fmt, const std::initializer_list<ArgMixIn> args);
+        template <class... Args>
+        void report(const UChar* fmt, Args&&... args)
+        {
+            if (_outfile.is_open()) {
+                _outfile << UString::Format(fmt, std::forward<ArgMixIn>(args)...) << std::endl;
+            }
+            else {
+                tsp->info(fmt, {std::forward<ArgMixIn>(args)...});
+            }
+        }
+
     };
 }
 
@@ -181,10 +191,10 @@ bool ts::CountPlugin::stop()
         for (size_t pid = 0; pid < PID_MAX; pid++) {
             if (_counters[pid] > 0) {
                 if (_brief_report) {
-                    report(u"%d %d", {pid, _counters[pid]});
+                    report(u"%d %d", pid, _counters[pid]);
                 }
                 else {
-                    report(u"%sPID %4d (0x%04X): %10'd packets", {_tag, pid, pid, _counters[pid]});
+                    report(u"%sPID %4d (0x%04X): %10'd packets", _tag, pid, pid, _counters[pid]);
                 }
             }
         }
@@ -195,10 +205,10 @@ bool ts::CountPlugin::stop()
             total += _counters[pid];
         }
         if (_brief_report) {
-            report(u"%d", {total});
+            report(u"%d", total);
         }
         else {
-            report(u"%stotal: counted %'d packets out of %'d", {_tag, total, tsp->pluginPackets()});
+            report(u"%stotal: counted %'d packets out of %'d", _tag, total, tsp->pluginPackets());
         }
     }
 
@@ -208,21 +218,6 @@ bool ts::CountPlugin::stop()
     }
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Report a line
-//----------------------------------------------------------------------------
-
-void ts::CountPlugin::report(const UChar* fmt, const std::initializer_list<ArgMixIn> args)
-{
-    if (_outfile.is_open()) {
-        _outfile << UString::Format(fmt, args) << std::endl;
-    }
-    else {
-        tsp->info(fmt, args);
-    }
 }
 
 
@@ -267,7 +262,7 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, TSPack
                 totalBitRate = PacketBitRate(now.total_packets - _last_report.total_packets, duration);
             }
             report(u"%s%s, counted: %'d packets, %'d b/s, total: %'d packets, %'d b/s",
-                   {_tag, Time::CurrentLocalTime(), now.counted_packets, countedBitRate, now.total_packets, totalBitRate});
+                   _tag, Time::CurrentLocalTime(), now.counted_packets, countedBitRate, now.total_packets, totalBitRate);
 
             // Save current report.
             _last_report = now;
@@ -278,10 +273,10 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, TSPack
     if (ok) {
         if (_report_all) {
             if (_brief_report) {
-                report(u"%d %d", {tsp->pluginPackets(), pid});
+                report(u"%d %d", tsp->pluginPackets(), pid);
             }
             else {
-                report(u"%spacket: %10'd, PID: %4d (0x%04X)", {_tag, tsp->pluginPackets(), pid, pid});
+                report(u"%spacket: %10'd, PID: %4d (0x%04X)", _tag, tsp->pluginPackets(), pid, pid);
             }
         }
         _counters[pid]++;

@@ -542,12 +542,12 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 
         // Description of the TLV record.
         strm << UString::Format(u"%*s%04X:  %*sTag: %*d (0x%0*X), length: %*d bytes, value: ",
-                                {indent, u"",
-                                 dataOffset + index,
-                                 innerIndent, u"",
-                                 MaxDecimalWidth(tlv.getTagSize()), tag,
-                                 MaxHexaWidth(tlv.getTagSize()), tag,
-                                 MaxDecimalWidth(tlv.getLengthSize()), valueSize});
+                                indent, u"",
+                                dataOffset + index,
+                                innerIndent, u"",
+                                MaxDecimalWidth(tlv.getTagSize()), tag,
+                                MaxHexaWidth(tlv.getTagSize()), tag,
+                                MaxDecimalWidth(tlv.getLengthSize()), valueSize);
 
         // Display the value field.
         size_t tlvInnerStart = 0;

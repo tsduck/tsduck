@@ -115,8 +115,8 @@ bool ts::IPv6Address::match(const IPv6Address& other) const
 ts::UString ts::IPv6Address::toFullString() const
 {
     return UString::Format(u"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
-                           {hexlet(0), hexlet(1), hexlet(2), hexlet(3),
-                            hexlet(4), hexlet(5), hexlet(6), hexlet(7)});
+                           hexlet(0), hexlet(1), hexlet(2), hexlet(3),
+                           hexlet(4), hexlet(5), hexlet(6), hexlet(7));
 }
 
 ts::UString ts::IPv6Address::toString() const

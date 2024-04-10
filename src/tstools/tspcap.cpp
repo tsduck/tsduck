@@ -279,11 +279,11 @@ namespace {
 void DisplayInterval::print(std::ostream& out, const ts::PcapFile& file)
 {
     out << ts::UString::Format(u"%-24s %+16'd %11'd %15'd %12'd",
-                               {ts::PcapFile::ToTime(_stats.first_timestamp),
-                                file.timeOffset(_stats.first_timestamp).count(),
-                                _stats.packet_count,
-                                _stats.total_data_size,
-                                ts::BytesBitRate(_stats.total_data_size, _opt.interval)})
+                               ts::PcapFile::ToTime(_stats.first_timestamp),
+                               file.timeOffset(_stats.first_timestamp).count(),
+                               _stats.packet_count,
+                               _stats.total_data_size,
+                               ts::BytesBitRate(_stats.total_data_size, _opt.interval))
         << std::endl;
     _stats.reset(_stats.first_timestamp + _opt.interval);
 }
@@ -295,8 +295,8 @@ void DisplayInterval::addPacket(std::ostream& out, const ts::PcapFile& file, con
     if (timestamp >= cn::microseconds::zero()) {
         if (_stats.first_timestamp < cn::microseconds::zero()) {
             // Initial processing.
-            out << std::endl;
-            out << ts::UString::Format(u"%-24s %16s %11s %15s %12s", u"Date", u"Micro-seconds", u"Packets", u"Data bytes", u"Bitrate")
+            out << std::endl
+                << ts::UString::Format(u"%-24s %16s %11s %15s %12s", u"Date", u"Micro-seconds", u"Packets", u"Data bytes", u"Bitrate")
                 << std::endl;
         }
         else {
@@ -433,12 +433,12 @@ void FileAnalysis::listStreams(std::ostream& out, cn::microseconds duration)
         const StreamId& id(it.first);
         const StatBlock& sb(it.second);
         out << ts::UString::Format(u"%-22s %-22s %-8s %11'd %15'd %12'd",
-                                   {id.source,
-                                    id.destination,
-                                    ts::IPProtocolName(id.protocol),
-                                    sb.packet_count,
-                                    sb.total_data_size,
-                                    duration <= cn::microseconds::zero() ? 0 : ts::BytesBitRate(sb.total_data_size, duration)})
+                                   id.source,
+                                   id.destination,
+                                   ts::IPProtocolName(id.protocol),
+                                   sb.packet_count,
+                                   sb.total_data_size,
+                                   duration <= cn::microseconds::zero() ? 0 : ts::BytesBitRate(sb.total_data_size, duration))
             << std::endl;
     }
     out << std::endl;

@@ -148,8 +148,8 @@ bool ts::StuffAnalyzePlugin::start()
 ts::UString ts::StuffAnalyzePlugin::PIDContext::toString() const
 {
     return UString::Format(u"%10d %10d %10d %10d %9s",
-                           {total_sections, stuffing_sections, total_bytes, stuffing_bytes,
-                            UString::Percentage(stuffing_bytes, total_bytes)});
+                           total_sections, stuffing_sections, total_bytes, stuffing_bytes,
+                           UString::Percentage(stuffing_bytes, total_bytes));
 }
 
 

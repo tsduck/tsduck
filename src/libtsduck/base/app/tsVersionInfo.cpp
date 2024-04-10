@@ -221,10 +221,10 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 #elif defined(__GNUC__)
     version.format(u"GCC %d", __GNUC__);
     #if defined(__GNUC_MINOR__)
-        version.append(UString::FormatNew(u".%d", __GNUC_MINOR__));
+        version.append(UString::Format(u".%d", __GNUC_MINOR__));
     #endif
     #if defined(__GNUC_PATCHLEVEL__)
-        version.append(UString::FormatNew(u".%d", __GNUC_PATCHLEVEL__));
+        version.append(UString::Format(u".%d", __GNUC_PATCHLEVEL__));
     #endif
 #else
     version.assign(u"unknown compiler");
@@ -234,7 +234,7 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 #if defined(_MSVC_LANG)
     // With MSVC, the standard macro __cplusplus is stuck at 199711 for obscure reasons.
     // The actual level of language standard is in the system-specific macro _MSVC_LANG.
-    version.append(UString::FormatNew(u", C++ std %04d.%02d", _MSVC_LANG / 100, _MSVC_LANG % 100));
+    version.append(UString::Format(u", C++ std %04d.%02d", _MSVC_LANG / 100, _MSVC_LANG % 100));
 #elif defined(__cplusplus)
     version.append(UString::Format(u", C++ std %04d.%02d", __cplusplus / 100, __cplusplus % 100));
 #endif
@@ -255,16 +255,16 @@ ts::UString ts::VersionInfo::GetSystemVersion()
         name.format(u" (%s)", version);
     }
     name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes",
-                {SysInfo::Instance().cpuName(),
-                 TS_ADDRESS_BITS,
-                 #if defined(TS_LITTLE_ENDIAN)
-                     u"little",
-                 #elif defined(TS_BIG_ENDIAN)
-                    u"big",
-                 #else
-                     u"unknown",
-                 #endif
-                 SysInfo::Instance().memoryPageSize()});
+                SysInfo::Instance().cpuName(),
+                TS_ADDRESS_BITS,
+                #if defined(TS_LITTLE_ENDIAN)
+                    u"little",
+                #elif defined(TS_BIG_ENDIAN)
+                   u"big",
+                #else
+                    u"unknown",
+                #endif
+                SysInfo::Instance().memoryPageSize());
     return name;
 }
 
@@ -313,7 +313,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The name tsduckVersion contains the visible version.
             // The name tsduckVersionInfi contains a Window normalized version number X.X.X.X.
             return UString::Format(u"!define tsduckVersion \"%s\"\n!define tsduckVersionInfo \"%d.%d.%d.0\"",
-                                   {GetVersion(Format::SHORT), TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT});
+                                   GetVersion(Format::SHORT), TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT);
         }
         case Format::CRYPTO: {
             // The version of the cryptographiclibrary.

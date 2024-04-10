@@ -249,12 +249,12 @@ bool ts::EITPlugin::stop()
         const ServiceDesc& serv(it.second);
         const bool actual = _ts_id.has_value() && serv.hasTSId(_ts_id.value());
         out << UString::Format(u"%s  0x%04X  0x%04X  %-*s  %-6s  %-4s  %8d",
-                               {actual ? u"Act" : u"Oth",
-                                serv.getTSId(), serv.getId(),
-                                name_width, serv.getName(),
-                                UString::YesNo(serv.eitpf_count != 0),
-                                UString::YesNo(serv.eits_count != 0),
-                                Days(serv.max_time)})
+                               actual ? u"Act" : u"Oth",
+                               serv.getTSId(), serv.getId(),
+                               name_width, serv.getName(),
+                               UString::YesNo(serv.eitpf_count != 0),
+                               UString::YesNo(serv.eits_count != 0),
+                               Days(serv.max_time))
             << std::endl;
     }
 
