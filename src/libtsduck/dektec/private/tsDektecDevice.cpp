@@ -122,11 +122,11 @@ ts::UString ts::DektecDevice::GetPortDescription(const Dtapi::DtHwFuncDesc& port
     // IP and MAC address (TS-over-IP)
     if ((port.m_Flags & DTAPI_CAP_IP) != 0) {
         desc += UString::Format(u", IP %d.%d.%d.%d, MAC %02X:%02X:%02X:%02X:%02X:%02X",
-                                {port.m_Ip[0] & 0xFF, port.m_Ip[1] & 0xFF,
-                                 port.m_Ip[2] & 0xFF, port.m_Ip[3] & 0xFF,
-                                 port.m_MacAddr[0] & 0xFF, port.m_MacAddr[1] & 0xFF,
-                                 port.m_MacAddr[2] & 0xFF, port.m_MacAddr[3] & 0xFF,
-                                 port.m_MacAddr[4] & 0xFF, port.m_MacAddr[5] & 0xFF});
+                                port.m_Ip[0] & 0xFF, port.m_Ip[1] & 0xFF,
+                                port.m_Ip[2] & 0xFF, port.m_Ip[3] & 0xFF,
+                                port.m_MacAddr[0] & 0xFF, port.m_MacAddr[1] & 0xFF,
+                                port.m_MacAddr[2] & 0xFF, port.m_MacAddr[3] & 0xFF,
+                                port.m_MacAddr[4] & 0xFF, port.m_MacAddr[5] & 0xFF);
     }
 
     // Device capabilities.
