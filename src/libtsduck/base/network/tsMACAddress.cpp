@@ -112,7 +112,8 @@ bool ts::MACAddress::resolve(const UString& name, Report& report)
 ts::UString ts::MACAddress::toString() const
 {
     return UString::Format(u"%02X:%02X:%02X:%02X:%02X:%02X",
-                {(_addr >> 40) & 0xFF, (_addr >> 32) & 0xFF, (_addr >> 24) & 0xFF, (_addr >> 16) & 0xFF, (_addr >> 8) & 0xFF, _addr & 0xFF});
+                           (_addr >> 40) & 0xFF, (_addr >> 32) & 0xFF, (_addr >> 24) & 0xFF,
+                           (_addr >> 16) & 0xFF, (_addr >> 8) & 0xFF, _addr & 0xFF);
 }
 
 

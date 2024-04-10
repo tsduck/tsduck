@@ -57,6 +57,10 @@ mac:   ALLPYTHON = $$files(/usr/local/bin/python3) \
 equals(ALLPYTHON, ""): PYTHON = python
 else: PYTHON = $$first(ALLPYTHON)
 
+# Dektex API
+DTAPI_HEADER = $$system($$PROJROOT/scripts/dtapi-config.sh --header)
+equals(DTAPI_HEADER, ''): DEFINES += TS_NO_DTAPI=1
+
 # Other configuration.
 LIBS += -ledit
 linux|mac|mingw {
@@ -90,7 +94,6 @@ mac {
     LIBS += -framework PCSC
     exists(/usr/local/lib): LIBS += -L/usr/local/lib
     exists(/opt/homebrew/lib): LIBS += -L/opt/homebrew/lib
-    DEFINES += TS_NO_DTAPI=1
 }
 exists(/usr/include/srt/*.h) | exists(/usr/local/include/srt/*.h) | exists(/opt/homebrew/include/srt/*.h) {
     LIBS += -lsrt
@@ -138,9 +141,9 @@ libtsduck {
 config_files {
     QMAKE_POST_LINK += cp $$SRCROOT/libtsduck/config/*.names $$SRCROOT/libtsduck/config/*.xml . $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += rm -f *.skeleton.names *.skeleton.xml $$escape_expand(\\n\\t)
-    DTAPI_HEADER = $$system($$PROJROOT/scripts/dtapi-config.sh --header)
-    equals(DTAPI_HEADER, ''): DTAPI_HEADER = /dev/null
-    QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dektec-names.py $$DTAPI_HEADER tsduck.dektec.names $$escape_expand(\\n\\t)
+    equals(DTAPI_HEADER, ''): DTAPI_INPUT = /dev/null
+    else: DTAPI_INPUT = $$DTAPI_HEADER
+    QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dektec-names.py $$DTAPI_INPUT tsduck.dektec.names $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dtv-names.py \
                        tsduck.dtv.names \
                        $$SRCROOT/libtsduck/config/tsduck.dtv.skeleton.names \

@@ -34,7 +34,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
     if (multiple_receivers) {
         help.format(u"\nSeveral %s can be specified to receive multiple UDP streams. "
                     u"If distinct receivers use the same port, this may work or not, depending on the operating system.",
-                    {dest_display});
+                    dest_display);
     }
     args.option(destinationOptionName(), dest_short, Args::STRING, dest_min, max_count);
     args.help(destinationOptionName(), u"[address:]port", help);
@@ -71,7 +71,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
         help.format(u"\nIf several %s are specified, several --local-address options can be specified, "
                     u"one for each receiver, in the same order. It there are less --local-address "
                     u"options than receivers, the last --local-address applies for all remaining receivers.",
-                    {dest_display});
+                    dest_display);
     }
     args.option(u"local-address", with_short_options ? 'l' : 0, Args::IPADDR, 0, max_count);
     args.help(u"local-address", help);
@@ -100,7 +100,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
         help.format(u"\nIf several %s are specified, several --source options can be specified, "
                     u"one for each receiver, in the same order. It there are less --source "
                     u"options than receivers, the last --source applies for all remaining receivers.",
-                    {dest_display});
+                    dest_display);
     }
     args.option(u"source", with_short_options ? 's' : 0, Args::STRING, 0, max_count);
     args.help(u"source", u"address[:port]", help);

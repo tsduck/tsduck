@@ -1262,22 +1262,22 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
         if (show_receive && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
             none = false;
             msg.format(u"\n  Total received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
-                       {stats.byteRecvTotal, stats.pktRecvTotal, stats.pktRcvLossTotal, stats.pktRcvDropTotal});
+                       stats.byteRecvTotal, stats.pktRecvTotal, stats.pktRcvLossTotal, stats.pktRcvDropTotal);
         }
         if (show_send && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
             none = false;
             msg.format(u"\n  Total sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
-                       {stats.byteSentTotal, stats.pktSentTotal, stats.pktRetransTotal, stats.pktSndLossTotal, stats.pktSndDropTotal});
+                       stats.byteSentTotal, stats.pktSentTotal, stats.pktRetransTotal, stats.pktSndLossTotal, stats.pktSndDropTotal);
         }
         if (show_receive && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
             none = false;
             msg.format(u"\n  Interval received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
-                       {stats.byteRecv, stats.pktRecv, stats.pktRcvLoss, stats.pktRcvDrop});
+                       stats.byteRecv, stats.pktRecv, stats.pktRcvLoss, stats.pktRcvDrop);
         }
         if (show_send && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
             none = false;
             msg.format(u"\n  Interval sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
-                       {stats.byteSent, stats.pktSent, stats.pktRetrans, stats.pktSndLoss, stats.pktSndDrop});
+                       stats.byteSent, stats.pktSent, stats.pktRetrans, stats.pktSndLoss, stats.pktSndDrop);
         }
         if ((show_send || show_receive) && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
             none = false;

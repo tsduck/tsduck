@@ -332,11 +332,8 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                     // Optional comment
                     if (_use_comment) {
                         *_output << _comment_prefix
-                                 << UString::Format(u"TS id: %d (0x%X), original network id: %d (0x%X), from NIT v%d on network id: %d (0x%X)",
-                                                    {tsid.transport_stream_id, tsid.transport_stream_id,
-                                                     tsid.original_network_id, tsid.original_network_id,
-                                                     nit.version,
-                                                     nit.network_id, nit.network_id})
+                                 << UString::Format(u"TS id: %d (0x%<X), original network id: %d (0x%<X), from NIT v%d on network id: %d (0x%<X)",
+                                                    tsid.transport_stream_id, tsid.original_network_id, nit.version, nit.network_id)
                                  << std::endl;
                     }
                     // Output the tuning information, optionally in a variable definition.
