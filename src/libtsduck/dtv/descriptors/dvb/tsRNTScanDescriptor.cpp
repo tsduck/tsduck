@@ -108,8 +108,8 @@ void ts::RNTScanDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 
 void ts::RNTScanDescriptor::ScanTriplet::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Transport stream: 0x%X", {buf.getUInt16()});
-    disp << "" << UString::Format(u", original network: 0x%X", {buf.getUInt16()});
+    disp << margin << UString::Format(u"Transport stream: 0x%X", buf.getUInt16());
+    disp << "" << UString::Format(u", original network: 0x%X", buf.getUInt16());
     disp << ", weighting: " << int(buf.getUInt8()) << std::endl;
 }
 

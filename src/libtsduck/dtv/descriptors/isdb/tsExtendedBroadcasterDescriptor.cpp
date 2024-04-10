@@ -114,18 +114,18 @@ void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& disp, P
         disp << margin << "Broadcaster type: " << DataName(MY_XML_NAME, u"Type", btype, NamesFlags::HEXA_FIRST) << std::endl;
 
         if ((btype == 0x01 || btype == 0x02) && buf.canReadBytes(3)) {
-            disp << margin << UString::Format(u"Terrestrial%s broadcaster id: 0x%X (%<d)", {btype == 0x02 ? u" sound" : u"", buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Terrestrial%s broadcaster id: 0x%X (%<d)", btype == 0x02 ? u" sound" : u"", buf.getUInt16()) << std::endl;
             size_t aff_count = buf.getBits<size_t>(4);
             size_t bc_count = buf.getBits<size_t>(4);
-            disp << margin << UString::Format(u"Number of affiliations: %d, number of broadcaster ids: %d", {aff_count, bc_count}) << std::endl;
+            disp << margin << UString::Format(u"Number of affiliations: %d, number of broadcaster ids: %d", aff_count, bc_count) << std::endl;
 
             while (aff_count-- > 0 && buf.canReadBytes(1)) {
-                disp << margin << UString::Format(u"- %s id: 0x%X (%<d)", {btype == 0x02 ? u"Sound broadcast affiliation" : u"Affiliation", buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"- %s id: 0x%X (%<d)", btype == 0x02 ? u"Sound broadcast affiliation" : u"Affiliation", buf.getUInt8()) << std::endl;
             }
 
             while (bc_count-- > 0 && buf.canReadBytes(3)) {
-                disp << margin << UString::Format(u"- Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-                disp << margin << UString::Format(u"  Broadcaster id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"- Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Broadcaster id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
             }
         }
         disp.displayPrivateData(btype == 0x01 || btype == 0x02 ? u"Private data" : u"Reserve future use", buf, NPOS, margin);

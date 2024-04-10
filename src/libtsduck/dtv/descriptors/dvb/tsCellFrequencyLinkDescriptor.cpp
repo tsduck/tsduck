@@ -92,12 +92,12 @@ void ts::CellFrequencyLinkDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CellFrequencyLinkDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(7)) {
-        disp << margin << UString::Format(u"- Cell id: 0x%X", {buf.getUInt16()});
-        disp << UString::Format(u", frequency: %'d Hz", {10 * uint64_t(buf.getUInt32())}) << std::endl;
+        disp << margin << UString::Format(u"- Cell id: 0x%X", buf.getUInt16());
+        disp << UString::Format(u", frequency: %'d Hz", 10 * uint64_t(buf.getUInt32())) << std::endl;
         buf.pushReadSizeFromLength(8); // start read sequence
         while (buf.canRead()) {
-            disp << margin << UString::Format(u"  Subcell id ext: 0x%X", {buf.getUInt8()});
-            disp << UString::Format(u", frequency: %'d Hz", {10 * uint64_t(buf.getUInt32())}) << std::endl;
+            disp << margin << UString::Format(u"  Subcell id ext: 0x%X", buf.getUInt8());
+            disp << UString::Format(u", frequency: %'d Hz", 10 * uint64_t(buf.getUInt32())) << std::endl;
         }
         buf.popState(); // end read sequence
     }

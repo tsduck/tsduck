@@ -98,12 +98,12 @@ bool ts::IPv6SocketAddress::match(const IPv6SocketAddress& other) const
 
 ts::UString ts::IPv6SocketAddress::toString() const
 {
-    return _port == AnyPort ? IPv6Address::toString() : UString::Format(u"[%s]:%d", {IPv6Address::toString(), _port});
+    return _port == AnyPort ? IPv6Address::toString() : UString::Format(u"[%s]:%d", IPv6Address::toString(), _port);
 }
 
 ts::UString ts::IPv6SocketAddress::toFullString() const
 {
-    return _port == AnyPort ? IPv6Address::toFullString() : UString::Format(u"[%s]:%d", {IPv6Address::toFullString(), _port});
+    return _port == AnyPort ? IPv6Address::toFullString() : UString::Format(u"[%s]:%d", IPv6Address::toFullString(), _port);
 }
 
 

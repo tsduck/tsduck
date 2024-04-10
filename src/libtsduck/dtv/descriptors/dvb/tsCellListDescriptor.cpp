@@ -104,11 +104,11 @@ void ts::CellListDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(10)) {
-        disp << margin << UString::Format(u"- Cell id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"- Cell id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         DisplayCoordinates(disp, buf, margin + u"  ");
         buf.pushReadSizeFromLength(8); // start read sequence
         while (buf.canReadBytes(8)) {
-            disp << margin << UString::Format(u"  - Subcell id ext: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"  - Subcell id ext: 0x%X (%<d)", buf.getUInt8()) << std::endl;
             DisplayCoordinates(disp, buf, margin + u"    ");
         }
         disp.displayPrivateData(u"Extraneous subcell data", buf, NPOS, margin + u"  ");
@@ -128,7 +128,7 @@ void ts::CellListDescriptor::DisplayCoordinates(TablesDisplay& disp, PSIBuffer& 
     const uint16_t lat_ext = buf.getBits<uint16_t>(12);
     const uint16_t long_ext = buf.getBits<uint16_t>(12);
 
-    disp << margin << UString::Format(u"Raw latitude/longitude: %d/%d, extent: %d/%d", {latitude, longitude, lat_ext, long_ext}) << std::endl;
+    disp << margin << UString::Format(u"Raw latitude/longitude: %d/%d, extent: %d/%d", latitude, longitude, lat_ext, long_ext) << std::endl;
     disp << margin << "Actual latitude range: " << ToDegrees(latitude, true) << " to " << ToDegrees(latitude + lat_ext, true) << std::endl;
     disp << margin << "Actual longitude range: " << ToDegrees(longitude, false) << " to " << ToDegrees(longitude + long_ext, false) << std::endl;
 }
@@ -166,7 +166,7 @@ ts::UString ts::CellListDescriptor::ToDegrees(int32_t value, bool is_latitude)
     // Compute degrees, minutes, seconds.
     int32_t deg = value / 0x8000;
     int32_t sec = ((value % 0x8000) * 3600) / 0x8000;
-    return UString::Format(u"%d%c %d' %d\" %c", {deg, MASCULINE_ORDINAL_INDICATOR, sec / 60, sec % 60, orientation});
+    return UString::Format(u"%d%c %d' %d\" %c", deg, MASCULINE_ORDINAL_INDICATOR, sec / 60, sec % 60, orientation);
 }
 
 

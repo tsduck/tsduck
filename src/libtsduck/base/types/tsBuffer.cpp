@@ -901,7 +901,7 @@ ts::UString ts::Buffer::ReservedBitsErrorString(std::vector<size_t>& errors, siz
         if (!message.empty()) {
             message.push_back(LINE_FEED);
         }
-        message.format(u"%sByte %d, bit #%d should be '%d'", {margin, (value >> 4) + base_offset, (value >> 1) & 0x07, value & 0x01});
+        message.format(u"%sByte %d, bit #%d should be '%d'", margin, (value >> 4) + base_offset, (value >> 1) & 0x07, value & 0x01);
     }
     return message;
 }

@@ -114,11 +114,11 @@ void ts::EVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
             const bool has_90kHz = buf.getBool();
             buf.skipReservedBits(7);
             if (has_90kHz && buf.canReadBytes(8)) {
-                disp << margin << UString::Format(u"90 kHz: N = %'d", {buf.getUInt32()});
-                disp << UString::Format(u", K = %'d", {buf.getUInt32()}) << std::endl;
+                disp << margin << UString::Format(u"90 kHz: N = %'d", buf.getUInt32());
+                disp << UString::Format(u", K = %'d", buf.getUInt32()) << std::endl;
             }
             if (buf.canReadBytes(4)) {
-                disp << margin << UString::Format(u"Num. units in tick: %'d", {buf.getUInt32()}) << std::endl;
+                disp << margin << UString::Format(u"Num. units in tick: %'d", buf.getUInt32()) << std::endl;
             }
         }
     }

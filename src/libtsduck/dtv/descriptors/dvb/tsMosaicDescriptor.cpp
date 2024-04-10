@@ -147,23 +147,23 @@ void ts::MosaicDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Mosaic entry point: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Mosaic entry point: %s", buf.getBool()) << std::endl;
         const uint8_t hor = buf.getBits<uint8_t>(3);
-        disp << margin << UString::Format(u"Horizontal elementary cells: %d (actual number: %d)", {hor, hor + 1}) << std::endl;
+        disp << margin << UString::Format(u"Horizontal elementary cells: %d (actual number: %d)", hor, hor + 1) << std::endl;
         buf.skipBits(1);
         const uint8_t ver = buf.getBits<uint8_t>(3);
-        disp << margin << UString::Format(u"Vertical elementary cells: %d (actual number: %d)", {ver, ver + 1}) << std::endl;
+        disp << margin << UString::Format(u"Vertical elementary cells: %d (actual number: %d)", ver, ver + 1) << std::endl;
     }
 
     while (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"- Logical cell id: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
+        disp << margin << UString::Format(u"- Logical cell id: 0x%X (%<d)", buf.getBits<uint8_t>(6)) << std::endl;
         buf.skipBits(7);
         disp << margin << "  Presentation info: " << DataName(MY_XML_NAME, u"LogicalCellPresentation", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
 
         buf.pushReadSizeFromLength(8); // elementary_cell_field_length
         while (buf.canReadBytes(1)) {
             buf.skipBits(2);
-            disp << margin << UString::Format(u"  Elementary cell id: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
+            disp << margin << UString::Format(u"  Elementary cell id: 0x%X (%<d)", buf.getBits<uint8_t>(6)) << std::endl;
         }
         buf.popState(); // end of elementary_cell_field_length
 
@@ -171,18 +171,18 @@ void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf
         disp << margin << "  Cell linkage info: " << DataName(MY_XML_NAME, u"CellLinkageInfo", link, NamesFlags::DECIMAL_FIRST) << std::endl;
 
         if (link == 0x01 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"  Bouquet id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Bouquet id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
         else if ((link == 0x02 || link == 0x03) && buf.canReadBytes(6)) {
-            disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
         else if (link == 0x04 && buf.canReadBytes(8)) {
-            disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"  Event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Event id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
     }
 }

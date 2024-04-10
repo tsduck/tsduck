@@ -1245,7 +1245,7 @@ void ts::UString::convertToJSON()
         else {
             // Other Unicode character, use hex code.
             at(i) = REVERSE_SOLIDUS;
-            insert(i + 1, Format(u"u%04X", {uint16_t(c)}));
+            insert(i + 1, Format(u"u%04X", uint16_t(c)));
             i += 6;
         }
     }
@@ -1325,7 +1325,7 @@ ts::UString ts::UString::TristateOnOff(Tristate b)
 ts::UString ts::UString::AfterBytes(const std::streampos& position)
 {
     const int64_t bytes = int64_t(position);
-    return bytes <= 0 ? UString() : Format(u" after %'d bytes", {bytes});
+    return bytes <= 0 ? UString() : Format(u" after %'d bytes", bytes);
 }
 
 ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool forceSign)
@@ -1408,10 +1408,10 @@ ts::UString ts::UString::ChronoUnit(std::intmax_t num, std::intmax_t den, bool s
         }
     }
     else if (den == 1) {
-        return Format(u"%'d-%s", {num, short_format ? u"sec" : u"second"});
+        return Format(u"%'d-%s", num, short_format ? u"sec" : u"second");
     }
     else {
-        return Format(u"%'d/%'d-%s", {num, den, short_format ? u"sec" : u"second"});
+        return Format(u"%'d/%'d-%s", num, den, short_format ? u"sec" : u"second");
     }
 }
 
@@ -1956,7 +1956,7 @@ void ts::UString::appendDump(const void *data,
 // Format a string using a template and arguments.
 //----------------------------------------------------------------------------
 
-void ts::UString::format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+void ts::UString::formatHelper(const UChar* fmt, std::initializer_list<ArgMixIn> args)
 {
     // Pre-reserve some space. We don't really know how much. Just address the most common cases.
     reserve(256);
@@ -1965,19 +1965,12 @@ void ts::UString::format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
     ArgMixInContext ctx(*this, fmt, args);
 }
 
-ts::UString ts::UString::Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
-{
-    UString result;
-    result.format(fmt, args);
-    return result;
-}
-
 
 //----------------------------------------------------------------------------
 // Scan this string for integer or character values.
 //----------------------------------------------------------------------------
 
-bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+bool ts::UString::scanHelper(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
 {
     // Process this string instance.
     const UChar* input = data();

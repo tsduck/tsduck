@@ -67,7 +67,7 @@ void ts::StreamIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::StreamIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Component tag: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Component tag: %d (0x%<X)", buf.getUInt8()) << std::endl;
     }
 }
 

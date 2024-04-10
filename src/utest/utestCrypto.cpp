@@ -170,7 +170,7 @@ void CryptoTest::testCipher(utest::TSUnitBenchmark& bench,
                             const void* cipher,
                             size_t cipher_size)
 {
-    const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", {algo.name(), tv_index + 1, tv_count}));
+    const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", algo.name(), tv_index + 1, tv_count));
     ts::ByteBlock tmp(std::max(plain_size, cipher_size));
     size_t retsize = 0;
 
@@ -267,7 +267,7 @@ void CryptoTest::testChainingSizes(ts::BlockCipher& algo, int sizes, ...)
     va_start(ap, sizes);
     while (size > 0) {
 
-        const ts::UString name(ts::UString::Format(u"%s on %d bytes", {algo.name(), size}));
+        const ts::UString name(ts::UString::Format(u"%s on %d bytes", algo.name(), size));
 
         size_t retsize = 0;
         ts::ByteBlock plain(size);
@@ -332,7 +332,7 @@ void CryptoTest::testHash(utest::TSUnitBenchmark& bench,
                           const void* hash,
                           size_t hash_size)
 {
-    const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", {algo.name(), tv_index + 1, tv_count}));
+    const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", algo.name(), tv_index + 1, tv_count));
     ts::ByteBlock tmp(2 * hash_size);
     size_t retsize = 0;
     const size_t message_length = std::strlen(message);

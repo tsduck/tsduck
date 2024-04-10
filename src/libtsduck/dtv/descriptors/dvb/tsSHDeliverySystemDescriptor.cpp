@@ -207,7 +207,7 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
     if (buf.canReadBytes(1)) {
         const uint8_t div = buf.getBits<uint8_t>(4);
         buf.skipBits(4);
-        disp << margin << UString::Format(u"Diversity mode: 0x%X", {div});
+        disp << margin << UString::Format(u"Diversity mode: 0x%X", div);
         if ((div & 0x08) != 0) {
             disp << ", paTS";
         }
@@ -230,12 +230,12 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             if (is_ofdm) {
                 disp << margin << "- Modulation type: OFDM" << std::endl;
                 disp << margin << "  Bandwidth: " << BandwidthNames.name(buf.getBits<uint8_t>(3)) << std::endl;
-                disp << margin << UString::Format(u"  Priority: %d", {buf.getBit()}) << std::endl;
+                disp << margin << UString::Format(u"  Priority: %d", buf.getBit()) << std::endl;
                 disp << margin << "  Constellation & hierarchy: " << DataName(MY_XML_NAME, u"ConstellationHierarchy", buf.getBits<uint8_t>(3), NamesFlags::FIRST) << std::endl;
                 disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
                 disp << margin << "  Guard interval: " << GuardIntervalNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Transmission mode: " << TransmissionModeNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-                disp << margin << UString::Format(u"  Common frequency: %s", {buf.getBool()}) << std::endl;
+                disp << margin << UString::Format(u"  Common frequency: %s", buf.getBool()) << std::endl;
             }
             else {
                 disp << margin << "- Modulation type: TDM" << std::endl;
@@ -243,19 +243,19 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
                 disp << margin << "  Roll off: " << RollOffNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Modulation mode: " << ModulationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
-                disp << margin << UString::Format(u"  Symbol rate code: 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
+                disp << margin << UString::Format(u"  Symbol rate code: 0x%X (%<d)", buf.getBits<uint8_t>(5)) << std::endl;
                 buf.skipBits(1);
             }
             if (interleaver && buf.canReadBytes(short_interleaver ? 1 : 4)) {
-                disp << margin << UString::Format(u"  Common multiplier: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+                disp << margin << UString::Format(u"  Common multiplier: %d", buf.getBits<uint8_t>(6)) << std::endl;
                 if (short_interleaver) {
                     buf.skipBits(2);
                 }
                 else {
-                    disp << margin << UString::Format(u"  Number of late taps: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
-                    disp << margin << UString::Format(u"  Number of slices: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
-                    disp << margin << UString::Format(u"  Slice distance: %d", {buf.getBits<uint8_t>(8)}) << std::endl;
-                    disp << margin << UString::Format(u"  Non-late increments: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+                    disp << margin << UString::Format(u"  Number of late taps: %d", buf.getBits<uint8_t>(6)) << std::endl;
+                    disp << margin << UString::Format(u"  Number of slices: %d", buf.getBits<uint8_t>(6)) << std::endl;
+                    disp << margin << UString::Format(u"  Slice distance: %d", buf.getBits<uint8_t>(8)) << std::endl;
+                    disp << margin << UString::Format(u"  Non-late increments: %d", buf.getBits<uint8_t>(6)) << std::endl;
                 }
             }
         }

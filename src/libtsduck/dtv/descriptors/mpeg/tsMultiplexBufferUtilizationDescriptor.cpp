@@ -89,9 +89,9 @@ void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& 
         const bool valid = buf.getBool();
         disp << margin << "Bound valid: " << UString::YesNo(valid) << std::endl;
         if (valid) {
-            disp << margin << UString::Format(u"LTW offset bounds: lower: 0x%X (%<d)", {buf.getBits<uint16_t>(15)});
+            disp << margin << UString::Format(u"LTW offset bounds: lower: 0x%X (%<d)", buf.getBits<uint16_t>(15));
             buf.skipBits(1);
-            disp << UString::Format(u", upper: 0x%X (%<d)", {buf.getBits<uint16_t>(15)}) << std::endl;
+            disp << UString::Format(u", upper: 0x%X (%<d)", buf.getBits<uint16_t>(15)) << std::endl;
         }
         else {
             buf.skipBits(31);

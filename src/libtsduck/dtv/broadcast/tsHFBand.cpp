@@ -77,7 +77,7 @@ ts::UString ts::HFBand::channelList() const
         if (!list.empty()) {
             list.append(u", ");
         }
-        list.format(u"%d-%d", {it.first_channel, it.last_channel});
+        list.format(u"%d-%d", it.first_channel, it.last_channel);
     }
     return list;
 }
@@ -290,13 +290,13 @@ ts::UString ts::HFBand::description(uint32_t channel, int32_t offset) const
     const uint64_t freq = frequency(channel, offset);
     const int mhz = int(freq / 1000000);
     const int khz = int((freq % 1000000) / 1000);
-    UString desc(UString::Format(u"%s channel %d", {_band_name, channel}));
+    UString desc(UString::Format(u"%s channel %d", _band_name, channel));
     if (offset != 0) {
-        desc += UString::Format(u", offset %+d", {offset});
+        desc += UString::Format(u", offset %+d", offset);
     }
-    desc += UString::Format(u" (%d", {mhz});
+    desc += UString::Format(u" (%d", mhz);
     if (khz > 0) {
-        desc += UString::Format(u".%03d", {khz});
+        desc += UString::Format(u".%03d", khz);
     }
     desc += u" MHz)";
     return desc;
@@ -385,7 +385,7 @@ ts::HFBand::HFBandIndex::HFBandIndex(const UString& typ, const UString& reg) :
 
 ts::UString ts::HFBand::HFBandIndex::toString() const
 {
-    return UString::Format(u"%s band in region %s", {band, region});
+    return UString::Format(u"%s band in region %s", band, region);
 }
 
 bool ts::HFBand::HFBandIndex::operator==(const HFBandIndex& other) const

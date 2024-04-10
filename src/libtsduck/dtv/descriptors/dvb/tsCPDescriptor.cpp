@@ -105,7 +105,7 @@ void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, co
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::FIRST);
-        disp << UString::Format(u", CP PID: %d (0x%<X)", {buf.getPID()}) << std::endl;
+        disp << UString::Format(u", CP PID: %d (0x%<X)", buf.getPID()) << std::endl;
         disp.displayPrivateData(u"Private CP data", buf, NPOS, margin);
     }
 }

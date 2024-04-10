@@ -80,10 +80,10 @@ void ts::SystemClockDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SystemClockDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"External clock reference: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"External clock reference: %s", buf.getBool()) << std::endl;
         buf.skipBits(1);
-        disp << margin << UString::Format(u"Clock accuracy integer: %d", {buf.getBits<uint8_t>(6)});
-        disp << UString::Format(u", exponent: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
+        disp << margin << UString::Format(u"Clock accuracy integer: %d", buf.getBits<uint8_t>(6));
+        disp << UString::Format(u", exponent: %d", buf.getBits<uint8_t>(3)) << std::endl;
         buf.skipBits(5);
     }
 }

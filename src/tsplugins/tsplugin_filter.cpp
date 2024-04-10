@@ -367,13 +367,13 @@ bool ts::FilterPlugin::getOptions()
     for (const auto& it : intervals) {
         PacketCounter first = 0;
         PacketCounter second = 0;
-        if (it.scan(u"%d-%d", {&first, &second})) {
+        if (it.scan(u"%d-%d", &first, &second)) {
             _ranges.push_back(std::make_pair(first, second));
         }
-        else if (it.scan(u"%d-", {&first})) {
+        else if (it.scan(u"%d-", &first)) {
             _ranges.push_back(std::make_pair(first, std::numeric_limits<PacketCounter>::max()));
         }
-        else if (it.scan(u"%d", {&first})) {
+        else if (it.scan(u"%d", &first)) {
             _ranges.push_back(std::make_pair(first, first));
         }
         else {

@@ -158,7 +158,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp,
             uint8_t numGroupDescriptions = buf.getBits<uint8_t>(7);
             for (uint8_t n = 0; n < numGroupDescriptions; n++) {
                 buf.skipReservedBits(1);
-                disp << margin << UString::Format(u" Group Description [%d] id: %d - ", { n, buf.getBits<uint8_t>(7) });
+                disp << margin << UString::Format(u" Group Description [%d] id: %d - ",  n, buf.getBits<uint8_t>(7) );
                 const UString groupDescriptionData(buf.getStringWithByteLength());
                 disp << "\"" << groupDescriptionData << "\"" << std::endl;
             }
@@ -166,7 +166,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp,
             uint8_t numSwitchGroupDescriptions = buf.getBits<uint8_t>(5);
             for (uint8_t n = 0; n < numSwitchGroupDescriptions; n++) {
                 buf.skipReservedBits(3);
-                disp << margin << UString::Format(u" Switch Group Description [%d] id: %d - ", { n, buf.getBits<uint8_t>(5) });
+                disp << margin << UString::Format(u" Switch Group Description [%d] id: %d - ",  n, buf.getBits<uint8_t>(5) );
                 const UString switchGroupDescriptionData(buf.getStringWithByteLength());
                 disp << "\"" << switchGroupDescriptionData << "\"" << std::endl;
             }
@@ -174,7 +174,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp,
             uint8_t numGroupPresetsDescriptions = buf.getBits<uint8_t>(5);
             for (uint8_t n = 0; n < numGroupPresetsDescriptions; n++) {
                 buf.skipReservedBits(3);
-                disp << margin << UString::Format(u" Group Preset Description [%d] id: %d - ", { n, buf.getBits<uint8_t>(5) });
+                disp << margin << UString::Format(u" Group Preset Description [%d] id: %d - ",  n, buf.getBits<uint8_t>(5) );
                 const UString groupPresetDescriptionData(buf.getStringWithByteLength());
                 disp << "\"" << groupPresetDescriptionData << "\"" << std::endl;
             }

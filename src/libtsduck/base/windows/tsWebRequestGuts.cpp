@@ -184,7 +184,7 @@ bool ts::WebRequest::SystemGuts::init()
     if (useProxy) {
         access = INTERNET_OPEN_TYPE_PROXY;
         if (_request.proxyPort() != 0) {
-            proxyName += UString::Format(u":%d", {_request.proxyPort()});
+            proxyName += UString::Format(u":%d", _request.proxyPort());
         }
         proxy = proxyName.wc_str();
     }

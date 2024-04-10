@@ -113,14 +113,14 @@ void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 {
     if (buf.canReadBytes(9)) {
         buf.skipBits(4);
-        disp << margin << UString::Format(u"Content type: 0x%X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Content type: 0x%X (%<d)", buf.getBits<uint8_t>(4)) << std::endl;
         disp << margin << "Component type: " << DataName(MY_XML_NAME, u"component_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
-        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         disp << margin << "Stream type: " << names::StreamType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         const uint8_t group = buf.getUInt8();
-        disp << margin << UString::Format(u"Simulcast group: 0x%X (%<d%s)", {group, group == 0xFF ? u", none" : u""}) << std::endl;
+        disp << margin << UString::Format(u"Simulcast group: 0x%X (%<d%s)", group, group == 0xFF ? u", none" : u"") << std::endl;
         const bool multi = buf.getBool();
-        disp << margin << UString::Format(u"Main component: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Main component: %s", buf.getBool()) << std::endl;
         disp << margin << "Quality indicator: " << DataName(MY_XML_NAME, u"Quality", buf.getBits<uint8_t>(2), NamesFlags::FIRST) << std::endl;
         disp << margin << "Sampling rate: " << DataName(MY_XML_NAME, u"Sampling", buf.getBits<uint8_t>(3), NamesFlags::FIRST) << std::endl;
         buf.skipBits(1);

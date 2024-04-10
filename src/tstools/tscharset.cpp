@@ -231,7 +231,7 @@ void ts::CharsetOptions::printUTF16(const UString& str) const
         }
         else {
             // At start of a line, with byte offset.
-            std::cout << UString::Format(u"  %04X:  ", {2 * i});
+            std::cout << UString::Format(u"  %04X:  ", 2 * i);
         }
         std::cout << UString::Hexa(str[i], 4, UString(), c_style);
         if (c_style) {
@@ -497,7 +497,7 @@ void ts::ARIBCharsetCodeGenerator::generateFile(std::ostream& out)
         if (count++ % entries_per_line == 0) {
             out << "   ";
         }
-        out << UString::Format(u" {0x%X, 0x%X},", {it.first, entry});
+        out << UString::Format(u" {0x%X, 0x%X},", it.first, entry);
         if (count % entries_per_line == 0) {
             out << std::endl;
         }

@@ -381,8 +381,8 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Protocol version: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"EAS event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"EAS event id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         disp << margin << "Originator code: \"" << buf.getUTF8(3) << "\"";
         disp << ", event code: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
     }
@@ -390,25 +390,25 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
     disp.displayATSCMultipleString(buf, 1, margin, u"Nature of activation: ");
 
     if (buf.canReadBytes(17)) {
-        disp << margin << UString::Format(u"Remaining: %d seconds", {buf.getUInt8()});
+        disp << margin << UString::Format(u"Remaining: %d seconds", buf.getUInt8());
         const cn::seconds start = cn::seconds(buf.getUInt32());
         disp << ", start time: " << (start == cn::seconds::zero() ? u"immediate" : Time::GPSSecondsToUTC(start).format(Time::DATETIME));
-        disp << UString::Format(u", duration: %d minutes", {buf.getUInt16()}) << std::endl;
+        disp << UString::Format(u", duration: %d minutes", buf.getUInt16()) << std::endl;
         buf.skipBits(12);
-        disp << margin << UString::Format(u"Alert priority: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
-        disp << margin << UString::Format(u"Details: OOB id: 0x%X (%<d)", {buf.getUInt16()});
+        disp << margin << UString::Format(u"Alert priority: %d", buf.getBits<uint8_t>(4)) << std::endl;
+        disp << margin << UString::Format(u"Details: OOB id: 0x%X (%<d)", buf.getUInt16());
         buf.skipBits(6);
         disp << ", major.minor: " << buf.getBits<uint16_t>(10);
         buf.skipBits(6);
         disp << "." << buf.getBits<uint16_t>(10) << std::endl;
-        disp << margin << UString::Format(u"Audio: OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Audio: OOB id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         disp.displayATSCMultipleString(buf, 2, margin, u"Alert text: ");
     }
 
     // Display locations.
     size_t count = buf.getUInt8();
     if (!buf.error()) {
-        disp << margin << UString::Format(u"Number of locations: %d", {count}) << std::endl;
+        disp << margin << UString::Format(u"Number of locations: %d", count) << std::endl;
     }
     while (buf.canReadBytes(3) && count-- > 0) {
         const uint8_t state = buf.getUInt8();
@@ -416,29 +416,29 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
         buf.skipBits(2);
         const uint16_t county = buf.getBits<uint16_t>(10);
         disp << margin
-             << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, DataName(MY_XML_NAME, u"CountySubdivision", subd, NamesFlags::VALUE)})
+             << UString::Format(u"  State code: %d, county: %d, subdivision: %s", state, county, DataName(MY_XML_NAME, u"CountySubdivision", subd, NamesFlags::VALUE))
              << std::endl;
     }
 
     // Display exceptions.
     count = buf.getUInt8();
     if (!buf.error()) {
-        disp << margin << UString::Format(u"Number of exceptions: %d", {count}) << std::endl;
+        disp << margin << UString::Format(u"Number of exceptions: %d", count) << std::endl;
     }
     while (buf.canReadBytes(5) && count-- > 0) {
         const bool inband = buf.getBool();
         buf.skipBits(7);
-        disp << margin << UString::Format(u"  In-band: %s", {inband});
+        disp << margin << UString::Format(u"  In-band: %s", inband);
         if (inband) {
             buf.skipBits(6);
             const uint16_t major = buf.getBits<uint16_t>(10);
             buf.skipBits(6);
             const uint16_t minor = buf.getBits<uint16_t>(10);
-            disp << UString::Format(u", exception major.minor: %d.%d", {major, minor}) << std::endl;
+            disp << UString::Format(u", exception major.minor: %d.%d", major, minor) << std::endl;
         }
         else {
             buf.skipBits(16);
-            disp << UString::Format(u", exception OOB id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << UString::Format(u", exception OOB id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
     }
 

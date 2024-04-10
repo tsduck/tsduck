@@ -1373,7 +1373,7 @@ void ts::EITGenerator::dumpSection(int lev, const UString& margin, const ESectio
 
     // Eliminate null Section in ESection.
     const UString space(margin.size(), SPACE);
-    const UString desc(UString::Format(u"next inject: %s, obsolete: %s, injected: %s", {sec->next_inject, sec->obsolete, sec->injected}));
+    const UString desc(UString::Format(u"next inject: %s, obsolete: %s, injected: %s", sec->next_inject, sec->obsolete, sec->injected));
     if (sec->section == nullptr) {
         rep.log(lev, u"%s(null section)", {margin});
         rep.log(lev, u"%s%s", {space, desc});

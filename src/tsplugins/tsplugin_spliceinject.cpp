@@ -895,19 +895,19 @@ ts::UString ts::SpliceInjectPlugin::SpliceCommand::toString() const
             sit.splice_insert.program_splice &&
             sit.splice_insert.program_pts.has_value())
         {
-            name.append(UString::Format(u" @0x%09X", {sit.splice_insert.program_pts.value()}));
+            name.append(UString::Format(u" @0x%09X", sit.splice_insert.program_pts.value()));
         }
         if (next_pts == INVALID_PTS) {
             name.append(u", immediate");
         }
         else {
-            name.append(UString::Format(u", start: 0x%09X", {next_pts}));
+            name.append(UString::Format(u", start: 0x%09X", next_pts));
         }
         if (last_pts != INVALID_PTS) {
-            name.append(UString::Format(u", end: 0x%09X", {last_pts}));
+            name.append(UString::Format(u", end: 0x%09X", last_pts));
         }
         if (count > 1) {
-            name.append(UString::Format(u", %s times", {count}));
+            name.append(UString::Format(u", %s times", count));
         }
         return name;
     }

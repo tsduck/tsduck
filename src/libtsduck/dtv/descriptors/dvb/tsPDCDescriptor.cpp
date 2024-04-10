@@ -86,7 +86,7 @@ void ts::PDCDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
         const uint8_t month = buf.getBits<uint8_t>(4);
         const uint8_t hours = buf.getBits<uint8_t>(5);
         const uint8_t minutes = buf.getBits<uint8_t>(6);
-        disp << margin << UString::Format(u"Programme Identification Label: %02d-%02d %02d:%02d (MM-DD hh:mm)", {month, day, hours, minutes}) << std::endl;
+        disp << margin << UString::Format(u"Programme Identification Label: %02d-%02d %02d:%02d (MM-DD hh:mm)", month, day, hours, minutes) << std::endl;
     }
 }
 
@@ -97,7 +97,7 @@ void ts::PDCDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
 
 void ts::PDCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setAttribute(u"programme_identification_label", UString::Format(u"%02d-%02d %02d:%02d", {pil_month, pil_day, pil_hours, pil_minutes}));
+    root->setAttribute(u"programme_identification_label", UString::Format(u"%02d-%02d %02d:%02d", pil_month, pil_day, pil_hours, pil_minutes));
 }
 
 
@@ -110,7 +110,7 @@ bool ts::PDCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elemen
     UString date;
     bool ok =
         element->getAttribute(date, u"programme_identification_label", true) &&
-        date.scan(u"%d-%d %d:%d", {&pil_month, &pil_day, &pil_hours, &pil_minutes}) &&
+        date.scan(u"%d-%d %d:%d", &pil_month, &pil_day, &pil_hours, &pil_minutes) &&
         pil_month > 0 && pil_month < 13 &&
         pil_day > 0 && pil_day < 32 &&
         pil_hours < 24 &&

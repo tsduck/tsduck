@@ -70,7 +70,7 @@ void ts::MaximumBitrateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
     if (buf.canReadBytes(3)) {
         buf.skipBits(2);
         const uint32_t mbr = buf.getBits<uint32_t>(22);
-        disp << margin << UString::Format(u"Maximum bitrate: 0x%X (%<d), %'d bits/second", {mbr, mbr * BITRATE_UNIT}) << std::endl;
+        disp << margin << UString::Format(u"Maximum bitrate: 0x%X (%<d), %'d bits/second", mbr, mbr * BITRATE_UNIT) << std::endl;
     }
 }
 

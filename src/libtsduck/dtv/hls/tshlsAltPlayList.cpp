@@ -18,16 +18,16 @@ ts::UString ts::hls::AltPlayList::toString() const
     UString str(MediaElement::toString());
 
     if (!type.empty()) {
-        str.format(u", type: %s", {type});
+        str.format(u", type: %s", type);
     }
     if (!name.empty()) {
-        str.format(u", name: %s", {name});
+        str.format(u", name: %s", name);
     }
     if (!groupId.empty()) {
-        str.format(u", group id: %s", {groupId});
+        str.format(u", group id: %s", groupId);
     }
     if (!language.empty()) {
-        str.format(u", language: %s", {language});
+        str.format(u", language: %s", language);
     }
 
     return str;

@@ -100,7 +100,7 @@ bool ts::PESPacketizer::getNextPacket(TSPacket& pkt)
 std::ostream& ts::PESPacketizer::display(std::ostream& strm) const
 {
     return AbstractPacketizer::display(strm)
-        << UString::Format(u"  Output PES packets: %'d", {_pes_out_count}) << std::endl
-        << UString::Format(u"  Provided PES packets: %'d", {_pes_in_count}) << std::endl
-        << UString::Format(u"  Current PES packet: offset %d/%d", {_next_byte, _pes == nullptr ? 0 : _pes->size()}) << std::endl;
+        << UString::Format(u"  Output PES packets: %'d", _pes_out_count) << std::endl
+        << UString::Format(u"  Provided PES packets: %'d", _pes_in_count) << std::endl
+        << UString::Format(u"  Current PES packet: offset %d/%d", _next_byte, _pes == nullptr ? 0 : _pes->size()) << std::endl;
 }

@@ -94,9 +94,9 @@ bool ts::StreamEventDescriptor::asciiPrivate() const
 void ts::StreamEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(10)) {
-        disp << margin << UString::Format(u"Event id: 0x%X (%<d)", {buf.getUInt16()});
+        disp << margin << UString::Format(u"Event id: 0x%X (%<d)", buf.getUInt16());
         buf.skipBits(31);
-        disp << UString::Format(u", NPT: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+        disp << UString::Format(u", NPT: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

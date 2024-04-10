@@ -141,7 +141,7 @@ void ts::FileNameGenerator::initDateTime(const fs::path& name_template, int fiel
 fs::path ts::FileNameGenerator::newFileName()
 {
     if (_counter_mode) {
-        return fs::path(UString::Format(u"%s%0*d%s", {_name_prefix, _counter_width, _counter_value++, _name_suffix}));
+        return fs::path(UString::Format(u"%s%0*d%s", _name_prefix, _counter_width, _counter_value++, _name_suffix));
     }
     else {
         return newFileName(Time::CurrentLocalTime());
@@ -164,28 +164,28 @@ fs::path ts::FileNameGenerator::newFileName(const Time& time)
     UString str;
     Time::Fields fields(time);
     if ((_time_fields & Time::YEAR) != 0) {
-        str.format(u"%04d", {fields.year});
+        str.format(u"%04d", fields.year);
     }
     if ((_time_fields & Time::MONTH) != 0) {
-        str.format(u"%02d", {fields.month});
+        str.format(u"%02d", fields.month);
     }
     if ((_time_fields & Time::DAY) != 0) {
-        str.format(u"%02d", {fields.day});
+        str.format(u"%02d", fields.day);
     }
     if ((_time_fields & Time::DATE) != 0 && (_time_fields & (Time::TIME | Time::MILLISECOND)) != 0) {
         str.append(u'-');
     }
     if ((_time_fields & Time::HOUR) != 0) {
-        str.format(u"%02d", {fields.hour});
+        str.format(u"%02d", fields.hour);
     }
     if ((_time_fields & Time::MINUTE) != 0) {
-        str.format(u"%02d", {fields.minute});
+        str.format(u"%02d", fields.minute);
     }
     if ((_time_fields & Time::SECOND) != 0) {
-        str.format(u"%02d", {fields.second});
+        str.format(u"%02d", fields.second);
     }
     if ((_time_fields & Time::MILLISECOND) != 0) {
-        str.format(u"%03d", {fields.millisecond});
+        str.format(u"%03d", fields.millisecond);
     }
 
     // Avoid duplicates.
@@ -194,7 +194,7 @@ fs::path ts::FileNameGenerator::newFileName(const Time& time)
         _counter_value = 1;
     }
     else {
-        str.format(u"-%d", {_counter_value++});
+        str.format(u"-%d", _counter_value++);
     }
 
     return fs::path(_name_prefix + str + _name_suffix);

@@ -153,7 +153,7 @@ void ts::HEVCSubregionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
                 for (uint8_t k = 0; k <= SubstreamCountMinus1; k++) {
                     PatternOffsets.push_back(buf.getInt8());
                 }
-                disp.displayVector(UString::Format(u" Pattern [%d]:", { j }), PatternOffsets, margin, true, 8);
+                disp.displayVector(UString::Format(u" Pattern [%d]:",  j ), PatternOffsets, margin, true, 8);
             }
         }
     }

@@ -97,7 +97,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, co
         const uint16_t casid = buf.getUInt16();
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, NamesFlags::FIRST);
         disp << ", " << (tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA"));
-        disp << UString::Format(u" PID: %d (0x%<X)", {buf.getPID()}) << std::endl;
+        disp << UString::Format(u" PID: %d (0x%<X)", buf.getPID()) << std::endl;
 
         // CA private part.
         if (buf.canRead()) {
@@ -152,7 +152,7 @@ bool ts::CADescriptor::fromCommmandLine(const UString& value, Report& report)
     size_t count = 0;
     size_t index = 0;
 
-    value.scan(count, index, u"%i/%i", {&casid, &pid});
+    value.scan(count, index, u"%i/%i", &casid, &pid);
 
     // On return, index points to the next index in val after "cas-id/PID".
     // If there is a private part, then index must points to a '/'.

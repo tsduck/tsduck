@@ -20,7 +20,7 @@ ts::tsmux::InputExecutor::InputExecutor(const MuxerArgs& opt, const PluginEventH
     _pluginIndex(index)
 {
     // Make sure that the input plugins display their index.
-    setLogName(UString::Format(u"%s[%d]", {pluginName(), _pluginIndex}));
+    setLogName(UString::Format(u"%s[%d]", pluginName(), _pluginIndex));
 }
 
 ts::tsmux::InputExecutor::~InputExecutor()

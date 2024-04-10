@@ -433,7 +433,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
 
 ts::UString ts::HiDesDevice::Guts::FormatVersion(uint32_t v)
 {
-    return v == 0 ? UString() : UString::Format(u"%d.%d.%d.%d", {(v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF});
+    return v == 0 ? UString() : UString::Format(u"%d.%d.%d.%d", (v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF);
 }
 
 

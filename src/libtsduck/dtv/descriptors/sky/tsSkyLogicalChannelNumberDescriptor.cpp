@@ -89,13 +89,13 @@ void ts::SkyLogicalChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Region Id: %5d (0x%<X)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Region Id: %5d (0x%<X)", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(9)) {
-            disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
+            disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", buf.getUInt16());
             disp << ", Service Type: " << names::ServiceType(buf.getUInt8(), NamesFlags::FIRST);
-            disp << UString::Format(u", Channel number: %3d", {buf.getUInt16()});
-            disp << UString::Format(u", Lcn: %5d",  {buf.getUInt16()});
-            disp << UString::Format(u", Sky Id: %5d (0x%<X)", {buf.getUInt16()}) << std::endl;
+            disp << UString::Format(u", Channel number: %3d", buf.getUInt16());
+            disp << UString::Format(u", Lcn: %5d",  buf.getUInt16());
+            disp << UString::Format(u", Sky Id: %5d (0x%<X)", buf.getUInt16()) << std::endl;
         }
     }
 }

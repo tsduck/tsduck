@@ -144,7 +144,7 @@ ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool 
     // stack size: 16 kB, maximum priority
     Thread(ThreadAttributes().setStackSize(16 * 1024).setPriority(ThreadAttributes::GetMaximumPriority())),
 #if defined(TS_MAC)
-    _sem_name(UString::Format(u"tsduck-%d-%d", {getpid(), ptrdiff_t(this)}).toUTF8()),
+    _sem_name(UString::Format(u"tsduck-%d-%d", getpid(), ptrdiff_t(this)).toUTF8()),
 #endif
 #endif
     _handler(handler),

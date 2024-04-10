@@ -136,27 +136,27 @@ void ts::BasicLocalEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         else if (mode == 1) {
             if (buf.canReadBytes(10)) {
                 buf.skipBits(7);
-                disp << margin << UString::Format(u"Start time NPT: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+                disp << margin << UString::Format(u"Start time NPT: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
                 buf.skipBits(7);
-                disp << margin << UString::Format(u"End time NPT: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+                disp << margin << UString::Format(u"End time NPT: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
             }
         }
         else if (mode < 6) {
             if (buf.canReadBytes(6)) {
-                disp << margin << UString::Format(u"Start time: %02d", {buf.getBCD<int>(2)});
-                disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
-                disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
+                disp << margin << UString::Format(u"Start time: %02d", buf.getBCD<int>(2));
+                disp << UString::Format(u":%02d", buf.getBCD<int>(2));
+                disp << UString::Format(u":%02d", buf.getBCD<int>(2));
                 const int hour = buf.getBCD<int>(2);
                 const int min = buf.getBCD<int>(2);
                 const int sec = buf.getBCD<int>(2);
                 if (buf.canReadBytes(2)) {
-                    disp << UString::Format(u".%03d", {buf.getBCD<int>(3)});
+                    disp << UString::Format(u".%03d", buf.getBCD<int>(3));
                     buf.skipBits(4);
                 }
                 disp << std::endl;
-                disp << margin << UString::Format(u"Duration: %02d:%02d:%02d", {hour, min, sec});
+                disp << margin << UString::Format(u"Duration: %02d:%02d:%02d", hour, min, sec);
                 if (buf.canReadBytes(2)) {
-                    disp << UString::Format(u".%03d", {buf.getBCD<int>(3)});
+                    disp << UString::Format(u".%03d", buf.getBCD<int>(3));
                     buf.skipBits(4);
                 }
                 disp << std::endl;
@@ -168,7 +168,7 @@ void ts::BasicLocalEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         disp.displayPrivateData(u"Extraneous segmentation info data", buf, NPOS, margin);
         buf.popState(); // end of segmentation_info_length
         while (buf.canRead()) {
-            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         }
     }
 }
@@ -191,8 +191,8 @@ void ts::BasicLocalEventDescriptor::buildXML(DuckContext& duck, xml::Element* ro
         root->setTimeAttribute(u"start_time", start_time);
         root->setTimeAttribute(u"duration", duration);
         if (start_time.count() % 1000 != 0 || duration.count() % 1000 != 0) {
-            root->setAttribute(u"start_time_extension", UString::Format(u"%03d", {start_time.count() % 1000}));
-            root->setAttribute(u"duration_extension", UString::Format(u"%03d", {duration.count() % 1000}));
+            root->setAttribute(u"start_time_extension", UString::Format(u"%03d", start_time.count() % 1000));
+            root->setAttribute(u"duration_extension", UString::Format(u"%03d", duration.count() % 1000));
         }
     }
     else {

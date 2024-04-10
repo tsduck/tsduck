@@ -71,9 +71,9 @@ void ts::MPEG2AACAudioDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MPEG2AACAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"MPEG-2 AAC profile: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"MPEG-2 AAC channel configuration: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"MPEG-2 AAC additional information: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"MPEG-2 AAC profile: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"MPEG-2 AAC channel configuration: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"MPEG-2 AAC additional information: 0x%X (%<d)", buf.getUInt8()) << std::endl;
     }
 }
 

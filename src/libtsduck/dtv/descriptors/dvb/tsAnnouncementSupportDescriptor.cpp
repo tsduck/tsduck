@@ -124,7 +124,7 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& disp, P
         // Get announcement_support_indicator.
         // We will check later that all annoucement types are present.
         uint16_t indicator = buf.getUInt16();
-        disp << margin << UString::Format(u"Annoucement support indicator: 0x%X", {indicator}) << std::endl;
+        disp << margin << UString::Format(u"Annoucement support indicator: 0x%X", indicator) << std::endl;
 
         // List all entries.
         while (buf.canReadBytes(1)) {
@@ -138,10 +138,10 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& disp, P
             disp << margin << "- Announcement type: " << DataName(MY_XML_NAME, u"Type", type, NamesFlags::DECIMAL_FIRST) << std::endl;
             disp << margin << "  Reference type: " << DataName(MY_XML_NAME, u"ReferenceType", ref, NamesFlags::DECIMAL_FIRST) << std::endl;
             if (ref >= 1 && ref <= 3 && buf.canReadBytes(7)) {
-                disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-                disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-                disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-                disp << margin << UString::Format(u"  Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
             }
         }
 

@@ -80,7 +80,7 @@ void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
         const uint8_t id = buf.getBit();
         const uint8_t layer = buf.getBits<uint8_t>(2);
         disp << ", variable rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        disp << margin << UString::Format(u"ID: %d, layer: %d", {id, layer}) << std::endl;
+        disp << margin << UString::Format(u"ID: %d, layer: %d", id, layer) << std::endl;
         buf.skipReservedBits(3);
     }
 }

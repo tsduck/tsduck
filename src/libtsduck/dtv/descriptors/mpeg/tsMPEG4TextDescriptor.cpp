@@ -201,7 +201,7 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         if (SampleDescription_carriage_flag) {
             const uint8_t number_of_SampleDescriptions = buf.getUInt8();
             for (uint8_t i = 0; i < number_of_SampleDescriptions; i++) {
-                disp << margin << UString::Format(u"Sample description[%d]: index=0x%X", {i, buf.getUInt8()});
+                disp << margin << UString::Format(u"Sample description[%d]: index=0x%X", i, buf.getUInt8());
                 const uint8_t textFormat = buf.getUInt8();
                 disp << ", format: " << DataName(MY_XML_NAME, u"textFormat", textFormat, NamesFlags::VALUE);
                 const uint16_t textConfigLength = buf.getUInt16();

@@ -116,10 +116,10 @@ void ts::CDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::CDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Download data id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Download data id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Data type: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Data type: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptors:");
         if (buf.canRead()) {
             disp.displayPrivateData(u"Data module", buf, NPOS, margin);

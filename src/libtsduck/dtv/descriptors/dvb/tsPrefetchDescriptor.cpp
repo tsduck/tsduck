@@ -88,11 +88,11 @@ void ts::PrefetchDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         while (buf.canReadBytes(1)) {
             disp << margin << "Label: \"" << buf.getStringWithByteLength() << "\"";
             if (buf.canReadBytes(1)) {
-                disp << UString::Format(u", prefetch priority: %d", {buf.getUInt8()});
+                disp << UString::Format(u", prefetch priority: %d", buf.getUInt8());
             }
             disp << std::endl;
         }

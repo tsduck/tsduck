@@ -79,7 +79,7 @@ void ts::DTSNeuralDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DTSNeuralDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Config Id: 0x%X (%<d))", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Config Id: 0x%X (%<d))", buf.getUInt8()) << std::endl;
         disp.displayPrivateData(u"Additional info", buf, NPOS, margin);
     }
 }

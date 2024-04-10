@@ -111,9 +111,9 @@ void ts::ISDBLDTLinkageDescriptor::DescriptionType::deserialize(PSIBuffer& buf)
 void ts::ISDBLDTLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(6)) {
-        disp << margin << UString::Format(u"Original service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Original service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
 
         while (buf.canReadBytes(3)) {
             DescriptionType desc;
@@ -127,7 +127,7 @@ void ts::ISDBLDTLinkageDescriptor::DescriptionType::display(TablesDisplay& disp,
     disp << margin << "Description id: " << buf.getUInt16() << std::endl;
     buf.skipReservedBits(4);
     disp << margin << " Description type: " << DataName(MY_XML_NAME, u"description_type", buf.getBits<uint8_t>(4)) << std::endl;
-    disp << margin << UString::Format(u" User defined: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+    disp << margin << UString::Format(u" User defined: 0x%X (%<d)", buf.getUInt8()) << std::endl;
 }
 
 

@@ -159,7 +159,7 @@ ts::Args::IOption::IOption(Args*           parent,
             type = INTEGER;
             break;
         default:
-            parent->fatalArgError(UString::Format(u"invalid option type %d", {type}));
+            parent->fatalArgError(UString::Format(u"invalid option type %d", type));
     }
 }
 
@@ -368,9 +368,9 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
         // This is an option.
         indent_desc = OPTION_DESC;
         if (short_name != 0) {
-            text += HelpLines(OPTION_NAME, UString::Format(u"-%c%s", {short_name, valueDescription(IOption::SHORT)}), line_width);
+            text += HelpLines(OPTION_NAME, UString::Format(u"-%c%s", short_name, valueDescription(IOption::SHORT)), line_width);
         }
-        text += HelpLines(OPTION_NAME, UString::Format(u"--%s%s", {name, valueDescription(IOption::LONG)}), line_width);
+        text += HelpLines(OPTION_NAME, UString::Format(u"--%s%s", name, valueDescription(IOption::LONG)), line_width);
     }
 
     // Add option description.
@@ -389,12 +389,12 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
 
     // Document decimal values (with a decimal point).
     if (decimals > 0) {
-        text += HelpLines(indent_desc, UString::Format(u"The value may include up to %d meaningful decimal digits.", {decimals}), line_width);
+        text += HelpLines(indent_desc, UString::Format(u"The value may include up to %d meaningful decimal digits.", decimals), line_width);
     }
     if (type == ANUMBER && anumber != nullptr) {
         const UString desc(anumber->description());
         if (!desc.empty()) {
-            text += HelpLines(indent_desc, UString::Format(u"The value must be a %s.", {desc}), line_width);
+            text += HelpLines(indent_desc, UString::Format(u"The value must be a %s.", desc), line_width);
         }
     }
 
@@ -725,7 +725,7 @@ ts::Args::IOption* ts::Args::search(UChar c)
             return &it.second;
         }
     }
-    error(UString::Format(u"unknown option -%c", {c}));
+    error(UString::Format(u"unknown option -%c", c));
     return nullptr;
 }
 
@@ -1185,10 +1185,10 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
             // Specifying such an option multiple times is the same as once.
             if (op.type != NONE) {
                 if (op.value_count < op.min_occur) {
-                    error(u"missing " + op.display() + (op.min_occur < 2 ? u"" : UString::Format(u", %d required", {op.min_occur})));
+                    error(u"missing " + op.display() + (op.min_occur < 2 ? u"" : UString::Format(u", %d required", op.min_occur)));
                 }
                 else if (op.value_count > op.max_occur) {
-                    error(u"too many " + op.display() + (op.max_occur < 2 ? u"" : UString::Format(u", %d maximum", {op.max_occur})));
+                    error(u"too many " + op.display() + (op.max_occur < 2 ? u"" : UString::Format(u", %d maximum", op.max_occur)));
                 }
             }
         }

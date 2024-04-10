@@ -22,7 +22,7 @@ ts::UString ts::MPEG2VideoAttributes::toString() const
         return UString();
     }
 
-    UString desc(UString::Format(u"%dx%d", {_hsize, _vsize}));
+    UString desc(UString::Format(u"%dx%d", _hsize, _vsize));
     if (_progressive) {
         desc += u'p';
     }
@@ -52,10 +52,10 @@ ts::UString ts::MPEG2VideoAttributes::frameRateName() const
         return UString();
     }
     else if ((fr100 = frameRate100()) % 100 == 0) {
-        return UString::Format(u"@%d Hz", {fr100 / 100});
+        return UString::Format(u"@%d Hz", fr100 / 100);
     }
     else {
-        return UString::Format(u"@%d.%02d Hz", {fr100 / 100, fr100 % 100});
+        return UString::Format(u"@%d.%02d Hz", fr100 / 100, fr100 % 100);
     }
 }
 

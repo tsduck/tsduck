@@ -26,7 +26,7 @@ void ts::Service::set(const UString& desc)
         // Found a service id.
         setId(id);
     }
-    else if (desc.scan(u"%d.%d", {&id, &minor})) {
+    else if (desc.scan(u"%d.%d", &id, &minor)) {
         // Found an ATSC major.minor id.
         setMajorIdATSC(id);
         setMinorIdATSC(minor);
@@ -51,7 +51,7 @@ bool ts::Service::match(const UString& ident, bool exact_match) const
         // This is a service id.
         return _id.has_value() && id ==_id.value();
     }
-    else if (ident.scan(u"%d.%d", {&id, &minor})) {
+    else if (ident.scan(u"%d.%d", &id, &minor)) {
         // Found an ATSC major.minor id.
         return _major_id_atsc.has_value() && _minor_id_atsc.has_value() && id == _major_id_atsc.value() && minor == _minor_id_atsc.value();
     }
@@ -157,16 +157,16 @@ ts::UString ts::Service::toString() const
         str = u"\"" + _name.value() + u"\"";
     }
     if (_major_id_atsc.has_value() && _minor_id_atsc.has_value()) {
-        str.format(u"%s%d.%d", {str.empty() ? u"" : u", ", _major_id_atsc.value(), _minor_id_atsc.value()});
+        str.format(u"%s%d.%d", str.empty() ? u"" : u", ", _major_id_atsc.value(), _minor_id_atsc.value());
     }
     if (_id.has_value()) {
-        str.format(u"%s0x%X (%d)", {str.empty() ? u"" : u", ", _id.value(), _id.value()});
+        str.format(u"%s0x%X (%d)", str.empty() ? u"" : u", ", _id.value(), _id.value());
     }
     if (_lcn.has_value()) {
-        str.format(u"%s#%d", {str.empty() ? u"" : u", ", _lcn.value()});
+        str.format(u"%s#%d", str.empty() ? u"" : u", ", _lcn.value());
     }
     if (_hidden.has_value() && *_hidden) {
-        str.format(u"%s(hidden)", {str.empty() ? u"" : u" "});
+        str.format(u"%s(hidden)", str.empty() ? u"" : u" ");
     }
     return str;
 }

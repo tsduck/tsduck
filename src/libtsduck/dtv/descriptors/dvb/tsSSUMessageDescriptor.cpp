@@ -76,8 +76,8 @@ void ts::SSUMessageDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SSUMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Descriptor number: %d", {buf.getBits<uint8_t>(4)});
-        disp << UString::Format(u", last: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Descriptor number: %d", buf.getBits<uint8_t>(4));
+        disp << UString::Format(u", last: %d", buf.getBits<uint8_t>(4)) << std::endl;
         disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
         disp << margin << "Text: \"" << buf.getString() << "\"" << std::endl;
     }

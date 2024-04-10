@@ -68,8 +68,8 @@ void ts::TimeShiftedEventDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TimeShiftedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Reference service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Reference event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Reference service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Reference event id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
     }
 
 }

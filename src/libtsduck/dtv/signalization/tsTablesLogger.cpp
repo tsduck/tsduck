@@ -813,13 +813,13 @@ void ts::TablesLogger::handleInvalidSection(SectionDemux& demux, const DemuxedDa
     const bool is_long = Section::StartLongSection(data, size);
     UString reason;
     if (sec_size > 0 && sec_size != size) {
-        reason.format(u"invalid section size: %d, data size: %d", {sec_size, size});
+        reason.format(u"invalid section size: %d, data size: %d", sec_size, size);
     }
     else if (is_long && sec_size > 4 && CRC32(data, sec_size - 4) != GetUInt32(data + sec_size - 4)) {
         reason = u"invalid CRC32, corrupted section";
     }
     else if (is_long && data[6] > data[7]) {
-        reason.format(u"invalid section number: %d, last section: %d", {data[6], data[7]});
+        reason.format(u"invalid section number: %d, last section: %d", data[6], data[7]);
     }
 
     preDisplay(ddata.firstTSPacketIndex(), ddata.lastTSPacketIndex());
@@ -1049,9 +1049,9 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
     if (_bin_multi_files) {
         // Build a unique file name for this section
         UString suffix;
-        suffix.format(u"_p%04X_t%02X", {sect.sourcePID(), sect.tableId()});
+        suffix.format(u"_p%04X_t%02X", sect.sourcePID(), sect.tableId());
         if (sect.isLongSection()) {
-            suffix.format(u"_e%04X_v%02X_s%02X", {sect.tableIdExtension(), sect.version(), sect.sectionNumber()});
+            suffix.format(u"_e%04X_v%02X_s%02X", sect.tableIdExtension(), sect.version(), sect.sectionNumber());
         }
         fs::path outname(_bin_destination);
         outname.replace_filename(_bin_destination.stem() + suffix + _bin_destination.extension());
@@ -1080,12 +1080,12 @@ ts::UString ts::TablesLogger::logHeader(const DemuxedData& data)
 {
     UString header;
     if (_time_stamp) {
-        header.format(u"%s: ", {Time::CurrentLocalTime()});
+        header.format(u"%s: ", Time::CurrentLocalTime());
     }
     if (_packet_index) {
-        header.format(u"Packet %'d to %'d, ", {data.firstTSPacketIndex(), data.lastTSPacketIndex()});
+        header.format(u"Packet %'d to %'d, ", data.firstTSPacketIndex(), data.lastTSPacketIndex());
     }
-    header.format(u"PID 0x%X", {data.sourcePID()});
+    header.format(u"PID 0x%X", data.sourcePID());
     return header;
 }
 
@@ -1093,16 +1093,16 @@ void ts::TablesLogger::logSection(const Section& sect)
 {
     const TID tid = sect.tableId();
     UString header(logHeader(sect));
-    header.format(u", TID 0x%X", {tid});
+    header.format(u", TID 0x%X", tid);
     if (sect.isLongSection()) {
-        header.format(u", TIDext 0x%X, V%d, Sec %d/%d", {sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber()});
+        header.format(u", TIDext 0x%X, V%d, Sec %d/%d", sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber());
     }
     else if (bool(_duck.standards() & Standards::DVB) && (tid == TID_TDT || tid == TID_TOT) && sect.payloadSize() >= MJD_SIZE) {
         // Get UTC time from DVB TDT or TOT. The time reference is UTC as defined by DVB, but can be non-standard.
         Time utc;
         if (DecodeMJD(sect.payload(), MJD_SIZE, utc)) {
             utc -= _duck.timeReferenceOffset();
-            header.format(u", %s", {utc.format(Time::DATETIME)});
+            header.format(u", %s", utc.format(Time::DATETIME));
         }
     }
     header.append(u": ");
@@ -1117,7 +1117,7 @@ void ts::TablesLogger::logInvalid(const DemuxedData& data, const UString& reason
     UString line(logHeader(data));
     line += u", invalid section";
     if (!reason.empty()) {
-        line.format(u" (%s)", {reason});
+        line.format(u" (%s)", reason);
     }
     line += u": ";
     line.appendDump(data.content(), size, UString::SINGLE_LINE);
@@ -1173,7 +1173,7 @@ void ts::TablesLogger::preDisplay(PacketCounter first, PacketCounter last)
             strm << ", ";
         }
         if (_packet_index) {
-            strm << UString::Format(u"First TS packet: %'d, last: %'d", {first, last});
+            strm << UString::Format(u"First TS packet: %'d, last: %'d", first, last);
         }
         strm << std::endl;
     }

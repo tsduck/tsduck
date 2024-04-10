@@ -88,12 +88,12 @@ void ts::DeferredAssociationTagsDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     buf.pushReadSizeFromLength(8); // association_tags_loop_length
     while (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", buf.getUInt16()) << std::endl;
     }
     buf.popState(); // update association_tags_loop_length
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Program number: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

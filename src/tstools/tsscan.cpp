@@ -499,7 +499,7 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
     uint16_t net_id = 0;
     if (pat != nullptr) {
         ts_id = pat->ts_id;
-        strm << margin << ts::UString::Format(u"Transport stream id: %d, 0x%X", {ts_id, ts_id}) << std::endl;
+        strm << margin << ts::UString::Format(u"Transport stream id: %d, 0x%X", ts_id, ts_id) << std::endl;
     }
     if (nit != nullptr) {
         net_id = nit->network_id;

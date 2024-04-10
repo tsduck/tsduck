@@ -508,11 +508,11 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
         }
         else if (bool(flags & NamesFlags::DECIMAL)) {
             // Display decimal value only.
-            return UString::Format(u"%d", {value});
+            return UString::Format(u"%d", value);
         }
         else {
             // Display hexadecimal value only.
-            return UString::Format(u"0x%0*X", {HexaDigits(bits), value});
+            return UString::Format(u"0x%0*X", HexaDigits(bits), value);
         }
     }
 
@@ -527,17 +527,17 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
 
     switch (flags & (NamesFlags::FIRST | NamesFlags::DECIMAL | NamesFlags::HEXA)) {
         case NamesFlags::DECIMAL:
-            return UString::Format(u"%s (%d)", {*displayName, value});
+            return UString::Format(u"%s (%d)", *displayName, value);
         case NamesFlags::HEXA:
-            return UString::Format(u"%s (0x%0*X)", {*displayName, HexaDigits(bits), value});
+            return UString::Format(u"%s (0x%0*X)", *displayName, HexaDigits(bits), value);
         case NamesFlags::HEXA | NamesFlags::DECIMAL:
-            return UString::Format(u"%s (0x%0*X, %d)", {*displayName, HexaDigits(bits), value, value});
+            return UString::Format(u"%s (0x%0*X, %d)", *displayName, HexaDigits(bits), value, value);
         case NamesFlags::DECIMAL | NamesFlags::FIRST:
-            return UString::Format(u"%d (%s)", {value, *displayName});
+            return UString::Format(u"%d (%s)", value, *displayName);
         case NamesFlags::HEXA | NamesFlags::FIRST:
-            return UString::Format(u"0x%0*X (%s)", {HexaDigits(bits), value, *displayName});
+            return UString::Format(u"0x%0*X (%s)", HexaDigits(bits), value, *displayName);
         case NamesFlags::HEXA | NamesFlags::DECIMAL | NamesFlags::FIRST:
-            return UString::Format(u"0x%0*X (%d, %s)", {HexaDigits(bits), value, value, *displayName});
+            return UString::Format(u"0x%0*X (%d, %s)", HexaDigits(bits), value, value, *displayName);
         default:
             assert(false);
             return UString();

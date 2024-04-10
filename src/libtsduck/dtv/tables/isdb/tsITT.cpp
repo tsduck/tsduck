@@ -98,7 +98,7 @@ void ts::ITT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::ITT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Event id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
     disp.displayDescriptorListWithLength(section, buf, margin);
 }
 

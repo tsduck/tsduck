@@ -347,7 +347,7 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
 
     uint16_t num_channels = 0;
 
@@ -355,8 +355,8 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        disp << UString::Format(u", number of channels: %d", {num_channels = buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8());
+        disp << UString::Format(u", number of channels: %d", num_channels = buf.getUInt8()) << std::endl;
     }
 
     // Loop on all channel definitions.
@@ -373,15 +373,15 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << "." << buf.getBits<uint16_t>(10);
         disp << ", short name: \"" << name << "\"" << std::endl;
         disp << margin << "  Modulation: " << NameFromDTV(u"ATSCModulationModes", buf.getUInt8());
-        disp << UString::Format(u", frequency: %'d", {buf.getUInt32()}) << std::endl;
-        disp << margin << UString::Format(u"  TS id: 0x%X (%<d)", {buf.getUInt16()});
-        disp << UString::Format(u", program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"  ETM location: %d", {buf.getBits<uint8_t>(2)});
+        disp << UString::Format(u", frequency: %'d", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"  TS id: 0x%X (%<d)", buf.getUInt16());
+        disp << UString::Format(u", program number: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"  ETM location: %d", buf.getBits<uint8_t>(2));
         disp << ", access controlled: " << UString::YesNo(buf.getBool()) << std::endl;
         const bool hidden = buf.getBool();
         if (section.tableId() == TID_CVCT) {
             // The following two bits are used in CVCT only.
-            disp << margin << UString::Format(u"  Path select: %d", {buf.getBit()});
+            disp << margin << UString::Format(u"  Path select: %d", buf.getBit());
             disp << ", out of band: " << UString::YesNo(buf.getBool()) << std::endl;
         }
         else {
@@ -390,7 +390,7 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << "  Hidden: " << UString::YesNo(hidden) << ", hide guide: " << UString::YesNo(buf.getBool()) << std::endl;
         buf.skipBits(3);
         disp << margin << "  Service type: " << NameFromDTV(u"ATSCServiceType", buf.getBits<uint8_t>(6));
-        disp << UString::Format(u", source id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << UString::Format(u", source id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
 
         disp.displayDescriptorListWithLength(section, buf, margin + u"  ", UString(), UString(), 10);
     }

@@ -336,7 +336,7 @@ namespace {
                 }
                 std::cout << "  " << it.name << " (" << ts::UString::HumanSize(it.size);
                 if (it.downloadCount > 0) {
-                    std::cout << ts::UString::Format(u", %'d downloads", {it.downloadCount});
+                    std::cout << ts::UString::Format(u", %'d downloads", it.downloadCount);
                 }
                 std::cout << ")" << std::endl;
             }

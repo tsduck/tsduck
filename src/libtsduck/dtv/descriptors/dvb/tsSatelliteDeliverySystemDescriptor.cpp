@@ -143,10 +143,10 @@ void ts::SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(11)) {
-        disp << margin << UString::Format(u"Frequency: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%05d GHz", {buf.getBCD<uint32_t>(5)}) << std::endl;
-        disp << margin << UString::Format(u"Orbital position: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%d degree, ", {buf.getBCD<uint32_t>(1)});
+        disp << margin << UString::Format(u"Frequency: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%05d GHz", buf.getBCD<uint32_t>(5)) << std::endl;
+        disp << margin << UString::Format(u"Orbital position: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%d degree, ", buf.getBCD<uint32_t>(1));
         disp << (buf.getBool() ? "east" : "west") << std::endl;
         disp << margin << "Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         const bool isdb = bool(disp.duck().standards() & Standards::ISDB);
@@ -164,8 +164,8 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
             }
             disp << std::endl;
         }
-        disp << margin << UString::Format(u"Symbol rate: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Symbol rate: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
         disp << margin << "Inner FEC: " << DataName(MY_XML_NAME, isdb ? u"ISDBSatelliteFEC" : u"DVBSatelliteFEC", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
     }
 }
@@ -247,7 +247,7 @@ void ts::SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Ele
     const bool isDVB = delsys != DS_ISDB_S;
 
     root->setIntAttribute(u"frequency", frequency, false);
-    root->setAttribute(u"orbital_position", UString::Format(u"%d.%d", {orbital_position / 10, orbital_position % 10}));
+    root->setAttribute(u"orbital_position", UString::Format(u"%d.%d", orbital_position / 10, orbital_position % 10));
     root->setIntEnumAttribute(DirectionNames, u"west_east_flag", east_not_west);
     root->setIntEnumAttribute(PolarizationNames, u"polarization", polarization);
     if (delsys == DS_DVB_S2) {

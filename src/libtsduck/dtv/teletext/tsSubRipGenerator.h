@@ -142,7 +142,7 @@ ts::UString ts::SubRipGenerator::FormatTime(const cn::duration<Rep,Period>& time
     const int m = int(ms / 60000 - 60 * h);
     const int s = int(ms / 1000 - 3600 * h - 60 * m);
     const int u = int(ms - 3600000 * h - 60000 * m - 1000 * s);
-    return UString::Format(u"%02d:%02d:%02d,%03d", {h, m, s, u});
+    return UString::Format(u"%02d:%02d:%02d,%03d", h, m, s, u);
 }
 
 // Add a multi-lines subtitle frame.

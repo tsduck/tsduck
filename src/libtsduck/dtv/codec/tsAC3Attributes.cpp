@@ -259,7 +259,7 @@ ts::UString ts::AC3Attributes::toString() const
         desc += name;
     }
 
-    desc += UString::Format(u", bsid %d", {_bsid});
+    desc += UString::Format(u", bsid %d", _bsid);
     return desc;
 }
 
@@ -282,7 +282,7 @@ ts::UString ts::AC3Attributes::bitstreamModeDescription() const
         case 5:  return u"commentary";
         case 6:  return u"emergency";
         case 7:  return _acmod == 1 ? u"voice over" : u"karaoke";
-        default: return UString::Format(u"bsmod=%d", {_bsmod});
+        default: return UString::Format(u"bsmod=%d", _bsmod);
     }
 }
 
@@ -305,7 +305,7 @@ ts::UString ts::AC3Attributes::audioCodingDescription() const
         case 5:  return u"3/1 (L,C,R,S)";
         case 6:  return u"2/2 (L,R,SL,SR)";
         case 7:  return u"3/2 (L,C,R,SL,SR)";
-        default: return UString::Format(u"acmod=%d", {_acmod});
+        default: return UString::Format(u"acmod=%d", _acmod);
     }
 }
 

@@ -102,14 +102,14 @@ void ts::C2BundleDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(8)) {
-        disp << margin << UString::Format(u"- PLP id: 0x%X (%<d)", {buf.getUInt8()});
-        disp << UString::Format(u", data slice id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"  Frequency: %'d Hz (0x%<X)", {buf.getUInt32()}) << std::endl;
-        disp << margin << UString::Format(u"  Tuning frequency type: %s", {DataName(MY_XML_NAME, u"C2TuningType", buf.getBits<uint8_t>(2), NamesFlags::FIRST)}) << std::endl;
-        disp << margin << UString::Format(u"  Symbol duration: %s", {DataName(MY_XML_NAME, u"C2SymbolDuration", buf.getBits<uint8_t>(3), NamesFlags::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"- PLP id: 0x%X (%<d)", buf.getUInt8());
+        disp << UString::Format(u", data slice id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"  Frequency: %'d Hz (0x%<X)", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"  Tuning frequency type: %s", DataName(MY_XML_NAME, u"C2TuningType", buf.getBits<uint8_t>(2), NamesFlags::FIRST)) << std::endl;
+        disp << margin << UString::Format(u"  Symbol duration: %s", DataName(MY_XML_NAME, u"C2SymbolDuration", buf.getBits<uint8_t>(3), NamesFlags::FIRST)) << std::endl;
         const uint8_t guard = buf.getBits<uint8_t>(3);
-        disp << margin << UString::Format(u"  Guard interval: %d (%s)", {guard, C2DeliverySystemDescriptor::C2GuardIntervalNames.name(guard)}) << std::endl;
-        disp << margin << UString::Format(u"  Master channel: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"  Guard interval: %d (%s)", guard, C2DeliverySystemDescriptor::C2GuardIntervalNames.name(guard)) << std::endl;
+        disp << margin << UString::Format(u"  Master channel: %s", buf.getBool()) << std::endl;
         buf.skipBits(7);
     }
 }

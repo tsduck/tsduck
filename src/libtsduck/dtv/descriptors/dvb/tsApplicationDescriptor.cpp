@@ -102,20 +102,20 @@ void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     buf.pushReadSizeFromLength(8); // application_profiles_length
     while (buf.canReadBytes(5)) {
-        disp << margin << UString::Format(u"Profile: 0x%X (%<d)", {buf.getUInt16()});
-        disp << UString::Format(u", version: %d", {buf.getUInt8()});
-        disp << UString::Format(u".%d", {buf.getUInt8()});
-        disp << UString::Format(u".%d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Profile: 0x%X (%<d)", buf.getUInt16());
+        disp << UString::Format(u", version: %d", buf.getUInt8());
+        disp << UString::Format(u".%d", buf.getUInt8());
+        disp << UString::Format(u".%d", buf.getUInt8()) << std::endl;
     }
     buf.popState(); // end of application_profiles_length
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Service bound: %d", {buf.getBool()});
-        disp << UString::Format(u", visibility: %d", {buf.getBits<uint8_t>(2)});
+        disp << margin << UString::Format(u"Service bound: %d", buf.getBool());
+        disp << UString::Format(u", visibility: %d", buf.getBits<uint8_t>(2));
         buf.skipBits(5);
-        disp << UString::Format(u", priority: %d", {buf.getUInt8()}) << std::endl;
+        disp << UString::Format(u", priority: %d", buf.getUInt8()) << std::endl;
     }
     while (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", buf.getUInt8()) << std::endl;
     }
 }
 
@@ -132,7 +132,7 @@ void ts::ApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     for (const auto& it : profiles) {
         xml::Element* e = root->addElement(u"profile");
         e->setIntAttribute(u"application_profile", it.application_profile, true);
-        e->setAttribute(u"version", UString::Format(u"%d.%d.%d", {it.version_major, it.version_minor, it.version_micro}));
+        e->setAttribute(u"version", UString::Format(u"%d.%d.%d", it.version_major, it.version_minor, it.version_micro));
     }
     for (size_t i = 0; i < transport_protocol_labels.size(); ++i) {
         root->addElement(u"transport_protocol")->setIntAttribute(u"label", transport_protocol_labels[i], true);
@@ -160,7 +160,7 @@ bool ts::ApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element
         UString version;
         ok = prof[i]->getIntAttribute(p.application_profile, u"application_profile", true) &&
              prof[i]->getAttribute(version, u"version", true);
-        if (ok && !version.scan(u"%d.%d.%d", {&p.version_major, &p.version_minor, &p.version_micro})) {
+        if (ok && !version.scan(u"%d.%d.%d", &p.version_major, &p.version_minor, &p.version_micro)) {
             ok = false;
             prof[i]->report().error(u"invalid version '%s' in <%s>, line %d, use 'major.minor.micro'", {version, prof[i]->name(), prof[i]->lineNumber()});
         }

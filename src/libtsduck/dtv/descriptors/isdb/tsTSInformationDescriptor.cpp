@@ -106,16 +106,16 @@ void ts::TSInformationDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TSInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Remote control key id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Remote control key id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         const size_t nlen = buf.getBits<size_t>(6);
         const size_t tcount = buf.getBits<size_t>(2);
         disp << margin << "TS name: \"" << buf.getString(nlen) << "\"" << std::endl;
 
         for (size_t i1 = 0; buf.canReadBytes(2) && i1 < tcount; ++i1) {
-            disp << margin << UString::Format(u"- Transmission type info: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"- Transmission type info: 0x%X (%<d)", buf.getUInt8()) << std::endl;
             const size_t scount = buf.getUInt8();
             for (size_t i2 = 0; buf.canReadBytes(2) && i2 < scount; ++i2) {
-                disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"  Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
             }
         }
         disp.displayPrivateData(u"Reserved for future use", buf, NPOS, margin);

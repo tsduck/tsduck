@@ -51,5 +51,5 @@ ts::IPv4Address ts::IPv4AddressMask::broadcastAddress() const
 
 ts::UString ts::IPv4AddressMask::toString() const
 {
-    return UString::Format(u"%s/%d", {address, maskSize()});
+    return UString::Format(u"%s/%d", address, maskSize());
 }

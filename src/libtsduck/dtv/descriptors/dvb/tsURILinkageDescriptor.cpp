@@ -158,7 +158,7 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
         disp << margin << "URI: " << buf.getStringWithByteLength() << std::endl;
         if ((type == URI_LINKAGE_ONLINE_SDT || type == URI_LINKAGE_IPTV_SDnS) && buf.canReadBytes(2)) {
             const int interval = buf.getUInt16();
-            disp << margin << UString::Format(u"Min polling interval: %d (%d seconds)", {interval, 2 * interval}) << std::endl;
+            disp << margin << UString::Format(u"Min polling interval: %d (%d seconds)", interval, 2 * interval) << std::endl;
         }
         else if ((type == URI_LINKAGE_DVB_I) && buf.canReadBytes(1)) {
             DVB_I_Info    tmp;

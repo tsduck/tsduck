@@ -279,7 +279,7 @@ void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp
                 uint8_t cps_vector_count = buf.getUInt8();
                 for (uint8_t i = 0; i < cps_vector_count; i++) {
                     uint8_t CandRmask = buf.getUInt8();
-                    disp << margin << UString::Format(u"cps[%03d] - C and R regime mask: ", { i }) << UString::Format(BYTE_TO_BINARY_PATTERN, { BYTE_TO_BINARY(CandRmask) }) << std::endl;
+                    disp << margin << UString::Format(u"cps[%03d] - C and R regime mask: ", i) << UString::Format(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(CandRmask)) << std::endl;
                     uint16_t cps_vector_length = buf.getUInt16();
                     disp << margin << margin << UString::Dump(buf.getBytes(cps_vector_length), UString::SINGLE_LINE) << std::endl;
                 }

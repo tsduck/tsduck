@@ -76,9 +76,9 @@ void ts::IBPDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::IBPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Closed GOP: %s", {buf.getBool()});
-        disp << UString::Format(u", identical GOP: %s", {buf.getBool()});
-        disp << UString::Format(u", max GOP length: 0x%X (%<'d)", {buf.getBits<uint16_t>(14)}) << std::endl;
+        disp << margin << UString::Format(u"Closed GOP: %s", buf.getBool());
+        disp << UString::Format(u", identical GOP: %s", buf.getBool());
+        disp << UString::Format(u", max GOP length: 0x%X (%<'d)", buf.getBits<uint16_t>(14)) << std::endl;
     }
 }
 

@@ -165,7 +165,7 @@ int MainCode(int argc, char *argv[])
         for (ts::PID pid = 0; pid < ts::PID_MAX; pid++) {
             ts::PacketCounter pcount = zer.packetCount (pid);
             if (pcount > 0) {
-                std::cout << ts::UString::Format(u"%4d (0x%04X)  %12'd  %14'd b/s  %14'd b/s", {pid, pid, pcount, zer.bitrate188(pid), zer.bitrate204(pid)})
+                std::cout << ts::UString::Format(u"%4d (0x%04X)  %12'd  %14'd b/s  %14'd b/s", pid, pid, pcount, zer.bitrate188(pid), zer.bitrate204(pid))
                           << std::endl;
             }
         }

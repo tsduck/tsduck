@@ -71,8 +71,8 @@ void ts::TargetBackgroundGridDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Size: %d", {buf.getBits<uint16_t>(14)});
-        disp << UString::Format(u"x%d", {buf.getBits<uint16_t>(14)});
+        disp << margin << UString::Format(u"Size: %d", buf.getBits<uint16_t>(14));
+        disp << UString::Format(u"x%d", buf.getBits<uint16_t>(14));
         disp << ", aspect ratio: " << NameFromDTV(u"mpeg2.aspect_ratio", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
     }
 }

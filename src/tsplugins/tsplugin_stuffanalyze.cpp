@@ -170,7 +170,7 @@ bool ts::StuffAnalyzePlugin::stop()
         const PID pid = it.first;
         const PIDContextPtr& ctx(it.second);
         if (ctx != nullptr) {
-            (*_output) << UString::Format(u"%4d (0x%04<X) ", {pid}) << ctx->toString() << std::endl;
+            (*_output) << UString::Format(u"%4d (0x%04<X) ", pid) << ctx->toString() << std::endl;
         }
     }
     (*_output) << "Total         " << _total.toString() << std::endl;

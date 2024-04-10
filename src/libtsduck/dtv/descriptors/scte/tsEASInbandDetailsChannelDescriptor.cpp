@@ -69,8 +69,8 @@ void ts::EASInbandDetailsChannelDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::EASInbandDetailsChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"RF channel: %d", {buf.getUInt8()});
-        disp << UString::Format(u", program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"RF channel: %d", buf.getUInt8());
+        disp << UString::Format(u", program number: 0x%X (%<d)", buf.getUInt16()) << std::endl;
     }
 }
 

@@ -29,7 +29,7 @@ ts::tslatencymonitor::InputExecutor::InputExecutor(const LatencyMonitorArgs& opt
     _metadata(BUFFERED_PACKETS)
 {
     // Make sure that the input plugins display their index.
-    setLogName(UString::Format(u"%s[%d]", {pluginName(), _pluginIndex}));
+    setLogName(UString::Format(u"%s[%d]", pluginName(), _pluginIndex));
 }
 
 ts::tslatencymonitor::InputExecutor::~InputExecutor()

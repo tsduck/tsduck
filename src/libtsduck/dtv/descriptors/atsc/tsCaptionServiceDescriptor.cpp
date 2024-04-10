@@ -112,16 +112,16 @@ void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
             disp << margin << "- Language: \"" << buf.getLanguageCode() << "\"";
             const bool digital = buf.getBool();
             buf.skipBits(1);
-            disp << UString::Format(u", digital: %s", {digital});
+            disp << UString::Format(u", digital: %s", digital);
             if (digital) {
-                disp << UString::Format(u", service: 0x%X (%<d)", {buf.getBits<uint8_t>(6)});
+                disp << UString::Format(u", service: 0x%X (%<d)", buf.getBits<uint8_t>(6));
             }
             else {
                 buf.skipBits(5);
-                disp << UString::Format(u", line 21: %s", {buf.getBool()});
+                disp << UString::Format(u", line 21: %s", buf.getBool());
             }
-            disp << UString::Format(u", easy reader: %s", {buf.getBool()});
-            disp << UString::Format(u", wide: %s", {buf.getBool()}) << std::endl;
+            disp << UString::Format(u", easy reader: %s", buf.getBool());
+            disp << UString::Format(u", wide: %s", buf.getBool()) << std::endl;
             buf.skipBits(14);
         }
     }

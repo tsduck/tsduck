@@ -127,9 +127,9 @@ void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
     if (buf.canReadBytes(1)) {
         buf.skipBits(6);
         const uint8_t type = buf.getBits<uint8_t>(2);
-        disp << margin << UString::Format(u"Coding type: %d (%s)", {type, CodingTypeEnum.name(type)}) << std::endl;
+        disp << margin << UString::Format(u"Coding type: %d (%s)", type, CodingTypeEnum.name(type)) << std::endl;
         while (buf.canReadBytes(4)) {
-            disp << margin << UString::Format(u"Centre frequency: %'d Hz", {DecodeFrequency(type, buf)}) << std::endl;
+            disp << margin << UString::Format(u"Centre frequency: %'d Hz", DecodeFrequency(type, buf)) << std::endl;
         }
     }
 }

@@ -273,7 +273,7 @@ ts::UString ts::URL::toString(bool useWinInet) const
         }
         url.append(_host);
         if (_port != 0) {
-            url.append(UString::Format(u":%d", {_port}));
+            url.append(UString::Format(u":%d", _port));
         }
         if (!_path.startWith(u"/")) {
             // Enforce a slash between host and path.

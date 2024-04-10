@@ -59,7 +59,7 @@ void ts::AbstractPacketizer::configurePacket(TSPacket& pkt, bool nullify)
 std::ostream& ts::AbstractPacketizer::display(std::ostream& strm) const
 {
     return strm
-        << UString::Format(u"  PID: %d (0x%X)", {_pid, _pid}) << std::endl
+        << UString::Format(u"  PID: %d (0x%X)", _pid, _pid) << std::endl
         << "  Next CC: " << int(_continuity) << std::endl
-        << UString::Format(u"  Output packets: %'d", {_packet_count}) << std::endl;
+        << UString::Format(u"  Output packets: %'d", _packet_count) << std::endl;
 }

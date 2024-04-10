@@ -93,14 +93,14 @@ ts::UString ts::Enumeration::error(const UString& name1, bool caseSensitive, boo
     }
 
     if (maybe.empty()) {
-        return UString::Format(u"unknown %s \"%s%s\"", {designator, prefix, name1});
+        return UString::Format(u"unknown %s \"%s%s\"", designator, prefix, name1);
     }
     else if (maybe.size() == 1) {
         // Only one possibility, there is no error.
         return UString();
     }
     else {
-        return UString::Format(u"ambiguous %s \"%s%s\", could be one of %s", {designator, prefix, name1, UString::Join(maybe)});
+        return UString::Format(u"ambiguous %s \"%s%s\", could be one of %s", designator, prefix, name1, UString::Join(maybe));
     }
 }
 
@@ -116,7 +116,7 @@ ts::UString ts::Enumeration::intToName(int_t value, bool hexa, size_t hexDigitCo
         return it->second;
     }
     else if (hexa) {
-        return UString::Format(u"0x%0*X", {hexDigitCount, value});
+        return UString::Format(u"0x%0*X", hexDigitCount, value);
     }
     else {
         return UString::Decimal(value, 0, true, UString());
@@ -153,7 +153,7 @@ ts::UString ts::Enumeration::bitMaskNames(int_t value, const ts::UString& separa
             list += separator;
         }
         if (hexa) {
-            list += UString::Format(u"0x%0*X", {hexDigitCount, mask});
+            list += UString::Format(u"0x%0*X", hexDigitCount, mask);
         }
         else {
             list += UString::Decimal(mask, 0, true, UString());

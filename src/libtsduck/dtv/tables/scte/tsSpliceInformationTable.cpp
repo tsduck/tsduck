@@ -386,7 +386,7 @@ bool ts::SpliceInformationTable::analyzeXML(DuckContext& duck, const xml::Elemen
 void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     if (buf.canReadBytes(15)) {
-        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8()) << std::endl;
         disp << margin << "Encryption: ";
         const uint8_t encrypted_packet = buf.getBit();
         if (encrypted_packet == 0) {
@@ -395,7 +395,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
         }
         else {
             const uint8_t encryption_algo = buf.getBits<uint8_t>(6);
-            disp << UString::Format(u"0x%X (%<d)", {encryption_algo});
+            disp << UString::Format(u"0x%X (%<d)", encryption_algo);
             switch (encryption_algo) {
                 case 0: disp << ", none"; break;
                 case 1: disp << ", DES-ECB"; break;
@@ -406,8 +406,8 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
         }
         disp << std::endl;
         disp << margin << "PTS adjustment: " << PTSToString(buf.getBits<uint64_t>(33)) << std::endl;
-        disp << margin << UString::Format(u"CW index: 0x%X (%<d)", {buf.getUInt8()});
-        disp << UString::Format(u", tier: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
+        disp << margin << UString::Format(u"CW index: 0x%X (%<d)", buf.getUInt8());
+        disp << UString::Format(u", tier: 0x%03X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;
         if (encrypted_packet != 0) {
             // The encrypted part starts at the command type.
             disp << margin << "Encrypted command, cannot display" << std::endl;
@@ -418,7 +418,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
             const uint8_t cmd_type = buf.getUInt8();
             disp << margin
                  << "Command type: " << NameFromDTV(u"SpliceCommandType", cmd_type, NamesFlags::HEXA_FIRST)
-                 << ", size: " << (cmd_length == 0x0FFF ? u"unspecified" : UString::Format(u"%d bytes", {cmd_length}))
+                 << ", size: " << (cmd_length == 0x0FFF ? u"unspecified" : UString::Format(u"%d bytes", cmd_length))
                  << std::endl;
 
             // If the command length is the legacy value 0x0FFF, it means unspecified. See deserializePayload().
@@ -460,7 +460,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
                 case SPLICE_PRIVATE_COMMAND: {
                     // A splice private command has no implicit size. It cannot be used with legacy command_length == 0x0FFF.
                     if (cmd_length != 0x0FFF && cmd_length >= 4) {
-                        disp << margin << UString::Format(u"Command identifier: 0x%0X (%<'d)", {GetUInt32(buf.currentReadAddress())}) << std::endl;
+                        disp << margin << UString::Format(u"Command identifier: 0x%0X (%<'d)", GetUInt32(buf.currentReadAddress())) << std::endl;
                         actual_length = 4;
                     }
                     break;

@@ -126,30 +126,30 @@ void ts::MVCOperationPointDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Profile IDC: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"Constraint set: 0:%s", {buf.getBool()});
-        disp << UString::Format(u", 1:%s", {buf.getBool()});
-        disp << UString::Format(u", 2:%s", {buf.getBool()});
-        disp << UString::Format(u", 3:%s", {buf.getBool()});
-        disp << UString::Format(u", 4:%s", {buf.getBool()});
-        disp << UString::Format(u", 5:%s", {buf.getBool()}) << std::endl;
-        disp << margin << UString::Format(u"AVC compatible flags: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+        disp << margin << UString::Format(u"Profile IDC: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Constraint set: 0:%s", buf.getBool());
+        disp << UString::Format(u", 1:%s", buf.getBool());
+        disp << UString::Format(u", 2:%s", buf.getBool());
+        disp << UString::Format(u", 3:%s", buf.getBool());
+        disp << UString::Format(u", 4:%s", buf.getBool());
+        disp << UString::Format(u", 5:%s", buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"AVC compatible flags: %d", buf.getBits<uint8_t>(2)) << std::endl;
         uint8_t level_count = buf.getUInt8();
-        disp << margin << UString::Format(u"Level count: %d", {level_count}) << std::endl;
+        disp << margin << UString::Format(u"Level count: %d", level_count) << std::endl;
 
         while (level_count-- > 0 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"- Level IDC: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"- Level IDC: 0x%X (%<d)", buf.getUInt8()) << std::endl;
             uint8_t points_count = buf.getUInt8();
-            disp << margin << UString::Format(u"  Operation points count: %d", {points_count}) << std::endl;
+            disp << margin << UString::Format(u"  Operation points count: %d", points_count) << std::endl;
             while (points_count-- > 0 && buf.canReadBytes(3)) {
                 buf.skipBits(5);
-                disp << margin << UString::Format(u"  - Applicable temporal id: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
-                disp << margin << UString::Format(u"    Num target output views: %d", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"  - Applicable temporal id: %d", buf.getBits<uint8_t>(3)) << std::endl;
+                disp << margin << UString::Format(u"    Num target output views: %d", buf.getUInt8()) << std::endl;
                 uint8_t ES_count = buf.getUInt8();
-                disp << margin << UString::Format(u"    ES count: %d", {ES_count}) << std::endl;
+                disp << margin << UString::Format(u"    ES count: %d", ES_count) << std::endl;
                 while (ES_count-- > 0 && buf.canReadBytes(1)) {
                     buf.skipBits(2);
-                    disp << margin << UString::Format(u"    ES reference: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
+                    disp << margin << UString::Format(u"    ES reference: 0x%X (%<d)", buf.getBits<uint8_t>(6)) << std::endl;
                 }
             }
         }

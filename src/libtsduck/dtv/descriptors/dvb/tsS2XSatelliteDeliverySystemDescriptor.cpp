@@ -197,7 +197,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
     if (buf.canReadBytes(2)) {
         const uint8_t profiles = buf.getBits<uint8_t>(5);
         buf.skipBits(3);
-        disp << margin << UString::Format(u"Receiver profiles: 0x%X", {profiles});
+        disp << margin << UString::Format(u"Receiver profiles: 0x%X", profiles);
         if ((profiles & 0x01) != 0) {
             disp << ", broadcast services";
         }
@@ -222,11 +222,11 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
 
         if (sseq_sel && buf.canReadBytes(3)) {
             buf.skipBits(6);
-            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {buf.getBits<uint32_t>(18)}) << std::endl;
+            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", buf.getBits<uint32_t>(18)) << std::endl;
         }
         DisplayChannel(disp, u"Master channel", buf, margin);
         if (mode == 2 && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Timeslice number: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Timeslice number: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         }
         if (mode == 3 && buf.canReadBytes(1)) {
             buf.skipBits(7);
@@ -248,10 +248,10 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
     }
     else {
         disp << margin << title << ":" << std::endl;
-        disp << margin << UString::Format(u"  Frequency: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%05d GHz", {buf.getBCD<uint32_t>(5)}) << std::endl;
-        disp << margin << UString::Format(u"  Orbital position: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%d degree, ", {buf.getBCD<uint32_t>(1)});
+        disp << margin << UString::Format(u"  Frequency: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%05d GHz", buf.getBCD<uint32_t>(5)) << std::endl;
+        disp << margin << UString::Format(u"  Orbital position: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%d degree, ", buf.getBCD<uint32_t>(1));
         disp << (buf.getBool() ? "east" : "west") << std::endl;
         disp << margin << "  Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         const bool multiple = buf.getBool();
@@ -259,10 +259,10 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
         buf.skipBits(1);
         disp << margin << "  Roll-off factor: " << RollOffNames.name(buf.getBits<uint8_t>(3)) << std::endl;
         buf.skipBits(4);
-        disp << margin << UString::Format(u"  Symbol rate: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"  Symbol rate: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
         if (multiple && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"  Input stream identifier: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"  Input stream identifier: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         }
     }
 }
@@ -300,7 +300,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::buildChannelXML(const Channel& ch
 {
     xml::Element* e = parent->addElement(name);
     e->setIntAttribute(u"frequency", channel.frequency, false);
-    e->setAttribute(u"orbital_position", UString::Format(u"%d.%d", {channel.orbital_position / 10, channel.orbital_position % 10}));
+    e->setAttribute(u"orbital_position", UString::Format(u"%d.%d", channel.orbital_position / 10, channel.orbital_position % 10));
     e->setIntEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", channel.east_not_west);
     e->setIntEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", channel.polarization);
     e->setIntEnumAttribute(RollOffNames, u"roll_off", channel.roll_off);
@@ -366,7 +366,7 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, D
 
         // Expected orbital position is "XX.X" as in "19.2".
         uint16_t o1, o2;
-        ok = orbit.scan(u"%d.%d", {&o1, &o2});
+        ok = orbit.scan(u"%d.%d", &o1, &o2);
         if (ok) {
             channel.orbital_position = (o1 * 10) + o2;
         }

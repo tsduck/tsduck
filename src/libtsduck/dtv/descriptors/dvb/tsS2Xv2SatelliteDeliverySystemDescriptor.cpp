@@ -209,7 +209,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
 void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Delivery sytsem id: 0x%08X", { buf.getUInt32() });
+        disp << margin << UString::Format(u"Delivery sytsem id: 0x%08X",  buf.getUInt32() );
         uint8_t _S2Xv2_mode = buf.getBits<uint8_t>(4);
         disp << ", S2Xv2 mode: " << DataName(MY_XML_NAME, u"S2Xv2_mode", _S2Xv2_mode, NamesFlags::VALUE);
         bool _multiple_input_stream_flag = buf.getBool();
@@ -228,7 +228,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         }
         disp << margin << "TS/GS S2X mode: " << DataName(MY_XML_NAME, u"TSGSS2Xv2Mode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
         const uint8_t _receiver_profiles = buf.getBits<uint8_t>(5);
-        disp << margin << UString::Format(u"Receiver profiles: 0x%X", { _receiver_profiles });
+        disp << margin << UString::Format(u"Receiver profiles: 0x%X",  _receiver_profiles );
         if ((_receiver_profiles & 0x01) != 0) {
             disp << ", broadcast services";
         }
@@ -246,11 +246,11 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         }
         disp << std::endl;
 
-        disp << margin << UString::Format(u"Satellite id : 0x%X", { buf.getUInt24() });
-        disp << UString::Format(u", frequency: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%05d GHz", { buf.getBCD<uint32_t>(5) });
-        disp << UString::Format(u", symbol rate: %d", {buf.getBCD<uint32_t>(4)});
-        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Satellite id : 0x%X",  buf.getUInt24() );
+        disp << UString::Format(u", frequency: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%05d GHz",  buf.getBCD<uint32_t>(5) );
+        disp << UString::Format(u", symbol rate: %d", buf.getBCD<uint32_t>(4));
+        disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
 
         disp << margin << "Multiple input stream: " << UString::YesNo(_multiple_input_stream_flag);
         if (_multiple_input_stream_flag) {
@@ -272,7 +272,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
             uint8_t _num_channel_bonds_minus1 = buf.getBits<uint8_t>(1);
             disp << margin << "Secondary delivery system id" << (_num_channel_bonds_minus1+1 == 1 ? "" : "s") << ": ";
             for (uint8_t j = 0; j < _num_channel_bonds_minus1 + 1; j++) {
-                disp << UString::Format(u"0x08%X ", { buf.getUInt32() });
+                disp << UString::Format(u"0x08%X ",  buf.getUInt32() );
             }
             disp << std::endl;
         }

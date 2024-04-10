@@ -119,24 +119,24 @@ void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         disp << margin << "Recording control: " << DataName(MY_XML_NAME, u"CopyControl", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
         const bool bitrate_flag = buf.getBool();
         const bool comp_flag = buf.getBool();
-        disp << margin << UString::Format(u"User-defined: 0x%1X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"User-defined: 0x%1X (%<d)", buf.getBits<uint8_t>(4)) << std::endl;
 
         if (bitrate_flag && buf.canReadBytes(1)) {
             // Bitrate unit is 1/4 Mb/s.
             const uint32_t mbr = buf.getUInt8();
-            disp << margin << UString::Format(u"Maximum bitrate: %d (%'d b/s)", {mbr, mbr * 250000}) << std::endl;
+            disp << margin << UString::Format(u"Maximum bitrate: %d (%'d b/s)", mbr, mbr * 250000) << std::endl;
         }
         if (comp_flag) {
             buf.pushReadSizeFromLength(8); // component_control_length
             while (buf.canReadBytes(2)) {
-                disp << margin << UString::Format(u"- Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"- Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
                 disp << margin << "  Recording control: " << DataName(MY_XML_NAME, u"CopyControl", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
                 const bool bflag = buf.getBool();
                 buf.skipBits(1);
-                disp << margin << UString::Format(u"  User-defined: 0x%1X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
+                disp << margin << UString::Format(u"  User-defined: 0x%1X (%<d)", buf.getBits<uint8_t>(4)) << std::endl;
                 if (bflag && buf.canReadBytes(1)) {
                     const uint32_t mbr = buf.getUInt8();
-                    disp << margin << UString::Format(u"  Maximum bitrate: %d (%'d b/s)", {mbr, mbr * 250000}) << std::endl;
+                    disp << margin << UString::Format(u"  Maximum bitrate: %d (%'d b/s)", mbr, mbr * 250000) << std::endl;
                 }
             }
             buf.popState(); // component_control_length

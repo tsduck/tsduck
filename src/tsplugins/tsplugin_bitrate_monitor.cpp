@@ -272,8 +272,8 @@ bool ts::BitrateMonitorPlugin::getOptions()
         _alarm_target = u"ts";
     }
     else {
-        _alarm_prefix.format(u"PID 0x%X (%<d)", {_first_pid});
-        _alarm_target.format(u"%d", {_first_pid});
+        _alarm_prefix.format(u"PID 0x%X (%<d)", _first_pid);
+        _alarm_target.format(u"%d", _first_pid);
         if (_json_line) {
             _json_pids = std::make_shared<json::Array>();
             for (size_t pid = 0; pid < _pids.size(); ++pid) {
@@ -440,19 +440,19 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
         // Format an alarm message.
         UString alarm_message;
-        alarm_message.format(u"%s bitrate (%'d bits/s)", {_alarm_prefix, bitrate});
+        alarm_message.format(u"%s bitrate (%'d bits/s)", _alarm_prefix, bitrate);
         if (state_change) {
             switch (new_bitrate_status) {
                 case LOWER:
-                    alarm_message.format(u" is lower than allowed minimum (%'d bits/s)", {_min_bitrate});
+                    alarm_message.format(u" is lower than allowed minimum (%'d bits/s)", _min_bitrate);
                     _labels_next |= _labels_go_below;
                     break;
                 case IN_RANGE:
-                    alarm_message.format(u" is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
+                    alarm_message.format(u" is back in allowed range (%'d-%'d bits/s)", _min_bitrate, _max_bitrate);
                     _labels_next |= _labels_go_normal;
                     break;
                 case GREATER:
-                    alarm_message.format(u" is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
+                    alarm_message.format(u" is greater than allowed maximum (%'d bits/s)", _max_bitrate);
                     _labels_next |= _labels_go_above;
                     break;
                 default:
@@ -467,7 +467,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
         // The command is run asynchronously, do not wait for completion.
         if (!_alarm_command.empty()) {
             UString command;
-            command.format(u"%s \"%s\" %s %s %d %d %d %d", {_alarm_command, alarm_message, _alarm_target, alarm_status, bitrate, _min_bitrate, _max_bitrate, net_bitrate});
+            command.format(u"%s \"%s\" %s %s %d %d %d %d", _alarm_command, alarm_message, _alarm_target, alarm_status, bitrate, _min_bitrate, _max_bitrate, net_bitrate);
             ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
         }
 

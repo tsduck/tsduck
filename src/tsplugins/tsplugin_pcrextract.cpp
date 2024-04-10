@@ -482,7 +482,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
     if (_log_format && report_it) {
         UString trailer;
         if (_input_time && mdata.hasInputTimeStamp()) {
-            trailer.format(u", input: 0x%011X", {mdata.getInputTimeStamp().count()});
+            trailer.format(u", input: 0x%011X", mdata.getInputTimeStamp().count());
         }
         // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
         const size_t width = pcr_subfactor == 1 ? 11 : 9;
@@ -658,7 +658,7 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
     const uint64_t command_pts = sit.splice_command_type == SPLICE_INSERT ? sit.splice_insert.lowestPTS() : INVALID_PTS;
 
     // Start of message.
-    UString msg(UString::Format(u"PID: 0x%X (%d), SCTE 35 command %s", {pid, pid, NameFromDTV(u"SpliceCommandType", sit.splice_command_type)}));
+    UString msg(UString::Format(u"PID: 0x%X (%d), SCTE 35 command %s", pid, pid, NameFromDTV(u"SpliceCommandType", sit.splice_command_type)));
     if (sit.splice_command_type == SPLICE_INSERT) {
         if (sit.splice_insert.canceled) {
             msg += u" canceled";
@@ -673,12 +673,12 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
     // Add service PTS if there is one.
     if (service_pts != INVALID_PTS) {
         // No PTS in command but we know the last PTS in the service.
-        msg += UString::Format(u", at PTS 0x%09X in service", {service_pts});
+        msg += UString::Format(u", at PTS 0x%09X in service", service_pts);
     }
 
     // Add command PTS if there is one.
     if (command_pts != INVALID_PTS) {
-        msg += UString::Format(u", exec at PTS 0x%09X", {command_pts});
+        msg += UString::Format(u", exec at PTS 0x%09X", command_pts);
         if (service_pts != INVALID_PTS && service_pts < command_pts) {
             // Add real time difference.
             msg += u", in ";

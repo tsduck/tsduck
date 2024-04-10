@@ -139,7 +139,7 @@ void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         const uint8_t cp = buf.getUInt8();
         const uint8_t tc = buf.getUInt8();
         const uint8_t mc = buf.getUInt8();
-        disp << margin << UString::Format(u"Colour primaries: %d, Transfer characteristics: %d, Matrix coefficients: %d", {cp, tc, mc}) << std::endl;
+        disp << margin << UString::Format(u"Colour primaries: %d, Transfer characteristics: %d, Matrix coefficients: %d", cp, tc, mc) << std::endl;
         buf.skipBits(8); // T/AI 109.6 is not explicit on the value for reserved bits
     }
 }

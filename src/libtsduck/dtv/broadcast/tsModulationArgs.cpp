@@ -863,26 +863,26 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
             }
 
             if (band != nullptr) {
-                desc += UString::Format(u"%s channel %d", {band, channel});
+                desc += UString::Format(u"%s channel %d", band, channel);
                 if (offset != 0) {
-                    desc += UString::Format(u", offset %+d", {offset});
+                    desc += UString::Format(u", offset %+d", offset);
                 }
                 desc += u" (";
             }
-            desc += UString::Format(u"%'d Hz", {frequency.value()});
+            desc += UString::Format(u"%'d Hz", frequency.value());
             if (band != nullptr) {
                 desc += u")";
             }
 
             if (plp != PLP_DISABLE) {
-                desc += UString::Format(u", PLP %d", {plp.value()});
+                desc += UString::Format(u", PLP %d", plp.value());
             }
             break;
         }
         case TT_DVB_S:
         case TT_ISDB_S: {
             // Display frequency and polarity.
-            desc = UString::Format(u"%'d Hz", {frequency.value()});
+            desc = UString::Format(u"%'d Hz", frequency.value());
             if (polarity.has_value()) {
                 switch (polarity.value()) {
                     case POL_HORIZONTAL:
@@ -918,7 +918,7 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
         case TT_UNDEFINED:
         default: {
             // Generic display.
-            desc = UString::Format(u"%'d Hz", {frequency.value()});
+            desc = UString::Format(u"%'d Hz", frequency.value());
             break;
         }
     }
@@ -1120,12 +1120,12 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
     }
 
     // Delivery system and frequency are common options and always come first.
-    UString opt(UString::Format(u"--delivery-system %s --frequency %'d", {DeliverySystemEnum.name(delivery_system.value()), frequency.value()}));
+    UString opt(UString::Format(u"--delivery-system %s --frequency %'d", DeliverySystemEnum.name(delivery_system.value()), frequency.value()));
 
     // All other options depend on the tuner type.
     switch (TunerTypeOf(delivery_system.value())) {
         case TT_ATSC: {
-            opt += UString::Format(u" --modulation %s", {ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_ATSC))});
+            opt += UString::Format(u" --modulation %s", ModulationEnum.name(modulation.value_or(DEFAULT_MODULATION_ATSC)));
             break;
         }
         case TT_DVB_C: {
@@ -1151,7 +1151,7 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                    GuardIntervalEnum.name(guard_interval.value_or(DEFAULT_GUARD_INTERVAL_DVBT)),
                                    HierarchyEnum.name(hierarchy.value_or(DEFAULT_HIERARCHY))});
             if (plp.has_value() && plp != PLP_DISABLE) {
-                opt += UString::Format(u" --plp %d", {plp.value()});
+                opt += UString::Format(u" --plp %d", plp.value());
             }
             break;
         }
@@ -1170,19 +1170,19 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                        RollOffEnum.name(roll_off.value_or(DEFAULT_ROLL_OFF))});
             }
             if (isi.has_value() && isi != DEFAULT_ISI) {
-                opt += UString::Format(u" --isi %d", {isi.value()});
+                opt += UString::Format(u" --isi %d", isi.value());
             }
             if (pls_code.has_value() && pls_code != DEFAULT_PLS_CODE) {
-                opt += UString::Format(u" --pls-code %d", {pls_code.value()});
+                opt += UString::Format(u" --pls-code %d", pls_code.value());
             }
             if (pls_mode.has_value() && pls_mode != DEFAULT_PLS_MODE) {
-                opt += UString::Format(u" --pls-mode %s", {PLSModeEnum.name(pls_mode.value())});
+                opt += UString::Format(u" --pls-mode %s", PLSModeEnum.name(pls_mode.value()));
             }
             if (!no_local && lnb.has_value()) {
-                opt += UString::Format(u" --lnb %s", {lnb.value()});
+                opt += UString::Format(u" --lnb %s", lnb.value());
             }
             if (!no_local && satellite_number.has_value()) {
-                opt += UString::Format(u" --satellite-number %d", {satellite_number.value()});
+                opt += UString::Format(u" --satellite-number %d", satellite_number.value());
             }
             break;
         }
@@ -1192,13 +1192,13 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                                    InnerFECEnum.name(inner_fec.value_or(DEFAULT_INNER_FEC)),
                                    PolarizationEnum.name(polarity.value_or(DEFAULT_POLARITY))});
             if (stream_id.has_value() && stream_id != DEFAULT_STREAM_ID) {
-                opt += UString::Format(u" --stream-id %d", {stream_id.value()});
+                opt += UString::Format(u" --stream-id %d", stream_id.value());
             }
             if (!no_local && lnb.has_value()) {
-                opt += UString::Format(u" --lnb %s", {lnb.value()});
+                opt += UString::Format(u" --lnb %s", lnb.value());
             }
             if (!no_local && satellite_number.has_value()) {
-                opt += UString::Format(u" --satellite-number %d", {satellite_number.value()});
+                opt += UString::Format(u" --satellite-number %d", satellite_number.value());
             }
             break;
         }
@@ -1217,43 +1217,43 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
                 opt += u" --isdbt-partial-reception";
             }
             if (!isdbt_layers.has_value() || !isdbt_layers.value().empty()) {
-                opt += UString::Format(u" --isdbt-layers \"%s\"", {isdbt_layers.value_or(DEFAULT_ISDBT_LAYERS)});
+                opt += UString::Format(u" --isdbt-layers \"%s\"", isdbt_layers.value_or(DEFAULT_ISDBT_LAYERS));
             }
             if (layer_a_fec.has_value() && layer_a_fec != FEC_AUTO) {
-                opt += UString::Format(u" --isdbt-layer-a-fec %s", {InnerFECEnum.name(layer_a_fec.value())});
+                opt += UString::Format(u" --isdbt-layer-a-fec %s", InnerFECEnum.name(layer_a_fec.value()));
             }
             if (layer_a_modulation.has_value() && layer_a_modulation != QAM_AUTO) {
-                opt += UString::Format(u" --isdbt-layer-a-modulation %s", {ModulationEnum.name(layer_a_modulation.value())});
+                opt += UString::Format(u" --isdbt-layer-a-modulation %s", ModulationEnum.name(layer_a_modulation.value()));
             }
             if (layer_a_segment_count.has_value()) {
-                opt += UString::Format(u" --isdbt-layer-a-segment-count %d", {layer_a_segment_count.value()});
+                opt += UString::Format(u" --isdbt-layer-a-segment-count %d", layer_a_segment_count.value());
             }
             if (layer_a_time_interleaving.has_value()) {
-                opt += UString::Format(u" --isdbt-layer-a-time-interleaving %d", {layer_a_time_interleaving.value()});
+                opt += UString::Format(u" --isdbt-layer-a-time-interleaving %d", layer_a_time_interleaving.value());
             }
             if (layer_b_fec.has_value() && layer_b_fec != FEC_AUTO) {
-                opt += UString::Format(u" --isdbt-layer-b-fec %s", {InnerFECEnum.name(layer_b_fec.value())});
+                opt += UString::Format(u" --isdbt-layer-b-fec %s", InnerFECEnum.name(layer_b_fec.value()));
             }
             if (layer_b_modulation.has_value() && layer_b_modulation != QAM_AUTO) {
-                opt += UString::Format(u" --isdbt-layer-b-modulation %s", {ModulationEnum.name(layer_b_modulation.value())});
+                opt += UString::Format(u" --isdbt-layer-b-modulation %s", ModulationEnum.name(layer_b_modulation.value()));
             }
             if (layer_b_segment_count.has_value()) {
-                opt += UString::Format(u" --isdbt-layer-b-segment-count %d", {layer_b_segment_count.value()});
+                opt += UString::Format(u" --isdbt-layer-b-segment-count %d", layer_b_segment_count.value());
             }
             if (layer_b_time_interleaving.has_value()) {
-                opt += UString::Format(u" --isdbt-layer-b-time-interleaving %d", {layer_b_time_interleaving.value()});
+                opt += UString::Format(u" --isdbt-layer-b-time-interleaving %d", layer_b_time_interleaving.value());
             }
             if (layer_c_fec.has_value() && layer_c_fec != FEC_AUTO) {
-                opt += UString::Format(u" --isdbt-layer-c-fec %s", {InnerFECEnum.name(layer_c_fec.value())});
+                opt += UString::Format(u" --isdbt-layer-c-fec %s", InnerFECEnum.name(layer_c_fec.value()));
             }
             if (layer_c_modulation.has_value() && layer_c_modulation != QAM_AUTO) {
-                opt += UString::Format(u" --isdbt-layer-c-modulation %s", {ModulationEnum.name(layer_c_modulation.value())});
+                opt += UString::Format(u" --isdbt-layer-c-modulation %s", ModulationEnum.name(layer_c_modulation.value()));
             }
             if (layer_c_segment_count.has_value()) {
-                opt += UString::Format(u" --isdbt-layer-c-segment-count %d", {layer_c_segment_count.value()});
+                opt += UString::Format(u" --isdbt-layer-c-segment-count %d", layer_c_segment_count.value());
             }
             if (layer_c_time_interleaving.has_value()) {
-                opt += UString::Format(u" --isdbt-layer-c-time-interleaving %d", {layer_c_time_interleaving.value()});
+                opt += UString::Format(u" --isdbt-layer-c-time-interleaving %d", layer_c_time_interleaving.value());
             }
             break;
         }

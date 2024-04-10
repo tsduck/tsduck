@@ -888,7 +888,7 @@ void JsonTest::testIssue1353()
 
     f = 1.2;
     for (size_t pow = 0; pow <= 9; pow++) {
-        ts::UString name(ts::UString::Format(u"f%d", {pow}));
+        ts::UString name(ts::UString::Format(u"f%d", pow));
         root.add(name, f / double(ts::Power10(pow)));
     }
 

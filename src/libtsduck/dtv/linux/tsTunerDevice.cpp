@@ -272,7 +272,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     // In some adapters, there are less demux than frontends, find the highest existing demux number.
     if (fcount < 3) {
         demux_nb = frontend_nb;
-        while (demux_nb > 0 && !fs::exists(UString::Format(u"%s%cdemux%d", {fields[0], dvb_name_separator, demux_nb}))) {
+        while (demux_nb > 0 && !fs::exists(UString::Format(u"%s%cdemux%d", fields[0], dvb_name_separator, demux_nb))) {
             demux_nb--;
         }
     }
@@ -281,7 +281,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     // In some adapters, there are less dvr than frontends, find the highest existing dvr number.
     if (fcount < 4) {
         dvr_nb = frontend_nb;
-        while (dvr_nb > 0 && !fs::exists(UString::Format(u"%s%cdvr%d", {fields[0], dvb_name_separator, dvr_nb}))) {
+        while (dvr_nb > 0 && !fs::exists(UString::Format(u"%s%cdvr%d", fields[0], dvb_name_separator, dvr_nb))) {
             dvr_nb--;
         }
     }
@@ -289,19 +289,19 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     // Rebuild full TSDuck device name.
     _device_name = fields[0];
     if (dvr_nb != frontend_nb) {
-        _device_name += UString::Format(u":%d:%d:%d", {frontend_nb, demux_nb, dvr_nb});
+        _device_name += UString::Format(u":%d:%d:%d", frontend_nb, demux_nb, dvr_nb);
     }
     else if (demux_nb != frontend_nb) {
-        _device_name += UString::Format(u":%d:%d", {frontend_nb, demux_nb});
+        _device_name += UString::Format(u":%d:%d", frontend_nb, demux_nb);
     }
     else if (frontend_nb != 0) {
-        _device_name += UString::Format(u":%d", {frontend_nb});
+        _device_name += UString::Format(u":%d", frontend_nb);
     }
 
     // Rebuild device names for frontend, demux and dvr.
-    _frontend_name.format(u"%s%cfrontend%d", {fields[0], dvb_name_separator, frontend_nb});
-    _demux_name.format(u"%s%cdemux%d", {fields[0], dvb_name_separator, demux_nb});
-    _dvr_name.format(u"%s%cdvr%d", {fields[0], dvb_name_separator, dvr_nb});
+    _frontend_name.format(u"%s%cfrontend%d", fields[0], dvb_name_separator, frontend_nb);
+    _demux_name.format(u"%s%cdemux%d", fields[0], dvb_name_separator, demux_nb);
+    _dvr_name.format(u"%s%cdvr%d", fields[0], dvb_name_separator, dvr_nb);
 
     // Use the frontend device as "device path" for the tuner.
     _device_path = _frontend_name;

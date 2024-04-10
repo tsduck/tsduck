@@ -290,7 +290,7 @@ void PlatformTest::testSharedPtr()
         void** base = reinterpret_cast<void**>(&ptr1);
         const size_t count = sizeof(ptr1) / sizeof(void*);
         for (size_t i = 0; i < count; i++) {
-            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", {2*sizeof(void*), ptrdiff_t(base[i])});
+            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", 2*sizeof(void*), ptrdiff_t(base[i]));
             if (base[i] != nullptr) {
                     debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
             }
@@ -317,7 +317,7 @@ void PlatformTest::testSharedPtr()
         void** base = reinterpret_cast<void**>(&ptr1);
         const size_t count = sizeof(ptr1) / sizeof(void*);
         for (size_t i = 0; i < count; i++) {
-            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", {2*sizeof(void*), ptrdiff_t(base[i])});
+            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", 2*sizeof(void*), ptrdiff_t(base[i]));
             if (base[i] != nullptr) {
                 debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
             }

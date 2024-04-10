@@ -159,7 +159,7 @@ bool ts::HiDesOutputPlugin::start()
         tsp->error(u"no carrier frequency specified");
         return false;
     }
-    if (set_dc && (!dc_string.scan(u"%d/%d", {&dc_i, &dc_q}) ||
+    if (set_dc && (!dc_string.scan(u"%d/%d", &dc_i, &dc_q) ||
                    dc_i < HiDesDevice::IT95X_DC_CAL_MIN ||
                    dc_i > HiDesDevice::IT95X_DC_CAL_MAX ||
                    dc_q < HiDesDevice::IT95X_DC_CAL_MIN ||

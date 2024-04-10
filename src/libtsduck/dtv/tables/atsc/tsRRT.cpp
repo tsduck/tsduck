@@ -166,13 +166,13 @@ void ts::RRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Rating region: 0x%X (%<d)", {uint8_t(section.tableIdExtension())}) << std::endl;
+    disp << margin << UString::Format(u"Rating region: 0x%X (%<d)", uint8_t(section.tableIdExtension())) << std::endl;
 
     if (!buf.canReadBytes(2)) {
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8()) << std::endl;
         disp.displayATSCMultipleString(buf, 1, margin, u"Rating region name: ");
     }
 
@@ -183,7 +183,7 @@ void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << "- Dimension " << dim_index << std::endl;
         disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Dimension name: ");
         buf.skipBits(3);
-        disp << margin << UString::Format(u"  Graduated scale: %s", {buf.getBool()});
+        disp << margin << UString::Format(u"  Graduated scale: %s", buf.getBool());
         size_t val_count = buf.getBits<size_t>(4);
         disp << ", number of rating values: " << val_count << std::endl;
 

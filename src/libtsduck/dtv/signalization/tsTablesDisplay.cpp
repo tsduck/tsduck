@@ -169,7 +169,7 @@ void ts::TablesDisplay::displayIntAndASCII(const UString& format, PSIBuffer& buf
     }
 
     // Now display the data.
-    _duck.out() << margin << UString::Format(format, {buf.getBits<uint64_t>(8 * size)});
+    _duck.out() << margin << UString::Format(format, buf.getBits<uint64_t>(8 * size));
     if (!ascii.empty()) {
         _duck.out() << " (\"" << ascii << "\")";
     }
@@ -209,10 +209,10 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     // Display common header lines.
-    strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(_duck, tid, cas), table.tableId(), table.tableId()});
+    strm << margin << UString::Format(u"* %s, TID %d (0x%X)", names::TID(_duck, tid, cas), table.tableId(), table.tableId());
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
-        strm << UString::Format(u", PID %d (0x%X)", {table.sourcePID(), table.sourcePID()});
+        strm << UString::Format(u", PID %d (0x%X)", table.sourcePID(), table.sourcePID());
     }
     strm << std::endl;
     if (table.sectionCount() == 1 && table.sectionAt(0)->isShortSection()) {
@@ -261,10 +261,10 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << UString::Format(u"* %s, TID %d (0x%<X)", {names::TID(_duck, tid, cas), tid});
+        strm << margin << UString::Format(u"* %s, TID %d (0x%<X)", names::TID(_duck, tid, cas), tid);
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
-            strm << UString::Format(u", PID %d (0x%<X)", {section.sourcePID()});
+            strm << UString::Format(u", PID %d (0x%<X)", section.sourcePID());
         }
         strm << std::endl;
         if (section.isShortSection()) {
@@ -428,12 +428,12 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
         }
         strm << std::endl << margin << "  ";
         if (tid != TID_NULL) {
-            strm << UString::Format(u"%s, TID %d (0x%<X), ", {names::TID(_duck, tid, cas), tid});
+            strm << UString::Format(u"%s, TID %d (0x%<X), ", names::TID(_duck, tid, cas), tid);
         }
         if (data.sourcePID() != PID_NULL) {
-            strm << UString::Format(u"PID %d (0x%<X), ", {data.sourcePID()});
+            strm << UString::Format(u"PID %d (0x%<X), ", data.sourcePID());
         }
-        strm << UString::Format(u"%'d bytes:", {data.size()}) << std::endl;
+        strm << UString::Format(u"%'d bytes:", data.size()) << std::endl;
     }
 
     // Display invalid section data
@@ -461,7 +461,7 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, con
 
     // The table id extension was not yet displayed since it depends on the table id.
     if (section.isLongSection()) {
-        strm << margin << UString::Format(u"TIDext: %d (0x%X)", {section.tableIdExtension(), section.tableIdExtension()}) << std::endl;
+        strm << margin << UString::Format(u"TIDext: %d (0x%X)", section.tableIdExtension(), section.tableIdExtension()) << std::endl;
     }
 
     // Section payload.
@@ -492,7 +492,7 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, con
 
             // Display a separator after TLV area.
             if (index < payloadSize) {
-                strm << margin << UString::Format(u"%04X:  End of TLV area", {index}) << std::endl;
+                strm << margin << UString::Format(u"%04X:  End of TLV area", index) << std::endl;
             }
         }
     }
@@ -572,7 +572,7 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 
     // Display a separator after TLV area.
     if (index > tlvStart && index < endIndex) {
-        strm << UString::Format(u"%*s%04X:  %*sEnd of TLV area", {indent, u"", index, innerIndent, u""}) << std::endl;
+        strm << UString::Format(u"%*s%04X:  %*sEnd of TLV area", indent, u"", index, innerIndent, u"") << std::endl;
     }
 
     // Display remaining binary data.
@@ -791,12 +791,12 @@ void ts::TablesDisplay::displayCRC32(const Section& section, const UString& marg
     const uint32_t sect_crc32 = GetUInt32(section.content() + section.size() - 4);
     const CRC32 comp_crc32(section.content(), section.size() - 4);
 
-    strm << margin << UString::Format(u"CRC32: 0x%X ", {sect_crc32});
+    strm << margin << UString::Format(u"CRC32: 0x%X ", sect_crc32);
     if (sect_crc32 == comp_crc32) {
         strm << "(OK)";
     }
     else {
-        strm << UString::Format(u"(WRONG, expected 0x%X)", {comp_crc32.value()});
+        strm << UString::Format(u"(WRONG, expected 0x%X)", comp_crc32.value());
     }
     strm << std::endl;
 }
@@ -854,7 +854,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint32_t
         UString myMargin(margin.length() + title.length(), ' ');
         strm << margin << title;
         for (size_t j = 0; j < values.size(); j++) {
-            strm << (space_first ? " " : "") << UString::Format(u"%08X", { values[j] });
+            strm << (space_first ? " " : "") << UString::Format(u"%08X",  values[j] );
             if ((j + 1) % num_per_line == 0) {
                 strm << std::endl;
                 if (j != (values.size() - 1)) {
@@ -881,7 +881,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint16_t
         UString myMargin(margin.length() + title.length(), ' ');
         strm << margin << title;
         for (size_t j = 0; j < values.size(); j++) {
-            strm << (space_first ? " " : "") << UString::Format(u"%04X", { values[j] });
+            strm << (space_first ? " " : "") << UString::Format(u"%04X",  values[j] );
             if ((j + 1) % num_per_line == 0) {
                 strm << std::endl;
                 if (j != (values.size() - 1)) {
@@ -908,7 +908,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint8_t>
         UString myMargin(margin.length() + title.length(), ' ');
         strm << margin << title;
         for (size_t j = 0; j < values.size(); j++) {
-            strm << (space_first ? " " : "") << UString::Format(u"%02X", { values[j] });
+            strm << (space_first ? " " : "") << UString::Format(u"%02X",  values[j] );
             if ((j + 1) % num_per_line == 0) {
                 strm << std::endl;
                 if (j != (values.size() - 1)) {
@@ -939,7 +939,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<int8_t> 
         }
         strm << margin << title;
         for (size_t j = 0; j < values.size(); j++) {
-            strm << (space_first ? " " : "") << UString::Format(u"%d", { values[j] }).toJustifiedRight(hasNegative?4:3);
+            strm << (space_first ? " " : "") << UString::Format(u"%d",  values[j] ).toJustifiedRight(hasNegative?4:3);
             if ((j + 1) % num_per_line == 0) {
                 strm << std::endl;
                 if (j != (values.size() - 1)) {

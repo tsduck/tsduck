@@ -71,8 +71,8 @@ void ts::ShortSmoothingBufferDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ShortSmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Smoothing buffer size: %s", {DataName(MY_XML_NAME, u"BufferSize", buf.getBits<uint8_t>(2), NamesFlags::FIRST)}) << std::endl;
-        disp << margin << UString::Format(u"Smoothing buffer leak rate: %s", {DataName(MY_XML_NAME, u"LeakRate", buf.getBits<uint8_t>(6), NamesFlags::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Smoothing buffer size: %s", DataName(MY_XML_NAME, u"BufferSize", buf.getBits<uint8_t>(2), NamesFlags::FIRST)) << std::endl;
+        disp << margin << UString::Format(u"Smoothing buffer leak rate: %s", DataName(MY_XML_NAME, u"LeakRate", buf.getBits<uint8_t>(6), NamesFlags::FIRST)) << std::endl;
         disp.displayPrivateData(u"DVB-reserved data", buf, NPOS, margin);
     }
 }

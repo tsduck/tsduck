@@ -39,13 +39,13 @@ ts::TunerDeviceInfo::TunerDeviceInfo(const UString& devname, Report& report) :
     const UString infodir(devname + u"/device");
 
     // Adapter and frontend numbers are extracted from the basename.
-    BaseName(devname).scan(u"dvb%d.frontend%d", {&adapter_number, &frontend_number});
+    BaseName(devname).scan(u"dvb%d.frontend%d", &adapter_number, &frontend_number);
 
     // Vendor and product id are hexadecimal strings.
     UString str_vendor;
     UString str_product;
-    LoadText(str_vendor, infodir, u"idVendor", report) && str_vendor.scan(u"%x", {&vendor_id});
-    LoadText(str_product, infodir, u"idProduct", report) && str_product.scan(u"%x", {&product_id});
+    LoadText(str_vendor, infodir, u"idVendor", report) && str_vendor.scan(u"%x", &vendor_id);
+    LoadText(str_product, infodir, u"idProduct", report) && str_product.scan(u"%x", &product_id);
 
     // Other informations are pure strings.
     LoadText(manufacturer, infodir, u"manufacturer", report);
@@ -112,7 +112,7 @@ void ts::TunerDeviceInfo::BuildName(UString& name, const UString& prefix, const 
 ts::UString ts::TunerDeviceInfo::SearchSysdevice(int adapter, int frontend, Report& report)
 {
     UString pattern;
-    pattern.format(u"dvb%d.frontend%d", {adapter, frontend});
+    pattern.format(u"dvb%d.frontend%d", adapter, frontend);
 
     UStringList files;
     SearchFiles(files, u"/sys/devices", pattern, 16);

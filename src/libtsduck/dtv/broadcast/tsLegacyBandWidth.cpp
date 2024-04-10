@@ -92,13 +92,13 @@ void ts::DefineLegacyBandWidthArg(Args& args, const UChar* name, UChar short_nam
     if (dvbt_default != 0 || isdbt_default != 0) {
         help.append(u" The default is ");
         if (dvbt_default != 0) {
-            help.format(u"%'d for DVB-T/T2", {dvbt_default});
+            help.format(u"%'d for DVB-T/T2", dvbt_default);
         }
         if (dvbt_default != 0 && isdbt_default != 0) {
             help.append(u" and ");
         }
         if (isdbt_default != 0) {
-            help.format(u"%'d for ISDB-T", {isdbt_default});
+            help.format(u"%'d for ISDB-T", isdbt_default);
         }
         help.append(u".");
     }

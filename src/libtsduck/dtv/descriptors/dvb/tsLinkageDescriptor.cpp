@@ -221,11 +221,11 @@ void ts::LinkageDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(7)) {
-        disp << margin << UString::Format(u"Transport stream id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Original network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: %d (0x%<X)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network Id: %d (0x%<X)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Service id: %d (0x%<X)", buf.getUInt16()) << std::endl;
         const uint8_t ltype = buf.getUInt8();
-        disp << margin << UString::Format(u"Linkage type: %s", {DataName(MY_XML_NAME, u"linkage_type", ltype, NamesFlags::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Linkage type: %s", DataName(MY_XML_NAME, u"linkage_type", ltype, NamesFlags::FIRST)) << std::endl;
 
         // Variable part
         switch (ltype) {
@@ -272,13 +272,13 @@ void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& disp, PS
             case 0x03: name = u"associated service"; break;
             default:   name = u"unknown"; break;
         }
-        disp << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", {hand_over, name, origin ? u"SDT" : u"NIT"}) << std::endl;
+        disp << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", hand_over, name, origin ? u"SDT" : u"NIT") << std::endl;
 
         if (hand_over >= 1 && hand_over <= 3 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Network id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Network id: %d (0x%<X)", buf.getUInt16()) << std::endl;
         }
         if (origin == 0x00 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Original service id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Original service id: %d (0x%<X)", buf.getUInt16()) << std::endl;
         }
     }
 }
@@ -331,7 +331,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"- Platform id: %s", {DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEXA_FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"- Platform id: %s", DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEXA_FIRST)) << std::endl;
         buf.pushReadSizeFromLength(8); // platform_name_loop_length
         while (buf.canReadBytes(4)) {
             disp << margin << "  Language: " << buf.getLanguageCode();
@@ -363,7 +363,7 @@ void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& disp, PSIBu
         }
         disp << std::endl;
         if (ttype == 0x02 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Bouquet id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Bouquet id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
     }
 }

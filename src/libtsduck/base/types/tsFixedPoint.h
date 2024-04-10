@@ -314,7 +314,7 @@ bool ts::FixedPoint<INT_T,PREC,N>::inRange(int64_t min, int64_t max) const
 template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
 ts::UString ts::FixedPoint<INT_T,PREC,N>::description() const
 {
-    return UString::Format(u"%d-bit fixed-point value with up to %d decimals", {8 * sizeof(int_t), PRECISION});
+    return UString::Format(u"%d-bit fixed-point value with up to %d decimals", 8 * sizeof(int_t), PRECISION);
 }
 
 // Convert the number to a string object.

@@ -99,7 +99,7 @@ void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp,
         buf.skipBits(4);
         const uint16_t channel = buf.getBits<uint16_t>(12);
         disp << margin
-             << UString::Format(u"Service Id: %5d (0x%04<X), Channel number: %3d, TS Id: %5d (0x%<04X), Net Id: %5d (0x%<04X)", {service_id, channel, ts_id, onetw_id})
+             << UString::Format(u"Service Id: %5d (0x%04<X), Channel number: %3d, TS Id: %5d (0x%<04X), Net Id: %5d (0x%<04X)", service_id, channel, ts_id, onetw_id)
              << std::endl;
     }
 }

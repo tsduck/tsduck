@@ -382,7 +382,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         strm << margin;
         if (fields & LCN) {
             if (it->_lcn.has_value()) {
-                strm << UString::Format(u"%3d ", {it->_lcn.value()});
+                strm << UString::Format(u"%3d ", it->_lcn.value());
             }
             else {
                 strm << "    ";
@@ -396,7 +396,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & ID) {
             if (it->_id.has_value()) {
-                strm << UString::Format(u"0x%04X ", {it->_id.value()});
+                strm << UString::Format(u"0x%04X ", it->_id.value());
             }
             else {
                 strm << "       ";
@@ -404,7 +404,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & TSID) {
             if (it->_tsid.has_value()) {
-                strm << UString::Format(u"0x%04X ", {it->_tsid.value()});
+                strm << UString::Format(u"0x%04X ", it->_tsid.value());
             }
             else {
                 strm << "       ";
@@ -412,7 +412,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & ONID) {
             if (it->_onid.has_value()) {
-                strm << UString::Format(u"0x%04X ", {it->_onid.value()});
+                strm << UString::Format(u"0x%04X ", it->_onid.value());
             }
             else {
                 strm << "       ";
@@ -420,10 +420,10 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & (TYPE_DVB | TYPE_ATSC)) {
             if (it->_type_dvb.has_value()) {
-                strm << UString::Format(u"0x%02X ", {it->_type_dvb.value()});
+                strm << UString::Format(u"0x%02X ", it->_type_dvb.value());
             }
             else if (it->_type_atsc.has_value()) {
-                strm << UString::Format(u"0x%02X ", {it->_type_atsc.value()});
+                strm << UString::Format(u"0x%02X ", it->_type_atsc.value());
             }
             else {
                 strm << "     ";
@@ -431,7 +431,7 @@ std::ostream& ts::Service::Display(std::ostream& strm,
         }
         if (fields & PMT_PID) {
             if (it->_pmt_pid.has_value()) {
-                strm << UString::Format(u"0x%04X ", {it->_pmt_pid.value()});
+                strm << UString::Format(u"0x%04X ", it->_pmt_pid.value());
             }
             else {
                 strm << "      ";

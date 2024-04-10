@@ -35,7 +35,7 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
 {
     if (options.log_plugin_index) {
         // Make sure that plugins display their index. Input plugin is always at index 0.
-        setLogName(UString::Format(u"%s[0]", {pluginName()}));
+        setLogName(UString::Format(u"%s[0]", pluginName()));
     }
 
     // Configure PTS/DTS analyze

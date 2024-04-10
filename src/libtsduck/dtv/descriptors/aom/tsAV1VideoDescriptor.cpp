@@ -162,7 +162,7 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         bool _initial_presentation_delay_present = buf.getBool();
         if (_initial_presentation_delay_present) {
             uint8_t ipd = buf.getBits<uint8_t>(4);
-            disp << margin << UString::Format(u"Initial presentation delay %d (minus1=%d)", {ipd+1, ipd}) << std::endl;
+            disp << margin << UString::Format(u"Initial presentation delay %d (minus1=%d)", ipd+1, ipd) << std::endl;
         }
         else {
             buf.skipReservedBits(4, 0);

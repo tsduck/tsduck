@@ -202,7 +202,7 @@ void UStringTest::afterTest()
 // Get the name of a temporary file from an index
 ts::UString UStringTest::temporaryFileName (int index) const
 {
-    return _tempFilePrefix + ts::UString::Format(u"%03d", {index});
+    return _tempFilePrefix + ts::UString::Format(u"%03d", index);
 }
 
 // Get the name of the next temporary file
@@ -944,7 +944,7 @@ void UStringTest::testLoadSave()
 
     ts::UChar c = ts::LATIN_CAPITAL_LETTER_A_WITH_MACRON;
     for (int i = 1; i <= 20; ++i) {
-        ref.push_back(ts::UString::Format(u"%s, line %d", {ts::UString(2, c++), i}));
+        ref.push_back(ts::UString::Format(u"%s, line %d", ts::UString(2, c++), i));
     }
     TSUNIT_ASSERT(ref.size() == 20);
 
@@ -1854,120 +1854,120 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
 
 void UStringTest::testFormat()
 {
-    TSUNIT_EQUAL(u"", ts::UString::Format(u"", {}));
-    TSUNIT_EQUAL(u"abc", ts::UString::Format(u"abc", {}));
+    TSUNIT_EQUAL(u"", ts::UString::Format(u""));
+    TSUNIT_EQUAL(u"abc", ts::UString::Format(u"abc"));
 
-    TSUNIT_EQUAL(u"abc1", ts::UString::Format(u"abc%d", {1}));
-    TSUNIT_EQUAL(u"abc1de%f", ts::UString::Format(u"abc%dde%%f", {1}));
+    TSUNIT_EQUAL(u"abc1", ts::UString::Format(u"abc%d", 1));
+    TSUNIT_EQUAL(u"abc1de%f", ts::UString::Format(u"abc%dde%%f", 1));
 
     // Invalid formats / arguments. Define environment variable TSDUCK_FORMAT_DEBUG to get error messages.
-    TSUNIT_EQUAL(u"a) 1 2",     ts::UString::Format(u"a) %d %d", {1, 2, 3, 4}));
-    TSUNIT_EQUAL(u"b) 1 ",      ts::UString::Format(u"b) %d %d", {1}));
-    TSUNIT_EQUAL(u"c) 1 abc",   ts::UString::Format(u"c) %d %d", {1, u"abc"}));
-    TSUNIT_EQUAL(u"d) 1 2",     ts::UString::Format(u"d) %d %s", {1, 2}));
-    TSUNIT_EQUAL(u"e) abXcdef", ts::UString::Format(u"e) ab%scd%sef", {u"X"}));
-    TSUNIT_EQUAL(u"f) 1 ",      ts::UString::Format(u"f) %d %01", {1, 2, 3}));
+    TSUNIT_EQUAL(u"a) 1 2",     ts::UString::Format(u"a) %d %d", 1, 2, 3, 4));
+    TSUNIT_EQUAL(u"b) 1 ",      ts::UString::Format(u"b) %d %d", 1));
+    TSUNIT_EQUAL(u"c) 1 abc",   ts::UString::Format(u"c) %d %d", 1, u"abc"));
+    TSUNIT_EQUAL(u"d) 1 2",     ts::UString::Format(u"d) %d %s", 1, 2));
+    TSUNIT_EQUAL(u"e) abXcdef", ts::UString::Format(u"e) ab%scd%sef", u"X"));
+    TSUNIT_EQUAL(u"f) 1 ",      ts::UString::Format(u"f) %d %01", 1, 2, 3));
 
     int i = -1234;
     uint16_t u16 = 128;
     const ts::UString us(u"abc");
     const std::string s("def");
-    TSUNIT_EQUAL(u"i = -1,234, u16 = 0x0080, 27 abc def ghi jkl", ts::UString::Format(u"i = %'d, u16 = 0x%X, %d %s %s %s %s", {i, u16, 27, us, s, u"ghi", "jkl"}));
+    TSUNIT_EQUAL(u"i = -1,234, u16 = 0x0080, 27 abc def ghi jkl", ts::UString::Format(u"i = %'d, u16 = 0x%X, %d %s %s %s %s", i, u16, 27, us, s, u"ghi", "jkl"));
 
     // Character.
     const ts::UString ref1({u'A', ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS, u'B'});
-    TSUNIT_EQUAL(ref1, ts::UString::Format(u"A%cB", {int(ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS)}));
-    TSUNIT_EQUAL(ref1, ts::UString::Format(u"A%cB", {ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS}));
-    TSUNIT_EQUAL(u"AxyB", ts::UString::Format(u"A%c%cB", {'x', u'y'}));
+    TSUNIT_EQUAL(ref1, ts::UString::Format(u"A%cB", int(ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS)));
+    TSUNIT_EQUAL(ref1, ts::UString::Format(u"A%cB", ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS));
+    TSUNIT_EQUAL(u"AxyB", ts::UString::Format(u"A%c%cB", 'x', u'y'));
 
     // Decimal integer.
-    TSUNIT_EQUAL(u"1234567", ts::UString::Format(u"%d", {1234567}));
-    TSUNIT_EQUAL(u"+1234567", ts::UString::Format(u"%+d", {1234567}));
-    TSUNIT_EQUAL(u"1,234,567", ts::UString::Format(u"%'d", {1234567}));
-    TSUNIT_EQUAL(u"+1,234,567", ts::UString::Format(u"%+'d", {1234567}));
-    TSUNIT_EQUAL(u"1,234,567", ts::UString::Format(u"%-'d", {1234567}));
-    TSUNIT_EQUAL(u"1234567", ts::UString::Format(u"%0d", {1234567}));
-    TSUNIT_EQUAL(u"1234567", ts::UString::Format(u"%05d", {1234567}));
-    TSUNIT_EQUAL(u"0001234567", ts::UString::Format(u"%010d", {1234567}));
-    TSUNIT_EQUAL(u"   1234567", ts::UString::Format(u"%10d", {1234567}));
-    TSUNIT_EQUAL(u"1234567   ", ts::UString::Format(u"%-10d", {1234567}));
-    TSUNIT_EQUAL(u"     1234567", ts::UString::Format(u"%*d", {12, 1234567}));
-    TSUNIT_EQUAL(u"1234567     ", ts::UString::Format(u"%-*d", {12, 1234567}));
-    TSUNIT_EQUAL(u"1,234,567   ", ts::UString::Format(u"%-*'d", {12, 1234567}));
+    TSUNIT_EQUAL(u"1234567", ts::UString::Format(u"%d", 1234567));
+    TSUNIT_EQUAL(u"+1234567", ts::UString::Format(u"%+d", 1234567));
+    TSUNIT_EQUAL(u"1,234,567", ts::UString::Format(u"%'d", 1234567));
+    TSUNIT_EQUAL(u"+1,234,567", ts::UString::Format(u"%+'d", 1234567));
+    TSUNIT_EQUAL(u"1,234,567", ts::UString::Format(u"%-'d", 1234567));
+    TSUNIT_EQUAL(u"1234567", ts::UString::Format(u"%0d", 1234567));
+    TSUNIT_EQUAL(u"1234567", ts::UString::Format(u"%05d", 1234567));
+    TSUNIT_EQUAL(u"0001234567", ts::UString::Format(u"%010d", 1234567));
+    TSUNIT_EQUAL(u"   1234567", ts::UString::Format(u"%10d", 1234567));
+    TSUNIT_EQUAL(u"1234567   ", ts::UString::Format(u"%-10d", 1234567));
+    TSUNIT_EQUAL(u"     1234567", ts::UString::Format(u"%*d", 12, 1234567));
+    TSUNIT_EQUAL(u"1234567     ", ts::UString::Format(u"%-*d", 12, 1234567));
+    TSUNIT_EQUAL(u"1,234,567   ", ts::UString::Format(u"%-*'d", 12, 1234567));
 
     // Hexadecimal integer.
-    TSUNIT_EQUAL(u"AB", ts::UString::Format(u"%X", {uint8_t(171)}));
-    TSUNIT_EQUAL(u"00AB", ts::UString::Format(u"%X", {int16_t(171)}));
-    TSUNIT_EQUAL(u"000000AB", ts::UString::Format(u"%X", {uint32_t(171)}));
-    TSUNIT_EQUAL(u"00000000000000AB", ts::UString::Format(u"%X", {171LL}));
-    TSUNIT_EQUAL(u"000000000000000000AB", ts::UString::Format(u"%20X", {171LL}));
-    TSUNIT_EQUAL(u"00AB", ts::UString::Format(u"%*X", {4, 171LL}));
-    TSUNIT_EQUAL(u"AB", ts::UString::Format(u"%*X", {1, 171LL}));
-    TSUNIT_EQUAL(u"0123,4567", ts::UString::Format(u"%'X", {uint32_t(0x1234567)}));
+    TSUNIT_EQUAL(u"AB", ts::UString::Format(u"%X", uint8_t(171)));
+    TSUNIT_EQUAL(u"00AB", ts::UString::Format(u"%X", int16_t(171)));
+    TSUNIT_EQUAL(u"000000AB", ts::UString::Format(u"%X", uint32_t(171)));
+    TSUNIT_EQUAL(u"00000000000000AB", ts::UString::Format(u"%X", 171LL));
+    TSUNIT_EQUAL(u"000000000000000000AB", ts::UString::Format(u"%20X", 171LL));
+    TSUNIT_EQUAL(u"00AB", ts::UString::Format(u"%*X", 4, 171LL));
+    TSUNIT_EQUAL(u"AB", ts::UString::Format(u"%*X", 1, 171LL));
+    TSUNIT_EQUAL(u"0123,4567", ts::UString::Format(u"%'X", uint32_t(0x1234567)));
 
     // Enumerations
     enum E1 : uint8_t {E10 = 10, E11 = 11};
     enum E2 : int16_t {E20 = 20, E21 = 21};
     E1 e1 = E11;
-    TSUNIT_EQUAL(u"11 10", ts::UString::Format(u"%d %d", {e1, E10}));
-    TSUNIT_EQUAL(u"0B", ts::UString::Format(u"%X", {e1}));
-    TSUNIT_EQUAL(u"0B", ts::UString::Format(u"%X", {E11}));
-    TSUNIT_EQUAL(u"0014", ts::UString::Format(u"%X", {E20}));
+    TSUNIT_EQUAL(u"11 10", ts::UString::Format(u"%d %d", e1, E10));
+    TSUNIT_EQUAL(u"0B", ts::UString::Format(u"%X", e1));
+    TSUNIT_EQUAL(u"0B", ts::UString::Format(u"%X", E11));
+    TSUNIT_EQUAL(u"0014", ts::UString::Format(u"%X", E20));
 
     // String.
-    TSUNIT_EQUAL(u"||", ts::UString::Format(u"|%s|", {}));
-    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {"abc"}));
-    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {u"abc"}));
-    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {std::string("abc")}));
-    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", {ts::UString(u"abc")}));
-    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%2s|", {u"abc"}));
-    TSUNIT_EQUAL(u"| abc|", ts::UString::Format(u"|%4s|", {u"abc"}));
-    TSUNIT_EQUAL(u"|abc |", ts::UString::Format(u"|%-4s|", {u"abc"}));
-    TSUNIT_EQUAL(u"|000abc|", ts::UString::Format(u"|%06s|", {u"abc"}));
-    TSUNIT_EQUAL(u"|abc000|", ts::UString::Format(u"|%-06s|", {u"abc"}));
-    TSUNIT_EQUAL(u"|abc     |", ts::UString::Format(u"|%-*s|", {8, u"abc"}));
-    TSUNIT_EQUAL(u"|abc     |", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abc"}));
-    TSUNIT_EQUAL(u"|abcdefgh|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefgh"}));
-    TSUNIT_EQUAL(u"|abcdefghijkl|", ts::UString::Format(u"|%-*.*s|", {8, 12, u"abcdefghijklmnop"}));
-    TSUNIT_EQUAL(u"|abcdefghijklmnop|", ts::UString::Format(u"|%-*s|", {8, u"abcdefghijklmnop"}));
+    TSUNIT_EQUAL(u"||", ts::UString::Format(u"|%s|"));
+    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", "abc"));
+    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", u"abc"));
+    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", std::string("abc")));
+    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%s|", ts::UString(u"abc")));
+    TSUNIT_EQUAL(u"|abc|", ts::UString::Format(u"|%2s|", u"abc"));
+    TSUNIT_EQUAL(u"| abc|", ts::UString::Format(u"|%4s|", u"abc"));
+    TSUNIT_EQUAL(u"|abc |", ts::UString::Format(u"|%-4s|", u"abc"));
+    TSUNIT_EQUAL(u"|000abc|", ts::UString::Format(u"|%06s|", u"abc"));
+    TSUNIT_EQUAL(u"|abc000|", ts::UString::Format(u"|%-06s|", u"abc"));
+    TSUNIT_EQUAL(u"|abc     |", ts::UString::Format(u"|%-*s|", 8, u"abc"));
+    TSUNIT_EQUAL(u"|abc     |", ts::UString::Format(u"|%-*.*s|", 8, 12, u"abc"));
+    TSUNIT_EQUAL(u"|abcdefgh|", ts::UString::Format(u"|%-*.*s|", 8, 12, u"abcdefgh"));
+    TSUNIT_EQUAL(u"|abcdefghijkl|", ts::UString::Format(u"|%-*.*s|", 8, 12, u"abcdefghijklmnop"));
+    TSUNIT_EQUAL(u"|abcdefghijklmnop|", ts::UString::Format(u"|%-*s|", 8, u"abcdefghijklmnop"));
 
     // Stringifiable.
-    TSUNIT_EQUAL(u"|1.2.3.4|", ts::UString::Format(u"|%s|", {ts::IPv4Address(1, 2, 3, 4)}));
-    TSUNIT_EQUAL(u"|11.22.33.44:678|", ts::UString::Format(u"|%s|", {ts::IPv4SocketAddress(ts::IPv4Address(11, 22, 33, 44), 678)}));
+    TSUNIT_EQUAL(u"|1.2.3.4|", ts::UString::Format(u"|%s|", ts::IPv4Address(1, 2, 3, 4)));
+    TSUNIT_EQUAL(u"|11.22.33.44:678|", ts::UString::Format(u"|%s|", ts::IPv4SocketAddress(ts::IPv4Address(11, 22, 33, 44), 678)));
 
     // Boolean.
     bool b = false;
-    TSUNIT_EQUAL(u"|false|", ts::UString::Format(u"|%s|", {b}));
-    TSUNIT_EQUAL(u"|true|", ts::UString::Format(u"|%s|", {b = true}));
-    TSUNIT_EQUAL(u"|true|", ts::UString::Format(u"|%s|", {true}));
-    TSUNIT_EQUAL(u"|false|", ts::UString::Format(u"|%s|", {false}));
-    TSUNIT_EQUAL(u"|    true|", ts::UString::Format(u"|%8s|", {true}));
-    TSUNIT_EQUAL(u"|false   |", ts::UString::Format(u"|%-8s|", {false}));
+    TSUNIT_EQUAL(u"|false|", ts::UString::Format(u"|%s|", b));
+    TSUNIT_EQUAL(u"|true|", ts::UString::Format(u"|%s|", b = true));
+    TSUNIT_EQUAL(u"|true|", ts::UString::Format(u"|%s|", true));
+    TSUNIT_EQUAL(u"|false|", ts::UString::Format(u"|%s|", false));
+    TSUNIT_EQUAL(u"|    true|", ts::UString::Format(u"|%8s|", true));
+    TSUNIT_EQUAL(u"|false   |", ts::UString::Format(u"|%-8s|", false));
 
     // Floats.
-    TSUNIT_EQUAL(u"0.666667", ts::UString::Format(u"%f", {2.0 / 3.0}));
-    TSUNIT_EQUAL(u"-0.666667", ts::UString::Format(u"%f", {2.0 / -3.0}));
-    TSUNIT_EQUAL(u"+0.666667", ts::UString::Format(u"%+f", {2.0 / 3.0}));
-    TSUNIT_EQUAL(u"-0.666667", ts::UString::Format(u"%+f", {2.0 / -3.0}));
-    TSUNIT_EQUAL(u"2.000000", ts::UString::Format(u"%f", {2.0}));
-    TSUNIT_EQUAL(u"2.000000", ts::UString::Format(u"%f", {2}));
-    TSUNIT_EQUAL(u"-2.000000", ts::UString::Format(u"%f", {-2}));
-    TSUNIT_EQUAL(u" 0.667", ts::UString::Format(u"%6.3f", {2.0 / 3.0}));
+    TSUNIT_EQUAL(u"0.666667", ts::UString::Format(u"%f", 2.0 / 3.0));
+    TSUNIT_EQUAL(u"-0.666667", ts::UString::Format(u"%f", 2.0 / -3.0));
+    TSUNIT_EQUAL(u"+0.666667", ts::UString::Format(u"%+f", 2.0 / 3.0));
+    TSUNIT_EQUAL(u"-0.666667", ts::UString::Format(u"%+f", 2.0 / -3.0));
+    TSUNIT_EQUAL(u"2.000000", ts::UString::Format(u"%f", 2.0));
+    TSUNIT_EQUAL(u"2.000000", ts::UString::Format(u"%f", 2));
+    TSUNIT_EQUAL(u"-2.000000", ts::UString::Format(u"%f", -2));
+    TSUNIT_EQUAL(u" 0.667", ts::UString::Format(u"%6.3f", 2.0 / 3.0));
 
     // Repeat previous argument.
-    TSUNIT_EQUAL(u"1 1 2", ts::UString::Format(u"%d %<d %d", {1, 2}));
-    TSUNIT_EQUAL(u" 1 2", ts::UString::Format(u"%<d %d %d", {1, 2}));
-    TSUNIT_EQUAL(u"   1   1 2", ts::UString::Format(u"%*d %<*d %d", {4, 1, 3, 2}));
+    TSUNIT_EQUAL(u"1 1 2", ts::UString::Format(u"%d %<d %d", 1, 2));
+    TSUNIT_EQUAL(u" 1 2", ts::UString::Format(u"%<d %d %d", 1, 2));
+    TSUNIT_EQUAL(u"   1   1 2", ts::UString::Format(u"%*d %<*d %d", 4, 1, 3, 2));
 
     // std::chrono::duration values.
-    TSUNIT_EQUAL(u"-1234 milliseconds", ts::UString::Format(u"%s", {cn::milliseconds(-1234)}));
-    TSUNIT_EQUAL(u"1,234 ms", ts::UString::Format(u"%'!s", {cn::milliseconds(1234)}));
-    TSUNIT_EQUAL(u"-1 millisecond", ts::UString::Format(u"%s", {cn::milliseconds(-1)}));
-    TSUNIT_EQUAL(u"|    1,234 ms|", ts::UString::Format(u"|%12'!s|", {cn::milliseconds(1234)}));
-    TSUNIT_EQUAL(u"|1,234 ms|", ts::UString::Format(u"|%6'!s|", {cn::milliseconds(1234)}));
-    TSUNIT_EQUAL(u"1 PCR", ts::UString::Format(u"%s", {ts::PCR(1)}));
-    TSUNIT_EQUAL(u"12345 PCR", ts::UString::Format(u"%!s", {ts::PCR(12345)}));
-    TSUNIT_EQUAL(u"+12,345 microseconds", ts::UString::Format(u"%+'s", {cn::microseconds(12345)}));
+    TSUNIT_EQUAL(u"-1234 milliseconds", ts::UString::Format(u"%s", cn::milliseconds(-1234)));
+    TSUNIT_EQUAL(u"1,234 ms", ts::UString::Format(u"%'!s", cn::milliseconds(1234)));
+    TSUNIT_EQUAL(u"-1 millisecond", ts::UString::Format(u"%s", cn::milliseconds(-1)));
+    TSUNIT_EQUAL(u"|    1,234 ms|", ts::UString::Format(u"|%12'!s|", cn::milliseconds(1234)));
+    TSUNIT_EQUAL(u"|1,234 ms|", ts::UString::Format(u"|%6'!s|", cn::milliseconds(1234)));
+    TSUNIT_EQUAL(u"1 PCR", ts::UString::Format(u"%s", ts::PCR(1)));
+    TSUNIT_EQUAL(u"12345 PCR", ts::UString::Format(u"%!s", ts::PCR(12345)));
+    TSUNIT_EQUAL(u"+12,345 microseconds", ts::UString::Format(u"%+'s", cn::microseconds(12345)));
 }
 
 void UStringTest::testArgMixOut()
@@ -2129,29 +2129,29 @@ void UStringTest::testScan()
     int64_t i64 = 0;
     ts::UChar uc = ts::CHAR_NULL;
 
-    TSUNIT_ASSERT(ts::UString(u"").scan(count, index, u"", {}));
+    TSUNIT_ASSERT(ts::UString(u"").scan(count, index, u""));
     TSUNIT_EQUAL(0, count);
     TSUNIT_EQUAL(0, index);
 
-    TSUNIT_ASSERT(ts::UString(u"  ").scan(count, index, u" ", {}));
+    TSUNIT_ASSERT(ts::UString(u"  ").scan(count, index, u" "));
     TSUNIT_EQUAL(0, count);
     TSUNIT_EQUAL(2, index);
 
-    TSUNIT_ASSERT(ts::UString(u" ").scan(count, index, u"   ", {}));
+    TSUNIT_ASSERT(ts::UString(u" ").scan(count, index, u"   "));
     TSUNIT_EQUAL(0, count);
     TSUNIT_EQUAL(1, index);
 
-    TSUNIT_ASSERT(ts::UString(u"-133").scan(count, index, u"%d", {&i}));
+    TSUNIT_ASSERT(ts::UString(u"-133").scan(count, index, u"%d", &i));
     TSUNIT_EQUAL(1, count);
     TSUNIT_EQUAL(4, index);
     TSUNIT_EQUAL(-133, i);
 
-    TSUNIT_ASSERT(ts::UString(u"  6893  ").scan(count, index, u"%d", {&i}));
+    TSUNIT_ASSERT(ts::UString(u"  6893  ").scan(count, index, u"%d", &i));
     TSUNIT_EQUAL(1, count);
     TSUNIT_EQUAL(8, index);
     TSUNIT_EQUAL(6893, i);
 
-    TSUNIT_ASSERT(ts::UString(u" -654 / 0x54/0x0123456789ABCDEF x 54:5  ").scan(count, index, u" %d/%d/%d%c%d:%d", {&i, &u8, &i64, &uc, &i16, &u32}));
+    TSUNIT_ASSERT(ts::UString(u" -654 / 0x54/0x0123456789ABCDEF x 54:5  ").scan(count, index, u" %d/%d/%d%c%d:%d", &i, &u8, &i64, &uc, &i16, &u32));
     TSUNIT_EQUAL(6, count);
     TSUNIT_EQUAL(40, index);
     TSUNIT_EQUAL(-654, i);
@@ -2162,7 +2162,7 @@ void UStringTest::testScan()
     TSUNIT_EQUAL(5, u32);
 
     u32 = 27;
-    TSUNIT_ASSERT(!ts::UString(u" 45 / 79").scan(count, index, u" %d/%d/%d", {&u8, &i16, &u32}));
+    TSUNIT_ASSERT(!ts::UString(u" 45 / 79").scan(count, index, u" %d/%d/%d", &u8, &i16, &u32));
     TSUNIT_EQUAL(2, count);
     TSUNIT_EQUAL(8, index);
     TSUNIT_EQUAL(45, u8);
@@ -2170,7 +2170,7 @@ void UStringTest::testScan()
     TSUNIT_EQUAL(27, u32);
 
     i = 87;
-    TSUNIT_ASSERT(!ts::UString(u" 67 / 657 / 46 / 78").scan(count, index, u" %d/%d/%d", {&u8, &i16, &u32, &i}));
+    TSUNIT_ASSERT(!ts::UString(u" 67 / 657 / 46 / 78").scan(count, index, u" %d/%d/%d", &u8, &i16, &u32, &i));
     TSUNIT_EQUAL(3, count);
     TSUNIT_EQUAL(15, index);
     TSUNIT_EQUAL(67, u8);
@@ -2178,28 +2178,28 @@ void UStringTest::testScan()
     TSUNIT_EQUAL(46, u32);
     TSUNIT_EQUAL(87, i);
 
-    TSUNIT_ASSERT(!ts::UString(u" 98 / -7889 / 89 / 2 ").scan(count, index, u" %d/%d/%d", {&u8, &i16}));
+    TSUNIT_ASSERT(!ts::UString(u" 98 / -7889 / 89 / 2 ").scan(count, index, u" %d/%d/%d", &u8, &i16));
     TSUNIT_EQUAL(2, count);
     TSUNIT_EQUAL(14, index);
     TSUNIT_EQUAL(98, u8);
     TSUNIT_EQUAL(-7889, i16);
 
-    TSUNIT_ASSERT(ts::UString(u"8/9/").scan(count, index, u" %i/%i/", {&u8, &i16}));
+    TSUNIT_ASSERT(ts::UString(u"8/9/").scan(count, index, u" %i/%i/", &u8, &i16));
     TSUNIT_EQUAL(2, count);
     TSUNIT_EQUAL(4, index);
     TSUNIT_EQUAL(8, u8);
     TSUNIT_EQUAL(9, i16);
 
-    TSUNIT_ASSERT(ts::UString(u"73/-3457").scan(u" %i/%i", {&u8, &i16}));
+    TSUNIT_ASSERT(ts::UString(u"73/-3457").scan(u" %i/%i", &u8, &i16));
     TSUNIT_EQUAL(73, u8);
     TSUNIT_EQUAL(-3457, i16);
 
-    TSUNIT_ASSERT(ts::UString(u"12345").scan(u"%d", {&i}));
+    TSUNIT_ASSERT(ts::UString(u"12345").scan(u"%d", &i));
     TSUNIT_EQUAL(12345, i);
 
-    TSUNIT_ASSERT(!ts::UString(u"62,852").scan(u"%d", {&i}));
+    TSUNIT_ASSERT(!ts::UString(u"62,852").scan(u"%d", &i));
 
-    TSUNIT_ASSERT(ts::UString(u"67,654").scan(u"%'d", {&i}));
+    TSUNIT_ASSERT(ts::UString(u"67,654").scan(u"%'d", &i));
     TSUNIT_EQUAL(67654, i);
 }
 

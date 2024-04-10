@@ -99,7 +99,7 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
     while (buf.canReadBytes(4)) {
         disp << margin << "Country code: " << buf.getLanguageCode();
         const uint8_t rating = buf.getUInt8();
-        disp << UString::Format(u", rating: 0x%X ", {rating});
+        disp << UString::Format(u", rating: 0x%X ", rating);
         if (rating == 0) {
             disp << "(undefined)";
         }

@@ -289,7 +289,7 @@ bool ts::FloatingPoint<FLOAT_T,PREC,N>::inRange(int64_t min, int64_t max) const
 template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
 ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::description() const
 {
-    return UString::Format(u"%d-bit floating-point value", {8 * sizeof(float_t)});
+    return UString::Format(u"%d-bit floating-point value", 8 * sizeof(float_t));
 }
 
 // Convert the number to a string object.

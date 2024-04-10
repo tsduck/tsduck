@@ -147,9 +147,9 @@ ts::UString ts::tlv::Serializer::toString() const
     if (_bb == nullptr) {
         return u"(null)";
     }
-    prefix = UString::Format(u"{%d bytes, ", {_bb->size()});
+    prefix = UString::Format(u"{%d bytes, ", _bb->size());
     if (_length_offset >= 0) {
-        prefix += UString::Format(u"length at offset %d, ", {_length_offset});
+        prefix += UString::Format(u"length at offset %d, ", _length_offset);
     }
     return prefix + u"data: " + UString::Dump(*_bb, UString::SINGLE_LINE) + u"}";
 }

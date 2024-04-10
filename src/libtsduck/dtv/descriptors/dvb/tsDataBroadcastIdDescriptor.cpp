@@ -132,7 +132,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
         disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
         buf.skipBits(4);
         const uint8_t upd_type = buf.getBits<uint8_t>(4);
-        disp << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
+        disp << margin << UString::Format(u"  Update type: 0x%X (", upd_type);
         switch (upd_type) {
             case 0x00: disp << "proprietary update solution"; break;
             case 0x01: disp << "standard update carousel (no notification) via broadcast"; break;
@@ -146,7 +146,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
         const uint8_t upd_version = buf.getBits<uint8_t>(5);
         disp << margin << "  Update version: ";
         if (upd_flag) {
-            disp << UString::Format(u"%d (0x%<02X)", {upd_version});
+            disp << UString::Format(u"%d (0x%<02X)", upd_version);
         }
         else {
             disp << "none";
@@ -170,11 +170,11 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
 void ts::DataBroadcastIdDescriptor::DisplaySelectorMPE(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, uint16_t dbid)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"MAC address range: %d", {buf.getBits<uint8_t>(3)});
-        disp << UString::Format(u", MAC/IP mapping: %d", {buf.getBit()});
-        disp << UString::Format(u", alignment: %d bits", {buf.getBit() == 0 ? 8 : 32}) << std::endl;
+        disp << margin << UString::Format(u"MAC address range: %d", buf.getBits<uint8_t>(3));
+        disp << UString::Format(u", MAC/IP mapping: %d", buf.getBit());
+        disp << UString::Format(u", alignment: %d bits", buf.getBit() == 0 ? 8 : 32) << std::endl;
         buf.skipBits(3);
-        disp << margin << UString::Format(u"Max sections per datagram: %d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Max sections per datagram: %d", buf.getUInt8()) << std::endl;
     }
 }
 
@@ -189,7 +189,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, PSIB
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(5)) {
         disp << margin << "- Platform id: " << DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEXA_FIRST) << std::endl;
-        disp << margin << UString::Format(u"  Action type: 0x%X, version: ", {buf.getUInt8()});
+        disp << margin << UString::Format(u"  Action type: 0x%X, version: ", buf.getUInt8());
         buf.skipBits(2);
         if (buf.getBool()) {
             disp << buf.getBits<uint32_t>(5) << std::endl;

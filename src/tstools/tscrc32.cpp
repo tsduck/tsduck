@@ -101,7 +101,7 @@ namespace {
             size_t insize = size_t(in->gcount());
             crc.add(buffer.data(), insize);
         }
-        std::cout << ts::UString::Format(u"%s%08X", {prefix, crc.value()}) << std::endl;
+        std::cout << ts::UString::Format(u"%s%08X", prefix, crc.value()) << std::endl;
     }
 }
 
@@ -129,7 +129,7 @@ int MainCode(int argc, char *argv[])
     // Process explicit input data.
     if (!opt.indata.empty()) {
         const ts::CRC32 crc(opt.indata.data(), opt.indata.size());
-        std::cout << ts::UString::Format(u"%s%08X", {opt.show_name ? u"input data: " : u"", crc.value()}) << std::endl;
+        std::cout << ts::UString::Format(u"%s%08X", opt.show_name ? u"input data: " : u"", crc.value()) << std::endl;
     }
 
     // Process input files.

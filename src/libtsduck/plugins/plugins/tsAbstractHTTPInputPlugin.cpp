@@ -128,7 +128,7 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
 
     // Print a message.
     tsp->verbose(u"downloading from %s", {_request.finalURL()});
-    tsp->verbose(u"MIME type: %s, expected size: %s", {mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", {size})});
+    tsp->verbose(u"MIME type: %s, expected size: %s", {mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", size)});
     if (!mime.empty() && !mime.similar(u"video/mp2t")) {
         tsp->warning(u"MIME type is %s, maybe not a valid transport stream", {mime});
     }

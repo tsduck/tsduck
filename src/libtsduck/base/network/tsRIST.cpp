@@ -19,6 +19,6 @@ ts::UString ts::GetRISTLibraryVersion()
 #if defined(TS_NO_RIST)
     return u"This version of TSDuck was compiled without RIST support";
 #else
-    return UString::Format(u"librist version %s, API version %s", {::librist_version(), ::librist_api_version()});
+    return UString::Format(u"librist version %s, API version %s", ::librist_version(), ::librist_api_version());
 #endif
 }

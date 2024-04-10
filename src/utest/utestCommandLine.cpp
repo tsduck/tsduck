@@ -76,13 +76,13 @@ namespace {
         // Command handlers.
         ts::CommandStatus cmd1(const ts::UString& command, ts::Args& args)
         {
-            output.format(u"[command:%s][--foo:%s]", {command, args.present(u"foo")});
+            output.format(u"[command:%s][--foo:%s]", command, args.present(u"foo"));
             return ts::CommandStatus::SUCCESS;
         }
 
         ts::CommandStatus cmd2(const ts::UString& command, ts::Args& args)
         {
-            output.format(u"[command:%s][--bar:%s]", {command, args.present(u"bar")});
+            output.format(u"[command:%s][--bar:%s]", command, args.present(u"bar"));
             return ts::CommandStatus::SUCCESS;
         }
     };

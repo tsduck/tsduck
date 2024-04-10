@@ -222,7 +222,7 @@ ts::UString ts::xml::JSONConverter::ToElementName(const UString& str)
             result.push_back(c);
         }
         else {
-            result.format(u"_%02X", {int(c)});
+            result.format(u"_%02X", int(c));
         }
     }
     return result;

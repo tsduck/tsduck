@@ -142,14 +142,14 @@ void ts::LIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::LIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Event id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Event id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(6)) {
-        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(4)) {
-            disp << margin << UString::Format(u"- Local event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"- Local event id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
             disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
         }
     }

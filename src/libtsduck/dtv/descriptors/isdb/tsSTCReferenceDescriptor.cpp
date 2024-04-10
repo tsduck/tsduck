@@ -132,28 +132,28 @@ void ts::STCReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
         const uint8_t mode = buf.getBits<uint8_t>(4);
         disp << margin << "Segmentation mode: " << DataName(MY_XML_NAME, u"Mode", mode, NamesFlags::DECIMAL_FIRST) << std::endl;
         if (external) {
-            disp << margin << UString::Format(u"External event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"External service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"External network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"External event id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"External service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"External network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
         if (mode == 0) {
         }
         else if (mode == 1) {
             if (buf.canReadBytes(10)) {
                 buf.skipBits(7);
-                disp << margin << UString::Format(u"NPT reference: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+                disp << margin << UString::Format(u"NPT reference: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
                 buf.skipBits(7);
-                disp << margin << UString::Format(u"STC reference: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+                disp << margin << UString::Format(u"STC reference: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
             }
         }
         else if (mode == 3 || mode == 5) {
             if (buf.canReadBytes(10)) {
-                disp << margin << UString::Format(u"Time reference: %02d", {buf.getBCD<int>(2)});
-                disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
-                disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
-                disp << UString::Format(u".%03d", {buf.getBCD<int>(3)}) << std::endl;
+                disp << margin << UString::Format(u"Time reference: %02d", buf.getBCD<int>(2));
+                disp << UString::Format(u":%02d", buf.getBCD<int>(2));
+                disp << UString::Format(u":%02d", buf.getBCD<int>(2));
+                disp << UString::Format(u".%03d", buf.getBCD<int>(3)) << std::endl;
                 buf.skipBits(11);
-                disp << margin << UString::Format(u"STC reference: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+                disp << margin << UString::Format(u"STC reference: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
             }
         }
         else {
@@ -183,7 +183,7 @@ void ts::STCReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root)
     }
     else if (STC_reference_mode == 3 || STC_reference_mode == 5) {
         root->setTimeAttribute(u"time_reference", time_reference);
-        root->setAttribute(u"time_reference_extension", UString::Format(u"%03d", {time_reference.count() % 1000}));
+        root->setAttribute(u"time_reference_extension", UString::Format(u"%03d", time_reference.count() % 1000));
         root->setIntAttribute(u"STC_reference", STC_reference, true);
     }
     else {

@@ -186,7 +186,7 @@ bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
         return abortConnection(u"MUX channel_setup response timeout");
     }
     if (response != emmgmux::Tags::channel_status) {
-        return abortConnection(UString::Format(u"unexpected response 0x%X from MUX (expected channel_status)", {response}));
+        return abortConnection(UString::Format(u"unexpected response 0x%X from MUX (expected channel_status)", response));
     }
 
     // Cleanup response state.
@@ -209,7 +209,7 @@ bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
         return abortConnection(u"MUX stream_setup response timeout");
     }
     if (response != emmgmux::Tags::stream_status) {
-        return abortConnection(UString::Format(u"unexpected response 0x%X from MUX (expected stream_status)", {response}));
+        return abortConnection(UString::Format(u"unexpected response 0x%X from MUX (expected stream_status)", response));
     }
 
     // Data stream now established

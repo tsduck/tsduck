@@ -77,8 +77,8 @@ void ts::SSUURIDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SSUURIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Max holdoff time: %d minutes", {buf.getUInt8()}) << std::endl;
-        disp << margin << UString::Format(u"Min polling interval: %d hours", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Max holdoff time: %d minutes", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Min polling interval: %d hours", buf.getUInt8()) << std::endl;
         disp << margin << "URI: \"" << buf.getString() << "\"" << std::endl;
     }
 }

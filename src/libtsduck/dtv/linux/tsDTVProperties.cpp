@@ -133,7 +133,7 @@ void ts::DTVProperties::reportStat(Report& report, int severity) const
                 if (i2 > 0) {
                     str.append(u", ");
                 }
-                str.format(u"{scale: %d, value: %d}", {prop.u.st.stat[i2].scale, prop.u.st.stat[i2].svalue});
+                str.format(u"{scale: %d, value: %d}", prop.u.st.stat[i2].scale, prop.u.st.stat[i2].svalue);
             }
             report.log(severity, u"[%d] cmd = %d (%s), count = %d, stat = %s", {i1, prop.cmd, name == nullptr ? "?" : name, prop.u.st.len, str});
         }

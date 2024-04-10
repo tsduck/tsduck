@@ -553,7 +553,7 @@ void SysUtilsTest::testWildcard()
     ts::UStringVector fileNames;
     fileNames.reserve(count);
     for (size_t i = 0; i < count; ++i) {
-        const ts::UString fileName(filePrefix + ts::UString::Format(u"%03d", {i}));
+        const ts::UString fileName(filePrefix + ts::UString::Format(u"%03d", i));
         TSUNIT_ASSERT(_CreateFile(fileName, 0));
         TSUNIT_ASSERT(fs::exists(fileName));
         fileNames.push_back(fileName);

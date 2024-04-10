@@ -79,7 +79,7 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 {
     while (buf.canReadBytes(2)) {
         disp << margin << "Content: " << names::Content(disp.duck(), buf.getUInt8(), NamesFlags::FIRST);
-        disp << UString::Format(u" / User: 0x%X", {buf.getUInt8()}) << std::endl;
+        disp << UString::Format(u" / User: 0x%X", buf.getUInt8()) << std::endl;
     }
 }
 

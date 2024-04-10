@@ -37,5 +37,5 @@ void ts::TransportStreamId::clear()
 
 ts::UString ts::TransportStreamId::toString() const
 {
-    return UString::Format(u"TS: 0x%X (%<d), O.Net:0x%X (%<d)", {transport_stream_id, original_network_id});
+    return UString::Format(u"TS: 0x%X (%<d), O.Net:0x%X (%<d)", transport_stream_id, original_network_id);
 }

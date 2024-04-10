@@ -132,7 +132,7 @@ void ts::HEVCTileSubstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
                 while (buf.canReadBytes(1)) {
                     uint8_t _Flag = buf.getBits<uint8_t>(1);
                     uint8_t _AdditionalSubstreamID = buf.getBits<uint8_t>(7);
-                    substreams.push_back(UString::Format(u"%d-%d", { _Flag , _AdditionalSubstreamID }));
+                    substreams.push_back(UString::Format(u"%d-%d",  _Flag , _AdditionalSubstreamID ));
                 }
                 disp.displayVector(u"Additional Stream IDs:", substreams, margin, true, 8);
             }

@@ -118,14 +118,14 @@ void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         disp << margin << "Logo transmission type: " << DataName(MY_XML_NAME, u"Type", ttype, NamesFlags::HEXA_FIRST) << std::endl;
         if (ttype == 0x01 && buf.canReadBytes(6)) {
             buf.skipBits(7);
-            disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", {buf.getBits<uint16_t>(9)}) << std::endl;
+            disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", buf.getBits<uint16_t>(9)) << std::endl;
             buf.skipBits(4);
-            disp << margin << UString::Format(u"Logo version: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
-            disp << margin << UString::Format(u"Download data id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Logo version: 0x%03X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;
+            disp << margin << UString::Format(u"Download data id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
         else if (ttype == 0x02 && buf.canReadBytes(2)) {
             buf.skipBits(7);
-            disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", {buf.getBits<uint16_t>(9)}) << std::endl;
+            disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", buf.getBits<uint16_t>(9)) << std::endl;
         }
         else if (ttype == 0x03) {
             disp << margin << "Logo characters: \"" << buf.getString() << "\"" << std::endl;

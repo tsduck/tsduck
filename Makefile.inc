@@ -476,7 +476,7 @@ endif
 # Always use maximal or even paranoid warning mode.
 # With clang, the option -Weverything turns everything on. There is no such option with GCC.
 
-CXXFLAGS_WARNINGS = -Werror
+CXXFLAGS_WARNINGS = -Werror -Wno-error=deprecated-declarations
 ifneq ($(USE_LLVM),)
     CXXFLAGS_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
     ifneq ($(MACOS),)

@@ -111,14 +111,14 @@ void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
     if (buf.canReadBytes(14)) {
         disp << margin << "Start time: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
         disp << margin << "End time:   " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
-        disp << margin << UString::Format(u"Final availability: %s", {buf.getBool()}) << std::endl;
-        disp << margin << UString::Format(u"Periodicity: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Final availability: %s", buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"Periodicity: %s", buf.getBool()) << std::endl;
         const uint8_t period_unit = buf.getBits<uint8_t>(2);
         const uint8_t duration_unit = buf.getBits<uint8_t>(2);
         const uint8_t cycle_unit = buf.getBits<uint8_t>(2);
-        disp << margin << UString::Format(u"Period: %d %ss", {buf.getUInt8(), SchedulingUnitNames.name(period_unit)}) << std::endl;
-        disp << margin << UString::Format(u"Duration: %d %ss", {buf.getUInt8(), SchedulingUnitNames.name(duration_unit)}) << std::endl;
-        disp << margin << UString::Format(u"Estimated cycle time: %d %ss", {buf.getUInt8(), SchedulingUnitNames.name(cycle_unit)}) << std::endl;
+        disp << margin << UString::Format(u"Period: %d %ss", buf.getUInt8(), SchedulingUnitNames.name(period_unit)) << std::endl;
+        disp << margin << UString::Format(u"Duration: %d %ss", buf.getUInt8(), SchedulingUnitNames.name(duration_unit)) << std::endl;
+        disp << margin << UString::Format(u"Estimated cycle time: %d %ss", buf.getUInt8(), SchedulingUnitNames.name(cycle_unit)) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

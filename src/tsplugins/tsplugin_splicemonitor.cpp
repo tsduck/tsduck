@@ -102,9 +102,17 @@ namespace ts {
         void processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out);
 
         // Build and report a one-line message or JSON structure.
-        UString message(PID splice_pid, uint32_t event_id, const UChar* format, std::initializer_list<ArgMixIn> args = {});
         void display(const UString& line);
         void initJSON(json::Object& obj, PID splice_pid, uint32_t event_id, const UString& progress, const SpliceContext& ctx, const SpliceEvent* evt);
+        UString header(PID splice_pid, uint32_t event_id);
+
+        template <class... Args>
+        UString message(PID splice_pid, uint32_t event_id, const UChar* format, Args&&... args)
+        {
+            UString line(header(splice_pid, event_id));
+            line.format(format, std::forward<ArgMixIn>(args)...);
+            return line;
+        }
 
         // Compute time between current packet and event. Return false if not possible to compute.
         bool timeToEvent(cn::milliseconds& tte, uint64_t event_pts, const SpliceContext& ctx);
@@ -344,24 +352,23 @@ void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 
 
 //----------------------------------------------------------------------------
-// Build a one-line message.
+// Build a one-line message header.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, uint32_t event_id, const UChar* format, std::initializer_list<ArgMixIn> args)
+ts::UString ts::SpliceMonitorPlugin::header(PID splice_pid, uint32_t event_id)
 {
     UString line;
     if (_packet_index) {
-        line.format(u"packet %'d, ", {tsp->pluginPackets()});
+        line.format(u"packet %'d, ", tsp->pluginPackets());
     }
     if (splice_pid != PID_NULL) {
         SpliceContext& ctx(_splice_contexts[splice_pid]);
-        line.format(u"splice PID 0x%X (%<d), ", {splice_pid});
+        line.format(u"splice PID 0x%X (%<d), ", splice_pid);
         if (event_id != SpliceInsert::INVALID_EVENT_ID) {
             const SpliceEvent& evt(ctx.splice_events[event_id]);
-            line.format(u"event 0x%X (%<d) %d, ", {evt.event_id, evt.event_out ? u"out" : u"in"});
+            line.format(u"event 0x%X (%<d) %d, ", evt.event_id, evt.event_out ? u"out" : u"in");
         }
     }
-    line.format(format, args);
     return line;
 }
 
@@ -480,7 +487,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
             _json_args.report(obj, _json_doc, *tsp);
         }
         else {
-            display(message(splice_pid, event_id, u"immediately %s", {splice_out ? "OUT" : "IN"}));
+            display(message(splice_pid, event_id, u"immediately %s", splice_out ? "OUT" : "IN"));
         }
         if (known_event) {
             // Immediate event, won't reference it later -> remove it.
@@ -513,13 +520,13 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
             cn::milliseconds time_to_event;
             if (timeToEvent(time_to_event, event_pts, ctx)) {
                 if (time_to_event < cn::milliseconds::zero()) {
-                    time.format(u", event is in the past by %'!s", {-time_to_event});
+                    time.format(u", event is in the past by %'!s", -time_to_event);
                 }
                 else {
-                    time.format(u", time to event: %'!s", {time_to_event});
+                    time.format(u", time to event: %'!s", time_to_event);
                 }
             }
-            display(message(splice_pid, event_id, u"occurrence #%d%s", {evt->second.event_count, time}));
+            display(message(splice_pid, event_id, u"occurrence #%d%s", evt->second.event_count, time));
         }
     }
 }
@@ -619,7 +626,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                 // Build a one-line message.
                 UString line(message(spid, evt.event_id, u"occurred"));
                 if (preroll > cn::milliseconds::zero()) {
-                    line.format(u", actual pre-roll time: %'!s", {preroll});
+                    line.format(u", actual pre-roll time: %'!s", preroll);
                 }
 
                 // Display the event.
@@ -638,7 +645,9 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                 if (!_alarm_command.empty() && alarm) {
                     UString command;
                     command.format(u"%s \"%s\" %d %d %s %d %d %d",
-                                   {_alarm_command, line, spid, evt.event_id, evt.event_out ? u"out" : u"in", evt.event_pts, preroll.count(), evt.event_count});
+                                   _alarm_command, line, spid, evt.event_id,
+                                   evt.event_out ? u"out" : u"in",
+                                   evt.event_pts, preroll.count(), evt.event_count);
                     ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
                 }
 

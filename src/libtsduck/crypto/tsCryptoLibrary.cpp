@@ -23,7 +23,7 @@ ts::UString ts::GetCryptographicLibraryVersion()
     return u"Microsoft BCrypt";
 #elif defined(OPENSSL_FULL_VERSION_STRING)
     // OpenSSL v3
-    return UString::Format(u"OpenSSL %s (%s)", {OpenSSL_version(OPENSSL_FULL_VERSION_STRING), OpenSSL_version(OPENSSL_CPU_INFO)});
+    return UString::Format(u"OpenSSL %s (%s)", OpenSSL_version(OPENSSL_FULL_VERSION_STRING), OpenSSL_version(OPENSSL_CPU_INFO));
 #else
     // OpenSSL v1
     return UString::FromUTF8(OpenSSL_version(OPENSSL_VERSION));

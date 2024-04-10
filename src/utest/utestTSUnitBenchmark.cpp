@@ -61,5 +61,5 @@ void utest::TSUnitBenchmark::report(const ts::UString& test_name)
         stop();
         start();
     }
-    tsunit::Test::debug() << ts::UString::Format(u"%s: %'d sequences of %'d iterations, %'d ms", {test_name, _sequences, iterations, _accumulated.count()}) << std::endl;
+    tsunit::Test::debug() << ts::UString::Format(u"%s: %'d sequences of %'d iterations, %'d ms", test_name, _sequences, iterations, _accumulated.count()) << std::endl;
 }

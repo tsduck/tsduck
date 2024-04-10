@@ -196,35 +196,35 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 
     // Add compiler type and version.
 #if defined(_MSC_FULL_VER)
-    version.format(u"MSVC %02d.%02d.%05d", {_MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000});
+    version.format(u"MSVC %02d.%02d.%05d", _MSC_FULL_VER / 10000000, (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000);
     #if defined(_MSC_BUILD)
-        version.append(UString::Format(u".%02d", {_MSC_BUILD}));
+        version.append(UString::FormatNew(u".%02d", _MSC_BUILD));
     #endif
 #elif defined(_MSC_VER)
-    version.format(u"MSVC %02d.%02d", {_MSC_VER / 100, _MSC_VER % 100});
+    version.format(u"MSVC %02d.%02d", _MSC_VER / 100, _MSC_VER % 100);
     #if defined(_MSC_BUILD)
-        version.append(UString::Format(u".%02d", {_MSC_BUILD}));
+        version.append(UString::FormatNew(u".%02d", _MSC_BUILD));
     #endif
 #elif defined(__clang_version__)
-    version.format(u"Clang %s", {__clang_version__});
+    version.format(u"Clang %s", __clang_version__);
 #elif defined(__llvm__) || defined(__clang__) || defined(__clang_major__)
     version.assign(u"Clang ");
     #if defined(__clang_major__)
-        version.append(UString::Format(u"%d", {__clang_major__}));
+        version.append(UString::FormatNew(u"%d", __clang_major__));
     #endif
     #if defined(__clang_minor__)
-        version.append(UString::Format(u".%d", {__clang_minor__}));
+        version.append(UString::FormatNew(u".%d", __clang_minor__));
     #endif
     #if defined(__clang_patchlevel__)
-        version.append(UString::Format(u".%d", {__clang_patchlevel__}));
+        version.append(UString::FormatNew(u".%d", __clang_patchlevel__));
     #endif
 #elif defined(__GNUC__)
-    version.format(u"GCC %d", {__GNUC__});
+    version.format(u"GCC %d", __GNUC__);
     #if defined(__GNUC_MINOR__)
-        version.append(UString::Format(u".%d", {__GNUC_MINOR__}));
+        version.append(UString::FormatNew(u".%d", __GNUC_MINOR__));
     #endif
     #if defined(__GNUC_PATCHLEVEL__)
-        version.append(UString::Format(u".%d", {__GNUC_PATCHLEVEL__}));
+        version.append(UString::FormatNew(u".%d", __GNUC_PATCHLEVEL__));
     #endif
 #else
     version.assign(u"unknown compiler");
@@ -234,9 +234,9 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 #if defined(_MSVC_LANG)
     // With MSVC, the standard macro __cplusplus is stuck at 199711 for obscure reasons.
     // The actual level of language standard is in the system-specific macro _MSVC_LANG.
-    version.append(UString::Format(u", C++ std %04d.%02d", {_MSVC_LANG / 100, _MSVC_LANG % 100}));
+    version.append(UString::FormatNew(u", C++ std %04d.%02d", _MSVC_LANG / 100, _MSVC_LANG % 100));
 #elif defined(__cplusplus)
-    version.append(UString::Format(u", C++ std %04d.%02d", {__cplusplus / 100, __cplusplus % 100}));
+    version.append(UString::Format(u", C++ std %04d.%02d", __cplusplus / 100, __cplusplus % 100));
 #endif
 
     return version;
@@ -252,7 +252,7 @@ ts::UString ts::VersionInfo::GetSystemVersion()
     UString name(SysInfo::Instance().systemName());
     const UString version(SysInfo::Instance().systemVersion());
     if (!version.empty()) {
-        name.format(u" (%s)", {version});
+        name.format(u" (%s)", version);
     }
     name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes",
                 {SysInfo::Instance().cpuName(),
@@ -280,7 +280,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The simplest version.
             // This environment variable can be used to force the version (for debug purpose).
             const UString forcedVersion(GetEnvironment(u"TS_FORCED_VERSION"));
-            return forcedVersion.empty() ? ts::UString::Format(u"%d.%d-%d", {TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT}) : forcedVersion;
+            return forcedVersion.empty() ? ts::UString::Format(u"%d.%d-%d", TS_VERSION_MAJOR, TS_VERSION_MINOR, TS_COMMIT) : forcedVersion;
         }
         case Format::LONG: {
             // The long explanatory version.
@@ -296,7 +296,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The build date.
             TS_PUSH_WARNING()
             TS_LLVM_NOWARNING(date-time)
-            return UString::Format(u"%s - %s", {__DATE__, __TIME__});
+            return UString::Format(u"%s - %s", __DATE__, __TIME__);
             TS_POP_WARNING()
         }
         case Format::COMPILER: {
@@ -341,7 +341,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         }
         case Format::ACCELERATION: {
             // Support for accelerated instructions.
-            return UString::Format(u"CRC32: %s", {UString::YesNo(SysInfo::Instance().crcInstructions())});
+            return UString::Format(u"CRC32: %s", UString::YesNo(SysInfo::Instance().crcInstructions()));
         }
         case Format::ALL: {
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +

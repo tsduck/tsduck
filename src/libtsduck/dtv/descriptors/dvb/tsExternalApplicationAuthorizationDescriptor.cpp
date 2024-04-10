@@ -76,9 +76,9 @@ void ts::ExternalApplicationAuthorizationDescriptor::deserializePayload(PSIBuffe
 void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(7)) {
-        disp << margin << UString::Format(u"- Organization id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"  Priority: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"- Organization id: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"  Priority: 0x%X (%<d)", buf.getUInt8()) << std::endl;
     }
 }
 

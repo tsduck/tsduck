@@ -67,7 +67,7 @@ void ts::ApplicationUsageDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ApplicationUsageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Usage type: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Usage type: %d (0x%<X)", buf.getUInt8()) << std::endl;
     }
 }
 

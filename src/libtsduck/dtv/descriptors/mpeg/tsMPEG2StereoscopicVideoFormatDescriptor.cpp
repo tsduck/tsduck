@@ -72,7 +72,7 @@ void ts::MPEG2StereoscopicVideoFormatDescriptor::DisplayDescriptor(TablesDisplay
 {
     if (buf.canReadBytes(1)) {
         if (buf.getBool()) {
-            disp << margin << UString::Format(u"Arrangement type: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
+            disp << margin << UString::Format(u"Arrangement type: 0x%X (%<d)", buf.getBits<uint8_t>(7)) << std::endl;
         }
         else {
             buf.skipBits(7);

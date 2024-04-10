@@ -101,7 +101,7 @@ void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
     if (buf.canReadBytes(1)) {
         buf.skipBits(6);
         const uint8_t type = buf.getBits<uint8_t>(2);
-        disp << margin << UString::Format(u"Guidance type: %d", {type}) << std::endl;
+        disp << margin << UString::Format(u"Guidance type: %d", type) << std::endl;
         if (type == 0x01 && buf.canReadBytes(1)) {
             buf.skipBits(7);
             disp << margin << "Guidance mode: " << UString::TrueFalse(buf.getBool()) << std::endl;

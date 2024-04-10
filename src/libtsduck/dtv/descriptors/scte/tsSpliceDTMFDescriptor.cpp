@@ -88,7 +88,7 @@ void ts::SpliceDTMFDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
     if (buf.canReadBytes(6)) {
         // Sometimes, the identifier is made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
-        disp << margin << UString::Format(u"Pre-roll: %d x 1/10 second", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Pre-roll: %d x 1/10 second", buf.getUInt8()) << std::endl;
         const size_t len = buf.getBits<size_t>(3);
         buf.skipBits(5);
         disp << margin << "DTMF: \"" << buf.getUTF8(len) << "\"" << std::endl;

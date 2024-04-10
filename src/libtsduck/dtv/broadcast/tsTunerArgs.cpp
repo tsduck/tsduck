@@ -61,12 +61,12 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
     else if (args.present(u"adapter")) {
         const int adapter = args.intValue(u"adapter", 0);
 #if defined(TS_LINUX)
-        device_name.format(u"/dev/dvb/adapter%d", {adapter});
+        device_name.format(u"/dev/dvb/adapter%d", adapter);
 #elif defined(TS_WINDOWS)
-        device_name.format(u":%d", {adapter});
+        device_name.format(u":%d", adapter);
 #else
         // Does not mean anything, just for error messages.
-        device_name.format(u"DVB adapter %d", {adapter});
+        device_name.format(u"DVB adapter %d", adapter);
 #endif
     }
 

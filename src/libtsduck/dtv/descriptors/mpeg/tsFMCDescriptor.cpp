@@ -84,8 +84,8 @@ void ts::FMCDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"ES id: 0x%X (%<d)", {buf.getUInt16()});
-        disp << UString::Format(u", M4Mux channel: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"ES id: 0x%X (%<d)", buf.getUInt16());
+        disp << UString::Format(u", M4Mux channel: 0x%X (%<d)", buf.getUInt8()) << std::endl;
     }
 }
 

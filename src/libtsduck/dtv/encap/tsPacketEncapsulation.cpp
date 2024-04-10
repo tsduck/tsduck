@@ -174,7 +174,7 @@ bool ts::PacketEncapsulation::processPacket(TSPacket& pkt)
 
     // Detect PID conflicts (when the output PID is present on input but not encapsulated).
     if (pid == _pidOutput && !_pidInput.test(pid)) {
-        _lastError.format(u"PID conflict, output PID 0x%X (%d) is present but not encapsulated", {pid, pid});
+        _lastError.format(u"PID conflict, output PID 0x%X (%d) is present but not encapsulated", pid, pid);
         status = false;
     }
 

@@ -60,7 +60,7 @@ else: PYTHON = $$first(ALLPYTHON)
 # Other configuration.
 LIBS += -ledit
 linux|mac|mingw {
-    QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra
+    QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra -Wno-error=deprecated-declarations
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all
 }
 linux|mingw {

@@ -113,7 +113,7 @@ void ts::DVBAC4Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf
         const bool ac4_toc_flag = buf.getBool();
         buf.skipBits(6);
         if (ac4_config_flag && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Dialog enhancement enabled: %d", {buf.getBool()});
+            disp << margin << UString::Format(u"Dialog enhancement enabled: %d", buf.getBool());
             disp << ", channel mode: " << DataName(MY_XML_NAME, u"ChannelMode", buf.getBits<uint8_t>(2), NamesFlags::FIRST) << std::endl;
             buf.skipBits(5);
         }

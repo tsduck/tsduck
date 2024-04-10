@@ -205,19 +205,19 @@ void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"DCC subtype: 0x%02X (%<d), DCC id: 0x%02X (%<d)", {section.tableIdExtension() >> 8, section.tableIdExtension() & 0xFF}) << std::endl;
+    disp << margin << UString::Format(u"DCC subtype: 0x%02X (%<d), DCC id: 0x%02X (%<d)", section.tableIdExtension() >> 8, section.tableIdExtension() & 0xFF) << std::endl;
 
     uint16_t dcc_test_count = 0;
 
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        disp << UString::Format(u", number of DCC tests: %d", {dcc_test_count = buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8());
+        disp << UString::Format(u", number of DCC tests: %d", dcc_test_count = buf.getUInt8()) << std::endl;
 
         // Loop on all upper-level definitions.
         while (buf.canReadBytes(15) && dcc_test_count-- > 0) {
 
             const uint8_t ctx = buf.getBit();
-            disp << margin << UString::Format(u"- DCC context: %d (%s)", {ctx, DCCContextNames.name(ctx)}) << std::endl;
+            disp << margin << UString::Format(u"- DCC context: %d (%s)", ctx, DCCContextNames.name(ctx)) << std::endl;
             buf.skipBits(3);
             disp << margin << "  DCC from channel " << buf.getBits<uint16_t>(10);
             disp << "." << buf.getBits<uint16_t>(10);
@@ -233,7 +233,7 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             // Loop on all DCC selection terms.
             while (dcc_term_count-- > 0 && buf.canReadBytes(9)) {
                 disp << margin << "  - DCC selection type: " << DataName(MY_XML_NAME, u"selection_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
-                disp << margin << UString::Format(u"    DCC selection id: 0x%X", {buf.getUInt64()}) << std::endl;
+                disp << margin << UString::Format(u"    DCC selection id: 0x%X", buf.getUInt64()) << std::endl;
                 disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"DCC selection term descriptors:", UString(), 10);
             }
 

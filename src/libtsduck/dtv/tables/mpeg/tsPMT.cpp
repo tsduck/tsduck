@@ -487,8 +487,8 @@ uint32_t ts::PMT::registrationId(PID pid) const
 void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     const PID pcr_pid = buf.getPID();
-    disp << margin << UString::Format(u"Program: %d (0x%<X), PCR PID: ", {section.tableIdExtension()})
-         << (pcr_pid == PID_NULL ? u"none" : UString::Format(u"%d (0x%<X)", {pcr_pid}))
+    disp << margin << UString::Format(u"Program: %d (0x%<X), PCR PID: ", section.tableIdExtension())
+         << (pcr_pid == PID_NULL ? u"none" : UString::Format(u"%d (0x%<X)", pcr_pid))
          << std::endl;
 
     // Process and display "program info" descriptors. Get registration id.
@@ -500,7 +500,7 @@ void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
         disp << margin << "Elementary stream: type " << names::StreamType(type, NamesFlags::FIRST, disp.duck().lastRegistrationId())
-             << UString::Format(u", PID: %d (0x%<X)", {pid}) << std::endl;
+             << UString::Format(u", PID: %d (0x%<X)", pid) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
 }

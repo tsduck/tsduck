@@ -388,9 +388,9 @@ namespace {
 ts::UString ts::SRTSocket::GetLibraryVersion()
 {
 #if defined(SRT_VERSION_STRING)
-    return UString::Format(u"libsrt version %s", {SRT_VERSION_STRING});
+    return UString::Format(u"libsrt version %s", SRT_VERSION_STRING);
 #else
-    return UString::Format(u"libsrt version %d.%d.%d", {SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH});
+    return UString::Format(u"libsrt version %d.%d.%d", SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH);
 #endif
 }
 
@@ -1283,12 +1283,12 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             none = false;
             msg.append(u"\n  Timestamp-based delivery delay");
             if (show_receive) {
-                msg.format(u", receive: %d ms", {stats.msRcvTsbPdDelay});
+                msg.format(u", receive: %d ms", stats.msRcvTsbPdDelay);
             }
             if (show_send) {
-                msg.format(u", send: %d ms", {stats.msSndTsbPdDelay});
+                msg.format(u", send: %d ms", stats.msSndTsbPdDelay);
             }
-            msg.format(u", RTT: %f ms", {stats.msRTT});
+            msg.format(u", RTT: %f ms", stats.msRTT);
         }
         if (none) {
             msg.append(u" none available");

@@ -93,7 +93,7 @@ bool ts::tsswitch::EventDispatcher::signalNewInput(size_t oldPluginIndex, size_t
 {
     bool success = true;
     if (_sendCommand) {
-        success = sendCommand(u"newinput", UString::Format(u"%d %d", {oldPluginIndex, newPluginIndex}));
+        success = sendCommand(u"newinput", UString::Format(u"%d %d", oldPluginIndex, newPluginIndex));
     }
     if (_sendUDP) {
         json::Object root;

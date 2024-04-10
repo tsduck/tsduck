@@ -350,7 +350,7 @@ void ts::tlv::MessageFactory::checkParamSize(TAG tag, const ParameterMultimap::c
 {
     const size_t expected = dataSize<T>();
     if (it->second.length != expected) {
-        throw DeserializationInternalError(UString::Format(u"Bad size for parameter 0x%X in message, expected %d bytes, found %d", {tag, expected, it->second.length}));
+        throw DeserializationInternalError(UString::Format(u"Bad size for parameter 0x%X in message, expected %d bytes, found %d", tag, expected, it->second.length));
     }
 }
 
@@ -360,7 +360,7 @@ INT ts::tlv::MessageFactory::get(TAG tag) const
 {
     const auto it = _params.find(tag);
     if (it == _params.end()) {
-        throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", {tag}));
+        throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", tag));
     }
     else {
         checkParamSize<INT>(tag, it);
@@ -391,7 +391,7 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, MSG& param) const
     getCompound(tag, gen);
     MSG* msg = dynamic_cast<MSG*>(gen.get());
     if (msg == 0) {
-        throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for parameter 0x%X", {tag}));
+        throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for parameter 0x%X", tag));
     }
     param = *msg;
 }
@@ -407,14 +407,14 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MSG>& param) cons
     const auto last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
         if (it->second.compound == nullptr) {
-            throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));
+            throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", i, tag));
         }
         else {
             MessagePtr gen;
             it->second.compound->factory(gen);
             MSG* msg = dynamic_cast<MSG*>(gen.get());
             if (msg == 0) {
-                throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for occurence %d of parameter 0x%X", {i, tag}));
+                throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for occurence %d of parameter 0x%X", i, tag));
             }
             param.push_back(*msg);
         }

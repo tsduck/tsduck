@@ -157,27 +157,27 @@ void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, P
         buf.skipBits(4);
 
         if (timescale_flag && buf.canReadBytes(3)) {
-            disp << margin << UString::Format(u"Ticks per seconds: %'d", {buf.getBits<uint32_t>(21)}) << std::endl;
+            disp << margin << UString::Format(u"Ticks per seconds: %'d", buf.getBits<uint32_t>(21)) << std::endl;
             buf.getBits(mdl, 2);
-            disp << margin << UString::Format(u"Maximum duration length: %d bytes + 5 bits", {mdl}) << std::endl;
+            disp << margin << UString::Format(u"Maximum duration length: %d bytes + 5 bits", mdl) << std::endl;
             buf.skipBits(1);
         }
 
         for (size_t i = 0; i < num_partitions && buf.canReadBytes(2); ++i) {
             const bool explicit_boundary_flag = buf.getBool();
-            disp << margin << UString::Format(u"- Partition id: %d", {buf.getBits<uint8_t>(3)});
+            disp << margin << UString::Format(u"- Partition id: %d", buf.getBits<uint8_t>(3));
             buf.skipBits(4);
-            disp << UString::Format(u", SAP type max: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
+            disp << UString::Format(u", SAP type max: %d", buf.getBits<uint8_t>(3)) << std::endl;
             if (!explicit_boundary_flag) {
                 buf.skipBits(5);
-                disp << margin << UString::Format(u"  Boundary PID: 0x%X (%<d)", {buf.getBits<uint16_t>(13)}) << std::endl;
+                disp << margin << UString::Format(u"  Boundary PID: 0x%X (%<d)", buf.getBits<uint16_t>(13)) << std::endl;
                 buf.skipBits(3);
             }
             else if (buf.remainingReadBits() < mdl * 8 + 5) {
                 buf.setUserError();
             }
             else {
-                disp << margin << UString::Format(u"  Maximum duration: %'d ticks", {buf.getBits<uint32_t>(mdl * 8 + 5)}) << std::endl;
+                disp << margin << UString::Format(u"  Maximum duration: %'d ticks", buf.getBits<uint32_t>(mdl * 8 + 5)) << std::endl;
             }
         }
     }

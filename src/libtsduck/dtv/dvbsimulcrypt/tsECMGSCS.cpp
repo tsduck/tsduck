@@ -144,7 +144,7 @@ void ts::ecmgscs::Protocol::factory(const tlv::MessageFactory& fact, tlv::Messag
             msg = std::make_shared<ECMResponse>(fact);
             break;
         default:
-            throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));
+            throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", fact.commandTag()));
     }
 }
 
@@ -231,7 +231,7 @@ void ts::ecmgscs::ChannelSetup::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::ChannelSetup::dump(size_t indent) const
 {
-    return UString::Format(u"%*schannel_setup (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_setup (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"Super_CAS_id", Super_CAS_id);
@@ -254,7 +254,7 @@ void ts::ecmgscs::ChannelTest::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::ChannelTest::dump(size_t indent) const
 {
-    return UString::Format(u"%*schannel_test (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_test (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id);
 }
@@ -314,7 +314,7 @@ void ts::ecmgscs::ChannelStatus::serializeParameters(tlv::Serializer& fact) cons
 
 ts::UString ts::ecmgscs::ChannelStatus::dump(size_t indent) const
 {
-    return UString::Format(u"%*schannel_status (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_status (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpDecimal(indent, u"section_TSpkt_flag", section_TSpkt_flag ? 1 : 0) +
@@ -349,7 +349,7 @@ void ts::ecmgscs::ChannelClose::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::ChannelClose::dump(size_t indent) const
 {
-    return UString::Format(u"%*schannel_close (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_close (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id);
 }
@@ -377,7 +377,7 @@ void ts::ecmgscs::ChannelError::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::ChannelError::dump(size_t indent) const
 {
-    return UString::Format(u"%*schannel_error (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_error (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpVector(indent, u"error_status", error_status, Errors::Name) +
@@ -406,7 +406,7 @@ void ts::ecmgscs::StreamSetup::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::StreamSetup::dump(size_t indent) const
 {
-    return UString::Format(u"%*sstream_setup (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_setup (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id) +
@@ -432,7 +432,7 @@ void ts::ecmgscs::StreamTest::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::StreamTest::dump(size_t indent) const
 {
-    return UString::Format(u"%*sstream_test(" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_test(" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id);
@@ -460,7 +460,7 @@ void ts::ecmgscs::StreamStatus::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::StreamStatus::dump(size_t indent) const
 {
-    return UString::Format(u"%*sstream_status (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_status (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id) +
@@ -486,7 +486,7 @@ void ts::ecmgscs::StreamCloseRequest::serializeParameters(tlv::Serializer& fact)
 
 ts::UString ts::ecmgscs::StreamCloseRequest::dump(size_t indent) const
 {
-    return UString::Format(u"%*sstream_close_request (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_close_request (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id);
@@ -510,7 +510,7 @@ void ts::ecmgscs::StreamCloseResponse::serializeParameters(tlv::Serializer& fact
 
 ts::UString ts::ecmgscs::StreamCloseResponse::dump(size_t indent) const
 {
-    return UString::Format(u"%*sstream_close_response (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_close_response (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id);
@@ -540,7 +540,7 @@ void ts::ecmgscs::StreamError::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::StreamError::dump(size_t indent) const
 {
-    return UString::Format(u"%*sstream_error (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_error (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id) +
@@ -606,7 +606,7 @@ void ts::ecmgscs::CWProvision::serializeParameters(tlv::Serializer& fact) const
 ts::UString ts::ecmgscs::CWProvision::dump(size_t indent) const
 {
     UString dump =
-        UString::Format(u"%*sCW_provision (" PROTOCOL_NAME u")\n", {indent, u""}) +
+        UString::Format(u"%*sCW_provision (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id) +
@@ -646,7 +646,7 @@ void ts::ecmgscs::ECMResponse::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::ecmgscs::ECMResponse::dump(size_t indent) const
 {
-    return UString::Format(u"%*sECM_response (" PROTOCOL_NAME u")\n", {indent, u"   "}) +
+    return UString::Format(u"%*sECM_response (" PROTOCOL_NAME u")\n", indent, u"   ") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"ECM_channel_id", channel_id) +
         dumpHexa(indent, u"ECM_stream_id", stream_id) +
