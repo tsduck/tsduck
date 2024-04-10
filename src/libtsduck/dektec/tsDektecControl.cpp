@@ -385,11 +385,11 @@ void ts::DektecControl::Guts::listNormalizedCapabilities(size_t device_index, si
 
     if ((hw.m_Flags & DTAPI_CAP_IP) != 0) {
         std::cout << UString::Format(u"ip=%d.%d.%d.%d:mac=%02X-%02X-%02X-%02X-%02X-%02X:",
-                                     {hw.m_Ip[0] & 0xFF, hw.m_Ip[1] & 0xFF,
-                                      hw.m_Ip[2] & 0xFF, hw.m_Ip[3] & 0xFF,
-                                      hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF,
-                                      hw.m_MacAddr[2] & 0xFF, hw.m_MacAddr[3] & 0xFF,
-                                      hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF});
+                                     hw.m_Ip[0] & 0xFF, hw.m_Ip[1] & 0xFF,
+                                     hw.m_Ip[2] & 0xFF, hw.m_Ip[3] & 0xFF,
+                                     hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF,
+                                     hw.m_MacAddr[2] & 0xFF, hw.m_MacAddr[3] & 0xFF,
+                                     hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF);
     }
 
     std::cout << std::endl;
@@ -549,8 +549,8 @@ void ts::DektecControl::Guts::listCapabilitiesJSON(ts::json::Value& jv, size_t d
     if ((hw.m_Flags & DTAPI_CAP_IP) != 0) {
         jv.add(u"ip", UString::Format(u"%d.%d.%d.%d", hw.m_Ip[0] & 0xFF, hw.m_Ip[1] & 0xFF, hw.m_Ip[2] & 0xFF, hw.m_Ip[3] & 0xFF));
         jv.add(u"mac", UString::Format(u"%02X-%02X-%02X-%02X-%02X-%02X:",
-                                       {hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF, hw.m_MacAddr[2] & 0xFF,
-                                        hw.m_MacAddr[3] & 0xFF, hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF}));
+                                       hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF, hw.m_MacAddr[2] & 0xFF,
+                                       hw.m_MacAddr[3] & 0xFF, hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF));
     }
 }
 
