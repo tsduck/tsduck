@@ -50,9 +50,9 @@ ts::UString ts::SignalState::Value::toString() const
         case Unit::COUNTER:
             return UString::Decimal(value);
         case Unit::PERCENT:
-            return UString::Format(u"%d%%", {value});
+            return UString::Format(u"%d%%", value);
         case Unit::MDB:
-            return UString::Format(u"%s dB", {FixedPoint<int64_t, 3>(value, true)});
+            return UString::Format(u"%s dB", FixedPoint<int64_t, 3>(value, true));
         default:
             return UString();
     }
@@ -61,18 +61,18 @@ ts::UString ts::SignalState::Value::toString() const
 ts::UString ts::SignalState::toString() const
 {
     UString str;
-    str.format(u"locked: %s", {UString::YesNo(signal_locked)});
+    str.format(u"locked: %s", UString::YesNo(signal_locked));
     if (signal_strength.has_value()) {
-        str.format(u", strength: %s", {signal_strength.value()});
+        str.format(u", strength: %s", signal_strength.value());
     }
     if (signal_noise_ratio.has_value()) {
-        str.format(u", SNR: %s", {signal_noise_ratio.value()});
+        str.format(u", SNR: %s", signal_noise_ratio.value());
     }
     if (bit_error_rate.has_value()) {
-        str.format(u", BER: %s", {bit_error_rate.value()});
+        str.format(u", BER: %s", bit_error_rate.value());
     }
     if (packet_error_rate.has_value()) {
-        str.format(u", PER: %s", {packet_error_rate.value()});
+        str.format(u", PER: %s", packet_error_rate.value());
     }
     return str;
 }

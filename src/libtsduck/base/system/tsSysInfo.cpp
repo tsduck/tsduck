@@ -221,7 +221,7 @@ ts::SysInfo::SysInfo() :
     TS_ZERO(info);
     info.dwOSVersionInfoSize = sizeof(info);
     if (::GetVersionExW(&info)) {
-        _systemVersion = UString::Format(u"Windows %d.%d Build %d %s", {info.dwMajorVersion, info.dwMinorVersion, info.dwBuildNumber, UString(info.szCSDVersion)});
+        _systemVersion = UString::Format(u"Windows %d.%d Build %d %s", info.dwMajorVersion, info.dwMinorVersion, info.dwBuildNumber, UString(info.szCSDVersion));
         _systemVersion.trim();
     }
 

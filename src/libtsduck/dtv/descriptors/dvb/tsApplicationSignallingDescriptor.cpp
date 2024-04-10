@@ -89,9 +89,9 @@ void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp,
 {
     while (buf.canReadBytes(3)) {
         buf.skipBits(1);
-        disp << margin << UString::Format(u"Application type: %d (0x%<X)", {buf.getBits<uint16_t>(15)});
+        disp << margin << UString::Format(u"Application type: %d (0x%<X)", buf.getBits<uint16_t>(15));
         buf.skipBits(3);
-        disp << UString::Format(u", AIT Version: %d (0x%<X)", {buf.getBits<uint8_t>(5)}) << std::endl;
+        disp << UString::Format(u", AIT Version: %d (0x%<X)", buf.getBits<uint8_t>(5)) << std::endl;
     }
 }
 

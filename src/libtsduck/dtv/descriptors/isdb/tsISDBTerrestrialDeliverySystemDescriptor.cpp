@@ -107,14 +107,14 @@ namespace {
 void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Area code: 0x%3X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
+        disp << margin << UString::Format(u"Area code: 0x%3X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;
         const uint8_t guard = buf.getBits<uint8_t>(2);
         const uint8_t mode = buf.getBits<uint8_t>(2);
-        disp << margin << UString::Format(u"Guard interval: %d (%s)", {guard, GuardIntervalNames.name(guard)}) << std::endl;
-        disp << margin << UString::Format(u"Transmission mode: %d (%s)", {mode, TransmissionModeNames.name(mode)}) << std::endl;
+        disp << margin << UString::Format(u"Guard interval: %d (%s)", guard, GuardIntervalNames.name(guard)) << std::endl;
+        disp << margin << UString::Format(u"Transmission mode: %d (%s)", mode, TransmissionModeNames.name(mode)) << std::endl;
     }
     while (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Frequency: %'d Hz", {BinToHz(buf.getUInt16())}) << std::endl;
+        disp << margin << UString::Format(u"Frequency: %'d Hz", BinToHz(buf.getUInt16())) << std::endl;
     }
 }
 

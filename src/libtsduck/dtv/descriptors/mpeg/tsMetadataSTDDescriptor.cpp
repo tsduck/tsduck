@@ -88,9 +88,9 @@ void ts::MetadataSTDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
         const uint32_t buffer = buf.getBits<uint32_t>(22);
         buf.skipBits(2);
         const uint32_t output = buf.getBits<uint32_t>(22);
-        disp << margin << UString::Format(u"Metadata input leak rate: %'d (%'d bits/s)", {input, 400 * input}) << std::endl;
-        disp << margin << UString::Format(u"Metadata buffer size: %'d (%'d bytes)", {buffer, 1024 * buffer}) << std::endl;
-        disp << margin << UString::Format(u"Metadata output leak rate: %'d (%'d bits/s)", {output, 400 * output}) << std::endl;
+        disp << margin << UString::Format(u"Metadata input leak rate: %'d (%'d bits/s)", input, 400 * input) << std::endl;
+        disp << margin << UString::Format(u"Metadata buffer size: %'d (%'d bytes)", buffer, 1024 * buffer) << std::endl;
+        disp << margin << UString::Format(u"Metadata output leak rate: %'d (%'d bits/s)", output, 400 * output) << std::endl;
     }
 }
 

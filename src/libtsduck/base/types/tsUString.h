@@ -1870,6 +1870,60 @@ namespace ts {
         // String formatting (freely inspired from printf)
         //--------------------------------------------------------------------
 
+        // Legacy functions using initializer lists.
+        // The new declaraction use variadic templates instead of explicit initializer lists.
+        // Calling the new overloaded functions is identical, without the brackets.
+        //! @cond nodoxygen
+        [[deprecated("remove brackets '{}'")]]
+        void format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            formatHelper(fmt, args);
+        }
+        [[deprecated("remove brackets '{}'")]]
+        void format(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            formatHelper(fmt.c_str(), args);
+        }
+        [[deprecated("remove brackets '{}'")]]
+        static inline UString Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            UString result;
+            result.formatHelper(fmt, args);
+            return result;
+        }
+        [[deprecated("remove brackets '{}'")]]
+        static inline UString Format(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            UString result;
+            result.formatHelper(fmt.c_str(), args);
+            return result;
+        }
+        [[deprecated("remove brackets '{}'")]]
+        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        {
+            return scanHelper(extractedCount, endIndex, fmt, args);
+        }
+        [[deprecated("remove brackets '{}'")]]
+        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        {
+            return scanHelper(extractedCount, endIndex, fmt.c_str(), args);
+        }
+        [[deprecated("remove brackets '{}'")]]
+        bool scan(const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        {
+            size_t extractedCount;
+            size_type endIndex;
+            return scanHelper(extractedCount, endIndex, fmt, args);
+        }
+        [[deprecated("remove brackets '{}'")]]
+        bool scan(const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        {
+            size_t extractedCount;
+            size_type endIndex;
+            return scanHelper(extractedCount, endIndex, fmt.c_str(), args);
+        }
+        //! @endcond
+
         //!
         //! Format a string using a template and arguments.
         //!
@@ -1913,7 +1967,7 @@ namespace ts {
         //! uint16_t u16 = 128;
         //! ts::UString us(u"abc");
         //! std::string s("def");
-        //! std::cout << ts::UString::Format(u"i = %'d, u16 = 0x%X, %d %s %s %s %s", {i, u16, 27, us, s, u"ghi", "jkl"});
+        //! std::cout << ts::UString::Format(u"i = %'d, u16 = 0x%X, %d %s %s %s %s", i, u16, 27, us, s, u"ghi", "jkl");
         //! @endcode
         //! displays:
         //! @code
@@ -1927,12 +1981,12 @@ namespace ts {
         //!
         //! Sample incorrect formats or combination of arguments:
         //! @code
-        //! ts::UString::Format(u"a) %d %d", {1, 2, 3, 4});  // return "a) 1 2"
-        //! ts::UString::Format(u"b) %d %d", {1});           // return "b) 1 "
-        //! ts::UString::Format(u"c) %d %d", {1, u"abc"});   // return "c) 1 abc"
-        //! ts::UString::Format(u"d) %d %s", {1, 2});        // return "d) 1 2"
-        //! ts::UString::Format(u"e) ab%scd%sef", {u"X"});   // return "e) abXcdef"
-        //! ts::UString::Format(u"f) %d %01", {1, 2, 3});    // return "f) 1 "
+        //! ts::UString::Format(u"a) %d %d", 1, 2, 3, 4);  // return "a) 1 2"
+        //! ts::UString::Format(u"b) %d %d", 1);           // return "b) 1 "
+        //! ts::UString::Format(u"c) %d %d", 1, u"abc");   // return "c) 1 abc"
+        //! ts::UString::Format(u"d) %d %s", 1, 2);        // return "d) 1 2"
+        //! ts::UString::Format(u"e) ab%scd%sef", u"X");   // return "e) abXcdef"
+        //! ts::UString::Format(u"f) %d %01", 1, 2, 3);    // return "f) 1 "
         //! @endcode
         //!
         //! To report errors which are otherwise silently fixed:
@@ -1954,7 +2008,11 @@ namespace ts {
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of arguments to substitute in the format string.
         //!
-        void format(const UChar* fmt, std::initializer_list<ArgMixIn> args);
+        template <class... Args>
+        void format(const UChar* fmt, Args&&... args)
+        {
+            formatHelper(fmt, {std::forward<ArgMixIn>(args)...});
+        }
 
         //!
         //! Format a string using a template and arguments.
@@ -1963,9 +2021,10 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see format()
         //!
-        void format(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        template <class... Args>
+        void format(const UString& fmt, Args&&... args)
         {
-            format(fmt.c_str(), args);
+            formatHelper(fmt.c_str(), {std::forward<ArgMixIn>(args)...});
         }
 
         //!
@@ -1975,7 +2034,13 @@ namespace ts {
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UChar* fmt, std::initializer_list<ArgMixIn> args);
+        template <class... Args>
+        static inline UString Format(const UChar* fmt, Args&&... args)
+        {
+            UString result;
+            result.formatHelper(fmt, {std::forward<ArgMixIn>(args)...});
+            return result;
+        }
 
         //!
         //! Format a string using a template and arguments.
@@ -1984,9 +2049,12 @@ namespace ts {
         //! @return The formatted string.
         //! @see format()
         //!
-        static UString Format(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        template <class... Args>
+        static inline UString Format(const UString& fmt, Args&&... args)
         {
-            return Format(fmt.c_str(), args);
+            UString result;
+            result.formatHelper(fmt.c_str(), {std::forward<ArgMixIn>(args)...});
+            return result;
         }
 
         //!
@@ -2026,7 +2094,11 @@ namespace ts {
         //! exactly matches the format in @a fmt.
         //! @see Format(const UChar*, std::initializer_list<ArgMixIn>)
         //!
-        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const;
+        template <class... Args>
+        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, Args&&... args) const
+        {
+            return scanHelper(extractedCount, endIndex, fmt, {std::forward<ArgMixOut>(args)...});
+        }
 
         //!
         //! Scan this string for integer or character values using a template and arguments.
@@ -2040,9 +2112,10 @@ namespace ts {
         //! exactly matches the format in @a fmt.
         //! @see scan()
         //!
-        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        template <class... Args>
+        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, Args&&... args) const
         {
-            return scan(extractedCount, endIndex, fmt.c_str(), args);
+            return scanHelper(extractedCount, endIndex, fmt.c_str(), {std::forward<ArgMixOut>(args)...});
         }
 
         //!
@@ -2055,11 +2128,12 @@ namespace ts {
         //! exactly matches the format in @a fmt.
         //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
         //!
-        bool scan(const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        template <class... Args>
+        bool scan(const UChar* fmt, Args&&... args) const
         {
             size_t extractedCount;
             size_type endIndex;
-            return scan(extractedCount, endIndex, fmt, args);
+            return scanHelper(extractedCount, endIndex, fmt, {std::forward<ArgMixOut>(args)...});
         }
 
         //!
@@ -2072,11 +2146,12 @@ namespace ts {
         //! exactly matches the format in @a fmt.
         //! @see scan(size_t&, size_type&, const UChar*, std::initializer_list<ArgMixOut>)
         //!
-        bool scan(const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        template <class... Args>
+        bool scan(const UString& fmt, Args&&... args) const
         {
             size_t extractedCount;
             size_type endIndex;
-            return scan(extractedCount, endIndex, fmt.c_str(), args);
+            return scanHelper(extractedCount, endIndex, fmt.c_str(), {std::forward<ArgMixOut>(args)...});
         }
 
         //--------------------------------------------------------------------
@@ -2413,6 +2488,10 @@ namespace ts {
 
         template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && sizeof(INT) < 8>::type* = nullptr>
         static void DecimalMostNegative(UString& result, const UString& separator);
+
+        // Internal helpers for string formatting.
+        void formatHelper(const UChar* fmt, std::initializer_list<ArgMixIn> args);
+        bool scanHelper(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const;
 
         //!
         //! Analysis context of a Format or Scan string, base class.
@@ -3604,7 +3683,7 @@ ts::UString ts::UString::Percentage(Int1 value, Int2 total)
         const int p1 = int(std::abs((100 * std::intmax_t(value)) / std::intmax_t(total)));
         // Percentage first 2 decimals
         const int p2 = int(std::abs((10000 * std::intmax_t(value)) / std::intmax_t(total)) % 100);
-        return Format(u"%d.%02d%%", {p1, p2});
+        return Format(u"%d.%02d%%", p1, p2);
     }
 }
 

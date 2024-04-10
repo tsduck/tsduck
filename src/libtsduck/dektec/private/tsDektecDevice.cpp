@@ -22,7 +22,7 @@ bool tsDektecDeviceIsEmpty = true; // Avoid warning about empty module.
 
 ts::UString ts::DektecStrError(Dtapi::DTAPI_RESULT status)
 {
-    return UString::FromUTF8(Dtapi::DtapiResult2Str(status)) + UString::Format(u" (DTAPI status %d)", {status});
+    return UString::FromUTF8(Dtapi::DtapiResult2Str(status)) + UString::Format(u" (DTAPI status %d)", status);
 }
 
 
@@ -93,7 +93,7 @@ ts::UString ts::DektecDevice::GetDeviceDescription(const Dtapi::DtDeviceDesc& de
     }
     else {
         // Forge a name
-        return UString::Format(u"DT%c-%03d", {dev.m_Category == DTAPI_CAT_PCI ? u'A' : u'U', dev.m_TypeNumber});
+        return UString::Format(u"DT%c-%03d", dev.m_Category == DTAPI_CAT_PCI ? u'A' : u'U', dev.m_TypeNumber);
     }
 }
 
@@ -108,7 +108,7 @@ ts::UString ts::DektecDevice::GetPortDescription(const Dtapi::DtHwFuncDesc& port
     UString desc(GetDeviceDescription(port.m_DvcDesc));
 
     // Add port number.
-    desc += UString::Format(u" port %d", {port.m_Port});
+    desc += UString::Format(u" port %d", port.m_Port);
 
     // For devices with multiple ports, indicate which one is the top-most.
     if (port.m_Port == 1 && port.m_DvcDesc.m_NumPorts > 1) {
@@ -398,7 +398,7 @@ void ts::DektecDevice::ReportDvbT2Pars(const Dtapi::DtDvbT2Pars& pars, Report& r
         report.log(severity, u"%sm_StartRfIdx = %d", {margin, pars.m_StartRfIdx});
         report.log(severity, u"%sm_NumPlps = %d", {margin, pars.m_NumPlps});
         for (int i = 0; i < DTAPI_DVBT2_NUM_PLP_MAX && i < pars.m_NumPlps; i++) {
-            ReportDvbT2PlpPars(pars.m_Plps[i], report, severity, UString::Format(u"%sm_Plps[%d].", {margin, i}));
+            ReportDvbT2PlpPars(pars.m_Plps[i], report, severity, UString::Format(u"%sm_Plps[%d].", margin, i));
         }
     }
 }

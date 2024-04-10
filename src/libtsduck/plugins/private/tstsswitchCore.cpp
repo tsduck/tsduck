@@ -264,7 +264,7 @@ const ts::Enumeration ts::tsswitch::Core::_actionNames({
 
 ts::UString ts::tsswitch::Core::Action::toString() const
 {
-    return UString::Format(u"%s, %d, %s", {_actionNames.name(type), index, flag});
+    return UString::Format(u"%s, %d, %s", _actionNames.name(type), index, flag);
 }
 
 

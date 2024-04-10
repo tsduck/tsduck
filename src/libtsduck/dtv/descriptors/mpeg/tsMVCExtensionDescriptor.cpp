@@ -99,17 +99,17 @@ void ts::MVCExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MVCExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(8)) {
-        disp << margin << UString::Format(u"Average bitrate: %d kb/s", {buf.getUInt16()});
-        disp << UString::Format(u", maximum: %d kb/s", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"View association not present: %s", {buf.getBool()}) << std::endl;
-        disp << margin << UString::Format(u"Base view is left eyeview: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Average bitrate: %d kb/s", buf.getUInt16());
+        disp << UString::Format(u", maximum: %d kb/s", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"View association not present: %s", buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"Base view is left eyeview: %s", buf.getBool()) << std::endl;
         buf.skipBits(2);
-        disp << margin << UString::Format(u"View order min: %d", {buf.getBits<uint16_t>(10)});
-        disp << UString::Format(u", max: %d", {buf.getBits<uint16_t>(10)}) << std::endl;
-        disp << margin << UString::Format(u"Temporal id start: %d", {buf.getBits<uint8_t>(3)});
-        disp << UString::Format(u", end: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
-        disp << margin << UString::Format(u"No SEI NALunit present: %s", {buf.getBool()}) << std::endl;
-        disp << margin << UString::Format(u"No prefix NALunit present: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"View order min: %d", buf.getBits<uint16_t>(10));
+        disp << UString::Format(u", max: %d", buf.getBits<uint16_t>(10)) << std::endl;
+        disp << margin << UString::Format(u"Temporal id start: %d", buf.getBits<uint8_t>(3));
+        disp << UString::Format(u", end: %d", buf.getBits<uint8_t>(3)) << std::endl;
+        disp << margin << UString::Format(u"No SEI NALunit present: %s", buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"No prefix NALunit present: %s", buf.getBool()) << std::endl;
     }
 }
 

@@ -193,7 +193,7 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
                 purposes.push_back(DataName(MY_XML_NAME, u"purpose", buf.getUInt8(), NamesFlags::VALUE));
             }
             if (!purposes.empty()) {
-                disp.displayVector(UString::Format(u"  Purpose%s:", { (purposes.size() > 1) ? "s" : "" }), purposes, margin, true, 2);
+                disp.displayVector(UString::Format(u"  Purpose%s:",  (purposes.size() > 1) ? "s" : "" ), purposes, margin, true, 2);
             }
         }
 

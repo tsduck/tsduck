@@ -116,7 +116,7 @@ void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 {
     if (buf.canReadBytes(1)) {
         const size_t number_of_audio_sources = buf.getUInt8();
-        disp << margin << UString::Format(u"Number of audio sources: %d", {number_of_audio_sources}) << std::endl;
+        disp << margin << UString::Format(u"Number of audio sources: %d", number_of_audio_sources) << std::endl;
         for (size_t i = 0; i < number_of_audio_sources && buf.canReadBytes(1); ++i) {
             buf.pushReadSizeFromLength(8); // loop_length
             if (buf.canReadBytes(1)) {
@@ -129,15 +129,15 @@ void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
                     const uint8_t audio_source = buf.getUInt8();
                     disp << margin << "  Audio source: " << DataName(MY_XML_NAME, u"Source", audio_source, NamesFlags::VALUE) << std::endl;
                     if (audio_source == 0x01 && buf.canReadBytes(8)) {
-                        disp << margin << UString::Format(u"  Program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-                        disp << margin << UString::Format(u"  Carousel id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-                        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"  Program number: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"  Carousel id: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+                        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
                     }
                     else if (audio_source == 0x02 && buf.canReadBytes(12)) {
-                        disp << margin << UString::Format(u"  Program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-                        disp << margin << UString::Format(u"  Download id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-                        disp << margin << UString::Format(u"  Module id: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-                        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"  Program number: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"  Download id: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+                        disp << margin << UString::Format(u"  Module id: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+                        disp << margin << UString::Format(u"  Application id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
                     }
                 }
             }

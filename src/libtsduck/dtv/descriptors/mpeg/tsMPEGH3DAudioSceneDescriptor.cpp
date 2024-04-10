@@ -457,15 +457,15 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::display(Table
 void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::PositionInteractivityType::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     buf.skipReservedBits(1);
-    disp << margin << UString::Format(u"  Azimuth Offset (min: %f", {-1.5 * buf.getBits<uint8_t>(7)});
+    disp << margin << UString::Format(u"  Azimuth Offset (min: %f", -1.5 * buf.getBits<uint8_t>(7));
     buf.skipReservedBits(1);
-    disp << UString::Format(u", max: %f)", {+1.5 * buf.getBits<uint8_t>(7)}) << std::endl;
+    disp << UString::Format(u", max: %f)", +1.5 * buf.getBits<uint8_t>(7)) << std::endl;
     buf.skipReservedBits(3);
-    disp << margin << UString::Format(u"  Elevation Offset (min: %f", {-3.0 * buf.getBits<uint8_t>(5)});
+    disp << margin << UString::Format(u"  Elevation Offset (min: %f", -3.0 * buf.getBits<uint8_t>(5));
     buf.skipReservedBits(3);
-    disp << UString::Format(u", max: %f)", {+3.0 * buf.getBits<uint8_t>(5)}) << std::endl;
-    disp << margin << UString::Format(u"  Distance Offset (min: %f", {pow(2, buf.getBits<uint8_t>(4) - 12)});
-    disp << UString::Format(u", max: %f)", {pow(2, buf.getBits<uint8_t>(4) - 12)}) << std::endl;
+    disp << UString::Format(u", max: %f)", +3.0 * buf.getBits<uint8_t>(5)) << std::endl;
+    disp << margin << UString::Format(u"  Distance Offset (min: %f", pow(2, buf.getBits<uint8_t>(4) - 12));
+    disp << UString::Format(u", max: %f)", pow(2, buf.getBits<uint8_t>(4) - 12)) << std::endl;
 }
 
 void ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::GainInteractivityType::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
@@ -520,14 +520,14 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
         disp << ", Disable Position Interactivity: " << UString::TrueFalse(buf.getBool()) << std::endl;
         const bool mae_groupPresetPositionFlag = buf.getBool();
         if (mae_groupPresetGainFlag) {
-            disp << margin << UString::Format(u"   Preset Gain: %f dB", {((0.5 * (buf.getUInt8() - 255)) + 32)}) << std::endl;
+            disp << margin << UString::Format(u"   Preset Gain: %f dB", ((0.5 * (buf.getUInt8() - 255)) + 32)) << std::endl;
         }
         if (mae_groupPresetPositionFlag) {
-            disp << margin << UString::Format(u"   Azimuth Offset: %f degrees", {1.5 * (buf.getUInt8() - 127)});
+            disp << margin << UString::Format(u"   Azimuth Offset: %f degrees", 1.5 * (buf.getUInt8() - 127));
             buf.skipReservedBits(2);
-            disp << UString::Format(u", Elevation Offset: %f degrees", {3 * (buf.getBits<uint8_t>(6) - 32)}) << std::endl;
+            disp << UString::Format(u", Elevation Offset: %f degrees", 3 * (buf.getBits<uint8_t>(6) - 32)) << std::endl;
             buf.skipReservedBits(4);
-            disp << margin << UString::Format(u"   Distance Factor: %f", {pow(2, buf.getBits<uint8_t>(4) - 12)}) << std::endl;
+            disp << margin << UString::Format(u"   Distance Factor: %f", pow(2, buf.getBits<uint8_t>(4) - 12)) << std::endl;
         }
     }
 }

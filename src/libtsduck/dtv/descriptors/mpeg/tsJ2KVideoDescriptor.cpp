@@ -230,17 +230,17 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
     if (buf.canReadBytes(24)) {
         bool stripe_flag=false, block_flag=false, mdm_flag=false;
         bool isExtendedCapability = buf.getBool();
-        disp << margin << UString::Format(u"Profile and level: 0x%X (%<d)", {{buf.getBits<uint16_t>(15)}});
+        disp << margin << UString::Format(u"Profile and level: 0x%X (%<d)", buf.getBits<uint16_t>(15));
         if (isExtendedCapability) {
             disp << "  [extended]";
         }
         disp << std::endl;
-        disp << margin << UString::Format(u"Horizontal size: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-        disp << margin << UString::Format(u"Vertical size: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-        disp << margin << UString::Format(u"Max bit rate: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
-        disp << margin << UString::Format(u"Max buffer size: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+        disp << margin << UString::Format(u"Horizontal size: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"Vertical size: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"Max bit rate: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"Max buffer size: 0x%X (%<d)", buf.getUInt32()) << std::endl;
         const uint16_t DEN_frame_rate = buf.getUInt16();
-        disp << margin << UString::Format(u"Frame rate: %d/%d", {buf.getUInt16(), DEN_frame_rate}) << std::endl;
+        disp << margin << UString::Format(u"Frame rate: %d/%d", buf.getUInt16(), DEN_frame_rate) << std::endl;
         if (isExtendedCapability) {
             stripe_flag = buf.getBool();
             block_flag = buf.getBool();
@@ -251,10 +251,10 @@ void ts::J2KVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
             buf.skipReservedBits(5, 0);
         }
         else {
-            disp << margin << UString::Format(u"Color specification: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Color specification: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         }
-        disp << margin << UString::Format(u"Still mode: %s", {buf.getBool()}) << std::endl;
-        disp << margin << UString::Format(u"Interlaced video: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Still mode: %s", buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"Interlaced video: %s", buf.getBool()) << std::endl;
         buf.skipBits(6);
         if (isExtendedCapability) {
             disp << margin << "Colour primaries: " << DataName(MY_XML_NAME, u"colour_primaries", buf.getUInt8(), NamesFlags::VALUE | NamesFlags::DECIMAL);

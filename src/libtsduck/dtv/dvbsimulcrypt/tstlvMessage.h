@@ -155,7 +155,7 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpDecimal(size_t indent, const UString& name, const INT& value)
             {
-                return UString::Format(u"%*s%s = %d\n", {indent, u"", name, value});
+                return UString::Format(u"%*s%s = %d\n", indent, u"", name, value);
             }
 
             //!
@@ -169,7 +169,7 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             static UString dumpHexa(size_t indent, const UString& name, const INT& value)
             {
-                return UString::Format(u"%*s%s = 0x%X\n", {indent, u"", name, value});
+                return UString::Format(u"%*s%s = 0x%X\n", indent, u"", name, value);
             }
 
             //!
@@ -366,7 +366,7 @@ ts::UString ts::tlv::Message::dumpVector(size_t indent, const UString& name, con
             s += dumpInteger(indent, name, i);
         }
         else {
-            s += UString::Format(u"%*s%s = %s\n", {indent, u"", name, toString(i)});
+            s += UString::Format(u"%*s%s = %s\n", indent, u"", name, toString(i));
         }
     }
     return s;

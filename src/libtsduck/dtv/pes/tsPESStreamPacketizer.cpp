@@ -85,6 +85,6 @@ bool ts::PESStreamPacketizer::addPES(const PESPacket& pes, ShareMode mode)
 std::ostream& ts::PESStreamPacketizer::display(std::ostream& strm) const
 {
     return AbstractPacketizer::display(strm)
-        << UString::Format(u"  Additional queued PES packets: %'d", {_pes_queue.size()}) << std::endl
-        << UString::Format(u"  Enqueue limit: %'d", {_max_queued}) << std::endl;
+        << UString::Format(u"  Additional queued PES packets: %'d", _pes_queue.size()) << std::endl
+        << UString::Format(u"  Enqueue limit: %'d", _max_queued) << std::endl;
 }

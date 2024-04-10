@@ -164,19 +164,19 @@ void ts::GetDektecVersions(std::map<UString,UString>& versions)
 
     // DTAPI version is always available.
     Dtapi::DtapiGetVersion(major, minor, bugfix, build);
-    versions[u"DTAPI"].format(u"%d.%d.%d.%d", {major, minor, bugfix, build});
+    versions[u"DTAPI"].format(u"%d.%d.%d.%d", major, minor, bugfix, build);
 
     // DTAPI service is optional.
     major = minor = bugfix = build = 0;
     if (Dtapi::DtapiGetDtapiServiceVersion(major, minor, bugfix, build) == DTAPI_OK) {
-        versions[u"Service"].format(u"%d.%d.%d.%d", {major, minor, bugfix, build});
+        versions[u"Service"].format(u"%d.%d.%d.%d", major, minor, bugfix, build);
     }
 
     // Get all Dektec drivers versions.
     std::vector<Dtapi::DtDriverVersionInfo> drv;
     if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_ALL, drv) == DTAPI_OK) {
         for (const auto& it : drv) {
-            versions[UString::FromWChar(it.m_Name)].format(u"%d.%d.%d.%d", {it.m_Major, it.m_Minor, it.m_BugFix, it.m_Build});
+            versions[UString::FromWChar(it.m_Name)].format(u"%d.%d.%d.%d", it.m_Major, it.m_Minor, it.m_BugFix, it.m_Build);
         }
     }
 #endif

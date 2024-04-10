@@ -67,7 +67,7 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 {
     if (buf.canRead()) {
         const uint8_t id = buf.getUInt8();
-        disp << margin << UString::Format(u"Ancillary data identifier: 0x%X", {id}) << std::endl;
+        disp << margin << UString::Format(u"Ancillary data identifier: 0x%X", id) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
                 disp << margin << "  " << DataName(MY_XML_NAME, u"DataIdentifier", (1 << i), NamesFlags::HEXA_FIRST) << std::endl;

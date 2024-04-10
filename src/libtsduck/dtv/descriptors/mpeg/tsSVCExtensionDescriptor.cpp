@@ -104,18 +104,18 @@ void ts::SVCExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SVCExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(13)) {
-        disp << margin << UString::Format(u"Frame size: %d", {buf.getUInt16()});
-        disp << UString::Format(u"x%d", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Frame rate: %d frames / 256 seconds", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Average bitrate: %d kb/s", {buf.getUInt16()});
-        disp << UString::Format(u", maximum: %d kb/s", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Dependency id: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
+        disp << margin << UString::Format(u"Frame size: %d", buf.getUInt16());
+        disp << UString::Format(u"x%d", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Frame rate: %d frames / 256 seconds", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Average bitrate: %d kb/s", buf.getUInt16());
+        disp << UString::Format(u", maximum: %d kb/s", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Dependency id: %d", buf.getBits<uint8_t>(3)) << std::endl;
         buf.skipBits(5);
-        disp << margin << UString::Format(u"Quality id start: %d", {buf.getBits<uint8_t>(4)});
-        disp << UString::Format(u", end: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
-        disp << margin << UString::Format(u"Temporal id start: %d", {buf.getBits<uint8_t>(3)});
-        disp << UString::Format(u", end: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
-        disp << margin << UString::Format(u"No SEI NALunit present: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Quality id start: %d", buf.getBits<uint8_t>(4));
+        disp << UString::Format(u", end: %d", buf.getBits<uint8_t>(4)) << std::endl;
+        disp << margin << UString::Format(u"Temporal id start: %d", buf.getBits<uint8_t>(3));
+        disp << UString::Format(u", end: %d", buf.getBits<uint8_t>(3)) << std::endl;
+        disp << margin << UString::Format(u"No SEI NALunit present: %s", buf.getBool()) << std::endl;
         buf.skipBits(1);
     }
 }

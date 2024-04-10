@@ -92,12 +92,12 @@ void ts::AACDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canRead()) {
-        disp << margin << UString::Format(u"Profile and level: 0x%X", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Profile and level: 0x%X", buf.getUInt8()) << std::endl;
     }
 
     if (buf.canRead()) {
         bool has_AAC_type = buf.getBool();
-        disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"SOAC DE flag: %s", buf.getBool()) << std::endl;
         buf.skipBits(6);
         if (has_AAC_type && buf.canRead()) {
             disp << margin << "AAC type: " << ComponentDescriptor::ComponentTypeName(disp.duck(), 6, 0, buf.getUInt8(), NamesFlags::HEXA_FIRST, 8) << std::endl;

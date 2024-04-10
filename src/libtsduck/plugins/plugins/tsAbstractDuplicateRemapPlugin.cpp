@@ -83,11 +83,11 @@ bool ts::AbstractDuplicateRemapPlugin::getOptions()
         PID pid2 = PID_NULL;
         PID newpid = PID_NULL;
 
-        if (param.scan(u"%d=%d", {&pid1, &newpid})) {
+        if (param.scan(u"%d=%d", &pid1, &newpid)) {
             // Simple form.
             pid2 = pid1;
         }
-        else if (!param.scan(u"%d-%d=%d", {&pid1, &pid2, &newpid})) {
+        else if (!param.scan(u"%d-%d=%d", &pid1, &pid2, &newpid)) {
             tsp->error(u"invalid PID %s specification: %s", {_noun, param});
             return false;
         }

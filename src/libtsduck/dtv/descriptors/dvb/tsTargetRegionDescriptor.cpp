@@ -129,11 +129,11 @@ void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
                 disp << margin << "  Country code: \"" << buf.getLanguageCode() << "\"" << std::endl;
             }
             if (depth >= 1) {
-                disp << margin << UString::Format(u"  Primary region code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"  Primary region code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
                 if (depth >= 2) {
-                    disp << margin << UString::Format(u"  Secondary region code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                    disp << margin << UString::Format(u"  Secondary region code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
                     if (depth >= 3) {
-                        disp << margin << UString::Format(u"  Tertiary region code: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                        disp << margin << UString::Format(u"  Tertiary region code: 0x%X (%<d)", buf.getUInt16()) << std::endl;
                     }
                 }
             }

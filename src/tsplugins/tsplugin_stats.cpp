@@ -295,8 +295,8 @@ bool ts::StatsPlugin::produceReport()
                 << ctx.ipkt.standardDeviationString() << std::endl;
         }
         else {
-            out << UString::Format(_track_pids ? u"0x%04X" : u"%-6d", {index})
-                << UString::Format(u"  %10'd  %6d  %6d  %s  %s", {ctx.total_pkt, ctx.ipkt.minimum(), ctx.ipkt.maximum(), ctx.ipkt.meanString(8), ctx.ipkt.standardDeviationString(8)})
+            out << UString::Format(_track_pids ? u"0x%04X" : u"%-6d", index)
+                << UString::Format(u"  %10'd  %6d  %6d  %s  %s", ctx.total_pkt, ctx.ipkt.minimum(), ctx.ipkt.maximum(), ctx.ipkt.meanString(8), ctx.ipkt.standardDeviationString(8))
                 << std::endl;
         }
     }

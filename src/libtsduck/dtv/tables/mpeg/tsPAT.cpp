@@ -125,10 +125,10 @@ void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::PAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"TS id:   %5d (0x%<04X)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"TS id:   %5d (0x%<04X)", section.tableIdExtension()) << std::endl;
     while (buf.canReadBytes(4)) {
         const uint16_t id = buf.getUInt16();
-        disp << margin << UString::Format(u"%s %5d (0x%<04X)  PID: %4d (0x%<04X)", {id == 0 ? u"NIT:    " : u"Program:", id, buf.getPID()}) << std::endl;
+        disp << margin << UString::Format(u"%s %5d (0x%<04X)  PID: %4d (0x%<04X)", id == 0 ? u"NIT:    " : u"Program:", id, buf.getPID()) << std::endl;
     }
 }
 

@@ -605,14 +605,14 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bo
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
         strm << margin << ""
-             << UString::Format(u"* Section dump, PID 0x%X (%<d), TID %s", {sourcePID(), names::TID(duck, tid, cas, NamesFlags::BOTH_FIRST)})
+             << UString::Format(u"* Section dump, PID 0x%X (%<d), TID %s", sourcePID(), names::TID(duck, tid, cas, NamesFlags::BOTH_FIRST))
              << std::endl
              << margin << "  Section size: " << size() << " bytes, header: " << (isLongSection() ? "long" : "short")
              << std::endl;
         if (isLongSection()) {
             strm << margin
                  << UString::Format(u"  TIDext: 0x%X (%<d), version: %d, index: %d, last: %d, %s",
-                                    {tableIdExtension(), version(), sectionNumber(), lastSectionNumber(), (isNext() ? u"next" : u"current")})
+                                    tableIdExtension(), version(), sectionNumber(), lastSectionNumber(), isNext() ? u"next" : u"current")
                  << std::endl;
         }
     }

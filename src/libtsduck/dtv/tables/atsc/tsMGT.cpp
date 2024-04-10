@@ -153,19 +153,19 @@ ts::MGT::TableTypeEnum::TableTypeEnum() :
 {
     // 0x0100-0x017F EIT-0 to EIT-127
     for (int val = 0x0100; val <= 0x017F; ++val) {
-        add(UString::Format(u"EIT-%d", {val & 0x00FF}), val);
+        add(UString::Format(u"EIT-%d", val & 0x00FF), val);
     }
     // 0x0200 - 0x027F Event ETT - 0 to event ETT - 127
     for (int val = 0x0200; val <= 0x027F; ++val) {
-        add(UString::Format(u"ETT-%d", {val & 0x00FF}), val);
+        add(UString::Format(u"ETT-%d", val & 0x00FF), val);
     }
     // 0x0301 - 0x03FF RRT with rating_region 1 - 255
     for (int val = 0x0301; val <= 0x03FF; ++val) {
-        add(UString::Format(u"RRT-%d", {val & 0x00FF}), val);
+        add(UString::Format(u"RRT-%d", val & 0x00FF), val);
     }
     // 0x1400 - 0x14FF DCCT with dcc_id 0x00 - 0xFF
     for (int val = 0x1400; val <= 0x14FF; ++val) {
-        add(UString::Format(u"DCCT-%d", {val & 0x00FF}), val);
+        add(UString::Format(u"DCCT-%d", val & 0x00FF), val);
     }
 }
 
@@ -192,8 +192,8 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()});
-        disp << UString::Format(u", number of table types: %d", {table_count = buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8());
+        disp << UString::Format(u", number of table types: %d", table_count = buf.getUInt16()) << std::endl;
     }
 
     // Loop on all table types.
@@ -205,11 +205,11 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         }
 
         const uint16_t type = buf.getUInt16();
-        disp << margin << UString::Format(u"- Table type: %s (0x%X)", {TableTypeName(type), type}) << std::endl;
-        disp << margin << UString::Format(u"  PID: 0x%X (%<d)", {buf.getPID()});
+        disp << margin << UString::Format(u"- Table type: %s (0x%X)", TableTypeName(type), type) << std::endl;
+        disp << margin << UString::Format(u"  PID: 0x%X (%<d)", buf.getPID());
         buf.skipBits(3);
-        disp << UString::Format(u", version: %d", {buf.getBits<uint8_t>(5)});
-        disp << UString::Format(u", size: %d bytes", {buf.getUInt32()}) << std::endl;
+        disp << UString::Format(u", version: %d", buf.getBits<uint8_t>(5));
+        disp << UString::Format(u", size: %d bytes", buf.getUInt32()) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }
 

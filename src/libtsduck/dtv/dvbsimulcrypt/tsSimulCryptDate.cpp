@@ -50,7 +50,7 @@ void ts::SimulCryptDate::get(const tlv::MessageFactory& mf, tlv::TAG tag)
     // Check parameter size. Raise exception on error.
     if (p.length != sizeof(_data)) {
         throw tlv::DeserializationInternalError(
-            UString::Format(u"Invalid DVB time size in parameter 0x%X, expected %d bytes, got %d", {tag, sizeof(_data), p.length}));
+            UString::Format(u"Invalid DVB time size in parameter 0x%X, expected %d bytes, got %d", tag, sizeof(_data), p.length));
     }
 
     // Now get binary content
@@ -74,5 +74,5 @@ ts::SimulCryptDate::operator ts::Time() const
 
 ts::SimulCryptDate::operator ts::UString() const
 {
-    return UString::Format(u"%04d/%02d/%02d-%02d:%02d:%02d.%02d", {year(), month(), day(), hour(), minute(), second(), hundredth()});
+    return UString::Format(u"%04d/%02d/%02d-%02d:%02d:%02d.%02d", year(), month(), day(), hour(), minute(), second(), hundredth());
 }

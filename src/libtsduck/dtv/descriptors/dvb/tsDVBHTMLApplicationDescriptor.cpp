@@ -83,7 +83,7 @@ void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 {
     buf.pushReadSizeFromLength(8); // appid_set_length
     while (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Application id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Application id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
     }
     buf.popState(); // end of appid_set_length
     disp << margin << "Parameter: \"" << buf.getString() << "\"" << std::endl;

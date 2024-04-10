@@ -63,10 +63,10 @@ ts::UString ts::Severity::Header(int severity)
 {
     if (severity < Fatal) {
         // Invalid / undefined severity.
-        return UString::Format(u"[%d] ", {severity});
+        return UString::Format(u"[%d] ", severity);
     }
     else if (severity > Debug) {
-        return UString::Format(u"Debug[%d]: ", {severity});
+        return UString::Format(u"Debug[%d]: ", severity);
     }
     else {
         switch (severity) {

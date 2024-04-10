@@ -45,7 +45,7 @@ ts::PCRAnalyzer::Status::Status(const PCRAnalyzer& an) : Status()
 ts::UString ts::PCRAnalyzer::Status::toString() const
 {
     return UString::Format(u"valid: %s, bitrate: %'d b/s, packets: %'d, PCRs: %'d, PIDs with PCR: %'d, discont: %'d, instantaneous bitrate: %'d b/s",
-                           {bitrate_valid, bitrate_188, packet_count, pcr_count, pcr_pids, discontinuities, instantaneous_bitrate_188});
+                           bitrate_valid, bitrate_188, packet_count, pcr_count, pcr_pids, discontinuities, instantaneous_bitrate_188);
 }
 
 

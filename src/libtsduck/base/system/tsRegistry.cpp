@@ -174,10 +174,10 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
             value = reinterpret_cast<UChar*>(buf);
             break;
         case REG_DWORD:
-            value = UString::Format(u"%d", {*reinterpret_cast<const ::DWORD*>(buf)});
+            value = UString::Format(u"%d", *reinterpret_cast<const ::DWORD*>(buf));
             break;
         case REG_DWORD_BIG_ENDIAN:
-            value = UString::Format(u"%d", {GetUInt32(buf)});
+            value = UString::Format(u"%d", GetUInt32(buf));
             break;
     }
 

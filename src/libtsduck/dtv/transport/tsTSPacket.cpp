@@ -951,7 +951,7 @@ namespace {
     {
         const int64_t packets = int64_t(std::streamoff(position)) / ts::PKT_SIZE;
         if (packets > 0 && position != std::streampos(-1)) {
-            return ts::UString::Format(u" after %'d TS packets", {packets});
+            return ts::UString::Format(u" after %'d TS packets", packets);
         }
         else {
             return ts::UString();
@@ -1020,13 +1020,13 @@ namespace {
     {
         ts::UString str;
         if (pcr != ts::INVALID_PCR) {
-            str.format(u"PCR: 0x%011X", {pcr});
+            str.format(u"PCR: 0x%011X", pcr);
             if (opcr != ts::INVALID_PCR) {
                 str.append(u", ");
             }
         }
         if (opcr != ts::INVALID_PCR) {
-            str.format(u"OPCR: 0x%011X", {opcr});
+            str.format(u"OPCR: 0x%011X", opcr);
         }
         return str;
     }
@@ -1063,7 +1063,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
     if (flags & UString::SINGLE_LINE) {
         strm << margin;
         if (flags & DUMP_TS_HEADER) {
-            strm << UString::Format(u"PID: 0x%X, PUSI: %d, ", {getPID(), getPUSI()});
+            strm << UString::Format(u"PID: 0x%X, PUSI: %d, ", getPID(), getPUSI());
         }
         strm << UString::Dump(display_data, display_size, flags & 0x0000FFFF) << std::endl;
         return strm;
@@ -1078,7 +1078,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
     // Display TS header
     if (flags & DUMP_TS_HEADER) {
         strm << margin << "---- TS Header ----" << std::endl
-             << margin << UString::Format(u"PID: %d (0x%X), header size: %d, sync: 0x%X", {getPID(), getPID(), header_size, b[0]}) << std::endl
+             << margin << UString::Format(u"PID: %d (0x%X), header size: %d, sync: 0x%X", getPID(), getPID(), header_size, b[0]) << std::endl
              << margin << "Error: " << getTEI() << ", unit start: " << getPUSI() << ", priority: " << getPriority() << std::endl
              << margin << "Scrambling: " << int(getScrambling()) << ", continuity counter: " << int(getCC()) << std::endl
              << margin << "Adaptation field: " << UString::YesNo(hasAF()) << " (" << getAFSize() << " bytes)"
@@ -1159,7 +1159,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
                 buf.skipBits(1);
                 dts_next_au |= buf.getBits<uint64_t>(15);
                 buf.skipBits(1);
-                strm << UString::Format(u"DTS next AU: 0x%09X", {dts_next_au}) << std::endl;
+                strm << UString::Format(u"DTS next AU: 0x%09X", dts_next_au) << std::endl;
             }
             if (!af_descriptor_not_present_flag) {
                 strm << margin << "AF descriptors (" << buf.remainingReadBytes() << " bytes): " << std::endl;
@@ -1192,30 +1192,30 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
         if (dts != INVALID_DTS || pts != INVALID_PTS) {
             strm << margin;
             if (dts != INVALID_DTS) {
-                strm << UString::Format(u"DTS: 0x%09X", {dts});
+                strm << UString::Format(u"DTS: 0x%09X", dts);
                 if (pcr != INVALID_PCR) {
                     const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(DTS(dts)) - cn::duration_cast<cn::milliseconds>(PCR(pcr));
-                    strm << UString::Format(u" (PCR%+'!s", {delta});
+                    strm << UString::Format(u" (PCR%+'!s", delta);
                 }
                 if (pts != INVALID_PTS) {
                     strm << ", ";
                 }
             }
             if (pts != INVALID_PTS) {
-                strm << UString::Format(u"PTS: 0x%09X", {pts});
+                strm << UString::Format(u"PTS: 0x%09X", pts);
                 if (dts != INVALID_DTS || pcr != INVALID_PCR) {
                     strm << " (";
                 }
                 if (dts != INVALID_DTS) {
                     const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(PTS(pts)) - cn::duration_cast<cn::milliseconds>(DTS(dts));
-                    strm << UString::Format(u"DTS%+'!s", {delta});
+                    strm << UString::Format(u"DTS%+'!s", delta);
                 }
                 if (dts != INVALID_DTS && pcr != INVALID_PCR) {
                     strm << ", ";
                 }
                 if (pcr != INVALID_PCR) {
                     const cn::milliseconds delta = cn::duration_cast<cn::milliseconds>(PTS(pts)) - cn::duration_cast<cn::milliseconds>(PCR(pcr));
-                    strm << UString::Format(u"PCR%+'!s", {delta});
+                    strm << UString::Format(u"PCR%+'!s", delta);
                 }
                 if (dts != INVALID_DTS || pcr != INVALID_PCR) {
                     strm << ")";

@@ -56,8 +56,8 @@ void ts::CASSelectionArgs::defineArgs(Args& args)
     for (const auto& cas : _predefined_cas) {
         args.option(cas.name);
         args.help(cas.name, cas.min == cas.max ?
-            UString::Format(u"Equivalent to --cas 0x%04X.", {cas.min}) :
-            UString::Format(u"Equivalent to --min-cas 0x%04X --max-cas 0x%04X.", {cas.min, cas.max}));
+            UString::Format(u"Equivalent to --cas 0x%04X.", cas.min) :
+            UString::Format(u"Equivalent to --min-cas 0x%04X --max-cas 0x%04X.", cas.min, cas.max));
     }
 }
 

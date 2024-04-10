@@ -115,10 +115,10 @@ void ts::RARoverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         disp << margin << "Weighting: " << int(buf.getBits<uint8_t>(6));
         disp << ", complete: " << UString::TrueFalse(buf.getBool()) << std::endl;
         bool scheduled_flag = buf.getBool();
-        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         if (scheduled_flag) {
             disp << margin << "Download start time: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
             disp << margin << "Download period duration: " << int(buf.getUInt8() * 6) << " minutes";

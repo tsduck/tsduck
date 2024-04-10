@@ -101,10 +101,10 @@ void ts::ATSCTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp
         disp << margin << "Number of services: " << count << std::endl;
         for (size_t i = 0; i < count && buf.canReadBytes(5); ++i) {
             buf.skipBits(6);
-            disp << margin << UString::Format(u"- Time shift: %d mn", {buf.getBits<uint16_t>(10)});
+            disp << margin << UString::Format(u"- Time shift: %d mn", buf.getBits<uint16_t>(10));
             buf.skipBits(4);
-            disp << UString::Format(u", service: %d", {buf.getBits<uint16_t>(10)});
-            disp << UString::Format(u".%d", {buf.getBits<uint16_t>(10)}) << std::endl;
+            disp << UString::Format(u", service: %d", buf.getBits<uint16_t>(10));
+            disp << UString::Format(u".%d", buf.getBits<uint16_t>(10)) << std::endl;
         }
     }
 }

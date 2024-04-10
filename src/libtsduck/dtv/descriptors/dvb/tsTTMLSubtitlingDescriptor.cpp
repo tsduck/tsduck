@@ -170,7 +170,7 @@ ts::UString ts::TTMLSubtitlingDescriptor::TTML_qualifier(uint32_t quali) {
 
 ts::UString ts::TTMLSubtitlingDescriptor::TTML_subtitle_purpose(uint8_t purpose) {
     // EN 303 560 table 2
-    ts::UString res(ts::UString::Format(u"0x%X (", {purpose}));
+    ts::UString res(ts::UString::Format(u"0x%X (", purpose));
     switch (purpose) {
         case 0x00: res += u"same-lang-dialogue"; break;
         case 0x01: res += u"other-lang-dialogue"; break;
@@ -188,7 +188,7 @@ ts::UString ts::TTMLSubtitlingDescriptor::TTML_subtitle_purpose(uint8_t purpose)
 
 ts::UString ts::TTMLSubtitlingDescriptor::TTML_suitability(uint8_t suitability) {
     // EN 303 560 table 3
-    ts::UString res(ts::UString::Format(u"0x%X (", {suitability}));
+    ts::UString res(ts::UString::Format(u"0x%X (", suitability));
     switch (suitability) {
         case 0x0: res += u"unknown"; break;
         case 0x1: res += u"suitable"; break;

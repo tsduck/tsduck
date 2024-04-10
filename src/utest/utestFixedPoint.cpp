@@ -302,19 +302,19 @@ void FixedPointTest::testToString()
     TSUNIT_EQUAL(u"   -56|789.000", Fix3(-56789).toString(14, true, u'|', true, ts::NPOS, true));
     TSUNIT_EQUAL(u"   +56|789.000", Fix3(56789).toString(14, true, u'|', true, ts::NPOS, true));
 
-    TSUNIT_EQUAL(u"1234",     ts::UString::Format(u"%d",   {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.5",   ts::UString::Format(u"%s",   {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1,234",    ts::UString::Format(u"%'d",  {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1,234.5",  ts::UString::Format(u"%'s",  {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"04D2",     ts::UString::Format(u"%04X", {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234",     ts::UString::Format(u"%f",   {Fix3(1234)}));
-    TSUNIT_EQUAL(u"1234.5",   ts::UString::Format(u"%f",   {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.000", ts::UString::Format(u"%.f",  {Fix3(1234)}));
-    TSUNIT_EQUAL(u"1234.500", ts::UString::Format(u"%.f",  {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.50",  ts::UString::Format(u"%.2f", {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.500", ts::UString::Format(u"%.3f", {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.52",  ts::UString::Format(u"%f",   {Fix3(1234520, true)}));
-    TSUNIT_EQUAL(u"1234.546", ts::UString::Format(u"%f",   {Fix3(1234546, true)}));
+    TSUNIT_EQUAL(u"1234",     ts::UString::Format(u"%d",   Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1234.5",   ts::UString::Format(u"%s",   Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1,234",    ts::UString::Format(u"%'d",  Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1,234.5",  ts::UString::Format(u"%'s",  Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"04D2",     ts::UString::Format(u"%04X", Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1234",     ts::UString::Format(u"%f",   Fix3(1234)));
+    TSUNIT_EQUAL(u"1234.5",   ts::UString::Format(u"%f",   Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1234.000", ts::UString::Format(u"%.f",  Fix3(1234)));
+    TSUNIT_EQUAL(u"1234.500", ts::UString::Format(u"%.f",  Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1234.50",  ts::UString::Format(u"%.2f", Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1234.500", ts::UString::Format(u"%.3f", Fix3(1234500, true)));
+    TSUNIT_EQUAL(u"1234.52",  ts::UString::Format(u"%f",   Fix3(1234520, true)));
+    TSUNIT_EQUAL(u"1234.546", ts::UString::Format(u"%f",   Fix3(1234546, true)));
 }
 
 

@@ -236,7 +236,7 @@ ts::UString ts::MPEG2AudioAttributes::layerName() const
         case 1:  return u"layer I";
         case 2:  return u"layer II";
         case 3:  return u"layer III";
-        default: return UString::Format(u"layer %d", {_layer});
+        default: return UString::Format(u"layer %d", _layer);
     }
 }
 

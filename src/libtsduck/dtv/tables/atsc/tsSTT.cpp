@@ -158,16 +158,16 @@ void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     if (buf.canReadBytes(8)) {
-        disp << margin << UString::Format(u"Protocol version: %d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8()) << std::endl;
         const uint32_t time = buf.getUInt32();
         const uint8_t offset = buf.getUInt8();
         const Time utc(Time::UnixTimeToUTC(time + Time::UnixEpochToGPS.count() - offset));
-        disp << margin << UString::Format(u"System time: 0x%X (%<d), GPS-UTC offset: 0x%X (%<d)", {time, offset}) << std::endl;
+        disp << margin << UString::Format(u"System time: 0x%X (%<d), GPS-UTC offset: 0x%X (%<d)", time, offset) << std::endl;
         disp << margin << "Corresponding UTC time: " << (time == 0 ? u"none" : utc.format(Time::DATETIME)) << std::endl;
         disp << margin << "Daylight saving time: " << UString::YesNo(buf.getBool());
         buf.skipBits(2);
-        disp << UString::Format(u", next switch day: %d", {buf.getBits<uint8_t>(5)});
-        disp << UString::Format(u", hour: %d", {buf.getUInt8()}) << std::endl;
+        disp << UString::Format(u", next switch day: %d", buf.getBits<uint8_t>(5));
+        disp << UString::Format(u", hour: %d", buf.getUInt8()) << std::endl;
         disp.displayDescriptorList(section, buf, margin);
     }
 }

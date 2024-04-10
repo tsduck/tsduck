@@ -233,7 +233,7 @@ ts::Time ts::GitHubRelease::StringToTime(const UString& str)
 
     // Decode up to 6 fields.
     Time::Fields f;
-    s.scan(u"%d %d %d %d %d %d", {&f.year, &f.month, &f.day, &f.hour, &f.minute, &f.second});
+    s.scan(u"%d %d %d %d %d %d", &f.year, &f.month, &f.day, &f.hour, &f.minute, &f.second);
     try {
         return Time(f);
     }
@@ -354,7 +354,7 @@ bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
     // System major version as a string (empty string if unknown).
     UString smv;
     if (sys.systemMajorVersion() >= 0) {
-        smv.format(u"%d", {sys.systemMajorVersion()});
+        smv.format(u"%d", sys.systemMajorVersion());
     }
 
     if (sys.isWindows() && sys.isIntel64()) {

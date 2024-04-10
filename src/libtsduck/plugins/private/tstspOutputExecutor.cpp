@@ -25,7 +25,7 @@ ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
 {
     if (options.log_plugin_index) {
         // Make sure that plugins display their index. Output plugin is always last.
-        setLogName(UString::Format(u"%s[%d]", {pluginName(), options.plugins.size() + 1}));
+        setLogName(UString::Format(u"%s[%d]", pluginName(), options.plugins.size() + 1));
     }
 }
 

@@ -138,10 +138,10 @@ void ts::SystemMonitor::main()
         UString message(MonPrefix(current_time));
 
         // Format virtual memory size status.
-        message.format(u"VM: %s", {UString::HumanSize(vmem_size)});
+        message.format(u"VM: %s", UString::HumanSize(vmem_size));
         if (vmem_size != last_vmem_size) {
             // Virtual memory has changed
-            message.format(u" (%s)", {UString::HumanSize(ptrdiff_t(vmem_size) - ptrdiff_t(last_vmem_size), u"B", true)});
+            message.format(u" (%s)", UString::HumanSize(ptrdiff_t(vmem_size) - ptrdiff_t(last_vmem_size), u"B", true));
         }
         else {
             // VM stable since last time. Check if temporarily stable or safely stable.
@@ -169,7 +169,7 @@ void ts::SystemMonitor::main()
             _report.warning(u"%sALARM, CPU usage is %d%%, max defined to %d%%", {MonPrefix(current_time), cpu, period->max_cpu});
             if (!period->alarm_command.empty()) {
                 UString command;
-                command.format(u"%s \"%s\" cpu %d", {period->alarm_command, message, cpu});
+                command.format(u"%s \"%s\" cpu %d", period->alarm_command, message, cpu);
                 ForkPipe::Launch(command, _report, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
             }
         }
@@ -180,7 +180,7 @@ void ts::SystemMonitor::main()
                             {MonPrefix(current_time), UString::HumanSize(ptrdiff_t(vmem_size) - ptrdiff_t(last_vmem_size), u"B", true)});
             if (!period->alarm_command.empty()) {
                 UString command;
-                command.format(u"%s \"%s\" memory %d", {period->alarm_command, message, vmem_size});
+                command.format(u"%s \"%s\" memory %d", period->alarm_command, message, vmem_size);
                 ForkPipe::Launch(command, _report, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
             }
         }

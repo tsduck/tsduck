@@ -78,7 +78,7 @@ void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& d
 {
     if (buf.canReadBytes(1)) {
         const size_t count = buf.getUInt8();
-        disp << margin << UString::Format(u"Number of prefixes: %d", {count}) << std::endl;
+        disp << margin << UString::Format(u"Number of prefixes: %d", count) << std::endl;
         for (size_t i = 0; i < count && buf.canRead(); ++i) {
             disp << margin << "Boundary extension: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
         }

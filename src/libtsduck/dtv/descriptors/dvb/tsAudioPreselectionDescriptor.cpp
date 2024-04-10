@@ -165,7 +165,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
         const size_t count = buf.getBits<size_t>(5);
         buf.skipBits(3);
         for (size_t i = 0; buf.canReadBytes(2) && i < count; ++i) {
-            disp << margin << UString::Format(u"- Preselection id: %d", {buf.getBits<uint8_t>(5)}) << std::endl;
+            disp << margin << UString::Format(u"- Preselection id: %d", buf.getBits<uint8_t>(5)) << std::endl;
             disp << margin << "  Audio rendering indication: " << DataName(MY_XML_NAME, u"Rendering", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
             disp << margin << "  Audio description: " << UString::YesNo(buf.getBool()) << std::endl;
             disp << margin << "  Spoken subtitles: " << UString::YesNo(buf.getBool()) << std::endl;
@@ -181,14 +181,14 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
                 disp << margin << "  Language code: \"" << buf.getLanguageCode() << '"' << std::endl;
             }
             if (hasLabel && buf.canReadBytes(1)) {
-                disp << margin << UString::Format(u"  Text label / message id: 0x%0X (%<d)", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"  Text label / message id: 0x%0X (%<d)", buf.getUInt8()) << std::endl;
             }
             if (hasMultiStream && buf.canReadBytes(1)) {
                 const size_t num = buf.getBits<size_t>(3);
                 buf.skipBits(5);
-                disp << margin << UString::Format(u"  Multi stream info: %d aux components", {num}) << std::endl;
+                disp << margin << UString::Format(u"  Multi stream info: %d aux components", num) << std::endl;
                 for (size_t n = 1; n <= num; ++n) {
-                    disp << margin << UString::Format(u"    Component tag: 0x%0X (%<d)", {buf.getUInt8()}) << std::endl;
+                    disp << margin << UString::Format(u"    Component tag: 0x%0X (%<d)", buf.getUInt8()) << std::endl;
                 }
             }
             if (hasExtension && buf.canReadBytes(1)) {

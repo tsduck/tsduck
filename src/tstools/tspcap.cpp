@@ -296,7 +296,7 @@ void DisplayInterval::addPacket(std::ostream& out, const ts::PcapFile& file, con
         if (_stats.first_timestamp < cn::microseconds::zero()) {
             // Initial processing.
             out << std::endl;
-            out << ts::UString::Format(u"%-24s %16s %11s %15s %12s", {u"Date", u"Micro-seconds", u"Packets", u"Data bytes", u"Bitrate"})
+            out << ts::UString::Format(u"%-24s %16s %11s %15s %12s", u"Date", u"Micro-seconds", u"Packets", u"Data bytes", u"Bitrate")
                 << std::endl;
         }
         else {
@@ -396,28 +396,28 @@ void FileAnalysis::displaySummary(std::ostream& out, const StatBlock& stats)
 
     out << std::endl;
     out << "File summary:" << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total packets in file:", _file.packetCount()}) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total IPv4 packets:", _file.ipv4PacketCount()}) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"File size:", _file.fileSize()}) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total packets size:", _file.totalPacketsSize()}) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total IPv4 size:", _file.totalIPv4PacketsSize()}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Total packets in file:", _file.packetCount()) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Total IPv4 packets:", _file.ipv4PacketCount()) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d bytes", hwidth, u"File size:", _file.fileSize()) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d bytes", hwidth, u"Total packets size:", _file.totalPacketsSize()) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d bytes", hwidth, u"Total IPv4 size:", _file.totalIPv4PacketsSize()) << std::endl;
     out << std::endl;
 
     out << "Filtered packets summary:" << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets:", stats.packet_count}) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets size:", stats.total_ip_size}) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Payload data size:", stats.total_data_size}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Packets:", stats.packet_count) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Packets size:", stats.total_ip_size) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Payload data size:", stats.total_data_size) << std::endl;
 
     if (stats.first_timestamp > cn::microseconds::zero() && stats.last_timestamp > cn::microseconds::zero()) {
         const ts::Time start(ts::PcapFile::ToTime(stats.first_timestamp));
         const ts::Time end(ts::PcapFile::ToTime(stats.last_timestamp));
         const cn::microseconds duration = stats.last_timestamp - stats.first_timestamp;
-        out << ts::UString::Format(u"  %-*s %s (%+'s)", {hwidth, u"Start time:", start, _file.timeOffset(stats.first_timestamp)}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %s (%+'s)", {hwidth, u"End time:", end, _file.timeOffset(stats.last_timestamp)}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %s (%+'s)", hwidth, u"Start time:", start, _file.timeOffset(stats.first_timestamp)) << std::endl;
+        out << ts::UString::Format(u"  %-*s %s (%+'s)", hwidth, u"End time:", end, _file.timeOffset(stats.last_timestamp)) << std::endl;
         if (duration > cn::microseconds::zero()) {
-            out << ts::UString::Format(u"  %-*s %'s", {hwidth, u"Duration:", duration}) << std::endl;
-            out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"IP bitrate:", ts::BytesBitRate(stats.total_ip_size, duration)}) << std::endl;
-            out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"Data bitrate:", ts::BytesBitRate(stats.total_data_size, duration)}) << std::endl;
+            out << ts::UString::Format(u"  %-*s %'s", hwidth, u"Duration:", duration) << std::endl;
+            out << ts::UString::Format(u"  %-*s %'d bits/second", hwidth, u"IP bitrate:", ts::BytesBitRate(stats.total_ip_size, duration)) << std::endl;
+            out << ts::UString::Format(u"  %-*s %'d bits/second", hwidth, u"Data bitrate:", ts::BytesBitRate(stats.total_data_size, duration)) << std::endl;
         }
     }
     out << std::endl;
@@ -427,7 +427,7 @@ void FileAnalysis::displaySummary(std::ostream& out, const StatBlock& stats)
 void FileAnalysis::listStreams(std::ostream& out, cn::microseconds duration)
 {
     out << std::endl
-        << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", {u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate"})
+        << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate")
         << std::endl;
     for (const auto& it : _streams_stats) {
         const StreamId& id(it.first);

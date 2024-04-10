@@ -133,7 +133,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& disp, 
         uint8_t labelCount = buf.getUInt8();
         while (buf.canReadBytes(1) && labelCount > 0) {
             disp << margin << "Label: \"" << buf.getStringWithByteLength();
-            disp << UString::Format(u"\", storage properties: 0x%X", {buf.getBits<uint8_t>(2)}) << std::endl;
+            disp << UString::Format(u"\", storage properties: 0x%X", buf.getBits<uint8_t>(2)) << std::endl;
             buf.skipBits(6);
             labelCount--;
         }
@@ -143,7 +143,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& disp, 
     if (buf.canReadBytes(1)) {
         uint8_t count = buf.getUInt8();
         while (count > 0 && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
             count--;
         }
     }

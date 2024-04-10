@@ -75,8 +75,8 @@ void ts::AssociationTagDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::AssociationTagDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(5)) {
-        disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", {buf.getUInt16()});
-        disp << UString::Format(u", use: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", buf.getUInt16());
+        disp << UString::Format(u", use: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         disp.displayPrivateData(u"Selector bytes", buf, buf.getUInt8(), margin);
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }

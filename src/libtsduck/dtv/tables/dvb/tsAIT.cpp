@@ -225,16 +225,16 @@ void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     // Common information.
     const uint16_t tidext = section.tableIdExtension();
-    disp << margin << UString::Format(u"Application type: %d (0x%<04X), Test application: %d", {tidext & 0x7FFF, tidext >> 15}) << std::endl;
+    disp << margin << UString::Format(u"Application type: %d (0x%<04X), Test application: %d", tidext & 0x7FFF, tidext >> 15) << std::endl;
     disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptor loop:");
 
     // Application loop
     buf.skipBits(4);
     buf.pushReadSizeFromLength(12);
     while (buf.canReadBytes(9)) {
-        disp << margin << UString::Format(u"Application: Identifier: (Organization id: %d (0x%<X)", {buf.getUInt32()});
-        disp << UString::Format(u", Application id: %d (0x%<X))", {buf.getUInt16()});
-        disp << UString::Format(u", Control code: %d", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Application: Identifier: (Organization id: %d (0x%<X)", buf.getUInt32());
+        disp << UString::Format(u", Application id: %d (0x%<X))", buf.getUInt16());
+        disp << UString::Format(u", Control code: %d", buf.getUInt8()) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
     disp.displayPrivateData(u"Extraneous application data", buf, NPOS, margin);

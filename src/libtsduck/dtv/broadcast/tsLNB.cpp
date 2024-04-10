@@ -151,7 +151,7 @@ bool ts::LNB::set(const UString& name, Report& report)
         set(low_freq * 1000000);
         return true;
     }
-    else if (name.scan(u"%d,%d,%d", {&low_freq, &high_freq, &switch_freq})) {
+    else if (name.scan(u"%d,%d,%d", &low_freq, &high_freq, &switch_freq)) {
         // "low,high,switch" legacy format. Frequencies in MHz.
         set(low_freq * 1000000, high_freq * 1000000, switch_freq * 1000000);
         return true;
@@ -176,7 +176,7 @@ void ts::LNB::set(uint64_t low_frequency, uint64_t high_frequency, uint64_t swit
 {
     if (high_frequency == 0 && switch_frequency == 0) {
         // No high band, just an oscillator frequency and "unlimited" band.
-        _name.format(u"%d", {low_frequency / 1000000});
+        _name.format(u"%d", low_frequency / 1000000);
         _alias.clear();
         _bands.clear();
         _bands.resize(1);
@@ -186,7 +186,7 @@ void ts::LNB::set(uint64_t low_frequency, uint64_t high_frequency, uint64_t swit
     }
     else {
         // High band, two oscillators (low and high). The switch frequency is the boundary between the two bands.
-        _name.format(u"%d,%d,%d", {low_frequency / 1000000, high_frequency / 1000000, switch_frequency / 1000000});
+        _name.format(u"%d,%d,%d", low_frequency / 1000000, high_frequency / 1000000, switch_frequency / 1000000);
         _alias.clear();
         _bands.clear();
         _bands.resize(2);

@@ -150,9 +150,9 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 {
     if (buf.canReadBytes(3)) {
         const uint8_t desc = buf.getBits<uint8_t>(4);
-        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", {desc, buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", desc, buf.getBits<uint8_t>(4)) << std::endl;
         buf.skipBits(5);
-        disp << margin << UString::Format(u"Icon id: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
+        disp << margin << UString::Format(u"Icon id: %d", buf.getBits<uint8_t>(3)) << std::endl;
 
         if (desc == 0) {
             const uint8_t transport = buf.getBits<uint8_t>(2);
@@ -163,8 +163,8 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
                 disp << margin << "Coordinate system: " << DataName(MY_XML_NAME, u"CoordinateSystem", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
                 buf.skipBits(2);
                 if (buf.canReadBytes(3)) {
-                    disp << margin << UString::Format(u"Horizontal origin: %d", {buf.getBits<uint16_t>(12)});
-                    disp << UString::Format(u", vertical: %d", {buf.getBits<uint16_t>(12)}) << std::endl;
+                    disp << margin << UString::Format(u"Horizontal origin: %d", buf.getBits<uint16_t>(12));
+                    disp << UString::Format(u", vertical: %d", buf.getBits<uint16_t>(12)) << std::endl;
                 }
             }
             else {

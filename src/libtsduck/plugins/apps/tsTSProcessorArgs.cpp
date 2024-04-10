@@ -203,7 +203,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 
     // Decode --add-input-stuffing nullpkt/inpkt.
     instuff_nullpkt = instuff_inpkt = 0;
-    if (args.present(u"add-input-stuffing") && !args.value(u"add-input-stuffing").scan(u"%d/%d", {&instuff_nullpkt, &instuff_inpkt})) {
+    if (args.present(u"add-input-stuffing") && !args.value(u"add-input-stuffing").scan(u"%d/%d", &instuff_nullpkt, &instuff_inpkt)) {
         args.error(u"invalid value for --add-input-stuffing, use \"nullpkt/inpkt\" format");
     }
 

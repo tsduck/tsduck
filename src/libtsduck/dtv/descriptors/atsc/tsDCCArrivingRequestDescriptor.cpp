@@ -69,7 +69,7 @@ void ts::DCCArrivingRequestDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DCCArrivingRequestDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"DCC arriving request type: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"DCC arriving request type: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         disp.displayATSCMultipleString(buf, 1, margin, u"DCC arriving request text: ");
     }
 }

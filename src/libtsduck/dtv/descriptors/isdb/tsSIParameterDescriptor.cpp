@@ -88,7 +88,7 @@ void ts::SIParameterDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Parameter version: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Parameter version: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         disp << margin << "Update time: " << buf.getMJD(2).format(Time::DATE) << std::endl;
         while (buf.canReadBytes(2)) {
             disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;

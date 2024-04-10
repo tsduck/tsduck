@@ -102,8 +102,8 @@ void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
         if (type == 1) {
             disp << margin << "Simultaneous services:" << (buf.canRead() ? "" : " none") << std::endl;
             while (buf.canReadBytes(4)) {
-                disp << margin << UString::Format(u"- Primary service id:   0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-                disp << margin << UString::Format(u"  Secondary service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"- Primary service id:   0x%X (%<d)", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Secondary service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
             }
         }
         else {

@@ -98,14 +98,14 @@ void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& disp,
     if (buf.canReadBytes(1)) {
         buf.skipBits(7);
         const bool base = buf.getBool();
-        disp << margin << UString::Format(u"Base video: %s", {base}) << std::endl;
+        disp << margin << UString::Format(u"Base video: %s", base) << std::endl;
         if (base && buf.canReadBytes(1)) {
             buf.skipBits(7);
-            disp << margin << UString::Format(u"Left view: %s", {buf.getBool()}) << std::endl;
+            disp << margin << UString::Format(u"Left view: %s", buf.getBool()) << std::endl;
         }
         else if (!base && buf.canReadBytes(2)) {
             buf.skipBits(7);
-            disp << margin << UString::Format(u"Usable as 2D: %s", {buf.getBool()}) << std::endl;
+            disp << margin << UString::Format(u"Usable as 2D: %s", buf.getBool()) << std::endl;
             disp << margin << "Horizontal upsampling factor: " << DataName(MY_XML_NAME, u"UpsamplingFactor", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
             disp << margin << "Vertical upsampling factor: " << DataName(MY_XML_NAME, u"UpsamplingFactor", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
         }

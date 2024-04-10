@@ -106,20 +106,20 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
     if (buf.canReadBytes(1)) {
         const bool scrambling_sequence_selector = buf.getBool();
         const bool multiple_input_stream_flag = buf.getBool();
-        disp << margin << UString::Format(u"Backward compatibility: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Backward compatibility: %s", buf.getBool()) << std::endl;
         const bool not_timeslice_flag = buf.getBool();
         buf.skipReservedBits(2);
         disp << margin << "TS/GS mode: " << DataName(MY_XML_NAME, u"TSGSS2Mode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
 
         if (scrambling_sequence_selector && buf.canReadBytes(3)) {
             buf.skipReservedBits(6);
-            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {buf.getBits<uint32_t>(18)}) << std::endl;
+            disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", buf.getBits<uint32_t>(18)) << std::endl;
         }
         if (multiple_input_stream_flag && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Input stream identifier: 0x%X", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Input stream identifier: 0x%X", buf.getUInt8()) << std::endl;
         }
         if (!not_timeslice_flag && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Time slice number: 0x%X", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Time slice number: 0x%X", buf.getUInt8()) << std::endl;
         }
     }
 }

@@ -170,16 +170,16 @@ void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::NBIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
+    disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
 
     while (buf.canReadBytes(5)) {
-        disp << margin << UString::Format(u"- Information id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"- Information id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         disp << margin << "  Information type: " << DataName(MY_XML_NAME, u"InformationType", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
         disp << margin << "  Description body location: " << DataName(MY_XML_NAME, u"DescriptionBodyLocation", buf.getBits<uint8_t>(2), NamesFlags::FIRST) << std::endl;
         buf.skipBits(2);
-        disp << margin << UString::Format(u"  User defined: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"  User defined: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         for (size_t count = buf.getUInt8(); buf.canReadBytes(2) && count > 0; count--) {
-            disp << margin << UString::Format(u"  Key id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"  Key id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
         disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
     }

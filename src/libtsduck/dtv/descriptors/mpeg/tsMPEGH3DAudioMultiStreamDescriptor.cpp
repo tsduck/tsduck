@@ -124,22 +124,22 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     if (buf.canRead()) {
         const bool main = buf.getBool();
-        disp << margin << UString::Format(u"This is main stream: %s", {main}) << std::endl;
-        disp << margin << UString::Format(u"This stream id: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
+        disp << margin << UString::Format(u"This is main stream: %s", main) << std::endl;
+        disp << margin << UString::Format(u"This stream id: 0x%X (%<d)", buf.getBits<uint8_t>(7)) << std::endl;
         if (main && buf.canRead()) {
             buf.skipBits(1);
-            disp << margin << UString::Format(u"Number of auxiliary streams: %d", {buf.getBits<uint8_t>(7)}) << std::endl;
+            disp << margin << UString::Format(u"Number of auxiliary streams: %d", buf.getBits<uint8_t>(7)) << std::endl;
             buf.skipBits(1);
             const size_t count = buf.getBits<size_t>(7);
-            disp << margin << UString::Format(u"Number of mae groups: %d", {count}) << std::endl;
+            disp << margin << UString::Format(u"Number of mae groups: %d", count) << std::endl;
             for (size_t i = 0; i < count && buf.canRead(); ++i) {
-                disp << margin << UString::Format(u"- MAE group id: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
+                disp << margin << UString::Format(u"- MAE group id: 0x%X (%<d)", buf.getBits<uint8_t>(7)) << std::endl;
                 const bool in_main = buf.getBool();
-                disp << margin << UString::Format(u"  Is in main stream: %s", {in_main}) << std::endl;
+                disp << margin << UString::Format(u"  Is in main stream: %s", in_main) << std::endl;
                 // See warning [1] above.
                 if (!in_main && buf.canRead()) {
-                    disp << margin << UString::Format(u"  Is in TS: %s", {buf.getBool()}) << std::endl;
-                    disp << margin << UString::Format(u"  Auxiliary stream id: 0x%X (%<d)", {buf.getBits<uint8_t>(7)}) << std::endl;
+                    disp << margin << UString::Format(u"  Is in TS: %s", buf.getBool()) << std::endl;
+                    disp << margin << UString::Format(u"  Auxiliary stream id: 0x%X (%<d)", buf.getBits<uint8_t>(7)) << std::endl;
                 }
             }
         }

@@ -231,11 +231,11 @@ bool ts::T2MIPlugin::stop()
         for (const auto& it : _identified) {
             const PID pid = it.first;
             const PLPSet& plps(it.second);
-            UString line(UString::Format(u"PID 0x%X (%d): ", {pid, pid}));
+            UString line(UString::Format(u"PID 0x%X (%d): ", pid, pid));
             bool first = true;
             for (size_t plp = 0; plp < plps.size(); ++plp) {
                 if (plps.test(plp)) {
-                    line.append(UString::Format(u"%s%d", {first ? u"PLP " : u", ", plp}));
+                    line.append(UString::Format(u"%s%d", first ? u"PLP " : u", ", plp));
                     first = false;
                 }
             }
@@ -290,7 +290,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
     if (_log && _extract_pid == pid) {
         UString plpInfo;
         if (hasPLP) {
-            plpInfo = UString::Format(u", PLP: 0x%X (%d)", {plp, plp});
+            plpInfo = UString::Format(u", PLP: 0x%X (%d)", plp, plp);
         }
         tsp->info(u"PID 0x%X (%d), packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
                   {pid, pid,

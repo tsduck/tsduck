@@ -760,7 +760,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     const TagAttributes attr(tagParams);
                     attr.getValue(plNext.bandwidth, u"BANDWIDTH");
                     attr.getValue(plNext.averageBandwidth, u"AVERAGE-BANDWIDTH");
-                    attr.value(u"RESOLUTION").scan(u"%dx%d", {&plNext.width, &plNext.height});
+                    attr.value(u"RESOLUTION").scan(u"%dx%d", &plNext.width, &plNext.height);
                     attr.getMilliValue(plNext.frameRate, u"FRAME-RATE");
                     plNext.codecs = attr.value(u"CODECS");
                     plNext.hdcp = attr.value(u"HDCP-LEVEL");
@@ -974,16 +974,16 @@ ts::UString ts::hls::PlayList::toString() const
     }
     str.append(isUpdatable() ? u", updatable (live)" : u", static");
     if (isMedia()) {
-        str.format(u", %d segments", {_segments.size()});
+        str.format(u", %d segments", _segments.size());
     }
     else if (_type == PlayListType::MASTER) {
-        str.format(u", %d media playlists", {_playlists.size()});
+        str.format(u", %d media playlists", _playlists.size());
         if (!_altPlaylists.empty()) {
-            str.format(u", %d alternative rendition playlists", {_altPlaylists.size()});
+            str.format(u", %d alternative rendition playlists", _altPlaylists.size());
         }
     }
     if (_targetDuration > cn::seconds::zero()) {
-        str.format(u", %s/segment", {_targetDuration});
+        str.format(u", %s/segment", _targetDuration);
     }
     return str;
 }
@@ -1032,18 +1032,18 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
     // Start building the content.
     UString text;
-    text.format(u"#%s\n#%s:%d\n", {TagNames.name(Tag::EXTM3U), TagNames.name(Tag::VERSION), _version});
+    text.format(u"#%s\n#%s:%d\n", TagNames.name(Tag::EXTM3U), TagNames.name(Tag::VERSION), _version);
 
     // Insert application-specific tags before standard tags.
     for (const auto& tag : _extraTags) {
-        text.format(u"%s%s\n", {tag.startWith(u"#") ? u"" : u"#", tag});
+        text.format(u"%s%s\n", tag.startWith(u"#") ? u"" : u"#", tag);
     }
 
     if (isMaster()) {
         // Loop on all alternative rendition playlists.
         for (const auto& pl : _altPlaylists) {
             // The initial fields are required.
-            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", {TagNames.name(Tag::MEDIA), pl.type, pl.groupId, pl.name});
+            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", TagNames.name(Tag::MEDIA), pl.type, pl.groupId, pl.name);
             if (pl.isDefault) {
                 text.append(u",DEFAULT=YES");
             }
@@ -1054,25 +1054,25 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 text.append(u",FORCED=YES");
             }
             if (!pl.language.empty()) {
-                text.format(u",LANGUAGE=\"%s\"", {pl.language});
+                text.format(u",LANGUAGE=\"%s\"", pl.language);
             }
             if (!pl.assocLanguage.empty()) {
-                text.format(u",ASSOC-LANGUAGE=\"%s\"", {pl.assocLanguage});
+                text.format(u",ASSOC-LANGUAGE=\"%s\"", pl.assocLanguage);
             }
             if (!pl.stableRenditionId.empty()) {
-                text.format(u",STABLE-RENDITION-ID=\"%s\"", {pl.stableRenditionId});
+                text.format(u",STABLE-RENDITION-ID=\"%s\"", pl.stableRenditionId);
             }
             if (!pl.inStreamId.empty()) {
-                text.format(u",INSTREAM-ID=\"%s\"", {pl.inStreamId});
+                text.format(u",INSTREAM-ID=\"%s\"", pl.inStreamId);
             }
             if (!pl.characteristics.empty()) {
-                text.format(u",CHARACTERISTICS=\"%s\"", {pl.characteristics});
+                text.format(u",CHARACTERISTICS=\"%s\"", pl.characteristics);
             }
             if (!pl.channels.empty()) {
-                text.format(u",CHANNELS=\"%s\"", {pl.channels});
+                text.format(u",CHANNELS=\"%s\"", pl.channels);
             }
             if (!pl.relativeURI.empty()) {
-                text.format(u",URI=\"%s\"", {pl.relativeURI});
+                text.format(u",URI=\"%s\"", pl.relativeURI);
             }
             // Close the #EXT-X-MEDIA line.
             text.append(u'\n');
@@ -1083,33 +1083,33 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
                 // Take care about string parameters: some are documented as quoted-string and
                 // some as enumerated-string. The former shall be quoted, the latter shall not.
-                text.format(u"#%s:BANDWIDTH=%d", {TagNames.name(Tag::STREAM_INF), pl.bandwidth.toInt()});
+                text.format(u"#%s:BANDWIDTH=%d", TagNames.name(Tag::STREAM_INF), pl.bandwidth.toInt());
                 if (pl.averageBandwidth > 0) {
-                    text.format(u",AVERAGE-BANDWIDTH=%d", {pl.averageBandwidth.toInt()});
+                    text.format(u",AVERAGE-BANDWIDTH=%d", pl.averageBandwidth.toInt());
                 }
                 if (pl.frameRate > 0) {
-                    text.format(u",FRAME-RATE=%d.%03d", {pl.frameRate / 1000, pl.frameRate % 1000});
+                    text.format(u",FRAME-RATE=%d.%03d", pl.frameRate / 1000, pl.frameRate % 1000);
                 }
                 if (pl.width > 0 && pl.height > 0) {
-                    text.format(u",RESOLUTION=%dx%d", {pl.width, pl.height});
+                    text.format(u",RESOLUTION=%dx%d", pl.width, pl.height);
                 }
                 if (!pl.codecs.empty()) {
-                    text.format(u",CODECS=\"%s\"", {pl.codecs});
+                    text.format(u",CODECS=\"%s\"", pl.codecs);
                 }
                 if (!pl.hdcp.empty()) {
-                    text.format(u",HDCP-LEVEL=%s", {pl.hdcp});
+                    text.format(u",HDCP-LEVEL=%s", pl.hdcp);
                 }
                 if (!pl.videoRange.empty()) {
-                    text.format(u",VIDEO-RANGE=%s", {pl.videoRange});
+                    text.format(u",VIDEO-RANGE=%s", pl.videoRange);
                 }
                 if (!pl.video.empty()) {
-                    text.format(u",VIDEO=\"%s\"", {pl.video});
+                    text.format(u",VIDEO=\"%s\"", pl.video);
                 }
                 if (!pl.audio.empty()) {
-                    text.format(u",AUDIO=\"%s\"", {pl.audio});
+                    text.format(u",AUDIO=\"%s\"", pl.audio);
                 }
                 if (!pl.subtitles.empty()) {
-                    text.format(u",SUBTITLES=\"%s\"", {pl.subtitles});
+                    text.format(u",SUBTITLES=\"%s\"", pl.subtitles);
                 }
                 if (!pl.closedCaptions.empty()) {
                     if (pl.closedCaptions.similar(u"NONE")) {
@@ -1118,44 +1118,44 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                     }
                     else {
                         // quoted-string
-                        text.format(u",CLOSED-CAPTIONS=\"%s\"", {pl.closedCaptions});
+                        text.format(u",CLOSED-CAPTIONS=\"%s\"", pl.closedCaptions);
                     }
                 }
                 // Close the #EXT-X-STREAM-INF line.
                 text.append(u'\n');
                 // The URI line must come right after #EXT-X-STREAM-INF.
-                text.format(u"%s\n", {pl.relativeURI});
+                text.format(u"%s\n", pl.relativeURI);
             }
         }
     }
     else if (isMedia()) {
         // Global tags.
-        text.format(u"#%s:%d\n", {TagNames.name(Tag::TARGETDURATION), _targetDuration.count()});
-        text.format(u"#%s:%d\n", {TagNames.name(Tag::MEDIA_SEQUENCE), _mediaSequence});
+        text.format(u"#%s:%d\n", TagNames.name(Tag::TARGETDURATION), _targetDuration.count());
+        text.format(u"#%s:%d\n", TagNames.name(Tag::MEDIA_SEQUENCE), _mediaSequence);
         if (_type == PlayListType::VOD) {
-            text.format(u"#%s:VOD\n", {TagNames.name(Tag::PLAYLIST_TYPE)});
+            text.format(u"#%s:VOD\n", TagNames.name(Tag::PLAYLIST_TYPE));
         }
         else if (_type == PlayListType::EVENT) {
-            text.format(u"#%s:EVENT\n", {TagNames.name(Tag::PLAYLIST_TYPE)});
+            text.format(u"#%s:EVENT\n", TagNames.name(Tag::PLAYLIST_TYPE));
         }
 
         // Loop on all media segments.
         for (const auto& seg : _segments) {
             if (!seg.relativeURI.empty()) {
-                text.format(u"#%s:%d.%03d,%s\n", {TagNames.name(Tag::EXTINF), seg.duration.count() / 1000, seg.duration.count() % 1000, seg.title});
+                text.format(u"#%s:%d.%03d,%s\n", TagNames.name(Tag::EXTINF), seg.duration.count() / 1000, seg.duration.count() % 1000, seg.title);
                 if (seg.bitrate > 1024) {
-                    text.format(u"#%s:%d\n", {TagNames.name(Tag::BITRATE), (seg.bitrate / 1024).toInt()});
+                    text.format(u"#%s:%d\n", TagNames.name(Tag::BITRATE), (seg.bitrate / 1024).toInt());
                 }
                 if (seg.gap) {
-                    text.format(u"#%s\n", {TagNames.name(Tag::GAP)});
+                    text.format(u"#%s\n", TagNames.name(Tag::GAP));
                 }
-                text.format(u"%s\n", {seg.relativeURI});
+                text.format(u"%s\n", seg.relativeURI);
             }
         }
 
         // Mark end of list when necessary.
         if (_endList) {
-            text.format(u"#%s\n", {TagNames.name(Tag::ENDLIST)});
+            text.format(u"#%s\n", TagNames.name(Tag::ENDLIST));
         }
     }
     else {

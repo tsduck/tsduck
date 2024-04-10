@@ -114,13 +114,13 @@ void ts::xml::Attribute::setDate(const Time& value)
 ts::UString ts::xml::Attribute::DateTimeToString(const Time& value)
 {
     const Time::Fields f(value);
-    return UString::Format(u"%04d-%02d-%02d %02d:%02d:%02d", {f.year, f.month, f.day, f.hour, f.minute, f.second});
+    return UString::Format(u"%04d-%02d-%02d %02d:%02d:%02d", f.year, f.month, f.day, f.hour, f.minute, f.second);
 }
 
 ts::UString ts::xml::Attribute::DateToString(const Time& value)
 {
     const Time::Fields f(value);
-    return UString::Format(u"%04d-%02d-%02d", {f.year, f.month, f.day});
+    return UString::Format(u"%04d-%02d-%02d", f.year, f.month, f.day);
 }
 
 bool ts::xml::Attribute::DateTimeFromString(Time& value, const UString& str)

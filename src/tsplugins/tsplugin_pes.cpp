@@ -486,9 +486,9 @@ bool ts::PESPlugin::lastDump(std::ostream& out)
 ts::UString ts::PESPlugin::prefix(const DemuxedData& pkt) const
 {
     UString line;
-    line.format(u"PID 0x%X", {pkt.sourcePID()});
+    line.format(u"PID 0x%X", pkt.sourcePID());
     if (_trace_packet_index) {
-        line.format(u", TS packets %'d-%'d", {pkt.firstTSPacketIndex(), pkt.lastTSPacketIndex()});
+        line.format(u", TS packets %'d-%'d", pkt.firstTSPacketIndex(), pkt.lastTSPacketIndex());
     }
     return line;
 }
@@ -502,24 +502,24 @@ void ts::PESPlugin::handleInvalidPESPacket(PESDemux&, const DemuxedData& data)
 {
     // Report invalid packets with --trace-packets
     if (_trace_packets) {
-        *_out << UString::Format(u"* %s, invalid PES packet, data size: %d bytes", {prefix(data), data.size()});
+        *_out << UString::Format(u"* %s, invalid PES packet, data size: %d bytes", prefix(data), data.size());
         const size_t hsize = PESPacket::HeaderSize(data.content(), data.size());
         if (hsize == 0) {
             *_out << ", no PES header found";
         }
         else if (data.size() < hsize) {
-            *_out << UString::Format(u", expected header size: %d bytes", {hsize});
+            *_out << UString::Format(u", expected header size: %d bytes", hsize);
         }
         else {
             // The embedded PES payload size is either zero (unbounded) or indicates the packet length _after_ that field (ie. after offset 6).
             const size_t psize = 6 + size_t(GetUInt16(data.content() + 4));
             if (psize != 6) {
-                *_out << UString::Format(u", PES packet size: %d bytes", {psize});
+                *_out << UString::Format(u", PES packet size: %d bytes", psize);
                 if (psize < hsize) {
-                    *_out << UString::Format(u", expected header size: %d bytes", {hsize});
+                    *_out << UString::Format(u", expected header size: %d bytes", hsize);
                 }
                 if (data.size() < psize) {
-                    *_out << UString::Format(u", truncated, missing %d bytes", {psize - data.size()});
+                    *_out << UString::Format(u", truncated, missing %d bytes", psize - data.size());
                 }
             }
         }
@@ -543,10 +543,10 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
     if (_trace_packets) {
         *_out << "* " << prefix(pkt)
               << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST)
-              << UString::Format(u", size: %d bytes (header: %d, payload: %d)", {pkt.size(), pkt.headerSize(), pkt.payloadSize()});
+              << UString::Format(u", size: %d bytes (header: %d, payload: %d)", pkt.size(), pkt.headerSize(), pkt.payloadSize());
         const size_t spurious = pkt.spuriousDataSize();
         if (spurious > 0) {
-            *_out << UString::Format(u", raw data: %d bytes, %d spurious trailing bytes", {pkt.rawDataSize(), spurious});
+            *_out << UString::Format(u", raw data: %d bytes, %d spurious trailing bytes", pkt.rawDataSize(), spurious);
         }
         *_out << std::endl;
         if (lastDump(*_out)) {
@@ -576,7 +576,7 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
             !pkt.isVVC() &&
             !PESPacket::HasCommonVideoHeader(pkt.payload(), pkt.payloadSize()))
         {
-            *_out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", {pkt.sourcePID()})
+            *_out << UString::Format(u"WARNING: PID 0x%X, invalid start of video PES payload: ", pkt.sourcePID())
                   << UString::Dump(pkt.payload(), std::min<size_t>(8, pkt.payloadSize()), UString::SINGLE_LINE)
                   << std::endl;
         }
@@ -631,7 +631,7 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
 void ts::PESPlugin::handleIntraImage(PESDemux& demux, const PESPacket& pkt, size_t offset)
 {
     if (_intra_images) {
-        *_out << "* " << prefix(pkt) << UString::Format(u", intra-image offset in PES payload: %d/%d", { offset, pkt.payloadSize() }) << std::endl;
+        *_out << "* " << prefix(pkt) << UString::Format(u", intra-image offset in PES payload: %d/%d",  offset, pkt.payloadSize() ) << std::endl;
         lastDump(*_out);
     }
 }
@@ -647,7 +647,7 @@ void ts::PESPlugin::handleVideoStartCode(PESDemux&, const PESPacket& pkt, uint8_
     if (_dump_start_code) {
         *_out << "* " << prefix(pkt)
               << ", start code " << NameFromDTV(u"pes.stream_id", start_code, NamesFlags::FIRST)
-              << UString::Format(u", offset in PES payload: %d, size: %d bytes", {offset, size})
+              << UString::Format(u", offset in PES payload: %d, size: %d bytes", offset, size)
               << std::endl;
 
         size_t dsize = size;
@@ -692,7 +692,7 @@ void ts::PESPlugin::handleAccessUnit(PESDemux&, const PESPacket& pes, uint8_t au
 
         // Hexadecimal dump
         *_out << "* " << prefix(pes) << ", " << CodecTypeEnum.name(codec) << " access unit type " << AccessUnitTypeName(codec, au_type, NamesFlags::FIRST) << std::endl;
-        *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
+        *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", offset, size) << std::endl;
 
         size_t dsize = size;
         *_out << "  " << CodecTypeEnum.name(codec) << " access unit";
@@ -758,7 +758,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
 
     // Now display the SEI.
     *_out << "* " << prefix(pkt) << ", SEI type " << NameFromDTV(u"avc.sei_type", sei_type, NamesFlags::FIRST) << std::endl;
-    *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
+    *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", offset, size) << std::endl;
 
     size_t dsize = size;
     *_out << "  AVC SEI";
@@ -807,7 +807,7 @@ void ts::PESPlugin::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pk
     if (_video_attributes) {
         *_out << "* " << prefix(pkt) << ", stream_id " << NameFromDTV(u"pes.stream_id", pkt.getStreamId(), NamesFlags::FIRST) << ", video attributes:" << std::endl;
         *_out << "  " << va << std::endl;
-        *_out << UString::Format(u"  Maximum bitrate: %'d b/s, VBV buffer size: %'d bits", {va.maximumBitRate(), va.vbvSize()}) << std::endl;
+        *_out << UString::Format(u"  Maximum bitrate: %'d b/s, VBV buffer size: %'d bits", va.maximumBitRate(), va.vbvSize()) << std::endl;
         lastDump(*_out);
     }
 }

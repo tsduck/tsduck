@@ -28,7 +28,7 @@ ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
     _metadata(opt.bufferedPackets)
 {
     // Make sure that the input plugins display their index.
-    setLogName(UString::Format(u"%s[%d]", {pluginName(), _pluginIndex}));
+    setLogName(UString::Format(u"%s[%d]", pluginName(), _pluginIndex));
 }
 
 ts::tsswitch::InputExecutor::~InputExecutor()

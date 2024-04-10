@@ -132,7 +132,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         const uint16_t format = buf.getUInt16();
         disp << margin << "Metadata application format: " << DataName(MY_XML_NAME, u"application_format", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFFFF && buf.remainingReadBytes() >= 4) {
-            disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+            disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", buf.getUInt32()) << std::endl;
         }
     }
 
@@ -143,7 +143,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         const uint8_t format = buf.getUInt8();
         disp << margin << "Metadata format: " << DataName(MY_XML_NAME, u"metadata_format", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFF && buf.remainingReadBytes() >= 4) {
-            disp << margin << UString::Format(u"Metadata format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
+            disp << margin << UString::Format(u"Metadata format identifier: 0x%X (%<d)", buf.getUInt32()) << std::endl;
         }
     }
 
@@ -151,7 +151,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Metadata service id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Metadata service id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         const bool metadata_locator_record_flag = buf.getBool();
         const uint8_t flags = buf.getBits<uint8_t>(2);
         disp << margin << "MPEG carriage flags: " << DataName(MY_XML_NAME, u"carriage_flags", flags, NamesFlags::DECIMAL_FIRST) << std::endl;
@@ -161,11 +161,11 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
             disp.displayPrivateData(u"Metadata location record", buf, length, margin);
         }
         if (flags <= 2 && buf.remainingReadBytes() >= 2) {
-            disp << margin << UString::Format(u"Program number: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Program number: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
         if (flags == 1 && buf.remainingReadBytes() >= 4) {
-            disp << margin << UString::Format(u"Transport stream location: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"Transport stream location: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
         }
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }

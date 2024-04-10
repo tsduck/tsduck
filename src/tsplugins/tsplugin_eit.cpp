@@ -187,7 +187,7 @@ bool ts::EITPlugin::stop()
     out << "Summary" << std::endl
         << "-------" << std::endl;
     if (_ts_id.has_value()) {
-        out << UString::Format(u"TS id:         %d (0x%04X)", {_ts_id.value(), _ts_id.value()}) << std::endl;
+        out << UString::Format(u"TS id:         %d (0x%04X)", _ts_id.value(), _ts_id.value()) << std::endl;
     }
     if (_last_utc != Time::Epoch) {
         out << "Last UTC:      " << _last_utc.format(Time::DATETIME) << std::endl;
@@ -236,15 +236,15 @@ bool ts::EITPlugin::stop()
     }
     out << "TS      Services  With EITp/f  With EITs  EPG days" << std::endl
         << "------  --------  -----------  ---------  --------" << std::endl
-        << UString::Format(u"Actual  %8d  %11d  %9d  %8d", {scount_act, scount_eitpf_act, scount_eits_act, Days(max_time_act)}) << std::endl
-        << UString::Format(u"Other   %8d  %11d  %9d  %8d", {scount_oth, scount_eitpf_oth, scount_eits_oth, Days(max_time_oth)}) << std::endl
+        << UString::Format(u"Actual  %8d  %11d  %9d  %8d", scount_act, scount_eitpf_act, scount_eits_act, Days(max_time_act)) << std::endl
+        << UString::Format(u"Other   %8d  %11d  %9d  %8d", scount_oth, scount_eitpf_oth, scount_eits_oth, Days(max_time_oth)) << std::endl
         << std::endl;
 
     // Summary by service
     const UString h_name(u"Name");
     name_width = std::max(name_width, h_name.length());
-    out << UString::Format(u"A/O  TS Id   Srv Id  %-*s  EITp/f  EITs  EPG days", {name_width, u"Name"}) << std::endl
-        << UString::Format(u"---  ------  ------  %s  ------  ----  --------", {UString(name_width, u'-')}) << std::endl;
+    out << UString::Format(u"A/O  TS Id   Srv Id  %-*s  EITp/f  EITs  EPG days", name_width, u"Name") << std::endl
+        << UString::Format(u"---  ------  ------  %s  ------  ----  --------", UString(name_width, u'-')) << std::endl;
     for (const auto& it : _services) {
         const ServiceDesc& serv(it.second);
         const bool actual = _ts_id.has_value() && serv.hasTSId(_ts_id.value());

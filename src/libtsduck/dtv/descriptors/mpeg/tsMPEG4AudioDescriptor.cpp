@@ -65,7 +65,7 @@ void ts::MPEG4AudioDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MPEG4AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"MPEG-4 Audio profile and level: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"MPEG-4 Audio profile and level: 0x%X (%<d)", buf.getUInt8()) << std::endl;
     }
 }
 

@@ -124,7 +124,7 @@ void ts::ServiceListDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()});
+        disp << margin << UString::Format(u"Service id: %d (0x%<X)", buf.getUInt16());
         disp << ", Type: " << names::ServiceType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
     }
 }

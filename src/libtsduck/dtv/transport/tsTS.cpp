@@ -152,14 +152,14 @@ namespace {
         int count = 0;
         ts::UString str;
         if (hexa) {
-            str.format(u"0x%0*X", {hex_digits, value});
+            str.format(u"0x%0*X", hex_digits, value);
             count++;
         }
         if (decimal && (value != 0 || count == 0)) {
             if (count == 1) {
                 str.append(u" (");
             }
-            str.format(u"%'d", {value});
+            str.format(u"%'d", value);
             count++;
         }
         if (ms && (value != 0 || count == 0)) {
@@ -169,7 +169,7 @@ namespace {
             else if (count > 1) {
                 str.append(u", ");
             }
-            str.format(u"%'d ms", {value / (frequency / 1000)});
+            str.format(u"%'d ms", value / (frequency / 1000));
             count++;
         }
         if (count > 1) {

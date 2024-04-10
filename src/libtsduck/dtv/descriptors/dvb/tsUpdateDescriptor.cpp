@@ -82,7 +82,7 @@ void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf
     if (buf.canRead()) {
         disp << margin << "Update flag: " << DataName(MY_XML_NAME, u"SSUUpdateFlag", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
         disp << margin << "Update method: " << DataName(MY_XML_NAME, u"SSUUpdateMethod", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
-        disp << margin << UString::Format(u"Update priority: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+        disp << margin << UString::Format(u"Update priority: %d", buf.getBits<uint8_t>(2)) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

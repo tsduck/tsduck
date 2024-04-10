@@ -222,7 +222,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     // Compare contents of reference sections and demuxed sections.
 
     const ts::BinaryTable& table1(*demux.tableAt(0));
-    debug() << "DemuxTest: " << ts::UString::Format(u"  PID %d (0x%X)", {table1.sourcePID(), table1.sourcePID()}) << std::endl;
+    debug() << "DemuxTest: " << ts::UString::Format(u"  PID %d (0x%X)", table1.sourcePID(), table1.sourcePID()) << std::endl;
     TSUNIT_ASSERT(checkSections(name, "demuxed table", table1, ref_sections, ref_sections_size));
 
     // Table-specific tests.

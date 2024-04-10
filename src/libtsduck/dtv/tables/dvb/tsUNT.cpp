@@ -295,11 +295,11 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         const uint32_t oui = buf.getUInt24();
         const uint8_t oui_hash = section.tableIdExtension() & 0xFF;
         const uint8_t comp_hash = uint8_t(oui >> 16) ^ uint8_t(oui >> 8) ^ uint8_t(oui);
-        const UString oui_check(oui_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash}));
+        const UString oui_check(oui_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", comp_hash));
         disp << margin << "OUI: " << NameFromOUI(oui, NamesFlags::HEXA_FIRST) << std::endl;
-        disp << margin << UString::Format(u"Action type: 0x%X", {uint8_t(section.tableIdExtension() >> 8)});
-        disp << UString::Format(u", processing order: 0x%X", {buf.getUInt8()});
-        disp << UString::Format(u", OUI hash: 0x%X (%s)", {oui_hash, oui_check}) << std::endl;
+        disp << margin << UString::Format(u"Action type: 0x%X", uint8_t(section.tableIdExtension() >> 8));
+        disp << UString::Format(u", processing order: 0x%X", buf.getUInt8());
+        disp << UString::Format(u", OUI hash: 0x%X (%s)", oui_hash, oui_check) << std::endl;
     }
 
     // Display common descriptor loop.
@@ -320,7 +320,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         buf.pushReadSizeFromLength(16);
         const size_t compatibilityDescriptorLength = buf.remainingReadBytes();
         size_t descriptorCount = buf.getUInt16();
-        disp << margin << UString::Format(u"  Compatibility descriptor: %d bytes, %d descriptors", {compatibilityDescriptorLength, descriptorCount}) << std::endl;
+        disp << margin << UString::Format(u"  Compatibility descriptor: %d bytes, %d descriptors", compatibilityDescriptorLength, descriptorCount) << std::endl;
 
         // Display outer descriptor loop.
         for (size_t desc_index = 0; buf.canRead() && descriptorCount-- > 0 && buf.canReadBytes(11); ++desc_index) {
@@ -332,18 +332,18 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             // Get current compatibility descriptor content, based on 8-bit length field.
             buf.pushReadSizeFromLength(8);
 
-            disp << margin << UString::Format(u"    Specifier type: 0x%X", {buf.getUInt8()});
-            disp << UString::Format(u", specifier data (OUI): %s", {NameFromOUI(buf.getUInt24(), NamesFlags::HEXA_FIRST)}) << std::endl;
-            disp << margin << UString::Format(u"    Model: 0x%X (%<d)", {buf.getUInt16()});
-            disp << UString::Format(u", version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
+            disp << margin << UString::Format(u"    Specifier type: 0x%X", buf.getUInt8());
+            disp << UString::Format(u", specifier data (OUI): %s", NameFromOUI(buf.getUInt24(), NamesFlags::HEXA_FIRST)) << std::endl;
+            disp << margin << UString::Format(u"    Model: 0x%X (%<d)", buf.getUInt16());
+            disp << UString::Format(u", version: 0x%X (%<d)", buf.getUInt16()) << std::endl;
             const size_t subDescriptorCount = buf.getUInt8();
-            disp << margin << UString::Format(u"    Sub-descriptor count: %d", {subDescriptorCount}) << std::endl;
+            disp << margin << UString::Format(u"    Sub-descriptor count: %d", subDescriptorCount) << std::endl;
 
             // Display sub-descriptors. They are not real descriptors, so we display them in hexa.
             for (size_t subdesc_index = 0; buf.canRead() && subdesc_index < subDescriptorCount; ++subdesc_index) {
-                disp << margin << UString::Format(u"    - Sub-descriptor %d, type: 0x%X (%<d)", {subdesc_index, buf.getUInt8()});
+                disp << margin << UString::Format(u"    - Sub-descriptor %d, type: 0x%X (%<d)", subdesc_index, buf.getUInt8());
                 size_t length = buf.getUInt8();
-                disp << UString::Format(u", %d bytes", {length}) << std::endl;
+                disp << UString::Format(u", %d bytes", length) << std::endl;
                 length = std::min(length, buf.remainingReadBytes());
                 if (length > 0) {
                     disp << UString::Dump(buf.currentReadAddress(), length, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size() + 6);

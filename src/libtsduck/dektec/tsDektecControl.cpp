@@ -265,19 +265,19 @@ int ts::DektecControl::Guts::listDevices(const DektecDeviceVector& devices)
                       << "  Channels: input: " << device.input.size()
                       << ", output: " << device.output.size() << std::endl;
             for (size_t i = 0; i < device.input.size(); i++) {
-                wideDisplay(UString::Format(u"  Input %d: %s", {i, DektecDevice::GetPortDescription(device.input[i])}));
+                wideDisplay(UString::Format(u"  Input %d: %s", i, DektecDevice::GetPortDescription(device.input[i])));
             }
             for (size_t i = 0; i < device.output.size(); i++) {
-                wideDisplay(UString::Format(u"  Output %d: %s", {i, DektecDevice::GetPortDescription(device.output[i])}));
+                wideDisplay(UString::Format(u"  Output %d: %s", i, DektecDevice::GetPortDescription(device.output[i])));
             }
-            std::cout << UString::Format(u"  Subsystem id: 0x%04X", {device.desc.m_SubsystemId})
+            std::cout << UString::Format(u"  Subsystem id: 0x%04X", device.desc.m_SubsystemId)
                       << " (" << device.model << ")" << std::endl
-                      << UString::Format(u"  Subsystem vendor id: 0x%04X", {device.desc.m_SubVendorId}) << std::endl
-                      << UString::Format(u"  Device id: 0x%04X", {device.desc.m_DeviceId}) << std::endl
-                      << UString::Format(u"  Vendor id: 0x%04X", {device.desc.m_VendorId}) << std::endl
-                      << UString::Format(u"  Serial number: %016X", {device.desc.m_Serial}) << std::endl
-                      << UString::Format(u"  Firmware version: %d (0x%08X)", {device.desc.m_FirmwareVersion, device.desc.m_FirmwareVersion}) << std::endl
-                      << UString::Format(u"  Firmware variant: %d (0x%08X)", {device.desc.m_FirmwareVariant, device.desc.m_FirmwareVariant}) << std::endl;
+                      << UString::Format(u"  Subsystem vendor id: 0x%04X", device.desc.m_SubVendorId) << std::endl
+                      << UString::Format(u"  Device id: 0x%04X", device.desc.m_DeviceId) << std::endl
+                      << UString::Format(u"  Vendor id: 0x%04X", device.desc.m_VendorId) << std::endl
+                      << UString::Format(u"  Serial number: %016X", device.desc.m_Serial) << std::endl
+                      << UString::Format(u"  Firmware version: %d (0x%08X)", device.desc.m_FirmwareVersion, device.desc.m_FirmwareVersion) << std::endl
+                      << UString::Format(u"  Firmware variant: %d (0x%08X)", device.desc.m_FirmwareVariant, device.desc.m_FirmwareVariant) << std::endl;
 
             switch (device.desc.m_Category) {
                 case DTAPI_CAT_PCI:
@@ -547,7 +547,7 @@ void ts::DektecControl::Guts::listCapabilitiesJSON(ts::json::Value& jv, size_t d
     jv.add(u"spi-serial-8-bit", json::Bool((hw.m_Flags & DTAPI_CAP_SPISER8B) != 0));
 
     if ((hw.m_Flags & DTAPI_CAP_IP) != 0) {
-        jv.add(u"ip", UString::Format(u"%d.%d.%d.%d", {hw.m_Ip[0] & 0xFF, hw.m_Ip[1] & 0xFF, hw.m_Ip[2] & 0xFF, hw.m_Ip[3] & 0xFF}));
+        jv.add(u"ip", UString::Format(u"%d.%d.%d.%d", hw.m_Ip[0] & 0xFF, hw.m_Ip[1] & 0xFF, hw.m_Ip[2] & 0xFF, hw.m_Ip[3] & 0xFF));
         jv.add(u"mac", UString::Format(u"%02X-%02X-%02X-%02X-%02X-%02X:",
                                        {hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF, hw.m_MacAddr[2] & 0xFF,
                                         hw.m_MacAddr[3] & 0xFF, hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF}));

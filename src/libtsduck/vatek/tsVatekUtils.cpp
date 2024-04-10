@@ -41,9 +41,9 @@ ts::UString ts::GetVatekVersion()
     return u"3.06 or lower";
 #else
     UString version;
-    version.format(u"libvatek version %d.%02d", {VATEK_VERSION / 10000, (VATEK_VERSION / 100) % 100});
+    version.format(u"libvatek version %d.%02d", VATEK_VERSION / 10000, (VATEK_VERSION / 100) % 100);
 #if (VATEK_VERSION % 100) != 0
-    version.format(u".%02d", {VATEK_VERSION % 100});
+    version.format(u".%02d", VATEK_VERSION % 100);
 #endif
     return version;
 #endif

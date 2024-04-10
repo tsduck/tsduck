@@ -520,7 +520,7 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::i
 
     // Then report the message.
     if (_outfile.is_open()) {
-        _outfile << UString::Format(u"%d: ", {pkt}) << UString::Format(fmt, args) << std::endl;
+        _outfile << UString::Format(u"%d: ", pkt) << UString::Format(fmt, args) << std::endl;
     }
     else {
         tsp->info(u"%d: %s", {pkt, UString::Format(fmt, args)});

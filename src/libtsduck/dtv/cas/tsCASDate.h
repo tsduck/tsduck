@@ -219,7 +219,7 @@ ts::CASDate<YEARBASE>::CASDate(const Time& t)
 template <int YEARBASE>
 ts::UString ts::CASDate<YEARBASE>::toString() const
 {
-    return isValid() ? UString::Format(u"%04d-%02d-%02d", {year(), month(), day()}) : u"?";
+    return isValid() ? UString::Format(u"%04d-%02d-%02d", year(), month(), day()) : u"?";
 }
 
 // Convert to a Time object.

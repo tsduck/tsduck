@@ -54,7 +54,7 @@ ts::ChannelFile::ServicePtr ts::ChannelFile::TransportStream::serviceByName(cons
     // Check if the name has "major.minor" syntax.
     uint16_t majorId = 0;
     uint16_t minorId = 0;
-    const bool atscId = !strict && name.scan(u"%d.%d", {&majorId, &minorId});
+    const bool atscId = !strict && name.scan(u"%d.%d", &majorId, &minorId);
 
     // Now lookup all services in transport.
     for (size_t i = 0; i < _services.size(); ++i) {

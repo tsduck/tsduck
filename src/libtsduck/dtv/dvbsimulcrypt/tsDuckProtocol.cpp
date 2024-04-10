@@ -63,7 +63,7 @@ void ts::duck::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePt
             msg = std::make_shared<ClearECM>(fact);
             break;
         default:
-            throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));
+            throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", fact.commandTag()));
     }
 }
 
@@ -118,7 +118,7 @@ namespace {
     ts::UString DumpTimestamp(size_t indent, const std::optional<ts::SimulCryptDate>& timestamp)
     {
         if (timestamp.has_value()) {
-            return ts::UString::Format(u"%*sTimestamp = %s\n", {indent, u"", ts::UString(timestamp.value())});
+            return ts::UString::Format(u"%*sTimestamp = %s\n", indent, u"", ts::UString(timestamp.value()));
         }
         else {
             return ts::UString();
@@ -134,7 +134,7 @@ namespace {
         else {
             const uint32_t flags = ts::UString::HEXA | ts::UString::ASCII | ts::UString::OFFSET | ts::UString::BPL;
             const ts::UString sec(ts::UString::Dump(section->content(), section->size(), flags, indent + 2, 16));
-            return ts::UString::Format(u"%*sSection = \n%s", {indent, u"", sec});
+            return ts::UString::Format(u"%*sSection = \n%s", indent, u"", sec);
         }
     }
 
@@ -145,7 +145,7 @@ namespace {
             return ts::UString();
         }
         else {
-            return ts::UString::Format(u"%*s%s = %s\n", {indent, u"", name, ts::UString::Dump(data, ts::UString::COMPACT)});
+            return ts::UString::Format(u"%*s%s = %s\n", indent, u"", name, ts::UString::Dump(data, ts::UString::COMPACT));
         }
     }
 }
@@ -186,7 +186,7 @@ void ts::duck::LogSection::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::duck::LogSection::dump(size_t indent) const
 {
-    return UString::Format(u"%*sLogSection (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sLogSection (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpOptionalHexa(indent, u"PID", pid) +
         DumpTimestamp(indent, timestamp) +
@@ -239,7 +239,7 @@ ts::UString ts::duck::LogTable::dump(size_t indent) const
         }
     }
 
-    return UString::Format(u"%*sLogTable (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sLogTable (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpOptionalHexa(indent, u"PID", pid) +
         DumpTimestamp(indent, timestamp) +
@@ -280,7 +280,7 @@ void ts::duck::ClearECM::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::duck::ClearECM::dump(size_t indent) const
 {
-    return UString::Format(u"%*sClearECM (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sClearECM (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         DumpBin(indent, u"CW (even)", cw_even) +
         DumpBin(indent, u"CW (odd)", cw_odd) +
@@ -305,7 +305,7 @@ void ts::duck::Error::serializeParameters(tlv::Serializer& fact) const
 
 ts::UString ts::duck::Error::dump(size_t indent) const
 {
-    return UString::Format(u"%*sError (" PROTOCOL_NAME u")\n", {indent, u""}) +
+    return UString::Format(u"%*sError (" PROTOCOL_NAME u")\n", indent, u"") +
         tlv::Message::dump(indent) +
         dumpHexa(indent, u"error_status", error_status);
 }

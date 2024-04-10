@@ -90,10 +90,10 @@ void ts::NorDigLogicalChannelDescriptorV1::deserializePayload(PSIBuffer& buf)
 void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
-        disp << UString::Format(u", Visible: %1d", {buf.getBool()});
+        disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", buf.getUInt16());
+        disp << UString::Format(u", Visible: %1d", buf.getBool());
         buf.skipBits(1);
-        disp << UString::Format(u", Channel number: %3d", {buf.getBits<uint16_t>(14)}) << std::endl;
+        disp << UString::Format(u", Channel number: %3d", buf.getBits<uint16_t>(14)) << std::endl;
     }
 }
 

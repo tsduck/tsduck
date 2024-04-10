@@ -385,7 +385,7 @@ ts::UString ts::pcsc::StrError(::LONG status)
 #elif defined(TS_WINDOWS)
             return UString::FromUTF8(SysErrorCodeMessage(status));
 #else
-            return UString::Format(u"unknown PC/SC error code 0x%X (%<d)", {status});
+            return UString::Format(u"unknown PC/SC error code 0x%X (%<d)", status);
 #endif
     }
 }

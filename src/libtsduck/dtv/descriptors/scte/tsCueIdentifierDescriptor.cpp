@@ -81,7 +81,7 @@ void ts::CueIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 {
     if (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
-        disp << margin << UString::Format(u"Cue stream type: 0x%X", {type});
+        disp << margin << UString::Format(u"Cue stream type: 0x%X", type);
         switch (type) {
             case 0x00: disp << " (splice_insert, splice_null, splice_schedule)"; break;
             case 0x01: disp << " (All commands)"; break;

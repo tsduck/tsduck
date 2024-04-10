@@ -105,7 +105,7 @@ void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 {
     if (buf.canReadBytes(3)) {
         disp << margin << "3D-audio profile level indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
-        disp << margin << UString::Format(u"Interactivity enabled: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Interactivity enabled: %s", buf.getBool()) << std::endl;
         const bool compatibleProfileSetsPresent = !buf.getBool(); // bit=0 means present
         buf.skipBits(8);
         disp << margin << "Reference channel layout: " << DataName(MY_XML_NAME, u"reference_channel_layout", buf.getBits<uint8_t>(6), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;

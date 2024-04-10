@@ -322,10 +322,10 @@ void Stuffer::evaluateNextStuffing()
     if (!_tstamp2 && (initial_position == 0 || !_input.canSeek(initial_position))) {
         ts::UString msg(u"no " + getTimeStampType() + u" found");
         if (initial_position > 0) {
-            msg += ts::UString::Format(u" after packet %'d", {initial_position});
+            msg += ts::UString::Format(u" after packet %'d", initial_position);
         }
         if (_opt.reference_pid != ts::PID_NULL) {
-            msg += ts::UString::Format(u" in PID %d (0x%X), try another PID or increasing --buffer-size", {_opt.reference_pid, _opt.reference_pid});
+            msg += ts::UString::Format(u" in PID %d (0x%X), try another PID or increasing --buffer-size", _opt.reference_pid, _opt.reference_pid);
         }
         else {
             msg += u", try increasing --buffer-size";

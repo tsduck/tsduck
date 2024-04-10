@@ -809,8 +809,8 @@ void ts::FileComparator::displayReorder(size_t file0_index, const FileToCompare&
         json::Value& jv(_jroot.query(u"events[]", true));
         jv.add(u"type", u"out-of-order");
         jv.add(u"count", count);
-        jv.add(UString::Format(u"packet%d", {file0_index}), packet_index0);
-        jv.add(UString::Format(u"packet%d", {file1_index}), packet_index1);
+        jv.add(UString::Format(u"packet%d", file0_index), packet_index0);
+        jv.add(UString::Format(u"packet%d", file1_index), packet_index1);
     }
     if (_opt.normalized) {
         std::cout << "outoforder:count=" << count << ":packet" << file0_index << "=" << packet_index0 << ":packet" << file1_index << "=" << packet_index1 << ":" << std::endl;

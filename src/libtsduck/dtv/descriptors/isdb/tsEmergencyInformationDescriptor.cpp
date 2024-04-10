@@ -95,13 +95,13 @@ void ts::EmergencyInformationDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"- Event service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-        disp << margin << UString::Format(u"  Event is started: %s", {buf.getBool()}) << std::endl;
-        disp << margin << UString::Format(u"  Signal level: %d", {buf.getBit()}) << std::endl;
+        disp << margin << UString::Format(u"- Event service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"  Event is started: %s", buf.getBool()) << std::endl;
+        disp << margin << UString::Format(u"  Signal level: %d", buf.getBit()) << std::endl;
         buf.skipBits(6);
         buf.pushReadSizeFromLength(8); // area_code_length
         while (buf.canRead()) {
-            disp << margin << UString::Format(u"  Area code: 0x%03X (%<d)", {buf.getBits<uint16_t>(12)}) << std::endl;
+            disp << margin << UString::Format(u"  Area code: 0x%03X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;
             buf.skipBits(4);
         }
         buf.popState(); // end of  area_code_length

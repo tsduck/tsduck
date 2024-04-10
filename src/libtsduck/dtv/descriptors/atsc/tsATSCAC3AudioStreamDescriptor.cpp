@@ -206,7 +206,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     if (buf.canReadBytes(3)) {
         // Fixed initial size: 3 bytes.
         disp << margin << "Sample rate: " << DataName(MY_XML_NAME, u"SampleRateCode", buf.getBits<uint8_t>(3), NamesFlags::VALUE) << std::endl;
-        disp << margin << UString::Format(u"AC-3 coding version: 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
+        disp << margin << UString::Format(u"AC-3 coding version: 0x%X (%<d)", buf.getBits<uint8_t>(5)) << std::endl;
         const uint8_t bitrate = buf.getBits<uint8_t>(6);
         disp << margin << "Bit rate: " << DataName(MY_XML_NAME, u"BitRateCode", bitrate & 0x1F, NamesFlags::VALUE) << ((bitrate & 0x20) == 0 ? "" : " max") << std::endl;
         disp << margin << "Surround mode: " << DataName(MY_XML_NAME, u"SurroundMode", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
@@ -214,7 +214,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         disp << margin << "Bitstream mode: " << DataName(MY_XML_NAME, u"BitStreamMode", bsmod, NamesFlags::VALUE) << std::endl;
         const uint8_t channels = buf.getBits<uint8_t>(4);
         disp << margin << "Num. channels: " << DataName(MY_XML_NAME, u"NumChannels", channels, NamesFlags::VALUE) << std::endl;
-        disp << margin << UString::Format(u"Full service: %s", {buf.getBool()}) << std::endl;
+        disp << margin << UString::Format(u"Full service: %s", buf.getBool()) << std::endl;
 
         // Ignore langcode and langcode2, deprecated
         buf.skipBits(8);
@@ -225,12 +225,12 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         // Decode one byte depending on bsmod.
         if (buf.canRead()) {
             if (bsmod < 2) {
-                disp << margin << UString::Format(u"Main audio service id: %d", {buf.getBits<uint8_t>(3)}) << std::endl;
-                disp << margin << UString::Format(u"Priority: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+                disp << margin << UString::Format(u"Main audio service id: %d", buf.getBits<uint8_t>(3)) << std::endl;
+                disp << margin << UString::Format(u"Priority: %d", buf.getBits<uint8_t>(2)) << std::endl;
                 buf.skipBits(3);
             }
             else {
-                disp << margin << UString::Format(u"Associated services flags: 0x%X", {buf.getUInt8()}) << std::endl;
+                disp << margin << UString::Format(u"Associated services flags: 0x%X", buf.getUInt8()) << std::endl;
             }
         }
 

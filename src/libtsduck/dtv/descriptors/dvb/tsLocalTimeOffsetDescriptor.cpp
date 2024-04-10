@@ -93,15 +93,15 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
     while (buf.canReadBytes(13)) {
         // Country code is a 3-byte string
         disp << margin << "Country code: " << buf.getLanguageCode() << std::endl;
-        disp << margin << UString::Format(u"Region id: %d (0x%<X)", {buf.getBits<uint8_t>(6)});
+        disp << margin << UString::Format(u"Region id: %d (0x%<X)", buf.getBits<uint8_t>(6));
         buf.skipBits(1);
         const uint8_t polarity = buf.getBit();
         disp << ", polarity: " << (polarity ? "west" : "east") << " of Greenwich" << std::endl;
-        disp << margin << UString::Format(u"Local time offset: %s%02d", {polarity ? u"-" : u"", buf.getBCD<uint8_t>(2)});
-        disp << UString::Format(u":%02d", {buf.getBCD<uint8_t>(2)}) << std::endl;
+        disp << margin << UString::Format(u"Local time offset: %s%02d", polarity ? u"-" : u"", buf.getBCD<uint8_t>(2));
+        disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
         disp << margin << "Next change: " << buf.getMJD(5).format(Time::DATETIME) << std::endl;
-        disp << margin << UString::Format(u"Next time offset: %s%02d", {polarity ? u"-" : u"", buf.getBCD<uint8_t>(2)});
-        disp << UString::Format(u":%02d", {buf.getBCD<uint8_t>(2)}) << std::endl;
+        disp << margin << UString::Format(u"Next time offset: %s%02d", polarity ? u"-" : u"", buf.getBCD<uint8_t>(2));
+        disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
     }
 }
 

@@ -388,7 +388,7 @@ bool ts::Fraction<INT_T,N>::inRange(int64_t min, int64_t max) const
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 ts::UString ts::Fraction<INT_T,N>::description() const
 {
-    return UString::Format(u"fraction of two %d-bit integers", {8 * sizeof(int_t)});
+    return UString::Format(u"fraction of two %d-bit integers", 8 * sizeof(int_t));
 }
 
 // Converts to a proper fraction (a fraction that is less than 1).

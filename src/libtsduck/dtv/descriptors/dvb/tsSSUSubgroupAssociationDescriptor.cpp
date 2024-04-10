@@ -66,7 +66,7 @@ void ts::SSUSubgroupAssociationDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SSUSubgroupAssociationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBits(40)) {
-        disp << margin << UString::Format(u"Subgroup tag: 0x%010X (%<d)", {buf.getUInt40()}) << std::endl;
+        disp << margin << UString::Format(u"Subgroup tag: 0x%010X (%<d)", buf.getUInt40()) << std::endl;
     }
 }
 

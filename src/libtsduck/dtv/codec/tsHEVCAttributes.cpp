@@ -22,7 +22,7 @@ ts::UString ts::HEVCAttributes::toString() const
     }
 
     UString desc;
-    desc.format(u"%dx%d, ", {_hsize, _vsize});
+    desc.format(u"%dx%d, ", _hsize, _vsize);
     desc += profileName();
     desc += u", level ";
     desc += levelName();
@@ -39,7 +39,7 @@ ts::UString ts::HEVCAttributes::toString() const
 
 ts::UString ts::HEVCAttributes::levelName() const
 {
-    return _is_valid ? UString::Format(u"%d.%d", {_level / 30, (_level / 3) % 10}) : UString();
+    return _is_valid ? UString::Format(u"%d.%d", _level / 30, (_level / 3) % 10) : UString();
 }
 
 ts::UString ts::HEVCAttributes::profileName() const

@@ -523,7 +523,7 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
                 result = u"\n ";
             }
             if (i > start) {
-                result.append(UString::Format(u" %d", {i - start}));
+                result.append(UString::Format(u" %d", i - start));
             }
             result.append(u" S");
             start = i + 1;
@@ -533,7 +533,7 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
         return u"\n  no sync byte";
     }
     else if (start < udp_size) {
-        result.append(UString::Format(u" %d", {udp_size - start}));
+        result.append(UString::Format(u" %d", udp_size - start));
     }
 
     // If we have shorter intervals (less than 187), maybe some 0x47 were simply data bytes.
@@ -548,9 +548,9 @@ ts::UString ts::MPEPlugin::syncLayoutString(const uint8_t* udp, size_t udp_size)
             }
             if (found) {
                 // Yes, found a list of complete TS packets.
-                result.append(UString::Format(u"\n  %d", {syncIndex[si]}));
+                result.append(UString::Format(u"\n  %d", syncIndex[si]));
                 for (size_t i = syncIndex[si]; i < udp_size; i += PKT_SIZE) {
-                    result.append(UString::Format(u" S %d", {std::min(PKT_SIZE - 1, udp_size - i)}));
+                    result.append(UString::Format(u" S %d", std::min(PKT_SIZE - 1, udp_size - i)));
                 }
                 // Not need to try starting at the next sync byte?
                 break;

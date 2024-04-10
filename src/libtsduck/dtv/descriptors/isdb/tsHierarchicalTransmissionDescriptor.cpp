@@ -73,7 +73,7 @@ void ts::HierarchicalTransmissionDescriptor::DisplayDescriptor(TablesDisplay& di
     if (buf.canReadBytes(3)) {
         buf.skipBits(7);
         disp << margin << "Quality level: " << (buf.getBool() ? u"high" : u"low") << std::endl;
-        disp << margin << UString::Format(u"Reference PID: 0x%X (%<d)", {buf.getPID()}) << std::endl;
+        disp << margin << UString::Format(u"Reference PID: 0x%X (%<d)", buf.getPID()) << std::endl;
     }
 }
 

@@ -115,12 +115,12 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 {
     while (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();
-        disp << margin << UString::Format(u"- Range type: 0x%X (%<d)", {type}) << std::endl;
+        disp << margin << UString::Format(u"- Range type: 0x%X (%<d)", type) << std::endl;
 
         buf.pushReadSizeFromLength(8); // range_length
         if (type == 0 && buf.canReadBytes(3)) {
-            disp << margin << UString::Format(u"  Video max disparity hint: %d", {buf.getBits<int16_t>(12)});
-            disp << UString::Format(u", min: %d", {buf.getBits<int16_t>(12)}) << std::endl;
+            disp << margin << UString::Format(u"  Video max disparity hint: %d", buf.getBits<int16_t>(12));
+            disp << UString::Format(u", min: %d", buf.getBits<int16_t>(12)) << std::endl;
         }
         else if (type > 1) {
             disp.displayPrivateData(u"Range selector bytes", buf, NPOS, margin + u"  ");

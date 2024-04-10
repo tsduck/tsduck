@@ -237,25 +237,25 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     else {
         // Sometimes, the identifier is made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
-        disp << margin << UString::Format(u"Segmentation event id: 0x%X", {buf.getUInt32()});
+        disp << margin << UString::Format(u"Segmentation event id: 0x%X", buf.getUInt32());
         cancel = buf.getBool();
         buf.skipBits(7);
-        disp << UString::Format(u", cancel: %d", {cancel}) << std::endl;
+        disp << UString::Format(u", cancel: %d", cancel) << std::endl;
     }
 
     if (buf.canReadBytes(1) && !cancel) {
         program_segmentation = buf.getBool();
         has_duration = buf.getBool();
         not_restricted = buf.getBool();
-        disp << margin << UString::Format(u"Program segmentation: %d, has duration: %d, not restricted: %d", {program_segmentation, has_duration, not_restricted}) << std::endl;
+        disp << margin << UString::Format(u"Program segmentation: %d, has duration: %d, not restricted: %d", program_segmentation, has_duration, not_restricted) << std::endl;
         if (not_restricted) {
             buf.skipBits(5);
         }
         else {
-            disp << margin << UString::Format(u"Web delivery allowed: %d", {buf.getBit()});
-            disp << UString::Format(u", no regional blackout: %d", {buf.getBit()}) << std::endl;
-            disp << margin << UString::Format(u"Archive allowed: %d", {buf.getBit()});
-            disp << UString::Format(u", device restrictions: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
+            disp << margin << UString::Format(u"Web delivery allowed: %d", buf.getBit());
+            disp << UString::Format(u", no regional blackout: %d", buf.getBit()) << std::endl;
+            disp << margin << UString::Format(u"Archive allowed: %d", buf.getBit());
+            disp << UString::Format(u", device restrictions: %d", buf.getBits<uint8_t>(2)) << std::endl;
         }
     }
 
@@ -265,12 +265,12 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         }
         else {
             size_t count = buf.getUInt8();
-            disp << margin << UString::Format(u"Component count: %d", {count}) << std::endl;
+            disp << margin << UString::Format(u"Component count: %d", count) << std::endl;
             while (buf.canReadBytes(6) && count > 0) {
                 count--;
-                disp << margin << UString::Format(u"Component tag: %d", {buf.getUInt8()});
+                disp << margin << UString::Format(u"Component tag: %d", buf.getUInt8());
                 buf.skipBits(7);
-                disp << UString::Format(u", PTS offset: %d", {buf.getBits<uint64_t>(33)}) << std::endl;
+                disp << UString::Format(u", PTS offset: %d", buf.getBits<uint64_t>(33)) << std::endl;
             }
             if (count != 0) {
                 buf.setUserError();
@@ -283,7 +283,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
             buf.setUserError();
         }
         else {
-            disp << margin << UString::Format(u"Segment duration: %d", {buf.getUInt40()}) << std::endl;
+            disp << margin << UString::Format(u"Segment duration: %d", buf.getUInt40()) << std::endl;
         }
     }
 
@@ -292,7 +292,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
             buf.setUserError();
         }
         else {
-            disp << margin << UString::Format(u"Segmentation upid type: %s", {DataName(MY_XML_NAME, u"UpIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"Segmentation upid type: %s", DataName(MY_XML_NAME, u"UpIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST)) << std::endl;
             const size_t upid_size = buf.getUInt8();
             disp.displayPrivateData(u"Upid data", buf, upid_size, margin);
         }
@@ -304,9 +304,9 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         }
         else {
             type_id = buf.getUInt8();
-            disp << margin << UString::Format(u"Segmentation type id: %s", {DataName(MY_XML_NAME, u"TypeId", type_id, NamesFlags::HEXA_FIRST)}) << std::endl;
-            disp << margin << UString::Format(u"Segment number: %d", {buf.getUInt8()});
-            disp << UString::Format(u", expected segments: %d", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Segmentation type id: %s", DataName(MY_XML_NAME, u"TypeId", type_id, NamesFlags::HEXA_FIRST)) << std::endl;
+            disp << margin << UString::Format(u"Segment number: %d", buf.getUInt8());
+            disp << UString::Format(u", expected segments: %d", buf.getUInt8()) << std::endl;
         }
     }
 
@@ -315,8 +315,8 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
             buf.setUserError();
         }
         else {
-            disp << margin << UString::Format(u"Sub-segment number: %d", {buf.getUInt8()});
-            disp << UString::Format(u", expected sub-segments: %d", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Sub-segment number: %d", buf.getUInt8());
+            disp << UString::Format(u", expected sub-segments: %d", buf.getUInt8()) << std::endl;
         }
     }
 }

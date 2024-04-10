@@ -27,7 +27,7 @@ ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
 {
     if (options.log_plugin_index) {
         // Make sure that plugins display their index.
-        setLogName(UString::Format(u"%s[%d]", {pluginName(), _plugin_index}));
+        setLogName(UString::Format(u"%s[%d]", pluginName(), _plugin_index));
     }
 }
 

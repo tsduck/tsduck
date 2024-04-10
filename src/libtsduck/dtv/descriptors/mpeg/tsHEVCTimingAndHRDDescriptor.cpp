@@ -121,17 +121,17 @@ void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             buf.skipBits(5);
         }
         else {
-            disp << margin << UString::Format(u"Target schedule idx: 0x%x (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
+            disp << margin << UString::Format(u"Target schedule idx: 0x%x (%<d)", buf.getBits<uint8_t>(5)) << std::endl;
         }
         if (buf.getBool()) { // info_present
             const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
             buf.skipBits(7);
             if (has_90kHz && buf.canReadBytes(8)) {
-                disp << margin << UString::Format(u"90 kHz: N = %'d", {buf.getUInt32()});
-                disp << UString::Format(u", K = %'d", {buf.getUInt32()}) << std::endl;
+                disp << margin << UString::Format(u"90 kHz: N = %'d", buf.getUInt32());
+                disp << UString::Format(u", K = %'d", buf.getUInt32()) << std::endl;
             }
             if (buf.canReadBytes(4)) {
-                disp << margin << UString::Format(u"Num. units in tick: %'d", {buf.getUInt32()}) << std::endl;
+                disp << margin << UString::Format(u"Num. units in tick: %'d", buf.getUInt32()) << std::endl;
             }
         }
     }

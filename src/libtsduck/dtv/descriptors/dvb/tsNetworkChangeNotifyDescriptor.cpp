@@ -123,22 +123,22 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"- Cell id: 0x%X", {buf.getUInt16()}) << std::endl;
+        disp << margin << UString::Format(u"- Cell id: 0x%X", buf.getUInt16()) << std::endl;
         buf.pushReadSizeFromLength(8); // loop_length
         while (buf.canReadBytes(12)) {
-            disp << margin << UString::Format(u"  - Network change id: 0x%X", {buf.getUInt8()});
-            disp << UString::Format(u", version: 0x%X", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"  - Network change id: 0x%X", buf.getUInt8());
+            disp << UString::Format(u", version: 0x%X", buf.getUInt8()) << std::endl;
             disp << margin << "    Start: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME);
-            disp << UString::Format(u", duration: %02d", {buf.getBCD<uint8_t>(2)});
-            disp << UString::Format(u":%02d", {buf.getBCD<uint8_t>(2)});
-            disp << UString::Format(u":%02d", {buf.getBCD<uint8_t>(2)}) << std::endl;
-            disp << margin << UString::Format(u"    Receiver category: 0x%X", {buf.getBits<uint8_t>(3)}) << std::endl;
+            disp << UString::Format(u", duration: %02d", buf.getBCD<uint8_t>(2));
+            disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2));
+            disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
+            disp << margin << UString::Format(u"    Receiver category: 0x%X", buf.getBits<uint8_t>(3)) << std::endl;
             const bool invariant_ts_present = buf.getBool();
             disp << margin << "    Change type: " << DataName(MY_XML_NAME, u"ChangeType", buf.getBits<uint8_t>(4), NamesFlags::HEXA_FIRST) << std::endl;
-            disp << margin << UString::Format(u"    Message id: 0x%X", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"    Message id: 0x%X", buf.getUInt8()) << std::endl;
             if (invariant_ts_present && buf.canReadBytes(4)) {
-                disp << margin << UString::Format(u"    Invariant TS id: 0x%X", {buf.getUInt16()});
-                disp << UString::Format(u", orig. net. id: 0x%X", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"    Invariant TS id: 0x%X", buf.getUInt16());
+                disp << UString::Format(u", orig. net. id: 0x%X", buf.getUInt16()) << std::endl;
             }
         }
         disp.displayPrivateData(u"Extraneous cell data", buf, NPOS, margin + u"  ");

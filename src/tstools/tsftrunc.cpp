@@ -107,12 +107,12 @@ int MainCode(int argc, char *argv[])
             if (opt.files.size() > 1) {
                 std::cout << file << ": ";
             }
-            std::cout << ts::UString::Format(u"%'d bytes, %'d %d-byte packets, ", {file_size, pkt_count, opt.packet_size});
+            std::cout << ts::UString::Format(u"%'d bytes, %'d %d-byte packets, ", file_size, pkt_count, opt.packet_size);
             if (extra > 0) {
-                std::cout << ts::UString::Format(u"%'d extra bytes, ", {extra});
+                std::cout << ts::UString::Format(u"%'d extra bytes, ", extra);
             }
             if (keep < file_size) {
-                std::cout << ts::UString::Format(u"%'d bytes to truncate, ", {file_size - keep}) << std::endl;
+                std::cout << ts::UString::Format(u"%'d bytes to truncate, ", file_size - keep) << std::endl;
             }
             else {
                 std::cout << "ok" << std::endl;

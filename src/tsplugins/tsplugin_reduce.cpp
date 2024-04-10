@@ -152,7 +152,7 @@ bool ts::ReducePlugin::getOptions()
             tsp->error(u"Specify either --fixed-proportion or legacy parameters but not both");
             ok = false;
         }
-        else if (!fixprop.scan(u"%d/%d", {&_fixed_rempkt, &_fixed_inpkt}) || _fixed_rempkt <= 0 || _fixed_inpkt <= 0) {
+        else if (!fixprop.scan(u"%d/%d", &_fixed_rempkt, &_fixed_inpkt) || _fixed_rempkt <= 0 || _fixed_inpkt <= 0) {
             tsp->error(u"Invalid value '%s' for --fixed-proportion", {fixprop});
             ok = false;
         }

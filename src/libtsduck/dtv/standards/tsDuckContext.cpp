@@ -249,7 +249,7 @@ bool ts::DuckContext::setTimeReference(const UString& name)
     cn::hours::rep hours = 0;
     cn::minutes::rep minutes = 0;
 
-    str.scan(count, last, u"UTC%c%d:%d", {&sign, &hours, &minutes});
+    str.scan(count, last, u"UTC%c%d:%d", &sign, &hours, &minutes);
     if ((count == 2 || count == 3) &&
         last == str.size() &&
         (sign == u'+' || sign == u'-') &&
@@ -282,10 +282,10 @@ ts::UString ts::DuckContext::timeReferenceName() const
         const UChar sign = _timeReference < cn::minutes::zero() ? u'-' : u'+';
         const cn::minutes::rep minutes = std::abs(cn::duration_cast<cn::minutes>(_timeReference).count());
         if (minutes % 60 == 0) {
-            return UString::Format(u"UTC%c%d", {sign, minutes / 60});
+            return UString::Format(u"UTC%c%d", sign, minutes / 60);
         }
         else {
-            return UString::Format(u"UTC%c%d:%02d", {sign, minutes / 60, minutes % 60});
+            return UString::Format(u"UTC%c%d:%02d", sign, minutes / 60, minutes % 60);
         }
     }
 }
@@ -452,7 +452,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         // Predefined CAS options:
         for (const auto& cas : _predefined_cas) {
             args.option(cas.second);
-            args.help(cas.second, UString::Format(u"Equivalent to --default-cas-id 0x%04X.", {cas.first}));
+            args.help(cas.second, UString::Format(u"Equivalent to --default-cas-id 0x%04X.", cas.first));
         }
     }
 

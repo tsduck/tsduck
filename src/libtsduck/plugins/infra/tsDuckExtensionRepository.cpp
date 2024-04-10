@@ -130,25 +130,25 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
     for (const auto& ext : _extensions) {
 
         // First line: name and description.
-        out.format(u"%s %s\n", {ext.name.toJustifiedLeft(width, u'.', false, 1), ext.description});
+        out.format(u"%s %s\n", ext.name.toJustifiedLeft(width, u'.', false, 1), ext.description);
 
         if (report.verbose()) {
             // Display full file names.
-            out.format(u"%*s Library: %s\n", {width, u"", ext.file_name});
+            out.format(u"%*s Library: %s\n", width, u"", ext.file_name);
             for (size_t i = 0; i < ext.plugins.size(); ++i) {
-                out.format(u"%*s Plugin %s: %s\n", {width, u"", ext.plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext.plugins[i], SHARED_LIBRARY_SUFFIX)});
+                out.format(u"%*s Plugin %s: %s\n", width, u"", ext.plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext.plugins[i], SHARED_LIBRARY_SUFFIX));
             }
             for (size_t i = 0; i < ext.tools.size(); ++i) {
-                out.format(u"%*s Command %s: %s\n", {width, u"", ext.tools[i], SearchFile(tools_dirs, u"", ext.tools[i], EXECUTABLE_FILE_SUFFIX)});
+                out.format(u"%*s Command %s: %s\n", width, u"", ext.tools[i], SearchFile(tools_dirs, u"", ext.tools[i], EXECUTABLE_FILE_SUFFIX));
             }
         }
         else {
             // Only display plugins and tools names.
             if (!ext.plugins.empty()) {
-                out.format(u"%*s Plugins: %s\n", {width, u"", UString::Join(ext.plugins)});
+                out.format(u"%*s Plugins: %s\n", width, u"", UString::Join(ext.plugins));
             }
             if (!ext.tools.empty()) {
-                out.format(u"%*s Commands: %s\n", {width, u"", UString::Join(ext.tools)});
+                out.format(u"%*s Commands: %s\n", width, u"", UString::Join(ext.tools));
             }
         }
     }

@@ -151,13 +151,13 @@ bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml:
 void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(11)) {
-        disp << margin << UString::Format(u"Frequency: %d", {buf.getBCD<uint32_t>(4)});
-        disp << UString::Format(u".%04d MHz", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Frequency: %d", buf.getBCD<uint32_t>(4));
+        disp << UString::Format(u".%04d MHz", buf.getBCD<uint32_t>(4)) << std::endl;
         buf.skipReservedBits(12);
         const uint8_t fec_outer = buf.getBits<uint8_t>(4);
         const uint8_t modulation = buf.getUInt8();
-        disp << margin << UString::Format(u"Symbol rate: %d", {buf.getBCD<uint32_t>(3)});
-        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Symbol rate: %d", buf.getBCD<uint32_t>(3));
+        disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
         disp << margin << "Modulation: ";
         switch (modulation) {
             case 0:  disp << "not defined"; break;

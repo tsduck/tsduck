@@ -220,15 +220,15 @@ void FloatingPointTest::testToString()
     TSUNIT_EQUAL(u"-12,345.04", Double(-12345.04).toString());
     TSUNIT_EQUAL(u"0", Double().toString());
     TSUNIT_EQUAL(u"1.333,333", (Double(4) / Double(3)).toString());
-    TSUNIT_EQUAL(u"1.333333", ts::UString::Format(u"%s", {Double(4) / Double(3)}));
-    TSUNIT_EQUAL(u"1.333333", ts::UString::Format(u"%f", {Double(4) / Double(3)}));
-    TSUNIT_EQUAL(u"1.333,333", ts::UString::Format(u"%'s", {Double(4) / Double(3)}));
-    TSUNIT_EQUAL(u"1.333,333", ts::UString::Format(u"%'f", {Double(4) / Double(3)}));
+    TSUNIT_EQUAL(u"1.333333", ts::UString::Format(u"%s", Double(4) / Double(3)));
+    TSUNIT_EQUAL(u"1.333333", ts::UString::Format(u"%f", Double(4) / Double(3)));
+    TSUNIT_EQUAL(u"1.333,333", ts::UString::Format(u"%'s", Double(4) / Double(3)));
+    TSUNIT_EQUAL(u"1.333,333", ts::UString::Format(u"%'f", Double(4) / Double(3)));
 
     using Double2 = ts::FloatingPoint<double, 2>;
     TSUNIT_EQUAL(u"1.33", (Double2(4) / Double2(3)).toString());
-    TSUNIT_EQUAL(u"1.33", ts::UString::Format(u"%s", {Double2(4) / Double2(3)}));
-    TSUNIT_EQUAL(u"1.33", ts::UString::Format(u"%f", {Double2(4) / Double2(3)}));
+    TSUNIT_EQUAL(u"1.33", ts::UString::Format(u"%s", Double2(4) / Double2(3)));
+    TSUNIT_EQUAL(u"1.33", ts::UString::Format(u"%f", Double2(4) / Double2(3)));
 }
 
 void FloatingPointTest::testFromString()

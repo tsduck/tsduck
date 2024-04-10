@@ -22,7 +22,7 @@ ts::UString ts::AVCAttributes::toString() const
     }
 
     UString desc;
-    desc.format(u"%dx%d, ", {_hsize, _vsize});
+    desc.format(u"%dx%d, ", _hsize, _vsize);
     desc += profileName();
     desc += u", level ";
     desc += levelName();
@@ -39,7 +39,7 @@ ts::UString ts::AVCAttributes::toString() const
 
 ts::UString ts::AVCAttributes::levelName() const
 {
-    return _is_valid ? UString::Format(u"%d.%d", {_level / 10, _level % 10}) : UString();
+    return _is_valid ? UString::Format(u"%d.%d", _level / 10, _level % 10) : UString();
 }
 
 ts::UString ts::AVCAttributes::profileName() const

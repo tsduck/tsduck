@@ -80,9 +80,9 @@ void ts::NPTEndpointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     if (buf.canReadBytes(14)) {
         buf.skipBits(15);
-        disp << margin << UString::Format(u"Start NPT: 0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+        disp << margin << UString::Format(u"Start NPT: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
         buf.skipBits(31);
-        disp << margin << UString::Format(u"Stop NPT:  0x%09X (%<d)", {buf.getBits<uint64_t>(33)}) << std::endl;
+        disp << margin << UString::Format(u"Stop NPT:  0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
     }
 }
 

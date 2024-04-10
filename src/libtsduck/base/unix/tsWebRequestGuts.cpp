@@ -277,7 +277,7 @@ ts::UString ts::WebRequest::SystemGuts::message(const UString& title, ENUM code,
         msg.append(UString::FromUTF8(err));
     }
     else {
-        msg.format(u"error code %d", {int(code)});
+        msg.format(u"error code %d", int(code));
     }
     if (_error[0] != 0) {
         msg.append(u", ");
@@ -784,19 +784,19 @@ ts::UString ts::WebRequest::GetLibraryVersion()
     if (info != nullptr) {
         same = info->version_num == LIBCURL_VERSION_NUM;
         if (info->version != nullptr) {
-            result.format(u": %s", {info->version});
+            result.format(u": %s", info->version);
         }
         if (info->ssl_version != nullptr) {
-            result.format(u", ssl: %s", {info->ssl_version});
+            result.format(u", ssl: %s", info->ssl_version);
         }
         if (info->libz_version != nullptr) {
-            result.format(u", libz: %s", {info->libz_version});
+            result.format(u", libz: %s", info->libz_version);
         }
     }
 
     // Add compilation version if different.
     if (!same) {
-        result.format(u", compiled with %s", {LIBCURL_VERSION});
+        result.format(u", compiled with %s", LIBCURL_VERSION);
     }
     return result;
 }

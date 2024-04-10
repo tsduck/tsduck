@@ -68,9 +68,9 @@ void ts::MultiplexBufferDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(6)) {
-        disp << margin << UString::Format(u"MB buffer size: %'d bytes", {buf.getUInt24()}) << std::endl;
+        disp << margin << UString::Format(u"MB buffer size: %'d bytes", buf.getUInt24()) << std::endl;
         const uint32_t tb = buf.getUInt24();
-        disp << margin << UString::Format(u"TB leak rate: %'d (%'d bits/s)", {tb, 400 * tb}) << std::endl;
+        disp << margin << UString::Format(u"TB leak rate: %'d (%'d bits/s)", tb, 400 * tb) << std::endl;
     }
 }
 

@@ -91,10 +91,10 @@ void ts::DTGServiceAttributeDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", {buf.getUInt16()});
+        disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", buf.getUInt16());
         buf.skipBits(6);
-        disp << UString::Format(u", numeric selection: %s", {buf.getBool()});
-        disp << UString::Format(u", visible: %s", {buf.getBool()}) << std::endl;
+        disp << UString::Format(u", numeric selection: %s", buf.getBool());
+        disp << UString::Format(u", visible: %s", buf.getBool()) << std::endl;
     }
 }
 

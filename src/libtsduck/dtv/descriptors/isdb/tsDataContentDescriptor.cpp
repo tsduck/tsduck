@@ -91,12 +91,12 @@ void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "Data component id: " << DataName(MY_XML_NAME, u"DataComponentId", buf.getUInt16(), NamesFlags::HEXA_FIRST) << std::endl;
-        disp << margin << UString::Format(u"Entry component: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Entry component: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         size_t len = buf.getUInt8();
         disp.displayPrivateData(u"Selector bytes", buf, len, margin);
         len = buf.canRead() ? buf.getUInt8() : 0;
         for (size_t i = 0; buf.canRead() && i < len; ++i) {
-            disp << margin << UString::Format(u"Component ref: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+            disp << margin << UString::Format(u"Component ref: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         }
         if (buf.canReadBytes(3)) {
             disp << margin << "Language: \"" << buf.getLanguageCode() << "\"" << std::endl;

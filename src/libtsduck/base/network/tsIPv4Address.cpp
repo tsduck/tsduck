@@ -130,7 +130,7 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
 
     // Try the trivial case of an IPv4 address.
     uint8_t b1, b2, b3, b4;
-    if (name.scan(u"%d.%d.%d.%d", {&b1, &b2, &b3, &b4})) {
+    if (name.scan(u"%d.%d.%d.%d", &b1, &b2, &b3, &b4)) {
         setAddress(b1, b2, b3, b4);
         return true;
     }
@@ -206,5 +206,5 @@ bool ts::IPv4Address::match(const IPv4Address& other) const
 
 ts::UString ts::IPv4Address::toString() const
 {
-    return UString::Format(u"%d.%d.%d.%d", {(_addr >> 24) & 0xFF, (_addr >> 16) & 0xFF, (_addr >> 8) & 0xFF, _addr & 0xFF});
+    return UString::Format(u"%d.%d.%d.%d", (_addr >> 24) & 0xFF, (_addr >> 16) & 0xFF, (_addr >> 8) & 0xFF, _addr & 0xFF);
 }

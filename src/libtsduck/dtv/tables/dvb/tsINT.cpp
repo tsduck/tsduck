@@ -193,11 +193,11 @@ void ts::INT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         const uint32_t pfid = buf.getUInt24();
         const uint8_t order = buf.getUInt8();
         const uint8_t comp_hash = uint8_t(pfid >> 16) ^ uint8_t(pfid >> 8) ^ uint8_t(pfid);
-        const UString hash_status(id_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash}));
+        const UString hash_status(id_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", comp_hash));
 
         disp << margin << "Platform id: " << DataName(MY_XML_NAME, u"platform_id", pfid, NamesFlags::FIRST) << std::endl
              << margin
-             << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)", {action, order, id_hash, hash_status})
+             << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)", action, order, id_hash, hash_status)
              << std::endl;
 
         disp.displayDescriptorListWithLength(section, buf, margin, u"Platform descriptors:");

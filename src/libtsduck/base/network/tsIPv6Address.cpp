@@ -152,7 +152,7 @@ ts::UString ts::IPv6Address::toString() const
             if (!result.empty() && result.back() != u':') {
                 result.append(u':');
             }
-            result.append(UString::Format(u"%1x", {GetUInt16(_bytes + i)}));
+            result.append(UString::Format(u"%1x", GetUInt16(_bytes + i)));
             i += 2;
         }
     }
@@ -213,7 +213,7 @@ bool ts::IPv6Address::resolve(const UString& name, Report& report)
         else {
             // Found a standard hexlet.
             uint16_t hl = 0; // hexlet
-            ok = fields[i].size() <= 4 && fields[i].scan(u"%x", {&hl});
+            ok = fields[i].size() <= 4 && fields[i].scan(u"%x", &hl);
             if (ok) {
                 PutUInt16(_bytes + bytesIndex, hl);
                 bytesIndex += 2;

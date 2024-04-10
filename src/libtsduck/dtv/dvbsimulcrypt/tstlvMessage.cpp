@@ -71,7 +71,7 @@ ts::UString ts::tlv::Message::dump(size_t indent) const
 ts::UString ts::tlv::Message::dumpOptional(size_t indent, const UString& name, bool has_value, const ByteBlock& bl, uint32_t flags)
 {
     if (has_value) {
-        return UString::Format(u"%*s%s (%d bytes) = ", {indent, u"", name, bl.size()}) +
+        return UString::Format(u"%*s%s (%d bytes) = ", indent, u"", name, bl.size()) +
                ((flags & UString::SINGLE_LINE) ? u"" : u"\n") +
                UString::Dump(bl.data(), bl.size(), flags, indent + 4) +
                ((flags & UString::SINGLE_LINE) ? u"\n" : u"");
@@ -90,7 +90,7 @@ ts::UString ts::tlv::Message::dumpVector(size_t indent, const UString& name, con
 {
     UString result;
     for (const auto& s : val) {
-        result += UString::Format(u"%*s%s = \"%s\"\n", {indent, u"", name, s});
+        result += UString::Format(u"%*s%s = \"%s\"\n", indent, u"", name, s);
     }
     return result;
 }

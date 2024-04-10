@@ -123,7 +123,7 @@ void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::dese
 
 void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::toXML(xml::Element* root)
 {
-    root->setAttribute(u"orbital_position", UString::Format(u"%d.%d", { orbital_position / 10, orbital_position % 10 }));
+    root->setAttribute(u"orbital_position", UString::Format(u"%d.%d",  orbital_position / 10, orbital_position % 10 ));
     root->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", west_east_flag);
 }
 
@@ -957,7 +957,7 @@ ts::UString ts::SAT::degrees18(uint32_t twosCompNum)
     constexpr SomeType sign_bits = ~SomeType{} << 18;
     long long int regularNum = twosCompNum & 1 << 17 ? twosCompNum | sign_bits : twosCompNum;
 
-    return  UString::Format(u"%f", { Double(regularNum) / Double(1000) });
+    return  UString::Format(u"%f",  Double(regularNum) / Double(1000) );
 }
 
 ts::UString ts::SAT::degrees19(uint32_t twosCompNum)
@@ -966,7 +966,7 @@ ts::UString ts::SAT::degrees19(uint32_t twosCompNum)
     constexpr SomeType sign_bits = ~SomeType{} << 19;
     long long int regularNum = twosCompNum & 1 << 18 ? twosCompNum | sign_bits : twosCompNum;
 
-    return  UString::Format(u"%f", { Double(regularNum) / Double(1000) });
+    return  UString::Format(u"%f",  Double(regularNum) / Double(1000) );
 }
 
 ts::UString ts::SAT::ncr(PSIBuffer& buf)
@@ -975,7 +975,7 @@ ts::UString ts::SAT::ncr(PSIBuffer& buf)
     uint64_t base = buf.getBits<uint64_t>(33);
     buf.skipReservedBits(6, 0);
     uint16_t ext = buf.getBits<uint16_t>(9);
-    return UString::Format(u"base=%d ext=%d NCR(%d)", { base, ext, (base * 300) + ext});
+    return UString::Format(u"base=%d ext=%d NCR(%d)",  base, ext, (base * 300) + ext);
 }
 
 
@@ -991,20 +991,20 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         case SATELLITE_POSITION_V2_INFO:  // Satellite Position V2 - EN 300 468, clause 5.2.11.2
             loop = 1;
             while (buf.canReadBytes(4)) {
-                disp << margin << UString::Format(u"[%d] Satellite id: %06x", { loop++, buf.getBits<uint32_t>(24) });
+                disp << margin << UString::Format(u"[%d] Satellite id: %06x",  loop++, buf.getBits<uint32_t>(24) );
                 buf.skipReservedBits(7, 0);
                 uint8_t _position_system = buf.getBits<uint8_t>(1);
                 if (_position_system == POSITION_SYSTEM_GEOSTATIONARY) {
                     uint16_t _orbital_position = buf.getUInt16();
                     bool _west_east_flag = buf.getBool();
                     buf.skipReservedBits(7, 0);
-                    disp << ", position: " <<
-                        UString::Format(u"%d%d%d.%d ", {
-                                (_orbital_position & 0xF000) >> 12,
-                                (_orbital_position & 0x0F00) >> 8,
-                                (_orbital_position & 0x00F0) >> 4,
-                                (_orbital_position & 0x000F)}) <<
-                        DataName(MY_XML_NAME, u"west_east_indicator", _west_east_flag, NamesFlags::NAME) << std::endl;
+                    disp << ", position: "
+                         << UString::Format(u"%d%d%d.%d ",
+                                            (_orbital_position & 0xF000) >> 12,
+                                            (_orbital_position & 0x0F00) >> 8,
+                                            (_orbital_position & 0x00F0) >> 4,
+                                            (_orbital_position & 0x000F))
+                         << DataName(MY_XML_NAME, u"west_east_indicator", _west_east_flag, NamesFlags::NAME) << std::endl;
                 }
                 else if (_position_system == POSITION_SYSTEM_EARTH_ORBITING) {
                     uint8_t _epoch_year = buf.getUInt8();
@@ -1026,7 +1026,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         case CELL_FRAGMENT_INFO: // Cell Fragment Info - EN 300 468, clause 5.2.11.3
             loop = 1;
             while (buf.canReadBytes(4)) {
-                disp << margin << UString::Format(u"[%d] Cell fragment id: %08x", { loop++, buf.getUInt32() });
+                disp << margin << UString::Format(u"[%d] Cell fragment id: %08x",  loop++, buf.getUInt32() );
                 bool _first_occurence = buf.getBool();
                 bool _last_occurence = buf.getBool();
                 disp << ", first: " << UString::TrueFalse(_first_occurence) << ", last: " << UString::TrueFalse(_last_occurence) << std::endl;
@@ -1083,7 +1083,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         case BEAMHOPPING_TIME_PLAN_INFO: // Beamhopping Time Plan - EN 300 468, clause 5.2.11.5
             loop = 1;
             while (buf.canReadBytes(19)) {
-                disp << margin << UString::Format(u"[%d] Beamhopping Time Plan id: %08x", { loop++, buf.getUInt32() });
+                disp << margin << UString::Format(u"[%d] Beamhopping Time Plan id: %08x",  loop++, buf.getUInt32() );
                 buf.skipReservedBits(4, 0);
                 buf.skipBits(12); // beamhopping_time_plan_length
                 buf.skipReservedBits(6, 0);
@@ -1118,7 +1118,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             }
             break;
         default:
-            disp << margin << UString::Format(u"!! invalid satellite_table_id: %d (0x%<X)", { _satellite_table_id }) << std::endl;
+            disp << margin << UString::Format(u"!! invalid satellite_table_id: %d (0x%<X)",  _satellite_table_id ) << std::endl;
     }
 }
 

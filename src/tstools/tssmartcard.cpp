@@ -220,7 +220,7 @@ namespace {
                 }
             }
             if (opt.verbose()) {
-                std::cout << ts::UString::Format(u"SW: %04X, response (%d bytes): %s", {sw, resp_len, ts::UString::Dump(response.data(), resp_len, ts::UString::SINGLE_LINE)})
+                std::cout << ts::UString::Format(u"SW: %04X, response (%d bytes): %s", sw, resp_len, ts::UString::Dump(response.data(), resp_len, ts::UString::SINGLE_LINE))
                           << std:: endl;
             }
         }

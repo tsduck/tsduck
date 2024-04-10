@@ -220,8 +220,8 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Protocol version: %d, DCCSCT type: 0x%X", {buf.getUInt8(), section.tableIdExtension()});
-        disp << UString::Format(u", number of updates: %d", {updates_defined = buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %d, DCCSCT type: 0x%X", buf.getUInt8(), section.tableIdExtension());
+        disp << UString::Format(u", number of updates: %d", updates_defined = buf.getUInt8()) << std::endl;
     }
 
     // Loop on all updates definitions.
@@ -233,7 +233,7 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         }
 
         const uint8_t utype = buf.getUInt8();
-        disp << margin << UString::Format(u"- Update type: 0x%X (%s)", {utype, UpdateTypeNames.name(utype)}) << std::endl;
+        disp << margin << UString::Format(u"- Update type: 0x%X (%s)", utype, UpdateTypeNames.name(utype)) << std::endl;
 
         // Reduce read area to update data.
         buf.pushReadSizeFromLength(8);
@@ -242,23 +242,23 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         switch (utype) {
             case new_genre_category: {
                 if (buf.canReadBytes(1)) {
-                    disp << margin << UString::Format(u"  Genre category code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                    disp << margin << UString::Format(u"  Genre category code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"Genre category name: ");
                 }
                 break;
             }
             case new_state: {
                 if (buf.canReadBytes(1)) {
-                    disp << margin << UString::Format(u"  DCC state location code: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+                    disp << margin << UString::Format(u"  DCC state location code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"DCC state location: ");
                 }
                 break;
             }
             case new_county: {
                 if (buf.canReadBytes(3)) {
-                    disp << margin << UString::Format(u"  State code: 0x%X (%<d)", {buf.getUInt8()});
+                    disp << margin << UString::Format(u"  State code: 0x%X (%<d)", buf.getUInt8());
                     buf.skipBits(6);
-                    disp << UString::Format(u", DCC county location code: 0x%03X (%<d)", {buf.getBits<uint16_t>(10)}) << std::endl;
+                    disp << UString::Format(u", DCC county location code: 0x%03X (%<d)", buf.getBits<uint16_t>(10)) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"DCC county location: ");
                 }
                 break;

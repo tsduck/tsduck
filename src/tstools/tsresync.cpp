@@ -357,8 +357,8 @@ int MainCode(int argc, char *argv[])
                 resync.setStatus(RS_EOF);
             }
             else if (sync_buf[resync.inputHeaderSize()] != ts::SYNC_BYTE) {
-                std::cerr << ts::UString::Format(u"*** Synchronization lost after %'d TS packets", {resync.outputFilePackets()}) << std::endl
-                          << ts::UString::Format(u"*** Got 0x%X instead of 0x%X at start of TS packet", {sync_buf[resync.inputHeaderSize()], ts::SYNC_BYTE}) << std::endl;
+                std::cerr << ts::UString::Format(u"*** Synchronization lost after %'d TS packets", resync.outputFilePackets()) << std::endl
+                          << ts::UString::Format(u"*** Got 0x%X instead of 0x%X at start of TS packet", sync_buf[resync.inputHeaderSize()], ts::SYNC_BYTE) << std::endl;
                 resync.setStatus(RS_SYNC_LOST);
                 // Will resynchronize with sync buffer pre-loaded
                 sync_pre_size = resync.inputPacketSize();
@@ -372,7 +372,7 @@ int MainCode(int argc, char *argv[])
     } while (resync.status() == RS_OK || (resync.status() == RS_SYNC_LOST && opt.cont_sync));
 
     if (opt.verbose()) {
-        std::cerr << ts::UString::Format(u"* Output %'d bytes, %'d %d-byte packets", {resync.outputFileBytes(), resync.outputFilePackets(), resync.outputPacketSize()})
+        std::cerr << ts::UString::Format(u"* Output %'d bytes, %'d %d-byte packets", resync.outputFileBytes(), resync.outputFilePackets(), resync.outputPacketSize())
                   << std::endl;
     }
 

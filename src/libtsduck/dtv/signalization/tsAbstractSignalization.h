@@ -123,7 +123,7 @@ namespace ts {
         static UString DataName(const UChar* xml_name, const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternate = 0)
         {
             return NamesFile::Instance(NamesFile::Predefined::DTV)->
-                    nameFromSection(UString::Format(u"%s.%s", {xml_name, section}), NamesFile::Value(value), flags, bits, NamesFile::Value(alternate));
+                    nameFromSection(UString::Format(u"%s.%s", xml_name, section), NamesFile::Value(value), flags, bits, NamesFile::Value(alternate));
         }
 
         //!

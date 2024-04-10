@@ -125,11 +125,11 @@ int MainCode(int argc, char *argv[])
         // Display gain range.
         int min, max;
         if (dev.getInfo(info, opt) && dev.getGainRange(min, max, opt.frequency, opt.bandwidth, opt)) {
-            std::cout << ts::UString::Format(u"Device: %s", {info.toString()}) << std::endl
-                << ts::UString::Format(u"Frequency: %'d Hz", {opt.frequency}) << std::endl
-                << ts::UString::Format(u"Bandwidth: %'d Hz", {opt.bandwidth}) << std::endl
-                << ts::UString::Format(u"Min. gain: %d dB", {min}) << std::endl
-                << ts::UString::Format(u"Max. gain: %d dB", {max}) << std::endl;
+            std::cout << ts::UString::Format(u"Device: %s", info.toString()) << std::endl
+                << ts::UString::Format(u"Frequency: %'d Hz", opt.frequency) << std::endl
+                << ts::UString::Format(u"Bandwidth: %'d Hz", opt.bandwidth) << std::endl
+                << ts::UString::Format(u"Min. gain: %d dB", min) << std::endl
+                << ts::UString::Format(u"Max. gain: %d dB", max) << std::endl;
         }
     }
     else if (one_device) {

@@ -74,7 +74,7 @@ void ts::ISPAccessModeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 {
     if (buf.canReadBytes(1)) {
         const uint8_t mode = buf.getUInt8();
-        disp << margin << UString::Format(u"Access mode: 0x%X (%s)", {mode, AccessModeNames.name(mode)}) << std::endl;
+        disp << margin << UString::Format(u"Access mode: 0x%X (%s)", mode, AccessModeNames.name(mode)) << std::endl;
     }
 }
 

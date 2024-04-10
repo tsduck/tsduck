@@ -203,7 +203,7 @@ void ThreadTest::testDeleteWhenTerminated()
         debug() << "ThreadTest::testDeleteWhenTerminated: ThreadDeleteWhenTerminated deleted after " << (after - before).count() << " milliseconds" << std::endl;
     }
     else {
-        TSUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", {(after - before).count()}).toUTF8());
+        TSUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", (after - before).count()).toUTF8());
     }
 }
 

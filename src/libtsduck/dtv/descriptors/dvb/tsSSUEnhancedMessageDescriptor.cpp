@@ -85,11 +85,11 @@ void ts::SSUEnhancedMessageDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SSUEnhancedMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(5)) {
-        disp << margin << UString::Format(u"Descriptor number: %d", {buf.getBits<uint8_t>(4)});
-        disp << UString::Format(u", last: %d", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Descriptor number: %d", buf.getBits<uint8_t>(4));
+        disp << UString::Format(u", last: %d", buf.getBits<uint8_t>(4)) << std::endl;
         disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
         buf.skipBits(3);
-        disp << margin << UString::Format(u"Message index: %d", {buf.getBits<uint8_t>(5)}) << std::endl;
+        disp << margin << UString::Format(u"Message index: %d", buf.getBits<uint8_t>(5)) << std::endl;
         disp << margin << "Text: \"" << buf.getString() << "\"" << std::endl;
     }
 }

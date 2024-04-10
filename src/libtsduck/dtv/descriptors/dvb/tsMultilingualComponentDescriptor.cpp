@@ -66,7 +66,7 @@ void ts::MultilingualComponentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canRead()) {
-        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         AbstractMultilingualDescriptor::DisplayDescriptor(disp, buf, margin, did, tid, pds);
     }
 }

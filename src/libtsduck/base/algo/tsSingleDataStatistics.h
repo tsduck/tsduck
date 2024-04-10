@@ -208,19 +208,19 @@ typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::FLOAT ts::SingleDat
 template <typename NUMBER, typename DEFAULT_FLOAT, class N>
 ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::meanString(size_t width, size_t precision) const
 {
-    return UString::Format(u"%*.*f", {width, precision, mean()});
+    return UString::Format(u"%*.*f", width, precision, mean());
 }
 
 // Get the variance as string.
 template <typename NUMBER, typename DEFAULT_FLOAT, class N>
 ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::varianceString(size_t width, size_t precision) const
 {
-    return UString::Format(u"%*.*f", {width, precision, variance()});
+    return UString::Format(u"%*.*f", width, precision, variance());
 }
 
 // Get the standard deviation as string.
 template <typename NUMBER, typename DEFAULT_FLOAT, class N>
 ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT, N>::standardDeviationString(size_t width, size_t precision) const
 {
-    return UString::Format(u"%*.*f", {width, precision, standardDeviation()});
+    return UString::Format(u"%*.*f", width, precision, standardDeviation());
 }

@@ -143,7 +143,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
 
     // In case errno was also set.
     if (errno_status != 0 && errno_status != driver_status) {
-        msg.format(u"%s%s", {msg.empty() ? u"" : u", ", SysErrorCodeMessage(errno_status)});
+        msg.format(u"%s%s", msg.empty() ? u"" : u", ", SysErrorCodeMessage(errno_status));
     }
     return msg;
 }

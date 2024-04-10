@@ -352,7 +352,7 @@ bool ts::xml::Node::parseChildren(TextParser& parser)
 
 ts::UString ts::xml::Node::debug() const
 {
-    return UString::Format(u"%s, line %d, children: %d, value '%s'", {typeName(), lineNumber(), childrenCount(), value()});
+    return UString::Format(u"%s, line %d, children: %d, value '%s'", typeName(), lineNumber(), childrenCount(), value());
 }
 
 

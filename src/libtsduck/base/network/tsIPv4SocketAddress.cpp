@@ -107,7 +107,7 @@ bool ts::IPv4SocketAddress::match(const IPv4SocketAddress& other) const
 
 ts::UString ts::IPv4SocketAddress::toString() const
 {
-    return IPv4Address::toString() + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
+    return IPv4Address::toString() + (_port == AnyPort ? u"" : UString::Format(u":%d", _port));
 }
 
 

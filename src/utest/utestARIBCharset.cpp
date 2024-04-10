@@ -178,7 +178,7 @@ void ARIBCharsetTest::dump(const ts::UString& title, const ts::UString& str)
     if (debugMode()) {
         debug() << title.toJustifiedLeft(10) << '"' << str << '"' << std::endl << "UTF-16:  ";
         for (size_t i = 0; i < str.size(); ++i) {
-            debug() << ts::UString::Format(u" %s%X%s", {_cSyntaxDebug ? u"0x" : u"", uint16_t(str[i]), _cSyntaxDebug ? u"," : u""});
+            debug() << ts::UString::Format(u" %s%X%s", _cSyntaxDebug ? u"0x" : u"", uint16_t(str[i]), _cSyntaxDebug ? u"," : u"");
         }
         debug() << std::endl;
     }

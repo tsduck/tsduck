@@ -128,7 +128,7 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
         switch (mpe_fec) {
             case 0:  disp << "none"; break;
             case 1:  disp << "Reed-Solomon(255, 191, 64)"; break;
-            default: disp << UString::Format(u"reserved value 0x%X", {mpe_fec}); break;
+            default: disp << UString::Format(u"reserved value 0x%X", mpe_fec); break;
         }
         disp << std::endl;
         buf.skipBits(2);
@@ -139,10 +139,10 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
             case 1:  disp << "1024 kbits, 512 rows"; break;
             case 2:  disp << "1536 kbits, 768 rows"; break;
             case 3:  disp << "2048 kbits, 1024 rows"; break;
-            default: disp << UString::Format(u"reserved value 0x%X", {frame_size}); break;
+            default: disp << UString::Format(u"reserved value 0x%X", frame_size); break;
         }
         disp << std::endl;
-        disp << margin << UString::Format(u"Max burst duration: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        disp << margin << UString::Format(u"Max burst duration: 0x%X (%<d)", buf.getUInt8()) << std::endl;
         const uint8_t max_average_rate = buf.getBits<uint8_t>(4);
         disp << margin << "Max average rate: ";
         switch (max_average_rate) {
@@ -154,10 +154,10 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
             case 5:  disp << "512 kbps"; break;
             case 6:  disp << "1024 kbps"; break;
             case 7:  disp << "2048 kbps"; break;
-            default: disp << UString::Format(u"reserved value 0x%X", {max_average_rate}); break;
+            default: disp << UString::Format(u"reserved value 0x%X", max_average_rate); break;
         }
         disp << std::endl;
-        disp << margin << UString::Format(u"Time slice FEC id: 0x%X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
+        disp << margin << UString::Format(u"Time slice FEC id: 0x%X (%<d)", buf.getBits<uint8_t>(4)) << std::endl;
         disp.displayPrivateData(u"Id selector bytes", buf, NPOS, margin);
     }
 }

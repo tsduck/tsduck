@@ -161,43 +161,43 @@ ts::UString ts::Time::format(int fields) const
     Fields f(*this);
 
     if ((fields & YEAR) != 0) {
-        s.append(UString::Format(u"%4d", {f.year}));
+        s.append(UString::Format(u"%4d", f.year));
     }
     if ((fields & MONTH) != 0) {
         if ((fields & YEAR) != 0) {
             s.push_back(u'/');
         }
-        s.append(UString::Format(u"%02d", {f.month}));
+        s.append(UString::Format(u"%02d", f.month));
     }
     if ((fields & DAY) != 0) {
         if ((fields & (YEAR | MONTH)) != 0) {
             s.push_back(u'/');
         }
-        s.append(UString::Format(u"%02d", {f.day}));
+        s.append(UString::Format(u"%02d", f.day));
     }
     if ((fields & (YEAR | MONTH | DAY)) != 0 && (fields & (HOUR | MINUTE | SECOND | MILLISECOND)) != 0) {
         s.push_back(u' ');
     }
     if ((fields & HOUR) != 0) {
-        s.append(UString::Format(u"%02d", {f.hour}));
+        s.append(UString::Format(u"%02d", f.hour));
     }
     if ((fields & MINUTE) != 0) {
         if ((fields & HOUR) != 0) {
             s.push_back(u':');
         }
-        s.append(UString::Format(u"%02d", {f.minute}));
+        s.append(UString::Format(u"%02d", f.minute));
     }
     if ((fields & SECOND) != 0) {
         if ((fields & (HOUR | MINUTE)) != 0) {
             s.push_back(u':');
         }
-        s.append(UString::Format(u"%02d", {f.second}));
+        s.append(UString::Format(u"%02d", f.second));
     }
     if ((fields & MILLISECOND) != 0) {
         if ((fields & (HOUR | MINUTE | SECOND)) != 0) {
             s.push_back(u'.');
         }
-        s.append(UString::Format(u"%03d", {f.millisecond}));
+        s.append(UString::Format(u"%03d", f.millisecond));
     }
     return s;
 }
@@ -224,7 +224,7 @@ bool ts::Time::decode(const ts::UString& str, int fields)
     int f[7];
     size_t count = 0;
     size_t end = 0;
-    s.scan(count, end, u"%d %d %d %d %d %d %d", {&f[0], &f[1], &f[2], &f[3], &f[4], &f[5], &f[6]});
+    s.scan(count, end, u"%d %d %d %d %d %d %d", &f[0], &f[1], &f[2], &f[3], &f[4], &f[5], &f[6]);
 
     // Count how many fields are expected.
     size_t expected = 0;
@@ -564,7 +564,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     int64_t seconds = ::mktime_z(nullptr, &stime);
 
     if (seconds == time_t(-1)) {
-        throw TimeError(UString::Format(u"mktime_z error (%d, %d, %d, %d, %d, %d, %d)", {year, month, day, hour, minute, second, millisecond}));
+        throw TimeError(UString::Format(u"mktime_z error (%d, %d, %d, %d, %d, %d, %d)", year, month, day, hour, minute, second, millisecond));
     }
 
     // Convert to 64-bit time value
@@ -586,7 +586,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     int64_t seconds = ::mktime(&stime);
 
     if (seconds == time_t(-1)) {
-        throw TimeError(UString::Format(u"mktime error (%d, %d, %d, %d, %d, %d, %d)", {year, month, day, hour, minute, second, millisecond}));
+        throw TimeError(UString::Format(u"mktime error (%d, %d, %d, %d, %d, %d, %d)", year, month, day, hour, minute, second, millisecond));
     }
 
     // Add the GMT offset since mktime() uses stime as a local time

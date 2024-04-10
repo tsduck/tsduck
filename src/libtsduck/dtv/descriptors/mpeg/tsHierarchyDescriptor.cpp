@@ -106,12 +106,12 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << margin << "No quality scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Hierarchy type: " << DataName(MY_XML_NAME, u"HierarchyType", buf.getBits<uint8_t>(4), NamesFlags::BOTH_FIRST) << std::endl;
         buf.skipReservedBits(2);
-        disp << margin << UString::Format(u"Hierarchy layer index: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+        disp << margin << UString::Format(u"Hierarchy layer index: %d", buf.getBits<uint8_t>(6)) << std::endl;
         disp << margin << "Tref present: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipReservedBits(1);
-        disp << margin << UString::Format(u"Hierarchy embedded layer index: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+        disp << margin << UString::Format(u"Hierarchy embedded layer index: %d", buf.getBits<uint8_t>(6)) << std::endl;
         buf.skipReservedBits(2);
-        disp << margin << UString::Format(u"Hierarchy channel: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
+        disp << margin << UString::Format(u"Hierarchy channel: %d", buf.getBits<uint8_t>(6)) << std::endl;
     }
 }
 

@@ -52,29 +52,29 @@ ts::UString ts::HiDesDeviceInfo::toString(bool full, size_t indent) const
     if (full) {
         // One line per characteristics, when present.
         if (index >= 0) {
-            s += title(index, u"Index") + UString::Format(u"%d\n", {index});
+            s += title(index, u"Index") + UString::Format(u"%d\n", index);
         }
         if (!name.empty()) {
-            s += title(index, u"Name") + UString::Format(u"\"%s\"\n", {name});
+            s += title(index, u"Name") + UString::Format(u"\"%s\"\n", name);
         }
         if (!path.empty() && path != name) {
             s += title(index, u"Device") + path + u"\n";
         }
         if (usb_mode != 0) {
-            s += title(index, u"USB mode") + UString::Format(u"0x%X\n", {usb_mode});
+            s += title(index, u"USB mode") + UString::Format(u"0x%X\n", usb_mode);
         }
         if (vendor_id != 0) {
-            s += title(index, u"Vendor id") + UString::Format(u"0x%X\n", {vendor_id});
+            s += title(index, u"Vendor id") + UString::Format(u"0x%X\n", vendor_id);
         }
         if (product_id != 0) {
-            s += title(index, u"Product id") + UString::Format(u"0x%X\n", {product_id});
+            s += title(index, u"Product id") + UString::Format(u"0x%X\n", product_id);
         }
         if (chip_type != 0) {
-            s += title(index, u"Chip type") + UString::Format(u"0x%X\n", {chip_type});
+            s += title(index, u"Chip type") + UString::Format(u"0x%X\n", chip_type);
         }
         if (device_type >= 0) {
             // TODO: replace by names if possible.
-            s += title(index, u"Device type") + UString::Format(u"%d\n", {device_type});
+            s += title(index, u"Device type") + UString::Format(u"%d\n", device_type);
         }
         if (!driver_version.empty()) {
             s += title(index, u"Driver version") + driver_version + u"\n";
@@ -97,10 +97,10 @@ ts::UString ts::HiDesDeviceInfo::toString(bool full, size_t indent) const
     }
     else {
         // Short form.
-        s.format(u"%d: \"%s\"", {index, name});
+        s.format(u"%d: \"%s\"", index, name);
         // Add the device path if different and "not too long" (avoid ugly endless Windows device names).
         if (!path.empty() && path != name && path.length() < 40) {
-            s += UString::Format(u" (%s)", {path});
+            s += UString::Format(u" (%s)", path);
         }
     }
 

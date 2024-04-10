@@ -128,8 +128,8 @@ void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
                 disp << margin << "URL: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
             }
             else if (buf.canReadBytes(3)) {
-                disp << margin << UString::Format(u"Component tag: 0x0%X (%<d)", {buf.getUInt8()}) << std::endl;
-                disp << margin << UString::Format(u"Module id: 0x0%X (%<d)", {buf.getUInt16()}) << std::endl;
+                disp << margin << UString::Format(u"Component tag: 0x0%X (%<d)", buf.getUInt8()) << std::endl;
+                disp << margin << UString::Format(u"Module id: 0x0%X (%<d)", buf.getUInt16()) << std::endl;
             }
         }
     }
