@@ -8,7 +8,6 @@
 
 #include "tsxmlText.h"
 #include "tsxmlElement.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -93,7 +92,7 @@ bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent)
             setValue(content);
         }
         else {
-            report().error(u"line %d: no ]]> found to close the <![CDATA[", {lineNumber()});
+            report().error(u"line %d: no ]]> found to close the <![CDATA[", lineNumber());
         }
     }
     else {
@@ -104,7 +103,7 @@ bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent)
             setValue(content);
         }
         else {
-            report().error(u"line %d: error parsing text element, not properly terminated", {lineNumber()});
+            report().error(u"line %d: error parsing text element, not properly terminated", lineNumber());
         }
     }
 

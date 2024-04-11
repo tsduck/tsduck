@@ -71,7 +71,7 @@ ts::xml::Element* ts::xml::Element::findFirstChild(const UString& name, bool sil
 
     // Child node not found.
     if (!silent) {
-        report().error(u"Child node <%s> not found in <%s>, line %d", {name, value(), lineNumber()});
+        report().error(u"Child node <%s> not found in <%s>, line %d", name, value(), lineNumber());
     }
     return nullptr;
 }
@@ -235,7 +235,7 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSi
     // Get text children. Ignore errors if no text found, simply empty.
     // Interpret hexa data.
     if (!text().hexaDecode(data)) {
-        report().error(u"Invalid hexadecimal content in <%s>, line %d", {name(), lineNumber()});
+        report().error(u"Invalid hexadecimal content in <%s>, line %d", name(), lineNumber());
         return false;
     }
 

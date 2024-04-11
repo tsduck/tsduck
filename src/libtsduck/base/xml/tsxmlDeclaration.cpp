@@ -68,12 +68,12 @@ bool ts::xml::Declaration::parseNode(TextParser& parser, const Node* parent)
     if (ok) {
         setValue(text);
         if (dynamic_cast<const Document*>(parent) == nullptr) {
-            report().error(u"line %d: misplaced declaration, not directly inside a document", {lineNumber()});
+            report().error(u"line %d: misplaced declaration, not directly inside a document", lineNumber());
             ok = false;
         }
     }
     else {
-        report().error(u"line %d: error parsing XML declaration, not properly terminated", {lineNumber()});
+        report().error(u"line %d: error parsing XML declaration, not properly terminated", lineNumber());
     }
     return ok;
 }

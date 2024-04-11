@@ -66,7 +66,7 @@ bool ts::xml::Unknown::parseNode(TextParser& parser, const Node* parent)
         setValue(content);
     }
     else {
-        report().error(u"line %d: error parsing unknown or DTD node, not properly terminated", {lineNumber()});
+        report().error(u"line %d: error parsing unknown or DTD node, not properly terminated", lineNumber());
     }
     return ok;
 }

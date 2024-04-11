@@ -118,7 +118,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
                 }
             }
             else {
-                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be an integer", {it.first, source->name(), source->lineNumber(), it.second});
+                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be an integer", it.first, source->name(), source->lineNumber(), it.second);
             }
         }
         else if (boolModel) {
@@ -127,7 +127,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
                 jvalue = json::Bool(boolValue);
             }
             else {
-                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be a boolean", {it.first, source->name(), source->lineNumber(), it.second});
+                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be a boolean", it.first, source->name(), source->lineNumber(), it.second);
             }
         }
 

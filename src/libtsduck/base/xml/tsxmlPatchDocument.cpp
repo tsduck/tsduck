@@ -115,7 +115,7 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
             const size_t lpar = it.second.find('(');
             const size_t rpar = it.second.find(')');
             if (lpar == NPOS || rpar == NPOS || rpar < lpar) {
-                report().error(u"invalid %s \"%s\" in <%s>, line %d", {X_NODE_ATTR, it.second, patch->name(), patch->lineNumber()});
+                report().error(u"invalid %s \"%s\" in <%s>, line %d", X_NODE_ATTR, it.second, patch->name(), patch->lineNumber());
             }
             else {
                 // Get name of parent to delete.
@@ -126,12 +126,12 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
                     return false;
                 }
                 else {
-                    report().error(u"no parent named %s in <%s>, line %d", {parent, patch->name(), patch->lineNumber()});
+                    report().error(u"no parent named %s in <%s>, line %d", parent, patch->name(), patch->lineNumber());
                 }
             }
         }
         else if (it.first.startWith(X_ATTR, CASE_INSENSITIVE)) {
-            report().error(u"invalid special attribute '%s' in <%s>, line %d", {it.first, patch->name(), patch->lineNumber()});
+            report().error(u"invalid special attribute '%s' in <%s>, line %d", it.first, patch->name(), patch->lineNumber());
         }
     }
 
