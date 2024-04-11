@@ -576,7 +576,7 @@ bool ts::DektecInputPlugin::start()
     tsp->debug(u"attaching to device %s serial 0x%X", {_guts->device.model, _guts->device.desc.m_Serial});
     Dtapi::DTAPI_RESULT status = _guts->dtdev.AttachToSerial(_guts->device.desc.m_Serial);
     if (status != DTAPI_OK) {
-        tsp->error(u"error attaching input Dektec device %d: %s", {_guts->dev_index, DektecStrError(status)});
+        tsp->error(u"error attaching input Dektec device %d: %s", _guts->dev_index, DektecStrError(status));
         return false;
     }
 
@@ -588,19 +588,19 @@ bool ts::DektecInputPlugin::start()
     tsp->debug(u"attaching to port %d", {port});
     status = _guts->chan.AttachToPort(&_guts->dtdev, port);
     if (status != DTAPI_OK) {
-        tsp->error(u"error attaching input channel %d of Dektec device %d: %s", {_guts->chan_index, _guts->dev_index, DektecStrError(status)});
+        tsp->error(u"error attaching input channel %d of Dektec device %d: %s", _guts->chan_index, _guts->dev_index, DektecStrError(status));
         _guts->dtdev.Detach();
         return false;
     }
 
     // Reset input channel
-    tsp->debug(u"resetting channel, mode: %d", {DTAPI_FULL_RESET});
+    tsp->debug(u"resetting channel, mode: %d", DTAPI_FULL_RESET);
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
         return startError(u"input device reset error", status);
     }
 
-    tsp->debug(u"setting RxControl, mode: %d", {DTAPI_RXCTRL_IDLE});
+    tsp->debug(u"setting RxControl, mode: %d", DTAPI_RXCTRL_IDLE);
     status = _guts->chan.SetRxControl(DTAPI_RXCTRL_IDLE);
     if (status != DTAPI_OK) {
         return startError(u"device SetRxControl error", status);
@@ -619,25 +619,25 @@ bool ts::DektecInputPlugin::start()
         _guts->max_fifo_size = int(DTA_FIFO_SIZE);
         tsp->debug(u"retrieving max FIFO size is not supported");
     }
-    tsp->debug(u"max FIFO size: %'d bytes", {_guts->max_fifo_size});
+    tsp->debug(u"max FIFO size: %'d bytes", _guts->max_fifo_size);
 
     // Get/set actual FIFO size.
     _guts->cur_fifo_size = _guts->max_fifo_size;
     if (_guts->opt_fifo_size > 0) {
-        tsp->debug(u"setting FIFO size to %'d", {_guts->opt_fifo_size});
+        tsp->debug(u"setting FIFO size to %'d", _guts->opt_fifo_size);
         status = _guts->chan.SetFifoSize(_guts->opt_fifo_size);
         if (status == DTAPI_OK) {
             _guts->cur_fifo_size = _guts->opt_fifo_size;
         }
         else {
-            tsp->error(u"error setting FIFO size: %s", {DektecStrError(status)});
+            tsp->error(u"error setting FIFO size: %s", DektecStrError(status));
         }
     }
     tsp->debug(u"using FIFO size: %'d bytes", {_guts->cur_fifo_size});
 
     // Configure I/O standard if necessary.
     if (_guts->iostd_value >= 0) {
-        tsp->debug(u"setting IO config of port %d, group: %d, value: %d, subvalue: %d", {port, DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue});
+        tsp->debug(u"setting IO config of port %d, group: %d, value: %d, subvalue: %d", port, DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue);
         status = _guts->chan.SetIoConfig(DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue);
         if (status != DTAPI_OK) {
             return startError(u"error setting I/O standard", status);
@@ -653,7 +653,7 @@ bool ts::DektecInputPlugin::start()
         }
 
         // Tune to the frequency and demodulation parameters.
-        tsp->debug(u"tuning to frequency %'d Hz, demod: %s", {_guts->demod_freq, demodParsToXml()});
+        tsp->debug(u"tuning to frequency %'d Hz, demod: %s", _guts->demod_freq, demodParsToXml());
         status = _guts->chan.Tune(int64_t(_guts->demod_freq), &_guts->demod_pars);
         if (status != DTAPI_OK) {
             return startError(u"error tuning Dektec demodulator", status);
@@ -722,7 +722,7 @@ bool ts::DektecInputPlugin::startError(const UString& message, unsigned int stat
         tsp->error(message);
     }
     else {
-        tsp->error(u"%s: %s", {message, DektecStrError(status)});
+        tsp->error(u"%s: %s", message, DektecStrError(status));
     }
     _guts->chan.Detach(0);
     _guts->dtdev.Detach();
@@ -850,11 +850,11 @@ ts::BitRate ts::DektecInputPlugin::getBitrate()
     Dtapi::DTAPI_RESULT status = _guts->chan.GetTsRateBps(bitrate);
 
     if (status != DTAPI_OK) {
-        tsp->error(u"error getting Dektec device input bitrate: %s", {DektecStrError(status)});
+        tsp->error(u"error getting Dektec device input bitrate: %s", DektecStrError(status));
         return 0;
     }
     if (_guts->got_bitrate && bitrate != _guts->cur_bitrate) {
-        tsp->verbose(u"new input bitrate: %'d b/s", {bitrate});
+        tsp->verbose(u"new input bitrate: %'d b/s", bitrate);
     }
 
     _guts->got_bitrate = true;
@@ -887,10 +887,10 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
             std::this_thread::sleep_for(cn::milliseconds(10));
         }
         if (status != DTAPI_OK) {
-            tsp->error(u"error getting input initial FIFO load: %s", {DektecStrError(status)});
+            tsp->error(u"error getting input initial FIFO load: %s", DektecStrError(status));
         }
         else {
-            tsp->debug(u"initial FIFO load: %'d bytes", {fifo_load});
+            tsp->debug(u"initial FIFO load: %'d bytes", fifo_load);
         }
     }
 
@@ -902,7 +902,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
     int fifo_load = 0;
     status = _guts->chan.GetFifoLoad(fifo_load);
     if (status != DTAPI_OK) {
-        tsp->error(u"error getting input FIFO load: %s", {DektecStrError(status)});
+        tsp->error(u"error getting input FIFO load: %s", DektecStrError(status));
     }
 
     // After initialization, we check the receive FIFO load before reading it.
@@ -939,7 +939,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
         return size / PKT_SIZE;
     }
     else {
-        tsp->error(u"capture error on Dektec device %d: %s", {_guts->dev_index, DektecStrError(status)});
+        tsp->error(u"capture error on Dektec device %d: %s", _guts->dev_index, DektecStrError(status));
         return 0;
     }
 }

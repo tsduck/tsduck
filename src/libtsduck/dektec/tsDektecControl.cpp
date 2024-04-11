@@ -208,7 +208,7 @@ int ts::DektecControl::execute()
         // List only one device
         if (_guts->_devindex >= devices.size()) {
             // Invalid device index specified
-            error(u"invalid device index: %d", {_guts->_devindex});
+            error(u"invalid device index: %d", _guts->_devindex);
             return EXIT_FAILURE;
         }
         else {

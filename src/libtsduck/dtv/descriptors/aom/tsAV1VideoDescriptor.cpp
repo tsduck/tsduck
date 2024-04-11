@@ -149,11 +149,11 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", profile: " << int(buf.getBits<uint8_t>(3));
         disp << ", level: " << DataName(MY_XML_NAME, u"seq_level_idx", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL);
         disp << ", tier: " << int(buf.getBit()) << std::endl;
-        disp << margin << "High bitdepth: " << UString::YesNo(buf.getBit());
-        disp << ", 12 bit: " << UString::YesNo(buf.getBit());
-        bool monochrome = buf.getBit();
-        bool subsampling_x = buf.getBit();
-        bool subsampling_y = buf.getBit();
+        disp << margin << "High bitdepth: " << UString::YesNo(buf.getBool());
+        disp << ", 12 bit: " << UString::YesNo(buf.getBool());
+        bool monochrome = buf.getBool();
+        bool subsampling_x = buf.getBool();
+        bool subsampling_y = buf.getBool();
         disp << ", monochrome: " << UString::YesNo(monochrome) << ", chroma subsampling x=" << UString::YesNo(subsampling_x) << " y=" << UString::YesNo(subsampling_y);
         disp << ", --> " << SubsamplingFormat(subsampling_x, subsampling_y, monochrome) << std::endl;
         disp << margin << "Chroma sample position: " << DataName(MY_XML_NAME, u"chroma_sample_position", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);

@@ -259,14 +259,14 @@ namespace {
             instance.getAddress(addr, addr_size);
         }
         else if (require_addr) {
-            args.error(u"IP address missing in --%s %s", {option_name, value});
+            args.error(u"IP address missing in --%s %s", option_name, value);
             return false;
         }
         if (instance.hasPort() && port != nullptr) {
             *port = instance.port();
         }
         else if (require_port) {
-            args.error(u"port number missing in --%s %s", {option_name, value});
+            args.error(u"port number missing in --%s %s", option_name, value);
             return false;
         }
         return true;

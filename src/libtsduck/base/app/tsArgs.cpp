@@ -226,11 +226,11 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
         TS_LLVM_NOWARNING(switch-enum)
         TS_MSC_NOWARNING(4061)
         switch (type) {
-            case NONE:      break;
-            case FILENAME:  desc = u"file-name"; break;
-            case DIRECTORY: desc = u"directory-name"; break;
-            case HEXADATA:  desc = u"hexa-data"; break;
-            case IPADDR:    desc = u"ip-address"; break;
+            case NONE:           break;
+            case FILENAME:       desc = u"file-name"; break;
+            case DIRECTORY:      desc = u"directory-name"; break;
+            case HEXADATA:       desc = u"hexa-data"; break;
+            case IPADDR:         desc = u"ip-address"; break;
             case IPSOCKADDR:     desc = u"ip-address:port"; break;
             case IPSOCKADDR_OA:  desc = u"[ip-address:]port"; break;
             case IPSOCKADDR_OP:  desc = u"ip-address[:port]"; break;

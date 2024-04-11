@@ -39,7 +39,6 @@ ts::RARoverIPDescriptor::RARoverIPDescriptor(DuckContext& duck, const Descriptor
     deserialize(duck, desc);
 }
 
-
 void ts::RARoverIPDescriptor::clearContent()
 {
     first_valid_date.clear();
