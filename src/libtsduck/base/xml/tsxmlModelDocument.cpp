@@ -55,7 +55,7 @@ bool ts::xml::ModelDocument::validate(const Document& doc) const
         return validateElement(modelRoot, docRoot);
     }
     else {
-        report().error(u"invalid XML document, expected <%s> as root, found <%s>", {modelRoot->name(), docRoot->name()});
+        report().error(u"invalid XML document, expected <%s> as root, found <%s>", modelRoot->name(), docRoot->name());
         return false;
     }
 }
@@ -88,7 +88,7 @@ bool ts::xml::ModelDocument::validateElement(const Element* model, const Element
         if (!model->hasAttribute(atname)) {
             // The corresponding attribute does not exist in the model.
             const Attribute& attr(doc->attribute(atname));
-            report().error(u"unexpected attribute '%s' in <%s>, line %d", {attr.name(), doc->name(), attr.lineNumber()});
+            report().error(u"unexpected attribute '%s' in <%s>, line %d", attr.name(), doc->name(), attr.lineNumber());
             success = false;
         }
     }
@@ -98,7 +98,7 @@ bool ts::xml::ModelDocument::validateElement(const Element* model, const Element
         const Element* modelChild = findModelElement(model, docChild->name());
         if (modelChild == nullptr) {
             // The corresponding node does not exist in the model.
-            report().error(u"unexpected node <%s> in <%s>, line %d", {docChild->name(), doc->name(), docChild->lineNumber()});
+            report().error(u"unexpected node <%s> in <%s>, line %d", docChild->name(), doc->name(), docChild->lineNumber());
             success = false;
         }
         else if (!validateElement(modelChild, docChild)) {
@@ -133,7 +133,7 @@ const ts::xml::Element* ts::xml::ModelDocument::findModelElement(const Element* 
             // Find the reference name, "_descriptors" in the example.
             const UString refName(child->attribute(TSXML_REF_ATTR).value());
             if (refName.empty()) {
-                report().error(u"invalid XML model, missing or empty attribute 'in' for <%s> at line %d", {child->name(), child->lineNumber()});
+                report().error(u"invalid XML model, missing or empty attribute 'in' for <%s> at line %d", child->name(), child->lineNumber());
             }
             else {
                 // Locate the referenced node inside the model root.
@@ -142,7 +142,7 @@ const ts::xml::Element* ts::xml::ModelDocument::findModelElement(const Element* 
                 const Element* refElem = root == nullptr ? nullptr : root->findFirstChild(refName, true);
                 if (refElem == nullptr) {
                     // The referenced element does not exist.
-                    report().error(u"invalid XML model, <%s> not found in model root, referenced in line %d", {refName, child->attribute(TSXML_REF_ATTR).lineNumber()});
+                    report().error(u"invalid XML model, <%s> not found in model root, referenced in line %d", refName, child->attribute(TSXML_REF_ATTR).lineNumber());
                 }
                 else {
                     // Check if the child is found inside the referenced element.

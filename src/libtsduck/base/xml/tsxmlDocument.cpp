@@ -115,13 +115,13 @@ bool ts::xml::Document::load(const UString& fileName, bool search)
 
     // Eliminate non-existent files.
     if (actualFileName.empty()) {
-        report().error(u"file not found: %s", {fileName});
+        report().error(u"file not found: %s", fileName);
         return false;
     }
 
     // Parse the document from the file.
     TextParser parser(report());
-    report().debug(u"loading XML file %s", {actualFileName});
+    report().debug(u"loading XML file %s", actualFileName);
     return parser.loadFile(actualFileName) && parseNode(parser, nullptr);
 }
 
@@ -167,7 +167,7 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 
     // We must have reached the end of document.
     if (!parser.eof()) {
-        report().error(u"line %d: trailing character sequence, invalid XML document", {parser.lineNumber()});
+        report().error(u"line %d: trailing character sequence, invalid XML document", parser.lineNumber());
         return false;
     }
 
@@ -196,7 +196,7 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 
     // Verify that there is no additional children.
     if (child != nullptr) {
-        report().error(u"line %d: trailing %s, invalid XML document, need one single root element", {child->lineNumber(), child->typeName()});
+        report().error(u"line %d: trailing %s, invalid XML document, need one single root element", child->lineNumber(), child->typeName());
         return false;
     }
 
