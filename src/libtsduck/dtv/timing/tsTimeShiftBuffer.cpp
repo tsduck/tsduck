@@ -91,7 +91,7 @@ bool ts::TimeShiftBuffer::open(Report& report)
                 filename = _directory + fs::path::preferred_separator + filename.filename();
             }
             else {
-                report.error(u"directory %s does not exist", {_directory});
+                report.error(u"directory %s does not exist", _directory);
                 return false;
             }
         }
@@ -250,7 +250,7 @@ bool ts::TimeShiftBuffer::seekFile(size_t index, Report& report)
         return true;
     }
     else {
-        report.error(u"error seeking time-shift file at packet index %d", {index});
+        report.error(u"error seeking time-shift file at packet index %d", index);
         return false;
     }
 }
@@ -266,11 +266,11 @@ bool ts::TimeShiftBuffer::writeFile(size_t index, const TSPacket* buffer, const 
         return false;
     }
     else if (_file.writePackets(buffer, mdata, count, report)) {
-        report.debug(u"written %d packets in time-shift file at packet index %d", {count, index});
+        report.debug(u"written %d packets in time-shift file at packet index %d", count, index);
         return true;
     }
     else {
-        report.error(u"error writing %d packets in time-shift file at packet index %d", {count, index});
+        report.error(u"error writing %d packets in time-shift file at packet index %d", count, index);
         return false;
     }
 }
@@ -287,10 +287,10 @@ size_t ts::TimeShiftBuffer::readFile(size_t index, TSPacket* buffer, TSPacketMet
     }
     const size_t retcount = _file.readPackets(buffer, mdata, count, report);
     if (retcount == 0) {
-        report.error(u"error reading %d packets in time-shift file at packet index %d", {count, index});
+        report.error(u"error reading %d packets in time-shift file at packet index %d", count, index);
     }
     else {
-        report.debug(u"read %d packets in time-shift file at packet index %d", {retcount, index});
+        report.debug(u"read %d packets in time-shift file at packet index %d", retcount, index);
     }
     return retcount;
 }

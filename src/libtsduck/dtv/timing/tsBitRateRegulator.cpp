@@ -46,7 +46,7 @@ void ts::BitRateRegulator::start()
     // keep what the operating system gives.
     _burst_min = cn::milliseconds(2);
     SetTimersPrecision(_burst_min);
-    _report->log(_log_level, u"minimum packet burst duration is %s", {_burst_min});
+    _report->log(_log_level, u"minimum packet burst duration is %s", _burst_min);
 
     // Initial measurement period is one second. Will be enlarged for extra-low bitrates.
     _period_duration = cn::seconds(1);
@@ -87,7 +87,7 @@ void ts::BitRateRegulator::handleNewBitrate()
     // Measurement period is one second by default but must be larger than 2 bursts.
     _period_duration = std::max(cn::nanoseconds(cn::seconds(1)), 2 * _burst_duration);
 
-    _report->debug(u"new regulation, burst: %'s, %'d packets, measurement period: %'s", {_burst_duration, burst_pkt_max, _period_duration});
+    _report->debug(u"new regulation, burst: %'s, %'d packets, measurement period: %'s", _burst_duration, burst_pkt_max, _period_duration);
 }
 
 
@@ -168,7 +168,7 @@ void ts::BitRateRegulator::regulate(const BitRate& current_bitrate, bool& flush,
             _report->log(_log_level, u"unknown bitrate, cannot regulate.");
         }
         else {
-            _report->log(_log_level, u"regulated at bitrate %'d b/s", {_cur_bitrate.toInt()});
+            _report->log(_log_level, u"regulated at bitrate %'d b/s", _cur_bitrate.toInt());
         }
     }
     _starting = false;

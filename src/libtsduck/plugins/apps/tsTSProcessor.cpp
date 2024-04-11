@@ -150,7 +150,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
             proc->setRealTimeForAll(realtime);
             // Decode command line parameters for the plugin.
             if (!proc->plugin()->getOptions()) {
-                _report.debug(u"getOptions() error in plugin %s", {proc->pluginName()});
+                _report.debug(u"getOptions() error in plugin %s", proc->pluginName());
                 cleanupInternal();
                 return false;
             }
@@ -161,9 +161,9 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         CheckNonNull(_packet_buffer);
         if (!_packet_buffer->isLocked()) {
             _report.debug(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
-                          {_packet_buffer->lockErrorCode().value(), _packet_buffer->lockErrorCode().message()});
+                          _packet_buffer->lockErrorCode().value(), _packet_buffer->lockErrorCode().message());
         }
-        _report.debug(u"tsp: buffer size: %'d TS packets, %'d bytes", {_packet_buffer->count(), _packet_buffer->count() * ts::PKT_SIZE});
+        _report.debug(u"tsp: buffer size: %'d TS packets, %'d bytes", _packet_buffer->count(), _packet_buffer->count() * ts::PKT_SIZE);
 
         // Buffer for the packet metadata.
         // A packet and its metadata have the same index in their respective buffer.
@@ -177,7 +177,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
     // Exit application in case of error.
     for (tsp::PluginExecutor* proc = _output->ringPrevious<tsp::PluginExecutor>(); proc != _output; proc = proc->ringPrevious<tsp::PluginExecutor>()) {
         if (!proc->plugin()->start()) {
-            _report.debug(u"start() error in plugin %s", {proc->pluginName()});
+            _report.debug(u"start() error in plugin %s", proc->pluginName());
             cleanupInternal();
             return false;
         }
@@ -194,7 +194,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
     // Start the output device (we now have an idea of the bitrate).
     // Exit application in case of error.
     if (!_output->plugin()->start()) {
-        _report.debug(u"start() error in output plugin %s", {_output->pluginName()});
+        _report.debug(u"start() error in output plugin %s", _output->pluginName());
         cleanupInternal();
         return false;
     }
@@ -240,7 +240,7 @@ void ts::TSProcessor::abort()
         // successor as aborted. Notify all threads that something happened.
         tsp::PluginExecutor* proc = _input;
         do {
-            _report.debug(u"aborting plugin %s", {proc->pluginName()});
+            _report.debug(u"aborting plugin %s", proc->pluginName());
             proc->setAbort();
         } while ((proc = proc->ringNext<tsp::PluginExecutor>()) != _input);
     }

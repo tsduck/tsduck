@@ -384,8 +384,8 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
                 // For this time only, we keep the extrapolated PCR.
                 // Compute the difference between PCR and RTP timestamps.
                 _rtp_pcr_offset = pcr - rtp_pcr;
-                report.verbose(u"RTP timestamps resynchronized with PCR PID 0x%X (%d)", {_pcr_pid, _pcr_pid});
-                report.debug(u"new PCR-RTP offset: %d", {_rtp_pcr_offset});
+                report.verbose(u"RTP timestamps resynchronized with PCR PID 0x%X (%d)", _pcr_pid, _pcr_pid);
+                report.debug(u"new PCR-RTP offset: %d", _rtp_pcr_offset);
             }
             else {
                 // PCR are normally increasing, drop extrapolated value, resynchronize with PCR.
@@ -393,7 +393,7 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
                 if (adjusted_rtp_pcr <= _last_rtp_pcr) {
                     // The adjustment would make the RTP timestamp go backward. We do not want that.
                     // We increase the RTP timestamp "more slowly", by 25% of the extrapolated value.
-                    report.debug(u"RTP adjustment from PCR would step backward by %d", {((_last_rtp_pcr - adjusted_rtp_pcr) * RTP_RATE_MP2T) / SYSTEM_CLOCK_FREQ});
+                    report.debug(u"RTP adjustment from PCR would step backward by %d", ((_last_rtp_pcr - adjusted_rtp_pcr) * RTP_RATE_MP2T) / SYSTEM_CLOCK_FREQ);
                     adjusted_rtp_pcr = _last_rtp_pcr + (rtp_pcr - _last_rtp_pcr) / 4;
                 }
                 rtp_pcr = adjusted_rtp_pcr;

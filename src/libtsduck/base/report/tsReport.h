@@ -12,13 +12,12 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUChar.h"
+#include "tsUString.h"
 #include "tsArgMix.h"
 
 namespace ts {
 
     class Enumeration;
-    class UString;
 
     //!
     //! Message severity.
@@ -90,6 +89,18 @@ namespace ts {
         int maxSeverity() const { return _max_severity; }
 
         //!
+        //! Check if errors (or worse) were reported through this object.
+        //! @return True if errors (or worse) were reported through this object.
+        //!
+        bool gotErrors() const { return _got_errors; }
+
+        //!
+        //! Reset the error indicator.
+        //! @see gotErrors()
+        //!
+        void resetErrors() { _got_errors = false; }
+
+        //!
         //! Check if debugging is active.
         //! @return True if current reporting level is Debug or higher.
         //!
@@ -101,20 +112,84 @@ namespace ts {
         //!
         bool verbose() const { return _max_severity >= Severity::Verbose; }
 
+        // Legacy functions using initializer lists.
+        // The new declarations use variadic templates instead of explicit initializer lists.
+        // Calling the new overloaded functions is identical, without the brackets.
+        //! @cond nodoxygen
+        TS_DEPRECATED void log(int severity, const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            if (severity <= _max_severity) {
+                log(severity, UString::Format(fmt, args));
+            }
+        }
+        TS_DEPRECATED void log(int severity, const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(severity, fmt.c_str(), args);
+        }
+        TS_DEPRECATED void fatal(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Fatal, fmt, args);
+        }
+        TS_DEPRECATED void fatal(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Fatal, fmt, args);
+        }
+        TS_DEPRECATED void severe(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Severe, fmt, args);
+        }
+        TS_DEPRECATED void severe(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Severe, fmt, args);
+        }
+        TS_DEPRECATED void error(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Error, fmt, args);
+        }
+        TS_DEPRECATED void error(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Error, fmt, args);
+        }
+        TS_DEPRECATED void warning(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Warning, fmt, args);
+        }
+        TS_DEPRECATED void warning(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Warning, fmt, args);
+        }
+        TS_DEPRECATED void info(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Info, fmt, args);
+        }
+        TS_DEPRECATED void info(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Info, fmt, args);
+        }
+        TS_DEPRECATED void verbose(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Verbose, fmt, args);
+        }
+        TS_DEPRECATED void verbose(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Verbose, fmt, args);
+        }
+        TS_DEPRECATED void debug(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Debug, fmt, args);
+        }
+        TS_DEPRECATED void debug(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        {
+            log(Severity::Debug, fmt, args);
+        }
+        //! @endcond
+
         //!
         //! Report a message with an explicit severity.
-        //!
-        //! This method is the central reporting point. If filters the severity
-        //! and drops the message if @a severity is higher than maxSeverity().
-        //!
-        //! Subclasses should override writeLog() to implement a specific reporting
-        //! device. It is not necessary to override log() unless the subclass needs
-        //! to implement a different severity filtering policy.
-        //!
         //! @param [in] severity Message severity.
-        //! @param [in] msg Message text.
+        //! @param [in] msg Message line.
         //!
-        virtual void log(int severity, const UString& msg);
+        void log(int severity, const UString& msg);
 
         //!
         //! Report a message with an explicit severity and a printf-like interface.
@@ -123,7 +198,13 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        virtual void log(int severity, const UChar* fmt, std::initializer_list<ArgMixIn> args);
+        template <class... Args>
+        void log(int severity, const UChar* fmt, Args&&... args)
+        {
+            if (severity <= _max_severity) {
+                log(severity, UString::Format(fmt, std::forward<ArgMixIn>(args)...));
+            }
+        }
 
         //!
         //! Report a message with an explicit severity and a printf-like interface.
@@ -132,13 +213,31 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        virtual void log(int severity, const UString& fmt, std::initializer_list<ArgMixIn> args);
+        template <class... Args>
+        void log(int severity, const UString& fmt, Args&&... args)
+        {
+            log(severity, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a fatal error message.
-        //! @param [in] msg Message text.
+        //! @param [in] msg Message line.
         //!
-        void fatal(const UString& msg) { log(Severity::Fatal, msg); }
+        void fatal(const UChar* msg)
+        {
+            if (Severity::Fatal <= _max_severity) {
+                log(Severity::Fatal, UString(msg));
+            }
+        }
+
+        //!
+        //! Report a fatal error message.
+        //! @param [in] msg Message line.
+        //!
+        void fatal(const UString& msg)
+        {
+            log(Severity::Fatal, msg);
+        }
 
         //!
         //! Report a fatal error message with a printf-like interface.
@@ -146,7 +245,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void fatal(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Fatal, fmt, args); }
+        template <class... Args>
+        void fatal(const UChar* fmt, Args&&... args)
+        {
+            log(Severity::Fatal, fmt, std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a fatal error message with a printf-like interface.
@@ -154,13 +257,31 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void fatal(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Fatal, fmt, args); }
+        template <class... Args>
+        void fatal(const UString& fmt, Args&&... args)
+        {
+            log(Severity::Fatal, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a severe error message.
-        //! @param [in] msg Message text.
+        //! @param [in] msg Message line.
         //!
-        void severe(const UString& msg) { log(Severity::Severe, msg); }
+        void severe(const UChar* msg)
+        {
+            if (Severity::Severe <= _max_severity) {
+                log(Severity::Severe, UString(msg));
+            }
+        }
+
+        //!
+        //! Report a severe error message.
+        //! @param [in] msg Message line.
+        //!
+        void severe(const UString& msg)
+        {
+            log(Severity::Severe, msg);
+        }
 
         //!
         //! Report a severe error message with a printf-like interface.
@@ -168,7 +289,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void severe(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Severe, fmt, args); }
+        template <class... Args>
+        void severe(const UChar* fmt, Args&&... args)
+        {
+            log(Severity::Severe, fmt, std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a severe error message with a printf-like interface.
@@ -176,13 +301,31 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void severe(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Severe, fmt, args); }
+        template <class... Args>
+        void severe(const UString& fmt, Args&&... args)
+        {
+            log(Severity::Severe, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report an error message.
-        //! @param [in] msg Message text.
+        //! @param [in] msg Message line.
         //!
-        void error(const UString& msg) { log(Severity::Error, msg); }
+        void error(const UChar* msg)
+        {
+            if (Severity::Error <= _max_severity) {
+                log(Severity::Error, UString(msg));
+            }
+        }
+
+        //!
+        //! Report an error message.
+        //! @param [in] msg Message line.
+        //!
+        void error(const UString& msg)
+        {
+            log(Severity::Error, msg);
+        }
 
         //!
         //! Report an error message with a printf-like interface.
@@ -190,7 +333,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void error(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Error, fmt, args); }
+        template <class... Args>
+        void error(const UChar* fmt, Args&&... args)
+        {
+            log(Severity::Error, fmt, std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report an error message with a printf-like interface.
@@ -198,13 +345,31 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void error(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Error, fmt, args); }
+        template <class... Args>
+        void error(const UString& fmt, Args&&... args)
+        {
+            log(Severity::Error, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
         //!
-        //! Report a warning message.
-        //! @param [in] msg Message text.
+        //! Report a warning error message.
+        //! @param [in] msg Message line.
         //!
-        void warning(const UString& msg) { log(Severity::Warning, msg); }
+        void warning(const UChar* msg)
+        {
+            if (Severity::Warning <= _max_severity) {
+                log(Severity::Warning, UString(msg));
+            }
+        }
+
+        //!
+        //! Report a warning error message.
+        //! @param [in] msg Message line.
+        //!
+        void warning(const UString& msg)
+        {
+            log(Severity::Warning, msg);
+        }
 
         //!
         //! Report a warning message with a printf-like interface.
@@ -212,7 +377,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void warning(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Warning, fmt, args); }
+        template <class... Args>
+        void warning(const UChar* fmt, Args&&... args)
+        {
+            log(Severity::Warning, fmt, std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a warning message with a printf-like interface.
@@ -220,13 +389,31 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void warning(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Warning, fmt, args); }
+        template <class... Args>
+        void warning(const UString& fmt, Args&&... args)
+        {
+            log(Severity::Warning, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report an informational message.
-        //! @param [in] msg Message text.
+        //! @param [in] msg Message line.
         //!
-        void info(const UString& msg) { log(Severity::Info, msg); }
+        void info(const UChar* msg)
+        {
+            if (Severity::Info <= _max_severity) {
+                log(Severity::Info, UString(msg));
+            }
+        }
+
+        //!
+        //! Report an informational message.
+        //! @param [in] msg Message line.
+        //!
+        void info(const UString& msg)
+        {
+            log(Severity::Info, msg);
+        }
 
         //!
         //! Report an informational message with a printf-like interface.
@@ -234,7 +421,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void info(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Info, fmt, args); }
+        template <class... Args>
+        void info(const UChar* fmt, Args&&... args)
+        {
+            log(Severity::Info, fmt, std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report an informational message with a printf-like interface.
@@ -242,13 +433,31 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void info(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Info, fmt, args); }
+        template <class... Args>
+        void info(const UString& fmt, Args&&... args)
+        {
+            log(Severity::Info, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a verbose message.
-        //! @param [in] msg Message text.
+        //! @param [in] msg Message line.
         //!
-        void verbose(const UString& msg) { log(Severity::Verbose, msg); }
+        void verbose(const UChar* msg)
+        {
+            if (Severity::Verbose <= _max_severity) {
+                log(Severity::Verbose, UString(msg));
+            }
+        }
+
+        //!
+        //! Report a verbose message.
+        //! @param [in] msg Message line.
+        //!
+        void verbose(const UString& msg)
+        {
+            log(Severity::Verbose, msg);
+        }
 
         //!
         //! Report a verbose message with a printf-like interface.
@@ -256,7 +465,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void verbose(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Verbose, fmt, args); }
+        template <class... Args>
+        void verbose(const UChar* fmt, Args&&... args)
+        {
+            log(Severity::Verbose, fmt, std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a verbose message with a printf-like interface.
@@ -264,13 +477,31 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void verbose(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Verbose, fmt, args); }
+        template <class... Args>
+        void verbose(const UString& fmt, Args&&... args)
+        {
+            log(Severity::Verbose, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a debug message.
-        //! @param [in] msg Message text.
+        //! @param [in] msg Message line.
         //!
-        void debug(const UString& msg) { log(Severity::Debug, msg); }
+        void debug(const UChar* msg)
+        {
+            if (Severity::Debug <= _max_severity) {
+                log(Severity::Debug, UString(msg));
+            }
+        }
+
+        //!
+        //! Report a debug message.
+        //! @param [in] msg Message line.
+        //!
+        void debug(const UString& msg)
+        {
+            log(Severity::Debug, msg);
+        }
 
         //!
         //! Report a debug message with a printf-like interface.
@@ -278,7 +509,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void debug(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Debug, fmt, args); }
+        template <class... Args>
+        void debug(const UChar* fmt, Args&&... args)
+        {
+            log(Severity::Debug, fmt, std::forward<ArgMixIn>(args)...);
+        }
 
         //!
         //! Report a debug message with a printf-like interface.
@@ -286,19 +521,11 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void debug(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Debug, fmt, args); }
-
-        //!
-        //! Check if errors (or worse) were reported through this object.
-        //! @return True if errors (or worse) were reported through this object.
-        //!
-        bool gotErrors() const { return _got_errors; }
-
-        //!
-        //! Reset the error indicator.
-        //! @see gotErrors()
-        //!
-        void resetErrors() { _got_errors = false; }
+        template <class... Args>
+        void debug(const UString& fmt, Args&&... args)
+        {
+            log(Severity::Debug, fmt.c_str(), std::forward<ArgMixIn>(args)...);
+        }
 
     protected:
         //!

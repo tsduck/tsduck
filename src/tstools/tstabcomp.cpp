@@ -163,7 +163,7 @@ namespace {
             outName /= ts::SectionFile::XML_TABLES_MODEL;
         }
         if (!outName.empty()) {
-            opt.verbose(u"saving model file to %s", {outName});
+            opt.verbose(u"saving model file to %s", outName);
         }
 
         // Load and save the model.
@@ -217,27 +217,27 @@ namespace {
 
         // Process the input file, starting with error cases.
         if (!compile && !decompile) {
-            opt.error(u"don't know what to do with file %s, unknown file type, specify --compile or --decompile", {infile});
+            opt.error(u"don't know what to do with file %s, unknown file type, specify --compile or --decompile", infile);
             return false;
         }
         else if (compile && inType == FType::BINARY) {
-            opt.error(u"cannot compile binary file %s", {infile});
+            opt.error(u"cannot compile binary file %s", infile);
             return false;
         }
         else if (decompile && (inType == FType::XML || inType == FType::JSON)) {
-            opt.error(u"cannot decompile XML or JSON file %s", {infile});
+            opt.error(u"cannot decompile XML or JSON file %s", infile);
             return false;
         }
         else if (compile) {
             // Load XML file and save binary sections.
-            opt.verbose(u"Compiling %s to %s", {infile, outname});
+            opt.verbose(u"Compiling %s to %s", infile, outname);
             return (inType == FType::JSON ? file.loadJSON(infile) : file.loadXML(infile)) &&
                    opt.sectionOptions.processSectionFile(file, opt) &&
                    file.saveBinary(outname);
         }
         else {
             // Load binary sections and save XML file.
-            opt.verbose(u"Decompiling %s to %s", {infile, outname});
+            opt.verbose(u"Decompiling %s to %s", infile, outname);
             return file.loadBinary(infile) &&
                    opt.sectionOptions.processSectionFile(file, opt) &&
                    (opt.toJSON ? file.saveJSON(outname) : file.saveXML(outname));

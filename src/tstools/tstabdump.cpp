@@ -163,7 +163,7 @@ namespace {
                 }
                 else {
                     // Cannot analyze UDP message, invalid message.
-                    opt.error(u"invalid section in UDP packet (%s)", {opt.no_encapsulation ? u"raw sections, no encapsulation" : u"TLV messages"});
+                    opt.error(u"invalid section in UDP packet (%s)", opt.no_encapsulation ? u"raw sections, no encapsulation" : u"TLV messages");
                     if (++invalid_msg >= opt.max_invalid_udp) {
                         opt.error(u"received too many consecutive invalid messages, giving up");
                         ok = false;

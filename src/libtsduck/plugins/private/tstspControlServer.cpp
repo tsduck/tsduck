@@ -40,7 +40,7 @@ ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, std
             _plugins.push_back(pe);
         }
     }
-    _log.debug(u"found %d packet processor plugins", {_plugins.size()});
+    _log.debug(u"found %d packet processor plugins", _plugins.size());
 
     // Register command handlers.
     _reference.setCommandLineHandler(this, &ControlServer::executeExit, u"exit");
@@ -129,11 +129,11 @@ void ts::tsp::ControlServer::main()
         // Filter allowed sources.
         // Set receive timeout on the connection and read one line.
         if (std::find(_options.control_sources.begin(), _options.control_sources.end(), source.address()) == _options.control_sources.end()) {
-            _log.warning(u"connection attempt from unauthorized source %s (ignored)", {source});
+            _log.warning(u"connection attempt from unauthorized source %s (ignored)", source);
             conn.sendLine("error: client address is not authorized", _log);
         }
         else if (conn.setReceiveTimeout(_options.control_timeout, _log) && conn.receiveLine(line, nullptr, _log)) {
-            _log.verbose(u"received from %s: %s", {source, line});
+            _log.verbose(u"received from %s: %s", source, line);
 
             // Reset the severity of the connection before analysing the line.
             // A previous analysis may have used --verbose or --debug.
@@ -141,7 +141,7 @@ void ts::tsp::ControlServer::main()
 
             // Analyze the command, return errors on the client connection.
             if (_reference.processCommand(line, &conn) != CommandStatus::SUCCESS) {
-                conn.error(u"invalid tsp control command: %s", {line});
+                conn.error(u"invalid tsp control command: %s", line);
             }
         }
 
@@ -190,7 +190,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeSetLog(const UString& command, 
 
     // Set log severity of the main logger.
     _log.setMaxSeverity(level);
-    _log.log(level, u"set log level to %s", {Severity::Enums.name(level)});
+    _log.log(level, u"set log level to %s", Severity::Enums.name(level));
 
     // Also set the log severity on each individual plugin.
     std::lock_guard<std::recursive_mutex> lock(_global_mutex);
@@ -211,7 +211,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeList(const UString& command, Ar
 {
     if (args.verbose()) {
         args.info(u"");
-        args.info(u"Executable: %s", {ExecutableFile()});
+        args.info(u"Executable: %s", ExecutableFile());
         args.info(u"");
     }
 
@@ -232,11 +232,11 @@ void ts::tsp::ControlServer::listOnePlugin(size_t index, UChar type, PluginExecu
 {
     const bool verbose = report.verbose();
     const bool suspended = plugin->getSuspended();
-    report.info(u"%2d: %s-%c %s", {
+    report.info(u"%2d: %s-%c %s",
                 index,
                 verbose && suspended ? u"(suspended) " : u"",
                 type,
-                verbose ? plugin->plugin()->commandLine() : plugin->pluginName() });
+                verbose ? plugin->plugin()->commandLine() : plugin->pluginName());
 }
 
 
@@ -267,7 +267,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeSuspendResume(bool state, Args&
         args.error(u"cannot suspend/resume the input plugin");
     }
     else {
-        args.error(u"invalid plugin index %d, specify 1 to %d", {index, _plugins.size() + 1});
+        args.error(u"invalid plugin index %d, specify 1 to %d", index, _plugins.size() + 1);
     }
     return CommandStatus::SUCCESS;
 }

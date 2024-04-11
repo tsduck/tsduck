@@ -280,7 +280,7 @@ bool ts::DataInjectPlugin::start()
 
     // Clear client session.
     clearSession();
-    tsp->verbose(u"initial bandwidth allocation is %'d", {_req_bitrate == 0 ? u"unlimited" : _req_bitrate.toString() + u" b/s"});
+    tsp->verbose(u"initial bandwidth allocation is %'d", _req_bitrate == 0 ? u"unlimited" : _req_bitrate.toString() + u" b/s");
 
     // TS processing state
     _cc_fixer.reset();
@@ -346,7 +346,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
     // Abort if data PID is already present in TS
     const PID pid = pkt.getPID();
     if (pid == _data_pid) {
-        tsp->error(u"data PID conflict, specified %d (0x%X), now found as input PID, try another one", {pid, pid});
+        tsp->error(u"data PID conflict, specified %d (0x%<X), now found as input PID, try another one", pid);
         return TSP_END;
     }
 
@@ -440,7 +440,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
         BitRate requested = 1000 * BitRate(m->bandwidth); // protocol unit is kb/s
         _req_bitrate = _max_bitrate == 0 ? requested : std::min(requested, _max_bitrate);
         _req_bitrate_changed = true;
-        tsp->verbose(u"requested bandwidth %'d b/s, allocated %'d b/s", {requested, _req_bitrate});
+        tsp->verbose(u"requested bandwidth %'d b/s, allocated %'d b/s", requested, _req_bitrate);
     }
 
     // Build the response
@@ -476,11 +476,11 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 
     // Check that the client and data id are expected.
     if (m->client_id != _client_id) {
-        tsp->error(u"unexpected client id 0x%X in data_provision, expected 0x%X", {m->client_id, _client_id});
+        tsp->error(u"unexpected client id 0x%X in data_provision, expected 0x%X", m->client_id, _client_id);
         return false;
     }
     if (m->data_id != _data_id) {
-        tsp->error(u"unexpected data id 0x%X in data_provision, expected 0x%X", {m->data_id, _data_id});
+        tsp->error(u"unexpected data id 0x%X in data_provision, expected 0x%X", m->data_id, _data_id);
         return false;
     }
 
@@ -494,7 +494,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                 processPacketLoss(u"sections", _section_queue.enqueue(sp, cn::milliseconds::zero()));
             }
             else {
-                tsp->error(u"received an invalid section (%d bytes)", {m->datagram[i]->size()});
+                tsp->error(u"received an invalid section (%d bytes)", m->datagram[i]->size());
             }
         }
     }
@@ -516,7 +516,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                 }
             }
             if (size != 0) {
-                tsp->error(u"extraneous %d bytes in datagram", {size});
+                tsp->error(u"extraneous %d bytes in datagram", size);
             }
         }
     }
@@ -532,10 +532,10 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 void ts::DataInjectPlugin::processPacketLoss(const UChar* type, bool enqueueSuccess)
 {
     if (!enqueueSuccess && _lost_packets++ == 0) {
-        tsp->warning(u"internal queue overflow, losing %s, consider using --queue-size", {type});
+        tsp->warning(u"internal queue overflow, losing %s, consider using --queue-size", type);
     }
     else if (enqueueSuccess && _lost_packets != 0) {
-        tsp->info(u"retransmitting after %'d lost %s", {_lost_packets, type});
+        tsp->info(u"retransmitting after %'d lost %s", _lost_packets, type);
         _lost_packets = 0;
     }
 }
@@ -579,7 +579,7 @@ void ts::DataInjectPlugin::TCPListener::main()
     // Loop on client acceptance (accept only one client at a time).
     while (_plugin->_server.accept(_client, client_address, _report)) {
 
-        _report.verbose(u"incoming connection from %s", {client_address});
+        _report.verbose(u"incoming connection from %s", client_address);
 
         // Start from a fresh client session context.
         _plugin->clearSession();
@@ -777,7 +777,7 @@ void ts::DataInjectPlugin::UDPListener::main()
         const tlv::MessagePtr msg(mf.factory());
 
         if (mf.errorStatus() != tlv::OK || msg == nullptr) {
-            _report.error(u"received invalid message from %s, %d bytes", {sender, insize});
+            _report.error(u"received invalid message from %s, %d bytes", sender, insize);
         }
         else {
             // Log the message.

@@ -252,7 +252,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
             return TSP_END;
         }
         _inter_pkt = (ts_bitrate / _bitrate).toInt();
-        tsp->verbose(u"transport bitrate: %s'd b/s, packet interval: %'d", {ts_bitrate, _inter_pkt});
+        tsp->verbose(u"transport bitrate: %s'd b/s, packet interval: %'d", ts_bitrate, _inter_pkt);
     }
 
     // Count TS
@@ -278,7 +278,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
         if (_min_pts != 0) {
             if (_pts_pid == PID_NULL || pid == _pts_pid) {
                 if (currentpts > _min_pts  && (currentpts < _max_pts || _max_pts == 0)) {
-                    tsp->debug(u"Found minmaxpts range OK at PTS: %'d, enabling packet insertion", { currentpts });
+                    tsp->debug(u"Found minmaxpts range OK at PTS: %'d, enabling packet insertion", currentpts);
                     _pts_range_ok = true;
                 }
             }
@@ -288,7 +288,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
         if (_inter_time != 0 && _pts_last_inserted != 0) {
             uint64_t calculated = _pts_last_inserted + _inter_time;
             if (_youngest_pts > calculated) {
-                tsp->debug(u"Detected waiting time %d has passed, pts_last_insert: %d, youngest pts: %d, enabling packet insertion", { _inter_time, _pts_last_inserted, _youngest_pts});
+                tsp->debug(u"Detected waiting time %d has passed, pts_last_insert: %d, youngest pts: %d, enabling packet insertion",  _inter_time, _pts_last_inserted, _youngest_pts);
                 _pts_range_ok = true;
             }
             else {
@@ -298,7 +298,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
 
         // check if max-pts is reached
         if (_max_pts != 0 && _max_pts < currentpts && (pid == _pts_pid || _pts_pid == PID_NULL)) {
-            tsp->debug(u"max-pts %d reached, disabling packet insertion at PTS: %'d", { _max_pts,currentpts });
+            tsp->debug(u"max-pts %d reached, disabling packet insertion at PTS: %'d", _max_pts, currentpts);
             _pts_range_ok = false;
         }
     }
@@ -337,7 +337,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
 
     _inserted_packet_count++;
     _pts_last_inserted = _youngest_pts;   // store pts of last insertion
-    tsp->debug(u"[%d:%d] Inserting Packet at PTS: %'d (pos: %'d), file: %s (pos: %'d)", { _inter_pkt,_pid_next_pkt,_pts_last_inserted,_packet_count,_file.getFileName(),_inserted_packet_count });
+    tsp->debug(u"[%d:%d] Inserting Packet at PTS: %'d (pos: %'d), file: %s (pos: %'d)", _inter_pkt, _pid_next_pkt, _pts_last_inserted,_packet_count, _file.getFileName(), _inserted_packet_count);
 
     if (_inter_time != 0) {
         _pts_range_ok = false; // reset _pts_range_ok signal if inter_time is specified
@@ -349,7 +349,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
     }
     pid = pkt.getPID();
     if (_check_pid_conflict && _ts_pids.test(pid)) {
-        tsp->error(u"PID %d (0x%X) already exists in TS, specify --pid with another value, aborting", {pid, pid});
+        tsp->error(u"PID %d (0x%X) already exists in TS, specify --pid with another value, aborting", pid, pid);
         return TSP_END;
     }
     if (_update_cc) {

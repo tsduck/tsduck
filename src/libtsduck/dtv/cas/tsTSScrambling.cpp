@@ -108,7 +108,7 @@ bool ts::TSScrambling::setScramblingType(uint8_t scrambling, bool overrideExplic
 
         // Set scrambling type.
         if (_scrambling_type != scrambling) {
-            _report.debug(u"switching scrambling type from %s to %s", {NameFromDTV(u"ScramblingMode", _scrambling_type), NameFromDTV(u"ScramblingMode", scrambling)});
+            _report.debug(u"switching scrambling type from %s to %s", NameFromDTV(u"ScramblingMode", _scrambling_type), NameFromDTV(u"ScramblingMode", scrambling));
             _scrambling_type = scrambling;
         }
     }
@@ -286,7 +286,7 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
     else if (args.present(u"cw-file")) {
         const UString file(args.value(u"cw-file"));
         if (!UString::Load(lines, file)) {
-            args.error(u"error loading file %s", {file});
+            args.error(u"error loading file %s", file);
         }
     }
 
@@ -297,7 +297,7 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
         it.trim();
         if (!it.empty()) {
             if (!it.hexaDecode(cw) || cw.size() != cwSize()) {
-                args.error(u"invalid control word \"%s\", specify %d hexa digits", {it, 2 * cwSize()});
+                args.error(u"invalid control word \"%s\", specify %d hexa digits", it, 2 * cwSize());
             }
             else {
                 _cw_list.push_back(cw);
@@ -305,7 +305,7 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
         }
     }
     if (!_cw_list.empty()) {
-        args.verbose(u"loaded %d control words", {_cw_list.size()});
+        args.verbose(u"loaded %d control words", _cw_list.size());
     }
 
     // Name of the output file for control words.
@@ -331,7 +331,7 @@ bool ts::TSScrambling::start()
         _out_cw_file.open(_out_cw_name.toUTF8().c_str(), std::ios::out);
         success = !_out_cw_file.fail();
         if (!success) {
-            _report.error(u"error creating %s", {_out_cw_name});
+            _report.error(u"error creating %s", _out_cw_name);
         }
     }
 
@@ -365,7 +365,7 @@ bool ts::TSScrambling::handleBlockCipherAlert(BlockCipher& cipher, AlertReason r
             // First usage of a new CW. Report it on debug and add it in --output-cw-file when necessary.
             if (cipher.hasKey()) {
                 const UString key_string(UString::Dump(cipher.currentKey(), UString::SINGLE_LINE));
-                _report.debug(u"starting using CW %s (%s)", {key_string, cipher.cipherId() == 0 ? u"even" : u"odd"});
+                _report.debug(u"starting using CW %s (%s)", key_string, cipher.cipherId() == 0 ? u"even" : u"odd");
                 if (_out_cw_file.is_open()) {
                     _out_cw_file << key_string << std::endl;
                 }
@@ -434,7 +434,7 @@ bool ts::TSScrambling::setCW(const ByteBlock& cw, int parity)
         return true;
     }
     else {
-        _report.error(u"error setting %d-byte key to %s", {cw.size(), algo->name()});
+        _report.error(u"error setting %d-byte key to %s", cw.size(), algo->name());
         return false;
     }
 }
@@ -496,7 +496,7 @@ bool ts::TSScrambling::encrypt(TSPacket& pkt)
         pkt.setScrambling(_encrypt_scv);
     }
     else {
-        _report.error(u"packet encryption error using %s", {algo->name()});
+        _report.error(u"packet encryption error using %s", algo->name());
     }
     return ok;
 }
@@ -541,7 +541,7 @@ bool ts::TSScrambling::decrypt(TSPacket& pkt)
         pkt.setScrambling(SC_CLEAR);
     }
     else {
-        _report.error(u"packet decryption error using %s", {algo->name()});
+        _report.error(u"packet decryption error using %s", algo->name());
     }
     return ok;
 }

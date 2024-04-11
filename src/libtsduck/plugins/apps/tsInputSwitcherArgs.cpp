@@ -227,11 +227,11 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
 
     // Check validity of input indexes.
     if (firstInput >= inputs.size()) {
-        args.error(u"invalid input index for --first-input %d", {firstInput});
+        args.error(u"invalid input index for --first-input %d", firstInput);
     }
 
     if (primaryInput != NPOS && primaryInput >= inputs.size()) {
-        args.error(u"invalid input index for --primary-input %d", {primaryInput});
+        args.error(u"invalid input index for --primary-input %d", primaryInput);
     }
 
     return args.valid();

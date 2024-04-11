@@ -189,14 +189,14 @@ namespace {
         log.setMaxSeverity(level);
         log.clear();
 
-        log.log(ts::Severity::Info, u"%d", {1});
-        log.debug(u"%d", {2});
-        log.log(ts::Severity::Debug, u"%d", {3});
-        log.warning(u"%d", {4});
-        log.info(u"%d", {5});
-        log.fatal(u"%d", {6});
-        log.log(ts::Severity::Fatal, u"%d", {7});
-        log.error(u"%d", {8});
+        log.log(ts::Severity::Info, u"%d", 1);
+        log.debug(u"%d", 2);
+        log.log(ts::Severity::Debug, u"%d", 3);
+        log.warning(u"%d", 4);
+        log.info(u"%d", 5);
+        log.fatal(u"%d", 6);
+        log.log(ts::Severity::Fatal, u"%d", 7);
+        log.error(u"%d", 8);
     }
 }
 
@@ -253,13 +253,13 @@ void ReportTest::testByName()
 {
     {
         ts::ReportFile<ts::ThreadSafety::Full> log(_fileName, false, false);
-        log.info(u"info 1");
-        log.error(u"error 1");
+        log.info(u"info %d 1");
+        log.error(u"error %s 1");
     }
 
     ts::UStringVector ref;
-    ref.push_back(u"info 1");
-    ref.push_back(u"Error: error 1");
+    ref.push_back(u"info %d 1");
+    ref.push_back(u"Error: error %s 1");
 
     ts::UStringVector value;
     ts::UString::Load(value, _fileName);

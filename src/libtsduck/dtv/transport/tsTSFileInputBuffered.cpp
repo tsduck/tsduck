@@ -37,7 +37,7 @@ ts::TSFileInputBuffered::~TSFileInputBuffered()
 bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
 {
     if (isOpen()) {
-        report.error(u"file %s is already open, cannot resize buffer", {getFileName()});
+        report.error(u"file %s is already open, cannot resize buffer", getFileName());
         return false;
     }
     else {
@@ -55,7 +55,7 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size, Report& report)
 bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, Report& report, TSPacketFormat format)
 {
     if (isOpen()) {
-        report.error(u"file %s is already open", {getFileName()});
+        report.error(u"file %s is already open", getFileName());
         return false;
     }
     else {

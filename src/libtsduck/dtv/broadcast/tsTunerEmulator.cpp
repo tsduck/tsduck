@@ -76,7 +76,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
     // Open and validate the XML file describing the tuner emulator.
     xml::Document doc(_duck.report());
     xml::ModelDocument model(_duck.report());
-    _duck.report().debug(u"load tuner emulator from %s", {device_name});
+    _duck.report().debug(u"load tuner emulator from %s", device_name);
     if (!doc.load(device_name, false) || !model.load(u"tsduck.etuner.model.xml", true) || !model.validate(doc)) {
         return false;
     }
@@ -101,7 +101,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         else {
             def_directory = AbsoluteFilePath(def_directory, base_directory);
         }
-        _duck.report().debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", {DeliverySystemEnum.name(def_delivery), def_bandwidth, def_directory});
+        _duck.report().debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", DeliverySystemEnum.name(def_delivery), def_bandwidth, def_directory);
     }
 
     // Get all channel descriptions.
@@ -118,7 +118,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         chan.file.trim();
         chan.pipe.trim();
         if (success && (chan.file.empty() + chan.pipe.empty()) != 1) {
-            _duck.report().error(u"%s, line %d: exactly one of file or pipe must be set in <channel>", {device_name, (*it)->lineNumber()});
+            _duck.report().error(u"%s, line %d: exactly one of file or pipe must be set in <channel>", device_name, (*it)->lineNumber());
             success = false;
         }
         if (success && !chan.file.empty()) {
@@ -127,7 +127,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         _delivery_systems.insert(chan.delivery);
         _channels.push_back(chan);
     }
-    _duck.report().debug(u"loaded %d emulated channels", {_channels.size()});
+    _duck.report().debug(u"loaded %d emulated channels", _channels.size());
 
     if (success) {
         _xml_file_path = device_name;
@@ -136,7 +136,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         return true;
     }
     else {
-        _duck.report().error(u"error opening tuner emulator at %s", {device_name});
+        _duck.report().error(u"error opening tuner emulator at %s", device_name);
         _delivery_systems.clear();
         _channels.clear();
         return false;
@@ -245,11 +245,11 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
         index++;
     }
     if (index >= _channels.size()) {
-        _duck.report().error(u"no signal at %'d Hz", {freq});
+        _duck.report().error(u"no signal at %'d Hz", freq);
         return false;
     }
     else if (delsys != DS_UNDEFINED && _channels[index].delivery != DS_UNDEFINED && delsys != _channels[index].delivery) {
-        _duck.report().error(u"delivery system at %'d Hz is %s, %s requested ", {freq, DeliverySystemEnum.name(_channels[index].delivery), DeliverySystemEnum.name(delsys)});
+        _duck.report().error(u"delivery system at %'d Hz is %s, %s requested ", freq, DeliverySystemEnum.name(_channels[index].delivery), DeliverySystemEnum.name(delsys));
         return false;
     }
 
@@ -258,10 +258,10 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
 
     if (IsSatelliteDelivery(params.delivery_system.value())) {
         if (!params.lnb.has_value()) {
-            _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
+            _duck.report().warning(u"no LNB set for satellite delivery %s", DeliverySystemEnum.name(params.delivery_system.value()));
         }
         else {
-            _duck.report().debug(u"using LNB %s", {params.lnb.value()});
+            _duck.report().debug(u"using LNB %s", params.lnb.value());
         }
     }
 
@@ -301,7 +301,7 @@ bool ts::TunerEmulator::start()
         }
     }
     else {
-        _duck.report().error(u"empty file and pipe names for channel at %'d Hz", {chan.frequency});
+        _duck.report().error(u"empty file and pipe names for channel at %'d Hz", chan.frequency);
         return false;
     }
 

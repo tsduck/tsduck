@@ -162,7 +162,7 @@ bool ts::ByteBlock::appendFromFile(const UString& fileName, size_t maxSize, Repo
     std::ifstream strm(fileName.toUTF8().c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
         if (report != nullptr) {
-            report->error(u"cannot open %s", {fileName});
+            report->error(u"cannot open %s", fileName);
         }
         return false;
     }
@@ -174,7 +174,7 @@ bool ts::ByteBlock::appendFromFile(const UString& fileName, size_t maxSize, Repo
     const bool success = !strm.fail() || strm.eof();
     strm.close();
     if (!success && report != nullptr) {
-        report->error(u"error reading %s", {fileName});
+        report->error(u"error reading %s", fileName);
     }
     return success;
 }
@@ -236,7 +236,7 @@ bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode
     std::ofstream strm(fileName.toUTF8().c_str(), mode);
     if (!strm.is_open()) {
         if (report != nullptr) {
-            report->error(u"cannot create %s", {fileName});
+            report->error(u"cannot create %s", fileName);
         }
         return false;
     }
@@ -246,7 +246,7 @@ bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode
     const bool success = !strm.fail();
     strm.close();
     if (!success && report != nullptr) {
-        report->error(u"error writing %s", {fileName});
+        report->error(u"error writing %s", fileName);
     }
     return success;
 }

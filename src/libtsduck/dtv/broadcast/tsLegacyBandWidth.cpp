@@ -74,7 +74,7 @@ bool ts::GetLegacyBandWidth(std::optional<BandWidth>& bandwidth, const xml::Elem
         return true;
     }
     else {
-        element->report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, attribute, element->name(), element->lineNumber()});
+        element->report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", str, attribute, element->name(), element->lineNumber());
         bandwidth.reset();
         return false;
     }
@@ -122,7 +122,7 @@ bool ts::LoadLegacyBandWidthArg(BandWidth& bandwidth, Args& args, const UChar* n
         return true;
     }
     else {
-        args.error(u"invalid value '%s' for --%s", {str, name});
+        args.error(u"invalid value '%s' for --%s", str, name);
         bandwidth = def_value;
         return false;
     }
@@ -141,7 +141,7 @@ bool ts::LoadLegacyBandWidthArg(std::optional<BandWidth>& bandwidth, Args& args,
         return true;
     }
     else {
-        args.error(u"invalid value '%s' for --%s", {str, name});
+        args.error(u"invalid value '%s' for --%s", str, name);
         bandwidth.reset();
         return false;
     }

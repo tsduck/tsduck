@@ -226,7 +226,7 @@ bool ts::IPv6Address::resolve(const UString& name, Report& report)
 
     // Erase in case of error.
     if (!ok) {
-        report.error(u"invalid IPv6 address '%s'", {name});
+        report.error(u"invalid IPv6 address '%s'", name);
         clear();
     }
     return ok;

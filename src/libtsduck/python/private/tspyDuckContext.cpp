@@ -36,7 +36,7 @@ TSDUCKPY bool tspyDuckContextSetDefaultCharset(void* duck_ptr, const uint8_t* na
             duck->setDefaultCharsetOut(charset);
             return true;
         }
-        duck->report().error(u"unknown character set \"%s\"", {str});
+        duck->report().error(u"unknown character set \"%s\"", str);
     }
     return false;
 }
@@ -95,7 +95,7 @@ TSDUCKPY bool tspyDuckContextSetTimeReference(void* duck_ptr, const uint8_t* nam
         if (duck->setTimeReference(str)) {
             return true;
         }
-        duck->report().error(u"invalid time reference \"%s\"", {str});
+        duck->report().error(u"invalid time reference \"%s\"", str);
     }
     return false;
 }

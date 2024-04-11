@@ -155,7 +155,7 @@ namespace {
             in = &file;
             file.open(filename.toUTF8().c_str(), std::ios::binary);
             if (!file) {
-                opt.error(u"cannot open file %s", {filename});
+                opt.error(u"cannot open file %s", filename);
                 return;
             }
         }

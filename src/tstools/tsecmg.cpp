@@ -341,7 +341,7 @@ ECMGClientHandler::~ECMGClientHandler()
 void ECMGClientHandler::main()
 {
     _peer = _conn->peerName();
-    _shared->report().verbose(u"%s: session started", {_peer});
+    _shared->report().verbose(u"%s: session started", _peer);
 
     // Normally, an ECMG should handle incoming and outgoing messages independently.
     // However, here we have a minimal implementation. We never send any request to
@@ -397,7 +397,7 @@ void ECMGClientHandler::main()
         _channel.reset();
     }
 
-    _shared->report().verbose(u"%s: session completed", {_peer});
+    _shared->report().verbose(u"%s: session completed", _peer);
 }
 
 
@@ -605,7 +605,7 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
                 ecm.cw_odd = it->CW;
             }
             // In debug mode, display if CW has reduced entropy.
-            _shared->report().debug(u"incoming CW entropy: %s", {it->CW.size() == ts::DVBCSA2::KEY_SIZE && ts::DVBCSA2::IsReducedCW(it->CW.data()) ? u"reduced" : u"not reduced"});
+            _shared->report().debug(u"incoming CW entropy: %s", it->CW.size() == ts::DVBCSA2::KEY_SIZE && ts::DVBCSA2::IsReducedCW(it->CW.data()) ? u"reduced" : u"not reduced");
         }
 
         // Add optional access criteria in ECM.
@@ -676,7 +676,7 @@ int MainCode(int argc, char *argv[])
     {
         return EXIT_FAILURE;
     }
-    shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d", {opt.serverAddress, opt.ecmgscs.version()});
+    shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d", opt.serverAddress, opt.ecmgscs.version());
 
     // On UNIX systems, ignore SIGPIPE. This signal is raised when trying to write to a disconnected
     // socket. This may happen when a client disconnects after sending stream_close_request without

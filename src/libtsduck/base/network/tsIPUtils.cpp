@@ -93,7 +93,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     // Get the list of local addresses. The memory is allocated by getifaddrs().
     ::ifaddrs* start = nullptr;
     if (::getifaddrs(&start) != 0) {
-        report.error(u"error getting local addresses: %s", {SysErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", SysErrorCodeMessage());
         return false;
     }
 

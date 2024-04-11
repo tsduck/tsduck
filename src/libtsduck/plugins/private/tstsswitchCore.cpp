@@ -167,10 +167,10 @@ size_t ts::tsswitch::Core::currentInput()
 void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
 {
     if (index >= _inputs.size()) {
-        _log.warning(u"invalid input index %d", {index});
+        _log.warning(u"invalid input index %d", index);
     }
     else if (index != _curPlugin) {
-        _log.debug(u"switch input %d to %d", {_curPlugin, index});
+        _log.debug(u"switch input %d to %d", _curPlugin, index);
 
         // The processing depends on the switching mode.
         if (_opt.delayedSwitch) {
@@ -234,7 +234,7 @@ void ts::tsswitch::Core::handleWatchDogTimeout(WatchDog& watchdog)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const size_t next = (_curPlugin + 1) % _inputs.size();
     // Verbose message under mutex is not a good idea when option --synchronous-log is set.
-    _log.verbose(u"receive timeout, switching to next plugin (#%d to #%d)", {_curPlugin, next});
+    _log.verbose(u"receive timeout, switching to next plugin (#%d to #%d)", _curPlugin, next);
     setInputLocked(next, true);
 }
 
@@ -292,7 +292,7 @@ bool ts::tsswitch::Core::Action::operator<(const Action& a) const
 
 void ts::tsswitch::Core::enqueue(const Action& action, bool highPriority)
 {
-    _log.debug(u"enqueue action %s", {action});
+    _log.debug(u"enqueue action %s", action);
     if (highPriority) {
         _actions.push_front(action);
     }
@@ -312,7 +312,7 @@ void ts::tsswitch::Core::cancelActions(int typeMask)
         // Check if the current action is one that must be removed.
         if ((int(it->type) & typeMask) != 0) {
             // Yes, remove instruction.
-            _log.debug(u"cancel action %s", {*it});
+            _log.debug(u"cancel action %s", *it);
             it = _actions.erase(it);
         }
         else {
@@ -334,7 +334,7 @@ void ts::tsswitch::Core::execute(const Action& event)
     if (event.type != NONE && !Contains(_events, eventNoFlag)) {
         // The event was not present.
         _events.insert(eventNoFlag);
-        _log.debug(u"setting event: %s", {event});
+        _log.debug(u"setting event: %s", event);
     }
 
     // Loop on all enqueued commands.
@@ -342,7 +342,7 @@ void ts::tsswitch::Core::execute(const Action& event)
 
         // Inspect front command. Will be dequeued if executed.
         const Action& action(_actions.front());
-        _log.debug(u"executing action %s", {action});
+        _log.debug(u"executing action %s", action);
         assert(action.index < _inputs.size());
 
         // Try to execute the front command. Return if wait is required.
@@ -365,7 +365,7 @@ void ts::tsswitch::Core::execute(const Action& event)
             case ABORT_INPUT: {
                 // Abort only if flag is set in action.
                 if (action.flag && !_inputs[action.index]->abortInput()) {
-                    _log.warning(u"input plugin %s does not support interruption, blocking may occur", {_inputs[action.index]->pluginName()});
+                    _log.warning(u"input plugin %s does not support interruption, blocking may occur", _inputs[action.index]->pluginName());
                 }
                 break;
             }
@@ -393,11 +393,11 @@ void ts::tsswitch::Core::execute(const Action& event)
                 const auto it = _events.find(Action(action, false));
                 if (it == _events.end()) {
                     // Event not found, cannot execute further, keep the action in queue and retry later.
-                    _log.debug(u"not ready, waiting: %s", {action});
+                    _log.debug(u"not ready, waiting: %s", action);
                     return;
                 }
                 // Clear the event.
-                _log.debug(u"clearing event: %s", {*it});
+                _log.debug(u"clearing event: %s", *it);
                 _events.erase(it);
                 break;
             }
@@ -502,9 +502,9 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
     // If input is detected on the primary input and the current plugin is not this one
     // after executing all actions, then automatically switch to it.
     if (pluginIndex == _opt.primaryInput && _curPlugin != _opt.primaryInput) {
-        _log.verbose(u"received data, switching back to primary input plugin (#%d to #%d)", {_curPlugin, _opt.primaryInput});
+        _log.verbose(u"received data, switching back to primary input plugin (#%d to #%d)", _curPlugin, _opt.primaryInput);
         // Remove all pending actions.
-        _log.debug(u"clearing action queue, %s events canceled", {_actions.size()});
+        _log.debug(u"clearing action queue, %s events canceled", _actions.size());
         _actions.clear();
         // Define a new set of actions.
         enqueue(Action(SUSPEND_TIMEOUT));
@@ -538,7 +538,7 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
 
 bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
 {
-    _log.debug(u"input %d completed, success: %s", {pluginIndex, success});
+    _log.debug(u"input %d completed, success: %s", pluginIndex, success);
     bool stopRequest = false;
 
     // Locked sequence.

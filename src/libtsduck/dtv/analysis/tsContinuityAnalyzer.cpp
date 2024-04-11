@@ -222,7 +222,7 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                         logJSON(pid, u"duplicate", state.dup_count + 1);
                     }
                     else {
-                        _report->log(_severity, u"%s, %d duplicate packets", {linePrefix(pid), state.dup_count + 1});
+                        _report->log(_severity, u"%s, %d duplicate packets", linePrefix(pid), state.dup_count + 1);
                     }
                 }
                 // There is nothing we can do to fix this.
@@ -252,7 +252,7 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                             logJSON(pid, u"increment-without-payload");
                         }
                         else {
-                            _report->log(_severity, u"%s, incorrect CC increment without payload", {linePrefix(pid)});
+                            _report->log(_severity, u"%s, incorrect CC increment without payload", linePrefix(pid));
                         }
                     }
                     else {
@@ -260,7 +260,7 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                             logJSON(pid, u"missing", MissingPackets(last_cc_in, cc));
                         }
                         else {
-                            _report->log(_severity, u"%s, missing %d packets", {linePrefix(pid), MissingPackets(last_cc_in, cc)});
+                            _report->log(_severity, u"%s, missing %d packets", linePrefix(pid), MissingPackets(last_cc_in, cc));
                         }
                     }
                 }

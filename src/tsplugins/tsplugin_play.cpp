@@ -100,7 +100,7 @@ bool ts::PlayPlugin::searchInPath(UString& result, const UStringVector& path, co
     for (const auto& file : path) {
         if (!file.empty()) {
             result = file + fs::path::preferred_separator + name;
-            tsp->debug(u"looking for %s", {result});
+            tsp->debug(u"looking for %s", result);
             if (fs::exists(result)) {
                 return true;
             }
@@ -229,7 +229,7 @@ bool ts::PlayPlugin::start()
 #endif
 
     // Create pipe & process
-    tsp->verbose(u"using media player command: %s", {command});
+    tsp->verbose(u"using media player command: %s", command);
     _pipe.setIgnoreAbort(false);
     return _pipe.open(command, ForkPipe::SYNCHRONOUS, PIPE_BUFFER_SIZE, *tsp, ForkPipe::KEEP_BOTH, ForkPipe::STDIN_PIPE);
 }

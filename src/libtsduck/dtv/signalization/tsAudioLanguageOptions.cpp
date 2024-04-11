@@ -88,7 +88,7 @@ bool ts::AudioLanguageOptions::getFromArgs(Args& args, const UChar* option_name,
     return true;
 
  error:
-    args.error(u"invalid value \"%s\" for option --%s, use %s", {val, option_name, GetSyntaxString()});
+    args.error(u"invalid value \"%s\" for option --%s, use %s", val, option_name, GetSyntaxString());
     return false;
 }
 
@@ -126,7 +126,7 @@ bool ts::AudioLanguageOptionsVector::apply(DuckContext& duck, PMT& pmt, int seve
             // Find the audio stream by PID in the PMT
             smi = pmt.streams.find(it->getPID());
             if (smi == pmt.streams.end()) {
-                duck.report().log(severity, u"audio PID %d (0x%X) not found in PMT", {it->getPID(), it->getPID()});
+                duck.report().log(severity, u"audio PID %d (0x%X) not found in PMT", it->getPID(), it->getPID());
                 ok = false;
             }
         }
@@ -142,7 +142,7 @@ bool ts::AudioLanguageOptionsVector::apply(DuckContext& duck, PMT& pmt, int seve
                 ++smi;
             }
             if (smi == pmt.streams.end()) {
-                duck.report().log(severity, u"audio stream %d not found in PMT", {it->getAudioStreamNumber()});
+                duck.report().log(severity, u"audio stream %d not found in PMT", it->getAudioStreamNumber());
                 ok = false;
             }
         }

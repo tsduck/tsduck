@@ -30,11 +30,11 @@ ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize,
 bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, bool msb, Report& report)
 {
     if (tagSize != 1 && tagSize != 2 && tagSize != 4) {
-        report.error(u"invalid tag size %d", {tagSize});
+        report.error(u"invalid tag size %d", tagSize);
         return false;
     }
     else if (lengthSize != 1 && lengthSize != 2 && lengthSize != 4) {
-        report.error(u"invalid length size %d", {lengthSize});
+        report.error(u"invalid length size %d", lengthSize);
         return false;
     }
     else {
@@ -82,7 +82,7 @@ bool ts::TLVSyntax::fromString(const UString& s, Report& report)
 
     // Handle errors.
     if (!ok) {
-        report.error(u"invalid TLV syntax specification \"%s\", use \"start,size,tagSize,lengthSize,msb|lsb\"", {s});
+        report.error(u"invalid TLV syntax specification \"%s\", use \"start,size,tagSize,lengthSize,msb|lsb\"", s);
     }
     return ok;
 }

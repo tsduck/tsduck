@@ -70,7 +70,7 @@ bool ts::PcapFile::open(const fs::path& filename, Report& report)
     else {
         _file.open(filename, std::ios::in | std::ios::binary);
         if (!_file) {
-            report.error(u"error opening %s", {filename});
+            report.error(u"error opening %s", filename);
             return false;
         }
         _in = &_file;
@@ -84,7 +84,7 @@ bool ts::PcapFile::open(const fs::path& filename, Report& report)
         return false;
     }
 
-    report.debug(u"opened %s, %s format version %d.%d, %s endian", {_name, _ng ? u"pcap-ng" : u"pcap", _major, _minor, _be ? u"big" : u"little"});
+    report.debug(u"opened %s, %s format version %d.%d, %s endian", _name, _ng ? u"pcap-ng" : u"pcap", _major, _minor, _be ? u"big" : u"little");
     return true;
 }
 
@@ -114,7 +114,7 @@ bool ts::PcapFile::readall(uint8_t* data, size_t size, Report& report)
         if (!_in->read(reinterpret_cast<char*>(data), size)) {
             // Read error, don't display error on end-of-file.
             if (!_in->eof()) {
-                report.error(u"error reading %s", {_name});
+                report.error(u"error reading %s", _name);
             }
             return error(report);
         }
@@ -230,7 +230,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
     }
 
     report.debug(u"pcap-ng interface#%d: link type: %d, time units/second: %'d, time offset: %'!s, FCS length: %d bytes",
-                 {_if.size(), ifd.link_type, ifd.time_units, ifd.time_offset, ifd.fcs_size});
+                 _if.size(), ifd.link_type, ifd.time_units, ifd.time_offset, ifd.fcs_size);
 
     // Add the interface description.
     _if.push_back(ifd);
@@ -423,7 +423,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
         // Now process the captured packet.
         _packets_size += cap_size;
         if (orig_size > cap_size) {
-            report.debug(u"truncated captured packet ignored (%d bytes, truncated to %d)", {orig_size, cap_size});
+            report.debug(u"truncated captured packet ignored (%d bytes, truncated to %d)", orig_size, cap_size);
             continue; // loop to next packet block
         }
 
@@ -441,7 +441,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
         }
 
         report.log(2, u"pcap data block: %d bytes, captured packet at offset %d, %d bytes (original: %d bytes), link type: %d",
-                   {buffer.size(), cap_start, cap_size, orig_size, ifd.link_type});
+                   buffer.size(), cap_start, cap_size, orig_size, ifd.link_type);
 
         // Analyze the captured packet, trying to find an IPv4 datagram.
         if (ifd.link_type == LINKTYPE_NULL && cap_size > 4 && get32(buffer.data() + cap_start) == 2) {
@@ -479,7 +479,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
                 return true;
             }
             else {
-                report.warning(u"invalid IPv4 datagram in pcap file, %d bytes (original: %d bytes), link type: %d", {cap_size, orig_size, ifd.link_type});
+                report.warning(u"invalid IPv4 datagram in pcap file, %d bytes (original: %d bytes), link type: %d", cap_size, orig_size, ifd.link_type);
             }
         }
     }

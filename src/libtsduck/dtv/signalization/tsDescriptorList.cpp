@@ -768,7 +768,7 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
             }
             else {
                 // The XML name is correct but the XML structure failed to produce a valid descriptor.
-                parent->report().error(u"Error in descriptor <%s> at line %d", {node->name(), node->lineNumber()});
+                parent->report().error(u"Error in descriptor <%s> at line %d", node->name(), node->lineNumber());
                 success = false;
             }
         }
@@ -781,7 +781,7 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
                 // Always ignore <metadata> nodes.
             }
             else {
-                parent->report().error(u"Illegal <%s> at line %d", {node->name(), node->lineNumber()});
+                parent->report().error(u"Illegal <%s> at line %d", node->name(), node->lineNumber());
                 success = false;
             }
         }

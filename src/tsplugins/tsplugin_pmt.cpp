@@ -306,7 +306,7 @@ bool ts::PMTPlugin::decodeOptionForPID(const UChar* parameter_name, size_t param
 
     // Process errors.
     if (!ok) {
-        error(u"invalid value \"%s\" for --%s", {str, parameter_name});
+        error(u"invalid value \"%s\" for --%s", str, parameter_name);
     }
     return ok;
 }
@@ -450,7 +450,7 @@ bool ts::PMTPlugin::start()
     value(u"sort-languages").toLower().split(_sort_languages, COMMA, true, true);
     for (const auto& lang : _sort_languages) {
         if (lang.length() != 3) {
-            tsp->error(u"invalid language '%s' in --sort-languages", {lang});
+            tsp->error(u"invalid language '%s' in --sort-languages", lang);
             return false;
         }
     }
@@ -578,7 +578,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
         auto comp_it = pmt.streams.find(pid);
         if (comp_it == pmt.streams.end()) {
-            tsp->warning(u"PID 0x%X (%d) not found in PMT", {pid, pid});
+            tsp->warning(u"PID 0x%X (%d) not found in PMT", pid, pid);
         }
         else {
             comp_it->second.descs.add(dlist);

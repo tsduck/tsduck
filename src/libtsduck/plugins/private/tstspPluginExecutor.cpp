@@ -95,7 +95,7 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer*         buffer,
                                          const BitRate&        bitrate,
                                          BitRateConfidence     br_confidence)
 {
-    log(10, u"initBuffer(..., pkt_first = %'d, pkt_cnt = %'d, input_end = %s, aborted = %s, bitrate = %'d)", {pkt_first, pkt_cnt, input_end, aborted, bitrate});
+    log(10, u"initBuffer(..., pkt_first = %'d, pkt_cnt = %'d, input_end = %s, aborted = %s, bitrate = %'d)", pkt_first, pkt_cnt, input_end, aborted, bitrate);
 
     _buffer = buffer;
     _metadata = metadata;
@@ -118,7 +118,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
 {
     assert(count <= _pkt_cnt);
 
-    log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {count, bitrate, input_end, aborted});
+    log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", count, bitrate, input_end, aborted);
 
     // We access data under the protection of the global mutex.
     std::lock_guard<std::recursive_mutex> lock(_global_mutex);
@@ -166,11 +166,11 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
                                        BitRate& bitrate, BitRateConfidence& br_confidence,
                                        bool& input_end, bool& aborted, bool &timeout)
 {
-    log(10, u"waitWork(min_pkt_cnt = %'d, ...)", {min_pkt_cnt});
+    log(10, u"waitWork(min_pkt_cnt = %'d, ...)", min_pkt_cnt);
 
     // Cannot allocate more than the buffer size.
     if (min_pkt_cnt > _buffer->count()) {
-        debug(u"requests too many packets at a time: %'d, larger than buffer size: %'d", {min_pkt_cnt, _buffer->count()});
+        debug(u"requests too many packets at a time: %'d, larger than buffer size: %'d", min_pkt_cnt, _buffer->count());
         min_pkt_cnt = _buffer->count();
     }
 
@@ -222,7 +222,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
     aborted = plugin()->type() != PluginType::OUTPUT && next->_tsp_aborting;
 
     log(10, u"waitWork(min_pkt_cnt = %'d, pkt_first = %'d, pkt_cnt = %'d, bitrate = %'d, input_end = %s, aborted = %s, timeout = %s)",
-        {min_pkt_cnt, pkt_first, pkt_cnt, bitrate, input_end, aborted, timeout});
+        min_pkt_cnt, pkt_first, pkt_cnt, bitrate, input_end, aborted, timeout);
 }
 
 
@@ -319,7 +319,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 
     // Verbose message in the current tsp process and back to the remote tspcontrol.
     verbose(u"restarting due to remote tspcontrol");
-    _restart_data->report.verbose(u"restarting plugin %s", {pluginName()});
+    _restart_data->report.verbose(u"restarting plugin %s", pluginName());
 
     // First, stop the current execution.
     plugin()->stop();
@@ -351,7 +351,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 
         // In case of restart failure, try to restart with the previous arguments.
         if (!success) {
-            _restart_data->report.warning(u"failed to restart plugin %s, restarting with previous parameters", {pluginName()});
+            _restart_data->report.warning(u"failed to restart plugin %s, restarting with previous parameters", pluginName());
             success = plugin()->analyze(pluginName(), previous_args, false) && plugin()->getOptions() && plugin()->start();
         }
     }
@@ -367,6 +367,6 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     _restart = false;
     _restart_data.reset();
 
-    debug(u"restarted plugin %s, status: %s", {pluginName(), success});
+    debug(u"restarted plugin %s, status: %s", pluginName(), success);
     return success;
 }

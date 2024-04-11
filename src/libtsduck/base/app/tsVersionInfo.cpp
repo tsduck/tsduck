@@ -137,7 +137,7 @@ void ts::VersionInfo::startNewVersionDetection()
     const Time curtime(Time::CurrentUTC());
     if (lasttime != Time::Epoch && curtime != Time::Epoch && curtime >= lasttime && curtime < lasttime + cn::days(1)) {
         // Last check was done less than one day ago, don't try again.
-        _debug.debug(u"last new version check done %s, not done again", {lasttime.UTCToLocal()});
+        _debug.debug(u"last new version check done %s, not done again", lasttime.UTCToLocal());
         return;
     }
 
@@ -145,7 +145,7 @@ void ts::VersionInfo::startNewVersionDetection()
     fs::remove(filename, &ErrCodeReport());
     fs::create_directories(dirname, &ErrCodeReport(_debug, u"error creating directory", dirname));
     if (!UString::Save(UStringVector(), filename)) {
-        _debug.error(u"error creating file %s", {filename});
+        _debug.error(u"error creating file %s", filename);
     }
 
     // Start the thread.
@@ -179,7 +179,7 @@ void ts::VersionInfo::main()
     // Compare versions.
     if (ts::VersionInfo::CompareVersions(current, remote) < 0) {
         // The current version is older than latest one on GitHub.
-        _report.info(u"new TSDuck version %s is available (yours is %s), use 'tsversion --upgrade' or see https://tsduck.io/", {remote, current});
+        _report.info(u"new TSDuck version %s is available (yours is %s), use 'tsversion --upgrade' or see https://tsduck.io/", remote, current);
     }
 
 #endif

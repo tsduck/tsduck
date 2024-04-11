@@ -153,5 +153,5 @@ void ts::tsp::OutputExecutor::main()
     debug(u"stopping the output plugin");
     _output->stop();
 
-    debug(u"output thread %s after %'d packets (%'d output)", {aborted ? u"aborted" : u"terminated", totalPacketsInThread(), output_packets});
+    debug(u"output thread %s after %'d packets (%'d output)", aborted ? u"aborted" : u"terminated", totalPacketsInThread(), output_packets);
 }

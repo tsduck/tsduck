@@ -445,7 +445,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
 
     // Download the content.
     UString text;
-    report.debug(u"downloading %s", {_original});
+    report.debug(u"downloading %s", _original);
     if (!web.downloadTextContent(_original, text)) {
         return false;
     }
@@ -456,7 +456,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
 
     // Check MIME type of the downloaded content.
     const UString mime(web.mimeType());
-    report.debug(u"MIME type: %s", {mime});
+    report.debug(u"MIME type: %s", mime);
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u - OR -
     // HTTP Content-Type is application/vnd.apple.mpegurl or audio/mpegurl.
@@ -467,7 +467,7 @@ bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArg
         mime != u"application/mpegurl" &&
         mime != u"audio/mpegurl")
     {
-        report.error(u"Invalid MIME type \"%s\" for HLS playlist at %s", {mime, _original});
+        report.error(u"Invalid MIME type \"%s\" for HLS playlist at %s", mime, _original);
         return false;
     }
 
@@ -499,7 +499,7 @@ bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListT
 
     // Check strict conformance: according to RFC 8216, a playlist must either ends in .m3u8 or .m3u.
     if (strict && !filename.endWith(u".m3u8", CASE_INSENSITIVE) && !filename.endWith(u".m3u", CASE_INSENSITIVE)) {
-        report.error(u"Invalid file name extension for HLS playlist in %s", {filename});
+        report.error(u"Invalid file name extension for HLS playlist in %s", filename);
         return false;
     }
 
@@ -511,7 +511,7 @@ bool ts::hls::PlayList::loadFile(const UString& filename, bool strict, PlayListT
         return parse(strict, report);
     }
     else {
-        report.error(u"error loading %s", {filename});
+        report.error(u"error loading %s", filename);
         return false;
     }
 }
@@ -537,7 +537,7 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
 {
     // Playlists which cannot be reloaded are ignored (no error).
     if (!isUpdatable() || _original.empty()) {
-        report.debug(u"non-reloadable playlist: %s", {_original});
+        report.debug(u"non-reloadable playlist: %s", _original);
         return true;
     }
 
@@ -549,7 +549,7 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
         return false;
     }
     assert(plNew._valid);
-    report.debug(u"playlist media sequence: old: %d/%s, new: %d/%d", {_mediaSequence, _segments.size(), plNew._mediaSequence, plNew._segments.size()});
+    report.debug(u"playlist media sequence: old: %d/%s, new: %d/%d", _mediaSequence, _segments.size(), plNew._mediaSequence, plNew._segments.size());
 
     // If no new segment is present, nothing to do.
     if (plNew._mediaSequence + plNew._segments.size() <= _mediaSequence + _segments.size()) {
@@ -568,7 +568,7 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
     // Copy missing segments.
     if (_mediaSequence + _segments.size() < plNew._mediaSequence) {
         // There are missing segments, we reloaded too late.
-        report.warning(u"missed %d HLS segments, dropping %d outdated segments", {plNew._mediaSequence - _mediaSequence - _segments.size(), _segments.size()});
+        report.warning(u"missed %d HLS segments, dropping %d outdated segments", plNew._mediaSequence - _mediaSequence - _segments.size(), _segments.size());
         // Dropping current segments, reloading fresh contiguous set of segments.
         _mediaSequence = plNew._mediaSequence;
         _segments.swap(plNew._segments);
@@ -640,7 +640,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
             line.trim();
         }
         lineNumber++;
-        report.log(2, u"playlist: %s", {line});
+        report.log(2, u"playlist: %s", line);
 
         // A line is one of blank, comment, tag, URI.
         if (isURI(line, strict, report)) {
@@ -650,7 +650,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 buildURL(plNext, line);
                 _playlists.push_back(plNext);
                 if (!plNext.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
-                    report.debug(u"unexpected playlist file extension in reference URI: %s", {line});
+                    report.debug(u"unexpected playlist file extension in reference URI: %s", line);
                 }
                 // Reset description of next playlist.
                 plNext = plGlobal;
@@ -661,13 +661,13 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 _utcTermination += segNext.duration;
                 _segments.push_back(segNext);
                 if (!segNext.filePath.endWith(u".ts", CASE_INSENSITIVE)) {
-                    report.debug(u"unexpected segment file extension in reference URI: %s", {line});
+                    report.debug(u"unexpected segment file extension in reference URI: %s", line);
                 }
                 // Reset description of next segment.
                 segNext = segGlobal;
             }
             else {
-                report.debug(u"unknown URI: %s", {line});
+                report.debug(u"unknown URI: %s", line);
                 _valid = false;
             }
         }
@@ -676,14 +676,14 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
             switch (tag) {
                 case Tag::EXTM3U: {
                     if (strict && lineNumber > 1) {
-                        report.error(u"misplaced: %s", {line});
+                        report.error(u"misplaced: %s", line);
                         _valid = false;
                     }
                     break;
                 }
                 case Tag::VERSION: {
                     if (!tagParams.toInteger(_version) && strict) {
-                        report.error(u"invalid HLS playlist version: %s", {line});
+                        report.error(u"invalid HLS playlist version: %s", line);
                         _valid = false;
                     }
                     break;
@@ -693,7 +693,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     // Apply to next segment only.
                     const size_t comma = tagParams.find(u",");  // can be NPOS
                     if (!TagAttributes::ToMilliValue(segNext.duration, tagParams.substr(0, comma))) {
-                        report.error(u"invalid segment duration in %s", {line});
+                        report.error(u"invalid segment duration in %s", line);
                         _valid = false;
                     }
                     if (comma != NPOS) {
@@ -710,7 +710,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                         segGlobal.bitrate = segNext.bitrate = 1024 * kilobits;
                     }
                     else if (strict) {
-                        report.error(u"invalid segment bitrate in %s", {line});
+                        report.error(u"invalid segment bitrate in %s", line);
                         _valid = false;
                     }
                     break;
@@ -724,7 +724,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case Tag::TARGETDURATION: {
                     // #EXT-X-TARGETDURATION:s
                     if (!tagParams.toChrono(_targetDuration) && strict) {
-                        report.error(u"invalid target duration in %s", {line});
+                        report.error(u"invalid target duration in %s", line);
                         _valid = false;
                     }
                     break;
@@ -732,7 +732,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case Tag::MEDIA_SEQUENCE: {
                     // #EXT-X-MEDIA-SEQUENCE:number
                     if (!tagParams.toInteger(_mediaSequence) && strict) {
-                        report.error(u"invalid media sequence in %s", {line});
+                        report.error(u"invalid media sequence in %s", line);
                         _valid = false;
                     }
                     break;
@@ -749,7 +749,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                         setType(PlayListType::EVENT, report);
                     }
                     else {
-                        report.error(u"invalid playlist type '%s' in %s", {tagParams, line});
+                        report.error(u"invalid playlist type '%s' in %s", tagParams, line);
                         _valid = false;
                     }
                     break;
@@ -791,7 +791,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     if (!uri.empty()) {
                         buildURL(pl, uri);
                         if (!pl.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
-                            report.debug(u"unexpected playlist file extension in reference URI: %s", {uri});
+                            report.debug(u"unexpected playlist file extension in reference URI: %s", uri);
                         }
                     }
                     _altPlaylists.push_back(pl);
@@ -851,7 +851,7 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
 
     // Identify the tag. Report unknown tag but do not invalidate the playlist.
     if (!TagNames.getValue(tag, line.substr(1, pos - 1), strict)) {
-        report.log(strict ? Severity::Error : Severity::Debug, u"unsupported HLS tag: %s", {line.substr(1, pos - 1)});
+        report.log(strict ? Severity::Error : Severity::Debug, u"unsupported HLS tag: %s", line.substr(1, pos - 1));
         return false;
     }
 
@@ -875,7 +875,7 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
             ++pos; // skip ':'
         }
         else {
-            report.error(u"invalid HLS playlist line: %s", {line});
+            report.error(u"invalid HLS playlist line: %s", line);
             _valid = false;
             return false;
         }
@@ -932,10 +932,10 @@ bool ts::hls::PlayList::autoSave(Report& report)
     }
     else {
         const UString name(_autoSaveDir + fs::path::preferred_separator + BaseName(_original));
-        report.verbose(u"saving playlist to %s", {name});
+        report.verbose(u"saving playlist to %s", name);
         const bool ok = UString::Save(_loadedContent, name);
         if (!ok) {
-            report.warning(u"error saving playlist to %s", {name});
+            report.warning(u"error saving playlist to %s", name);
         }
         return ok;
     }
@@ -1010,7 +1010,7 @@ bool ts::hls::PlayList::saveFile(const ts::UString &filename, ts::Report &report
     // Save the file.
     const UString& name(filename.empty() ? _original : filename);
     if (!text.save(name, false, true)) {
-        report.error(u"error saving HLS playlist in %s", {name});
+        report.error(u"error saving HLS playlist in %s", name);
         return false;
     }
 

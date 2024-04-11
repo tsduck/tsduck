@@ -31,7 +31,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
         return true;
     }
     else {
-        report.error(u"PC/SC error 0x%X: %s", {status, pcsc::StrError(status)});
+        report.error(u"PC/SC error 0x%X: %s", status, pcsc::StrError(status));
         return false;
     }
 }

@@ -500,7 +500,7 @@ void SimulCryptDump::dumpMessage(std::ostream& out, const uint8_t* data, size_t 
         // Adjust protocol version when necessary.
         const ts::tlv::VERSION version = data[0];
         if (version != protocol->version()) {
-            _opt.debug(u"switching EMMG <=> MUX version protocol to %d", {version});
+            _opt.debug(u"switching EMMG <=> MUX version protocol to %d", version);
             protocol->setVersion(version);
         }
 
@@ -620,7 +620,7 @@ bool TCPSimulCryptDump::dump(std::ostream& out)
             break;
         }
         if (size < 5) {
-            _opt.error(u"truncated message: %s (%s -> %s)", {ts::UString::Dump(data, ts::UString::SINGLE_LINE), source, _file.otherFilter(source)});
+            _opt.error(u"truncated message: %s (%s -> %s)", ts::UString::Dump(data, ts::UString::SINGLE_LINE), source, _file.otherFilter(source));
             break;
         }
         assert(data.size() == 5);
@@ -755,7 +755,7 @@ bool TCPSessionDump::save()
         outfile.open(_opt.output_file.toUTF8(), std::ios::out | std::ios::binary);
         ok = bool(outfile);
         if (!ok) {
-            _opt.error(u"error creating %s", {_opt.output_file});
+            _opt.error(u"error creating %s", _opt.output_file);
         }
     }
 
@@ -775,7 +775,7 @@ bool TCPSessionDump::save()
             out->write(reinterpret_cast<const char*>(data.data()), data.size());
             ok = bool(outfile);
             if (!ok) {
-                _opt.error(u"error writing %s", {_opt.output_file});
+                _opt.error(u"error writing %s", _opt.output_file);
             }
             data.clear();
         }

@@ -47,7 +47,7 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, cn::milliseconds timeo
     // Read packets and analyze tables until completed
     while (!_completed && Time::CurrentUTC() < deadline) {
         const size_t pcount = tuner.receive(buffer.data(), buffer.size(), nullptr);
-        _duck.report().debug(u"got %d packets", {pcount});
+        _duck.report().debug(u"got %d packets", pcount);
         if (pcount == 0) { // error
             break;
         }
@@ -162,7 +162,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
 
 void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
 {
-    _duck.report().debug(u"got table id 0x%X on PID 0x%X", {table.tableId(), table.sourcePID()});
+    _duck.report().debug(u"got table id 0x%X on PID 0x%X", table.tableId(), table.sourcePID());
 
     // Store known tables
     switch (table.tableId()) {

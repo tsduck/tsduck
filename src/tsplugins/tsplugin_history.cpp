@@ -124,7 +124,7 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UString& line)
         _outfile << UString::Format(u"%d: ", pkt) << line << std::endl;
     }
     else {
-        tsp->info(u"%d: %s", {pkt, line});
+        tsp->info(u"%d: %s", pkt, line);
     }
 }
 
@@ -202,10 +202,10 @@ bool ts::HistoryPlugin::start()
 {
     // Create output file
     if (!_outfile_name.empty()) {
-        tsp->verbose(u"creating %s", {_outfile_name});
+        tsp->verbose(u"creating %s", _outfile_name);
         _outfile.open(_outfile_name, std::ios::out);
         if (!_outfile) {
-            tsp->error(u"cannot create %s", {_outfile_name});
+            tsp->error(u"cannot create %s", _outfile_name);
             return false;
         }
     }

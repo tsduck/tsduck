@@ -69,7 +69,7 @@ void ts::GitHubRelease::InvalidResponse(const json::ValuePtr& response, Report& 
 {
     report.error(u"invalid response from GitHub, use --debug for more details");
     if (report.debug()) {
-        report.debug(u"GitHub response: %s", {response->printed(2, report)});
+        report.debug(u"GitHub response: %s", response->printed(2, report));
     }
 }
 
@@ -121,7 +121,7 @@ bool ts::GitHubRelease::CallGitHub(json::ValuePtr& response, json::Type expected
     // If the response is an object containing a "message" field, this is an error.
     const UString message(response->value(u"message").toString());
     if (!message.empty()) {
-        report.error(u"GitHub error: %s", {message});
+        report.error(u"GitHub error: %s", message);
         return false;
     }
 

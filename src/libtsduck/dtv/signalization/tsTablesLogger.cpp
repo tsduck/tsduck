@@ -31,7 +31,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
 {
     // Create an instance of each registered section filter.
     TablesLoggerFilterRepository::Instance().createFilters(_section_filters);
-    _report.debug(u"TablesLogger has %s section filters", {_section_filters.size()});
+    _report.debug(u"TablesLogger has %s section filters", _section_filters.size());
 }
 
 ts::TablesLogger::~TablesLogger()
@@ -1025,13 +1025,13 @@ bool ts::TablesLogger::createBinaryFile(const fs::path& name)
         return SetBinaryModeStdout(_report);
     }
     else {
-        _report.verbose(u"creating %s", {name});
+        _report.verbose(u"creating %s", name);
         _bin_file.open(name, std::ios::out | std::ios::binary);
         if (_bin_file) {
             return true;
         }
         else {
-            _report.error(u"error creating %s", {name});
+            _report.error(u"error creating %s", name);
             _abort = true;
             return false;
         }

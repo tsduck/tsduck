@@ -326,9 +326,9 @@ bool ts::InjectPlugin::reloadFiles()
             it.retry_count = 0;  // no longer needed to retry
             _pzer.addSections(file.sections(), it.repetition);
             tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
-                         {file.sections().size(),
-                          xml::Document::IsInlineXML(it.file_name) ? u"inlined XML" : it.file_name,
-                          it.repetition > cn::milliseconds::zero() ? UString::Chrono(it.repetition, true) : u"unspecified"});
+                         file.sections().size(),
+                         xml::Document::IsInlineXML(it.file_name) ? u"inlined XML" : it.file_name,
+                         it.repetition > cn::milliseconds::zero() ? UString::Chrono(it.repetition, true) : u"unspecified");
 
             if (_use_files_bitrate) {
                 assert(it.repetition != cn::milliseconds::zero());
@@ -345,7 +345,7 @@ bool ts::InjectPlugin::reloadFiles()
     if (_use_files_bitrate) {
         _files_bitrate = BitRate(bits_per_1000s / 1000);
         _pzer.setBitRate(_files_bitrate);
-        tsp->verbose(u"target bitrate from repetition rates: %'d b/s", {_files_bitrate});
+        tsp->verbose(u"target bitrate from repetition rates: %'d b/s", _files_bitrate);
     }
     else {
         _files_bitrate = 0;
@@ -376,7 +376,7 @@ bool ts::InjectPlugin::processBitRates()
             return false;
         }
         _pid_inter_pkt = (ts_bitrate / _pid_bitrate).toInt();
-        tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _pid_inter_pkt});
+        tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", ts_bitrate, _pid_inter_pkt);
     }
     else if (!_use_files_bitrate && _specific_rates && _pid_inter_pkt != 0) {
         // The PID bitrate must be set in the packetizer in order to apply
@@ -390,7 +390,7 @@ bool ts::InjectPlugin::processBitRates()
         }
         else {
             _pzer.setBitRate(_pid_bitrate);
-            tsp->verbose(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", {ts_bitrate, _pid_bitrate});
+            tsp->verbose(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", ts_bitrate, _pid_bitrate);
         }
     }
 
@@ -438,7 +438,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, TSPac
         }
         else {
             _pzer.setBitRate(_pid_bitrate);
-            tsp->debug(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", {ts_bitrate, _pid_bitrate});
+            tsp->debug(u"transport bitrate: %'d b/s, new PID bitrate: %'d b/s", ts_bitrate, _pid_bitrate);
         }
         _pid_packet_count = 0;
         _packet_count = 0;
@@ -488,7 +488,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, TSPac
         }
         else {
             // Don't replace. Target PID should not be present on input.
-            tsp->error(u"PID %d (0x%X) already exists, specify --replace or use another PID, aborting", {_inject_pid, _inject_pid});
+            tsp->error(u"PID %d (0x%<X) already exists, specify --replace or use another PID, aborting", _inject_pid);
             return TSP_END;
         }
     }

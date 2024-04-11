@@ -76,7 +76,7 @@ bool ts::IPv6SocketAddress::resolve(const UString& name, Report& report)
         return IPv6Address::resolve(name.substr(1, br2 - 1), report);
     }
     else {
-        report.error(u"invalid IPv6 socket address \"%s\"", {name});
+        report.error(u"invalid IPv6 socket address \"%s\"", name);
         return false;
     }
 }

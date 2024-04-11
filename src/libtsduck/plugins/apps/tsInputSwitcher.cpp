@@ -61,7 +61,7 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
         }
         cmd.append(u" ");
         cmd.append(args.output.toString(PluginType::OUTPUT));
-        _report.debug(u"starting: %s", {cmd});
+        _report.debug(u"starting: %s", cmd);
     }
 
     // Clear errors on the report, used to check further initialisation errors.

@@ -107,7 +107,7 @@ void ts::WatchDog::suspend()
 
 void ts::WatchDog::main()
 {
-    _log.debug(u"Watchdog thread started, id %d", {_watchDogId});
+    _log.debug(u"Watchdog thread started, id %d", _watchDogId);
 
     while (!_terminate) {
         bool expired = false;
@@ -127,10 +127,10 @@ void ts::WatchDog::main()
 
         // Handle the expiration. No longer under mutex protection to avoid deadlocks in handler.
         if (!_terminate && expired && h != nullptr) {
-            _log.debug(u"Watchdog expired, id %d", {_watchDogId});
+            _log.debug(u"Watchdog expired, id %d", _watchDogId);
             h->handleWatchDogTimeout(*this);
         }
     }
 
-    _log.debug(u"Watchdog thread completed, id %d", {_watchDogId});
+    _log.debug(u"Watchdog thread completed, id %d", _watchDogId);
 }

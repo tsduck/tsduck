@@ -112,7 +112,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
                         update_pcr = false;
                         ctx->first_pcr = ctx->last_pcr = pcr;
                         ctx->first_pcr_pkt = ctx->last_pcr_pkt = main_packet_index;
-                        _duck.report().verbose(u"resetting PCR restamping in PID 0x%X (%<d) after DTS/PTS moved backwards restamped PCR", {pid});
+                        _duck.report().verbose(u"resetting PCR restamping in PID 0x%X (%<d) after DTS/PTS moved backwards restamped PCR", pid);
                     }
                 }
             }
@@ -127,7 +127,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
                 // Too high, reset PCR adjustment.
                 ctx->first_pcr = ctx->last_pcr = pcr;
                 ctx->first_pcr_pkt = ctx->last_pcr_pkt = main_packet_index;
-                _duck.report().verbose(u"resetting PCR restamping in PID 0x%X (%<d) after possible discontinuity in original PCR", {pid});
+                _duck.report().verbose(u"resetting PCR restamping in PID 0x%X (%<d) after possible discontinuity in original PCR", pid);
             }
             else {
                 pkt.setPCR(ctx->last_pcr);
@@ -135,7 +135,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
                 // This may go back and forth around zero but should never diverge (--pcr-reset-backwards case).
                 // Report it at debug level 2 only since it occurs on almost all merged packets with PCR.
                 if (_duck.report().maxSeverity() >= 2) {
-                    _duck.report().log(2, u"adjusted PCR by %+'d (%+'!s) in PID 0x%X (%<d)", {moved, cn::duration_cast<cn::milliseconds>(PCR(moved)), pid});
+                    _duck.report().log(2, u"adjusted PCR by %+'d (%+'!s) in PID 0x%X (%<d)", moved, cn::duration_cast<cn::milliseconds>(PCR(moved)), pid);
                 }
             }
         }
@@ -149,14 +149,14 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
 
 void ts::PCRMerger::handlePMT(const PMT& pmt, PID pid)
 {
-    _duck.report().debug(u"got PMT for service 0x%X (%<d), PMT PID 0x%X (%<d), PCR PID 0x%X (%<d)", {pmt.service_id, pid, pmt.pcr_pid});
+    _duck.report().debug(u"got PMT for service 0x%X (%<d), PMT PID 0x%X (%<d), PCR PID 0x%X (%<d)", pmt.service_id, pid, pmt.pcr_pid);
 
     // Record the PCR PID for each component in the service.
     if (pmt.pcr_pid != PID_NULL) {
         for (const auto& it : pmt.streams) {
             // it.first is the PID of the component
             getContext(it.first)->pcr_pid = pmt.pcr_pid;
-            _duck.report().debug(u"associating PID 0x%X (%<d) to PCR PID 0x%X (%<d)", {it.first, pmt.pcr_pid});
+            _duck.report().debug(u"associating PID 0x%X (%<d) to PCR PID 0x%X (%<d)", it.first, pmt.pcr_pid);
         }
     }
 }

@@ -30,7 +30,7 @@ bool ts::TSFuzzing::start(const TSFuzzingArgs& options)
         }
         // Display the random seed in debug mode, for future reuse.
         if (_duck.report().debug()) {
-            _duck.report().debug(u"fuzzing seed: %s", {UString::Dump(_opt.seed, UString::COMPACT)});
+            _duck.report().debug(u"fuzzing seed: %s", UString::Dump(_opt.seed, UString::COMPACT));
         }
     }
 

@@ -377,7 +377,7 @@ bool ts::FilterPlugin::getOptions()
             _ranges.push_back(std::make_pair(first, first));
         }
         else {
-            tsp->error(u"invalid packet range %s", {it});
+            tsp->error(u"invalid packet range %s", it);
             return false;
         }
     }
@@ -449,7 +449,7 @@ bool ts::FilterPlugin::start()
 
 bool ts::FilterPlugin::stop()
 {
-    tsp->debug(u"%'d / %'d filtered packets", {_filtered_packets, tsp->pluginPackets()});
+    tsp->debug(u"%'d / %'d filtered packets", _filtered_packets, tsp->pluginPackets());
     return true;
 }
 
@@ -561,7 +561,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
 void ts::FilterPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
 {
     const UString service_name(service.getName());
-    tsp->debug(u"handling updated services, TS id: 0x%X (%<d), service: 0x%X (%<d), \"%s\"", {ts_id, service.getId(), service_name});
+    tsp->debug(u"handling updated services, TS id: 0x%X (%<d), service: 0x%X (%<d), \"%s\"", ts_id, service.getId(), service_name);
 
     // If the service is filtered by name from the command line, add its service id in the filters.
     for (const auto& name : _service_names) {

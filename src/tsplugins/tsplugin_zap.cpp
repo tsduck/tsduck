@@ -407,7 +407,7 @@ void ts::ZapPlugin::serviceNotPresent(ServiceContext& ctx, const UChar* table_na
 {
     if (_ignore_absent) {
         // Service not present is not an error, waiting for it to reappear.
-        tsp->verbose(u"service %s not found in %s, waiting for the service...", {ctx.service_spec, table_name});
+        tsp->verbose(u"service %s not found in %s, waiting for the service...", ctx.service_spec, table_name);
         // Make sure the service PMT will be notified again if on the same PID.
         if (ctx.pmt_pid != PID_NULL) {
             _demux.resetPID(ctx.pmt_pid);
@@ -422,7 +422,7 @@ void ts::ZapPlugin::serviceNotPresent(ServiceContext& ctx, const UChar* table_na
     }
     else {
         // Service not found is a fatal error.
-        tsp->error(u"service %s not found in %s", {ctx.service_spec, table_name});
+        tsp->error(u"service %s not found in %s", ctx.service_spec, table_name);
         _abort = true;
     }
 }
@@ -437,7 +437,7 @@ void ts::ZapPlugin::setServiceId(ServiceContext& ctx, uint16_t service_id)
     // Ignore case where the service was already known with the same service id.
     if (!ctx.id_known || ctx.service_id != service_id) {
 
-        tsp->verbose(u"found service %s, service id 0x%X (%<d)", {ctx.service_spec, service_id});
+        tsp->verbose(u"found service %s, service id 0x%X (%<d)", ctx.service_spec, service_id);
 
         // Forget the previous service.
         ctx.pmt_pid = PID_NULL;
@@ -553,7 +553,7 @@ void ts::ZapPlugin::handlePAT(PAT& pat)
                 // Need to process the PMT on that PID.
                 ctx.pmt_pid = it->second;
                 _demux.addPID(ctx.pmt_pid);
-                tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {ctx.service_id,ctx.pmt_pid});
+                tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", ctx.service_id, ctx.pmt_pid);
                 need_new_pat = true;
             }
         }
@@ -866,7 +866,7 @@ ts::ProcessorPlugin::Status ts::ZapPlugin::processPacket(TSPacket& pkt, TSPacket
 
         default:
             // Should never get there...
-            tsp->error(u"internal error, invalid PID state %d", {_pid_state[pid]});
+            tsp->error(u"internal error, invalid PID state %d", _pid_state[pid]);
             return TSP_END;
     }
 }

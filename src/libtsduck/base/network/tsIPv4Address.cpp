@@ -159,10 +159,10 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
         report.error(u"%s: %s", {name, SysErrorCodeMessage()});
 #else
         if (status == EAI_SYSTEM) {
-            report.error(u"%s: %s", {name, SysErrorCodeMessage(LastSysErrorCode())});
+            report.error(u"%s: %s", name, SysErrorCodeMessage(LastSysErrorCode()));
         }
         else {
-            report.error(u"%s: %s", {name, SysErrorCodeMessage(status, getaddrinfo_category())});
+            report.error(u"%s: %s", name, SysErrorCodeMessage(status, getaddrinfo_category()));
         }
 #endif
         return false;

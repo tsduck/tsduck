@@ -116,9 +116,9 @@ bool ts::CyclingPacketizer::SectionDesc::insertAfter(const SectionDesc& other) c
 void ts::CyclingPacketizer::addScheduledSection(const SectionDescPtr& sect)
 {
     report().log(2, u"schedule section: PID 0x%X, TID 0x%X, TIDext 0x%X, section %d/%d, cycle: %'d, packet: %'d, due packet: %'d",
-                 {getPID(), sect->section->tableId(), sect->section->tableIdExtension(),
-                  sect->section->sectionNumber(), sect->section->lastSectionNumber(),
-                  sect->last_cycle, sect->last_packet, sect->due_packet});
+                 getPID(), sect->section->tableId(), sect->section->tableIdExtension(),
+                 sect->section->sectionNumber(), sect->section->lastSectionNumber(),
+                 sect->last_cycle, sect->last_packet, sect->due_packet);
 
     auto it = _sched_sections.begin();
     while (it != _sched_sections.end() && sect->insertAfter(**it)) {

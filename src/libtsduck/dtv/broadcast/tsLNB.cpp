@@ -79,7 +79,7 @@ bool ts::LNB::transpose(Transposition& transposition, uint64_t sat_freq, Polariz
     // We need to know the polarity on polarization-controlled LNB.
     const bool pol_control = isPolarizationControlled();
     if (pol_control && (polarity == POL_NONE || polarity == POL_AUTO)) {
-        report.error(u"no polarization provided on polarization-controlled LNB, type %s", {_name});
+        report.error(u"no polarization provided on polarization-controlled LNB, type %s", _name);
         return false;
     }
 
@@ -104,7 +104,7 @@ bool ts::LNB::transpose(Transposition& transposition, uint64_t sat_freq, Polariz
 
     // Now compute the transposition.
     if (index >= _bands.size()) {
-        report.error(u"satellite frequency %'d Hz cannot be transposed using LNB type %s", {sat_freq, _name});
+        report.error(u"satellite frequency %'d Hz cannot be transposed using LNB type %s", sat_freq, _name);
         return false;
     }
     else {
@@ -157,7 +157,7 @@ bool ts::LNB::set(const UString& name, Report& report)
         return true;
     }
     else {
-        report.error(u"unknown LNB name \"%s\"", {name});
+        report.error(u"unknown LNB name \"%s\"", name);
         return false;
     }
 }
@@ -289,7 +289,7 @@ bool ts::LNB::LNBRepository::getNameAttribute(const xml::Element* node, UString&
     // Check if the name is already known.
     const UString iname(ToIndex(name));
     if (Contains(_lnbs, iname)) {
-        node->report().error(u"duplicate LNB name '%s' in <%s> line %d", {name, node->name(), node->lineNumber()});
+        node->report().error(u"duplicate LNB name '%s' in <%s> line %d", name, node->name(), node->lineNumber());
         return false;
     }
 
@@ -416,7 +416,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
             _default_lnb = it->second;
         }
         else {
-            report.error(u"default LNB \"%s\" not found", {def_name});
+            report.error(u"default LNB \"%s\" not found", def_name);
         }
     }
 

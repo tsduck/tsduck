@@ -65,7 +65,7 @@ void ts::tsp::JointTermination::useJointTermination(bool on)
             _jt_users++;
             _jt_remaining++;
         }
-        debug(u"using \"joint termination\", now %d plugins use it", {_jt_users});
+        debug(u"using \"joint termination\", now %d plugins use it", _jt_users);
     }
     else if (!on && _use_jt) {
         _use_jt = false;
@@ -76,7 +76,7 @@ void ts::tsp::JointTermination::useJointTermination(bool on)
             assert (_jt_users >= 0);
             assert (_jt_remaining >= 0);
         }
-        debug(u"no longer using \"joint termination\", now %d plugins use it", {_jt_users});
+        debug(u"no longer using \"joint termination\", now %d plugins use it", _jt_users);
     }
 }
 
@@ -99,7 +99,7 @@ void ts::tsp::JointTermination::jointTerminate()
         if (totalPacketsInThread() > _jt_hightest_pkt) {
             _jt_hightest_pkt = totalPacketsInThread();
         }
-        debug(u"completed for \"joint termination\", %d plugins remaining, current pkt limit: %'d", {_jt_remaining, _jt_hightest_pkt});
+        debug(u"completed for \"joint termination\", %d plugins remaining, current pkt limit: %'d", _jt_remaining, _jt_hightest_pkt);
     }
 }
 

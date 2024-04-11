@@ -87,7 +87,7 @@ bool ts::TablePatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
         }
         else {
             ok = false;
-            _duck.report().error(u"error loading patch file %s", {xml::Document::DisplayFileName(_patchFiles[i])});
+            _duck.report().error(u"error loading patch file %s", xml::Document::DisplayFileName(_patchFiles[i]));
         }
     }
     return ok;
@@ -147,7 +147,7 @@ bool ts::TablePatchXML::applyPatches(BinaryTable& table) const
 
     // Check that the XML transformation created exactly one table.
     if (xnext != nullptr) {
-        _duck.report().warning(u"XML patching left more than one table in the document, first is <%s>, second if <%s>", {xtable->name(), xnext->name()});
+        _duck.report().warning(u"XML patching left more than one table in the document, first is <%s>, second if <%s>", xtable->name(), xnext->name());
     }
 
     // Serialize the modified document as a binary table.

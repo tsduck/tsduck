@@ -223,13 +223,13 @@ namespace {
         }
 
         if (!ok) {
-            opt.error(u"error loading %s", {ts::xml::Document::DisplayFileName(file_name, true)});
+            opt.error(u"error loading %s", ts::xml::Document::DisplayFileName(file_name, true));
             return false;
         }
 
         // Validate the file according to the model.
         if (opt.use_model && !model.validate(doc)) {
-            opt.error(u"%s is not conformant with the XML model", {ts::xml::Document::DisplayFileName(file_name, true)});
+            opt.error(u"%s is not conformant with the XML model", ts::xml::Document::DisplayFileName(file_name, true));
             return false;
         }
 

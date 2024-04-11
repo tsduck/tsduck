@@ -87,7 +87,7 @@ bool ts::DumpPlugin::start()
     else {
         _outfile.open(_outname);
         if (!_outfile) {
-            tsp->error(u"error creating output file %s", {_outname});
+            tsp->error(u"error creating output file %s", _outname);
             return false;
         }
         _out = &_outfile;

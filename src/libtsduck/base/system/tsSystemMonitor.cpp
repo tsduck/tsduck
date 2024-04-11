@@ -65,7 +65,7 @@ void ts::SystemMonitor::main()
 {
     // Load configuration file, consider as terminated on error.
     if (!loadConfigurationFile(_config_file)) {
-        _report.error(u"monitoring ignored, invalid system monitoring XML file %s", {_config_file});
+        _report.error(u"monitoring ignored, invalid system monitoring XML file %s", _config_file);
         return;
     }
 
@@ -96,7 +96,7 @@ void ts::SystemMonitor::main()
     Time vsize_uptime(start_time);
     size_t vsize_max(start_vmem_size);
 
-    _report.info(u"%sresource monitoring started", {MonPrefix(start_time)});
+    _report.info(u"%sresource monitoring started", MonPrefix(start_time));
     bool mute_reported = false;
 
     // Loop on monitoring intervals.
@@ -109,7 +109,7 @@ void ts::SystemMonitor::main()
             period_index++;
             start_next_period += period->duration;
             mute_reported = false;
-            _report.debug(u"starting monitoring period #%d, duration: %'!s, interval: %'!s", {period_index, period->duration, period->interval});
+            _report.debug(u"starting monitoring period #%d, duration: %'!s, interval: %'!s", period_index, period->duration, period->interval);
         }
 
         // Wait until due time or termination request
@@ -125,7 +125,7 @@ void ts::SystemMonitor::main()
 
         // If we no longer log monitoring messages, issue a last message.
         if (!period->log_messages && !mute_reported) {
-            _report.info(u"%sstopping stable monitoring messages to avoid infinitely large log files", {MonPrefix(Time::CurrentLocalTime())});
+            _report.info(u"%sstopping stable monitoring messages to avoid infinitely large log files", MonPrefix(Time::CurrentLocalTime()));
             mute_reported = true;
         }
 
@@ -166,7 +166,7 @@ void ts::SystemMonitor::main()
 
         // Raise an alarm if the CPU usage is above defined limit for this period.
         if (cpu > period->max_cpu) {
-            _report.warning(u"%sALARM, CPU usage is %d%%, max defined to %d%%", {MonPrefix(current_time), cpu, period->max_cpu});
+            _report.warning(u"%sALARM, CPU usage is %d%%, max defined to %d%%", MonPrefix(current_time), cpu, period->max_cpu);
             if (!period->alarm_command.empty()) {
                 UString command;
                 command.format(u"%s \"%s\" cpu %d", period->alarm_command, message, cpu);
@@ -177,7 +177,8 @@ void ts::SystemMonitor::main()
         // Raise an alarm if the virtual memory is not stable while it should be.
         if (period->stable_memory && vmem_size > last_vmem_size) {
             _report.warning(u"%sALARM, VM is not stable: %s in last monitoring interval",
-                            {MonPrefix(current_time), UString::HumanSize(ptrdiff_t(vmem_size) - ptrdiff_t(last_vmem_size), u"B", true)});
+                            MonPrefix(current_time),
+                            UString::HumanSize(ptrdiff_t(vmem_size) - ptrdiff_t(last_vmem_size), u"B", true));
             if (!period->alarm_command.empty()) {
                 UString command;
                 command.format(u"%s \"%s\" memory %d", period->alarm_command, message, vmem_size);
@@ -197,7 +198,7 @@ void ts::SystemMonitor::main()
         last_cpu_time = cpu_time;
     }
 
-    _report.info(u"%sresource monitoring terminated", {MonPrefix(Time::CurrentLocalTime())});
+    _report.info(u"%sresource monitoring terminated", MonPrefix(Time::CurrentLocalTime()));
 }
 
 
@@ -252,7 +253,7 @@ bool ts::SystemMonitor::loadConfigurationFile(const UString& config)
         _periods.push_back(period);
     }
 
-    _report.debug(u"monitoring configuration loaded, %d periods", {_periods.size()});
+    _report.debug(u"monitoring configuration loaded, %d periods", _periods.size());
     return ok;
 }
 

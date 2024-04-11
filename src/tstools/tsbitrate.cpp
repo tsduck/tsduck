@@ -130,7 +130,7 @@ int MainCode(int argc, char *argv[])
     zer.getStatus(status);
 
     if (!status.bitrate_valid) {
-        opt.error(u"cannot compute transport bitrate, insufficient %s", {opt.pcr_name});
+        opt.error(u"cannot compute transport bitrate, insufficient %s", opt.pcr_name);
         if (!opt.full) {
             return EXIT_FAILURE;
         }

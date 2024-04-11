@@ -18,9 +18,9 @@
 
 bool ts::TCPServer::listen(int backlog, Report& report)
 {
-    report.debug(u"server listen, backlog is %d", {backlog});
+    report.debug(u"server listen, backlog is %d", backlog);
     if (::listen(getSocket(), backlog) != 0) {
-        report.error(u"error starting TCP server: %s", {SysErrorCodeMessage()});
+        report.error(u"error starting TCP server: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -52,13 +52,13 @@ bool ts::TCPServer::accept (TCPConnection& client, IPv4SocketAddress& client_add
     if (client_sock == SYS_SOCKET_INVALID) {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
         if (isOpen()) {
-            report.error(u"error accepting TCP client: %s", {SysErrorCodeMessage()});
+            report.error(u"error accepting TCP client: %s", SysErrorCodeMessage());
         }
         return false;
     }
 
     client_address = IPv4SocketAddress(sock_addr);
-    report.debug(u"received connection from %s", {client_address});
+    report.debug(u"received connection from %s", client_address);
 
     client.declareOpened(client_sock, report);
     client.declareConnected(report);
@@ -77,7 +77,7 @@ bool ts::TCPServer::close(Report& report)
     if (::shutdown(getSocket(), SYS_SOCKET_SHUT_RDWR) != 0) {
         const int errcode = LastSysErrorCode();
         if (errcode != SYS_SOCKET_ERR_NOTCONN) {
-            report.error(u"error shutdowning server socket: %s", {SysErrorCodeMessage(errcode)});
+            report.error(u"error shutdowning server socket: %s", SysErrorCodeMessage(errcode));
         }
     }
 

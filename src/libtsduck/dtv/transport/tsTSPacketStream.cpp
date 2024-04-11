@@ -155,7 +155,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             }
         }
 
-        report.debug(u"detected TS file format %s", {packetFormatString()});
+        report.debug(u"detected TS file format %s", packetFormatString());
     }
 
     // Repeat reading packets until the buffer is full or error.
@@ -235,7 +235,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 break;
             }
             default: {
-                report.error(u"internal error, invalid TS file format %s", {packetFormatString()});
+                report.error(u"internal error, invalid TS file format %s", packetFormatString());
                 return 0;
             }
         }
@@ -319,7 +319,7 @@ bool ts::TSPacketStream::writePackets(const TSPacket *buffer, const TSPacketMeta
             break;
         }
         default: {
-            report.error(u"internal error, invalid TS file format %s", {packetFormatString()});
+            report.error(u"internal error, invalid TS file format %s", packetFormatString());
             return false;
         }
     }

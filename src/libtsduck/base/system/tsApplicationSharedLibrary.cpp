@@ -160,21 +160,21 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
 
     // Try in each directory.
     size_t index = 0;
-    CERR.log(2, u"Searching for plugins %s*%s", {prefix, SHARED_LIBRARY_SUFFIX});
+    CERR.log(2, u"Searching for plugins %s*%s", prefix, SHARED_LIBRARY_SUFFIX);
     for (const auto& dir : path_dirs) {
         // Get list of shared library files matching the requested pattern in this directory.
-        CERR.log(2, u"Searching in \"%s\"", {dir});
+        CERR.log(2, u"Searching in \"%s\"", dir);
         ExpandWildcardAndAppend(files, dir + fs::path::preferred_separator + prefix + u"*" + SHARED_LIBRARY_SUFFIX);
         // Eliminate files with already registered base names.
         while (index < files.size()) {
             const UString base(BaseName(files[index]));
             if (basenames.find(base) != basenames.end()) {
-                CERR.log(2, u"  \"%s\", duplicated, ignored", {files[index]});
+                CERR.log(2, u"  \"%s\", duplicated, ignored", files[index]);
                 files.erase(files.begin() + index);
             }
             else {
                 basenames.insert(base);
-                CERR.log(2, u"  \"%s\"", {files[index]});
+                CERR.log(2, u"  \"%s\"", files[index]);
                 index++;
             }
         }
@@ -185,9 +185,9 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
 
     // Debug section when TS_CERR_DEBUG_LEVEL environment variable is 2 or higher.
     if (CERR.maxSeverity() >= 2) {
-        CERR.log(2, u"Results for plugins %s*%s:", {prefix, SHARED_LIBRARY_SUFFIX});
+        CERR.log(2, u"Results for plugins %s*%s:", prefix, SHARED_LIBRARY_SUFFIX);
         for (const auto& it : files) {
-            CERR.log(2, u"  \"%s\"", {it});
+            CERR.log(2, u"  \"%s\"", it);
         }
     }
 }

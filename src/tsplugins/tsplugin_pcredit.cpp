@@ -164,7 +164,7 @@ int64_t ts::PCREditPlugin::adjust(int64_t value)
     if (_random) {
         const int64_t max = std::abs(value);
         _prng.readInt(value, -max, max);
-        tsp->debug(u"adjust by %+d", {value});
+        tsp->debug(u"adjust by %+d", value);
     }
     return value;
 }

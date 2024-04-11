@@ -979,18 +979,18 @@ std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& re
             // Complete packet read but wrong sync byte.
             // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
             strm.setstate(std::ios::failbit);
-            report.error(u"synchronization lost%s, got 0x%X instead of 0x%X at start of TS packet", {AfterPackets(position), b[0], SYNC_BYTE});
+            report.error(u"synchronization lost%s, got 0x%X instead of 0x%X at start of TS packet", AfterPackets(position), b[0], SYNC_BYTE);
         }
     }
     else if (!strm.eof()) {
         // Not an EOF, actual I/O error
-        report.error(u"I/O error while reading TS packet%s", {AfterPackets(position)});
+        report.error(u"I/O error while reading TS packet%s", AfterPackets(position));
     }
     else if (insize > 0) {
         // EOF, got partial packet.
         // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
         strm.setstate(std::ios::failbit);
-        report.error(u"truncated TS packet (%d bytes)%s", {insize, AfterPackets(position)});
+        report.error(u"truncated TS packet (%d bytes)%s", insize, AfterPackets(position));
     }
 
     return strm;

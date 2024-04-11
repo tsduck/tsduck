@@ -150,7 +150,7 @@ bool ts::SVResyncPlugin::start()
 
 bool ts::SVResyncPlugin::stop()
 {
-    tsp->verbose(u"adjusted %'d PCR, %'d PTS, %'d DTS", {_pcr_adjust_count, _pts_adjust_count, _dts_adjust_count});
+    tsp->verbose(u"adjusted %'d PCR, %'d PTS, %'d DTS", _pcr_adjust_count, _pts_adjust_count, _dts_adjust_count);
     return true;
 }
 
@@ -161,7 +161,7 @@ bool ts::SVResyncPlugin::stop()
 
 void ts::SVResyncPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
 {
-    tsp->debug(u"handling updated services, TS id: 0x%X (%<d), service: 0x%X (%<d), \"%s\"", {ts_id, service.getId(), service.getName()});
+    tsp->debug(u"handling updated services, TS id: 0x%X (%<d), service: 0x%X (%<d), \"%s\"", ts_id, service.getId(), service.getName());
 
     if (service.match(_target_service) && pmt.isValid()) {
         // Found the target service. Get all components. We will adjust time stamps here.
@@ -179,7 +179,7 @@ void ts::SVResyncPlugin::handleService(uint16_t ts_id, const Service& service, c
     }
     else if (_ref_pid == PID_NULL && service.match(_ref_service) && pmt.isValid() && pmt.pcr_pid != PID_NULL && pmt.pcr_pid != _cur_ref_pid) {
         // Found the reference service and a new reference PCR PID.
-        tsp->verbose(u"using reference PCR PID 0x%X (%<d) from service 0x%X (%<d)", {pmt.pcr_pid, pmt.service_id});
+        tsp->verbose(u"using reference PCR PID 0x%X (%<d) from service 0x%X (%<d)", pmt.pcr_pid, pmt.service_id);
         _cur_ref_pid = pmt.pcr_pid;
         _last_ref_pcr = INVALID_PCR;
         _last_ref_packet = 0;
@@ -216,7 +216,7 @@ ts::ProcessorPlugin::Status ts::SVResyncPlugin::processPacket(TSPacket& pkt, TSP
             const BitRate bitrate = tsp->bitrate();
             if (bitrate != 0) {
                 if (_bitrate_error) {
-                    tsp->info(u"bitrate now known (%'d b/s), PCR accuracy restored", {bitrate});
+                    tsp->info(u"bitrate now known (%'d b/s), PCR accuracy restored", bitrate);
                     _bitrate_error = false;
                 }
                 ref_pcr += (((tsp->pluginPackets() - _last_ref_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt();
@@ -230,7 +230,7 @@ ts::ProcessorPlugin::Status ts::SVResyncPlugin::processPacket(TSPacket& pkt, TSP
             _delta_pts = ref_pcr >= pcr ?
                 (ref_pcr - pcr) / SYSTEM_CLOCK_SUBFACTOR :
                 PTS_DTS_SCALE - (pcr - ref_pcr) / SYSTEM_CLOCK_SUBFACTOR;
-            tsp->debug(u"new delta PTS/DTS: 0x%09X (%'<d)", {_delta_pts});
+            tsp->debug(u"new delta PTS/DTS: 0x%09X (%'<d)", _delta_pts);
 
             // Replace PCR with extrapolated reference PCR.
             pkt.setPCR(ref_pcr);

@@ -294,7 +294,7 @@ bool ts::MPEPlugin::start()
         }
         _outfile.open(_outfile_name, mode);
         if (!_outfile.is_open()) {
-            tsp->error(u"error creating %s", {_outfile_name});
+            tsp->error(u"error creating %s", _outfile_name);
             return false;
         }
     }
@@ -357,7 +357,7 @@ void ts::MPEPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid)
     // Found a new PID carrying MPE.
     // If we need to extract all MPE PID's, add it.
     if (_all_mpe_pids) {
-        tsp->verbose(u"extract new MPE PID 0x%X (%d), service 0x%X (%d)", {pid, pid, pmt.service_id, pmt.service_id});
+        tsp->verbose(u"extract new MPE PID 0x%X (%d), service 0x%X (%d)", pid, pid, pmt.service_id, pmt.service_id);
         _demux.addPID(pid);
     }
 }
@@ -433,17 +433,17 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
             dump.appendDump(dump_data, dump_size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16);
         }
         tsp->info(u"PID 0x%X (%<d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
-                  {mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
-                   destIP, mpe.destinationUDPPort(), destMAC, macComment, udp_size,
-                   GetUInt16(mpe.datagram() + 6), syncLayoutString(udp_data, udp_size),
-                   dump});
+                  mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
+                  destIP, mpe.destinationUDPPort(), destMAC, macComment, udp_size,
+                  GetUInt16(mpe.datagram() + 6), syncLayoutString(udp_data, udp_size),
+                  dump);
     }
 
     // Save UDP messages in binary file.
     if (_outfile.is_open() && udp_size > _skip_size) {
         _outfile.write(reinterpret_cast<const char*>(udp_data + _skip_size), std::streamsize(udp_size - _skip_size));
         if (!_outfile) {
-            tsp->error(u"error writing to %s", {_outfile_name});
+            tsp->error(u"error writing to %s", _outfile_name);
             _abort = true;
         }
     }

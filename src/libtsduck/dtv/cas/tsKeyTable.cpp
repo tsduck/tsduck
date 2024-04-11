@@ -111,7 +111,7 @@ bool ts::KeyTable::loadFile(Report& report, const UString& filename, bool replac
 {
     // Do not search in TSDuck directory, use plain file specification.
     xml::Document doc(report);
-    report.debug(u"loading %s", {filename});
+    report.debug(u"loading %s", filename);
     return doc.load(filename, false) && parseXML(doc, replace, id_size, value_size);
 }
 
@@ -145,7 +145,7 @@ bool ts::KeyTable::parseXML(xml::Document& doc, bool replace, size_t id_size, si
     }
 
     // Analyze all keys.
-    doc.report().debug(u"loaded %d key records", {keys.size()});
+    doc.report().debug(u"loaded %d key records", keys.size());
     bool success = true;
     for (size_t i = 0; i < keys.size(); ++i) {
         UString id, value;
@@ -156,11 +156,11 @@ bool ts::KeyTable::parseXML(xml::Document& doc, bool replace, size_t id_size, si
             success = false;
         }
         else if (!id.hexaDecode(bid) || (id_size != 0 && bid.size() != id_size)) {
-            doc.report().error(u"invalid id in <%s> at line %d", {k->name(), k->lineNumber()});
+            doc.report().error(u"invalid id in <%s> at line %d", k->name(), k->lineNumber());
             success = false;
         }
         else if (!value.hexaDecode(bvalue) || (value_size != 0 && bvalue.size() != value_size)) {
-            doc.report().error(u"invalid value in <%s> at line %d", {k->name(), k->lineNumber()});
+            doc.report().error(u"invalid value in <%s> at line %d", k->name(), k->lineNumber());
         }
         else if (replace || !hasKey(bid)) {
             _keys[bid] = bvalue;

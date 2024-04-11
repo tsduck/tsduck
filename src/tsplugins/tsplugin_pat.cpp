@@ -103,7 +103,7 @@ bool ts::PATPlugin::start()
         getValue(sidpid, u"add-service", u"", n);
         int sid = 0, pid = 0;
         if (!sidpid.scan(u"%i/%i", &sid, &pid) || sid < 0 || sid > 0xFFFF || pid < 0 || pid >= PID_MAX) {
-            Args::error(u"invalid \"service_id/PID\" value \"%s\"", {sidpid});
+            Args::error(u"invalid \"service_id/PID\" value \"%s\"", sidpid);
             return false;
         }
         Service serv;
@@ -136,7 +136,7 @@ void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 {
     // Warn about non-PAT tables in the PAT PID but keep them.
     if (table.tableId() != TID_PAT) {
-        tsp->warning(u"found table id 0x%X (%d) in the PAT PID", {table.tableId(), table.tableId()});
+        tsp->warning(u"found table id 0x%X (%d) in the PAT PID", table.tableId(), table.tableId());
         is_target = false;
         return;
     }

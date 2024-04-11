@@ -86,7 +86,7 @@ bool ts::TCPConnection::getPeer(IPv4SocketAddress& peer, Report& report) const
     SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
     if (::getpeername(getSocket(), &sock_addr, &len) != 0) {
-        report.error(u"error getting socket peer: %s", {SysErrorCodeMessage()});
+        report.error(u"error getting socket peer: %s", SysErrorCodeMessage());
         return false;
     }
     peer = IPv4SocketAddress(sock_addr);
@@ -123,7 +123,7 @@ bool ts::TCPConnection::send(const void* buffer, size_t size, Report& report)
         }
 #endif
         else {
-            report.error(u"error sending data to socket: %s", {SysErrorCodeMessage()});
+            report.error(u"error sending data to socket: %s", SysErrorCodeMessage());
             return false;
         }
     }
@@ -172,7 +172,7 @@ bool ts::TCPConnection::receive(void* data,             // Buffers address
             std::lock_guard<std::recursive_mutex> lock(_mutex);
             if (isOpen()) {
                 // Report the error only if the error does not result from a close in another thread.
-                report.error(u"error receiving data from socket: %s", {SysErrorCodeMessage(errcode)});
+                report.error(u"error receiving data from socket: %s", SysErrorCodeMessage(errcode));
             }
             return false;
         }
@@ -217,7 +217,7 @@ bool ts::TCPConnection::connect(const IPv4SocketAddress& addr, Report& report)
     for (;;) {
         ::sockaddr sock_addr;
         addr.copy(sock_addr);
-        report.debug(u"connecting to %s", {addr});
+        report.debug(u"connecting to %s", addr);
         if (::connect(getSocket(), &sock_addr, sizeof(sock_addr)) == 0) {
             declareConnected(report);
             return true;
@@ -229,7 +229,7 @@ bool ts::TCPConnection::connect(const IPv4SocketAddress& addr, Report& report)
         }
 #endif
         else {
-            report.error(u"error connecting socket: %s", {SysErrorCodeMessage()});
+            report.error(u"error connecting socket: %s", SysErrorCodeMessage());
             return false;
         }
     }
@@ -247,7 +247,7 @@ bool ts::TCPConnection::shutdownSocket(int how, Report& report)
         std::lock_guard<std::recursive_mutex> lock(_mutex);
         // Do not report "not connected" errors since they are normal when the peer disconnects first.
         if (isOpen() && errcode != SYS_SOCKET_ERR_NOTCONN) {
-            report.error(u"error shutting down socket: %s", {SysErrorCodeMessage(errcode)});
+            report.error(u"error shutting down socket: %s", SysErrorCodeMessage(errcode));
             return false;
         }
     }

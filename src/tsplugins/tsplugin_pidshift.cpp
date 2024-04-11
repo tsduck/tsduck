@@ -202,7 +202,7 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
             // Compute the amount of packets to shift in the selected PID's:
             const PacketCounter count = PacketDistance((ts_bitrate * _init_packets) / ts_packets, _shift_ms);
 
-            tsp->debug(u"TS bitrate: %'d b/s, TS packets: %'d, selected: %'d, duration: %'!s, shift: %'d packets", {ts_bitrate, ts_packets, _init_packets, ms, count});
+            tsp->debug(u"TS bitrate: %'d b/s, TS packets: %'d, selected: %'d, duration: %'!s, shift: %'d packets", ts_bitrate, ts_packets, _init_packets, ms, count);
 
             // We can do that only if we have seen some packets from them.
             if (count < TimeShiftBuffer::MIN_TOTAL_PACKETS) {
@@ -211,7 +211,7 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
                 return _ignore_errors ? TSP_OK : TSP_END;
             }
 
-            tsp->verbose(u"setting shift buffer size to %'d packets", {count});
+            tsp->verbose(u"setting shift buffer size to %'d packets", count);
             _buffer.setTotalPackets(size_t(count));
 
             // Open the shift buffer.
@@ -221,7 +221,7 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
             }
         }
         else if (ts_packets > MAX_EVAL_PACKETS && ts_bitrate == 0) {
-            tsp->error(u"bitrate still unknown after %'d packets, cannot compute the shift buffer size", {ts_packets});
+            tsp->error(u"bitrate still unknown after %'d packets, cannot compute the shift buffer size", ts_packets);
             _pass_all = true;
             return _ignore_errors ? TSP_OK : TSP_END;
         }

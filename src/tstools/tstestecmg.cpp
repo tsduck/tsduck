@@ -257,7 +257,7 @@ EventQueue::EventQueue(const CmdOptions& opt, ts::Report& report) :
 // Enqueue an event.
 void EventQueue::enqueue(const Event& event)
 {
-    _report.debug(u"enqueue event, due: %s, term: %s, channel: %d, stream: %d", {event.due, event.terminate, event.channel_id, event.stream_id});
+    _report.debug(u"enqueue event, due: %s, term: %s, channel: %d, stream: %d", event.due, event.terminate, event.channel_id, event.stream_id);
     std::lock_guard<std::mutex> lock(_mutex);
 
     // Keep an ordered list of events by due time, most future first.
@@ -372,9 +372,9 @@ void CmdStatistics::oneResponse(const cn::milliseconds& time)
 void CmdStatistics::reportStatistics(const ResponseStat& stat)
 {
     _report.info(u"req: %'d, ecm: %'d, response mean: %s ms, min: %d, max: %d, dev: %s",
-                 {_request_count.load(), _global_response.count(),
-                  stat.meanString(0, 3), stat.minimum(), stat.maximum(),
-                  stat.standardDeviationString(0, 3)});
+                 _request_count.load(), _global_response.count(),
+                 stat.meanString(0, 3), stat.minimum(), stat.maximum(),
+                 stat.standardDeviationString(0, 3));
 }
 
 // Thread code.
@@ -532,7 +532,7 @@ bool ECMGConnection::checkChannelMessage(const ts::tlv::ChannelMessage* mp, cons
         return false;
     }
     else if (mp->channel_id != _channel_id) {
-        _logger.report().error(u"received invalid channel_id %d (should be %d) in %s", {mp->channel_id, _channel_id, name});
+        _logger.report().error(u"received invalid channel_id %d (should be %d) in %s", mp->channel_id, _channel_id, name);
         return false;
     }
     else {
@@ -547,7 +547,7 @@ bool ECMGConnection::checkStreamMessage(const ts::tlv::StreamMessage* mp, const 
         return false;
     }
     else if (mp->stream_id < _first_stream_id || mp->stream_id >= _end_stream_id) {
-        _logger.report().error(u"received invalid stream_id %d (should be %d to %d) in %s", {mp->channel_id, _first_stream_id, _end_stream_id - 1, name});
+        _logger.report().error(u"received invalid stream_id %d (should be %d to %d) in %s", mp->channel_id, _first_stream_id, _end_stream_id - 1, name);
         return false;
     }
     else {
@@ -617,7 +617,7 @@ bool ECMGConnection::sendStreamSetup(uint16_t stream_id)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const size_t index = stream_id - _opt.first_ecm_stream_id;
     if (stream_id < _opt.first_ecm_stream_id || index >= _streams.size() || _streams[index].ready) {
-        _logger.report().error(u"invalid stream id: %d", {stream_id});
+        _logger.report().error(u"invalid stream id: %d", stream_id);
         return false;
     }
     else {
@@ -636,7 +636,7 @@ bool ECMGConnection::sendRequest(uint16_t stream_id)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     const size_t index = stream_id - _opt.first_ecm_stream_id;
     if (stream_id < _opt.first_ecm_stream_id || index >= _streams.size() || !_streams[index].ready) {
-        _logger.report().error(u"invalid stream id: %d", {stream_id});
+        _logger.report().error(u"invalid stream id: %d", stream_id);
         return false;
     }
     else {
@@ -681,7 +681,7 @@ void ECMGConnection::main()
         switch (msg->tag()) {
 
             case ts::ecmgscs::Tags::channel_status: {
-                    ts::ecmgscs::ChannelStatus* const mp = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.get());
+                ts::ecmgscs::ChannelStatus* const mp = dynamic_cast<ts::ecmgscs::ChannelStatus*>(msg.get());
                 if (checkChannelMessage(mp, u"channel_status")) {
                     // Received a valid channel_status, keep it for reference.
                     channel_status = *mp;
@@ -695,7 +695,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::channel_test: {
-                    ts::ecmgscs::ChannelTest* const mp = dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.get());
+                ts::ecmgscs::ChannelTest* const mp = dynamic_cast<ts::ecmgscs::ChannelTest*>(msg.get());
                 if (checkChannelMessage(mp, u"channel_test")) {
                     // Automatic reply to channel_test
                     ok = _conn.send(channel_status, _logger);
@@ -704,7 +704,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::stream_status: {
-                    ts::ecmgscs::StreamStatus* const mp = dynamic_cast<ts::ecmgscs::StreamStatus*>(msg.get());
+                ts::ecmgscs::StreamStatus* const mp = dynamic_cast<ts::ecmgscs::StreamStatus*>(msg.get());
                 if (checkStreamMessage(mp, u"stream_status")) {
                     std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
@@ -723,7 +723,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::stream_test: {
-                    ts::ecmgscs::StreamTest* const mp = dynamic_cast<ts::ecmgscs::StreamTest*>(msg.get());
+                ts::ecmgscs::StreamTest* const mp = dynamic_cast<ts::ecmgscs::StreamTest*>(msg.get());
                 if (checkStreamMessage(mp, u"stream_test")) {
                     // Automatic reply to stream_test
                     ts::ecmgscs::StreamStatus resp(_opt.ecmgscs);
@@ -737,17 +737,17 @@ void ECMGConnection::main()
 
             case ts::ecmgscs::Tags::channel_error:
             case ts::ecmgscs::Tags::stream_error: {
-                _logger.report().error(u"received error:\n%s", {msg->dump(2)});
+                _logger.report().error(u"received error:\n%s", msg->dump(2));
                 break;
             }
 
             case ts::ecmgscs::Tags::ECM_response: {
-                    ts::ecmgscs::ECMResponse* const mp = dynamic_cast<ts::ecmgscs::ECMResponse*>(msg.get());
+                ts::ecmgscs::ECMResponse* const mp = dynamic_cast<ts::ecmgscs::ECMResponse*>(msg.get());
                 if (checkStreamMessage(mp, u"ECM_response")) {
                     std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
                     if (!stream.ready || stream.start_request == ts::Time::Epoch) {
-                        _logger.report().error(u"unexpected ECM response, channel_id %d, stream id %d", {mp->channel_id, mp->stream_id});
+                        _logger.report().error(u"unexpected ECM response, channel_id %d, stream id %d", mp->channel_id, mp->stream_id);
                     }
                     else {
                         // Log current request response time.
@@ -761,7 +761,7 @@ void ECMGConnection::main()
             }
 
             case ts::ecmgscs::Tags::stream_close_response: {
-                    ts::ecmgscs::StreamCloseResponse* const mp = dynamic_cast<ts::ecmgscs::StreamCloseResponse*>(msg.get());
+                ts::ecmgscs::StreamCloseResponse* const mp = dynamic_cast<ts::ecmgscs::StreamCloseResponse*>(msg.get());
                 if (checkStreamMessage(mp, u"stream_close_response")) {
                     std::lock_guard<std::recursive_mutex> lock(_mutex);
                     Stream& stream(_streams[mp->stream_id - _first_stream_id]);
@@ -772,7 +772,7 @@ void ECMGConnection::main()
             }
 
             default: {
-                _logger.report().error(u"Unexpected message:\n%s", {msg->dump(2)});
+                _logger.report().error(u"Unexpected message:\n%s", msg->dump(2));
                 break;
             }
         }

@@ -42,7 +42,7 @@ bool ts::SubRipGenerator::open(const fs::path& fileName, Report& report)
     _outputStream.open(fileName, std::ios::out);
 
     if (!_outputStream) {
-        report.error(u"error creating file %s", {fileName});
+        report.error(u"error creating file %s", fileName);
         return false;
     }
     else {

@@ -160,7 +160,7 @@ bool ts::AnalyzePlugin::openOutput()
         return true;
     }
     else {
-        tsp->error(u"cannot create file %s", {name});
+        tsp->error(u"cannot create file %s", name);
         return false;
     }
 }

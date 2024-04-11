@@ -224,7 +224,7 @@ ts::ProcessorPlugin::Status ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPa
 
     if (select) {
         // The packet shall be selected.
-        tsp->debug(u"triggering action, packet %'d", {tsp->pluginPackets()});
+        tsp->debug(u"triggering action, packet %'d", tsp->pluginPackets());
         _lastTime = now == Time::Epoch ? Time::CurrentUTC() : now;
         _lastPacket = tsp->pluginPackets();
         trigger();

@@ -139,7 +139,7 @@ bool ts::TSFileInputArgs::openFile(size_t name_index, size_t file_index, Report&
     // Report file name when there are more than one file.
     // No need to report this with --interleave since all files are open at startup.
     if (!_interleave && _filenames.size() > 1) {
-        report.verbose(u"reading file %s", {name.empty() ? u"'stdin'" : name});
+        report.verbose(u"reading file %s", name.empty() ? u"'stdin'" : name);
     }
 
     // Preset artificial stuffing.
@@ -283,7 +283,7 @@ size_t ts::TSFileInputArgs::read(TSPacket* buffer, TSPacketMetadata* pkt_data, s
 
             // With --interleave --first-terminate, exit at first end of file.
             if (_interleave && _first_terminate) {
-                report.debug(u"end of file %s, terminating", {_filenames[_current_filename]});
+                report.debug(u"end of file %s, terminating", _filenames[_current_filename]);
                 _aborted = true;
                 break;
             }

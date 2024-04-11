@@ -53,7 +53,7 @@ bool ts::Muxer::start(const MuxerArgs& args)
         }
         cmd.append(u" ");
         cmd.append(args.output.toString(PluginType::OUTPUT));
-        _report.debug(u"starting: %s", {cmd});
+        _report.debug(u"starting: %s", cmd);
     }
 
     // Allocate a muxer core object.

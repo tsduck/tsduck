@@ -76,7 +76,7 @@ void ts::tsswitch::CommandListener::main()
 
         // Filter out unauthorized remote systems.
         if (!_opt.allowedRemote.empty() && !Contains(_opt.allowedRemote, sender)) {
-            _log.warning(u"rejected remote command from unauthorized host %s", {sender});
+            _log.warning(u"rejected remote command from unauthorized host %s", sender);
             continue;
         }
 
@@ -90,7 +90,7 @@ void ts::tsswitch::CommandListener::main()
         UString cmd(UString::FromUTF8(inbuf, len));
         cmd.toLower();
         cmd.trim();
-        _log.verbose(u"received command \"%s\", from %s (%d bytes)", {cmd, sender, insize});
+        _log.verbose(u"received command \"%s\", from %s (%d bytes)", cmd, sender, insize);
 
         // Process the command (case insensitive).
         size_t index = 0;
@@ -112,7 +112,7 @@ void ts::tsswitch::CommandListener::main()
             FatalError(err, sizeof(err) - 1);
         }
         else {
-            _log.error(u"received invalid command \"%s\" from remote control at %s", {cmd, sender});
+            _log.error(u"received invalid command \"%s\" from remote control at %s", cmd, sender);
         }
     }
 

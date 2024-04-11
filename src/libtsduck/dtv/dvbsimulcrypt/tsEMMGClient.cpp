@@ -319,7 +319,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
             // Valid response.
             return true;
         default:
-            _logger.report().error(u"unexpected response 0x%X from MUX (expected stream_status)", {response});
+            _logger.report().error(u"unexpected response 0x%X from MUX (expected stream_status)", response);
             return false;
     }
 }

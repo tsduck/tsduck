@@ -81,7 +81,7 @@ bool ts::IPv4SocketAddress::resolve(const UString& name, Report& report)
 
     // If there is something after the colon, this must be a port number
     if (colon < name.length() - 1 && !name.substr(colon + 1).toInteger(_port)) {
-        report.error(u"invalid port value in \"%s\"", {name});
+        report.error(u"invalid port value in \"%s\"", name);
         return false;
     }
 

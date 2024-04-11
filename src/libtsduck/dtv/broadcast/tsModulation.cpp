@@ -27,7 +27,7 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 #elif defined(TS_WINDOWS)
                      u" by Windows BDA/DirectShow"
 #endif
-                     , {name, conv.name(value)});
+                     , name, conv.name(value));
         return false;
     }
 }

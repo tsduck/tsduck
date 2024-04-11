@@ -550,7 +550,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     _guts->sock = ::srt_socket(AF_INET, SOCK_DGRAM, 0);
 #endif
     if (_guts->sock == SRT_INVALID_SOCK) {
-        report.error(u"error creating SRT socket: %s", {::srt_getlasterror_str()});
+        report.error(u"error creating SRT socket: %s", ::srt_getlasterror_str());
         return false;
     }
 
@@ -578,7 +578,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
             report.error(u"unsupported socket mode");
             success = false;
     }
-    report.debug(u"SRTSocket::open, sock = 0x%X, listener = 0x%X", {_guts->sock, _guts->listener});
+    report.debug(u"SRTSocket::open, sock = 0x%X, listener = 0x%X", _guts->sock, _guts->listener);
 
     // Set final socket options.
     success = success && _guts->setSockOptPost(report);
@@ -602,7 +602,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
 
 bool ts::SRTSocket::close(Report& report)
 {
-    report.debug(u"SRTSocket::close, sock = 0x%X, listener = 0x%X, final stats: %s", {_guts->sock, _guts->listener, _guts->final_stats});
+    report.debug(u"SRTSocket::close, sock = 0x%X, listener = 0x%X, final stats: %s", _guts->sock, _guts->listener, _guts->final_stats);
 
     // Report final statistics if required.
     if (_guts->final_stats) {
@@ -712,7 +712,7 @@ bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const USt
             return false;
         }
         else if (!_guts->local_address.hasPort()) {
-            report.error(u"missing port number in local listener address '%s'", {listener_addr});
+            report.error(u"missing port number in local listener address '%s'", listener_addr);
             return false;
         }
     }
@@ -723,7 +723,7 @@ bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const USt
             return false;
         }
         else if (!_guts->remote_address.hasAddress() || !_guts->remote_address.hasPort()) {
-            report.error(u"missing address or port in remote caller address '%s'", {caller_addr});
+            report.error(u"missing address or port in remote caller address '%s'", caller_addr);
             return false;
         }
     }
@@ -804,10 +804,10 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
 bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report)
 {
     if (report.debug()) {
-        report.debug(u"calling srt_setsockflag(%s, %s, %d)", {optNameStr, UString::Dump(optval, optlen, UString::SINGLE_LINE), optlen});
+        report.debug(u"calling srt_setsockflag(%s, %s, %d)", optNameStr, UString::Dump(optval, optlen, UString::SINGLE_LINE), optlen);
     }
     if (srt_setsockflag(sock, SRT_SOCKOPT(optName), optval, int(optlen)) < 0) {
-        report.error(u"error during srt_setsockflag(%s): %s", {optNameStr, srt_getlasterror_str()});
+        report.error(u"error during srt_setsockflag(%s): %s", optNameStr, srt_getlasterror_str());
         return false;
     }
     return true;
@@ -815,9 +815,9 @@ bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const 
 
 bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, Report& report) const
 {
-    report.debug(u"calling srt_getsockflag(%s, ..., %d)", {optNameStr, optlen});
+    report.debug(u"calling srt_getsockflag(%s, ..., %d)", optNameStr, optlen);
     if (srt_getsockflag(_guts->sock, SRT_SOCKOPT(optName), optval, &optlen) < 0) {
-        report.error(u"error during srt_getsockflag(%s): %s", {optNameStr, srt_getlasterror_str()});
+        report.error(u"error during srt_getsockflag(%s): %s", optNameStr, srt_getlasterror_str());
         return false;
     }
     return true;
@@ -911,22 +911,22 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
 
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
-    report.debug(u"calling srt_bind(%s)", {addr});
+    report.debug(u"calling srt_bind(%s)", addr);
     if (::srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
-        report.error(u"error during srt_bind(): %s", {::srt_getlasterror_str()});
+        report.error(u"error during srt_bind(): %s", ::srt_getlasterror_str());
         return false;
     }
 
     // Second parameter is the number of simultaneous connection accepted. For now we only accept one.
     report.debug(u"calling srt_listen()");
     if (::srt_listen(sock, backlog) < 0) {
-        report.error(u"error during srt_listen(): %s", {::srt_getlasterror_str()});
+        report.error(u"error during srt_listen(): %s", ::srt_getlasterror_str());
         return false;
     }
 
     // Install a listen callback which will reject all subsequent connections after the first one.
     if (::srt_listen_callback(sock, listenCallback, this) < 0) {
-        report.error(u"error during srt_listen_callback(): %s", {::srt_getlasterror_str()});
+        report.error(u"error during srt_listen_callback(): %s", ::srt_getlasterror_str());
         return false;
     }
 
@@ -936,7 +936,7 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     report.debug(u"calling srt_accept()");
     const int data_sock = ::srt_accept(sock, &peer_addr, &peer_addr_len);
     if (data_sock == SRT_INVALID_SOCK) {
-        report.error(u"error during srt_accept(): %s", {::srt_getlasterror_str()});
+        report.error(u"error during srt_accept(): %s", ::srt_getlasterror_str());
         return false;
     }
 
@@ -946,7 +946,7 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
 
     // In listener mode, keep the address of the remote peer.
     const IPv4SocketAddress p_addr(peer_addr);
-    report.debug(u"connected to %s", {p_addr});
+    report.debug(u"connected to %s", p_addr);
     if (mode == SRTSocketMode::LISTENER) {
         remote_address = p_addr;
     }
@@ -976,13 +976,13 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
 
-    report.debug(u"calling srt_connect(%s)", {addr});
+    report.debug(u"calling srt_connect(%s)", addr);
     if (::srt_connect(sock, &sock_addr, sizeof(sock_addr)) < 0) {
         const int err = ::srt_getlasterror(&errno);
         std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
             const RejectReason reason = ::srt_getrejectreason(sock);
-            report.debug(u"srt_connect rejected, reason: %d", {reason});
+            report.debug(u"srt_connect rejected, reason: %d", reason);
 #if defined(HAS_SRT_ACCESS_CONTROL)
             if (reason == SRT_REJX_OVERLOAD) {
                 // Extended rejection reasons (REJX) have no meaningful error strings.
@@ -997,7 +997,7 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
             }
 #endif
         }
-        report.error(u"error during srt_connect: %s", {err_str});
+        report.error(u"error during srt_connect: %s", err_str);
         return false;
     }
     else {
@@ -1011,9 +1011,9 @@ bool ts::SRTSocket::Guts::srtBind(const IPv4SocketAddress& addr, Report& report)
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
 
-    report.debug(u"calling srt_bind(%s)", {addr});
+    report.debug(u"calling srt_bind(%s)", addr);
     if (::srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
-        report.error(u"error during srt_bind: %s", {::srt_getlasterror_str()});
+        report.error(u"error during srt_bind: %s", ::srt_getlasterror_str());
         return false;
     }
     else {
@@ -1047,7 +1047,7 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAd
         }
         else if (sock != SRT_INVALID_SOCK) {
             // Display error only if the socket was not closed in the meantime.
-            report.error(u"error during srt_send(): %s", {::srt_getlasterror_str()});
+            report.error(u"error during srt_send(): %s", ::srt_getlasterror_str());
         }
         return false;
     }
@@ -1090,7 +1090,7 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, cn::m
         }
         else if (_guts->sock != SRT_INVALID_SOCK) {
             // Display error only if the socket was not closed in the meantime.
-            report.error(u"error during srt_recv(): %s", {srt_getlasterror_str()});
+            report.error(u"error during srt_recv(): %s", srt_getlasterror_str());
         }
         return false;
     }
@@ -1139,9 +1139,9 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
     if (::srt_bstats(_guts->sock, &stats, clear) < 0) {
         int sys_error = 0;
         const int srt_error = ::srt_getlasterror(&sys_error);
-        report.debug(u"srt_bstats: socket: 0x%X, libsrt error: %d, system error: %d", {_guts->sock, srt_error, sys_error});
+        report.debug(u"srt_bstats: socket: 0x%X, libsrt error: %d, system error: %d", _guts->sock, srt_error, sys_error);
         if (!_guts->disconnected) {
-            report.error(u"error during srt_bstats: %s", {::srt_getlasterror_str()});
+            report.error(u"error during srt_bstats: %s", ::srt_getlasterror_str());
         }
         return false;
     }

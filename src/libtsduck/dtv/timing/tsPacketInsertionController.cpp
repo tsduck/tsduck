@@ -54,7 +54,7 @@ bool ts::PacketInsertionController::BitRateControl::setBitRate(const BitRate& ra
     if (rate == 0) {
         // Unknown bitrate.
         if (_average != 0) {
-            _report.verbose(u"%s bitrate now unknown (was %'d b/s)", {_name, _average});
+            _report.verbose(u"%s bitrate now unknown (was %'d b/s)", _name, _average);
         }
         _count = 0;
         _value_0 = 0;
@@ -65,7 +65,7 @@ bool ts::PacketInsertionController::BitRateControl::setBitRate(const BitRate& ra
     else if (_count == 0 || _average == 0 || diffPercent(rate) > _reset_percent) {
         // First value or reset computation.
         if (rate != _average) {
-            _report.verbose(u"%s bitrate reset to %'d b/s (was %'d b/s)", {_name, rate, _average});
+            _report.verbose(u"%s bitrate reset to %'d b/s (was %'d b/s)", _name, rate, _average);
         }
         _count = 1;
         _value_0 = rate;
@@ -82,7 +82,7 @@ bool ts::PacketInsertionController::BitRateControl::setBitRate(const BitRate& ra
         }
         // Report bitrate adjustment over 5% only.
         if (diffPercent(rate) > 5) {
-            _report.verbose(u"%s bitrate set to %'d b/s, adjusted to %'d b/s", {_name, rate, _average});
+            _report.verbose(u"%s bitrate set to %'d b/s, adjusted to %'d b/s", _name, rate, _average);
         }
         return true; // continue
     }
@@ -136,7 +136,7 @@ bool ts::PacketInsertionController::mustInsert(size_t waiting_packets)
             // Stop acceleration.
             _accel_factor = 1;
             _accel_max_wait = 0;
-            _report.verbose(u"waiting packets back to normal, %s bitrate back to %'d", {_sub_name, _sub_bitrate.getBitRate()});
+            _report.verbose(u"waiting packets back to normal, %s bitrate back to %'d", _sub_name, _sub_bitrate.getBitRate());
         }
         return false;
     }
@@ -151,7 +151,7 @@ bool ts::PacketInsertionController::mustInsert(size_t waiting_packets)
         _accel_main_packets = _main_packets;
         _accel_sub_packets = _sub_packets;
         _accel_max_wait = waiting_packets;
-        _report.verbose(u"%'d waiting packets, accelerating %s bitrate by factor %d", {waiting_packets, _sub_name, _accel_factor});
+        _report.verbose(u"%'d waiting packets, accelerating %s bitrate by factor %d", waiting_packets, _sub_name, _accel_factor);
     }
 
     // Use the same insertion criteria with the accelerated sub-bitrate over the current accelerated phase.
