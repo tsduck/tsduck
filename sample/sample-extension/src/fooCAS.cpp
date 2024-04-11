@@ -30,7 +30,7 @@ TS_REGISTER_SECTION(ts::Range<ts::TID>(ts::TID_EMM_FIRST, ts::TID_EMM_LAST),
 void foo::DisplayFooCASECM(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin)
 {
     // A FooCAS ECM starts with a 2-byte foo_id.
-    disp << margin << ts::UString::Format(u"Foo id: 0x%X", {buf.getUInt16()}) << std::endl;
+    disp << margin << ts::UString::Format(u"Foo id: 0x%X", buf.getUInt16()) << std::endl;
     disp.displayPrivateData(u"Data", buf, ts::NPOS, margin);
 }
 
@@ -42,7 +42,7 @@ void foo::DisplayFooCASECM(ts::TablesDisplay& disp, const ts::Section& section, 
 void foo::DisplayFooCASEMM(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin)
 {
     // A FooCAS EMM starts with a 2-byte foo_id.
-    disp << margin << ts::UString::Format(u"Foo id: 0x%X", {buf.getUInt16()}) << std::endl;
+    disp << margin << ts::UString::Format(u"Foo id: 0x%X", buf.getUInt16()) << std::endl;
     disp.displayPrivateData(u"Data", buf, ts::NPOS, margin);
 }
 
@@ -57,7 +57,7 @@ ts::UString foo::LogFooCASECM(const ts::Section& section, size_t max_bytes)
     size_t size = section.payloadSize();
 
     // A FooCAS ECM starts with a 2-byte foo_id.
-    return size < 2 ? ts::UString() : ts::UString::Format(u"Foo id: 0x%X, data: %s", {ts::GetUInt16(data), ts::UString::Dump(data + 2, std::min(max_bytes, size - 2), ts::UString::COMPACT)});
+    return size < 2 ? ts::UString() : ts::UString::Format(u"Foo id: 0x%X, data: %s", ts::GetUInt16(data), ts::UString::Dump(data + 2, std::min(max_bytes, size - 2), ts::UString::COMPACT));
 }
 
 
@@ -71,7 +71,7 @@ ts::UString foo::LogFooCASEMM(const ts::Section& section, size_t max_bytes)
     size_t size = section.payloadSize();
 
     // A FooCAS EMM starts with a 2-byte foo_id.
-    return size < 2 ? ts::UString() : ts::UString::Format(u"Foo id: 0x%X, data: %s", {ts::GetUInt16(data), ts::UString::Dump(data + 2, std::min(max_bytes, size - 2), ts::UString::COMPACT)});
+    return size < 2 ? ts::UString() : ts::UString::Format(u"Foo id: 0x%X, data: %s", ts::GetUInt16(data), ts::UString::Dump(data + 2, std::min(max_bytes, size - 2), ts::UString::COMPACT));
 }
 
 
@@ -82,6 +82,6 @@ ts::UString foo::LogFooCASEMM(const ts::Section& section, size_t max_bytes)
 void foo::DisplayFooCASCADescriptor(ts::TablesDisplay& disp, ts::PSIBuffer& buf, const ts::UString& margin, ts::TID tid)
 {
     // The private part of a FooCAS CA-descriptor starts with a 2-byte foo_id.
-    disp << margin << ts::UString::Format(u"Foo id: 0x%X", {buf.getUInt16()}) << std::endl;
+    disp << margin << ts::UString::Format(u"Foo id: 0x%X", buf.getUInt16()) << std::endl;
     disp.displayPrivateData(u"Data",buf, ts::NPOS, margin);
 }
