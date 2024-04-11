@@ -139,10 +139,10 @@ void ts::WebRequest::abort()
 void ts::WebRequest::SystemGuts::error(const UChar* message, ::DWORD code)
 {
     if (code == ERROR_SUCCESS) {
-        _request._report.error(u"Web error: %s", {message});
+        _request._report.error(u"Web error: %s", message);
     }
     else {
-        _request._report.error(u"Web error: %s (%s)", {message, WinErrorMessage(code, u"Wininet.dll", INTERNET_ERROR_BASE, INTERNET_ERROR_LAST)});
+        _request._report.error(u"Web error: %s (%s)", message, WinErrorMessage(code, u"Wininet.dll", INTERNET_ERROR_BASE, INTERNET_ERROR_LAST));
     }
 }
 

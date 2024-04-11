@@ -38,7 +38,6 @@ ts::RedistributionControlDescriptor::RedistributionControlDescriptor(DuckContext
     deserialize(duck, desc);
 }
 
-
 void ts::RedistributionControlDescriptor::clearContent()
 {
     rc_information.clear();

@@ -170,7 +170,7 @@ Options::Options(int argc, char *argv[]) :
             for (const auto& fname : names) {
                 const int value = support.value(fname);
                 if (value >= 0) {
-                    std::cout << fname << ": " << ts::UString::YesNo(value) << std::endl;
+                    std::cout << fname << ": " << ts::UString::YesNo(value != 0) << std::endl;
                 }
             }
         }

@@ -27,6 +27,7 @@ namespace ts {
     template <ThreadSafety SAFETY>
     class ReportFile: public Report
     {
+        TS_NOBUILD_NOCOPY(ReportFile);
     public:
         //!
         //! Generic definition of the mutex for this class.

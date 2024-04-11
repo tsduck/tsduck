@@ -39,7 +39,6 @@ ts::RARoverDVBstreamDescriptor::RARoverDVBstreamDescriptor(DuckContext& duck, co
     deserialize(duck, desc);
 }
 
-
 void ts::RARoverDVBstreamDescriptor::clearContent()
 {
     first_valid_date.clear();
@@ -143,8 +142,9 @@ void ts::RARoverDVBstreamDescriptor::buildXML(DuckContext& duck, xml::Element* r
     root->setIntAttribute(u"original_network_id", original_network_id, true);
     root->setIntAttribute(u"service_id", service_id, true);
     root->setIntAttribute(u"component_tag", component_tag, true);
-    if (download_start_time.has_value())
+    if (download_start_time.has_value()) {
         root->setDateTimeAttribute(u"download_start_time", download_start_time.value());
+    }
     root->setOptionalIntAttribute(u"download_period_duration", download_period_duration);
     root->setOptionalIntAttribute(u"download_cycle_time", download_cycle_time);
 }
@@ -179,7 +179,7 @@ bool ts::RARoverDVBstreamDescriptor::analyzeXML(DuckContext& duck, const xml::El
         uint8_t optional_count = download_start_time.has_value() + download_period_duration.has_value() + download_cycle_time.has_value();
         if (optional_count != 0 && optional_count != 3) {
             ok = false;
-            element->report().error(u"download_start_time, download_period_duration and download_cycle_time to be specified together  in <%s>, line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"download_start_time, download_period_duration and download_cycle_time to be specified together  in <%s>, line %d", element->name(), element->lineNumber());
         }
     }
     return ok;
