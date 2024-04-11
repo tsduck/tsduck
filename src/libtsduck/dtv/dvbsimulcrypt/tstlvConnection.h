@@ -248,7 +248,7 @@ bool ts::tlv::Connection<SAFETY>::receive(MessagePtr& msg, const AbortInterface*
 
         // If invalid message max has been reached, break the connection
         if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
-            logger.report().error(u"too many invalid messages from %s, disconnecting", {peerName()});
+            logger.report().error(u"too many invalid messages from %s, disconnecting", peerName());
             disconnect(logger.report());
             return false;
         }

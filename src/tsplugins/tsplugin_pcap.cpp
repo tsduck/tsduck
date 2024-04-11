@@ -236,7 +236,7 @@ bool ts::PcapInputPlugin::stop()
 {
     const size_t max = _pcap_tcp.maxReassemblyQueueSize();
     if (max > 0) {
-        tsp->debug(u"max TCP reassembly queue size: %d data blocks", {max});
+        tsp->debug(u"max TCP reassembly queue size: %d data blocks", max);
     }
     _pcap_udp.close();
     _pcap_tcp.close();
@@ -303,7 +303,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
                 }
                 // We just found the first UDP datagram with a data_provision message, now use this destination address all the time.
                 _actual_dest = dst;
-                tsp->verbose(u"using UDP destination address %s", {dst});
+                tsp->verbose(u"using UDP destination address %s", dst);
             }
 
             // Extract TS packets from the data_provision message.
@@ -325,7 +325,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
                 }
                 // We just found the first UDP datagram with TS packets, now use this destination address all the time.
                 _actual_dest = dst;
-                tsp->verbose(u"using UDP destination address %s", {dst});
+                tsp->verbose(u"using UDP destination address %s", dst);
             }
 
             // Now we have a valid UDP packet.
@@ -336,7 +336,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
         // List all source addresses as they appear.
         if (_all_sources.find(src) == _all_sources.end()) {
             // This is a new source address.
-            tsp->verbose(u"%s UDP source address %s", {_all_sources.empty() ? u"using" : u"adding", src});
+            tsp->verbose(u"%s UDP source address %s", _all_sources.empty() ? u"using" : u"adding", src);
             _all_sources.insert(src);
         }
 
@@ -421,7 +421,7 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
     // Adjust protocol version when necessary.
     const ts::tlv::VERSION version = msg[0];
     if (version != _emmgmux.version()) {
-        tsp->debug(u"switching EMMG <=> MUX version protocol to %d", {version});
+        tsp->debug(u"switching EMMG <=> MUX version protocol to %d", version);
         _emmgmux.setVersion(version);
     }
 
@@ -474,7 +474,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
             // At start of TCP session. At least one packet for this TCP session is ready to be read.
             // If the source was initially unspecified, it is now known.
             _actual_source = _pcap_tcp.sourceFilter();
-            tsp->debug(u"at start of HTTP session, source: %s, server: %s", {_actual_source, _pcap_tcp.serverPeer()});
+            tsp->debug(u"at start of HTTP session, source: %s, server: %s", _actual_source, _pcap_tcp.serverPeer());
         }
         else {
             // The pcap file probably started in the middle of a TCP session.
@@ -497,7 +497,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
                 tsp->verbose(u"TCP session not found in the pcap file");
                 return false;
             }
-            tsp->debug(u"start in middle of HTTP session, initial read: %'d bytes, source: %s", {size, _actual_source});
+            tsp->debug(u"start in middle of HTTP session, initial read: %'d bytes, source: %s", size, _actual_source);
 
             // Try to find 2 adjacent starts of packets (0x47).
             size_t start = 0;
@@ -535,7 +535,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
             size_t size = _http_chunk_size;
             const bool ok = _pcap_tcp.readTCP(_actual_source, _data, size, timestamp, *tsp);
             if (!ok) {
-                tsp->debug(u"readTCP failed, read size: %'d bytes, position in file: %'d", {size, _pcap_tcp.fileSize()});
+                tsp->debug(u"readTCP failed, read size: %'d bytes, position in file: %'d", size, _pcap_tcp.fileSize());
             }
         }
 
@@ -589,7 +589,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
 
             // Display header in debug mode.
             if (!header.empty()) {
-                tsp->debug(u"response header: %s", {header});
+                tsp->debug(u"response header: %s", header);
             }
         }
     }

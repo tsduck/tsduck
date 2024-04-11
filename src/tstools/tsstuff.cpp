@@ -282,7 +282,7 @@ void Stuffer::evaluateNextStuffing()
 {
     // Save initial position in the file
     const ts::PacketCounter initial_position = _input.readPacketsCount();
-    _opt.debug(u"evaluateNextStuffing: initial_position = %'d", {initial_position});
+    _opt.debug(u"evaluateNextStuffing: initial_position = %'d", initial_position);
 
     // Initialize new search. Note that _tstamp1 and _tstamp2 may be unset.
     _tstamp1 = _tstamp2;
@@ -296,7 +296,7 @@ void Stuffer::evaluateNextStuffing()
             if (_opt.reference_pid == ts::PID_NULL) {
                 // Found the first time stamp, use this PID as reference
                 _opt.reference_pid = pkt.getPID();
-                _opt.verbose(u"using PID %d (0x%X) as reference", {_opt.reference_pid, _opt.reference_pid});
+                _opt.verbose(u"using PID %d (0x%<X) as reference", _opt.reference_pid);
             }
             else if (_opt.reference_pid != pkt.getPID()) {
                 // Not the reference PID, skip;
@@ -308,12 +308,12 @@ void Stuffer::evaluateNextStuffing()
                 // 2) Or found a time stamp lower than tstamp1, may be because of a
                 //    file rewind or wrapping at 2**42. Use new time stamp as first.
                 _tstamp1 = time_stamp;
-                _opt.debug(u"evaluateNextStuffing: tstamp1 = %'d at %'d", {time_stamp.tstamp, time_stamp.packet});
+                _opt.debug(u"evaluateNextStuffing: tstamp1 = %'d at %'d", time_stamp.tstamp, time_stamp.packet);
             }
             else if (((tstamp - _tstamp1->tstamp) * 1000) / ts::SYSTEM_CLOCK_FREQ >= _opt.min_interval_ms) {
                 // Found second time stamp (with a sufficiently large interval from first time stamp).
                 _tstamp2 = time_stamp;
-                _opt.debug(u"evaluateNextStuffing: tstamp2 = %'d at %'d", {time_stamp.tstamp, time_stamp.packet});
+                _opt.debug(u"evaluateNextStuffing: tstamp2 = %'d at %'d", time_stamp.tstamp, time_stamp.packet);
             }
         }
     }
@@ -350,7 +350,7 @@ void Stuffer::evaluateNextStuffing()
         // Actual number of input packets in the segment and corresponding bitrate.
         const uint64_t input_packets = _tstamp2->packet - _tstamp1->packet;
         const ts::BitRate input_bitrate = ts::BitRate(input_packets * ts::PKT_SIZE_BITS * ts::SYSTEM_CLOCK_FREQ) / duration;
-        _opt.debug(u"segment: %'d ms, %'d packets, %'d b/s", {(duration * 1000) / ts::SYSTEM_CLOCK_FREQ, input_packets, input_bitrate});
+        _opt.debug(u"segment: %'d ms, %'d packets, %'d b/s", (duration * 1000) / ts::SYSTEM_CLOCK_FREQ, input_packets, input_bitrate);
 
         // Target output number of bits in segment, plus the previously unstuffed bits (less than one packet).
         const uint64_t target_bits = _additional_bits + ((_opt.target_bitrate * duration) / ts::SYSTEM_CLOCK_FREQ).toInt();
@@ -361,7 +361,7 @@ void Stuffer::evaluateNextStuffing()
         // Compute number of stuffing packets to add
         if (input_packets > target_packets) {
             // Input burst greater than target bitrate.
-            _opt.warning(u"input bitrate locally higher (%'d b/s) than target bitrate, cannot stuff", {input_bitrate});
+            _opt.warning(u"input bitrate locally higher (%'d b/s) than target bitrate, cannot stuff", input_bitrate);
             _remaining_stuff_count = 0;
             _current_inter_packet = 0;
             _current_residue_packets = 0;
@@ -397,7 +397,7 @@ void Stuffer::stuff()
         fatalError();
     }
 
-    _opt.debug(u"input file buffer size: %'d packets", {_input.getBufferSize()});
+    _opt.debug(u"input file buffer size: %'d packets", _input.getBufferSize());
 
     // Remaining number of bits to stuff representing less than one packet
     _additional_bits = 0;
@@ -453,7 +453,7 @@ void Stuffer::stuff()
     // Write trailing stuffing packets
     writeStuffing(_opt.trailing_packets);
 
-    _opt.verbose(u"stuffing completed, read %'d packets, written %'d packets", {_input.readPacketsCount(), _output.writePacketsCount()});
+    _opt.verbose(u"stuffing completed, read %'d packets, written %'d packets", _input.readPacketsCount(), _output.writePacketsCount());
 
     // Close files
     _output.close(_opt);

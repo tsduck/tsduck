@@ -98,7 +98,7 @@ bool ts::MACAddress::resolve(const UString& name, Report& report)
         return true;
     }
     else {
-        report.error(u"invalid MAC address '%s', use format 'xx:xx:xx:xx:xx:xx'", {name});
+        report.error(u"invalid MAC address '%s', use format 'xx:xx:xx:xx:xx:xx'", name);
         _addr = 0;
         return false;
     }

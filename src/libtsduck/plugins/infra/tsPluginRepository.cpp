@@ -8,9 +8,9 @@
 
 #include "tsPluginRepository.h"
 #include "tsApplicationSharedLibrary.h"
+#include "tsEnvironment.h"
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
-#include "tsFileUtils.h"
 
 TS_DEFINE_SINGLETON(ts::PluginRepository);
 
@@ -41,39 +41,39 @@ ts::PluginRepository::PluginRepository()
 
 void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory allocator)
 {
-    CERR.debug(u"registering input plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
+    CERR.debug(u"registering input plugin \"%s\", status: %s", name, allocator != nullptr ? u"ok" : u"error, no allocator");
     if (allocator != nullptr) {
         if (_inputPlugins[name] == nullptr) {
             _inputPlugins[name] = allocator;
         }
         else {
-            CERR.debug(u"duplicated input plugin \"%s\" ignored", {name});
+            CERR.debug(u"duplicated input plugin \"%s\" ignored", name);
         }
     }
 }
 
 void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPluginFactory allocator)
 {
-    CERR.debug(u"registering processor plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
+    CERR.debug(u"registering processor plugin \"%s\", status: %s", name, allocator != nullptr ? u"ok" : u"error, no allocator");
     if (allocator != nullptr) {
         if (_processorPlugins[name] == nullptr) {
             _processorPlugins[name] = allocator;
         }
         else {
-            CERR.debug(u"duplicated packet processor plugin \"%s\" ignored", {name});
+            CERR.debug(u"duplicated packet processor plugin \"%s\" ignored", name);
         }
     }
 }
 
 void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFactory allocator)
 {
-    CERR.debug(u"registering output plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
+    CERR.debug(u"registering output plugin \"%s\", status: %s", name, allocator != nullptr ? u"ok" : u"error, no allocator");
     if (allocator != nullptr) {
         if (_outputPlugins[name] == nullptr) {
             _outputPlugins[name] = allocator;
         }
         else {
-            CERR.debug(u"duplicated output plugin \"%s\" ignored", {name});
+            CERR.debug(u"duplicated output plugin \"%s\" ignored", name);
         }
     }
 }
@@ -131,7 +131,7 @@ FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UStri
         return it->second;
     }
     else {
-        report.error(u"%s plugin %s not found", {plugin_type, plugin_name});
+        report.error(u"%s plugin %s not found", plugin_type, plugin_name);
         return nullptr;
     }
 }
@@ -218,7 +218,7 @@ void ts::PluginRepository::loadAllPlugins(Report& report)
     for (size_t i = 0; i < files.size(); ++i) {
         // Permanent load.
         SharedLibrary shlib(files[i], SharedLibraryFlags::PERMANENT, report);
-        CERR.debug(u"loaded plugin file \"%s\", status: %s", {files[i], shlib.isLoaded()});
+        CERR.debug(u"loaded plugin file \"%s\", status: %s", files[i], shlib.isLoaded());
     }
 }
 

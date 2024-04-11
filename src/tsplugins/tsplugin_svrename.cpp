@@ -195,9 +195,9 @@ void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 {
     if (tsp->debug()) {
         tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
-                   {names::TID(duck, table.tableId()), table.version(),
-                    table.sourcePID(), table.sourcePID(),
-                    table.tableIdExtension(), table.tableIdExtension()});
+                   names::TID(duck, table.tableId()), table.version(),
+                   table.sourcePID(), table.sourcePID(),
+                   table.tableIdExtension(), table.tableIdExtension());
     }
 
     switch (table.tableId()) {
@@ -318,7 +318,7 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
         found = Contains(sdt.services, _old_service.getId());
         if (!found) {
             // Informational only
-            tsp->verbose(u"service 0x%X (%d) not found in SDT", {_old_service.getId(), _old_service.getId()});
+            tsp->verbose(u"service 0x%X (%d) not found in SDT", _old_service.getId(), _old_service.getId());
         }
     }
     else if (_old_service.hasName()) {
@@ -326,13 +326,13 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
         found = sdt.findService(duck, _old_service);
         if (!found) {
             // Here, this is an error. If the name is not in the SDT, then we cannot identify the service.
-            tsp->error(u"service \"%s\" not found in SDT", {_old_service.getName()});
+            tsp->error(u"service \"%s\" not found in SDT", _old_service.getName());
             _abort = true;
             return;
         }
         // The service id was previously unknown, now wait for the PAT
         _demux.addPID(PID_PAT);
-        tsp->verbose(u"found service \"%s\", service id is 0x%X", {_old_service.getName(), _old_service.getId()});
+        tsp->verbose(u"found service \"%s\", service id is 0x%X", _old_service.getName(), _old_service.getId());
     }
 
     // Modify the SDT with new service identification
@@ -395,12 +395,12 @@ void ts::SVRenamePlugin::processPAT(PAT& pat)
     // If service not found, error
     if (it == pat.pmts.end()) {
         if (_ignore_nit && _ignore_bat && _ignore_eit) {
-            tsp->error(u"service id 0x%X not found in PAT", {_old_service.getId()});
+            tsp->error(u"service id 0x%X not found in PAT", _old_service.getId());
             _abort = true;
             return;
         }
         else {
-            tsp->info(u"service id 0x%X not found in PAT, will still update NIT, BAT, EIT's", {_old_service.getId()});
+            tsp->info(u"service id 0x%X not found in PAT, will still update NIT, BAT, EIT's", _old_service.getId());
         }
     }
     else {
@@ -410,7 +410,7 @@ void ts::SVRenamePlugin::processPAT(PAT& pat)
         _demux.addPID(it->second);
         _pzer_pmt.setPID(it->second);
 
-        tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_old_service.getId(), _old_service.getPMTPID()});
+        tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", _old_service.getId(), _old_service.getPMTPID());
 
         // Modify the PAT
         if (_new_service.hasId() && !_new_service.hasId(_old_service.getId())) {

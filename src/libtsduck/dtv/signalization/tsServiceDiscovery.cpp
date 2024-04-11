@@ -170,7 +170,7 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
         // Service not found by name in SDT. If we already know the service id, this is fine.
         // If we do not know the service id, then there is no way to find the service.
         if (!hasId()) {
-            _duck.report().error(u"service \"%s\" not found in SDT", {getName()});
+            _duck.report().error(u"service \"%s\" not found in SDT", getName());
             _notFound = true;
         }
         return;
@@ -196,7 +196,7 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
         _demux.resetPID(PID_PAT);
         _demux.addPID(PID_PAT);
 
-        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", {getName(), getId(), getId()});
+        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", getName(), getId(), getId());
     }
 
     // Now collect suitable information from the SDT.
@@ -256,7 +256,7 @@ void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
         // Service not found by name in VCT. If we already know the service id, this is fine.
         // If we do not know the service id, then there is no way to find the service.
         if (!hasId()) {
-            _duck.report().error(u"service \"%s\" not found in VCT", {getName()});
+            _duck.report().error(u"service \"%s\" not found in VCT", getName());
             _notFound = true;
         }
         return;
@@ -283,7 +283,7 @@ void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
         _demux.resetPID(PID_PAT);
         _demux.addPID(PID_PAT);
 
-        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", {getName(), getId(), getId()});
+        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", getName(), getId(), getId());
     }
 
     // Now collect suitable information from the VCT.
@@ -303,7 +303,7 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
         // A service id was known, locate the service in the PAT.
         it = pat.pmts.find(getId());
         if (it == pat.pmts.end()) {
-            _duck.report().error(u"service id 0x%X (%d) not found in PAT", {getId(), getId()});
+            _duck.report().error(u"service id 0x%X (%<d) not found in PAT", getId());
             _notFound = true;
             return;
         }
@@ -335,7 +335,7 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
         // Invalidate out PMT.
         _pmt.invalidate();
 
-        _duck.report().verbose(u"found service id 0x%X (%d), PMT PID is 0x%X (%d)", {getId(), getId(), getPMTPID(), getPMTPID()});
+        _duck.report().verbose(u"found service id 0x%X (%<d), PMT PID is 0x%X (%<d)", getId(), getPMTPID());
     }
 }
 

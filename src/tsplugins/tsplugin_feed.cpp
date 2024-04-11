@@ -202,7 +202,7 @@ void ts::FeedPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 _service_pids[pmt.service_id] = PID_NULL;
                 for (const auto& it : pmt.streams) {
                     if (it.second.stream_type == _stream_type) {
-                        tsp->debug(u"possible tunnel PID 0x%X (%<d) in service 0x%X (%<d)", {it.first, pmt.service_id});
+                        tsp->debug(u"possible tunnel PID 0x%X (%<d) in service 0x%X (%<d)", it.first, pmt.service_id);
                         _service_pids[pmt.service_id] = it.first;
                         break;
                     }
@@ -210,7 +210,7 @@ void ts::FeedPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 // Look for (incorrectly placed) service descriptor.
                 ServiceDescriptor sd;
                 if (pmt.descs.search(duck, DID_SERVICE, sd) < pmt.descs.size()) {
-                    tsp->debug(u"service 0x%X (%<d) has type 0x%X (%<d)", {pmt.service_id, sd.service_type});
+                    tsp->debug(u"service 0x%X (%<d) has type 0x%X (%<d)", pmt.service_id, sd.service_type);
                     _service_types[pmt.service_id] = sd.service_type;
                 }
             }
@@ -223,7 +223,7 @@ void ts::FeedPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 for (const auto& it : sdt.services) {
                     const uint8_t type = it.second.serviceType(duck);
                     if (type != 0) {
-                        tsp->debug(u"service 0x%X (%<d) has type 0x%X (%<d)", {it.first, type});
+                        tsp->debug(u"service 0x%X (%<d) has type 0x%X (%<d)", it.first, type);
                         _service_types[it.first] = type;
                     }
                 }
@@ -246,7 +246,7 @@ void ts::FeedPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 if (ipid != _service_pids.end() && ipid->second != PID_NULL) {
                     // Found the right combination of service type and stream type.
                     _extract_pid = ipid->second;
-                    tsp->verbose(u"extracting feed from PID 0x%X (%<d), service id 0x%X (%<d)", {_extract_pid, itype.first});
+                    tsp->verbose(u"extracting feed from PID 0x%X (%<d), service id 0x%X (%<d)", _extract_pid, itype.first);
                     return;
                 }
             }
@@ -263,7 +263,7 @@ void ts::FeedPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 }
             }
             if (got_them_all) {
-                tsp->error(u"no service found with type 0x%X (%<d) with a PID with stream type 0x%X (%<d)", {_service_type, _stream_type});
+                tsp->error(u"no service found with type 0x%X (%<d) with a PID with stream type 0x%X (%<d)", _service_type, _stream_type);
                 _abort = true;
             }
         }
@@ -281,14 +281,14 @@ void ts::FeedPlugin::resyncBuffer()
 
     if (sync_index != 0 && !_outdata.empty()) {
         if (_sync) {
-            tsp->warning(u"lost synchronization, no initial 0x%X byte", {SYNC_BYTE});
+            tsp->warning(u"lost synchronization, no initial 0x%X byte", SYNC_BYTE);
             _sync = false;
         }
         if (sync_index == NPOS) {
             _outdata.clear();
         }
         else {
-            tsp->info(u"resynchronization on 0x%X byte", {SYNC_BYTE});
+            tsp->info(u"resynchronization on 0x%X byte", SYNC_BYTE);
             _outdata.erase(0, sync_index);
             _sync = true;
         }

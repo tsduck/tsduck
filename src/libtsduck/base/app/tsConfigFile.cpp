@@ -118,7 +118,7 @@ bool ts::ConfigFile::merge(const fs::path& filename, Report& report)
     // Non-existent file means empty configuration.
     // Report a warning.
     if (!file) {
-        report.error(u"Cannot open configuration file %s", {_filename});
+        report.error(u"Cannot open configuration file %s", _filename);
         return false;
     }
 
@@ -196,7 +196,7 @@ bool ts::ConfigFile::save(const fs::path& filename, Report& report) const
     std::ofstream file(_filename);
 
     if (!file) {
-        report.error(u"error creating configuration file %s", {_filename});
+        report.error(u"error creating configuration file %s", _filename);
         return false;
     }
 

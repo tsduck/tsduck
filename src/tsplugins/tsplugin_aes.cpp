@@ -191,14 +191,14 @@ bool ts::AESPlugin::getOptions()
 
     // Get AES key
     if (!_chain->isValidKeySize(key.size())) {
-        tsp->error(u"%d bytes is an invalid AES key size", {key.size()});
+        tsp->error(u"%d bytes is an invalid AES key size", key.size());
         return false;
     }
     if (!_chain->setKey(key.data(), key.size())) {
         tsp->error(u"error in AES key schedule");
         return false;
     }
-    tsp->verbose(u"using %d bits key: %s", {key.size() * 8, UString::Dump(key, UString::SINGLE_LINE)});
+    tsp->verbose(u"using %d bits key: %s", key.size() * 8, UString::Dump(key, UString::SINGLE_LINE));
 
     // Get IV, default IV is all zeroes
     const ByteBlock iv(hexaValue(u"iv", ByteBlock(_chain->minIVSize(), 0)));
@@ -206,7 +206,7 @@ bool ts::AESPlugin::getOptions()
         tsp->error(u"incorrect initialization vector");
         return false;
     }
-    tsp->verbose(u"using %d bits IV: %s", {iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE)});
+    tsp->verbose(u"using %d bits IV: %s", iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE));
 
     return true;
 }
@@ -289,7 +289,7 @@ void ts::AESPlugin::processSDT(SDT& sdt)
     assert(_service.hasName());
     uint16_t service_id;
     if (!sdt.findService(duck, _service.getName(), service_id)) {
-        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
+        tsp->error(u"service \"%s\" not found in SDT", _service.getName());
         _abort = true;
         return;
     }
@@ -297,7 +297,7 @@ void ts::AESPlugin::processSDT(SDT& sdt)
     // Remember service id
     _service.setId(service_id);
     _service.clearPMTPID();
-    tsp->verbose(u"found service id %d (0x%X)", {_service.getId(), _service.getId()});
+    tsp->verbose(u"found service id %d (0x%<X)", _service.getId());
 
     // No longer need the SDT, now need the PAT
     _demux.removePID(PID_SDT);
@@ -317,7 +317,7 @@ void ts::AESPlugin::processPAT(PAT& pat)
 
     // If service not found, error
     if (it == pat.pmts.end()) {
-        tsp->error(u"service %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
+        tsp->error(u"service %d (0x%<X) not found in PAT", _service.getId());
         _abort = true;
         return;
     }
@@ -325,7 +325,7 @@ void ts::AESPlugin::processPAT(PAT& pat)
     // Now filter the PMT
     _service.setPMTPID(it->second);
     _demux.addPID(it->second);
-    tsp->verbose(u"found PMT PID %d (0x%X)", {_service.getPMTPID(), _service.getPMTPID()});
+    tsp->verbose(u"found PMT PID %d (0x%<X)", _service.getPMTPID());
 
     // No longer need the PAT
     _demux.removePID(PID_PAT);
@@ -344,7 +344,7 @@ void ts::AESPlugin::processPMT(PMT& pmt)
     for (const auto& it : pmt.streams) {
         if (it.second.isVideo(duck) || it.second.isAudio(duck) || it.second.isSubtitles(duck)) {
             _scrambled.set(it.first);
-            tsp->verbose(u"scrambling PID %d (0x%X)", {it.first, it.first});
+            tsp->verbose(u"scrambling PID %d (0x%<X)", it.first);
         }
     }
 }
@@ -378,7 +378,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
 
     // If packet to scramble is already scrambled, there is an error
     if (!_descramble && pkt.isScrambled()) {
-        tsp->error(u"PID %d (0x%X) already scrambled", {pid, pid});
+        tsp->error(u"PID %d (0x%<X) already scrambled", pid);
         return TSP_END;
     }
 

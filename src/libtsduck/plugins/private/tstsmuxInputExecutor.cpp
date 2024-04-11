@@ -140,7 +140,7 @@ void ts::tsmux::InputExecutor::main()
             }
             else {
                 // Restart when the plugin terminates or fails.
-                verbose(u"restarting input plugin '%s' after end of stream or failure", {pluginName()});
+                verbose(u"restarting input plugin '%s' after end of stream or failure", pluginName());
                 _input->stop();
                 while (!_terminate && !_input->start()) {
                     std::this_thread::sleep_for(_opt.inputRestartDelay);

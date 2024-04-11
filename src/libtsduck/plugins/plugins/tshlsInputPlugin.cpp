@@ -228,7 +228,7 @@ bool ts::hls::InputPlugin::start()
 
     // In the case of a master play list, select one media playlist.
     if (_playlist.type() == hls::PlayListType::MASTER) {
-        tsp->verbose(u"downloaded %s", {_playlist});
+        tsp->verbose(u"downloaded %s", _playlist);
 
         // Get a copy of the master playlist. The media playlist will be loaded in _playlist.
         PlayList master(_playlist);
@@ -239,7 +239,7 @@ bool ts::hls::InputPlugin::start()
                 tsp->info(master.playList(i).toString());
             }
             if (master.altPlayListCount() > 0) {
-                tsp->info(u"%s alternative rendition contents:", {master.altPlayListCount()});
+                tsp->info(u"%s alternative rendition contents:", master.altPlayListCount());
                 for (size_t i = 0; i < master.altPlayListCount(); ++i) {
                     tsp->info(master.altPlayList(i).toString());
                 }
@@ -257,7 +257,7 @@ bool ts::hls::InputPlugin::start()
             }
             else {
                 assert(index < master.altPlayListCount());
-                tsp->verbose(u"selected playlist: %s", {master.altPlayList(index)});
+                tsp->verbose(u"selected playlist: %s", master.altPlayList(index));
                 if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, webArgs, hls::PlayListType::UNKNOWN, *tsp)) {
                     return false;
                 }
@@ -288,7 +288,7 @@ bool ts::hls::InputPlugin::start()
                     return false;
                 }
                 assert(index < master.playListCount());
-                tsp->verbose(u"selected playlist: %s", {master.playList(index)});
+                tsp->verbose(u"selected playlist: %s", master.playList(index));
                 const UString nextURL(master.playList(index).urlString());
 
                 // Download selected media playlist.
@@ -313,7 +313,7 @@ bool ts::hls::InputPlugin::start()
         tsp->error(u"invalid HLS playlist type, expected a media playlist");
         return false;
     }
-    tsp->verbose(u"downloaded %s", {_playlist});
+    tsp->verbose(u"downloaded %s", _playlist);
 
     // Manage the number of media segments and starting point.
     size_t segCount = _playlist.segmentCount();
@@ -324,7 +324,7 @@ bool ts::hls::InputPlugin::start()
     else if (_startSegment > 0) {
         // Start index from the start of playlist.
         if (segCount + 1 < size_t(_startSegment)) {
-            tsp->warning(u"playlist has only %d segments, starting at last one", {segCount});
+            tsp->warning(u"playlist has only %d segments, starting at last one", segCount);
             segCount = 1;
         }
         else {
@@ -335,7 +335,7 @@ bool ts::hls::InputPlugin::start()
     else if (_startSegment < 0) {
         // Start index from the end of playlist.
         if (segCount < size_t(- _startSegment)) {
-            tsp->warning(u"playlist has only %d segments, starting at first one", {segCount});
+            tsp->warning(u"playlist has only %d segments, starting at first one", segCount);
         }
         else {
             // Remaining number of segments to play.
@@ -346,7 +346,7 @@ bool ts::hls::InputPlugin::start()
     // If the start point is not the first segment, then drop unused initial segments.
     while (_playlist.segmentCount() > segCount) {
         _playlist.popFirstSegment();
-        tsp->debug(u"dropped initial segment, %d remaining segments", {_playlist.segmentCount()});
+        tsp->debug(u"dropped initial segment, %d remaining segments", _playlist.segmentCount());
     }
 
     _segmentCount = 0;
@@ -420,7 +420,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     _segmentCount++;
 
     // Open the segment.
-    tsp->debug(u"downloading segment %s", {seg.urlString()});
+    tsp->debug(u"downloading segment %s", seg.urlString());
     request.enableCookies(webArgs.cookiesFile);
     return request.open(seg.urlString());
 }

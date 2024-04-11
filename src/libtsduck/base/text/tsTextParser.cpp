@@ -77,7 +77,7 @@ bool ts::TextParser::loadFile(const fs::path& fileName)
     // Load the file into the internal lines buffer.
     const bool ok = UString::Load(_lines, fileName);
     if (!ok) {
-        _report.error(u"error reading file %s", {fileName});
+        _report.error(u"error reading file %s", fileName);
     }
 
     // Initialize the parser on the internal lines buffer, including on file error (empty).

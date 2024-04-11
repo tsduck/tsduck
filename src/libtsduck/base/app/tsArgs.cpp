@@ -423,13 +423,13 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
 
 void ts::Args::fatalArgError(const UString& reason) const
 {
-    CERR.fatal(u"%s: application internal error, %s", {_app_name, reason});
+    CERR.fatal(u"%s: application internal error, %s", _app_name, reason);
     std::exit(EXIT_FAILURE);
 }
 
 void ts::Args::fatalArgError(const UString& option, const UString& reason) const
 {
-    CERR.fatal(u"%s: application internal error, option --%s %s", {_app_name, option, reason});
+    CERR.fatal(u"%s: application internal error, option --%s %s", _app_name, option, reason);
     std::exit(EXIT_FAILURE);
 }
 
@@ -1159,7 +1159,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
     // Display the analyzed command line. Do it outside the previous condition (checking for --debug) if the debug
     // mode was set outside this analysis (typically debug mode set at command level and propagated to plugins).
     if (debug()) {
-        debug(u"====> %s%s%s %s", {_shell, _shell.empty() ? u"" : u" ", _app_name.toQuoted(), UString::ToQuotedLine(_args)});
+        debug(u"====> %s%s%s %s", _shell, _shell.empty() ? u"" : u" ", _app_name.toQuoted(), UString::ToQuotedLine(_args));
     }
 
     // Process --help predefined option
@@ -1218,46 +1218,46 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         // There should be no value, this is a flag without value.
         if (val.has_value()) {
             // In the case --option=value
-            error(u"no value allowed for %s", {opt.display()});
+            error(u"no value allowed for %s", opt.display());
             return false;
         }
     }
     else if (!val.has_value()) {
         // No value set, must be an optional value.
         if ((opt.flags & IOPT_OPTVALUE) == 0) {
-            error(u"missing value for %s", {opt.display()});
+            error(u"missing value for %s", opt.display());
             return false;
         }
     }
     else if (opt.type == TRISTATE) {
         Tristate t;
         if (!val.value().toTristate(t)) {
-            error(u"invalid value %s for %s, use one of %s", {val.value(), opt.display(), UString::TristateNamesList()});
+            error(u"invalid value %s for %s, use one of %s", val.value(), opt.display(), UString::TristateNamesList());
             return false;
         }
     }
     else if (opt.type == ANUMBER) {
         // We keep the arg as a string value after validation and will parse it again when the value is queried later.
         if (opt.anumber == nullptr) {
-            error(u"internal error, option %s has no abstract number instance for validation", {opt.display()});
+            error(u"internal error, option %s has no abstract number instance for validation", opt.display());
             return false;
         }
         else if (!opt.anumber->fromString(val.value())) {
-            error(u"invalid value %s for %s", {val.value(), opt.display()});
+            error(u"invalid value %s for %s", val.value(), opt.display());
             return false;
         }
         else if (!opt.anumber->inRange(opt.min_value, opt.max_value)) {
-            error(u"value for %s must be in range %'d to %'d", {opt.display(), opt.min_value, opt.max_value});
+            error(u"value for %s must be in range %'d to %'d", opt.display(), opt.min_value, opt.max_value);
             return false;
         }
     }
     else if (opt.type == STRING) {
         if (val.value().size() < size_t(opt.min_value)) {
-            error(u"invalid size %d for %s, must be at least %d characters", {val.value().size(), opt.display(), opt.min_value});
+            error(u"invalid size %d for %s, must be at least %d characters", val.value().size(), opt.display(), opt.min_value);
             return false;
         }
         if (val.value().size() > size_t(opt.max_value)) {
-            error(u"invalid size %d for %s, must be at most %d characters", {val.value().size(), opt.display(), opt.max_value});
+            error(u"invalid size %d for %s, must be at most %d characters", val.value().size(), opt.display(), opt.max_value);
             return false;
         }
     }
@@ -1265,15 +1265,15 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         // We keep the arg as a string value after validation and will parse it again when the value is queried later.
         ByteBlock data;
         if (!val.value().hexaDecode(data)) {
-            error(u"invalid hexadecimal value '%s' for %s", {val.value(), opt.display()});
+            error(u"invalid hexadecimal value '%s' for %s", val.value(), opt.display());
             return false;
         }
         if (data.size() < size_t(opt.min_value)) {
-            error(u"invalid size %d for %s, must be at least %d bytes", {data.size(), opt.display(), opt.min_value});
+            error(u"invalid size %d for %s, must be at least %d bytes", data.size(), opt.display(), opt.min_value);
             return false;
         }
         if (data.size() > size_t(opt.max_value)) {
-            error(u"invalid size %d for %s, must be at most %d bytes", {data.size(), opt.display(), opt.max_value});
+            error(u"invalid size %d for %s, must be at most %d bytes", data.size(), opt.display(), opt.max_value);
             return false;
         }
     }
@@ -1290,11 +1290,11 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
             return false;
         }
         if (!arg.address.hasAddress() && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OAP) {
-            error(u"mandatory IP address is missing in %s, use ip-address:port", {val.value()});
+            error(u"mandatory IP address is missing in %s, use ip-address:port", val.value());
             return false;
         }
         if (!arg.address.hasPort() && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
-            error(u"mandatory port number is missing in %s, use ip-address:port", {val.value()});
+            error(u"mandatory port number is missing in %s, use ip-address:port", val.value());
             return false;
         }
     }
@@ -1314,7 +1314,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         // Enumeration value expected, get corresponding integer value (not case sensitive)
         int i = opt.enumeration.value(val.value(), false);
         if (i == Enumeration::UNKNOWN) {
-            error(u"invalid value %s for %s, use one of %s", {val.value(), opt.display(), optionNames(opt.name.c_str())});
+            error(u"invalid value %s for %s, use one of %s", val.value(), opt.display(), optionNames(opt.name.c_str()));
             return false;
         }
         // Replace with actual integer value.
@@ -1332,24 +1332,24 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
     {
         // Found one range of integer values.
         if (last < arg.int_base) {
-            error(u"invalid range of integer values \"%s\" for %s", {val.value(), opt.display()});
+            error(u"invalid range of integer values \"%s\" for %s", val.value(), opt.display());
             return false;
         }
         arg.int_count = size_t(last + 1 - arg.int_base);
     }
     else {
-        error(u"invalid integer value %s for %s", {val.value(), opt.display()});
+        error(u"invalid integer value %s for %s", val.value(), opt.display());
         return false;
     }
 
     // Check validity of integer values.
     if (opt.type == INTEGER && arg.int_count > 0) {
         if (arg.int_base < opt.min_value) {
-            error(u"value for %s must be >= %'d", {opt.display(), opt.min_value});
+            error(u"value for %s must be >= %'d", opt.display(), opt.min_value);
             return false;
         }
         else if (arg.int_base + int64_t(arg.int_count) - 1 > opt.max_value) {
-            error(u"value for %s must be <= %'d", {opt.display(), opt.max_value});
+            error(u"value for %s must be <= %'d", opt.display(), opt.max_value);
             return false;
         }
     }
@@ -1535,7 +1535,7 @@ bool ts::Args::processArgsRedirection(UStringVector& args)
             else {
                 // Error loading file.
                 result = false;
-                error(u"error reading command line arguments from file \"%s\"", {fileName});
+                error(u"error reading command line arguments from file \"%s\"", fileName);
             }
         }
         else {

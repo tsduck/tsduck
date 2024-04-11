@@ -187,9 +187,9 @@ void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 {
     if (tsp->debug()) {
         tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
-                   {names::TID(duck, table.tableId()), table.version(),
-                    table.sourcePID(), table.sourcePID(),
-                    table.tableIdExtension(), table.tableIdExtension()});
+                   names::TID(duck, table.tableId()), table.version(),
+                   table.sourcePID(), table.sourcePID(),
+                   table.tableIdExtension(), table.tableIdExtension());
     }
 
     switch (table.tableId()) {
@@ -308,7 +308,7 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
         found = Contains(sdt.services, _service.getId());
         if (!found) {
             // Informational only, SDT entry is not mandatory.
-            tsp->info(u"service %d (0x%X) not found in SDT, ignoring it", {_service.getId(), _service.getId()});
+            tsp->info(u"service %d (0x%X) not found in SDT, ignoring it", _service.getId(), _service.getId());
         }
     }
     else {
@@ -317,11 +317,11 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
         if (!found) {
             // Here, this is an error. A service can be searched by name only in current TS
             if (_ignore_absent) {
-                tsp->warning(u"service \"%s\" not found in SDT, ignoring it", {_service.getName()});
+                tsp->warning(u"service \"%s\" not found in SDT, ignoring it", _service.getName());
                 _transparent = true;
             }
             else {
-                tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
+                tsp->error(u"service \"%s\" not found in SDT", _service.getName());
                 _abort = true;
             }
             return;
@@ -331,7 +331,7 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
         if (!_ignore_nit) {
             _demux.addPID(PID_NIT);
         }
-        tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
+        tsp->verbose(u"found service \"%s\", service id is 0x%X", _service.getName(), _service.getId());
     }
 
     // Remove service description in the SDT
@@ -370,7 +370,7 @@ void ts::SVRemovePlugin::processPAT(PAT& pat)
         if (it.first == _service.getId()) {
             found = true;
             _service.setPMTPID(it.second);
-            tsp->verbose(u"found service id 0x%X (%<d), PMT PID is 0x%X (%<d)", {_service.getId(), _service.getPMTPID()});
+            tsp->verbose(u"found service id 0x%X (%<d), PMT PID is 0x%X (%<d)", _service.getId(), _service.getPMTPID());
             // Drop PMT of the service
             _drop_pids.set(it.second);
         }
@@ -386,12 +386,12 @@ void ts::SVRemovePlugin::processPAT(PAT& pat)
     }
     else if (_ignore_absent || !_ignore_nit || !_ignore_bat) {
         // Service is not present in current TS, but continue
-        tsp->info(u"service id 0x%X not found in PAT, ignoring it", {_service.getId()});
+        tsp->info(u"service id 0x%X not found in PAT, ignoring it", _service.getId());
         _ready = true;
     }
     else {
         // If service is not found and no need to modify to NIT or BAT, abort
-        tsp->error(u"service id 0x%X not found in PAT", {_service.getId()});
+        tsp->error(u"service id 0x%X not found in PAT", _service.getId());
         _abort = true;
     }
 

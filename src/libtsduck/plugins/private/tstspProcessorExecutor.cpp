@@ -204,7 +204,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
                         break;
                     default:
                         // Invalid status, report error and accept packet.
-                        error(u"invalid packet processing status %d", {status});
+                        error(u"invalid packet processing status %d", status);
                         break;
                 }
 
@@ -238,7 +238,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
     } while (!input_end && !aborted);
 
     debug(u"packet processing thread %s after %'d packets, %'d passed, %'d dropped, %'d nullified",
-          {input_end ? u"terminated" : u"aborted", pluginPackets(), passed_packets, dropped_packets, nullified_packets});
+          input_end ? u"terminated" : u"aborted", pluginPackets(), passed_packets, dropped_packets, nullified_packets);
 }
 
 
@@ -248,7 +248,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
 
 void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
 {
-    debug(u"packet processing window size: %'d packets", {window_size});
+    debug(u"packet processing window size: %'d packets", window_size);
 
     TSPacketLabelSet only_labels(_processor->getOnlyLabelOption());
     PacketCounter passed_packets = 0;
@@ -412,5 +412,5 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
     } while (!input_end && !aborted);
 
     debug(u"packet processing thread %s after %'d packets, %'d passed, %'d dropped, %'d nullified",
-          {input_end ? u"terminated" : u"aborted", pluginPackets(), passed_packets, dropped_packets, nullified_packets});
+          input_end ? u"terminated" : u"aborted", pluginPackets(), passed_packets, dropped_packets, nullified_packets);
 }

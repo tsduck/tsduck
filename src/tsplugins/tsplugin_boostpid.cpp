@@ -88,7 +88,7 @@ bool ts::BoostPIDPlugin::getOptions()
 
 bool ts::BoostPIDPlugin::start()
 {
-    tsp->verbose(u"adding %d packets every %d packets on PID %d (0x%X)", {_opt_addpkt, _opt_inpkt, _pid, _pid});
+    tsp->verbose(u"adding %d packets every %d packets on PID %d (0x%X)", _opt_addpkt, _opt_inpkt, _pid, _pid);
     _last_cc = 0;
     _in_count = 0;
     _add_count = 0;
@@ -111,7 +111,7 @@ ts::ProcessorPlugin::Status ts::BoostPIDPlugin::processPacket(TSPacket& pkt, TSP
             // It is time to add more packets
             if (_add_count > 0) {
                 // Overflow, we did not find enough stuffing packets to add packets in the target PID.
-                tsp->verbose(u"overflow: failed to insert %d packets", {_add_count});
+                tsp->verbose(u"overflow: failed to insert %d packets", _add_count);
             }
             _add_count += _opt_addpkt;
             _in_count = _opt_inpkt;

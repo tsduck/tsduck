@@ -137,9 +137,9 @@ bool ts::SlicePlugin::start()
     _next_index = 0;
 
     if (tsp->verbose()) {
-        tsp->verbose(u"initial packet processing: %s", {StatusNames.name(_status)});
+        tsp->verbose(u"initial packet processing: %s", StatusNames.name(_status));
         for (auto& it : _events) {
-            tsp->verbose(u"packet %s after %'d %s", {StatusNames.name(it.status), it.value, _use_time ? u"ms" : u"packets"});
+            tsp->verbose(u"packet %s after %'d %s", StatusNames.name(it.status), it.value, _use_time ? u"ms" : u"packets");
         }
     }
 
@@ -206,7 +206,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
         // Yes, we just passed a schedule
         _status = _events[_next_index].status;
         _next_index++;
-        tsp->verbose(u"new packet processing: %s after %'d packets", {StatusNames.name(_status), _packet_cnt});
+        tsp->verbose(u"new packet processing: %s after %'d packets", StatusNames.name(_status), _packet_cnt);
     }
 
     // Count packets

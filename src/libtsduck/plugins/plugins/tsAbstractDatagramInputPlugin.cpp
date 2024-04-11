@@ -206,7 +206,7 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
         }
 
         // No TS packet found in UDP message, wait for another one.
-        tsp->debug(u"no TS packet in message, %s bytes", {insize});
+        tsp->debug(u"no TS packet in message, %s bytes", insize);
     }
 
     // If new packets were received, we may need to re-evaluate the real-time input bitrate.
@@ -243,9 +243,9 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
             const cn::milliseconds ms_total = Time::CurrentUTC() - _start;
             const BitRate br_current = PacketBitRate(_packets_0, ms_current);
             const BitRate br_average = PacketBitRate(_packets, ms_total);
-            tsp->info(u"input bitrate: %s, average: %s", {
-                br_current == 0 ? u"undefined" : br_current.toString() + u" b/s",
-                br_average == 0 ? u"undefined" : br_average.toString() + u" b/s"});
+            tsp->info(u"input bitrate: %s, average: %s",
+                      br_current == 0 ? u"undefined" : br_current.toString() + u" b/s",
+                      br_average == 0 ? u"undefined" : br_average.toString() + u" b/s");
         }
     }
 

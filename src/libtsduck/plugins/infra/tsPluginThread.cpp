@@ -125,5 +125,5 @@ ts::Plugin* ts::PluginThread::plugin() const
 
 void ts::PluginThread::writeLog(int severity, const UString& msg)
 {
-    _report->log(severity, u"%s: %s", {_logname.empty() ? _name : _logname, msg});
+    _report->log(severity, u"%s: %s", _logname.empty() ? _name : _logname, msg);
 }

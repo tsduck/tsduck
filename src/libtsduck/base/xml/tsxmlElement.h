@@ -932,11 +932,11 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
     UString str(attr.value());
     INT val = INT(0);
     if (!str.toInteger(val, u",")) {
-        report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
     else if (val < INT(minValue) || val > INT(maxValue)) {
-        report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", {str, minValue, maxValue, name, this->name(), lineNumber()});
+        report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", str, minValue, maxValue, name, this->name(), lineNumber());
         return false;
     }
     else {
@@ -1026,11 +1026,11 @@ bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool r
     UString str(attr.value());
     FLT val = FLT(0.0);
     if (!str.toFloat(val)) {
-        report().error(u"'%s' is not a valid floating-point value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid floating-point value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
     else if (val < FLT(minValue) || val > FLT(maxValue)) {
-        report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", {str, double(minValue), double(maxValue), name, this->name(), lineNumber()});
+        report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", str, double(minValue), double(maxValue), name, this->name(), lineNumber());
         return false;
     }
     else {
@@ -1077,7 +1077,7 @@ bool ts::xml::Element::getTimeAttribute(cn::duration<Rep1,Period1>& value, const
     // Analyze the time string.
     const bool ok = Attribute::TimeFromString(value, str);
     if (!ok) {
-        report().error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", str, name, this->name(), lineNumber());
     }
     return ok;
 }

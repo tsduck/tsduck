@@ -183,7 +183,7 @@ PluginExecutor::PluginExecutor(Options& opt, size_t index, PluginExecutor* previ
 
     // Load arguments and start the plugin.
     if (!_shlib->getOptions() || !_shlib->start()) {
-        _opt.error(u"error starting plugin %s", {_name});
+        _opt.error(u"error starting plugin %s", _name);
     }
 }
 
@@ -276,7 +276,7 @@ size_t InputPluginExecutor::receive(ts::TSPacket* packets, ts::TSPacketMetadata*
             }
         }
         else {
-            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {pluginPackets(), packets[n].b[0], ts::SYNC_BYTE});
+            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", pluginPackets(), packets[n].b[0], ts::SYNC_BYTE);
             _sync_lost = true;
             count = n;
         }

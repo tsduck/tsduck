@@ -99,7 +99,7 @@ bool ts::SectionFileArgs::loadArgs(DuckContext& duck, Args& args)
     // Try to decode --eit-base-date first as a date, then as date/time.
     const UString date_str(args.value(u"eit-base-date"));
     if (!date_str.empty() && !eit_base_time.decode(date_str, Time::DATE) && !eit_base_time.decode(date_str, Time::DATETIME)) {
-        args.error(u"invalid date value \"%s\" (use \"year/month/day [hh:mm:ss]\")", {date_str});
+        args.error(u"invalid date value \"%s\" (use \"year/month/day [hh:mm:ss]\")", date_str);
         return false;
     }
 
@@ -151,7 +151,7 @@ bool ts::SectionFileArgs::processSectionFile(SectionFile& file, Report& report) 
     if (pack_and_flush) {
         const size_t packed = file.packOrphanSections();
         if (packed > 0) {
-            report.verbose(u"packed %d incomplete tables, may be invalid", {packed});
+            report.verbose(u"packed %d incomplete tables, may be invalid", packed);
         }
     }
 

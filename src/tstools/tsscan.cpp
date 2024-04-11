@@ -286,7 +286,7 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
     _tuner(tuner),
     _channel(channel)
 {
-    _opt.verbose(u"scanning channel %'d, %'d Hz", {_channel, _opt.hfband->frequency(_channel)});
+    _opt.verbose(u"scanning channel %'d, %'d Hz", _channel, _opt.hfband->frequency(_channel));
 
     if (_opt.no_offset) {
         // Only try the central frequency
@@ -367,7 +367,7 @@ bool OffsetScanner::tune(int32_t offset, ts::ModulationArgs& params)
 
 bool OffsetScanner::tryOffset(int32_t offset)
 {
-    _opt.debug(u"trying offset %d", {offset});
+    _opt.debug(u"trying offset %d", offset);
 
     // Tune to transponder and start signal acquisition.
     // Signal locking timeout is applied in start().
@@ -384,7 +384,7 @@ bool OffsetScanner::tryOffset(int32_t offset)
     // If we don't scan offsets, there is no need to consider signal strength, just use the central offset.
     if (ok && !_opt.no_offset) {
 
-        _opt.verbose(u"%s, %s", {_opt.hfband->description(_channel, offset), state});
+        _opt.verbose(u"%s, %s", _opt.hfband->description(_channel, offset), state);
 
         if (state.signal_strength.has_value()) {
             const int64_t strength = state.signal_strength.value().value;
@@ -660,7 +660,7 @@ void ScanContext::main()
 
     // Save channel file. Create intermediate directories when it is the default file.
     if (!_opt.channel_file.empty()) {
-        _opt.verbose(u"saving %s", {_opt.channel_file});
+        _opt.verbose(u"saving %s", _opt.channel_file);
         _channels.save(_opt.channel_file, _opt.default_channel_file, _opt);
     }
 }

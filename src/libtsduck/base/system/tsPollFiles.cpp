@@ -17,7 +17,7 @@
 
 void ts::PollFiles::pollRepeatedly()
 {
-    _report.debug(u"Starting PollFiles on %s, poll interval = %!s, min stable delay = %!s", {_files_wildcard, _poll_interval, _min_stable_delay});
+    _report.debug(u"Starting PollFiles on %s, poll interval = %!s, min stable delay = %!s", _files_wildcard, _poll_interval, _min_stable_delay);
 
     // Loop on poll for files.
     while (pollOnce()) {
@@ -43,7 +43,7 @@ bool ts::PollFiles::pollOnce()
         }
         catch (const std::exception& e) {
             const char* msg = e.what();
-            _report.error(u"Exception in PollFiles listener: %s", {msg == nullptr ? "unknown" : msg});
+            _report.error(u"Exception in PollFiles listener: %s", msg == nullptr ? "unknown" : msg);
         }
     }
 
@@ -83,7 +83,7 @@ bool ts::PollFiles::pollOnce()
         if (pf->_pending && now >= pf->_found_date + _min_stable_delay) {
             pf->_pending = false;
             _notified_files.push_back(pf);
-            _report.debug(u"PolledFiles: %s %s", {PolledFile::StatusEnumeration.name(pf->_status), name});
+            _report.debug(u"PolledFiles: %s %s", PolledFile::StatusEnumeration.name(pf->_status), name);
         }
 
         // Next polled file
@@ -105,7 +105,7 @@ bool ts::PollFiles::pollOnce()
         }
         catch (const std::exception& e) {
             const char* msg = e.what();
-            _report.error(u"Exception in PollFiles listener: %s", {msg == nullptr ? "unknown" : msg});
+            _report.error(u"Exception in PollFiles listener: %s", msg == nullptr ? "unknown" : msg);
         }
     }
 
@@ -121,7 +121,7 @@ bool ts::PollFiles::pollOnce()
 
 void ts::PollFiles::deleteFile(PolledFileList::iterator& polled)
 {
-    _report.debug(u"PolledFiles: deleted %s", {(*polled)->_name});
+    _report.debug(u"PolledFiles: deleted %s", (*polled)->_name);
     (*polled)->_status = PolledFile::DELETED;
     _notified_files.push_back(*polled);
     polled = _polled_files.erase(polled);

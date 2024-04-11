@@ -102,11 +102,11 @@ bool ts::xml::Element::getChildren(ElementVector& children, const UString& searc
         return true;
     }
     else if (maxCount == UNLIMITED) {
-        report().error(u"<%s>, line %d, contains %d <%s>, at least %d required", {name(), lineNumber(), children.size(), searchName, minCount});
+        report().error(u"<%s>, line %d, contains %d <%s>, at least %d required", name(), lineNumber(), children.size(), searchName, minCount);
         return false;
     }
     else {
-        report().error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", {name(), lineNumber(), children.size(), searchName, minCount, maxCount});
+        report().error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", name(), lineNumber(), children.size(), searchName, minCount, maxCount);
         return false;
     }
 }
@@ -190,11 +190,11 @@ bool ts::xml::Element::getText(UString& data, const bool trim, size_t minSize, s
         return true;
     }
     else if (maxSize == UNLIMITED) {
-        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, at least %d required", {name(), lineNumber(), len, minSize});
+        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, at least %d required", name(), lineNumber(), len, minSize);
         return false;
     }
     else {
-        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, allowed %d to %d", {name(), lineNumber(), len, minSize, maxSize});
+        report().error(u"Incorrect text in <%s>, line %d, contains %d characters, allowed %d to %d", name(), lineNumber(), len, minSize, maxSize);
         return false;
     }
 }
@@ -245,11 +245,11 @@ bool ts::xml::Element::getHexaText(ByteBlock& data, size_t minSize, size_t maxSi
         return true;
     }
     else if (maxSize == UNLIMITED) {
-        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, at least %d required", {name(), lineNumber(), len, minSize});
+        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, at least %d required", name(), lineNumber(), len, minSize);
         return false;
     }
     else {
-        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, allowed %d to %d", {name(), lineNumber(), len, minSize, maxSize});
+        report().error(u"Incorrect hexa content in <%s>, line %d, contains %d bytes, allowed %d to %d", name(), lineNumber(), len, minSize, maxSize);
         return false;
     }
 }
@@ -386,7 +386,7 @@ const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attributeNa
         return it->second;
     }
     if (!silent) {
-        report().error(u"attribute '%s' not found in <%s>, line %d", {attributeName, name(), lineNumber()});
+        report().error(u"attribute '%s' not found in <%s>, line %d", attributeName, name(), lineNumber());
     }
     // Return a reference to a static invalid attribute.
     return Attribute::INVALID;
@@ -440,12 +440,12 @@ bool ts::xml::Element::getAttribute(UString& value,
         // Incorrect value size.
         if (maxSize == UNLIMITED) {
             report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, at least %d required",
-                          {name, this->name(), attr.lineNumber(), value.length(), minSize});
+                           name, this->name(), attr.lineNumber(), value.length(), minSize);
             return false;
         }
         else {
             report().error(u"Incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
-                          {name, this->name(), attr.lineNumber(), value.length(), minSize, maxSize});
+                           name, this->name(), attr.lineNumber(), value.length(), minSize, maxSize);
             return false;
         }
     }
@@ -498,7 +498,7 @@ bool ts::xml::Element::getBoolAttribute(bool& value, const UString& name, bool r
         return true;
     }
     else {
-        report().error(u"'%s' is not a valid boolean value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid boolean value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
 }
@@ -544,7 +544,7 @@ bool ts::xml::Element::getEnumAttribute(int& value, const Enumeration& definitio
         const UString str(attr.value());
         const int val = definition.value(str, false);
         if (val == Enumeration::UNKNOWN) {
-            report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+            report().error(u"'%s' is not a valid value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
             return false;
         }
         else {
@@ -573,7 +573,7 @@ bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bo
     // Analyze the time string.
     const bool ok = Attribute::DateTimeFromString(value, str);
     if (!ok) {
-        report().error(u"'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid date/time for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD hh:mm:ss\"", str, name, this->name(), lineNumber());
     }
     return ok;
 }
@@ -597,7 +597,7 @@ bool ts::xml::Element::getDateAttribute(Time& value, const UString& name, bool r
     // Analyze the time string.
     const bool ok = Attribute::DateFromString(value, str);
     if (!ok) {
-        report().error(u"'%s' is not a valid date for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD\"", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid date for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD\"", str, name, this->name(), lineNumber());
     }
     return ok;
 }
@@ -620,7 +620,7 @@ bool ts::xml::Element::getIPAttribute(IPv4Address& value, const UString& name, b
 
     const bool ok = value.resolve(str, report());
     if (!ok) {
-        report().error(u"'%s' is not a valid IPv4 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid IPv4 address for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
     }
     return ok;
 }
@@ -638,7 +638,7 @@ bool ts::xml::Element::getIPv6Attribute(IPv6Address& value, const UString& name,
 
     const bool ok = value.resolve(str, report());
     if (!ok) {
-        report().error(u"'%s' is not a valid IPv6 address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid IPv6 address for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
     }
     return ok;
 }
@@ -656,7 +656,7 @@ bool ts::xml::Element::getMACAttribute(MACAddress& value, const UString& name, b
 
     const bool ok = value.resolve(str, report());
     if (!ok) {
-        report().error(u"'%s' is not a valid MAC address for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        report().error(u"'%s' is not a valid MAC address for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
     }
     return ok;
 }
@@ -724,7 +724,7 @@ bool ts::xml::Element::merge(Element* other, MergeAttributes attrOptions)
 
     // Check that the elements have identical tags.
     if (!name().similar(other->name())) {
-        report().error(u"Cannot merge XML element <%s>, line %d, with <%s>, line %d", {name(), lineNumber(), other->name(), other->lineNumber()});
+        report().error(u"Cannot merge XML element <%s>, line %d, with <%s>, line %d", name(), lineNumber(), other->name(), other->lineNumber());
         return false;
     }
 
@@ -870,7 +870,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
     UString nodeName;
     parser.skipWhiteSpace();
     if (!parser.parseXMLName(nodeName)) {
-        report().error(u"line %d: parsing error, tag name expected", {parser.lineNumber()});
+        report().error(u"line %d: parsing error, tag name expected", parser.lineNumber());
         return false;
     }
 
@@ -921,10 +921,10 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
 
             // Store the attribute.
             if (!ok) {
-                report().error(u"line %d: error parsing attribute '%s' in tag <%s>", {line, attrName, value()});
+                report().error(u"line %d: error parsing attribute '%s' in tag <%s>", line, attrName, value());
             }
             else if (hasAttribute(attrName)) {
-                report().error(u"line %d: duplicate attribute '%s' in tag <%s>", {line, attrName, value()});
+                report().error(u"line %d: duplicate attribute '%s' in tag <%s>", line, attrName, value());
                 ok = false;
             }
             else {
@@ -936,7 +936,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
             }
         }
         else {
-            report().error(u"line %d: parsing error, tag <%s>", {lineNumber(), value()});
+            report().error(u"line %d: parsing error, tag <%s>", lineNumber(), value());
             ok = false;
         }
     }
@@ -963,7 +963,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent)
     }
 
     if (!ok) {
-        report().error(u"line %d: parsing error, expected </%s> to match <%s> at line %d", {parser.lineNumber(), value(), value(), lineNumber()});
+        report().error(u"line %d: parsing error, expected </%s> to match <%s> at line %d", parser.lineNumber(), value(), value(), lineNumber());
     }
 
     return ok;

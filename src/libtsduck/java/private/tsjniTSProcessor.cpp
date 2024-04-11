@@ -124,7 +124,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
         }
         cmd.append(u" ");
         cmd.append(args.output.toString(ts::PluginType::OUTPUT));
-        tsp->report().debug(u"starting: %s", {cmd});
+        tsp->report().debug(u"starting: %s", cmd);
     }
 
     // Finally start the TSProcessor.

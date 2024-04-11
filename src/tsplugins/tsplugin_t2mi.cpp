@@ -195,7 +195,7 @@ bool ts::T2MIPlugin::start()
     if (!_t2mi_file_name.empty()) {
         _t2mi_file.open(_t2mi_file_name, std::ios::out | std::ios::binary);
         if (!_t2mi_file) {
-            tsp->error(u"error creating %s", {_t2mi_file_name});
+            tsp->error(u"error creating %s", _t2mi_file_name);
             if (_ts_file.isOpen()) {
                 _ts_file.close(*tsp);
             }
@@ -222,12 +222,12 @@ bool ts::T2MIPlugin::stop()
 
     // With --extract, display a summary.
     if (_extract) {
-        tsp->verbose(u"extracted %'d TS packets from %'d T2-MI packets", {_ts_count, _t2mi_count});
+        tsp->verbose(u"extracted %'d TS packets from %'d T2-MI packets", _ts_count, _t2mi_count);
     }
 
     // With --identify, display a summary.
     if (_identify) {
-        tsp->info(u"summary: found %d PID's with T2-MI", {_identified.size()});
+        tsp->info(u"summary: found %d PID's with T2-MI", _identified.size());
         for (const auto& it : _identified) {
             const PID pid = it.first;
             const PLPSet& plps(it.second);
@@ -259,7 +259,7 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
     // Found a new PID carrying T2-MI. Use it by default for extraction.
     if (!_extract_pid.has_value()) {
         if (_extract || _log) {
-            tsp->verbose(u"using PID 0x%X (%d) to extract T2-MI stream", {pid, pid});
+            tsp->verbose(u"using PID 0x%X (%d) to extract T2-MI stream", pid, pid);
         }
         _extract_pid = pid;
         _demux.addPID(pid);
@@ -267,7 +267,7 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
 
     // Report all new PID's with --identify.
     if (_identify) {
-        tsp->info(u"found T2-MI PID 0x%X (%d)", {pid, pid});
+        tsp->info(u"found T2-MI PID 0x%X (%d)", pid, pid);
         // Demux all T2-MI PID's to identify all PLP's.
         _demux.addPID(pid);
         // Make sure the PID is identified, even if no PLP is found.
@@ -293,9 +293,9 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
             plpInfo = UString::Format(u", PLP: 0x%X (%d)", plp, plp);
         }
         tsp->info(u"PID 0x%X (%d), packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
-                  {pid, pid,
-                   NameFromDTV(u"t2mi.packet_type", pkt.packetType(), NamesFlags::HEXA_FIRST),
-                   pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo});
+                  pid, pid,
+                  NameFromDTV(u"t2mi.packet_type", pkt.packetType(), NamesFlags::HEXA_FIRST),
+                  pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo);
     }
 
     // Select PLP when extraction is requested.
@@ -303,7 +303,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         if (!_extract_plp.has_value()) {
             // The PLP was not yet specified, use this one by default.
             _extract_plp = plp;
-            tsp->verbose(u"extracting PLP 0x%X (%d)", {plp, plp});
+            tsp->verbose(u"extracting PLP 0x%X (%d)", plp, plp);
         }
         if (_extract_plp == plp) {
             // Count input T2-MI packets.
@@ -316,14 +316,14 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         PLPSet& plps(_identified[pid]);
         if (!plps.test(plp)) {
             plps.set(plp);
-            tsp->info(u"PID 0x%X (%<d), found PLP %d", {pid, plp});
+            tsp->info(u"PID 0x%X (%<d), found PLP %d", pid, plp);
         }
     }
 
     // Save raw T2-MI packets.
     if (_t2mi_file.is_open() && (!_original_plp.has_value() || (hasPLP && _original_plp == plp))) {
         if (!_t2mi_file.write(reinterpret_cast<const char*>(pkt.content()), std::streamsize(pkt.size()))) {
-            tsp->error(u"error writing raw T2-MI packets to %s", {_t2mi_file_name});
+            tsp->error(u"error writing raw T2-MI packets to %s", _t2mi_file_name);
             _abort = true;
         }
     }

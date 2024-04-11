@@ -399,6 +399,6 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
         _sections.push_back(sp);
     }
     else {
-        _duck.report().warning(u"dropping EIT section (%d bytes), too many buffered EIT sections (%d)", {sp->size(), _sections.size()});
+        _duck.report().warning(u"dropping EIT section (%d bytes), too many buffered EIT sections (%d)", sp->size(), _sections.size());
     }
 }

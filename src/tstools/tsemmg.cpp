@@ -247,7 +247,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     // Check validity of some parameters.
     if (emmMaxTableId < emmMinTableId) {
-        error(u"--emm-max-table-id 0x%X is less than --emm-min-table-id 0x%X", {emmMaxTableId, emmMinTableId});
+        error(u"--emm-max-table-id 0x%X is less than --emm-min-table-id 0x%X", emmMaxTableId, emmMinTableId);
     }
 
     // If UDP is used for data provision, use same address as TCP by default.
@@ -277,15 +277,15 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
 bool EMMGOptions::adjustBandwidth(uint16_t allocated)
 {
-    verbose(u"Allocated bandwidth: %'d kb/s", {allocated});
+    verbose(u"Allocated bandwidth: %'d kb/s", allocated);
 
     // Reduce the bandwidth if not enough was allocated.
     if (sendBandwidth > allocated) {
         if (ignoreAllocatedBW) {
-            info(u"Allocated bandwidth %'d kb/s but will send data at %'d kbs/s because of --ignore-allocated", {allocated, sendBandwidth});
+            info(u"Allocated bandwidth %'d kb/s but will send data at %'d kbs/s because of --ignore-allocated", allocated, sendBandwidth);
         }
         else {
-            info(u"Reducing bandwidth to %'d kb/s as allocated by the MUX", {allocated});
+            info(u"Reducing bandwidth to %'d kb/s as allocated by the MUX", allocated);
             sendBandwidth = allocated;
         }
     }
@@ -308,7 +308,7 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
         error(u"no bandwidth available");
         return false;
     }
-    info(u"Target data bitrate: %'d b/s", {dataBitrate});
+    info(u"Target data bitrate: %'d b/s", dataBitrate);
 
     // Compute interval between two send operations in nanoseconds.
     sendInterval = std::max(MIN_SEND_INTERVAL, ts::ByteInterval(dataBitrate, bytesPerSend));
@@ -319,11 +319,11 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
         ts::SetTimersPrecision(actualInterval);
         if (actualInterval > sendInterval) {
             // Cannot get that precision from the system.
-            debug(u"requesting %s between send, can get only %s", {sendInterval, actualInterval});
+            debug(u"requesting %s between send, can get only %s", sendInterval, actualInterval);
             sendInterval = actualInterval;
         }
     }
-    info(u"Send interval: %s", {sendInterval});
+    info(u"Send interval: %s", sendInterval);
     return true;
 }
 
@@ -418,7 +418,7 @@ int MainCode(int argc, char *argv[])
     }
 
     // Connect to the MUX.
-    opt.verbose(u"Connecting to MUX at %s", {opt.tcpMuxAddress});
+    opt.verbose(u"Connecting to MUX at %s", opt.tcpMuxAddress);
     if (!client.connect(opt.tcpMuxAddress,
                         opt.udpMuxAddress,
                         opt.clientId,
@@ -478,7 +478,7 @@ int MainCode(int argc, char *argv[])
         }
         else {
             // Overflow if we count from the beginning, restart the count.
-            opt.debug(u"overflow in bitrate computation, resetting bitrate accumulation, bitrate: %'d b/s, duration: %'d microsec", {opt.dataBitrate, duration});
+            opt.debug(u"overflow in bitrate computation, resetting bitrate accumulation, bitrate: %'d b/s, duration: %'d microsec", opt.dataBitrate, duration);
             startTime = currentTime;
             targetBytes = opt.bytesPerSend;
         }

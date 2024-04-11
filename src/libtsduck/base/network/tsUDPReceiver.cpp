@@ -161,7 +161,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
 
     // If a destination address is specified, it must be a multicast address.
     if (_dest_addr.hasAddress() && !_dest_addr.isMulticast()) {
-        args.error(u"address %s is not multicast", {_dest_addr});
+        args.error(u"address %s is not multicast", _dest_addr);
         return false;
     }
 
@@ -171,7 +171,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
         return false;
     }
     if (_use_ssm && !_dest_addr.isSSM()) {
-        args.warning(u"address %s is not an SSM address", {_dest_addr});
+        args.warning(u"address %s is not an SSM address", _dest_addr);
     }
     if (_use_ssm && _use_first_source) {
         args.error(u"SSM and --first-source are mutually exclusive");
@@ -180,7 +180,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
 
     // The destination port is mandatory
     if (!_dest_addr.hasPort()) {
-        args.error(u"no UDP port specified in %s", {destination});
+        args.error(u"no UDP port specified in %s", destination);
         return false;
     }
 
@@ -226,7 +226,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
     }
     else if (!_use_source.hasAddress()) {
         // If source is specified, the port is optional but the address is mandatory.
-        args.error(u"missing IP address in --source %s", {source});
+        args.error(u"missing IP address in --source %s", source);
         return false;
     }
     else if (_use_first_source) {
@@ -360,7 +360,7 @@ bool ts::UDPReceiver::receive(void* data,
         // Debug (level 2) message for each message.
         if (report.maxSeverity() >= 2) {
             // Prior report level checking to avoid evaluating parameters when not necessary.
-            report.log(2, u"received UDP packet, source: %s, destination: %s, timestamp: %'d", {sender, destination, timestamp != nullptr ? timestamp->count() : -1});
+            report.log(2, u"received UDP packet, source: %s, destination: %s, timestamp: %'d", sender, destination, timestamp != nullptr ? timestamp->count() : -1);
         }
 
         // Check the destination address to exclude packets from other streams.
@@ -382,7 +382,7 @@ bool ts::UDPReceiver::receive(void* data,
             // This is a spurious packet.
             if (report.maxSeverity() >= Severity::Debug) {
                 // Prior report level checking to avoid evaluating parameters when not necessary.
-                report.debug(u"rejecting packet, destination: %s, expecting: %s", {destination, _dest_addr});
+                report.debug(u"rejecting packet, destination: %s, expecting: %s", destination, _dest_addr);
             }
             continue;
         }
@@ -397,7 +397,7 @@ bool ts::UDPReceiver::receive(void* data,
             if (_use_first_source) {
                 assert(!_use_source.hasAddress());
                 _use_source = sender;
-                report.verbose(u"now filtering on source address %s", {sender});
+                report.verbose(u"now filtering on source address %s", sender);
             }
         }
 
@@ -408,10 +408,10 @@ bool ts::UDPReceiver::receive(void* data,
             // With source filtering, this is just an informational verbose-level message.
             const int level = _use_source.hasAddress() ? Severity::Verbose : Severity::Warning;
             if (_sources.size() == 1) {
-                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", {destination});
-                report.log(level, u"detected source: %s", {_first_source});
+                report.log(level, u"detected multiple sources for the same destination %s with potentially distinct streams", destination);
+                report.log(level, u"detected source: %s", _first_source);
             }
-            report.log(level, u"detected source: %s", {sender});
+            report.log(level, u"detected source: %s", sender);
             _sources.insert(sender);
         }
 
@@ -420,7 +420,7 @@ bool ts::UDPReceiver::receive(void* data,
             // Not the expected source, this is a spurious packet.
             if (report.maxSeverity() >= Severity::Debug) {
                 // Prior report level checking to avoid evaluating parameters when not necessary.
-                report.debug(u"rejecting packet, source: %s, expecting: %s", {sender, _use_source});
+                report.debug(u"rejecting packet, source: %s, expecting: %s", sender, _use_source);
             }
             continue;
         }

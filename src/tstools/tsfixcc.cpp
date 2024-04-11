@@ -83,7 +83,7 @@ bool Options::fileError(const ts::UChar* message)
         return false;
     }
     else {
-        error(u"%s: %s", {filename, message});
+        error(u"%s: %s", filename, message);
         return true;
     }
 }
@@ -113,7 +113,7 @@ int MainCode(int argc, char *argv[])
     opt.file.open(opt.filename.toUTF8().c_str(), mode);
 
     if (!opt.file) {
-        opt.error(u"cannot open file %s", {opt.filename});
+        opt.error(u"cannot open file %s", opt.filename);
         return EXIT_FAILURE;
     }
 
@@ -154,7 +154,7 @@ int MainCode(int argc, char *argv[])
         }
     }
 
-    opt.verbose(u"%'d packets read, %'d discontinuities, %'d packets updated", {fixer.totalPackets(), fixer.errorCount(), fixer.fixCount()});
+    opt.verbose(u"%'d packets read, %'d discontinuities, %'d packets updated", fixer.totalPackets(), fixer.errorCount(), fixer.fixCount());
 
     // Append empty packet to ensure circular continuity
     if (opt.circular && opt.valid()) {
@@ -182,7 +182,7 @@ int MainCode(int argc, char *argv[])
             uint8_t last_cc = fixer.lastCC(pid);
             if (first_cc != ts::INVALID_CC && first_cc != ((last_cc + 1) & ts::CC_MASK)) {
                 // We must add some packets on this PID
-                opt.verbose(u"PID: 0x%04X, adding %2d empty packets", {pid, ts::ContinuityAnalyzer::MissingPackets(last_cc, first_cc)});
+                opt.verbose(u"PID: 0x%04X, adding %2d empty packets", pid, ts::ContinuityAnalyzer::MissingPackets(last_cc, first_cc));
                 if (!opt.test) {
                     for (;;) {
                         last_cc = (last_cc + 1) & ts::CC_MASK;

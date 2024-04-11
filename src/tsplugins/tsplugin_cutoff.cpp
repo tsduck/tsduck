@@ -184,7 +184,7 @@ ts::ProcessorPlugin::Status ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPac
                 _set_labels.reset(iparam);
             }
             else {
-                tsp->warning(u"received invalid command \"%s\"", {*cmd});
+                tsp->warning(u"received invalid command \"%s\"", *cmd);
             }
         }
     }
@@ -216,7 +216,7 @@ void ts::CutoffPlugin::main()
 
         // Filter out unauthorized remote systems.
         if (!_allowedRemote.empty() && !Contains(_allowedRemote, sender)) {
-            tsp->warning(u"rejected remote command from unauthorized host %s", {sender});
+            tsp->warning(u"rejected remote command from unauthorized host %s", sender);
             continue;
         }
 
@@ -230,7 +230,7 @@ void ts::CutoffPlugin::main()
         CommandQueue::MessagePtr cmd(new UString(UString::FromUTF8(inbuf, len)));
         cmd->toLower();
         cmd->trim();
-        tsp->verbose(u"received command \"%s\", from %s (%d bytes)", {*cmd, sender, insize});
+        tsp->verbose(u"received command \"%s\", from %s (%d bytes)", *cmd, sender, insize);
 
         // Enqueue the command immediately. Never wait.
         if (!cmd->empty()) {

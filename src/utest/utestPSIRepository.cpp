@@ -11,7 +11,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPSIRepository.h"
-#include "tsAbstractTable.h"
 #include "tsMGT.h"
 #include "tsLDT.h"
 #include "tsunit.h"

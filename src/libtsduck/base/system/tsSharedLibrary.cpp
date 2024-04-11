@@ -54,7 +54,7 @@ void ts::SharedLibrary::load(const fs::path& filename)
     }
 
     _filename = filename;
-    _report.debug(u"trying to load \"%s\"", {_filename});
+    _report.debug(u"trying to load \"%s\"", _filename);
 
     // Load the shared library.
 #if defined(TSDUCK_STATIC)
@@ -124,7 +124,7 @@ void* ts::SharedLibrary::getSymbol(const std::string& name) const
         result = ::dlsym(_dl, name.c_str());
 #endif
         if (result == nullptr) {
-            _report.debug(u"symbol %s not found in %s", {name, _filename});
+            _report.debug(u"symbol %s not found in %s", name, _filename);
         }
         return result;
     }

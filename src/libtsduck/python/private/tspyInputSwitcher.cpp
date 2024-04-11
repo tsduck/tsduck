@@ -176,7 +176,7 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
             continue;
         }
         if (current == nullptr) {
-            isw->report().error(u"unexpected argument '%s'", {*it});
+            isw->report().error(u"unexpected argument '%s'", *it);
             return false;
         }
         if (current->name.empty()) {

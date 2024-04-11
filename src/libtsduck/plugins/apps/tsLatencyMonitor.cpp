@@ -27,7 +27,7 @@ ts::LatencyMonitor::LatencyMonitor(const LatencyMonitorArgs& args, Report& repor
             cmd.append(u" ");
             cmd.append(input.toString(PluginType::INPUT));
         }
-        _report.debug(u"starting: %s", {cmd});
+        _report.debug(u"starting: %s", cmd);
     }
 
     // Clear errors on the report, used to check further initialisation errors.

@@ -131,7 +131,7 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
             continue;
         }
         if (current == nullptr) {
-            proc->report().error(u"unexpected argument '%s'", {*it});
+            proc->report().error(u"unexpected argument '%s'", *it);
             return false;
         }
         if (current->name.empty()) {
@@ -156,7 +156,7 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
         }
         cmd.append(u" ");
         cmd.append(args.output.toString(ts::PluginType::OUTPUT));
-        proc->report().debug(u"starting: %s", {cmd});
+        proc->report().debug(u"starting: %s", cmd);
     }
 
     // Finally start the TSProcessor.

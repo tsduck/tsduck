@@ -88,7 +88,7 @@ bool ts::DuplicatePlugin::getOptions()
 bool ts::DuplicatePlugin::start()
 {
     _queue.clear();
-    tsp->verbose(u"%d PID's duplicated", {_pidMap.size()});
+    tsp->verbose(u"%d PID's duplicated", _pidMap.size());
     return true;
 }
 
@@ -107,7 +107,7 @@ ts::ProcessorPlugin::Status ts::DuplicatePlugin::processPacket(TSPacket& pkt, TS
 
     // Check PID conflicts.
     if (!_unchecked && !duplicate && _newPIDs.test(pid)) {
-        tsp->error(u"PID conflict: PID %d (0x%X) present both in input and duplicate", {pid, pid});
+        tsp->error(u"PID conflict: PID %d (0x%<X) present both in input and duplicate", pid);
         return TSP_END;
     }
 

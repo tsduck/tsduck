@@ -178,7 +178,7 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
         status = CommandStatus::ERROR;
     }
     else if (cmd.handler == nullptr || cmd.method == nullptr) {
-        log->error(u"no command handler for command %s", {cmd.name});
+        log->error(u"no command handler for command %s", cmd.name);
         status = CommandStatus::ERROR;
     }
     else {
@@ -215,7 +215,7 @@ ts::CommandStatus ts::CommandLine::processCommandFiles(const UStringVector& file
 
 ts::CommandStatus ts::CommandLine::processCommandFile(const UString& file_name, bool exit_on_error, Report* redirect)
 {
-    _report.debug(u"executing commands from %s", {file_name});
+    _report.debug(u"executing commands from %s", file_name);
 
     if (file_name.empty() || file_name == u"-") {
         // Execute an interactive session.
@@ -225,7 +225,7 @@ ts::CommandStatus ts::CommandLine::processCommandFile(const UString& file_name, 
         // Load all text lines from the file.
         ts::UStringVector lines;
         if (!UString::Load(lines, file_name)) {
-            (redirect == nullptr ? _report : *redirect).error(u"error loading %s", {file_name});
+            (redirect == nullptr ? _report : *redirect).error(u"error loading %s", file_name);
             return CommandStatus::ERROR;
         }
         return processCommands(lines, exit_on_error, redirect);

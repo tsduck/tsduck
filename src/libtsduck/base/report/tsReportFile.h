@@ -55,11 +55,6 @@ namespace ts {
         //!
         ReportFile(std::ostream& stream, int max_severity = 0);
 
-        //!
-        //! Destructor
-        //!
-        virtual ~ReportFile() override;
-
     protected:
         virtual void writeLog(int severity, const UString& message) override;
 
@@ -97,20 +92,6 @@ ts::ReportFile<SAFETY>::ReportFile(std::ostream& stream, int max_severity) :
     _file(stream)
 {
 }
-
-// Destructor
-TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(dtor-name)
-template <ts::ThreadSafety SAFETY>
-ts::ReportFile<SAFETY>::~ReportFile()
-{
-    std::lock_guard<MutexType> lock(_mutex);
-    // Close the file if it was explicitly open by constructor
-    if (_named_file.is_open()) {
-        _named_file.close();
-    }
-}
-TS_POP_WARNING()
 
 // Message processing handler, must be implemented in actual classes.
 template <ts::ThreadSafety SAFETY>

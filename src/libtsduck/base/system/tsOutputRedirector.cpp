@@ -24,7 +24,7 @@ ts::OutputRedirector::OutputRedirector(const fs::path& name, Args& args, std::os
             _previous = _stream.rdbuf(_file.rdbuf());
         }
         else {
-            args.error(u"cannot open file %s", {name});
+            args.error(u"cannot open file %s", name);
             args.exitOnError();
         }
     }

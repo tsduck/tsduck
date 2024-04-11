@@ -561,7 +561,7 @@ namespace {
 
             // Send a message
             const char message[] = "Hello";
-            CERR.debug(u"TCPSocketTest: client thread: sending \"%s\", %d bytes", {message, sizeof(message)});
+            CERR.debug(u"TCPSocketTest: client thread: sending \"%s\", %d bytes", message, sizeof(message));
             TSUNIT_ASSERT(session.send(message, sizeof(message), CERR));
             CERR.debug(u"TCPSocketTest: client thread: data sent");
 
@@ -573,7 +573,7 @@ namespace {
             char buffer [1024];
             size_t size = 0;
             while (totalSize < sizeof(buffer) && session.receive(buffer + totalSize, sizeof(buffer) - totalSize, size, nullptr, CERR)) {
-                CERR.debug(u"TCPSocketTest: client thread: data received, %d bytes", {size});
+                CERR.debug(u"TCPSocketTest: client thread: data received, %d bytes", size);
                 totalSize += size;
             }
             CERR.debug(u"TCPSocketTest: client thread: end of data stream");
@@ -625,7 +625,7 @@ void NetworkingTest::testTCPSocket()
     char buffer [1024];
     size_t size = 0;
     while (session.receive(buffer, sizeof(buffer), size, nullptr, CERR)) {
-        CERR.debug(u"TCPSocketTest: main thread: data received, %d bytes", {size});
+        CERR.debug(u"TCPSocketTest: main thread: data received, %d bytes", size);
         TSUNIT_ASSERT(session.send(buffer, size, CERR));
         CERR.debug(u"TCPSocketTest: main thread: data sent back");
     }
@@ -676,7 +676,7 @@ namespace {
 
             // Send a message
             const char message[] = "Hello";
-            CERR.debug(u"UDPSocketTest: client thread: sending \"%s\", %d bytes", {message, sizeof(message)});
+            CERR.debug(u"UDPSocketTest: client thread: sending \"%s\", %d bytes", message, sizeof(message));
             TSUNIT_ASSERT(sock.send(message, sizeof(message), CERR));
             CERR.debug(u"UDPSocketTest: client thread: request sent");
 
@@ -686,7 +686,7 @@ namespace {
             char buffer [1024];
             size_t size;
             TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
-            CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
+            CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", size, sender, destination);
             TSUNIT_ASSERT(size == sizeof(message));
             TSUNIT_EQUAL(0, ts::MemCompare(message, buffer, size));
             TSUNIT_ASSERT(ts::IPv4Address(sender) == ts::IPv4Address::LocalHost);
@@ -725,7 +725,7 @@ void NetworkingTest::testUDPSocket()
     char buffer [1024];
     size_t size;
     TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
-    CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
+    CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes, sender: %s, destination: %s", size, sender, destination);
     TSUNIT_ASSERT(ts::IPv4Address(sender) == ts::IPv4Address::LocalHost);
 
     TSUNIT_ASSERT(sock.send(buffer, size, sender, CERR));

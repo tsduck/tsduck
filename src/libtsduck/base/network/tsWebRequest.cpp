@@ -160,7 +160,7 @@ bool ts::WebRequest::deleteCookiesFile() const
         return true;
     }
     else {
-        _report.debug(u"deleting cookies file %s", {_cookiesFileName});
+        _report.debug(u"deleting cookies file %s", _cookiesFileName);
         return fs::remove(_cookiesFileName, &ErrCodeReport(_report, u"error deleting", _cookiesFileName));
     }
 }
@@ -277,7 +277,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
     // Process headers one by one.
     for (const auto& line : lines) {
 
-        _report.debug(u"HTTP header: %s", {line});
+        _report.debug(u"HTTP header: %s", line);
         const size_t colon = line.find(u':');
         size_t size = 0;
 
@@ -293,7 +293,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
             UStringVector fields;
             line.split(fields, u' ', true, true);
             if (fields.size() < 2 || !fields[1].toInteger(_httpStatus)) {
-                _report.warning(u"no HTTP status found in header: %s", {line});
+                _report.warning(u"no HTTP status found in header: %s", line);
             }
         }
         else if (colon != NPOS) {
@@ -309,7 +309,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
             // Process specific headers.
             if (name.similar(u"Location")) {
                 _finalURL = value;
-                _report.debug(u"redirected to %s", {_finalURL});
+                _report.debug(u"redirected to %s", _finalURL);
             }
             else if (name.similar(u"Content-length") && value.toInteger(size)) {
                 _headerContentSize = size;
@@ -331,7 +331,7 @@ bool ts::WebRequest::open(const UString& url)
     }
 
     if (_isOpen) {
-        _report.error(u"internal error, transfer already started, cannot download %s", {url});
+        _report.error(u"internal error, transfer already started, cannot download %s", url);
         return false;
     }
 
@@ -429,7 +429,7 @@ bool ts::WebRequest::downloadFile(const UString& url, const fs::path& fileName, 
     // Create the output file.
     std::ofstream file(fileName, std::ios::out | std::ios::binary);
     if (!file) {
-        _report.error(u"error creating file %s", {fileName});
+        _report.error(u"error creating file %s", fileName);
         close();
         return false;
     }
@@ -449,7 +449,7 @@ bool ts::WebRequest::downloadFile(const UString& url, const fs::path& fileName, 
 
         file.write(buffer.data(), thisSize);
         if (!file) {
-            _report.error(u"error saving download to %s", {fileName});
+            _report.error(u"error saving download to %s", fileName);
             success = false;
             break;
         }

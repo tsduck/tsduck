@@ -255,13 +255,13 @@ namespace {
                 _env = reinterpret_cast<JNIEnv*>(penv);
             }
         }
-        CERR.debug(u"start of JNI thread: jvm: 0x%X, env: 0x%X, detach: %s", {ptrdiff_t(ts::jni::javaVM), ptrdiff_t(_env), _detach_jvm});
+        CERR.debug(u"start of JNI thread: jvm: 0x%X, env: 0x%X, detach: %s", ptrdiff_t(ts::jni::javaVM), ptrdiff_t(_env), _detach_jvm);
     }
 
     // The destructor detaches from the JVM when necessary.
     LocalThreadJNI::~LocalThreadJNI()
     {
-        CERR.debug(u"end of JNI thread: jvm: 0x%X, env: 0x%X, detach: %s", {ptrdiff_t(ts::jni::javaVM), ptrdiff_t(_env), _detach_jvm});
+        CERR.debug(u"end of JNI thread: jvm: 0x%X, env: 0x%X, detach: %s", ptrdiff_t(ts::jni::javaVM), ptrdiff_t(_env), _detach_jvm);
         _env = nullptr;
         if (_detach_jvm && ts::jni::javaVM != nullptr) {
             _detach_jvm = false;

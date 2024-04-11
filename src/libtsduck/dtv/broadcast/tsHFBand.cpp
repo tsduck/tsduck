@@ -319,7 +319,7 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
         elem->getChildren(xchannels, u"channels", 1);
 
     if (!success) {
-        elem->report().error(u"Error in <%s> at line %d", {elem->name(), elem->lineNumber()});
+        elem->report().error(u"Error in <%s> at line %d", elem->name(), elem->lineNumber());
         return HFBandPtr();
     }
 
@@ -359,7 +359,7 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
                 ++next;
             }
             if (next != hf->_channels.end() && next->first_channel <= chan.last_channel) {
-                elem->report().error(u"overlapping channel numbers, line %s", {it->lineNumber()});
+                elem->report().error(u"overlapping channel numbers, line %s", it->lineNumber());
                 success = false;
             }
             else {
@@ -427,7 +427,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
 
     // Get the default region from configuration file.
     setDefaultRegion(UString());
-    report.debug(u"default HF band region: %s", {_default_region});
+    report.debug(u"default HF band region: %s", _default_region);
 
     // A set of region names (to build a list of unique names).
     std::set<UString> regionSet;
@@ -469,7 +469,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
                 // Build a set of unique entries for region names.
                 regionSet.insert(*it);
                 if (Contains(_objects, index)) {
-                    report.error(u"duplicate definition for %s, line %d", {index, node->lineNumber()});
+                    report.error(u"duplicate definition for %s, line %d", index, node->lineNumber());
                     success = false;
                 }
                 else {
@@ -521,7 +521,7 @@ const ts::HFBand* ts::HFBand::HFBandRepository::get(const UString& band, const U
         return it->second.get();
     }
     else {
-        report.warning(u"no definition for %s", {index});
+        report.warning(u"no definition for %s", index);
         return _voidBand.get();
     }
 }

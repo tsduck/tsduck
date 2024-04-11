@@ -309,7 +309,7 @@ bool ts::SectionFile::loadBinary(const fs::path& file_name)
     // Open the input file.
     std::ifstream strm(file_name, std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
-        _report.error(u"cannot open %s", {file_name});
+        _report.error(u"cannot open %s", file_name);
         return false;
     }
 
@@ -353,7 +353,7 @@ bool ts::SectionFile::saveBinary(const fs::path& file_name) const
     // Create the output file.
     std::ofstream strm(file_name, std::ios::out | std::ios::binary);
     if (!strm.is_open()) {
-        _report.error(u"error creating %s", {file_name});
+        _report.error(u"error creating %s", file_name);
         return false;
     }
 
@@ -491,7 +491,7 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
 {
     // Load the main model. Use searching rules.
     if (!doc.load(XML_TABLES_MODEL, true)) {
-        doc.report().error(u"Main model for TSDuck XML files not found: %s", {XML_TABLES_MODEL});
+        doc.report().error(u"Main model for TSDuck XML files not found: %s", XML_TABLES_MODEL);
         return false;
     }
 
@@ -503,7 +503,7 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
     // Get the root element in the model.
     xml::Element* root = doc.rootElement();
     if (root == nullptr) {
-        doc.report().error(u"Main model for TSDuck XML files is empty: %s", {XML_TABLES_MODEL});
+        doc.report().error(u"Main model for TSDuck XML files is empty: %s", XML_TABLES_MODEL);
         return false;
     }
 
@@ -516,7 +516,7 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
         // Load the extension file. Use searching rules.
         xml::Document extdoc(doc.report());
         if (!extdoc.load(name, true)) {
-            extdoc.report().error(u"Extension XML model file not found: %s", {name});
+            extdoc.report().error(u"Extension XML model file not found: %s", name);
         }
         else {
             root->merge(extdoc.rootElement());
@@ -575,7 +575,7 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
             add(bin);
         }
         else {
-            doc.report().error(u"Error in table <%s> at line %d", {node->name(), node->lineNumber()});
+            doc.report().error(u"Error in table <%s> at line %d", node->name(), node->lineNumber());
             success = false;
         }
     }
@@ -701,7 +701,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
 
     // Issue a warning if incomplete tables were not saved.
     if (!_orphanSections.empty()) {
-        doc.report().warning(u"%d orphan sections not saved in XML document (%d tables saved)", {_orphanSections.size(), _tables.size()});
+        doc.report().warning(u"%d orphan sections not saved in XML document (%d tables saved)", _orphanSections.size(), _tables.size());
     }
 
     return true;
@@ -780,7 +780,7 @@ bool ts::SectionFile::load(const UString& file_name, FileType type)
             return loadJSON(file_name);
         case FileType::UNSPECIFIED:
         default:
-            _report.error(u"unknown file type for %s", {file_name});
+            _report.error(u"unknown file type for %s", file_name);
             return false;
     }
 }

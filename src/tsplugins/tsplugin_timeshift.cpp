@@ -123,7 +123,7 @@ bool ts::TimeShiftPlugin::initBufferByTime()
         if (bitrate > 0) {
             const PacketCounter packets = PacketDistance(bitrate, _time_shift_ms);
             if (packets < TimeShiftBuffer::MIN_TOTAL_PACKETS) {
-                tsp->error(u"bitrate %'d b/s is too small to perform time-shift", {bitrate});
+                tsp->error(u"bitrate %'d b/s is too small to perform time-shift", bitrate);
                 return false;
             }
             else {
@@ -172,7 +172,7 @@ ts::ProcessorPlugin::Status ts::TimeShiftPlugin::processPacket(TSPacket& pkt, TS
         }
         // Issue a warning the first time only.
         if (_buffer.isOpen()) {
-            tsp->verbose(u"time-shift buffer size is %'d packets", {_buffer.size()});
+            tsp->verbose(u"time-shift buffer size is %'d packets", _buffer.size());
         }
         else if (tsp->pluginPackets() == 0) {
             tsp->warning(u"unknown initial bitrate, discarding packets until a valid bitrate can set the buffer size");

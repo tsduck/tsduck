@@ -83,7 +83,7 @@ int MainCode(int argc, char *argv[])
 
     // Process input files one by one.
     for (const auto& infile_name : opt.in_files) {
-        opt.verbose(u"Fuzzing %s", {infile_name});
+        opt.verbose(u"Fuzzing %s", infile_name);
 
         // Open input file.
         ts::TSFile infile;

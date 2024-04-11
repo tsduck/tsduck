@@ -627,7 +627,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
             const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
             assert(dequeued);
             assert(cmd2 == cmd);
-            tsp->verbose(u"dropping %s, obsolete, current PTS: 0x%09X", {*cmd2, _last_pts});
+            tsp->verbose(u"dropping %s, obsolete, current PTS: 0x%09X", *cmd2, _last_pts);
         }
         else {
             // Give up if the command is not immediate and not yet ready to start.
@@ -643,7 +643,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
 
             // Now we have a section to send.
             section = cmd->section;
-            tsp->verbose(u"injecting %s, current PTS: 0x%09X", {*cmd, _last_pts});
+            tsp->verbose(u"injecting %s, current PTS: 0x%09X", *cmd, _last_pts);
 
             // If the command must be repeated, compute next PTS and requeue.
             if (cmd->count > 1) {
@@ -651,7 +651,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
                 cmd->next_pts = (cmd->next_pts + cmd->interval) & PTS_DTS_MASK;
                 if (SequencedPTS(cmd->next_pts, cmd->last_pts)) {
                     // The next PTS is still in range, requeue at the next position.
-                    tsp->verbose(u"requeueing %s", {*cmd});
+                    tsp->verbose(u"requeueing %s", *cmd);
                     _queue.forceEnqueue(cmd);
                 }
             }
@@ -736,13 +736,15 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
 
     // Give up if we cannot find a valid format.
     if (type == FType::UNSPECIFIED) {
-        tsp->error(u"cannot find received data type, %d bytes, %s ...", {size, UString::Dump(addr, std::min<size_t>(size, 8), UString::SINGLE_LINE)});
+        tsp->error(u"cannot find received data type, %d bytes, %s ...", size, UString::Dump(addr, std::min<size_t>(size, 8), UString::SINGLE_LINE));
         return;
     }
 
     // Consider the memory as a C++ input stream.
     std::istringstream strm(std::string(reinterpret_cast<const char*>(addr), size));
-    tsp->debug(u"parsing section:\n%s", {UString::Dump(addr, size, UString::HEXA | UString::ASCII, 4)});
+    if (tsp->debug()) {
+        tsp->debug(u"parsing section:\n%s", UString::Dump(addr, size, UString::HEXA | UString::ASCII, 4));
+    }
 
     // Analyze the message as a binary, XML or JSON section file.
     SectionFile secFile(duck);
@@ -757,7 +759,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         SectionPtr sec(*it);
         if (sec != nullptr) {
             if (sec->tableId() != TID_SCTE35_SIT) {
-                tsp->error(u"unexpected section, %s, ignored", {names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE)});
+                tsp->error(u"unexpected section, %s, ignored", names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE));
             }
             else {
                 CommandPtr cmd(new SpliceCommand(this, sec));
@@ -765,7 +767,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
                     tsp->error(u"received invalid splice information section, ignored");
                 }
                 else {
-                    tsp->verbose(u"enqueuing %s", {*cmd});
+                    tsp->verbose(u"enqueuing %s", *cmd);
                     if (!_queue.enqueue(cmd, cn::milliseconds::zero())) {
                         tsp->warning(u"queue overflow, dropped one section");
                     }
@@ -965,11 +967,11 @@ bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileLis
             const UString name(file.getFileName());
             ByteBlock data;
             if (file.getSize() != FS_ERROR && file.getSize() > _plugin->_max_file_size) {
-                _tsp->warning(u"file %s is too large, %'d bytes, ignored", {name, file.getSize()});
+                _tsp->warning(u"file %s is too large, %'d bytes, ignored", name, file.getSize());
             }
             else if (data.loadFromFile(name, size_t(_plugin->_max_file_size), _tsp)) {
                 // File correctly loaded, ingest it.
-                _tsp->verbose(u"loaded file %s, %d bytes", {name, data.size()});
+                _tsp->verbose(u"loaded file %s, %d bytes", name, data.size());
                 _plugin->processSectionMessage(data.data(), data.size());
 
                 // Delete file after successful load when required.
@@ -1027,7 +1029,7 @@ void ts::SpliceInjectPlugin::UDPListener::main()
 
     // Loop on incoming messages.
     while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _tsp, error)) {
-        _tsp->verbose(u"received message, %d bytes, from %s", {insize, sender});
+        _tsp->verbose(u"received message, %d bytes, from %s", insize, sender);
         _plugin->processSectionMessage(inbuf, insize);
     }
 

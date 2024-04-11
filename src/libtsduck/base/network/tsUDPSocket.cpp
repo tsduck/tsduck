@@ -61,7 +61,7 @@ bool ts::UDPSocket::open(Report& report)
 #if defined(IP_PKTINFO)
     int opt = 1;
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
-        report.error(u"error setting socket IP_PKTINFO option: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting socket IP_PKTINFO option: %s", SysErrorCodeMessage());
         return false;
     }
 #elif defined(IP_RECVDSTADDR)
@@ -102,9 +102,9 @@ bool ts::UDPSocket::bind(const IPv4SocketAddress& addr, Report& report)
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
 
-    report.debug(u"binding socket to %s", {addr});
+    report.debug(u"binding socket to %s", addr);
     if (::bind(getSocket(), &sock_addr, sizeof(sock_addr)) != 0) {
-        report.error(u"error binding socket to local address: %s", {SysErrorCodeMessage()});
+        report.error(u"error binding socket to local address: %s", SysErrorCodeMessage());
         return false;
     }
 
@@ -130,7 +130,7 @@ bool ts::UDPSocket::setOutgoingMulticast(const IPv4Address& addr, Report& report
     addr.copy(iaddr);
 
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) != 0) {
-        report.error(u"error setting outgoing local address: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting outgoing local address: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -175,14 +175,14 @@ bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
     if (multicast) {
         SysSocketMulticastTTLType mttl = SysSocketMulticastTTLType(ttl);
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, SysSockOptPointer(&mttl), sizeof(mttl)) != 0) {
-            report.error(u"socket option multicast TTL: %s", {SysErrorCodeMessage()});
+            report.error(u"socket option multicast TTL: %s", SysErrorCodeMessage());
             return false;
         }
     }
     else {
         SysSocketTTLType uttl = SysSocketTTLType(ttl);
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, SysSockOptPointer(&uttl), sizeof(uttl)) != 0) {
-            report.error(u"socket option unicast TTL: %s", {SysErrorCodeMessage()});
+            report.error(u"socket option unicast TTL: %s", SysErrorCodeMessage());
             return false;
         }
     }
@@ -198,7 +198,7 @@ bool ts::UDPSocket::setTOS(int tos, Report& report)
 {
     SysSocketTOSType utos = SysSocketTOSType(tos);
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_TOS, SysSockOptPointer(&utos), sizeof(utos)) != 0) {
-        report.error(u"socket option TOS: %s", {SysErrorCodeMessage()});
+        report.error(u"socket option TOS: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -212,9 +212,9 @@ bool ts::UDPSocket::setTOS(int tos, Report& report)
 bool ts::UDPSocket::setMulticastLoop(bool on, Report& report)
 {
     SysSocketMulticastLoopType mloop = SysSocketMulticastLoopType(on);
-    report.debug(u"setting socket IP_MULTICAST_LOOP to %d", {mloop});
+    report.debug(u"setting socket IP_MULTICAST_LOOP to %d", mloop);
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) != 0) {
-        report.error(u"socket option multicast loop: %s", {SysErrorCodeMessage()});
+        report.error(u"socket option multicast loop: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -232,7 +232,7 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
     // Set SO_TIMESTAMPNS option which reports timestamps in nanoseconds (struct timespec).
     int enable = int(on);
     if (::setsockopt(getSocket(), SOL_SOCKET, SO_TIMESTAMPNS, &enable, sizeof(enable)) != 0) {
-        report.error(u"socket option SO_TIMESTAMPNS: %s", {SysErrorCodeMessage()});
+        report.error(u"socket option SO_TIMESTAMPNS: %s", SysErrorCodeMessage());
         return false;
     }
 #endif
@@ -249,7 +249,7 @@ bool ts::UDPSocket::setBroadcast(bool on, Report& report)
 {
     int enable = int(on);
     if (::setsockopt(getSocket(), SOL_SOCKET, SO_BROADCAST, SysSockOptPointer(&enable), sizeof(enable)) != 0) {
-        report.error(u"socket option broadcast: %s", {SysErrorCodeMessage()});
+        report.error(u"socket option broadcast: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -293,10 +293,10 @@ bool ts::UDPSocket::addMembership(const IPv4Address& multicast, const IPv4Addres
     }
     groupString += multicast.toString();
     if (local.hasAddress()) {
-        report.verbose(u"joining multicast group %s from local address %s", {groupString, local});
+        report.verbose(u"joining multicast group %s from local address %s", groupString, local);
     }
     else {
-        report.verbose(u"joining multicast group %s from default interface", {groupString});
+        report.verbose(u"joining multicast group %s from default interface", groupString);
     }
 
     // Now join the group.
@@ -308,7 +308,7 @@ bool ts::UDPSocket::addMembership(const IPv4Address& multicast, const IPv4Addres
 #else
         SSMReq req(multicast, local, source);
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
-            report.error(u"error adding SSM membership to %s from local address %s: %s", {groupString, local, SysErrorCodeMessage()});
+            report.error(u"error adding SSM membership to %s from local address %s: %s", groupString, local, SysErrorCodeMessage());
             return false;
         }
         else {
@@ -321,7 +321,7 @@ bool ts::UDPSocket::addMembership(const IPv4Address& multicast, const IPv4Addres
         // Standard multicast.
         MReq req(multicast, local);
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
-            report.error(u"error adding multicast membership to %s from local address %s: %s", {groupString, local, SysErrorCodeMessage()});
+            report.error(u"error adding multicast membership to %s from local address %s: %s", groupString, local, SysErrorCodeMessage());
             return false;
         }
         else {
@@ -380,9 +380,9 @@ bool ts::UDPSocket::dropMembership(Report& report)
 
     // Drop all standard multicast groups.
     for (const auto& it : _mcast) {
-        report.verbose(u"leaving multicast group %s from local address %s", {IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface)});
+        report.verbose(u"leaving multicast group %s from local address %s", IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface));
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
-            report.error(u"error dropping multicast membership: %s", {SysErrorCodeMessage()});
+            report.error(u"error dropping multicast membership: %s", SysErrorCodeMessage());
             ok = false;
         }
     }
@@ -392,9 +392,9 @@ bool ts::UDPSocket::dropMembership(Report& report)
 #if !defined(TS_NO_SSM)
     for (const auto& it : _ssmcast) {
         report.verbose(u"leaving multicast group %s@%s from local address %s",
-                       {IPv4Address(it.data.imr_sourceaddr), IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface)});
+                       IPv4Address(it.data.imr_sourceaddr), IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface));
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
-            report.error(u"error dropping multicast membership: %s", {SysErrorCodeMessage()});
+            report.error(u"error dropping multicast membership: %s", SysErrorCodeMessage());
             ok = false;
         }
     }
@@ -420,7 +420,7 @@ bool ts::UDPSocket::send(const void* data, size_t size, const IPv4SocketAddress&
     dest.copy(addr);
 
     if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, &addr, sizeof(addr)) < 0) {
-        report.error(u"error sending UDP message: %s", {SysErrorCodeMessage()});
+        report.error(u"error sending UDP message: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -475,7 +475,7 @@ bool ts::UDPSocket::receive(void* data,
             // Abort on non-interrupt errors.
             if (isOpen()) {
                 // Report the error only if the error does not result from a close in another thread.
-                report.error(u"error receiving from UDP socket: %s", {SysErrorCodeMessage(err)});
+                report.error(u"error receiving from UDP socket: %s", SysErrorCodeMessage(err));
             }
             return false;
         }

@@ -176,10 +176,10 @@ bool ts::TimeRefPlugin::getOptions()
         if (start.empty() || start == u"system") {
             _startref = Time::CurrentUTC();
             _add_milliseconds = cn::milliseconds::zero(); // for --system-synchronous
-            tsp->verbose(u"current system clock is %s", {_startref});
+            tsp->verbose(u"current system clock is %s", _startref);
         }
         else if (!_startref.decode(start)) {
-            tsp->error(u"invalid --start time value \"%s\" (use \"year/month/day:hour:minute:second\")", {start});
+            tsp->error(u"invalid --start time value \"%s\" (use \"year/month/day:hour:minute:second\")", start);
             return false;
         }
         else if (_system_sync) {
@@ -197,7 +197,7 @@ bool ts::TimeRefPlugin::getOptions()
     // Next DST change in absolute time.
     const UString next(value(u"next-change"));
     if (!next.empty() && !_next_change.decode(next)) {
-        tsp->error(u"invalid --next-change value \"%s\" (use \"year/month/day:hour:minute:second\")", {next});
+        tsp->error(u"invalid --next-change value \"%s\" (use \"year/month/day:hour:minute:second\")", next);
         return false;
     }
 
@@ -299,13 +299,13 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     // Check table id.
     const TID tid = section[0];
     if (tid != TID_TDT && tid != TID_TOT) {
-        tsp->warning(u"found table_id 0x%X (%d) in TDT/TOT PID", {tid, tid});
+        tsp->warning(u"found table_id 0x%X (%<d) in TDT/TOT PID", tid);
         return;
     }
 
     // Check section size.
     if ((tid == TID_TDT && size < SHORT_SECTION_HEADER_SIZE + MJD_SIZE) || (tid == TID_TOT && size < SHORT_SECTION_HEADER_SIZE + MJD_SIZE + 4)) {
-        tsp->warning(u"invalid TDT/TOD, too short: %d bytes", {size});
+        tsp->warning(u"invalid TDT/TOD, too short: %d bytes", size);
         return;
     }
 
@@ -345,7 +345,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
         // Configure EIT processor if time offset not yet known.
         if (_update_eit && !_eit_active) {
             const cn::milliseconds add = _timeref - time;
-            tsp->verbose(u"adding %'s to all event start time in EIT's", {add});
+            tsp->verbose(u"adding %'s to all event start time in EIT's", add);
             _eit_processor.addStartTimeOffet(add, _eit_date_only);
             _eit_active = true;
         }

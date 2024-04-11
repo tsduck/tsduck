@@ -260,7 +260,7 @@ bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems,
 {
     if (delivery_system.has_value()) {
         if (!Contains(systems, delivery_system.value())) {
-            report.error(u"delivery system %s is not supported by this tuner", {DeliverySystemEnum.name(delivery_system.value())});
+            report.error(u"delivery system %s is not supported by this tuner", DeliverySystemEnum.name(delivery_system.value()));
             return false;
         }
         else {
@@ -275,7 +275,7 @@ bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems,
         }
         else {
             delivery_system = systems.preferred();
-            report.debug(u"using %s as default delivery system", {DeliverySystemEnum.name(delivery_system.value())});
+            report.debug(u"using %s as default delivery system", DeliverySystemEnum.name(delivery_system.value()));
             return true;
         }
     }
@@ -1350,7 +1350,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
             status = false;
         }
         else {
-            args.debug(u"loaded LNB \"%s\" from command line", {l});
+            args.debug(u"loaded LNB \"%s\" from command line", l);
             lnb = l;
         }
     }

@@ -133,7 +133,7 @@ bool ts::AbstractSignalization::checkXMLName(const xml::Element* element) const
         return true;
     }
     else {
-        element->report().error(u"Incorrect <%s>, expected <%s>", {element->name(), _xml_name});
+        element->report().error(u"Incorrect <%s>, expected <%s>", element->name(), _xml_name);
         return false;
     }
 }

@@ -61,7 +61,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_DuckContext_setDefaultCharset(JNIEnv* 
             duck->setDefaultCharsetOut(charset);
             return true;
         }
-        duck->report().error(u"unknown character set \"%s\"", {name});
+        duck->report().error(u"unknown character set \"%s\"", name);
     }
     return false;
 }
@@ -141,7 +141,7 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_DuckContext_setTimeReference(JNIEnv* e
         if (duck->setTimeReference(str)) {
             return true;
         }
-        duck->report().error(u"invalid time reference \"%s\"", {str});
+        duck->report().error(u"invalid time reference \"%s\"", str);
     }
     return false;
 }

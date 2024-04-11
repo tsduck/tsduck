@@ -563,7 +563,7 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
             table->serialize(duck, *this);
             if (!isValid()) {
                 // Serialization failed.
-                node->report().error(u"<%s>, line %d, is correct but the binary serialization failed", {node->name(), node->lineNumber()});
+                node->report().error(u"<%s>, line %d, is correct but the binary serialization failed", node->name(), node->lineNumber());
                 return false;
             }
         }
@@ -618,6 +618,6 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
     }
 
     // At this point, the table is invalid.
-    node->report().error(u"<%s>, line %d, is not a valid table", {node->name(), node->lineNumber()});
+    node->report().error(u"<%s>, line %d, is not a valid table", node->name(), node->lineNumber());
     return false;
 }

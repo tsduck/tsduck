@@ -567,7 +567,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         if (insize > 0) {
             // Flawfinder: ignore: completely fooled here, std::ostream::setstate has nothing to do with PRNG.
             strm.setstate(std::ios::failbit);
-            report.error(u"truncated section%s, got %d bytes, expected %d", {UString::AfterBytes(position), insize, secsize});
+            report.error(u"truncated section%s, got %d bytes, expected %d", UString::AfterBytes(position), insize, secsize);
         }
     }
     else {
@@ -575,7 +575,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
         reload(secdata, PID_NULL, crc_op);
         if (!_is_valid) {
             strm.setstate(std::ios::failbit);
-            report.error(u"invalid section%s", {UString::AfterBytes(position)});
+            report.error(u"invalid section%s", UString::AfterBytes(position));
         }
     }
 

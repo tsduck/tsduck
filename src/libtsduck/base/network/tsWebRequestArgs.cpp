@@ -80,7 +80,7 @@ bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)
     for (const auto& headerString : headerStrings) {
         auto pos = headerString.find(':');
         if (pos == NPOS || pos == 0 || pos == headerString.size() - 1) {
-            args.warning(u"Ignoring custom header '%s' - not of expected form 'x-header-name: value'", {headerString});
+            args.warning(u"Ignoring custom header '%s' - not of expected form 'x-header-name: value'", headerString);
         }
         else {
             auto headerKey = headerString.substr(0, pos);

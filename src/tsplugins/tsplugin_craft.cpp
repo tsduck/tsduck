@@ -684,7 +684,7 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
 
     // If the payload must be resized to a specific size, do it now.
     if (mayUpdatePayload && _resizePayload && !pkt.setPayloadSize(payloadBase + _payloadSize, true, 0xFF)) {
-        tsp->warning(u"packet %'d: cannot resize %s payload to %'d bytes", {tsp->pluginPackets(), _pesPayload ? u"PES" : u"TS", _payloadSize});
+        tsp->warning(u"packet %'d: cannot resize %s payload to %'d bytes", tsp->pluginPackets(), _pesPayload ? u"PES" : u"TS", _payloadSize);
     }
 
     // Check if we are allowed to shrink the payload to any value.
@@ -693,27 +693,27 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
 
     // Set individual flags in AF. Try to create minimal AF with flags field.
     if (_setDiscontinuity && !pkt.setDiscontinuityIndicator(canShrinkPayload)) {
-        tsp->warning(u"packet %'d: no adaptation field to set discontinuity indicator", {tsp->pluginPackets()});
+        tsp->warning(u"packet %'d: no adaptation field to set discontinuity indicator", tsp->pluginPackets());
     }
     if (_setESPriority && !pkt.setESPI(canShrinkPayload)) {
-        tsp->warning(u"packet %'d: no adaptation field to set ES priority indicator", {tsp->pluginPackets()});
+        tsp->warning(u"packet %'d: no adaptation field to set ES priority indicator", tsp->pluginPackets());
     }
     if (_setRandomAccess && !pkt.setRandomAccessIndicator(canShrinkPayload)) {
-        tsp->warning(u"packet %'d: no adaptation field to set random access indicator", {tsp->pluginPackets()});
+        tsp->warning(u"packet %'d: no adaptation field to set random access indicator", tsp->pluginPackets());
     }
 
     // Set fields which need more space in the adaptation field.
     if (_newPCR != INVALID_PCR && !pkt.setPCR(_newPCR, canShrinkPayload)) {
-        tsp->warning(u"packet %'d: no adaptation field to set PCR", {tsp->pluginPackets()});
+        tsp->warning(u"packet %'d: no adaptation field to set PCR", tsp->pluginPackets());
     }
     if (_newOPCR != INVALID_PCR && !pkt.setOPCR(_newOPCR, canShrinkPayload)) {
-        tsp->warning(u"packet %'d: no adaptation field to set OPCR", {tsp->pluginPackets()});
+        tsp->warning(u"packet %'d: no adaptation field to set OPCR", tsp->pluginPackets());
     }
     if (_setSpliceCountdown && !pkt.setSpliceCountdown(_newSpliceCountdown, canShrinkPayload)) {
-        tsp->warning(u"packet %'d: no adaptation field to set splicing point countdown", {tsp->pluginPackets()});
+        tsp->warning(u"packet %'d: no adaptation field to set splicing point countdown", tsp->pluginPackets());
     }
     if (!_privateData.empty() && !pkt.setPrivateData(_privateData, canShrinkPayload)) {
-        tsp->warning(u"packet %'d: adaptation field too short to set private data", {tsp->pluginPackets()});
+        tsp->warning(u"packet %'d: adaptation field too short to set private data", tsp->pluginPackets());
     }
 
     // Fill payload with pattern.

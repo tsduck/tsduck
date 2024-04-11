@@ -188,7 +188,7 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
         inputs.push_back(PluginOptions(u"file"));
     }
     if (timeInputIndex != NPOS && timeInputIndex >= inputs.size()) {
-        args.error(u"%d is not a valid input plugin index in --time-reference-input", {timeInputIndex});
+        args.error(u"%d is not a valid input plugin index in --time-reference-input", timeInputIndex);
     }
 
     // Default output buffer size is the sum of all input buffer sizes.

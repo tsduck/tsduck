@@ -151,7 +151,7 @@ FUNCTION ts::PSIRepository::getDescriptorFunction(const EDID& edid, TID tid, FUN
 
 ts::PSIRepository::RegisterXML::RegisterXML(const UString& filename)
 {
-    CERR.debug(u"registering XML file %s", {filename});
+    CERR.debug(u"registering XML file %s", filename);
     PSIRepository::Instance()._xmlModelFiles.push_back(filename);
 }
 
@@ -170,7 +170,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
                                                 uint16_t minCAS,
                                                 uint16_t maxCAS)
 {
-    CERR.log(2, u"registering table <%s>", {xmlName});
+    CERR.log(2, u"registering table <%s>", xmlName);
     PSIRepository& repo(PSIRepository::Instance());
 
     // XML names are recorded independently.

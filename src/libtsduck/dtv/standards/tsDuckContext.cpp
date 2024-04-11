@@ -39,14 +39,14 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
 {
     // Initialize time reference from configuration file. Ignore errors.
     if (!_timeRefConfig.empty() && !setTimeReference(_timeRefConfig)) {
-        CERR.verbose(u"invalid default.time '%s' in %s", {_timeRefConfig, DuckConfigFile::Instance().fileName()});
+        CERR.verbose(u"invalid default.time '%s' in %s", _timeRefConfig, DuckConfigFile::Instance().fileName());
     }
 
     // Get leap.seconds initial value from configuration file. Default value is true.
     const UString ls(DuckConfigFile::Instance().value(u"leap.seconds"));
     if (!ls.empty() && !ls.toBool(_useLeapSeconds)) {
         _useLeapSeconds = true;
-        CERR.verbose(u"invalid leap.seconds '%s' in %s", {ls, DuckConfigFile::Instance().fileName()});
+        CERR.verbose(u"invalid leap.seconds '%s' in %s", ls, DuckConfigFile::Instance().fileName());
     }
 }
 
@@ -103,7 +103,7 @@ void ts::DuckContext::setDefaultCharsetOut(const Charset* charset)
 void ts::DuckContext::addStandards(Standards mask)
 {
     if (_report->debug() && (_accStandards | mask) != _accStandards) {
-        _report->debug(u"adding standards %s to %s", {StandardsNames(mask), StandardsNames(_accStandards)});
+        _report->debug(u"adding standards %s to %s", StandardsNames(mask), StandardsNames(_accStandards));
     }
     _accStandards |= mask;
 }
@@ -113,7 +113,7 @@ void ts::DuckContext::resetStandards(Standards mask)
     _accStandards = _cmdStandards | mask;
 
     if (_report->debug()) {
-        _report->debug(u"resetting standards to %s", {StandardsNames(_accStandards)});
+        _report->debug(u"resetting standards to %s", StandardsNames(_accStandards));
     }
 }
 
@@ -341,10 +341,10 @@ bool ts::DuckContext::setOutput(const fs::path& fileName, bool override)
 
         // Open new file if any.
         if (!fileName.empty() && fileName != u"-") {
-            _report->verbose(u"creating %s", {fileName});
+            _report->verbose(u"creating %s", fileName);
             _outFile.open(fileName, std::ios::out);
             if (!_outFile) {
-                _report->error(u"cannot create %s", {fileName});
+                _report->error(u"cannot create %s", fileName);
                 return false;
             }
             _out = &_outFile;
@@ -579,7 +579,7 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (!name.empty()) {
             const Charset* cset = DVBCharTable::GetCharset(name);
             if (cset == nullptr) {
-                args.error(u"invalid character set name '%s'", {name});
+                args.error(u"invalid character set name '%s'", name);
             }
             else {
                 _charsetIn = _charsetOut = cset;
@@ -656,7 +656,7 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"time-reference")) {
             const UString name(args.value(u"time-reference"));
             if (!setTimeReference(name)) {
-                args.error(u"invalid time reference '%s'", {name});
+                args.error(u"invalid time reference '%s'", name);
             }
         }
         else if (args.present(u"japan")) {

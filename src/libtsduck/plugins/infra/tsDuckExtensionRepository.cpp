@@ -38,12 +38,12 @@ ts::DuckExtensionRepository::Loader::Loader()
     // Get the list of extensions to ignore.
     UStringVector ignore;
     GetEnvironment(u"TSLIBEXT_IGNORE").split(ignore, u',', true, true);
-    CERR.debug(u"%d extensions ignored", {ignore.size()});
+    CERR.debug(u"%d extensions ignored", ignore.size());
 
     // Get list of shared library files
     UStringVector files;
     ApplicationSharedLibrary::GetPluginList(files, u"tslibext_", PLUGINS_PATH_ENVIRONMENT_VARIABLE);
-    CERR.debug(u"found %d possible extensions", {files.size()});
+    CERR.debug(u"found %d possible extensions", files.size());
 
     // Load all plugins shared library.
     for (size_t i = 0; i < files.size(); ++i) {
@@ -55,20 +55,20 @@ ts::DuckExtensionRepository::Loader::Loader()
         const UString name(BaseName(filename, SHARED_LIBRARY_SUFFIX).toRemovedPrefix(u"tslibext_", FILE_SYSTEM_CASE_SENSITVITY));
         if (name.isContainedSimilarIn(ignore)) {
             // This extension is listed in TSLIBEXT_IGNORE.
-            CERR.debug(u"ignoring extension \"%s\"", {filename});
+            CERR.debug(u"ignoring extension \"%s\"", filename);
         }
         else {
             // This extension shall be loaded.
             // Use the "permanent" load flag to make sure the shared library remains active.
-            CERR.debug(u"loading extension \"%s\"", {filename});
+            CERR.debug(u"loading extension \"%s\"", filename);
             ApplicationSharedLibrary shlib(filename, UString(), UString(), SharedLibraryFlags::PERMANENT);
             if (!shlib.isLoaded()) {
-                CERR.debug(u"failed to load extension \"%s\": %s", {filename, shlib.errorMessage()});
+                CERR.debug(u"failed to load extension \"%s\": %s", filename, shlib.errorMessage());
             }
         }
     }
 
-    CERR.debug(u"loaded %d extensions", {DuckExtensionRepository::Instance()._extensions.size()});
+    CERR.debug(u"loaded %d extensions", DuckExtensionRepository::Instance()._extensions.size());
 }
 
 //----------------------------------------------------------------------------
@@ -81,7 +81,7 @@ ts::DuckExtensionRepository::Register::Register(const UString& name,
                                                 const UStringVector& plugins,
                                                 const UStringVector& tools)
 {
-    CERR.debug(u"registering extension \"%s\"", {name});
+    CERR.debug(u"registering extension \"%s\"", name);
     DuckExtensionRepository::Instance()._extensions.push_back({name, file_name, description, plugins, tools});
 }
 

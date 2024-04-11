@@ -92,7 +92,7 @@ namespace {
 
             // The ECM is in TS packet format.
             if (response.ECM_datagram.size() % ts::PKT_SIZE != 0) {
-                opt.error(u"Invalid ECM reponse, pretend to be in packet mode, returned %d bytes, not a multiple of %d", {response.ECM_datagram.size(), ts::PKT_SIZE});
+                opt.error(u"Invalid ECM reponse, pretend to be in packet mode, returned %d bytes, not a multiple of %d", response.ECM_datagram.size(), ts::PKT_SIZE);
                 return false;
             }
 

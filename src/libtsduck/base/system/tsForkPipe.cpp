@@ -98,7 +98,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     _wait_mode = wait_mode;
     _eof = !_out_pipe;
 
-    report.debug(u"creating process \"%s\"", {command});
+    report.debug(u"creating process \"%s\"", command);
 
 #if defined(TS_WINDOWS)
 
@@ -274,7 +274,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     // Create a pipe
     int filedes[PIPE_COUNT];
     if (_use_pipe && ::pipe(filedes) < 0) {
-        report.error(u"error creating pipe: %s", {SysErrorCodeMessage()});
+        report.error(u"error creating pipe: %s", SysErrorCodeMessage());
         return false;
     }
 
@@ -284,7 +284,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         _fpid = 0;
     }
     else if ((_fpid = ::fork()) < 0) {
-        report.error(u"fork error: %s", {SysErrorCodeMessage()});
+        report.error(u"fork error: %s", SysErrorCodeMessage());
         if (_use_pipe) {
             ::close(filedes[PIPE_READFD]);
             ::close(filedes[PIPE_WRITEFD]);
@@ -431,7 +431,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         // At this point, there was an error.
         if (_wait_mode == EXIT_PROCESS) {
             // No process was created, so return to the caller.
-            report.error(u"%s: %s", {message, SysErrorCodeMessage(error)});
+            report.error(u"%s: %s", message, SysErrorCodeMessage(error));
             return false;
         }
         else {
@@ -499,7 +499,7 @@ bool ts::ForkPipe::close(Report& report)
     if (_wait_mode == SYNCHRONOUS) {
         assert(_fpid != 0);
         if (::waitpid(_fpid, nullptr, 0) < 0) {
-            report.error(u"error waiting for process termination: %s", {SysErrorCodeMessage()});
+            report.error(u"error waiting for process termination: %s", SysErrorCodeMessage());
             result = false;
         }
     }
@@ -611,7 +611,7 @@ bool ts::ForkPipe::writeStream(const void* addr, size_t size, size_t& written_si
     }
     else if (!_broken_pipe) {
         // Always report non-pipe error (message + error status).
-        report.error(u"error writing to pipe: %s", {SysErrorCodeMessage(errcode)});
+        report.error(u"error writing to pipe: %s", SysErrorCodeMessage(errcode));
         return false;
     }
     else if (_ignore_abort) {
@@ -694,7 +694,7 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
         }
         else if (errno != EINTR) {
             // Actual error (not an interrupt)
-            report.error(u"error reading from pipe: %s", {SysErrorCodeMessage()});
+            report.error(u"error reading from pipe: %s", SysErrorCodeMessage());
             return false;
         }
     }
@@ -726,7 +726,7 @@ bool ts::ForkPipe::Launch(const ts::UString& command, ts::Report& report, ts::Fo
         return exe.close(report);
     }
     else {
-        report.error(u"cannot execute command: %s", {command});
+        report.error(u"cannot execute command: %s", command);
         return false;
     }
 }

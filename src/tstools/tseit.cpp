@@ -296,7 +296,7 @@ bool ts::EITCommand::getTimeOptions(Time& time, Args& args, const UChar* name)
         return true;
     }
     else {
-        args.error(u"invalid --%s value \"%s\" (use \"year/month/day:hour:minute:sec.ms\")", {name, args.value(name)});
+        args.error(u"invalid --%s value \"%s\" (use \"year/month/day:hour:minute:sec.ms\")", name, args.value(name));
         return false;
     }
 }

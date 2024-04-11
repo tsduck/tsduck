@@ -88,7 +88,7 @@ void ts::tslatencymonitor::InputExecutor::main()
         // Here, we need to start an input session.
         debug(u"starting input plugin");
         const bool started = _input->start();
-        debug(u"input plugin started, status: %s", {started});
+        debug(u"input plugin started, status: %s", started);
 
         // Loop on incoming packets.
         for (;;) {

@@ -213,7 +213,7 @@ Options::Options(int argc, char *argv[]) :
     // Check output directory.
     if (!out_dir.empty()) {
         if (!fs::is_directory(out_dir)) {
-            error(u"directory not found: %s", {out_dir});
+            error(u"directory not found: %s", out_dir);
         }
         else if (!out_dir.endWith(ts::UString(1, fs::path::preferred_separator))) {
             // Make sure we can use out_dir directly with a file name.
@@ -497,7 +497,7 @@ namespace {
         if (sys.isWindows()) {
             // On Windows, there should be only one installer.
             if (files.size() != 1) {
-                opt.error(u"found %d installers for this version, manually run one of: %s", {files.size(), ts::UString::Join(files, u" ")});
+                opt.error(u"found %d installers for this version, manually run one of: %s", files.size(), ts::UString::Join(files, u" "));
                 return false;
             }
             // We require a privileged execution.
@@ -516,7 +516,7 @@ namespace {
             return RunUpgradeCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true);
         }
         else {
-            opt.error(u"don't know how to upgrade on %s, rebuild from sources", {sys.systemName()});
+            opt.error(u"don't know how to upgrade on %s, rebuild from sources", sys.systemName());
             return false;
         }
     }

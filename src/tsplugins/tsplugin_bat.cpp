@@ -147,7 +147,7 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         return;
     }
 
-    tsp->debug(u"got a BAT, version %d, bouquet id: %d (0x%X)", {bat.version, bat.bouquet_id, bat.bouquet_id});
+    tsp->debug(u"got a BAT, version %d, bouquet id: %d (0x%<X)", bat.version, bat.bouquet_id);
 
     // Remove the specified transport streams.
     for (auto it = bat.transports.begin(); it != bat.transports.end(); ) {

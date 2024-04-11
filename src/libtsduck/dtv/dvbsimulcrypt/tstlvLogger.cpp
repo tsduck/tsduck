@@ -62,7 +62,7 @@ void ts::tlv::Logger::log(const Message& msg, const UString& comment, Report* re
             rep->log(level, dump);
         }
         else {
-            rep->log(level, u"%s\n%s", {comment, dump});
+            rep->log(level, u"%s\n%s", comment, dump);
         }
     }
 }

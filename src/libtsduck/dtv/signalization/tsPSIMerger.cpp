@@ -558,11 +558,11 @@ void ts::PSIMerger::mergePAT()
     for (const auto& merge : _merge_pat.pmts) {
         // Check if the service already exists in the main PAT.
         if (Contains(pat.pmts, merge.first)) {
-            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge.first, merge.first});
+            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", merge.first, merge.first);
         }
         else {
             pat.pmts[merge.first] = merge.second;
-            _duck.report().verbose(u"adding service 0x%X (%d) in PAT from merged stream", {merge.first, merge.first});
+            _duck.report().verbose(u"adding service 0x%X (%d) in PAT from merged stream", merge.first, merge.first);
         }
     }
 
@@ -597,11 +597,11 @@ void ts::PSIMerger::mergeCAT()
         const CADescriptor ca(_duck, *_merge_cat.descs[index]);
         // Check if the same EMM PID already exists in the main CAT.
         if (CADescriptor::SearchByPID(_main_cat.descs, ca.ca_pid) < _main_cat.descs.count()) {
-            _duck.report().error(u"EMM PID conflict, PID 0x%X (%d) referenced in the two streams, dropping from merged stream", {ca.ca_pid, ca.ca_pid});
+            _duck.report().error(u"EMM PID conflict, PID 0x%X (%<d) referenced in the two streams, dropping from merged stream", ca.ca_pid);
         }
         else {
             cat.descs.add(_merge_cat.descs[index]);
-            _duck.report().verbose(u"adding EMM PID 0x%X (%d) in CAT from merged stream", {ca.ca_pid, ca.ca_pid});
+            _duck.report().verbose(u"adding EMM PID 0x%X (%<d) in CAT from merged stream", ca.ca_pid);
         }
     }
 
@@ -635,11 +635,11 @@ void ts::PSIMerger::mergeSDT()
     for (const auto& merge : _merge_sdt.services) {
         // Check if the service already exists in the main SDT.
         if (Contains(sdt.services, merge.first)) {
-            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge.first, merge.first});
+            _duck.report().error(u"service conflict, service 0x%X (%<d) exists in the two streams, dropping from merged stream", merge.first);
         }
         else {
             sdt.services[merge.first] = merge.second;
-            _duck.report().verbose(u"adding service \"%s\", id 0x%X (%d) in SDT from merged stream", {merge.second.serviceName(_duck), merge.first, merge.first});
+            _duck.report().verbose(u"adding service \"%s\", id 0x%X (%<d) in SDT from merged stream", merge.second.serviceName(_duck), merge.first);
         }
     }
 
@@ -717,7 +717,7 @@ void ts::PSIMerger::mergeBAT(uint16_t bouquet_id)
         return;
     }
 
-    _duck.report().debug(u"merging BAT for bouquet id 0x%X (%d)", {bouquet_id, bouquet_id});
+    _duck.report().debug(u"merging BAT for bouquet id 0x%X (%d)", bouquet_id, bouquet_id);
 
     // Build a new BAT based on last main BAT with incremented version number.
     BAT bat(main->second);

@@ -197,7 +197,7 @@ bool ts::ArgsWithPlugins::analyze(const UString& app_name, const UStringVector& 
 
         // Check that a plugin name is present after the processor option.
         if (plugin_index + 1 >= args.size()) {
-            error(u"missing plugin name for option %s", {args[plugin_index]});
+            error(u"missing plugin name for option %s", args[plugin_index]);
             break;
         }
 
@@ -229,27 +229,27 @@ bool ts::ArgsWithPlugins::analyze(const UString& app_name, const UStringVector& 
 
     // Check min and max number of occurences of each plugin type.
     if (in_count < _min_inputs) {
-        error(u"not enough input plugins, need at least %d", {_min_inputs});
+        error(u"not enough input plugins, need at least %d", _min_inputs);
         return false;
     }
     if (out_count < _min_outputs) {
-        error(u"not enough output plugins, need at least %d", {_min_outputs});
+        error(u"not enough output plugins, need at least %d", _min_outputs);
         return false;
     }
     if (proc_count < _min_plugins) {
-        error(u"not enough packet processor plugins, need at least %d", {_min_plugins});
+        error(u"not enough packet processor plugins, need at least %d", _min_plugins);
         return false;
     }
     if (in_count > _max_inputs) {
-        error(u"too many input plugins, need at most %d", {_max_inputs});
+        error(u"too many input plugins, need at most %d", _max_inputs);
         return false;
     }
     if (out_count > _max_outputs) {
-        error(u"too many output plugins, need at most %d", {_max_outputs});
+        error(u"too many output plugins, need at most %d", _max_outputs);
         return false;
     }
     if (proc_count > _max_plugins) {
-        error(u"too many packet processor plugins, need at most %d", {_max_plugins});
+        error(u"too many packet processor plugins, need at most %d", _max_plugins);
         return false;
     }
 

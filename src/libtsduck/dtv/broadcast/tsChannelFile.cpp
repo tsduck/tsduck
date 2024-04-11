@@ -239,7 +239,7 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
                                     bool strict,
                                     Report& report) const
 {
-    report.debug(u"searching channel \"%s\" for delivery systems %s in %s", {name, delsys, fileDescription()});
+    report.debug(u"searching channel \"%s\" for delivery systems %s in %s", name, delsys, fileDescription());
 
     // Clear output parameters.
     net.reset();
@@ -259,10 +259,10 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
             // Check if this TS has an acceptable delivery system.
             // If the input delsys is empty, accept any delivery system.
             if (delsys.empty() || (pts->tune.delivery_system.has_value() && delsys.contains(pts->tune.delivery_system.value()))) {
-                report.debug(u"searching channel \"%s\" in TS id 0x%X, delivery system %s", {name, pts->id, DeliverySystemEnum.name(pts->tune.delivery_system.value_or(DS_UNDEFINED))});
+                report.debug(u"searching channel \"%s\" in TS id 0x%X, delivery system %s", name, pts->id, DeliverySystemEnum.name(pts->tune.delivery_system.value_or(DS_UNDEFINED)));
                 srv = pts->serviceByName(name, strict);
                 if (srv != nullptr) {
-                    report.debug(u"found channel \"%s\" in TS id 0x%X", {name, pts->id});
+                    report.debug(u"found channel \"%s\" in TS id 0x%X", name, pts->id);
                     net = pnet;
                     ts = pts;
                     return true;
@@ -272,7 +272,7 @@ bool ts::ChannelFile::searchService(NetworkPtr& net,
     }
 
     // Channel not found.
-    report.error(u"channel \"%s\" not found in %s", {name, fileDescription()});
+    report.error(u"channel \"%s\" not found in %s", name, fileDescription());
     return false;
 }
 
@@ -413,11 +413,11 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
                     }
                     else if (ts->tune.hasModulationArgs()) {
                         // Tuner parameters already set.
-                        doc.report().error(u"Invalid <%s> at line %d, at most one set of tuner parameters is allowed in <ts>", {e->name(), e->lineNumber()});
+                        doc.report().error(u"Invalid <%s> at line %d, at most one set of tuner parameters is allowed in <ts>", e->name(), e->lineNumber());
                         success = false;
                     }
                     else if (!fromXML(ts->tune, e, net->type, tsid)) {
-                        doc.report().error(u"Invalid <%s> at line %d", {e->name(), e->lineNumber()});
+                        doc.report().error(u"Invalid <%s> at line %d", e->name(), e->lineNumber());
                         success = false;
                     }
                 }

@@ -54,7 +54,7 @@ bool ts::FileNameRate::scanFile(size_t retry, Report& report)
         const Time date = GetFileModificationTimeLocal(file_name);
         const bool changed = date != file_date;
         if (changed) {
-            report.verbose(u"file %s %s", {file_name, file_date == Time::Epoch ? u"created" : (date == Time::Epoch ? u"deleted" : u"modified")});
+            report.verbose(u"file %s %s", file_name, file_date == Time::Epoch ? u"created" : (date == Time::Epoch ? u"deleted" : u"modified"));
             file_date = date;
             retry_count = retry;
         }

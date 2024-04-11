@@ -303,7 +303,7 @@ bool ts::EITInjectPlugin::getOptions()
     const UString time(value(u"time"));
     _use_system_time = time == u"system";
     if (!_use_system_time && !time.empty() && !_start_time.decode(time)) {
-        tsp->error(u"invalid --time value \"%s\" (use \"year/month/day:hour:minute:second\")", {time});
+        tsp->error(u"invalid --time value \"%s\" (use \"year/month/day:hour:minute:second\")", time);
         return false;
     }
 
@@ -395,13 +395,15 @@ bool ts::EITInjectPlugin::start()
         _eit_gen.setCurrentTime(_start_time);
     }
 
-    tsp->debug(u"cycle for EIT p/f actual: %s", {_eit_profile.cycle_seconds[size_t(EITProfile::PF_ACTUAL)]});
-    tsp->debug(u"cycle for EIT p/f other: %s", {_eit_profile.cycle_seconds[size_t(EITProfile::PF_OTHER)]});
-    tsp->debug(u"cycle for EIT sched actual: %s (prime), %s (later)", {_eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_PRIME)],
-                                                                       _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_LATER)]});
-    tsp->debug(u"cycle for EIT sched other: %s (prime), %s (later)", {_eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_PRIME)],
-                                                                      _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)]});
-    tsp->debug(u"EIT prime period: %s", {_eit_profile.prime_days});
+    tsp->debug(u"cycle for EIT p/f actual: %s", _eit_profile.cycle_seconds[size_t(EITProfile::PF_ACTUAL)]);
+    tsp->debug(u"cycle for EIT p/f other: %s", _eit_profile.cycle_seconds[size_t(EITProfile::PF_OTHER)]);
+    tsp->debug(u"cycle for EIT sched actual: %s (prime), %s (later)",
+               _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_PRIME)],
+               _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_LATER)]);
+    tsp->debug(u"cycle for EIT sched other: %s (prime), %s (later)",
+               _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_PRIME)],
+               _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)]);
+    tsp->debug(u"EIT prime period: %s", _eit_profile.prime_days);
 
     // Clear the "first batch of events received" flag.
     _wfb_received = false;
@@ -551,7 +553,7 @@ void ts::EITInjectPlugin::loadFiles()
     for (const auto& it : _polled_files) {
 
         // Load events from the file into the EPG database
-        tsp->verbose(u"loading events from file %s", {it});
+        tsp->verbose(u"loading events from file %s", it);
         SectionFile secfile(duck);
         if (secfile.load(it)) {
             _eit_gen.loadEvents(secfile);

@@ -52,7 +52,7 @@ bool ts::AbstractReadStreamInterface::readStreamChunks(void* addr, size_t max_si
     // Can read only an integral number of chunks.
     if (chunk_size > 0) {
         if (max_size < chunk_size) {
-            report.error(u"internal error, buffer (%'d bytes) is smaller than chunk size (%'d bytes)", {max_size, chunk_size});
+            report.error(u"internal error, buffer (%'d bytes) is smaller than chunk size (%'d bytes)", max_size, chunk_size);
             return false;
         }
         max_size -= max_size % chunk_size;

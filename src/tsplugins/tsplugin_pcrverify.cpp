@@ -170,7 +170,7 @@ bool ts::PCRVerifyPlugin::stop()
 {
     // Display PCR summary
     tsp->info(u"%'d PCR OK, %'d with jitter > %'d (%'d micro-seconds), %'d unchecked",
-              {_nb_pcr_ok, _nb_pcr_nok, _jitter_max, _jitter_max / PCR_PER_MICRO_SEC, _nb_pcr_unchecked});
+              _nb_pcr_ok, _nb_pcr_nok, _jitter_max, _jitter_max / PCR_PER_MICRO_SEC, _nb_pcr_unchecked);
     return true;
 }
 
@@ -214,7 +214,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
             _nb_pcr_unchecked++;
         }
         else if (pc.pcr_timesource != next_pc.pcr_timesource) {
-            tsp->verbose(u"distinct time sources for PCR packets: %s then %s", {TimeSourceEnum.name(pc.pcr_timesource), TimeSourceEnum.name(next_pc.pcr_timesource)});
+            tsp->verbose(u"distinct time sources for PCR packets: %s then %s", TimeSourceEnum.name(pc.pcr_timesource), TimeSourceEnum.name(next_pc.pcr_timesource));
             _nb_pcr_unchecked++;
         }
         else {
@@ -262,7 +262,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
                 _nb_pcr_nok++;
                 // Jitter in bits at current bitrate
                 const int64_t bit_jit = (ajit * bitrate) / SYSTEM_CLOCK_FREQ;
-                tsp->info(u"%sPID %d (0x%<X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits (%s time)", {
+                tsp->info(u"%sPID %d (0x%<X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits (%s time)",
                           _time_stamp ? (Time::CurrentLocalTime().format(Time::DATETIME) + u", ") : u"",
                           pid,
                           jitter,
@@ -270,7 +270,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
                           bit_jit / PKT_SIZE_BITS,
                           (bit_jit / 8) % PKT_SIZE,
                           bit_jit % 8,
-                          TimeSourceEnum.name(next_pc.pcr_timesource)});
+                          TimeSourceEnum.name(next_pc.pcr_timesource));
             }
         }
 

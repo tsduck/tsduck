@@ -35,7 +35,7 @@ void ts::ErrCodeReport::log()
         if (!msg.empty()) {
             msg.append(u": ");
         }
-        _report->log(_severity, u"%s%s", {msg, message()});
+        _report->log(_severity, u"%s%s", msg, message());
     }
 
     // Clear error to avoid later message.

@@ -125,7 +125,7 @@ namespace {
             return true;
         }
         else {
-            opt.error(u"%s: PC/SC error 0x%08X: %s", {cause, sc_status, ts::pcsc::StrError(sc_status)});
+            opt.error(u"%s: PC/SC error 0x%08X: %s", cause, sc_status, ts::pcsc::StrError(sc_status));
             return false;
         }
     }
@@ -319,7 +319,7 @@ int MainCode(int argc, char *argv[])
 
     // If one reader was specified on the command line, check that is was found
     if (!opt.reader.empty() && !reader_found) {
-        opt.error(u"smartcard reader \"%s\" not found", {opt.reader});
+        opt.error(u"smartcard reader \"%s\" not found", opt.reader);
         status = EXIT_FAILURE;
     }
 

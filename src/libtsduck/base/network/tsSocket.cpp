@@ -39,7 +39,7 @@ bool ts::Socket::createSocket(int domain, int type, int protocol, Report& report
     // Create a datagram socket.
     _sock = ::socket(domain, type, protocol);
     if (_sock == SYS_SOCKET_INVALID) {
-        report.error(u"error creating socket: %s", {SysErrorCodeMessage()});
+        report.error(u"error creating socket: %s", SysErrorCodeMessage());
         return false;
     }
 
@@ -92,9 +92,9 @@ bool ts::Socket::close(Report& report)
 bool ts::Socket::setSendBufferSize(size_t bytes, Report& report)
 {
     int size = int(bytes); // Actual socket option is an int.
-    report.debug(u"setting socket send buffer size to %'d", {bytes});
+    report.debug(u"setting socket send buffer size to %'d", bytes);
     if (::setsockopt(_sock, SOL_SOCKET, SO_SNDBUF, SysSockOptPointer(&size), sizeof(size)) != 0) {
-        report.error(u"error setting socket send buffer size: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting socket send buffer size: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -108,9 +108,9 @@ bool ts::Socket::setSendBufferSize(size_t bytes, Report& report)
 bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
 {
     int size = int(bytes); // Actual socket option is an int.
-    report.debug(u"setting socket receive buffer size to %'d", {bytes});
+    report.debug(u"setting socket receive buffer size to %'d", bytes);
     if (::setsockopt(_sock, SOL_SOCKET, SO_RCVBUF, SysSockOptPointer(&size), sizeof(size)) != 0) {
-        report.error(u"error setting socket receive buffer size: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting socket receive buffer size: %s", SysErrorCodeMessage());
         return false;
     }
     return true;
@@ -123,7 +123,7 @@ bool ts::Socket::setReceiveBufferSize(size_t bytes, Report& report)
 
 bool ts::Socket::setReceiveTimeout(cn::milliseconds timeout, Report& report)
 {
-    report.debug(u"setting socket receive timeout to %s", {timeout});
+    report.debug(u"setting socket receive timeout to %s", timeout);
 
 #if defined(TS_WINDOWS)
     ::DWORD param = ::DWORD(timeout.count());
@@ -134,7 +134,7 @@ bool ts::Socket::setReceiveTimeout(cn::milliseconds timeout, Report& report)
 #endif
 
     if (::setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, SysSockOptPointer(&param), sizeof(param)) != 0) {
-        report.error(u"error setting socket receive timeout: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting socket receive timeout: %s", SysErrorCodeMessage());
         return false;
     }
 
@@ -149,15 +149,15 @@ bool ts::Socket::setReceiveTimeout(cn::milliseconds timeout, Report& report)
 bool ts::Socket::reusePort(bool active, Report& report)
 {
     int reuse = int(active); // Actual socket option is an int.
-    report.debug(u"setting socket reuse address to %'d", {reuse});
+    report.debug(u"setting socket reuse address to %'d", reuse);
     if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, SysSockOptPointer(&reuse), sizeof(reuse)) != 0) {
-        report.error(u"error setting socket reuse address: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting socket reuse address: %s", SysErrorCodeMessage());
         return false;
     }
 #if defined(TS_MAC)
     // BSD (macOS) also needs SO_REUSEPORT in addition to SO_REUSEADDR.
     if (::setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, SysSockOptPointer(&reuse), sizeof(reuse)) != 0) {
-        report.error(u"error setting socket reuse port: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting socket reuse port: %s", SysErrorCodeMessage());
         return false;
     }
 #endif
@@ -175,7 +175,7 @@ bool ts::Socket::getLocalAddress(IPv4SocketAddress& addr, Report& report)
     SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
     if (::getsockname(_sock, &sock_addr, &len) != 0) {
-        report.error(u"error getting socket name: %s", {SysErrorCodeMessage()});
+        report.error(u"error getting socket name: %s", SysErrorCodeMessage());
         addr.clear();
         return false;
     }

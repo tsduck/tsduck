@@ -192,13 +192,13 @@ void ts::NamesFile::DeleteInstance(Predefined index)
 
 ts::NamesFile::RegisterExtensionFile::RegisterExtensionFile(const UString& filename)
 {
-    CERR.debug(u"registering names file %s", {filename});
+    CERR.debug(u"registering names file %s", filename);
     AllInstances::Instance().addExtensionFile(filename);
 }
 
 void ts::NamesFile::UnregisterExtensionFile(const UString& filename)
 {
-    CERR.debug(u"unregistering names file %s", {filename});
+    CERR.debug(u"unregistering names file %s", filename);
     AllInstances::Instance().removeExtensionFile(filename);
 }
 
@@ -214,7 +214,7 @@ ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
     // Locate the configuration file.
     if (_configFile.empty()) {
         // Cannot load configuration, names will not be available.
-        _log.error(u"configuration file '%s' not found", {fileName});
+        _log.error(u"configuration file '%s' not found", fileName);
     }
     else {
         loadFile(_configFile);
@@ -228,7 +228,7 @@ ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
         for (const auto& name : files) {
             const UString path(SearchConfigurationFile(name));
             if (path.empty()) {
-                _log.error(u"extension file '%s' not found", {name});
+                _log.error(u"extension file '%s' not found", name);
             }
             else {
                 loadFile(path);
@@ -244,13 +244,13 @@ ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
 
 void ts::NamesFile::loadFile(const UString& fileName)
 {
-    _log.debug(u"loading names file %s", {fileName});
+    _log.debug(u"loading names file %s", fileName);
 
     // Open configuration file.
     std::ifstream strm(fileName.toUTF8().c_str());
     if (!strm) {
         _configErrors++;
-        _log.error(u"error opening file %s", {fileName});
+        _log.error(u"error opening file %s", fileName);
         return;
     }
 
@@ -286,10 +286,10 @@ void ts::NamesFile::loadFile(const UString& fileName)
         }
         else if (!decodeDefinition(line, section)) {
             // Invalid line.
-            _log.error(u"%s: invalid line %d: %s", {fileName, lineNumber, line});
+            _log.error(u"%s: invalid line %d: %s", fileName, lineNumber, line);
             if (++_configErrors >= 20) {
                 // Give up after that number of errors
-                _log.error(u"%s: too many errors, giving up", {fileName});
+                _log.error(u"%s: too many errors, giving up", fileName);
                 break;
             }
         }
@@ -351,7 +351,7 @@ bool ts::NamesFile::decodeDefinition(const UString& line, ConfigSection* section
             section->addEntry(first, last, value);
         }
         else {
-            _log.error(u"%s: range 0x%X-0x%X overlaps with an existing range", {_configFile, first, last});
+            _log.error(u"%s: range 0x%X-0x%X overlaps with an existing range", _configFile, first, last);
             valid = false;
         }
     }

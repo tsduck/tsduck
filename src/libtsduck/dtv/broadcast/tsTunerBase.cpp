@@ -190,13 +190,13 @@ bool ts::TunerBase::checkTuneParameters(ModulationArgs& params) const
             return false;
         }
         else if (delivery_systems.size() > 1) {
-            _duck.report().verbose(u"using default deliver system %s", {DeliverySystemEnum.name(params.delivery_system.value())});
+            _duck.report().verbose(u"using default deliver system %s", DeliverySystemEnum.name(params.delivery_system.value()));
         }
     }
 
     // Check if the delivery system is supported by this tuner.
     if (!delivery_systems.contains(params.delivery_system.value())) {
-        _duck.report().error(u"deliver system %s not supported on tuner %s", {DeliverySystemEnum.name(params.delivery_system.value()), deviceName()});
+        _duck.report().error(u"deliver system %s not supported on tuner %s", DeliverySystemEnum.name(params.delivery_system.value()), deviceName());
         return false;
     }
 

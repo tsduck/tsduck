@@ -295,10 +295,10 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
 
     // If the table is specified and the XML descriptor is not allowed in this table, this is an error.
     if (!PSIRepository::Instance().isDescriptorAllowed(node->name(), tid)) {
-        node->report().error(u"<%s>, line %d, is not allowed here, must be in %s", {
+        node->report().error(u"<%s>, line %d, is not allowed here, must be in %s",
                              node->name(),
                              node->lineNumber(),
-                             PSIRepository::Instance().descriptorTables(duck, node->name())});
+                             PSIRepository::Instance().descriptorTables(duck, node->name()));
         return false;
     }
 
@@ -331,7 +331,7 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
             return true;
         }
         else {
-            node->report().error(u"<%s>, line %d, is not a valid descriptor", {node->name(), node->lineNumber()});
+            node->report().error(u"<%s>, line %d, is not a valid descriptor", node->name(), node->lineNumber());
         }
     }
 

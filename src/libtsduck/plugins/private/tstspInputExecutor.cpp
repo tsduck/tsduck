@@ -43,7 +43,7 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
 
     // Propose receive timeout to input plugin.
     if (options.receive_timeout.count() > 0 && !_input->setReceiveTimeout(options.receive_timeout)) {
-        debug(u"%s input plugin does not support receive timeout, using watchdog and abort", {pluginName()});
+        debug(u"%s input plugin does not support receive timeout, using watchdog and abort", pluginName());
         _use_watchdog = true;
     }
 }
@@ -72,7 +72,7 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
         return false; // receive error
     }
 
-    debug(u"initial buffer load: %'d packets, %'d bytes", {pkt_read, pkt_read * PKT_SIZE});
+    debug(u"initial buffer load: %'d packets, %'d bytes", pkt_read, pkt_read * PKT_SIZE);
 
     // Try to evaluate the initial input bitrate.
     BitRate init_bitrate = 0;
@@ -83,7 +83,7 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
         verbose(u"unknown initial input bitrate");
     }
     else {
-        verbose(u"initial input bitrate is %'d b/s", {init_bitrate});
+        verbose(u"initial input bitrate is %'d b/s", init_bitrate);
     }
 
     // Indicate that the loaded packets are now available to the next packet processor.
@@ -259,17 +259,17 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
         }
         else {
             // Report error
-            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", {pluginPackets(), pkt[n].b[0], SYNC_BYTE});
+            error(u"synchronization lost after %'d packets, got 0x%X instead of 0x%X", pluginPackets(), pkt[n].b[0], SYNC_BYTE);
             // In debug mode, partial dump of input
             // (one packet before lost of sync and 3 packets starting at lost of sync).
             if (maxSeverity() >= 1) {
                 if (n > 0) {
                     debug(u"content of packet before loss of synchronization:\n%s",
-                          {UString::Dump(pkt[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16)});
+                          UString::Dump(pkt[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16));
                 }
                 const size_t dump_count = std::min<size_t>(3, count - n);
                 debug(u"data at loss of synchronization:\n%s",
-                      {UString::Dump(pkt[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16)});
+                      UString::Dump(pkt[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16));
             }
             // Ignore subsequent packets
             count = n;
@@ -368,7 +368,7 @@ void ts::tsp::InputExecutor::passInputPackets(size_t pkt_count, bool input_end)
             pkt_count = 0;
         }
         // Wait the specified number of milliseconds or forever if zero.
-        debug(u"final wait after end of input: %s", {_options.final_wait});
+        debug(u"final wait after end of input: %s", _options.final_wait);
         if (_options.final_wait.count() > 0) {
             std::this_thread::sleep_for(_options.final_wait);
         }
@@ -480,7 +480,7 @@ void ts::tsp::InputExecutor::main()
                 // Keep this bitrate
                 _tsp_bitrate = bitrate;
                 _tsp_bitrate_confidence = br_confidence;
-                debug(u"input: got bitrate %'d b/s", {bitrate});
+                debug(u"input: got bitrate %'d b/s", bitrate);
             }
         }
 
@@ -493,5 +493,5 @@ void ts::tsp::InputExecutor::main()
     debug(u"stopping the input plugin");
     _input->stop();
 
-    debug(u"input thread %s after %'d packets", {aborted ? u"aborted" : u"terminated", totalPacketsInThread()});
+    debug(u"input thread %s after %'d packets", aborted ? u"aborted" : u"terminated", totalPacketsInThread());
 }

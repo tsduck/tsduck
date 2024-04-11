@@ -123,7 +123,7 @@ bool ts::RISTPluginData::loadArgs(DuckContext& duck, Args& args)
         // Parse the URL.
         _peer_configs[i] = nullptr;
         if (::rist_parse_address2(_peer_urls[i].toUTF8().c_str(), &_peer_configs[i]) != 0 || _peer_configs[i] == nullptr) {
-            _report.error(u"invalid RIST URL: %s", {_peer_urls[i]});
+            _report.error(u"invalid RIST URL: %s", _peer_urls[i]);
             cleanup();
             return false;
         }
@@ -137,7 +137,7 @@ bool ts::RISTPluginData::loadArgs(DuckContext& duck, Args& args)
         if (!_secret.empty() && peer->secret[0] == '\0') {
             // Override 'secret=' only if not specified in the URL.
             if (secret8.size() >= sizeof(peer->secret)) {
-                _report.error(u"invalid shared secret, maximum length is %d characters", {sizeof(peer->secret) - 1});
+                _report.error(u"invalid shared secret, maximum length is %d characters", sizeof(peer->secret) - 1);
                 return false;
             }
             TS_ZERO(peer->secret);
@@ -148,7 +148,7 @@ bool ts::RISTPluginData::loadArgs(DuckContext& duck, Args& args)
             peer->key_size = _encryption_type == 0 ? 128 : _encryption_type;
         }
         if (peer->secret[0] == '\0' && peer->key_size != 0) {
-            _report.error(u"AES-%d encryption is specified but the shared secret is missing", {peer->key_size});
+            _report.error(u"AES-%d encryption is specified but the shared secret is missing", peer->key_size);
             return false;
         }
     }
@@ -191,7 +191,7 @@ bool ts::RISTPluginData::getSocketValues(Args& args, IPv4SocketAddressVector& li
     for (size_t index = 0; index < count; ++index) {
         const UString str(args.value(option, u"", index));
         if (!list[index].resolve(str, _report) || !list[index].hasAddress()) {
-            _report.error(u"invalid socket address \"%s\", use \"address[:port]\"", {str});
+            _report.error(u"invalid socket address \"%s\", use \"address[:port]\"", str);
             return false;
         }
     }
@@ -222,7 +222,7 @@ bool ts::RISTPluginData::addPeers()
         ::rist_peer* peer = nullptr;
         ::rist_peer_config* config = _peer_configs[i];
         if (::rist_peer_create(ctx, &peer, config) != 0) {
-            _report.error(u"error creating peer: %s", {_peer_urls[i]});
+            _report.error(u"error creating peer: %s", _peer_urls[i]);
             cleanup();
             return false;
         }
@@ -239,7 +239,7 @@ bool ts::RISTPluginData::addPeers()
 
             if (err != 0) {
                 // Report warning but do not fail.
-                _report.warning(u"error %d while setting SRP authentication on %s", {err, _peer_urls[i]});
+                _report.warning(u"error %d while setting SRP authentication on %s", err, _peer_urls[i]);
             }
         }
     }
@@ -258,7 +258,7 @@ int ts::RISTPluginData::ConnectCallback(void* arg, const char* peer_ip, uint16_t
         // Looks like an invalid call, reject connection just in case of hacking.
         return -1;
     }
-    data->_report.verbose(u"connected to %s:%d (local: %s:%d)", {peer_ip, peer_port, local_ip, local_port});
+    data->_report.verbose(u"connected to %s:%d (local: %s:%d)", peer_ip, peer_port, local_ip, local_port);
 
     // Process client access filtering if necessary.
     if (!data->_allowed.empty() || !data->_denied.empty()) {
@@ -266,7 +266,7 @@ int ts::RISTPluginData::ConnectCallback(void* arg, const char* peer_ip, uint16_t
         // Analyze remote peer socket address.
         IPv4SocketAddress addr;
         if (!addr.resolve(UString::FromUTF8(peer_ip), data->_report)) {
-            data->_report.error(u"invalid peer address: %s", {peer_ip});
+            data->_report.error(u"invalid peer address: %s", peer_ip);
             return -1; // connection rejected
         }
         addr.setPort(peer_port);
@@ -274,7 +274,7 @@ int ts::RISTPluginData::ConnectCallback(void* arg, const char* peer_ip, uint16_t
         // Process black list first.
         for (auto it = data->_denied.begin(); it != data->_denied.end(); ++it) {
             if (it->match(addr)) {
-                data->_report.error(u"peer address %s is denied, connection rejected", {addr});
+                data->_report.error(u"peer address %s is denied, connection rejected", addr);
                 return -1; // connection rejected
             }
         }
@@ -285,7 +285,7 @@ int ts::RISTPluginData::ConnectCallback(void* arg, const char* peer_ip, uint16_t
             ok = it->match(addr);
         }
         if (!ok) {
-            data->_report.error(u"peer address %s is not explicitly allowed, connection rejected", {addr});
+            data->_report.error(u"peer address %s is not explicitly allowed, connection rejected", addr);
             return -1; // connection rejected
         }
     }
@@ -375,7 +375,7 @@ int ts::RISTPluginData::StatsCallback(void* arg, const ::rist_stats* stats)
 {
     RISTPluginData* data = reinterpret_cast<RISTPluginData*>(arg);
     if (data != nullptr && stats != nullptr) {
-        data->_report.info(u"%s%s", {data->_stats_prefix, stats->stats_json});
+        data->_report.info(u"%s%s", data->_stats_prefix, stats->stats_json);
         ::rist_stats_free(stats);
     }
     return 0; // undocumented, 0 seems safe

@@ -64,7 +64,7 @@ Options::Options(int argc, char *argv[]) :
     // but let's not send an invalid command. Not all commands can be fully
     // validated outside the context of the tsp, but let's filter most errors.
     if (!cmdline.analyzeCommand(command)) {
-        error(u"invalid tsp control command: %s", {command});
+        error(u"invalid tsp control command: %s", command);
     }
 
     exitOnError();

@@ -221,7 +221,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
         }
         else {
             // Not a packet from that TCP session. Shouldn't happen since the filter is set in the superclass.
-            report.error(u"internal error in PcapStream::readStreams(), unexpected packet %s -> %s in stream %s <-> %s", {src, dst, sourceFilter(), destinationFilter()});
+            report.error(u"internal error in PcapStream::readStreams(), unexpected packet %s -> %s in stream %s <-> %s", src, dst, sourceFilter(), destinationFilter());
             return false;
         }
 
@@ -391,7 +391,7 @@ bool ts::PcapStream::indexOf(const IPv4SocketAddress& source, bool allow_unspeci
         return true;
     }
     else {
-        report.error(u"invalid source address %s for TCP stream %s <-> %s", {source, sourceFilter(), destinationFilter()});
+        report.error(u"invalid source address %s for TCP stream %s <-> %s", source, sourceFilter(), destinationFilter());
         index = NPOS;
         return false;
     }

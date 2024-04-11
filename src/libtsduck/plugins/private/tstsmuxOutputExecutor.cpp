@@ -119,7 +119,7 @@ void ts::tsmux::OutputExecutor::main()
             }
             else {
                 // Restart when the plugin fails.
-                verbose(u"restarting output plugin '%s' after failure", {pluginName()});
+                verbose(u"restarting output plugin '%s' after failure", pluginName());
                 _output->stop();
                 while (!_terminate && !_output->start()) {
                     std::this_thread::sleep_for(_opt.outputRestartDelay);

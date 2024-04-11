@@ -286,7 +286,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     // and status_test. They are automatically handled in the reception thread.
     // At this point, if we receive a message, this is an error or an truely
     // unexpected message.
-    _logger.report().error(u"unexpected response to ECM request:\n%s", {resp->dump(4)});
+    _logger.report().error(u"unexpected response to ECM request:\n%s", resp->dump(4));
     return false;
 }
 

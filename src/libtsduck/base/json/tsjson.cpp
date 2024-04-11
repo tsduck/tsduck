@@ -165,7 +165,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
         }
         else {
             // Invalid integer,
-            report.error(u"line %d: JSON floating-point numbers not yet supported, using \"null\" instead", {parser.lineNumber()});
+            report.error(u"line %d: JSON floating-point numbers not yet supported, using \"null\" instead", parser.lineNumber());
             value = std::make_shared<Null>();
         }
     }
@@ -197,7 +197,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
             }
             // Expect a comma before next field.
             if (!parser.match(u",", true)) {
-                report.error(u"line %d: syntax error in JSON object, missing ','", {parser.lineNumber()});
+                report.error(u"line %d: syntax error in JSON object, missing ','", parser.lineNumber());
                 return false;
             }
         }
@@ -225,13 +225,13 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
             }
             // Expect a comma before next element
             if (!parser.match(u",", true)) {
-                report.error(u"line %d: syntax error in JSON array, missing ','", {parser.lineNumber()});
+                report.error(u"line %d: syntax error in JSON array, missing ','", parser.lineNumber());
                 return false;
             }
         }
     }
     else {
-        report.error(u"line %d: not a valid JSON value", {parser.lineNumber()});
+        report.error(u"line %d: not a valid JSON value", parser.lineNumber());
         return false;
     }
 
@@ -243,7 +243,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
             return true;
         }
         else {
-            report.error(u"line %d: extraneous text after JSON value", {parser.lineNumber()});
+            report.error(u"line %d: extraneous text after JSON value", parser.lineNumber());
             return false;
         }
     }

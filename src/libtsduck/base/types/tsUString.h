@@ -16,6 +16,19 @@
 #include "tsArgMix.h"
 #include "tsMemory.h"
 
+// The UString class contains printf-like and scanf-like features.
+// Initially, these methods used initializer lists for the variable list of arguments.
+// The new declarations use variadic templates instead of explicit initializer lists.
+// Calling the new overloaded functions is identical, without the brackets.
+// When TS_DEPRECATE is defined, using the legacy functions generate "deprecation" warnings.
+//! @cond nodoxygen
+#if defined(TS_DEPRECATE)
+    #define TS_DEPRECATED [[deprecated("remove brackets '{}'")]]
+#else
+    #define TS_DEPRECATED
+#endif
+//! @endcond
+
 namespace ts {
 
     class ByteBlock;
@@ -1871,52 +1884,44 @@ namespace ts {
         //--------------------------------------------------------------------
 
         // Legacy functions using initializer lists.
-        // The new declaraction use variadic templates instead of explicit initializer lists.
+        // The new declarations use variadic templates instead of explicit initializer lists.
         // Calling the new overloaded functions is identical, without the brackets.
         //! @cond nodoxygen
-        [[deprecated("remove brackets '{}'")]]
-        void format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        TS_DEPRECATED void format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
         {
             formatHelper(fmt, args);
         }
-        [[deprecated("remove brackets '{}'")]]
-        void format(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        TS_DEPRECATED void format(const UString& fmt, std::initializer_list<ArgMixIn> args)
         {
             formatHelper(fmt.c_str(), args);
         }
-        [[deprecated("remove brackets '{}'")]]
-        static inline UString Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
+        TS_DEPRECATED static inline UString Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
         {
             UString result;
             result.formatHelper(fmt, args);
             return result;
         }
-        [[deprecated("remove brackets '{}'")]]
-        static inline UString Format(const UString& fmt, std::initializer_list<ArgMixIn> args)
+        TS_DEPRECATED static inline UString Format(const UString& fmt, std::initializer_list<ArgMixIn> args)
         {
             UString result;
             result.formatHelper(fmt.c_str(), args);
             return result;
         }
-        [[deprecated("remove brackets '{}'")]]
-        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        TS_DEPRECATED bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
         {
             return scanHelper(extractedCount, endIndex, fmt, args);
         }
-        [[deprecated("remove brackets '{}'")]]
-        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        TS_DEPRECATED bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
         {
             return scanHelper(extractedCount, endIndex, fmt.c_str(), args);
         }
-        [[deprecated("remove brackets '{}'")]]
-        bool scan(const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        TS_DEPRECATED bool scan(const UChar* fmt, std::initializer_list<ArgMixOut> args) const
         {
             size_t extractedCount;
             size_type endIndex;
             return scanHelper(extractedCount, endIndex, fmt, args);
         }
-        [[deprecated("remove brackets '{}'")]]
-        bool scan(const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        TS_DEPRECATED bool scan(const UString& fmt, std::initializer_list<ArgMixOut> args) const
         {
             size_t extractedCount;
             size_type endIndex;

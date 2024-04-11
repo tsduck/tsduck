@@ -253,7 +253,7 @@ bool ts::BitrateMonitorPlugin::getOptions()
     getIntValues(_labels_go_above, u"set-label-go-above");
 
     if (_min_bitrate > _max_bitrate) {
-        tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", {_min_bitrate, _max_bitrate});
+        tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", _min_bitrate, _max_bitrate);
         ok = false;
     }
     if (_periodic_command > cn::seconds::zero() && _alarm_command.empty()) {
@@ -334,10 +334,10 @@ bool ts::BitrateMonitorPlugin::stop()
             jsonLine(u"summary", bitrate, net_bitrate);
         }
         else if (_full_ts) {
-            tsp->info(u"%s average bitrate: %'d bits/s, average net bitrate: %'d bits/s", {_alarm_prefix, bitrate, net_bitrate});
+            tsp->info(u"%s average bitrate: %'d bits/s, average net bitrate: %'d bits/s", _alarm_prefix, bitrate, net_bitrate);
         }
         else {
-            tsp->info(u"%s average bitrate: %'d bits/s", {_alarm_prefix, bitrate});
+            tsp->info(u"%s average bitrate: %'d bits/s", _alarm_prefix, bitrate);
         }
     }
     return true;
@@ -419,10 +419,10 @@ void ts::BitrateMonitorPlugin::computeBitrate()
             jsonLine(alarm_status, bitrate.toInt64(), net_bitrate.toInt64());
         }
         else if (_full_ts) {
-            tsp->info(u"%s, %s bitrate: %'d bits/s, net bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate, net_bitrate});
+            tsp->info(u"%s, %s bitrate: %'d bits/s, net bitrate: %'d bits/s", Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate, net_bitrate);
         }
         else {
-            tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate});
+            tsp->info(u"%s, %s bitrate: %'d bits/s", Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate);
         }
     }
 

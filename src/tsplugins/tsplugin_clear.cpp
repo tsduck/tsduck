@@ -199,14 +199,14 @@ void ts::ClearPlugin::processSDT(SDT& sdt)
     uint16_t service_id;
     assert (_service.hasName());
     if (!sdt.findService(duck, _service.getName(), service_id)) {
-        tsp->error(u"service \"%s\" not found in SDT", {_service.getName()});
+        tsp->error(u"service \"%s\" not found in SDT", _service.getName());
         _abort = true;
         return;
     }
 
     // Remember service id
     _service.setId(service_id);
-    tsp->verbose(u"found service \"%s\", service id is 0x%X", {_service.getName(), _service.getId()});
+    tsp->verbose(u"found service \"%s\", service id is 0x%X", _service.getName(), _service.getId());
 
     // No longer need to filter the SDT
     _demux.removePID(PID_SDT);
@@ -228,7 +228,7 @@ void ts::ClearPlugin::processPAT(PAT& pat)
         const auto it = pat.pmts.find(_service.getId());
         if (it == pat.pmts.end()) {
             // Service not found, error
-            tsp->error(u"service id %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
+            tsp->error(u"service id %d (0x%X) not found in PAT", _service.getId(), _service.getId());
             _abort = true;
             return;
         }
@@ -246,7 +246,7 @@ void ts::ClearPlugin::processPAT(PAT& pat)
         _service.setId(it->first);
         _service.setPMTPID(it->second);
         _demux.addPID(it->second);
-        tsp->verbose(u"using service %d (0x%X)", {_service.getId(), _service.getId()});
+        tsp->verbose(u"using service %d (0x%X)", _service.getId(), _service.getId());
     }
     else {
         // No service specified, no service in PAT, error
@@ -308,7 +308,7 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPack
             tsp->error(u"bitrate unknown or too low, use option --drop-after-packets");
             return TSP_END;
         }
-        tsp->verbose(u"will drop %'d packets after last clear packet", {_drop_after});
+        tsp->verbose(u"will drop %'d packets after last clear packet", _drop_after);
     }
 
     // If packets are passing but no clear packet recently found, drop packets
@@ -324,7 +324,7 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPack
         const UString curtime(_last_tot.isValid() && !_last_tot.regions.empty() ?
                               _last_tot.localTime(_last_tot.regions[0]).format(Time::DATETIME) :
                               u"unknown");
-        tsp->verbose(u"now %s all packets, last TOT local time: %s, current packet: %'d", {_pass_packets ? u"passing" : u"dropping", curtime, _current_pkt});
+        tsp->verbose(u"now %s all packets, last TOT local time: %s, current packet: %'d", _pass_packets ? u"passing" : u"dropping", curtime, _current_pkt);
     }
 
     // Count TS packets

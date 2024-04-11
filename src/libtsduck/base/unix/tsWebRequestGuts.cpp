@@ -338,7 +338,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
     size_t retries = 0;
     cn::milliseconds retryInterval;
     LibCurlInit::Instance().getRetry(_request._originalURL, retries, retryInterval);
-    _request._report.debug(u"curl retries: %d, interval: %!s", {retries, retryInterval});
+    _request._report.debug(u"curl retries: %d, interval: %!s", retries, retryInterval);
 
     // Loop until all retries are exhausted.
     for (;;) {
@@ -357,12 +357,12 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < cn::days(1)) {
             // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
             certState = CERT_DOWNLOAD;
-            _request._report.debug(u"reusing recent CA cert file %s", {_certFile});
+            _request._report.debug(u"reusing recent CA cert file %s", _certFile);
         }
         else if ((certState == CERT_EXISTING && !certFileExists) || certState == CERT_DOWNLOAD) {
             // We need to download it. Jump to CERT_DOWNLOAD if there was no file.
             certState = CERT_DOWNLOAD;
-            _request._report.verbose(u"encountered certificate issue, downloading a fresh CA list from %s", {FRESH_CACERT_URL});
+            _request._report.verbose(u"encountered certificate issue, downloading a fresh CA list from %s", FRESH_CACERT_URL);
 
             WebRequest certRequest(_request._report);
             certRequest.setAutoRedirect(true);
@@ -529,7 +529,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         }
         else if (_canRetry) {
             // No data received and some remaining retries.
-            _request._report.debug(u"cannot start transfer, retrying after %s", {retryInterval});
+            _request._report.debug(u"cannot start transfer, retrying after %s", retryInterval);
             retries--;
             std::this_thread::sleep_for(retryInterval);
         }

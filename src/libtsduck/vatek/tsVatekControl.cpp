@@ -66,7 +66,7 @@ int ts::VatekControl::execute()
     const int32_t device_count = int32_t(status);
 
     if (!is_vatek_success(status)) {
-        error(u"enumeration VATek device fail, status: %d", {status});
+        error(u"enumeration VATek device fail, status: %d", status);
         return EXIT_FAILURE;
     }
     else if (device_count < 1) {
@@ -74,7 +74,7 @@ int ts::VatekControl::execute()
         return EXIT_SUCCESS;
     }
     else if (_dev_index >= device_count) {
-        error(u"invalid device index %d, only %d devices in the system", {_dev_index, device_count});
+        error(u"invalid device index %d, only %d devices in the system", _dev_index, device_count);
         return EXIT_FAILURE;
     }
 
@@ -90,7 +90,7 @@ int ts::VatekControl::execute()
         hvatek_chip hchip = nullptr;
         status = vatek_device_open(hdevices, _dev_index, &hchip);
         if (!is_vatek_success(status)) {
-            error(u"open VATek device fail, status: %d", {status});
+            error(u"open VATek device fail, status: %d", status);
             return EXIT_FAILURE;
         }
         std::cout << "Device " << _dev_index << ": " << vatek_device_get_name(hchip) << std::endl << std::flush;

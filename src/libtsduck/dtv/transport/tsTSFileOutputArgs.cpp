@@ -185,7 +185,7 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
 
         // Try to open the file.
         const fs::path name(_multiple_files ? _name_gen.newFileName() : _name);
-        report.verbose(u"creating file %s", {name});
+        report.verbose(u"creating file %s", name);
         const bool success = _file.open(name, _flags, report, _file_format);
 
         // Remember the list of created files if we need to limit their number.
@@ -240,7 +240,7 @@ bool ts::TSFileOutputArgs::closeAndCleanup(Report& report)
         _current_files.pop_front();
 
         // Delete the file.
-        report.verbose(u"deleting obsolete file %s", {name});
+        report.verbose(u"deleting obsolete file %s", name);
         if (!fs::remove(name, &ErrCodeReport(report, u"error deleting", name)) && fs::exists(name)) {
             // Failed to delete, keep it to retry later.
             failed_delete.push_back(name);

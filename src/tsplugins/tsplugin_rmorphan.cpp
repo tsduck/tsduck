@@ -87,7 +87,7 @@ bool ts::RMOrphanPlugin::getOptions()
     if ((duck.standards() & (Standards::ISDB | Standards::ATSC)) == Standards::NONE) {
         duck.addStandards(Standards::DVB);
     }
-    tsp->debug(u"using standards %s", {StandardsNames(duck.standards())});
+    tsp->debug(u"using standards %s", StandardsNames(duck.standards()));
 
     return true;
 }
@@ -125,7 +125,7 @@ void ts::RMOrphanPlugin::passPID(PID pid)
 {
     if (!_pass_pids[pid]) {
         _pass_pids.set(pid);
-        tsp->verbose(u"PID %d (0x%X) is referenced", {pid, pid});
+        tsp->verbose(u"PID %d (0x%X) is referenced", pid, pid);
     }
 }
 

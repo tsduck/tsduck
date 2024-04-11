@@ -138,7 +138,7 @@ ts::ProcessorPlugin::Status ts::PCRBitratePlugin::processPacket(TSPacket& pkt, T
         // If the new bitrate is too close to the previous recorded one, no need to signal it.
         if (new_bitrate != _bitrate && (new_bitrate / (new_bitrate - _bitrate)).abs() < REPORT_THRESHOLD) {
             // New bitrate is significantly different, signal it.
-            tsp->verbose(u"new bitrate from %s analysis: %'d b/s", {_pcr_name, new_bitrate});
+            tsp->verbose(u"new bitrate from %s analysis: %'d b/s", _pcr_name, new_bitrate);
             _bitrate = new_bitrate;
             pkt_data.setBitrateChanged(true);
         }

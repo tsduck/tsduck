@@ -61,11 +61,11 @@ cn::microseconds ts::PcapFilter::getDate(Args& args, const ts::UChar* arg_name, 
         return def_value;
     }
     else if (!date.decode(str, Time::ALL)) {
-        args.error(u"invalid date \"%s\", use format \"YYYY/MM/DD:hh:mm:ss.mmm\"", {str});
+        args.error(u"invalid date \"%s\", use format \"YYYY/MM/DD:hh:mm:ss.mmm\"", str);
         return def_value;
     }
     else if (date < Time::UnixEpoch) {
-        args.error(u"invalid date %s, must be after %s", {str, Time::UnixEpoch});
+        args.error(u"invalid date %s, must be after %s", str, Time::UnixEpoch);
         return def_value;
     }
     else {
@@ -253,10 +253,10 @@ bool ts::PcapFilter::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, R
         }
 
         if (display_filter) {
-            report.log(_display_addresses_severity, u"selected stream %s %s %s", {_source, _bidirectional_filter ? u"<->" : u"->", _destination});
+            report.log(_display_addresses_severity, u"selected stream %s %s %s", _source, _bidirectional_filter ? u"<->" : u"->", _destination);
         }
 
-        report.log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'!s", {packet.size(), packet.protocolDataSize(), timestamp});
+        report.log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'!s", packet.size(), packet.protocolDataSize(), timestamp);
         return true;
     }
 }
