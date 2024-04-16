@@ -26,7 +26,7 @@ bool ts::IPInitialize(Report& report)
         ::WSADATA data;
         int err = ::WSAStartup(MAKEWORD(2, 2), &data);
         if (err != 0) {
-            report.error(u"WSAStartup failed, WinSock error %X", {err});
+            report.error(u"WSAStartup failed, WinSock error %X", err);
             return false;
         }
         done = true;

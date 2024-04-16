@@ -67,7 +67,7 @@ bool ts::UDPSocket::open(Report& report)
 #elif defined(IP_RECVDSTADDR)
     int opt = 1;
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_RECVDSTADDR, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
-        report.error(u"error setting socket IP_RECVDSTADDR option: %s", {SysErrorCodeMessage()});
+        report.error(u"error setting socket IP_RECVDSTADDR option: %s", SysErrorCodeMessage());
         return false;
     }
 #endif

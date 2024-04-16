@@ -142,7 +142,7 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
 
 #if defined(TSDUCK_STATIC)
 
-    report.error(u"error resolving %s: must be an IPv4 address x.x.x.x (statically linked application)", {name});
+    report.error(u"error resolving %s: must be an IPv4 address x.x.x.x (statically linked application)", name);
     return false;
 
 #else
@@ -156,7 +156,7 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
 
     if (status != 0) {
 #if defined(TS_WINDOWS)
-        report.error(u"%s: %s", {name, SysErrorCodeMessage()});
+        report.error(u"%s: %s", name, SysErrorCodeMessage());
 #else
         if (status == EAI_SYSTEM) {
             report.error(u"%s: %s", name, SysErrorCodeMessage(LastSysErrorCode()));

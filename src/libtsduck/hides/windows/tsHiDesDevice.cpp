@@ -555,7 +555,7 @@ bool ts::HiDesDevice::Guts::setTransmission(bool enable, Report& report)
 {
     ite::IoctlGeneric ioc(ite::IOCTL_IT95X_SET_RF_OUTPUT, enable);
     if (!ioctlSet(&ioc, sizeof(ioc), report)) {
-        report.error(u"error setting transmission %s", {UString::OnOff(enable)});
+        report.error(u"error setting transmission %s", UString::OnOff(enable));
         return false;
     }
     else {

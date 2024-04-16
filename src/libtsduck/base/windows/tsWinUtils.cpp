@@ -169,7 +169,7 @@ bool ts::WinCreateElevatedProcess(const UString& exeName, bool synchronous, Repo
     info.nShow = SW_SHOW;
 
     if (!::ShellExecuteExW(&info)) {
-        report.error(u"error starting %s: %s", {exeName, WinErrorMessage(::GetLastError())});
+        report.error(u"error starting %s: %s", exeName, WinErrorMessage(::GetLastError()));
         return false;
     }
 
@@ -224,12 +224,12 @@ bool ts::ComSuccess(::HRESULT hr, const UChar* message, Report& report)
 {
     if (SUCCEEDED(hr)) {
         if (message != nullptr && report.maxSeverity() >= 10) {
-            report.log(10, u"%s: success", {message});
+            report.log(10, u"%s: success", message);
         }
         return true;
     }
     else {
-        report.error(u"%s: %s", {message != nullptr ? message : u"COM error", ComMessage(hr)});
+        report.error(u"%s: %s", message != nullptr ? message : u"COM error", ComMessage(hr));
         return false;
     }
 }
@@ -283,7 +283,7 @@ public:
     // Return the handle. Note that KsGetObjectHandle returns zero on error, not INVALID_HANDLE_VALUE.
     report.log(2, u"WinUtils.GetHandleFromObject: IKsObject found, calling KsGetObjectHandle");
     const ::HANDLE h = ks->KsGetObjectHandle();
-    report.log(2, u"WinUtils.GetHandleFromObject: handle: 0x%X", {uintptr_t(h)});
+    report.log(2, u"WinUtils.GetHandleFromObject: handle: 0x%X", uintptr_t(h));
     return h == 0 ? INVALID_HANDLE_VALUE : h;
 }
 

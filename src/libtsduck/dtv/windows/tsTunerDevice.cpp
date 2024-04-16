@@ -132,7 +132,7 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
         return false;
     }
     else {
-        _duck.report().error(u"device \"%s\" not found", {device_name});
+        _duck.report().error(u"device \"%s\" not found", device_name);
         return false;
     }
 }
@@ -358,7 +358,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
         case TT_UNDEFINED:
         default: {
-            _duck.report().error(u"cannot convert BDA tuning parameters to %s parameters", {TunerTypeEnum.name(ttype)});
+            _duck.report().error(u"cannot convert BDA tuning parameters to %s parameters", TunerTypeEnum.name(ttype));
             return false;
         }
     }
@@ -427,7 +427,7 @@ bool ts::TunerDevice::start()
         TSPacket pack;
         if (sink->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
             if (!_signal_timeout_silent) {
-                _duck.report().error(u"no input DVB signal after %s", {_signal_timeout});
+                _duck.report().error(u"no input DVB signal after %s", _signal_timeout);
             }
             return false;
         }
@@ -551,7 +551,7 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
     // Check if tuner device name is ":integer"
     int dvb_device_index = -1;
     if (tuner != nullptr) {
-        report.debug(u"looking for DVB adapter number \"%d\"", {tuner->_device_name});
+        report.debug(u"looking for DVB adapter number \"%d\"", tuner->_device_name);
         if (!tuner->_device_name.empty() && tuner->_device_name[0] == ':') {
             tuner->_device_name.substr(1).toInteger(dvb_device_index);
         }
@@ -562,7 +562,7 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
 
     // First, check if tuner device name is a device path in order to get a direct moniker.
     if (tuner != nullptr && tuner->_device_name.startWith(u"@")) {
-        report.debug(u"looking for DVB device path \"%s\"", {tuner->_device_name});
+        report.debug(u"looking for DVB device path \"%s\"", tuner->_device_name);
         IBindCtx* lpBC = nullptr;
         IMoniker* pmTuner = nullptr;
         HRESULT hr = ::CreateBindCtx(0, &lpBC);
@@ -592,7 +592,7 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
 
         // Get friendly name of this tuner filter
         const UString tuner_name(GetStringPropertyBag(tuner_monikers[moniker_index].pointer(), L"FriendlyName", debug_report));
-        report.debug(u"found tuner filter \"%s\"", {tuner_name});
+        report.debug(u"found tuner filter \"%s\"", tuner_name);
 
         // Get physical device path.
         UString device_path;
@@ -602,7 +602,7 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
             device_path = ToString(wstring);
             ::CoTaskMemFree(wstring);
         }
-        report.debug(u"tuner device path: %s", {device_path});
+        report.debug(u"tuner device path: %s", device_path);
 
         // If a device name was specified, filter this name.
         // First case: a tuner filter name was specified. In that case, there is
@@ -643,7 +643,7 @@ bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtr
                 tref._device_name = tuner_name;
                 tref._device_path = device_path;
                 tref._device_info.clear();  // none on Windows
-                report.debug(u"found tuner device \"%s\"", {tref._device_name});
+                report.debug(u"found tuner device \"%s\"", tref._device_name);
 
                 // Add tuner it to response set
                 if (tuner_list != nullptr) {
