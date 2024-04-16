@@ -164,7 +164,7 @@ bool ts::HiDesDevice::Guts::ksProperty(KSPROPERTY& prop, void *data, ::DWORD siz
     }
 
     if (!ok) {
-        report.error(u"IOCTL_KS_PROPERTY error: %s", {WinErrorMessage(::GetLastError())});
+        report.error(u"IOCTL_KS_PROPERTY error: %s", WinErrorMessage(::GetLastError()));
     }
 
     return ok;
@@ -207,7 +207,7 @@ bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, con
 
     // Get a canonical version of CLSID_Proxy, the expected class id of it950x devices.
     const UString itclsid(CanonicalGUID(CLSID_Proxy));
-    report.debug(u"HiDes: CLSID_Proxy: %s", {itclsid});
+    report.debug(u"HiDes: CLSID_Proxy: %s", itclsid);
 
     // Count devices to match index.
     int deviceIndex = 0;
@@ -220,12 +220,12 @@ bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, con
         // Get friendly name and class id of this filter.
         const UString fname(GetStringPropertyBag(monikers[i].pointer(), L"FriendlyName", report));
         const UString clsid(GetStringPropertyBag(monikers[i].pointer(), L"CLSID", report));
-        report.debug(u"HiDes: checking \"%s\", CLSID %s", {fname, clsid});
+        report.debug(u"HiDes: checking \"%s\", CLSID %s", fname, clsid);
 
         // Check if the name has the required prefix and class id for an it950x device.
         // Filter out names containing " RX " in case this means a receiver (not verified yet).
         if (fname.startWith(u"IT95") && !fname.contain(u" RX ") && CanonicalGUID(clsid) == itclsid) {
-            report.debug(u"HiDes: found device \"%s\"", {fname});
+            report.debug(u"HiDes: found device \"%s\"", fname);
 
             // We must increment deviceIndex now because this is an index of all it950x devices.
             // If there is an error later, this means that we may have no right to access this device.
@@ -270,11 +270,11 @@ bool ts::HiDesDevice::Guts::getDevices(HiDesDeviceInfoList* list, int index, con
         return true;
     }
     else if (index >= 0) {
-        report.error(u"device index %d not found", {index});
+        report.error(u"device index %d not found", index);
         return false;
     }
     else {
-        report.error(u"device %s not found", {name});
+        report.error(u"device %s not found", name);
         return false;
     }
 }
@@ -312,7 +312,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
     report.log(2, u"HiDesDevice: creating event for overlapped");
     overlapped.hEvent = ::CreateEventW(nullptr, true, false, nullptr);
     if (overlapped.hEvent == nullptr) {
-        report.error(u"CreateEvent error: %s", {WinErrorMessage(::GetLastError())});
+        report.error(u"CreateEvent error: %s", WinErrorMessage(::GetLastError()));
         close();
         return false;
     }
@@ -328,7 +328,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
         prop.Flags = KSPROPERTY_TYPE_BASICSUPPORT;
         ::DWORD want = 0;
 
-        report.log(2, u"HiDesDevice: checking support for property %d, index %d", {prop.Id, i});
+        report.log(2, u"HiDesDevice: checking support for property %d, index %d", prop.Id, i);
 
         // Check that basic support is provided.
         ::DWORD got = 0;
@@ -344,7 +344,7 @@ bool ts::HiDesDevice::Guts::getDeviceInfo(const ComPtr<::IMoniker>& moniker, Rep
             }
         }
         if (!ok || (got & want) == 0) {
-            report.error(u"Property %d not fully supported on %s (%s)", {prop.Id, info.name, info.path});
+            report.error(u"Property %d not fully supported on %s (%s)", prop.Id, info.name, info.path);
             status = false;
         }
     }
@@ -460,7 +460,7 @@ bool ts::HiDesDevice::open(int index, Report& report)
 {
     // Error if already open.
     if (_is_open) {
-        report.error(u"%s already open", {_guts->info.path});
+        report.error(u"%s already open", _guts->info.path);
         return false;
     }
 
@@ -473,7 +473,7 @@ bool ts::HiDesDevice::open(const UString& name, Report& report)
 {
     // Error if already open.
     if (_is_open) {
-        report.error(u"%s already open", {_guts->info.path});
+        report.error(u"%s already open", _guts->info.path);
         return false;
     }
 
@@ -568,7 +568,7 @@ bool ts::HiDesDevice::Guts::setPower(bool enable, Report& report)
 {
     ite::IoctlGeneric ioc(ite::IOCTL_IT95X_SET_POWER, enable);
     if (!ioctlSet(&ioc, sizeof(ioc), report)) {
-        report.error(u"error setting power %s", {UString::OnOff(enable)});
+        report.error(u"error setting power %s", UString::OnOff(enable));
         return false;
     }
     else {
@@ -620,7 +620,7 @@ bool ts::HiDesDevice::Guts::setGetGain(uint32_t code, int& gain, Report& report)
                 gain = - int(ioc.param1);
                 break;
             default:
-                report.error(u"error setting output gain, invalid returned sign value: %d", {ioc.param2});
+                report.error(u"error setting output gain, invalid returned sign value: %d", ioc.param2);
                 return false;
         }
         return true;
@@ -876,7 +876,7 @@ bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report&
         ioc.size = uint32_t(count * PKT_SIZE);
         MemCopy(ioc.data, packets, ioc.size);
 
-        report.log(2, u"HiDesDevice: calling IOCTL_IT95X_SEND_TS_DATA, size = %d, packets: %d", {ioc.size, count});
+        report.log(2, u"HiDesDevice: calling IOCTL_IT95X_SEND_TS_DATA, size = %d, packets: %d", ioc.size, count);
 
         // Send packets.
         if (!_guts->ioctlSet(&ioc, sizeof(ioc), report)) {
@@ -884,7 +884,7 @@ bool ts::HiDesDevice::send(const TSPacket* packets, size_t packet_count, Report&
             return false;
         }
 
-        report.log(2, u"HiDesDevice: after IOCTL_IT95X_SEND_TS_DATA, size = %d", {ioc.size});
+        report.log(2, u"HiDesDevice: after IOCTL_IT95X_SEND_TS_DATA, size = %d", ioc.size);
 
         packets += count;
         packet_count -= count;

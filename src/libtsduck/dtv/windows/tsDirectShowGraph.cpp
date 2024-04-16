@@ -61,7 +61,7 @@ bool ts::DirectShowGraph::initialize(Report& report)
         }
     }
 
-    report.debug(u"DirectShowGraph init, graph build is valid: %s, media control is valid: %s", {!_graph_builder.isNull(), !_media_control.isNull()});
+    report.debug(u"DirectShowGraph init, graph build is valid: %s, media control is valid: %s", !_graph_builder.isNull(), !_media_control.isNull());
     return isValid();
 }
 

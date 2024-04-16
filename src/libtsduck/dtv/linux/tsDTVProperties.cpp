@@ -112,11 +112,11 @@ bool ts::DTVProperties::getStatByCommand(int64_t& value, ::fecap_scale_params& s
 void ts::DTVProperties::report(Report& report, int severity) const
 {
     if (report.maxSeverity() >= severity) {
-        report.log(severity, u"%d DTVProperties:", {_prop_head.num});
+        report.log(severity, u"%d DTVProperties:", _prop_head.num);
         for (size_t i = 0; i < _prop_head.num; ++i) {
             const ::dtv_property& prop(_prop_head.props[i]);
             const char* name = CommandName(prop.cmd);
-            report.log(severity, u"[%d] cmd = %d (%s), data = %d (0x%<08X)", {i, prop.cmd, name == nullptr ? "?" : name, prop.u.data});
+            report.log(severity, u"[%d] cmd = %d (%s), data = %d (0x%<08X)", i, prop.cmd, name == nullptr ? "?" : name, prop.u.data);
         }
     }
 }
@@ -124,7 +124,7 @@ void ts::DTVProperties::report(Report& report, int severity) const
 void ts::DTVProperties::reportStat(Report& report, int severity) const
 {
     if (report.maxSeverity() >= severity) {
-        report.log(severity, u"%d DTVProperties (statistics result):", {_prop_head.num});
+        report.log(severity, u"%d DTVProperties (statistics result):", _prop_head.num);
         for (size_t i1 = 0; i1 < _prop_head.num; ++i1) {
             const ::dtv_property& prop(_prop_head.props[i1]);
             const char* name = CommandName(prop.cmd);
@@ -135,7 +135,7 @@ void ts::DTVProperties::reportStat(Report& report, int severity) const
                 }
                 str.format(u"{scale: %d, value: %d}", prop.u.st.stat[i2].scale, prop.u.st.stat[i2].svalue);
             }
-            report.log(severity, u"[%d] cmd = %d (%s), count = %d, stat = %s", {i1, prop.cmd, name == nullptr ? "?" : name, prop.u.st.len, str});
+            report.log(severity, u"[%d] cmd = %d (%s), count = %d, stat = %s", i1, prop.cmd, name == nullptr ? "?" : name, prop.u.st.len, str);
         }
     }
 }
