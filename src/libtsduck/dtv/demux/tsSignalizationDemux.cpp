@@ -642,7 +642,7 @@ void ts::SignalizationDemux::removeAllFilteredServices()
 
 void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table)
 {
-    _duck.report().debug(u"signalization demux got table id 0x%X (%<d)", table.tableId());
+    _duck.report().debug(u"signalization demux got table id %n", table.tableId());
 
     const PID pid = table.sourcePID();
     const TID tid = table.tableId();

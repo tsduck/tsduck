@@ -91,7 +91,7 @@ void ts::CAContractInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
         disp << margin << UString::Format(u"CA unit id: %d", buf.getBits<uint8_t>(4)) << std::endl;
         for (size_t count = buf.getBits<size_t>(4); buf.canRead() && count > 0; count--) {
-            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
         }
         if (buf.canReadBytes(1)) {
             disp.displayPrivateData(u"Contract verification info", buf, buf.getUInt8(), margin);

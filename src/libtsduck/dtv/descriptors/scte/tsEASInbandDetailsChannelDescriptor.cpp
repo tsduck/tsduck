@@ -70,7 +70,7 @@ void ts::EASInbandDetailsChannelDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"RF channel: %d", buf.getUInt8());
-        disp << UString::Format(u", program number: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << UString::Format(u", program number: %n", buf.getUInt16()) << std::endl;
     }
 }
 

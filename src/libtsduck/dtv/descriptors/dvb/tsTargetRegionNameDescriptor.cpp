@@ -120,11 +120,11 @@ void ts::TargetRegionNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             const uint8_t depth = buf.getBits<uint8_t>(2);
             const size_t len = buf.getBits<uint8_t>(6);
             disp << margin << "  Region name: \"" << buf.getString(len) << "\"" << std::endl;
-            disp << margin << UString::Format(u"  Primary region code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"  Primary region code: %n", buf.getUInt8()) << std::endl;
             if (depth >= 2) {
-                disp << margin << UString::Format(u"  Secondary region code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+                disp << margin << UString::Format(u"  Secondary region code: %n", buf.getUInt8()) << std::endl;
                 if (depth >= 3) {
-                    disp << margin << UString::Format(u"  Tertiary region code: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                    disp << margin << UString::Format(u"  Tertiary region code: %n", buf.getUInt16()) << std::endl;
                 }
             }
         }

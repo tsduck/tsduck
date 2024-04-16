@@ -190,8 +190,8 @@ namespace {
 void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"PLP id: 0x%X (%<d)", buf.getUInt8());
-        disp << UString::Format(u", T2 system id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"PLP id: %n", buf.getUInt8());
+        disp << UString::Format(u", T2 system id: %n", buf.getUInt16()) << std::endl;
 
         if (buf.canReadBytes(2)) {
             disp << margin << "SISO/MISO: " << SisoNames.name(buf.getBits<uint8_t>(2)) << std::endl;
@@ -204,7 +204,7 @@ void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             disp << margin << UString::Format(u"TFS arrangement: %s", tfs) << std::endl;
 
             while (buf.canReadBytes(3)) {
-                disp << margin << UString::Format(u"- Cell id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"- Cell id: %n", buf.getUInt16()) << std::endl;
                 if (tfs) {
                     buf.pushReadSizeFromLength(8); // frequency_loop_length
                     while (buf.canRead()) {
@@ -217,7 +217,7 @@ void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
                 }
                 buf.pushReadSizeFromLength(8); // subcell_info_loop_length
                 while (buf.canReadBytes(5)) {
-                    disp << margin << UString::Format(u"  Cell id ext: 0x%X (%<d)", buf.getUInt8());
+                    disp << margin << UString::Format(u"  Cell id ext: %n", buf.getUInt8());
                     disp << UString::Format(u", transp. frequency: %'d Hz", uint64_t(buf.getUInt32()) * 10) << std::endl;
                 }
                 buf.popState(); // subcell_info_loop_length

@@ -72,9 +72,9 @@ void ts::ServiceMoveDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ServiceMoveDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(6)) {
-        disp << margin << UString::Format(u"New original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"New transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"New service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"New original network id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"New transport stream id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"New service id: %n", buf.getUInt16()) << std::endl;
     }
 }
 

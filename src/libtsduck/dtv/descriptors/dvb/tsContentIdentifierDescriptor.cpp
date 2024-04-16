@@ -97,7 +97,7 @@ void ts::ContentIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
             disp << margin << "  CRID: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
         }
         else if (loc == 1 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"  CRID reference: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  CRID reference: %n", buf.getUInt16()) << std::endl;
         }
     }
 }

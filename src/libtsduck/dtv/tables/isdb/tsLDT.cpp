@@ -152,13 +152,13 @@ void ts::LDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::LDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Original service id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Original service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(5)) {
-            disp << margin << UString::Format(u"Description id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Description id: %n", buf.getUInt16()) << std::endl;
             buf.skipBits(12);
             disp.displayDescriptorListWithLength(section, buf, margin);
         }

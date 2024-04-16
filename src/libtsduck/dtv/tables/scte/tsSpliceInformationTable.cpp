@@ -395,7 +395,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
         }
         else {
             const uint8_t encryption_algo = buf.getBits<uint8_t>(6);
-            disp << UString::Format(u"0x%X (%<d)", encryption_algo);
+            disp << UString::Format(u"%n", encryption_algo);
             switch (encryption_algo) {
                 case 0: disp << ", none"; break;
                 case 1: disp << ", DES-ECB"; break;
@@ -406,7 +406,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
         }
         disp << std::endl;
         disp << margin << "PTS adjustment: " << PTSToString(buf.getBits<uint64_t>(33)) << std::endl;
-        disp << margin << UString::Format(u"CW index: 0x%X (%<d)", buf.getUInt8());
+        disp << margin << UString::Format(u"CW index: %n", buf.getUInt8());
         disp << UString::Format(u", tier: 0x%03X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;
         if (encrypted_packet != 0) {
             // The encrypted part starts at the command type.

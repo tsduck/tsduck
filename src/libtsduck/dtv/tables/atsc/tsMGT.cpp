@@ -206,7 +206,7 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
         const uint16_t type = buf.getUInt16();
         disp << margin << UString::Format(u"- Table type: %s (0x%X)", TableTypeName(type), type) << std::endl;
-        disp << margin << UString::Format(u"  PID: 0x%X (%<d)", buf.getPID());
+        disp << margin << UString::Format(u"  PID: %n", buf.getPID());
         buf.skipBits(3);
         disp << UString::Format(u", version: %d", buf.getBits<uint8_t>(5));
         disp << UString::Format(u", size: %d bytes", buf.getUInt32()) << std::endl;

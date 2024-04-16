@@ -104,11 +104,11 @@ void ts::CellListDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CellListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(10)) {
-        disp << margin << UString::Format(u"- Cell id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"- Cell id: %n", buf.getUInt16()) << std::endl;
         DisplayCoordinates(disp, buf, margin + u"  ");
         buf.pushReadSizeFromLength(8); // start read sequence
         while (buf.canReadBytes(8)) {
-            disp << margin << UString::Format(u"  - Subcell id ext: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"  - Subcell id ext: %n", buf.getUInt8()) << std::endl;
             DisplayCoordinates(disp, buf, margin + u"    ");
         }
         disp.displayPrivateData(u"Extraneous subcell data", buf, NPOS, margin + u"  ");

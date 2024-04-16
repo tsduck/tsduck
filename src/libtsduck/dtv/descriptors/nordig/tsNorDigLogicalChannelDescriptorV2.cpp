@@ -112,7 +112,7 @@ void ts::NorDigLogicalChannelDescriptorV2::deserializePayload(PSIBuffer& buf)
 void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"- Channel list id: 0x%X (%<d)", buf.getUInt8());
+        disp << margin << UString::Format(u"- Channel list id: %n", buf.getUInt8());
         disp << ", name: \"" << buf.getStringWithByteLength() << "\"";
         if (!buf.canReadBytes(3)) {
             disp << std::endl;

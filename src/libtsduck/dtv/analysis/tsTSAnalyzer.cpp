@@ -603,7 +603,7 @@ void ts::TSAnalyzer::analyzeNIT(PID pid, const NIT& nit)
     nit.descs.search(_duck, DID_NETWORK_NAME, desc);
 
     // Format network description as attribute of PID.
-    AppendUnique(ps->attributes, UString::Format(u"Network: 0x%X (%<d) %s", nit.network_id, desc.name).toTrimmed());
+    AppendUnique(ps->attributes, UString::Format(u"Network: %n %s", nit.network_id, desc.name).toTrimmed());
 
     // Collect information from LCN descriptors of different flavors.
     _lcn.addFromNIT(nit, _ts_id.value_or(0xFFFF));
@@ -1306,7 +1306,7 @@ void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         pc->t2mi_plp_ts[pkt.plp()];
 
         // Add the PLP as attributes of this PID.
-        AppendUnique(pc->attributes, UString::Format(u"PLP: 0x%X (%<d)", pkt.plp()));
+        AppendUnique(pc->attributes, UString::Format(u"PLP: %n", pkt.plp()));
     }
 }
 

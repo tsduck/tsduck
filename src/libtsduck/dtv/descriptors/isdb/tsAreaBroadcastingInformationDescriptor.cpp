@@ -89,8 +89,8 @@ void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay&
     if (buf.canReadBytes(1)) {
         size_t count = buf.getUInt8();
         while (count > 0 && buf.canReadBytes(7)) {
-            disp << margin << UString::Format(u"- Station id: 0x%X (%<d)", buf.getUInt24()) << std::endl;
-            disp << margin << UString::Format(u"  Location code: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"- Station id: %n", buf.getUInt24()) << std::endl;
+            disp << margin << UString::Format(u"  Location code: %n", buf.getUInt16()) << std::endl;
             disp << margin << "  Broadcast signal format: " << DataName(MY_XML_NAME, u"BroadcastSignalFormat", buf.getUInt8(), NamesFlags::HEXA_FIRST) << std::endl;
             disp.displayPrivateData(u"Additional station info", buf, buf.getUInt8(), margin + u"  ");
         }

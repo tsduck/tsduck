@@ -216,7 +216,7 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
     if (buf.canReadBytes(3)) {
         const uint16_t proto = buf.getUInt16();
         disp << margin << "Protocol id: " << NameFromDTV(u"MHPTransportProtocolId", proto, NamesFlags::BOTH_FIRST) << std::endl;
-        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Transport protocol label: %n", buf.getUInt8()) << std::endl;
 
         switch (proto) {
             case MHP_PROTO_CAROUSEL: {
@@ -224,12 +224,12 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
                     const bool remote = buf.getBool();
                     buf.skipBits(7);
                     if (remote && buf.canReadBytes(6)) {
-                        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-                        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-                        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
                     }
                     if (buf.canReadBytes(1)) {
-                        disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+                        disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
                     }
                 }
                 break;
@@ -239,9 +239,9 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
                     const bool remote = buf.getBool();
                     buf.skipBits(7);
                     if (remote && buf.canReadBytes(6)) {
-                        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-                        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-                        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+                        disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
                     }
                     if (buf.canReadBytes(1)) {
                         disp << margin << UString::Format(u"Alignment indicator: %d", buf.getBool()) << std::endl;

@@ -166,11 +166,11 @@ void ts::CIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::CIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Service id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(5)) {
-        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
         UStringVector pstring;
         buf.getUTF8WithLength().split(pstring, CHAR_NULL, false, false);
         disp << margin << "Number of prepend string: " << pstring.size() << std::endl;
@@ -178,7 +178,7 @@ void ts::CIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             disp << margin << "  Prepend[" << i << "] = \"" << pstring[i] << "\"" << std::endl;
         }
         while (buf.canReadBytes(5)) {
-            disp << margin << UString::Format(u"- CRID reference: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"- CRID reference: %n", buf.getUInt16()) << std::endl;
             disp << margin << UString::Format(u"  Prepend string index: %d", buf.getUInt8()) << std::endl;
             disp << margin << "  Unique string: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
         }

@@ -226,7 +226,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
         }
         DisplayChannel(disp, u"Master channel", buf, margin);
         if (mode == 2 && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Timeslice number: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Timeslice number: %n", buf.getUInt8()) << std::endl;
         }
         if (mode == 3 && buf.canReadBytes(1)) {
             buf.skipBits(7);
@@ -262,7 +262,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
         disp << margin << UString::Format(u"  Symbol rate: %d", buf.getBCD<uint32_t>(3));
         disp << UString::Format(u".%04d Msymbol/s", buf.getBCD<uint32_t>(4)) << std::endl;
         if (multiple && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"  Input stream identifier: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"  Input stream identifier: %n", buf.getUInt8()) << std::endl;
         }
     }
 }

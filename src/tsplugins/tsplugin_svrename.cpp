@@ -317,7 +317,7 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
         found = Contains(sdt.services, _old_service.getId());
         if (!found) {
             // Informational only
-            tsp->verbose(u"service 0x%X (%<d) not found in SDT", _old_service.getId());
+            tsp->verbose(u"service %n not found in SDT", _old_service.getId());
         }
     }
     else if (_old_service.hasName()) {

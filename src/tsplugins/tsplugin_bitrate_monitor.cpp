@@ -272,7 +272,7 @@ bool ts::BitrateMonitorPlugin::getOptions()
         _alarm_target = u"ts";
     }
     else {
-        _alarm_prefix.format(u"PID 0x%X (%<d)", _first_pid);
+        _alarm_prefix.format(u"PID %n", _first_pid);
         _alarm_target.format(u"%d", _first_pid);
         if (_json_line) {
             _json_pids = std::make_shared<json::Array>();

@@ -502,7 +502,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
         _main_pids.set(pid);
         if (_merge_pids.test(pid)) {
             // We have already merged some packets from this PID.
-            tsp->error(u"PID conflict: PID 0x%X (%<d) exists in the two streams, dropping from merged stream, but some packets were already merged", pid);
+            tsp->error(u"PID conflict: PID %n exists in the two streams, dropping from merged stream, but some packets were already merged", pid);
         }
     }
 
@@ -582,7 +582,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
             // First time we see that PID on the merged stream.
             _merge_pids.set(pid);
             if (_main_pids.test(pid)){
-                tsp->error(u"PID conflict: PID 0x%X (%<d) exists in the two streams, dropping from merged stream", pid);
+                tsp->error(u"PID conflict: PID %n exists in the two streams, dropping from merged stream", pid);
             }
         }
         if (_main_pids.test(pid)) {

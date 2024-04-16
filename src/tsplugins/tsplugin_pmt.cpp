@@ -578,7 +578,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
         auto comp_it = pmt.streams.find(pid);
         if (comp_it == pmt.streams.end()) {
-            tsp->warning(u"PID 0x%X (%<d) not found in PMT", pid);
+            tsp->warning(u"PID %n not found in PMT", pid);
         }
         else {
             comp_it->second.descs.add(dlist);

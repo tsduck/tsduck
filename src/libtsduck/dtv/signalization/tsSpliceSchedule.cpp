@@ -53,7 +53,7 @@ ts::UString ts::SpliceSchedule::DumpSpliceTime(const DuckContext& duck, uint32_t
 void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) const
 {
     for (auto& ev : events) {
-        disp << margin << UString::Format(u"- Splice event id: 0x%X (%<d), cancel: %d", ev.event_id, ev.canceled) << std::endl;
+        disp << margin << UString::Format(u"- Splice event id: %n, cancel: %d", ev.event_id, ev.canceled) << std::endl;
 
         if (!ev.canceled) {
             disp << margin
@@ -70,14 +70,14 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
                 // Program components switch individually.
                 disp << margin << "  Number of components: " << ev.components_utc.size() << std::endl;
                 for (auto& it : ev.components_utc) {
-                    disp << margin << UString::Format(u"    Component tag: 0x%X (%<d)", it.first)
+                    disp << margin << UString::Format(u"    Component tag: %n", it.first)
                          << ", UTC: " << DumpSpliceTime(disp.duck(), it.second) << std::endl;
                 }
             }
             if (ev.use_duration) {
                 disp << margin << "  Duration PTS: " << PTSToString(ev.duration_pts) << ", auto return: " << UString::YesNo(ev.auto_return) << std::endl;
             }
-            disp << margin << UString::Format(u"  Unique program id: 0x%X (%<d), avail: 0x%X (%<d), avails expected: %d", ev.program_id, ev.avail_num, ev.avails_expected) << std::endl;
+            disp << margin << UString::Format(u"  Unique program id: %n, avail: %n, avails expected: %d", ev.program_id, ev.avail_num, ev.avails_expected) << std::endl;
         }
     }
 }

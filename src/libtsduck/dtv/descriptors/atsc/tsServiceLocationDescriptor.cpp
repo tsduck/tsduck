@@ -101,14 +101,14 @@ void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
             disp << "none";
         }
         else {
-            disp << UString::Format(u"0x%X (%<d)", pid);
+            disp << UString::Format(u"%n", pid);
         }
         disp << ", number of elements: " << count << std::endl;
 
         // Loop on all component entries.
         for (size_t i = 0; i < count && buf.canReadBytes(6); ++i) {
             const uint8_t stype = buf.getUInt8();
-            disp << margin << UString::Format(u"- PID: 0x%X (%<d)", buf.getPID());
+            disp << margin << UString::Format(u"- PID: %n", buf.getPID());
             disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << names::ServiceType(stype, NamesFlags::FIRST) << std::endl;
         }
     }

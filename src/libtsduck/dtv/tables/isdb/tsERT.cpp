@@ -148,18 +148,18 @@ void ts::ERT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::ERT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Event relation id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Event relation id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Information provider id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Information provider id: %n", buf.getUInt16()) << std::endl;
         disp << margin << "Relation type: " << DataName(MY_XML_NAME, u"RelationType", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
         buf.skipBits(4);
         while (buf.canReadBytes(8)) {
-            disp << margin << UString::Format(u"- Node id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"- Node id: %n", buf.getUInt16()) << std::endl;
             disp << margin << "  Collection mode: " << DataName(MY_XML_NAME, u"CollectionMode", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
             buf.skipBits(4);
-            disp << margin << UString::Format(u"  Parent node id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-            disp << margin << UString::Format(u"  Reference number: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"  Parent node id: %n", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Reference number: %n", buf.getUInt8()) << std::endl;
             disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
         }
     }

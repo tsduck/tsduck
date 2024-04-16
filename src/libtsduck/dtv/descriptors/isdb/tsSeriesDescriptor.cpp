@@ -101,7 +101,7 @@ void ts::SeriesDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(8)) {
-        disp << margin << UString::Format(u"Series id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Series id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Repeat label: %d", buf.getBits<uint8_t>(4)) << std::endl;
         disp << margin << "Program pattern: " << DataName(MY_XML_NAME, u"ProgramPattern", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
         const bool date_valid = buf.getBool();

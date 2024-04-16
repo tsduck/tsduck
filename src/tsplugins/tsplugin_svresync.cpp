@@ -161,7 +161,7 @@ bool ts::SVResyncPlugin::stop()
 
 void ts::SVResyncPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
 {
-    tsp->debug(u"handling updated services, TS id: 0x%X (%<d), service: 0x%X (%<d), \"%s\"", ts_id, service.getId(), service.getName());
+    tsp->debug(u"handling updated services, TS id: %n, service: %n, \"%s\"", ts_id, service.getId(), service.getName());
 
     if (service.match(_target_service) && pmt.isValid()) {
         // Found the target service. Get all components. We will adjust time stamps here.
@@ -179,7 +179,7 @@ void ts::SVResyncPlugin::handleService(uint16_t ts_id, const Service& service, c
     }
     else if (_ref_pid == PID_NULL && service.match(_ref_service) && pmt.isValid() && pmt.pcr_pid != PID_NULL && pmt.pcr_pid != _cur_ref_pid) {
         // Found the reference service and a new reference PCR PID.
-        tsp->verbose(u"using reference PCR PID 0x%X (%<d) from service 0x%X (%<d)", pmt.pcr_pid, pmt.service_id);
+        tsp->verbose(u"using reference PCR PID %n from service %n", pmt.pcr_pid, pmt.service_id);
         _cur_ref_pid = pmt.pcr_pid;
         _last_ref_pcr = INVALID_PCR;
         _last_ref_packet = 0;

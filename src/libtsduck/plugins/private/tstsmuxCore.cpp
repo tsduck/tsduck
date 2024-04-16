@@ -439,7 +439,7 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
     if (_next_insertion > 0) {
         if (_next_insertion <= _core._output_packets) {
             // It is now time to return that packet.
-            _core._log.debug(u"input #%d, PID 0x%X (%<d), output packet %'d, restarting insertion", _plugin_index, _next_packet.getPID(), _core._output_packets);
+            _core._log.debug(u"input #%d, PID %n, output packet %'d, restarting insertion", _plugin_index, _next_packet.getPID(), _core._output_packets);
             _next_insertion = 0;
             pkt = _next_packet;
             pkt_data = _next_metadata;
@@ -483,7 +483,7 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
             const uint64_t packet_pcr = pkt.getPCR();
             if (packet_pcr < clock->second.pcr_value && !WrapUpPCR(clock->second.pcr_value, packet_pcr)) {
                 const uint64_t back = DiffPCR(packet_pcr, clock->second.pcr_value);
-                _core._log.verbose(u"input #%d, PID 0x%X (%<d), late packet by PCR %'d, %'!s", _plugin_index, pid, back, cn::duration_cast<cn::milliseconds>(PCR(back)));
+                _core._log.verbose(u"input #%d, PID %n, late packet by PCR %'d, %'!s", _plugin_index, pid, back, cn::duration_cast<cn::milliseconds>(PCR(back)));
             }
             else {
                 // Compute current PCR for previous packet in the output TS.
@@ -499,7 +499,7 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
                     const PacketCounter target_packet = clock->second.pcr_packet + PacketDistance(_core._bitrate, PCR(DiffPCR(clock->second.pcr_value, packet_pcr)));
                     if (target_packet > _core._output_packets) {
                         // This packet will be inserted later.
-                        _core._log.debug(u"input #%d, PID 0x%X (%<d), output packet %'d, delay packet by %'d packets", _plugin_index, pid, _core._output_packets, target_packet - _core._output_packets);
+                        _core._log.debug(u"input #%d, PID %n, output packet %'d, delay packet by %'d packets", _plugin_index, pid, _core._output_packets, target_packet - _core._output_packets);
                         _next_insertion = target_packet;
                         _next_packet = pkt;
                         _next_metadata = pkt_data;
@@ -627,7 +627,7 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
 
         if (!Contains(_core._output_pat.pmts, service_id)) {
             // New service found.
-            _core._log.verbose(u"adding service 0x%X (%<d) from input #%d in PAT", service_id, _plugin_index);
+            _core._log.verbose(u"adding service %n from input #%d in PAT", service_id, _plugin_index);
             _core._output_pat.pmts[service_id] = it.second;
             origin.plugin_index = _plugin_index;
             modified = true;
@@ -638,14 +638,14 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
             _core._output_pat.pmts[service_id] = it.second;
         }
         else if (!_core._opt.ignoreConflicts) {
-            _core._log.error(u"service conflict, service 0x%X (%<d) exists in input #%d and #%d, aborting", service_id, origin.plugin_index, _plugin_index);
+            _core._log.error(u"service conflict, service %n exists in input #%d and #%d, aborting", service_id, origin.plugin_index, _plugin_index);
             _core.stop();
             return;
         }
         else if (!origin.conflict_detected) {
             // Conflicts are ignored, this conflict is detected for the first time.
             origin.conflict_detected = true;
-            _core._log.warning(u"service conflict, service 0x%X (%<d) exists in input #%d and #%d, ignoring", service_id, origin.plugin_index, _plugin_index);
+            _core._log.warning(u"service conflict, service %n exists in input #%d and #%d, ignoring", service_id, origin.plugin_index, _plugin_index);
         }
     }
 
@@ -655,7 +655,7 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
         if (_core._service_origin[service_id].plugin_index == _plugin_index && !Contains(pat.pmts, service_id)) {
             // This service was in the output PAT and identified as coming from this input plugin.
             // However, it is no longer in the PAT of this input.
-            _core._log.verbose(u"service 0x%X (%<d) disappeared from input #%d, removing from PAT", service_id, _plugin_index);
+            _core._log.verbose(u"service %n disappeared from input #%d, removing from PAT", service_id, _plugin_index);
             it = _core._output_pat.pmts.erase(it);
             modified = true;
         }
@@ -692,7 +692,7 @@ void ts::tsmux::Core::Input::handleCAT(const CAT& cat)
             const size_t output_index = CADescriptor::SearchByPID(_core._output_cat.descs, ca.ca_pid);
             if (output_index >= _core._output_cat.descs.count()) {
                 // Not found in output CAT, this is a new EMM PID.
-                _core._log.verbose(u"adding EMM PID 0x%X (%<d) from input #%d in CAT", ca.ca_pid, _plugin_index);
+                _core._log.verbose(u"adding EMM PID %n from input #%d in CAT", ca.ca_pid, _plugin_index);
                 _core._output_cat.descs.add(cat.descs[index]);
                 origin.plugin_index = _plugin_index;
                 modified = true;
@@ -706,14 +706,14 @@ void ts::tsmux::Core::Input::handleCAT(const CAT& cat)
                 }
             }
             else if (!_core._opt.ignoreConflicts) {
-                _core._log.error(u"EMM PID conflict, PID 0x%X (%<d) exists in input #%d and #%d, aborting", ca.ca_pid, origin.plugin_index, _plugin_index);
+                _core._log.error(u"EMM PID conflict, PID %n exists in input #%d and #%d, aborting", ca.ca_pid, origin.plugin_index, _plugin_index);
                 _core.stop();
                 return;
             }
             else if (!origin.conflict_detected) {
                 // Conflicts are ignored, this conflict is detected for the first time.
                 origin.conflict_detected = true;
-                _core._log.warning(u"EMM PID conflict, PID 0x%X (%<d) exists in input #%d and #%d, ignoring", ca.ca_pid, origin.plugin_index, _plugin_index);
+                _core._log.warning(u"EMM PID conflict, PID %n exists in input #%d and #%d, ignoring", ca.ca_pid, origin.plugin_index, _plugin_index);
             }
         }
     }
@@ -786,7 +786,7 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
 
         if (!Contains(_core._output_sdt.services, service_id)) {
             // New service found.
-            _core._log.verbose(u"adding service 0x%X (%<d) from input #%d in SDT", service_id, _plugin_index);
+            _core._log.verbose(u"adding service %n from input #%d in SDT", service_id, _plugin_index);
             _core._output_sdt.services[service_id] = it.second;
             origin.plugin_index = _plugin_index;
             modified = true;
@@ -797,14 +797,14 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
             modified = true;
         }
         else if (!_core._opt.ignoreConflicts) {
-            _core._log.error(u"service conflict, service 0x%X (%<d) exists in input #%d and #%d, aborting", service_id, origin.plugin_index, _plugin_index);
+            _core._log.error(u"service conflict, service %n exists in input #%d and #%d, aborting", service_id, origin.plugin_index, _plugin_index);
             _core.stop();
             return;
         }
         else if (!origin.conflict_detected) {
             // Conflicts are ignored, this conflict is detected for the first time.
             origin.conflict_detected = true;
-            _core._log.warning(u"service conflict, service 0x%X (%<d) exists in input #%d and #%d, ignoring", service_id, origin.plugin_index, _plugin_index);
+            _core._log.warning(u"service conflict, service %n exists in input #%d and #%d, ignoring", service_id, origin.plugin_index, _plugin_index);
         }
     }
 
@@ -814,7 +814,7 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
         if (_core._service_origin[service_id].plugin_index == _plugin_index && !Contains(sdt.services, service_id)) {
             // This service was in the output SDT and identified as coming from this input plugin.
             // However, it is no longer in the SDT of this input.
-            _core._log.verbose(u"service 0x%X (%<d) disappeared from input #%d, removing from SDT", service_id, _plugin_index);
+            _core._log.verbose(u"service %n disappeared from input #%d, removing from SDT", service_id, _plugin_index);
             it = _core._output_sdt.services.erase(it);
             modified = true;
         }

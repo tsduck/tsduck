@@ -96,12 +96,12 @@ void ts::NodeRelationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
         const bool has_external = buf.getBool();
         buf.skipBits(3);
         if (has_external && buf.canReadBytes(4)) {
-            disp << margin << UString::Format(u"Information provider id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-            disp << margin << UString::Format(u"Event relation id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Information provider id: %n", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Event relation id: %n", buf.getUInt16()) << std::endl;
         }
         if (buf.canReadBytes(3)) {
-            disp << margin << UString::Format(u"Reference node id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-            disp << margin << UString::Format(u"Reference number: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Reference node id: %n", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Reference number: %n", buf.getUInt8()) << std::endl;
         }
     }
 }

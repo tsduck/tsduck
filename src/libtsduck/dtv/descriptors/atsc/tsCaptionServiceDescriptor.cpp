@@ -114,7 +114,7 @@ void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
             buf.skipBits(1);
             disp << UString::Format(u", digital: %s", digital);
             if (digital) {
-                disp << UString::Format(u", service: 0x%X (%<d)", buf.getBits<uint8_t>(6));
+                disp << UString::Format(u", service: %n", buf.getBits<uint8_t>(6));
             }
             else {
                 buf.skipBits(5);

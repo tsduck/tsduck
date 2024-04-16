@@ -155,7 +155,7 @@ void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::BIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Original network id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canRead()) {
         buf.skipBits(3);
@@ -165,7 +165,7 @@ void ts::BIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     // Loop across all broadcasters
     while (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Broadcaster id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Broadcaster id: %n", buf.getUInt8()) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
 }

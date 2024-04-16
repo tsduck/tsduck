@@ -349,42 +349,42 @@ void ts::ISDBHyperlinkDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 
 void ts::ISDBHyperlinkDescriptor::ServiceTriplet::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-    disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-    disp << margin << UString::Format(u"Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
 }
 
 void ts::ISDBHyperlinkDescriptor::EventTriplet::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     ServiceTriplet::display(disp, buf, margin);
-    disp << margin << UString::Format(u"Event id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Event id: %n", buf.getUInt16()) << std::endl;
 }
 
 void ts::ISDBHyperlinkDescriptor::ModuleTriplet::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     EventTriplet::display(disp, buf, margin);
-    disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
-    disp << margin << UString::Format(u"Module id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
+    disp << margin << UString::Format(u"Module id: %n", buf.getUInt16()) << std::endl;
 }
 
 void ts::ISDBHyperlinkDescriptor::ContentTriplet::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     ServiceTriplet::display(disp, buf, margin);
-    disp << margin << UString::Format(u"Content id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Content id: %n", buf.getUInt16()) << std::endl;
 }
 
 void ts::ISDBHyperlinkDescriptor::ContentModuleTriplet::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     ContentTriplet::display(disp, buf, margin);
-    disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
-    disp << margin << UString::Format(u"Module id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
+    disp << margin << UString::Format(u"Module id: %n", buf.getUInt16()) << std::endl;
 }
 
 void ts::ISDBHyperlinkDescriptor::ERTNode::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Information provider id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-    disp << margin << UString::Format(u"Event relation id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-    disp << margin << UString::Format(u"Node id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Information provider id: %n", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Event relation id: %n", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Node id: %n", buf.getUInt16()) << std::endl;
 }
 
 void ts::ISDBHyperlinkDescriptor::StoredContent::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)

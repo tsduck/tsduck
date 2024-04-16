@@ -437,7 +437,7 @@ void ts::ZapPlugin::setServiceId(ServiceContext& ctx, uint16_t service_id)
     // Ignore case where the service was already known with the same service id.
     if (!ctx.id_known || ctx.service_id != service_id) {
 
-        tsp->verbose(u"found service %s, service id 0x%X (%<d)", ctx.service_spec, service_id);
+        tsp->verbose(u"found service %s, service id %n", ctx.service_spec, service_id);
 
         // Forget the previous service.
         ctx.pmt_pid = PID_NULL;

@@ -99,11 +99,11 @@ void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         size_t reg_count = buf.getBits<size_t>(6);
         disp << margin << "Number of regions: " << reg_count << std::endl;
         while (buf.canReadBytes(2) && reg_count > 0) {
-            disp << margin << UString::Format(u"- Rating region: 0x%X (%<d)", buf.getUInt8());
+            disp << margin << UString::Format(u"- Rating region: %n", buf.getUInt8());
             size_t dim_count = buf.getUInt8();
             disp << UString::Format(u", number of dimensions: %d", dim_count) << std::endl;
             while (buf.canReadBytes(2) && dim_count > 0) {
-                disp << margin << UString::Format(u"    Rating dimension j: 0x%X (%<d)", buf.getUInt8());
+                disp << margin << UString::Format(u"    Rating dimension j: %n", buf.getUInt8());
                 buf.skipBits(4);
                 disp << UString::Format(u", rating value: %d", buf.getBits<uint8_t>(4)) << std::endl;
                 dim_count--;

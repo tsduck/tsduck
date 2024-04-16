@@ -164,7 +164,7 @@ void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Source Id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Source Id: %n", section.tableIdExtension()) << std::endl;
 
     size_t event_count = 0;
 
@@ -175,7 +175,7 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section
         // Loop on all event definitions.
         while (buf.canReadBytes(8) && event_count-- > 0) {
             buf.skipBits(2);
-            disp << margin << UString::Format(u"- Event Id: 0x%X (%<d)", buf.getBits<uint16_t>(14)) << std::endl;
+            disp << margin << UString::Format(u"- Event Id: %n", buf.getBits<uint16_t>(14)) << std::endl;
             disp << margin << "  Start UTC: " << Time::GPSSecondsToUTC(cn::seconds(buf.getUInt32())).format(Time::DATETIME) << std::endl;
             buf.skipBits(2);
             disp << margin << UString::Format(u"  ETM location: %d", buf.getBits<uint8_t>(2)) << std::endl;

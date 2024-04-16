@@ -69,7 +69,7 @@ bool ts::DSMCCStreamDescriptorsTable::isPrivate() const
 
 void ts::DSMCCStreamDescriptorsTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Table id extension: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Table id extension: %n", section.tableIdExtension()) << std::endl;
     AbstractDescriptorsTable::DisplaySection(disp, section, buf, margin);
 }
 

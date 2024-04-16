@@ -237,13 +237,13 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
 
         // Discard events in the past.
         if (now != Time::Epoch && ev->end_time <= now) {
-            _duck.report().verbose(u"discard obsolete event id 0x%X (%<d), %s, ending %s", ev->event_id, service_id, ev->end_time);
+            _duck.report().verbose(u"discard obsolete event id %n, %s, ending %s", ev->event_id, service_id, ev->end_time);
             continue;
         }
 
         // Discard events too far in the future.
         if (now != Time::Epoch && ev->start_time >= ref_midnight + EIT::TOTAL_DAYS) {
-            _duck.report().verbose(u"discard event id 0x%X (%<d), %s, starting %s, too far in the future", ev->event_id, service_id, ev->start_time);
+            _duck.report().verbose(u"discard event id %n, %s, starting %s, too far in the future", ev->event_id, service_id, ev->start_time);
             continue;
         }
 
@@ -279,7 +279,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
             // Duplicate event, ignore it.
             continue;
         }
-        _duck.report().log(2, u"loaded event id 0x%X (%<d), %s, starting %s", ev->event_id, service_id, ev->start_time);
+        _duck.report().log(2, u"loaded event id %n, %s, starting %s", ev->event_id, service_id, ev->start_time);
         seg.events.insert(ev_iter, ev);
         ev_count++;
 
@@ -409,7 +409,7 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
     if (_actual_ts_id_set && _actual_ts_id == new_ts_id) {
         return;
     }
-    _duck.report().debug(u"setting EIT generator TS id to 0x%X (%<d)", new_ts_id);
+    _duck.report().debug(u"setting EIT generator TS id to %n", new_ts_id);
 
     // Set new TS id.
     const uint16_t old_ts_id = _actual_ts_id_set ? _actual_ts_id : 0xFFFF;
@@ -848,7 +848,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             EService& srv(srv_iter.second);
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
             const auto GEN_SCHED = actual ? EITOptions::GEN_ACTUAL_SCHED : EITOptions::GEN_OTHER_SCHED;
-            _duck.report().debug(u"regenerating events for service 0x%X (%<d)", service_id);
+            _duck.report().debug(u"regenerating events for service %n", service_id);
 
             // Set of subtables to globally update their version (SYNC_VERSIONS only).
             std::set<TID> sync_tids;
@@ -1220,7 +1220,7 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
 
                 // Requeue next iteration of that section.
                 enqueueInjectSection(sec, now + _profile.repetitionSeconds(*sec->section), false);
-                _duck.report().log(2, u"inject section TID 0x%X (%<d), service 0x%X (%<d), at %s, requeue for %s",
+                _duck.report().log(2, u"inject section TID %n, service %n, at %s, requeue for %s",
                                    section->tableId(), section->tableIdExtension(), now, sec->next_inject);
                 _last_tid = section->tableId();
                 _last_tidext = section->tableIdExtension();
@@ -1311,9 +1311,9 @@ void ts::EITGenerator::dumpInternalState(int lev) const
         rep.log(lev, u"EITGenerator internal state");
         rep.log(lev, u"---------------------------");
         rep.log(lev, u"");
-        rep.log(lev, u"EIT PID: 0x%X (%<d)", _eit_pid);
+        rep.log(lev, u"EIT PID: %n", _eit_pid);
         rep.log(lev, u"EIT options: 0x%X", uint16_t(_options));
-        rep.log(lev, u"Actual TS id %s: 0x%X (%<d)", _actual_ts_id_set ? u"set" : u"not set", _actual_ts_id);
+        rep.log(lev, u"Actual TS id %s: %n", _actual_ts_id_set ? u"set" : u"not set", _actual_ts_id);
         rep.log(lev, u"TS packets: %'d", _packet_index);
         rep.log(lev, u"TS bitrate: %'d b/s, max EIT bitrate: %'d b/s", _ts_bitrate, _max_bitrate);
         rep.log(lev, u"Services count: %d", _services.size());

@@ -149,7 +149,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         const uint16_t format = buf.getUInt16();
         disp << margin << "Metadata application format: " << DataName(MY_XML_NAME, u"application_format", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFFFF && buf.remainingReadBytes() >= 4) {
-            disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+            disp << margin << UString::Format(u"Metadata application format identifier: %n", buf.getUInt32()) << std::endl;
         }
     }
 
@@ -160,7 +160,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         const uint8_t format = buf.getUInt8();
         disp << margin << "Metadata format: " << DataName(MY_XML_NAME, u"metadata_format", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFF && buf.remainingReadBytes() >= 4) {
-            disp << margin << UString::Format(u"Metadata format identifier: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+            disp << margin << UString::Format(u"Metadata format identifier: %n", buf.getUInt32()) << std::endl;
         }
     }
 
@@ -168,7 +168,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Metadata service id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Metadata service id: %n", buf.getUInt8()) << std::endl;
         const uint8_t flags = buf.getBits<uint8_t>(3);
         const bool DSMCC_flag = buf.getBool();
         buf.skipBits(4);
@@ -186,7 +186,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
             disp.displayPrivateData(u"Decoder config identification record", buf, length, margin);
         }
         else if (flags == 4) {
-            disp << margin << UString::Format(u"Decoder config metadata service id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Decoder config metadata service id: %n", buf.getUInt8()) << std::endl;
         }
         else if (flags == 5 || flags == 6) {
             const size_t length = buf.getUInt8();

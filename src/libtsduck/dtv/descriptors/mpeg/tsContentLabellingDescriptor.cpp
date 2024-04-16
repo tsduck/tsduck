@@ -131,7 +131,7 @@ void ts::ContentLabellingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         const uint16_t format = buf.getUInt16();
         disp << margin << "Metadata application format: " << DataName(MY_XML_NAME, u"application_format", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFFFF && buf.canReadBytes(4)) {
-            disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+            disp << margin << UString::Format(u"Metadata application format identifier: %n", buf.getUInt32()) << std::endl;
         }
         const bool content_reference_id_record_flag = buf.getBool();
         const uint8_t time_base_indicator = buf.getBits<uint8_t>(4);
@@ -149,7 +149,7 @@ void ts::ContentLabellingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         }
         if (time_base_indicator == 2) {
             buf.skipBits(1);
-            disp << margin << UString::Format(u"Content id: 0x%X (%<d)", buf.getBits<uint8_t>(7)) << std::endl;
+            disp << margin << UString::Format(u"Content id: %n", buf.getBits<uint8_t>(7)) << std::endl;
         }
         if (time_base_indicator >= 3 && time_base_indicator <= 7) {
             const size_t length = buf.getUInt8();

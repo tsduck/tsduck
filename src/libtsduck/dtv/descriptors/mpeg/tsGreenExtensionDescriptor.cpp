@@ -104,13 +104,13 @@ void ts::GreenExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         buf.skipBits(6);
         disp << margin << UString::Format(u"Number of backlight voltage time intervals: %d", count) << std::endl;
         for (size_t i = 0; i < count && !buf.error(); ++i) {
-            disp << margin << UString::Format(u"  Constant backlight voltage time intervals [%d]: 0x%X (%<d)", i, buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Constant backlight voltage time intervals [%d]: %n", i, buf.getUInt16()) << std::endl;
         }
         buf.getBits(count, 2);
         buf.skipBits(6);
         disp << margin << UString::Format(u"Number of variations: %d", count) << std::endl;
         for (size_t i = 0; i < count && buf.canReadBytes(2); ++i) {
-            disp << margin << UString::Format(u"  Max variation [%d]: 0x%X (%<d)", i, buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Max variation [%d]: %n", i, buf.getUInt16()) << std::endl;
         }
     }
 }

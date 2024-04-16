@@ -208,7 +208,7 @@ void ts::RNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Context id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Context id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(3)) {
         disp << margin << "Context id type: " << DataName(MY_XML_NAME, u"ContextIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST) << std::endl;

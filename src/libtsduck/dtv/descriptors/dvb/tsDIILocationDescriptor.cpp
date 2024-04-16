@@ -90,11 +90,11 @@ void ts::DIILocationDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DIILocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Transport protocol label: %n", buf.getUInt8()) << std::endl;
         while (buf.canReadBytes(4)) {
             buf.skipBits(1);
-            disp << margin << UString::Format(u"DII id: 0x%X (%<d)", buf.getBits<uint16_t>(15));
-            disp << UString::Format(u", tag: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"DII id: %n", buf.getBits<uint16_t>(15));
+            disp << UString::Format(u", tag: %n", buf.getUInt16()) << std::endl;
         }
     }
 }

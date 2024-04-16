@@ -206,7 +206,7 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     if (buf.canReadBytes(3)) {
         // Fixed initial size: 3 bytes.
         disp << margin << "Sample rate: " << DataName(MY_XML_NAME, u"SampleRateCode", buf.getBits<uint8_t>(3), NamesFlags::VALUE) << std::endl;
-        disp << margin << UString::Format(u"AC-3 coding version: 0x%X (%<d)", buf.getBits<uint8_t>(5)) << std::endl;
+        disp << margin << UString::Format(u"AC-3 coding version: %n", buf.getBits<uint8_t>(5)) << std::endl;
         const uint8_t bitrate = buf.getBits<uint8_t>(6);
         disp << margin << "Bit rate: " << DataName(MY_XML_NAME, u"BitRateCode", bitrate & 0x1F, NamesFlags::VALUE) << ((bitrate & 0x20) == 0 ? "" : " max") << std::endl;
         disp << margin << "Surround mode: " << DataName(MY_XML_NAME, u"SurroundMode", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;

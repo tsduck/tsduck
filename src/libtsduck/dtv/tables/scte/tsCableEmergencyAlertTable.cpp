@@ -381,8 +381,8 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
         buf.setUserError();
     }
     else {
-        disp << margin << UString::Format(u"Protocol version: 0x%X (%<d)", buf.getUInt8()) << std::endl;
-        disp << margin << UString::Format(u"EAS event id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Protocol version: %n", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"EAS event id: %n", buf.getUInt16()) << std::endl;
         disp << margin << "Originator code: \"" << buf.getUTF8(3) << "\"";
         disp << ", event code: \"" << buf.getUTF8WithLength() << "\"" << std::endl;
     }
@@ -396,12 +396,12 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
         disp << UString::Format(u", duration: %d minutes", buf.getUInt16()) << std::endl;
         buf.skipBits(12);
         disp << margin << UString::Format(u"Alert priority: %d", buf.getBits<uint8_t>(4)) << std::endl;
-        disp << margin << UString::Format(u"Details: OOB id: 0x%X (%<d)", buf.getUInt16());
+        disp << margin << UString::Format(u"Details: OOB id: %n", buf.getUInt16());
         buf.skipBits(6);
         disp << ", major.minor: " << buf.getBits<uint16_t>(10);
         buf.skipBits(6);
         disp << "." << buf.getBits<uint16_t>(10) << std::endl;
-        disp << margin << UString::Format(u"Audio: OOB id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Audio: OOB id: %n", buf.getUInt16()) << std::endl;
         disp.displayATSCMultipleString(buf, 2, margin, u"Alert text: ");
     }
 
@@ -438,7 +438,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
         }
         else {
             buf.skipBits(16);
-            disp << UString::Format(u", exception OOB id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << UString::Format(u", exception OOB id: %n", buf.getUInt16()) << std::endl;
         }
     }
 

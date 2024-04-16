@@ -334,14 +334,14 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
             disp << margin << UString::Format(u"    Specifier type: 0x%X", buf.getUInt8());
             disp << UString::Format(u", specifier data (OUI): %s", NameFromOUI(buf.getUInt24(), NamesFlags::HEXA_FIRST)) << std::endl;
-            disp << margin << UString::Format(u"    Model: 0x%X (%<d)", buf.getUInt16());
-            disp << UString::Format(u", version: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"    Model: %n", buf.getUInt16());
+            disp << UString::Format(u", version: %n", buf.getUInt16()) << std::endl;
             const size_t subDescriptorCount = buf.getUInt8();
             disp << margin << UString::Format(u"    Sub-descriptor count: %d", subDescriptorCount) << std::endl;
 
             // Display sub-descriptors. They are not real descriptors, so we display them in hexa.
             for (size_t subdesc_index = 0; buf.canRead() && subdesc_index < subDescriptorCount; ++subdesc_index) {
-                disp << margin << UString::Format(u"    - Sub-descriptor %d, type: 0x%X (%<d)", subdesc_index, buf.getUInt8());
+                disp << margin << UString::Format(u"    - Sub-descriptor %d, type: %n", subdesc_index, buf.getUInt8());
                 size_t length = buf.getUInt8();
                 disp << UString::Format(u", %d bytes", length) << std::endl;
                 length = std::min(length, buf.remainingReadBytes());

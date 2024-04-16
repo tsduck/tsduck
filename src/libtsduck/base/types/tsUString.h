@@ -1951,6 +1951,7 @@ namespace ts {
         //!            If argument os a fixed point value, print its integral part.
         //! - @c \%x : Integer in lowercase hexadecimal. Treated as @c \%s if the argument is a string.
         //! - @c \%X : Integer in uppercase hexadecimal. Treated as @c \%s if the argument is a string.
+        //! - @c \%n : Integer in "normalized" hexadecimal and decimal format. Equivalent to <code>0x%X (%<d)</code>. Treated as @c \%s if the argument is a string.
         //! - @c \%f : Floating or fixed point value. Treated as @c \%s if the argument is a string.
         //! - @c \%\% : Insert a literal \%.
         //!

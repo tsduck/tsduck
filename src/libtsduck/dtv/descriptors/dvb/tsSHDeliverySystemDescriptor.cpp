@@ -243,7 +243,7 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
                 disp << margin << "  Roll off: " << RollOffNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Modulation mode: " << ModulationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Code rate: " << DataName(MY_XML_NAME, u"CodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
-                disp << margin << UString::Format(u"  Symbol rate code: 0x%X (%<d)", buf.getBits<uint8_t>(5)) << std::endl;
+                disp << margin << UString::Format(u"  Symbol rate code: %n", buf.getBits<uint8_t>(5)) << std::endl;
                 buf.skipBits(1);
             }
             if (interleaver && buf.canReadBytes(short_interleaver ? 1 : 4)) {

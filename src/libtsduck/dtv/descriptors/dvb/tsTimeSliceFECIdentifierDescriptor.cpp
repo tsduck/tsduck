@@ -142,7 +142,7 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
             default: disp << UString::Format(u"reserved value 0x%X", frame_size); break;
         }
         disp << std::endl;
-        disp << margin << UString::Format(u"Max burst duration: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Max burst duration: %n", buf.getUInt8()) << std::endl;
         const uint8_t max_average_rate = buf.getBits<uint8_t>(4);
         disp << margin << "Max average rate: ";
         switch (max_average_rate) {
@@ -157,7 +157,7 @@ void ts::TimeSliceFECIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp
             default: disp << UString::Format(u"reserved value 0x%X", max_average_rate); break;
         }
         disp << std::endl;
-        disp << margin << UString::Format(u"Time slice FEC id: 0x%X (%<d)", buf.getBits<uint8_t>(4)) << std::endl;
+        disp << margin << UString::Format(u"Time slice FEC id: %n", buf.getBits<uint8_t>(4)) << std::endl;
         disp.displayPrivateData(u"Id selector bytes", buf, NPOS, margin);
     }
 }
