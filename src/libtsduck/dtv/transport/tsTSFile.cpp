@@ -253,13 +253,13 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         _handle = ::CreateFileW(_filename.c_str(), access, shared, nullptr, winflags, attrib, nullptr);
         if (_handle == INVALID_HANDLE_VALUE) {
             const int err = LastSysErrorCode();
-            report.log(_severity, u"cannot open %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
+            report.log(_severity, u"cannot open %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));
             return false;
         }
         // Move to end of file if --append
         if (append_access && ::SetFilePointer(_handle, 0, nullptr, FILE_END) == INVALID_SET_FILE_POINTER) {
             const int err = LastSysErrorCode();
-            report.log(_severity, u"cannot append to %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
+            report.log(_severity, u"cannot append to %s: %s", getDisplayFileName(), SysErrorCodeMessage(err));
             ::CloseHandle(_handle);
             return false;
         }
@@ -292,7 +292,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         ::LARGE_INTEGER offset(*(::LARGE_INTEGER*)(&_start_offset));
         if (::SetFilePointerEx(_handle, offset, nullptr, FILE_BEGIN) == 0) {
             const int err = LastSysErrorCode();
-            report.log(_severity, u"error seeking file %s: %s", {_filename, SysErrorCodeMessage(err)});
+            report.log(_severity, u"error seeking file %s: %s", _filename, SysErrorCodeMessage(err));
             if (!_filename.empty()) {
                 ::CloseHandle(_handle);
             }
@@ -682,7 +682,7 @@ bool ts::TSFile::writeStream(const void* buffer, size_t data_size, size_t& writt
         }
         else {
             // Write error
-            report.log(_severity, u"error writing %s: %s", {getDisplayFileName(), SysErrorCodeMessage(errcode)});
+            report.log(_severity, u"error writing %s: %s", getDisplayFileName(), SysErrorCodeMessage(errcode));
             return false;
         }
     }

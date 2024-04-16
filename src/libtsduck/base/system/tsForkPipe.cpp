@@ -116,7 +116,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         sa.lpSecurityDescriptor = 0;
         sa.bInheritHandle = true;
         if (::CreatePipe(&read_handle, &write_handle, &sa, bufsize) == 0) {
-            report.error(u"error creating pipe: %s", {SysErrorCodeMessage()});
+            report.error(u"error creating pipe: %s", SysErrorCodeMessage());
             return false;
         }
 
@@ -152,7 +152,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             // Open the null device for reading.
             null_handle = ::CreateFileA("NUL:", GENERIC_READ, FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
             if (null_handle == INVALID_HANDLE_VALUE) {
-                report.error(u"error opening NUL: %s", {SysErrorCodeMessage()});
+                report.error(u"error opening NUL: %s", SysErrorCodeMessage());
                 if (_use_pipe) {
                     ::CloseHandle(read_handle);
                     ::CloseHandle(write_handle);
@@ -219,7 +219,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     // Create the process
     ::PROCESS_INFORMATION pi;
     if (::CreateProcessW(nullptr, cmdp, nullptr, nullptr, true, 0, nullptr, nullptr, &si, &pi) == 0) {
-        report.error(u"error creating process: %s", {SysErrorCodeMessage()});
+        report.error(u"error creating process: %s", SysErrorCodeMessage());
         if (_use_pipe) {
             ::CloseHandle(read_handle);
             ::CloseHandle(write_handle);
@@ -479,7 +479,7 @@ bool ts::ForkPipe::close(Report& report)
 
     // Wait for termination of child process
     if (_wait_mode == SYNCHRONOUS && ::WaitForSingleObject(_process, INFINITE) != WAIT_OBJECT_0) {
-        report.error(u"error waiting for process termination: %s", {SysErrorCodeMessage()});
+        report.error(u"error waiting for process termination: %s", SysErrorCodeMessage());
         result = false;
     }
 
@@ -673,7 +673,7 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
     }
     else {
         // This is a real error.
-        report.error(u"error reading from pipe: %s", {SysErrorCodeMessage(errcode)});
+        report.error(u"error reading from pipe: %s", SysErrorCodeMessage(errcode));
         return false;
     }
 

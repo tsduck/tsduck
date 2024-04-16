@@ -124,10 +124,10 @@ int main(int argc, char* argv[])
     // Get the Path value.
     ts::UString path(ts::Registry::GetValue(ts::Registry::SystemEnvironmentKey, opt.environment, opt));
     if (path.empty() && opt.environment.similar(u"Path")) {
-        opt.fatal(u"cannot get path from registry: %s\\%s", {ts::Registry::SystemEnvironmentKey, opt.environment});
+        opt.fatal(u"cannot get path from registry: %s\\%s", ts::Registry::SystemEnvironmentKey, opt.environment);
     }
     if (opt.dryRun) {
-        opt.info(u"Previous %s value: %s", {opt.environment, path});
+        opt.info(u"Previous %s value: %s", opt.environment, path);
     }
 
     // Split the Path into a list of clean directories.
@@ -163,13 +163,13 @@ int main(int argc, char* argv[])
         path.append(ts::SEARCH_PATH_SEPARATOR);
     }
     if (opt.dryRun) {
-        opt.info(u"New %s value: %s", {opt.environment, path});
+        opt.info(u"New %s value: %s", opt.environment, path);
     }
     else {
         // Update the Path in the registry.
         // Always set type as REG_EXPAND_SZ, in case there is a variable reference in the add path.
         if (!ts::Registry::SetValue(ts::Registry::SystemEnvironmentKey, opt.environment, path, true, opt)) {
-            opt.fatal(u"error setting path in registry: %s\\%s", {ts::Registry::SystemEnvironmentKey, opt.environment});
+            opt.fatal(u"error setting path in registry: %s\\%s", ts::Registry::SystemEnvironmentKey, opt.environment);
         }
 
         // Notify all applications that the Path was updated.

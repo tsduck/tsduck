@@ -92,7 +92,7 @@ void ts::DirectShowGraph::clear(Report& report)
 
 bool ts::DirectShowGraph::addFilter(::IBaseFilter* filter, const wchar_t* name, Report& report)
 {
-    report.debug(u"adding filter \"%s\", graph valid: %s, filter not null: %s", {ToString(name), isValid(), filter != nullptr});
+    report.debug(u"adding filter \"%s\", graph valid: %s, filter not null: %s", ToString(name), isValid(), filter != nullptr);
 
     if (isValid() && filter != nullptr) {
         const ::HRESULT hr = _graph_builder->AddFilter(filter, name != 0 ? name : L"");

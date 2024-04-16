@@ -72,14 +72,14 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
     _ituner.queryInterface(_provider_filter.pointer(), ::IID_ITuner, report);
     _ituner_cap.queryInterface(_provider_filter.pointer(), ::IID_ITunerCap, debug_report);
     if (_provider_filter.isNull() || _inet_provider.isNull() || _ituner.isNull() || _ituner_cap.isNull()) {
-        report.debug(u"failed to create an instance of network provider for \"%s\"", {_tuner_name});
+        report.debug(u"failed to create an instance of network provider for \"%s\"", _tuner_name);
         return false;
     }
 
     // Create an instance of tuner from moniker
     _tuner_filter.bindToObject(tuner_moniker, ::IID_IBaseFilter, report);
     if (_tuner_filter.isNull()) {
-        report.debug(u"failed to create an instance of BDA tuner for \"%s\"", {_tuner_name});
+        report.debug(u"failed to create an instance of BDA tuner for \"%s\"", _tuner_name);
         return false;
     }
 
@@ -89,7 +89,7 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
         !addFilter(_tuner_filter.pointer(), L"Tuner", report) ||
         !connectFilters(_provider_filter.pointer(), _tuner_filter.pointer(), report))
     {
-        report.debug(u"failed to initiate the graph with network provider => tuner for \"%s\"", {_tuner_name});
+        report.debug(u"failed to initiate the graph with network provider => tuner for \"%s\"", _tuner_name);
         clear(report);
         return false;
     }
@@ -105,7 +105,7 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
         return false;
     }
     else if (net_count == 0) {
-        report.error(u"tuner \"%s\" did not return any supported network type", {_tuner_name});
+        report.error(u"tuner \"%s\" did not return any supported network type", _tuner_name);
         clear(report);
         return false;
     }
@@ -114,7 +114,7 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
     for (size_t net_index = 0; net_index < net_count; ++net_index) {
         DirectShowNetworkType net;
         if (!net.initialize(net_types[net_index], report)) {
-            report.debug(u"failed to set network type %s", {NameGUID(net_types[net_index])});
+            report.debug(u"failed to set network type %s", NameGUID(net_types[net_index]));
         }
         else {
             // Add the delivery systems for the network type to the tuner.
@@ -126,14 +126,14 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
 
     // Check that we have at least one network type.
     if (_net_types.empty()) {
-        report.error(u"tuner \"%s\" failed to support all network types", {_tuner_name});
+        report.error(u"tuner \"%s\" failed to support all network types", _tuner_name);
         clear(report);
         return false;
     }
 
     bool graph_done = false;
     bool user_receiver_found = false;
-    report.debug(u"user-specified receiver filter name: \"%s\"", {_user_receiver_name});
+    report.debug(u"user-specified receiver filter name: \"%s\"", _user_receiver_name);
 
     // Try to build the rest of the graph starting at tuner filter, without receiver filter.
     // Usually work with Terratec driver for instance.
@@ -165,7 +165,7 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
 
             // Try this receiver if there is no user-specified one or it is the user-specified one.
             if (_user_receiver_name.empty() || user_receiver_found) {
-                report.debug(u"trying receiver filter \"%s\"", {receiver_name});
+                report.debug(u"trying receiver filter \"%s\"", receiver_name);
 
                 // Create an instance of this receiver filter from moniker
                 ComPtr<::IBaseFilter> receiver_filter;
@@ -189,14 +189,14 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
                 // Try to build the rest of the graph
                 if (buildGraphAtTee(receiver_filter, report)) {
                     graph_done = true;
-                    report.debug(u"using receiver filter \"%s\"", {receiver_name});
+                    report.debug(u"using receiver filter \"%s\"", receiver_name);
                 }
             }
         }
     }
     if (!graph_done) {
         if (!_user_receiver_name.empty() && !user_receiver_found) {
-            report.error(u"receiver filter \"%s\" not found", {_user_receiver_name});
+            report.error(u"receiver filter \"%s\" not found", _user_receiver_name);
         }
         clear(report);
         return false;
@@ -242,10 +242,10 @@ bool ts::TunerGraph::initialize(const UString& tuner_name, ::IMoniker* tuner_mon
         }
     }
 
-    report.debug(u"IBDA_DigitalDemodulator in tuner: %d", {_demods.size()});
-    report.debug(u"IBDA_DigitalDemodulator2 in tuner: %d", {_demods2.size()});
-    report.debug(u"IBDA_SignalStatistics in tuner: %d", {_sigstats.size()});
-    report.debug(u"IKsPropertySet in tuner: %d", {_tunprops.size()});
+    report.debug(u"IBDA_DigitalDemodulator in tuner: %d", _demods.size());
+    report.debug(u"IBDA_DigitalDemodulator2 in tuner: %d", _demods2.size());
+    report.debug(u"IBDA_SignalStatistics in tuner: %d", _sigstats.size());
+    report.debug(u"IKsPropertySet in tuner: %d", _tunprops.size());
 
     return true;
 }
@@ -374,7 +374,7 @@ bool ts::TunerGraph::buildGraphAtTIF(const ComPtr <::IBaseFilter>& demux, Report
 
         // Get friendly name of this TIF
         UString tif_name(GetStringPropertyBag(tif_moniker.pointer(), L"FriendlyName", report));
-        report.debug(u"trying TIF \"%s\"", {tif_name});
+        report.debug(u"trying TIF \"%s\"", tif_name);
 
         // Create an instance of this TIF from moniker
         tif.bindToObject(tif_moniker.pointer(), ::IID_IBaseFilter, report);
@@ -431,7 +431,7 @@ bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& pa
     const TunerType ttype = TunerTypeOf(params.delivery_system.value());
     const auto it = _net_types.find(ttype);
     if (it == _net_types.end()) {
-        duck.report().error(u"tuner \"%s\" does not support %s", {_tuner_name, TunerTypeEnum.name(ttype)});
+        duck.report().error(u"tuner \"%s\" does not support %s", _tuner_name, TunerTypeEnum.name(ttype));
         return false;
     }
 
