@@ -2135,6 +2135,7 @@ void ts::UString::ArgMixInContext::processArg()
     // - %d : Integer in decimal.
     // - %x : Integer in lowercase hexadecimal.
     // - %X : Integer in uppercase hexadecimal.
+    // - %n : Integer in "uppercase "normalized" hexadecimal and decimal format.
     // - %f : Floating point value.
     // - %% : Insert a literal % (already done).
 
@@ -2145,7 +2146,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // Process invalid '%' sequence.
-    if (cmd != u's' && cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X' && cmd != u'f') {
+    if (cmd != u's' && cmd != u'c' && cmd != u'd' && cmd != u'x' && cmd != u'X' && cmd != u'n' && cmd != u'f') {
         if (debugActive()) {
             debug(u"invalid '%' sequence", cmd);
         }
@@ -2172,10 +2173,10 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // Now, the command is valid, process it.
-    if (argit->isAnyString() || ((argit->isBool() || argit->isChrono()) && cmd == u's')) {
+    if (argit->isAnyString() || ((argit->isBool() || argit->isChrono()) && cmd == u's') || ((argit->isInteger() || argit->isAbstractNumber()) && cmd == u'n')) {
         // String arguments are always treated as %s, regardless of the % command.
         // Also if a bool is specified as %s, print true or false.
-        if (cmd != u's' && debugActive()) {
+        if (argit->isAnyString() && cmd != u's' && debugActive()) {
             debug(u"type mismatch, got a string", cmd);
         }
         // Get the string parameter.
@@ -2196,6 +2197,17 @@ void ts::UString::ArgMixInContext::processArg()
             const size_t ulen = units.length();
             value.assign(Decimal(ivalue, minWidth < ulen ? 0 : minWidth - ulen, !leftJustified, separator, forceSign, pad));
             value.append(units);
+        }
+        else if (cmd == u'n') {
+            // Format the string from a number.
+            // 4 possible formats, 2-bit index: forceSign || useSeparator
+            static const UChar* const formats[4] = {
+                u"0x%X (%<d)",     // 0b00
+                u"0x%'X (%<'d)",   // 0b01 -> useSeparator
+                u"0x%+X (%<+d)",   // 0b10 -> forceSign
+                u"0x%+'X (%<+'d)"  // 0b11 -> forceSign && useSeparator
+            };
+            value.formatHelper(formats[(int(forceSign) << 1) | int(useSeparator)], {*argit});
         }
         else {
             // Not a string, should not get there.

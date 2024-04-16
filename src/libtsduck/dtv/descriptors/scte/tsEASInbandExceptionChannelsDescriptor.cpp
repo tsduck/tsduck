@@ -91,7 +91,7 @@ void ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor(TablesDisplay& 
         disp << margin << UString::Format(u"Exception channel count: %d", count) << std::endl;
         while (buf.canReadBytes(3) && count-- > 0) {
             disp << margin << UString::Format(u"  RF channel: %d", buf.getUInt8());
-            disp << UString::Format(u", program number 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << UString::Format(u", program number %n", buf.getUInt16()) << std::endl;
         }
     }
 }

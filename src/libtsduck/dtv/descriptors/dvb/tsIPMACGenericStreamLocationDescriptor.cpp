@@ -86,11 +86,11 @@ void ts::IPMACGenericStreamLocationDescriptor::deserializePayload(PSIBuffer& buf
 void ts::IPMACGenericStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(7)) {
-        disp << margin << UString::Format(u"Interactive network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Interactive network id: %n", buf.getUInt16()) << std::endl;
         const uint8_t systype = buf.getUInt8();
         disp << margin << UString::Format(u"Modulation system type: 0x%X (%s)", systype, ModulationTypeNames.name(systype)) << std::endl;
-        disp << margin << UString::Format(u"Modulation system id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Physical stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Modulation system id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Physical stream id: %n", buf.getUInt16()) << std::endl;
         disp.displayPrivateData(u"Selector bytes", buf, NPOS, margin);
     }
 }

@@ -219,7 +219,7 @@ void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
             lang2_flag = buf.getBool();
             buf.skipBits(1);
             if (bsid_flag) {
-                disp << margin << UString::Format(u"Bit stream id (bsid): 0x%X (%<d)", buf.getBits<uint8_t>(5)) << std::endl;
+                disp << margin << UString::Format(u"Bit stream id (bsid): %n", buf.getBits<uint8_t>(5)) << std::endl;
             }
             else {
                 buf.skipBits(5);
@@ -228,19 +228,19 @@ void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
         if (mainid_flag && buf.canRead()) {
             buf.skipBits(3);
             disp << margin << UString::Format(u"Priority: %d", buf.getBits<uint8_t>(2)) << std::endl;
-            disp << margin << UString::Format(u"Main id: 0x%X (%<d)", buf.getBits<uint8_t>(3)) << std::endl;
+            disp << margin << UString::Format(u"Main id: %n", buf.getBits<uint8_t>(3)) << std::endl;
         }
         if (asvc_flag && buf.canRead()) {
-            disp << margin << UString::Format(u"Associated service (asvc): 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Associated service (asvc): %n", buf.getUInt8()) << std::endl;
         }
         if (sub1_flag && buf.canRead()) {
-            disp << margin << UString::Format(u"Substream 1: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Substream 1: %n", buf.getUInt8()) << std::endl;
         }
         if (sub2_flag && buf.canRead()) {
-            disp << margin << UString::Format(u"Substream 2: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Substream 2: %n", buf.getUInt8()) << std::endl;
         }
         if (sub3_flag && buf.canRead()) {
-            disp << margin << UString::Format(u"Substream 3: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Substream 3: %n", buf.getUInt8()) << std::endl;
         }
         if (lang_flag && buf.canReadBytes(3)) {
             disp << margin << "Language: \"" << buf.getLanguageCode() << "\"" << std::endl;

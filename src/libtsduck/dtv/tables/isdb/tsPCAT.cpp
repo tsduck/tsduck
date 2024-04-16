@@ -214,17 +214,17 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Service id: 0x%X (%<d)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(9)) {
-        disp << margin << UString::Format(u"Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Content id: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Content id: %n", buf.getUInt32()) << std::endl;
 
         // Loop across all content versions.
         for (size_t version_count = buf.getUInt8(); buf.canReadBytes(8) && version_count > 0; version_count--) {
-            disp << margin << UString::Format(u"- Content version: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-            disp << margin << UString::Format(u"  Content minor version: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"- Content version: %n", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Content minor version: %n", buf.getUInt16()) << std::endl;
             disp << margin << "  Version indicator: " << DataName(MY_XML_NAME, u"VersionIndicator", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
             buf.skipBits(2);
 

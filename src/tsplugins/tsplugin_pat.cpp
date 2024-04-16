@@ -136,7 +136,7 @@ void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 {
     // Warn about non-PAT tables in the PAT PID but keep them.
     if (table.tableId() != TID_PAT) {
-        tsp->warning(u"found table id 0x%X (%<d) in the PAT PID", table.tableId());
+        tsp->warning(u"found table id %n in the PAT PID", table.tableId());
         is_target = false;
         return;
     }

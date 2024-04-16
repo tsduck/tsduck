@@ -363,7 +363,7 @@ void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& disp, PSIBu
         }
         disp << std::endl;
         if (ttype == 0x02 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Bouquet id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Bouquet id: %n", buf.getUInt16()) << std::endl;
         }
     }
 }

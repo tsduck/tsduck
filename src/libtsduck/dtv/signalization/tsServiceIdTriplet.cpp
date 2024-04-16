@@ -28,7 +28,7 @@ void ts::ServiceIdTriplet::clear()
 ts::UString ts::ServiceIdTriplet::toString() const
 {
     UString str;
-    str.format(u"service: 0x%X (%<d), TS: 0x%X (%<d), network: 0x%X (%<d)", service_id, transport_stream_id, original_network_id);
+    str.format(u"service: %n, TS: %n, network: %n", service_id, transport_stream_id, original_network_id);
     if (version != 0) {
         // Default version 0 does not matter in most cases.
         str.format(u", version %d", version);

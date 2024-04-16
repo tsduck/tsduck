@@ -86,10 +86,10 @@ void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
-        disp << margin << UString::Format(u"CA broadcaster group id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"CA broadcaster group id: %n", buf.getUInt8()) << std::endl;
         disp << margin << UString::Format(u"Delay time: %d days", buf.getUInt8()) << std::endl;
         while (buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
         }
     }
 }

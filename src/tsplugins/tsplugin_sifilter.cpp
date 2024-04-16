@@ -205,7 +205,7 @@ void ts::SIFilterPlugin::processPAT(const PAT& pat)
         }
         // Pass this PMT PID if PMT are required
         if (_pass_pmt && !_pass_pids[it.second]) {
-            tsp->verbose(u"Filtering PMT PID 0x%X (%<d)", it.second);
+            tsp->verbose(u"Filtering PMT PID %n", it.second);
             _pass_pids.set(it.second);
         }
     }

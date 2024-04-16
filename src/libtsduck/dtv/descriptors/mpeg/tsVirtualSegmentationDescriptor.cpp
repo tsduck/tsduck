@@ -170,7 +170,7 @@ void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, P
             disp << UString::Format(u", SAP type max: %d", buf.getBits<uint8_t>(3)) << std::endl;
             if (!explicit_boundary_flag) {
                 buf.skipBits(5);
-                disp << margin << UString::Format(u"  Boundary PID: 0x%X (%<d)", buf.getBits<uint16_t>(13)) << std::endl;
+                disp << margin << UString::Format(u"  Boundary PID: %n", buf.getBits<uint16_t>(13)) << std::endl;
                 buf.skipBits(3);
             }
             else if (buf.remainingReadBits() < mdl * 8 + 5) {

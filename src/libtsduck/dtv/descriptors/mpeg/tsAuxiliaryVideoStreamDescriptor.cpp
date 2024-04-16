@@ -280,7 +280,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::display(TablesDisplay&
 void ts::AuxiliaryVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Auxiliary video code stream type: 0x%X (%<d)",  buf.getUInt8() ) << std::endl;
+        disp << margin << UString::Format(u"Auxiliary video code stream type: %n",  buf.getUInt8() ) << std::endl;
         while (buf.canReadBytes(2)) {
             si_message_type d;
             d.display(disp, buf, margin);

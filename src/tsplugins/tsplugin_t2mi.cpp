@@ -231,7 +231,7 @@ bool ts::T2MIPlugin::stop()
         for (const auto& it : _identified) {
             const PID pid = it.first;
             const PLPSet& plps(it.second);
-            UString line(UString::Format(u"PID 0x%X (%<d): ", pid));
+            UString line(UString::Format(u"PID %n: ", pid));
             bool first = true;
             for (size_t plp = 0; plp < plps.size(); ++plp) {
                 if (plps.test(plp)) {
@@ -259,7 +259,7 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
     // Found a new PID carrying T2-MI. Use it by default for extraction.
     if (!_extract_pid.has_value()) {
         if (_extract || _log) {
-            tsp->verbose(u"using PID 0x%X (%<d) to extract T2-MI stream", pid);
+            tsp->verbose(u"using PID %n to extract T2-MI stream", pid);
         }
         _extract_pid = pid;
         _demux.addPID(pid);
@@ -267,7 +267,7 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
 
     // Report all new PID's with --identify.
     if (_identify) {
-        tsp->info(u"found T2-MI PID 0x%X (%<d)", pid);
+        tsp->info(u"found T2-MI PID %n", pid);
         // Demux all T2-MI PID's to identify all PLP's.
         _demux.addPID(pid);
         // Make sure the PID is identified, even if no PLP is found.
@@ -290,9 +290,9 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
     if (_log && _extract_pid == pid) {
         UString plpInfo;
         if (hasPLP) {
-            plpInfo = UString::Format(u", PLP: 0x%X (%<d)", plp);
+            plpInfo = UString::Format(u", PLP: %n", plp);
         }
-        tsp->info(u"PID 0x%X (%<d), packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
+        tsp->info(u"PID %n, packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
                   pid, NameFromDTV(u"t2mi.packet_type", pkt.packetType(), NamesFlags::HEXA_FIRST),
                   pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo);
     }
@@ -302,7 +302,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         if (!_extract_plp.has_value()) {
             // The PLP was not yet specified, use this one by default.
             _extract_plp = plp;
-            tsp->verbose(u"extracting PLP 0x%X (%<d)", plp);
+            tsp->verbose(u"extracting PLP %n", plp);
         }
         if (_extract_plp == plp) {
             // Count input T2-MI packets.
@@ -315,7 +315,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         PLPSet& plps(_identified[pid]);
         if (!plps.test(plp)) {
             plps.set(plp);
-            tsp->info(u"PID 0x%X (%<d), found PLP %d", pid, plp);
+            tsp->info(u"PID %n, found PLP %d", pid, plp);
         }
     }
 

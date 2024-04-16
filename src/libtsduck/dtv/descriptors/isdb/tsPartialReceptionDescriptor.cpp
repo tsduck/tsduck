@@ -75,7 +75,7 @@ void ts::PartialReceptionDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::PartialReceptionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
     }
 }
 

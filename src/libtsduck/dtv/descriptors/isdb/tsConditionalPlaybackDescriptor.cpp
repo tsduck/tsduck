@@ -75,7 +75,7 @@ void ts::ConditionalPlaybackDescriptor::DisplayDescriptor(TablesDisplay& disp, P
     if (buf.canReadBytes(4)) {
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
         const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
-        disp << margin << UString::Format(u"%s PID: 0x%X (%<d)", dtype, buf.getPID()) << std::endl;
+        disp << margin << UString::Format(u"%s PID: %n", dtype, buf.getPID()) << std::endl;
         disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);
     }
 }

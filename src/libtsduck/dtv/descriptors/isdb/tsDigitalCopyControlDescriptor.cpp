@@ -129,7 +129,7 @@ void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         if (comp_flag) {
             buf.pushReadSizeFromLength(8); // component_control_length
             while (buf.canReadBytes(2)) {
-                disp << margin << UString::Format(u"- Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+                disp << margin << UString::Format(u"- Component tag: %n", buf.getUInt8()) << std::endl;
                 disp << margin << "  Recording control: " << DataName(MY_XML_NAME, u"CopyControl", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
                 const bool bflag = buf.getBool();
                 buf.skipBits(1);

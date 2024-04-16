@@ -66,7 +66,7 @@ void ts::DVBTimeShiftedServiceDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DVBTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Reference service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Reference service id: %n", buf.getUInt16()) << std::endl;
     }
 }
 

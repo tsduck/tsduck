@@ -82,7 +82,7 @@ void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, P
         disp << margin << "Availability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(7);
         while (buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Cell id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Cell id: %n", buf.getUInt16()) << std::endl;
         }
     }
 }

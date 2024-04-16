@@ -116,16 +116,16 @@ void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
         size_t count = buf.getBits<size_t>(4);
         disp << margin << "Actual events:" << (count == 0 ? " none" : "") << std::endl;
         while (count-- > 0 && buf.canReadBytes(4)) {
-            disp << margin << UString::Format(u"- Service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-            disp << margin << UString::Format(u"  Event id:   0x%X (%<d)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"- Service id: %n", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"  Event id:   %n", buf.getUInt16()) << std::endl;
         }
         if (type == 4 || type == 5) {
             disp << margin << "Other networks events:" << (buf.canReadBytes(8) ? "" : " none") << std::endl;
             while (buf.canReadBytes(8)) {
-                disp << margin << UString::Format(u"- Original network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-                disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-                disp << margin << UString::Format(u"  Service id:          0x%X (%<d)", buf.getUInt16()) << std::endl;
-                disp << margin << UString::Format(u"  Event id:            0x%X (%<d)", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"- Original network id: %n", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Transport stream id: %n", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Service id:          %n", buf.getUInt16()) << std::endl;
+                disp << margin << UString::Format(u"  Event id:            %n", buf.getUInt16()) << std::endl;
             }
         }
         else {

@@ -554,7 +554,7 @@ bool ts::PMT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = e->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF);
         if (ok) {
             if (Contains(streams, pid)) {
-                element->report().error(u"line %d: in <%s>, duplicated <%s> for PID 0x%X (%<d)", e->lineNumber(), element->name(), e->name(), pid);
+                element->report().error(u"line %d: in <%s>, duplicated <%s> for PID %n", e->lineNumber(), element->name(), e->name(), pid);
                 ok = false;
             }
             else {

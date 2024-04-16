@@ -242,21 +242,21 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         switch (utype) {
             case new_genre_category: {
                 if (buf.canReadBytes(1)) {
-                    disp << margin << UString::Format(u"  Genre category code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+                    disp << margin << UString::Format(u"  Genre category code: %n", buf.getUInt8()) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"Genre category name: ");
                 }
                 break;
             }
             case new_state: {
                 if (buf.canReadBytes(1)) {
-                    disp << margin << UString::Format(u"  DCC state location code: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+                    disp << margin << UString::Format(u"  DCC state location code: %n", buf.getUInt8()) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"DCC state location: ");
                 }
                 break;
             }
             case new_county: {
                 if (buf.canReadBytes(3)) {
-                    disp << margin << UString::Format(u"  State code: 0x%X (%<d)", buf.getUInt8());
+                    disp << margin << UString::Format(u"  State code: %n", buf.getUInt8());
                     buf.skipBits(6);
                     disp << UString::Format(u", DCC county location code: 0x%03X (%<d)", buf.getBits<uint16_t>(10)) << std::endl;
                     disp.displayATSCMultipleString(buf, 0, margin + u"  ", u"DCC county location: ");

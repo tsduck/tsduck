@@ -384,7 +384,7 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
                 // For this time only, we keep the extrapolated PCR.
                 // Compute the difference between PCR and RTP timestamps.
                 _rtp_pcr_offset = pcr - rtp_pcr;
-                report.verbose(u"RTP timestamps resynchronized with PCR PID 0x%X (%<d)", _pcr_pid);
+                report.verbose(u"RTP timestamps resynchronized with PCR PID %n", _pcr_pid);
                 report.debug(u"new PCR-RTP offset: %d", _rtp_pcr_offset);
             }
             else {

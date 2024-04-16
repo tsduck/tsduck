@@ -105,8 +105,8 @@ const ts::Enumeration ts::C2DeliverySystemDescriptor::C2GuardIntervalNames({
 void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(7)) {
-        disp << margin << UString::Format(u"PLP id: 0x%X (%<d)", buf.getUInt8());
-        disp << UString::Format(u", data slice id: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"PLP id: %n", buf.getUInt8());
+        disp << UString::Format(u", data slice id: %n", buf.getUInt8()) << std::endl;
         disp << margin << UString::Format(u"Frequency: %'d Hz (0x%<X)", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"Tuning frequency type: %s", DataName(MY_XML_NAME, u"C2TuningType", buf.getBits<uint8_t>(2), NamesFlags::FIRST)) << std::endl;
         disp << margin << UString::Format(u"Symbol duration: %s", DataName(MY_XML_NAME, u"C2SymbolDuration", buf.getBits<uint8_t>(3), NamesFlags::FIRST)) << std::endl;

@@ -126,7 +126,7 @@ void ts::MVCOperationPointDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::MVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Profile IDC: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Profile IDC: %n", buf.getUInt8()) << std::endl;
         disp << margin << UString::Format(u"Constraint set: 0:%s", buf.getBool());
         disp << UString::Format(u", 1:%s", buf.getBool());
         disp << UString::Format(u", 2:%s", buf.getBool());
@@ -138,7 +138,7 @@ void ts::MVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
         disp << margin << UString::Format(u"Level count: %d", level_count) << std::endl;
 
         while (level_count-- > 0 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"- Level IDC: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"- Level IDC: %n", buf.getUInt8()) << std::endl;
             uint8_t points_count = buf.getUInt8();
             disp << margin << UString::Format(u"  Operation points count: %d", points_count) << std::endl;
             while (points_count-- > 0 && buf.canReadBytes(3)) {
@@ -149,7 +149,7 @@ void ts::MVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
                 disp << margin << UString::Format(u"    ES count: %d", ES_count) << std::endl;
                 while (ES_count-- > 0 && buf.canReadBytes(1)) {
                     buf.skipBits(2);
-                    disp << margin << UString::Format(u"    ES reference: 0x%X (%<d)", buf.getBits<uint8_t>(6)) << std::endl;
+                    disp << margin << UString::Format(u"    ES reference: %n", buf.getBits<uint8_t>(6)) << std::endl;
                 }
             }
         }

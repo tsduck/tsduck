@@ -299,7 +299,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     // Check table id.
     const TID tid = section[0];
     if (tid != TID_TDT && tid != TID_TOT) {
-        tsp->warning(u"found table_id 0x%X (%<d) in TDT/TOT PID", tid);
+        tsp->warning(u"found table_id %n in TDT/TOT PID", tid);
         return;
     }
 

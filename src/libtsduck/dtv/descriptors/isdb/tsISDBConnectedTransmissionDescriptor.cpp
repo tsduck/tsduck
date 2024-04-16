@@ -88,7 +88,7 @@ void ts::ISDBConnectedTransmissionDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ISDBConnectedTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"Connected transmission group id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Connected transmission group id: %n", buf.getUInt16()) << std::endl;
         disp << margin << "Segment type: " << DataName(MY_XML_NAME, u"segment_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         disp << margin << "Modulation type A: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         disp << margin << "Modulation type B: " << DataName(MY_XML_NAME, u"modulation_type", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;

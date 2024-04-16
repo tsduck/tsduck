@@ -137,7 +137,7 @@ void ts::NPTReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 {
     if (buf.canReadBytes(18)) {
         disp << margin << "Post discontinuity: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        disp << margin << UString::Format(u"Content id: 0x%X (%<d)", buf.getBits<uint8_t>(7)) << std::endl;
+        disp << margin << UString::Format(u"Content id: %n", buf.getBits<uint8_t>(7)) << std::endl;
         buf.skipBits(7);
         disp << margin << UString::Format(u"STC reference: 0x%09X (%<d)", buf.getBits<uint64_t>(33)) << std::endl;
         buf.skipBits(31);

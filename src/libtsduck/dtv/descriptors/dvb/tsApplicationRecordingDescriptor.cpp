@@ -143,7 +143,7 @@ void ts::ApplicationRecordingDescriptor::DisplayDescriptor(TablesDisplay& disp, 
     if (buf.canReadBytes(1)) {
         uint8_t count = buf.getUInt8();
         while (count > 0 && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
             count--;
         }
     }

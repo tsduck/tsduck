@@ -73,9 +73,9 @@ void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 {
     if (buf.canReadBytes(6)) {
         buf.skipBits(2);
-        disp << margin << UString::Format(u"Smoothing buffer leak rate: 0x%X (%<d) x 400 b/s", buf.getBits<uint32_t>(22)) << std::endl;
+        disp << margin << UString::Format(u"Smoothing buffer leak rate: %n x 400 b/s", buf.getBits<uint32_t>(22)) << std::endl;
         buf.skipBits(2);
-        disp << margin << UString::Format(u"Smoothing buffer size: 0x%X (%<d) bytes", buf.getBits<uint32_t>(22)) << std::endl;
+        disp << margin << UString::Format(u"Smoothing buffer size: %n bytes", buf.getBits<uint32_t>(22)) << std::endl;
     }
 }
 

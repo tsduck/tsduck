@@ -249,7 +249,7 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                     const PID pid = it.second;
                     _demux.addPID(pid);
                     getContext(pid)->psi = true;
-                    tsp->debug(u"Adding PMT PID 0x%X (%<d)", pid);
+                    tsp->debug(u"Adding PMT PID %n", pid);
                 }
             }
             break;
@@ -258,13 +258,13 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             const PMT pmt(duck, table);
             if (pmt.isValid()) {
                 // Collect all component PID's.
-                tsp->debug(u"Found PMT in PID 0x%X (%<d)", table.sourcePID());
+                tsp->debug(u"Found PMT in PID %n", table.sourcePID());
                 for (const auto& it : pmt.streams) {
                     const PID pid = it.first;
                     const PIDContextPtr pc(getContext(pid));
                     pc->audio = it.second.isAudio(duck);
                     pc->video = it.second.isVideo(duck);
-                    tsp->debug(u"Found component PID 0x%X (%<d)", pid);
+                    tsp->debug(u"Found component PID %n", pid);
                 }
             }
             break;
@@ -406,7 +406,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
         if (drop) {
             if (pc->dropCount++ == 0) {
                 // First time we drop packets in this PID.
-                tsp->verbose(u"starting to drop packets on PID 0x%X (%<d)", pid);
+                tsp->verbose(u"starting to drop packets on PID %n", pid);
             }
             _excessPackets--;
             status = TSP_DROP;

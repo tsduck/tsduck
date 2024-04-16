@@ -71,7 +71,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
     // Select first PID with PCR's when unspecified by user.
     if (has_pcr && _pid == PID_NULL) {
         _pid = pid;
-        _report->log(_log_level, u"using PID 0x%X (%<d) for PCR reference", pid);
+        _report->log(_log_level, u"using PID %n for PCR reference", pid);
     }
 
     // Do something only on PCR's from the reference PID.

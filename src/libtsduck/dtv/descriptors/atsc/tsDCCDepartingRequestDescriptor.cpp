@@ -69,7 +69,7 @@ void ts::DCCDepartingRequestDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"DCC departing request type: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"DCC departing request type: %n", buf.getUInt8()) << std::endl;
         disp.displayATSCMultipleString(buf, 1, margin, u"DCC departing request text: ");
     }
 }

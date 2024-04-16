@@ -113,18 +113,18 @@ void ts::HEVCHierarchyExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp
                 disp << margin << "  Bit " << bit << ": " << DataName(MY_XML_NAME, u"ExtensionDimensionBits", bit) << std::endl;
             }
         }
-        disp << margin << UString::Format(u"Hierarchy layer index: 0x%X (%<d)", buf.getBits<uint8_t>(6)) << std::endl;
+        disp << margin << UString::Format(u"Hierarchy layer index: %n", buf.getBits<uint8_t>(6)) << std::endl;
         disp << margin << UString::Format(u"Temporal id: %d", buf.getBits<uint8_t>(3)) << std::endl;
-        disp << margin << UString::Format(u"NUH layer id: 0x%X (%<d)", buf.getBits<uint8_t>(6)) << std::endl;
+        disp << margin << UString::Format(u"NUH layer id: %n", buf.getBits<uint8_t>(6)) << std::endl;
         disp << margin << UString::Format(u"TREF present: %s", buf.getBool()) << std::endl;
         buf.skipBits(2);
         const size_t num_embedded_layers = buf.getBits<uint8_t>(6);
         disp << margin << UString::Format(u"Number of embedded layers: %d", num_embedded_layers) << std::endl;
         buf.skipBits(2);
-        disp << margin << UString::Format(u"Hierarchy channel: 0x%X (%<d)", buf.getBits<uint8_t>(6)) << std::endl;
+        disp << margin << UString::Format(u"Hierarchy channel: %n", buf.getBits<uint8_t>(6)) << std::endl;
         for (size_t i = 0; i < num_embedded_layers && buf.canReadBytes(1); ++i) {
             buf.skipBits(2);
-            disp << margin << UString::Format(u"Hierarchy embeddedlayer index[%d]: 0x%X (%<d)", i, buf.getBits<uint8_t>(6)) << std::endl;
+            disp << margin << UString::Format(u"Hierarchy embeddedlayer index[%d]: %n", i, buf.getBits<uint8_t>(6)) << std::endl;
         }
     }
 }

@@ -412,7 +412,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                     _pmtPID = pat.pmts.begin()->second;
                     _demux.addPID(_pmtPID);
                     _ccFixer.addPID(_pmtPID);
-                    tsp->verbose(u"using service id 0x%X (%<d) as reference, PMT PID 0x%X (%<d)", srv, _pmtPID);
+                    tsp->verbose(u"using service id %n as reference, PMT PID %n", srv, _pmtPID);
                 }
             }
             break;
@@ -423,11 +423,11 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                 packets = &_pmtPackets;
                 _videoPID = pmt.firstVideoPID(duck);
                 if (_videoPID == PID_NULL) {
-                    tsp->warning(u"no video PID found in service 0x%X (%<d)", pmt.service_id);
+                    tsp->warning(u"no video PID found in service %n", pmt.service_id);
                 }
                 else {
                     _videoStreamType = pmt.streams[_videoPID].stream_type;
-                    tsp->verbose(u"using video PID 0x%X (%<d) as reference", _videoPID);
+                    tsp->verbose(u"using video PID %n as reference", _videoPID);
                 }
             }
             break;

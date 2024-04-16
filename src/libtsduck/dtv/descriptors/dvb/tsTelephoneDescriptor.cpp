@@ -125,7 +125,7 @@ void ts::TelephoneDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
     if (buf.canReadBytes(3)) {
         buf.skipBits(2);
         disp << margin << UString::Format(u"Foreign availability: %s", buf.getBool()) << std::endl;
-        disp << margin << UString::Format(u"Connection type: 0x%X (%<d)", buf.getBits<uint8_t>(5)) << std::endl;
+        disp << margin << UString::Format(u"Connection type: %n", buf.getBits<uint8_t>(5)) << std::endl;
         buf.skipBits(1);
         const size_t country_len = buf.getBits<size_t>(2);
         const size_t inter_len = buf.getBits<size_t>(3);

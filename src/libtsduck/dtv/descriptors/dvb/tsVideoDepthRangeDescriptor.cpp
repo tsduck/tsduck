@@ -115,7 +115,7 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 {
     while (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();
-        disp << margin << UString::Format(u"- Range type: 0x%X (%<d)", type) << std::endl;
+        disp << margin << UString::Format(u"- Range type: %n", type) << std::endl;
 
         buf.pushReadSizeFromLength(8); // range_length
         if (type == 0 && buf.canReadBytes(3)) {

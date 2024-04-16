@@ -1177,7 +1177,7 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
                     (uint32_t(params.pls_mode.value_or(ModulationArgs::DEFAULT_PLS_MODE)) << 26) |
                     ((params.pls_code.value_or(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
                     (params.isi.value() & 0x000000FF);
-                _duck.report().debug(u"using DVB-S2 multi-stream id 0x%X (%<d)", id);
+                _duck.report().debug(u"using DVB-S2 multi-stream id %n", id);
                 props.add(DTV_STREAM_ID, id);
             }
 #endif

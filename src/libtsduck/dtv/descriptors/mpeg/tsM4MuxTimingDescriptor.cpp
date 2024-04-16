@@ -74,7 +74,7 @@ void ts::M4MuxTimingDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::M4MuxTimingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(8)) {
-        disp << margin << UString::Format(u"FCR ES ID: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"FCR ES ID: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"FCR resolution: %'d cycles/second", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"FCR length: %'d", buf.getUInt8()) << std::endl;
         disp << margin << UString::Format(u"FMX rate length: %d", buf.getUInt8()) << std::endl;

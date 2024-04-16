@@ -94,10 +94,10 @@ void ts::SIPrimeTSDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SIPrimeTSDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(7)) {
-        disp << margin << UString::Format(u"Parameter version: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;
         disp << margin << "Update time: " << buf.getMJD(2).format(Time::DATE) << std::endl;
-        disp << margin << UString::Format(u"SI prime TS network id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"SI prime TS id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"SI prime TS network id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"SI prime TS id: %n", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(2)) {
             disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
             disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");

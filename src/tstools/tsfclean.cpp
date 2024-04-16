@@ -299,12 +299,12 @@ void ts::FileCleaner::handlePAT(const PAT& pat, PID pid)
             const auto cur = _pat.pmts.find(it.first);
             if (cur == _pat.pmts.end()) {
                 // Add new service in PAT update.
-                _opt.verbose(u"added service 0x%X (%<d) from PAT update", it.first);
+                _opt.verbose(u"added service %n from PAT update", it.first);
                 _pat.pmts[it.first] = it.second;
             }
             else if (it.second != cur->second) {
                 // Existing service changes PMT PID, not allowed.
-                _opt.error(u"service 0x%X (%<d) changed PMT PID from 0x%X (%<d) to 0x%X (%<d) in PAT update", it.first, cur->second, it.second);
+                _opt.error(u"service %n changed PMT PID from %n to %n in PAT update", it.first, cur->second, it.second);
                 _success = false;
             }
         }
@@ -349,7 +349,7 @@ void ts::FileCleaner::handleSDT(const SDT& sdt, PID pid)
             const auto cur = _sdt.services.find(it.first);
             if (cur == _sdt.services.end()) {
                 // Add new service in SDT update.
-                _opt.verbose(u"added service 0x%X (%<d) from SDT update", it.first);
+                _opt.verbose(u"added service %n from SDT update", it.first);
                 _sdt.services[it.first] = it.second;
             }
             else {
@@ -367,7 +367,7 @@ void ts::FileCleaner::handleSDT(const SDT& sdt, PID pid)
 
 void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
 {
-    _opt.debug(u"got PMT version %d, PID 0x%X (%<d), service id 0x%X (%<d)", pmt.version, pid, pmt.service_id);
+    _opt.debug(u"got PMT version %d, PID %n, service id %n", pmt.version, pid, pmt.service_id);
 
     // Get or create context for this PMT.
     auto ctx = getPMTContext(pid, true);
@@ -378,12 +378,12 @@ void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
     }
     else {
         // Updated PMT, add new components, merge others.
-        _opt.verbose(u"got PMT update version %d, PID 0x%X (%<d), service id 0x%X (%<d)", pmt.version, pid, pmt.service_id);
+        _opt.verbose(u"got PMT update version %d, PID %n, service id %n", pmt.version, pid, pmt.service_id);
         for (const auto& it : pmt.streams) {
             const auto cur = ctx->pmt.streams.find(it.first);
             if (cur == ctx->pmt.streams.end()) {
                 // Add new component in PMT update.
-                _opt.verbose(u"added component PID 0x%X (%<d) from PMT update", it.first);
+                _opt.verbose(u"added component PID %n from PMT update", it.first);
                 ctx->pmt.streams[it.first] = it.second;
             }
             else {

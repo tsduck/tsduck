@@ -95,7 +95,7 @@ void ts::EmergencyInformationDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"- Event service id: 0x%X (%<d)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"- Event service id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"  Event is started: %s", buf.getBool()) << std::endl;
         disp << margin << UString::Format(u"  Signal level: %d", buf.getBit()) << std::endl;
         buf.skipBits(6);

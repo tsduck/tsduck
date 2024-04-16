@@ -369,7 +369,7 @@ void ts::SVRemovePlugin::processPAT(PAT& pat)
         if (it.first == _service.getId()) {
             found = true;
             _service.setPMTPID(it.second);
-            tsp->verbose(u"found service id 0x%X (%<d), PMT PID is 0x%X (%<d)", _service.getId(), _service.getPMTPID());
+            tsp->verbose(u"found service id %n, PMT PID is %n", _service.getId(), _service.getPMTPID());
             // Drop PMT of the service
             _drop_pids.set(it.second);
         }

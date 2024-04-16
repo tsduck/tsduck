@@ -102,7 +102,7 @@ void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     buf.pushReadSizeFromLength(8); // application_profiles_length
     while (buf.canReadBytes(5)) {
-        disp << margin << UString::Format(u"Profile: 0x%X (%<d)", buf.getUInt16());
+        disp << margin << UString::Format(u"Profile: %n", buf.getUInt16());
         disp << UString::Format(u", version: %d", buf.getUInt8());
         disp << UString::Format(u".%d", buf.getUInt8());
         disp << UString::Format(u".%d", buf.getUInt8()) << std::endl;
@@ -115,7 +115,7 @@ void ts::ApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
         disp << UString::Format(u", priority: %d", buf.getUInt8()) << std::endl;
     }
     while (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Transport protocol label: %n", buf.getUInt8()) << std::endl;
     }
 }
 

@@ -1968,6 +1968,20 @@ void UStringTest::testFormat()
     TSUNIT_EQUAL(u"1 PCR", ts::UString::Format(u"%s", ts::PCR(1)));
     TSUNIT_EQUAL(u"12345 PCR", ts::UString::Format(u"%!s", ts::PCR(12345)));
     TSUNIT_EQUAL(u"+12,345 microseconds", ts::UString::Format(u"%+'s", cn::microseconds(12345)));
+
+    // Normalized hexadecimal + decimal.
+    TSUNIT_EQUAL(u"0xAB (171)", ts::UString::Format(u"%n", uint8_t(171)));
+    TSUNIT_EQUAL(u"0x00AB (171)", ts::UString::Format(u"%n", int16_t(171)));
+    TSUNIT_EQUAL(u"0x00AB (+171)", ts::UString::Format(u"%+n", int16_t(171)));
+    TSUNIT_EQUAL(u"0xFF55 (-171)", ts::UString::Format(u"%n", int16_t(-171)));
+    TSUNIT_EQUAL(u"0x000000AB (171)", ts::UString::Format(u"%n", uint32_t(171)));
+    TSUNIT_EQUAL(u"0x00000000000000AB (171)", ts::UString::Format(u"%n", 171LL));
+    TSUNIT_EQUAL(u"0x1234,5678 (305,419,896)", ts::UString::Format(u"%'n", 305419896));
+    TSUNIT_EQUAL(u"0x000000AB (171)    ", ts::UString::Format(u"%-20n", uint32_t(171)));
+    TSUNIT_EQUAL(u"    0x000000AB (171)", ts::UString::Format(u"%20n", uint32_t(171)));
+    TSUNIT_EQUAL(u"00AB (171)", ts::UString::Format(u"%.10n", uint32_t(171)));
+    TSUNIT_EQUAL(u"0x000000AB", ts::UString::Format(u"%-.10n", uint32_t(171)));
+    TSUNIT_EQUAL(u"  0x000000AB (171)", ts::UString::Format(u"%*n", 18, uint32_t(171)));
 }
 
 void UStringTest::testArgMixOut()

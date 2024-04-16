@@ -68,7 +68,7 @@ void ts::CarouselIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CarouselIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"Carousel id: 0x%X (%<d)", buf.getUInt32()) << std::endl;
+        disp << margin << UString::Format(u"Carousel id: %n", buf.getUInt32()) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }
 }

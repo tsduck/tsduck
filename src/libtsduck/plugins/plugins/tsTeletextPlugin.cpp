@@ -161,7 +161,7 @@ void ts::TeletextPlugin::handlePMT(const PMT& pmt, PID)
     if (_pid != PID_NULL) {
         // Found a Teletext PID, demux it.
         _demux.addPID(_pid);
-        tsp->verbose(u"using Teletext PID 0x%X (%<d)", _pid);
+        tsp->verbose(u"using Teletext PID %n", _pid);
     }
     else {
         // Display error if you could not find any appropriate Teletext PID
@@ -172,7 +172,7 @@ void ts::TeletextPlugin::handlePMT(const PMT& pmt, PID)
             tsp->error(u"no Teletext subtitles found for language \"%s\"", _language);
         }
         if (pageOK && languageOK) {
-            tsp->error(u"no Teletext subtitles found for service 0x%X (%<d)", pmt.service_id);
+            tsp->error(u"no Teletext subtitles found for service %n", pmt.service_id);
         }
         _abort = true;
     }
@@ -195,7 +195,7 @@ void ts::TeletextPlugin::handleTeletextMessage(TeletextDemux& demux, const Telet
     // For information, report all Teletext pages in the PID.
     if (_pages.count(frame.page()) == 0) {
         _pages.insert(frame.page());
-        tsp->verbose(u"Teletext page %d found in PID 0x%X (%<d)", frame.page(), frame.pid());
+        tsp->verbose(u"Teletext page %d found in PID %n", frame.page(), frame.pid());
     }
 
     // Save only frames from the selected Teletext page.

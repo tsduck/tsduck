@@ -89,13 +89,13 @@ void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp
         buf.skipBits(2);
         const uint16_t max_buffer = buf.getBits<uint16_t>(14);
 
-        disp << margin << UString::Format(u"Peak rate: 0x%X (%<d) x 400 b/s", peak) << std::endl;
+        disp << margin << UString::Format(u"Peak rate: %n x 400 b/s", peak) << std::endl;
         disp << margin << "Min smoothing rate: ";
         if (min_rate == UNDEFINED_SMOOTHING_RATE) {
             disp << "undefined";
         }
         else {
-            disp << UString::Format(u"0x%X (%<d) x 400 b/s", min_rate);
+            disp << UString::Format(u"%n x 400 b/s", min_rate);
         }
         disp << std::endl;
         disp << margin << "Max smoothing buffer: ";
@@ -103,7 +103,7 @@ void ts::PartialTransportStreamDescriptor::DisplayDescriptor(TablesDisplay& disp
             disp << "undefined";
         }
         else {
-            disp << UString::Format(u"0x%X (%<d) bytes", max_buffer);
+            disp << UString::Format(u"%n bytes", max_buffer);
         }
         disp << std::endl;
     }
