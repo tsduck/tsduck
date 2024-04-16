@@ -128,7 +128,7 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
                 // Error while accepting a client is fatal.
                 return false;
             }
-            tsp->verbose(u"client connected from %s", {client_address});
+            tsp->verbose(u"client connected from %s", client_address);
 
             // Initialize the session, process request, send response headers.
             if (startSession()) {
@@ -165,7 +165,7 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
 
 bool ts::HTTPOutputPlugin::sendResponseHeader(const std::string& line)
 {
-    tsp->debug(u"response header: %s", {line});
+    tsp->debug(u"response header: %s", line);
     std::string data(line);
     data += "\r\n";
     return _client.send(data.data(), data.size(), *tsp);
@@ -201,7 +201,7 @@ bool ts::HTTPOutputPlugin::startSession()
             header.assignFromUTF8(reinterpret_cast<const char*>(data.data()), eol);
             header.trim();
             data.erase(0, eol + 1);
-            tsp->debug(u"request header: %s", {header});
+            tsp->debug(u"request header: %s", header);
 
             // The first header is the request.
             if (request.empty()) {
@@ -220,7 +220,7 @@ bool ts::HTTPOutputPlugin::startSession()
     const bool valid = is_get && resource == u"/" && protocol.startWith(u"HTTP/");
 
     if (!valid && !_ignore_bad_request) {
-        tsp->error(u"invalid client request: %s", {request});
+        tsp->error(u"invalid client request: %s", request);
         sendResponseHeader(is_get ? "HTTP/1.1 404 Not Found" : "HTTP/1.1 400 Bad Request");
         sendResponseHeader("");
         return false;

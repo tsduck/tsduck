@@ -373,7 +373,7 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::iso23002_2_value_codin
     }
     else {
         if (block[block.size() - 1] == 0xFF) {
-            element->report().error(u"last byte of <%s> cannot be 0xFF in <%s>, line %d", {element->name(), parent_name, element->lineNumber()});
+            element->report().error(u"last byte of <%s> cannot be 0xFF in <%s>, line %d", element->name(), parent_name, element->lineNumber());
             ok = false;
         }
         else {
@@ -383,7 +383,7 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::iso23002_2_value_codin
                     numFF_bytes++;
                 }
                 else {
-                    element->report().error(u"leading bytes of <%s> must be 0xFF in <%s>, line %d", {element->name(), parent_name, element->lineNumber()});
+                    element->report().error(u"leading bytes of <%s> must be 0xFF in <%s>, line %d", element->name(), parent_name, element->lineNumber());
                     ok = false;
                 }
             }
@@ -402,11 +402,11 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::f
 
     if (ok) {
         if (gp[0]->hasAttribute(u"aux_is_bottom_field") && gp[0]->hasAttribute(u"aux_is_interlaced")) {
-            element->report().error(u"only one of <aux_is_bottom_field> and <aux_is_interlaced> must be specified  in <%s>, line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"only one of <aux_is_bottom_field> and <aux_is_interlaced> must be specified  in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
         if (!gp[0]->hasAttribute(u"aux_is_bottom_field") && !gp[0]->hasAttribute(u"aux_is_interlaced")) {
-            element->report().error(u"either <aux_is_bottom_field> or <aux_is_interlaced> must be specified  in <%s>, line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"either <aux_is_bottom_field> or <aux_is_interlaced> must be specified  in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
     }
@@ -451,13 +451,13 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::fromXML(const xml::Ele
             ok = false;
         }
         if (element->hasChildElement(u"reserved_si_message")) {
-            element->report().error(u"<reserved_si_message> is not permitted for known payload types (0, 1)  in <%s>, line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"<reserved_si_message> is not permitted for known payload types (0, 1)  in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
     }
     if (payload_type.value() == 0) {
         if (element->hasChildElement(u"parallax_params")) {
-            element->report().error(u"<parallax_params> is not permitted for payload type==0  in <%s>, line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"<parallax_params> is not permitted for payload type==0  in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
         depth_params_type dp;
@@ -470,7 +470,7 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::fromXML(const xml::Ele
     }
     else if (payload_type.value() == 1) {
         if (element->hasChildElement(u"depth_params")) {
-            element->report().error(u"<depth_params> is not permitted for known payload type==1  in <%s>, line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"<depth_params> is not permitted for known payload type==1  in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
         parallax_params_type pp;
@@ -483,7 +483,7 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::fromXML(const xml::Ele
     }
     else {
         if (element->hasChildElement(u"generic_params") || element->hasChildElement(u"depth_params") || element->hasChildElement(u"parallax_params")) {
-            element->report().error(u"generic, depth and parallax parameters are not permitted for payload type=%d  in <%s>, line %d", {payload_type.value(), element->name(), element->lineNumber()});
+            element->report().error(u"generic, depth and parallax parameters are not permitted for payload type=%d  in <%s>, line %d", payload_type.value(), element->name(), element->lineNumber());
             ok = false;
         }
         ByteBlock bb;

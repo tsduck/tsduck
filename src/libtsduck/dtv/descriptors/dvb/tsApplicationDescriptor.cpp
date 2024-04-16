@@ -162,7 +162,7 @@ bool ts::ApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::Element
              prof[i]->getAttribute(version, u"version", true);
         if (ok && !version.scan(u"%d.%d.%d", &p.version_major, &p.version_minor, &p.version_micro)) {
             ok = false;
-            prof[i]->report().error(u"invalid version '%s' in <%s>, line %d, use 'major.minor.micro'", {version, prof[i]->name(), prof[i]->lineNumber()});
+            prof[i]->report().error(u"invalid version '%s' in <%s>, line %d, use 'major.minor.micro'", version, prof[i]->name(), prof[i]->lineNumber());
         }
         if (ok) {
             profiles.push_back(p);

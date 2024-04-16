@@ -476,7 +476,7 @@ endif
 # Always use maximal or even paranoid warning mode.
 # With clang, the option -Weverything turns everything on. There is no such option with GCC.
 
-CXXFLAGS_WARNINGS = -Werror -Wno-error=deprecated-declarations
+CXXFLAGS_WARNINGS = -Werror
 ifneq ($(USE_LLVM),)
     CXXFLAGS_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
     ifneq ($(MACOS),)
@@ -755,8 +755,8 @@ ifneq ($(NOHWACCEL),)
     CXXFLAGS_INCLUDES += -DTS_NO_ARM_AES_INSTRUCTIONS=1
 endif
 
-ifneq ($(DEPRECATE),)
-    CXXFLAGS_INCLUDES += -DTS_DEPRECATE=1
+ifneq ($(NODEPRECATE),)
+    CXXFLAGS_INCLUDES += -DTS_NODEPRECATE=1
 endif
 
 # These variables are used when building the TSDuck library, not in the

@@ -181,13 +181,13 @@ bool ts::VBIDataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
         if (ok) {
             if (service.hasReservedBytes()) {
                 if (!fld.empty()) {
-                    element->report().error(u"no <field> allowed in <service>, line %d, when data_service_id='%d'", {srv[srvIndex]->lineNumber(), service.data_service_id});
+                    element->report().error(u"no <field> allowed in <service>, line %d, when data_service_id='%d'", srv[srvIndex]->lineNumber(), service.data_service_id);
                     ok = false;
                 }
             }
             else {
                 if (!service.reserved.empty()) {
-                    element->report().error(u"no <reserved> allowed in <service>, line %d, when data_service_id='%d'", {srv[srvIndex]->lineNumber(), service.data_service_id});
+                    element->report().error(u"no <reserved> allowed in <service>, line %d, when data_service_id='%d'", srv[srvIndex]->lineNumber(), service.data_service_id);
                     ok = false;
                 }
             }

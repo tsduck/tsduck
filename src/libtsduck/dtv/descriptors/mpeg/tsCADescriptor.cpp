@@ -157,7 +157,7 @@ bool ts::CADescriptor::fromCommmandLine(const UString& value, Report& report)
     // On return, index points to the next index in val after "cas-id/PID".
     // If there is a private part, then index must points to a '/'.
     if (count != 2 || casid < 0 || casid > 0xFFFF || pid < 0 || pid >= int(PID_MAX) || (index < value.length() && value[index] != u'/')) {
-        report.error(u"invalid \"cas-id/PID[/private-data]\" value \"%s\"", {value});
+        report.error(u"invalid \"cas-id/PID[/private-data]\" value \"%s\"", value);
         return false;
     }
 
@@ -168,7 +168,7 @@ bool ts::CADescriptor::fromCommmandLine(const UString& value, Report& report)
         // There is a private part
         const UString hexa(value.substr(index + 1));
         if (!hexa.hexaDecode(private_data)) {
-            report.error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", {hexa});
+            report.error(u"invalid private data \"%s\" for CA_descriptor, specify an even number of hexa digits", hexa);
             return false;
         }
     }

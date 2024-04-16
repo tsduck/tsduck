@@ -276,7 +276,7 @@ bool ts::TTMLSubtitlingDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
         element->getIntAttribute(reserved_zero_future_use_bytes, u"reserved_zero_future_count");
 
     if (ok && ((subtitle_purpose >= 0x03 && subtitle_purpose <= 0x0F) || (subtitle_purpose >= 0x13 && subtitle_purpose <= 0x2F) || (subtitle_purpose >= 0x32))) {
-        element->report().error(u"value 0x%X in <%s>, line %d, is reserved.", { subtitle_purpose, element->name(), element->lineNumber() });
+        element->report().error(u"value 0x%X in <%s>, line %d, is reserved.", subtitle_purpose, element->name(), element->lineNumber());
         ok = false;
     }
     ok &= element->getChildren(children, u"dvb_ttml_profile", 0x00, 0x0F);

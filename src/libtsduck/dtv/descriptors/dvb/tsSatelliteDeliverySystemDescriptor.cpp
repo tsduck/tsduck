@@ -304,7 +304,7 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
             orbital_position = (p1 * 10) + p2;
         }
         else {
-            element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", {orbit, element->name(), element->lineNumber()});
+            element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", orbit, element->name(), element->lineNumber());
         }
     }
     return ok;

@@ -119,7 +119,7 @@ bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size, Report&
             // Actual error, not a clean disconnection from the receiver, do not retry, even with --multiple.
             return false;
         }
-        report.verbose(u"receiver disconnected%s", {_multiple ? u", waiting for another one" : u""});
+        report.verbose(u"receiver disconnected%s", _multiple ? u", waiting for another one" : u"");
         if (!_multiple) {
             // No multiple sessions, terminate here.
             return false;

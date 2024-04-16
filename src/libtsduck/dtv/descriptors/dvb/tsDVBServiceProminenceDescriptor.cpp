@@ -274,15 +274,15 @@ bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml
                  rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF) &&
                  rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
             if (ok && !r.country_code.has_value() && !r.primary_region_code.has_value()) {
-                rgn->report().error(u"country_code and/or primary_region_code must be present in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
+                rgn->report().error(u"country_code and/or primary_region_code must be present in <%s>, line %d", rgn->name(), rgn->lineNumber());
                 ok = false;
             }
             if (ok && !r.primary_region_code.has_value() && r.secondary_region_code.has_value()) {
-                rgn->report().error(u"secondary_region_code cannot be used without primary_region_code in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
+                rgn->report().error(u"secondary_region_code cannot be used without primary_region_code in <%s>, line %d", rgn->name(), rgn->lineNumber());
                 ok = false;
             }
             if (ok && !r.secondary_region_code.has_value() && r.tertiary_region_code.has_value()) {
-                rgn->report().error(u"tertiary_region_code cannot be used without secondary_region_code in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
+                rgn->report().error(u"tertiary_region_code cannot be used without secondary_region_code in <%s>, line %d", rgn->name(), rgn->lineNumber());
                 ok = false;
             }
             s.regions.push_back(r);

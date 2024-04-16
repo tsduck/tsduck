@@ -368,7 +368,7 @@ bool ts::J2KVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
          element->hasAttribute(u"matrix_coefficients") ||
          element->hasAttribute(u"video_full_range_flag"))) {
 
-        element->report().error(u"cannot specify both legacy (color_specification) and extended (colour_primaries, transfer_characteristics, matrix_coefficients, video_full_range_flag) attributes in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"cannot specify both legacy (color_specification) and extended (colour_primaries, transfer_characteristics, matrix_coefficients, video_full_range_flag) attributes in <%s>, line %d", element->name(), element->lineNumber());
         return false;
     }
 

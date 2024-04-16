@@ -209,10 +209,10 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     // Display common header lines.
-    strm << margin << UString::Format(u"* %s, TID %d (0x%X)", names::TID(_duck, tid, cas), table.tableId(), table.tableId());
+    strm << margin << UString::Format(u"* %s, TID %d (0x%<X)", names::TID(_duck, tid, cas), table.tableId());
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
-        strm << UString::Format(u", PID %d (0x%X)", table.sourcePID(), table.sourcePID());
+        strm << UString::Format(u", PID %d (0x%<X)", table.sourcePID());
     }
     strm << std::endl;
     if (table.sectionCount() == 1 && table.sectionAt(0)->isShortSection()) {
@@ -461,7 +461,7 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, con
 
     // The table id extension was not yet displayed since it depends on the table id.
     if (section.isLongSection()) {
-        strm << margin << UString::Format(u"TIDext: %d (0x%X)", section.tableIdExtension(), section.tableIdExtension()) << std::endl;
+        strm << margin << UString::Format(u"TIDext: %d (0x%<X)", section.tableIdExtension()) << std::endl;
     }
 
     // Section payload.

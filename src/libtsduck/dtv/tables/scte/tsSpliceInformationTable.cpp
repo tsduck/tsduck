@@ -338,7 +338,7 @@ bool ts::SpliceInformationTable::analyzeXML(DuckContext& duck, const xml::Elemen
         descs.fromXML(duck, command, element, u"splice_null,splice_schedule,splice_insert,time_signal,bandwidth_reservation,private_command");
 
     if (ok && command.size() != 1) {
-        element->report().error(u"Specify exactly one splice command in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"Specify exactly one splice command in <%s>, line %d", element->name(), element->lineNumber());
         return false;
     }
 

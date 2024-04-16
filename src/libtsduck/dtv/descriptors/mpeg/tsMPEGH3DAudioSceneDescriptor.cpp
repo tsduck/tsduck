@@ -724,7 +724,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::fromXML(const xml::
                 mae_switchGroupMemberID.push_back(member);
             }
             else {
-                element->report().error(u"SwitchGroupMember identifiers can only be 7 bits (0-127) in <%s>, line %d", {element->name(), element->lineNumber()});
+                element->report().error(u"SwitchGroupMember identifiers can only be 7 bits (0-127) in <%s>, line %d", element->name(), element->lineNumber());
                 ok = false;
             }
         }
@@ -771,11 +771,11 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
     }
 
     if ((hasPresetAzOffset + hasPresetElOffset + hasPresetDistFactor != 0) && (hasPresetAzOffset + hasPresetElOffset + hasPresetDistFactor != 3)) {
-        element->report().error(u"all or none of groupPresetAzOffset, groupPresetElOffset and groupPresetDistFactor must be specified in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"all or none of groupPresetAzOffset, groupPresetElOffset and groupPresetDistFactor must be specified in <%s>, line %d", element->name(), element->lineNumber());
         ok = false;
     }
     else if (!hasPresetDisableGainInteractivity && !hasPresetDisablePositionInteractivity) {
-        element->report().error(u"groupPresetAzOffset, groupPresetElOffset and groupPresetDistFactor can only be specified with groupPresetDisableGainInteractivity and groupPresetDisablePositionInteractivity in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"groupPresetAzOffset, groupPresetElOffset and groupPresetDistFactor can only be specified with groupPresetDisableGainInteractivity and groupPresetDisablePositionInteractivity in <%s>, line %d", element->name(), element->lineNumber());
         ok = false;
     }
 
@@ -792,7 +792,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
     }
 
     if (hasPresetDisableGainInteractivity + hasPresetDisablePositionInteractivity == 1) {
-        element->report().error(u"both groupPresetDisableGainInteractivity and mae_groupPresetDisablePositionInteractivity must be specified in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"both groupPresetDisableGainInteractivity and mae_groupPresetDisablePositionInteractivity must be specified in <%s>, line %d", element->name(), element->lineNumber());
         ok = false;
     }
     else {
@@ -805,7 +805,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
         }
     }
     if (hasPresetGain && !(hasPresetDisableGainInteractivity || hasPresetDisablePositionInteractivity)) {
-        element->report().error(u"groupPresetGain must be specified with groupPresetDisableGainInteractivity and mae_groupPresetDisablePositionInteractivity  <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"groupPresetGain must be specified with groupPresetDisableGainInteractivity and mae_groupPresetDisablePositionInteractivity  <%s>, line %d", element->name(), element->lineNumber());
         ok = false;
     }
     else if (hasPresetGain) {

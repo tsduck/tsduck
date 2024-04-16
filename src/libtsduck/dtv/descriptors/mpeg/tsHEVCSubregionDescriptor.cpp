@@ -207,7 +207,7 @@ bool ts::HEVCSubregionDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                 SubstreamMarkingFlag = (subregions[i]->hasAttribute(u"PreambleSubstreamID") ? 1 : 0);
             }
             if ((SubstreamMarkingFlag == 1) && !(subregions[i]->hasAttribute(u"PreambleSubstreamID"))) {
-                subregions[i]->report().error(u"all Subregions must either contain @PreambleSubstreamID or not in <%s>, line %d", { element->name(), element->lineNumber() });
+                subregions[i]->report().error(u"all Subregions must either contain @PreambleSubstreamID or not in <%s>, line %d", element->name(), element->lineNumber());
                 ok = false;
             }
             xml::ElementVector patterns;
@@ -229,7 +229,7 @@ bool ts::HEVCSubregionDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                             substreamCount = int(offsets.size());
                         }
                         else if (int(offsets.size()) != substreamCount) {
-                            element->report().error(u"number of substream offsets '%d' must be the same as in the first pattern (%d) in <%s>, line %d", { offsets.size(), substreamCount, patterns[j]->name(), patterns[j]->lineNumber() });
+                            element->report().error(u"number of substream offsets '%d' must be the same as in the first pattern (%d) in <%s>, line %d", offsets.size(), substreamCount, patterns[j]->name(), patterns[j]->lineNumber());
                             ok = false;
                         }
                     }

@@ -274,11 +274,11 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
               element->getChildren(_operation_points, u"operation_point");
 
     if (ok && _profile_tier_levels.size() > MAX_PROFILE_TIER_LEVELS) {
-        element->report().error(u"only %d <profile_tier_level_info> elements are permitted [<%s>, line %d]", { MAX_PROFILE_TIER_LEVELS, element->name(), element->lineNumber() });
+        element->report().error(u"only %d <profile_tier_level_info> elements are permitted [<%s>, line %d]", MAX_PROFILE_TIER_LEVELS, element->name(), element->lineNumber());
         ok = false;
     }
     if (ok && _operation_points.size() > MAX_OPERATION_POINTS) {
-        element->report().error(u"only %d <operation_point> elements are permitted [<%s>, line %d]", { MAX_OPERATION_POINTS, element->name(), element->lineNumber() });
+        element->report().error(u"only %d <operation_point> elements are permitted [<%s>, line %d]", MAX_OPERATION_POINTS, element->name(), element->lineNumber());
         ok = false;
     }
 
@@ -286,7 +286,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
         ByteBlock ptli;
         ok &= _profile_tier_levels[i]->getHexaText(ptli);
         if (ok && (ptli.size() != PROFILE_TIER_LEVEL_INFO_SIZE)) {
-            _profile_tier_levels[i]->report().error(u"<profile_tier_level_info> must contain %d bytes [<%s>, line %d]", { PROFILE_TIER_LEVEL_INFO_SIZE, _profile_tier_levels[i]->name(), _profile_tier_levels[i]->lineNumber() });
+            _profile_tier_levels[i]->report().error(u"<profile_tier_level_info> must contain %d bytes [<%s>, line %d]", PROFILE_TIER_LEVEL_INFO_SIZE, _profile_tier_levels[i]->name(), _profile_tier_levels[i]->lineNumber());
             ok = false;
         }
         profile_tier_level_infos.push_back(ptli);
@@ -301,7 +301,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
               _operation_points[i]->getChildren(_ESinOP, u"ESinOP");
 
         if (ok && (_ES.size() > MAX_ES_POINTS)) {
-            _operation_points[i]->report().error(u"only %d <ES> elements are permitted [<%s>, line %d]", { MAX_ES_POINTS, _operation_points[i]->name(), _operation_points[i]->lineNumber() });
+            _operation_points[i]->report().error(u"only %d <ES> elements are permitted [<%s>, line %d]", MAX_ES_POINTS, _operation_points[i]->name(), _operation_points[i]->lineNumber());
             ok = false;
         }
         for (size_t j = 0; j < _ES.size(); j++) {
@@ -312,7 +312,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
         }
 
         if (ok && (_ESinOP.size() > MAX_numEsInOp)) {
-            _operation_points[i]->report().error(u"only %d <ESinOP> elements are permitted [<%s>, line %d]", { MAX_numEsInOp, _operation_points[i]->name(), _operation_points[i]->lineNumber() });
+            _operation_points[i]->report().error(u"only %d <ESinOP> elements are permitted [<%s>, line %d]", MAX_numEsInOp, _operation_points[i]->name(), _operation_points[i]->lineNumber());
             ok = false;
         }
         for (size_t k = 0; k < _ESinOP.size(); k++) {
@@ -330,7 +330,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
               _operation_points[i]->getOptionalIntAttribute(op.max_bit_rate, u"max_bit_rate", 0, 0xFFFFFF);
 
         if (ok && ((op.constant_frame_rate_info_idc > 0) && !op.frame_rate_indicator.has_value())) {
-            _operation_points[i]->report().error(u"attribute frame_rate_indicator is required when constant_frame_rate_info_idc is not zero. [<%s>, line %d]", { _operation_points[i]->name(), _operation_points[i]->lineNumber() });
+            _operation_points[i]->report().error(u"attribute frame_rate_indicator is required when constant_frame_rate_info_idc is not zero. [<%s>, line %d]", _operation_points[i]->name(), _operation_points[i]->lineNumber());
         }
 
         operation_points.push_back(op);

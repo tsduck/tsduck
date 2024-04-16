@@ -511,7 +511,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
             _abort = true;
         }
         else {
-            tsp->verbose(u"using PID %d (0x%X) for ECM", _ecm_pid, _ecm_pid);
+            tsp->verbose(u"using PID %d (0x%<X) for ECM", _ecm_pid);
         }
     }
 
@@ -819,13 +819,13 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TS
     if (pkt.isScrambled()) {
         if (_ignore_scrambled) {
             if (!_conflict_pids.test(pid)) {
-                tsp->verbose(u"found input scrambled packets in PID %d (0x%X), ignored", pid, pid);
+                tsp->verbose(u"found input scrambled packets in PID %d (0x%<X), ignored", pid);
                 _conflict_pids.set(pid);
             }
             return TSP_OK;
         }
         else {
-            tsp->error(u"packet already scrambled in PID %d (0x%X)", pid, pid);
+            tsp->error(u"packet already scrambled in PID %d (0x%<X)", pid);
             return TSP_END;
         }
     }

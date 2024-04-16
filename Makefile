@@ -8,20 +8,21 @@
 #
 #  Additional options which can be defined:
 #
-#  - NOTEST     : Do not build unitary tests.
-#  - NOSTATIC   : Do not build the static library and the static tests.
-#  - NODEKTEC   : No Dektec device support, remove dependency to DTAPI.
-#  - NOHIDES    : No HiDes device support.
-#  - NOVATEK    : No Vatek-based device support.
-#  - NOCURL     : No HTTP support, remove dependency to libcurl.
-#  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
-#  - NOSRT      : No SRT support, remove dependency to libsrt.
-#  - NORIST     : No RIST support, remove dependency to librist.
-#  - NOEDITLINE : No interactive line editing, remove dependency to libedit.
-#  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
-#  - NOHWACCEL  : Disable hardware acceleration such as crypto instructions.
-#  - NOPCSTD    : Remove the std=c++17 flag from libtsduck's pkg-config file.
-#  - VERBOSE    : Display full commands. Can be abbreviated as V.
+#  - NOTEST      : Do not build unitary tests.
+#  - NOSTATIC    : Do not build the static library and the static tests.
+#  - NODEKTEC    : No Dektec device support, remove dependency to DTAPI.
+#  - NOHIDES     : No HiDes device support.
+#  - NOVATEK     : No Vatek-based device support.
+#  - NOCURL      : No HTTP support, remove dependency to libcurl.
+#  - NOPCSC      : No smartcard support, remove dependency to pcsc-lite.
+#  - NOSRT       : No SRT support, remove dependency to libsrt.
+#  - NORIST      : No RIST support, remove dependency to librist.
+#  - NOEDITLINE  : No interactive line editing, remove dependency to libedit.
+#  - NOGITHUB    : No version check, no download, no upgrade from GitHub.
+#  - NOHWACCEL   : Disable hardware acceleration such as crypto instructions.
+#  - NOPCSTD     : Remove the std=c++17 flag from libtsduck's pkg-config file.
+#  - NODEPRECATE : Do not flag legacy methods as deprecated.
+#  - VERBOSE     : Display full commands. Can be abbreviated as V.
 #
 #  Options to define the representation of bitrates:
 #

@@ -370,7 +370,7 @@ ts::ProcessorPlugin::Status ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TS
 
             if (ctx->last_updated_pcr == INVALID_PCR) {
                 // First packet in this PID with a PCR, use it as base.
-                tsp->debug(u"starting fixing PCR in PID 0x%X (%d)", pid, pid);
+                tsp->debug(u"starting fixing PCR in PID 0x%X (%<d)", pid);
                 ctx->last_updated_pcr = ctx->last_original_pcr;
             }
             else {
@@ -421,7 +421,7 @@ ts::ProcessorPlugin::Status ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TS
 
         // Create an empty packet if a PID is late.
         if (pcr_ctx != nullptr) {
-            tsp->debug(u"adding PCR in PID 0x%X (%d)", pcr_ctx->pid, pcr_ctx->pid);
+            tsp->debug(u"adding PCR in PID 0x%X (%<d)", pcr_ctx->pid);
 
             // Build an empty packet with a PCR.
             pkt = EmptyPacket;

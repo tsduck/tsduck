@@ -285,23 +285,23 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getChildren(Sample_index_and_description_children, u"Sample_index_and_description");
 
     if (!Contains(allowed_3GPPBaseFormat_values, ThreeGPPBaseFormat)) {
-        element->report().error(u"line %d: in <%s>, attribute 'ThreeGPPBaseFormat' has a reserved value (0x%X)", {element->lineNumber(), element->name(), ThreeGPPBaseFormat});
+        element->report().error(u"line %d: in <%s>, attribute 'ThreeGPPBaseFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), ThreeGPPBaseFormat);
         ok = false;
     }
     if (!Contains(allowed_profileLevel_values, profileLevel)) {
-        element->report().error(u"line %d: in <%s>, attribute 'profileLevel' has a reserved value (%d)", {element->lineNumber(), element->name(), profileLevel});
+        element->report().error(u"line %d: in <%s>, attribute 'profileLevel' has a reserved value (%d)", element->lineNumber(), element->name(), profileLevel);
         ok = false;
     }
     const uint8_t num_optionals = scene_width.has_value() + scene_height.has_value() + horizontal_scene_offset.has_value() + vertical_scene_offset.has_value();
     if (ok && (num_optionals > 0 && num_optionals < 4)) {
-        element->report().error(u"line %d: in <%s>, attributes 'scene_width', 'scene_height', 'horizontal_scene_offset' and 'vertical_scene_offset' must all be present or all omitted", {element->lineNumber(), element->name()});
+        element->report().error(u"line %d: in <%s>, attributes 'scene_width', 'scene_height', 'horizontal_scene_offset' and 'vertical_scene_offset' must all be present or all omitted", element->lineNumber(), element->name());
         ok = false;
     }
     for (auto it : Compatible_3GPPFormat_children) {
         uint8_t value = 0;
         ok &= it->getIntAttribute(value, u"value", true);
         if (!Contains(allowed_3GPPBaseFormat_values, value)) {
-            element->report().error(u"line %d: in <%s>, element 'Compatible_3GPPFormat' has a reserved value (0x%X)", {element->lineNumber(), element->name(), value});
+            element->report().error(u"line %d: in <%s>, element 'Compatible_3GPPFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), value);
             ok = false;
         }
         Compatible_3GPPFormat.push_back(value);
@@ -313,7 +313,7 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
              it->getIntAttribute(sample.SampleDescription.textFormat, u"textFormat") &&
              it->getHexaText(sample.SampleDescription.formatSpecificTextConfig);
         if (ok && !Contains(allowed_textFormat_values, sample.SampleDescription.textFormat)) {
-            element->report().error(u"line %d: in <%s>, attribute 'textFormat' has a reserved value (0x%X)", {element->lineNumber(), element->name(), sample.SampleDescription.textFormat});
+            element->report().error(u"line %d: in <%s>, attribute 'textFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), sample.SampleDescription.textFormat);
             ok = false;
         }
         Sample_index_and_description.push_back(sample);

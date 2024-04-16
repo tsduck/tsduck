@@ -143,7 +143,7 @@ bool ts::NodeRelationDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
         element->getIntAttribute(reference_number, u"reference_number", true);
 
     if (ok && (information_provider_id.has_value() + event_relation_id.has_value()) == 1) {
-        element->report().error(u"in <%s> line %d, attributes 'information_provider_id' and 'event_relation_id' must be both present or both absent", {element->name(), element->lineNumber()});
+        element->report().error(u"in <%s> line %d, attributes 'information_provider_id' and 'event_relation_id' must be both present or both absent", element->name(), element->lineNumber());
         ok = false;
     }
     return ok;

@@ -180,7 +180,7 @@ bool ts::HEVCTileSubstreamDescriptor::analyzeXML(DuckContext& duck, const xml::E
         element->getChildren(Substream, u"Substream");
 
     if (ok && !Reference.empty() && !Substream.empty()) {
-        element->report().error(u"cannot specify both Reference and Substream in <%s>, line %d", { element->name(), element->lineNumber() });
+        element->report().error(u"cannot specify both Reference and Substream in <%s>, line %d", element->name(), element->lineNumber());
         ok = false;
     }
     if (ok && !Reference.empty()) {

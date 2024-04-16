@@ -69,7 +69,7 @@ bool ts::ForkInputPlugin::stop()
 
 bool ts::ForkInputPlugin::abortInput()
 {
-    tsp->debug(u"aborting input, is open: %s, is broken: %s", {_pipe.isOpen(), _pipe.isBroken()});
+    tsp->debug(u"aborting input, is open: %s, is broken: %s", _pipe.isOpen(), _pipe.isBroken());
     _pipe.abortPipeReadWrite();
     return true;
 }

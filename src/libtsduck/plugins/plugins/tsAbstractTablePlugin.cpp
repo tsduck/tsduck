@@ -195,7 +195,7 @@ void ts::AbstractTablePlugin::reinsertTable(BinaryTable& table, bool is_target_t
 {
     // Make common modifications on target table.
     if (is_target_table) {
-        tsp->verbose(u"%s version %d modified", {_table_name, table.version()});
+        tsp->verbose(u"%s version %d modified", _table_name, table.version());
 
         // The target table is found, no longer need to create a new one.
         _found_table = true;
@@ -240,7 +240,7 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
         const BitRate ts_bitrate = tsp->bitrate();
         if (ts_bitrate > 0) {
             _pkt_create = PacketDistance(ts_bitrate, _create_after_ms);
-            tsp->debug(u"will create %s after %'d packets, %'!s (bitrate: %'d b/s)", {_table_name, _pkt_create, _create_after_ms, ts_bitrate});
+            tsp->debug(u"will create %s after %'d packets, %'!s (bitrate: %'d b/s)", _table_name, _pkt_create, _create_after_ms, ts_bitrate);
         }
     }
 

@@ -375,7 +375,7 @@ ts::ProcessorPlugin::Status ts::SectionsPlugin::processPacket(TSPacket& pkt, TSP
 
     // If the output PID is not an input one and already exists, this is an error.
     if (pid == _output_pid && !_input_pids.test(_output_pid)) {
-        tsp->error(u"output PID 0x%X (%d) already present in the stream", _output_pid, _output_pid);
+        tsp->error(u"output PID 0x%X (%<d) already present in the stream", _output_pid);
         return TSP_END;
     }
 

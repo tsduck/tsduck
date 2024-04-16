@@ -118,7 +118,7 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 {
     // Warn about non-CAT tables in the CAT PID but keep them.
     if (table.tableId() != TID_CAT) {
-        tsp->warning(u"found table id 0x%X (%d) in the CAT PID", table.tableId(), table.tableId());
+        tsp->warning(u"found table id 0x%X (%<d) in the CAT PID", table.tableId());
         is_target = false;
         return;
     }

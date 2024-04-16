@@ -88,7 +88,7 @@ bool ts::BoostPIDPlugin::getOptions()
 
 bool ts::BoostPIDPlugin::start()
 {
-    tsp->verbose(u"adding %d packets every %d packets on PID %d (0x%X)", _opt_addpkt, _opt_inpkt, _pid, _pid);
+    tsp->verbose(u"adding %d packets every %d packets on PID %d (0x%<X)", _opt_addpkt, _opt_inpkt, _pid);
     _last_cc = 0;
     _in_count = 0;
     _add_count = 0;

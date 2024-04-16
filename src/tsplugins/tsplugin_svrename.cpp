@@ -194,10 +194,9 @@ bool ts::SVRenamePlugin::start()
 void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     if (tsp->debug()) {
-        tsp->debug(u"Got %s v%d, PID %d (0x%X), TIDext %d (0x%X)",
+        tsp->debug(u"Got %s v%d, PID %d (0x%<X), TIDext %d (0x%<X)",
                    names::TID(duck, table.tableId()), table.version(),
-                   table.sourcePID(), table.sourcePID(),
-                   table.tableIdExtension(), table.tableIdExtension());
+                   table.sourcePID(), table.tableIdExtension());
     }
 
     switch (table.tableId()) {
@@ -318,7 +317,7 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
         found = Contains(sdt.services, _old_service.getId());
         if (!found) {
             // Informational only
-            tsp->verbose(u"service 0x%X (%d) not found in SDT", _old_service.getId(), _old_service.getId());
+            tsp->verbose(u"service 0x%X (%<d) not found in SDT", _old_service.getId());
         }
     }
     else if (_old_service.hasName()) {

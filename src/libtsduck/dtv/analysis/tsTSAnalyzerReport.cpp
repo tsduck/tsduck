@@ -386,7 +386,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.putLine(u"Service type: " + names::ServiceType(sv.service_type, NamesFlags::FIRST));
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", sv.ts_pkt_cnt, sv.pid_cnt, sv.pid_cnt - sv.scrambled_pid_cnt, sv.scrambled_pid_cnt));
         grid.putLine(u"PMT PID: " +
-                     (sv.pmt_pid == 0 || sv.pmt_pid == PID_NULL ? u"Unknown in PAT" : UString::Format(u"0x%X (%d)", sv.pmt_pid, sv.pmt_pid)) +
+                     (sv.pmt_pid == 0 || sv.pmt_pid == PID_NULL ? u"Unknown in PAT" : UString::Format(u"0x%X (%<d)", sv.pmt_pid)) +
                      u", PCR PID: " +
                      (sv.pcr_pid == 0 || sv.pcr_pid == PID_NULL ? u"None" : UString::Format(u"0x%X (%<d)", sv.pcr_pid)));
 
@@ -416,7 +416,7 @@ void ts::TSAnalyzerReport::reportServicesForPID(Grid& grid, const PIDContext& pc
 {
     for (const auto& serv_id : pc.services) {
         auto serv_it = _services.find(serv_id);
-        grid.putLine(UString::Format(u"Service: 0x%X (%d) %s", serv_id, serv_id, serv_it == _services.end() ? UString() : serv_it->second->getName()));
+        grid.putLine(UString::Format(u"Service: 0x%X (%<d) %s", serv_id, serv_it == _services.end() ? UString() : serv_it->second->getName()));
     }
 }
 
@@ -472,7 +472,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // Header lines
         grid.section();
-        grid.putLine(UString::Format(u"PID: 0x%X (%d)", pc.pid, pc.pid), pc.fullDescription(false), false);
+        grid.putLine(UString::Format(u"PID: 0x%X (%<d)", pc.pid), pc.fullDescription(false), false);
 
         // Type of PES data, if available
         if (pc.same_stream_id) {
@@ -573,7 +573,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 
         // Header line: PID
         grid.section();
-        grid.putLine(UString::Format(u"PID: 0x%X (%d)", pc.pid, pc.pid), pc.fullDescription(false), false);
+        grid.putLine(UString::Format(u"PID: 0x%X (%<d)", pc.pid), pc.fullDescription(false), false);
 
         // Header lines: list of services to which the PID belongs to
         reportServicesForPID(grid, pc);
@@ -624,7 +624,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
             // Header line: TID
             grid.subSection();
             grid.putLine(names::TID(_duck, tid, pc.cas_id, NamesFlags::BOTH_FIRST) +
-                         (isShort ? u"" : UString::Format(u", TID ext: 0x%X (%d)", etc.etid.tidExt(), etc.etid.tidExt())));
+                         (isShort ? u"" : UString::Format(u", TID ext: 0x%X (%<d)", etc.etid.tidExt())));
 
             // 4-columns output, first column remains empty.
             grid.setLayout({grid.left(2), grid.bothTruncateLeft(25, u'.'), grid.bothTruncateLeft(23, u'.'), grid.bothTruncateLeft(17, u'.')});

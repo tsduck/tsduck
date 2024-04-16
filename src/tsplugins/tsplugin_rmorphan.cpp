@@ -125,7 +125,7 @@ void ts::RMOrphanPlugin::passPID(PID pid)
 {
     if (!_pass_pids[pid]) {
         _pass_pids.set(pid);
-        tsp->verbose(u"PID %d (0x%X) is referenced", pid, pid);
+        tsp->verbose(u"PID %d (0x%<X) is referenced", pid);
     }
 }
 

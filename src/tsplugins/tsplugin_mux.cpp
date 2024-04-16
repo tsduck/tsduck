@@ -349,7 +349,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
     }
     pid = pkt.getPID();
     if (_check_pid_conflict && _ts_pids.test(pid)) {
-        tsp->error(u"PID %d (0x%X) already exists in TS, specify --pid with another value, aborting", pid, pid);
+        tsp->error(u"PID %d (0x%<X) already exists in TS, specify --pid with another value, aborting", pid);
         return TSP_END;
     }
     if (_update_cc) {
