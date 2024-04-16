@@ -57,7 +57,7 @@ void ts::DirectShowTest::runTest(TestType type)
             testBDATuners();
             break;
         default:
-            _report.error(u"undefined DirectShow test %d", {type});
+            _report.error(u"undefined DirectShow test %d", type);
             break;
     }
 }

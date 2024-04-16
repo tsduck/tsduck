@@ -216,7 +216,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     fd = ::open(name.toUTF8().c_str(), O_RDWR);
     if (fd < 0) {
         const int err = LastSysErrorCode();
-        report.error(u"error opening %s: %s", {name, SysErrorCodeMessage(err)});
+        report.error(u"error opening %s: %s", name, SysErrorCodeMessage(err));
         return false;
     }
 
@@ -232,7 +232,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
 
     if (::ioctl(fd, IOCTL_ITE_MOD_GETCHIPTYPE, &chipTypeRequest) < 0 || chipTypeRequest.error != 0) {
         const int err = errno;
-        report.verbose(u"ignoring error getting chip type on %s: %s", {info.path, HiDesErrorMessage(chipTypeRequest.error, err)});
+        report.verbose(u"ignoring error getting chip type on %s: %s", info.path, HiDesErrorMessage(chipTypeRequest.error, err));
     }
     info.chip_type = uint16_t(chipTypeRequest.chipType);
 
@@ -243,7 +243,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
 
     if (::ioctl(fd, IOCTL_ITE_MOD_GETDEVICETYPE, &devTypeRequest) < 0 || devTypeRequest.error != 0) {
         const int err = errno;
-        report.verbose(u"ignoring error getting device type on %s: %s", {info.path, HiDesErrorMessage(devTypeRequest.error, err)});
+        report.verbose(u"ignoring error getting device type on %s: %s", info.path, HiDesErrorMessage(devTypeRequest.error, err));
     }
     info.device_type = int(devTypeRequest.DeviceType);
 
@@ -254,7 +254,7 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
 
     if (::ioctl(fd, IOCTL_ITE_MOD_GETDRIVERINFO, &driverRequest) < 0 || driverRequest.error != 0) {
         const int err = errno;
-        report.error(u"error getting driver info on %s: %s", {info.path, HiDesErrorMessage(driverRequest.error, err)});
+        report.error(u"error getting driver info on %s: %s", info.path, HiDesErrorMessage(driverRequest.error, err));
         status = false;
     }
     else {
@@ -315,7 +315,7 @@ bool ts::HiDesDevice::open(int index, Report& report)
 {
     // Error if already open.
     if (_is_open) {
-        report.error(u"%s already open", {_guts->info.path});
+        report.error(u"%s already open", _guts->info.path);
         return false;
     }
 
@@ -323,7 +323,7 @@ bool ts::HiDesDevice::open(int index, Report& report)
     UStringVector names;
     Guts::GetAllDeviceNames(names);
     if (index < 0 || size_t(index) >= names.size()) {
-        report.error(u"HiDes adapter %s not found", {index});
+        report.error(u"HiDes adapter %s not found", index);
         return false;
     }
 
@@ -336,7 +336,7 @@ bool ts::HiDesDevice::open(const UString& name, Report& report)
 {
     // Error if already open.
     if (_is_open) {
-        report.error(u"%s already open", {_guts->info.path});
+        report.error(u"%s already open", _guts->info.path);
         return false;
     }
 
@@ -406,7 +406,7 @@ bool ts::HiDesDevice::setGain(int& gain, Report& report)
 
     if (::ioctl(_guts->fd, IOCTL_ITE_MOD_ADJUSTOUTPUTGAIN, &request) < 0 || request.error != 0) {
         const int err = errno;
-        report.error(u"error setting gain on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        report.error(u"error setting gain on %s: %s", _guts->info.path, Guts::HiDesErrorMessage(request.error, err));
         return false;
     }
 
@@ -430,7 +430,7 @@ bool ts::HiDesDevice::getGain(int& gain, Report& report)
 
     if (::ioctl(_guts->fd, IOCTL_ITE_MOD_GETOUTPUTGAIN, &request) < 0 || request.error != 0) {
         const int err = errno;
-        report.error(u"error getting gain on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        report.error(u"error getting gain on %s: %s", _guts->info.path, Guts::HiDesErrorMessage(request.error, err));
         return false;
     }
 
@@ -467,7 +467,7 @@ bool ts::HiDesDevice::getGainRange(int& minGain, int& maxGain, uint64_t frequenc
 
     if (::ioctl(_guts->fd, IOCTL_ITE_MOD_GETGAINRANGE, &request) < 0 || request.error != 0) {
         const int err = errno;
-        report.error(u"error getting gain range on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        report.error(u"error getting gain range on %s: %s", _guts->info.path, Guts::HiDesErrorMessage(request.error, err));
         return false;
     }
 
@@ -496,7 +496,7 @@ bool ts::HiDesDevice::setDCCalibration(int dcI, int dcQ, ts::Report &report)
 
     if (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETDCCALIBRATIONVALUE, &request) < 0 || request.error != 0) {
         const int err = errno;
-        report.error(u"error setting DC calibration on %s: %s", {_guts->info.path, Guts::HiDesErrorMessage(request.error, err)});
+        report.error(u"error setting DC calibration on %s: %s", _guts->info.path, Guts::HiDesErrorMessage(request.error, err));
         return false;
     }
     return true;
@@ -640,21 +640,21 @@ bool ts::HiDesDevice::tune(const ModulationArgs& in_params, Report& report)
     errno = 0;
     if (::ioctl(_guts->fd, IOCTL_ITE_MOD_ACQUIRECHANNEL, &acqRequest) < 0 || acqRequest.error != 0) {
         const int err = errno;
-        report.error(u"error setting frequency & bandwidth: %s", {Guts::HiDesErrorMessage(acqRequest.error, err)});
+        report.error(u"error setting frequency & bandwidth: %s", Guts::HiDesErrorMessage(acqRequest.error, err));
         return false;
     }
 
     errno = 0;
     if (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETMODULE, &modRequest) < 0 || modRequest.error != 0) {
         const int err = errno;
-        report.error(u"error setting modulation parameters: %s", {Guts::HiDesErrorMessage(modRequest.error, err)});
+        report.error(u"error setting modulation parameters: %s", Guts::HiDesErrorMessage(modRequest.error, err));
         return false;
     }
 
     errno = 0;
     if (setInversion && (::ioctl(_guts->fd, IOCTL_ITE_MOD_SETSPECTRALINVERSION, &invRequest) < 0 || invRequest.error != 0)) {
         const int err = errno;
-        report.error(u"error setting spectral inversion: %s", {Guts::HiDesErrorMessage(invRequest.error, err)});
+        report.error(u"error setting spectral inversion: %s", Guts::HiDesErrorMessage(invRequest.error, err));
         return false;
     }
 
@@ -687,7 +687,7 @@ bool ts::HiDesDevice::Guts::startTransmission(Report& report)
 
     if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &modeRequest) < 0 || modeRequest.error != 0) {
         const int err = errno;
-        report.error(u"error enabling transmission: %s", {Guts::HiDesErrorMessage(modeRequest.error, err)});
+        report.error(u"error enabling transmission: %s", Guts::HiDesErrorMessage(modeRequest.error, err));
         return false;
     }
 
@@ -698,7 +698,7 @@ bool ts::HiDesDevice::Guts::startTransmission(Report& report)
 
     if (::ioctl(fd, IOCTL_ITE_MOD_STARTTRANSFER, &startRequest) < 0 || startRequest.error != 0) {
         const int err = errno;
-        report.error(u"error starting transmission: %s", {Guts::HiDesErrorMessage(startRequest.error, err)});
+        report.error(u"error starting transmission: %s", Guts::HiDesErrorMessage(startRequest.error, err));
         return false;
     }
 
@@ -729,7 +729,7 @@ bool ts::HiDesDevice::stopTransmission(Report& report)
 
 bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 {
-    report.debug(u"HiDesDevice: stopping transmission, total write: %'d, failed: %'d", {all_write, fail_write});
+    report.debug(u"HiDesDevice: stopping transmission, total write: %'d, failed: %'d", all_write, fail_write);
 
     // Stop transfer.
     ite::TxStopTransferRequest stopRequest;
@@ -738,7 +738,7 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 
     if (::ioctl(fd, IOCTL_ITE_MOD_STOPTRANSFER, &stopRequest) < 0 || stopRequest.error != 0) {
         const int err = errno;
-        report.error(u"error stopping transmission: %s", {Guts::HiDesErrorMessage(stopRequest.error, err)});
+        report.error(u"error stopping transmission: %s", Guts::HiDesErrorMessage(stopRequest.error, err));
         return false;
     }
 
@@ -750,7 +750,7 @@ bool ts::HiDesDevice::Guts::stopTransmission(Report& report)
 
     if (::ioctl(fd, IOCTL_ITE_MOD_ENABLETXMODE, &modeRequest) < 0 || modeRequest.error != 0) {
         const int err = errno;
-        report.error(u"error disabling transmission: %s", {Guts::HiDesErrorMessage(modeRequest.error, err)});
+        report.error(u"error disabling transmission: %s", Guts::HiDesErrorMessage(modeRequest.error, err));
         return false;
     }
 
@@ -782,7 +782,7 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
     }
 
     // Retry several write operations until everything is gone.
-    report.log(2, u"HiDesDevice: sending %d packets", {packet_count});
+    report.log(2, u"HiDesDevice: sending %d packets", packet_count);
     const char* data = reinterpret_cast<const char*>(packets);
     size_t remain = packet_count * PKT_SIZE;
 
@@ -817,7 +817,7 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
             fail_write++;
         }
         report.log(2, u"HiDesDevice: sent %d packets, write = %d, errno = %d, after %d fail (total write: %'d, failed: %'d)",
-                   {burst / PKT_SIZE, status, err, retry_count, all_write, fail_write});
+                   burst / PKT_SIZE, status, err, retry_count, all_write, fail_write);
 
         if (status == 0) {
             // Success, assume that the complete burst was sent (ie. written in the buffer in the driver).
@@ -837,7 +837,7 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
         }
         else {
             // Error and no more retry allowed.
-            report.error(u"error sending data: %s", {HiDesErrorMessage(status, err)});
+            report.error(u"error sending data: %s", HiDesErrorMessage(status, err));
             return false;
         }
     }

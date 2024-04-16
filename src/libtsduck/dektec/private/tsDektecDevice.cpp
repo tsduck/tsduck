@@ -287,13 +287,13 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
             }
         }
         if (dev_index < 0) {
-            report.error(u"no %s Dektec device found", {direction});
+            report.error(u"no %s Dektec device found", direction);
             return false;
         }
     }
     else if (dev_index >= int(devlist.size())) {
         // Invalid device index specified
-        report.error(u"invalid Dektec device index: %d", {dev_index});
+        report.error(u"invalid Dektec device index: %d", dev_index);
         return false;
     }
 
@@ -317,7 +317,7 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
 
     // Report selected device
     report.verbose(u"using Dektec device %d, %s channel %d (%s port %d)",
-                   {dev_index, direction, chan_index, model, is_input ? input[chan_index].m_Port : output[chan_index].m_Port});
+                   dev_index, direction, chan_index, model, is_input ? input[chan_index].m_Port : output[chan_index].m_Port);
     return true;
 }
 

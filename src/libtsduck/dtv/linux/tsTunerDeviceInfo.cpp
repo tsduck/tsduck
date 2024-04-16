@@ -67,7 +67,7 @@ bool ts::TunerDeviceInfo::LoadText(UString& line, const UString& directory, cons
     bool ok = line.getLine(strm);
     strm.close();
     line.trim();
-    report.debug(u"%s = \"%s\" (%s)", {name, line, ok ? u"success" : u"failure"});
+    report.debug(u"%s = \"%s\" (%s)", name, line, ok ? u"success" : u"failure");
     return ok;
 }
 

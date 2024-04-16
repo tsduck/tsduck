@@ -305,7 +305,7 @@ bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, co
         case TT_ISDB_C:
         case TT_UNDEFINED:
         default:
-            duck.report().error(u"cannot convert %s parameters to DirectShow tuning parameters", {DeliverySystemEnum.name(delsys)});
+            duck.report().error(u"cannot convert %s parameters to DirectShow tuning parameters", DeliverySystemEnum.name(delsys));
             return false;
     }
 }
@@ -500,11 +500,11 @@ bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         physical_channel = vhf->channelNumber(freq);
     }
     else {
-        duck.report().error(u"frequency %'d Hz is in neither the UHF nor VHF band", {freq});
+        duck.report().error(u"frequency %'d Hz is in neither the UHF nor VHF band", freq);
         return false;
     }
 
-    duck.report().debug(u"mapped frequency %'d to physical channel %d", {freq, physical_channel});
+    duck.report().debug(u"mapped frequency %'d to physical channel %d", freq, physical_channel);
 
     if (loc.isNull() ||
         !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, duck.report()) ||

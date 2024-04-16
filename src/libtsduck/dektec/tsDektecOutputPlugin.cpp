@@ -799,7 +799,7 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Open the device
-    tsp->debug(u"attaching to device %s serial 0x%X", {_guts->device.model, _guts->device.desc.m_Serial});
+    tsp->debug(u"attaching to device %s serial 0x%X", _guts->device.model, _guts->device.desc.m_Serial);
     Dtapi::DTAPI_RESULT status = _guts->dtdev.AttachToSerial(_guts->device.desc.m_Serial);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching output Dektec device %d (%s): %s", _guts->dev_index, _guts->device.model, DektecStrError(status));
@@ -899,7 +899,7 @@ bool ts::DektecOutputPlugin::start()
     // Set 188/204-byte output packet format and stuffing
     const int tx_mode = present(u"204") ? DTAPI_TXMODE_ADD16 : DTAPI_TXMODE_188;
     const int stuff_mode = present(u"stuffing") ? 1 : 0;
-    tsp->debug(u"setting TxMode, tx: %d, stuff: %d", {tx_mode, stuff_mode});
+    tsp->debug(u"setting TxMode, tx: %d, stuff: %d", tx_mode, stuff_mode);
     status = _guts->chan.SetTxMode(tx_mode, stuff_mode);
     if (status != DTAPI_OK) {
         return startError(u"output device SetTxMode error", status);
@@ -1039,7 +1039,7 @@ bool ts::DektecOutputPlugin::start()
         return startError(u"output device start send error", status);
     }
 
-    tsp->verbose(u"initial output bitrate: %'d b/s", {_guts->cur_bitrate});
+    tsp->verbose(u"initial output bitrate: %'d b/s", _guts->cur_bitrate);
     if (_guts->starting) {
         tsp->verbose(u"Will preload FIFO before starting transmission. Preload FIFO size: %'d bytes.", _guts->preload_fifo_size);
     }
@@ -1058,7 +1058,7 @@ bool ts::DektecOutputPlugin::start()
 bool ts::DektecOutputPlugin::startError(const UString& message, unsigned int status)
 {
     if (status != DTAPI_OK) {
-        tsp->error(u"%s: %s", {message, DektecStrError(status)});
+        tsp->error(u"%s: %s", message, DektecStrError(status));
     }
     else if (!message.empty()){
         tsp->error(message);
@@ -1125,7 +1125,7 @@ void ts::DektecOutputPlugin::displaySymbolRate(const BitRate& ts_bitrate, int dt
 bool ts::DektecOutputPlugin::setBitrate(const BitRate& bitrate)
 {
     const Dtapi::DtFractionInt frac_bitrate(ToDektecFractionInt(bitrate));
-    tsp->debug(u"SetTsRateBps(%d/%d), ie. %f", {frac_bitrate.m_Num, frac_bitrate.m_Den, bitrate});
+    tsp->debug(u"SetTsRateBps(%d/%d), ie. %f", frac_bitrate.m_Num, frac_bitrate.m_Den, bitrate);
     Dtapi::DTAPI_RESULT status = _guts->chan.SetTsRateBps(frac_bitrate);
     if (status == DTAPI_E_NOT_SUPPORTED) {
         tsp->debug(u"setting TsRateBps using DtFractionInt unsupported, using int, SetTsRateBps(%d),", bitrate.toInt());
@@ -1243,7 +1243,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             else if (!computeBitrate(symbol_rate, modulation_type, fec, 0, 0)) {
                 return false;
             }
-            tsp->debug(u"SetModControl(%d, %d, %d, %d)", {modulation_type, fec, 0, 0});
+            tsp->debug(u"SetModControl(%d, %d, %d, %d)", modulation_type, fec, 0, 0);
             status = _guts->chan.SetModControl(modulation_type, fec, 0, 0);
             break;
         }
@@ -1277,7 +1277,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             else if (!computeBitrate(symbol_rate, modulation_type, fec, param1, gold_code)) {
                 return false;
             }
-            tsp->debug(u"SetModControl(%d, %d, %d, %d)", {modulation_type, fec, param1, gold_code});
+            tsp->debug(u"SetModControl(%d, %d, %d, %d)", modulation_type, fec, param1, gold_code);
             status = _guts->chan.SetModControl(modulation_type, fec, param1, gold_code);
             break;
         }
@@ -1298,7 +1298,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             else if (!computeBitrate(symbol_rate, modulation_type, j83, qam_b, 0)) {
                 return false;
             }
-            tsp->debug(u"SetModControl(%d, %d, %d, %d)", {modulation_type, j83, qam_b, 0});
+            tsp->debug(u"SetModControl(%d, %d, %d, %d)", modulation_type, j83, qam_b, 0);
             status = _guts->chan.SetModControl(modulation_type, j83, qam_b, 0);
             break;
         }
@@ -1726,7 +1726,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                         return false;
                     }
                     _guts->starting = true;
-                    tsp->verbose(u"Pausing transmission temporarily in order to maintain preload.");
+                    tsp->verbose(u"Pausing transmission temporarily in order to maintain preload");
                 }
                 else if (_guts->drop_to_maintain) {
                     if ((_guts->drop_to_preload && ((fifo_load + cursize) > _guts->preload_fifo_size)) ||
@@ -1735,8 +1735,8 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
                             // we would have exceeded the threshold--now drop sufficient packets to get back to
                             // the preload FIFO size
                             _guts->drop_to_preload = true;
-                            tsp->verbose(u"Would have exceeded preload FIFO size (%'d bytes) + threshold (%'d bytes).  Dropping packets to get back to preload FIFO size.",
-                            {_guts->preload_fifo_size, _guts->maintain_threshold});
+                            tsp->verbose(u"Would have exceeded preload FIFO size (%'d bytes) + threshold (%'d bytes), dropping packets to get back to preload FIFO size",
+                                         _guts->preload_fifo_size, _guts->maintain_threshold);
                         }
 
                         // Want to try to get FIFO back to preload_fifo_size, not preload_fifo_size + the threshold.

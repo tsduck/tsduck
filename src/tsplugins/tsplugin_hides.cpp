@@ -165,7 +165,7 @@ bool ts::HiDesOutputPlugin::start()
                    dc_q < HiDesDevice::IT95X_DC_CAL_MIN ||
                    dc_q > HiDesDevice::IT95X_DC_CAL_MAX))
     {
-        tsp->error(u"invalid DC compensation value \"%s\"", {dc_string});
+        tsp->error(u"invalid DC compensation value \"%s\"", dc_string);
         return false;
     }
 
@@ -183,7 +183,7 @@ bool ts::HiDesOutputPlugin::start()
         _device.close(*tsp);
         return false;
     }
-    tsp->verbose(u"using device %s with nominal output bitrate of %'d bits/s", {_dev_info.toString(),_bitrate});
+    tsp->verbose(u"using device %s with nominal output bitrate of %'d bits/s", _dev_info.toString(),_bitrate);
 
     // Tune to frequency.
     if (!_device.tune(params, *tsp)) {
@@ -199,7 +199,7 @@ bool ts::HiDesOutputPlugin::start()
             return false;
         }
         // The value of gain is updated to effective value.
-        tsp->verbose(u"adjusted output gain, requested %d dB, set to %d dB", {gain, new_gain});
+        tsp->verbose(u"adjusted output gain, requested %d dB, set to %d dB", gain, new_gain);
     }
 
     // Set DC calibration

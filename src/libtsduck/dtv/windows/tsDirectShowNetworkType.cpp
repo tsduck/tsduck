@@ -249,7 +249,7 @@ bool ts::DirectShowNetworkType::initTuningSpace(::ITuningSpace* tspace, const ::
 {
     // Keep the tuning space name.
     _tuning_space_name = UString(name);
-    report.debug(u"initializing tuning space \"%s\"", {_tuning_space_name});
+    report.debug(u"initializing tuning space \"%s\"", _tuning_space_name);
 
     // Setting the unique and friendly name is not critical.
     // Ignore error (display them in debug mode only).

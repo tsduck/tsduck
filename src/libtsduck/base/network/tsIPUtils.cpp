@@ -115,7 +115,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     // Create a socket to query the system on
     SysSocketType sock = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == SYS_SOCKET_INVALID) {
-        report.error(u"error creating socket: %s", {SysErrorCodeMessage()});
+        report.error(u"error creating socket: %s", SysErrorCodeMessage());
         return false;
     }
 
@@ -126,7 +126,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     ::INTERFACE_INFO info[32];  // max 32 local interface (arbitrary)
     ::DWORD retsize;
     if (::WSAIoctl(sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD(sizeof(info)), &retsize, 0, 0) != 0) {
-        report.error(u"error getting local addresses: %s", {SysErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", SysErrorCodeMessage());
         status = false;
     }
     else {
@@ -151,7 +151,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     ifc.ifc_len = sizeof(info);
 
     if (::ioctl(sock, SIOCGIFCONF, &ifc) != 0) {
-        report.error(u"error getting local addresses: %s", {SysErrorCodeMessage()});
+        report.error(u"error getting local addresses: %s", SysErrorCodeMessage());
         status = false;
     }
     else {
@@ -165,7 +165,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
                 ::ifreq req;
                 req = info[i];
                 if (::ioctl(sock, SIOCGIFNETMASK, &req) != 0) {
-                    report.error(u"error getting network mask for %s: %s", {addr, SysErrorCodeMessage()});
+                    report.error(u"error getting network mask for %s: %s", addr, SysErrorCodeMessage());
                 }
                 else {
                     mask = IPv4Address(req.ifr_netmask);

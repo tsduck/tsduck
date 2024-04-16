@@ -116,6 +116,8 @@ namespace ts {
         // The new declarations use variadic templates instead of explicit initializer lists.
         // Calling the new overloaded functions is identical, without the brackets.
         //! @cond nodoxygen
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(deprecated-declarations)
         TS_DEPRECATED void log(int severity, const UChar* fmt, std::initializer_list<ArgMixIn> args)
         {
             if (severity <= _max_severity) {
@@ -182,6 +184,7 @@ namespace ts {
         {
             log(Severity::Debug, fmt, args);
         }
+        TS_POP_WARNING()
         //! @endcond
 
         //!

@@ -392,7 +392,7 @@ bool ts::DektecInputPlugin::getOptions()
 
         Dtapi::DTAPI_RESULT status = _guts->demod_pars.SetModType(intValue<int>(u"modulation", DTAPI_MOD_DVBS_QPSK));
         if (status != DTAPI_OK) {
-            tsp->error(u"error setting modulation type: %s", {DektecStrError(status)});
+            tsp->error(u"error setting modulation type: %s", DektecStrError(status));
             success = false;
         }
 
@@ -509,10 +509,10 @@ bool ts::DektecInputPlugin::getOptions()
         }
 
         // Check consistency of demodulation parameters.
-        tsp->debug(u"Dektec demodulation parameters: %s", {demodParsToXml()});
+        tsp->debug(u"Dektec demodulation parameters: %s", demodParsToXml());
         status = _guts->demod_pars.CheckValidity();
         if (status != DTAPI_OK) {
-            tsp->error(u"invalid Dektec demodulation parameters: %s", {DektecStrError(status)});
+            tsp->error(u"invalid Dektec demodulation parameters: %s", DektecStrError(status));
             success = false;
         }
     }
@@ -573,7 +573,7 @@ bool ts::DektecInputPlugin::start()
     }
 
     // Open the device
-    tsp->debug(u"attaching to device %s serial 0x%X", {_guts->device.model, _guts->device.desc.m_Serial});
+    tsp->debug(u"attaching to device %s serial 0x%X", _guts->device.model, _guts->device.desc.m_Serial);
     Dtapi::DTAPI_RESULT status = _guts->dtdev.AttachToSerial(_guts->device.desc.m_Serial);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching input Dektec device %d: %s", _guts->dev_index, DektecStrError(status));
@@ -585,7 +585,7 @@ bool ts::DektecInputPlugin::start()
     Dtapi::DtCaps dt_flags = _guts->device.input[_guts->chan_index].m_Flags;
 
     // Open the input channel.
-    tsp->debug(u"attaching to port %d", {port});
+    tsp->debug(u"attaching to port %d", port);
     status = _guts->chan.AttachToPort(&_guts->dtdev, port);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching input channel %d of Dektec device %d: %s", _guts->chan_index, _guts->dev_index, DektecStrError(status));
@@ -633,7 +633,7 @@ bool ts::DektecInputPlugin::start()
             tsp->error(u"error setting FIFO size: %s", DektecStrError(status));
         }
     }
-    tsp->debug(u"using FIFO size: %'d bytes", {_guts->cur_fifo_size});
+    tsp->debug(u"using FIFO size: %'d bytes", _guts->cur_fifo_size);
 
     // Configure I/O standard if necessary.
     if (_guts->iostd_value >= 0) {
@@ -692,14 +692,14 @@ bool ts::DektecInputPlugin::start()
     // Set the receiving packet size to 188 bytes (the size of the packets
     // which are returned by the board to the application, dropping extra 16
     // bytes if the transmitted packets are 204-byte).
-    tsp->debug(u"setting RxMode, mode: %d", {DTAPI_RXMODE_ST188});
+    tsp->debug(u"setting RxMode, mode: %d", DTAPI_RXMODE_ST188);
     status = _guts->chan.SetRxMode(DTAPI_RXMODE_ST188);
     if (status != DTAPI_OK) {
         return startError(u"device SetRxMode error", status);
     }
 
     // Start the capture on the input device (set receive control to "receive")
-    tsp->debug(u"setting RxControl, mode: %d", {DTAPI_RXCTRL_RCV});
+    tsp->debug(u"setting RxControl, mode: %d", DTAPI_RXCTRL_RCV);
     status = _guts->chan.SetRxControl(DTAPI_RXCTRL_RCV);
     if (status != DTAPI_OK) {
         return startError(u"device SetRxControl error", status);
