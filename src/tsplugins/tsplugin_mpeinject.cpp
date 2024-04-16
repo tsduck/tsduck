@@ -304,7 +304,7 @@ ts::ProcessorPlugin::Status ts::MPEInjectPlugin::processPacket(TSPacket& pkt, TS
     // Abort if data PID is already present in TS and --replace is not specified.
     const PID pid = pkt.getPID();
     if (!_replace && pid == _mpe_pid) {
-        tsp->error(u"MPE PID conflict, specified 0x%X (%d), now found as input PID, try another one", pid, pid);
+        tsp->error(u"MPE PID conflict, specified 0x%X (%<d), now found as input PID, try another one", pid);
         return TSP_END;
     }
 

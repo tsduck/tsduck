@@ -367,7 +367,7 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
                     ok = false;
                     element->report().error(u"in <%s>, line %d, attributes nof_late_taps, nof_slices, slice_distance, "
                                             u"non_late_increments must be all present or all absent",
-                                            {xint[0]->name(), xint[0]->lineNumber()});
+                                            xint[0]->name(), xint[0]->lineNumber());
                 }
             }
         }

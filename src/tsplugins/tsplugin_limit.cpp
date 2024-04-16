@@ -406,7 +406,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
         if (drop) {
             if (pc->dropCount++ == 0) {
                 // First time we drop packets in this PID.
-                tsp->verbose(u"starting to drop packets on PID 0x%X (%d)", pid, pid);
+                tsp->verbose(u"starting to drop packets on PID 0x%X (%<d)", pid);
             }
             _excessPackets--;
             status = TSP_DROP;

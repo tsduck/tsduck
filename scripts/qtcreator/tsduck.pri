@@ -61,9 +61,6 @@ else: PYTHON = $$first(ALLPYTHON)
 DTAPI_HEADER = $$system($$PROJROOT/scripts/dtapi-config.sh --header)
 equals(DTAPI_HEADER, ''): DEFINES += TS_NO_DTAPI=1
 
-# Detect deprecated API's.
-DEFINES += TS_DEPRECATE=1
-
 # Other configuration.
 LIBS += -ledit
 linux|mac|mingw {

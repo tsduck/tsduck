@@ -357,7 +357,7 @@ void ts::MPEPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid)
     // Found a new PID carrying MPE.
     // If we need to extract all MPE PID's, add it.
     if (_all_mpe_pids) {
-        tsp->verbose(u"extract new MPE PID 0x%X (%d), service 0x%X (%d)", pid, pid, pmt.service_id, pmt.service_id);
+        tsp->verbose(u"extract new MPE PID 0x%X (%<d), service 0x%X (%<d)", pid, pmt.service_id);
         _demux.addPID(pid);
     }
 }

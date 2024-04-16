@@ -172,7 +172,7 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
         xml::ElementVector subStructures;
         ok &= MuxCodeEntries[i]->getChildren(subStructures, u"substructure");
         if (subStructures.size() > MAX_SUBSTRUCTURES) {
-            element->report().error(u"only %d <substructure> elements are permitted [<%s>, line %d]", { MAX_SUBSTRUCTURES, element->name(), element->lineNumber() });
+            element->report().error(u"only %d <substructure> elements are permitted [<%s>, line %d]", MAX_SUBSTRUCTURES, element->name(), element->lineNumber());
             ok = false;
         }
         for (size_t j = 0; ok && j < subStructures.size(); ++j) {
@@ -182,13 +182,13 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 
             if ((_substructure.repititionCount == 0) && j != (subStructures.size() - 1)) {
                 // repetitionCount of zero is only permitted in the last substructire (ISO/IEC 14496-1 clause 7.4.2.5.2)
-                element->report().error(u"repetitionCount=='%d' is only valid the last <substructure> [<%s>, line %d]", { _substructure.repititionCount, element->name(), element->lineNumber() });
+                element->report().error(u"repetitionCount=='%d' is only valid the last <substructure> [<%s>, line %d]", _substructure.repititionCount, element->name(), element->lineNumber());
                 ok = false;
             }
             xml::ElementVector slots;
             ok &= subStructures[j]->getChildren(slots, u"slot");
             if (slots.size() > MAX_SLOTS) {
-                element->report().error(u"only %d <slot> elements are permitted [<%s>, line %d]", { MAX_SLOTS, element->name(), element->lineNumber() });
+                element->report().error(u"only %d <slot> elements are permitted [<%s>, line %d]", MAX_SLOTS, element->name(), element->lineNumber());
                 ok = false;
             }
             for (size_t k = 0; ok && k < slots.size(); k++) {

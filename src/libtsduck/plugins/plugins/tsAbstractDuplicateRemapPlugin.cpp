@@ -88,12 +88,12 @@ bool ts::AbstractDuplicateRemapPlugin::getOptions()
             pid2 = pid1;
         }
         else if (!param.scan(u"%d-%d=%d", &pid1, &pid2, &newpid)) {
-            tsp->error(u"invalid PID %s specification: %s", {_noun, param});
+            tsp->error(u"invalid PID %s specification: %s", _noun, param);
             return false;
         }
 
         if (pid1 > pid2 || pid2 >= PID_NULL || newpid > PID_NULL || (!single && newpid + pid2 - pid1 > PID_NULL)) {
-            tsp->error(u"invalid PID %s values in %s", {_noun, param});
+            tsp->error(u"invalid PID %s values in %s", _noun, param);
             return false;
         }
 
@@ -104,13 +104,13 @@ bool ts::AbstractDuplicateRemapPlugin::getOptions()
 
         // Remember each PID remapping/duplication.
         while (pid1 <= pid2) {
-            tsp->debug(u"%s PID 0x%X (%d) to 0x%X (%d)", {_verbing, pid1, pid1, newpid, newpid});
+            tsp->debug(u"%s PID 0x%X (%<d) to 0x%X (%<d)", _verbing, pid1, newpid);
 
             // Check that we don't remap/duplicate the same PID twice on distinct taget PID's.
             // Ignore --unchecked since this is always inconsistent.
             const auto it = _pidMap.find(pid1);
             if (it != _pidMap.end() && it->second != newpid) {
-                tsp->error(u"PID 0x%X (%d) %s twice", {pid1, pid1, _verbed});
+                tsp->error(u"PID 0x%X (%<d) %s twice", pid1, _verbed);
                 return false;
             }
 
@@ -119,7 +119,7 @@ bool ts::AbstractDuplicateRemapPlugin::getOptions()
 
             // Remember output PID's
             if (!_unchecked && _newPIDs.test(newpid)) {
-                tsp->error(u"duplicated output PID 0x%X (%d)", {newpid, newpid});
+                tsp->error(u"duplicated output PID 0x%X (%<d)", newpid);
                 return false;
             }
             _newPIDs.set(newpid);

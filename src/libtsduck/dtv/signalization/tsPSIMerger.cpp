@@ -558,11 +558,11 @@ void ts::PSIMerger::mergePAT()
     for (const auto& merge : _merge_pat.pmts) {
         // Check if the service already exists in the main PAT.
         if (Contains(pat.pmts, merge.first)) {
-            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", merge.first, merge.first);
+            _duck.report().error(u"service conflict, service 0x%X (%<d) exists in the two streams, dropping from merged stream", merge.first);
         }
         else {
             pat.pmts[merge.first] = merge.second;
-            _duck.report().verbose(u"adding service 0x%X (%d) in PAT from merged stream", merge.first, merge.first);
+            _duck.report().verbose(u"adding service 0x%X (%<d) in PAT from merged stream", merge.first);
         }
     }
 
@@ -717,7 +717,7 @@ void ts::PSIMerger::mergeBAT(uint16_t bouquet_id)
         return;
     }
 
-    _duck.report().debug(u"merging BAT for bouquet id 0x%X (%d)", bouquet_id, bouquet_id);
+    _duck.report().debug(u"merging BAT for bouquet id 0x%X (%<d)", bouquet_id);
 
     // Build a new BAT based on last main BAT with incremented version number.
     BAT bat(main->second);

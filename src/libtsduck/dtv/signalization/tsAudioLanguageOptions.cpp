@@ -126,7 +126,7 @@ bool ts::AudioLanguageOptionsVector::apply(DuckContext& duck, PMT& pmt, int seve
             // Find the audio stream by PID in the PMT
             smi = pmt.streams.find(it->getPID());
             if (smi == pmt.streams.end()) {
-                duck.report().log(severity, u"audio PID %d (0x%X) not found in PMT", it->getPID(), it->getPID());
+                duck.report().log(severity, u"audio PID %d (0x%<X) not found in PMT", it->getPID());
                 ok = false;
             }
         }

@@ -53,7 +53,7 @@ size_t ts::tsswitch::InputExecutor::pluginIndex() const
 
 void ts::tsswitch::InputExecutor::startInput(bool isCurrent)
 {
-    debug(u"received start request, current: %s", {isCurrent});
+    debug(u"received start request, current: %s", isCurrent);
 
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     _isCurrent = isCurrent;
@@ -179,7 +179,7 @@ void ts::tsswitch::InputExecutor::main()
         // Here, we need to start an input session.
         debug(u"starting input plugin");
         const bool started = _input->start();
-        debug(u"input plugin started, status: %s", {started});
+        debug(u"input plugin started, status: %s", started);
         _core.inputStarted(_pluginIndex, started);
 
         if (!started) {
@@ -218,7 +218,7 @@ void ts::tsswitch::InputExecutor::main()
                 }
                 // Exit input when termination is requested.
                 if (_stopRequest || _terminated) {
-                    debug(u"exiting session: stop request: %s, terminated: %s", {_stopRequest, _terminated});
+                    debug(u"exiting session: stop request: %s, terminated: %s", _stopRequest, _terminated);
                     break;
                 }
                 // There is some free buffer, compute first index and size of receive area.

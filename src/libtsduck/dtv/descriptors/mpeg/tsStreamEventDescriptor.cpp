@@ -139,7 +139,7 @@ bool ts::StreamEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element
             private_data.appendUTF8(text);
         }
         else {
-            element->report().error(u"In <%s> at line %d, <private_data> and <private_text> are mutually exclusive", {element->name(), element->lineNumber()});
+            element->report().error(u"In <%s> at line %d, <private_data> and <private_text> are mutually exclusive", element->name(), element->lineNumber());
         }
     }
     return ok;

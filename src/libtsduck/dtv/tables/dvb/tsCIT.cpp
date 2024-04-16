@@ -238,7 +238,7 @@ bool ts::CIT::analyzeXML(DuckContext& duck, const xml::Element* element)
              (*it)->getIntAttribute(cr.prepend_string_index, u"prepend_string_index", true) &&
              (*it)->getAttribute(cr.unique_string, u"unique_string", true, UString(), 0, 255);
         if (ok && cr.prepend_string_index >= prepend_strings.size() && cr.prepend_string_index != 0xFF) {
-            element->report().error(u"line %d, attribute 'prepend_string_index' out of range", {(*it)->lineNumber()});
+            element->report().error(u"line %d, attribute 'prepend_string_index' out of range", (*it)->lineNumber());
             ok = false;
         }
         crids.push_back(cr);

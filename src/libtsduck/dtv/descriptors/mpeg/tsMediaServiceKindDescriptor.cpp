@@ -306,7 +306,7 @@ bool ts::MediaServiceKindDescriptor::analyzeXML(DuckContext& duck, const xml::El
                     case 1: newLanguagePair.lang_len = 2; break;
                     case 2: newLanguagePair.lang_len = 3; break;
                     case 3:
-                        mediaPairs[j]->report().error(u"'3' is a reserved value for @lang_len_idc in <%s>, line %d", { element->name(), element->lineNumber() });
+                        mediaPairs[j]->report().error(u"'3' is a reserved value for @lang_len_idc in <%s>, line %d", element->name(), element->lineNumber());
                         ok = false;
                         break;
                     default:
@@ -315,7 +315,7 @@ bool ts::MediaServiceKindDescriptor::analyzeXML(DuckContext& duck, const xml::El
                 }
                 ok &= mediaPairs[j]->getAttribute(newLanguagePair.language_code, u"BCP47_language_code", true, u"");
                 if (newLanguagePair.language_code.length() != newLanguagePair.lang_len) {
-                    mediaPairs[j]->report().error(u"specified length (%d) does not match @IETF_BCP_47_language_code length (%d) in <%s>, line %d", { newLanguagePair.lang_len, newLanguagePair.language_code.length(), element->name(), element->lineNumber() });
+                    mediaPairs[j]->report().error(u"specified length (%d) does not match @IETF_BCP_47_language_code length (%d) in <%s>, line %d", newLanguagePair.lang_len, newLanguagePair.language_code.length(), element->name(), element->lineNumber());
                     ok = false;
                 }
                 xml::ElementVector mediaServiceTypes;

@@ -197,7 +197,7 @@ bool ts::EVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0, 7);
 
     if (ok && temporal_id_min.has_value() + temporal_id_max.has_value() == 1) {
-        element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), element->name()});
+        element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", element->lineNumber(), element->name());
         ok = false;
     }
     return ok;

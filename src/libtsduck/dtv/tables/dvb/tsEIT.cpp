@@ -557,7 +557,7 @@ bool ts::EIT::getTableId(const xml::Element* element)
         return true;
     }
     else {
-        element->report().error(u"'%s' is not a valid value for attribute 'type' in <%s>, line %d", {type, element->name(), element->lineNumber()});
+        element->report().error(u"'%s' is not a valid value for attribute 'type' in <%s>, line %d", type, element->name(), element->lineNumber());
         return false;
     }
 }

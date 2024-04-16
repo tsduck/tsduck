@@ -258,7 +258,7 @@ bool ts::ISDBComponentGroupDescriptor::analyzeXML(DuckContext& duck, const xml::
             }
         }
         if (components_ok && !matching_total_bit_rate()) {
-            element->report().error(u"total_bit_rate must be specified for all or none of the component_group in  <%s>, line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"total_bit_rate must be specified for all or none of the component_group in  <%s>, line %d", element->name(), element->lineNumber());
             components_ok = false;
         }
     }

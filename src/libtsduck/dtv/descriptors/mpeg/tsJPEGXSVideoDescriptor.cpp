@@ -288,7 +288,7 @@ bool ts::JPEGXSVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element
     if (ok) {
         if ((sample_bitdepth.has_value() && !sampling_structure.has_value()) ||
             (!sample_bitdepth.has_value() && sampling_structure.has_value())) {
-            element->report().error(u"neither or both of sample_bitdepth and sampling_structure are to be signalled  in <%s> at line %d", {element->name(), element->lineNumber()});
+            element->report().error(u"neither or both of sample_bitdepth and sampling_structure are to be signalled  in <%s> at line %d", element->name(), element->lineNumber());
             ok = false;
         }
     }

@@ -344,7 +344,7 @@ bool ts::TransportProtocolDescriptor::analyzeXML(DuckContext& duck, const xml::E
         element->getChildren(proto, u"protocol", 0, 1);
 
     if (ok && (objcar.size() + ip.size() + htt.size() + proto.size()) != 1) {
-        element->report().error(u"specify exactly one of <object_carousel>, <ip_mpe>, <http>, <protocol> in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"specify exactly one of <object_carousel>, <ip_mpe>, <http>, <protocol> in <%s>, line %d", element->name(), element->lineNumber());
         return false;
     }
     else if (ok && !objcar.empty()) {

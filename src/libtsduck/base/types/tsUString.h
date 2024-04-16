@@ -16,18 +16,20 @@
 #include "tsArgMix.h"
 #include "tsMemory.h"
 
-// The UString class contains printf-like and scanf-like features.
-// Initially, these methods used initializer lists for the variable list of arguments.
-// The new declarations use variadic templates instead of explicit initializer lists.
-// Calling the new overloaded functions is identical, without the brackets.
-// When TS_DEPRECATE is defined, using the legacy functions generate "deprecation" warnings.
-//! @cond nodoxygen
-#if defined(TS_DEPRECATE)
-    #define TS_DEPRECATED [[deprecated("remove brackets '{}'")]]
-#else
+//!
+//! Do not declare legacy method as "deprecated".
+//!
+//! The UString class contains printf-like and scanf-like features. Initially,
+//! these methods used initializer lists for the variable list of arguments. The new
+//! declarations use variadic templates instead of explicit initializer lists. Calling
+//! the new overloaded functions is identical, without the brackets. When TS_NODEPRECATE
+//! is defined, using the legacy functions does not generate "deprecation" warnings.
+//!
+#if defined(TS_NODEPRECATE)
     #define TS_DEPRECATED
+#else
+    #define TS_DEPRECATED [[deprecated("remove brackets '{}'")]]
 #endif
-//! @endcond
 
 namespace ts {
 

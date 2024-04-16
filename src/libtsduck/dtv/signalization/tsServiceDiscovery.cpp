@@ -196,7 +196,7 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
         _demux.resetPID(PID_PAT);
         _demux.addPID(PID_PAT);
 
-        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", getName(), getId(), getId());
+        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%<d)", getName(), getId());
     }
 
     // Now collect suitable information from the SDT.
@@ -283,7 +283,7 @@ void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
         _demux.resetPID(PID_PAT);
         _demux.addPID(PID_PAT);
 
-        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%d)", getName(), getId(), getId());
+        _duck.report().verbose(u"found service \"%s\", service id is 0x%X (%<d)", getName(), getId());
     }
 
     // Now collect suitable information from the VCT.

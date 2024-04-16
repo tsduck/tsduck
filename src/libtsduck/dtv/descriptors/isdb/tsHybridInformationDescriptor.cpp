@@ -168,11 +168,11 @@ bool ts::HybridInformationDescriptor::analyzeXML(DuckContext& duck, const xml::E
     location_type = has_connect;
 
     if (bcast_count == 1) {
-        element->report().error(u"attributes 'component_tag' and 'module_id' must be both present or both absent in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"attributes 'component_tag' and 'module_id' must be both present or both absent in <%s>, line %d", element->name(), element->lineNumber());
         return false;
     }
     else if (has_connect && bcast_count > 0) {
-        element->report().error(u"attribute 'URL' and attributes 'component_tag', 'module_id' are mutually exclusive in <%s>, line %d", {element->name(), element->lineNumber()});
+        element->report().error(u"attribute 'URL' and attributes 'component_tag', 'module_id' are mutually exclusive in <%s>, line %d", element->name(), element->lineNumber());
         return false;
     }
     else if (!element->getIntAttribute(format, u"format", true, 0, 0, 15)) {

@@ -259,7 +259,7 @@ bool ts::hls::OutputPlugin::createNextSegment()
     const UString fileName(_nameGenerator.newFileName());
 
     // Create the segment file.
-    tsp->verbose(u"creating media segment %s", {fileName});
+    tsp->verbose(u"creating media segment %s", fileName);
     if (!_segmentFile.open(fileName, TSFile::WRITE | TSFile::SHARED, *tsp)) {
         return false;
     }
@@ -376,7 +376,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         _liveSegmentFiles.pop_front();
 
         // Delete the segment file.
-        tsp->verbose(u"deleting obsolete segment file %s", {name});
+        tsp->verbose(u"deleting obsolete segment file %s", name);
         if (!fs::remove(name, &ErrCodeReport(*tsp, u"error deleting", name)) && fs::exists(name)) {
             // Failed to delete, keep it to retry later.
             failedDelete.push_back(name);
@@ -412,7 +412,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                     _pmtPID = pat.pmts.begin()->second;
                     _demux.addPID(_pmtPID);
                     _ccFixer.addPID(_pmtPID);
-                    tsp->verbose(u"using service id 0x%X (%d) as reference, PMT PID 0x%X (%d)", {srv, srv, _pmtPID, _pmtPID});
+                    tsp->verbose(u"using service id 0x%X (%<d) as reference, PMT PID 0x%X (%<d)", srv, _pmtPID);
                 }
             }
             break;
@@ -423,11 +423,11 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                 packets = &_pmtPackets;
                 _videoPID = pmt.firstVideoPID(duck);
                 if (_videoPID == PID_NULL) {
-                    tsp->warning(u"no video PID found in service 0x%X (%d)", {pmt.service_id, pmt.service_id});
+                    tsp->warning(u"no video PID found in service 0x%X (%<d)", pmt.service_id);
                 }
                 else {
                     _videoStreamType = pmt.streams[_videoPID].stream_type;
-                    tsp->verbose(u"using video PID 0x%X (%d) as reference", {_videoPID, _videoPID});
+                    tsp->verbose(u"using video PID 0x%X (%<d) as reference", _videoPID);
                 }
             }
             break;
@@ -560,7 +560,7 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
                         renewNow = true;
                     }
                     else if (renewOnPUSI) {
-                        tsp->debug(u"no I-frame found in last %s, starting new segment on new PES packet", {_maxExtraDuration});
+                        tsp->debug(u"no I-frame found in last %s, starting new segment on new PES packet", _maxExtraDuration);
                         renewNow = true;
                     }
                     else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {

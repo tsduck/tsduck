@@ -293,11 +293,11 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 {
     if (pat.nit_pid != PID_NULL) {
         _nit_pid = pat.nit_pid;
-        tsp->verbose(u"NIT PID is %d (0x%X) in PAT", _nit_pid, _nit_pid);
+        tsp->verbose(u"NIT PID is %d (0x%<X) in PAT", _nit_pid);
     }
     else {
         _nit_pid = PID_NIT;
-        tsp->verbose(u"NIT PID not found in PAT, using default %d (0x%X)", _nit_pid, _nit_pid);
+        tsp->verbose(u"NIT PID not found in PAT, using default %d (0x%<X)", _nit_pid);
     }
 
     // Filter sections on the PID for NIT.
@@ -311,7 +311,7 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 
 void ts::NITScanPlugin::processNIT(const NIT& nit)
 {
-    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%X)", nit.version, nit.network_id, nit.network_id);
+    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%<X)", nit.version, nit.network_id);
 
     // Count the number of NIT's
     _nit_count++;

@@ -144,7 +144,7 @@ bool ts::SAT::satellite_position_v2_info_type::geostationary_position_type::from
             orbital_position = (p1 * 10) + p2;
         }
         else {
-            element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", { orbit, element->name(), element->lineNumber() });
+            element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", orbit, element->name(), element->lineNumber());
         }
     }
     return ok;
@@ -272,11 +272,11 @@ bool ts::SAT::satellite_position_v2_info_type::fromXML(const xml::Element* eleme
         ok = element->getChildren(geos, u"geostationary", 0, 1) &&
             element->getChildren(eos, u"earth_orbiting", 0, 1);
         if (ok && (geos.size() + eos.size() == 0)) {
-            element->report().error(u"either <geostationary> or <earth_orbiting> must be provided in <%s>, line %d", { element->name(), element->lineNumber() });
+            element->report().error(u"either <geostationary> or <earth_orbiting> must be provided in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
         if (ok && (geos.size() + eos.size() != 1)) {
-            element->report().error(u"only one of <geostationary> or <earth_orbiting> is permitted in <%s>, line %d", { element->name(), element->lineNumber() });
+            element->report().error(u"only one of <geostationary> or <earth_orbiting> is permitted in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
         if (ok) {
@@ -829,7 +829,7 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
             if (ok) {
                 const auto found = std::find(begin(slot_transmission_on), end(slot_transmission_on), newSlot);
                 if (found != end(slot_transmission_on)) {
-                    slots[j]->report().error(u"slot id=%d already specified in <%s>, line %d", { newSlot.number, plan->name(), slots[j]->lineNumber() });
+                    slots[j]->report().error(u"slot id=%d already specified in <%s>, line %d", newSlot.number, plan->name(), slots[j]->lineNumber());
                     ok = false;
                 }
             }
@@ -841,7 +841,7 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
             }
         }
         if (ok && (highest_slot_number != slot_transmission_on.size())) {
-            plan->report().error(u"not all <slot> elements specified in <%s>, line %d", { plan->name(), plan->lineNumber() });
+            plan->report().error(u"not all <slot> elements specified in <%s>, line %d", plan->name(), plan->lineNumber());
             ok = false;
         }
     }
@@ -868,7 +868,7 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
         }
     }
     if (time_plan_mode == -1) {
-        element->report().error(u"no slot type specified in <%s>, line %d", { element->name(), element->lineNumber() });
+        element->report().error(u"no slot type specified in <%s>, line %d", element->name(), element->lineNumber());
         ok = false;
     }
     return ok;
@@ -1187,7 +1187,7 @@ bool ts::SAT::analyzeXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute(table_count, u"table_count", true, 0, 0x000, 0x03FF);
 
     if (satellite_table_id == TIME_ASSOCIATION_INFO && table_count != 0) {
-        element->report().error(u"@table_count must be 0 for Time Association Info (satellite_table_id=%d) in <%s>, line %d", { satellite_table_id, element->name(), element->lineNumber()});
+        element->report().error(u"@table_count must be 0 for Time Association Info (satellite_table_id=%d) in <%s>, line %d", satellite_table_id, element->name(), element->lineNumber());
         ok = false;
     }
 
@@ -1244,7 +1244,7 @@ bool ts::SAT::analyzeXML(DuckContext& duck, const xml::Element* element)
                 }
                 break;
             default:
-                element->report().error(u"invalid @satellite_table_id (%d)  in <%s>, line %d", { satellite_table_id, element->name(), element->lineNumber()});
+                element->report().error(u"invalid @satellite_table_id (%d)  in <%s>, line %d", satellite_table_id, element->name(), element->lineNumber());
                 ok = false;
                 break;
         }

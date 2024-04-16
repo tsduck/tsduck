@@ -120,7 +120,7 @@ bool ts::RISTOutputPlugin::start()
     }
 
     // Initialize the RIST context.
-    tsp->debug(u"calling rist_sender_create, profile: %d", {_guts->rist.profile});
+    tsp->debug(u"calling rist_sender_create, profile: %d", _guts->rist.profile);
     if (::rist_sender_create(&_guts->rist.ctx, _guts->rist.profile, 0, &_guts->rist.log) != 0) {
         tsp->error(u"error in rist_sender_create");
         _guts->datagram.close(0, *tsp);
@@ -196,7 +196,7 @@ bool ts::RISTOutputPlugin::sendDatagram(const void* address, size_t size, Report
     }
     else if (size_t(sent) != size) {
         // Don't really know what to do, retry with the rest?
-        report.warning(u"sent %d bytes to RIST, only %d were written", {size, sent});
+        report.warning(u"sent %d bytes to RIST, only %d were written", size, sent);
     }
     return true;
 }

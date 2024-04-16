@@ -1048,7 +1048,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
             eps->cas_operators.insert(opi);
             eps->carry_section = true;
             _demux.addPID(ca_pid);
-            eps->description.format(u"MediaGuard ECM for OPI %d (0x%X)", opi, opi);
+            eps->description.format(u"MediaGuard ECM for OPI %d (0x%<X)", opi);
             data += 15; size -= 15;
         }
     }
@@ -1065,7 +1065,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         eps->cas_operators.insert(opi);
         eps->carry_section = true;
         _demux.addPID(ca_pid);
-        eps->description.format(u"MediaGuard EMM for OPI %d (0x%X), EMM types: 0x%X", opi, opi, etypes);
+        eps->description.format(u"MediaGuard EMM for OPI %d (0x%<X), EMM types: 0x%X", opi, etypes);
     }
 
     else if (cas == CAS_MEDIAGUARD && svp == nullptr && size >= 1) {
@@ -1091,7 +1091,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
             eps1->cas_operators.insert(opi);
             eps1->carry_section = true;
             _demux.addPID(ca_pid);
-            eps1->description = UString::Format(u"MediaGuard Group EMM for OPI %d (0x%X)", opi, opi);
+            eps1->description = UString::Format(u"MediaGuard Group EMM for OPI %d (0x%<X)", opi);
             data += 4; size -= 4; nb_opi--;
         }
     }
@@ -1112,10 +1112,10 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
             uint16_t ppid = GetUInt16(data);
             data += 2; size -= 2;
             if (eps->cas_operators.empty()) {
-                eps->description += UString::Format(u" for PPID %d (0x%X)", ppid, ppid);
+                eps->description += UString::Format(u" for PPID %d (0x%<X)", ppid);
             }
             else {
-                eps->description += UString::Format(u", %d (0x%X)", ppid, ppid);
+                eps->description += UString::Format(u", %d (0x%<X)", ppid);
             }
             eps->cas_operators.insert(ppid);
         }
@@ -1306,7 +1306,7 @@ void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         pc->t2mi_plp_ts[pkt.plp()];
 
         // Add the PLP as attributes of this PID.
-        AppendUnique(pc->attributes, UString::Format(u"PLP: 0x%X (%d)", pkt.plp(), pkt.plp()));
+        AppendUnique(pc->attributes, UString::Format(u"PLP: 0x%X (%<d)", pkt.plp()));
     }
 }
 

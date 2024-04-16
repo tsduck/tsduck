@@ -160,7 +160,7 @@ ts::UString ts::Service::toString() const
         str.format(u"%s%d.%d", str.empty() ? u"" : u", ", _major_id_atsc.value(), _minor_id_atsc.value());
     }
     if (_id.has_value()) {
-        str.format(u"%s0x%X (%d)", str.empty() ? u"" : u", ", _id.value(), _id.value());
+        str.format(u"%s0x%X (%<d)", str.empty() ? u"" : u", ", _id.value());
     }
     if (_lcn.has_value()) {
         str.format(u"%s#%d", str.empty() ? u"" : u", ", _lcn.value());

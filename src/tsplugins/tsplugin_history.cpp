@@ -375,7 +375,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
             // Got an ECM
             if (_report_cas && _cpids[pid].last_tid != table.tableId()) {
                 // Got a new ECM
-                report(u"PID %d (0x%X), service 0x%X, new ECM 0x%X", pid, pid, _cpids[pid].service_id, table.tableId());
+                report(u"PID %d (0x%<X), service 0x%X, new ECM 0x%X", pid, _cpids[pid].service_id, table.tableId());
             }
             break;
         }

@@ -253,7 +253,7 @@ ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket(TSPacket& pkt, TSPack
 
     // Check conflicts
     if (!_unchecked && new_pid == pid && _newPIDs.test(pid)) {
-        tsp->error(u"PID conflict: PID %d (0x%X) present both in input and remap", pid, pid);
+        tsp->error(u"PID conflict: PID %d (0x%<X) present both in input and remap", pid);
         return TSP_END;
     }
 

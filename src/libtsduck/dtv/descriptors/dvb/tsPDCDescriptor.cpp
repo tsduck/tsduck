@@ -116,7 +116,7 @@ bool ts::PDCDescriptor::analyzeXML(DuckContext& duck, const xml::Element* elemen
         pil_hours < 24 &&
         pil_minutes < 60;
     if (!ok) {
-        element->report().error(u"Incorrect value '%s' for attribute 'programme_identification_label' in <%s>, line %d, use 'MM-DD hh:mm'", {date, element->name(), element->lineNumber()});
+        element->report().error(u"Incorrect value '%s' for attribute 'programme_identification_label' in <%s>, line %d, use 'MM-DD hh:mm'", date, element->name(), element->lineNumber());
     }
     return ok;
 }

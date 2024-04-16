@@ -127,17 +127,17 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
     const size_t size = _request.announdedContentSize();
 
     // Print a message.
-    tsp->verbose(u"downloading from %s", {_request.finalURL()});
-    tsp->verbose(u"MIME type: %s, expected size: %s", {mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", size)});
+    tsp->verbose(u"downloading from %s", _request.finalURL());
+    tsp->verbose(u"MIME type: %s, expected size: %s", mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", size));
     if (!mime.empty() && !mime.similar(u"video/mp2t")) {
-        tsp->warning(u"MIME type is %s, maybe not a valid transport stream", {mime});
+        tsp->warning(u"MIME type is %s, maybe not a valid transport stream", mime);
     }
 
     // Create the auto-save file when necessary.
     UString name(BaseName(URL(_request.finalURL()).getPath()));
     if (!_autoSaveDir.empty() && !name.empty()) {
         name = _autoSaveDir + fs::path::preferred_separator + name;
-        tsp->verbose(u"saving input TS to %s", {name});
+        tsp->verbose(u"saving input TS to %s", name);
         // Display errors but do not fail, this is just auto save.
         _outSave.open(name, TSFile::WRITE | TSFile::SHARED, *tsp);
     }

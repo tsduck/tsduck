@@ -325,7 +325,7 @@ void Stuffer::evaluateNextStuffing()
             msg += ts::UString::Format(u" after packet %'d", initial_position);
         }
         if (_opt.reference_pid != ts::PID_NULL) {
-            msg += ts::UString::Format(u" in PID %d (0x%X), try another PID or increasing --buffer-size", _opt.reference_pid, _opt.reference_pid);
+            msg += ts::UString::Format(u" in PID %d (0x%<X), try another PID or increasing --buffer-size", _opt.reference_pid);
         }
         else {
             msg += u", try increasing --buffer-size";

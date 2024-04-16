@@ -214,7 +214,7 @@ bool ts::VirtualSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml:
              (*it)->getOptionalIntAttribute<PID>(part.boundary_PID, u"boundary_PID", 0, 0x1FFF) &&
              (*it)->getOptionalIntAttribute(part.maximum_duration, u"maximum_duration", 0, 0x1FFFFFFF);
         if (part.boundary_PID.has_value() && part.maximum_duration.has_value()) {
-            element->report().error(u"attributes 'boundary_PID' and 'maximum_duration' are mutually exclusive in <%s>, line %d", {element->name(), (*it)->lineNumber()});
+            element->report().error(u"attributes 'boundary_PID' and 'maximum_duration' are mutually exclusive in <%s>, line %d", element->name(), (*it)->lineNumber());
         }
         partitions.push_back(part);
     }

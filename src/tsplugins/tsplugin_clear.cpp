@@ -228,7 +228,7 @@ void ts::ClearPlugin::processPAT(PAT& pat)
         const auto it = pat.pmts.find(_service.getId());
         if (it == pat.pmts.end()) {
             // Service not found, error
-            tsp->error(u"service id %d (0x%X) not found in PAT", _service.getId(), _service.getId());
+            tsp->error(u"service id %d (0x%<X) not found in PAT", _service.getId());
             _abort = true;
             return;
         }
@@ -246,7 +246,7 @@ void ts::ClearPlugin::processPAT(PAT& pat)
         _service.setId(it->first);
         _service.setPMTPID(it->second);
         _demux.addPID(it->second);
-        tsp->verbose(u"using service %d (0x%X)", _service.getId(), _service.getId());
+        tsp->verbose(u"using service %d (0x%<X)", _service.getId());
     }
     else {
         // No service specified, no service in PAT, error

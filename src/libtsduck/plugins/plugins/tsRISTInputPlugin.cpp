@@ -132,7 +132,7 @@ bool ts::RISTInputPlugin::start()
     _guts->qsize_warned = false;
 
     // Initialize the RIST context.
-    tsp->debug(u"calling rist_receiver_create, profile: %d", {_guts->rist.profile});
+    tsp->debug(u"calling rist_receiver_create, profile: %d", _guts->rist.profile);
     if (::rist_receiver_create(&_guts->rist.ctx, _guts->rist.profile, &_guts->rist.log) != 0) {
         tsp->error(u"error in rist_receiver_create");
         return false;
@@ -176,7 +176,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
 
     if (!_guts->buffer.empty()) {
         // There are remaining data from a previous receive in the buffer.
-        tsp->debug(u"read data from remaining %d bytes in the buffer", {_guts->buffer.size()});
+        tsp->debug(u"read data from remaining %d bytes in the buffer", _guts->buffer.size());
         assert(_guts->buffer.size() % PKT_SIZE == 0);
         pkt_count = std::min(_guts->buffer.size() / PKT_SIZE, max_packets);
         MemCopy(pkt_buffer->b, _guts->buffer.data(), pkt_count * PKT_SIZE);
@@ -213,12 +213,12 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
                     // User abort was requested.
                     return 0;
                 }
-                tsp->debug(u"no packet, queue size: %d, data block: 0x%X, polling librist again", {queue_size, size_t(dblock)});
+                tsp->debug(u"no packet, queue size: %d, data block: 0x%X, polling librist again", queue_size, size_t(dblock));
             }
             else {
                 // Report excessive queue size to diagnose reception issues.
                 if (queue_size > _guts->last_qsize + 10) {
-                    tsp->warning(u"RIST receive queue heavy load: %d data blocks, flow id %d", {queue_size, dblock->flow_id});
+                    tsp->warning(u"RIST receive queue heavy load: %d data blocks, flow id %d", queue_size, dblock->flow_id);
                     _guts->qsize_warned = true;
                 }
                 else if (_guts->qsize_warned && queue_size == 1) {
@@ -233,7 +233,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
                 const size_t data_size = total_pkt_count * PKT_SIZE;
                 if (data_size < dblock->payload_len) {
                     tsp->warning(u"received %'d bytes, not a integral number of TS packets, %d trailing bytes, first received byte: 0x%X, first trailing byte: 0x%X",
-                                 {dblock->payload_len, dblock->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]});
+                                 dblock->payload_len, dblock->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]);
                 }
 
                 // Get the input RIST timestamp. This value is in NTP units (Network Time Protocol).

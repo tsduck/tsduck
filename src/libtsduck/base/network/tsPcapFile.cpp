@@ -24,20 +24,6 @@ ts::PcapFile::~PcapFile()
 
 
 //----------------------------------------------------------------------------
-// Report an error (if fmt is not empty), set error indicator, return false.
-//----------------------------------------------------------------------------
-
-bool ts::PcapFile::error(Report& report, const UString& fmt, std::initializer_list<ArgMixIn> args)
-{
-    if (!fmt.empty()) {
-        report.error(fmt, args);
-    }
-    _error = true;
-    return false;
-}
-
-
-//----------------------------------------------------------------------------
 // Open the file for read.
 //----------------------------------------------------------------------------
 
@@ -116,7 +102,7 @@ bool ts::PcapFile::readall(uint8_t* data, size_t size, Report& report)
             if (!_in->eof()) {
                 report.error(u"error reading %s", _name);
             }
-            return error(report);
+            return error();
         }
 
         // Get file size so far.
@@ -148,7 +134,7 @@ bool ts::PcapFile::readHeader(uint32_t magic, Report& report)
             // This is a pcap file. Read 20 additional bytes for the rest of the header.
             uint8_t header[20];
             if (!readall(header, sizeof(header), report)) {
-                return error(report);
+                return error();
             }
             _ng = false;
             _be = magic == PCAP_MAGIC_BE || magic == PCAPNS_MAGIC_BE;
@@ -165,10 +151,10 @@ bool ts::PcapFile::readHeader(uint32_t magic, Report& report)
             _ng = true;
             ByteBlock header;
             if (!readNgBlockBody(magic, header, report)) {
-                return error(report);
+                return error();
             }
             if (header.size() < 16) {
-                return error(report, u"invalid pcap-ng file, truncated section header in %s", {_name});
+                return error(report, u"invalid pcap-ng file, truncated section header in %s", _name);
             }
             _major = get16(header.data() + 4);
             _minor = get16(header.data() + 6);
@@ -176,7 +162,7 @@ bool ts::PcapFile::readHeader(uint32_t magic, Report& report)
             break;
         }
         default: {
-            return error(report, u"invalid pcap file, unknown magic number 0x%X", {magic});
+            return error(report, u"invalid pcap file, unknown magic number 0x%X", magic);
         }
     }
     return true;
@@ -190,7 +176,7 @@ bool ts::PcapFile::readHeader(uint32_t magic, Report& report)
 bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& report)
 {
     if (data == nullptr || size < 8) {
-        return error(report, u"invalid pcap-ng interface description, %d bytes", {size});
+        return error(report, u"invalid pcap-ng interface description, %d bytes", size);
     }
 
     InterfaceDesc ifd;
@@ -249,7 +235,7 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
     // Read the first "Block Total Length" field.
     uint8_t lenfield[4];
     if (!readall(lenfield, sizeof(lenfield), report)) {
-        return error(report);
+        return error();
     }
 
     // If the block type is Section Header, then the endianness is given by the first 4 bytes.
@@ -259,12 +245,12 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
         body.resize(4);
         if (!readall(body.data(), body.size(), report)) {
             body.clear();
-            return error(report);
+            return error();
         }
         const uint32_t order_magic = GetUInt32BE(body.data());
         if (order_magic != PCAPNG_ORDER_BE && order_magic != PCAPNG_ORDER_LE) {
             body.clear();
-            return error(report, u"invalid pcap-ng file, unknown 'byte-order magic' 0x%X in %s", {order_magic, _name});
+            return error(report, u"invalid pcap-ng file, unknown 'byte-order magic' 0x%X in %s", order_magic, _name);
         }
         _be = order_magic == PCAPNG_ORDER_BE;
     }
@@ -274,7 +260,7 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
     const size_t size = get32(lenfield);
     if (size % 4 != 0 || size < 12 + body.size()) {
         body.clear();
-        return error(report, u"invalid pcap-ng block length %d in %s", {size, _name});
+        return error(report, u"invalid pcap-ng block length %d in %s", size, _name);
     }
 
     // Read the rest of the block body.
@@ -282,17 +268,17 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
     body.resize(size - 12);
     if (!readall(body.data() + start, body.size() - start, report)) {
         body.clear();
-        return error(report);
+        return error();
     }
 
     // Read and check the last "Block Total Length" field.
     if (!readall(lenfield, sizeof(lenfield), report)) {
-        return error(report);
+        return error();
     }
     const size_t last_size = get32(lenfield);
     if (size != last_size) {
         body.clear();
-        return error(report, u"inconsistent pcap-ng block length in %s, leading length: %d, trailing length: %d", {_name, size, last_size});
+        return error(report, u"inconsistent pcap-ng block length in %s, leading length: %d, trailing length: %d", _name, size, last_size);
     }
     return true;
 }
@@ -336,24 +322,24 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
             // Pcap-ng file, read block type value.
             uint8_t type_field[4];
             if (!readall(type_field, sizeof(type_field), report)) {
-                return error(report);
+                return error();
             }
             const uint32_t type = get32(type_field);
             if (type == PCAPNG_SECTION_HEADER) {
                 // Restart a new section, reinitialize all characteristics.
                 if (!readHeader(type, report)) {
-                    return error(report);
+                    return error();
                 }
                 continue; // loop to next packet block
             }
             // Read one data block.
             if (!readNgBlockBody(type, buffer, report)) {
-                return error(report);
+                return error();
             }
             if (type == PCAPNG_INTERFACE_DESC) {
                 // Process an interface description.
                 if (!analyzeNgInterface(buffer.data(), buffer.size(), report)) {
-                    return error(report);
+                    return error();
                 }
                 continue; // loop to next packet block
             }
@@ -401,7 +387,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
             _packet_count++;
             uint8_t header[16];
             if (!readall(header, sizeof(header), report)) {
-                return error(report);
+                return error();
             }
             const uint32_t tstamp = get32(header);
             const uint32_t sub_tstamp = get32(header + 4);
@@ -416,7 +402,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
             // Read packet data.
             buffer.resize(cap_size);
             if (!readall(buffer.data(), buffer.size(), report)) {
-                return error(report);
+                return error();
             }
         }
 

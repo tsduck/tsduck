@@ -187,7 +187,17 @@ namespace ts {
         std::vector<InterfaceDesc> _if {};        // Capture interfaces by index, only one in pcap files.
 
         // Report an error (if fmt is not empty), set error indicator, return false.
-        bool error(Report& report, const UString& fmt = UString(), std::initializer_list<ArgMixIn> args = {});
+        bool error()
+        {
+            _error = true;
+            return false;
+        }
+        template <class... Args>
+        bool error(Report& report, const UChar* fmt, Args&&... args)
+        {
+            report.error(fmt, std::forward<ArgMixIn>(args)...);
+            return error();
+        }
 
         // Read exactly "size" bytes. Return false if not enough bytes before eof.
         bool readall(uint8_t* data, size_t size, Report& report);

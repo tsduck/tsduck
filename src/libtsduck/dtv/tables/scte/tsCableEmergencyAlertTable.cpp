@@ -361,7 +361,7 @@ bool ts::CableEmergencyAlertTable::analyzeXML(DuckContext& duck, const xml::Elem
         }
         if (wrong) {
             ok = false;
-            exceps[i]->report().error(u"invalid combination of attributes in <%s>, line %d", {exceps[i]->name(), exceps[i]->lineNumber()});
+            exceps[i]->report().error(u"invalid combination of attributes in <%s>, line %d", exceps[i]->name(), exceps[i]->lineNumber());
         }
         if (ok) {
             exceptions.push_back(exc);
