@@ -346,7 +346,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
     // Abort if data PID is already present in TS
     const PID pid = pkt.getPID();
     if (pid == _data_pid) {
-        tsp->error(u"data PID conflict, specified %d (0x%<X), now found as input PID, try another one", pid);
+        tsp->error(u"data PID conflict, specified %n, now found as input PID, try another one", pid);
         return TSP_END;
     }
 

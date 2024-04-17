@@ -202,7 +202,7 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
     grid.section();
 
     grid.setLayout({grid.bothTruncateLeft(42, u'.'), grid.border(), grid.bothTruncateLeft(26, u'.')});
-    grid.putLayout({{u"Transport Stream Id:", _ts_id.has_value() ? UString::Format(u"%d (0x%<X)", *_ts_id) : u"Unknown"},
+    grid.putLayout({{u"Transport Stream Id:", _ts_id.has_value() ? UString::Format(u"%n", *_ts_id) : u"Unknown"},
                     {u"Services:", UString::Decimal(_services.size())}});
     grid.putLayout({{u"Bytes:", UString::Decimal(PKT_SIZE * _ts_pkt_cnt)},
                     {u"PID's: Total:", UString::Decimal(_pid_cnt)}});
@@ -669,7 +669,7 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
         stm << "TITLE: " << title << std::endl;
     }
     if (_ts_id.has_value()) {
-        stm << UString::Format(u"INFO: Transport Stream Identifier: %d (0x%<X)", tsid) << std::endl;
+        stm << UString::Format(u"INFO: Transport Stream Identifier: %n", tsid) << std::endl;
     }
 
     // Report global errors
@@ -758,7 +758,7 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
             stm << UString::Format(u"PID:%d:0x%<X: No PCR, PCR PID of service%s", pc.pid, pc.services.size() > 1 ? u"s" : u"");
             bool first = true;
             for (auto& srv : pc.services) {
-                stm << (first ? "" : ",") << UString::Format(u" %d (0x%<X)", srv);
+                stm << (first ? "" : ",") << UString::Format(u" %n", srv);
                 first = false;
             }
             stm << std::endl;

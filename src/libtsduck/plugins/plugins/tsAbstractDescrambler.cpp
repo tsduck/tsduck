@@ -237,7 +237,7 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
 
                         // Ask subclass if this PID is OK
                         if (checkCADescriptor(sysid, ByteBlock(desc + 4, size - 4))) {
-                            tsp->verbose(u"using ECM PID %d (0x%<X)", pid);
+                            tsp->verbose(u"using ECM PID %n", pid);
                             // Create context for this ECM stream.
                             ecm_pids.insert(pid);
                             getOrCreateECMStream(pid);
@@ -270,12 +270,12 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
 void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& sect)
 {
     const PID ecm_pid = sect.sourcePID();
-    tsp->log(2, u"got ECM (TID 0x%X) on PID %d (0x%<X)", sect.tableId(), ecm_pid);
+    tsp->log(2, u"got ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
 
     // Get ECM stream context
     auto ecm_it = _ecm_streams.find(ecm_pid);
     if (ecm_it == _ecm_streams.end()) {
-        tsp->warning(u"got ECM on non-ECM PID %d (0x%<X)", ecm_pid);
+        tsp->warning(u"got ECM on non-ECM PID %n", ecm_pid);
         return;
     }
     ECMStreamPtr& estream(ecm_it->second);
@@ -293,7 +293,7 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
         tsp->log(2, u"ECM not handled by subclass");
         return;
     }
-    tsp->debug(u"new ECM (TID 0x%X) on PID %d (0x%<X)", sect.tableId(), ecm_pid);
+    tsp->debug(u"new ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
 
     // In asynchronous mode, the CW are accessed under mutex protection.
     if (!_synchronous) {

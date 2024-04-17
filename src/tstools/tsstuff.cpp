@@ -296,7 +296,7 @@ void Stuffer::evaluateNextStuffing()
             if (_opt.reference_pid == ts::PID_NULL) {
                 // Found the first time stamp, use this PID as reference
                 _opt.reference_pid = pkt.getPID();
-                _opt.verbose(u"using PID %d (0x%<X) as reference", _opt.reference_pid);
+                _opt.verbose(u"using PID %n as reference", _opt.reference_pid);
             }
             else if (_opt.reference_pid != pkt.getPID()) {
                 // Not the reference PID, skip;
@@ -325,7 +325,7 @@ void Stuffer::evaluateNextStuffing()
             msg += ts::UString::Format(u" after packet %'d", initial_position);
         }
         if (_opt.reference_pid != ts::PID_NULL) {
-            msg += ts::UString::Format(u" in PID %d (0x%<X), try another PID or increasing --buffer-size", _opt.reference_pid);
+            msg += ts::UString::Format(u" in PID %n, try another PID or increasing --buffer-size", _opt.reference_pid);
         }
         else {
             msg += u", try increasing --buffer-size";

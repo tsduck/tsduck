@@ -194,7 +194,7 @@ bool ts::SVRenamePlugin::start()
 void ts::SVRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     if (tsp->debug()) {
-        tsp->debug(u"Got %s v%d, PID %d (0x%<X), TIDext %d (0x%<X)",
+        tsp->debug(u"Got %s v%d, PID %n, TIDext %n",
                    names::TID(duck, table.tableId()), table.version(),
                    table.sourcePID(), table.tableIdExtension());
     }

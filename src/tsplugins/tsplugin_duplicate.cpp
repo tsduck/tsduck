@@ -107,7 +107,7 @@ ts::ProcessorPlugin::Status ts::DuplicatePlugin::processPacket(TSPacket& pkt, TS
 
     // Check PID conflicts.
     if (!_unchecked && !duplicate && _newPIDs.test(pid)) {
-        tsp->error(u"PID conflict: PID %d (0x%<X) present both in input and duplicate", pid);
+        tsp->error(u"PID conflict: PID %n present both in input and duplicate", pid);
         return TSP_END;
     }
 

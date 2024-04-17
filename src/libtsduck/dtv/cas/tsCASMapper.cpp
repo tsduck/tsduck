@@ -79,7 +79,7 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
         default: {
-            _duck.report().debug(u"Got unexpected TID %d (0x%<X) on PID %d (0x%<X)", table.tableId(), table.sourcePID());
+            _duck.report().debug(u"Got unexpected TID %n on PID %n", table.tableId(), table.sourcePID());
             break;
         }
     }
@@ -98,7 +98,7 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
             if (cadesc != nullptr && cadesc->isValid()) {
                 const std::string cas_name(names::CASId(_duck, cadesc->cas_id).toUTF8());
                 _pids[cadesc->ca_pid] = PIDDescription(cadesc->cas_id, is_ecm, cadesc);
-                _duck.report().debug(u"Found %s PID %d (0x%<X) for CAS id 0x%X (%s)", is_ecm ? u"ECM" : u"EMM", cadesc->ca_pid, cadesc->cas_id, cas_name);
+                _duck.report().debug(u"Found %s PID %n for CAS id 0x%X (%s)", is_ecm ? u"ECM" : u"EMM", cadesc->ca_pid, cadesc->cas_id, cas_name);
             }
         }
     }

@@ -488,7 +488,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, TSPac
         }
         else {
             // Don't replace. Target PID should not be present on input.
-            tsp->error(u"PID %d (0x%<X) already exists, specify --replace or use another PID, aborting", _inject_pid);
+            tsp->error(u"PID %n already exists, specify --replace or use another PID, aborting", _inject_pid);
             return TSP_END;
         }
     }

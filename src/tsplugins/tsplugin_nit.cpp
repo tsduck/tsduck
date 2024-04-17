@@ -438,7 +438,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         return;
     }
 
-    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%<X)", nit.version, nit.network_id);
+    tsp->debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
 
     // Remove the specified transport streams
     for (auto it = nit.transports.begin(); it != nit.transports.end(); ) {

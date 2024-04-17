@@ -446,17 +446,17 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     // The time reference is UTC as defined by DVB, but can be non-standard.
     const UString zone(disp.duck().timeReferenceName());
 
-    disp << margin << UString::Format(u"Service Id: %d (0x%<X)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Service Id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(6)) {
-        disp << margin << UString::Format(u"TS Id: %d (0x%<X)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Original Network Id: %d (0x%<X)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Segment last section: %d (0x%<X)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"TS Id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original Network Id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Segment last section: %n", buf.getUInt8()) << std::endl;
         const uint8_t last_tid = buf.getUInt8();
-        disp << margin << UString::Format(u"Last Table Id: %d (0x%<X), %s", last_tid, names::TID(disp.duck(), last_tid)) << std::endl;
+        disp << margin << UString::Format(u"Last Table Id: %n, %s", last_tid, names::TID(disp.duck(), last_tid)) << std::endl;
 
         while (buf.canReadBytes(12)) {
-            disp << margin << UString::Format(u"- Event Id: %d (0x%<X)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"- Event Id: %n", buf.getUInt16()) << std::endl;
             disp << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
             disp << margin << UString::Format(u"  Duration: %02d", buf.getBCD<int>(2));
             disp << UString::Format(u":%02d", buf.getBCD<int>(2));

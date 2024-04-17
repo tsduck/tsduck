@@ -209,10 +209,10 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     // Display common header lines.
-    strm << margin << UString::Format(u"* %s, TID %d (0x%<X)", names::TID(_duck, tid, cas), table.tableId());
+    strm << margin << UString::Format(u"* %s, TID %n", names::TID(_duck, tid, cas), table.tableId());
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
-        strm << UString::Format(u", PID %d (0x%<X)", table.sourcePID());
+        strm << UString::Format(u", PID %n", table.sourcePID());
     }
     strm << std::endl;
     if (table.sectionCount() == 1 && table.sectionAt(0)->isShortSection()) {
@@ -261,10 +261,10 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << UString::Format(u"* %s, TID %d (0x%<X)", names::TID(_duck, tid, cas), tid);
+        strm << margin << UString::Format(u"* %s, TID %n", names::TID(_duck, tid, cas), tid);
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
-            strm << UString::Format(u", PID %d (0x%<X)", section.sourcePID());
+            strm << UString::Format(u", PID %n", section.sourcePID());
         }
         strm << std::endl;
         if (section.isShortSection()) {
@@ -428,10 +428,10 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
         }
         strm << std::endl << margin << "  ";
         if (tid != TID_NULL) {
-            strm << UString::Format(u"%s, TID %d (0x%<X), ", names::TID(_duck, tid, cas), tid);
+            strm << UString::Format(u"%s, TID %n, ", names::TID(_duck, tid, cas), tid);
         }
         if (data.sourcePID() != PID_NULL) {
-            strm << UString::Format(u"PID %d (0x%<X), ", data.sourcePID());
+            strm << UString::Format(u"PID %n, ", data.sourcePID());
         }
         strm << UString::Format(u"%'d bytes:", data.size()) << std::endl;
     }
@@ -461,7 +461,7 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, con
 
     // The table id extension was not yet displayed since it depends on the table id.
     if (section.isLongSection()) {
-        strm << margin << UString::Format(u"TIDext: %d (0x%<X)", section.tableIdExtension()) << std::endl;
+        strm << margin << UString::Format(u"TIDext: %n", section.tableIdExtension()) << std::endl;
     }
 
     // Section payload.

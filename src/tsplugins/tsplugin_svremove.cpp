@@ -186,7 +186,7 @@ bool ts::SVRemovePlugin::start()
 void ts::SVRemovePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
     if (tsp->debug()) {
-        tsp->debug(u"Got %s v%d, PID %d (0x%<X), TIDext %d (0x%<X)",
+        tsp->debug(u"Got %s v%d, PID %n, TIDext %n",
                    names::TID(duck, table.tableId()), table.version(),
                    table.sourcePID(), table.tableIdExtension());
     }
@@ -307,7 +307,7 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
         found = Contains(sdt.services, _service.getId());
         if (!found) {
             // Informational only, SDT entry is not mandatory.
-            tsp->info(u"service %d (0x%<X) not found in SDT, ignoring it", _service.getId());
+            tsp->info(u"service %n not found in SDT, ignoring it", _service.getId());
         }
     }
     else {

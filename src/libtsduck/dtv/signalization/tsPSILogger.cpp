@@ -288,7 +288,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             PAT pat(_duck, table);
             if (pid != PID_PAT) {
                 // A PAT is only expected on PID 0
-                _report.warning(u"got unexpected PAT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected PAT on PID %n", pid);
             }
             else if (pat.isValid()) {
                 // Got the PAT.
@@ -324,7 +324,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_CAT: {
             if (pid != PID_CAT) {
                 // A CAT is only expected on PID 1
-                _report.warning(u"got unexpected CAT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected CAT on PID %n", pid);
             }
             else {
                 // Got the CAT.
@@ -360,7 +360,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_TSDT: {
             if (pid != PID_TSDT) {
                 // A TSDT is only expected on PID 0x0002
-                _report.warning(u"got unexpected TSDT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected TSDT on PID %n", pid);
             }
             else if (!_all_versions) {
                 _demux.removePID(pid);
@@ -372,7 +372,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_SDT_ACT: {
             if (pid != PID_SDT) {
                 // An SDT is only expected on PID 0x0011
-                _report.warning(u"got unexpected SDT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected SDT on PID %n", pid);
                 displayTable(table);
             }
             else if (_all_versions || !_sdt_ok) {
@@ -394,7 +394,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_BAT: {
             if (pid != PID_BAT) {
                 // An SDT is only expected on PID 0x0011
-                _report.warning(u"got unexpected BAT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected BAT on PID %n", pid);
                 displayTable(table);
             }
             else if (_all_versions || !_bat_ok) {
@@ -409,7 +409,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_PCAT: {
             if (pid != PID_PCAT) {
                 // An ISDB PCAT is only expected on PID 0x0022
-                _report.warning(u"got unexpected ISDB PCAT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected ISDB PCAT on PID %n", pid);
             }
             else if (!_all_versions) {
                 _demux.removePID(pid);
@@ -421,7 +421,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_BIT: {
             if (pid != PID_BIT) {
                 // An ISDB BIT is only expected on PID 0x0024
-                _report.warning(u"got unexpected ISDB BIT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected ISDB BIT on PID %n", pid);
             }
             else if (!_all_versions) {
                 _demux.removePID(pid);
@@ -434,7 +434,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_NBIT_BODY: {
             if (pid != PID_NBIT) {
                 // An ISDB NBIT is only expected on PID 0x0025
-                _report.warning(u"got unexpected ISDB NBIT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected ISDB NBIT on PID %n", pid);
             }
             // We cannot stop filtering this PID if we don't need all versions since the LDT can also be found here.
             displayTable(table);
@@ -447,7 +447,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             if (pid != PID_PSIP && pid != PID_LDT) {
                 // An ATSC MGT is only expected on PID 0x1FFB.
                 // An ISDB LDT is only expected on PID 0x0025.
-                _report.warning(u"got unexpected ATSC MGT / ISDB LDT on PID %d (0x%<X)", pid);
+                _report.warning(u"got unexpected ATSC MGT / ISDB LDT on PID %n", pid);
             }
             // We cannot stop filtering this PID if we don't need all versions
             // since the TVCT or CVCT (ATSC) and NBIT (ISDB) can also be found here.
@@ -464,7 +464,7 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
 
         default: {
             if (_duck.report().verbose()) {
-                _report.warning(u"got unexpected TID %d (0x%<X) on PID %d (0x%<X)", tid, pid);
+                _report.warning(u"got unexpected TID %n on PID %n", tid, pid);
             }
         }
     }

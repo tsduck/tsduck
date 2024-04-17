@@ -93,7 +93,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
     while (buf.canReadBytes(13)) {
         // Country code is a 3-byte string
         disp << margin << "Country code: " << buf.getLanguageCode() << std::endl;
-        disp << margin << UString::Format(u"Region id: %d (0x%<X)", buf.getBits<uint8_t>(6));
+        disp << margin << UString::Format(u"Region id: %n", buf.getBits<uint8_t>(6));
         buf.skipBits(1);
         const uint8_t polarity = buf.getBit();
         disp << ", polarity: " << (polarity ? "west" : "east") << " of Greenwich" << std::endl;
