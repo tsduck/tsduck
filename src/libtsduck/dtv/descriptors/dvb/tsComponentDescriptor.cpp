@@ -90,7 +90,7 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         const uint8_t stream_content = buf.getBits<uint8_t>(4);
         const uint8_t component_type = buf.getUInt8();
         disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::FIRST) << std::endl;
-        disp << margin << UString::Format(u"Component tag: %d (0x%<X)", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
         disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
         if (buf.canRead()) {
             disp << margin << "Description: \"" << buf.getString() << "\"" << std::endl;

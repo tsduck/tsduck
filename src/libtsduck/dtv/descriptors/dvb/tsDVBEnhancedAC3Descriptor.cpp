@@ -152,10 +152,10 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
             disp << margin << "Component type: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         }
         if (bsid_flag && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"AC-3 coding version: %d (0x%<X)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"AC-3 coding version: %n", buf.getUInt8()) << std::endl;
         }
         if (mainid_flag && buf.canReadBytes(1)) {
-            disp << margin << UString::Format(u"Main audio service id: %d (0x%<X)", buf.getUInt8()) << std::endl;
+            disp << margin << UString::Format(u"Main audio service id: %n", buf.getUInt8()) << std::endl;
         }
         if (asvc_flag && buf.canReadBytes(1)) {
             disp << margin << UString::Format(u"Associated to: 0x%X", buf.getUInt8()) << std::endl;

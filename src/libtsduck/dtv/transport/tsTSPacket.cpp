@@ -1078,7 +1078,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
     // Display TS header
     if (flags & DUMP_TS_HEADER) {
         strm << margin << "---- TS Header ----" << std::endl
-             << margin << UString::Format(u"PID: %d (0x%<X), header size: %d, sync: 0x%X", getPID(), header_size, b[0]) << std::endl
+             << margin << UString::Format(u"PID: %n, header size: %d, sync: 0x%X", getPID(), header_size, b[0]) << std::endl
              << margin << "Error: " << getTEI() << ", unit start: " << getPUSI() << ", priority: " << getPriority() << std::endl
              << margin << "Scrambling: " << int(getScrambling()) << ", continuity counter: " << int(getCC()) << std::endl
              << margin << "Adaptation field: " << UString::YesNo(hasAF()) << " (" << getAFSize() << " bytes)"

@@ -293,11 +293,11 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 {
     if (pat.nit_pid != PID_NULL) {
         _nit_pid = pat.nit_pid;
-        tsp->verbose(u"NIT PID is %d (0x%<X) in PAT", _nit_pid);
+        tsp->verbose(u"NIT PID is %n in PAT", _nit_pid);
     }
     else {
         _nit_pid = PID_NIT;
-        tsp->verbose(u"NIT PID not found in PAT, using default %d (0x%<X)", _nit_pid);
+        tsp->verbose(u"NIT PID not found in PAT, using default %n", _nit_pid);
     }
 
     // Filter sections on the PID for NIT.
@@ -311,7 +311,7 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 
 void ts::NITScanPlugin::processNIT(const NIT& nit)
 {
-    tsp->debug(u"got a NIT, version %d, network Id: %d (0x%<X)", nit.version, nit.network_id);
+    tsp->debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
 
     // Count the number of NIT's
     _nit_count++;
@@ -332,7 +332,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                     // Optional comment
                     if (_use_comment) {
                         *_output << _comment_prefix
-                                 << UString::Format(u"TS id: %d (0x%<X), original network id: %d (0x%<X), from NIT v%d on network id: %d (0x%<X)",
+                                 << UString::Format(u"TS id: %n, original network id: %n, from NIT v%d on network id: %n",
                                                     tsid.transport_stream_id, tsid.original_network_id, nit.version, nit.network_id)
                                  << std::endl;
                     }

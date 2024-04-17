@@ -356,13 +356,13 @@ void ts::SDT::ServiceEntry::setType(uint8_t service_type)
 
 void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp << margin << UString::Format(u"Transport Stream Id: %d (0x%<X)", section.tableIdExtension()) << std::endl;
-    disp << margin << UString::Format(u"Original Network Id: %d (0x%<X)", buf.getUInt16()) << std::endl;
+    disp << margin << UString::Format(u"Transport Stream Id: %n", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Original Network Id: %n", buf.getUInt16()) << std::endl;
     buf.skipReservedBits(8);
 
     // Services description
     while (buf.canRead()) {
-        disp << margin << UString::Format(u"Service Id: %d (0x%<X)", buf.getUInt16());
+        disp << margin << UString::Format(u"Service Id: %n", buf.getUInt16());
         buf.skipReservedBits(6);
         disp << ", EITs: " << UString::YesNo(buf.getBool());
         disp << ", EITp/f: " << UString::YesNo(buf.getBool());

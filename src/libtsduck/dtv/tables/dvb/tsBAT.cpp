@@ -73,7 +73,7 @@ size_t ts::BAT::maxPayloadSize() const
 void ts::BAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
     // Display bouquet information
-    disp << margin << UString::Format(u"Bouquet Id: %d (0x%<X)", section.tableIdExtension()) << std::endl;
+    disp << margin << UString::Format(u"Bouquet Id: %n", section.tableIdExtension()) << std::endl;
     disp.displayDescriptorListWithLength(section, buf, margin, u"Bouquet information:");
 
     // Transport stream loop
@@ -82,7 +82,7 @@ void ts::BAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     while (buf.canReadBytes(6)) {
         const uint16_t tsid = buf.getUInt16();
         const uint16_t nwid = buf.getUInt16();
-        disp << margin << UString::Format(u"Transport Stream Id: %d (0x%<X), Original Network Id: %d (0x%<X)", tsid, nwid) << std::endl;
+        disp << margin << UString::Format(u"Transport Stream Id: %n, Original Network Id: %n", tsid, nwid) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }
     buf.popState(); // transport_stream_loop_length

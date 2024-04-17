@@ -245,7 +245,7 @@ bool ts::HistoryPlugin::stop()
     // Report last packet of each PID
     for (const auto& it : _cpids) {
         if (it.second.pkt_count > 0) {
-            report(it.second.last_pkt, u"PID %d (0x%<X) last packet, %s", it.first, it.second.scrambling ? u"scrambled" : u"clear");
+            report(it.second.last_pkt, u"PID %n last packet, %s", it.first, it.second.scrambling ? u"scrambled" : u"clear");
         }
     }
 
@@ -375,7 +375,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
             // Got an ECM
             if (_report_cas && _cpids[pid].last_tid != table.tableId()) {
                 // Got a new ECM
-                report(u"PID %d (0x%<X), service 0x%X, new ECM 0x%X", pid, _cpids[pid].service_id, table.tableId());
+                report(u"PID %n, service 0x%X, new ECM 0x%X", pid, _cpids[pid].service_id, table.tableId());
             }
             break;
         }
@@ -483,34 +483,34 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     if (cpid.pkt_count == 0) {
         // First packet in a PID
         cpid.first_pkt = tsp->pluginPackets();
-        report(u"PID %d (0x%<X) first packet, %s", pid, scrambling ? u"scrambled" : u"clear");
+        report(u"PID %n first packet, %s", pid, scrambling ? u"scrambled" : u"clear");
     }
     else if (_suspend_after > 0 && cpid.last_pkt + _suspend_after < tsp->pluginPackets()) {
         // Last packet in the PID is so old that we consider the PID as suspended, and now restarted
-        report(cpid.last_pkt, u"PID %d (0x%<X) suspended, %s, service 0x%X", pid, cpid.scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id);
-        report(u"PID %d (0x%<X) restarted, %s, service 0x%04X", pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id);
+        report(cpid.last_pkt, u"PID %n suspended, %s, service 0x%X", pid, cpid.scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id);
+        report(u"PID %n restarted, %s, service 0x%04X", pid, scrambling ? u"scrambled" : u"clear", _cpids[pid].service_id);
     }
     else if (!ignore_scrambling && cpid.scrambling == 0 && scrambling != 0) {
         // Clear to scrambled transition
-        report(u"PID %d (0x%<X), clear to scrambled transition, %s key, service 0x%X", pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id);
+        report(u"PID %n, clear to scrambled transition, %s key, service 0x%X", pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id);
     }
     else if (!ignore_scrambling && cpid.scrambling != 0 && scrambling == 0) {
         // Scrambled to clear transition
-        report(u"PID %d (0x%<X), scrambled to clear transition, service 0x%X", pid, _cpids[pid].service_id);
+        report(u"PID %n, scrambled to clear transition, service 0x%X", pid, _cpids[pid].service_id);
     }
     else if (!ignore_scrambling && _report_cas && cpid.scrambling != scrambling) {
         // New crypto-period
-        report(u"PID %d (0x%<X), new crypto-period, %s key, service 0x%X", pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id);
+        report(u"PID %n, new crypto-period, %s key, service 0x%X", pid, NameFromDTV(u"ts.scrambling_control", scrambling), _cpids[pid].service_id);
     }
 
     if (has_pes_start) {
         if (!cpid.pes_strid.has_value()) {
             // Found first PES stream id in the PID.
-            report(u"PID %d (0x%<X), PES stream_id is %s", pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
+            report(u"PID %n, PES stream_id is %s", pid, NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
         }
         else if (cpid.pes_strid != pes_stream_id && !_ignore_stream_id) {
             // PES stream id has changed in the PID.
-            report(u"PID %d (0x%<X), PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
+            report(u"PID %n, PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
         }
         cpid.pes_strid = pes_stream_id;
     }

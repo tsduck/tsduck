@@ -297,7 +297,7 @@ void ts::AESPlugin::processSDT(SDT& sdt)
     // Remember service id
     _service.setId(service_id);
     _service.clearPMTPID();
-    tsp->verbose(u"found service id %d (0x%<X)", _service.getId());
+    tsp->verbose(u"found service id %n", _service.getId());
 
     // No longer need the SDT, now need the PAT
     _demux.removePID(PID_SDT);
@@ -317,7 +317,7 @@ void ts::AESPlugin::processPAT(PAT& pat)
 
     // If service not found, error
     if (it == pat.pmts.end()) {
-        tsp->error(u"service %d (0x%<X) not found in PAT", _service.getId());
+        tsp->error(u"service %n not found in PAT", _service.getId());
         _abort = true;
         return;
     }
@@ -325,7 +325,7 @@ void ts::AESPlugin::processPAT(PAT& pat)
     // Now filter the PMT
     _service.setPMTPID(it->second);
     _demux.addPID(it->second);
-    tsp->verbose(u"found PMT PID %d (0x%<X)", _service.getPMTPID());
+    tsp->verbose(u"found PMT PID %n", _service.getPMTPID());
 
     // No longer need the PAT
     _demux.removePID(PID_PAT);
@@ -344,7 +344,7 @@ void ts::AESPlugin::processPMT(PMT& pmt)
     for (const auto& it : pmt.streams) {
         if (it.second.isVideo(duck) || it.second.isAudio(duck) || it.second.isSubtitles(duck)) {
             _scrambled.set(it.first);
-            tsp->verbose(u"scrambling PID %d (0x%<X)", it.first);
+            tsp->verbose(u"scrambling PID %n", it.first);
         }
     }
 }
@@ -378,7 +378,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
 
     // If packet to scramble is already scrambled, there is an error
     if (!_descramble && pkt.isScrambled()) {
-        tsp->error(u"PID %d (0x%<X) already scrambled", pid);
+        tsp->error(u"PID %n already scrambled", pid);
         return TSP_END;
     }
 

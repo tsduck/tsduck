@@ -164,7 +164,7 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList&
             if (operatorMatch(it.oper) && casMatch(it.cas_id)) {
                 pids.set(it.pid);
                 pid_count++;
-                report.verbose(u"Filtering %s PID %d (0x%<X)", tid == TID_CAT ? u"EMM" : u"ECM", it.pid);
+                report.verbose(u"Filtering %s PID %n", tid == TID_CAT ? u"EMM" : u"ECM", it.pid);
             }
         }
     }
@@ -181,7 +181,7 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList&
                 if (casMatch(sysid)) {
                     pids.set(pid);
                     pid_count++;
-                    report.verbose(u"Filtering %s PID %d (0x%<X)", tid == TID_CAT ? u"EMM" : u"ECM", pid);
+                    report.verbose(u"Filtering %s PID %n", tid == TID_CAT ? u"EMM" : u"ECM", pid);
                 }
             }
         }

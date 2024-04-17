@@ -1118,7 +1118,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             }
             break;
         default:
-            disp << margin << UString::Format(u"!! invalid satellite_table_id: %d (0x%<X)",  _satellite_table_id ) << std::endl;
+            disp << margin << UString::Format(u"!! invalid satellite_table_id: %n",  _satellite_table_id ) << std::endl;
     }
 }
 

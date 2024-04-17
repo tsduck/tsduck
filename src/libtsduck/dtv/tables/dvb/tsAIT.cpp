@@ -232,8 +232,8 @@ void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     buf.skipBits(4);
     buf.pushReadSizeFromLength(12);
     while (buf.canReadBytes(9)) {
-        disp << margin << UString::Format(u"Application: Identifier: (Organization id: %d (0x%<X)", buf.getUInt32());
-        disp << UString::Format(u", Application id: %d (0x%<X))", buf.getUInt16());
+        disp << margin << UString::Format(u"Application: Identifier: (Organization id: %n", buf.getUInt32());
+        disp << UString::Format(u", Application id: %n)", buf.getUInt16());
         disp << UString::Format(u", Control code: %d", buf.getUInt8()) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }

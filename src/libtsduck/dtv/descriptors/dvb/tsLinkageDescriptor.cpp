@@ -221,9 +221,9 @@ void ts::LinkageDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(7)) {
-        disp << margin << UString::Format(u"Transport stream id: %d (0x%<X)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Original network Id: %d (0x%<X)", buf.getUInt16()) << std::endl;
-        disp << margin << UString::Format(u"Service id: %d (0x%<X)", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network Id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
         const uint8_t ltype = buf.getUInt8();
         disp << margin << UString::Format(u"Linkage type: %s", DataName(MY_XML_NAME, u"linkage_type", ltype, NamesFlags::FIRST)) << std::endl;
 
@@ -275,10 +275,10 @@ void ts::LinkageDescriptor::DisplayPrivateMobileHandover(TablesDisplay& disp, PS
         disp << margin << UString::Format(u"Hand-over type: 0x%X, %s, Origin: %s", hand_over, name, origin ? u"SDT" : u"NIT") << std::endl;
 
         if (hand_over >= 1 && hand_over <= 3 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Network id: %d (0x%<X)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Network id: %n", buf.getUInt16()) << std::endl;
         }
         if (origin == 0x00 && buf.canReadBytes(2)) {
-            disp << margin << UString::Format(u"Original service id: %d (0x%<X)", buf.getUInt16()) << std::endl;
+            disp << margin << UString::Format(u"Original service id: %n", buf.getUInt16()) << std::endl;
         }
     }
 }

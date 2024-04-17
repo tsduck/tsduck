@@ -104,7 +104,7 @@ ts::UString ts::WinErrorMessage(::DWORD code, const UString& moduleName, ::DWORD
     }
 
     // If no message is found, return a generic message.
-    return message.empty() ? UString::Format(u"System error %d (0x%<X)", code) : message;
+    return message.empty() ? UString::Format(u"System error %n", code) : message;
 }
 
 
