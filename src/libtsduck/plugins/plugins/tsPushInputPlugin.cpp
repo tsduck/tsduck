@@ -50,7 +50,7 @@ void ts::PushInputPlugin::setQueueSize(size_t count)
 
 void ts::PushInputPlugin::Receiver::main()
 {
-    _plugin->tsp->debug(u"internal push-input thread started");
+    _plugin->debug(u"internal push-input thread started");
 
     // Simply let the subclass perform input until the end.
     _plugin->processInput();
@@ -58,7 +58,7 @@ void ts::PushInputPlugin::Receiver::main()
     // Push an end of file mark.
     _plugin->_queue.setEOF();
 
-    _plugin->tsp->debug(u"internal push-input thread completed");
+    _plugin->debug(u"internal push-input thread completed");
 }
 
 

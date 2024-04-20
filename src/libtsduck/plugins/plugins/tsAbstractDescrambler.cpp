@@ -76,7 +76,7 @@ bool ts::AbstractDescrambler::getOptions()
 
     // Descramble either a service or a list of PID's, not a mixture of them.
     if ((_use_service + _pids.any()) != 1) {
-        tsp->error(u"specify either a service or a list of PID's");
+        error(u"specify either a service or a list of PID's");
         return false;
     }
 
@@ -85,7 +85,7 @@ bool ts::AbstractDescrambler::getOptions()
 
     // To descramble a fixed list of PID's, we need fixed control words.
     if (_pids.any() && !_scrambling.hasFixedCW()) {
-        tsp->error(u"specify control words to descramble an explicit list of PID's");
+        error(u"specify control words to descramble an explicit list of PID's");
         return false;
     }
 
@@ -170,7 +170,7 @@ bool ts::AbstractDescrambler::stop()
 
 void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
 {
-    tsp->debug(u"PMT: service 0x%X, %d elementary streams", pmt.service_id, pmt.streams.size());
+    debug(u"PMT: service 0x%X, %d elementary streams", pmt.service_id, pmt.streams.size());
 
     // Default scrambling is DVB-CSA2.
     uint8_t scrambling_type = SCRAMBLING_DVB_CSA2;
@@ -206,7 +206,7 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
 
     // Set global scrambling type from scrambling descriptor, if not specified on the command line.
     _scrambling.setScramblingType(scrambling_type, false);
-    tsp->verbose(u"using scrambling mode: %s", NameFromDTV(u"ScramblingMode", _scrambling.scramblingType()));
+    verbose(u"using scrambling mode: %s", NameFromDTV(u"ScramblingMode", _scrambling.scramblingType()));
     for (auto& it : _ecm_streams) {
         it.second->scrambling.setScramblingType(scrambling_type, false);
     }
@@ -237,7 +237,7 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
 
                         // Ask subclass if this PID is OK
                         if (checkCADescriptor(sysid, ByteBlock(desc + 4, size - 4))) {
-                            tsp->verbose(u"using ECM PID %n", pid);
+                            verbose(u"using ECM PID %n", pid);
                             // Create context for this ECM stream.
                             ecm_pids.insert(pid);
                             getOrCreateECMStream(pid);
@@ -270,12 +270,12 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
 void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& sect)
 {
     const PID ecm_pid = sect.sourcePID();
-    tsp->log(2, u"got ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
+    log(2, u"got ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
 
     // Get ECM stream context
     auto ecm_it = _ecm_streams.find(ecm_pid);
     if (ecm_it == _ecm_streams.end()) {
-        tsp->warning(u"got ECM on non-ECM PID %n", ecm_pid);
+        warning(u"got ECM on non-ECM PID %n", ecm_pid);
         return;
     }
     ECMStreamPtr& estream(ecm_it->second);
@@ -290,10 +290,10 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
 
     // Check if the ECM can be deciphered (ask subclass)
     if (!checkECM(sect)) {
-        tsp->log(2, u"ECM not handled by subclass");
+        log(2, u"ECM not handled by subclass");
         return;
     }
-    tsp->debug(u"new ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
+    debug(u"new ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
 
     // In asynchronous mode, the CW are accessed under mutex protection.
     if (!_synchronous) {
@@ -340,19 +340,21 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
 
     // Here, we have an ECM to decipher.
     const size_t dumpSize = std::min<size_t>(8, ecm.payloadSize());
-    tsp->debug(u"packet %d, decipher ECM, %d bytes: %s%s",
-               tsp->pluginPackets(),
-               ecm.payloadSize(),
-               UString::Dump(ecm.payload(), dumpSize, UString::SINGLE_LINE),
-               dumpSize < ecm.payloadSize() ? u" ..." : u"");
+    if (debug()) {
+        debug(u"packet %d, decipher ECM, %d bytes: %s%s",
+              tsp->pluginPackets(),
+              ecm.payloadSize(),
+              UString::Dump(ecm.payload(), dumpSize, UString::SINGLE_LINE),
+              dumpSize < ecm.payloadSize() ? u" ..." : u"");
+    }
 
     // Submit the ECM to the CAS (subclass).
     // Exchange the control words if CW swapping was requested.
     bool ok = decipherECM(ecm, _swap_cw ? cw_odd : cw_even, _swap_cw ? cw_even : cw_odd);
 
     if (ok) {
-        tsp->debug(u"even CW: %s", UString::Dump(cw_even.cw, UString::SINGLE_LINE));
-        tsp->debug(u"odd CW:  %s", UString::Dump(cw_odd.cw, UString::SINGLE_LINE));
+        debug(u"even CW: %s", UString::Dump(cw_even.cw, UString::SINGLE_LINE));
+        debug(u"odd CW:  %s", UString::Dump(cw_odd.cw, UString::SINGLE_LINE));
     }
 
     // In asynchronous mode, relock the mutex.
@@ -386,7 +388,7 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
 
 void ts::AbstractDescrambler::ECMThread::main()
 {
-    _parent->tsp->debug(u"ECM processing thread started");
+    _parent->debug(u"ECM processing thread started");
 
     // ECM processing loop.
     // The loop executes with the mutex held. The mutex is released
@@ -436,7 +438,7 @@ void ts::AbstractDescrambler::ECMThread::main()
         _parent->_ecm_to_do.wait(lock);
     }
 
-    _parent->tsp->debug(u"ECM processing thread terminated");
+    _parent->debug(u"ECM processing thread terminated");
 }
 
 

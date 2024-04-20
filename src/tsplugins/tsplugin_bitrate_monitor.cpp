@@ -231,7 +231,7 @@ bool ts::BitrateMonitorPlugin::getOptions()
     getIntValues(_pids, pid_opt_name, true);
 
     if (got_legacy_arg && got_pid_option) {
-        tsp->error(u"specify either --pid or legacy argument, but not both");
+        error(u"specify either --pid or legacy argument, but not both");
         ok = false;
     }
 
@@ -253,11 +253,11 @@ bool ts::BitrateMonitorPlugin::getOptions()
     getIntValues(_labels_go_above, u"set-label-go-above");
 
     if (_min_bitrate > _max_bitrate) {
-        tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", _min_bitrate, _max_bitrate);
+        error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", _min_bitrate, _max_bitrate);
         ok = false;
     }
     if (_periodic_command > cn::seconds::zero() && _alarm_command.empty()) {
-        tsp->warning(u"no --alarm-command set, --periodic-command ignored");
+        warning(u"no --alarm-command set, --periodic-command ignored");
         _periodic_command = cn::seconds::zero();
     }
 
@@ -334,10 +334,10 @@ bool ts::BitrateMonitorPlugin::stop()
             jsonLine(u"summary", bitrate, net_bitrate);
         }
         else if (_full_ts) {
-            tsp->info(u"%s average bitrate: %'d bits/s, average net bitrate: %'d bits/s", _alarm_prefix, bitrate, net_bitrate);
+            info(u"%s average bitrate: %'d bits/s, average net bitrate: %'d bits/s", _alarm_prefix, bitrate, net_bitrate);
         }
         else {
-            tsp->info(u"%s average bitrate: %'d bits/s", _alarm_prefix, bitrate);
+            info(u"%s average bitrate: %'d bits/s", _alarm_prefix, bitrate);
         }
     }
     return true;
@@ -364,7 +364,7 @@ void ts::BitrateMonitorPlugin::jsonLine(const UChar* status, int64_t bitrate, in
     root.add(u"status", status);
     // Make sure to sure the same time format as XML attributes.
     root.add(u"time", xml::Attribute::DateTimeToString(Time::CurrentLocalTime()));
-    tsp->info(_json_prefix + root.oneLiner(*tsp));
+    info(_json_prefix + root.oneLiner(*tsp));
 }
 
 
@@ -419,10 +419,10 @@ void ts::BitrateMonitorPlugin::computeBitrate()
             jsonLine(alarm_status, bitrate.toInt64(), net_bitrate.toInt64());
         }
         else if (_full_ts) {
-            tsp->info(u"%s, %s bitrate: %'d bits/s, net bitrate: %'d bits/s", Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate, net_bitrate);
+            info(u"%s, %s bitrate: %'d bits/s, net bitrate: %'d bits/s", Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate, net_bitrate);
         }
         else {
-            tsp->info(u"%s, %s bitrate: %'d bits/s", Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate);
+            info(u"%s, %s bitrate: %'d bits/s", Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate);
         }
     }
 
@@ -460,7 +460,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
             }
 
             // Report alarm message as a tsp warning in case of state change.
-            tsp->warning(alarm_message);
+            warning(alarm_message);
         }
 
         // Call alarm script if defined.

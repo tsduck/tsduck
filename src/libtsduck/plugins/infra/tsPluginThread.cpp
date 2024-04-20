@@ -17,10 +17,8 @@
 
 ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginType type, const PluginOptions& options, const ThreadAttributes& attributes) :
     Thread(),
-    TSP(report->maxSeverity()),
-    _report(report),
+    TSP(report->maxSeverity(), options.name + u": ", report),
     _name(options.name),
-    _logname(),
     _shlib(nullptr)
 {
     const UChar* shellOpt = nullptr;
@@ -117,13 +115,11 @@ ts::Plugin* ts::PluginThread::plugin() const
     return _shlib;
 }
 
-
 //----------------------------------------------------------------------------
-// Invoked by the plugin shared library to log messages.
-// Inherited from Report via TSP.
+// Set the plugin name as displayed in log messages.
 //----------------------------------------------------------------------------
 
-void ts::PluginThread::writeLog(int severity, const UString& msg)
+void ts::PluginThread::setLogName(const UString& name)
 {
-    _report->log(severity, u"%s: %s", _logname.empty() ? _name : _logname, msg);
+    setReportPrefix((name.empty() ? _name : name) + u": ");
 }

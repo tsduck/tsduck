@@ -164,7 +164,7 @@ bool ts::AESPlugin::getOptions()
     // Get key and chaining mode.
     const ByteBlock key(hexaValue(u"key"));
     if (present(u"ecb") + present(u"cbc") + present(u"cts1") + present(u"cts2") + present(u"cts3") + present(u"cts4") + present(u"dvs042") > 1) {
-        tsp->error(u"options --cbc, --cts1, --cts2, --cts3, --cts4, --dvs042 and --ecb are mutually exclusive");
+        error(u"options --cbc, --cts1, --cts2, --cts3, --cts4, --dvs042 and --ecb are mutually exclusive");
         return false;
     }
     if (present(u"cbc")) {
@@ -191,22 +191,22 @@ bool ts::AESPlugin::getOptions()
 
     // Get AES key
     if (!_chain->isValidKeySize(key.size())) {
-        tsp->error(u"%d bytes is an invalid AES key size", key.size());
+        error(u"%d bytes is an invalid AES key size", key.size());
         return false;
     }
     if (!_chain->setKey(key.data(), key.size())) {
-        tsp->error(u"error in AES key schedule");
+        error(u"error in AES key schedule");
         return false;
     }
-    tsp->verbose(u"using %d bits key: %s", key.size() * 8, UString::Dump(key, UString::SINGLE_LINE));
+    verbose(u"using %d bits key: %s", key.size() * 8, UString::Dump(key, UString::SINGLE_LINE));
 
     // Get IV, default IV is all zeroes
     const ByteBlock iv(hexaValue(u"iv", ByteBlock(_chain->minIVSize(), 0)));
     if (!_chain->setIV(iv.data(), iv.size())) {
-        tsp->error(u"incorrect initialization vector");
+        error(u"incorrect initialization vector");
         return false;
     }
-    tsp->verbose(u"using %d bits IV: %s", iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE));
+    verbose(u"using %d bits IV: %s", iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE));
 
     return true;
 }
@@ -289,7 +289,7 @@ void ts::AESPlugin::processSDT(SDT& sdt)
     assert(_service.hasName());
     uint16_t service_id;
     if (!sdt.findService(duck, _service.getName(), service_id)) {
-        tsp->error(u"service \"%s\" not found in SDT", _service.getName());
+        error(u"service \"%s\" not found in SDT", _service.getName());
         _abort = true;
         return;
     }
@@ -297,7 +297,7 @@ void ts::AESPlugin::processSDT(SDT& sdt)
     // Remember service id
     _service.setId(service_id);
     _service.clearPMTPID();
-    tsp->verbose(u"found service id %n", _service.getId());
+    verbose(u"found service id %n", _service.getId());
 
     // No longer need the SDT, now need the PAT
     _demux.removePID(PID_SDT);
@@ -317,7 +317,7 @@ void ts::AESPlugin::processPAT(PAT& pat)
 
     // If service not found, error
     if (it == pat.pmts.end()) {
-        tsp->error(u"service %n not found in PAT", _service.getId());
+        error(u"service %n not found in PAT", _service.getId());
         _abort = true;
         return;
     }
@@ -325,7 +325,7 @@ void ts::AESPlugin::processPAT(PAT& pat)
     // Now filter the PMT
     _service.setPMTPID(it->second);
     _demux.addPID(it->second);
-    tsp->verbose(u"found PMT PID %n", _service.getPMTPID());
+    verbose(u"found PMT PID %n", _service.getPMTPID());
 
     // No longer need the PAT
     _demux.removePID(PID_PAT);
@@ -344,7 +344,7 @@ void ts::AESPlugin::processPMT(PMT& pmt)
     for (const auto& it : pmt.streams) {
         if (it.second.isVideo(duck) || it.second.isAudio(duck) || it.second.isSubtitles(duck)) {
             _scrambled.set(it.first);
-            tsp->verbose(u"scrambling PID %n", it.first);
+            verbose(u"scrambling PID %n", it.first);
         }
     }
 }
@@ -378,7 +378,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
 
     // If packet to scramble is already scrambled, there is an error
     if (!_descramble && pkt.isScrambled()) {
-        tsp->error(u"PID %n already scrambled", pid);
+        error(u"PID %n already scrambled", pid);
         return TSP_END;
     }
 
@@ -401,13 +401,13 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
     assert (pl_size < sizeof(tmp));
     if (_descramble) {
         if (!_chain->decrypt(pl, pl_size, tmp, pl_size)) {
-            tsp->error(u"AES decrypt error");
+            error(u"AES decrypt error");
             return TSP_END;
         }
     }
     else {
         if (!_chain->encrypt(pl, pl_size, tmp, pl_size)) {
-            tsp->error(u"AES encrypt error");
+            error(u"AES encrypt error");
             return TSP_END;
         }
     }

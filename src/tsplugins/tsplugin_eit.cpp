@@ -115,7 +115,7 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16
     uint32_t index = MakeIndex(ts_id, service_id);
 
     if (!Contains(_services, index)) {
-        tsp->verbose(u"new service %n, TS id %n", service_id, ts_id);
+        verbose(u"new service %n, TS id %n", service_id, ts_id);
         ServiceDesc& serv(_services[index]);
         serv.setId(service_id);
         serv.setTSId(ts_id);
@@ -149,10 +149,10 @@ bool ts::EITPlugin::start()
 {
     // Create output file.
     if (!_outfile_name.empty()) {
-        tsp->verbose(u"creating %s", _outfile_name);
+        verbose(u"creating %s", _outfile_name);
         _outfile.open(_outfile_name, std::ios::out);
         if (!_outfile) {
-            tsp->error(u"cannot create %s", _outfile_name);
+            error(u"cannot create %s", _outfile_name);
             return false;
         }
     }
@@ -280,7 +280,7 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 PAT pat(duck, table);
                 if (pat.isValid()) {
                     _ts_id = pat.ts_id;
-                    tsp->verbose(u"TS id is %n", pat.ts_id);
+                    verbose(u"TS id is %n", pat.ts_id);
                     // Register all services
                     for (const auto& it : pat.pmts) {
                         ServiceDesc& serv(getServiceDesc(pat.ts_id, it.first));
@@ -363,17 +363,17 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
     // Check other/actual TS
     if (_ts_id.has_value()) {
         if (actual && !serv.hasTSId (_ts_id.value())) {
-            tsp->verbose(u"EIT-Actual has wrong TS id %n", serv.getTSId());
+            verbose(u"EIT-Actual has wrong TS id %n", serv.getTSId());
         }
         else if (!actual && serv.hasId (_ts_id.value())) {
-            tsp->verbose(u"EIT-Other has same TS id as current TS");
+            verbose(u"EIT-Other has same TS id as current TS");
         }
     }
 
     // Count EIT
     if (pf) {
         if (serv.eitpf_count++ == 0) {
-            tsp->verbose(u"service %n, TS id %n, has EITp/f", serv.getId(), serv.getTSId());
+            verbose(u"service %n, TS id %n, has EITp/f", serv.getId(), serv.getTSId());
         }
         if (actual) {
             _eitpf_act_count++;
@@ -384,7 +384,7 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
     }
     else {
         if (serv.eits_count++ == 0) {
-            tsp->verbose(u"service %n, TS id %n, has EITs", serv.getId(), serv.getTSId());
+            verbose(u"service %n, TS id %n, has EITs", serv.getId(), serv.getTSId());
         }
         if (actual) {
             _eits_act_count++;

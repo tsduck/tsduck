@@ -142,12 +142,12 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Process the BAT.
     BAT bat(duck, table);
     if (!bat.isValid()) {
-        tsp->warning(u"found invalid BAT");
+        warning(u"found invalid BAT");
         reinsert = false;
         return;
     }
 
-    tsp->debug(u"got a BAT, version %d, bouquet id: %n", bat.version, bat.bouquet_id);
+    debug(u"got a BAT, version %d, bouquet id: %n", bat.version, bat.bouquet_id);
 
     // Remove the specified transport streams.
     for (auto it = bat.transports.begin(); it != bat.transports.end(); ) {

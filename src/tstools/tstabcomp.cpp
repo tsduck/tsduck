@@ -14,7 +14,6 @@
 #include "tsDuckContext.h"
 #include "tsSectionFileArgs.h"
 #include "tsxmlTweaks.h"
-#include "tsReportWithPrefix.h"
 #include "tsSysUtils.h"
 TS_MAIN(MainCode);
 
@@ -212,8 +211,6 @@ namespace {
         ts::SectionFile file(opt.duck);
         file.setTweaks(opt.xmlTweaks);
         file.setCRCValidation(ts::CRC32::CHECK);
-
-        ts::ReportWithPrefix report(opt, (useStdIn ? u"stdin" : inname.filename()) + u": ");
 
         // Process the input file, starting with error cases.
         if (!compile && !decompile) {

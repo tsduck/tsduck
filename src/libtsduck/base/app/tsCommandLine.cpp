@@ -92,7 +92,7 @@ ts::Args* ts::CommandLine::commandImpl(CommandLineHandler* handler, CommandLineM
     cmd.args.setSyntax(syntax);
     cmd.args.setAppName(name);
     cmd.args.setShell(_shell);
-    cmd.args.redirectReport(&_report);
+    cmd.args.delegateReport(&_report);
 
     // Enforce flags to avoid exiting the application on special events (error or help).
     cmd.args.setFlags(flags |
@@ -172,7 +172,7 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
     // Analyze and process command.
     CommandStatus status = CommandStatus::SUCCESS;
     Cmd& cmd(_commands[cmd_id]);
-    cmd.args.redirectReport(log);
+    cmd.args.delegateReport(log);
 
     if (!cmd.args.analyze(cmd.name, arguments, _process_redirections)) {
         status = CommandStatus::ERROR;
@@ -185,7 +185,7 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
         status = (cmd.handler->*cmd.method)(cmd.name, cmd.args);
     }
 
-    cmd.args.redirectReport(&_report);
+    cmd.args.delegateReport(&_report);
     return status;
 }
 

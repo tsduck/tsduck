@@ -149,16 +149,16 @@ bool ts::ReducePlugin::getOptions()
     const UString fixprop = value(u"fixed-proportion");
     if (!fixprop.empty()) {
         if (_fixed_rempkt > 0 || _fixed_inpkt > 0) {
-            tsp->error(u"Specify either --fixed-proportion or legacy parameters but not both");
+            error(u"Specify either --fixed-proportion or legacy parameters but not both");
             ok = false;
         }
         else if (!fixprop.scan(u"%d/%d", &_fixed_rempkt, &_fixed_inpkt) || _fixed_rempkt <= 0 || _fixed_inpkt <= 0) {
-            tsp->error(u"Invalid value '%s' for --fixed-proportion", fixprop);
+            error(u"Invalid value '%s' for --fixed-proportion", fixprop);
             ok = false;
         }
     }
     if (_target_bitrate > 0 && (_fixed_rempkt > 0 || _fixed_inpkt > 0)) {
-        tsp->error(u"Specify either fixed proportion or target bitrate but not both");
+        error(u"Specify either fixed proportion or target bitrate but not both");
         ok = false;
     }
 
@@ -201,11 +201,11 @@ size_t ts::ReducePlugin::getPacketWindowSize()
     if (bitrate > 0) {
         // Compute packet window size based on bitrate, round up one packet.
         const PacketCounter count = PacketDistance(bitrate, _window_ms) + 1;
-        tsp->verbose(u"bitrate analysis window size: %'d packets", count);
+        verbose(u"bitrate analysis window size: %'d packets", count);
         return size_t(count);
     }
     else {
-        tsp->warning(u"bitrate is unknown in start phase, using the default window size (%'d packets)", DEFAULT_PACKET_WINDOW);
+        warning(u"bitrate is unknown in start phase, using the default window size (%'d packets)", DEFAULT_PACKET_WINDOW);
         return size_t(DEFAULT_PACKET_WINDOW);
     }
 }
@@ -224,7 +224,7 @@ ts::ProcessorPlugin::Status ts::ReducePlugin::processPacket(TSPacket& pkt, TSPac
         // It is time to remove packets
         if (_pkt_to_remove > 2 * _fixed_rempkt) {
             // Overflow, we did not find enough stuffing packets to remove
-            tsp->verbose(u"overflow: failed to remove %'d packets", _pkt_to_remove);
+            verbose(u"overflow: failed to remove %'d packets", _pkt_to_remove);
         }
         _pkt_to_remove += _fixed_rempkt;
     }
@@ -270,7 +270,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
         // Report this error once, not continuously.
         if (_error != Error::USE_PREVIOUS) {
             _error = Error::USE_PREVIOUS;
-            tsp->warning(u"cannot get bitrate from packet window, using previous bitrate: %'d b/s", bitrate);
+            warning(u"cannot get bitrate from packet window, using previous bitrate: %'d b/s", bitrate);
         }
     }
     else {
@@ -278,7 +278,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
         // Report this error once, not continuously.
         if (_error != Error::NO_BITRATE) {
             _error = Error::NO_BITRATE;
-            tsp->warning(u"unknown bitrate, letting all packets pass");
+            warning(u"unknown bitrate, letting all packets pass");
         }
         return win.size();
     }
@@ -288,7 +288,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
         // Report this error once, not continuously.
         if (_error != Error::LOW_BITRATE && _error != Error::USE_PREVIOUS) {
             _error = Error::LOW_BITRATE;
-            tsp->warning(u"bitrate lower than target one, letting all packets pass");
+            warning(u"bitrate lower than target one, letting all packets pass");
         }
         return win.size();
     }
@@ -344,7 +344,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
             bool slice_done = false;
             // Count passes.
             pass_count++;
-            tsp->log(3, u"pass #%d, packets to remove: %'d, slice size: %'d packets", pass_count, pkt_count, slice_size);
+            log(3, u"pass #%d, packets to remove: %'d, slice size: %'d packets", pass_count, pkt_count, slice_size);
             // Perform the pass over the packet window.
             for (size_t i = 0; i < subwin_size && pkt_count > 0; ++i) {
                 // Reset at start of slice.
@@ -366,7 +366,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
                 }
             }
         }
-        tsp->log(2, u"subwindow size: %'d packets, number of passes: %d, remaining null: %'d, remaining bits: %'d", subwin_size, pass_count, null_count, _bits_to_remove);
+        log(2, u"subwindow size: %'d packets, number of passes: %d, remaining null: %'d, remaining bits: %'d", subwin_size, pass_count, null_count, _bits_to_remove);
 
         // Iterate to next sub-window.
         subwin_start += subwin_size;
@@ -376,7 +376,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
     if (_bits_to_remove >= PKT_SIZE_BITS) {
         if (_error != Error::PKT_OVERFLOW) {
             _error = Error::PKT_OVERFLOW;
-            tsp->error(u"overflow, late by %'d packets", _bits_to_remove / PKT_SIZE_BITS);
+            error(u"overflow, late by %'d packets", _bits_to_remove / PKT_SIZE_BITS);
         }
     }
     else {

@@ -44,7 +44,7 @@ bool ts::SRTInputPlugin::getOptions()
 {
     // Get command line arguments for superclass and socket.
     return AbstractDatagramInputPlugin::getOptions() &&
-           _sock.setAddresses(value(u"rendezvous"), value(u""), UString(), *tsp) &&
+           _sock.setAddresses(value(u"rendezvous"), value(u""), UString(), *this) &&
            _sock.loadArgs(duck, *this);
 }
 
@@ -56,7 +56,7 @@ bool ts::SRTInputPlugin::getOptions()
 bool ts::SRTInputPlugin::start()
 {
     // Initialize superclass and UDP socket.
-    return AbstractDatagramInputPlugin::start() && _sock.open(*tsp);
+    return AbstractDatagramInputPlugin::start() && _sock.open(*this);
 }
 
 
@@ -66,7 +66,7 @@ bool ts::SRTInputPlugin::start()
 
 bool ts::SRTInputPlugin::stop()
 {
-    _sock.close(*tsp);
+    _sock.close(*this);
     return AbstractDatagramInputPlugin::stop();
 }
 
@@ -77,7 +77,7 @@ bool ts::SRTInputPlugin::stop()
 
 bool ts::SRTInputPlugin::abortInput()
 {
-    _sock.close(*tsp);
+    _sock.close(*this);
     return true;
 }
 
@@ -89,5 +89,5 @@ bool ts::SRTInputPlugin::abortInput()
 bool ts::SRTInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource)
 {
     timesource = TimeSource::SRT;
-    return _sock.receive(buffer, buffer_size, ret_size, timestamp, *tsp);
+    return _sock.receive(buffer, buffer_size, ret_size, timestamp, *this);
 }

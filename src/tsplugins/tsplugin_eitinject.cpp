@@ -56,7 +56,6 @@ namespace ts {
 
         private:
             EITInjectPlugin* const _plugin;
-            TSP* const             _tsp;
             PollFiles              _poller;
             volatile bool          _terminate;
 
@@ -69,17 +68,17 @@ namespace ts {
         };
 
         // Command line options:
-        bool             _delete_files = false;
-        bool             _wait_first_batch = false;
-        bool             _use_system_time = false;
-        Time             _start_time {};
-        PID              _eit_pid = PID_EIT;
-        EITOptions       _eit_options = EITOptions::GEN_ALL;
-        BitRate          _eit_bitrate = 0;
-        UString          _files {};
-        int              _ts_id = -1;
-        cn::milliseconds _poll_interval {};
-        cn::milliseconds _min_stable_delay {};
+        bool                 _delete_files = false;
+        bool                 _wait_first_batch = false;
+        bool                 _use_system_time = false;
+        Time                 _start_time {};
+        PID                  _eit_pid = PID_EIT;
+        EITOptions           _eit_options = EITOptions::GEN_ALL;
+        BitRate              _eit_bitrate = 0;
+        UString              _files {};
+        int                  _ts_id = -1;
+        cn::milliseconds     _poll_interval {};
+        cn::milliseconds     _min_stable_delay {};
         EITRepetitionProfile _eit_profile {};
 
         // Working data.
@@ -303,7 +302,7 @@ bool ts::EITInjectPlugin::getOptions()
     const UString time(value(u"time"));
     _use_system_time = time == u"system";
     if (!_use_system_time && !time.empty() && !_start_time.decode(time)) {
-        tsp->error(u"invalid --time value \"%s\" (use \"year/month/day:hour:minute:second\")", time);
+        error(u"invalid --time value \"%s\" (use \"year/month/day:hour:minute:second\")", time);
         return false;
     }
 
@@ -362,11 +361,11 @@ bool ts::EITInjectPlugin::getOptions()
 
     // We need at least one of --files and --incoming-eits.
     if (_files.empty() && !(_eit_options & EITOptions::LOAD_INPUT)) {
-        tsp->error(u"specify at least one of --files and --incoming-eits");
+        error(u"specify at least one of --files and --incoming-eits");
         return false;
     }
     if (_wait_first_batch && _files.empty()) {
-        tsp->error(u"--files is required with --wait-first-batch");
+        error(u"--files is required with --wait-first-batch");
         return false;
     }
 
@@ -395,15 +394,15 @@ bool ts::EITInjectPlugin::start()
         _eit_gen.setCurrentTime(_start_time);
     }
 
-    tsp->debug(u"cycle for EIT p/f actual: %s", _eit_profile.cycle_seconds[size_t(EITProfile::PF_ACTUAL)]);
-    tsp->debug(u"cycle for EIT p/f other: %s", _eit_profile.cycle_seconds[size_t(EITProfile::PF_OTHER)]);
-    tsp->debug(u"cycle for EIT sched actual: %s (prime), %s (later)",
+    debug(u"cycle for EIT p/f actual: %s", _eit_profile.cycle_seconds[size_t(EITProfile::PF_ACTUAL)]);
+    debug(u"cycle for EIT p/f other: %s", _eit_profile.cycle_seconds[size_t(EITProfile::PF_OTHER)]);
+    debug(u"cycle for EIT sched actual: %s (prime), %s (later)",
                _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_PRIME)],
                _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_ACTUAL_LATER)]);
-    tsp->debug(u"cycle for EIT sched other: %s (prime), %s (later)",
+    debug(u"cycle for EIT sched other: %s (prime), %s (later)",
                _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_PRIME)],
                _eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)]);
-    tsp->debug(u"EIT prime period: %s", _eit_profile.prime_days);
+    debug(u"EIT prime period: %s", _eit_profile.prime_days);
 
     // Clear the "first batch of events received" flag.
     _wfb_received = false;
@@ -421,12 +420,12 @@ bool ts::EITInjectPlugin::start()
 
         // If --wait-first-batch was specified, suspend until a first batch of events is loaded.
         if (_wait_first_batch) {
-            tsp->verbose(u"waiting for first batch of events");
+            verbose(u"waiting for first batch of events");
             {
                 std::unique_lock<std::mutex> lock(_wfb_mutex);
                 _wfb_cond.wait(lock, [this]() { return _wfb_received; });
             }
-            tsp->verbose(u"received first batch of events");
+            verbose(u"received first batch of events");
             loadFiles();
         }
     }
@@ -475,8 +474,7 @@ ts::ProcessorPlugin::Status ts::EITInjectPlugin::processPacket(TSPacket& pkt, TS
 ts::EITInjectPlugin::FileListener::FileListener(EITInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _tsp(plugin->tsp),
-    _poller(UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_tsp),
+    _poller(UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin),
     _terminate(false)
 {
 }
@@ -501,12 +499,12 @@ void ts::EITInjectPlugin::FileListener::stop()
 // Invoked in the context of the file listener thread.
 void ts::EITInjectPlugin::FileListener::main()
 {
-    _tsp->debug(u"file listener thread started");
+    _plugin->debug(u"file listener thread started");
     _poller.setFileWildcard(_plugin->_files);
     _poller.setPollInterval(_plugin->_poll_interval);
     _poller.setMinStableDelay(_plugin->_min_stable_delay);
     _poller.pollRepeatedly();
-    _tsp->debug(u"file listener thread completed");
+    _plugin->debug(u"file listener thread completed");
 }
 
 // Invoked before polling.
@@ -553,7 +551,7 @@ void ts::EITInjectPlugin::loadFiles()
     for (const auto& it : _polled_files) {
 
         // Load events from the file into the EPG database
-        tsp->verbose(u"loading events from file %s", it);
+        verbose(u"loading events from file %s", it);
         SectionFile secfile(duck);
         if (secfile.load(it)) {
             _eit_gen.loadEvents(secfile);

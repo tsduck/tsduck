@@ -17,7 +17,7 @@
 
 ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     InputPlugin(tsp_, description, syntax),
-    _request(*tsp)
+    _request(*this)
 {
     webArgs.defineArgs(*this);
 }
@@ -127,19 +127,19 @@ bool ts::AbstractHTTPInputPlugin::startTransfer()
     const size_t size = _request.announdedContentSize();
 
     // Print a message.
-    tsp->verbose(u"downloading from %s", _request.finalURL());
-    tsp->verbose(u"MIME type: %s, expected size: %s", mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", size));
+    verbose(u"downloading from %s", _request.finalURL());
+    verbose(u"MIME type: %s, expected size: %s", mime.empty() ? u"unknown" : mime, size == 0 ? u"unknown" : UString::Format(u"%d bytes", size));
     if (!mime.empty() && !mime.similar(u"video/mp2t")) {
-        tsp->warning(u"MIME type is %s, maybe not a valid transport stream", mime);
+        warning(u"MIME type is %s, maybe not a valid transport stream", mime);
     }
 
     // Create the auto-save file when necessary.
     UString name(BaseName(URL(_request.finalURL()).getPath()));
     if (!_autoSaveDir.empty() && !name.empty()) {
         name = _autoSaveDir + fs::path::preferred_separator + name;
-        tsp->verbose(u"saving input TS to %s", name);
+        verbose(u"saving input TS to %s", name);
         // Display errors but do not fail, this is just auto save.
-        _outSave.open(name, TSFile::WRITE | TSFile::SHARED, *tsp);
+        _outSave.open(name, TSFile::WRITE | TSFile::SHARED, *this);
     }
 
     // Reinitialize partial packet if some bytes were left from a previous iteration.
@@ -158,7 +158,7 @@ bool ts::AbstractHTTPInputPlugin::stopTransfer()
 
     // Close auto save file if one was open.
     if (_outSave.isOpen()) {
-        _outSave.close(*tsp);
+        _outSave.close(*this);
     }
 
     // Terminate any pending transfer.
@@ -222,8 +222,8 @@ size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t max
 
     // If an intermediate save file was specified, save the packets.
     // Display errors but do not fail, this is just auto save.
-    if (_outSave.isOpen() && !_outSave.writePackets(buffer, nullptr, packetCount, *tsp)) {
-        _outSave.close(*tsp);
+    if (_outSave.isOpen() && !_outSave.writePackets(buffer, nullptr, packetCount, *this)) {
+        _outSave.close(*this);
     }
     return packetCount;
 }

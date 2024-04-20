@@ -130,11 +130,11 @@ bool ts::EncapPlugin::getOptions()
     getIntValues(_pidsInput, u"pid");
 
     if (_pesOffset != 0 && _pesMode == PacketEncapsulation::DISABLED) {
-        tsp->error(u"invalid use of pes-offset, it's only valid when PES mode is enabled.");
+        error(u"invalid use of pes-offset, it's only valid when PES mode is enabled.");
         return false;
     }
     if (_pesOffset != 0 && _pidPCR == PID_NULL) {
-        tsp->error(u"invalid use of pes-offset, it's only valid when using pcr-pid.");
+        error(u"invalid use of pes-offset, it's only valid when using pcr-pid.");
         return false;
     }
 
@@ -167,7 +167,7 @@ ts::ProcessorPlugin::Status ts::EncapPlugin::processPacket(TSPacket& pkt, TSPack
         return TSP_OK;
     }
     else {
-        tsp->error(_encap.lastError());
+        error(_encap.lastError());
         return TSP_END;
     }
 }

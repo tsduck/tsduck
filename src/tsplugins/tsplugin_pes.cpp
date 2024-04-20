@@ -396,7 +396,7 @@ bool ts::PESPlugin::openOutput(const fs::path& filename, std::ofstream* file, st
     }
     else {
         // Save binary data in a regular binary file.
-        tsp->verbose(u"creating %s", filename);
+        verbose(u"creating %s", filename);
         file->open(filename, binary ? (std::ios::out | std::ios::binary) : std::ios::out);
         if (!(*file)) {
             error(u"cannot create %s", filename);
@@ -415,7 +415,7 @@ bool ts::PESPlugin::openOutput(const fs::path& filename, std::ofstream* file, st
 void ts::PESPlugin::saveOnePES(FileNameGenerator& namegen, const uint8_t* data, size_t size)
 {
     const fs::path filename(namegen.newFileName());
-    tsp->debug(u"creating %s", filename);
+    debug(u"creating %s", filename);
     std::ofstream file(filename, std::ios::out | std::ios::binary);
     if (!file) {
         error(u"cannot create %s", filename);
@@ -609,14 +609,14 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
         if (_pes_stream != nullptr) {
             _pes_stream->write(reinterpret_cast<const char*>(pkt.content()), pkt.size());
             if (!(*_pes_stream)) {
-                tsp->error(u"error writing PES packet to %s", _pes_filename == u"-" ? u"standard output" : _pes_filename);
+                error(u"error writing PES packet to %s", _pes_filename == u"-" ? u"standard output" : _pes_filename);
                 _abort = true;
             }
         }
         if (_es_stream != nullptr) {
             _es_stream->write(reinterpret_cast<const char*>(pkt.payload()), pkt.payloadSize());
             if (!(*_es_stream)) {
-                tsp->error(u"error writing ES data to %s", _es_filename == u"-" ? u"standard output" : _es_filename);
+                error(u"error writing ES data to %s", _es_filename == u"-" ? u"standard output" : _es_filename);
                 _abort = true;
             }
         }

@@ -7,62 +7,41 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Abstract interface for event reporting and monitoring
+//!  Base class for event reporting and monitoring
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsSeverity.h"
 #include "tsUString.h"
 #include "tsArgMix.h"
 
 namespace ts {
-
-    class Enumeration;
-
     //!
-    //! Message severity.
+    //! Base class for event reporting and monitoring.
     //! @ingroup log
     //!
-    //! Positive values are debug levels. The typical default reporting level is @c Info.
-    //! All messages with a higher level (@c Verbose and all debug levels) are not reported by default.
-    //! The @c struct is here just to add a naming level.
-    //!
-    struct TSDUCKDLL Severity {
-
-        static constexpr int Fatal   = -5;  //!< Fatal error, typically aborts the application.
-        static constexpr int Severe  = -4;  //!< Severe errror.
-        static constexpr int Error   = -3;  //!< Regular error.
-        static constexpr int Warning = -2;  //!< Warning message.
-        static constexpr int Info    = -1;  //!< Information message.
-        static constexpr int Verbose = 0;   //!< Verbose information.
-        static constexpr int Debug   = 1;   //!< First debug level.
-
-        //!
-        //! Formatted line prefix header for a severity
-        //! @param [in] severity Severity value.
-        //! @return A string to prepend to messages. Empty for Info and Verbose levels.
-        //!
-        static UString Header(int severity);
-
-        //!
-        //! An enumeration to use severity values on the command line for instance.
-        //!
-        static const Enumeration Enums;
-    };
-
-    //!
-    //! Abstract interface for event reporting and monitoring.
-    //! @ingroup log
+    //! Maximum severity: Each report instance has an adjustable "maximum severity". All messages
+    //! with a higher severity are dropped without reporting. The initial default severity is
+    //! @c Info, meaning that @c Verbose and @c Debug messages are dropped by default.
     //!
     class TSDUCKDLL Report
     {
+        TS_NOCOPY(Report);
     public:
         //!
-        //! Constructor.
+        //! Default constructor.
         //! The default initial report level is Info.
-        //! @param [in] max_severity Initial maximum severity of reported messages.
         //!
-        Report(int max_severity = Severity::Info) : _max_severity(max_severity) {}
+        Report() = default;
+
+        //!
+        //! Constructor with initial report level, prefix and delegation.
+        //! @param [in] max_severity Initial maximum severity of reported messages.
+        //! @param [in] prefix The prefix to prepend to all messages.
+        //! @param [in] report New report object to which messages are delegated.
+        //!
+        Report(int max_severity, const UString& prefix = UString(), Report* report = nullptr);
 
         //!
         //! Destructor.
@@ -73,14 +52,17 @@ namespace ts {
         //! Set maximum severity level.
         //! Messages with higher severities are not reported.
         //! @param [in] level Set report to that level.
+        //! @param [in] delegated Propagate the severity to delegated reports.
         //!
-        virtual void setMaxSeverity(int level);
+        void setMaxSeverity(int level, bool delegated = false);
 
         //!
         //! Raise maximum severity level.
+        //! The severity can only be increased (more verbose, more debug), never decreased.
         //! @param [in] level Set report at least to that level.
+        //! @param [in] delegated Propagate the severity to delegated reports.
         //!
-        virtual void raiseMaxSeverity(int level);
+        void raiseMaxSeverity(int level, bool delegated = false);
 
         //!
         //! Get maximum severity level.
@@ -90,6 +72,7 @@ namespace ts {
 
         //!
         //! Check if errors (or worse) were reported through this object.
+        //! Errors which were reported through delegated reports are ignored.
         //! @return True if errors (or worse) were reported through this object.
         //!
         bool gotErrors() const { return _got_errors; }
@@ -99,6 +82,26 @@ namespace ts {
         //! @see gotErrors()
         //!
         void resetErrors() { _got_errors = false; }
+
+        //!
+        //! Set the prefix to display before each message.
+        //! @param [in] prefix The prefix to prepend to all messages.
+        //!
+        void setReportPrefix(const UString& prefix) { _prefix = prefix; }
+
+        //!
+        //! Get the current prefix to display.
+        //! @return The current prefix to display.
+        //!
+        UString reportPrefix() const { return _prefix; }
+
+        //!
+        //! Delegate message logging to another report object.
+        //! @param [in] report New report object to which messages are delegated.
+        //! Use @a nullptr to remove the delegation and return to normal logging.
+        //! @return Previous delegate report, return a null pointer if there was no previous delegate.
+        //!
+        Report* delegateReport(Report* report);
 
         //!
         //! Check if debugging is active.
@@ -533,23 +536,22 @@ namespace ts {
 
     protected:
         //!
-        //! Debug level is accessible to subclasses
-        //!
-        volatile int _max_severity = Severity::Info;
-
-        //!
         //! Actual message reporting method.
-        //!
-        //! Must be implemented in actual classes.
         //! The method is called only when a message passed the severity filter.
-        //! It is not necessary to recheck @a severity inside the method.
+        //! It is not necessary to recheck the maximum severity inside the method.
+        //! By default, does nothing.
         //!
         //! @param [in] severity Message severity.
         //! @param [in] msg Message text.
         //!
-        virtual void writeLog(int severity, const UString& msg) = 0;
+        virtual void writeLog(int severity, const UString& msg);
 
     private:
-        volatile bool _got_errors = false;
+        bool     volatile _got_errors = false;
+        int      volatile _max_severity = Severity::Info;
+        Report*  volatile _delegate = nullptr;  // where to send messages
+        UString           _prefix {};
+        std::mutex        _mutex {};            // protect access to _delegated and modification of _delegate in children
+        std::set<Report*> _delegated {};        // list of other instances which delegate to this
     };
 }

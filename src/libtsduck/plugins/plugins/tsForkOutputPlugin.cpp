@@ -53,7 +53,7 @@ bool ts::ForkOutputPlugin::start()
     return _pipe.open(_command,
                       _nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
                       PKT_SIZE * _buffer_size,  // Pipe buffer size (Windows only), same as internal buffer size.
-                      *tsp,                     // Error reporting.
+                      *this,                    // Error reporting.
                       ForkPipe::KEEP_BOTH,      // Output: same stdout and stderr as tsp process.
                       ForkPipe::STDIN_PIPE,     // Input: use the pipe.
                       _format);
@@ -61,10 +61,10 @@ bool ts::ForkOutputPlugin::start()
 
 bool ts::ForkOutputPlugin::stop()
 {
-    return _pipe.close(*tsp);
+    return _pipe.close(*this);
 }
 
 bool ts::ForkOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    return _pipe.writePackets(buffer, pkt_data, packet_count, *tsp);
+    return _pipe.writePackets(buffer, pkt_data, packet_count, *this);
 }

@@ -167,7 +167,7 @@ bool ts::NITScanPlugin::getOptions()
     _default_channel_file = (_save_channel_file || _update_channel_file) && (_channel_file.empty() || _channel_file == u"-");
 
     if (_save_channel_file && _update_channel_file) {
-        tsp->error(u"--save-channels and --update-channels are mutually exclusive");
+        error(u"--save-channels and --update-channels are mutually exclusive");
         return false;
     }
     else if (_default_channel_file) {
@@ -210,7 +210,7 @@ bool ts::NITScanPlugin::start()
         _output = &_output_stream;
         _output_stream.open(_output_name.toUTF8().c_str());
         if (!_output_stream) {
-            tsp->error(u"cannot create file %s", _output_name);
+            error(u"cannot create file %s", _output_name);
             return false;
         }
     }
@@ -232,7 +232,7 @@ bool ts::NITScanPlugin::stop()
 
     // Save channels file. Create intermediate directories when it is the default file.
     if (!_channel_file.empty()) {
-        tsp->verbose(u"saving %s", _channel_file);
+        verbose(u"saving %s", _channel_file);
         _channels.save(_channel_file, _default_channel_file, *tsp);
     }
 
@@ -293,11 +293,11 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 {
     if (pat.nit_pid != PID_NULL) {
         _nit_pid = pat.nit_pid;
-        tsp->verbose(u"NIT PID is %n in PAT", _nit_pid);
+        verbose(u"NIT PID is %n in PAT", _nit_pid);
     }
     else {
         _nit_pid = PID_NIT;
-        tsp->verbose(u"NIT PID not found in PAT, using default %n", _nit_pid);
+        verbose(u"NIT PID not found in PAT, using default %n", _nit_pid);
     }
 
     // Filter sections on the PID for NIT.
@@ -311,7 +311,7 @@ void ts::NITScanPlugin::processPAT(const PAT& pat)
 
 void ts::NITScanPlugin::processNIT(const NIT& nit)
 {
-    tsp->debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
+    debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
 
     // Count the number of NIT's
     _nit_count++;

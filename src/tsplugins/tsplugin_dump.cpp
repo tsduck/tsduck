@@ -68,7 +68,7 @@ bool ts::DumpPlugin::getOptions()
     getPathValue(_outname, u"output-file");
 
     if (_dump.log && !_outname.empty()) {
-        tsp->error(u"--log and --output-file are mutually exclusive");
+        error(u"--log and --output-file are mutually exclusive");
         ok = false;
     }
     return ok;
@@ -87,7 +87,7 @@ bool ts::DumpPlugin::start()
     else {
         _outfile.open(_outname);
         if (!_outfile) {
-            tsp->error(u"error creating output file %s", _outname);
+            error(u"error creating output file %s", _outname);
             return false;
         }
         _out = &_outfile;
@@ -126,7 +126,7 @@ ts::ProcessorPlugin::Status ts::DumpPlugin::processPacket(TSPacket& pkt, TSPacke
             UString str;
             str.assignFromUTF8(strm.str());
             str.trim();
-            tsp->info(str);
+            info(str);
         }
         else {
             (*_out) << std::endl << "* Packet " << ts::UString::Decimal(tsp->pluginPackets()) << std::endl;

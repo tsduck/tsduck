@@ -20,7 +20,7 @@
 
 ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, std::recursive_mutex& global_mutex, InputExecutor* input) :
     _options(options),
-    _log(log, u"control commands: "),
+    _log(log.maxSeverity(), u"control commands: ", &log),
     _global_mutex(global_mutex),
     _input(input)
 {
@@ -189,14 +189,14 @@ ts::CommandStatus ts::tsp::ControlServer::executeSetLog(const UString& command, 
     const int level = args.intValue(u"", Severity::Info);
 
     // Set log severity of the main logger.
-    _log.setMaxSeverity(level);
+    _log.setMaxSeverity(level, true);
     _log.log(level, u"set log level to %s", Severity::Enums.name(level));
 
     // Also set the log severity on each individual plugin.
     std::lock_guard<std::recursive_mutex> lock(_global_mutex);
     PluginExecutor* proc = _input;
     do {
-        proc->setMaxSeverity(level);
+        proc->plugin()->setMaxSeverity(level, true);
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != _input);
 
     return CommandStatus::SUCCESS;

@@ -124,7 +124,7 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UString& line)
         _outfile << UString::Format(u"%d: ", pkt) << line << std::endl;
     }
     else {
-        tsp->info(u"%d: %s", pkt, line);
+        info(u"%d: %s", pkt, line);
     }
 }
 
@@ -202,10 +202,10 @@ bool ts::HistoryPlugin::start()
 {
     // Create output file
     if (!_outfile_name.empty()) {
-        tsp->verbose(u"creating %s", _outfile_name);
+        verbose(u"creating %s", _outfile_name);
         _outfile.open(_outfile_name, std::ios::out);
         if (!_outfile) {
-            tsp->error(u"cannot create %s", _outfile_name);
+            error(u"cannot create %s", _outfile_name);
             return false;
         }
     }
@@ -463,7 +463,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
         else if (_suspend_after == 0 && !_bitrate_error && tsp->pluginPackets() > INITIAL_PACKET_THRESHOLD) {
             // Report this warning only once
             _bitrate_error = true;
-            tsp->warning(u"bitrate unknown or too low, use option --suspend-packet-threshold");
+            warning(u"bitrate unknown or too low, use option --suspend-packet-threshold");
         }
     }
 

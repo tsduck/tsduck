@@ -34,15 +34,15 @@ bool ts::FileOutputPlugin::getOptions()
 
 bool ts::FileOutputPlugin::start()
 {
-    return _file.open(*tsp, tsp);
+    return _file.open(*this, tsp);
 }
 
 bool ts::FileOutputPlugin::stop()
 {
-    return _file.close(*tsp);
+    return _file.close(*this);
 }
 
 bool ts::FileOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    return _file.write(buffer, pkt_data, packet_count, *tsp, tsp);
+    return _file.write(buffer, pkt_data, packet_count, *this, tsp);
 }

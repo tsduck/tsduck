@@ -132,7 +132,7 @@ bool ts::StuffAnalyzePlugin::start()
         _output = &_output_stream;
         _output_stream.open(_output_name);
         if (!_output_stream) {
-            tsp->error(u"cannot create file %s", _output_name);
+            error(u"cannot create file %s", _output_name);
             return false;
         }
     }

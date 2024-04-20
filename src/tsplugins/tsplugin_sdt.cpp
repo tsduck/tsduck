@@ -176,7 +176,7 @@ bool ts::SDTPlugin::getOptions()
         use_service_properties = true;
     }
     if (use_service_properties && !_service.hasId()) {
-        tsp->error(u"specify --service-id when changing service properties");
+        error(u"specify --service-id when changing service properties");
         return false;
     }
 
@@ -219,7 +219,7 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Process the SDT.
     SDT sdt(duck, table);
     if (!sdt.isValid()) {
-        tsp->warning(u"found invalid SDT");
+        warning(u"found invalid SDT");
         reinsert = false;
         return;
     }

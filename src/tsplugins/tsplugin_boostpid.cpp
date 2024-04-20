@@ -67,15 +67,15 @@ ts::BoostPIDPlugin::BoostPIDPlugin(TSP* tsp_) :
 bool ts::BoostPIDPlugin::getOptions()
 {
     if ((_pid = intValue<uint16_t>(u"", 0xFFFF, 0)) >= PID_MAX) {
-        tsp->error(u"invalid 'pid' parameter");
+        error(u"invalid 'pid' parameter");
         return false;
     }
     if ((_opt_addpkt = intValue(u"", 0, 1)) == 0) {
-        tsp->error(u"invalid 'addpkt' parameter");
+        error(u"invalid 'addpkt' parameter");
         return false;
     }
     if ((_opt_inpkt = intValue(u"", 0, 2)) == 0) {
-        tsp->error(u"invalid 'inpkt' parameter");
+        error(u"invalid 'inpkt' parameter");
         return false;
     }
     return true;
@@ -88,7 +88,7 @@ bool ts::BoostPIDPlugin::getOptions()
 
 bool ts::BoostPIDPlugin::start()
 {
-    tsp->verbose(u"adding %d packets every %d packets on PID %n", _opt_addpkt, _opt_inpkt, _pid);
+    verbose(u"adding %d packets every %d packets on PID %n", _opt_addpkt, _opt_inpkt, _pid);
     _last_cc = 0;
     _in_count = 0;
     _add_count = 0;
@@ -111,7 +111,7 @@ ts::ProcessorPlugin::Status ts::BoostPIDPlugin::processPacket(TSPacket& pkt, TSP
             // It is time to add more packets
             if (_add_count > 0) {
                 // Overflow, we did not find enough stuffing packets to add packets in the target PID.
-                tsp->verbose(u"overflow: failed to insert %d packets", _add_count);
+                verbose(u"overflow: failed to insert %d packets", _add_count);
             }
             _add_count += _opt_addpkt;
             _in_count = _opt_inpkt;

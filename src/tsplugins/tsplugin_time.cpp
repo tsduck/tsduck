@@ -135,7 +135,7 @@ bool ts::TimePlugin::start()
     _use_utc = present(u"utc");
 
     if (_relative + _use_tdt + _use_utc > 1) {
-        tsp->error(u"options --relative, --tdt and --utc are mutually exclusive");
+        error(u"options --relative, --tdt and --utc are mutually exclusive");
         return false;
     }
 
@@ -152,10 +152,10 @@ bool ts::TimePlugin::start()
     // Sort events by time
     std::sort(_events.begin(), _events.end());
 
-    if (tsp->verbose()) {
-        tsp->verbose(u"initial packet processing: %s", StatusNames.name(_status));
+    if (verbose()) {
+        verbose(u"initial packet processing: %s", StatusNames.name(_status));
         for (auto& it : _events) {
-            tsp->verbose(u"packet %s after %s", StatusNames.name(it.status), it.time.format(Time::DATETIME));
+            verbose(u"packet %s after %s", StatusNames.name(it.status), it.time.format(Time::DATETIME));
         }
     }
 
@@ -190,7 +190,7 @@ bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
             // Decode relative time string (a number of seconds) into milliseconds.
             cn::milliseconds::rep milliSeconds;
             if (!timeString.toInteger(milliSeconds, UString(), 3)) {
-                tsp->error(u"invalid relative number of seconds: %s", timeString);
+                error(u"invalid relative number of seconds: %s", timeString);
                 return false;
             }
             _events.push_back(TimeEvent(status, start_time + cn::milliseconds(milliSeconds)));
@@ -199,7 +199,7 @@ bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
             // Decode an absolute time string
             Time absTime;
             if (!absTime.decode(timeString)) {
-                tsp->error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", timeString);
+                error(u"invalid time value \"%s\" (use \"year/month/day:hour:minute:second\")", timeString);
                 return false;
             }
             _events.push_back(TimeEvent(status, absTime));
@@ -249,8 +249,8 @@ ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, TSPacke
         _status = _events[_next_index].status;
         _next_index++;
 
-        if (tsp->verbose()) {
-            tsp->verbose(u"%s: new packet processing: %s", _last_time.format(Time::DATETIME), StatusNames.name(_status));
+        if (verbose()) {
+            verbose(u"%s: new packet processing: %s", _last_time.format(Time::DATETIME), StatusNames.name(_status));
         }
     }
 

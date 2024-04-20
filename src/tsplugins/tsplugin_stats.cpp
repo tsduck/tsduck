@@ -163,7 +163,7 @@ bool ts::StatsPlugin::getOptions()
     getIntValues(_labels, u"label");
 
     if (_pids.any() && _labels.any()) {
-        tsp->error(u"options --pid and --label are mutually exclusive");
+        error(u"options --pid and --label are mutually exclusive");
         return false;
     }
     if (_pids.none() && _labels.none()) {
@@ -171,7 +171,7 @@ bool ts::StatsPlugin::getOptions()
         _pids.set();
     }
     if (_log && !_output_name.empty()) {
-        tsp->error(u"options --log and --output-file are mutually exclusive");
+        error(u"options --log and --output-file are mutually exclusive");
         return false;
     }
 
@@ -221,11 +221,11 @@ bool ts::StatsPlugin::openOutput()
     // Create the file
     _output_stream.open(name);
     if (_output_stream) {
-        tsp->verbose(u"created %s", name);
+        verbose(u"created %s", name);
         return true;
     }
     else {
-        tsp->error(u"cannot create file %s", name);
+        error(u"cannot create file %s", name);
         return false;
     }
 }
@@ -283,8 +283,8 @@ bool ts::StatsPlugin::produceReport()
         const Context& ctx(*(it.second));
 
         if (_log) {
-            tsp->info(u"%s: 0x%X  Total: %8'd  IPD min: %3d  max: %5d  mean: %s  std-dev: %s",
-                      name, index, ctx.total_pkt, ctx.ipkt.minimum(), ctx.ipkt.maximum(), ctx.ipkt.meanString(7), ctx.ipkt.standardDeviationString(7));
+            info(u"%s: 0x%X  Total: %8'd  IPD min: %3d  max: %5d  mean: %s  std-dev: %s",
+                 name, index, ctx.total_pkt, ctx.ipkt.minimum(), ctx.ipkt.maximum(), ctx.ipkt.meanString(7), ctx.ipkt.standardDeviationString(7));
         }
         else if (_csv) {
             out << index << _csv_separator

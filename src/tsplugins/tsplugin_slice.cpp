@@ -136,10 +136,10 @@ bool ts::SlicePlugin::start()
     std::sort(_events.begin(), _events.end());
     _next_index = 0;
 
-    if (tsp->verbose()) {
-        tsp->verbose(u"initial packet processing: %s", StatusNames.name(_status));
+    if (verbose()) {
+        verbose(u"initial packet processing: %s", StatusNames.name(_status));
         for (auto& it : _events) {
-            tsp->verbose(u"packet %s after %'d %s", StatusNames.name(it.status), it.value, _use_time ? u"ms" : u"packets");
+            verbose(u"packet %s after %'d %s", StatusNames.name(it.status), it.value, _use_time ? u"ms" : u"packets");
         }
     }
 
@@ -194,7 +194,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
             bitrate = _pcr_analyzer.bitrate188();
         }
         if (bitrate == 0) {
-            tsp->error(u"unknown bitrate, cannot compute time offset");
+            error(u"unknown bitrate, cannot compute time offset");
             return TSP_END;
         }
         // Compute time in milli-seconds since beginning
@@ -206,7 +206,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
         // Yes, we just passed a schedule
         _status = _events[_next_index].status;
         _next_index++;
-        tsp->verbose(u"new packet processing: %s after %'d packets", StatusNames.name(_status), _packet_cnt);
+        verbose(u"new packet processing: %s after %'d packets", StatusNames.name(_status), _packet_cnt);
     }
 
     // Count packets

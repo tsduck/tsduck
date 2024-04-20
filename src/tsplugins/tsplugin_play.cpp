@@ -100,7 +100,7 @@ bool ts::PlayPlugin::searchInPath(UString& result, const UStringVector& path, co
     for (const auto& file : path) {
         if (!file.empty()) {
             result = file + fs::path::preferred_separator + name;
-            tsp->debug(u"looking for %s", result);
+            debug(u"looking for %s", result);
             if (fs::exists(result)) {
                 return true;
             }
@@ -121,7 +121,7 @@ bool ts::PlayPlugin::start()
     _use_mplayer = present(u"mplayer");
     _use_xine = present(u"xine");
     if (_use_mplayer && _use_xine) {
-        tsp->error(u"--mplayer (-m) and --xine (-x) are mutually exclusive");
+        error(u"--mplayer (-m) and --xine (-x) are mutually exclusive");
         return false;
     }
 #endif
@@ -160,7 +160,7 @@ bool ts::PlayPlugin::start()
         command = u"\"" + exec + u"\" -";
     }
     else {
-        tsp->error(u"VLC not found, install VideoLAN VLC media player, see http://www.videolan.org/vlc/");
+        error(u"VLC not found, install VideoLAN VLC media player, see http://www.videolan.org/vlc/");
         return false;
     }
 
@@ -193,14 +193,14 @@ bool ts::PlayPlugin::start()
     if (_use_mplayer) {
         opts = mplayer_opts;
         if (!searchInPath(exec, search_path, mplayer_exec)) {
-            tsp->error(u"mplayer not found in PATH");
+            error(u"mplayer not found in PATH");
             return false;
         }
     }
     else if (_use_xine) {
         opts = xine_opts;
         if (!searchInPath(exec, search_path, xine_exec)) {
-            tsp->error(u"xine not found in PATH");
+            error(u"xine not found in PATH");
             return false;
         }
     }
@@ -220,7 +220,7 @@ bool ts::PlayPlugin::start()
         opts = xine_opts;
     }
     else {
-        tsp->error(u"no supported media player was found");
+        error(u"no supported media player was found");
         return false;
     }
 
@@ -229,7 +229,7 @@ bool ts::PlayPlugin::start()
 #endif
 
     // Create pipe & process
-    tsp->verbose(u"using media player command: %s", command);
+    verbose(u"using media player command: %s", command);
     _pipe.setIgnoreAbort(false);
     return _pipe.open(command, ForkPipe::SYNCHRONOUS, PIPE_BUFFER_SIZE, *tsp, ForkPipe::KEEP_BOTH, ForkPipe::STDIN_PIPE);
 }

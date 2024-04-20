@@ -171,15 +171,15 @@ bool ts::LimitPlugin::start()
     getIntValues(_pids1, u"pid");
 
     if (_threshold4 < 1) {
-        tsp->error(u"the last threshold can't be disabled");
+        error(u"the last threshold can't be disabled");
         return false;
     }
     if (_threshold4 < _threshold1 || (_threshold4 < _threshold3 && _pids1.any()) || (_threshold4 < _threshold2 && _pids1.any())) {
-        tsp->error(u"the last threshold can't be less than others");
+        error(u"the last threshold can't be less than others");
         return false;
     }
     if (_threshold2 > _threshold3) {
-        tsp->error(u"the threshold3 (audio) can't be less than threshold2 (video)");
+        error(u"the threshold3 (audio) can't be less than threshold2 (video)");
         return false;
     }
 
@@ -187,7 +187,7 @@ bool ts::LimitPlugin::start()
     // dropping other a/v at --threshold3 only. But, without any --pid, we start at --threshold1.
     _thresholdAV = _pids1.any() ? _threshold3 : _threshold1;
 
-    tsp->debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, threshold 4: %'d, audio/video threshold: %'d", _threshold1, _threshold2, _threshold3, _threshold4, _thresholdAV);
+    debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, threshold 4: %'d, audio/video threshold: %'d", _threshold1, _threshold2, _threshold3, _threshold4, _thresholdAV);
 
     // Reset plugin state.
     _currentPacket = 0;
@@ -249,7 +249,7 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                     const PID pid = it.second;
                     _demux.addPID(pid);
                     getContext(pid)->psi = true;
-                    tsp->debug(u"Adding PMT PID %n", pid);
+                    debug(u"Adding PMT PID %n", pid);
                 }
             }
             break;
@@ -258,13 +258,13 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             const PMT pmt(duck, table);
             if (pmt.isValid()) {
                 // Collect all component PID's.
-                tsp->debug(u"Found PMT in PID %n", table.sourcePID());
+                debug(u"Found PMT in PID %n", table.sourcePID());
                 for (const auto& it : pmt.streams) {
                     const PID pid = it.first;
                     const PIDContextPtr pc(getContext(pid));
                     pc->audio = it.second.isAudio(duck);
                     pc->video = it.second.isVideo(duck);
-                    tsp->debug(u"Found component PID %n", pid);
+                    debug(u"Found component PID %n", pid);
                 }
             }
             break;
@@ -348,14 +348,14 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
 
             // Report state change.
             if (_curBitrate > _maxBitrate && newBitrate <= _maxBitrate) {
-                tsp->verbose(u"bitrate back to normal (%'d b/s)", newBitrate);
+                verbose(u"bitrate back to normal (%'d b/s)", newBitrate);
             }
             else if (_curBitrate <= _maxBitrate && newBitrate > _maxBitrate) {
-                tsp->verbose(u"bitrate exceeds maximum (%'d b/s), starting to drop packets", newBitrate);
+                verbose(u"bitrate exceeds maximum (%'d b/s), starting to drop packets", newBitrate);
             }
             else if (_curBitrate != newBitrate && (_curBitrate > newBitrate ? _curBitrate - newBitrate : newBitrate - _curBitrate) > _curBitrate / 20) {
                 // Report new bitrate when more than 5% change.
-                tsp->debug(u"new bitrate: %'d b/s", newBitrate);
+                debug(u"new bitrate: %'d b/s", newBitrate);
             }
 
             // Save current bitrate.
@@ -406,7 +406,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
         if (drop) {
             if (pc->dropCount++ == 0) {
                 // First time we drop packets in this PID.
-                tsp->verbose(u"starting to drop packets on PID %n", pid);
+                verbose(u"starting to drop packets on PID %n", pid);
             }
             _excessPackets--;
             status = TSP_DROP;

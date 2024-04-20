@@ -271,7 +271,7 @@ bool ts::MergePlugin::getOptions()
     _format = LoadTSPacketFormatInputOption(*this);
 
     if (_restart + _terminate + tsp->useJointTermination() > 1) {
-        tsp->error(u"--restart, --terminate and --joint-termination are mutually exclusive");
+        error(u"--restart, --terminate and --joint-termination are mutually exclusive");
         return false;
     }
 
@@ -316,7 +316,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
     // ensure that all calls are valid.
 
     if (do_close) {
-        tsp->debug(u"closing merge process pipe");
+        debug(u"closing merge process pipe");
         _pipe->close(*tsp);
     }
 
@@ -331,7 +331,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
         std::this_thread::sleep_for(_restart_interval);
         // Because of the previous failure, we probably had error messages.
         // Inform the user that we restart and the error is not permanent.
-        tsp->info(u"restarting merge command");
+        info(u"restarting merge command");
     }
 
     // Allocate the new object. Atomically swap the safe pointer. This action
@@ -404,8 +404,8 @@ bool ts::MergePlugin::start()
 bool ts::MergePlugin::stop()
 {
     // Debug smoothing counters.
-    tsp->debug(u"stopping, last merge bitrate: %'d, merged: %'d, hold: %'d, empty: %'d",
-               _insert_control.currentSubBitRate(), _merged_count, _hold_count, _empty_count);
+    debug(u"stopping, last merge bitrate: %'d, merged: %'d, hold: %'d, empty: %'d",
+          _insert_control.currentSubBitRate(), _merged_count, _hold_count, _empty_count);
 
     // Send the stop condition to the internal packet queue.
     _queue.stop();
@@ -427,7 +427,7 @@ bool ts::MergePlugin::stop()
 
 void ts::MergePlugin::main()
 {
-    tsp->debug(u"receiver thread started");
+    debug(u"receiver thread started");
 
     // Specify the bitrate of the incoming stream.
     // When zero, packet queue will compute it from the PCR.
@@ -479,7 +479,7 @@ void ts::MergePlugin::main()
         _queue.releaseWriteBuffer(read_size / PKT_SIZE);
     }
 
-    tsp->debug(u"receiver thread completed");
+    debug(u"receiver thread completed");
 }
 
 
@@ -502,7 +502,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processPacket(TSPacket& pkt, TSPack
         _main_pids.set(pid);
         if (_merge_pids.test(pid)) {
             // We have already merged some packets from this PID.
-            tsp->error(u"PID conflict: PID %n exists in the two streams, dropping from merged stream, but some packets were already merged", pid);
+            error(u"PID conflict: PID %n exists in the two streams, dropping from merged stream, but some packets were already merged", pid);
         }
     }
 
@@ -539,7 +539,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         if (!_got_eof && _queue.eof()) {
             // Report end of input stream once.
             _got_eof = true;
-            tsp->verbose(u"end of merged stream");
+            verbose(u"end of merged stream");
             // If processing terminated, either exit or transparently pass packets
             if (tsp->useJointTermination()) {
                 tsp->jointTerminate();
@@ -582,7 +582,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
             // First time we see that PID on the merged stream.
             _merge_pids.set(pid);
             if (_main_pids.test(pid)){
-                tsp->error(u"PID conflict: PID %n exists in the two streams, dropping from merged stream", pid);
+                error(u"PID conflict: PID %n exists in the two streams, dropping from merged stream", pid);
             }
         }
         if (_main_pids.test(pid)) {

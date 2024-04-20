@@ -375,7 +375,7 @@ ts::ProcessorPlugin::Status ts::SectionsPlugin::processPacket(TSPacket& pkt, TSP
 
     // If the output PID is not an input one and already exists, this is an error.
     if (pid == _output_pid && !_input_pids.test(_output_pid)) {
-        tsp->error(u"output PID %n already present in the stream", _output_pid);
+        error(u"output PID %n already present in the stream", _output_pid);
         return TSP_END;
     }
 
@@ -387,7 +387,7 @@ ts::ProcessorPlugin::Status ts::SectionsPlugin::processPacket(TSPacket& pkt, TSP
     // there are not enough null packets, we may accumulate more and
     // more sections until the memory is exhausted.
     if (_sections.size() > _max_buffered_sections) {
-        tsp->error(u"too many accumulated buffered sections, not enough space in output PID");
+        error(u"too many accumulated buffered sections, not enough space in output PID");
         return TSP_END;
     }
 
