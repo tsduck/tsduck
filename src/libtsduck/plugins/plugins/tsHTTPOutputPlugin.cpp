@@ -79,15 +79,15 @@ bool ts::HTTPOutputPlugin::getOptions()
 
 bool ts::HTTPOutputPlugin::start()
 {
-    if (!_server.open(*tsp)) {
+    if (!_server.open(*this)) {
         return false;
     }
-    if (!_server.reusePort(_reuse_port, *tsp) ||
-        (_tcp_buffer_size > 0 && !_server.setSendBufferSize(_tcp_buffer_size, *tsp)) ||
-        !_server.bind(_server_address, *tsp) ||
-        !_server.listen(SERVER_BACKLOG, *tsp))
+    if (!_server.reusePort(_reuse_port, *this) ||
+        (_tcp_buffer_size > 0 && !_server.setSendBufferSize(_tcp_buffer_size, *this)) ||
+        !_server.bind(_server_address, *this) ||
+        !_server.listen(SERVER_BACKLOG, *this))
     {
-        _server.close(*tsp);
+        _server.close(*this);
         return false;
     }
     return true;
@@ -101,12 +101,12 @@ bool ts::HTTPOutputPlugin::start()
 bool ts::HTTPOutputPlugin::stop()
 {
     if (_client.isConnected()) {
-        _client.disconnect(*tsp);
+        _client.disconnect(*this);
     }
     if (_client.isOpen()) {
-        _client.close(*tsp);
+        _client.close(*this);
     }
-    _server.close(*tsp);
+    _server.close(*this);
     return true;
 }
 
@@ -123,12 +123,12 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
         while (!_client.isConnected()) {
             // Wait for a new incoming client.
             IPv4SocketAddress client_address;
-            tsp->debug(u"waiting for incoming client connection");
-            if (!_server.accept(_client, client_address, *tsp)) {
+            debug(u"waiting for incoming client connection");
+            if (!_server.accept(_client, client_address, *this)) {
                 // Error while accepting a client is fatal.
                 return false;
             }
-            tsp->verbose(u"client connected from %s", client_address);
+            verbose(u"client connected from %s", client_address);
 
             // Initialize the session, process request, send response headers.
             if (startSession()) {
@@ -137,21 +137,21 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
             }
 
             // Session initialization error, close the connection.
-            _client.disconnect(*tsp);
-            _client.close(*tsp);
+            _client.disconnect(*this);
+            _client.close(*this);
             if (!_multiple_clients) {
                 return false;
             }
         }
 
         // Send the TS packets to the client.
-        if (_client.send(buffer, packet_count * PKT_SIZE, *tsp)) {
+        if (_client.send(buffer, packet_count * PKT_SIZE, *this)) {
             return true;
         }
 
         // Send error, close the connection.
-        _client.disconnect(*tsp);
-        _client.close(*tsp);
+        _client.disconnect(*this);
+        _client.close(*this);
         if (!_multiple_clients) {
             return false;
         }
@@ -165,10 +165,10 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
 
 bool ts::HTTPOutputPlugin::sendResponseHeader(const std::string& line)
 {
-    tsp->debug(u"response header: %s", line);
+    debug(u"response header: %s", line);
     std::string data(line);
     data += "\r\n";
-    return _client.send(data.data(), data.size(), *tsp);
+    return _client.send(data.data(), data.size(), *this);
 }
 
 
@@ -189,7 +189,7 @@ bool ts::HTTPOutputPlugin::startSession()
         const size_t previous = data.size();
         size_t ret_size = 0;
         data.resize(previous + 512);
-        if (!_client.receive(data.data() + previous, data.size() - previous, ret_size, nullptr, *tsp)) {
+        if (!_client.receive(data.data() + previous, data.size() - previous, ret_size, nullptr, *this)) {
             return false; // receive error
         }
         data.resize(previous + ret_size);
@@ -201,7 +201,7 @@ bool ts::HTTPOutputPlugin::startSession()
             header.assignFromUTF8(reinterpret_cast<const char*>(data.data()), eol);
             header.trim();
             data.erase(0, eol + 1);
-            tsp->debug(u"request header: %s", header);
+            debug(u"request header: %s", header);
 
             // The first header is the request.
             if (request.empty()) {
@@ -220,7 +220,7 @@ bool ts::HTTPOutputPlugin::startSession()
     const bool valid = is_get && resource == u"/" && protocol.startWith(u"HTTP/");
 
     if (!valid && !_ignore_bad_request) {
-        tsp->error(u"invalid client request: %s", request);
+        error(u"invalid client request: %s", request);
         sendResponseHeader(is_get ? "HTTP/1.1 404 Not Found" : "HTTP/1.1 400 Bad Request");
         sendResponseHeader("");
         return false;

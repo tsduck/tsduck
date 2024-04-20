@@ -81,7 +81,7 @@ ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPack
         *_null = 0;
     }
     if (_bad_alloc) {
-        tsp->info(u"simulating a memory allocation failure");
+        info(u"simulating a memory allocation failure");
         for (;;) {
             new std::vector<uint8_t>(1'000'000'000);
         }
@@ -89,11 +89,11 @@ ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPack
     if (_exit) {
         std::exit(_exit_code);
     }
-    tsp->verbose(u"%sPID: 0x%0X, labels: %s, timestamp: %s, packets in plugin: %'d, in thread: %'d",
-                 _tag, pkt.getPID(),
-                 pkt_data.labelsString(),
-                 pkt_data.inputTimeStampString(),
-                 tsp->pluginPackets(),
-                 tsp->totalPacketsInThread());
+    verbose(u"%sPID: 0x%0X, labels: %s, timestamp: %s, packets in plugin: %'d, in thread: %'d",
+            _tag, pkt.getPID(),
+            pkt_data.labelsString(),
+            pkt_data.inputTimeStampString(),
+            tsp->pluginPackets(),
+            tsp->totalPacketsInThread());
     return TSP_OK;
 }

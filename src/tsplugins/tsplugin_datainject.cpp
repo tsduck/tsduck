@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsSwitchableReport.h"
 #include "tsSection.h"
 #include "tsPacketizer.h"
 #include "tsEMMGMUX.h"
@@ -70,7 +69,7 @@ namespace ts {
 
         private:
             DataInjectPlugin* const _plugin;
-            SwitchableReport _report;
+            Report _report;
             tlv::Connection<ThreadSafety::Full> _client;
         };
 
@@ -93,8 +92,8 @@ namespace ts {
 
         private:
             DataInjectPlugin* const _plugin;
-            SwitchableReport        _report;
-            UDPReceiver             _client;
+            Report _report;
+            UDPReceiver _client;
         };
 
         // Plugin private data
@@ -280,7 +279,7 @@ bool ts::DataInjectPlugin::start()
 
     // Clear client session.
     clearSession();
-    tsp->verbose(u"initial bandwidth allocation is %'d", _req_bitrate == 0 ? u"unlimited" : _req_bitrate.toString() + u" b/s");
+    verbose(u"initial bandwidth allocation is %'d", _req_bitrate == 0 ? u"unlimited" : _req_bitrate.toString() + u" b/s");
 
     // TS processing state
     _cc_fixer.reset();
@@ -346,7 +345,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
     // Abort if data PID is already present in TS
     const PID pid = pkt.getPID();
     if (pid == _data_pid) {
-        tsp->error(u"data PID conflict, specified %n, now found as input PID, try another one", pid);
+        error(u"data PID conflict, specified %n, now found as input PID, try another one", pid);
         return TSP_END;
     }
 
@@ -423,7 +422,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
     // Interpret the message as a stream_BW_request.
     emmgmux::StreamBWRequest* m = dynamic_cast<emmgmux::StreamBWRequest*>(request.get());
     if (m == nullptr) {
-        tsp->error(u"incorrect message, expected stream_BW_request");
+        error(u"incorrect message, expected stream_BW_request");
         return false;
     }
 
@@ -431,7 +430,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
 
     // Check that the stream is established.
     if (!_stream_established) {
-        tsp->error(u"unexpected stream_BW_request, stream not setup");
+        error(u"unexpected stream_BW_request, stream not setup");
         return false;
     }
 
@@ -440,7 +439,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
         BitRate requested = 1000 * BitRate(m->bandwidth); // protocol unit is kb/s
         _req_bitrate = _max_bitrate == 0 ? requested : std::min(requested, _max_bitrate);
         _req_bitrate_changed = true;
-        tsp->verbose(u"requested bandwidth %'d b/s, allocated %'d b/s", requested, _req_bitrate);
+        verbose(u"requested bandwidth %'d b/s, allocated %'d b/s", requested, _req_bitrate);
     }
 
     // Build the response
@@ -462,7 +461,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
     // Interpret the message as a stream_BW_request.
     emmgmux::DataProvision* m = dynamic_cast<emmgmux::DataProvision*>(msg.get());
     if (m == nullptr) {
-        tsp->error(u"incorrect message, expected data_provision");
+        error(u"incorrect message, expected data_provision");
         return false;
     }
 
@@ -470,17 +469,17 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 
     // Check that the stream is established.
     if (!_stream_established) {
-        tsp->error(u"unexpected data_provision, stream not setup");
+        error(u"unexpected data_provision, stream not setup");
         return false;
     }
 
     // Check that the client and data id are expected.
     if (m->client_id != _client_id) {
-        tsp->error(u"unexpected client id 0x%X in data_provision, expected 0x%X", m->client_id, _client_id);
+        error(u"unexpected client id 0x%X in data_provision, expected 0x%X", m->client_id, _client_id);
         return false;
     }
     if (m->data_id != _data_id) {
-        tsp->error(u"unexpected data id 0x%X in data_provision, expected 0x%X", m->data_id, _data_id);
+        error(u"unexpected data id 0x%X in data_provision, expected 0x%X", m->data_id, _data_id);
         return false;
     }
 
@@ -494,7 +493,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                 processPacketLoss(u"sections", _section_queue.enqueue(sp, cn::milliseconds::zero()));
             }
             else {
-                tsp->error(u"received an invalid section (%d bytes)", m->datagram[i]->size());
+                error(u"received an invalid section (%d bytes)", m->datagram[i]->size());
             }
         }
     }
@@ -505,7 +504,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
             size_t size = m->datagram[i]->size();
             while (size >= PKT_SIZE) {
                 if (*data != SYNC_BYTE) {
-                    tsp->error(u"invalid TS packet");
+                    error(u"invalid TS packet");
                 }
                 else {
                     PacketPtr p(new TSPacket());
@@ -516,7 +515,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                 }
             }
             if (size != 0) {
-                tsp->error(u"extraneous %d bytes in datagram", size);
+                error(u"extraneous %d bytes in datagram", size);
             }
         }
     }
@@ -532,10 +531,10 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
 void ts::DataInjectPlugin::processPacketLoss(const UChar* type, bool enqueueSuccess)
 {
     if (!enqueueSuccess && _lost_packets++ == 0) {
-        tsp->warning(u"internal queue overflow, losing %s, consider using --queue-size", type);
+        warning(u"internal queue overflow, losing %s, consider using --queue-size", type);
     }
     else if (enqueueSuccess && _lost_packets != 0) {
-        tsp->info(u"retransmitting after %'d lost %s", _lost_packets, type);
+        info(u"retransmitting after %'d lost %s", _lost_packets, type);
         _lost_packets = 0;
     }
 }
@@ -548,7 +547,7 @@ void ts::DataInjectPlugin::processPacketLoss(const UChar* type, bool enqueueSucc
 ts::DataInjectPlugin::TCPListener::TCPListener(DataInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _report(*plugin->tsp),
+    _report(Severity::Info, UString(), plugin->tsp),
     _client(plugin->_protocol, true, 3)
 {
 }
@@ -556,7 +555,7 @@ ts::DataInjectPlugin::TCPListener::TCPListener(DataInjectPlugin* plugin) :
 void ts::DataInjectPlugin::TCPListener::stop()
 {
     // Switch off error messages from the network client.
-    _report.setSwitch(false);
+    _report.delegateReport(nullptr);
 
     // Close the server, then break client connection.
     // This will force the server thread to terminate.
@@ -570,7 +569,7 @@ void ts::DataInjectPlugin::TCPListener::stop()
 
 void ts::DataInjectPlugin::TCPListener::main()
 {
-    _plugin->tsp->debug(u"TCP server thread started");
+    _plugin->debug(u"TCP server thread started");
 
     IPv4SocketAddress client_address;
     emmgmux::ChannelStatus channel_status(_plugin->_protocol);
@@ -725,7 +724,7 @@ void ts::DataInjectPlugin::TCPListener::main()
         _client.close(NULLREP);
     }
 
-    _plugin->tsp->debug(u"TCP server thread completed");
+    _plugin->debug(u"TCP server thread completed");
 }
 
 
@@ -736,7 +735,7 @@ void ts::DataInjectPlugin::TCPListener::main()
 ts::DataInjectPlugin::UDPListener::UDPListener(DataInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _report(*plugin->tsp),
+    _report(Severity::Info, UString(), plugin->tsp),
     _client(_report)
 {
 }
@@ -750,7 +749,7 @@ bool ts::DataInjectPlugin::UDPListener::open()
 void ts::DataInjectPlugin::UDPListener::stop()
 {
     // Switch off error messages from the network client.
-    _report.setSwitch(false);
+    _report.delegateReport(nullptr);
 
     // Close the UDP receiver.
     // This will force the server thread to terminate.
@@ -762,7 +761,7 @@ void ts::DataInjectPlugin::UDPListener::stop()
 
 void ts::DataInjectPlugin::UDPListener::main()
 {
-    _plugin->tsp->debug(u"UDP server thread started");
+    _plugin->debug(u"UDP server thread started");
 
     uint8_t inbuf[65536];
     size_t insize = 0;
@@ -787,5 +786,5 @@ void ts::DataInjectPlugin::UDPListener::main()
         }
     }
 
-    _plugin->tsp->debug(u"UDP server thread completed");
+    _plugin->debug(u"UDP server thread completed");
 }

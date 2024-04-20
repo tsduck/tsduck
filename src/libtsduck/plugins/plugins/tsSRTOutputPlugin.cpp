@@ -57,7 +57,7 @@ bool ts::SRTOutputPlugin::getOptions()
 {
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
-    return _sock.setAddresses(value(u""), value(u"rendezvous"), UString(), *tsp) &&
+    return _sock.setAddresses(value(u""), value(u"rendezvous"), UString(), *this) &&
            _sock.loadArgs(duck, *this) &&
            _datagram.loadArgs(duck, *this);
 }
@@ -69,11 +69,11 @@ bool ts::SRTOutputPlugin::getOptions()
 
 bool ts::SRTOutputPlugin::start()
 {
-    bool success = _datagram.open(*tsp);
+    bool success = _datagram.open(*this);
     if (success) {
-        success = _sock.open(*tsp);
+        success = _sock.open(*this);
         if (!success) {
-            _datagram.close(0, *tsp);
+            _datagram.close(0, *this);
         }
     }
     return success;
@@ -86,8 +86,8 @@ bool ts::SRTOutputPlugin::start()
 
 bool ts::SRTOutputPlugin::stop()
 {
-    _datagram.close(tsp->bitrate(), *tsp);
-    _sock.close(*tsp);
+    _datagram.close(tsp->bitrate(), *this);
+    _sock.close(*this);
     return true;
 }
 
@@ -98,7 +98,7 @@ bool ts::SRTOutputPlugin::stop()
 
 bool ts::SRTOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    return _datagram.send(packets, packet_count, tsp->bitrate(), *tsp);
+    return _datagram.send(packets, packet_count, tsp->bitrate(), *this);
 }
 
 

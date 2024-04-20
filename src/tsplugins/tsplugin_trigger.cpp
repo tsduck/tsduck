@@ -152,7 +152,7 @@ bool ts::TriggerPlugin::getOptions()
     _allPackets = !_onStart && !_onStop && _labels.none();
 
     if (present(u"udp-message") && !value(u"udp-message").hexaDecode(_udpMessage)) {
-        tsp->error(u"invalid hexadecimal UDP message");
+        error(u"invalid hexadecimal UDP message");
         return false;
     }
 
@@ -224,7 +224,7 @@ ts::ProcessorPlugin::Status ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPa
 
     if (select) {
         // The packet shall be selected.
-        tsp->debug(u"triggering action, packet %'d", tsp->pluginPackets());
+        debug(u"triggering action, packet %'d", tsp->pluginPackets());
         _lastTime = now == Time::Epoch ? Time::CurrentUTC() : now;
         _lastPacket = tsp->pluginPackets();
         trigger();

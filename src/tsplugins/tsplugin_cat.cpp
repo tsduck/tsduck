@@ -118,7 +118,7 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 {
     // Warn about non-CAT tables in the CAT PID but keep them.
     if (table.tableId() != TID_CAT) {
-        tsp->warning(u"found table id %n in the CAT PID", table.tableId());
+        warning(u"found table id %n in the CAT PID", table.tableId());
         is_target = false;
         return;
     }
@@ -126,7 +126,7 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Process the CAT.
     CAT cat(duck, table);
     if (!cat.isValid()) {
-        tsp->warning(u"found invalid CAT");
+        warning(u"found invalid CAT");
         reinsert = false;
         return;
     }

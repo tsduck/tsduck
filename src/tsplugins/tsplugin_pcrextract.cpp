@@ -305,7 +305,7 @@ bool ts::PCRExtractPlugin::start()
         _output = &_output_stream;
         _output_stream.open(_output_name);
         if (!_output_stream) {
-            tsp->error(u"cannot create file %s", _output_name);
+            error(u"cannot create file %s", _output_name);
             return false;
         }
     }
@@ -486,7 +486,7 @@ void ts::PCRExtractPlugin::processValue(PIDContext& ctx, PIDData PIDContext::* p
         }
         // Number of hexa digits: 11 for PCR (42 bits) and 9 for PTS/DTS (33 bits).
         const size_t width = pcr_subfactor == 1 ? 11 : 9;
-        tsp->info(u"PID: %n, %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)%s",
+        info(u"PID: %n, %s: 0x%0*X, (0x%0*X, %'d ms from start of PID, %'d ms from previous)%s",
                   ctx.pid, name, width, value, width, since_start, since_start / ticks, since_previous / ticks, trailer);
     }
 
@@ -523,7 +523,7 @@ ts::PCRExtractPlugin::SpliceContextPtr ts::PCRExtractPlugin::getSpliceContext(PI
 
         // Add this PID to the demux.
         _demux.addPID(pid);
-        tsp->verbose(u"Found SCTE 35 info PID %n", pid);
+        verbose(u"Found SCTE 35 info PID %n", pid);
     }
     return pc;
 }
@@ -687,5 +687,5 @@ void ts::PCRExtractPlugin::processSpliceCommand(PID pid, SpliceInformationTable&
     }
 
     // Finally report the message.
-    tsp->info(msg);
+    info(msg);
 }

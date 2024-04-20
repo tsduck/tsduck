@@ -24,7 +24,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename"),
     _demux(duck, this),
-    _ccFixer(NoPID, tsp)
+    _ccFixer(NoPID, this)
 {
     option(u"", 0, FILENAME, 1, 1);
     help(u"",
@@ -165,7 +165,7 @@ bool ts::hls::OutputPlugin::getOptions()
     if (present(u"event")) {
         _playlistType = hls::PlayListType::EVENT;
         if (_liveDepth > 0) {
-            tsp->error(u"options --live and --event are incompatible");
+            error(u"options --live and --event are incompatible");
             return false;
         }
     }
@@ -177,12 +177,12 @@ bool ts::hls::OutputPlugin::getOptions()
     }
 
     if (_fixedSegmentSize > 0 && _closeLabels.any()) {
-        tsp->error(u"options --fixed-segment-size and --label-close are incompatible");
+        error(u"options --fixed-segment-size and --label-close are incompatible");
         return false;
     }
 
     if (_sliceOnly && _alignFirstSegment) {
-        tsp->error(u"options --slice-only and --align-first-segment are incompatible");
+        error(u"options --slice-only and --align-first-segment are incompatible");
         return false;
     }
 
@@ -222,12 +222,12 @@ bool ts::hls::OutputPlugin::start()
     _segStarted = false;
     _segClosePending = false;
     if (_segmentFile.isOpen()) {
-        _segmentFile.close(*tsp);
+        _segmentFile.close(*this);
     }
     if (!_playlistFile.empty()) {
         _playlist.reset(_playlistType, _playlistFile);
-        _playlist.setTargetDuration(_targetDuration, *tsp);
-        _playlist.setMediaSequence(_initialMediaSeq, *tsp);
+        _playlist.setTargetDuration(_targetDuration, *this);
+        _playlist.setMediaSequence(_initialMediaSeq, *this);
     }
     return true;
 }
@@ -259,8 +259,8 @@ bool ts::hls::OutputPlugin::createNextSegment()
     const UString fileName(_nameGenerator.newFileName());
 
     // Create the segment file.
-    tsp->verbose(u"creating media segment %s", fileName);
-    if (!_segmentFile.open(fileName, TSFile::WRITE | TSFile::SHARED, *tsp)) {
+    verbose(u"creating media segment %s", fileName);
+    if (!_segmentFile.open(fileName, TSFile::WRITE | TSFile::SHARED, *this)) {
         return false;
     }
 
@@ -296,7 +296,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
     const PacketCounter segPackets = _segmentFile.writePacketsCount();
 
     // Close the TS file.
-    if (!_segmentFile.close(*tsp)) {
+    if (!_segmentFile.close(*this)) {
         return false;
     }
 
@@ -309,7 +309,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
     if (!_playlistFile.empty()) {
 
         // Set end of stream indicator in the playlist.
-        _playlist.setEndList(endOfStream, *tsp);
+        _playlist.setEndList(endOfStream, *this);
 
         // Declare a new segment.
         hls::MediaSegment seg;
@@ -334,7 +334,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
             seg.duration = cn::duration_cast<cn::milliseconds>(_targetDuration);
             seg.bitrate = _useBitrateTag ? PacketBitRate(segPackets, seg.duration) : 0;
         }
-        _playlist.addSegment(seg, *tsp);
+        _playlist.addSegment(seg, *this);
 
         // With live playlists, remove obsolete segments from the playlist.
         while (_liveDepth > 0 && _playlist.segmentCount() > _liveDepth) {
@@ -353,7 +353,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         }
 
         // Write the playlist file.
-        if (!_playlist.saveFile(UString(), *tsp)) {
+        if (!_playlist.saveFile(UString(), *this)) {
             return false;
         }
 
@@ -376,8 +376,8 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         _liveSegmentFiles.pop_front();
 
         // Delete the segment file.
-        tsp->verbose(u"deleting obsolete segment file %s", name);
-        if (!fs::remove(name, &ErrCodeReport(*tsp, u"error deleting", name)) && fs::exists(name)) {
+        verbose(u"deleting obsolete segment file %s", name);
+        if (!fs::remove(name, &ErrCodeReport(*this, u"error deleting", name)) && fs::exists(name)) {
             // Failed to delete, keep it to retry later.
             failedDelete.push_back(name);
         }
@@ -412,7 +412,7 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                     _pmtPID = pat.pmts.begin()->second;
                     _demux.addPID(_pmtPID);
                     _ccFixer.addPID(_pmtPID);
-                    tsp->verbose(u"using service id %n as reference, PMT PID %n", srv, _pmtPID);
+                    verbose(u"using service id %n as reference, PMT PID %n", srv, _pmtPID);
                 }
             }
             break;
@@ -423,11 +423,11 @@ void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& 
                 packets = &_pmtPackets;
                 _videoPID = pmt.firstVideoPID(duck);
                 if (_videoPID == PID_NULL) {
-                    tsp->warning(u"no video PID found in service %n", pmt.service_id);
+                    warning(u"no video PID found in service %n", pmt.service_id);
                 }
                 else {
                     _videoStreamType = pmt.streams[_videoPID].stream_type;
-                    tsp->verbose(u"using video PID %n as reference", _videoPID);
+                    verbose(u"using video PID %n as reference", _videoPID);
                 }
             }
             break;
@@ -478,7 +478,7 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
         }
 
         // Write the packet in the segment file.
-        if (!_segmentFile.writePackets(p, nullptr, 1, *tsp)) {
+        if (!_segmentFile.writePackets(p, nullptr, 1, *this)) {
             return false;
         }
     }
@@ -550,21 +550,21 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
             // We close only when we start a new PES packet or new intra-image on the video PID.
             if (_segClosePending) {
                 if (_videoPID == PID_NULL) {
-                    tsp->debug(u"closing segment, no video PID was identified for synchronization");
+                    debug(u"closing segment, no video PID was identified for synchronization");
                     renewNow = true;
                 }
                 else if (pkt->getPID() == _videoPID && pkt->getPUSI()) {
                     // On a new video PES packet.
                     if (!_intraClose) {
-                        tsp->debug(u"starting new segment on new PES packet");
+                        debug(u"starting new segment on new PES packet");
                         renewNow = true;
                     }
                     else if (renewOnPUSI) {
-                        tsp->debug(u"no I-frame found in last %s, starting new segment on new PES packet", _maxExtraDuration);
+                        debug(u"no I-frame found in last %s, starting new segment on new PES packet", _maxExtraDuration);
                         renewNow = true;
                     }
                     else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {
-                        tsp->debug(u"starting new segment on new I-frame");
+                        debug(u"starting new segment on new I-frame");
                         renewNow = true;
                     }
                 }

@@ -25,17 +25,8 @@ ts::Plugin::Plugin(TSP* to_tsp, const UString& description, const UString& synta
     tsp(to_tsp),
     duck(to_tsp)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Report implementation.
-//----------------------------------------------------------------------------
-
-void ts::Plugin::writeLog(int severity, const UString& message)
-{
-    // Force message to go through tsp
-    tsp->log(severity, message);
+    // Force messages to go through tsp
+    delegateReport(tsp);
 }
 
 

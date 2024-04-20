@@ -29,12 +29,12 @@ ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerR
         _inputs[i] = new InputExecutor(opt, handlers, i, *this, log);
         CheckNonNull(_inputs[i]);
         // Set the asynchronous logger as report method for all executors.
-        _inputs[i]->setReport(&_log);
+        _inputs[i]->delegateReport(&_log);
         _inputs[i]->setMaxSeverity(_log.maxSeverity());
     }
 
     // Set the asynchronous logger as report method for output as well.
-    _output.setReport(&_log);
+    _output.delegateReport(&_log);
     _output.setMaxSeverity(_log.maxSeverity());
 }
 

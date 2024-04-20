@@ -200,8 +200,10 @@ namespace ts {
         //!
         //! Constructor for subclasses.
         //! @param [in] max_severity Initial maximum severity of reported messages.
+        //! @param [in] prefix The prefix to prepend to all messages.
+        //! @param [in] report New report object to which messages are delegated.
         //!
-        TSP(int max_severity);
+        TSP(int max_severity, const UString& prefix = UString(), Report* report = nullptr);
 
         //!
         //! Account for more processed packets in this plugin object.

@@ -124,11 +124,11 @@ bool ts::PCRCopyPlugin::getOptions()
     getIntValue(_max_shift, u"max-shift", 16 * PKT_MAX_PAYLOAD_SIZE);
 
     if (count(u"reference-pid") + count(u"reference-label") != 1) {
-        tsp->error(u"Exactly one of --reference-pid and --reference-label shall be specified.");
+        error(u"Exactly one of --reference-pid and --reference-label shall be specified.");
         return false;
     }
     if (count(u"target-pid") + count(u"target-label") != 1) {
-        tsp->error(u"Exactly one of --target-pid and --target-label shall be specified.");
+        error(u"Exactly one of --target-pid and --target-label shall be specified.");
         return false;
     }
     return true;
@@ -168,13 +168,13 @@ ts::ProcessorPlugin::Status ts::PCRCopyPlugin::processPacket(TSPacket& pkt, TSPa
     // Process PID switching according to labels.
     if (_ref_label <= TSPacketLabelSet::MAX && pkt_data.hasLabel(_ref_label) && pid != _ref_pid && pid != PID_NULL) {
         // Switch to a new reference PID.
-        tsp->verbose(u"using PID %n as PCR reference", pid);
+        verbose(u"using PID %n as PCR reference", pid);
         _ref_pid = pid;
         _ref_pcr = INVALID_PCR;
     }
     if (_target_label <= TSPacketLabelSet::MAX && pkt_data.hasLabel(_target_label) && pid != _target_pid && pid != PID_NULL) {
         // Switch to a new target PID.
-        tsp->verbose(u"using PID %n to insert copied PCR", pid);
+        verbose(u"using PID %n to insert copied PCR", pid);
         _target_pid = pid;
         _target_packets = 0;
         _target_cc_in = _target_cc_out = CC_MAX; // invalid CC value
@@ -219,7 +219,7 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
         }
         else if (_shift_pusi != NPOS) {
             // There is a full PES packet in the shift buffer, we cannot accumulate them.
-            tsp->warning(u"dropping complete PES packet, not enought null packets to absorb the shift");
+            warning(u"dropping complete PES packet, not enought null packets to absorb the shift");
             assert(_shift_pusi <= _shift_buffer.size());
             _shift_buffer.resize(_shift_pusi);
             _shift_pusi = NPOS;
@@ -329,7 +329,7 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
 
     // Check if there is an overflow in the shift buffer after all adjustments.
     if (!_shift_overflow && _shift_buffer.size() > _max_shift) {
-        tsp->warning(u"dropping partial PES packet, not enought null packets to absorb the shift");
+        warning(u"dropping partial PES packet, not enought null packets to absorb the shift");
         _shift_overflow = true;
     }
 }

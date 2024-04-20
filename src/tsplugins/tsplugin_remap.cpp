@@ -111,7 +111,7 @@ bool ts::RemapPlugin::start()
     // Do not care about PMT if no need to update PSI
     _pmt_ready = !_update_psi;
 
-    tsp->verbose(u"%d PID's remapped", _pidMap.size());
+    verbose(u"%d PID's remapped", _pidMap.size());
     return true;
 }
 
@@ -253,7 +253,7 @@ ts::ProcessorPlugin::Status ts::RemapPlugin::processPacket(TSPacket& pkt, TSPack
 
     // Check conflicts
     if (!_unchecked && new_pid == pid && _newPIDs.test(pid)) {
-        tsp->error(u"PID conflict: PID %n present both in input and remap", pid);
+        error(u"PID conflict: PID %n present both in input and remap", pid);
         return TSP_END;
     }
 

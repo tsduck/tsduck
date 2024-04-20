@@ -687,19 +687,19 @@ namespace ts {
         //!
         //! @return True if the last analyze() completed successfully.
         //!
-        bool valid() const {return _is_valid;}
+        bool valid() const { return _is_valid && !gotErrors(); }
 
         //!
         //! Force en error state in this object, as if an error was reported.
         //!
-        void invalidate() {_is_valid = false;}
+        void invalidate() { _is_valid = false; }
 
         //!
         //! Get the application name from the last command line analysis.
         //!
         //! @return The application name from the last command line analysis.
         //!
-        UString appName() const {return _app_name;}
+        UString appName() const { return _app_name; }
 
         //!
         //! Get the application name from a standard argc/argv pair.
@@ -1218,17 +1218,6 @@ namespace ts {
         void exitOnError(bool force = false);
 
         //!
-        //! Redirect report logging.
-        //!
-        //! @param [in] report Where to report errors. The redirection is cancelled if zero.
-        //! @return The previous redirected report.
-        //!
-        Report* redirectReport(Report* report);
-
-        // Inherited from Report.
-        virtual void raiseMaxSeverity(int level) override;
-
-        //!
         //! Process argument redirection using @c '\@' on a vector of strings.
         //!
         //! @param [in,out] args A vector of strings. All lines of the form @c '\@filename' are
@@ -1344,8 +1333,6 @@ namespace ts {
         using IOptionMap = std::map<UString,IOption>;
 
         // Private fields
-        Report*       _subreport = nullptr;
-        int           _saved_severity {Severity::Info};
         IOptionMap    _iopts {};
         UString       _description {};
         UString       _shell {};

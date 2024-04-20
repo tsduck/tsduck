@@ -177,9 +177,6 @@ namespace ts {
         //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
         //!
         Plugin(TSP* to_tsp, const UString& description = UString(), const UString& syntax = UString());
-
-        // Report implementation.
-        virtual void writeLog(int severity, const UString& message) override;
     };
 }
 

@@ -154,7 +154,7 @@ void ArgsTest::testHelpDefault()
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
-    args.redirectReport(&log);
+    args.delegateReport(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
     TSUNIT_EQUAL(u"\n"
@@ -228,8 +228,8 @@ void ArgsTest::testCopyOptions()
     ts::Args args1(u"{description1}", u"{syntax1}", ts::Args::NO_EXIT_ON_ERROR);
     ts::Args args2(u"{description2}", u"{syntax2}", ts::Args::NO_EXIT_ON_ERROR);
 
-    args1.redirectReport(&log);
-    args2.redirectReport(&log);
+    args1.delegateReport(&log);
+    args2.delegateReport(&log);
 
     args1.option(u"opt1");
     args1.option(u"opt2", u'o', ts::Args::UNSIGNED);
@@ -249,7 +249,7 @@ namespace {
         explicit TestArgs(ts::Report* log) :
             ts::Args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS)
         {
-            redirectReport(log);
+            delegateReport(log);
             option(u"",      0,  ts::Args::STRING, 1, 2);
             option(u"opt1",  0,  ts::Args::NONE);
             option(u"opt2", 'a', ts::Args::STRING);
@@ -721,7 +721,7 @@ void ArgsTest::testGatherParameters()
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
-    args.redirectReport(&log);
+    args.delegateReport(&log);
 
     args.option(u"");
     args.option(u"opt1");
@@ -811,7 +811,7 @@ void ArgsTest::testRanges()
     args.option(u"opt3", 0, ts::Args::INTEGER, 0, ts::Args::UNLIMITED_COUNT, 0, ts::Args::UNLIMITED_VALUE, true);
 
     ts::ReportBuffer<ts::ThreadSafety::None> log;
-    args.redirectReport(&log);
+    args.delegateReport(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"0", u"--opt1", u"1,0-0x00C", u"--opt1", u"4,7"}));
     TSUNIT_ASSERT(args.present(u"opt1"));
@@ -866,7 +866,7 @@ void ArgsTest::testFixedPoint()
     using Fixed = ts::FixedPoint<int32_t, 3>;
 
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
-    args.redirectReport(&CERR);
+    args.delegateReport(&CERR);
     args.option<Fixed>(u"");
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"34", u"0.1", u"12.345678"}));
@@ -888,7 +888,7 @@ void ArgsTest::testFraction()
     using Frac = ts::Fraction<int32_t>;
 
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
-    args.redirectReport(&CERR);
+    args.delegateReport(&CERR);
     args.option<Frac>(u"");
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"1", u" -2", u"12/345", u" -6/12"}));
@@ -917,7 +917,7 @@ void ArgsTest::testFraction()
 void ArgsTest::testDouble()
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
-    args.redirectReport(&CERR);
+    args.delegateReport(&CERR);
     args.option<Double>(u"");
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"1", u"2.56", u"0", u" -6.12"}));
@@ -933,7 +933,7 @@ void ArgsTest::testDouble()
 void ArgsTest::testChrono()
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
-    args.redirectReport(&CERR);
+    args.delegateReport(&CERR);
     args.option<cn::seconds>(u"foo", 0, 0, ts::Args::UNLIMITED_COUNT);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--foo", u"23", u"--foo", u"6"}));
@@ -973,7 +973,7 @@ void ArgsTest::testInvalidFraction()
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 
     ts::ReportBuffer<ts::ThreadSafety::None> log;
-    args.redirectReport(&log);
+    args.delegateReport(&log);
 
     using Frac = ts::Fraction<int32_t>;
     args.option<Frac>(u"opt");
@@ -989,7 +989,7 @@ void ArgsTest::testInvalidDouble()
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 
     ts::ReportBuffer<ts::ThreadSafety::None> log;
-    args.redirectReport(&log);
+    args.delegateReport(&log);
     args.option<Double>(u"opt", 0, 0, 1, 12, 15);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"2.3"}));

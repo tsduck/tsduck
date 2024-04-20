@@ -19,7 +19,6 @@
 #include "tsTSPControlCommand.h"
 #include "tsThread.h"
 #include "tsTCPServer.h"
-#include "tsReportWithPrefix.h"
 
 namespace ts {
     namespace tsp {
@@ -61,7 +60,7 @@ namespace ts {
             volatile bool         _is_open = false;
             volatile bool         _terminate = false;
             TSProcessorArgs&      _options;
-            ReportWithPrefix      _log;
+            Report                _log;
             TSPControlCommand     _reference {_log};
             TCPServer             _server {};
             std::recursive_mutex& _global_mutex;

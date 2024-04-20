@@ -13,8 +13,8 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSP::TSP(int max_severity) :
-    Report(max_severity)
+ts::TSP::TSP(int max_severity, const UString& prefix, Report* report) :
+    Report(max_severity, prefix, report)
 {
 }
 

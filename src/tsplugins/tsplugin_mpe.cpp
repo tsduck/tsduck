@@ -251,7 +251,7 @@ bool ts::MPEPlugin::getOptions()
     // --net-size N is a shortcut for --min-net-size N --max-net-size N.
     if (present(u"net-size")) {
         if (present(u"min-net-size") || present(u"max-net-size")) {
-            tsp->error(u"--net-size is incompatible with --min-net-size and --max-net-size");
+            error(u"--net-size is incompatible with --min-net-size and --max-net-size");
             return false;
         }
         else {
@@ -262,7 +262,7 @@ bool ts::MPEPlugin::getOptions()
     // --udp-size N is a shortcut for --min-udp-size N --max-udp-size N.
     if (present(u"udp-size")) {
         if (present(u"min-udp-size") || present(u"max-udp-size")) {
-            tsp->error(u"--udp-size is incompatible with --min-udp-size and --max-udp-size");
+            error(u"--udp-size is incompatible with --min-udp-size and --max-udp-size");
             return false;
         }
         else {
@@ -294,7 +294,7 @@ bool ts::MPEPlugin::start()
         }
         _outfile.open(_outfile_name, mode);
         if (!_outfile.is_open()) {
-            tsp->error(u"error creating %s", _outfile_name);
+            error(u"error creating %s", _outfile_name);
             return false;
         }
     }
@@ -357,7 +357,7 @@ void ts::MPEPlugin::handleMPENewPID(MPEDemux& demux, const PMT& pmt, PID pid)
     // Found a new PID carrying MPE.
     // If we need to extract all MPE PID's, add it.
     if (_all_mpe_pids) {
-        tsp->verbose(u"extract new MPE PID %n, service %n", pid, pmt.service_id);
+        verbose(u"extract new MPE PID %n, service %n", pid, pmt.service_id);
         _demux.addPID(pid);
     }
 }
@@ -411,7 +411,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
 
     // Log MPE packets.
     if (_log_hexa_line) {
-        tsp->info(_log_hexa_prefix + UString::Dump(dump_data, dump_size, UString::COMPACT));
+        info(_log_hexa_prefix + UString::Dump(dump_data, dump_size, UString::COMPACT));
     }
     else if (_log) {
         // Get destination IP and MAC address.
@@ -432,18 +432,18 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
             dump.append(u"\n");
             dump.appendDump(dump_data, dump_size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16);
         }
-        tsp->info(u"PID %n, src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
-                  mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
-                  destIP, mpe.destinationUDPPort(), destMAC, macComment, udp_size,
-                  GetUInt16(mpe.datagram() + 6), syncLayoutString(udp_data, udp_size),
-                  dump);
+        info(u"PID %n, src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
+             mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
+             destIP, mpe.destinationUDPPort(), destMAC, macComment, udp_size,
+             GetUInt16(mpe.datagram() + 6), syncLayoutString(udp_data, udp_size),
+             dump);
     }
 
     // Save UDP messages in binary file.
     if (_outfile.is_open() && udp_size > _skip_size) {
         _outfile.write(reinterpret_cast<const char*>(udp_data + _skip_size), std::streamsize(udp_size - _skip_size));
         if (!_outfile) {
-            tsp->error(u"error writing to %s", _outfile_name);
+            error(u"error writing to %s", _outfile_name);
             _abort = true;
         }
     }

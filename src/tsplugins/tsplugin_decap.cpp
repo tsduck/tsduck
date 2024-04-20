@@ -93,7 +93,7 @@ ts::ProcessorPlugin::Status ts::DecapPlugin::processPacket(TSPacket& pkt, TSPack
         return TSP_OK;
     }
     else {
-        tsp->error(_decap.lastError());
+        error(_decap.lastError());
         return TSP_END;
     }
 }

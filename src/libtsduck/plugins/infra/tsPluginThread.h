@@ -44,12 +44,6 @@ namespace ts {
         virtual ~PluginThread() override;
 
         //!
-        //! Change the report object.
-        //! @param [in] rep Address of new report instance.
-        //!
-        void setReport(Report* rep) { _report = rep; }
-
-        //!
         //! Plugin stack size overhead.
         //! Each plugin defines its own usage of the stack. The PluginThread
         //! class and its subclasses have their own additional stack usage.
@@ -62,20 +56,14 @@ namespace ts {
         //! @param [in] name The name to use in log messages.
         //! When empty, revert to the real plugin name.
         //!
-        void setLogName(const UString& name) { _logname = name; }
+        void setLogName(const UString& name);
 
         // Implementation of TSP virtual methods.
         virtual UString pluginName() const override;
         virtual Plugin* plugin() const override;
 
-    protected:
-        // Inherited from Report (via TSP)
-        virtual void writeLog(int severity, const UString& msg) override;
-
     private:
-        Report*       _report;  // Common report interface for all plugins
         const UString _name;    // Plugin name.
-        UString       _logname; // Plugin name as displayed in log messages.
         Plugin*       _shlib;   // Shared library API.
     };
 }

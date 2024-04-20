@@ -34,12 +34,12 @@ bool ts::FileInputPlugin::getOptions()
 
 bool ts::FileInputPlugin::start()
 {
-    return _file.open(*tsp);
+    return _file.open(*this);
 }
 
 bool ts::FileInputPlugin::stop()
 {
-    return _file.close(*tsp);
+    return _file.close(*this);
 }
 
 bool ts::FileInputPlugin::abortInput()
@@ -50,5 +50,5 @@ bool ts::FileInputPlugin::abortInput()
 
 size_t ts::FileInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
-    return _file.read(buffer, pkt_data, max_packets, *tsp);
+    return _file.read(buffer, pkt_data, max_packets, *this);
 }

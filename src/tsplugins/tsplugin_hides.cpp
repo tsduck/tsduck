@@ -123,7 +123,7 @@ ts::HiDesOutputPlugin::HiDesOutputPlugin(TSP* tsp_) :
 bool ts::HiDesOutputPlugin::start()
 {
     if (_device.isOpen()) {
-        tsp->error(u"already started");
+        error(u"already started");
         return false;
     }
 
@@ -152,11 +152,11 @@ bool ts::HiDesOutputPlugin::start()
         _dev_number = 0;
     }
     else if (_dev_number >= 0 && !_dev_name.empty()) {
-        tsp->error(u"specify either HiDes adapter number or device name but not both");
+        error(u"specify either HiDes adapter number or device name but not both");
         return false;
     }
     if (*params.frequency == 0) {
-        tsp->error(u"no carrier frequency specified");
+        error(u"no carrier frequency specified");
         return false;
     }
     if (set_dc && (!dc_string.scan(u"%d/%d", &dc_i, &dc_q) ||
@@ -165,7 +165,7 @@ bool ts::HiDesOutputPlugin::start()
                    dc_q < HiDesDevice::IT95X_DC_CAL_MIN ||
                    dc_q > HiDesDevice::IT95X_DC_CAL_MAX))
     {
-        tsp->error(u"invalid DC compensation value \"%s\"", dc_string);
+        error(u"invalid DC compensation value \"%s\"", dc_string);
         return false;
     }
 
@@ -183,7 +183,7 @@ bool ts::HiDesOutputPlugin::start()
         _device.close(*tsp);
         return false;
     }
-    tsp->verbose(u"using device %s with nominal output bitrate of %'d bits/s", _dev_info.toString(),_bitrate);
+    verbose(u"using device %s with nominal output bitrate of %'d bits/s", _dev_info.toString(),_bitrate);
 
     // Tune to frequency.
     if (!_device.tune(params, *tsp)) {
@@ -199,7 +199,7 @@ bool ts::HiDesOutputPlugin::start()
             return false;
         }
         // The value of gain is updated to effective value.
-        tsp->verbose(u"adjusted output gain, requested %d dB, set to %d dB", gain, new_gain);
+        verbose(u"adjusted output gain, requested %d dB, set to %d dB", gain, new_gain);
     }
 
     // Set DC calibration

@@ -331,7 +331,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     plugin()->resetContext(_options.duck_args);
 
     // Redirect error messages from command line analysis to the remote tspcontrol.
-    Report* previous_report = plugin()->redirectReport(&_restart_data->report);
+    Report* previous_report = plugin()->delegateReport(&_restart_data->report);
 
     bool success = false;
     if (_restart_data->same_args) {
@@ -357,7 +357,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     }
 
     // Restore error messages to previous report.
-    plugin()->redirectReport(previous_report);
+    plugin()->delegateReport(previous_report);
 
     // Finally notify the calling thread that the restart is completed.
     _restart_data->completed = true;

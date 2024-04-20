@@ -226,11 +226,11 @@ bool ts::MPEInjectPlugin::ReceiverThread::getOptions(size_t index)
     const size_t src_count = _plugin->count(u"new-source");
 
     if (dst_count > max_count) {
-        _plugin->tsp->error(u"too many --new-destination options");
+        _plugin->error(u"too many --new-destination options");
         return false;
     }
     if (src_count > max_count) {
-        _plugin->tsp->error(u"too many --new-source options");
+        _plugin->error(u"too many --new-source options");
         return false;
     }
 
@@ -304,7 +304,7 @@ ts::ProcessorPlugin::Status ts::MPEInjectPlugin::processPacket(TSPacket& pkt, TS
     // Abort if data PID is already present in TS and --replace is not specified.
     const PID pid = pkt.getPID();
     if (!_replace && pid == _mpe_pid) {
-        tsp->error(u"MPE PID conflict, specified %n, now found as input PID, try another one", pid);
+        error(u"MPE PID conflict, specified %n, now found as input PID, try another one", pid);
         return TSP_END;
     }
 
@@ -345,7 +345,7 @@ void ts::MPEInjectPlugin::provideSection(SectionCounter counter, SectionPtr& sec
 
 void ts::MPEInjectPlugin::ReceiverThread::main()
 {
-    _plugin->tsp->debug(u"UDP reception thread %d started", _index);
+    _plugin->debug(u"UDP reception thread %d started", _index);
 
     // Try to cumlate "UDP overflow" messages.
     size_t overflow_count = 0;
@@ -392,7 +392,7 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
 
         // Enqueue the section immediately. Never wait.
         if (!section->isValid()) {
-            _plugin->tsp->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes", sender, destination, insize);
+            _plugin->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes", sender, destination, insize);
         }
         else {
             const bool queued = _plugin->_section_queue.enqueue(section, cn::milliseconds::zero());
@@ -400,11 +400,11 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
                 overflow_count++;
             }
             if ((queued && overflow_count > 0) || overflow_count >= OVERFLOW_MSG_GROUP_COUNT) {
-                _plugin->tsp->warning(u"incoming UDP overflow, dropped %d datagrams", overflow_count);
+                _plugin->warning(u"incoming UDP overflow, dropped %d datagrams", overflow_count);
                 overflow_count = 0;
             }
         }
     }
 
-    _plugin->tsp->debug(u"UDP reception thread %d completed", _index);
+    _plugin->debug(u"UDP reception thread %d completed", _index);
 }

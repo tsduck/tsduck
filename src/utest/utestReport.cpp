@@ -33,6 +33,7 @@ public:
     void testByName();
     void testByStream();
     void testErrCodeReport();
+    void testDelegation();
 
     TSUNIT_TEST_BEGIN(ReportTest);
     TSUNIT_TEST(testSeverity);
@@ -41,6 +42,7 @@ public:
     TSUNIT_TEST(testByName);
     TSUNIT_TEST(testByStream);
     TSUNIT_TEST(testErrCodeReport);
+    TSUNIT_TEST(testDelegation);
     TSUNIT_TEST_END();
 
 private:
@@ -326,4 +328,65 @@ void ReportTest::testErrCodeReport()
     debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_ASSERT(log.messages().startWith(u"Error: isdir " + nodir + u":"));
+}
+
+// Test case: report delegation.
+void ReportTest::testDelegation()
+{
+    TestBuffer log;
+    ts::Report rep;
+    ts::Report* previous = nullptr;
+
+    previous = rep.delegateReport(&log);
+    TSUNIT_ASSERT(previous == nullptr);
+
+    rep.info(u"text 1");
+    TSUNIT_EQUAL(u"text 1", log.messages());
+
+    log.clear();
+    TSUNIT_EQUAL(u"", log.messages());
+
+    rep.setMaxSeverity(ts::Severity::Verbose);
+    rep.verbose(u"text 2");
+    TSUNIT_EQUAL(u"", log.messages());
+
+    log.setMaxSeverity(ts::Severity::Verbose);
+    rep.verbose(u"text 3");
+    TSUNIT_EQUAL(u"text 3", log.messages());
+
+    log.clear();
+    TSUNIT_EQUAL(u"", log.messages());
+
+    rep.setMaxSeverity(ts::Severity::Info);
+    rep.verbose(u"text 4");
+    TSUNIT_EQUAL(u"", log.messages());
+
+    rep.info(u"text 5");
+    TSUNIT_EQUAL(u"text 5", log.messages());
+
+    log.clear();
+    TSUNIT_EQUAL(u"", log.messages());
+
+    log.setReportPrefix(u"LOG: ");
+    rep.info(u"text 6");
+    TSUNIT_EQUAL(u"LOG: text 6", log.messages());
+
+    log.clear();
+    TSUNIT_EQUAL(u"", log.messages());
+
+    rep.setReportPrefix(u"REP: ");
+    rep.info(u"text 7");
+    TSUNIT_EQUAL(u"LOG: REP: text 7", log.messages());
+
+    log.clear();
+    TSUNIT_EQUAL(u"", log.messages());
+
+    previous = rep.delegateReport(nullptr);
+    TSUNIT_ASSERT(previous == &log);
+
+    previous = rep.delegateReport(nullptr);
+    TSUNIT_ASSERT(previous == nullptr);
+
+    rep.info(u"text 6");
+    TSUNIT_EQUAL(u"", log.messages());
 }

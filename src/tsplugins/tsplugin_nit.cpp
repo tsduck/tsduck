@@ -221,15 +221,15 @@ bool ts::NITPlugin::getOptions()
     getIntValue(_default_srv_type, u"default-service-type");
 
     if (_use_nit_other && _build_sld) {
-        tsp->error(u"--nit-other and --build-service-list-descriptors are mutually exclusive");
+        error(u"--nit-other and --build-service-list-descriptors are mutually exclusive");
         return false;
     }
     if (_lcn_oper != LCN_NONE && !_remove_serv.empty()) {
-        tsp->error(u"--lcn and --remove-service are mutually exclusive");
+        error(u"--lcn and --remove-service are mutually exclusive");
         return false;
     }
     if (_sld_oper != LCN_NONE && !_remove_serv.empty()) {
-        tsp->error(u"--sld and --remove-service are mutually exclusive");
+        error(u"--sld and --remove-service are mutually exclusive");
         return false;
     }
 
@@ -433,12 +433,12 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Process the NIT.
     NIT nit(duck, table);
     if (!nit.isValid()) {
-        tsp->warning(u"found invalid NIT");
+        warning(u"found invalid NIT");
         reinsert = false;
         return;
     }
 
-    tsp->debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
+    debug(u"got a NIT, version %d, network Id: %n", nit.version, nit.network_id);
 
     // Remove the specified transport streams
     for (auto it = nit.transports.begin(); it != nit.transports.end(); ) {

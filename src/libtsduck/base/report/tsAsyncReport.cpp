@@ -112,7 +112,7 @@ void ts::AsyncReport::main()
         }
     }
 
-    if (_max_severity >= Severity::Debug) {
+    if (maxSeverity() >= Severity::Debug) {
         asyncThreadLog(Severity::Debug, u"Report logging thread terminated");
     }
 

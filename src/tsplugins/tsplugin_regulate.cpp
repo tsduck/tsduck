@@ -99,11 +99,11 @@ bool ts::RegulatePlugin::getOptions()
     _pcr_synchronous = present(u"pcr-synchronous");
 
     if (present(u"bitrate") && _pcr_synchronous) {
-        tsp->error(u"--bitrate cannot be used with --pcr-synchronous");
+        error(u"--bitrate cannot be used with --pcr-synchronous");
         return false;
     }
     if (present(u"pid-pcr") && !_pcr_synchronous) {
-        tsp->error(u"--pid-pcr cannot be used without --pcr-synchronous");
+        error(u"--pid-pcr cannot be used without --pcr-synchronous");
         return false;
     }
     return true;
@@ -118,14 +118,14 @@ bool ts::RegulatePlugin::start()
 {
     // Initialize the appropriate regulator.
     if (_pcr_synchronous) {
-        tsp->debug(u"starting PCR-synchronous regulation");
+        debug(u"starting PCR-synchronous regulation");
         _pcr_regulator.reset();
         _pcr_regulator.setBurstPacketCount(_burst);
         _pcr_regulator.setReferencePID(_pid_pcr);
         _pcr_regulator.setMinimimWait(_wait_min);
     }
     else {
-        tsp->debug(u"starting bitrate-based regulation");
+        debug(u"starting bitrate-based regulation");
         _bitrate_regulator.setBurstPacketCount(_burst);
         _bitrate_regulator.setFixedBitRate(_bitrate);
         _bitrate_regulator.start();

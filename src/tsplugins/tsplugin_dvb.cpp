@@ -120,14 +120,14 @@ bool ts::DVBInputPlugin::start()
     if (!_tuner_args.configureTuner(_tuner)) {
         return false;
     }
-    tsp->verbose(u"using %s (%s)", _tuner.deviceName(), _tuner.deliverySystems().toString());
+    verbose(u"using %s (%s)", _tuner.deviceName(), _tuner.deliverySystems().toString());
 
     // Tune to the specified frequency.
     if (!_tuner_args.hasModulationArgs()) {
-        tsp->verbose(u"no modulation parameter specified, using current transponder in tuner");
+        verbose(u"no modulation parameter specified, using current transponder in tuner");
     }
     else if (_tuner.tune(_tuner_args)) {
-        tsp->verbose(u"tuned to transponder %s", _tuner_args.toPluginOptions());
+        verbose(u"tuned to transponder %s", _tuner_args.toPluginOptions());
     }
     else {
         stop();
@@ -137,21 +137,21 @@ bool ts::DVBInputPlugin::start()
     // Compute theoretical TS bitrate from tuning parameters.
     const BitRate bitrate = _tuner_args.theoreticalBitrate();
     if (bitrate > 0) {
-        tsp->verbose(u"expected bitrate from tuning parameters: %'d b/s", bitrate);
+        verbose(u"expected bitrate from tuning parameters: %'d b/s", bitrate);
     }
 
     // Start receiving packets
-    tsp->debug(u"starting tuner reception");
+    debug(u"starting tuner reception");
     if (!_tuner.start()) {
         stop();
         return false;
     }
-    tsp->debug(u"tuner reception started");
+    debug(u"tuner reception started");
 
     // Display signal state in verbose mode.
     SignalState state;
     if (_tuner.getSignalState(state)) {
-        tsp->verbose(state.toString());
+        verbose(state.toString());
     }
 
     return true;
@@ -194,7 +194,7 @@ ts::BitRate ts::DVBInputPlugin::getBitrate()
         ObjectRepository::Instance().store(u"tsp.dvb.params", std::make_shared<ModulationArgs>(_tuner_args));
 
         // Display new tuning info
-        tsp->verbose(u"actual tuning options: %s", _tuner_args.toPluginOptions());
+        verbose(u"actual tuning options: %s", _tuner_args.toPluginOptions());
     }
 
     return _previous_bitrate = bitrate;

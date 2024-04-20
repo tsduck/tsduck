@@ -153,7 +153,7 @@ bool ts::TSRenamePlugin::start()
 
 void ts::TSRenamePlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
-    tsp->debug(u"Got %s v%d, PID %n, TIDext %n", names::TID(duck, table.tableId()), table.version(), table.sourcePID(), table.tableIdExtension());
+    debug(u"Got %s v%d, PID %n, TIDext %n", names::TID(duck, table.tableId()), table.version(), table.sourcePID(), table.tableIdExtension());
 
     switch (table.tableId()) {
 

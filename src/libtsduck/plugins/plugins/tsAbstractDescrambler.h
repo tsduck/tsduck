@@ -240,7 +240,7 @@ namespace ts {
         bool                    _abort = false;               // Error, abort asap.
         bool                    _synchronous = false;         // Synchronous ECM deciphering.
         bool                    _swap_cw = false;             // Swap even/odd CW from ECM.
-        TSScrambling            _scrambling {*tsp};           // Default descrambling (used with fixed control words).
+        TSScrambling            _scrambling {*this};          // Default descrambling (used with fixed control words).
         PIDSet                  _pids {};                     // Explicit PID's to descramble.
         ServiceDiscovery        _service {duck, this};        // Service to descramble (by name, id or none).
         size_t                  _stack_usage;                 // Stack usage for ECM deciphering.

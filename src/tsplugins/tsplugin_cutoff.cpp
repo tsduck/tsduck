@@ -184,7 +184,7 @@ ts::ProcessorPlugin::Status ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPac
                 _set_labels.reset(iparam);
             }
             else {
-                tsp->warning(u"received invalid command \"%s\"", *cmd);
+                warning(u"received invalid command \"%s\"", *cmd);
             }
         }
     }
@@ -201,7 +201,7 @@ ts::ProcessorPlugin::Status ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPac
 
 void ts::CutoffPlugin::main()
 {
-    tsp->debug(u"server thread started");
+    debug(u"server thread started");
 
     char inbuf[1024];
     size_t insize = 0;
@@ -216,7 +216,7 @@ void ts::CutoffPlugin::main()
 
         // Filter out unauthorized remote systems.
         if (!_allowedRemote.empty() && !Contains(_allowedRemote, sender)) {
-            tsp->warning(u"rejected remote command from unauthorized host %s", sender);
+            warning(u"rejected remote command from unauthorized host %s", sender);
             continue;
         }
 
@@ -230,7 +230,7 @@ void ts::CutoffPlugin::main()
         CommandQueue::MessagePtr cmd(new UString(UString::FromUTF8(inbuf, len)));
         cmd->toLower();
         cmd->trim();
-        tsp->verbose(u"received command \"%s\", from %s (%d bytes)", *cmd, sender, insize);
+        verbose(u"received command \"%s\", from %s (%d bytes)", *cmd, sender, insize);
 
         // Enqueue the command immediately. Never wait.
         if (!cmd->empty()) {
@@ -240,8 +240,8 @@ void ts::CutoffPlugin::main()
 
     // If termination was requested, receive error is not an error.
     if (!_terminate && !error.empty()) {
-        tsp->info(error.messages());
+        info(error.messages());
     }
 
-    tsp->debug(u"server thread completed");
+    debug(u"server thread completed");
 }

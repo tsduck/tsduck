@@ -444,18 +444,18 @@ bool ts::PMTPlugin::start()
 
     // Get elementary streams sorting criteria.
     if (!value(u"sort-pids").toIntegers(_sort_pids, u"", u",", 0, u".", 0, PID_MAX - 1)) {
-        tsp->error(u"invalid list of PID's in --sort-pids");
+        error(u"invalid list of PID's in --sort-pids");
         return false;
     }
     value(u"sort-languages").toLower().split(_sort_languages, COMMA, true, true);
     for (const auto& lang : _sort_languages) {
         if (lang.length() != 3) {
-            tsp->error(u"invalid language '%s' in --sort-languages", lang);
+            error(u"invalid language '%s' in --sort-languages", lang);
             return false;
         }
     }
     if (!_sort_pids.empty() && !_sort_languages.empty()) {
-        tsp->error(u"--sort-pids and --sort-languages are mutually exclusive");
+        error(u"--sort-pids and --sort-languages are mutually exclusive");
         return false;
     }
 
@@ -509,7 +509,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Process the PMT.
     PMT pmt(duck, table);
     if (!pmt.isValid()) {
-        tsp->warning(u"found invalid PMT");
+        warning(u"found invalid PMT");
         reinsert = false;
         return;
     }
@@ -578,7 +578,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
         auto comp_it = pmt.streams.find(pid);
         if (comp_it == pmt.streams.end()) {
-            tsp->warning(u"PID %n not found in PMT", pid);
+            warning(u"PID %n not found in PMT", pid);
         }
         else {
             comp_it->second.descs.add(dlist);

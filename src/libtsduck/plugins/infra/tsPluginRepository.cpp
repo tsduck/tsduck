@@ -180,12 +180,8 @@ namespace {
     class ReportTSP: public ts::TSP
     {
         TS_NOBUILD_NOCOPY(ReportTSP);
-    private:
-        Report& _report;
-    protected:
-        virtual void writeLog(int sev, const ts::UString& msg) override { _report.log(sev, msg); }
     public:
-        ReportTSP(Report& report) : ts::TSP(report.maxSeverity()), _report(report) {}
+        ReportTSP(Report& report) : ts::TSP(report.maxSeverity(), ts::UString(), &report) {}
         virtual ts::UString pluginName() const override { return ts::UString(); }
         virtual ts::Plugin* plugin() const override { return nullptr; }
         virtual size_t pluginIndex() const override { return 0; }

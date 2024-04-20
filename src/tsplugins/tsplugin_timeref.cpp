@@ -166,7 +166,7 @@ bool ts::TimeRefPlugin::getOptions()
     getIntValues(_only_regions, u"only-region");
 
     if (_add_milliseconds != cn::milliseconds::zero() && _use_timeref) {
-        tsp->error(u"--add cannot be used with --start or --system-synchronous");
+        error(u"--add cannot be used with --start or --system-synchronous");
         return false;
     }
 
@@ -176,10 +176,10 @@ bool ts::TimeRefPlugin::getOptions()
         if (start.empty() || start == u"system") {
             _startref = Time::CurrentUTC();
             _add_milliseconds = cn::milliseconds::zero(); // for --system-synchronous
-            tsp->verbose(u"current system clock is %s", _startref);
+            verbose(u"current system clock is %s", _startref);
         }
         else if (!_startref.decode(start)) {
-            tsp->error(u"invalid --start time value \"%s\" (use \"year/month/day:hour:minute:second\")", start);
+            error(u"invalid --start time value \"%s\" (use \"year/month/day:hour:minute:second\")", start);
             return false;
         }
         else if (_system_sync) {
@@ -190,14 +190,14 @@ bool ts::TimeRefPlugin::getOptions()
     // In a local_time_offset_descriptor, the sign of the time offsets is stored once only.
     // So, the current and next time offsets must have the same sign.
     if (_local_offset != INT_MAX && _next_offset != INT_MAX && _local_offset * _next_offset < 0) {
-        tsp->error(u"values of --local-time-offset and --next-time-offset must be all positive or all negative");
+        error(u"values of --local-time-offset and --next-time-offset must be all positive or all negative");
         return false;
     }
 
     // Next DST change in absolute time.
     const UString next(value(u"next-change"));
     if (!next.empty() && !_next_change.decode(next)) {
-        tsp->error(u"invalid --next-change value \"%s\" (use \"year/month/day:hour:minute:second\")", next);
+        error(u"invalid --next-change value \"%s\" (use \"year/month/day:hour:minute:second\")", next);
         return false;
     }
 
@@ -279,7 +279,7 @@ ts::ProcessorPlugin::Status ts::TimeRefPlugin::processPacket(TSPacket& pkt, TSPa
             }
         }
         if (!ok) {
-            tsp->warning(u"got TDT/TOT PID packet with no complete section inside, cannot update");
+            warning(u"got TDT/TOT PID packet with no complete section inside, cannot update");
         }
     }
 
@@ -299,20 +299,20 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     // Check table id.
     const TID tid = section[0];
     if (tid != TID_TDT && tid != TID_TOT) {
-        tsp->warning(u"found table_id %n in TDT/TOT PID", tid);
+        warning(u"found table_id %n in TDT/TOT PID", tid);
         return;
     }
 
     // Check section size.
     if ((tid == TID_TDT && size < SHORT_SECTION_HEADER_SIZE + MJD_SIZE) || (tid == TID_TOT && size < SHORT_SECTION_HEADER_SIZE + MJD_SIZE + 4)) {
-        tsp->warning(u"invalid TDT/TOD, too short: %d bytes", size);
+        warning(u"invalid TDT/TOD, too short: %d bytes", size);
         return;
     }
 
     // Check TOT CRC.
     if (tid == TID_TOT) {
         if (CRC32(section, size - 4) != GetUInt32(section_end - 4)) {
-            tsp->warning(u"incorrect CRC in TOT, cannot reliably update");
+            warning(u"incorrect CRC in TOT, cannot reliably update");
             return;
         }
     }
@@ -321,7 +321,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     // TDT and TOT both store a UTC time in first 5 bytes of short section payload.
     Time time;
     if (!DecodeMJD(section + SHORT_SECTION_HEADER_SIZE, MJD_SIZE, time)) {
-        tsp->warning(u"error decoding UTC time from TDT/TOT");
+        warning(u"error decoding UTC time from TDT/TOT");
         return;
     }
 
@@ -335,7 +335,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
         else {
             const BitRate bitrate = tsp->bitrate();
             if (bitrate == 0) {
-                tsp->warning(u"unknown bitrate cannot reliably update TDT/TOT");
+                warning(u"unknown bitrate cannot reliably update TDT/TOT");
                 return;
             }
             _timeref += PacketInterval(bitrate, tsp->pluginPackets() - _timeref_pkt);
@@ -345,7 +345,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
         // Configure EIT processor if time offset not yet known.
         if (_update_eit && !_eit_active) {
             const cn::milliseconds add = _timeref - time;
-            tsp->verbose(u"adding %'s to all event start time in EIT's", add);
+            verbose(u"adding %'s to all event start time in EIT's", add);
             _eit_processor.addStartTimeOffet(add, _eit_date_only);
             _eit_active = true;
         }
@@ -363,7 +363,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
 
         // Update UTC time in section
         if (!EncodeMJD(time, section + SHORT_SECTION_HEADER_SIZE, MJD_SIZE)) {
-            tsp->warning(u"error encoding UTC time into TDT/TOT");
+            warning(u"error encoding UTC time into TDT/TOT");
             return;
         }
 

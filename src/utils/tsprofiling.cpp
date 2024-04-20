@@ -109,9 +109,6 @@ namespace {
         Options& _opt;              // Application options.
         bool _own_bitrate = false;  // This plugin manages its own bitrate (ie. does not get it from previous plugin).
 
-        // Inherited from Report (via TSP)
-        virtual void writeLog(int severity, const ts::UString& msg) override;
-
         // Update bitrate from previous plugin executor and from current plugin instance.
         void updateBitrateFromPrevious();
         void updateBitrateFromCurrent();
@@ -126,7 +123,7 @@ namespace {
 
 // Constructor: allocate and start the plugin.
 PluginExecutor::PluginExecutor(Options& opt, size_t index, PluginExecutor* previous) :
-    ts::TSP(opt.maxSeverity()),
+    ts::TSP(opt.maxSeverity(), ts::UString(), &opt),
     _opt(opt),
     _index(index),
     _previous(previous)
@@ -170,6 +167,9 @@ PluginExecutor::PluginExecutor(Options& opt, size_t index, PluginExecutor* previ
         return;
     }
 
+    // Prefix messages with plugin name.
+    setReportPrefix(_name + u": ");
+
     // Configure plugin object.
     _shlib->setShell(_opt.appName() + shell_opt);
     _shlib->setMaxSeverity(_opt.maxSeverity());
@@ -194,12 +194,6 @@ PluginExecutor::~PluginExecutor()
         delete _shlib;
         _shlib = nullptr;
     }
-}
-
-// Plugin report handler: synchronous log.
-void PluginExecutor::writeLog(int severity, const ts::UString& msg)
-{
-    _opt.log(severity, _name + u": " + msg);
 }
 
 // Update bitrate from previous plugin executor.

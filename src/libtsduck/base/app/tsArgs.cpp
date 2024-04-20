@@ -408,7 +408,6 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
 
 ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     Report(),
-    _saved_severity(maxSeverity()),
     _description(description),
     _syntax(syntax),
     _flags(flags)
@@ -633,44 +632,6 @@ ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 
 
 //----------------------------------------------------------------------------
-// Redirect report logging. Redirection cancelled if zero.
-//----------------------------------------------------------------------------
-
-ts::Report* ts::Args::redirectReport(Report* rep)
-{
-    // When leaving the default report, save the severity.
-    if (_subreport == nullptr) {
-        _saved_severity = this->maxSeverity();
-    }
-
-    // Switch report.
-    Report* previous = _subreport;
-    _subreport = rep;
-
-    // Adjust severity.
-    this->setMaxSeverity(rep == nullptr ? _saved_severity : rep->maxSeverity());
-
-    return previous;
-}
-
-
-//----------------------------------------------------------------------------
-// Adjust debug level, always increase verbosity, never decrease.
-//----------------------------------------------------------------------------
-
-void ts::Args::raiseMaxSeverity(int level)
-{
-    // Propagate to superclass (for this object).
-    Report::raiseMaxSeverity(level);
-
-    // Propagate to redirected report, if one is set.
-    if (_subreport != nullptr) {
-        _subreport->raiseMaxSeverity(level);
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Display an error message, as if it was produced during command line analysis.
 //----------------------------------------------------------------------------
 
@@ -678,25 +639,17 @@ void ts::Args::writeLog(int severity, const UString& message)
 {
     // Process error message if flag NO_ERROR_DISPLAY it not set.
     if ((_flags & NO_ERROR_DISPLAY) == 0) {
-        if (_subreport != nullptr) {
-            _subreport->log(severity, message);
+        if (severity < Severity::Info) {
+            std::cerr << _app_name << ": ";
         }
-        else {
-            if (severity < Severity::Info) {
-                std::cerr << _app_name << ": ";
-            }
-            else if (severity > Severity::Verbose) {
-                std::cerr << _app_name << ": " << Severity::Header(severity);
-            }
-            std::cerr << message << std::endl;
+        else if (severity > Severity::Verbose) {
+            std::cerr << _app_name << ": " << Severity::Header(severity);
         }
+        std::cerr << message << std::endl;
     }
 
-    // Mark this instance as error if severity <= Severity::Error.
-    _is_valid = _is_valid && severity > Severity::Error;
-
-    // Immediately abort application is severity == Severity::Fatal.
-    if (severity == Severity::Fatal) {
+    // Immediately abort application is severity is Fatal (or worse).
+    if (severity <= Severity::Fatal) {
         std::exit(EXIT_FAILURE);
     }
 }
@@ -708,7 +661,7 @@ void ts::Args::writeLog(int severity, const UString& message)
 
 void ts::Args::exitOnError(bool force)
 {
-    if (!_is_valid && (force || (_flags & NO_EXIT_ON_ERROR) == 0)) {
+    if (!valid() && (force || (_flags & NO_EXIT_ON_ERROR) == 0)) {
         std::exit(EXIT_FAILURE);
     }
 }
@@ -1062,6 +1015,9 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
         }
     }
 
+    // Reset previously logged errors.
+    resetErrors();
+
     // Process redirections.
     _is_valid = !processRedirections || processArgsRedirection(_args);
 
@@ -1148,12 +1104,12 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
 
     // Process --verbose predefined option
     if ((_flags & NO_VERBOSE) == 0 && present(u"verbose") && (search(u"verbose")->flags & IOPT_PREDEFINED) != 0) {
-        raiseMaxSeverity(Severity::Verbose);
+        raiseMaxSeverity(Severity::Verbose, true);
     }
 
     // Process --debug predefined option
     if ((_flags & NO_DEBUG) == 0 && present(u"debug") && (search(u"debug")->flags & IOPT_PREDEFINED) != 0) {
-        raiseMaxSeverity(intValue(u"debug", Severity::Debug));
+        raiseMaxSeverity(intValue(u"debug", Severity::Debug), true);
     }
 
     // Display the analyzed command line. Do it outside the previous condition (checking for --debug) if the debug
@@ -1178,7 +1134,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
 
     // Look for parameters/options number of occurences.
     // Don't do that if command already proven wrong.
-    if (_is_valid) {
+    if (valid()) {
         for (auto& it : _iopts) {
             const IOption& op(it.second);
             // Don't check number of occurences when the option has no value.
@@ -1197,7 +1153,7 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
     // In case of error, exit
     exitOnError();
 
-    return _is_valid;
+    return valid();
 }
 
 

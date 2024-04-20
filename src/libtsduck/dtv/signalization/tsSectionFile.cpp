@@ -8,15 +8,12 @@
 
 #include "tsSectionFile.h"
 #include "tsSection.h"
-#include "tsAbstractTable.h"
 #include "tsBinaryTable.h"
-#include "tsReportWithPrefix.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsxmlJSONConverter.h"
 #include "tsjsonNull.h"
-#include "tsFileUtils.h"
 #include "tsEIT.h"
 #include "tsFatal.h"
 
@@ -314,8 +311,10 @@ bool ts::SectionFile::loadBinary(const fs::path& file_name)
     }
 
     // Load the section file.
-    ReportWithPrefix report_internal(_report, file_name + u": ");
-    const bool success = loadBinary(strm, report_internal);
+    const UString prefix(_report.reportPrefix());
+    _report.setReportPrefix(prefix + file_name + u": ");
+    const bool success = loadBinary(strm, _report);
+    _report.setReportPrefix(prefix);
     strm.close();
 
     return success;
@@ -358,8 +357,10 @@ bool ts::SectionFile::saveBinary(const fs::path& file_name) const
     }
 
     // Save sections.
-    ReportWithPrefix report_internal(_report, file_name + u": ");
-    const bool success = saveBinary(strm, report_internal);
+    const UString prefix(_report.reportPrefix());
+    _report.setReportPrefix(prefix + file_name + u": ");
+    const bool success = saveBinary(strm, _report);
+    _report.setReportPrefix(prefix);
     strm.close();
 
     return success;

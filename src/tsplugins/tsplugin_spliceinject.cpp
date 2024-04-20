@@ -147,8 +147,7 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            TSP* const                _tsp = _plugin->tsp;
-            PollFiles                 _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_tsp};
+            PollFiles                 _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin};
             volatile bool             _terminate = false;
 
             // Implementation of Thread.
@@ -173,7 +172,6 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            TSP* const                _tsp = _plugin->tsp;
             UDPReceiver               _client {*_plugin->tsp};
             volatile bool             _terminate = false;
 
@@ -403,19 +401,19 @@ bool ts::SpliceInjectPlugin::getOptions()
 
     // We need either a service or specified PID's.
     if (_service_ref.empty() && (_inject_pid_opt == PID_NULL || _pts_pid_opt == PID_NULL)) {
-        tsp->error(u"specify --service or --pid and --pts-pid");
+        error(u"specify --service or --pid and --pts-pid");
         return false;
     }
 
     // We need at least one of --files and --udp.
     if (!_use_files && !_use_udp) {
-        tsp->error(u"specify at least one of --files and --udp");
+        error(u"specify at least one of --files and --udp");
         return false;
     }
 
     // At most one way of specifying the splice bitrate.
     if (_min_bitrate > 0 && _min_inter_packet > 0) {
-        tsp->error(u"specify at most one of --min-bitrate and --min-inter-packet");
+        error(u"specify at most one of --min-bitrate and --min-inter-packet");
         return false;
     }
 
@@ -477,10 +475,10 @@ bool ts::SpliceInjectPlugin::start()
 
     // If --wait-first-batch was specified, suspend until a first batch of commands is queued.
     if (_wait_first_batch) {
-        tsp->verbose(u"waiting for first batch of commands");
+        verbose(u"waiting for first batch of commands");
         std::unique_lock<std::mutex> lock(_wfb_mutex);
         _wfb_condition.wait(lock, [this]() { return _wfb_received; });
-        tsp->verbose(u"received first batch of commands");
+        verbose(u"received first batch of commands");
     }
 
     return true;
@@ -584,11 +582,11 @@ void ts::SpliceInjectPlugin::handlePMT(const PMT& pmt, PID)
 
     // If no PID is found for clock reference or splice command injection, abort.
     if (_inject_pid_act == PID_NULL) {
-        tsp->error(u"could not find an SCTE 35 splice information stream in service, use option --pid");
+        error(u"could not find an SCTE 35 splice information stream in service, use option --pid");
         _abort = true;
     }
     if (_pts_pid_act == PID_NULL) {
-        tsp->error(u"could not find a PID with PCR or PTS in service, use option --pts-pid");
+        error(u"could not find a PID with PCR or PTS in service, use option --pts-pid");
         _abort = true;
     }
 }
@@ -627,7 +625,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
             const bool dequeued = _queue.dequeue(cmd2, cn::milliseconds::zero());
             assert(dequeued);
             assert(cmd2 == cmd);
-            tsp->verbose(u"dropping %s, obsolete, current PTS: 0x%09X", *cmd2, _last_pts);
+            verbose(u"dropping %s, obsolete, current PTS: 0x%09X", *cmd2, _last_pts);
         }
         else {
             // Give up if the command is not immediate and not yet ready to start.
@@ -643,7 +641,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
 
             // Now we have a section to send.
             section = cmd->section;
-            tsp->verbose(u"injecting %s, current PTS: 0x%09X", *cmd, _last_pts);
+            verbose(u"injecting %s, current PTS: 0x%09X", *cmd, _last_pts);
 
             // If the command must be repeated, compute next PTS and requeue.
             if (cmd->count > 1) {
@@ -651,7 +649,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
                 cmd->next_pts = (cmd->next_pts + cmd->interval) & PTS_DTS_MASK;
                 if (SequencedPTS(cmd->next_pts, cmd->last_pts)) {
                     // The next PTS is still in range, requeue at the next position.
-                    tsp->verbose(u"requeueing %s", *cmd);
+                    verbose(u"requeueing %s", *cmd);
                     _queue.forceEnqueue(cmd);
                 }
             }
@@ -736,14 +734,14 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
 
     // Give up if we cannot find a valid format.
     if (type == FType::UNSPECIFIED) {
-        tsp->error(u"cannot find received data type, %d bytes, %s ...", size, UString::Dump(addr, std::min<size_t>(size, 8), UString::SINGLE_LINE));
+        error(u"cannot find received data type, %d bytes, %s ...", size, UString::Dump(addr, std::min<size_t>(size, 8), UString::SINGLE_LINE));
         return;
     }
 
     // Consider the memory as a C++ input stream.
     std::istringstream strm(std::string(reinterpret_cast<const char*>(addr), size));
-    if (tsp->debug()) {
-        tsp->debug(u"parsing section:\n%s", UString::Dump(addr, size, UString::HEXA | UString::ASCII, 4));
+    if (debug()) {
+        debug(u"parsing section:\n%s", UString::Dump(addr, size, UString::HEXA | UString::ASCII, 4));
     }
 
     // Analyze the message as a binary, XML or JSON section file.
@@ -759,17 +757,17 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         SectionPtr sec(*it);
         if (sec != nullptr) {
             if (sec->tableId() != TID_SCTE35_SIT) {
-                tsp->error(u"unexpected section, %s, ignored", names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE));
+                error(u"unexpected section, %s, ignored", names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE));
             }
             else {
                 CommandPtr cmd(new SpliceCommand(this, sec));
                 if (cmd == nullptr || !cmd->sit.isValid()) {
-                    tsp->error(u"received invalid splice information section, ignored");
+                    error(u"received invalid splice information section, ignored");
                 }
                 else {
-                    tsp->verbose(u"enqueuing %s", *cmd);
+                    verbose(u"enqueuing %s", *cmd);
                     if (!_queue.enqueue(cmd, cn::milliseconds::zero())) {
-                        tsp->warning(u"queue overflow, dropped one section");
+                        warning(u"queue overflow, dropped one section");
                     }
                 }
             }
@@ -940,14 +938,14 @@ void ts::SpliceInjectPlugin::FileListener::stop()
 // Invoked in the context of the server thread.
 void ts::SpliceInjectPlugin::FileListener::main()
 {
-    _tsp->debug(u"file server thread started");
+    _plugin->debug(u"file server thread started");
 
     _poller.setFileWildcard(_plugin->_files);
     _poller.setPollInterval(_plugin->_poll_interval);
     _poller.setMinStableDelay(_plugin->_min_stable_delay);
     _poller.pollRepeatedly();
 
-    _tsp->debug(u"file server thread completed");
+    _plugin->debug(u"file server thread completed");
 }
 
 // Invoked before polling.
@@ -967,16 +965,16 @@ bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileLis
             const UString name(file.getFileName());
             ByteBlock data;
             if (file.getSize() != FS_ERROR && file.getSize() > _plugin->_max_file_size) {
-                _tsp->warning(u"file %s is too large, %'d bytes, ignored", name, file.getSize());
+                _plugin->warning(u"file %s is too large, %'d bytes, ignored", name, file.getSize());
             }
-            else if (data.loadFromFile(name, size_t(_plugin->_max_file_size), _tsp)) {
+            else if (data.loadFromFile(name, size_t(_plugin->_max_file_size), _plugin)) {
                 // File correctly loaded, ingest it.
-                _tsp->verbose(u"loaded file %s, %d bytes", name, data.size());
+                _plugin->verbose(u"loaded file %s, %d bytes", name, data.size());
                 _plugin->processSectionMessage(data.data(), data.size());
 
                 // Delete file after successful load when required.
                 if (_plugin->_delete_files) {
-                    fs::remove(name, &ErrCodeReport(*_tsp, u"error deleting", name));
+                    fs::remove(name, &ErrCodeReport(*_plugin, u"error deleting", name));
                 }
             }
         }
@@ -999,7 +997,7 @@ ts::SpliceInjectPlugin::UDPListener::UDPListener(SpliceInjectPlugin* plugin) :
 bool ts::SpliceInjectPlugin::UDPListener::open()
 {
     _client.setParameters(_plugin->_server_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
-    return _client.open(*_tsp);
+    return _client.open(*_plugin);
 }
 
 // Terminate the thread.
@@ -1017,7 +1015,7 @@ void ts::SpliceInjectPlugin::UDPListener::stop()
 // Invoked in the context of the server thread.
 void ts::SpliceInjectPlugin::UDPListener::main()
 {
-    _tsp->debug(u"UDP server thread started");
+    _plugin->debug(u"UDP server thread started");
 
     uint8_t inbuf[65536];
     size_t insize = 0;
@@ -1025,18 +1023,18 @@ void ts::SpliceInjectPlugin::UDPListener::main()
     IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<ThreadSafety::None> error(_tsp->maxSeverity());
+    ReportBuffer<ThreadSafety::None> error(_plugin->maxSeverity());
 
     // Loop on incoming messages.
-    while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _tsp, error)) {
-        _tsp->verbose(u"received message, %d bytes, from %s", insize, sender);
+    while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _plugin->tsp, error)) {
+        _plugin->verbose(u"received message, %d bytes, from %s", insize, sender);
         _plugin->processSectionMessage(inbuf, insize);
     }
 
     // If termination was requested, receive error is not an error.
     if (!_terminate && !error.empty()) {
-        _tsp->info(error.messages());
+        _plugin->info(error.messages());
     }
 
-    _tsp->debug(u"UDP server thread completed");
+    _plugin->debug(u"UDP server thread completed");
 }

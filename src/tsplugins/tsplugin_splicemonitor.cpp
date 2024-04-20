@@ -320,7 +320,7 @@ void ts::SpliceMonitorPlugin::handlePMT(const PMT& pmt, PID)
                 const PID spid = it.first;
                 if (_splice_pid == PID_NULL || _splice_pid == spid) {
                     // This is a splice PID to monitor.
-                    tsp->verbose(u"starting monitoring splice PID %n", spid);
+                    verbose(u"starting monitoring splice PID %n", spid);
                     _section_demux.addPID(spid);
                     if (_pts_pid != PID_NULL) {
                         // One single user-defined audio/video PID.
@@ -380,7 +380,7 @@ ts::UString ts::SpliceMonitorPlugin::header(PID splice_pid, uint32_t event_id)
 void ts::SpliceMonitorPlugin::display(const UString& line)
 {
     if (_use_log) {
-        tsp->info(line);
+        info(line);
     }
     else {
         if (_displayed_table) {

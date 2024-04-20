@@ -57,7 +57,7 @@ bool ts::TablesPlugin::start()
 bool ts::TablesPlugin::stop()
 {
     _logger.close();
-    _logger.reportDemuxErrors(*tsp, Severity::Verbose);
+    _logger.reportDemuxErrors(*this, Severity::Verbose);
     return true;
 }
 

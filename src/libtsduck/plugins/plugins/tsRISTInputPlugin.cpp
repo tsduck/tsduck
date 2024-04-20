@@ -29,7 +29,7 @@ bool ts::RISTInputPlugin::isRealTime()
 #if defined(TS_NO_RIST)
 
 #define NORIST_ERROR_MSG u"This version of TSDuck was compiled without RIST support"
-#define NORIST_ERROR(ret) { tsp->error(NORIST_ERROR_MSG); return (ret); }
+#define NORIST_ERROR(ret) { error(NORIST_ERROR_MSG); return (ret); }
 
 ts::RISTInputPlugin::RISTInputPlugin(TSP* t) : InputPlugin(t) {}
 ts::RISTInputPlugin::~RISTInputPlugin() {}
@@ -61,7 +61,7 @@ public:
     bool             qsize_warned = false; // a warning was reporting on heavy queue size.
 
     // Constructor.
-    Guts(TSP* tsp) : rist(*tsp) {}
+    Guts(Report& report) : rist(report) {}
 };
 
 
@@ -71,7 +71,7 @@ public:
 
 ts::RISTInputPlugin::RISTInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options] url [url...]"),
-    _guts(new Guts(tsp))
+    _guts(new Guts(*this))
 {
     CheckNonNull(_guts);
     _guts->rist.defineArgs(*this);
@@ -122,7 +122,7 @@ bool ts::RISTInputPlugin::setReceiveTimeout(cn::milliseconds timeout)
 bool ts::RISTInputPlugin::start()
 {
     if (_guts->rist.ctx != nullptr) {
-        tsp->error(u"already started");
+        error(u"already started");
         return false;
     }
 
@@ -132,9 +132,9 @@ bool ts::RISTInputPlugin::start()
     _guts->qsize_warned = false;
 
     // Initialize the RIST context.
-    tsp->debug(u"calling rist_receiver_create, profile: %d", _guts->rist.profile);
+    debug(u"calling rist_receiver_create, profile: %d", _guts->rist.profile);
     if (::rist_receiver_create(&_guts->rist.ctx, _guts->rist.profile, &_guts->rist.log) != 0) {
-        tsp->error(u"error in rist_receiver_create");
+        error(u"error in rist_receiver_create");
         return false;
     }
 
@@ -144,9 +144,9 @@ bool ts::RISTInputPlugin::start()
     }
 
     // Start reception.
-    tsp->debug(u"calling rist_start");
+    debug(u"calling rist_start");
     if (::rist_start(_guts->rist.ctx) != 0) {
-        tsp->error(u"error starting RIST reception");
+        error(u"error starting RIST reception");
         _guts->rist.cleanup();
         return false;
     }
@@ -176,7 +176,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
 
     if (!_guts->buffer.empty()) {
         // There are remaining data from a previous receive in the buffer.
-        tsp->debug(u"read data from remaining %d bytes in the buffer", _guts->buffer.size());
+        debug(u"read data from remaining %d bytes in the buffer", _guts->buffer.size());
         assert(_guts->buffer.size() % PKT_SIZE == 0);
         pkt_count = std::min(_guts->buffer.size() / PKT_SIZE, max_packets);
         MemCopy(pkt_buffer->b, _guts->buffer.data(), pkt_count * PKT_SIZE);
@@ -199,30 +199,30 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
             // The returned value is: number of buffers remaining on queue +1 (0 if no buffer returned), -1 on error.
             const int queue_size = ::rist_receiver_data_read2(_guts->rist.ctx, &dblock, _guts->timeout == cn::milliseconds::zero() ? 5000 : int(_guts->timeout.count()));
             if (queue_size < 0) {
-                tsp->error(u"reception error");
+                error(u"reception error");
                 return 0;
             }
             else if (queue_size == 0 || dblock == nullptr) {
                 // No data block returned but not an error, must be a timeout.
                 if (_guts->timeout > cn::milliseconds::zero()) {
                     // This is a user-specified timeout.
-                    tsp->error(u"reception timeout");
+                    error(u"reception timeout");
                     return 0;
                 }
                 else if (tsp->aborting()) {
                     // User abort was requested.
                     return 0;
                 }
-                tsp->debug(u"no packet, queue size: %d, data block: 0x%X, polling librist again", queue_size, size_t(dblock));
+                debug(u"no packet, queue size: %d, data block: 0x%X, polling librist again", queue_size, size_t(dblock));
             }
             else {
                 // Report excessive queue size to diagnose reception issues.
                 if (queue_size > _guts->last_qsize + 10) {
-                    tsp->warning(u"RIST receive queue heavy load: %d data blocks, flow id %d", queue_size, dblock->flow_id);
+                    warning(u"RIST receive queue heavy load: %d data blocks, flow id %d", queue_size, dblock->flow_id);
                     _guts->qsize_warned = true;
                 }
                 else if (_guts->qsize_warned && queue_size == 1) {
-                    tsp->info(u"RIST receive queue back to normal");
+                    info(u"RIST receive queue back to normal");
                     _guts->qsize_warned = false;
                 }
                 _guts->last_qsize = queue_size;
@@ -232,7 +232,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
                 const uint8_t* const data_addr = reinterpret_cast<const uint8_t*>(dblock->payload);
                 const size_t data_size = total_pkt_count * PKT_SIZE;
                 if (data_size < dblock->payload_len) {
-                    tsp->warning(u"received %'d bytes, not a integral number of TS packets, %d trailing bytes, first received byte: 0x%X, first trailing byte: 0x%X",
+                    warning(u"received %'d bytes, not a integral number of TS packets, %d trailing bytes, first received byte: 0x%X, first trailing byte: 0x%X",
                                  dblock->payload_len, dblock->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]);
                 }
 

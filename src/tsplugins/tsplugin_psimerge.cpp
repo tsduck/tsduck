@@ -100,7 +100,7 @@ bool ts::PSIMergePlugin::getOptions()
     _main_label = intValue<size_t>(u"main-label", TSPacketLabelSet::MAX + 1);
     _merge_label = intValue<size_t>(u"merge-label", TSPacketLabelSet::MAX + 1);
     if (_main_label == _merge_label) {
-        tsp->error(u"at least one of --main-label and --merge-label must be specified and the labels must be different");
+        error(u"at least one of --main-label and --merge-label must be specified and the labels must be different");
         return false;
     }
 

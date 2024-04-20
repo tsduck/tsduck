@@ -351,13 +351,13 @@ bool ts::ScramblerPlugin::getOptions()
 
     // Scramble either a service or a list of PID's, not a mixture of them.
     if ((_use_service + _scrambled_pids.any()) != 1) {
-        tsp->error(u"specify either a service or a list of PID's");
+        error(u"specify either a service or a list of PID's");
         return false;
     }
 
     // To scramble a fixed list of PID's, we need fixed control words, otherwise the random CW's are lost.
     if (_scrambled_pids.any() && !_scrambling.hasFixedCW()) {
-        tsp->error(u"specify control words to scramble an explicit list of PID's");
+        error(u"specify control words to scramble an explicit list of PID's");
         return false;
     }
 
@@ -407,11 +407,11 @@ bool ts::ScramblerPlugin::start()
     if (_need_ecm) {
         if (!_ecmg_args.ecmg_address.hasAddress()) {
             // Without fixed control word and ECMG, we cannot do anything.
-            tsp->error(u"specify either --cw, --cw-file or --ecmg");
+            error(u"specify either --cw, --cw-file or --ecmg");
             return false;
         }
         else if (_ecmg_args.super_cas_id == 0) {
-            tsp->error(u"--super-cas-id is required with --ecmg");
+            error(u"--super-cas-id is required with --ecmg");
             return false;
         }
         else if (!_ecmg.connect(_ecmg_args, _channel_status, _stream_status, tsp, _logger)) {
@@ -423,10 +423,10 @@ bool ts::ScramblerPlugin::start()
             // Validate delay start (limit to half the crypto-period).
             _delay_start = cn::milliseconds(_channel_status.delay_start);
             if (_delay_start > _ecmg_args.cp_duration / 2 || _delay_start < -_ecmg_args.cp_duration / 2) {
-                tsp->error(u"crypto-period too short for this CAS, must be at least %'!s", 2 * cn::abs(_delay_start));
+                error(u"crypto-period too short for this CAS, must be at least %'!s", 2 * cn::abs(_delay_start));
                 return false;
             }
-            tsp->debug(u"crypto-period duration: %'!s, delay start: %'!s", cn::duration_cast<cn::milliseconds>(_ecmg_args.cp_duration), _delay_start);
+            debug(u"crypto-period duration: %'!s, delay start: %'!s", cn::duration_cast<cn::milliseconds>(_ecmg_args.cp_duration), _delay_start);
 
             // Create first and second crypto-periods
             _cp[0].initCycle(this, 0);
@@ -467,7 +467,7 @@ bool ts::ScramblerPlugin::stop()
     // Terminate the scrambling engine.
     _scrambling.stop();
 
-    tsp->debug(u"scrambled %'d packets in %'d PID's", _scrambled_count, _scrambled_pids.count());
+    debug(u"scrambled %'d packets in %'d PID's", _scrambled_count, _scrambled_pids.count());
     return true;
 }
 
@@ -491,13 +491,13 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         _input_pids.set(pid);
         if ((_scramble_audio && stream.isAudio(duck)) || (_scramble_video && stream.isVideo(duck)) || (_scramble_subtitles && stream.isSubtitles(duck))) {
             _scrambled_pids.set(pid);
-            tsp->verbose(u"starting scrambling PID 0x%X", pid);
+            verbose(u"starting scrambling PID 0x%X", pid);
         }
     }
 
     // Check that we have something to scramble.
     if (_scrambled_pids.none()) {
-        tsp->error(u"no PID to scramble in service");
+        error(u"no PID to scramble in service");
         _abort = true;
         return;
     }
@@ -507,11 +507,11 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         // Start at service PMT PID, then look for an unused one.
         for (_ecm_pid = _service.getPMTPID() + 1; _ecm_pid < PID_NULL && _input_pids.test(_ecm_pid); _ecm_pid++) {}
         if (_ecm_pid >= PID_NULL) {
-            tsp->error(u"cannot find an unused PID for ECM, try --pid-ecm");
+            error(u"cannot find an unused PID for ECM, try --pid-ecm");
             _abort = true;
         }
         else {
-            tsp->verbose(u"using PID %n for ECM", _ecm_pid);
+            verbose(u"using PID %n for ECM", _ecm_pid);
         }
     }
 
@@ -555,7 +555,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
     if (_need_cp || _need_ecm) {
         if (_ts_bitrate == 0) {
             _wait_bitrate = true;
-            tsp->warning(u"unknown bitrate, scheduling of crypto-periods is delayed");
+            warning(u"unknown bitrate, scheduling of crypto-periods is delayed");
         }
         else {
             initializeScheduling();
@@ -594,7 +594,7 @@ void ts::ScramblerPlugin::initializeScheduling()
     // No longer wait for bitrate.
     if (_wait_bitrate) {
         _wait_bitrate = false;
-        tsp->info(u"bitrate now known, %'d b/s, starting scheduling crypto-periods", _ts_bitrate);
+        info(u"bitrate now known, %'d b/s, starting scheduling crypto-periods", _ts_bitrate);
     }
 }
 
@@ -619,7 +619,7 @@ bool ts::ScramblerPlugin::inDegradedMode()
     }
     else {
         // Entering degraded mode
-        tsp->warning(u"Next ECM not ready, entering degraded mode");
+        warning(u"Next ECM not ready, entering degraded mode");
         return _degraded_mode = true;
     }
 }
@@ -644,7 +644,7 @@ bool ts::ScramblerPlugin::tryExitDegradedMode()
     }
 
     // Next ECM is ready, at last. Exit degraded mode.
-    tsp->info(u"Next ECM ready, exiting from degraded mode");
+    info(u"Next ECM ready, exiting from degraded mode");
     _degraded_mode = false;
 
     // Compute next CW and ECM change.
@@ -765,7 +765,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TS
 
     // Abort if allocated PID for ECM is already present in TS.
     if (_ecm_pid != PID_NULL && pid == _ecm_pid) {
-        tsp->error(u"ECM PID allocation conflict, used 0x%X, now found as input PID, try another --pid-ecm", pid);
+        error(u"ECM PID allocation conflict, used 0x%X, now found as input PID, try another --pid-ecm", pid);
         return TSP_END;
     }
 
@@ -819,13 +819,13 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TS
     if (pkt.isScrambled()) {
         if (_ignore_scrambled) {
             if (!_conflict_pids.test(pid)) {
-                tsp->verbose(u"found input scrambled packets in PID %n, ignored", pid);
+                verbose(u"found input scrambled packets in PID %n, ignored", pid);
                 _conflict_pids.set(pid);
             }
             return TSP_OK;
         }
         else {
-            tsp->error(u"packet already scrambled in PID %n", pid);
+            error(u"packet already scrambled in PID %n", pid);
             return TSP_END;
         }
     }
@@ -965,7 +965,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
         // ECMG returns ECM in section format
         SectionPtr sp(new Section(response.ECM_datagram));
         if (!sp->isValid()) {
-            _plugin->tsp->error(u"ECMG returned an invalid ECM section (%d bytes)", response.ECM_datagram.size());
+            _plugin->error(u"ECMG returned an invalid ECM section (%d bytes)", response.ECM_datagram.size());
             _plugin->_abort = true;
             return;
         }
@@ -977,7 +977,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
     }
     else if (response.ECM_datagram.size() % PKT_SIZE != 0) {
         // ECMG returns ECM in packet format, but not an integral number of packets
-        _plugin->tsp->error(u"invalid ECM size (%d bytes), not a multiple of %d", response.ECM_datagram.size(), PKT_SIZE);
+        _plugin->error(u"invalid ECM size (%d bytes), not a multiple of %d", response.ECM_datagram.size(), PKT_SIZE);
         _plugin->_abort = true;
         return;
     }
@@ -987,7 +987,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
         MemCopy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());
     }
 
-    _plugin->tsp->debug(u"got ECM for crypto-period %d, %d packets", _cp_number, _ecm.size());
+    _plugin->debug(u"got ECM for crypto-period %d, %d packets", _cp_number, _ecm.size());
 
     _ecm_pkt_index = 0;
 
