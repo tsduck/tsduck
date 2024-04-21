@@ -208,7 +208,7 @@ void ts::StuffAnalyzePlugin::handleTable(SectionDemux& demux, const BinaryTable&
             CAT cat(duck, table);
             if (cat.isValid() && table.sourcePID() == PID_CAT) {
                 PIDSet pids;
-                _cas_args.addMatchingPIDs(pids, cat, *tsp);
+                _cas_args.addMatchingPIDs(pids, cat, *this);
                 _analyze_demux.addPIDs(pids);
                 _analyze_pids |= pids;
             }
@@ -220,7 +220,7 @@ void ts::StuffAnalyzePlugin::handleTable(SectionDemux& demux, const BinaryTable&
             PMT pmt(duck, table);
             if (pmt.isValid()) {
                 PIDSet pids;
-                _cas_args.addMatchingPIDs(pids, pmt, *tsp);
+                _cas_args.addMatchingPIDs(pids, pmt, *this);
                 _analyze_demux.addPIDs(pids);
                 _analyze_pids |= pids;
             }

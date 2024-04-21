@@ -40,7 +40,7 @@ namespace ts {
         PIDSet  _pids {};                     // PID values to check or fix
 
         // Working data.
-        ContinuityAnalyzer _cc_analyzer {NoPID, tsp};
+        ContinuityAnalyzer _cc_analyzer {NoPID, this};
     };
 }
 

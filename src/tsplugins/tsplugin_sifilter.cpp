@@ -172,7 +172,7 @@ void ts::SIFilterPlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
         case TID_CAT: {
             CAT cat(duck, table);
             if (cat.isValid()) {
-                _cas_args.addMatchingPIDs(_pass_pids, cat, *tsp);
+                _cas_args.addMatchingPIDs(_pass_pids, cat, *this);
             }
             break;
         }
@@ -180,7 +180,7 @@ void ts::SIFilterPlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
         case TID_PMT: {
             PMT pmt(duck, table);
             if (pmt.isValid()) {
-                _cas_args.addMatchingPIDs(_pass_pids, pmt, *tsp);
+                _cas_args.addMatchingPIDs(_pass_pids, pmt, *this);
             }
             break;
         }

@@ -85,8 +85,8 @@ namespace ts {
             size_t receiverCount() const { return _sock.receiverCount(); }
 
             // Open/close UDP socket.
-            bool openSocket() { return _sock.open(*_plugin->tsp); }
-            bool closeSocket() { return _sock.close(*_plugin->tsp); }
+            bool openSocket() { return _sock.open(*_plugin); }
+            bool closeSocket() { return _sock.close(*_plugin); }
 
         private:
             MPEInjectPlugin* const _plugin;    // Parent plugin.
@@ -109,7 +109,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port ...")
 {
     // Use a dummy UDP receiver to define common options.
-    UDPReceiver dummy(*tsp);
+    UDPReceiver dummy(*this);
     dummy.defineArgs(*this, true, true, true);
 
     option(u"mac-address", 0, STRING);
@@ -169,7 +169,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
 ts::MPEInjectPlugin::ReceiverThread::ReceiverThread(MPEInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _sock(*_plugin->tsp)
+    _sock(*_plugin)
 {
 }
 
@@ -186,7 +186,7 @@ bool ts::MPEInjectPlugin::getOptions()
     _replace = present(u"replace");
     _pack_sections = present(u"pack-sections");
     const UString mac_address(value(u"mac-address"));
-    if (!mac_address.empty() && !_default_mac.resolve(mac_address, *tsp)) {
+    if (!mac_address.empty() && !_default_mac.resolve(mac_address, *this)) {
         return false;
     }
 
@@ -234,8 +234,8 @@ bool ts::MPEInjectPlugin::ReceiverThread::getOptions(size_t index)
         return false;
     }
 
-    return (dst_count == 0 || _new_dest.resolve(_plugin->value(u"new-destination", u"", std::min(_index, dst_count - 1)), *_plugin->tsp)) &&
-           (src_count == 0 || _new_source.resolve(_plugin->value(u"new-source", u"", std::min(_index, src_count - 1)), *_plugin->tsp));
+    return (dst_count == 0 || _new_dest.resolve(_plugin->value(u"new-destination", u"", std::min(_index, dst_count - 1)), *_plugin)) &&
+           (src_count == 0 || _new_source.resolve(_plugin->value(u"new-source", u"", std::min(_index, src_count - 1)), *_plugin));
 }
 
 
@@ -356,7 +356,7 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
     ByteBlock buffer(MAX_IP_SIZE);
 
     // Loop on message reception until a receive error (probably an end of execution).
-    while (!_plugin->_terminate && _sock.receive(buffer.data(), buffer.size(), insize, sender, destination, _plugin->tsp, *_plugin->tsp)) {
+    while (!_plugin->_terminate && _sock.receive(buffer.data(), buffer.size(), insize, sender, destination, _plugin->tsp, *_plugin)) {
 
         // Rebuild source and destination addresses if required.
         if (_new_source.hasAddress()) {

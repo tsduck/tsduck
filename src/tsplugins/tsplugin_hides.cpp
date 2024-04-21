@@ -173,29 +173,29 @@ bool ts::HiDesOutputPlugin::start()
     _bitrate = params.theoreticalBitrate();
 
     // Open the device, either by number or by name.
-    if (_dev_number >= 0 && !_device.open(_dev_number, *tsp)) {
+    if (_dev_number >= 0 && !_device.open(_dev_number, *this)) {
         return false;
     }
-    if (!_dev_name.empty() && !_device.open(_dev_name, *tsp)) {
+    if (!_dev_name.empty() && !_device.open(_dev_name, *this)) {
         return false;
     }
-    if (!_device.getInfo(_dev_info, *tsp)) {
-        _device.close(*tsp);
+    if (!_device.getInfo(_dev_info, *this)) {
+        _device.close(*this);
         return false;
     }
     verbose(u"using device %s with nominal output bitrate of %'d bits/s", _dev_info.toString(),_bitrate);
 
     // Tune to frequency.
-    if (!_device.tune(params, *tsp)) {
-        _device.close(*tsp);
+    if (!_device.tune(params, *this)) {
+        _device.close(*this);
         return false;
     }
 
     // Adjust output gain if required.
     if (set_gain) {
         int new_gain = gain;
-        if (!_device.setGain(new_gain, *tsp)) {
-            _device.close(*tsp);
+        if (!_device.setGain(new_gain, *this)) {
+            _device.close(*this);
             return false;
         }
         // The value of gain is updated to effective value.
@@ -203,14 +203,14 @@ bool ts::HiDesOutputPlugin::start()
     }
 
     // Set DC calibration
-    if (set_dc && !_device.setDCCalibration(dc_i, dc_q, *tsp)) {
-        _device.close(*tsp);
+    if (set_dc && !_device.setDCCalibration(dc_i, dc_q, *this)) {
+        _device.close(*this);
         return false;
     }
 
     // Start transmission.
-    if (!_device.startTransmission(*tsp)) {
-        _device.close(*tsp);
+    if (!_device.startTransmission(*this)) {
+        _device.close(*this);
         return false;
     }
 
@@ -225,7 +225,7 @@ bool ts::HiDesOutputPlugin::start()
 
 bool ts::HiDesOutputPlugin::stop()
 {
-    return _device.stopTransmission(*tsp) && _device.close(*tsp);
+    return _device.stopTransmission(*this) && _device.close(*this);
 }
 
 
@@ -252,5 +252,5 @@ ts::BitRateConfidence ts::HiDesOutputPlugin::getBitrateConfidence()
 
 bool ts::HiDesOutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    return _device.send(pkt, packet_count, *tsp, tsp);
+    return _device.send(pkt, packet_count, *this, tsp);
 }

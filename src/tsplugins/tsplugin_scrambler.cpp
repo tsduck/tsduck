@@ -154,7 +154,7 @@ namespace ts {
         PacketCounter     _partial_scrambling = 0;      // Do not scramble all packets if > 1
         cn::seconds       _clear_period {0};            // Clear period before scrambling commences
         ECMGClientArgs    _ecmg_args {};                // Parameters for ECMG client
-        tlv::Logger       _logger {Severity::Debug, tsp};  // Message logger for ECMG <=> SCS protocol
+        tlv::Logger       _logger {Severity::Debug, this}; // Message logger for ECMG <=> SCS protocol
         ecmgscs::Protocol      _ecmgscs {};                // ECMG <=> SCS protocol instance.
         ecmgscs::ChannelStatus _channel_status {_ecmgscs}; // Initial response to ECMG channel_setup
         ecmgscs::StreamStatus  _stream_status {_ecmgscs};  // Initial response to ECMG stream_setup
@@ -179,7 +179,7 @@ namespace ts {
         CryptoPeriod      _cp[2] {};                    // Previous/current or current/next crypto-periods
         size_t            _current_cw = 0;              // Index to current CW (current crypto period)
         size_t            _current_ecm = 0;             // Index to current ECM (ECM being broadcast)
-        TSScrambling      _scrambling {*tsp};           // Scrambler
+        TSScrambling      _scrambling {*this};          // Scrambler
         CyclingPacketizer _pzer_pmt {duck};             // Packetizer for modified PMT
 
         // Initialize ECM and CP scheduling.

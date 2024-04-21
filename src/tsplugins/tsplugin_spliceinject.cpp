@@ -172,7 +172,7 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            UDPReceiver               _client {*_plugin->tsp};
+            UDPReceiver               _client {*_plugin};
             volatile bool             _terminate = false;
 
             // Implementation of Thread.

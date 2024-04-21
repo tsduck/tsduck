@@ -45,7 +45,7 @@ namespace ts {
         volatile bool    _terminate = false;
         size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
         IPv4AddressSet   _allowedRemote {};
-        UDPReceiver      _sock {*tsp};
+        UDPReceiver      _sock {*this};
         CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};
         TSPacketLabelSet _set_labels {};
 
@@ -94,7 +94,7 @@ bool ts::CutoffPlugin::getOptions()
     getValues(remotes, u"allow");
     _allowedRemote.clear();
     for (const auto& it : remotes) {
-        const IPv4Address addr(it, *tsp);
+        const IPv4Address addr(it, *this);
         if (addr.hasAddress()) {
             _allowedRemote.insert(addr);
         }
@@ -115,7 +115,7 @@ bool ts::CutoffPlugin::getOptions()
 bool ts::CutoffPlugin::start()
 {
     // Create UDP socket
-    if (!_sock.open(*tsp)) {
+    if (!_sock.open(*this)) {
         return false;
     }
 
@@ -141,7 +141,7 @@ bool ts::CutoffPlugin::stop()
     // This will force the server thread to terminate on receive error.
     // In case the server does not properly notify the error, set a flag.
     _terminate = true;
-    _sock.close(*tsp);
+    _sock.close(*this);
 
     // Wait for actual thread termination
     Thread::waitForTermination();

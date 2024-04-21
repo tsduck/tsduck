@@ -158,7 +158,7 @@ bool ts::FeedPlugin::start()
     _outdata.reserve(8 * PKT_SIZE);
 
     // Open output file if present.
-    return _replace_ts || _outfile.open(_outfile_name, _outfile_flags , *tsp);
+    return _replace_ts || _outfile.open(_outfile_name, _outfile_flags , *this);
 }
 
 
@@ -169,7 +169,7 @@ bool ts::FeedPlugin::start()
 bool ts::FeedPlugin::stop()
 {
     if (_outfile.isOpen()) {
-        _outfile.close(*tsp);
+        _outfile.close(*this);
     }
     return true;
 }
@@ -345,7 +345,7 @@ ts::ProcessorPlugin::Status ts::FeedPlugin::processPacket(TSPacket& pkt, TSPacke
             while (end + PKT_SIZE <= _outdata.size() && _outdata[end] == SYNC_BYTE) {
                 end += PKT_SIZE;
             }
-            if (!_outfile.writePackets(reinterpret_cast<const TSPacket*>(_outdata.data()), nullptr, end / PKT_SIZE, *tsp)) {
+            if (!_outfile.writePackets(reinterpret_cast<const TSPacket*>(_outdata.data()), nullptr, end / PKT_SIZE, *this)) {
                 // Write error on output file.
                 return TSP_END;
             }

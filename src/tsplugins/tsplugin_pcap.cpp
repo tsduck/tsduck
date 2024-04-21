@@ -215,12 +215,12 @@ bool ts::PcapInputPlugin::start()
     bool ok = AbstractDatagramInputPlugin::start();
     if (ok) {
         if (_http || _tcp_emmg_mux) {
-            ok = _pcap_tcp.open(_file_name, *tsp);
+            ok = _pcap_tcp.open(_file_name, *this);
             _pcap_tcp.setBidirectionalFilter(_source, _destination);
             _pcap_tcp.setReportAddressesFilterSeverity(Severity::Verbose);
         }
         else {
-            ok = _pcap_udp.open(_file_name, *tsp);
+            ok = _pcap_udp.open(_file_name, *this);
             _pcap_udp.setProtocolFilterUDP();
         }
     }
@@ -268,7 +268,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
     for (;;) {
 
         // Read one IPv4 datagram.
-        if (!_pcap_udp.readIPv4(ip, timestamp, *tsp)) {
+        if (!_pcap_udp.readIPv4(ip, timestamp, *this)) {
             return 0; // end of file, invalid pcap file format or other i/o error
         }
 
@@ -373,14 +373,14 @@ bool ts::PcapInputPlugin::receiveEMMG(uint8_t *buffer, size_t buffer_size, size_
 
         // Read a message header from any source: version(1), type(2), length(2).
         size_t size = 5;
-        if (!_pcap_tcp.readTCP(source, data, size, timestamp, *tsp) || size < 5) {
+        if (!_pcap_tcp.readTCP(source, data, size, timestamp, *this) || size < 5) {
             return false;
         }
         assert(data.size() == 5);
 
         // Read the rest of the message from the same source.
         size = GetUInt16(data.data() + 3);
-        if (!_pcap_tcp.readTCP(source, data, size, timestamp, *tsp)) {
+        if (!_pcap_tcp.readTCP(source, data, size, timestamp, *this)) {
             return false;
         }
 
@@ -470,7 +470,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
 
     // The first time, detect start of HTTP session or resynchronize on a TS packet.
     if (tsp->pluginPackets() == 0) {
-        if (_pcap_tcp.startOfStream(*tsp)) {
+        if (_pcap_tcp.startOfStream(*this)) {
             // At start of TCP session. At least one packet for this TCP session is ready to be read.
             // If the source was initially unspecified, it is now known.
             _actual_source = _pcap_tcp.sourceFilter();
@@ -481,7 +481,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
             // Initially, the source may be unknown (if only the destination was specified).
             IPv4SocketAddress src(_source);
             size_t size = _http_chunk_size;
-            if (_pcap_tcp.readTCP(src, _data, size, timestamp, *tsp)) {
+            if (_pcap_tcp.readTCP(src, _data, size, timestamp, *this)) {
                 // The source is now known
                 _actual_source = _pcap_tcp.sourceFilter();
                 if (src != _actual_source) {
@@ -489,7 +489,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
                     // Revert the data buffer and retry to read from the real source.
                     _data.clear();
                     size = _http_chunk_size;
-                    _pcap_tcp.readTCP(_actual_source, _data, size, timestamp, *tsp);
+                    _pcap_tcp.readTCP(_actual_source, _data, size, timestamp, *this);
                 }
             }
             if (size == 0) {
@@ -533,7 +533,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
         if (_data_next + 1024 > _data.size()) {
             // Read more but don't fail on error, need to process what we already have in _data.
             size_t size = _http_chunk_size;
-            const bool ok = _pcap_tcp.readTCP(_actual_source, _data, size, timestamp, *tsp);
+            const bool ok = _pcap_tcp.readTCP(_actual_source, _data, size, timestamp, *this);
             if (!ok) {
                 debug(u"readTCP failed, read size: %'d bytes, position in file: %'d", size, _pcap_tcp.fileSize());
             }
