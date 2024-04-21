@@ -26,6 +26,14 @@ ts::Report::Report(int max_severity, const UString& prefix, Report* report) :
 
 ts::Report::~Report()
 {
+    // Unlink from delegate, if there is one. _delegate is volatile, use a copy.
+    Report* const del = _delegate;
+    if (del != nullptr) {
+        std::lock_guard<std::mutex> lock(del->_mutex);
+        del->_delegated.erase(this);
+        _delegate = nullptr;
+    }
+
     // Unlink other reports which delegated to this.
     std::lock_guard<std::mutex> lock(_mutex);
     for (auto child : _delegated) {
