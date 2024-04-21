@@ -92,8 +92,8 @@ namespace ts {
         std::map<PID,PID>           _splice_pids {};             // Map audio/video PID to splice PID.
         SectionDemux                _section_demux {duck, this}; // Section filter for splice information.
         SignalizationDemux          _sig_demux {duck, this};     // Signalization demux to get PMT's.
-        xml::JSONConverter          _x2j_conv {*tsp};            // XML-to-JSON converter.
-        json::RunningDocument       _json_doc {*tsp};            // JSON document, built on-the-fly.
+        xml::JSONConverter          _x2j_conv {*this};           // XML-to-JSON converter.
+        json::RunningDocument       _json_doc {*this};           // JSON document, built on-the-fly.
 
         // Associate all audio/video PID's in a PMT to a splice PID.
         void setSplicePID(const PMT&, PID);
@@ -469,7 +469,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
         if (_json_args.useJSON()) {
             json::Object obj;
             initJSON(obj, splice_pid, event_id, u"canceled", ctx, known_event ? &evt->second : nullptr);
-            _json_args.report(obj, _json_doc, *tsp);
+            _json_args.report(obj, _json_doc, *this);
         }
         else {
             display(message(splice_pid, event_id, u"canceled"));
@@ -484,7 +484,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
             json::Object obj;
             initJSON(obj, splice_pid, event_id, u"immediate", ctx, known_event ? &evt->second : nullptr);
             obj.add(u"event-type", splice_out ? u"out" : u"in");
-            _json_args.report(obj, _json_doc, *tsp);
+            _json_args.report(obj, _json_doc, *this);
         }
         else {
             display(message(splice_pid, event_id, u"immediately %s", splice_out ? "OUT" : "IN"));
@@ -512,7 +512,7 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
         if (_json_args.useJSON()) {
             json::Object obj;
             initJSON(obj, splice_pid, event_id, u"pending", ctx, &evt->second);
-            _json_args.report(obj, _json_doc, *tsp);
+            _json_args.report(obj, _json_doc, *this);
         }
         else {
             // Format time to event.
@@ -568,11 +568,11 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
     if (_log_cmds.test(sit.splice_command_type)) {
         if (_json_args.useJSON()) {
             // Format the SCTE-35 table using JSON. First, build an XML document with the table.
-            xml::Document doc(*tsp);
+            xml::Document doc(*this);
             doc.initialize(u"tsduck");
             table.toXML(duck, doc.rootElement(), _xml_options);
             // Convert the XML document into JSON and get the first (and only) table.
-            _json_args.report(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"), _json_doc, *tsp);
+            _json_args.report(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"), _json_doc, *this);
         }
         else {
             // Human-readable display of the SCTE-35 table.
@@ -635,7 +635,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                     initJSON(obj, spid, evt.event_id, u"occurred", ctx, &evt);
                     obj.add(u"status", alarm ? u"alarm" : u"normal");
                     obj.add(u"pre-roll-ms", preroll.count());
-                    _json_args.report(obj, _json_doc, *tsp);
+                    _json_args.report(obj, _json_doc, *this);
                 }
                 else {
                     display(line);
@@ -648,7 +648,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                                    _alarm_command, line, spid, evt.event_id,
                                    evt.event_out ? u"out" : u"in",
                                    evt.event_pts, preroll.count(), evt.event_count);
-                    ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+                    ForkPipe::Launch(command, *this, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
                 }
 
                 // Forget about this event, it is now in the past.

@@ -51,7 +51,7 @@ namespace ts {
         // Working data:
         PacketCounter _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
         Time          _lastTime {};            // UTC time of last action.
-        UDPSocket     _sock {false, *tsp};     // Output socket.
+        UDPSocket     _sock {false, *this};    // Output socket.
 
         // Trigger the actions (exec, UDP).
         void trigger();
@@ -171,14 +171,14 @@ bool ts::TriggerPlugin::start()
 
     // Initialize UDP output.
     if (!_udpDestination.empty()) {
-        if (!_sock.open(*tsp)) {
+        if (!_sock.open(*this)) {
             return false;
         }
-        if (!_sock.setDefaultDestination(_udpDestination, *tsp) ||
-            (!_udpLocal.empty() && !_sock.setOutgoingMulticast(_udpLocal, *tsp)) ||
-            (_udpTTL > 0 && !_sock.setTTL(_udpTTL, *tsp)))
+        if (!_sock.setDefaultDestination(_udpDestination, *this) ||
+            (!_udpLocal.empty() && !_sock.setOutgoingMulticast(_udpLocal, *this)) ||
+            (_udpTTL > 0 && !_sock.setTTL(_udpTTL, *this)))
         {
-            _sock.close(*tsp);
+            _sock.close(*this);
             return false;
         }
     }
@@ -203,7 +203,7 @@ bool ts::TriggerPlugin::stop()
     }
 
     if (_sock.isOpen()) {
-        _sock.close(*tsp);
+        _sock.close(*this);
     }
     return true;
 }
@@ -242,11 +242,11 @@ void ts::TriggerPlugin::trigger()
 {
     // Execute external command.
     if (!_execute.empty()) {
-        ForkPipe::Launch(_execute, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+        ForkPipe::Launch(_execute, *this, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
     }
 
     // Send message over a socket.
     if (_sock.isOpen()) {
-        _sock.send(_udpMessage.data(), _udpMessage.size(), *tsp);
+        _sock.send(_udpMessage.data(), _udpMessage.size(), *this);
     }
 }

@@ -79,7 +79,7 @@ namespace ts {
         PIDSet        _merge_pids {};      // Set of detected PID's in merged stream that we pass in main stream.
         PCRMerger     _pcr_merger {duck};  // Adjust PCR's in merged stream.
         PSIMerger     _psi_merger {duck, PSIMerger::NONE};  // Used to merge PSI/SI from both streams.
-        PacketInsertionController _insert_control {*tsp};   // Used to control insertion points for the merge
+        PacketInsertionController _insert_control {*this};  // Used to control insertion points for the merge
 
         // Start/restart/stop the merge command.
         bool startStopCommand(bool do_close, bool do_start);
@@ -317,7 +317,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
 
     if (do_close) {
         debug(u"closing merge process pipe");
-        _pipe->close(*tsp);
+        _pipe->close(*this);
     }
 
     if (_stopping || !do_restart) {
@@ -348,7 +348,7 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
     return _pipe->open(_command,
                        _no_wait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
                        PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
-                       *tsp,
+                       *this,
                        ForkPipe::STDOUT_PIPE,
                        ForkPipe::STDIN_NONE,
                        _format);
@@ -459,7 +459,7 @@ void ts::MergePlugin::main()
             // So, the object which is pointed to by _pipe does not change.
 
             // We request to read only multiples of 188 bytes (the packet size).
-            success = _pipe->readStreamChunks(buffer, PKT_SIZE * buffer_size, PKT_SIZE, read_size, *tsp);
+            success = _pipe->readStreamChunks(buffer, PKT_SIZE * buffer_size, PKT_SIZE, read_size, *this);
 
             if (!success) {
                 // Read error or end of file.

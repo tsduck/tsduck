@@ -65,7 +65,7 @@ namespace ts {
 
         // Plugin private fields.
         bool          _abort = false;           // Error, abort asap.
-        UDPSocket     _sock {false, *tsp};      // Outgoing UDP socket (forwarded datagrams).
+        UDPSocket     _sock {false, *this};     // Outgoing UDP socket (forwarded datagrams).
         int           _previous_uc_ttl = 0;     // Previous unicast TTL which was set.
         int           _previous_mc_ttl = 0;     // Previous multicast TTL which was set.
         PacketCounter _datagram_count = 0;      // Number of extracted datagrams.
@@ -301,21 +301,21 @@ bool ts::MPEPlugin::start()
 
     // Initialize the forwarding UDP socket.
     if (_send_udp) {
-        if (!_sock.open(*tsp)) {
+        if (!_sock.open(*this)) {
             return false;
         }
         // If local port is specified, bint to socket.
         const IPv4SocketAddress local(IPv4Address::AnyAddress, _local_port);
-        if (_local_port != IPv4SocketAddress::AnyPort && (!_sock.reusePort(true, *tsp) || !_sock.bind(local, *tsp))) {
+        if (_local_port != IPv4SocketAddress::AnyPort && (!_sock.reusePort(true, *this) || !_sock.bind(local, *this))) {
             return false;
         }
         // If specified, set TTL option, for unicast and multicast.
         // Otherwise, we will set the TTL for each packet.
-        if (_ttl > 0 && (!_sock.setTTL(_ttl, false, *tsp) || !_sock.setTTL(_ttl, true, *tsp))) {
+        if (_ttl > 0 && (!_sock.setTTL(_ttl, false, *this) || !_sock.setTTL(_ttl, true, *this))) {
             return false;
         }
         // Specify local address for outgoing multicast traffic.
-        if (_local_address.hasAddress() && !_sock.setOutgoingMulticast(_local_address, *tsp)) {
+        if (_local_address.hasAddress() && !_sock.setOutgoingMulticast(_local_address, *this)) {
             return false;
         }
     }
@@ -341,7 +341,7 @@ bool ts::MPEPlugin::stop()
 
     // Close the forwarding socket.
     if (_sock.isOpen()) {
-        _sock.close(*tsp);
+        _sock.close(*this);
     }
 
     return true;
@@ -466,7 +466,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         const bool mc = dest.isMulticast();
         const int previous_ttl = mc ? _previous_mc_ttl : _previous_uc_ttl;
         const int mpe_ttl = mpe.datagram()[8]; // in original IP header
-        if (_ttl <= 0 && mpe_ttl != previous_ttl && _sock.setTTL(mpe_ttl, mc, *tsp)) {
+        if (_ttl <= 0 && mpe_ttl != previous_ttl && _sock.setTTL(mpe_ttl, mc, *this)) {
             if (mc) {
                 _previous_mc_ttl = mpe_ttl;
             }
@@ -476,7 +476,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         }
 
         // Send the UDP datagram.
-        if (!_sock.send(udp_data, udp_size, dest, *tsp)) {
+        if (!_sock.send(udp_data, udp_size, dest, *this)) {
             _abort = true;
         }
     }

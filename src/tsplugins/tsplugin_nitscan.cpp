@@ -190,7 +190,7 @@ bool ts::NITScanPlugin::start()
 {
     // Pre-load the existing channel file.
     _channels.clear();
-    if (_update_channel_file && !_channel_file.empty() && fs::exists(_channel_file) && !_channels.load(_channel_file, *tsp)) {
+    if (_update_channel_file && !_channel_file.empty() && fs::exists(_channel_file) && !_channels.load(_channel_file, *this)) {
         return false;
     }
 
@@ -233,7 +233,7 @@ bool ts::NITScanPlugin::stop()
     // Save channels file. Create intermediate directories when it is the default file.
     if (!_channel_file.empty()) {
         verbose(u"saving %s", _channel_file);
-        _channels.save(_channel_file, _default_channel_file, *tsp);
+        _channels.save(_channel_file, _default_channel_file, *this);
     }
 
     return true;

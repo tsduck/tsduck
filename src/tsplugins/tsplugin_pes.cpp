@@ -387,7 +387,7 @@ bool ts::PESPlugin::openOutput(const fs::path& filename, std::ofstream* file, st
         // Save binary data on standard output, in binary mode.
         *stream = &std::cout;
         if (binary) {
-            SetBinaryModeStdout(*tsp);
+            SetBinaryModeStdout(*this);
         }
     }
     else if (filename.empty()) {

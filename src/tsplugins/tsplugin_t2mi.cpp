@@ -189,7 +189,7 @@ bool ts::T2MIPlugin::start()
     _abort = false;
 
     // Open output files.
-    if (!_ts_file_name.empty() && !_ts_file.open(_ts_file_name, _ts_file_flags , *tsp)) {
+    if (!_ts_file_name.empty() && !_ts_file.open(_ts_file_name, _ts_file_flags , *this)) {
         return false;
     }
     if (!_t2mi_file_name.empty()) {
@@ -197,7 +197,7 @@ bool ts::T2MIPlugin::start()
         if (!_t2mi_file) {
             error(u"error creating %s", _t2mi_file_name);
             if (_ts_file.isOpen()) {
-                _ts_file.close(*tsp);
+                _ts_file.close(*this);
             }
             return false;
         }
@@ -217,7 +217,7 @@ bool ts::T2MIPlugin::stop()
         _t2mi_file.close();
     }
     if (_ts_file.isOpen()) {
-        _ts_file.close(*tsp);
+        _ts_file.close(*this);
     }
 
     // With --extract, display a summary.
@@ -347,7 +347,7 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
         }
         else {
             // Write the packet to output file.
-            _abort = !_ts_file.writePackets(&ts, nullptr, 1, *tsp);
+            _abort = !_ts_file.writePackets(&ts, nullptr, 1, *this);
             _ts_count++;
         }
     }

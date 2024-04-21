@@ -364,7 +364,7 @@ void ts::BitrateMonitorPlugin::jsonLine(const UChar* status, int64_t bitrate, in
     root.add(u"status", status);
     // Make sure to sure the same time format as XML attributes.
     root.add(u"time", xml::Attribute::DateTimeToString(Time::CurrentLocalTime()));
-    info(_json_prefix + root.oneLiner(*tsp));
+    info(_json_prefix + root.oneLiner(*this));
 }
 
 
@@ -468,7 +468,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
         if (!_alarm_command.empty()) {
             UString command;
             command.format(u"%s \"%s\" %s %s %d %d %d %d", _alarm_command, alarm_message, _alarm_target, alarm_status, bitrate, _min_bitrate, _max_bitrate, net_bitrate);
-            ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+            ForkPipe::Launch(command, *this, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
         }
 
         // Update status

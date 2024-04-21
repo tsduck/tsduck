@@ -97,34 +97,34 @@ namespace ts {
         };
 
         // Plugin private data
-        emmgmux::Protocol  _protocol {};                   // EMMG/PDG <=> MUX protocol instance
-        PacketCounter      _pkt_current = 0;               // Current TS packet index
-        PacketCounter      _pkt_next_data = 0;             // Next data insertion point
-        PID                _data_pid = PID_NULL;           // PID for data (constant after start)
-        ContinuityAnalyzer _cc_fixer {AllPIDs, tsp};       // To fix continuity counters in injected PID
-        BitRate            _max_bitrate = 0;               // Max data PID's bitrate (constant after start)
-        bool               _unregulated = false;           // Insert data packet as soon as received.
-        IPv4SocketAddress  _tcp_address {};                // TCP port and optional local address.
-        IPv4SocketAddress  _udp_address {};                // UDP port and optional local address.
-        bool               _reuse_port = false;            // Reuse port option.
-        size_t             _sock_buf_size = 0;             // Socket receive buffer size.
-        TCPServer          _server {};                     // EMMG/PDG <=> MUX TCP server
-        TCPListener        _tcp_listener {this};           // TCP listener thread.
-        UDPListener        _udp_listener {this};           // UDP listener thread.
-        PacketQueue        _packet_queue {};               // Queue of incoming TS packets.
-        SectionQueue       _section_queue {};              // Queue of incoming sections.
-        tlv::Logger        _logger {Severity::Debug, tsp}; // Message logger.
-        volatile bool      _channel_established = false;   // Data channel open.
-        volatile bool      _stream_established = false;    // Data stream open.
-        volatile bool      _req_bitrate_changed = false;   // Requested bitrate has changed.
+        emmgmux::Protocol  _protocol {};                    // EMMG/PDG <=> MUX protocol instance
+        PacketCounter      _pkt_current = 0;                // Current TS packet index
+        PacketCounter      _pkt_next_data = 0;              // Next data insertion point
+        PID                _data_pid = PID_NULL;            // PID for data (constant after start)
+        ContinuityAnalyzer _cc_fixer {AllPIDs, this};       // To fix continuity counters in injected PID
+        BitRate            _max_bitrate = 0;                // Max data PID's bitrate (constant after start)
+        bool               _unregulated = false;            // Insert data packet as soon as received.
+        IPv4SocketAddress  _tcp_address {};                 // TCP port and optional local address.
+        IPv4SocketAddress  _udp_address {};                 // UDP port and optional local address.
+        bool               _reuse_port = false;             // Reuse port option.
+        size_t             _sock_buf_size = 0;              // Socket receive buffer size.
+        TCPServer          _server {};                      // EMMG/PDG <=> MUX TCP server
+        TCPListener        _tcp_listener {this};            // TCP listener thread.
+        UDPListener        _udp_listener {this};            // UDP listener thread.
+        PacketQueue        _packet_queue {};                // Queue of incoming TS packets.
+        SectionQueue       _section_queue {};               // Queue of incoming sections.
+        tlv::Logger        _logger {Severity::Debug, this}; // Message logger.
+        volatile bool      _channel_established = false;    // Data channel open.
+        volatile bool      _stream_established = false;     // Data stream open.
+        volatile bool      _req_bitrate_changed = false;    // Requested bitrate has changed.
         // Start of protected area.
-        std::mutex         _mutex {};                      // Mutex for access to protected area
-        uint32_t           _client_id = 0;                 // DVB SimilCrypt client id.
-        uint16_t           _data_id = 0;                   // DVB SimilCrypt data id.
-        bool               _section_mode = false;          // Datagrams are sections.
+        std::mutex         _mutex {};                       // Mutex for access to protected area
+        uint32_t           _client_id = 0;                  // DVB SimilCrypt client id.
+        uint16_t           _data_id = 0;                    // DVB SimilCrypt data id.
+        bool               _section_mode = false;           // Datagrams are sections.
         Packetizer         _packetizer {duck, PID_NULL, this}; // Generate packets in the case of incoming sections.
-        BitRate            _req_bitrate = 0;               // Requested bitrate
-        size_t             _lost_packets = 0;              // Lost packets (queue full)
+        BitRate            _req_bitrate = 0;                // Requested bitrate
+        size_t             _lost_packets = 0;               // Lost packets (queue full)
 
         // Reset all client session context information.
         void clearSession();
@@ -263,17 +263,17 @@ bool ts::DataInjectPlugin::start()
     }
 
     // Initialize the TCP server.
-    if (!_server.open(*tsp)) {
+    if (!_server.open(*this)) {
         return false;
     }
-    if (!_server.reusePort(_reuse_port, *tsp) || !_server.bind(_tcp_address, *tsp) || !_server.listen(SERVER_BACKLOG, *tsp)) {
-        _server.close(*tsp);
+    if (!_server.reusePort(_reuse_port, *this) || !_server.bind(_tcp_address, *this) || !_server.listen(SERVER_BACKLOG, *this)) {
+        _server.close(*this);
         return false;
     }
 
     // Initialize the UDP receiver.
     if (!_udp_listener.open()) {
-        _server.close(*tsp);
+        _server.close(*this);
         return false;
     }
 
@@ -547,7 +547,7 @@ void ts::DataInjectPlugin::processPacketLoss(const UChar* type, bool enqueueSucc
 ts::DataInjectPlugin::TCPListener::TCPListener(DataInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _report(Severity::Info, UString(), plugin->tsp),
+    _report(Severity::Info, UString(), plugin),
     _client(plugin->_protocol, true, 3)
 {
 }
@@ -559,7 +559,7 @@ void ts::DataInjectPlugin::TCPListener::stop()
 
     // Close the server, then break client connection.
     // This will force the server thread to terminate.
-    _plugin->_server.close(*_plugin->tsp);
+    _plugin->_server.close(*_plugin);
     _client.disconnect(NULLREP);
     _client.close(NULLREP);
 
@@ -735,7 +735,7 @@ void ts::DataInjectPlugin::TCPListener::main()
 ts::DataInjectPlugin::UDPListener::UDPListener(DataInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _report(Severity::Info, UString(), plugin->tsp),
+    _report(Severity::Info, UString(), plugin),
     _client(_report)
 {
 }

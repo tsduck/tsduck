@@ -148,7 +148,7 @@ bool ts::PIDShiftPlugin::start()
     if (_shift_packets > 0) {
         // Initialize the buffer only when its size is specified in packets.
         _buffer.setTotalPackets(_shift_packets);
-        return _buffer.open(*tsp);
+        return _buffer.open(*this);
     }
     else {
         // Need an evaluation phase.
@@ -165,7 +165,7 @@ bool ts::PIDShiftPlugin::start()
 
 bool ts::PIDShiftPlugin::stop()
 {
-    _buffer.close(*tsp);
+    _buffer.close(*this);
     return true;
 }
 
@@ -215,7 +215,7 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
             _buffer.setTotalPackets(size_t(count));
 
             // Open the shift buffer.
-            if (!_buffer.open(*tsp)) {
+            if (!_buffer.open(*this)) {
                 _pass_all = true;
                 return _ignore_errors ? TSP_OK : TSP_END;
             }
@@ -232,7 +232,7 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
     }
 
     // No longer in evaluation phase, shift packets.
-    if (_pids.test(pid) && !_buffer.shift(pkt, pkt_data, *tsp)) {
+    if (_pids.test(pid) && !_buffer.shift(pkt, pkt_data, *this)) {
         _pass_all = true;
         return _ignore_errors ? TSP_OK : TSP_END;
     }

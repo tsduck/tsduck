@@ -54,7 +54,7 @@ namespace ts {
         TSPacketFormat     _file_format = TSPacketFormat::AUTODETECT; // Input file format
         TSPacketLabelSet   _setLabels {};             // Labels to set on output packets.
         TSPacketLabelSet   _resetLabels {};           // Labels to reset on output packets.
-        ContinuityAnalyzer _cc_fixer {AllPIDs, tsp};  // To fix continuity counters in mux'ed PID's
+        ContinuityAnalyzer _cc_fixer {AllPIDs, this}; // To fix continuity counters in mux'ed PID's
     };
 }
 
@@ -222,7 +222,7 @@ bool ts::MuxPlugin::start()
     return _file.openRead(value(u""),
                           intValue<size_t>(u"repeat", 0),
                           intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE),
-                          *tsp,
+                          *this,
                           _file_format);
 }
 
@@ -233,7 +233,7 @@ bool ts::MuxPlugin::start()
 
 bool ts::MuxPlugin::stop()
 {
-    return _file.close(*tsp);
+    return _file.close(*this);
 }
 
 
@@ -320,7 +320,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
     }
 
     // Now, it is time to insert a new packet, read it. Directly overwrite the memory area of current stuffing pkt
-    if (_file.readPackets(&pkt, nullptr, 1, *tsp) == 0) {
+    if (_file.readPackets(&pkt, nullptr, 1, *this) == 0) {
         // File read error, error message already reported
         // If processing terminated, either exit or transparently pass packets
         if (tsp->useJointTermination()) {

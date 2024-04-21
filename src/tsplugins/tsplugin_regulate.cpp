@@ -42,8 +42,8 @@ namespace ts {
         PID              _pid_pcr = PID_NULL;
 
         // Working data:
-        BitRateRegulator _bitrate_regulator {tsp, Severity::Verbose};
-        PCRRegulator     _pcr_regulator {tsp, Severity::Verbose};
+        BitRateRegulator _bitrate_regulator {this, Severity::Verbose};
+        PCRRegulator     _pcr_regulator {this, Severity::Verbose};
     };
 }
 

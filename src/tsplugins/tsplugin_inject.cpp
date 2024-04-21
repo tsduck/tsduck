@@ -315,7 +315,7 @@ bool ts::InjectPlugin::reloadFiles()
             // With --poll-files, we ignore non-existent files.
             it.retry_count = 0;  // no longer needed to retry
         }
-        else if (!file.load(it.file_name, _intype) || !_sections_opt.processSectionFile(file, *tsp)) {
+        else if (!file.load(it.file_name, _intype) || !_sections_opt.processSectionFile(file, *this)) {
             success = false;
             if (it.retry_count > 0) {
                 it.retry_count--;
@@ -447,7 +447,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, TSPac
     // Poll files when necessary.
     // Do that only at section boundary in the output PID to avoid truncated sections.
     if (_poll_files && _pzer.atSectionBoundary() && Time::CurrentUTC() >= _poll_file_next) {
-        if (_infiles.scanFiles(FILE_RETRY, *tsp) > 0) {
+        if (_infiles.scanFiles(FILE_RETRY, *this) > 0) {
             // Some files have changed. Reset packetizer and reload files.
             reloadFiles();
             // Recompute bitrates and packet interval when based on files repetition rates.

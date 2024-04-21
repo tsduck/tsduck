@@ -559,7 +559,7 @@ void ts::EITInjectPlugin::loadFiles()
 
         // Delete file after successful load when required.
         if (_delete_files) {
-            fs::remove(it, &ErrCodeReport(*tsp, u"error deleting", it));
+            fs::remove(it, &ErrCodeReport(*this, u"error deleting", it));
         }
     }
 

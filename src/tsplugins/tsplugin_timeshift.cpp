@@ -128,7 +128,7 @@ bool ts::TimeShiftPlugin::initBufferByTime()
             }
             else {
                 _buffer.setTotalPackets(size_t(packets));
-                return _buffer.open(*tsp);
+                return _buffer.open(*this);
             }
         }
     }
@@ -143,7 +143,7 @@ bool ts::TimeShiftPlugin::initBufferByTime()
 bool ts::TimeShiftPlugin::start()
 {
     // Initialize the buffer only when its size is specified in packets or the bitrate is already known.
-    return _time_shift_ms == cn::milliseconds::zero() ? _buffer.open(*tsp) : initBufferByTime();
+    return _time_shift_ms == cn::milliseconds::zero() ? _buffer.open(*this) : initBufferByTime();
 }
 
 
@@ -153,7 +153,7 @@ bool ts::TimeShiftPlugin::start()
 
 bool ts::TimeShiftPlugin::stop()
 {
-    _buffer.close(*tsp);
+    _buffer.close(*this);
     return true;
 }
 
@@ -186,7 +186,7 @@ ts::ProcessorPlugin::Status ts::TimeShiftPlugin::processPacket(TSPacket& pkt, TS
     else {
         // Check if we are in the initial filling phase.
         const bool init_phase = !_buffer.full();
-        if (!_buffer.shift(pkt, pkt_data, *tsp)) {
+        if (!_buffer.shift(pkt, pkt_data, *this)) {
             return TSP_END; // fatal error
         }
         return init_phase && _drop_initial ? TSP_DROP : TSP_OK;
