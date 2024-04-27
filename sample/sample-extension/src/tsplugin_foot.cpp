@@ -124,7 +124,7 @@ void foo::FootPlugin::modifyTable(ts::BinaryTable& table, bool& is_target, bool&
         reinsert = false;
         return;
     }
-    tsp->verbose(u"modifying a FOOT, PID 0x%X, foo_id: 0x%X", {table.sourcePID(), foot.foo_id});
+    tsp->verbose(u"modifying a FOOT, PID 0x%X, foo_id: 0x%X", table.sourcePID(), foot.foo_id);
 
     // Modify global values.
     if (_set_id) {

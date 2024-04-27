@@ -83,7 +83,7 @@ bool ts::SamplePlugin::stop()
 
     // Close resources, display final report, etc.
     if (doCount) {
-        tsp->info(u"got %d packets", {counter});
+        tsp->info(u"got %d packets", counter);
     }
 
     return true;

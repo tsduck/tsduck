@@ -83,7 +83,7 @@ bool FooBarPlugin::start()
 // Called each time the plugin is stopped.
 bool FooBarPlugin::stop()
 {
-    tsp->info(u"PID: 0x%X (%d), packets: %'d", {_pid, _pid, _count});
+    tsp->info(u"PID: 0x%X (%d), packets: %'d", _pid, _pid, _count);
     return true;
 }
 
@@ -122,11 +122,11 @@ void FooBarHandler::handlePluginEvent(const ts::PluginEventContext& ctx)
 {
     FooBarData* data = dynamic_cast<FooBarData*>(ctx.pluginData());
     if (data != nullptr) {
-        _report.info(u"[HANDLER] plugin: %s, event code: 0x%X, packets: %'d, application message: %s", {
+        _report.info(u"[HANDLER] plugin: %s, event code: 0x%X, packets: %'d, application message: %s",
                      ctx.pluginName(),
                      ctx.eventCode(),
                      ctx.pluginPackets(),
-                     data->message});
+                     data->message);
     }
 }
 
