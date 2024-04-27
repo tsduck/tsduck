@@ -115,7 +115,7 @@ void foo::FooTable::DisplaySection(ts::TablesDisplay& disp, const ts::Section& s
     const uint16_t id = section.tableIdExtension();
     const ts::UString name(buf.getStringWithByteLength());
 
-    disp << margin << ts::UString::Format(u"Foo id: 0x%X (%<d), name: \"%s\"", {id, name}) << std::endl;
+    disp << margin << ts::UString::Format(u"Foo id: 0x%X (%<d), name: \"%s\"", id, name) << std::endl;
     disp.displayDescriptorListWithLength(section, buf, margin);
     disp.displayExtraData(buf, margin);
 }

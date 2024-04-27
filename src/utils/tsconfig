@@ -102,12 +102,20 @@ cmd_nostdcpp() {
     TS_NOSTDCPP=true
 }
 
+brewprefix() {
+    local before=$1
+    local after=$2
+    local prefix=
+    [[ $SYSTEM == Darwin && -n $(which brew 2>/dev/null) ]] && prefix=$(brew --prefix)
+    [[ -n $prefix ]] && echo "$before$prefix$after"
+}
+
 cmd_cflags() {
     local pcsc=
     local std="{{STDCPP}}"
     [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-I/usr/include/PCSC"
     [[ -n "$TS_NOSTDCPP" ]] && std=""
-    echo "-I$(cmd_include) $pcsc $std"
+    echo "$(brewprefix -I /include) -I$(cmd_include) $pcsc $std"
 }
 
 cmd_so() {
@@ -128,7 +136,7 @@ libs_common() {
     [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-lpcsclite"
     [[ $SYSTEM == Linux ]] && rt="-lrt"
     [[ $SYSTEM == OpenBSD ]] || dl="-ldl"
-    echo "$pcsc -lpthread $rt $dl -lm -lstdc++"
+    echo "$(brewprefix -L /lib) $pcsc -lpthread $rt $dl -lm -lstdc++"
 }
 
 cmd_libs() {

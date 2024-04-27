@@ -93,7 +93,7 @@ void InputHandler::handlePluginEvent(const ts::PluginEventContext& context)
     ts::PluginEventData* data = dynamic_cast<ts::PluginEventData*>(context.pluginData());
     if (data != nullptr) {
         if (_next_packet < _packets.size() && data->maxSize() >= ts::PKT_SIZE) {
-            _report.info(u"returning input packet #%d", {_next_packet});
+            _report.info(u"returning input packet #%d", _next_packet);
             data->append(&_packets[_next_packet++], ts::PKT_SIZE);
         }
         else {
@@ -135,9 +135,9 @@ void OutputHandler::handlePluginEvent(const ts::PluginEventContext& context)
     if (data != nullptr) {
         const ts::TSPacket* packets = reinterpret_cast<const ts::TSPacket*>(data->data());
         const size_t packets_count = data->size() / ts::PKT_SIZE;
-        _report.info(u"received %d output packets", {packets_count});
+        _report.info(u"received %d output packets", packets_count);
         for (size_t i = 0; i < packets_count; ++i) {
-            _report.info(u"packet #%d: %s", {i, ts::UString::Dump(packets + i, ts::PKT_SIZE, ts::UString::COMPACT)});
+            _report.info(u"packet #%d: %s", i, ts::UString::Dump(packets + i, ts::PKT_SIZE, ts::UString::COMPACT));
         }
     }
 }
