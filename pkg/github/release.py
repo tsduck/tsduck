@@ -47,6 +47,9 @@ class installer:
                    .replace('{OS}', r'\d*')
 
 # Description of expected installers.
+# Some of them are for reference only and not mandatory. Not having them does not
+# prevent the creation of the release. Typically, only Intel and Arm packages are
+# are natively built. Others are built in Qemu emulated virtual machines.
 installers = [
     installer('TSDuck-Win64-{VERSION}.exe',                  False, True,  'Windows (Intel, 64 bits'),
     installer('TSDuck-Win32-{VERSION}.exe',                  False, False, 'Windows (Intel, 32 bits)'),
@@ -58,8 +61,11 @@ installers = [
     installer('tsduck-{VERSION}.fc{OS}.aarch64.rpm',         False, False, 'Fedora (Arm, 64 bits)'),
     installer('tsduck_{VERSION}.debian{OS}_amd64.deb',       False, True,  'Debian (Intel, 64 bits)'),
     installer('tsduck_{VERSION}.debian{OS}_arm64.deb',       False, False, 'Debian (Arm, 64 bits)'),
+    installer('tsduck_{VERSION}.debian{OS}_ppc64.deb',       False, False, 'Debian (PowerPC, 64 bits)'),
     installer('tsduck_{VERSION}.ubuntu{OS}_amd64.deb',       False, True,  'Ubuntu (Intel, 64 bits)'),
     installer('tsduck_{VERSION}.ubuntu{OS}_arm64.deb',       False, False, 'Ubuntu (Arm, 64 bits)'),
+    installer('tsduck_{VERSION}.ubuntu{OS}_riscv64.deb',     False, False, 'Ubuntu (RISC-V, 64 bits)'),
+    installer('tsduck_{VERSION}.ubuntu{OS}_s390x.deb',       False, False, 'Ubuntu (IBM s390x, 64 bits)'),
     installer('tsduck_{VERSION}.raspbian{OS}_armhf.deb',     False, True,  'Raspbian (Raspberry Pi, 32 bits)'),
     installer('tsduck-devel-{VERSION}.el{OS}.x86_64.rpm',    True,  True,  'RedHat, AlmaLinux (Intel, 64 bits)'),
     installer('tsduck-devel-{VERSION}.el{OS}.aarch64.rpm',   True,  False, 'RedHat, AlmaLinux (Arm, 64 bits)'),
@@ -67,8 +73,11 @@ installers = [
     installer('tsduck-devel-{VERSION}.fc{OS}.aarch64.rpm',   True,  False, 'Fedora (Arm, 64 bits)'),
     installer('tsduck-dev_{VERSION}.debian{OS}_amd64.deb',   True,  True,  'Debian (Intel, 64 bits)'),
     installer('tsduck-dev_{VERSION}.debian{OS}_arm64.deb',   True,  False, 'Debian (Arm, 64 bits)'),
+    installer('tsduck-dev_{VERSION}.debian{OS}_ppc64.deb',   True,  False, 'Debian (PowerPC, 64 bits)'),
     installer('tsduck-dev_{VERSION}.ubuntu{OS}_amd64.deb',   True,  True,  'Ubuntu (Intel, 64 bits)'),
     installer('tsduck-dev_{VERSION}.ubuntu{OS}_arm64.deb',   True,  False, 'Ubuntu (Arm, 64 bits)'),
+    installer('tsduck-dev_{VERSION}.ubuntu{OS}_riscv64.deb', True,  False, 'Ubuntu (RISC-V, 64 bits)'),
+    installer('tsduck-dev_{VERSION}.ubuntu{OS}_s390x.deb',   True,  False, 'Ubuntu (IBM s390x, 64 bits)'),
     installer('tsduck-dev_{VERSION}.raspbian{OS}_armhf.deb', True,  True,  'Raspbian (Raspberry Pi, 32 bits)')
 ]
 
