@@ -2,12 +2,17 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.38-3679
+VERSION 3.38-3703
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
     - Option --pid in plugin "eitinject".
+
+[BUG] Bug fixes:
+
+  * In plugin "eitinject", fixed duplicated events when an event was reloaded
+    with same id but different content.
 
 -------------------------------------------------------------------------------
 
