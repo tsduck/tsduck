@@ -417,9 +417,10 @@ namespace ts {
         {
             TS_NOCOPY(EService);
         public:
-            bool         regenerate = false;  // Some segments must be regenerated in the service.
-            ESectionPair pf {};               // EIT p/f sections (0: present, 1: following).
-            ESegmentList segments {};         // List of 3-hour segments (EPG events and EIT schedule sections).
+            bool               regenerate = false;  // Some segments must be regenerated in the service.
+            ESectionPair       pf {};               // EIT p/f sections (0: present, 1: following).
+            ESegmentList       segments {};         // List of 3-hour segments (EPG events and EIT schedule sections).
+            std::set<uint16_t> event_ids {};        // Existing event ids in that service, used as fast lookup of event presence.
 
             // Constructor.
             EService() = default;

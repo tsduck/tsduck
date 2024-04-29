@@ -252,6 +252,37 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
             srv = &_services[service_id];
         }
 
+        // Check if the same event id already existed in the service.
+        if (Contains(srv->event_ids, ev->event_id)) {
+            // Look for existing event in this service with same id. Remove it if not an exact duplicate.
+            bool found = false;
+            bool duplicate = false;
+            for (auto iseg = srv->segments.begin(); !found && iseg != srv->segments.end(); ++iseg) {
+                auto& events((*iseg)->events);
+                for (auto iev = events.begin(); !found && iev != events.end(); ++iev) {
+                    if ((*iev)->event_id == ev->event_id) {
+                        // Found the event with same id.
+                        found = true;
+                        duplicate = (*iev)->event_data == ev->event_data;
+                        // Remove event if not a duplicate.
+                        if (!duplicate) {
+                            _duck.report().log(2, u"discard modified event id %n, %s, previously starting %s", (*iev)->event_id, service_id, (*iev)->start_time);
+                            // Remove event from segment and service.
+                            events.erase(iev);
+                            srv->event_ids.erase(ev->event_id);
+                            // Mark all EIT schedule in this segment as to be regenerated.
+                            _regenerate = srv->regenerate = (*iseg)->regenerate = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            // If the event is an exact duplicate, no need to do anything with that event.
+            if (duplicate) {
+                continue;
+            }
+        }
+
         // Locate or allocate the segment for that event. At this stage, we only create this
         // segment if necessary. This is the minimum to store an event. We do not try to create
         // empty intermediate segments. This will be done in regenerateSchedule().
@@ -263,9 +294,8 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
         }
         if (seg_iter == srv->segments.end() || (*seg_iter)->start_time != seg_start_time) {
             // The segment does not exist, create it.
-            _duck.report().debug(u"creating EIT segment starting at %s for %s", seg_start_time, service_id);
+            _duck.report().debug(u"create EIT segment starting at %s for %s", seg_start_time, service_id);
             const ESegmentPtr seg(new ESegment(seg_start_time));
-            CheckNonNull(seg.get());
             seg_iter = srv->segments.insert(seg_iter, seg);
         }
         ESegment& seg(**seg_iter);
@@ -275,12 +305,9 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
         while (ev_iter != seg.events.end() && (*ev_iter)->start_time < ev->start_time) {
             ++ev_iter;
         }
-        if (ev_iter != seg.events.end() && (*ev_iter)->event_id == ev->event_id && (*ev_iter)->event_data == ev->event_data) {
-            // Duplicate event, ignore it.
-            continue;
-        }
-        _duck.report().log(2, u"loaded event id %n, %s, starting %s", ev->event_id, service_id, ev->start_time);
+        _duck.report().log(2, u"load event id %n, %s, starting %s", ev->event_id, service_id, ev->start_time);
         seg.events.insert(ev_iter, ev);
+        srv->event_ids.insert(ev->event_id);
         ev_count++;
 
         // Mark all EIT schedule in this segment as to be regenerated.
@@ -747,7 +774,7 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
         const bool modp = regeneratePresentFollowingSection(service_id, srv.pf[0], tid, 0, events[0], now);
         const bool modf = regeneratePresentFollowingSection(service_id, srv.pf[1], tid, 1, events[1], now);
 
-        // With SYNC_VERIONS, if any section is modified, update both versions.
+        // With SYNC_VERSIONS, if any section is modified, update both versions.
         if ((modp || modf) && bool(_options & EITOptions::SYNC_VERSIONS)) {
             const uint8_t version = nextVersion(service_id, tid, 0);
             srv.pf[0]->section->setVersion(version, true);
@@ -864,6 +891,11 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
 
             // Remove final empty segments (no events). Keep at least one segment for last midnight, even if empty.
             while (!srv.segments.empty() && srv.segments.back()->events.empty() && srv.segments.back()->start_time > last_midnight) {
+                // Remove all event ids of this segment from the service.
+                for (const auto& ev : srv.segments.back()->events) {
+                    srv.event_ids.erase(ev->event_id);
+                }
+                // Remove segment from service
                 markObsoleteSegment(*srv.segments.back());
                 srv.segments.pop_back();
             }
@@ -1125,6 +1157,9 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
         for (auto seg_iter = srv.segments.begin(); seg_iter != srv.segments.end() && (*seg_iter)->start_time <= now; ++seg_iter) {
             ESegment& seg(**seg_iter);
             while (!seg.events.empty() && seg.events.front()->end_time <= now) {
+                // Remove event id from service.
+                srv.event_ids.erase(seg.events.front()->event_id);
+                // Remove event from segment.
                 seg.events.pop_front();
                 // Regenerate the segment, unless this is the current segment and we use the lazy update mode.
                 if (seg.start_time < now || !(_options & EITOptions::LAZY_SCHED_UPDATE)) {
@@ -1135,6 +1170,11 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
 
         // Discard events too far in the future.
         while (!srv.segments.empty() && srv.segments.back()->start_time >= last_midnight + EIT::TOTAL_DAYS) {
+            // Remove all event ids of this segment from the service.
+            for (const auto& ev : srv.segments.back()->events) {
+                srv.event_ids.erase(ev->event_id);
+            }
+            // Remove segment from service
             srv.segments.pop_back();
         }
 
