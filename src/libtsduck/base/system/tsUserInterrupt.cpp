@@ -174,13 +174,11 @@ ts::UserInterrupt::~UserInterrupt()
 
 void ts::UserInterrupt::activate()
 {
-    // If already active...
+    // Ensure that there is only one active instance at a time
+    std::lock_guard<std::recursive_mutex> lock(ActivationMutex::Instance());
     if (_active) {
         return;
     }
-
-    // Ensure that there is only one active instance at a time
-    std::lock_guard<std::recursive_mutex> lock(ActivationMutex::Instance());
     if (_active_instance != nullptr) {
         return;
     }
@@ -236,7 +234,6 @@ void ts::UserInterrupt::activate()
 #endif
 
     // Now active
-
     _active_instance = this;
     _active = true;
 }
@@ -253,12 +250,6 @@ void ts::UserInterrupt::deactivate()
     if (!_active) {
         return;
     }
-
-    // CID 158209 (#1 of 1): Side effect in assertion (ASSERT_SIDE_EFFECT)
-    // assert_side_effect: Argument ts::UserInterrupt::_active_instance of assert() has a side effect because the
-    // variable is volatile. The containing function might work differently in a non-debug build.
-    // ==> False positive, there is no side effect here, even with volatile data.
-    // coverity[ASSERT_SIDE_EFFECT]
     assert(_active_instance == this);
 
 #if defined(TS_WINDOWS)

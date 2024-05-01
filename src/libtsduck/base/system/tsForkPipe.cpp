@@ -349,11 +349,11 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                     error = errno;
                     message = "error opening /dev/null in forked process";
                 }
-                else if (::dup2(infd, STDIN_FILENO) < 0) {
-                    error = errno;
-                    message = "error redirecting stdin in forked process";
-                }
                 else {
+                    if (::dup2(infd, STDIN_FILENO) < 0) {
+                        error = errno;
+                        message = "error redirecting stdin in forked process";
+                    }
                     // Original file descriptor is no longer needed.
                     ::close(infd);
                 }

@@ -92,7 +92,7 @@ bool ts::MACAddress::resolve(const UString& name, Report& report)
         }
     }
 
-    uint8_t b1, b2, b3, b4, b5, b6;
+    uint8_t b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     if (s.scan(u"%x %x %x %x %x %x", &b1, &b2, &b3, &b4, &b5, &b6)) {
         setAddress(b1, b2, b3, b4, b5, b6);
         return true;

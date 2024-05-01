@@ -121,6 +121,7 @@ namespace ts {
             // Constructor & destructor.
             Receiver(PushInputPlugin* plugin);
             virtual ~Receiver() override;
+        protected:
             virtual void main() override;
         private:
             PushInputPlugin* _plugin;

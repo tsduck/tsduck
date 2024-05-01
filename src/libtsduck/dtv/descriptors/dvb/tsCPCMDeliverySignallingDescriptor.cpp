@@ -125,7 +125,7 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
     }
     if (!cps_vector.empty()) {
         buf.putBits(cps_vector.size(), 8);
-        for (auto it : cps_vector) {
+        for (const auto& it : cps_vector) {
             buf.putUInt8(it.C_and_R_regime_mask);
             buf.putBits(it.cps_byte.size(), 16);
             buf.putBytes(it.cps_byte);
@@ -209,6 +209,7 @@ void ts::CPCMDeliverySignallingDescriptor::deserializePayload(PSIBuffer& buf)
             break;
         default:
             cpcm_v1_delivery_signalling.clearContent();
+            break;
     }
 }
 
@@ -326,7 +327,7 @@ void ts::CPCMDeliverySignallingDescriptor::buildXML(DuckContext& duck, xml::Elem
         if (cpcm_v1_delivery_signalling.remote_access_date.has_value()) {
             v1->setDateTimeAttribute(u"remote_access_date", cpcm_v1_delivery_signalling.remote_access_date.value());
         }
-        for (auto it : cpcm_v1_delivery_signalling.cps_vector) {
+        for (const auto& it : cpcm_v1_delivery_signalling.cps_vector) {
             ts::xml::Element* cps = v1->addElement(u"cps");
             cps->setIntAttribute(u"C_and_R_regime_mask", it.C_and_R_regime_mask);
             cps->addHexaText(it.cps_byte);
@@ -387,5 +388,4 @@ bool ts::CPCMDeliverySignallingDescriptor::analyzeXML(DuckContext& duck, const x
          }
     }
     return ok;
-
 }

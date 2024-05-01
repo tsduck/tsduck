@@ -26,7 +26,6 @@
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
 #include "tsEnvironment.h"
-#include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsjsonValue.h"
 
@@ -68,7 +67,7 @@ bool ts::GitHubRelease::validate(Report& report)
 void ts::GitHubRelease::InvalidResponse(const json::ValuePtr& response, Report& report)
 {
     report.error(u"invalid response from GitHub, use --debug for more details");
-    if (report.debug()) {
+    if (report.debug() && response != nullptr) {
         report.debug(u"GitHub response: %s", response->printed(2, report));
     }
 }

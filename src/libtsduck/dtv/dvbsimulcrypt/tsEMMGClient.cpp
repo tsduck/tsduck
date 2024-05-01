@@ -224,6 +224,17 @@ bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
 
 
 //----------------------------------------------------------------------------
+// Check if the EMMG is connected.
+//----------------------------------------------------------------------------
+
+bool ts::EMMGClient::isConnected() const
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    return _state == CONNECTED;
+}
+
+
+//----------------------------------------------------------------------------
 // Disconnect from remote MUX. Close stream and channel.
 //----------------------------------------------------------------------------
 

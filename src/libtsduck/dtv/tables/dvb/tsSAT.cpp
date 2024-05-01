@@ -430,17 +430,17 @@ void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
         buf.putReservedZero(4);
     }
     buf.putBits(delivery_system_ids.size(), 10);
-    for (auto it : delivery_system_ids) {
+    for (const auto& it : delivery_system_ids) {
         buf.putUInt32(it);
     }
     buf.putReservedZero(6);
     buf.putBits(new_delivery_system_ids.size(), 10);
-    for (auto it : new_delivery_system_ids) {
+    for (const auto& it : new_delivery_system_ids) {
         it.serialize(buf);
     }
     buf.putReservedZero(6);
     buf.putBits(obsolescent_delivery_system_ids.size(), 10);
-    for (auto it : obsolescent_delivery_system_ids) {
+    for (const auto& it : obsolescent_delivery_system_ids) {
         it.serialize(buf);
     }
 }
@@ -883,12 +883,12 @@ void ts::SAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     switch (satellite_table_id) {
         case SATELLITE_POSITION_V2_INFO:
-            for (auto it : satellite_position_v2_info) {
+            for (const auto& it : satellite_position_v2_info) {
                 it.serialize(buf);
             }
             break;
         case CELL_FRAGMENT_INFO:
-            for (auto it : cell_fragment_info) {
+            for (const auto& it : cell_fragment_info) {
                 it.serialize(buf);
             }
             break;
@@ -896,7 +896,7 @@ void ts::SAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             time_association_fragment_info.serialize(buf);
             break;
         case BEAMHOPPING_TIME_PLAN_INFO:
-            for (auto it : beam_hopping_time_plan_info) {
+            for (const auto& it : beam_hopping_time_plan_info) {
                 it.serialize(buf);
             }
             break;

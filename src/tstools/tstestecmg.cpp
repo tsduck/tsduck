@@ -323,11 +323,12 @@ namespace {
         void oneRequest() { _request_count.fetch_add(1); }
         void oneResponse(const cn::milliseconds& time);
 
-        // Thread main code.
-        virtual void main() override;
-
         // Terminate the thread.
         void terminate();
+
+    protected:
+        // Thread main code.
+        virtual void main() override;
 
     private:
         using ResponseStat = ts::SingleDataStatistics<cn::milliseconds>;
@@ -432,14 +433,15 @@ namespace {
         // Send an ECM request.
         bool sendRequest(uint16_t stream_id);
 
-        // The internal thread is the receive thread.
-        virtual void main() override;
-
         // Terminate the session and wait for termination.
         void terminate();
 
         // Abort connection.
         void abort();
+
+    protected:
+        // The internal thread is the receive thread.
+        virtual void main() override;
 
     private:
         // Description of one stream.

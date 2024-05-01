@@ -606,7 +606,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     // (especially in spring where one hour "disappears"). Here, we just want
     // to convert time, regardless of local time considerations. So, we
     // compensate here.
-    seconds += (hour - stime.tm_hour) * 3600;
+    seconds += int64_t(hour - stime.tm_hour) * 3600;
 
     // Convert to 64-bit time value
     return (seconds * 1000 + int64_t(millisecond)) * TICKS_PER_MS;

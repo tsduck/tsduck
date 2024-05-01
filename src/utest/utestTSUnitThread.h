@@ -49,6 +49,7 @@ namespace utest {
         //!
         virtual void test() = 0;
 
+    protected:
         // Implementation of thread interface.
         virtual void main() override;
     };

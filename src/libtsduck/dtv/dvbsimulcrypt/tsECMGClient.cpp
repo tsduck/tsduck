@@ -161,6 +161,17 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
 
 
 //----------------------------------------------------------------------------
+// Check if the ECMG is connected.
+//----------------------------------------------------------------------------
+
+bool ts::ECMGClient::isConnected() const
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    return _state == CONNECTED;
+}
+
+
+//----------------------------------------------------------------------------
 // Disconnect from remote ECMG. Close stream and channel.
 //----------------------------------------------------------------------------
 

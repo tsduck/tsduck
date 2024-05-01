@@ -129,7 +129,7 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
     _addr = AnyAddress;
 
     // Try the trivial case of an IPv4 address.
-    uint8_t b1, b2, b3, b4;
+    uint8_t b1 = 0, b2 = 0, b3 = 0, b4 = 0;
     if (name.scan(u"%d.%d.%d.%d", &b1, &b2, &b3, &b4)) {
         setAddress(b1, b2, b3, b4);
         return true;

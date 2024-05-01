@@ -320,14 +320,18 @@ bool ts::Thread::waitForTermination()
 void ts::Thread::mainWrapper()
 {
     // Set thread name. For debug or trace purpose only.
-    UString name(_attributes.getName());
-    if (name.empty()) {
-        name = _typename;
-        // Thread names are limited on some systems, remove unnecessary prefix.
-        if (name.startWith(u"ts::")) {
-            name.erase(0, 4);
+    UString name;
+    {
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        name = _attributes.getName();
+        if (name.empty()) {
+            name = _typename;
+            // Thread names are limited on some systems, remove unnecessary prefix.
+            if (name.startWith(u"ts::")) {
+                name.erase(0, 4);
+            }
+            name.substitute(u"::", u".");
         }
-        name.substitute(u"::", u".");
     }
     if (!name.empty()) {
 #if defined(TS_LINUX)
