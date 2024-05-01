@@ -191,7 +191,7 @@ void ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc
                         CheckNonNull(newdesc.get());
                         dp->serialize(duck, *newdesc);
                         if (newdesc->isValid()) {
-                            _list[index].desc = newdesc;
+                            _list[index].desc = std::move(newdesc);
                             return;
                         }
                     }

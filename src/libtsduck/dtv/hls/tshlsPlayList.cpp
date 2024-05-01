@@ -411,7 +411,7 @@ size_t ts::hls::PlayList::selectAltPlayList(const UString& type, const UString& 
 // Load the playlist from a URL.
 //----------------------------------------------------------------------------
 
-bool ts::hls::PlayList::loadURL(const UString& url_string, bool strict, const WebRequestArgs args, PlayListType type, Report& report)
+bool ts::hls::PlayList::loadURL(const UString& url_string, bool strict, const WebRequestArgs& args, PlayListType type, Report& report)
 {
     const URL url(url_string);
     if (url.isValid()) {
@@ -423,7 +423,7 @@ bool ts::hls::PlayList::loadURL(const UString& url_string, bool strict, const We
     }
 }
 
-bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArgs args, PlayListType type, Report& report)
+bool ts::hls::PlayList::loadURL(const URL& url, bool strict, const WebRequestArgs& args, PlayListType type, Report& report)
 {
     clear();
     _type = type;
@@ -533,7 +533,7 @@ bool ts::hls::PlayList::loadText(const UString& text, bool strict, PlayListType 
 // Reload a media playlist with updated content.
 //----------------------------------------------------------------------------
 
-bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Report& report)
+bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs& args, ts::Report& report)
 {
     // Playlists which cannot be reloaded are ignored (no error).
     if (!isUpdatable() || _original.empty()) {

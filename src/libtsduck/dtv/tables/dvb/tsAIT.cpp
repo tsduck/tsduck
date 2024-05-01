@@ -294,7 +294,7 @@ bool ts::AIT::analyzeXML(DuckContext& duck, const xml::Element* element)
              id->getIntAttribute(identifier.application_id, u"application_id", true, 0, 0, 0xFFFF);
 
         if (ok) {
-            applications[identifier] = application;
+            applications[identifier] = std::move(application);
         }
     }
     return ok;

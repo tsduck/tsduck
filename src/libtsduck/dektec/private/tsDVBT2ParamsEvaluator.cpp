@@ -47,10 +47,10 @@ namespace {
 
 void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate& bitrate)
 {
-    Dtapi::DtDvbT2Pars best_params = pars;
+    Dtapi::DtDvbT2Pars best_params(pars);
     ts::BitRate best_bitrate = 0;
-    //initialize to some high value
-    auto best_bitrate_diff = bitrate;
+    // Initialize to some high value
+    ts::BitRate best_bitrate_diff = bitrate;
 
     // Build a list of all possible modulation parameters for this bitrate.
     for (auto fft_mode : pref_fft_mode) {
@@ -94,7 +94,7 @@ void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate
             }
         }
     }
-    pars = best_params;
+    pars = std::move(best_params);
 }
 
 #endif // TS_NO_DTAPI

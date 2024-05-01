@@ -196,7 +196,7 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
         // If none found as stream level, use the ones from service level.
         if (!component_ecm_pids.empty()) {
             // Valid ECM PID's found at component level, use them.
-            scr_stream.ecm_pids = component_ecm_pids;
+            scr_stream.ecm_pids = std::move(component_ecm_pids);
         }
         else if (!service_ecm_pids.empty()) {
             // Valid ECM PID's found at service level, use them.
@@ -370,12 +370,12 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
         if (!estream.cw_valid || estream.cw_even.cw != cw_even.cw) {
             // Previous even CW was either invalid or different from new one
             estream.new_cw_even = true;
-            estream.cw_even = cw_even;
+            estream.cw_even = std::move(cw_even);
         }
         if (!estream.cw_valid || estream.cw_odd.cw != cw_odd.cw) {
             // Previous odd CW was either invalid or different from new one
             estream.new_cw_odd = true;
-            estream.cw_odd = cw_odd;
+            estream.cw_odd = std::move(cw_odd);
         }
         estream.cw_valid = ok;
     }

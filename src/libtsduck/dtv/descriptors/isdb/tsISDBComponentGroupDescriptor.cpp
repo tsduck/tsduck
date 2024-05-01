@@ -68,7 +68,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::clear()
 bool ts::ISDBComponentGroupDescriptor::matching_total_bit_rate()
 {
     size_t count = 0;
-    for (auto c : components) {
+    for (const auto& c : components) {
         if (c.total_bit_rate.has_value()) {
             count++;
         }
@@ -93,7 +93,7 @@ void ts::ISDBComponentGroupDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(tbr_flag);
     buf.putBits(components.size(), 4);
 
-    for (auto component : components) {
+    for (const auto& component : components) {
         component.serialize(buf, tbr_flag);
     }
 }
@@ -102,7 +102,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::serialize(PSIBuffer& buf,
 {
     buf.putBits(component_group_id, 4);
     buf.putBits(CA_units.size(), 4);
-    for (auto ca_unit : CA_units) {
+    for (const auto& ca_unit : CA_units) {
         ca_unit.serialize(buf);
     }
     if (total_bit_rate_flag) {
@@ -115,7 +115,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::serialize(PSIBuff
 {
     buf.putBits(CA_unit_id, 4);
     buf.putBits(component_tags.size(), 4);
-    for (auto tag : component_tags) {
+    for (const auto& tag : component_tags) {
         buf.putUInt8(tag);
     }
 }
@@ -215,7 +215,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::display(TablesDis
 void ts::ISDBComponentGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"component_group_type", component_group_type, true);
-    for (auto component : components) {
+    for (const auto& component : components) {
         component.toXML(root->addElement(u"component_group"));
     }
 }
@@ -225,7 +225,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::toXML(xml::Element* root)
     root->setIntAttribute(u"component_group_id", component_group_id, true);
     root->setOptionalIntAttribute(u"total_bit_rate", total_bit_rate);
     root->setAttribute(u"explanation", explanation, true);
-    for (auto unit : CA_units) {
+    for (const auto& unit : CA_units) {
         unit.toXML(root->addElement(u"CAUnit"));
     }
 }
@@ -248,7 +248,7 @@ bool ts::ISDBComponentGroupDescriptor::analyzeXML(DuckContext& duck, const xml::
               element->getChildren(_components, u"component_group", 0, 16);
     bool components_ok = true;
     if (ok) {
-        for (auto component : _components) {
+        for (const auto& component : _components) {
             ComponentGroup newComponent;
             if (newComponent.fromXML(component)) {
                 components.push_back(newComponent);

@@ -47,21 +47,24 @@ void ts::DefaultAuthorityDescriptor::clearContent()
 // Helpers
 //----------------------------------------------------------------------------
 
-static ts::ByteBlock fromString(std::string s)
-{
-    ts::ByteBlock b {};
-    for (std::string::iterator it = s.begin(); it != s.end(); ++it)
-        b.push_back(*it);
-    return b;
-}
-
-static std::string fromByteBlock(ts::ByteBlock b)
-{
-    std::string s {};
-    for (auto ch : b) {
-        s.push_back(ch);
+namespace {
+    ts::ByteBlock fromString(const std::string& s)
+    {
+        ts::ByteBlock b;
+        for (auto it = s.begin(); it != s.end(); ++it) {
+            b.push_back(*it);
+        }
+        return b;
     }
-    return s;
+
+    std::string fromByteBlock(const ts::ByteBlock& b)
+    {
+        std::string s;
+        for (auto ch : b) {
+            s.push_back(ch);
+        }
+        return s;
+    }
 }
 
 
@@ -96,8 +99,7 @@ void ts::DefaultAuthorityDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
     ByteBlock da;
     buf.getBytes(da);
     disp.displayVector(u"Default authority: ", da, margin, true, 16);
-    std::string s = fromByteBlock(da);
-    disp << margin << "  fqdn: \"" << s << "\"" <<  std::endl;
+    disp << margin << "  fqdn: \"" << fromByteBlock(da) << "\"" << std::endl;
 }
 
 

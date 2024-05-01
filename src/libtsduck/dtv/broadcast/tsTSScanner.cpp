@@ -170,11 +170,11 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_PAT: {
             std::shared_ptr<PAT> pat(new PAT(_duck, table));
             if (pat->isValid()) {
-                _pat = pat;
+                _pat = std::move(pat);
                 if (_pat->nit_pid != PID_NULL && _pat->nit_pid != PID_NIT) {
                     // Non standard NIT PID
                     _demux.removePID(PID_NIT);
-                    _demux.addPID(pat->nit_pid);
+                    _demux.addPID(_pat->nit_pid);
                 }
             }
             break;
@@ -183,7 +183,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_SDT_ACT: {
             std::shared_ptr<SDT> sdt(new SDT(_duck, table));
             if (sdt->isValid()) {
-                _sdt = sdt;
+                _sdt = std::move(sdt);
             }
             break;
         }
@@ -191,7 +191,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_NIT_ACT: {
             std::shared_ptr<NIT> nit(new NIT(_duck, table));
             if (nit->isValid()) {
-                _nit = nit;
+                _nit = std::move(nit);
             }
             break;
         }
@@ -216,9 +216,9 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         }
 
         case TID_TVCT: {
-                std::shared_ptr<VCT> vct(new TVCT(_duck, table));
+            std::shared_ptr<VCT> vct(new TVCT(_duck, table));
             if (vct->isValid()) {
-                _vct = vct;
+                _vct = std::move(vct);
             }
             break;
         }
@@ -226,7 +226,7 @@ void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
         case TID_CVCT: {
             std::shared_ptr<VCT> vct(new CVCT(_duck, table));
             if (vct->isValid()) {
-                _vct = vct;
+                _vct = std::move(vct);
             }
             break;
         }

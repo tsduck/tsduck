@@ -274,7 +274,7 @@ namespace ts {
         ChannelsRangeList _channels {};        // Channel ranges, in order of channel numbers.
 
         // Default constructor (private only, use GetBand() from application).
-        HFBand(const UString band_name) : _band_name(band_name) {}
+        HFBand(const UString& band_name) : _band_name(band_name) {}
 
         // Get the range of channels for a given channel number. Null _channels.end() on error.
         ChannelsRangeList::const_iterator getRange(uint32_t channel) const;

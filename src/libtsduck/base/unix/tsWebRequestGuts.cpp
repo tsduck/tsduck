@@ -227,6 +227,9 @@ private:
     ByteBlock     _data {};                    // Received data, filled by writeCallback(), emptied by receive().
     char          _error[CURL_ERROR_SIZE] {0}; // Error message buffer for libcurl.
 
+    // Close and cleanup everything with _mutex already held.
+    void clearUnderLock();
+
     // Handle an error while receiving data. Always return false.
     bool downloadError(const UString& message, bool* certError);
 
@@ -391,7 +394,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             }
             if ((_curl = ::curl_easy_init()) == nullptr) {
                 _request._report.error(u"libcurl 'curl_easy' initialization error");
-                clear();
+                clearUnderLock();
                 return false;
             }
 
@@ -399,7 +402,7 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
             ::CURLMcode mstatus = ::curl_multi_add_handle(_curlm, _curl);
             if (mstatus != ::CURLM_OK) {
                 _request._report.error(multiMessage(u"curl_multi_add_handle error", mstatus));
-                clear();
+                clearUnderLock();
                 return false;
             }
         }
@@ -693,7 +696,11 @@ void ts::WebRequest::SystemGuts::clear()
     // Make sure we don't call curl_multi_wakeup() while deallocating.
     std::lock_guard<std::mutex> lock(_mutex);
 #endif
+    clearUnderLock();
+}
 
+void ts::WebRequest::SystemGuts::clearUnderLock()
+{
     // Deallocate list of headers.
     if (_headers != nullptr) {
         ::curl_slist_free_all(_headers);
