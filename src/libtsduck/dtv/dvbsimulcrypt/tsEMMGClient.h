@@ -150,7 +150,7 @@ namespace ts {
         //! Check if the EMMG is connected.
         //! @return True if the EMMG is connected.
         //!
-        bool isConnected() const { return _state == CONNECTED; }
+        bool isConnected() const;
 
         //!
         //! Get the total number of data bytes which were sent so far.
@@ -181,24 +181,24 @@ namespace ts {
         static constexpr cn::milliseconds RESPONSE_TIMEOUT = cn::milliseconds(5000);
 
         // Private members
-        const DuckContext&          _duck;
-        const emmgmux::Protocol&    _protocol;
-        volatile State              _state = INITIAL;
-        IPv4SocketAddress           _udp_address {};
-        uint64_t                    _total_bytes = 0;
-        const AbortInterface*       _abort = nullptr;
-        tlv::Logger                 _logger {};
+        const DuckContext&           _duck;
+        const emmgmux::Protocol&     _protocol;
+        volatile State               _state = INITIAL;
+        IPv4SocketAddress            _udp_address {};
+        uint64_t                     _total_bytes = 0;
+        const AbortInterface*        _abort = nullptr;
+        tlv::Logger                  _logger {};
         tlv::Connection<ThreadSafety::Full> _connection {_protocol, true, 3};  // connection with MUX server
-        UDPSocket                   _udp_socket {};              // where to send data_provision if UDP is used
-        emmgmux::ChannelStatus      _channel_status {_protocol}; // automatic response to channel_test
-        emmgmux::StreamStatus       _stream_status {_protocol};  // automatic response to stream_test
-        std::recursive_mutex        _mutex {};            // exclusive access to protected fields
-        std::condition_variable_any _work_to_do {};       // notify receiver thread to do some work
-        std::condition_variable_any _got_response {};     // notify application thread that a response arrived
-        tlv::TAG                    _last_response = 0;   // tag of last response message
-        uint16_t                    _allocated_bw = 0;    // last allocated bandwidth
-        std::vector<uint16_t>       _error_status {};     // last error status
-        std::vector<uint16_t>       _error_info {};       // last error information
+        UDPSocket                    _udp_socket {};              // where to send data_provision if UDP is used
+        emmgmux::ChannelStatus       _channel_status {_protocol}; // automatic response to channel_test
+        emmgmux::StreamStatus        _stream_status {_protocol};  // automatic response to stream_test
+        mutable std::recursive_mutex _mutex {};            // exclusive access to protected fields
+        std::condition_variable_any  _work_to_do {};       // notify receiver thread to do some work
+        std::condition_variable_any  _got_response {};     // notify application thread that a response arrived
+        tlv::TAG                     _last_response = 0;   // tag of last response message
+        uint16_t                     _allocated_bw = 0;    // last allocated bandwidth
+        std::vector<uint16_t>        _error_status {};     // last error status
+        std::vector<uint16_t>        _error_info {};       // last error information
 
         // Receiver thread main code
         virtual void main() override;

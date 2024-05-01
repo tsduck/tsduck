@@ -549,9 +549,14 @@ namespace ts {
     private:
         bool     volatile _got_errors = false;
         int      volatile _max_severity = Severity::Info;
-        Report*  volatile _delegate = nullptr;  // where to send messages
         UString           _prefix {};
-        std::mutex        _mutex {};            // protect access to _delegated and modification of _delegate in children
-        std::set<Report*> _delegated {};        // list of other instances which delegate to this
+        // Delegation and thread synchronization:
+        // - Establishing a delegation: _mutex shall be held in this object first, then in delegate.
+        // - Using the delegate to log a message or set severity: no lock, just read the volatile _delegate
+        //   once and use the copy. If unlinked in the meantime, the message will be logged to the previous
+        //   delegate, which is not incorrect since logging and delegating simultaneously occured.
+        std::mutex        _mutex {};
+        Report*  volatile _delegate = nullptr;
+        std::set<Report*> _delegated {};   // list of other instances which delegate to this
     };
 }

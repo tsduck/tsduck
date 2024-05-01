@@ -528,6 +528,19 @@ const ts::HFBand* ts::HFBand::HFBandRepository::get(const UString& band, const U
 
 
 //----------------------------------------------------------------------------
+// List of available regions.
+//----------------------------------------------------------------------------
+
+const ts::UStringList& ts::HFBand::HFBandRepository::allRegions() const
+{
+    // Lock access to the repository.
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+
+    return _allRegions;
+}
+
+
+//----------------------------------------------------------------------------
 // List of available bands in a region.
 //----------------------------------------------------------------------------
 

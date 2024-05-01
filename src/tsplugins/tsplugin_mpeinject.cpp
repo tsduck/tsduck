@@ -75,9 +75,6 @@ namespace ts {
             // Constructor.
             ReceiverThread(MPEInjectPlugin* plugin);
 
-            // Invoked in the context of the server thread.
-            virtual void main() override;
-
             // Read command line options for this receiver.
             bool getOptions(size_t index);
 
@@ -87,6 +84,10 @@ namespace ts {
             // Open/close UDP socket.
             bool openSocket() { return _sock.open(*_plugin); }
             bool closeSocket() { return _sock.close(*_plugin); }
+
+        protected:
+            // Invoked in the context of the server thread.
+            virtual void main() override;
 
         private:
             MPEInjectPlugin* const _plugin;    // Parent plugin.

@@ -131,7 +131,7 @@ void ts::tlv::Serializer::putBool(TAG tag, const std::vector<bool>& val)
 
 void ts::tlv::Serializer::put(TAG tag, const std::vector<std::string>& val)
 {
-    for (auto i : val) {
+    for (const auto& i : val) {
         put(tag, i);
     }
 }

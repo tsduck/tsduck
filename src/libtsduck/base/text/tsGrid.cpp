@@ -329,7 +329,7 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
     const ColumnText empty;
 
     // Loop on all declare columns.
-    for (auto iLayout : _layout) {
+    for (const auto& iLayout : _layout) {
 
         // Left margin between columns (except for first column).
         if (currentWidth > 0) {

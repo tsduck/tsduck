@@ -27,10 +27,7 @@ ts::BinaryTable::BinaryTable(BinaryTable&& other) noexcept :
     _missing_count(other._missing_count),
     _sections(std::move(other._sections))
 {
-    // If section array was actually moved, reset related data.
-    if (other._sections.empty()) {
-        other._missing_count = 0;
-    }
+    other._missing_count = 0; // section array was moved
 }
 
 
@@ -120,10 +117,7 @@ ts::BinaryTable& ts::BinaryTable::operator=(BinaryTable&& other) noexcept
         _source_pid = other._source_pid;
         _missing_count = other._missing_count;
         _sections = std::move(other._sections);
-        // If section array was actually moved, reset related data.
-        if (other._sections.empty()) {
-            other._missing_count = 0;
-        }
+        other._missing_count = 0; // section array was moved
     }
     return *this;
 }

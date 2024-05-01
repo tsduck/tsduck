@@ -319,7 +319,7 @@ namespace ts {
             void setDefaultRegion(const UString&);
 
             // List of available regions.
-            const UStringList& allRegions() const { return _allRegions; }
+            const UStringList& allRegions() const;
 
             // List of available bands in a region.
             const UStringList allBands(const UString& region) const;

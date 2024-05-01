@@ -181,6 +181,14 @@ namespace ts {
         bool isCurrentThread() const;
 
         //!
+        //! Yield execution of the current thread.
+        //! Execution is passed to another thread, if any is waiting for execution.
+        //! This should not change the behaviour of correctly-written applications.
+        //!
+        static void Yield();
+
+    protected:
+        //!
         //! This hook is invoked in the context of the thread.
         //!
         //! Concrete thread classes shall implement this pure virtual
@@ -189,14 +197,6 @@ namespace ts {
         //!
         virtual void main() = 0;
 
-        //!
-        //! Yield execution of the current thread.
-        //! Execution is passed to another thread, if any is waiting for execution.
-        //! This should not change the behaviour of correctly-written applications.
-        //!
-        static void Yield();
-
-    protected:
         //!
         //! Set the type name.
         //! @param [in] name The type name to set. If empty, the subclass type name is used.

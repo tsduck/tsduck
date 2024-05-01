@@ -280,6 +280,7 @@ public:
     virtual ~ECMGClientHandler() override;
 
     // Main code of the thread.
+    // Make it a public methof to invoke it synchronously with --once.
     virtual void main() override;
 
 private:

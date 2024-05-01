@@ -129,7 +129,7 @@ bool ts::TSPacketMetadata::deserialize(const void* bin, size_t size)
     _bitrate_changed = false;
     _input_stuffing = size > 13 && (data[13] & 0x80) != 0;
     _nullified = size > 13 && (data[13] & 0x40) != 0;
-    _time_source = static_cast<TimeSource>(data[13] & 0x0F);
+    _time_source = size > 13 ? static_cast<TimeSource>(data[13] & 0x0F) : TimeSource::UNDEFINED;
 
     return size >= 14;
 }

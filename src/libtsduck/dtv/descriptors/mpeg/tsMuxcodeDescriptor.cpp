@@ -54,7 +54,7 @@ void ts::MuxCodeDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (auto it : MuxCodeTableEntry) {
         uint8_t _length = 2;  // 4 bit MuxCode, 4 bit version, 8 bit substructureCount
-        for (auto it2 : it.substructure) {
+        for (const auto& it2 : it.substructure) {
             _length += 1 + // 5 bit slotCount, 3 bit repetitionCode
                 (2 * uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size())));
         }
@@ -136,12 +136,12 @@ void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 
 void ts::MuxCodeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it : MuxCodeTableEntry) {
+    for (const auto& it : MuxCodeTableEntry) {
         ts::xml::Element* _entry = root->addElement(u"MuxCodeEntry");
         _entry->setIntAttribute(u"MuxCode", it.MuxCode);
         _entry->setIntAttribute(u"version", it.version);
 
-        for (auto it2 : it.substructure) {
+        for (const auto& it2 : it.substructure) {
             ts::xml::Element* _substructure = _entry->addElement(u"substructure");
             _substructure->setIntAttribute(u"repetitionCount", it2.repititionCount);
             uint8_t slotCount = uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size()));

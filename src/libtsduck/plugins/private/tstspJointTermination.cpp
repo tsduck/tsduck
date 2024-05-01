@@ -15,7 +15,7 @@
 
 int ts::tsp::JointTermination::_jt_users = 0;
 int ts::tsp::JointTermination::_jt_remaining = 0;
-ts::PacketCounter ts::tsp::JointTermination::_jt_hightest_pkt = 0;
+ts::PacketCounter ts::tsp::JointTermination::_jt_highest_pkt = 0;
 
 
 //----------------------------------------------------------------------------
@@ -60,23 +60,27 @@ void ts::tsp::JointTermination::useJointTermination(bool on)
 {
     if (on && !_use_jt) {
         _use_jt = true;
+        int users = 0;
         {
             std::lock_guard<std::recursive_mutex> lock(_global_mutex);
             _jt_users++;
             _jt_remaining++;
+            users = _jt_users;
         }
-        debug(u"using \"joint termination\", now %d plugins use it", _jt_users);
+        debug(u"using \"joint termination\", now %d plugins use it", users);
     }
     else if (!on && _use_jt) {
         _use_jt = false;
+        int users = 0;
         {
             std::lock_guard<std::recursive_mutex> lock(_global_mutex);
             _jt_users--;
             _jt_remaining--;
             assert (_jt_users >= 0);
             assert (_jt_remaining >= 0);
+            users = _jt_users;
         }
-        debug(u"no longer using \"joint termination\", now %d plugins use it", _jt_users);
+        debug(u"no longer using \"joint termination\", now %d plugins use it", users);
     }
 }
 
@@ -91,15 +95,19 @@ void ts::tsp::JointTermination::jointTerminate()
 {
     if (_use_jt && !_jt_completed) {
         _jt_completed = true;
+        int remaining = 0;
+        PacketCounter highest = 0;
         {
             std::lock_guard<std::recursive_mutex> lock(_global_mutex);
             _jt_remaining--;
             assert(_jt_remaining >= 0);
+            if (totalPacketsInThread() > _jt_highest_pkt) {
+                _jt_highest_pkt = totalPacketsInThread();
+            }
+            remaining = _jt_remaining;
+            highest = _jt_highest_pkt;
         }
-        if (totalPacketsInThread() > _jt_hightest_pkt) {
-            _jt_hightest_pkt = totalPacketsInThread();
-        }
-        debug(u"completed for \"joint termination\", %d plugins remaining, current pkt limit: %'d", _jt_remaining, _jt_hightest_pkt);
+        debug(u"completed for \"joint termination\", %d plugins remaining, current pkt limit: %'d", remaining, highest);
     }
 }
 
@@ -112,5 +120,5 @@ void ts::tsp::JointTermination::jointTerminate()
 ts::PacketCounter ts::tsp::JointTermination::totalPacketsBeforeJointTermination() const
 {
     std::lock_guard<std::recursive_mutex> lock(_global_mutex);
-    return !_options.ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_hightest_pkt : std::numeric_limits<PacketCounter>::max();
+    return !_options.ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_highest_pkt : std::numeric_limits<PacketCounter>::max();
 }

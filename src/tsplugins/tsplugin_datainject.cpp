@@ -64,6 +64,7 @@ namespace ts {
             // Terminate the thread.
             void stop();
 
+        protected:
             // Invoked in the context of the server thread.
             virtual void main() override;
 
@@ -87,6 +88,7 @@ namespace ts {
             // Terminate the thread.
             void stop();
 
+        protected:
             // Invoked in the context of the server thread.
             virtual void main() override;
 
@@ -639,64 +641,79 @@ void ts::DataInjectPlugin::TCPListener::main()
                 }
 
                 case emmgmux::Tags::stream_setup: {
-                    if (!_plugin->_channel_established) {
-                        _report.error(u"unexpected stream_setup, channel not setup");
-                        ok = false;
-                    }
-                    else if (_plugin->_stream_established) {
-                        _report.error(u"received stream_setup when stream is already setup");
-                        ok = false;
-                    }
-                    else {
-                        emmgmux::StreamSetup* m = dynamic_cast<emmgmux::StreamSetup*>(msg.get());
-                        assert(m != nullptr);
-                        // First, declare the stream as established.
-                        {
-                            std::lock_guard<std::mutex> lock(_plugin->_mutex);
+                    bool send_stream_status = false;
+                    {
+                        std::lock_guard<std::mutex> lock(_plugin->_mutex);
+                        if (!_plugin->_channel_established) {
+                            _report.error(u"unexpected stream_setup, channel not setup");
+                            ok = false;
+                        }
+                        else if (_plugin->_stream_established) {
+                            _report.error(u"received stream_setup when stream is already setup");
+                            ok = false;
+                        }
+                        else {
+                            emmgmux::StreamSetup* m = dynamic_cast<emmgmux::StreamSetup*>(msg.get());
+                            assert(m != nullptr);
+                            // First, declare the stream as established.
                             _plugin->_data_id = m->data_id;
                             _plugin->_stream_established = true;
+                            // Build and send the stream_status
+                            stream_status.channel_id = m->channel_id;
+                            stream_status.stream_id = m->stream_id;
+                            stream_status.client_id = m->client_id;
+                            stream_status.data_id = m->data_id;
+                            stream_status.data_type = m->data_type;
+                            send_stream_status = true;
                         }
-                        // Build and send the stream_status
-                        stream_status.channel_id = m->channel_id;
-                        stream_status.stream_id = m->stream_id;
-                        stream_status.client_id = m->client_id;
-                        stream_status.data_id = m->data_id;
-                        stream_status.data_type = m->data_type;
+                    }
+                    if (send_stream_status) {
                         ok = _client.send(stream_status, _plugin->_logger);
                     }
                     break;
                 }
 
                 case emmgmux::Tags::stream_test: {
-                    if (_plugin->_stream_established) {
-                        // Automatic reply to stream_test
-                        ok = _client.send(stream_status, _plugin->_logger);
+                    bool send_stream_status = false;
+                    {
+                        std::lock_guard<std::mutex> lock(_plugin->_mutex);
+                        if (_plugin->_stream_established) {
+                            // Automatic reply to stream_test
+                            send_stream_status = true;
+                        }
+                        else {
+                            _report.error(u"unexpected stream_test, stream not setup");
+                            ok = false;
+                        }
                     }
-                    else {
-                        _report.error(u"unexpected stream_test, stream not setup");
-                        ok = false;
+                    if (send_stream_status) {
+                        ok = _client.send(stream_status, _plugin->_logger);
                     }
                     break;
                 }
 
                 case emmgmux::Tags::stream_close_request: {
-                    if (!_plugin->_stream_established) {
-                        _report.error(u"unexpected stream_close_request, stream not setup");
-                        ok = false;
-                    }
-                    else {
-                        // First, declare the stream as closed.
-                        {
-                            std::lock_guard<std::mutex> lock(_plugin->_mutex);
-                            _plugin->_stream_established = false;
+                    emmgmux::StreamCloseResponse resp(_plugin->_protocol);
+                    bool send_resp = false;
+                    {
+                        std::lock_guard<std::mutex> lock(_plugin->_mutex);
+                        if (!_plugin->_stream_established) {
+                            _report.error(u"unexpected stream_close_request, stream not setup");
+                            ok = false;
                         }
-                        // Send the stream_close_response
-                        emmgmux::StreamCloseResponse resp(_plugin->_protocol);
-                        emmgmux::StreamCloseRequest* m = dynamic_cast<emmgmux::StreamCloseRequest*>(msg.get());
-                        assert (m != nullptr);
-                        resp.channel_id = m->channel_id;
-                        resp.stream_id = m->stream_id;
-                        resp.client_id = m->client_id;
+                        else {
+                            // First, declare the stream as closed.
+                            _plugin->_stream_established = false;
+                            // Send the stream_close_response
+                            emmgmux::StreamCloseRequest* m = dynamic_cast<emmgmux::StreamCloseRequest*>(msg.get());
+                            assert (m != nullptr);
+                            resp.channel_id = m->channel_id;
+                            resp.stream_id = m->stream_id;
+                            resp.client_id = m->client_id;
+                            send_resp = true;
+                        }
+                    }
+                    if (send_resp) {
                         ok = _client.send(resp, _plugin->_logger);
                     }
                     break;

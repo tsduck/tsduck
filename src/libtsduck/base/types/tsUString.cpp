@@ -319,26 +319,27 @@ ts::UString& ts::UString::assignFromUTF8(const char* utf8)
 
 ts::UString& ts::UString::assignFromUTF8(const char* utf8, size_type count)
 {
-    if (utf8 == nullptr) {
+    if (utf8 == nullptr || count == 0) {
         clear();
     }
     else {
         // Resize the string over the maximum size.
-        // The number of UTF-16 codes is always less than the number of UTF-8 bytes.
+        // The number of UTF-16 codes is always less than or equal to the number of UTF-8 bytes.
         resize(count);
 
         // Convert from UTF-8 directly into this object.
         const char* inStart = utf8;
-        UChar* outStart = const_cast<UChar*>(data());
-        ConvertUTF8ToUTF16(inStart, inStart + count, outStart, outStart + size());
+        UChar* out = data();
+        UChar* outStart = out;
+        ConvertUTF8ToUTF16(inStart, inStart + count, outStart, outStart + count);
 
         assert(inStart >= utf8);
         assert(inStart == utf8 + count);
-        assert(outStart >= data());
-        assert(outStart <= data() + size());
+        assert(outStart >= out);
+        assert(outStart <= out + count);
 
         // Truncate to the exact number of characters.
-        resize(outStart - data());
+        resize(outStart - out);
     }
     return *this;
 }

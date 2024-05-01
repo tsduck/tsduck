@@ -118,7 +118,7 @@ namespace ts {
         //! Check if the ECMG is connected.
         //! @return True if the ECMG is connected.
         //!
-        bool isConnected() const {return _state == CONNECTED;}
+        bool isConnected() const;
 
     private:
         // State of the client connection
@@ -144,17 +144,17 @@ namespace ts {
         using AsyncRequests = std::map <uint16_t, ECMGClientHandlerInterface*>;
 
         // Private members
-        const ecmgscs::Protocol&    _protocol;
-        State                       _state = INITIAL;
-        const AbortInterface*       _abort = nullptr;
-        tlv::Logger                 _logger {};
+        const ecmgscs::Protocol&     _protocol;
+        volatile State               _state = INITIAL;
+        const AbortInterface*        _abort = nullptr;
+        tlv::Logger                  _logger {};
         tlv::Connection<ThreadSafety::None> _connection {_protocol, true, 3}; // connection with ECMG server
-        ecmgscs::ChannelStatus      _channel_status {_protocol};      // initial response to channel_setup
-        ecmgscs::StreamStatus       _stream_status {_protocol};       // initial response to stream_setup
-        std::recursive_mutex        _mutex {};                        // exclusive access to protected fields
-        std::condition_variable_any _work_to_do {};                   // notify receiver thread to do some work
-        AsyncRequests               _async_requests {};
-        MessageQueue<tlv::Message>  _response_queue {RESPONSE_QUEUE_SIZE};
+        ecmgscs::ChannelStatus       _channel_status {_protocol};   // initial response to channel_setup
+        ecmgscs::StreamStatus        _stream_status {_protocol};    // initial response to stream_setup
+        mutable std::recursive_mutex _mutex {};                     // exclusive access to protected fields
+        std::condition_variable_any  _work_to_do {};                // notify receiver thread to do some work
+        AsyncRequests                _async_requests {};
+        MessageQueue<tlv::Message>   _response_queue {RESPONSE_QUEUE_SIZE};
 
         // Build a CW_provision message.
         void buildCWProvision(ecmgscs::CWProvision& msg,
