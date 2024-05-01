@@ -14,7 +14,7 @@
 //----------------------------------------------------------------------------
 
 ts::PluginEventContext::PluginEventContext(uint32_t       event_code,
-                                           UString        plugin_name,
+                                           const UString& plugin_name,
                                            size_t         plugin_index,
                                            size_t         plugin_count,
                                            Plugin*        plugin,

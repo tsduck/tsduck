@@ -221,7 +221,7 @@ namespace ts {
         //! @param [in,out] other Other instance to move. Upon return, @a other is left in valid, but unspecified state.
         //!
         UString(SuperClass&& other) noexcept :
-            SuperClass(other) {}
+            SuperClass(std::move(other)) {}
 
         //!
         //! Constructor using a repetition of the same character.
@@ -2383,7 +2383,7 @@ namespace ts {
         UString& operator+=(std::initializer_list<UChar> ilist) { return append(ilist); }
 
         UString& operator=(const SuperClass& s) { SuperClass::assign(s); return *this; }
-        UString& operator=(SuperClass&& s) { SuperClass::assign(s); return *this; }
+        UString& operator=(SuperClass&& s) { SuperClass::assign(std::move(s)); return *this; }
         UString& operator=(const UChar* s) { SuperClass::assign(s); return *this; }
         UString& operator=(UChar c) { SuperClass::assign(1, c); return *this; }
         UString& operator=(char c) { SuperClass::assign(1, UChar(c)); return *this; }
@@ -2392,7 +2392,7 @@ namespace ts {
         UString& assign(size_type count, UChar ch) { SuperClass::assign(count, ch); return *this; }
         UString& assign(const SuperClass& str) { SuperClass::assign(str); return *this; }
         UString& assign(const SuperClass& str, size_type pos, size_type count = NPOS) { SuperClass::assign(str, pos, count); return *this; }
-        UString& assign(SuperClass&& str) { SuperClass::assign(str); return *this; }
+        UString& assign(SuperClass&& str) { SuperClass::assign(std::move(str)); return *this; }
         UString& assign(const UChar* s, size_type count) { SuperClass::assign(s, count); return *this; }
         UString& assign(const UChar* s) { SuperClass::assign(s); return *this; }
         UString& assign(std::initializer_list<UChar> ilist) { SuperClass::assign(ilist); return *this; }
@@ -2443,8 +2443,9 @@ namespace ts {
 #endif // DOXYGEN
 
         //--------------------------------------------------------------------
-        // On Windows, all methods which take 'npos' as default argument need to be overriden
-        // using NPOS instead. Otherwise, an undefined symbol error will occur at link time.
+        // On Windows, all methods which take 'npos' as default argument need
+        // to be overriden using NPOS instead. Otherwise, an undefined symbol
+        // error will occur at link time.
         //--------------------------------------------------------------------
 
 #if defined(TS_WINDOWS) && !defined(DOXYGEN)

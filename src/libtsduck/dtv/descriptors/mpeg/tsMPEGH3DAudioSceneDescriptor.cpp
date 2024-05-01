@@ -124,21 +124,21 @@ void ts::MPEGH3DAudioSceneDescriptor::serializePayload(PSIBuffer& buf) const
     if (!interactivityGroups.empty()) {
         buf.putBit(1);
         buf.putBits(interactivityGroups.size(), 7);
-        for (auto ig : interactivityGroups) {
+        for (const auto& ig : interactivityGroups) {
             ig.serialize(buf);
         }
     }
     if (!switchGroups.empty()) {
         buf.putReserved(3);
         buf.putBits(switchGroups.size(), 5);
-        for (auto sg : switchGroups) {
+        for (const auto& sg : switchGroups) {
             sg.serialize(buf);
         }
     }
     if (!presetGroups.empty()) {
         buf.putReserved(3);
         buf.putBits(presetGroups.size(), 5);
-        for (auto pg : presetGroups) {
+        for (const auto& pg : presetGroups) {
             pg.serialize(buf);
         }
     }
@@ -539,13 +539,13 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
 void ts::MPEGH3DAudioSceneDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"sceneID", _3dAudioSceneID);
-    for (auto ig : interactivityGroups) {
+    for (const auto& ig : interactivityGroups) {
         ig.toXML(root->addElement(u"InteractivityGroup"));
     }
-    for (auto sg : switchGroups) {
+    for (const auto& sg : switchGroups) {
         sg.toXML(root->addElement(u"SwitchGroup"));
     }
-    for (auto pg : presetGroups) {
+    for (const auto& pg : presetGroups) {
         pg.toXML(root->addElement(u"PresetGroup"));
     }
     root->addHexaTextChild(u"reserved", reserved, true);

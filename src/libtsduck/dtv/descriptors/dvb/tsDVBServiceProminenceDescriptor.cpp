@@ -188,23 +188,9 @@ void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, 
                         }
                         disp << "rimary region: " << int(buf.getUInt8());
                         if (region_depth >= 2 && buf.canReadBytes(1)) {
-                            if (!drawn) {
-                                disp << margin << "S";
-                                drawn = true;
-                            }
-                            else {
-                                disp << ", s";
-                            }
-                            disp << "econdary region: " << int(buf.getUInt8());
+                            disp << ", secondary region: " << int(buf.getUInt8());
                             if (region_depth >= 3 && buf.canReadBytes(2)) {
-                                if (!drawn) {
-                                    disp << margin << "T";
-                                    drawn = true;
-                                }
-                                else {
-                                    disp << ", t";
-                                }
-                                disp << "ertiary region: " << buf.getUInt16();
+                                disp << ", tertiary region: " << buf.getUInt16();
                             }
                         }
                     }

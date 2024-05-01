@@ -35,8 +35,7 @@ ts::LatencyMonitor::LatencyMonitor(const LatencyMonitorArgs& args, Report& repor
 
     // Get all input plugin options.
     for (size_t i = 0; i < _args.inputs.size(); ++i) {
-        auto inputExecutor = std::make_shared<tslatencymonitor::InputExecutor>(_args, i, *this, _report);
-        _inputs.push_back(InputData{inputExecutor, {}});
+        _inputs.push_back(InputData{std::make_shared<tslatencymonitor::InputExecutor>(_args, i, *this, _report), {}});
     }
 
     // Init last output time

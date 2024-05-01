@@ -562,7 +562,7 @@ namespace ts {
         //! Move constructor.
         //! @param [in,out] other Other instance to move.
         //!
-        ArgMixOut(ArgMixOut&& other) noexcept : ArgMix(other) {}
+        ArgMixOut(ArgMixOut&& other) noexcept : ArgMix(std::move(other)) {}
         //!
         //! Constructor from the address of an integer or enum data.
         //! @param [in] ptr Address of an integer or enum data.

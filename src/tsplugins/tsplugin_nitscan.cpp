@@ -356,7 +356,7 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
                     ChannelFile::TransportStreamPtr ts(net->tsGetOrCreate(tsid.transport_stream_id));
                     // Do not reset services in TS, keep existing if any, just update tuning info.
                     ts->onid = tsid.original_network_id;
-                    ts->tune = tp;
+                    ts->tune = std::move(tp);
                 }
             }
         }

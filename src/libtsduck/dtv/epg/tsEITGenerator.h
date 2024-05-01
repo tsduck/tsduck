@@ -234,7 +234,7 @@ namespace ts {
         //!
         //! @param [in] current_utc Current UTC time in the context of the stream.
         //!
-        void setCurrentTime(Time current_utc);
+        void setCurrentTime(const Time& current_utc);
 
         //!
         //! Get the current time in the stream processing.
@@ -254,7 +254,7 @@ namespace ts {
         //! @param [in] bitrate Current transport stream bitrate in bits per second.
         //! @see setCurrentTime()
         //!
-        void setTransportStreamBitRate(BitRate bitrate) { setBitRateField(&EITGenerator::_ts_bitrate, bitrate); }
+        void setTransportStreamBitRate(const BitRate& bitrate) { setBitRateField(&EITGenerator::_ts_bitrate, bitrate); }
 
         //!
         //! Process one packet from the stream.

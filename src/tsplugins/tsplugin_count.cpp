@@ -265,7 +265,7 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, TSPack
                    _tag, Time::CurrentLocalTime(), now.counted_packets, countedBitRate, now.total_packets, totalBitRate);
 
             // Save current report.
-            _last_report = now;
+            _last_report = std::move(now);
         }
     }
 

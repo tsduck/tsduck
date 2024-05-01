@@ -163,7 +163,7 @@ bool ts::KeyTable::parseXML(xml::Document& doc, bool replace, size_t id_size, si
             doc.report().error(u"invalid value in <%s> at line %d", k->name(), k->lineNumber());
         }
         else if (replace || !hasKey(bid)) {
-            _keys[bid] = bvalue;
+            _keys[bid] = std::move(bvalue);
         }
     }
     return success;

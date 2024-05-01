@@ -370,7 +370,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
                     ok = IsAlpha(c) || IsDigit(c) || c == u'-' || c == u'_' || c == u',' || c == u':';
                 }
                 if (ok) {
-                    lnb->_alias = alias;
+                    lnb->_alias = std::move(alias);
                 }
             }
         }

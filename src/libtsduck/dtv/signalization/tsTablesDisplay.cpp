@@ -847,7 +847,7 @@ void ts::TablesDisplay::displayATSCMultipleString(PSIBuffer& buf, size_t length_
 // items on each line
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint32_t> values, const UString& margin, bool space_first, size_t num_per_line)
+void ts::TablesDisplay::displayVector(const UString& title, const std::vector<uint32_t>& values, const UString& margin, bool space_first, size_t num_per_line)
 {
     if (!values.empty()) {
         std::ostream& strm(_duck.out());
@@ -874,7 +874,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint32_t
 // items on each line
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint16_t> values, const UString& margin, bool space_first, size_t num_per_line)
+void ts::TablesDisplay::displayVector(const UString& title, const std::vector<uint16_t>& values, const UString& margin, bool space_first, size_t num_per_line)
 {
     if (!values.empty()) {
         std::ostream& strm(_duck.out());
@@ -901,7 +901,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint16_t
 // items on each line
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint8_t> values, const UString& margin, bool space_first, size_t num_per_line)
+void ts::TablesDisplay::displayVector(const UString& title, const std::vector<uint8_t>& values, const UString& margin, bool space_first, size_t num_per_line)
 {
     if (!values.empty()) {
         std::ostream& strm(_duck.out());
@@ -928,7 +928,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint8_t>
 // number of items on each line
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayVector(const UString& title, std::vector<int8_t> values, const UString& margin, bool space_first, size_t num_per_line)
+void ts::TablesDisplay::displayVector(const UString& title, const std::vector<int8_t>& values, const UString& margin, bool space_first, size_t num_per_line)
 {
     if (!values.empty()) {
         std::ostream& strm(_duck.out());
@@ -959,7 +959,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<int8_t> 
 // specified and with the specified number of items on each line
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayVector(const UString& title, std::vector<bool> values, const UString& margin, bool space_first, size_t num_per_line, char true_val,
+void ts::TablesDisplay::displayVector(const UString& title, const std::vector<bool>& values, const UString& margin, bool space_first, size_t num_per_line, char true_val,
     char false_val)
 {
     if (!values.empty()) {
@@ -986,11 +986,15 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<bool> va
 // aligned and with the specified number of items on each line
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayVector(const UString& title, UStringVector values, const UString& margin, bool space_first, size_t num_per_line)
+void ts::TablesDisplay::displayVector(const UString& title, const UStringVector& values, const UString& margin, bool space_first, size_t num_per_line)
 {
     if (!values.empty()) {
         size_t _maxlen = 0;
-        for (auto i : values) { if (i.length() > _maxlen) _maxlen = i.length(); }
+        for (const auto& i : values) {
+            if (i.length() > _maxlen) {
+                _maxlen = i.length();
+            }
+        }
 
         std::ostream& strm(_duck.out());
         UString myMargin(margin.length() + title.length(), ' ');

@@ -61,7 +61,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool loadURL(const UString& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
+            bool loadURL(const UString& url, bool strict = false, const WebRequestArgs& args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
 
             //!
             //! Load the playlist from a URL.
@@ -72,7 +72,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool loadURL(const URL& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
+            bool loadURL(const URL& url, bool strict = false, const WebRequestArgs& args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
 
             //!
             //! Load the playlist from a text file.
@@ -104,7 +104,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool reload(bool strict = false, const WebRequestArgs args = WebRequestArgs(), Report& report = CERR);
+            bool reload(bool strict = false, const WebRequestArgs& args = WebRequestArgs(), Report& report = CERR);
 
             //!
             //! Set a directory name where all loaded files or URL are automatically saved.

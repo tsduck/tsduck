@@ -49,7 +49,7 @@ namespace ts {
         //! Set a fixed bitrate for regulation, ignore current bitrate.
         //! @param [in] bitrate Fixed bitrate to use. When zero, use current bitrate.
         //!
-        void setFixedBitRate(BitRate bitrate) { _opt_bitrate = bitrate; }
+        void setFixedBitRate(const BitRate& bitrate) { _opt_bitrate = bitrate; }
 
         //!
         //! Start regulation, initialize all timers.

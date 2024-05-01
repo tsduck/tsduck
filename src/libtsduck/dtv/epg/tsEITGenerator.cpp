@@ -639,7 +639,7 @@ ts::Time ts::EITGenerator::getCurrentTime()
 // Set the current time in the stream processing.
 //----------------------------------------------------------------------------
 
-void ts::EITGenerator::setCurrentTime(Time current_utc)
+void ts::EITGenerator::setCurrentTime(const Time& current_utc)
 {
     // Store the current time.
     _ref_time = current_utc;

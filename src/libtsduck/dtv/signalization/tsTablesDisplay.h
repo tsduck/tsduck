@@ -372,7 +372,7 @@ namespace ts {
         //! @param [in] num_per_line  Number of values to be output on a single line (default: 6)
         //!
         void displayVector(const UString& title,
-                           std::vector<uint32_t> values,
+                           const std::vector<uint32_t>& values,
                            const UString& margin = UString(),
                            bool space_first = true,
                            size_t num_per_line = 6);
@@ -387,7 +387,7 @@ namespace ts {
         //! @param [in] num_per_line  Number of values to be output on a single line (default: 6)
         //!
         void displayVector(const UString& title,
-                           std::vector<uint16_t> values,
+                           const std::vector<uint16_t>& values,
                            const UString& margin = UString(),
                            bool space_first = true,
                            size_t num_per_line = 6);
@@ -402,7 +402,7 @@ namespace ts {
         //! @param [in] num_per_line  Number of values to be output on a single line (default: 8)
         //!
         void displayVector(const UString& title,
-                           std::vector<uint8_t> values,
+                           const std::vector<uint8_t>& values,
                            const UString& margin = UString(),
                            bool space_first = true,
                            size_t num_per_line = 8);
@@ -417,7 +417,7 @@ namespace ts {
         //! @param [in] num_per_line  Number of values to be output on a single line (default: 8)
         //!
         void displayVector(const UString& title,
-                           std::vector<int8_t> values,
+                           const std::vector<int8_t>& values,
                            const UString& margin = UString(),
                            bool space_first = true,
                            size_t num_per_line = 8);
@@ -435,7 +435,7 @@ namespace ts {
         //! @param [in] false_val  Character to display when the value is false (default: '0')
         //!
         void displayVector(const UString& title,
-                           std::vector<bool> values,
+                           const std::vector<bool>& values,
                            const UString& margin = UString(),
                            bool space_first = false,
                            size_t num_per_line = 40,
@@ -452,7 +452,7 @@ namespace ts {
         //! @param [in] num_per_line  Number of values to be output on a single line (default: 3)
         //!
         void displayVector(const UString& title,
-                           UStringVector values,
+                           const UStringVector& values,
                            const UString& margin = UString(),
                            bool space_first = true,
                            size_t num_per_line = 3);

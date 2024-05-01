@@ -226,8 +226,8 @@ namespace {
             uint16_t stream_id;
 
             // Constructors, termination or request:
-            Event(ts::Time d = ts::Time::Epoch) : due(d), terminate(true), channel_id(0), stream_id(0) {}
-            Event(ts::Time d, uint16_t ch, uint16_t st) : due(d), terminate(false), channel_id(ch), stream_id(st) {}
+            Event(const ts::Time& d = ts::Time::Epoch) : due(d), terminate(true), channel_id(0), stream_id(0) {}
+            Event(const ts::Time& d, uint16_t ch, uint16_t st) : due(d), terminate(false), channel_id(ch), stream_id(st) {}
         };
 
         // EventScheduler private fields.

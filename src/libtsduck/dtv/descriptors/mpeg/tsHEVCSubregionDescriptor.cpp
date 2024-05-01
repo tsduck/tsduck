@@ -61,28 +61,29 @@ ts::DID ts::HEVCSubregionDescriptor::extendedTag() const
 void ts::HEVCSubregionDescriptor::serializePayload(PSIBuffer& buf) const
 {
     bool SubstreamMarkingFlag = false;
-    for (auto it : SubregionLayouts) {
-        if (it.PreambleSubstreamID.has_value())
+    for (const auto& it : SubregionLayouts) {
+        if (it.PreambleSubstreamID.has_value()) {
             SubstreamMarkingFlag = true;
+        }
     }
     buf.putBit(SubstreamMarkingFlag);
     buf.putBits(SubstreamIDsPerLine, 7);
     buf.putUInt8(TotalSubstreamIDs);
     buf.putUInt8(LevelFullPanorama);
-    for (auto it : SubregionLayouts) {
+    for (const auto& it : SubregionLayouts) {
         if (SubstreamMarkingFlag) {
             buf.putBit(1);
             buf.putBits(it.PreambleSubstreamID.value(), 7);
         }
-        uint8_t SubstreamCountMinus1 = it.Patterns.empty() ? 0 : uint8_t(it.Patterns[0].SubstreamOffset.size() - 1);
+        const uint8_t SubstreamCountMinus1 = it.Patterns.empty() ? 0 : uint8_t(it.Patterns[0].SubstreamOffset.size() - 1);
         buf.putUInt8(SubstreamCountMinus1);
         buf.putUInt8(it.Level);
         buf.putUInt16(it.PictureSizeHor);
         buf.putUInt16(it.PictureSizeVer);
         buf.putBit(1);
         buf.putBits(it.Patterns.size(), 7);
-        for (auto pattern : it.Patterns) {
-            for (auto sof : pattern.SubstreamOffset) {
+        for (const auto& pattern : it.Patterns) {
+            for (const auto& sof : pattern.SubstreamOffset) {
                 buf.putUInt8(sof);
             }
         }

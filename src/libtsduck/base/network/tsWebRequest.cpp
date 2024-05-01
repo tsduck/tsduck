@@ -308,7 +308,7 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
 
             // Process specific headers.
             if (name.similar(u"Location")) {
-                _finalURL = value;
+                _finalURL = std::move(value);
                 _report.debug(u"redirected to %s", _finalURL);
             }
             else if (name.similar(u"Content-length") && value.toInteger(size)) {

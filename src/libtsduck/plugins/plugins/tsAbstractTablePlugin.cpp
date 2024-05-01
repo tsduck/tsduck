@@ -18,7 +18,7 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
                                              const UString& syntax,
                                              const UString& table_name,
                                              PID pid,
-                                             BitRate default_bitrate,
+                                             const BitRate& default_bitrate,
                                              const UString& new_table_help) :
     ProcessorPlugin(tsp_, description, syntax),
     _table_name(table_name),

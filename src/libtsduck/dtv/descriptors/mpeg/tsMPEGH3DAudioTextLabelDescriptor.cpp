@@ -65,25 +65,25 @@ void ts::MPEGH3DAudioTextLabelDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt8(_3dAudioSceneInfoID);
     buf.putBits(0xFF, 4);
     buf.putBits(description_languages.size(), 4);
-    for (auto desclanguage : description_languages) {
+    for (const auto& desclanguage : description_languages) {
         buf.putLanguageCode(desclanguage.descriptionLanguage);
         buf.putBits(0xFF, 1);
         buf.putBits(desclanguage.group_descriptions.size(), 7);
-        for (auto groupDesc : desclanguage.group_descriptions) {
+        for (const auto& groupDesc : desclanguage.group_descriptions) {
             buf.putBits(0xFF, 1);
             buf.putBits(groupDesc.mae_descriptionGroupID, 7);
             buf.putStringWithByteLength(groupDesc.groupDescriptionData);
         }
         buf.putBits(0xFF, 3);
         buf.putBits(desclanguage.switch_group_descriptions.size(), 5);
-        for (auto switchGroup : desclanguage.switch_group_descriptions) {
+        for (const auto& switchGroup : desclanguage.switch_group_descriptions) {
             buf.putBits(0xFF, 3);
             buf.putBits(switchGroup.mae_descriptionSwitchGroupID, 5);
             buf.putStringWithByteLength(switchGroup.switchGroupDescriptionData);
         }
         buf.putBits(0xFF, 3);
         buf.putBits(desclanguage.group_preset_descriptions.size(), 5);
-        for (auto groupPreset : desclanguage.group_preset_descriptions) {
+        for (const auto& groupPreset : desclanguage.group_preset_descriptions) {
             buf.putBits(0xFF, 3);
             buf.putBits(groupPreset.mae_descriptionGroupPresetID, 5);
             buf.putStringWithByteLength(groupPreset.groupDescriptionPresetData);
@@ -194,20 +194,20 @@ void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp,
 void ts::MPEGH3DAudioTextLabelDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"_3dAudioSceneInfoID", _3dAudioSceneInfoID);
-    for (auto desclanguage : description_languages) {
+    for (const auto& desclanguage : description_languages) {
         ts::xml::Element* description = root->addElement(u"DescriptionLanguage");
         description->setAttribute(u"descriptionLanguage", desclanguage.descriptionLanguage);
-        for (auto groupDesc : desclanguage.group_descriptions) {
+        for (const auto& groupDesc : desclanguage.group_descriptions) {
             ts::xml::Element* groupDescription = description->addElement(u"GroupDescription");
             groupDescription->setIntAttribute(u"mae_descriptionGroupID", groupDesc.mae_descriptionGroupID);
             groupDescription->setAttribute(u"groupDescription", groupDesc.groupDescriptionData);
         }
-        for (auto switchGroup : desclanguage.switch_group_descriptions) {
+        for (const auto& switchGroup : desclanguage.switch_group_descriptions) {
             ts::xml::Element* switchGroupDescription = description->addElement(u"SwitchGroupDescription");
             switchGroupDescription->setIntAttribute(u"mae_descriptionSwitchGroupID", switchGroup.mae_descriptionSwitchGroupID);
             switchGroupDescription->setAttribute(u"switchGroupDescription", switchGroup.switchGroupDescriptionData);
         }
-        for (auto groupPreset : desclanguage.group_preset_descriptions) {
+        for (const auto& groupPreset : desclanguage.group_preset_descriptions) {
             ts::xml::Element* groupPresetDescription = description->addElement(u"GroupPresetDescription");
             groupPresetDescription->setIntAttribute(u"mae_descriptionGroupPresetID", groupPreset.mae_descriptionGroupPresetID);
             groupPresetDescription->setAttribute(u"groupPresetDescription", groupPreset.groupDescriptionPresetData);

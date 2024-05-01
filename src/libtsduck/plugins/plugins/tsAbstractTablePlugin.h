@@ -53,7 +53,7 @@ namespace ts {
                             const UString& syntax,
                             const UString& table_name,
                             PID pid = PID_NULL,
-                            BitRate default_bitrate = DEFAULT_BITRATE,
+                            const BitRate& default_bitrate = DEFAULT_BITRATE,
                             const UString& new_table_help = UString());
 
         //!

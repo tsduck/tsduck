@@ -72,21 +72,21 @@ void ts::HEVCOperationPointDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(0xFF, 2);
     buf.putBits(profile_tier_level_infos.size(), 6);
-    for (auto it : profile_tier_level_infos) {
+    for (const auto& it : profile_tier_level_infos) {
         buf.putBytes(it);
     }
     buf.putBits(operation_points.size(), 8);
-    for (auto it : operation_points) {
+    for (const auto& it : operation_points) {
         buf.putUInt8(it.target_ols);
         buf.putBits(it.ESs.size(), 8);
-        for (auto it2 : it.ESs) {
+        for (const auto& it2 : it.ESs) {
             buf.putBits(0xFF, 1);
             buf.putBit(it2.prepend_dependencies);
             buf.putBits(it2.ES_reference, 6);
         }
         buf.putBits(0xFF, 2);
         buf.putBits(it.ESinOPs.size(), 6);
-        for (auto it2 : it.ESinOPs) {
+        for (const auto& it2 : it.ESinOPs) {
             buf.putBit(it2.necessary_layer_flag);
             buf.putBit(it2.output_layer_flag);
             buf.putBits(it2.ptl_ref_idx, 6);
@@ -240,10 +240,10 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 
 void ts::HEVCOperationPointDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it : profile_tier_level_infos) {
+    for (const auto& it : profile_tier_level_infos) {
         root->addElement(u"profile_tier_level_info")->addHexaText(it);
     }
-    for (auto it : operation_points) {
+    for (const auto& it : operation_points) {
         ts::xml::Element* op = root->addElement(u"operation_point");
         op->setIntAttribute(u"target_ols", it.target_ols);
 

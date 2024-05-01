@@ -58,7 +58,7 @@ namespace ts {
         //! submitted to the plugin (deleted or excluded packets).
         //!
         PluginEventContext(uint32_t       event_code,
-                           UString        plugin_name,
+                           const UString& plugin_name,
                            size_t         plugin_index,
                            size_t         plugin_count,
                            Plugin*        plugin,
