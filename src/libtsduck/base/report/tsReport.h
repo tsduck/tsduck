@@ -555,6 +555,10 @@ namespace ts {
         // - Using the delegate to log a message or set severity: no lock, just read the volatile _delegate
         //   once and use the copy. If unlinked in the meantime, the message will be logged to the previous
         //   delegate, which is not incorrect since logging and delegating simultaneously occured.
+        // - Problems occur when we log to the delegate at the same time the delegate is destructed,
+        //   because there is no lock during the logging functions. We accept the race condition since
+        //   getting the lock each time we log a message whould be too costly. To avoid this race condition,
+        //   never delegate to a report which may be destructed before this object.
         std::mutex        _mutex {};
         Report*  volatile _delegate = nullptr;
         std::set<Report*> _delegated {};   // list of other instances which delegate to this

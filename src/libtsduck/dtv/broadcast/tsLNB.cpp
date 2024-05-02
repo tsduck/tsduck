@@ -400,7 +400,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
             // The last <lnb> with default="true" is the default one.
             // If there is no explicit default, the first <lnb> is the default one.
             if (_default_lnb == nullptr || is_default) {
-                _default_lnb = lnb;
+                _default_lnb = std::move(lnb); // last use of lnb (declared inside loop)
             }
         }
 

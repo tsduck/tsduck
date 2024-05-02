@@ -598,37 +598,50 @@ void ts::DataInjectPlugin::TCPListener::main()
             switch (msg->tag()) {
 
                 case emmgmux::Tags::channel_setup: {
-                    if (_plugin->_channel_established) {
-                        _report.error(u"received channel_setup when channel is already setup");
-                        ok = false;
-                    }
-                    else {
-                        emmgmux::ChannelSetup* m = dynamic_cast<emmgmux::ChannelSetup*>(msg.get());
-                        assert (m != nullptr);
-                        // First, declare the channel as established.
-                        {
-                            std::lock_guard<std::mutex> lock(_plugin->_mutex);
-                            _plugin->_client_id = m->client_id;
-                            _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
-                            _plugin->_channel_established = true;
+                    bool send_status = false;
+                    {
+                        std::lock_guard<std::mutex> lock(_plugin->_mutex);
+                        if (_plugin->_channel_established) {
+                            _report.error(u"received channel_setup when channel is already setup");
+                            ok = false;
                         }
-                        // Build and send the channel_status
-                        channel_status.channel_id = m->channel_id;
-                        channel_status.client_id = m->client_id;
-                        channel_status.section_TSpkt_flag = m->section_TSpkt_flag;
+                        else {
+                            emmgmux::ChannelSetup* m = dynamic_cast<emmgmux::ChannelSetup*>(msg.get());
+                            assert (m != nullptr);
+                            // First, declare the channel as established.
+                            {
+                                _plugin->_client_id = m->client_id;
+                                _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
+                                _plugin->_channel_established = true;
+                            }
+                            // Build and send the channel_status
+                            channel_status.channel_id = m->channel_id;
+                            channel_status.client_id = m->client_id;
+                            channel_status.section_TSpkt_flag = m->section_TSpkt_flag;
+                            send_status = true;
+                        }
+                    }
+                    if (send_status) {
                         ok = _client.send(channel_status, _plugin->_logger);
                     }
                     break;
                 }
 
                 case emmgmux::Tags::channel_test: {
-                    if (_plugin->_channel_established) {
-                        // Automatic reply to channel_test
-                        ok = _client.send(channel_status, _plugin->_logger);
+                    bool send_status = false;
+                    {
+                        std::lock_guard<std::mutex> lock(_plugin->_mutex);
+                        if (_plugin->_channel_established) {
+                            // Automatic reply to channel_test
+                            send_status = true;
+                        }
+                        else {
+                            _report.error(u"unexpected channel_test, channel not setup");
+                            ok = false;
+                        }
                     }
-                    else {
-                        _report.error(u"unexpected channel_test, channel not setup");
-                        ok = false;
+                    if (send_status) {
+                        ok = _client.send(channel_status, _plugin->_logger);
                     }
                     break;
                 }
@@ -641,7 +654,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                 }
 
                 case emmgmux::Tags::stream_setup: {
-                    bool send_stream_status = false;
+                    bool send_status = false;
                     {
                         std::lock_guard<std::mutex> lock(_plugin->_mutex);
                         if (!_plugin->_channel_established) {
@@ -664,29 +677,29 @@ void ts::DataInjectPlugin::TCPListener::main()
                             stream_status.client_id = m->client_id;
                             stream_status.data_id = m->data_id;
                             stream_status.data_type = m->data_type;
-                            send_stream_status = true;
+                            send_status = true;
                         }
                     }
-                    if (send_stream_status) {
+                    if (send_status) {
                         ok = _client.send(stream_status, _plugin->_logger);
                     }
                     break;
                 }
 
                 case emmgmux::Tags::stream_test: {
-                    bool send_stream_status = false;
+                    bool send_status = false;
                     {
                         std::lock_guard<std::mutex> lock(_plugin->_mutex);
                         if (_plugin->_stream_established) {
                             // Automatic reply to stream_test
-                            send_stream_status = true;
+                            send_status = true;
                         }
                         else {
                             _report.error(u"unexpected stream_test, stream not setup");
                             ok = false;
                         }
                     }
-                    if (send_stream_status) {
+                    if (send_status) {
                         ok = _client.send(stream_status, _plugin->_logger);
                     }
                     break;
