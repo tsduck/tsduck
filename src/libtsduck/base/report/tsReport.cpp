@@ -28,19 +28,22 @@ ts::Report::Report(int max_severity, const UString& prefix, Report* report) :
 ts::Report::~Report()
 {
     // Destructor: no longer need to synchronize on "this".
-    // If anyone is trying to add "this" as delegate during the destructor, the result
-    // is undefined. Using the address of an object being destructed is suicide.
+    std::lock_guard<std::mutex> lock1(_mutex);
 
     // Unlink from delegate, if there is one.
     Report* const del = _delegate;
     if (del != nullptr) {
-        std::lock_guard<std::mutex> lock(del->_mutex);
+        std::lock_guard<std::mutex> lock2(del->_mutex);
         del->_delegated.erase(this);
         _delegate = nullptr;
     }
 
     // Unlink other reports which delegated to this.
     for (auto child : _delegated) {
+        // There is a race condition here (see comment at end of class declaration).
+        // If the child logs a message at the same time, it may read its _delegate,
+        // then the delegate (this object) is destructed, then the child logs on
+        // the destructed object.
         child->_delegate = nullptr;
     }
     _delegated.clear();
@@ -53,8 +56,6 @@ ts::Report::~Report()
 
 ts::Report* ts::Report::delegateReport(Report* report)
 {
-    Report* const previous = _delegate;
-
     // Avoid looping.
     if (report == this) {
         report = nullptr;
@@ -64,6 +65,7 @@ ts::Report* ts::Report::delegateReport(Report* report)
     std::lock_guard<std::mutex> lock1(_mutex);
 
     // Unlink from previous.
+    Report* const previous = _delegate;
     if (previous != nullptr) {
         std::lock_guard<std::mutex> lock2(previous->_mutex);
         previous->_delegated.erase(this);
