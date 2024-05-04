@@ -57,7 +57,7 @@ F_GETSO     = $(shell ldd $(SHARED_LIBTSDUCK) \
 F_GETSODPKG = $(call F_GETDPKG,$(call F_GETSO,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)))
 
 deb-tools-control:
-	mkdir $(TMPROOT)/DEBIAN
+	mkdir -p $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
 	    -e 's/ libssl,/ $(call F_GETSODPKG,libcrypto)/' \
@@ -70,7 +70,7 @@ deb-tools-control:
 	    tsduck.control >$(TMPROOT)/DEBIAN/control
 
 deb-dev-control:
-	mkdir $(TMPROOT)/DEBIAN
+	mkdir -p $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt-dev,/ $(call F_GETDPKG,srt/srt.h)/') \
