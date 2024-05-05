@@ -36,6 +36,7 @@ namespace ts {
         TablesLogger  _logger {_display};
         bool          _signal_event = false;  // Signal a plugin event on section.
         uint32_t      _event_code = 0;        // Event code to signal.
+        bool          _terminated = false;    // Last table is display or saved, wait for joint termination.
 
         // Implementation of SectionHandlerInterface
         virtual void handleSection(SectionDemux& demux, const Section& section) override;

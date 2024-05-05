@@ -34,6 +34,11 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
          u"Signal a plugin event with the specified code for each section. "
          u"The event data is an instance of PluginEventData pointing to the section content. "
          u"Without --all-sections, an event is signaled for each section of complete new tables.");
+
+    option(u"joint-termination", 'j');
+    help(u"joint-termination",
+         u"With --max-tables, when the final table is collected, perform a \"joint termination\" instead of unconditional termination. "
+         u"See \"tsp --help\" for more details on \"joint termination\".");
 }
 
 
@@ -46,11 +51,13 @@ bool ts::TablesPlugin::getOptions()
     _signal_event = present(u"event-code");
     getIntValue(_event_code, u"event-code");
     _logger.setSectionHandler(_signal_event ? this : nullptr);
+    tsp->useJointTermination(present(u"joint-termination"));
     return duck.loadArgs(*this) && _logger.loadArgs(duck, *this) && _display.loadArgs(duck, *this);
 }
 
 bool ts::TablesPlugin::start()
 {
+    _terminated = false;
     return _logger.open();
 }
 
@@ -82,6 +89,24 @@ void ts::TablesPlugin::handleSection(SectionDemux&, const Section& sect)
 
 ts::ProcessorPlugin::Status ts::TablesPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    _logger.feedPacket(pkt);
-    return _logger.completed() ? TSP_END : TSP_OK;
+    if (_terminated) {
+        // Typically waiting for joint termination, pass packet without processing.
+        return TSP_OK;
+    }
+    else {
+        // Normal packet processing.
+        _logger.feedPacket(pkt);
+        _terminated = _logger.completed();
+        // Process termination.
+        if (!_terminated) {
+            return TSP_OK;
+        }
+        else if (tsp->useJointTermination()) {
+            tsp->jointTerminate();
+            return TSP_OK;
+        }
+        else {
+            return TSP_END;
+        }
+    }
 }
