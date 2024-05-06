@@ -18,6 +18,7 @@
 #include "tsModulation.h"
 #include "tsBitRate.h"
 #include "tsLNB.h"
+#include "tsjson.h"
 
 namespace ts {
 
@@ -538,6 +539,12 @@ namespace ts {
         //! @return A string containing a command line options for the "dvb" tsp plugin.
         //!
         UString toPluginOptions(bool no_local = false) const;
+
+        //!
+        //! Format the modulation parameters in a JSON object.
+        //! @param [in,out] obj JSON object into which the modulation parameters are added.
+        //!
+        void toJSON(json::Object& obj) const;
 
     protected:
         //!
