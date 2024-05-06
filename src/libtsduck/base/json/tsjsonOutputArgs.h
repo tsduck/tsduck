@@ -29,7 +29,7 @@ namespace ts {
         class RunningDocument;
 
         //!
-        //! Command line arguments for JSON reports (@c -\-json, @c -\-json-line, @c -\-json-udp).
+        //! Command line arguments for JSON reports (@c -\-json, @c -\-json-line, @c -\-json-udp, @c -\-json-tcp).
         //! @ingroup cmd
         //!
         class TSDUCKDLL OutputArgs
@@ -50,9 +50,13 @@ namespace ts {
             //! Add command line option definitions in an Args.
             //! @param [in,out] args Command line arguments to update.
             //! @param [in] use_short_opt Define @c 'j' as short option for @c -\-json.
-            //! @param [in] help Help text for option @c -\-json.
+            //! Ignored if @a allow_file is false.
+            //! @param [in] description Description of the JSON information. Also used as
+            //! help text for option @c -\-json.
+            //! @param [in] allow_file If false, the option @c -\-json is not defined, only
+            //! log and network options are defined.
             //!
-            void defineArgs(Args& args, bool use_short_opt, const UString& help = UString());
+            void defineArgs(Args& args, bool use_short_opt, const UString& description, bool allow_file = true);
 
             //!
             //! Load arguments from command line.
@@ -93,7 +97,16 @@ namespace ts {
             //!
             bool report(const json::Value& root, json::RunningDocument& doc, Report& rep);
 
+            //!
+            //! Issue a JSON report according to options (assuming @c -\-json is not specified for output files).
+            //! @param [in] root JSON root object.
+            //! @param [in] rep Logger to report errors or output one-line JSON when @c -\-json-line is specified.
+            //! @return True on success, false on error.
+            //!
+            bool report(const json::Value& root, Report& rep);
+
         private:
+            bool              _allow_file = true;     // Output to JSON file is allowed (option --json).
             bool              _json_opt = false;      // Option --json
             bool              _json_line = false;     // Option --json-line
             bool              _json_tcp = false;      // Option --json-tcp
@@ -107,9 +120,6 @@ namespace ts {
             size_t            _sock_buffer_size = 0;  // Socket buffer size (TCP and UDP).
             UDPSocket         _udp_sock {};           // Output UDP socket.
             TelnetConnection  _tcp_sock {};           // Output TCP socket.
-
-            // Issue a JSON report, except --json file.
-            bool reportOthers(const json::Value& root, Report& rep);
 
             // Open/close the UDP socket.
             bool udpOpen(Report& rep);

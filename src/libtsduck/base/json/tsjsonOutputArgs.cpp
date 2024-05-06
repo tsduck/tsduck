@@ -31,10 +31,24 @@ ts::json::OutputArgs::~OutputArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UString& help)
+void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UString& description, bool allow_file)
 {
-    args.option(u"json", use_short_opt ? 'j' : 0);
-    args.help(u"json", help.empty() ? u"Report in JSON output format (useful for automatic analysis)." : help);
+    // For --json, description is directly used as help. For other forms of output, reuse it as introduction.
+    UString intro(description);
+    if (!intro.empty()) {
+        if (!intro.endWith(u".")) {
+            intro.append(u".");
+        }
+        if (!intro.endWith(u" ")) {
+            intro.append(u" ");
+        }
+    }
+
+    _allow_file = allow_file;
+    if (_allow_file) {
+        args.option(u"json", use_short_opt ? 'j' : 0);
+        args.help(u"json", description);
+    }
 
     args.option(u"json-buffer-size", 0, Args::UNSIGNED);
     args.help(u"json-buffer-size",
@@ -42,15 +56,17 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
 
     args.option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
     args.help(u"json-line", u"'prefix'",
-              u"Same as --json but report the JSON text as one single line in the message logger instead of the output file. "
+              intro +
+              u"Report the JSON text as one single line in the message logger. "
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the JSON text to locate the appropriate line in the logs.");
 
     args.option(u"json-tcp", 0, Args::IPSOCKADDR);
     args.help(u"json-tcp",
-              u"Same as --json but report the JSON text as one single line in a TCP connection instead of the output file. "
-              u"The 'address' specifies an IP address or a host name that translates to an IP address. "
-              u"The 'port' specifies the destination TCP port. "
+              intro +
+              u"Report the JSON text as one single line in a TCP connection. "
+              u"The address specifies an IP address or a host name that translates to an IP address. "
+              u"The port specifies the destination TCP port. "
               u"By default, a new TCP connection is established each time a JSON message is produced. "
               u"Be aware that a complete TCP connection cycle may introduce some latency in the processing. "
               u"If latency is an issue, consider using --json-udp.");
@@ -62,10 +78,11 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
 
     args.option(u"json-udp", 0, Args::IPSOCKADDR);
     args.help(u"json-udp",
-              u"Same as --json but report the JSON text as one single line in a UDP datagram instead of the output file. "
-              u"The 'address' specifies an IP address which can be either unicast or multicast. "
+              intro +
+              u"Report the JSON text as one single line in a UDP datagram. "
+              u"The address specifies an IP address which can be either unicast or multicast. "
               u"It can be also a host name that translates to an IP address. "
-              u"The 'port' specifies the destination UDP port. "
+              u"The port specifies the destination UDP port. "
               u"Be aware that the size of UDP datagrams is limited by design to 64 kB. "
               u"If larger JSON contents are expected, consider using --json-tcp.");
 
@@ -91,7 +108,7 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
 
 bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    _json_opt = args.present(u"json");
+    _json_opt = _allow_file && args.present(u"json");
     _json_line = args.present(u"json-line");
     _json_tcp = args.present(u"json-tcp");
     _json_tcp_keep = args.present(u"json-tcp-keep");
@@ -177,10 +194,36 @@ bool ts::json::OutputArgs::tcpDisconnect(bool force, Report& rep)
 
 
 //----------------------------------------------------------------------------
-// Issue a JSON report, except --json file.
+// Issue a JSON report according to options.
 //----------------------------------------------------------------------------
 
-bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
+bool ts::json::OutputArgs::report(const json::Value& root, std::ostream& stm, Report& rep)
+{
+    // Process file output.
+    if (_json_opt) {
+        TextFormatter text(rep);
+        text.setStream(stm);
+        root.print(text);
+        text << ts::endl;
+        text.close();
+    }
+
+    // Other output forms.
+    return report(root, rep);
+}
+
+bool ts::json::OutputArgs::report(const json::Value& root, json::RunningDocument& doc, Report& rep)
+{
+    // Process file output.
+    if (_json_opt) {
+        doc.add(root);
+    }
+
+    // Other output forms.
+    return report(root, rep);
+}
+
+bool ts::json::OutputArgs::report(const json::Value& root, Report& rep)
 {
     bool udp_ok = true;
     bool tcp_ok = true;
@@ -224,35 +267,4 @@ bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
     }
 
     return udp_ok && tcp_ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Issue a JSON report according to options.
-//----------------------------------------------------------------------------
-
-bool ts::json::OutputArgs::report(const json::Value& root, std::ostream& stm, Report& rep)
-{
-    // Process file output.
-    if (_json_opt) {
-        TextFormatter text(rep);
-        text.setStream(stm);
-        root.print(text);
-        text << ts::endl;
-        text.close();
-    }
-
-    // Other output forms.
-    return reportOthers(root, rep);
-}
-
-bool ts::json::OutputArgs::report(const json::Value& root, json::RunningDocument& doc, Report& rep)
-{
-    // Process file output.
-    if (_json_opt) {
-        doc.add(root);
-    }
-
-    // Other output forms.
-    return reportOthers(root, rep);
 }

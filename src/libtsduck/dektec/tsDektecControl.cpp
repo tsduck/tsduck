@@ -132,10 +132,10 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"option --wait (the led state is automatically returned to "
          u"\"hardware\" after exit).");
 
-    _guts->_json.defineArgs(*this, true, u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
+    _guts->_json.defineArgs(*this, true, u"With --all, list the Dektec devices in JSON format.");
 
     option(u"normalized", 'n');
-    help(u"normalized", u"With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).");
+    help(u"normalized", u"With --all, list the Dektec devices in a normalized output format.");
 
     option(u"output", 'o', POSITIVE);
     help(u"output", u"port-number",

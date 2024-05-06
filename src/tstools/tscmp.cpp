@@ -127,7 +127,7 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
          u"different and the first file is read ahead. The default is zero, which "
          u"means that two packets must be strictly identical to declare them equal.");
 
-    json.defineArgs(*this, true);
+    json.defineArgs(*this, true, u"Report the differences in JSON output format.");
 
     analyze(argc, argv);
 
