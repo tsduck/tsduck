@@ -20,46 +20,21 @@
 
 class URLTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testIsURL();
-    void testParse();
-    void testBase();
-    void testToString();
-    void testToRelative();
-
-    TSUNIT_TEST_BEGIN(URLTest);
-    TSUNIT_TEST(testIsURL);
-    TSUNIT_TEST(testParse);
-    TSUNIT_TEST(testBase);
-    TSUNIT_TEST(testToString);
-    TSUNIT_TEST(testToRelative);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(IsURL);
+    TSUNIT_DECLARE_TEST(Parse);
+    TSUNIT_DECLARE_TEST(Base);
+    TSUNIT_DECLARE_TEST(ToString);
+    TSUNIT_DECLARE_TEST(ToRelative);
 };
 
 TSUNIT_REGISTER(URLTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-void URLTest::beforeTest()
-{
-}
-
-void URLTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Test cases
 //----------------------------------------------------------------------------
 
-void URLTest::testIsURL()
+TSUNIT_DEFINE_TEST(IsURL)
 {
     TSUNIT_ASSERT(!ts::URL::IsURL(u""));
     TSUNIT_ASSERT(!ts::URL::IsURL(u"foo/bar"));
@@ -71,7 +46,7 @@ void URLTest::testIsURL()
     TSUNIT_ASSERT(ts::URL::IsURL(u"file://C:/foo/bar"));
 }
 
-void URLTest::testParse()
+TSUNIT_DEFINE_TEST(Parse)
 {
     ts::URL url1(u"http://user:pwd@host.name:1234/foo/bar/?query+args#frag");
     TSUNIT_ASSERT(url1.isValid());
@@ -96,7 +71,7 @@ void URLTest::testParse()
     TSUNIT_EQUAL(u"", url2.getFragment());
 }
 
-void URLTest::testBase()
+TSUNIT_DEFINE_TEST(Base)
 {
     TSUNIT_EQUAL(u"http://foo.com/bar/abc/def", ts::URL(u"abc/def", u"http://foo.com/bar/cool").toString());
     TSUNIT_EQUAL(u"http://foo.com/bar/cool/abc/def", ts::URL(u"abc/def", u"http://foo.com/bar/cool/").toString());
@@ -104,7 +79,7 @@ void URLTest::testBase()
     TSUNIT_EQUAL(u"http://foo.com/bar/abc/def", ts::URL(u"../../abc/def", u"http://foo.com/bar/cool/taf/").toString());
 }
 
-void URLTest::testToString()
+TSUNIT_DEFINE_TEST(ToString)
 {
     TSUNIT_EQUAL(u"http://foo.bar/", ts::URL(u"http://foo.bar").toString());
     TSUNIT_EQUAL(u"http://foo.bar/a/d/e", ts::URL(u"http://foo.bar/a/b/c/../../d/e").toString());
@@ -122,7 +97,7 @@ void URLTest::testToString()
 #endif
 }
 
-void URLTest::testToRelative()
+TSUNIT_DEFINE_TEST(ToRelative)
 {
     TSUNIT_EQUAL(u"http://foo.bar/abc/def", ts::URL(u"http://foo.bar/abc/def").toRelative(u"http://foo.car/abc/def"));
     TSUNIT_EQUAL(u"/abc/def", ts::URL(u"http://foo.bar/abc/def").toRelative(u"http://foo.bar/xyz/def"));

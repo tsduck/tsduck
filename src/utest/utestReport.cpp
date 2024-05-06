@@ -23,27 +23,17 @@
 
 class ReportTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Severity);
+    TSUNIT_DECLARE_TEST(String);
+    TSUNIT_DECLARE_TEST(Printf);
+    TSUNIT_DECLARE_TEST(ByName);
+    TSUNIT_DECLARE_TEST(ByStream);
+    TSUNIT_DECLARE_TEST(ErrCodeReport);
+    TSUNIT_DECLARE_TEST(Delegation);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testSeverity();
-    void testString();
-    void testPrintf();
-    void testByName();
-    void testByStream();
-    void testErrCodeReport();
-    void testDelegation();
-
-    TSUNIT_TEST_BEGIN(ReportTest);
-    TSUNIT_TEST(testSeverity);
-    TSUNIT_TEST(testString);
-    TSUNIT_TEST(testPrintf);
-    TSUNIT_TEST(testByName);
-    TSUNIT_TEST(testByStream);
-    TSUNIT_TEST(testErrCodeReport);
-    TSUNIT_TEST(testDelegation);
-    TSUNIT_TEST_END();
 
 private:
     fs::path _fileName {};
@@ -80,7 +70,7 @@ namespace {
 }
 
 // Test case: set/get severity
-void ReportTest::testSeverity()
+TSUNIT_DEFINE_TEST(Severity)
 {
     TestBuffer log1;
     TSUNIT_ASSERT(log1.maxSeverity() == ts::Severity::Info);
@@ -131,7 +121,7 @@ namespace {
 }
 
 // Test case: log string messages
-void ReportTest::testString()
+TSUNIT_DEFINE_TEST(String)
 {
     TestBuffer log;
     TSUNIT_ASSERT(log.empty());
@@ -203,7 +193,7 @@ namespace {
 }
 
 // Test case: log using printf-like formats
-void ReportTest::testPrintf()
+TSUNIT_DEFINE_TEST(Printf)
 {
     TestBuffer log;
 
@@ -251,7 +241,7 @@ void ReportTest::testPrintf()
 }
 
 // Test case: log file by name
-void ReportTest::testByName()
+TSUNIT_DEFINE_TEST(ByName)
 {
     {
         ts::ReportFile<ts::ThreadSafety::Full> log(_fileName, false, false);
@@ -281,7 +271,7 @@ void ReportTest::testByName()
 }
 
 // Test case: log file on open stream
-void ReportTest::testByStream()
+TSUNIT_DEFINE_TEST(ByStream)
 {
     std::ofstream stream(_fileName);
     TSUNIT_ASSERT(stream.is_open());
@@ -306,7 +296,7 @@ void ReportTest::testByStream()
 }
 
 // Test case: std::error_code logging.
-void ReportTest::testErrCodeReport()
+TSUNIT_DEFINE_TEST(ErrCodeReport)
 {
     TestBuffer log;
 
@@ -331,7 +321,7 @@ void ReportTest::testErrCodeReport()
 }
 
 // Test case: report delegation.
-void ReportTest::testDelegation()
+TSUNIT_DEFINE_TEST(Delegation)
 {
     TestBuffer log;
     ts::Report rep;

@@ -21,72 +21,37 @@
 
 class TimeTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testTime();
-    void testFormat();
-    void testOperators();
-    void testLocalTime();
-    void testThisNext();
-    void testFields();
-    void testFieldsValid();
-    void testDecode();
-    void testEpoch();
-    void testUnixTime();
-    void testDaylightSavingTime();
-    void testCAS();
-    void testJST();
-    void testLeapSeconds();
-
-    TSUNIT_TEST_BEGIN(TimeTest);
-    TSUNIT_TEST(testTime);
-    TSUNIT_TEST(testFormat);
-    TSUNIT_TEST(testOperators);
-    TSUNIT_TEST(testLocalTime);
-    TSUNIT_TEST(testThisNext);
-    TSUNIT_TEST(testFields);
-    TSUNIT_TEST(testFieldsValid);
-    TSUNIT_TEST(testDecode);
-    TSUNIT_TEST(testEpoch);
-    TSUNIT_TEST(testUnixTime);
-    TSUNIT_TEST(testDaylightSavingTime);
-    TSUNIT_TEST(testCAS);
-    TSUNIT_TEST(testJST);
-    TSUNIT_TEST(testLeapSeconds);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Time);
+    TSUNIT_DECLARE_TEST(Format);
+    TSUNIT_DECLARE_TEST(Operators);
+    TSUNIT_DECLARE_TEST(LocalTime);
+    TSUNIT_DECLARE_TEST(ThisNext);
+    TSUNIT_DECLARE_TEST(Fields);
+    TSUNIT_DECLARE_TEST(FieldsValid);
+    TSUNIT_DECLARE_TEST(Decode);
+    TSUNIT_DECLARE_TEST(Epoch);
+    TSUNIT_DECLARE_TEST(UnixTime);
+    TSUNIT_DECLARE_TEST(DaylightSavingTime);
+    TSUNIT_DECLARE_TEST(CAS);
+    TSUNIT_DECLARE_TEST(JST);
+    TSUNIT_DECLARE_TEST(LeapSeconds);
 };
 
 TSUNIT_REGISTER(TimeTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TimeTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TimeTest::afterTest()
-{
-}
-
-//----------------------------------------------------------------------------
 // Test cases
 //----------------------------------------------------------------------------
 
-void TimeTest::testTime()
+TSUNIT_DEFINE_TEST(Time)
 {
     ts::Time t1;
     debug() << "TimeTest: Default constructor: " << t1 << std::endl;
     TSUNIT_ASSERT(t1 == ts::Time::Epoch);
 }
 
-void TimeTest::testFormat()
+TSUNIT_DEFINE_TEST(Format)
 {
     ts::Time t1(2006, 7, 24, 10, 25, 12, 20);
     TSUNIT_EQUAL(u"2006/07/24 10:25:12.020", t1.format());
@@ -103,7 +68,7 @@ void TimeTest::testFormat()
     TSUNIT_EQUAL(u"24 10:25", t1.format(ts::Time::DAY | ts::Time::HOUR | ts::Time::MINUTE));
 }
 
-void TimeTest::testOperators()
+TSUNIT_DEFINE_TEST(Operators)
 {
     ts::Time t1(2006, 7, 24, 10, 25, 12, 900);
     ts::Time t2(2006, 7, 24, 10, 25, 12, 901);
@@ -137,7 +102,7 @@ void TimeTest::testOperators()
     TSUNIT_ASSERT(t3 == t1);
 }
 
-void TimeTest::testLocalTime()
+TSUNIT_DEFINE_TEST(LocalTime)
 {
     const ts::Time t(2012, 8, 24, 10, 25, 12, 100);
 
@@ -159,7 +124,7 @@ void TimeTest::testLocalTime()
     TSUNIT_ASSERT(cn::abs(nowUtc - nowLocal) < cn::days(1));
 }
 
-void TimeTest::testThisNext()
+TSUNIT_DEFINE_TEST(ThisNext)
 {
     const ts::Time t(2012, 8, 24, 10, 25, 12, 100);
 
@@ -173,7 +138,7 @@ void TimeTest::testThisNext()
     TSUNIT_ASSERT(t.nextYear()  == ts::Time(2013, 1,  1,  0, 0, 0, 0));
 }
 
-void TimeTest::testFields()
+TSUNIT_DEFINE_TEST(Fields)
 {
     ts::Time::Fields f1(2012, 8, 24, 10, 25, 12, 100);
 
@@ -197,7 +162,7 @@ void TimeTest::testFields()
     TSUNIT_ASSERT(f3 == f1);
 }
 
-void TimeTest::testFieldsValid()
+TSUNIT_DEFINE_TEST(FieldsValid)
 {
     TSUNIT_ASSERT(ts::Time::Fields(2012, 8, 24, 10, 25, 12, 100).isValid());
     TSUNIT_ASSERT(ts::Time::Fields(2017, 2, 28, 0, 0, 0, 0).isValid());
@@ -214,7 +179,7 @@ void TimeTest::testFieldsValid()
     TSUNIT_ASSERT(!ts::Time::Fields(2012, 8, 24, 10, 25, 12, 1100).isValid());
 }
 
-void TimeTest::testDecode()
+TSUNIT_DEFINE_TEST(Decode)
 {
     ts::Time t;
     ts::Time::Fields f;
@@ -258,12 +223,12 @@ void TimeTest::testDecode()
     TSUNIT_EQUAL(234, f.millisecond);
 }
 
-void TimeTest::testEpoch()
+TSUNIT_DEFINE_TEST(Epoch)
 {
     TSUNIT_EQUAL(u"1970/01/01 00:00:00.000", ts::Time::UnixEpoch.format());
 }
 
-void TimeTest::testUnixTime()
+TSUNIT_DEFINE_TEST(UnixTime)
 {
     debug()
         << "TimeTest: UNIX Epoch at " << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time::UnixEpoch - ts::Time::Epoch)) << " from Epoch" << std::endl
@@ -276,7 +241,7 @@ void TimeTest::testUnixTime()
     TSUNIT_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074).format());
 }
 
-void TimeTest::testDaylightSavingTime()
+TSUNIT_DEFINE_TEST(DaylightSavingTime)
 {
     // Daylight saving time boundaries:
     //
@@ -405,7 +370,7 @@ void TimeTest::testDaylightSavingTime()
     TSUNIT_EQUAL(u"2017/10/29 23:30:00.000", ts::Time(2017, 10, 29, 23, 30,  0).format());
 }
 
-void TimeTest::testCAS()
+TSUNIT_DEFINE_TEST(CAS)
 {
     TSUNIT_EQUAL(1980, ts::ViaccessDate::MIN_YEAR);
     TSUNIT_EQUAL(1990, ts::MediaGuardDate::MIN_YEAR);
@@ -432,7 +397,7 @@ void TimeTest::testCAS()
     TSUNIT_ASSERT(!md.isValid());
 }
 
-void TimeTest::testJST()
+TSUNIT_DEFINE_TEST(JST)
 {
     TSUNIT_EQUAL(u"2020/04/30 21:00:00.000", ts::Time(2020, 4, 30,  12,  0,  0).UTCToJST().format());
     TSUNIT_EQUAL(u"2020/04/30 03:00:00.000", ts::Time(2020, 4, 30,  12,  0,  0).JSTToUTC().format());
@@ -440,7 +405,7 @@ void TimeTest::testJST()
     TSUNIT_EQUAL(u"2020/04/29 19:00:00.000", ts::Time(2020, 4, 30,   4,  0,  0).JSTToUTC().format());
 }
 
-void TimeTest::testLeapSeconds()
+TSUNIT_DEFINE_TEST(LeapSeconds)
 {
     TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time::Epoch).count());
     TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time(1971, 1, 1, 0, 0, 0)).count());

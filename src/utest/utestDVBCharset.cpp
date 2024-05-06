@@ -20,42 +20,18 @@
 
 class DVBCharsetTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testRepository();
-    void testDVB();
-
-    TSUNIT_TEST_BEGIN(DVBCharsetTest);
-    TSUNIT_TEST(testRepository);
-    TSUNIT_TEST(testDVB);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Repository);
+    TSUNIT_DECLARE_TEST(DVB);
 };
 
 TSUNIT_REGISTER(DVBCharsetTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void DVBCharsetTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void DVBCharsetTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Test cases
 //----------------------------------------------------------------------------
 
-void DVBCharsetTest::testRepository()
+TSUNIT_DEFINE_TEST(Repository)
 {
     debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::Charset::GetAllNames()) << std::endl;
     TSUNIT_EQUAL(38, ts::Charset::GetAllNames().size());
@@ -71,7 +47,7 @@ void DVBCharsetTest::testRepository()
     // DUMP
 }
 
-void DVBCharsetTest::testDVB()
+TSUNIT_DEFINE_TEST(DVB)
 {
     static const char s1[]= "abCD 89#()";
     TSUNIT_EQUAL(u"abCD 89#()", ts::DVBCharset::DVB.decoded(reinterpret_cast<const uint8_t*>(s1), std::strlen(s1)));

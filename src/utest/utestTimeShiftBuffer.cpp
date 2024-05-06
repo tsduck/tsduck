@@ -21,40 +21,15 @@
 
 class TimeShiftBufferTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testMinimum();
-    void testMemory();
-    void testFile();
-
-    TSUNIT_TEST_BEGIN(TimeShiftBufferTest);
-    TSUNIT_TEST(testMinimum);
-    TSUNIT_TEST(testMemory);
-    TSUNIT_TEST(testFile);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Minimum);
+    TSUNIT_DECLARE_TEST(Memory);
+    TSUNIT_DECLARE_TEST(File);
 
 private:
     void testCommon(uint8_t total, uint8_t memory);
 };
 
 TSUNIT_REGISTER(TimeShiftBufferTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TimeShiftBufferTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TimeShiftBufferTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -131,17 +106,17 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
     TSUNIT_ASSERT(!buf.isOpen());
 }
 
-void TimeShiftBufferTest::testMinimum()
+TSUNIT_DEFINE_TEST(Minimum)
 {
     testCommon(2, 2);
 }
 
-void TimeShiftBufferTest::testMemory()
+TSUNIT_DEFINE_TEST(Memory)
 {
     testCommon(10, 16);
 }
 
-void TimeShiftBufferTest::testFile()
+TSUNIT_DEFINE_TEST(File)
 {
     testCommon(20, 4);
 }

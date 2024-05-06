@@ -22,44 +22,19 @@
 
 class PluginRepositoryTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testRegistrations();
-    void testEmbedded();
-    void testLoaded();
-
-    TSUNIT_TEST_BEGIN(PluginRepositoryTest);
-    TSUNIT_TEST(testRegistrations);
-    TSUNIT_TEST(testEmbedded);
-    TSUNIT_TEST(testLoaded);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Registrations);
+    TSUNIT_DECLARE_TEST(Embedded);
+    TSUNIT_DECLARE_TEST(Loaded);
 };
 
 TSUNIT_REGISTER(PluginRepositoryTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void PluginRepositoryTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void PluginRepositoryTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void PluginRepositoryTest::testRegistrations()
+TSUNIT_DEFINE_TEST(Registrations)
 {
     const ts::UStringList inputs(ts::PluginRepository::Instance().inputNames());
     const ts::UStringList outputs(ts::PluginRepository::Instance().outputNames());
@@ -79,7 +54,7 @@ void PluginRepositoryTest::testRegistrations()
     TSUNIT_ASSERT(ts::UString(u"drop").isContainedSimilarIn(outputs));
 }
 
-void PluginRepositoryTest::testEmbedded()
+TSUNIT_DEFINE_TEST(Embedded)
 {
     ts::Report& report(debugMode() ? *static_cast<ts::Report*>(&CERR) : *static_cast<ts::Report*>(&NULLREP));
     ts::PluginRepository& repo(ts::PluginRepository::Instance());
@@ -102,7 +77,7 @@ void PluginRepositoryTest::testEmbedded()
     TSUNIT_ASSERT(repo.getProcessor(u"file", report) != nullptr);
 }
 
-void PluginRepositoryTest::testLoaded()
+TSUNIT_DEFINE_TEST(Loaded)
 {
     ts::Report& report(debugMode() ? *static_cast<ts::Report*>(&CERR) : *static_cast<ts::Report*>(&NULLREP));
     ts::PluginRepository& repo(ts::PluginRepository::Instance());

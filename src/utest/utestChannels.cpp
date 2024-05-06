@@ -21,40 +21,17 @@
 
 class ChannelsTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testText();
-
-    TSUNIT_TEST_BEGIN(ChannelsTest);
-    TSUNIT_TEST(testText);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Text);
 };
 
 TSUNIT_REGISTER(ChannelsTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void ChannelsTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void ChannelsTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void ChannelsTest::testText()
+TSUNIT_DEFINE_TEST(Text)
 {
     static const ts::UChar* const document =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

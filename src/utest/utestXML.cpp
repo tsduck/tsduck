@@ -28,41 +28,24 @@
 
 class XMLTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Document);
+    TSUNIT_DECLARE_TEST(Invalid);
+    TSUNIT_DECLARE_TEST(FileBOM);
+    TSUNIT_DECLARE_TEST(Validation);
+    TSUNIT_DECLARE_TEST(Creation);
+    TSUNIT_DECLARE_TEST(KeepOpen);
+    TSUNIT_DECLARE_TEST(Escape);
+    TSUNIT_DECLARE_TEST(Tweaks);
+    TSUNIT_DECLARE_TEST(Channels);
+    TSUNIT_DECLARE_TEST(Merge);
+    TSUNIT_DECLARE_TEST(Sort);
+    TSUNIT_DECLARE_TEST(GetFloat);
+    TSUNIT_DECLARE_TEST(SetFloat);
+    TSUNIT_DECLARE_TEST(PreserveSpace);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testDocument();
-    void testInvalid();
-    void testFileBOM();
-    void testValidation();
-    void testCreation();
-    void testKeepOpen();
-    void testEscape();
-    void testTweaks();
-    void testChannels();
-    void testMerge();
-    void testSort();
-    void testGetFloat();
-    void testSetFloat();
-    void testPreserveSpace();
-
-    TSUNIT_TEST_BEGIN(XMLTest);
-    TSUNIT_TEST(testDocument);
-    TSUNIT_TEST(testInvalid);
-    TSUNIT_TEST(testFileBOM);
-    TSUNIT_TEST(testValidation);
-    TSUNIT_TEST(testCreation);
-    TSUNIT_TEST(testKeepOpen);
-    TSUNIT_TEST(testEscape);
-    TSUNIT_TEST(testTweaks);
-    TSUNIT_TEST(testChannels);
-    TSUNIT_TEST(testMerge);
-    TSUNIT_TEST(testSort);
-    TSUNIT_TEST(testGetFloat);
-    TSUNIT_TEST(testSetFloat);
-    TSUNIT_TEST(testPreserveSpace);
-    TSUNIT_TEST_END();
 
 private:
     fs::path _tempFileName {};
@@ -106,7 +89,7 @@ ts::Report& XMLTest::report()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void XMLTest::testDocument()
+TSUNIT_DEFINE_TEST(Document)
 {
     static const ts::UChar* const document =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -177,7 +160,7 @@ void XMLTest::testDocument()
     TSUNIT_ASSERT(elem == nullptr);
 }
 
-void XMLTest::testInvalid()
+TSUNIT_DEFINE_TEST(Invalid)
 {
     // Incorrect XML document
     static const ts::UChar* xmlContent =
@@ -191,7 +174,7 @@ void XMLTest::testInvalid()
     TSUNIT_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.messages());
 }
 
-void XMLTest::testFileBOM()
+TSUNIT_DEFINE_TEST(FileBOM)
 {
     // Binary content of XML file with BOM, accented characters and HTML entities.
     const ts::ByteBlock fileData({
@@ -233,7 +216,7 @@ void XMLTest::testFileBOM()
     TSUNIT_ASSERT(fs::remove(_tempFileName, &ts::ErrCodeReport(CERR, u"error deleting", _tempFileName)));
 }
 
-void XMLTest::testValidation()
+TSUNIT_DEFINE_TEST(Validation)
 {
     ts::xml::ModelDocument model(report());
     TSUNIT_ASSERT(model.load(ts::SectionFile::XML_TABLES_MODEL));
@@ -263,7 +246,7 @@ void XMLTest::testValidation()
     TSUNIT_ASSERT(model.validate(doc));
 }
 
-void XMLTest::testCreation()
+TSUNIT_DEFINE_TEST(Creation)
 {
     ts::xml::Document doc(report());
     ts::xml::Element* child1 = nullptr;
@@ -312,7 +295,7 @@ void XMLTest::testCreation()
         doc.toString());
 }
 
-void XMLTest::testKeepOpen()
+TSUNIT_DEFINE_TEST(KeepOpen)
 {
     static const ts::UChar* const document =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -369,7 +352,7 @@ void XMLTest::testKeepOpen()
         out.toString());
 }
 
-void XMLTest::testEscape()
+TSUNIT_DEFINE_TEST(Escape)
 {
     ts::xml::Document doc(report());
     ts::xml::Element* child1 = nullptr;
@@ -420,7 +403,7 @@ void XMLTest::testEscape()
     TSUNIT_EQUAL(u"text<&'\">text", elem->text());
 }
 
-void XMLTest::testTweaks()
+TSUNIT_DEFINE_TEST(Tweaks)
 {
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"root");
@@ -467,13 +450,13 @@ void XMLTest::testTweaks()
         doc.toString());
 }
 
-void XMLTest::testChannels()
+TSUNIT_DEFINE_TEST(Channels)
 {
     ts::xml::Document model(report());
     TSUNIT_ASSERT(model.load(ts::SectionFile::XML_TABLES_MODEL));
 }
 
-void XMLTest::testMerge()
+TSUNIT_DEFINE_TEST(Merge)
 {
     static const ts::UChar* const document1 =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -600,7 +583,7 @@ void XMLTest::testMerge()
         doc1.toString());
 }
 
-void XMLTest::testSort()
+TSUNIT_DEFINE_TEST(Sort)
 {
     static const ts::UChar* const document =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -702,7 +685,7 @@ void XMLTest::testSort()
         doc.toString());
 }
 
-void XMLTest::testGetFloat()
+TSUNIT_DEFINE_TEST(GetFloat)
 {
     static const ts::UChar* const document =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -737,7 +720,7 @@ void XMLTest::testGetFloat()
     TSUNIT_EQUAL(52.12, flt);
 }
 
-void XMLTest::testSetFloat()
+TSUNIT_DEFINE_TEST(SetFloat)
 {
     ts::xml::Document doc(report());
     new ts::xml::Declaration(&doc, ts::xml::Declaration::DEFAULT_XML_DECLARATION);
@@ -754,7 +737,7 @@ void XMLTest::testSetFloat()
         doc.toString());
 }
 
-void XMLTest::testPreserveSpace()
+TSUNIT_DEFINE_TEST(PreserveSpace)
 {
     static const ts::UChar* const document =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

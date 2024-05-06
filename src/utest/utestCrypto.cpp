@@ -53,53 +53,26 @@
 
 class CryptoTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testAES();
-    void testAES_ECB();
-    void testAES_CBC();
-    void testAES_CTR();
-    void testAES_CTS1();
-    void testAES_CTS2();
-    void testAES_CTS3();
-    void testAES_CTS4();
-    void testAES_DVS042();
-    void testDES();
-    void testTDES();
-    void testTDES_CBC();
-    void testDVBCSA2();
-    void testDVBCISSA();
-    void testIDSA();
-    void testSCTE52_2003();
-    void testSCTE52_2008();
-    void testSHA1();
-    void testSHA256();
-    void testSHA512();
-
-    TSUNIT_TEST_BEGIN(CryptoTest);
-    TSUNIT_TEST(testAES);
-    TSUNIT_TEST(testAES_ECB);
-    TSUNIT_TEST(testAES_CBC);
-    TSUNIT_TEST(testAES_CTR);
-    TSUNIT_TEST(testAES_CTS1);
-    TSUNIT_TEST(testAES_CTS2);
-    TSUNIT_TEST(testAES_CTS3);
-    TSUNIT_TEST(testAES_CTS4);
-    TSUNIT_TEST(testAES_DVS042);
-    TSUNIT_TEST(testDES);
-    TSUNIT_TEST(testTDES);
-    TSUNIT_TEST(testTDES_CBC);
-    TSUNIT_TEST(testDVBCSA2);
-    TSUNIT_TEST(testDVBCISSA);
-    TSUNIT_TEST(testIDSA);
-    TSUNIT_TEST(testSCTE52_2003);
-    TSUNIT_TEST(testSCTE52_2008);
-    TSUNIT_TEST(testSHA1);
-    TSUNIT_TEST(testSHA256);
-    TSUNIT_TEST(testSHA512);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(AES);
+    TSUNIT_DECLARE_TEST(AES_ECB);
+    TSUNIT_DECLARE_TEST(AES_CBC);
+    TSUNIT_DECLARE_TEST(AES_CTR);
+    TSUNIT_DECLARE_TEST(AES_CTS1);
+    TSUNIT_DECLARE_TEST(AES_CTS2);
+    TSUNIT_DECLARE_TEST(AES_CTS3);
+    TSUNIT_DECLARE_TEST(AES_CTS4);
+    TSUNIT_DECLARE_TEST(AES_DVS042);
+    TSUNIT_DECLARE_TEST(DES);
+    TSUNIT_DECLARE_TEST(TDES);
+    TSUNIT_DECLARE_TEST(TDES_CBC);
+    TSUNIT_DECLARE_TEST(DVBCSA2);
+    TSUNIT_DECLARE_TEST(DVBCISSA);
+    TSUNIT_DECLARE_TEST(IDSA);
+    TSUNIT_DECLARE_TEST(SCTE52_2003);
+    TSUNIT_DECLARE_TEST(SCTE52_2008);
+    TSUNIT_DECLARE_TEST(SHA1);
+    TSUNIT_DECLARE_TEST(SHA256);
+    TSUNIT_DECLARE_TEST(SHA512);
 
 private:
     void testCipher(utest::TSUnitBenchmark& bench,
@@ -138,21 +111,6 @@ private:
 };
 
 TSUNIT_REGISTER(CryptoTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void CryptoTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void CryptoTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -361,7 +319,7 @@ void CryptoTest::testHash(utest::TSUnitBenchmark& bench,
     }
 }
 
-void CryptoTest::testAES()
+TSUNIT_DEFINE_TEST(AES)
 {
     ts::AES128 aes128;
     ts::AES256 aes256;
@@ -402,7 +360,7 @@ void CryptoTest::testAES()
     bench.report(u"CryptoTest::testAES");
 }
 
-void CryptoTest::testAES_ECB()
+TSUNIT_DEFINE_TEST(AES_ECB)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_ECB_ITERATIONS");
 
@@ -426,7 +384,7 @@ void CryptoTest::testAES_ECB()
     testChainingSizes(aes256, 16, 32, 64, 65536, 0);
 }
 
-void CryptoTest::testAES_CBC()
+TSUNIT_DEFINE_TEST(AES_CBC)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_CBC_ITERATIONS");
 
@@ -450,7 +408,7 @@ void CryptoTest::testAES_CBC()
     testChainingSizes(aes256, 16, 32, 64, 65536, 0);
 }
 
-void CryptoTest::testAES_CTR()
+TSUNIT_DEFINE_TEST(AES_CTR)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_CTR_ITERATIONS");
 
@@ -474,7 +432,7 @@ void CryptoTest::testAES_CTR()
     testChainingSizes(aes256, 16, 32, 64, 65536, 0);
 }
 
-void CryptoTest::testAES_CTS1()
+TSUNIT_DEFINE_TEST(AES_CTS1)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_AES_CTS1_ITERATIONS");
 
@@ -499,7 +457,7 @@ void CryptoTest::testAES_CTS1()
     testChainingSizes(aes256, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
-void CryptoTest::testAES_CTS2()
+TSUNIT_DEFINE_TEST(AES_CTS2)
 {
     ts::CTS2<ts::AES128> aes128;
     ts::CTS2<ts::AES256> aes256;
@@ -507,7 +465,7 @@ void CryptoTest::testAES_CTS2()
     testChainingSizes(aes256, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
-void CryptoTest::testAES_CTS3()
+TSUNIT_DEFINE_TEST(AES_CTS3)
 {
     ts::CTS3<ts::AES128> aes128;
     ts::CTS3<ts::AES256> aes256;
@@ -515,7 +473,7 @@ void CryptoTest::testAES_CTS3()
     testChainingSizes(aes256, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
-void CryptoTest::testAES_CTS4()
+TSUNIT_DEFINE_TEST(AES_CTS4)
 {
     ts::CTS4<ts::AES128> aes128;
     ts::CTS4<ts::AES256> aes256;
@@ -523,7 +481,7 @@ void CryptoTest::testAES_CTS4()
     testChainingSizes(aes256, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
-void CryptoTest::testAES_DVS042()
+TSUNIT_DEFINE_TEST(AES_DVS042)
 {
     ts::DVS042<ts::AES128> aes128;
     ts::DVS042<ts::AES256> aes256;
@@ -531,7 +489,7 @@ void CryptoTest::testAES_DVS042()
     testChainingSizes(aes256, 16, 17, 23, 31, 32, 33, 45, 64, 67, 184, 12345, 0);
 }
 
-void CryptoTest::testDES()
+TSUNIT_DEFINE_TEST(DES)
 {
     ts::DES des;
 
@@ -553,7 +511,7 @@ void CryptoTest::testDES()
     bench.report(u"CryptoTest::testDES");
 }
 
-void CryptoTest::testTDES()
+TSUNIT_DEFINE_TEST(TDES)
 {
     ts::TDES tdes;
 
@@ -576,7 +534,7 @@ void CryptoTest::testTDES()
     bench.report(u"CryptoTest::testTDES");
 }
 
-void CryptoTest::testTDES_CBC()
+TSUNIT_DEFINE_TEST(TDES_CBC)
 {
     ts::CBC<ts::TDES> cbc_tdes;
 
@@ -599,7 +557,7 @@ void CryptoTest::testTDES_CBC()
     bench.report(u"CryptoTest::testTDES_CBC");
 }
 
-void CryptoTest::testDVBCSA2()
+TSUNIT_DEFINE_TEST(DVBCSA2)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_DVBCSA2_ITERATIONS");
 
@@ -613,7 +571,7 @@ void CryptoTest::testDVBCSA2()
     bench.report(u"CryptoTest::testDVBCSA2");
 }
 
-void CryptoTest::testDVBCISSA()
+TSUNIT_DEFINE_TEST(DVBCISSA)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_DVBCISSA_ITERATIONS");
 
@@ -633,7 +591,7 @@ void CryptoTest::testDVBCISSA()
     bench.report(u"CryptoTest::testDVBCISSA");
 }
 
-void CryptoTest::testIDSA()
+TSUNIT_DEFINE_TEST(IDSA)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_IDSA_ITERATIONS");
 
@@ -647,7 +605,7 @@ void CryptoTest::testIDSA()
     bench.report(u"CryptoTest::testIDSA");
 }
 
-void CryptoTest::testSCTE52_2003()
+TSUNIT_DEFINE_TEST(SCTE52_2003)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_SCTE52_2003_ITERATIONS");
 
@@ -661,7 +619,7 @@ void CryptoTest::testSCTE52_2003()
     bench.report(u"CryptoTest::testSCTE52_2003");
 }
 
-void CryptoTest::testSCTE52_2008()
+TSUNIT_DEFINE_TEST(SCTE52_2008)
 {
     utest::TSUnitBenchmark bench(u"TSUNIT_SCTE52_2008_ITERATIONS");
 
@@ -677,7 +635,7 @@ void CryptoTest::testSCTE52_2008()
     bench.report(u"CryptoTest::testSCTE52_2008");
 }
 
-void CryptoTest::testSHA1()
+TSUNIT_DEFINE_TEST(SHA1)
 {
     ts::SHA1 sha1;
     TSUNIT_ASSERT(sha1.hashSize() == 20);
@@ -693,7 +651,7 @@ void CryptoTest::testSHA1()
     bench.report(u"CryptoTest::testSHA1");
 }
 
-void CryptoTest::testSHA256()
+TSUNIT_DEFINE_TEST(SHA256)
 {
     ts::SHA256 sha256;
     TSUNIT_ASSERT(sha256.hashSize() == 32);
@@ -709,7 +667,7 @@ void CryptoTest::testSHA256()
     bench.report(u"CryptoTest::testSHA256");
 }
 
-void CryptoTest::testSHA512()
+TSUNIT_DEFINE_TEST(SHA512)
 {
     ts::SHA512 sha512;
     TSUNIT_ASSERT(sha512.hashSize() == 64);

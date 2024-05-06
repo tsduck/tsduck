@@ -22,33 +22,10 @@
 
 class TSProcessorTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testProcessing();
-
-    TSUNIT_TEST_BEGIN(TSProcessorTest);
-    TSUNIT_TEST(testProcessing);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Processing);
 };
 
 TSUNIT_REGISTER(TSProcessorTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TSProcessorTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TSProcessorTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -212,7 +189,7 @@ void TestEventHandler::handlePluginEvent(const ts::PluginEventContext& ctx)
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TSProcessorTest::testProcessing()
+TSUNIT_DEFINE_TEST(Processing)
 {
     // Register our custom plugin with the name "test1".
     ts::PluginRepository::Instance().registerProcessor(u"test1", TestPlugin::CreateInstance);

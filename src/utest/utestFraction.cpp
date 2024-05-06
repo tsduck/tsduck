@@ -20,58 +20,26 @@
 
 class FractionTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testConstructor();
-    void testDouble();
-    void testAbs();
-    void testMin();
-    void testMax();
-    void testProper();
-    void testComparison();
-    void testArithmetics();
-    void testToString();
-    void testFromString();
-
-    TSUNIT_TEST_BEGIN(FractionTest);
-    TSUNIT_TEST(testConstructor);
-    TSUNIT_TEST(testDouble);
-    TSUNIT_TEST(testAbs);
-    TSUNIT_TEST(testMin);
-    TSUNIT_TEST(testMax);
-    TSUNIT_TEST(testProper);
-    TSUNIT_TEST(testComparison);
-    TSUNIT_TEST(testArithmetics);
-    TSUNIT_TEST(testToString);
-    TSUNIT_TEST(testFromString);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Constructor);
+    TSUNIT_DECLARE_TEST(Double);
+    TSUNIT_DECLARE_TEST(Abs);
+    TSUNIT_DECLARE_TEST(Min);
+    TSUNIT_DECLARE_TEST(Max);
+    TSUNIT_DECLARE_TEST(Proper);
+    TSUNIT_DECLARE_TEST(Comparison);
+    TSUNIT_DECLARE_TEST(Arithmetics);
+    TSUNIT_DECLARE_TEST(ToString);
+    TSUNIT_DECLARE_TEST(FromString);
 };
 
 TSUNIT_REGISTER(FractionTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void FractionTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void FractionTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void FractionTest::testConstructor()
+TSUNIT_DEFINE_TEST(Constructor)
 {
     using Frac = ts::Fraction<int16_t>;
 
@@ -111,7 +79,7 @@ void FractionTest::testConstructor()
     TSUNIT_EQUAL(1, a1.denominator());
 }
 
-void FractionTest::testDouble()
+TSUNIT_DEFINE_TEST(Double)
 {
     TSUNIT_EQUAL(0.0, ts::Fraction<int>(0).toDouble());
     TSUNIT_EQUAL(-2.0, ts::Fraction<int>(4, -2).toDouble());
@@ -119,7 +87,7 @@ void FractionTest::testDouble()
     TSUNIT_EQUAL(2.5, ts::Fraction<int>(-100, -40).toDouble());
 }
 
-void FractionTest::testAbs()
+TSUNIT_DEFINE_TEST(Abs)
 {
     using SF = ts::Fraction<int32_t>;
     using UF = ts::Fraction<uint32_t>;
@@ -136,7 +104,7 @@ void FractionTest::testAbs()
     TSUNIT_EQUAL(2, a3.abs().denominator());
 }
 
-void FractionTest::testMin()
+TSUNIT_DEFINE_TEST(Min)
 {
     using Frac = ts::Fraction<int32_t>;
 
@@ -149,7 +117,7 @@ void FractionTest::testMin()
     TSUNIT_EQUAL(3, a1.denominator());
 }
 
-void FractionTest::testMax()
+TSUNIT_DEFINE_TEST(Max)
 {
     using Frac = ts::Fraction<int32_t>;
 
@@ -162,7 +130,7 @@ void FractionTest::testMax()
     TSUNIT_EQUAL(2, a1.denominator());
 }
 
-void FractionTest::testProper()
+TSUNIT_DEFINE_TEST(Proper)
 {
     using Frac = ts::Fraction<int32_t>;
 
@@ -177,7 +145,7 @@ void FractionTest::testProper()
     TSUNIT_EQUAL(3, a1.denominator());
 }
 
-void FractionTest::testComparison()
+TSUNIT_DEFINE_TEST(Comparison)
 {
     using Frac = ts::Fraction<int32_t>;
 
@@ -218,7 +186,7 @@ void FractionTest::testComparison()
     TSUNIT_ASSERT(2 <= Frac(5, 2));
 }
 
-void FractionTest::testArithmetics()
+TSUNIT_DEFINE_TEST(Arithmetics)
 {
     using Frac = ts::Fraction<int32_t>;
 
@@ -323,7 +291,7 @@ void FractionTest::testArithmetics()
     TSUNIT_EQUAL(15, a1.denominator());
 }
 
-void FractionTest::testToString()
+TSUNIT_DEFINE_TEST(ToString)
 {
     using Frac = ts::Fraction<int32_t>;
     TSUNIT_EQUAL(u"12,345", Frac(12345).toString());
@@ -332,7 +300,7 @@ void FractionTest::testToString()
     TSUNIT_EQUAL(u"-1/2", Frac(1, -2).toString());
 }
 
-void FractionTest::testFromString()
+TSUNIT_DEFINE_TEST(FromString)
 {
     ts::Fraction<int32_t> a;
 

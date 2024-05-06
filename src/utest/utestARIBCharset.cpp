@@ -26,117 +26,58 @@
 
 class ARIBCharsetTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testCanEncode();
-    void testDecode1();
-    void testDecode2();
-    void testDecode3();
-    void testDecode4();
-    void testDecode5();
-    void testDecode6();
-    void testDecode7();
-    void testDecode8();
-    void testDecode9();
-    void testDecode10();
-    void testDecode11();
-    void testDecode12();
-    void testDecode13();
-    void testDecode14();
-    void testDecode15();
-    void testDecode16();
-    void testDecode17();
-    void testDecode18();
-    void testDecode19();
-    void testDecode20();
-    void testDecode21();
-    void testDecode22();
-    void testDecode23();
-    void testDecode24();
-    void testDecode25();
-    void testDecode26();
-    void testEncode1();
-    void testEncode2();
-    void testEncode3();
-    void testEncode4();
-    void testEncode5();
-    void testEncode6();
-    void testEncode7();
-    void testEncode8();
-    void testEncode9();
-    void testEncode10();
-    void testEncode11();
-    void testEncode12();
-    void testEncode13();
-    void testEncode14();
-    void testEncode15();
-    void testEncode16();
-    void testEncode17();
-    void testEncode18();
-    void testEncode19();
-    void testEncode20();
-    void testEncode21();
-    void testEncode22();
-    void testEncode23();
-    void testEncode24();
-    void testEncode25();
-
-    TSUNIT_TEST_BEGIN(ARIBCharsetTest);
-    TSUNIT_TEST(testCanEncode);
-    TSUNIT_TEST(testDecode1);
-    TSUNIT_TEST(testDecode2);
-    TSUNIT_TEST(testDecode3);
-    TSUNIT_TEST(testDecode4);
-    TSUNIT_TEST(testDecode5);
-    TSUNIT_TEST(testDecode6);
-    TSUNIT_TEST(testDecode7);
-    TSUNIT_TEST(testDecode8);
-    TSUNIT_TEST(testDecode9);
-    TSUNIT_TEST(testDecode10);
-    TSUNIT_TEST(testDecode11);
-    TSUNIT_TEST(testDecode12);
-    TSUNIT_TEST(testDecode13);
-    TSUNIT_TEST(testDecode14);
-    TSUNIT_TEST(testDecode15);
-    TSUNIT_TEST(testDecode16);
-    TSUNIT_TEST(testDecode17);
-    TSUNIT_TEST(testDecode18);
-    TSUNIT_TEST(testDecode19);
-    TSUNIT_TEST(testDecode20);
-    TSUNIT_TEST(testDecode21);
-    TSUNIT_TEST(testDecode22);
-    TSUNIT_TEST(testDecode23);
-    TSUNIT_TEST(testDecode24);
-    TSUNIT_TEST(testDecode25);
-    TSUNIT_TEST(testDecode26);
-    TSUNIT_TEST(testEncode1);
-    TSUNIT_TEST(testEncode2);
-    TSUNIT_TEST(testEncode3);
-    TSUNIT_TEST(testEncode4);
-    TSUNIT_TEST(testEncode5);
-    TSUNIT_TEST(testEncode6);
-    TSUNIT_TEST(testEncode7);
-    TSUNIT_TEST(testEncode8);
-    TSUNIT_TEST(testEncode9);
-    TSUNIT_TEST(testEncode10);
-    TSUNIT_TEST(testEncode11);
-    TSUNIT_TEST(testEncode12);
-    TSUNIT_TEST(testEncode13);
-    TSUNIT_TEST(testEncode14);
-    TSUNIT_TEST(testEncode15);
-    TSUNIT_TEST(testEncode16);
-    TSUNIT_TEST(testEncode17);
-    TSUNIT_TEST(testEncode18);
-    TSUNIT_TEST(testEncode19);
-    TSUNIT_TEST(testEncode20);
-    TSUNIT_TEST(testEncode21);
-    TSUNIT_TEST(testEncode22);
-    TSUNIT_TEST(testEncode23);
-    TSUNIT_TEST(testEncode24);
-    TSUNIT_TEST(testEncode25);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(CanEncode);
+    TSUNIT_DECLARE_TEST(Decode1);
+    TSUNIT_DECLARE_TEST(Decode2);
+    TSUNIT_DECLARE_TEST(Decode3);
+    TSUNIT_DECLARE_TEST(Decode4);
+    TSUNIT_DECLARE_TEST(Decode5);
+    TSUNIT_DECLARE_TEST(Decode6);
+    TSUNIT_DECLARE_TEST(Decode7);
+    TSUNIT_DECLARE_TEST(Decode8);
+    TSUNIT_DECLARE_TEST(Decode9);
+    TSUNIT_DECLARE_TEST(Decode10);
+    TSUNIT_DECLARE_TEST(Decode11);
+    TSUNIT_DECLARE_TEST(Decode12);
+    TSUNIT_DECLARE_TEST(Decode13);
+    TSUNIT_DECLARE_TEST(Decode14);
+    TSUNIT_DECLARE_TEST(Decode15);
+    TSUNIT_DECLARE_TEST(Decode16);
+    TSUNIT_DECLARE_TEST(Decode17);
+    TSUNIT_DECLARE_TEST(Decode18);
+    TSUNIT_DECLARE_TEST(Decode19);
+    TSUNIT_DECLARE_TEST(Decode20);
+    TSUNIT_DECLARE_TEST(Decode21);
+    TSUNIT_DECLARE_TEST(Decode22);
+    TSUNIT_DECLARE_TEST(Decode23);
+    TSUNIT_DECLARE_TEST(Decode24);
+    TSUNIT_DECLARE_TEST(Decode25);
+    TSUNIT_DECLARE_TEST(Decode26);
+    TSUNIT_DECLARE_TEST(Encode1);
+    TSUNIT_DECLARE_TEST(Encode2);
+    TSUNIT_DECLARE_TEST(Encode3);
+    TSUNIT_DECLARE_TEST(Encode4);
+    TSUNIT_DECLARE_TEST(Encode5);
+    TSUNIT_DECLARE_TEST(Encode6);
+    TSUNIT_DECLARE_TEST(Encode7);
+    TSUNIT_DECLARE_TEST(Encode8);
+    TSUNIT_DECLARE_TEST(Encode9);
+    TSUNIT_DECLARE_TEST(Encode10);
+    TSUNIT_DECLARE_TEST(Encode11);
+    TSUNIT_DECLARE_TEST(Encode12);
+    TSUNIT_DECLARE_TEST(Encode13);
+    TSUNIT_DECLARE_TEST(Encode14);
+    TSUNIT_DECLARE_TEST(Encode15);
+    TSUNIT_DECLARE_TEST(Encode16);
+    TSUNIT_DECLARE_TEST(Encode17);
+    TSUNIT_DECLARE_TEST(Encode18);
+    TSUNIT_DECLARE_TEST(Encode19);
+    TSUNIT_DECLARE_TEST(Encode20);
+    TSUNIT_DECLARE_TEST(Encode21);
+    TSUNIT_DECLARE_TEST(Encode22);
+    TSUNIT_DECLARE_TEST(Encode23);
+    TSUNIT_DECLARE_TEST(Encode24);
+    TSUNIT_DECLARE_TEST(Encode25);
 
 private:
     const bool _cSyntaxDebug = !ts::GetEnvironment(u"TS_UTEST_ARIB_CSYNTAX").empty();
@@ -145,21 +86,6 @@ private:
 };
 
 TSUNIT_REGISTER(ARIBCharsetTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void ARIBCharsetTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void ARIBCharsetTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -189,7 +115,7 @@ void ARIBCharsetTest::dump(const ts::UString& title, const ts::UString& str)
 // Test cases
 //----------------------------------------------------------------------------
 
-void ARIBCharsetTest::testCanEncode()
+TSUNIT_DEFINE_TEST(CanEncode)
 {
     const ts::Charset& cset(ts::ARIBCharset::B24);
 
@@ -221,133 +147,133 @@ void ARIBCharsetTest::testCanEncode()
     TSUNIT_EQUAL(u16, dec)
 
 
-void ARIBCharsetTest::testDecode1()
+TSUNIT_DEFINE_TEST(Decode1)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x0F, 0x41, 0x6D, 0x39, 0x67, 0x0E, 0x31, 0xFE, 0x0F, 0x3D, 0x29, 0x45, 0x44);
     U(0x004E, 0x0048, 0x004B, 0x7DCF, 0x5408, 0x0031, 0x30FB, 0x79CB, 0x7530);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode2()
+TSUNIT_DEFINE_TEST(Decode2)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x0F, 0x41, 0x6D, 0x39, 0x67, 0x0E, 0x32, 0xFE, 0x0F, 0x3D, 0x29, 0x45, 0x44);
     U(0x004E, 0x0048, 0x004B, 0x7DCF, 0x5408, 0x0032, 0x30FB, 0x79CB, 0x7530);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode3()
+TSUNIT_DEFINE_TEST(Decode3)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x0F, 0x37, 0x48, 0x42, 0x53, 0x0E, 0x47, 0xFE, 0x0F, 0x3D, 0x29, 0x45, 0x44);
     U(0x004E, 0x0048, 0x004B, 0x643A, 0x5E2F, 0x0047, 0x30FB, 0x79CB, 0x7530);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode4()
+TSUNIT_DEFINE_TEST(Decode4)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x45, 0x1D, 0x46, 0x1D, 0x6C, 0x31, 0x0F, 0x3D, 0x29, 0x45, 0x44);
     U(0x004E, 0x0048, 0x004B, 0x0045, 0x30C6, 0x30EC, 0x0031, 0x79CB, 0x7530);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode5()
+TSUNIT_DEFINE_TEST(Decode5)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x45, 0x1D, 0x46, 0x1D, 0x6C, 0x32, 0x0F, 0x3D, 0x29, 0x45, 0x44);
     U(0x004E, 0x0048, 0x004B, 0x0045, 0x30C6, 0x30EC, 0x0032, 0x79CB, 0x7530);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode6()
+TSUNIT_DEFINE_TEST(Decode6)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x45, 0x1D, 0x46, 0x1D, 0x6C, 0x33, 0x0F, 0x3D, 0x29, 0x45, 0x44);
     U(0x004E, 0x0048, 0x004B, 0x0045, 0x30C6, 0x30EC, 0x0033, 0x79CB, 0x7530);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode7()
+TSUNIT_DEFINE_TEST(Decode7)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x0F, 0x37, 0x48, 0x42, 0x53, 0x0E, 0x32);
     U(0x004E, 0x0048, 0x004B, 0x643A, 0x5E2F, 0x0032);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode8()
+TSUNIT_DEFINE_TEST(Decode8)
 {
     B(0x3D, 0x29, 0x45, 0x44, 0x44, 0x2B, 0x46, 0x7C, 0x4A, 0x7C, 0x41, 0x77);
     U(0x79CB, 0x7530, 0x671D, 0x65E5, 0x653E, 0x9001);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode9()
+TSUNIT_DEFINE_TEST(Decode9)
 {
     B(0x0E, 0x41, 0x42, 0x53, 0x0F, 0x3D, 0x29, 0x45, 0x44, 0x4A, 0x7C, 0x41, 0x77, 0x0E, 0x31);
     U(0x0041, 0x0042, 0x0053, 0x79CB, 0x7530, 0x653E, 0x9001, 0x0031);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode10()
+TSUNIT_DEFINE_TEST(Decode10)
 {
     B(0x0E, 0x41, 0x42, 0x53, 0x0F, 0x3D, 0x29, 0x45, 0x44, 0x4A, 0x7C, 0x41, 0x77, 0x0E, 0x32);
     U(0x0041, 0x0042, 0x0053, 0x79CB, 0x7530, 0x653E, 0x9001, 0x0032);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode11()
+TSUNIT_DEFINE_TEST(Decode11)
 {
     B(0x3D, 0x29, 0x45, 0x44, 0x4A, 0x7C, 0x41, 0x77, 0x37, 0x48, 0x42, 0x53);
     U(0x79CB, 0x7530, 0x653E, 0x9001, 0x643A, 0x5E2F);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode12()
+TSUNIT_DEFINE_TEST(Decode12)
 {
     B(0x0E, 0x41, 0x42, 0x53, 0x0F, 0x3D, 0x29, 0x45, 0x44, 0x4A, 0x7C, 0x41, 0x77, 0x4E, 0x57, 0x3B, 0x7E);
     U(0x0041, 0x0042, 0x0053, 0x79CB, 0x7530, 0x653E, 0x9001, 0x81E8, 0x6642);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode13()
+TSUNIT_DEFINE_TEST(Decode13)
 {
     B(0x0E, 0x41, 0x4B, 0x54, 0x0F, 0x3D, 0x29, 0x45, 0x44, 0x1B, 0x7C, 0xC6, 0xEC, 0xD3, 0x0E, 0x31);
     U(0x0041, 0x004B, 0x0054, 0x79CB, 0x7530, 0x30C6, 0x30EC, 0x30D3, 0x0031);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode14()
+TSUNIT_DEFINE_TEST(Decode14)
 {
     B(0x0E, 0x41, 0x4B, 0x54, 0x0F, 0x3D, 0x29, 0x45, 0x44, 0x1B, 0x7C, 0xC6, 0xEC, 0xD3, 0x0E, 0x32);
     U(0x0041, 0x004B, 0x0054, 0x79CB, 0x7530, 0x30C6, 0x30EC, 0x30D3, 0x0032);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode15()
+TSUNIT_DEFINE_TEST(Decode15)
 {
     B(0x0E, 0x41, 0x4B, 0x54, 0x0F, 0x4E, 0x57, 0x3B, 0x7E);
     U(0x0041, 0x004B, 0x0054, 0x81E8, 0x6642);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode16()
+TSUNIT_DEFINE_TEST(Decode16)
 {
     B(0x0E, 0x47, 0x1B, 0x7C, 0xAC, 0xA4, 0xC9);
     U(0x0047, 0x30AC, 0x30A4, 0x30C9);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode17()
+TSUNIT_DEFINE_TEST(Decode17)
 {
     B(0x0E, 0x41, 0x4B, 0x54, 0x0F, 0x3D, 0x29, 0x45, 0x44, 0x1B, 0x7C, 0xC6, 0xEC, 0xD3);
     U(0x0041, 0x004B, 0x0054, 0x79CB, 0x7530, 0x30C6, 0x30EC, 0x30D3);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode18()
+TSUNIT_DEFINE_TEST(Decode18)
 {
     B(0x0E, 0x4E, 0x48, 0x4B, 0x1D, 0x4B, 0x1D, 0x65, 0xF9, 0x1D, 0x39, 0x37, 0x0F, 0x1B, 0x24, 0x3B, 0x7A, 0x5A, 0x7A, 0x56);
     U(0x004E, 0x0048, 0x004B, 0x30CB, 0x30E5, 0x30FC, 0x30B9, 0x0037, 0xD83C, 0xDE14, 0xD83C, 0xDE11);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode19()
+TSUNIT_DEFINE_TEST(Decode19)
 {
     B(0x4C, 0x6B, 0x0E, 0x37, 0x0F, 0x3B, 0x7E, 0xFD, 0xFB, 0x30, 0x6C, 0x4A, 0x62, 0x40, 0x68, 0xD8,
       0xFD, 0x30, 0x6C, 0x4A, 0x62, 0x3F, 0x3C, 0xAF, 0xFC, 0x21, 0x21, 0x3A, 0x23, 0xFD, 0xB3, 0xCE,
@@ -367,14 +293,14 @@ void ARIBCharsetTest::testDecode19()
     T(true);
 }
 
-void ARIBCharsetTest::testDecode20()
+TSUNIT_DEFINE_TEST(Decode20)
 {
     B(0x3D, 0x50, 0x31, 0x69, 0x3C, 0x54);
     U(0x51FA, 0x6F14, 0x8005);
     T(true);
 }
 
-void ARIBCharsetTest::testDecode21()
+TSUNIT_DEFINE_TEST(Decode21)
 {
     B(0x21, 0x5A, 0x1B, 0x7C, 0xAD, 0xE3, 0xB9, 0xBF, 0xF9, 0x21, 0x5B, 0x40, 0x44, 0x30, 0x66, 0x3C,
       0x42, 0x21, 0x24, 0x21, 0x5A, 0xB5, 0xD6, 0xAD, 0xE3, 0xB9, 0xBF, 0xF9, 0x21, 0x5B, 0x43, 0x53,
@@ -388,7 +314,7 @@ void ARIBCharsetTest::testDecode21()
     T(true);
 }
 
-void ARIBCharsetTest::testDecode22()
+TSUNIT_DEFINE_TEST(Decode22)
 {
     B(0x1D, 0x40, 0xF9, 0x1B, 0x6F, 0x26, 0x23, 0x73, 0xAC, 0x0F, 0x4D, 0x68, 0xBF, 0x21, 0x2A, 0xFB,
       0x47, 0x48, 0x4D, 0x70, 0xCE, 0x1B, 0x7C, 0xE9, 0xA4, 0xAA, 0xF3, 0x33, 0x58, 0x31, 0x60, 0x19,
@@ -402,7 +328,7 @@ void ARIBCharsetTest::testDecode22()
     T(true);
 }
 
-void ARIBCharsetTest::testDecode23()
+TSUNIT_DEFINE_TEST(Decode23)
 {
     B(0x40, 0x2E, 0x44, 0x39, 0xDE, 0xC3, 0xBF, 0xC0, 0x43, 0x66, 0xCE, 0x1B, 0x6F, 0x69, 0x24, 0x2A,
       0x73, 0xCE, 0x0F, 0x3B, 0x52, 0xC9, 0xE2, 0xBF, 0xC1, 0xAC, 0xFD, 0x37, 0x32, 0xEC, 0xCE, 0x43,
@@ -422,7 +348,7 @@ void ARIBCharsetTest::testDecode23()
     T(true);
 }
 
-void ARIBCharsetTest::testDecode24()
+TSUNIT_DEFINE_TEST(Decode24)
 {
     B(0x21, 0x5A, 0x45, 0x5A, 0x4D, 0x4B, 0x3B, 0x7E, 0x42, 0x65, 0x1B, 0x7C, 0xC9, 0xE9, 0xDE, 0x21,
       0x5B, 0x31, 0x40, 0x4C, 0x38, 0x3F, 0x4E, 0x3A, 0x38, 0x31, 0x52, 0x4C, 0x67, 0x0E, 0x33, 0x0F,
@@ -435,7 +361,7 @@ void ARIBCharsetTest::testDecode24()
     T(true);
 }
 
-void ARIBCharsetTest::testDecode25()
+TSUNIT_DEFINE_TEST(Decode25)
 {
     B(0x1B, 0x7C, 0xCA, 0xCB, 0xB3, 0xEC, 0x44, 0x41, 0x49, 0x34, 0x37, 0x4A, 0x20, 0x40, 0x56, 0x1B,
       0x7D, 0xC1, 0xE3, 0xF3, 0xAC, 0x25, 0x4A, 0x25, 0x5E, 0x25, 0x3A, 0xF2, 0x3F, 0x29, 0xD9, 0xEB,
@@ -449,7 +375,7 @@ void ARIBCharsetTest::testDecode25()
     T(true);
 }
 
-void ARIBCharsetTest::testDecode26()
+TSUNIT_DEFINE_TEST(Decode26)
 {
     B(0x21, 0x7A, 0x46, 0x7C, 0x4B, 0x5C, 0x41, 0x34, 0x39, 0x71, 0xC7, 0x36, 0x43, 0xAD, 0xCE, 0x38,
       0x77, 0x37, 0x4A, 0xF2, 0x48, 0x2F, 0x38, 0x2B, 0x22, 0x27, 0x35, 0x5C, 0x3A, 0x6A, 0x21, 0x44,
@@ -496,7 +422,7 @@ void ARIBCharsetTest::testDecode26()
     TSUNIT_EQUAL(success, ok); \
     TSUNIT_EQUAL(u16, dec)
 
-void ARIBCharsetTest::testEncode1()
+TSUNIT_DEFINE_TEST(Encode1)
 {
     U(0x004E, 0x0048, 0x004B, 0x7DCF, 0x5408, 0x0031, 0x30FB, 0x79CB, 0x7530);
 #if defined(GL_FIRST)
@@ -507,7 +433,7 @@ void ARIBCharsetTest::testEncode1()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode2()
+TSUNIT_DEFINE_TEST(Encode2)
 {
     U(0x004E, 0x0048, 0x004B, 0x7DCF, 0x5408, 0x0032, 0x30FB, 0x79CB, 0x7530);
 #if defined(GL_FIRST)
@@ -518,7 +444,7 @@ void ARIBCharsetTest::testEncode2()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode3()
+TSUNIT_DEFINE_TEST(Encode3)
 {
     U(0x004E, 0x0048, 0x004B, 0x643A, 0x5E2F, 0x0047, 0x30FB, 0x79CB, 0x7530);
 #if defined(GL_FIRST)
@@ -529,7 +455,7 @@ void ARIBCharsetTest::testEncode3()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode4()
+TSUNIT_DEFINE_TEST(Encode4)
 {
     U(0x004E, 0x0048, 0x004B, 0x0045, 0x30C6, 0x30EC, 0x0031, 0x79CB, 0x7530);
 #if defined(GL_FIRST)
@@ -540,7 +466,7 @@ void ARIBCharsetTest::testEncode4()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode5()
+TSUNIT_DEFINE_TEST(Encode5)
 {
     U(0x004E, 0x0048, 0x004B, 0x0045, 0x30C6, 0x30EC, 0x0032, 0x79CB, 0x7530);
 #if defined(GL_FIRST)
@@ -551,7 +477,7 @@ void ARIBCharsetTest::testEncode5()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode6()
+TSUNIT_DEFINE_TEST(Encode6)
 {
     U(0x004E, 0x0048, 0x004B, 0x0045, 0x30C6, 0x30EC, 0x0033, 0x79CB, 0x7530);
 #if defined(GL_FIRST)
@@ -562,7 +488,7 @@ void ARIBCharsetTest::testEncode6()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode7()
+TSUNIT_DEFINE_TEST(Encode7)
 {
     U(0x004E, 0x0048, 0x004B, 0x643A, 0x5E2F, 0x0032);
 #if defined(GL_FIRST)
@@ -573,14 +499,14 @@ void ARIBCharsetTest::testEncode7()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode8()
+TSUNIT_DEFINE_TEST(Encode8)
 {
     U(0x79CB, 0x7530, 0x671D, 0x65E5, 0x653E, 0x9001);
     B(0x3D, 0x29, 0x45, 0x44, 0x44, 0x2B, 0x46, 0x7C, 0x4A, 0x7C, 0x41, 0x77);
     T(true);
 }
 
-void ARIBCharsetTest::testEncode9()
+TSUNIT_DEFINE_TEST(Encode9)
 {
     U(0x0041, 0x0042, 0x0053, 0x79CB, 0x7530, 0x653E, 0x9001, 0x0031);
 #if defined(GL_FIRST)
@@ -591,7 +517,7 @@ void ARIBCharsetTest::testEncode9()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode10()
+TSUNIT_DEFINE_TEST(Encode10)
 {
     U(0x0041, 0x0042, 0x0053, 0x79CB, 0x7530, 0x653E, 0x9001, 0x0032);
 #if defined(GL_FIRST)
@@ -602,14 +528,14 @@ void ARIBCharsetTest::testEncode10()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode11()
+TSUNIT_DEFINE_TEST(Encode11)
 {
     U(0x79CB, 0x7530, 0x653E, 0x9001, 0x643A, 0x5E2F);
     B(0x3D, 0x29, 0x45, 0x44, 0x4A, 0x7C, 0x41, 0x77, 0x37, 0x48, 0x42, 0x53);
     T(true);
 }
 
-void ARIBCharsetTest::testEncode12()
+TSUNIT_DEFINE_TEST(Encode12)
 {
     U(0x0041, 0x0042, 0x0053, 0x79CB, 0x7530, 0x653E, 0x9001, 0x81E8, 0x6642);
 #if defined(GL_FIRST)
@@ -620,7 +546,7 @@ void ARIBCharsetTest::testEncode12()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode13()
+TSUNIT_DEFINE_TEST(Encode13)
 {
     U(0x0041, 0x004B, 0x0054, 0x79CB, 0x7530, 0x30C6, 0x30EC, 0x30D3, 0x0031);
 #if defined(GL_FIRST)
@@ -631,7 +557,7 @@ void ARIBCharsetTest::testEncode13()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode14()
+TSUNIT_DEFINE_TEST(Encode14)
 {
     U(0x0041, 0x004B, 0x0054, 0x79CB, 0x7530, 0x30C6, 0x30EC, 0x30D3, 0x0032);
 #if defined(GL_FIRST)
@@ -642,7 +568,7 @@ void ARIBCharsetTest::testEncode14()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode15()
+TSUNIT_DEFINE_TEST(Encode15)
 {
     U(0x0041, 0x004B, 0x0054, 0x81E8, 0x6642);
 #if defined(GL_FIRST)
@@ -653,7 +579,7 @@ void ARIBCharsetTest::testEncode15()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode16()
+TSUNIT_DEFINE_TEST(Encode16)
 {
     U(0x0047, 0x30AC, 0x30A4, 0x30C9);
 #if defined(GL_FIRST)
@@ -664,7 +590,7 @@ void ARIBCharsetTest::testEncode16()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode17()
+TSUNIT_DEFINE_TEST(Encode17)
 {
     U(0x0041, 0x004B, 0x0054, 0x79CB, 0x7530, 0x30C6, 0x30EC, 0x30D3);
 #if defined(GL_FIRST)
@@ -675,7 +601,7 @@ void ARIBCharsetTest::testEncode17()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode18()
+TSUNIT_DEFINE_TEST(Encode18)
 {
     U(0x004E, 0x0048, 0x004B, 0x30CB, 0x30E5, 0x30FC, 0x30B9, 0x0037, 0xD83C, 0xDE14, 0xD83C, 0xDE11);
 #if defined(GL_FIRST)
@@ -686,7 +612,7 @@ void ARIBCharsetTest::testEncode18()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode19()
+TSUNIT_DEFINE_TEST(Encode19)
 {
     U(0x591C, 0x0037, 0x6642, 0x3001, 0x300C, 0x4E00, 0x6B69, 0x5148, 0x3078, 0x3001, 0x4E00, 0x6B69,
       0x6DF1, 0x304F, 0x300D, 0x3000, 0x4ECA, 0x3001, 0x3053, 0x306E, 0x30CB, 0x30E5, 0x30FC, 0x30B9,
@@ -708,14 +634,14 @@ void ARIBCharsetTest::testEncode19()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode20()
+TSUNIT_DEFINE_TEST(Encode20)
 {
     U(0x51FA, 0x6F14, 0x8005);
     B(0x3D, 0x50, 0x31, 0x69, 0x3C, 0x54);
     T(true);
 }
 
-void ARIBCharsetTest::testEncode21()
+TSUNIT_DEFINE_TEST(Encode21)
 {
     U(0x3010, 0x30AD, 0x30E3, 0x30B9, 0x30BF, 0x30FC, 0x3011, 0x9752, 0x4E95, 0x5B9F, 0xFF0C, 0x3010,
       0x30B5, 0x30D6, 0x30AD, 0x30E3, 0x30B9, 0x30BF, 0x30FC, 0x3011, 0x6C60, 0x7530, 0x4F38, 0x5B50,
@@ -730,7 +656,7 @@ void ARIBCharsetTest::testEncode21()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode22()
+TSUNIT_DEFINE_TEST(Encode22)
 {
     U(0x30C0, 0x30FC, 0x30A6, 0x30A3, 0x30F3, 0x304C, 0x6765, 0x305F, 0xFF01, 0x300C, 0x6CE2, 0x4E71,
       0x306E, 0x30E9, 0x30A4, 0x30AA, 0x30F3, 0x5B66, 0x5712, 0x306B, 0x6F5C, 0x5165, 0xFF01, 0x767E,
@@ -744,7 +670,7 @@ void ARIBCharsetTest::testEncode22()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode23()
+TSUNIT_DEFINE_TEST(Encode23)
 {
     U(0x6210, 0x9577, 0x307E, 0x3063, 0x305F, 0x3060, 0x4E2D, 0x306E, 0x30E9, 0x30A4, 0x30AA, 0x30F3,
       0x306E, 0x5B50, 0x3069, 0x3082, 0x305F, 0x3061, 0x304C, 0x3001, 0x7FA4, 0x308C, 0x306E, 0x4E2D,
@@ -766,7 +692,7 @@ void ARIBCharsetTest::testEncode23()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode24()
+TSUNIT_DEFINE_TEST(Encode24)
 {
     U(0x3010, 0x571F, 0x66DC, 0x6642, 0x4EE3, 0x30C9, 0x30E9, 0x30DE, 0x3011, 0x96F2, 0x9727, 0x4EC1,
       0x5DE6, 0x885B, 0x9580, 0x0033, 0x3000, 0xD83C, 0xDE1F, 0xFF08, 0x0031, 0xFF09, 0x300C, 0x5D50,
@@ -778,7 +704,7 @@ void ARIBCharsetTest::testEncode24()
     T(true);
 }
 
-void ARIBCharsetTest::testEncode25()
+TSUNIT_DEFINE_TEST(Encode25)
 {
     U(0x0061, 0x0062, 0x0020, 0x0063, 0x9A5A, 0x304D, 0x3000, 0x306E, 0x6563);
 #if defined(GL_FIRST)

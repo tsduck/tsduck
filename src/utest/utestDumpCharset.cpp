@@ -21,44 +21,19 @@
 
 class DumpCharsetTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testDecode();
-    void testEncode();
-    void testCanEncode();
-
-    TSUNIT_TEST_BEGIN(DumpCharsetTest);
-    TSUNIT_TEST(testDecode);
-    TSUNIT_TEST(testEncode);
-    TSUNIT_TEST(testCanEncode);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Decode);
+    TSUNIT_DECLARE_TEST(Encode);
+    TSUNIT_DECLARE_TEST(CanEncode);
 };
 
 TSUNIT_REGISTER(DumpCharsetTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void DumpCharsetTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void DumpCharsetTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Test cases
 //----------------------------------------------------------------------------
 
-void DumpCharsetTest::testCanEncode()
+TSUNIT_DEFINE_TEST(CanEncode)
 {
     const ts::Charset& cset(ts::DumpCharset::DUMP);
 
@@ -68,7 +43,7 @@ void DumpCharsetTest::testCanEncode()
     TSUNIT_ASSERT(!cset.canEncode(u"01 a"));
 }
 
-void DumpCharsetTest::testDecode()
+TSUNIT_DEFINE_TEST(Decode)
 {
     static const uint8_t data[] = {0x00, 0x01, 0x02, 0x11, 0xEA, 0x07, 0x80, 0x34, 0xB2};
 
@@ -80,7 +55,7 @@ void DumpCharsetTest::testDecode()
     TSUNIT_EQUAL(u"", cset.decoded(nullptr, 3));
 }
 
-void DumpCharsetTest::testEncode()
+TSUNIT_DEFINE_TEST(Encode)
 {
     const ts::Charset& cset(ts::DumpCharset::DUMP);
 

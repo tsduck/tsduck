@@ -32,51 +32,26 @@
 
 class ThreadAttributesTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testStackSize();
-    void testDeleteWhenTerminated();
-    void testPriority();
-
-    TSUNIT_TEST_BEGIN(ThreadAttributesTest);
-    TSUNIT_TEST(testStackSize);
-    TSUNIT_TEST(testDeleteWhenTerminated);
-    TSUNIT_TEST(testPriority);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(StackSize);
+    TSUNIT_DECLARE_TEST(DeleteWhenTerminated);
+    TSUNIT_DECLARE_TEST(Priority);
 };
 
 TSUNIT_REGISTER(ThreadAttributesTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void ThreadAttributesTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void ThreadAttributesTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Test cases
 //----------------------------------------------------------------------------
 
-void ThreadAttributesTest::testStackSize()
+TSUNIT_DEFINE_TEST(StackSize)
 {
     ts::ThreadAttributes attr;
     TSUNIT_ASSERT(attr.getStackSize() == 0); // default value
     TSUNIT_ASSERT(attr.setStackSize(123456).getStackSize() == 123456);
 }
 
-void ThreadAttributesTest::testDeleteWhenTerminated()
+TSUNIT_DEFINE_TEST(DeleteWhenTerminated)
 {
     ts::ThreadAttributes attr;
     TSUNIT_ASSERT(attr.getDeleteWhenTerminated() == false); // default value
@@ -84,7 +59,7 @@ void ThreadAttributesTest::testDeleteWhenTerminated()
     TSUNIT_ASSERT(attr.setDeleteWhenTerminated(false).getDeleteWhenTerminated() == false);
 }
 
-void ThreadAttributesTest::testPriority()
+TSUNIT_DEFINE_TEST(Priority)
 {
     debug()
         << "ThreadAttributesTest: GetMinimumPriority() = " << ts::ThreadAttributes::GetMinimumPriority() << std::endl

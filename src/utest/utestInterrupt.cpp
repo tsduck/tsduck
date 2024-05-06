@@ -26,33 +26,10 @@
 
 class InterruptTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testInterrupt();
-
-    TSUNIT_TEST_BEGIN(InterruptTest);
-    TSUNIT_TEST(testInterrupt);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Interrupt);
 };
 
 TSUNIT_REGISTER(InterruptTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void InterruptTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void InterruptTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -70,7 +47,7 @@ namespace {
     };
 }
 
-void InterruptTest::testInterrupt()
+TSUNIT_DEFINE_TEST(Interrupt)
 {
     if (ts::EnvironmentExists(u"UTEST_INTERRUPT_ALLOWED")) {
         std::cerr << "InterruptTest: Unset UTEST_INTERRUPT_ALLOWED to skip the interrupt test" << std::endl;

@@ -32,15 +32,7 @@
 
 class PacketizerTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testPacketizer();
-
-    TSUNIT_TEST_BEGIN(PacketizerTest);
-    TSUNIT_TEST(testPacketizer);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Packetizer);
 
 private:
     // Demux one table from a list of packets
@@ -48,21 +40,6 @@ private:
 };
 
 TSUNIT_REGISTER(PacketizerTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void PacketizerTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void PacketizerTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -90,7 +67,7 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, 
     TSUNIT_ASSERT(binTable->isValid());
 }
 
-void PacketizerTest::testPacketizer()
+TSUNIT_DEFINE_TEST(Packetizer)
 {
     // Build a PAT, PMT and SDT. All these tables use one packet.
 

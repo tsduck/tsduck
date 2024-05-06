@@ -24,48 +24,21 @@ TS_MSC_NOWARNING(4305) // 'argument': truncation from 'int' to 'bool'
 
 class BoolPredicateTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testIdentity();
-    void testNot();
-    void testAnd();
-    void testOr();
-    void testXor();
-
-    TSUNIT_TEST_BEGIN(BoolPredicateTest);
-    TSUNIT_TEST(testIdentity);
-    TSUNIT_TEST(testNot);
-    TSUNIT_TEST(testAnd);
-    TSUNIT_TEST(testOr);
-    TSUNIT_TEST(testXor);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Identity);
+    TSUNIT_DECLARE_TEST(Not);
+    TSUNIT_DECLARE_TEST(And);
+    TSUNIT_DECLARE_TEST(Or);
+    TSUNIT_DECLARE_TEST(Xor);
 };
 
 TSUNIT_REGISTER(BoolPredicateTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void BoolPredicateTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void BoolPredicateTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void BoolPredicateTest::testIdentity()
+TSUNIT_DEFINE_TEST(Identity)
 {
     TSUNIT_EQUAL(true, ts::Identity(true));
     TSUNIT_EQUAL(false, ts::Identity(false));
@@ -76,7 +49,7 @@ void BoolPredicateTest::testIdentity()
     TSUNIT_EQUAL(true, ts::Identity(-12));
 }
 
-void BoolPredicateTest::testNot()
+TSUNIT_DEFINE_TEST(Not)
 {
     TSUNIT_EQUAL(false, ts::Not(true));
     TSUNIT_EQUAL(true, ts::Not(false));
@@ -87,7 +60,7 @@ void BoolPredicateTest::testNot()
     TSUNIT_EQUAL(false, ts::Not(-12));
 }
 
-void BoolPredicateTest::testAnd()
+TSUNIT_DEFINE_TEST(And)
 {
     TSUNIT_EQUAL(false, ts::And(false, false));
     TSUNIT_EQUAL(false, ts::And(false, true));
@@ -105,7 +78,7 @@ void BoolPredicateTest::testAnd()
     TSUNIT_EQUAL(false, ts::MultiAnd({true, false, true}));
 }
 
-void BoolPredicateTest::testOr()
+TSUNIT_DEFINE_TEST(Or)
 {
     TSUNIT_EQUAL(false, ts::Or(false, false));
     TSUNIT_EQUAL(true, ts::Or(false, true));
@@ -124,7 +97,7 @@ void BoolPredicateTest::testOr()
     TSUNIT_EQUAL(false, ts::MultiOr({false, false, false}));
 }
 
-void BoolPredicateTest::testXor()
+TSUNIT_DEFINE_TEST(Xor)
 {
     TSUNIT_EQUAL(false, ts::Xor(false, false));
     TSUNIT_EQUAL(true, ts::Xor(false, true));

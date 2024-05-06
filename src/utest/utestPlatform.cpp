@@ -22,45 +22,16 @@
 
 class PlatformTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testEndianness();
-    void testIntegerTypes();
-    void test64bitLiterals();
-    void testStringify();
-    void testVersion();
-    void testChrono();
-    void testSharedPtr();
-
-    TSUNIT_TEST_BEGIN(PlatformTest);
-    TSUNIT_TEST(testEndianness);
-    TSUNIT_TEST(testIntegerTypes);
-    TSUNIT_TEST(test64bitLiterals);
-    TSUNIT_TEST(testStringify);
-    TSUNIT_TEST(testVersion);
-    TSUNIT_TEST(testChrono);
-    TSUNIT_TEST(testSharedPtr);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Endianness);
+    TSUNIT_DECLARE_TEST(IntegerTypes);
+    TSUNIT_DECLARE_TEST(64bitLiterals);
+    TSUNIT_DECLARE_TEST(Stringify);
+    TSUNIT_DECLARE_TEST(Version);
+    TSUNIT_DECLARE_TEST(Chrono);
+    TSUNIT_DECLARE_TEST(SharedPtr);
 };
 
 TSUNIT_REGISTER(PlatformTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void PlatformTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void PlatformTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -68,7 +39,7 @@ void PlatformTest::afterTest()
 //----------------------------------------------------------------------------
 
 // Test case: verify endianness.
-void PlatformTest::testEndianness()
+TSUNIT_DEFINE_TEST(Endianness)
 {
     uint32_t i = 0x01020304;
     char* c = reinterpret_cast<char*>(&i);
@@ -93,7 +64,7 @@ void PlatformTest::testEndianness()
 }
 
 // Test case: predefined integer types.
-void PlatformTest::testIntegerTypes()
+TSUNIT_DEFINE_TEST(IntegerTypes)
 {
     debug()
         << "PlatformTest: TS_ADDRESS_BITS = " << TS_ADDRESS_BITS << std::endl
@@ -200,7 +171,7 @@ void PlatformTest::testIntegerTypes()
 }
 
 // Test case: 64-bit literals
-void PlatformTest::test64bitLiterals()
+TSUNIT_DEFINE_TEST(64bitLiterals)
 {
     uint64_t ui64 = 0xFEDCBA9876543210;
     int64_t i64 = 0xFEDCBA9876543210;
@@ -210,7 +181,7 @@ void PlatformTest::test64bitLiterals()
 }
 
 // Test case: stringification macro
-void PlatformTest::testStringify()
+TSUNIT_DEFINE_TEST(Stringify)
 {
 #define TEST_X 1
 #define TEST_P1(x) ("P1[" #x "]")
@@ -225,7 +196,7 @@ void PlatformTest::testStringify()
 }
 
 // Test case: version string
-void PlatformTest::testVersion()
+TSUNIT_DEFINE_TEST(Version)
 {
     debug() << "PlatformTest: GetVersion(VERSION_SHORT) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) << "\"" << std::endl
             << "PlatformTest: GetVersion(VERSION_LONG) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::LONG) << "\"" << std::endl
@@ -240,7 +211,7 @@ void PlatformTest::testVersion()
 }
 
 // Test case: std::chrono::duration
-void PlatformTest::testChrono()
+TSUNIT_DEFINE_TEST(Chrono)
 {
     debug() << "PlatformTest: cn::nanoseconds: " << sizeof(cn::nanoseconds) << " bytes, rep: " << sizeof(cn::nanoseconds::rep) << " bytes" << std::endl
             << "PlatformTest: cn::microseconds: " << sizeof(cn::microseconds) << " bytes, rep: " << sizeof(cn::microseconds::rep) << " bytes" << std::endl
@@ -278,7 +249,7 @@ void PlatformTest::testChrono()
 }
 
 // Test case: std::share_ptr
-void PlatformTest::testSharedPtr()
+TSUNIT_DEFINE_TEST(SharedPtr)
 {
     using Ptr = std::shared_ptr<uint64_t>;
     Ptr ptr1(new uint64_t(0x0123456789ABCDEF));

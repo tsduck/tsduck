@@ -20,35 +20,11 @@
 
 class CommandLineTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testCommand();
-    void testCommandFile();
-
-    TSUNIT_TEST_BEGIN(CommandLineTest);
-    TSUNIT_TEST(testCommand);
-    TSUNIT_TEST(testCommandFile);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Command);
+    TSUNIT_DECLARE_TEST(CommandFile);
 };
 
 TSUNIT_REGISTER(CommandLineTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void CommandLineTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void CommandLineTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -93,7 +69,7 @@ namespace {
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void CommandLineTest::testCommand()
+TSUNIT_DEFINE_TEST(Command)
 {
     ts::CommandLine cmdline;
     TestCommand test(cmdline);
@@ -115,7 +91,7 @@ void CommandLineTest::testCommand()
     TSUNIT_EQUAL(test.output, u"[command:cmd2][--bar:true]");
 }
 
-void CommandLineTest::testCommandFile()
+TSUNIT_DEFINE_TEST(CommandFile)
 {
     ts::CommandLine cmdline;
     TestCommand test(cmdline);

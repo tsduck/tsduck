@@ -22,29 +22,14 @@
 
 class HFBandTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testDefaultRegion();
-    void testBands();
-    void testEmpty();
-    void testEurope();
-    void testUSA();
-    void testVHF();
-    void testBS();
-    void testCS();
-
-    TSUNIT_TEST_BEGIN(HFBandTest);
-    TSUNIT_TEST(testDefaultRegion);
-    TSUNIT_TEST(testBands);
-    TSUNIT_TEST(testEmpty);
-    TSUNIT_TEST(testEurope);
-    TSUNIT_TEST(testUSA);
-    TSUNIT_TEST(testVHF);
-    TSUNIT_TEST(testBS);
-    TSUNIT_TEST(testCS);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(DefaultRegion);
+    TSUNIT_DECLARE_TEST(Bands);
+    TSUNIT_DECLARE_TEST(Empty);
+    TSUNIT_DECLARE_TEST(Europe);
+    TSUNIT_DECLARE_TEST(USA);
+    TSUNIT_DECLARE_TEST(VHF);
+    TSUNIT_DECLARE_TEST(BS);
+    TSUNIT_DECLARE_TEST(CS);
 
 private:
     ts::Report& report();
@@ -54,18 +39,8 @@ TSUNIT_REGISTER(HFBandTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
+// Common tools.
 //----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void HFBandTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void HFBandTest::afterTest()
-{
-}
 
 ts::Report& HFBandTest::report()
 {
@@ -82,19 +57,19 @@ ts::Report& HFBandTest::report()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void HFBandTest::testDefaultRegion()
+TSUNIT_DEFINE_TEST(DefaultRegion)
 {
     debug() << "HFBandTest::testDefaultRegion: default region: \"" << ts::HFBand::DefaultRegion(report()) << "\"" << std::endl;
     TSUNIT_ASSERT(!ts::HFBand::DefaultRegion(report()).empty());
 }
 
-void HFBandTest::testBands()
+TSUNIT_DEFINE_TEST(Bands)
 {
     TSUNIT_EQUAL(u"UHF, VHF", ts::UString::Join(ts::HFBand::GetAllBands(u"Europe")));
     TSUNIT_EQUAL(u"BS, CS, UHF, VHF", ts::UString::Join(ts::HFBand::GetAllBands(u"Japan")));
 }
 
-void HFBandTest::testEmpty()
+TSUNIT_DEFINE_TEST(Empty)
 {
     const ts::HFBand* hf = ts::HFBand::GetBand(u"zozoland", u"UHF", report());
     TSUNIT_ASSERT(hf != nullptr);
@@ -102,7 +77,7 @@ void HFBandTest::testEmpty()
     TSUNIT_EQUAL(0, hf->channelCount());
 }
 
-void HFBandTest::testEurope()
+TSUNIT_DEFINE_TEST(Europe)
 {
     const ts::HFBand* hf = ts::HFBand::GetBand(u"Europe", u"UHF", report());
     TSUNIT_ASSERT(hf != nullptr);
@@ -142,7 +117,7 @@ void HFBandTest::testEurope()
     TSUNIT_EQUAL(68, hf->previousChannel(69));
 }
 
-void HFBandTest::testUSA()
+TSUNIT_DEFINE_TEST(USA)
 {
     const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", u"UHF", report());
     TSUNIT_ASSERT(hf != nullptr);
@@ -171,7 +146,7 @@ void HFBandTest::testUSA()
     TSUNIT_EQUAL(68, hf->previousChannel(69));
 }
 
-void HFBandTest::testVHF()
+TSUNIT_DEFINE_TEST(VHF)
 {
     const ts::HFBand* hf = ts::HFBand::GetBand(u"USA", u"VHF", report());
     TSUNIT_ASSERT(hf != nullptr);
@@ -204,7 +179,7 @@ void HFBandTest::testVHF()
     TSUNIT_EQUAL(12, hf->previousChannel(13));
 }
 
-void HFBandTest::testBS()
+TSUNIT_DEFINE_TEST(BS)
 {
     const ts::HFBand* hf = ts::HFBand::GetBand(u"Japan", u"BS", report());
     TSUNIT_ASSERT(hf != nullptr);
@@ -221,7 +196,7 @@ void HFBandTest::testBS()
     TSUNIT_EQUAL(ts::POL_LEFT, hf->polarization(12));
 }
 
-void HFBandTest::testCS()
+TSUNIT_DEFINE_TEST(CS)
 {
     const ts::HFBand* hf = ts::HFBand::GetBand(u"Japan", u"CS", report());
     TSUNIT_ASSERT(hf != nullptr);

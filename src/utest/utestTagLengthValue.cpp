@@ -22,46 +22,20 @@
 
 class TagLengthValueTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testECMG();
-    void testEMMG();
-    void testECMGError();
-    void testEMMGError();
-
-    TSUNIT_TEST_BEGIN(TagLengthValueTest);
-    TSUNIT_TEST(testECMG);
-    TSUNIT_TEST(testEMMG);
-    TSUNIT_TEST(testECMGError);
-    TSUNIT_TEST(testEMMGError);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(ECMG);
+    TSUNIT_DECLARE_TEST(EMMG);
+    TSUNIT_DECLARE_TEST(ECMGError);
+    TSUNIT_DECLARE_TEST(EMMGError);
 };
 
 TSUNIT_REGISTER(TagLengthValueTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TagLengthValueTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TagLengthValueTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TagLengthValueTest::testECMG()
+TSUNIT_DEFINE_TEST(ECMG)
 {
     ts::ecmgscs::Protocol protocol;
     ts::ecmgscs::ChannelStatus refMessage(protocol);
@@ -162,7 +136,7 @@ void TagLengthValueTest::testECMG()
     TSUNIT_EQUAL(refString, str);
 }
 
-void TagLengthValueTest::testEMMG()
+TSUNIT_DEFINE_TEST(EMMG)
 {
     ts::emmgmux::Protocol protocol;
     ts::emmgmux::StreamBWAllocation refMessage(protocol);
@@ -217,7 +191,7 @@ void TagLengthValueTest::testEMMG()
     TSUNIT_EQUAL(refString, str);
 }
 
-void TagLengthValueTest::testECMGError()
+TSUNIT_DEFINE_TEST(ECMGError)
 {
     ts::ecmgscs::Protocol protocol;
     ts::ecmgscs::StreamError refMessage(protocol);
@@ -272,7 +246,7 @@ void TagLengthValueTest::testECMGError()
     TSUNIT_EQUAL(refString, str);
 }
 
-void TagLengthValueTest::testEMMGError()
+TSUNIT_DEFINE_TEST(EMMGError)
 {
     ts::emmgmux::Protocol protocol;
     ts::emmgmux::StreamError refMessage(protocol);

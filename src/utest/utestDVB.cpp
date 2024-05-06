@@ -24,25 +24,12 @@
 
 class DVBTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testTunerArgs();
-    void testTunerParams();
-    void testAllLNB();
-    void testLNB();
-    void testUniversalLNB();
-    void testJapanLNB();
-
-    TSUNIT_TEST_BEGIN(DVBTest);
-    TSUNIT_TEST(testTunerArgs);
-    TSUNIT_TEST(testTunerParams);
-    TSUNIT_TEST(testAllLNB);
-    TSUNIT_TEST(testLNB);
-    TSUNIT_TEST(testUniversalLNB);
-    TSUNIT_TEST(testJapanLNB);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(TunerArgs);
+    TSUNIT_DECLARE_TEST(TunerParams);
+    TSUNIT_DECLARE_TEST(AllLNB);
+    TSUNIT_DECLARE_TEST(LNB);
+    TSUNIT_DECLARE_TEST(UniversalLNB);
+    TSUNIT_DECLARE_TEST(JapanLNB);
 
 private:
     ts::Report& report();
@@ -54,18 +41,8 @@ TSUNIT_REGISTER(DVBTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
+// Common tools.
 //----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void DVBTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void DVBTest::afterTest()
-{
-}
 
 ts::Report& DVBTest::report()
 {
@@ -82,7 +59,7 @@ ts::Report& DVBTest::report()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void DVBTest::testTunerArgs()
+TSUNIT_DEFINE_TEST(TunerArgs)
 {
     ts::Args args(u"Test tuner", u"[options]");
     ts::TunerArgs tuner_args;
@@ -116,7 +93,7 @@ void DVBTest::testParameters(ts::DeliverySystem delsys)
     TSUNIT_ASSERT(targs1.toPluginOptions() == opts);
 }
 
-void DVBTest::testTunerParams()
+TSUNIT_DEFINE_TEST(TunerParams)
 {
     testParameters(ts::DS_DVB_S);
     testParameters(ts::DS_DVB_C);
@@ -124,7 +101,7 @@ void DVBTest::testTunerParams()
     testParameters(ts::DS_ATSC);
 }
 
-void DVBTest::testAllLNB()
+TSUNIT_DEFINE_TEST(AllLNB)
 {
     ts::UStringList names(ts::LNB::GetAllNames(report()));
     debug() << "DVBTest::testAllLNB: " << ts::UString::Join(names, u" | ") << std::endl;
@@ -143,7 +120,7 @@ void DVBTest::displayLNB(const ts::LNB& lnb)
             << "    legacySwitchFrequency: " << lnb.legacySwitchFrequency() << std::endl;
 }
 
-void DVBTest::testLNB()
+TSUNIT_DEFINE_TEST(LNB)
 {
     ts::LNB lnb1(u"", report());
     debug() << "DVBTest::testLNB(): default LNB:" << std::endl;
@@ -167,7 +144,7 @@ void DVBTest::testLNB()
     TSUNIT_ASSERT(!lnb5.isValid());
 }
 
-void DVBTest::testUniversalLNB()
+TSUNIT_DEFINE_TEST(UniversalLNB)
 {
     ts::LNB lnb(u"universal", report());
     displayLNB(lnb);
@@ -199,7 +176,7 @@ void DVBTest::testUniversalLNB()
     TSUNIT_ASSERT(!lnb.transpose(tr, 8000000000, ts::POL_AUTO, report()));
 }
 
-void DVBTest::testJapanLNB()
+TSUNIT_DEFINE_TEST(JapanLNB)
 {
     ts::LNB lnb(u"japan", report());
     displayLNB(lnb);

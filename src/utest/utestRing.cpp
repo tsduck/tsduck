@@ -20,35 +20,11 @@
 
 class RingTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testRingNode();
-    void testSwap();
-
-    TSUNIT_TEST_BEGIN(RingTest);
-    TSUNIT_TEST(testRingNode);
-    TSUNIT_TEST(testSwap);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(RingNode);
+    TSUNIT_DECLARE_TEST(Swap);
 };
 
 TSUNIT_REGISTER(RingTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void RingTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void RingTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -64,7 +40,7 @@ namespace {
     };
 }
 
-void RingTest::testRingNode()
+TSUNIT_DEFINE_TEST(RingNode)
 {
     R r1(1);
     R r2(2);
@@ -134,7 +110,7 @@ void RingTest::testRingNode()
     // coverity[RETURN_LOCAL]
 }
 
-void RingTest::testSwap()
+TSUNIT_DEFINE_TEST(Swap)
 {
     R r1(1);
     R r2(2);

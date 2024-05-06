@@ -32,41 +32,24 @@
 
 class NetworkingTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(IPv4AddressConstructors);
+    TSUNIT_DECLARE_TEST(IPv4Address);
+    TSUNIT_DECLARE_TEST(IPv6Address);
+    TSUNIT_DECLARE_TEST(MACAddress);
+    TSUNIT_DECLARE_TEST(GetLocalIPAddresses);
+    TSUNIT_DECLARE_TEST(IPv4SocketAddressConstructors);
+    TSUNIT_DECLARE_TEST(IPv4SocketAddress);
+    TSUNIT_DECLARE_TEST(IPv6SocketAddress);
+    TSUNIT_DECLARE_TEST(TCPSocket);
+    TSUNIT_DECLARE_TEST(UDPSocket);
+    TSUNIT_DECLARE_TEST(IPHeader);
+    TSUNIT_DECLARE_TEST(IPProtocol);
+    TSUNIT_DECLARE_TEST(TCPPacket);
+    TSUNIT_DECLARE_TEST(UDPPacket);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testIPv4AddressConstructors();
-    void testIPv4Address();
-    void testIPv6Address();
-    void testMACAddress();
-    void testGetLocalIPAddresses();
-    void testIPv4SocketAddressConstructors();
-    void testIPv4SocketAddress();
-    void testIPv6SocketAddress();
-    void testTCPSocket();
-    void testUDPSocket();
-    void testIPHeader();
-    void testIPProtocol();
-    void testTCPPacket();
-    void testUDPPacket();
-
-    TSUNIT_TEST_BEGIN(NetworkingTest);
-    TSUNIT_TEST(testIPv4AddressConstructors);
-    TSUNIT_TEST(testIPv4Address);
-    TSUNIT_TEST(testIPv6Address);
-    TSUNIT_TEST(testMACAddress);
-    TSUNIT_TEST(testGetLocalIPAddresses);
-    TSUNIT_TEST(testIPv4SocketAddressConstructors);
-    TSUNIT_TEST(testIPv4SocketAddress);
-    TSUNIT_TEST(testIPv6SocketAddress);
-    TSUNIT_TEST(testTCPSocket);
-    TSUNIT_TEST(testUDPSocket);
-    TSUNIT_TEST(testIPHeader);
-    TSUNIT_TEST(testIPProtocol);
-    TSUNIT_TEST(testTCPPacket);
-    TSUNIT_TEST(testUDPPacket);
-    TSUNIT_TEST_END();
 
 private:
     int _previousSeverity = 0;
@@ -99,7 +82,7 @@ void NetworkingTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void NetworkingTest::testIPv4AddressConstructors()
+TSUNIT_DEFINE_TEST(IPv4AddressConstructors)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -144,7 +127,7 @@ void NetworkingTest::testIPv4AddressConstructors()
     TSUNIT_ASSERT(a8 == ts::IPv4Address::LocalHost);
 }
 
-void NetworkingTest::testIPv4Address()
+TSUNIT_DEFINE_TEST(IPv4Address)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -205,7 +188,7 @@ void NetworkingTest::testIPv4Address()
     debug() << "NetworkingTest: www.google.com = " << ts::IPv4Address(u"www.google.com", CERR) << std::endl;
 }
 
-void NetworkingTest::testIPv6Address()
+TSUNIT_DEFINE_TEST(IPv6Address)
 {
     ts::IPv6Address a1;
     TSUNIT_ASSERT(!a1.hasAddress());
@@ -252,7 +235,7 @@ void NetworkingTest::testIPv6Address()
     TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", a1.toFullString());
 }
 
-void NetworkingTest::testMACAddress()
+TSUNIT_DEFINE_TEST(MACAddress)
 {
     ts::MACAddress a1;
     TSUNIT_ASSERT(!a1.hasAddress());
@@ -281,7 +264,7 @@ void NetworkingTest::testMACAddress()
     TSUNIT_ASSERT(!a1.isMulticast());
 }
 
-void NetworkingTest::testGetLocalIPAddresses()
+TSUNIT_DEFINE_TEST(GetLocalIPAddresses)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -314,7 +297,7 @@ void NetworkingTest::testGetLocalIPAddresses()
     }
 }
 
-void NetworkingTest::testIPv4SocketAddressConstructors()
+TSUNIT_DEFINE_TEST(IPv4SocketAddressConstructors)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -395,7 +378,7 @@ void NetworkingTest::testIPv4SocketAddressConstructors()
     TSUNIT_ASSERT(a14.port() == ts::IPv4SocketAddress::AnyPort);
 }
 
-void NetworkingTest::testIPv4SocketAddress()
+TSUNIT_DEFINE_TEST(IPv4SocketAddress)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -469,7 +452,7 @@ void NetworkingTest::testIPv4SocketAddress()
     TSUNIT_ASSERT(a1 < a2);
 }
 
-void NetworkingTest::testIPv6SocketAddress()
+TSUNIT_DEFINE_TEST(IPv6SocketAddress)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -589,7 +572,7 @@ namespace {
 }
 
 // Test cases
-void NetworkingTest::testTCPSocket()
+TSUNIT_DEFINE_TEST(TCPSocket)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -698,7 +681,7 @@ namespace {
 }
 
 // Test cases
-void NetworkingTest::testUDPSocket()
+TSUNIT_DEFINE_TEST(UDPSocket)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
@@ -732,7 +715,7 @@ void NetworkingTest::testUDPSocket()
     CERR.debug(u"UDPSocketTest: main thread: reply sent");
 }
 
-void NetworkingTest::testIPHeader()
+TSUNIT_DEFINE_TEST(IPHeader)
 {
     static const uint8_t reference_header[] = {
         0x45, 0x00, 0x05, 0xBE, 0xFB, 0x6E, 0x00, 0x00, 0x32, 0x06,
@@ -757,13 +740,13 @@ void NetworkingTest::testIPHeader()
     TSUNIT_EQUAL(0x328B, ts::IPv4Packet::IPHeaderChecksum(header, sizeof(header)));
 }
 
-void NetworkingTest::testIPProtocol()
+TSUNIT_DEFINE_TEST(IPProtocol)
 {
     TSUNIT_EQUAL(u"TCP", ts::IPProtocolName(ts::IPv4_PROTO_TCP));
     TSUNIT_EQUAL(u"UDP", ts::IPProtocolName(ts::IPv4_PROTO_UDP));
 }
 
-void NetworkingTest::testTCPPacket()
+TSUNIT_DEFINE_TEST(TCPPacket)
 {
     static const uint8_t data[] = {
         0x45, 0x00, 0x04, 0x76, 0x26, 0xC7, 0x40, 0x00, 0x40, 0x06, 0x1E, 0x5F, 0xC0, 0xA8, 0x38, 0x0A,
@@ -859,7 +842,7 @@ void NetworkingTest::testTCPPacket()
     TSUNIT_EQUAL(u"192.168.56.1:5000", ip.destinationSocketAddress().toString());
 }
 
-void NetworkingTest::testUDPPacket()
+TSUNIT_DEFINE_TEST(UDPPacket)
 {
     static const uint8_t data[] = {
         0x45, 0x00, 0x01, 0x94, 0xB4, 0xF8, 0x40, 0x00, 0x40, 0x11, 0x93, 0x04, 0xC0, 0xA8, 0x38, 0x0A,

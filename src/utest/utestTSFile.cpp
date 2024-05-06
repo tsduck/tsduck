@@ -25,23 +25,15 @@
 
 class TSFileTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(TS);
+    TSUNIT_DECLARE_TEST(M2TS);
+    TSUNIT_DECLARE_TEST(Duck);
+    TSUNIT_DECLARE_TEST(StuffingRead);
+    TSUNIT_DECLARE_TEST(StuffingWrite);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testTS();
-    void testM2TS();
-    void testDuck();
-    void testStuffingRead();
-    void testStuffingWrite();
-
-    TSUNIT_TEST_BEGIN(TSFileTest);
-    TSUNIT_TEST(testTS);
-    TSUNIT_TEST(testM2TS);
-    TSUNIT_TEST(testDuck);
-    TSUNIT_TEST(testStuffingRead);
-    TSUNIT_TEST(testStuffingWrite);
-    TSUNIT_TEST_END();
 
 private:
     fs::path _tempFileName {};
@@ -74,7 +66,7 @@ void TSFileTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TSFileTest::testTS()
+TSUNIT_DEFINE_TEST(TS)
 {
     ts::TSFile file;
     ts::TSPacketVector packets(100);
@@ -110,7 +102,7 @@ void TSFileTest::testTS()
     TSUNIT_ASSERT(!file.isOpen());
 }
 
-void TSFileTest::testM2TS()
+TSUNIT_DEFINE_TEST(M2TS)
 {
     ts::TSFile file;
     ts::TSPacket packet;
@@ -162,7 +154,7 @@ void TSFileTest::testM2TS()
     TSUNIT_ASSERT(file.close(CERR));
 }
 
-void TSFileTest::testDuck()
+TSUNIT_DEFINE_TEST(Duck)
 {
     ts::TSFile file;
     ts::TSPacket packet;
@@ -248,7 +240,7 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(file.close(CERR));
 }
 
-void TSFileTest::testStuffingRead()
+TSUNIT_DEFINE_TEST(StuffingRead)
 {
     ts::TSFile file;
     ts::TSPacket pkt;
@@ -305,7 +297,7 @@ void TSFileTest::testStuffingRead()
     TSUNIT_EQUAL(0xFF, packets[5].getPayload()[0]);
 }
 
-void TSFileTest::testStuffingWrite()
+TSUNIT_DEFINE_TEST(StuffingWrite)
 {
     ts::TSFile file;
     ts::TSPacket pkt;

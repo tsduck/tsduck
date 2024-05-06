@@ -31,29 +31,18 @@
 
 class JsonTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Simple);
+    TSUNIT_DECLARE_TEST(Numbers);
+    TSUNIT_DECLARE_TEST(GitHub);
+    TSUNIT_DECLARE_TEST(Factory);
+    TSUNIT_DECLARE_TEST(Query);
+    TSUNIT_DECLARE_TEST(RunningDocumentEmpty);
+    TSUNIT_DECLARE_TEST(RunningDocument);
+    TSUNIT_DECLARE_TEST(Issue1353);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testSimple();
-    void testNumbers();
-    void testGitHub();
-    void testFactory();
-    void testQuery();
-    void testRunningDocumentEmpty();
-    void testRunningDocument();
-    void testIssue1353();
-
-    TSUNIT_TEST_BEGIN(JsonTest);
-    TSUNIT_TEST(testSimple);
-    TSUNIT_TEST(testNumbers);
-    TSUNIT_TEST(testGitHub);
-    TSUNIT_TEST(testFactory);
-    TSUNIT_TEST(testQuery);
-    TSUNIT_TEST(testRunningDocumentEmpty);
-    TSUNIT_TEST(testRunningDocument);
-    TSUNIT_TEST(testIssue1353);
-    TSUNIT_TEST_END();
 
 private:
     fs::path _tempFileName {};
@@ -98,7 +87,7 @@ ts::UString JsonTest::LoadFile(const ts::UString& filename)
 // Test cases
 //----------------------------------------------------------------------------
 
-void JsonTest::testSimple()
+TSUNIT_DEFINE_TEST(Simple)
 {
     ts::json::ValuePtr jv;
     TSUNIT_ASSERT(!ts::json::Parse(jv, u"", NULLREP));
@@ -136,7 +125,7 @@ void JsonTest::testSimple()
         jv->printed());
 }
 
-void JsonTest::testNumbers()
+TSUNIT_DEFINE_TEST(Numbers)
 {
     static const ts::UChar* response = u"{\"a\": 12, \"b\": 1.23, \"c\": 1e-2, \"d\": 1E2}";
 
@@ -180,7 +169,7 @@ void JsonTest::testNumbers()
         jv->printed());
 }
 
-void JsonTest::testGitHub()
+TSUNIT_DEFINE_TEST(GitHub)
 {
     // Typical response from GitHub:
     static const ts::UChar* response =
@@ -659,7 +648,7 @@ void JsonTest::testGitHub()
         jv->printed());
 }
 
-void JsonTest::testFactory()
+TSUNIT_DEFINE_TEST(Factory)
 {
     ts::json::ValuePtr jv;
 
@@ -707,7 +696,7 @@ void JsonTest::testFactory()
     TSUNIT_EQUAL(u"-12.45", jv->toString());
 }
 
-void JsonTest::testQuery()
+TSUNIT_DEFINE_TEST(Query)
 {
     ts::json::Object root;
 
@@ -769,7 +758,7 @@ void JsonTest::testQuery()
     debug() << "JsonTest::testQuery:" << std::endl << root.printed() << std::endl;
 }
 
-void JsonTest::testRunningDocumentEmpty()
+TSUNIT_DEFINE_TEST(RunningDocumentEmpty)
 {
     ts::json::RunningDocument doc(CERR);
 
@@ -797,7 +786,7 @@ void JsonTest::testRunningDocumentEmpty()
                  loadTempFile());
 }
 
-void JsonTest::testRunningDocument()
+TSUNIT_DEFINE_TEST(RunningDocument)
 {
     ts::json::RunningDocument doc(CERR);
     ts::json::ValuePtr root(new ts::json::Object());
@@ -861,7 +850,7 @@ void JsonTest::testRunningDocument()
                  loadTempFile());
 }
 
-void JsonTest::testIssue1353()
+TSUNIT_DEFINE_TEST(Issue1353)
 {
     ts::json::Object root;
 

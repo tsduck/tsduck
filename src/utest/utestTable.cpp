@@ -10,7 +10,6 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
 #include "tsBAT.h"
@@ -27,7 +26,6 @@
 #include "tsEacemLogicalChannelNumberDescriptor.h"
 #include "tsEutelsatChannelNumberDescriptor.h"
 #include "tsDuckContext.h"
-#include "tsTSPacket.h"
 #include "tsunit.h"
 
 
@@ -37,58 +35,27 @@
 
 class TableTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testAssignPMT();
-    void testCopyPMT();
-    void testAIT();
-    void testBAT();
-    void testCAT();
-    void testEIT();
-    void testNIT();
-    void testSDT();
-    void testTOT();
-    void testTSDT();
-    void testCleanupPrivateDescriptors();
-
-    TSUNIT_TEST_BEGIN(TableTest);
-    TSUNIT_TEST(testAssignPMT);
-    TSUNIT_TEST(testCopyPMT);
-    TSUNIT_TEST(testAIT);
-    TSUNIT_TEST(testBAT);
-    TSUNIT_TEST(testCAT);
-    TSUNIT_TEST(testEIT);
-    TSUNIT_TEST(testNIT);
-    TSUNIT_TEST(testSDT);
-    TSUNIT_TEST(testTOT);
-    TSUNIT_TEST(testTSDT);
-    TSUNIT_TEST(testCleanupPrivateDescriptors);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(AssignPMT);
+    TSUNIT_DECLARE_TEST(CopyPMT);
+    TSUNIT_DECLARE_TEST(AIT);
+    TSUNIT_DECLARE_TEST(BAT);
+    TSUNIT_DECLARE_TEST(CAT);
+    TSUNIT_DECLARE_TEST(EIT);
+    TSUNIT_DECLARE_TEST(NIT);
+    TSUNIT_DECLARE_TEST(SDT);
+    TSUNIT_DECLARE_TEST(TOT);
+    TSUNIT_DECLARE_TEST(TSDT);
+    TSUNIT_DECLARE_TEST(CleanupPrivateDescriptors);
 };
 
 TSUNIT_REGISTER(TableTest);
 
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TableTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TableTest::afterTest()
-{
-}
 
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TableTest::testAssignPMT()
+TSUNIT_DEFINE_TEST(AssignPMT)
 {
     ts::DuckContext duck;
     ts::PMT pmt1(1, true, 27, 1001);
@@ -130,7 +97,7 @@ void TableTest::testAssignPMT()
     TSUNIT_ASSERT(pmt2.streams[4004].descs.table() == &pmt2);
 }
 
-void TableTest::testCopyPMT()
+TSUNIT_DEFINE_TEST(CopyPMT)
 {
     ts::DuckContext duck;
     ts::PMT pmt1(1, true, 27, 1001);
@@ -173,7 +140,7 @@ void TableTest::testCopyPMT()
     TSUNIT_ASSERT(pmt2.streams[4004].descs.table() == &pmt2);
 }
 
-void TableTest::testAIT()
+TSUNIT_DEFINE_TEST(AIT)
 {
     ts::DuckContext duck;
     ts::ApplicationIdentifier id;
@@ -195,7 +162,7 @@ void TableTest::testAIT()
     TSUNIT_ASSERT(ait3.applications.begin()->second.descs.table() == &ait3);
 }
 
-void TableTest::testBAT()
+TSUNIT_DEFINE_TEST(BAT)
 {
     ts::DuckContext duck;
     ts::BAT bat1;
@@ -219,7 +186,7 @@ void TableTest::testBAT()
     TSUNIT_ASSERT(bat3.transports.begin()->second.descs.table() == &bat3);
 }
 
-void TableTest::testCAT()
+TSUNIT_DEFINE_TEST(CAT)
 {
     ts::CAT cat1;
     TSUNIT_ASSERT(cat1.descs.table() == &cat1);
@@ -232,7 +199,7 @@ void TableTest::testCAT()
     TSUNIT_ASSERT(cat3.descs.table() == &cat3);
 }
 
-void TableTest::testEIT()
+TSUNIT_DEFINE_TEST(EIT)
 {
     ts::DuckContext duck;
     ts::EIT eit1;
@@ -253,7 +220,7 @@ void TableTest::testEIT()
     TSUNIT_ASSERT(eit3.events.begin()->second.descs.table() == &eit3);
 }
 
-void TableTest::testNIT()
+TSUNIT_DEFINE_TEST(NIT)
 {
     ts::DuckContext duck;
     ts::NIT nit1;
@@ -277,7 +244,7 @@ void TableTest::testNIT()
     TSUNIT_ASSERT(nit3.transports.begin()->second.descs.table() == &nit3);
 }
 
-void TableTest::testSDT()
+TSUNIT_DEFINE_TEST(SDT)
 {
     ts::DuckContext duck;
     ts::SDT sdt1;
@@ -298,7 +265,7 @@ void TableTest::testSDT()
     TSUNIT_ASSERT(sdt3.services.begin()->second.descs.table() == &sdt3);
 }
 
-void TableTest::testTOT()
+TSUNIT_DEFINE_TEST(TOT)
 {
     ts::DuckContext duck;
     ts::TOT tot1;
@@ -319,7 +286,7 @@ void TableTest::testTOT()
     TSUNIT_EQUAL(ts::DID_CA, tot2.descs[0]->tag());
 }
 
-void TableTest::testTSDT()
+TSUNIT_DEFINE_TEST(TSDT)
 {
     ts::TSDT tsdt1;
     TSUNIT_ASSERT(tsdt1.descs.table() == &tsdt1);
@@ -332,7 +299,7 @@ void TableTest::testTSDT()
     TSUNIT_ASSERT(tsdt3.descs.table() == &tsdt3);
 }
 
-void TableTest::testCleanupPrivateDescriptors()
+TSUNIT_DEFINE_TEST(CleanupPrivateDescriptors)
 {
     // Issue #87 non-regression.
     ts::DuckContext duck;

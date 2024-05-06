@@ -21,50 +21,22 @@
 
 class BCDTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testIsValid();
-    void testEncodeByte();
-    void testDecodeByte();
-    void testEncodeString();
-    void testDecodeString();
-    void testToString();
-
-    TSUNIT_TEST_BEGIN(BCDTest);
-    TSUNIT_TEST(testIsValid);
-    TSUNIT_TEST(testEncodeByte);
-    TSUNIT_TEST(testDecodeByte);
-    TSUNIT_TEST(testEncodeString);
-    TSUNIT_TEST(testDecodeString);
-    TSUNIT_TEST(testToString);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(IsValid);
+    TSUNIT_DECLARE_TEST(EncodeByte);
+    TSUNIT_DECLARE_TEST(DecodeByte);
+    TSUNIT_DECLARE_TEST(EncodeString);
+    TSUNIT_DECLARE_TEST(DecodeString);
+    TSUNIT_DECLARE_TEST(ToString);
 };
 
 TSUNIT_REGISTER(BCDTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void BCDTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void BCDTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void BCDTest::testIsValid()
+TSUNIT_DEFINE_TEST(IsValid)
 {
     TSUNIT_ASSERT(ts::IsValidBCD(0x00));
     TSUNIT_ASSERT(ts::IsValidBCD(0x99));
@@ -80,7 +52,7 @@ void BCDTest::testIsValid()
     TSUNIT_ASSERT(!ts::IsValidBCD(0x0E));
 }
 
-void BCDTest::testEncodeByte()
+TSUNIT_DEFINE_TEST(EncodeByte)
 {
     TSUNIT_EQUAL(0x00, ts::EncodeBCD(0));
     TSUNIT_EQUAL(0x10, ts::EncodeBCD(10));
@@ -89,7 +61,7 @@ void BCDTest::testEncodeByte()
     TSUNIT_EQUAL(0x47, ts::EncodeBCD(47));
 }
 
-void BCDTest::testDecodeByte()
+TSUNIT_DEFINE_TEST(DecodeByte)
 {
     TSUNIT_EQUAL(0,  ts::DecodeBCD(0x00));
     TSUNIT_EQUAL(99, ts::DecodeBCD(0x99));
@@ -98,7 +70,7 @@ void BCDTest::testDecodeByte()
     TSUNIT_EQUAL(21, ts::DecodeBCD(0x21));
 }
 
-void BCDTest::testEncodeString()
+TSUNIT_DEFINE_TEST(EncodeString)
 {
     uint8_t buf[16];
 
@@ -119,7 +91,7 @@ void BCDTest::testEncodeString()
 #undef TEST
 }
 
-void BCDTest::testDecodeString()
+TSUNIT_DEFINE_TEST(DecodeString)
 {
 #define TEST(value, bcd_count, ljustified,...) \
     static const uint8_t TS_UNIQUE_NAME(REF)[]={ __VA_ARGS__}; TSUNIT_EQUAL((value), ts::DecodeBCD(TS_UNIQUE_NAME(REF), (bcd_count), (ljustified)))
@@ -131,7 +103,7 @@ void BCDTest::testDecodeString()
 #undef TEST
 }
 
-void BCDTest::testToString()
+TSUNIT_DEFINE_TEST(ToString)
 {
     std::string buf;
 

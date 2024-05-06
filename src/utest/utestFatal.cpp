@@ -25,42 +25,18 @@
 
 class FatalTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testWithoutCrash();
-    void testCrash();
-
-    TSUNIT_TEST_BEGIN(FatalTest);
-    TSUNIT_TEST(testWithoutCrash);
-    TSUNIT_TEST(testCrash);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(WithoutCrash);
+    TSUNIT_DECLARE_TEST(Crash);
 };
 
 TSUNIT_REGISTER(FatalTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void FatalTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void FatalTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void FatalTest::testWithoutCrash()
+TSUNIT_DEFINE_TEST(WithoutCrash)
 {
     int i = 0;
 
@@ -68,7 +44,7 @@ void FatalTest::testWithoutCrash()
     ts::CheckNonNull(&i);
 }
 
-void FatalTest::testCrash()
+TSUNIT_DEFINE_TEST(Crash)
 {
     if (ts::EnvironmentExists(u"UTEST_FATAL_CRASH_ALLOWED")) {
         std::cerr << "FatalTest: CheckNonNull(0) : should fail !" << std::endl

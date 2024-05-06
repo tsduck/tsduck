@@ -20,42 +20,18 @@
 
 class SingleDataStatTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testInteger();
-    void testChrono();
-
-    TSUNIT_TEST_BEGIN(SingleDataStatTest);
-    TSUNIT_TEST(testInteger);
-    TSUNIT_TEST(testChrono);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Integer);
+    TSUNIT_DECLARE_TEST(Chrono);
 };
 
 TSUNIT_REGISTER(SingleDataStatTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void SingleDataStatTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void SingleDataStatTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void SingleDataStatTest::testInteger()
+TSUNIT_DEFINE_TEST(Integer)
 {
     ts::SingleDataStatistics<uint32_t> stat;
 
@@ -79,7 +55,7 @@ void SingleDataStatTest::testInteger()
     TSUNIT_EQUAL(u"1.29", stat.standardDeviationString());
 }
 
-void SingleDataStatTest::testChrono()
+TSUNIT_DEFINE_TEST(Chrono)
 {
     ts::SingleDataStatistics<cn::seconds> stat;
 

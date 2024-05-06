@@ -22,21 +22,14 @@
 
 class ByteBlockTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Constructors);
+    TSUNIT_DECLARE_TEST(Find);
+    TSUNIT_DECLARE_TEST(Append);
+    TSUNIT_DECLARE_TEST(File);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testConstructors();
-    void testFind();
-    void testAppend();
-    void testFile();
-
-    TSUNIT_TEST_BEGIN(ByteBlockTest);
-    TSUNIT_TEST(testConstructors);
-    TSUNIT_TEST(testFind);
-    TSUNIT_TEST(testAppend);
-    TSUNIT_TEST(testFile);
-    TSUNIT_TEST_END();
 
 private:
     fs::path _tempFileName {};
@@ -77,7 +70,7 @@ namespace {
         ts::ByteBlock b = ts::ByteBlock(13, 42);
     };
 }
-void ByteBlockTest::testConstructors()
+TSUNIT_DEFINE_TEST(Constructors)
 {
     ts::ByteBlock v1;
     TSUNIT_ASSERT(v1.empty());
@@ -108,7 +101,7 @@ void ByteBlockTest::testConstructors()
     }
 }
 
-void ByteBlockTest::testFind()
+TSUNIT_DEFINE_TEST(Find)
 {
     ts::ByteBlock v;
     TSUNIT_EQUAL(ts::NPOS, v.find(1));
@@ -118,7 +111,7 @@ void ByteBlockTest::testFind()
     TSUNIT_EQUAL(3, v.find(9));
 }
 
-void ByteBlockTest::testAppend()
+TSUNIT_DEFINE_TEST(Append)
 {
     ts::ByteBlock v;
     ts::ByteBlock valtemp;
@@ -192,7 +185,7 @@ void ByteBlockTest::testAppend()
     TSUNIT_ASSERT(v[idx++] == 0x87);
 }
 
-void ByteBlockTest::testFile()
+TSUNIT_DEFINE_TEST(File)
 {
     const ts::ByteBlock bb({
         0x1B, 0x55, 0xF1, 0xA3, 0x59, 0x76, 0xC4, 0x0C, 0xBD, 0x13, 0xCB, 0x85, 0xE1, 0x28, 0xAE, 0x0B,

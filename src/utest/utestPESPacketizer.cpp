@@ -23,15 +23,11 @@
 
 class PESPacketizerTest: public tsunit::Test, private ts::PESHandlerInterface
 {
+    TSUNIT_DECLARE_TEST(Packetizer);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testPacketizer();
-
-    TSUNIT_TEST_BEGIN(PESPacketizerTest);
-    TSUNIT_TEST(testPacketizer);
-    TSUNIT_TEST_END();
 
 private:
     size_t _pes_count = 0;
@@ -61,7 +57,7 @@ void PESPacketizerTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void PESPacketizerTest::testPacketizer()
+TSUNIT_DEFINE_TEST(Packetizer)
 {
     // Build two PES packets from scratch.
     uint8_t data1[1234];

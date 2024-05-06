@@ -20,44 +20,19 @@
 
 class FileNameGeneratorTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testDefault();
-    void testCounter();
-    void testDateTime();
-
-    TSUNIT_TEST_BEGIN(FileNameGeneratorTest);
-    TSUNIT_TEST(testDefault);
-    TSUNIT_TEST(testCounter);
-    TSUNIT_TEST(testDateTime);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Default);
+    TSUNIT_DECLARE_TEST(Counter);
+    TSUNIT_DECLARE_TEST(DateTime);
 };
 
 TSUNIT_REGISTER(FileNameGeneratorTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void FileNameGeneratorTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void FileNameGeneratorTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void FileNameGeneratorTest::testDefault()
+TSUNIT_DEFINE_TEST(Default)
 {
     ts::FileNameGenerator gen;
     TSUNIT_EQUAL(u"000000", gen.newFileName());
@@ -66,7 +41,7 @@ void FileNameGeneratorTest::testDefault()
     TSUNIT_EQUAL(u"000003", gen.newFileName(ts::Time::CurrentLocalTime()));
 }
 
-void FileNameGeneratorTest::testCounter()
+TSUNIT_DEFINE_TEST(Counter)
 {
     ts::FileNameGenerator gen;
 
@@ -92,7 +67,7 @@ void FileNameGeneratorTest::testCounter()
     TSUNIT_EQUAL(u"base.0014.ext", gen.newFileName());
 }
 
-void FileNameGeneratorTest::testDateTime()
+TSUNIT_DEFINE_TEST(DateTime)
 {
     ts::FileNameGenerator gen;
 

@@ -23,21 +23,15 @@
 
 class ThreadTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Attributes);
+    TSUNIT_DECLARE_TEST(Termination);
+    TSUNIT_DECLARE_TEST(DeleteWhenTerminated);
+    TSUNIT_DECLARE_TEST(MutexTimeout);
+
 public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
+    virtual void beforeTestSuite() override;
+    virtual void afterTestSuite() override;
 
-    void testAttributes();
-    void testTermination();
-    void testDeleteWhenTerminated();
-    void testMutexTimeout();
-
-    TSUNIT_TEST_BEGIN(ThreadTest);
-    TSUNIT_TEST(testAttributes);
-    TSUNIT_TEST(testTermination);
-    TSUNIT_TEST(testDeleteWhenTerminated);
-    TSUNIT_TEST(testMutexTimeout);
-    TSUNIT_TEST_END();
 private:
     cn::milliseconds _precision {};
 };
@@ -50,7 +44,7 @@ TSUNIT_REGISTER(ThreadTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void ThreadTest::beforeTest()
+void ThreadTest::beforeTestSuite()
 {
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
@@ -58,7 +52,7 @@ void ThreadTest::beforeTest()
 }
 
 // Test suite cleanup method.
-void ThreadTest::afterTest()
+void ThreadTest::afterTestSuite()
 {
 }
 
@@ -89,7 +83,7 @@ namespace {
     };
 }
 
-void ThreadTest::testAttributes()
+TSUNIT_DEFINE_TEST(Attributes)
 {
     const int prio = ts::ThreadAttributes::GetMinimumPriority();
     ThreadConstructor thread(ts::ThreadAttributes().setStackSize(123456).setPriority(prio));
@@ -138,7 +132,7 @@ namespace {
     };
 }
 
-void ThreadTest::testTermination()
+TSUNIT_DEFINE_TEST(Termination)
 {
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
@@ -188,7 +182,7 @@ namespace {
     };
 }
 
-void ThreadTest::testDeleteWhenTerminated()
+TSUNIT_DEFINE_TEST(DeleteWhenTerminated)
 {
     volatile bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
@@ -251,7 +245,7 @@ namespace {
     };
 }
 
-void ThreadTest::testMutexTimeout()
+TSUNIT_DEFINE_TEST(MutexTimeout)
 {
     std::timed_mutex mutex;
     std::mutex mutexSig;

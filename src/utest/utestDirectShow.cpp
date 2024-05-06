@@ -24,15 +24,11 @@
 
 class DirectShowTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Devices);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testDevices();
-
-    TSUNIT_TEST_BEGIN(DirectShowTest);
-    TSUNIT_TEST(testDevices);
-    TSUNIT_TEST_END();
 };
 
 TSUNIT_REGISTER(DirectShowTest);
@@ -59,7 +55,7 @@ void DirectShowTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void DirectShowTest::testDevices()
+TSUNIT_DEFINE_TEST(Devices)
 {
     ts::DirectShowTest test(debug(), CERR);
     test.runTest(ts::DirectShowTest::ENUMERATE_DEVICES);

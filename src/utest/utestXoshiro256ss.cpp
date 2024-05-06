@@ -21,36 +21,13 @@
 
 class Xoshiro256ssTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testRandom();
-
-    TSUNIT_TEST_BEGIN(Xoshiro256ssTest);
-    TSUNIT_TEST(testRandom);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Random);
 
 private:
     void testRead(ts::RandomGenerator& prng, const ts::ByteBlock& expected);
 };
 
 TSUNIT_REGISTER(Xoshiro256ssTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void Xoshiro256ssTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void Xoshiro256ssTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -73,7 +50,7 @@ void Xoshiro256ssTest::testRead(ts::RandomGenerator& prng, const ts::ByteBlock& 
     TSUNIT_ASSERT(expected == generated);
 }
 
-void Xoshiro256ssTest::testRandom()
+TSUNIT_DEFINE_TEST(Random)
 {
     ts::Xoshiro256ss prng;
 

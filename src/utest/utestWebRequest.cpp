@@ -28,25 +28,16 @@
 
 class WebRequestTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(GitHub);
+    TSUNIT_DECLARE_TEST(Google);
+    TSUNIT_DECLARE_TEST(ReadMeFile);
+    TSUNIT_DECLARE_TEST(NoRedirection);
+    TSUNIT_DECLARE_TEST(NonExistentHost);
+    TSUNIT_DECLARE_TEST(InvalidURL);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testGitHub();
-    void testGoogle();
-    void testReadMeFile();
-    void testNoRedirection();
-    void testNonExistentHost();
-    void testInvalidURL();
-
-    TSUNIT_TEST_BEGIN(WebRequestTest);
-    TSUNIT_TEST(testGitHub);
-    TSUNIT_TEST(testGoogle);
-    TSUNIT_TEST(testReadMeFile);
-    TSUNIT_TEST(testNoRedirection);
-    TSUNIT_TEST(testNonExistentHost);
-    TSUNIT_TEST(testInvalidURL);
-    TSUNIT_TEST_END();
 
 private:
     fs::path _tempFileName {};
@@ -164,7 +155,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 // Test cases
 //----------------------------------------------------------------------------
 
-void WebRequestTest::testGitHub()
+TSUNIT_DEFINE_TEST(GitHub)
 {
     testURL(u"http://www.github.com/",
             true,     // expectRedirection
@@ -173,7 +164,7 @@ void WebRequestTest::testGitHub()
             false);   // expectInvariant
 }
 
-void WebRequestTest::testGoogle()
+TSUNIT_DEFINE_TEST(Google)
 {
     testURL(u"http://www.google.com/",
             false,    // expectRedirection
@@ -182,7 +173,7 @@ void WebRequestTest::testGoogle()
             false);   // expectInvariant
 }
 
-void WebRequestTest::testReadMeFile()
+TSUNIT_DEFINE_TEST(ReadMeFile)
 {
     testURL(u"https://raw.githubusercontent.com/tsduck/tsduck/master/README.md",
             false,    // expectRedirection
@@ -191,7 +182,7 @@ void WebRequestTest::testReadMeFile()
             true);    // expectInvariant
 }
 
-void WebRequestTest::testNoRedirection()
+TSUNIT_DEFINE_TEST(NoRedirection)
 {
     ts::WebRequest request(report());
     request.setAutoRedirect(false);
@@ -210,7 +201,7 @@ void WebRequestTest::testNoRedirection()
     TSUNIT_ASSERT(request.finalURL() != request.originalURL());
 }
 
-void WebRequestTest::testNonExistentHost()
+TSUNIT_DEFINE_TEST(NonExistentHost)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> rep;
     ts::WebRequest request(rep);
@@ -221,7 +212,7 @@ void WebRequestTest::testNonExistentHost()
     debug() << "WebRequestTest::testNonExistentHost: " << rep.messages() << std::endl;
 }
 
-void WebRequestTest::testInvalidURL()
+TSUNIT_DEFINE_TEST(InvalidURL)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> rep;
     ts::WebRequest request(rep);

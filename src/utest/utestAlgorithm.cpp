@@ -28,33 +28,10 @@ namespace {
 
 class AlgorithmTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testEnumerateCombinations();
-
-    TSUNIT_TEST_BEGIN(AlgorithmTest);
-    TSUNIT_TEST(testEnumerateCombinations);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(EnumerateCombinations);
 };
 
 TSUNIT_REGISTER(AlgorithmTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void AlgorithmTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void AlgorithmTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -122,7 +99,7 @@ namespace {
 }
 
 // Test cases
-void AlgorithmTest::testEnumerateCombinations()
+TSUNIT_DEFINE_TEST(EnumerateCombinations)
 {
     IdSet values;            // set of all values
     IdSet fixed;             // set of fixed values in all expected combinations.

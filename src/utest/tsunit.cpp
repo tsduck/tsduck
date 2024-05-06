@@ -44,8 +44,8 @@ namespace {
     {
         std::string res;
         res.reserve(name.size());
-        for (size_t i = 0; i < name.size(); ++i) {
-            res.push_back(char(std::tolower(name[i])));
+        for (auto c : name) {
+            res.push_back(char(std::tolower(c)));
         }
         return res;
     }
@@ -147,6 +147,14 @@ tsunit::Test::~Test()
 {
 }
 
+void tsunit::Test::beforeTestSuite()
+{
+}
+
+void tsunit::Test::afterTestSuite()
+{
+}
+
 void tsunit::Test::beforeTest()
 {
 }
@@ -199,26 +207,12 @@ std::string tsunit::Named::getLowerBaseName() const
 }
 
 //---------------------------------------------------------------------------------
-// Definition of a test case (one method in a user test class).
-//---------------------------------------------------------------------------------
-
-tsunit::TestCase::TestCase(const std::string& name) :
-    Named(name)
-{
-}
-
-tsunit::TestCase::~TestCase()
-{
-}
-
-//---------------------------------------------------------------------------------
-// TestSuite base class virtual methods.
+// TestSuite base class methods.
 //---------------------------------------------------------------------------------
 
 tsunit::TestSuite::TestSuite(const std::string& name, Test* test) :
     Named(name),
-    _test(test),
-    _testmap()
+    _test(test)
 {
 }
 
@@ -239,18 +233,102 @@ tsunit::TestSuite::~TestSuite()
     }
 }
 
-void tsunit::TestSuite::runBeforeTest()
+bool tsunit::TestSuite::runBeforeTestSuite()
 {
     if (_test != nullptr) {
-        _test->beforeTest();
+        try {
+            _test->beforeTestSuite();
+        }
+        catch (const std::exception& e) {
+            std::cout << std::endl
+                      << errorPrefix << getName() << ", beforeTestSuite, " << e.what() << std::endl
+                      << errorPrefix << "Test suite will NOT run" << std::endl;
+            return false;
+        }
+        catch (...) {
+            std::cout << std::endl
+                      << errorPrefix << getName() << ", beforeTestSuite, unknown exception" << std::endl
+                      << errorPrefix << "Test suite will NOT run" << std::endl;
+            return false;
+        }
     }
+    return true;
 }
 
-void tsunit::TestSuite::runAfterTest()
+bool tsunit::TestSuite::runAfterTestSuite()
 {
     if (_test != nullptr) {
-        _test->afterTest();
+        try {
+            _test->afterTestSuite();
+        }
+        catch (const std::exception& e) {
+            std::cout << std::endl << errorPrefix << getName() << ", afterTestSuite, " << e.what() << std::endl;
+            return false;
+        }
+        catch (...) {
+            std::cout << std::endl << errorPrefix << getName() << ", afterTestSuite, unknown exception" << std::endl;
+            return false;
+        }
     }
+    return true;
+}
+
+bool tsunit::TestSuite::runBeforeTest(const TestCase* test)
+{
+    if (_test != nullptr) {
+        try {
+            _test->beforeTest();
+        }
+        catch (const std::exception& e) {
+            std::cout << std::endl
+                      << errorPrefix << getName() << "::" << test->getName() << ", beforeTest, " << e.what() << std::endl
+                      << errorPrefix << "Test will NOT run" << std::endl;
+            return false;
+        }
+        catch (...) {
+            std::cout << std::endl
+                      << errorPrefix << getName() << "::" << test->getName() << ", beforeTest, unknown exception" << std::endl
+                      << errorPrefix << "Test will NOT run" << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+bool tsunit::TestSuite::runTest(TestCase* test)
+{
+    if (test != nullptr) {
+        try {
+            test->run();
+        }
+        catch (const std::exception& e) {
+            std::cout << std::endl << errorPrefix << getName() << "::" << test->getName() << ", " << e.what() << std::endl;
+            return false;
+        }
+        catch (...) {
+            std::cout << std::endl << errorPrefix << getName() << "::" << test->getName() << ", unknown exception" << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+bool tsunit::TestSuite::runAfterTest(const TestCase* test)
+{
+    if (_test != nullptr) {
+        try {
+            _test->afterTest();
+        }
+        catch (const std::exception& e) {
+            std::cout << std::endl << errorPrefix << getName() << "::" << test->getName() << ", afterTest, " << e.what() << std::endl;
+            return false;
+        }
+        catch (...) {
+            std::cout << std::endl << errorPrefix << getName() << "::" << test->getName() << ", afterTest, unknown exception" << std::endl;
+            return false;
+        }
+    }
+    return true;
 }
 
 void tsunit::TestSuite::getAllTestNames(std::list<std::string>& names) const
@@ -305,11 +383,6 @@ void tsunit::TestRepository::cleanupInstance()
     }
 }
 
-tsunit::TestRepository::TestRepository() :
-    _testsuites()
-{
-}
-
 tsunit::TestRepository::~TestRepository()
 {
     // Deallocate all test suites.
@@ -319,6 +392,7 @@ tsunit::TestRepository::~TestRepository()
         }
     }
     _testsuites.clear();
+    _testindex.clear();
 }
 
 // Get all test suite names.
@@ -339,23 +413,26 @@ tsunit::TestSuite* tsunit::TestRepository::getTestSuite(const std::string& name)
     return it == _testsuites.end() ? nullptr : it->second;
 }
 
-// Register a test suite in the repository.
-void tsunit::TestRepository::addTestSuite(TestSuite* test)
+// An inner class with constructors which register test suites.
+tsunit::TestRepository::Register::Register(std::type_index index, const std::string& name, Test* test)
 {
-    // Add or replace a test case.
-    if (test != nullptr) {
-        TestSuite*& t(_testsuites[test->getLowerBaseName()]);
-        if (t != nullptr) {
-            delete t;
-        }
-        t = test;
+    TestRepository* repo = instance();
+    TestSuite* suite = new TestSuite(name, test);
+    TestSuite*& t(repo->_testsuites[suite->getLowerBaseName()]);
+    if (t != nullptr) {
+        delete t; // delete previous test suite with that name
     }
+    t = suite;
+    repo->_testindex[index] = suite;
 }
 
-// An inner class with constructors which register test suites.
-tsunit::TestRepository::Register::Register(TestSuite* test)
+tsunit::TestRepository::Register::Register(std::type_index index, TestCase* test)
 {
-    instance()->addTestSuite(test);
+    TestRepository* repo = instance();
+    auto it = repo->_testindex.find(index);
+    if (test != nullptr && it != repo->_testindex.end() && it->second != nullptr) {
+        it->second->addTestCase(test);
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -364,14 +441,8 @@ tsunit::TestRepository::Register::Register(TestSuite* test)
 
 std::string tsunit::TestRunner::_currentTestName;
 
-tsunit::TestRunner::TestRunner() :
-    _passedCount(0),
-    _failedCount(0)
-{
-}
-
 // Run a test, a test suite or all test suites. Return true when all tests passed.
-bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test)
+bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test, bool prepost)
 {
     bool ok = true;
     if (suite == nullptr) {
@@ -380,79 +451,56 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test)
         std::list<std::string> names;
         TestRepository* repo = TestRepository::instance();
         repo->getAllTestSuiteNames(names);
-        for (const auto& it : names) {
-            suite = repo->getTestSuite(it);
+        for (const auto& name : names) {
+            suite = repo->getTestSuite(name);
             if (suite != nullptr) {
                 ok = run(suite) && ok;
             }
         }
     }
-    else if (test == nullptr) {
-        // Run all tests in one test suite.
-        Test::debug() << "==== Running test suite " << suite->getName() << std::endl;
-        std::list<std::string> names;
-        suite->getAllTestNames(names);
-        for (const auto& it : names) {
-            test = suite->getTestCase(it);
-            if (test != nullptr) {
-                ok = run(suite, test) && ok;
-            }
-        }
-    }
     else {
-        // Run one test
-        const std::string testName(suite->getName() + "::" + test->getName());
-        _currentTestName = testName;
-        Test::debug() << "== Running test " << testName << std::endl;
-        // Run pre-test
-        try {
-            suite->runBeforeTest();
+        // Run one test suite.
+        if (prepost) {
+            ok = suite->runBeforeTestSuite();
         }
-        catch (const std::exception& e) {
-            std::cout << std::endl
-                      << errorPrefix << testName << "::runBeforeTest, " << e.what() << std::endl
-                      << errorPrefix << "Test will NOT run" << std::endl;
-            ok = false;
-        }
-        catch (...) {
-            std::cout << std::endl
-                      << errorPrefix << testName << "::runBeforeTest, unknown exception" << std::endl
-                      << errorPrefix << "Test will NOT run" << std::endl;
-            ok = false;
-        }
-        // Run test if pre-test succeeded.
         if (ok) {
-            try {
-                test->run();
+            if (test == nullptr) {
+                // Run all tests in one test suite.
+                Test::debug() << "==== Running test suite " << suite->getName() << std::endl;
+                std::list<std::string> names;
+                suite->getAllTestNames(names);
+                for (const auto& it : names) {
+                    test = suite->getTestCase(it);
+                    if (test != nullptr) {
+                        ok = run(suite, test, false) && ok;
+                    }
+                }
             }
-            catch (const std::exception& e) {
-                std::cout << std::endl << errorPrefix << testName << ", " << e.what() << std::endl;
-                ok = false;
-            }
-            catch (...) {
-                std::cout << std::endl << errorPrefix << testName << ", unknown exception" << std::endl;
-                ok = false;
-            }
-            // Run post-test even if test is not OK (must do cleanup if the test ran in any way).
-            try {
-                suite->runAfterTest();
-            }
-            catch (const std::exception& e) {
-                std::cout << std::endl << errorPrefix << testName << "::runAfterTest, " << e.what() << std::endl;
-                ok = false;
-            }
-            catch (...) {
-                std::cout << std::endl << errorPrefix << testName << "::runAfterTest, unknown exception" << std::endl;
-                ok = false;
+            else {
+                // Run one test
+                _currentTestName = suite->getName() + "::" + test->getName();
+                Test::debug() << "== Running test " << _currentTestName << std::endl;
+                // Run pre-test
+                ok = suite->runBeforeTest(test);
+                // Run test if pre-test succeeded.
+                if (ok) {
+                    ok = suite->runTest(test);
+                    // Run post-test even if test is not OK (must do cleanup if the test ran in any way).
+                    ok = suite->runAfterTest(test) && ok;
+                }
+                _currentTestName.clear();
+                // Count passed and failed tests.
+                if (ok) {
+                    ++_passedCount;
+                }
+                else {
+                    ++_failedCount;
+                }
             }
         }
-        _currentTestName.clear();
-        // Count passed and failed tests.
-        if (ok) {
-            ++_passedCount;
-        }
-        else {
-            ++_failedCount;
+        // Run post-test-suite even if tests are not OK (must do cleanup if the tests ran in any way).
+        if (prepost) {
+            ok = suite->runAfterTestSuite() && ok;
         }
     }
     return ok;
@@ -551,11 +599,7 @@ void tsunit::Assertions::equal(const Bytes& expected, const Bytes& actual, const
 //---------------------------------------------------------------------------------
 
 tsunit::Main::Main(int argc, char* argv[]) :
-    _argv0(argv[0]),
-    _testName(""),
-    _listMode(false),
-    _debug(false),
-    _exitStatus(EXIT_SUCCESS)
+    _argv0(argc > 0 ? argv[0] : "")
 {
     bool ok = true;
 
