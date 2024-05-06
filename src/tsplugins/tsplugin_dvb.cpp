@@ -17,6 +17,10 @@
 #include "tsTunerArgs.h"
 #include "tsSignalState.h"
 #include "tsModulationArgs.h"
+#include "tsjsonOutputArgs.h"
+#include "tsjsonObject.h"
+#include "tsxmlAttribute.h"
+#include "tsTime.h"
 
 
 //----------------------------------------------------------------------------
@@ -43,9 +47,17 @@ namespace ts {
         virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
 
     private:
-        Tuner     _tuner {duck};          // DVB tuner device
-        TunerArgs _tuner_args {false};    // Command-line tuning arguments
-        BitRate   _previous_bitrate = 0;  // Previous value from getBitrate()
+        Tuner            _tuner {duck};          // DVB tuner device.
+        TunerArgs        _tuner_args {false};    // Command-line tuning arguments.
+        json::OutputArgs _json_args {};          // JSON status reporting.
+        cn::seconds      _json_interval {};      // Interval between JSON status reports.
+        BitRate          _previous_bitrate = 0;  // Previous value from getBitrate().
+        Time             _next_json_report {};   // UTC time of next JSON report.
+
+        static constexpr cn::seconds DEFAULT_JSON_INTERVAL = cn::seconds(60);
+
+        // Produce a JSON status report if necessary.
+        void jsonReport();
     };
 }
 
@@ -62,6 +74,14 @@ ts::DVBInputPlugin::DVBInputPlugin(TSP* tsp_) :
     // Define common tuning options
     duck.defineArgsForHFBand(*this);
     _tuner_args.defineArgs(*this, true);
+
+    // Define options for periodic status reporting.
+    _json_args.defineArgs(*this, true, u"Produce a status report in JSON format at regular intervals.", false);
+
+    option<cn::seconds>(u"json-interval");
+    help(u"json-interval",
+         u"With --json-line, --json-tcp, --json-udp, specify the interval between two status reports. "
+         u"The default is " + UString::Chrono(DEFAULT_JSON_INTERVAL) + u".");
 }
 
 
@@ -74,6 +94,8 @@ bool ts::DVBInputPlugin::getOptions()
     // Get common tuning options from command line
     duck.loadArgs(*this);
     _tuner_args.loadArgs(duck, *this);
+    _json_args.loadArgs(duck, *this);
+    getChronoValue(_json_interval, u"json-interval", DEFAULT_JSON_INTERVAL);
     return Args::valid();
 }
 
@@ -154,6 +176,10 @@ bool ts::DVBInputPlugin::start()
         verbose(state.toString());
     }
 
+    // Initialize periodic JSON reporting. Produce an initial report if necessary.
+    _next_json_report = Time::CurrentUTC();
+    jsonReport();
+
     return true;
 }
 
@@ -213,5 +239,37 @@ ts::BitRateConfidence ts::DVBInputPlugin::getBitrateConfidence()
 
 size_t ts::DVBInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
-    return _tuner.receive(buffer, max_packets, tsp);
+    const size_t count = _tuner.receive(buffer, max_packets, tsp);
+    jsonReport();
+    return count;
+}
+
+
+//----------------------------------------------------------------------------
+// Produce a JSON status report if necessary.
+//----------------------------------------------------------------------------
+
+void ts::DVBInputPlugin::jsonReport()
+{
+    if (_json_args.useJSON() && Time::CurrentUTC() >= _next_json_report) {
+
+        // Schedule next report.
+        _next_json_report += _json_interval;
+
+        // Build current report.
+        json::Object obj;
+        obj.add(u"time", xml::Attribute::DateTimeToString(Time::CurrentLocalTime()));
+        obj.add(u"packet-index", int64_t(tsp->pluginPackets()));
+        if (_previous_bitrate > 0) {
+            obj.add(u"bitrate", _previous_bitrate.toString());
+        }
+        _tuner_args.toJSON(obj);
+        SignalState state;
+        if (_tuner.getSignalState(state)) {
+            state.toJSON(obj);
+        }
+
+        // Send the report to whatever was specified in the command line options.
+        _json_args.report(obj, *this);
+    }
 }

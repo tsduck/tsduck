@@ -14,6 +14,7 @@
 #pragma once
 #include "tsStringifyInterface.h"
 #include "tsDisplayInterface.h"
+#include "tsjson.h"
 
 namespace ts {
     //!
@@ -97,6 +98,12 @@ namespace ts {
         // Implementation of interfaces.
         virtual UString toString() const override;
         virtual std::ostream& display(std::ostream& strm, const UString& margin = UString(), int level = Severity::Info) const override;
+
+        //!
+        //! Build a JSON description of this object.
+        //! @param [in,out] obj JSON object into which the signal state information is added.
+        //!
+        void toJSON(json::Object& obj) const;
 
         //!
         //! Set a percentage value from a raw driver value.

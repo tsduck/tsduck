@@ -2,13 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.38-3709
+VERSION 3.38-3713
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
     - Option --pid in plugin "eitinject".
     - Option --joint-termination in plugin "tables".
+    - Options --json-buffer-size, --json-interval, --json-line, --json-tcp,
+     --json-tcp-keep --json-udp, --json-udp-local, --json-udp-ttl to input
+     plugin "dvb".
 
 [BUG] Bug fixes:
 

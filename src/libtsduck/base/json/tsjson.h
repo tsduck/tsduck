@@ -23,7 +23,15 @@ namespace ts {
     //!
     namespace json {
 
+        // Forward declaration of JSON classes.
         class Value;
+        class Object;
+        class Array;
+        class String;
+        class Number;
+        class True;
+        class False;
+        class Null;
 
         //!
         //! Safe pointer to a JSON value (not thread-safe).

@@ -8,6 +8,7 @@
 
 #include "tsSignalState.h"
 #include "tsFixedPoint.h"
+#include "tsjsonObject.h"
 
 
 //----------------------------------------------------------------------------
@@ -98,4 +99,26 @@ std::ostream& ts::SignalState::display(std::ostream& out, const UString& margin,
         out << margin << "Packet error rate: " << packet_error_rate.value() << std::endl;
     }
     return out;
+}
+
+
+//----------------------------------------------------------------------------
+// Build a JSON description of this object.
+//----------------------------------------------------------------------------
+
+void ts::SignalState::toJSON(json::Object& obj) const
+{
+    obj.add(u"signal-locked", json::Bool(signal_locked));
+    if (signal_strength.has_value()) {
+        obj.add(u"strength", signal_strength.value().toString());
+    }
+    if (signal_noise_ratio.has_value()) {
+        obj.add(u"snr", signal_noise_ratio.value().toString());
+    }
+    if (bit_error_rate.has_value()) {
+        obj.add(u"ber", bit_error_rate.value().toString());
+    }
+    if (packet_error_rate.has_value()) {
+        obj.add(u"per", packet_error_rate.value().toString());
+    }
 }

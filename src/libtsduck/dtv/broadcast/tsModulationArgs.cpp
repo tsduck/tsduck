@@ -16,6 +16,7 @@
 #include "tsBCD.h"
 #include "tsDektec.h"
 #include "tsAlgorithm.h"
+#include "tsjsonObject.h"
 
 const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 
@@ -1271,6 +1272,72 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
     }
 
     return opt;
+}
+
+
+//----------------------------------------------------------------------------
+// Format the modulation parameters in a JSON object.
+//----------------------------------------------------------------------------
+
+void ts::ModulationArgs::toJSON(json::Object& obj) const
+{
+    // Don't know what to describe without delivery system or frequency.
+    if (!delivery_system.has_value() || !frequency.has_value()) {
+        return;
+    }
+
+    obj.add(u"delivery-system", DeliverySystemEnum.name(delivery_system.value()));
+    obj.add(u"frequency", frequency.value());
+
+    const BitRate tuner_bitrate = theoreticalBitrate();
+    if (tuner_bitrate > 0) {
+        obj.add(u"theoretical-bitrate", tuner_bitrate.toString());
+    }
+
+    if (modulation.has_value()) {
+        obj.add(u"modulation", ModulationEnum.name(modulation.value()));
+    }
+    if (symbol_rate.has_value()) {
+        obj.add(u"symbol-rate", symbol_rate.value());
+    }
+    if (inner_fec.has_value()) {
+        obj.add(u"fec-inner", InnerFECEnum.name(inner_fec.value()));
+    }
+    if (fec_hp.has_value()) {
+        obj.add(u"high-priority-fec", InnerFECEnum.name(fec_hp.value()));
+    }
+    if (fec_lp.has_value()) {
+        obj.add(u"low-priority-fec", InnerFECEnum.name(fec_lp.value()));
+    }
+    if (bandwidth.has_value()) {
+        obj.add(u"bandwidth", bandwidth.value());
+    }
+    if (transmission_mode.has_value()) {
+        obj.add(u"transmission-mode", TransmissionModeEnum.name(transmission_mode.value()));
+    }
+    if (guard_interval.has_value()) {
+        obj.add(u"guard-interval", GuardIntervalEnum.name(guard_interval.value()));
+    }
+    if (hierarchy.has_value()) {
+        obj.add(u"hierarchy", HierarchyEnum.name(hierarchy.value()));
+    }
+    if (polarity.has_value()) {
+        obj.add(u"polarity", PolarizationEnum.name(polarity.value()));
+    }
+    if (delivery_system == DS_DVB_S2) {
+        if (pilots.has_value()) {
+            obj.add(u"pilots", PilotEnum.name(pilots.value()));
+        }
+        if (roll_off.has_value()) {
+            obj.add(u"roll-off", RollOffEnum.name(roll_off.value()));
+        }
+    }
+    if (stream_id.has_value() && stream_id != DEFAULT_STREAM_ID) {
+        obj.add(u"stream-id", stream_id.value());
+    }
+    if (inversion.has_value() && inversion != DEFAULT_INVERSION) {
+        obj.add(u"spectral-inversion", SpectralInversionEnum.name(inversion.value()));
+    }
 }
 
 
