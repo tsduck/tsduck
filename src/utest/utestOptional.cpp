@@ -20,39 +20,13 @@
 
 class OptionalTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testElementaryType();
-    void testString();
-    void testClass();
-    [[noreturn]] void testUninitialized();
-
-    TSUNIT_TEST_BEGIN(OptionalTest);
-    TSUNIT_TEST(testElementaryType);
-    TSUNIT_TEST(testString);
-    TSUNIT_TEST(testClass);
-    TSUNIT_TEST_EXCEPTION(testUninitialized, std::bad_optional_access);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(ElementaryType);
+    TSUNIT_DECLARE_TEST(String);
+    TSUNIT_DECLARE_TEST(Class);
+    TSUNIT_DECLARE_TEST(Uninitialized);
 };
 
 TSUNIT_REGISTER(OptionalTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void OptionalTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void OptionalTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -60,7 +34,7 @@ void OptionalTest::afterTest()
 //----------------------------------------------------------------------------
 
 // Test case: usage on elementary types.
-void OptionalTest::testElementaryType()
+TSUNIT_DEFINE_TEST(ElementaryType)
 {
 #if defined(TS_OPTIONAL_IMPLEMENTED)
     debug() << "OptionalTest: std::optional uses TSDuck pre-C++17 implementation" << std::endl;
@@ -129,7 +103,7 @@ void OptionalTest::testElementaryType()
     TSUNIT_ASSERT(v4 != 1);
 }
 
-void OptionalTest::testString()
+TSUNIT_DEFINE_TEST(String)
 {
     std::optional<ts::UString> v1;
     TSUNIT_ASSERT(!v1.has_value());
@@ -280,7 +254,7 @@ namespace {
 }
 
 // Test case: usage on class types.
-void OptionalTest::testClass()
+TSUNIT_DEFINE_TEST(Class)
 {
     TSUNIT_EQUAL(0, TestData::InstanceCount());
     {
@@ -368,7 +342,7 @@ void OptionalTest::testClass()
 }
 
 // Test case: fail on uninitialized variable
-void OptionalTest::testUninitialized()
+TSUNIT_DEFINE_TEST_EXCEPTION(Uninitialized, std::bad_optional_access)
 {
     std::optional<int> vi;
     [[maybe_unused]] int i = vi.value();

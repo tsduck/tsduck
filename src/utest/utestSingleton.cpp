@@ -20,37 +20,12 @@
 
 class SingletonTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testSingleton();
-    void testNoInitializer();
-    void testInitializerTwoArgs();
-
-    TSUNIT_TEST_BEGIN(SingletonTest);
-    TSUNIT_TEST(testSingleton);
-    TSUNIT_TEST(testNoInitializer);
-    TSUNIT_TEST(testInitializerTwoArgs);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Singleton);
+    TSUNIT_DECLARE_TEST(NoInitializer);
+    TSUNIT_DECLARE_TEST(InitializerTwoArgs);
 };
 
 TSUNIT_REGISTER(SingletonTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void SingletonTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void SingletonTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -75,7 +50,7 @@ namespace {
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void SingletonTest::testSingleton()
+TSUNIT_DEFINE_TEST(Singleton)
 {
     // Check that this is a singleton
     Singleton& p1(Singleton::Instance());
@@ -86,7 +61,7 @@ void SingletonTest::testSingleton()
 // Static instance, no initializer
 TS_STATIC_INSTANCE(std::string, (), Foo1);
 
-void SingletonTest::testNoInitializer()
+TSUNIT_DEFINE_TEST(NoInitializer)
 {
     debug() << "SingletonTest: Foo1::Instance() = \"" << Foo1::Instance() << "\"" << std::endl;
 
@@ -102,7 +77,7 @@ void SingletonTest::testNoInitializer()
 // Static instance, initializer with two parameters
 TS_STATIC_INSTANCE(std::string, (4, '='), Foo2);
 
-void SingletonTest::testInitializerTwoArgs()
+TSUNIT_DEFINE_TEST(InitializerTwoArgs)
 {
     debug() << "StaticInstanceTest: Foo2::Instance() = \"" << Foo2::Instance() << "\"" << std::endl;
 

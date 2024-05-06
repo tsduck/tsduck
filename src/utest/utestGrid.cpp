@@ -20,19 +20,9 @@
 
 class GridTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testNarrow();
-    void testDefault();
-    void testLayout();
-
-    TSUNIT_TEST_BEGIN(GridTest);
-    TSUNIT_TEST(testNarrow);
-    TSUNIT_TEST(testDefault);
-    TSUNIT_TEST(testLayout);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Narrow);
+    TSUNIT_DECLARE_TEST(Default);
+    TSUNIT_DECLARE_TEST(Layout);
 
 private:
     static void cleanupEndLines(std::string& text);
@@ -42,18 +32,8 @@ TSUNIT_REGISTER(GridTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
+// Cleanup end of lines.
 //----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void GridTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void GridTest::afterTest()
-{
-}
 
 // Cleanup end of lines.
 void GridTest::cleanupEndLines(std::string& text)
@@ -71,7 +51,7 @@ void GridTest::cleanupEndLines(std::string& text)
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void GridTest::testNarrow()
+TSUNIT_DEFINE_TEST(Narrow)
 {
     std::ostringstream out;
     ts::Grid gr(out);
@@ -120,7 +100,7 @@ void GridTest::testNarrow()
     TSUNIT_EQUAL(reference, buffer);
 }
 
-void GridTest::testDefault()
+TSUNIT_DEFINE_TEST(Default)
 {
     std::ostringstream out;
     ts::Grid gr(out);
@@ -152,7 +132,7 @@ void GridTest::testDefault()
     TSUNIT_EQUAL(reference, buffer);
 }
 
-void GridTest::testLayout()
+TSUNIT_DEFINE_TEST(Layout)
 {
     std::ostringstream out;
     ts::Grid gr(out);

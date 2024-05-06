@@ -20,45 +20,16 @@
 
 class EnumerationTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testEnumeration();
-    void testName();
-    void testNames();
-    void testValue();
-    void testNameList();
-    void testIterators();
-    void testError();
-
-    TSUNIT_TEST_BEGIN(EnumerationTest);
-    TSUNIT_TEST(testEnumeration);
-    TSUNIT_TEST(testName);
-    TSUNIT_TEST(testNames);
-    TSUNIT_TEST(testValue);
-    TSUNIT_TEST(testNameList);
-    TSUNIT_TEST(testIterators);
-    TSUNIT_TEST(testError);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Enumeration);
+    TSUNIT_DECLARE_TEST(Name);
+    TSUNIT_DECLARE_TEST(Names);
+    TSUNIT_DECLARE_TEST(Value);
+    TSUNIT_DECLARE_TEST(NameList);
+    TSUNIT_DECLARE_TEST(Iterators);
+    TSUNIT_DECLARE_TEST(Error);
 };
 
 TSUNIT_REGISTER(EnumerationTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void EnumerationTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void EnumerationTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -66,7 +37,7 @@ void EnumerationTest::afterTest()
 //----------------------------------------------------------------------------
 
 // Test cases
-void EnumerationTest::testEnumeration()
+TSUNIT_DEFINE_TEST(Enumeration)
 {
     ts::Enumeration e1;
     ts::Enumeration e2({});
@@ -98,7 +69,7 @@ void EnumerationTest::testEnumeration()
     TSUNIT_ASSERT(e1 != e2);
 }
 
-void EnumerationTest::testName()
+TSUNIT_DEFINE_TEST(Name)
 {
     ts::Enumeration e1({{u"FirstElement", -1},
                         {u"SecondElement", 7},
@@ -120,7 +91,7 @@ void EnumerationTest::testName()
     TSUNIT_ASSERT(v7 == u"SecondElement" || v7 == u"Other7");
 }
 
-void EnumerationTest::testNames()
+TSUNIT_DEFINE_TEST(Names)
 {
     ts::Enumeration e1({{u"FirstElement", -1},
                         {u"SecondElement", 7},
@@ -141,7 +112,7 @@ void EnumerationTest::testNames()
     TSUNIT_EQUAL(u"SecondElement, AddedElement, 432", e1.names(vec));
 }
 
-void EnumerationTest::testValue()
+TSUNIT_DEFINE_TEST(Value)
 {
     ts::Enumeration e1({{u"FirstElement", -1},
                         {u"SecondElement", 7},
@@ -177,7 +148,7 @@ void EnumerationTest::testValue()
     TSUNIT_ASSERT(e1.value(u"x10") == ts::Enumeration::UNKNOWN);
 }
 
-void EnumerationTest::testNameList()
+TSUNIT_DEFINE_TEST(NameList)
 {
     ts::Enumeration e1({{u"FirstElement", -1},
                         {u"SecondElement", 7},
@@ -203,7 +174,7 @@ void EnumerationTest::testNameList()
     TSUNIT_ASSERT(value == ref);
 }
 
-void EnumerationTest::testIterators()
+TSUNIT_DEFINE_TEST(Iterators)
 {
     ts::Enumeration e1({{u"FirstElement", -1},
                         {u"SecondElement", 7},
@@ -226,7 +197,7 @@ void EnumerationTest::testIterators()
     TSUNIT_ASSERT(value == ref);
 }
 
-void EnumerationTest::testError()
+TSUNIT_DEFINE_TEST(Error)
 {
     ts::Enumeration e({{u"version",   0},
                        {u"verbose",   1},

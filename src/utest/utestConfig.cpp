@@ -20,35 +20,11 @@
 
 class ConfigTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testDefaultFile();
-    void testFile();
-
-    TSUNIT_TEST_BEGIN(ConfigTest);
-    TSUNIT_TEST(testDefaultFile);
-    TSUNIT_TEST(testFile);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(DefaultFile);
+    TSUNIT_DECLARE_TEST(File);
 };
 
 TSUNIT_REGISTER(ConfigTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void ConfigTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void ConfigTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -86,7 +62,7 @@ namespace {
     }
 }
 
-void ConfigTest::testDefaultFile()
+TSUNIT_DEFINE_TEST(DefaultFile)
 {
     debug() << "ConfigTest: DefaultFileName() = \"" << ts::ConfigFile::DefaultFileName().string() << "\"" << std::endl
             << "ConfigTest: DefaultFileName(UNIX_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE).string() << "\"" << std::endl
@@ -100,7 +76,7 @@ void ConfigTest::testDefaultFile()
                   ts::ConfigFile::DefaultFileName() == ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE));
 }
 
-void ConfigTest::testFile()
+TSUNIT_DEFINE_TEST(File)
 {
     // Reference configuration content.
     const std::string referenceContent(

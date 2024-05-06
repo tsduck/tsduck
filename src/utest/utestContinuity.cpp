@@ -21,40 +21,18 @@
 
 class ContinuityTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testAnalyze();
-    void testFix();
-
-    TSUNIT_TEST_BEGIN(ContinuityTest);
-    TSUNIT_TEST(testAnalyze);
-    TSUNIT_TEST(testFix);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Analyze);
+    TSUNIT_DECLARE_TEST(Fix);
 };
 
 TSUNIT_REGISTER(ContinuityTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-void ContinuityTest::beforeTest()
-{
-}
-
-void ContinuityTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void ContinuityTest::testAnalyze()
+TSUNIT_DEFINE_TEST(Analyze)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     ts::ContinuityAnalyzer fixer(ts::AllPIDs, &log);
@@ -127,7 +105,7 @@ void ContinuityTest::testAnalyze()
     TSUNIT_EQUAL(0, fixer.fixCount());
 }
 
-void ContinuityTest::testFix()
+TSUNIT_DEFINE_TEST(Fix)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     ts::ContinuityAnalyzer fixer(ts::AllPIDs, &log);

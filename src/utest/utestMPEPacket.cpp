@@ -21,42 +21,18 @@
 
 class MPEPacketTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testSection();
-    void testBuild();
-
-    TSUNIT_TEST_BEGIN(MPEPacketTest);
-    TSUNIT_TEST(testSection);
-    TSUNIT_TEST(testBuild);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Section);
+    TSUNIT_DECLARE_TEST(Build);
 };
 
 TSUNIT_REGISTER(MPEPacketTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void MPEPacketTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void MPEPacketTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void MPEPacketTest::testSection()
+TSUNIT_DEFINE_TEST(Section)
 {
     const ts::PID pid = 1234;
     ts::Section sec(psi_mpe_sections, sizeof(psi_mpe_sections), pid, ts::CRC32::CHECK);
@@ -77,7 +53,7 @@ void MPEPacketTest::testSection()
     TSUNIT_EQUAL(1468, mpe.udpMessageSize());
 }
 
-void MPEPacketTest::testBuild()
+TSUNIT_DEFINE_TEST(Build)
 {
     ts::MPEPacket mpe;
     TSUNIT_ASSERT(!mpe.isValid());

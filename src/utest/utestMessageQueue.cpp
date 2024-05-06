@@ -24,19 +24,14 @@
 
 class MessageQueueTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Constructor);
+    TSUNIT_DECLARE_TEST(Queue);
+    TSUNIT_DECLARE_TEST(PriorityQueue);
+
 public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
+    virtual void beforeTestSuite() override;
+    virtual void afterTestSuite() override;
 
-    void testConstructor();
-    void testQueue();
-    void testPriorityQueue();
-
-    TSUNIT_TEST_BEGIN(MessageQueueTest);
-    TSUNIT_TEST(testConstructor);
-    TSUNIT_TEST(testQueue);
-    TSUNIT_TEST(testPriorityQueue);
-    TSUNIT_TEST_END();
 private:
     cn::milliseconds _precision {};
 };
@@ -49,7 +44,7 @@ TSUNIT_REGISTER(MessageQueueTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void MessageQueueTest::beforeTest()
+void MessageQueueTest::beforeTestSuite()
 {
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
@@ -57,7 +52,7 @@ void MessageQueueTest::beforeTest()
 }
 
 // Test suite cleanup method.
-void MessageQueueTest::afterTest()
+void MessageQueueTest::afterTestSuite()
 {
 }
 
@@ -69,7 +64,7 @@ void MessageQueueTest::afterTest()
 using TestQueue = ts::MessageQueue<int>;
 
 // Test case: Constructor
-void MessageQueueTest::testConstructor()
+TSUNIT_DEFINE_TEST(Constructor)
 {
     TestQueue queue1;
     TestQueue queue2(10);
@@ -126,7 +121,7 @@ namespace {
     };
 }
 
-void MessageQueueTest::testQueue()
+TSUNIT_DEFINE_TEST(Queue)
 {
     TestQueue queue(10);
     MessageQueueTestThread thread(queue);
@@ -169,7 +164,7 @@ void MessageQueueTest::testQueue()
     debug() << "MessageQueueTest: main thread: end of test" << std::endl;
 }
 
-void MessageQueueTest::testPriorityQueue()
+TSUNIT_DEFINE_TEST(PriorityQueue)
 {
     struct Message
     {

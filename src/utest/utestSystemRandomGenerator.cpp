@@ -22,19 +22,9 @@
 
 class SystemRandomGeneratorTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testSystemRandomGenerator();
-    void testBetterSystemRandomGenerator();
-    void testRange();
-
-    TSUNIT_TEST_BEGIN(SystemRandomGeneratorTest);
-    TSUNIT_TEST(testSystemRandomGenerator);
-    TSUNIT_TEST(testBetterSystemRandomGenerator);
-    TSUNIT_TEST(testRange);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(SystemRandomGenerator);
+    TSUNIT_DECLARE_TEST(BetterSystemRandomGenerator);
+    TSUNIT_DECLARE_TEST(Range);
 
 private:
     void testRandom(ts::RandomGenerator& prng);
@@ -42,21 +32,6 @@ private:
 };
 
 TSUNIT_REGISTER(SystemRandomGeneratorTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void SystemRandomGeneratorTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void SystemRandomGeneratorTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -106,13 +81,13 @@ void SystemRandomGeneratorTest::testRandom(ts::RandomGenerator& prng)
 // Test cases
 //----------------------------------------------------------------------------
 
-void SystemRandomGeneratorTest::testSystemRandomGenerator()
+TSUNIT_DEFINE_TEST(SystemRandomGenerator)
 {
     ts::SystemRandomGenerator gen;
     testRandom(gen);
 }
 
-void SystemRandomGeneratorTest::testBetterSystemRandomGenerator()
+TSUNIT_DEFINE_TEST(BetterSystemRandomGenerator)
 {
     testRandom(ts::BetterSystemRandomGenerator::Instance());
 }
@@ -132,7 +107,7 @@ void SystemRandomGeneratorTest::testRandomRange(ts::RandomGenerator& prng, int64
     }
 }
 
-void SystemRandomGeneratorTest::testRange()
+TSUNIT_DEFINE_TEST(Range)
 {
     ts::SystemRandomGenerator gen;
     testRandomRange(gen, 1000, 1200);

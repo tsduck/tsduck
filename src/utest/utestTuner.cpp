@@ -36,25 +36,12 @@
 
 class TunerTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testListTuners();
-    void testScanDVBT();
-    void testSignalState();
+    TSUNIT_DECLARE_TEST(ListTuners);
+    TSUNIT_DECLARE_TEST(ScanDVBT);
+    TSUNIT_DECLARE_TEST(SignalState);
 #if defined(TS_LINUX)
-    void testDTVProperties();
+    TSUNIT_DECLARE_TEST(DTVProperties);
 #endif
-
-    TSUNIT_TEST_BEGIN(TunerTest);
-    TSUNIT_TEST(testListTuners);
-    TSUNIT_TEST(testScanDVBT);
-    TSUNIT_TEST(testSignalState);
-#if defined(TS_LINUX)
-    TSUNIT_TEST(testDTVProperties);
-#endif
-    TSUNIT_TEST_END();
 
 private:
     ts::COM _com {}; // required in Windows only
@@ -64,25 +51,10 @@ TSUNIT_REGISTER(TunerTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TunerTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TunerTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TunerTest::testListTuners()
+TSUNIT_DEFINE_TEST(ListTuners)
 {
     ts::DuckContext duck;
     ts::TunerPtrVector tuners;
@@ -97,7 +69,7 @@ void TunerTest::testListTuners()
     }
 }
 
-void TunerTest::testScanDVBT()
+TSUNIT_DEFINE_TEST(ScanDVBT)
 {
     // Environment variables to run this test:
     //   TS_TEST_SCAN_DVBT : test not run if empty or undefined
@@ -153,7 +125,7 @@ void TunerTest::testScanDVBT()
     }
 }
 
-void TunerTest::testSignalState()
+TSUNIT_DEFINE_TEST(SignalState)
 {
     TSUNIT_EQUAL(u"12,345", ts::SignalState::Value(12345).toString());
     TSUNIT_EQUAL(u"48%", ts::SignalState::Value(48, ts::SignalState::Unit::PERCENT).toString());
@@ -164,7 +136,7 @@ void TunerTest::testSignalState()
 }
 
 #if defined(TS_LINUX)
-void TunerTest::testDTVProperties()
+TSUNIT_DEFINE_TEST(DTVProperties)
 {
     debug() << "TunerTest::testDTVProperties:" << std::endl;
     for (uint32_t cmd = 0; cmd <= DTV_MAX_COMMAND + 2; cmd++) {

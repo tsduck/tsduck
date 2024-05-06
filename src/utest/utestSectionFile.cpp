@@ -35,35 +35,21 @@
 
 class SectionFileTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(ConfigurationFile);
+    TSUNIT_DECLARE_TEST(GenericDescriptor);
+    TSUNIT_DECLARE_TEST(GenericShortTable);
+    TSUNIT_DECLARE_TEST(GenericLongTable);
+    TSUNIT_DECLARE_TEST(PAT1);
+    TSUNIT_DECLARE_TEST(SCTE35);
+    TSUNIT_DECLARE_TEST(Memory);
+    TSUNIT_DECLARE_TEST(BuildSections);
+    TSUNIT_DECLARE_TEST(MultiSectionsCAT);
+    TSUNIT_DECLARE_TEST(MultiSectionsAtProgramLevelPMT);
+    TSUNIT_DECLARE_TEST(MultiSectionsAtStreamLevelPMT);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testConfigurationFile();
-    void testGenericDescriptor();
-    void testGenericShortTable();
-    void testGenericLongTable();
-    void testPAT1();
-    void testSCTE35();
-    void testMemory();
-    void testBuildSections();
-    void testMultiSectionsCAT();
-    void testMultiSectionsAtProgramLevelPMT();
-    void testMultiSectionsAtStreamLevelPMT();
-
-    TSUNIT_TEST_BEGIN(SectionFileTest);
-    TSUNIT_TEST(testConfigurationFile);
-    TSUNIT_TEST(testGenericDescriptor);
-    TSUNIT_TEST(testGenericShortTable);
-    TSUNIT_TEST(testGenericLongTable);
-    TSUNIT_TEST(testPAT1);
-    TSUNIT_TEST(testSCTE35);
-    TSUNIT_TEST(testMemory);
-    TSUNIT_TEST(testBuildSections);
-    TSUNIT_TEST(testMultiSectionsCAT);
-    TSUNIT_TEST(testMultiSectionsAtProgramLevelPMT);
-    TSUNIT_TEST(testMultiSectionsAtStreamLevelPMT);
-    TSUNIT_TEST_END();
 
 private:
     // Unitary test for one table.
@@ -174,14 +160,14 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
 // Other unitary tests.
 //----------------------------------------------------------------------------
 
-void SectionFileTest::testConfigurationFile()
+TSUNIT_DEFINE_TEST(ConfigurationFile)
 {
     const ts::UString conf(ts::SearchConfigurationFile(ts::SectionFile::XML_TABLES_MODEL));
     debug() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
     TSUNIT_ASSERT(fs::exists(conf));
 }
 
-void SectionFileTest::testGenericDescriptor()
+TSUNIT_DEFINE_TEST(GenericDescriptor)
 {
     static const uint8_t descData[] = {
         0x72,   // tag
@@ -233,7 +219,7 @@ void SectionFileTest::testGenericDescriptor()
     TSUNIT_ASSERT(ts::ByteBlock(desc2.payload(), desc2.payloadSize()) == ts::ByteBlock(descData + 2, sizeof(descData) - 2));
 }
 
-void SectionFileTest::testGenericShortTable()
+TSUNIT_DEFINE_TEST(GenericShortTable)
 {
     static const uint8_t refData[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
 
@@ -293,7 +279,7 @@ void SectionFileTest::testGenericShortTable()
     TSUNIT_ASSERT(ts::ByteBlock(sec->payload(), sec->payloadSize()) == ts::ByteBlock(refData, sizeof(refData)));
 }
 
-void SectionFileTest::testGenericLongTable()
+TSUNIT_DEFINE_TEST(GenericLongTable)
 {
     static const uint8_t refData0[] = {0x01, 0x02, 0x03, 0x04, 0x05};
     static const uint8_t refData1[] = {0x11, 0x12, 0x13, 0x14};
@@ -375,7 +361,7 @@ void SectionFileTest::testGenericLongTable()
     TSUNIT_ASSERT(ts::ByteBlock(sec->payload(), sec->payloadSize()) == ts::ByteBlock(refData1, sizeof(refData1)));
 }
 
-void SectionFileTest::testBuildSections()
+TSUNIT_DEFINE_TEST(BuildSections)
 {
     ts::DuckContext duck;
 
@@ -480,7 +466,7 @@ void SectionFileTest::testBuildSections()
     TSUNIT_ASSERT(tdtTime == xmlTDT.utc_time);
 }
 
-void SectionFileTest::testMultiSectionsCAT()
+TSUNIT_DEFINE_TEST(MultiSectionsCAT)
 {
     ts::DuckContext duck;
     ts::CAT cat1;
@@ -535,7 +521,7 @@ void SectionFileTest::testMultiSectionsCAT()
     }
 }
 
-void SectionFileTest::testMultiSectionsAtProgramLevelPMT()
+TSUNIT_DEFINE_TEST(MultiSectionsAtProgramLevelPMT)
 {
     ts::DuckContext duck;
     ts::PMT pmt1;
@@ -612,7 +598,7 @@ void SectionFileTest::testMultiSectionsAtProgramLevelPMT()
     }
 }
 
-void SectionFileTest::testMultiSectionsAtStreamLevelPMT()
+TSUNIT_DEFINE_TEST(MultiSectionsAtStreamLevelPMT)
 {
     ts::DuckContext duck;
     ts::PMT pmt1;
@@ -707,7 +693,7 @@ void SectionFileTest::testMultiSectionsAtStreamLevelPMT()
     }
 }
 
-void SectionFileTest::testMemory()
+TSUNIT_DEFINE_TEST(Memory)
 {
     ts::ByteBlock input(5);
     input.append(psi_pat1_sections, sizeof(psi_pat1_sections));

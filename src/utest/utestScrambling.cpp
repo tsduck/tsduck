@@ -22,33 +22,10 @@
 
 class ScramblingTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testScrambling();
-
-    TSUNIT_TEST_BEGIN(ScramblingTest);
-    TSUNIT_TEST(testScrambling);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Scrambling);
 };
 
 TSUNIT_REGISTER(ScramblingTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void ScramblingTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void ScramblingTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -150,7 +127,7 @@ namespace {
     };
 }
 
-void ScramblingTest::testScrambling()
+TSUNIT_DEFINE_TEST(Scrambling)
 {
     const ScramblingTestVector* vec = scrambling_test_vectors;
     size_t count = sizeof(scrambling_test_vectors) / sizeof(ScramblingTestVector);

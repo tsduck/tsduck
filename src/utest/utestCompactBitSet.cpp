@@ -20,42 +20,18 @@
 
 class CompactBitSetTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testSize();
-    void testOps14();
-
-    TSUNIT_TEST_BEGIN(CompactBitSetTest);
-    TSUNIT_TEST(testSize);
-    TSUNIT_TEST(testOps14);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Size);
+    TSUNIT_DECLARE_TEST(Ops14);
 };
 
 TSUNIT_REGISTER(CompactBitSetTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void CompactBitSetTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void CompactBitSetTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void CompactBitSetTest::testSize()
+TSUNIT_DEFINE_TEST(Size)
 {
     TSUNIT_EQUAL(2, ts::CompactBitSet<2>::SIZE);
     TSUNIT_EQUAL(1, ts::CompactBitSet<2>::MAX);
@@ -93,7 +69,7 @@ void CompactBitSetTest::testSize()
     TSUNIT_ASSUME(8 == sizeof(ts::CompactBitSet<64>));
 }
 
-void CompactBitSetTest::testOps14()
+TSUNIT_DEFINE_TEST(Ops14)
 {
     using Set = ts::CompactBitSet<14>;
 

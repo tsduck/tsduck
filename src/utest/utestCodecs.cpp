@@ -21,40 +21,17 @@
 
 class CodecsTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testIterator();
-
-    TSUNIT_TEST_BEGIN(CodecsTest);
-    TSUNIT_TEST(testIterator);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Iterator);
 };
 
 TSUNIT_REGISTER(CodecsTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void CodecsTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void CodecsTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void CodecsTest::testIterator()
+TSUNIT_DEFINE_TEST(Iterator)
 {
     static const uint8_t data[] = {
         0x00, 0x00, 0x00, 0x01, 0x09, 0x50, 0x00, 0x00, 0x01, 0x06, 0x01, 0x01, 0x32, 0x80, 0x00, 0x00,

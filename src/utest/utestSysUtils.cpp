@@ -35,57 +35,32 @@
 
 class SysUtilsTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(StdFileSystem);
+    TSUNIT_DECLARE_TEST(CurrentExecutableFile);
+    TSUNIT_DECLARE_TEST(Environment);
+    TSUNIT_DECLARE_TEST(Registry);
+    TSUNIT_DECLARE_TEST(IgnoreBrokenPipes);
+    TSUNIT_DECLARE_TEST(ErrorCode);
+    TSUNIT_DECLARE_TEST(Uid);
+    TSUNIT_DECLARE_TEST(VernacularFilePath);
+    TSUNIT_DECLARE_TEST(FilePaths);
+    TSUNIT_DECLARE_TEST(TempFiles);
+    TSUNIT_DECLARE_TEST(FileTime);
+    TSUNIT_DECLARE_TEST(Wildcard);
+    TSUNIT_DECLARE_TEST(SearchWildcard);
+    TSUNIT_DECLARE_TEST(HomeDirectory);
+    TSUNIT_DECLARE_TEST(ProcessCpuTime);
+    TSUNIT_DECLARE_TEST(ProcessVirtualSize);
+    TSUNIT_DECLARE_TEST(IsTerminal);
+    TSUNIT_DECLARE_TEST(SysInfo);
+    TSUNIT_DECLARE_TEST(IsAbsoluteFilePath);
+    TSUNIT_DECLARE_TEST(AbsoluteFilePath);
+    TSUNIT_DECLARE_TEST(CleanupFilePath);
+    TSUNIT_DECLARE_TEST(RelativeFilePath);
+
 public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testStdFileSystem();
-    void testCurrentExecutableFile();
-    void testEnvironment();
-    void testRegistry();
-    void testIgnoreBrokenPipes();
-    void testErrorCode();
-    void testUid();
-    void testVernacularFilePath();
-    void testFilePaths();
-    void testTempFiles();
-    void testFileTime();
-    void testWildcard();
-    void testSearchWildcard();
-    void testHomeDirectory();
-    void testProcessCpuTime();
-    void testProcessVirtualSize();
-    void testIsTerminal();
-    void testSysInfo();
-    void testIsAbsoluteFilePath();
-    void testAbsoluteFilePath();
-    void testCleanupFilePath();
-    void testRelativeFilePath();
-
-    TSUNIT_TEST_BEGIN(SysUtilsTest);
-    TSUNIT_TEST(testStdFileSystem);
-    TSUNIT_TEST(testCurrentExecutableFile);
-    TSUNIT_TEST(testEnvironment);
-    TSUNIT_TEST(testRegistry);
-    TSUNIT_TEST(testIgnoreBrokenPipes);
-    TSUNIT_TEST(testErrorCode);
-    TSUNIT_TEST(testUid);
-    TSUNIT_TEST(testVernacularFilePath);
-    TSUNIT_TEST(testFilePaths);
-    TSUNIT_TEST(testTempFiles);
-    TSUNIT_TEST(testFileTime);
-    TSUNIT_TEST(testWildcard);
-    TSUNIT_TEST(testSearchWildcard);
-    TSUNIT_TEST(testHomeDirectory);
-    TSUNIT_TEST(testProcessCpuTime);
-    TSUNIT_TEST(testProcessVirtualSize);
-    TSUNIT_TEST(testIsTerminal);
-    TSUNIT_TEST(testSysInfo);
-    TSUNIT_TEST(testIsAbsoluteFilePath);
-    TSUNIT_TEST(testAbsoluteFilePath);
-    TSUNIT_TEST(testCleanupFilePath);
-    TSUNIT_TEST(testRelativeFilePath);
-    TSUNIT_TEST_END();
+    virtual void beforeTestSuite() override;
+    virtual void afterTestSuite() override;
 
 private:
     cn::milliseconds _precision {};
@@ -99,7 +74,7 @@ TSUNIT_REGISTER(SysUtilsTest);
 //----------------------------------------------------------------------------
 
 // Test suite initialization method.
-void SysUtilsTest::beforeTest()
+void SysUtilsTest::beforeTestSuite()
 {
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
@@ -107,7 +82,7 @@ void SysUtilsTest::beforeTest()
 }
 
 // Test suite cleanup method.
-void SysUtilsTest::afterTest()
+void SysUtilsTest::afterTestSuite()
 {
 }
 
@@ -144,7 +119,7 @@ namespace {
 
 // Various tests on std::filesystem and std::filesystem::path.
 // We trust the C++ runtime library, this is just a test to understand what it does.
-void SysUtilsTest::testStdFileSystem()
+TSUNIT_DEFINE_TEST(StdFileSystem)
 {
     bool success = true;
 
@@ -208,7 +183,7 @@ void SysUtilsTest::testStdFileSystem()
     TSUNIT_ASSERT(!fs::exists(tmpName3));
 }
 
-void SysUtilsTest::testCurrentExecutableFile()
+TSUNIT_DEFINE_TEST(CurrentExecutableFile)
 {
     // Hard to make automated tests since we do not expect a predictible executable name.
 
@@ -218,7 +193,7 @@ void SysUtilsTest::testCurrentExecutableFile()
     TSUNIT_ASSERT(fs::exists(exe));
 }
 
-void SysUtilsTest::testEnvironment()
+TSUNIT_DEFINE_TEST(Environment)
 {
     debug() << "SysUtilsTest: EnvironmentExists(\"HOME\") = "
             << ts::EnvironmentExists(u"HOME") << std::endl
@@ -300,7 +275,7 @@ void SysUtilsTest::testEnvironment()
     TSUNIT_EQUAL(u"abc123456789aabcdefghijklm123456789/qsd", ts::ExpandEnvironment(u"abc${UTEST_A}a$UTEST_B$UTEST_D$UTEST_A/qsd"));
 }
 
-void SysUtilsTest::testRegistry()
+TSUNIT_DEFINE_TEST(Registry)
 {
     debug() << "SysUtilsTest: SystemEnvironmentKey = " << ts::Registry::SystemEnvironmentKey << std::endl
             << "SysUtilsTest: UserEnvironmentKey = " << ts::Registry::UserEnvironmentKey << std::endl;
@@ -355,7 +330,7 @@ void SysUtilsTest::testRegistry()
 #endif
 }
 
-void SysUtilsTest::testIgnoreBrokenPipes()
+TSUNIT_DEFINE_TEST(IgnoreBrokenPipes)
 {
     // Ignoring SIGPIPE may break up with some debuggers.
     // When running the unitary tests under a debugger, it may be useful
@@ -391,7 +366,7 @@ void SysUtilsTest::testIgnoreBrokenPipes()
     }
 }
 
-void SysUtilsTest::testErrorCode()
+TSUNIT_DEFINE_TEST(ErrorCode)
 {
     // Hard to make automated tests since we do not expect portable strings
 
@@ -415,7 +390,7 @@ void SysUtilsTest::testErrorCode()
     TSUNIT_ASSERT(!successMessage.empty());
 }
 
-void SysUtilsTest::testUid()
+TSUNIT_DEFINE_TEST(Uid)
 {
     debug() << "SysUtilsTest: newUid() = 0x" << ts::UString::Hexa(ts::UID::Instance().newUID()) << std::endl;
 
@@ -424,7 +399,7 @@ void SysUtilsTest::testUid()
     TSUNIT_ASSERT(ts::UID::Instance().newUID() != ts::UID::Instance().newUID());
 }
 
-void SysUtilsTest::testVernacularFilePath()
+TSUNIT_DEFINE_TEST(VernacularFilePath)
 {
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(u"C:\\alpha\\beta\\gamma", ts::VernacularFilePath(u"C:\\alpha/beta\\gamma"));
@@ -441,7 +416,7 @@ void SysUtilsTest::testVernacularFilePath()
 #endif
 }
 
-void SysUtilsTest::testFilePaths()
+TSUNIT_DEFINE_TEST(FilePaths)
 {
     const ts::UString dir(ts::VernacularFilePath(u"/dir/for/this.test"));
     const ts::UString sep(1, fs::path::preferred_separator);
@@ -455,7 +430,7 @@ void SysUtilsTest::testFilePaths()
     TSUNIT_ASSERT(ts::BaseName(dirSep) == u"");
 }
 
-void SysUtilsTest::testTempFiles()
+TSUNIT_DEFINE_TEST(TempFiles)
 {
     debug() << "SysUtilsTest: TempDirectory() = \"" << fs::temp_directory_path() << "\"" << std::endl;
     debug() << "SysUtilsTest: TempFile() = \"" << ts::TempFile() << "\"" << std::endl;
@@ -477,7 +452,7 @@ void SysUtilsTest::testTempFiles()
     TSUNIT_ASSERT(!fs::exists(tmpName));
 }
 
-void SysUtilsTest::testFileTime()
+TSUNIT_DEFINE_TEST(FileTime)
 {
     const fs::path tmpName(ts::TempFile());
 
@@ -534,7 +509,7 @@ void SysUtilsTest::testFileTime()
     TSUNIT_ASSERT(!fs::exists(tmpName));
 }
 
-void SysUtilsTest::testWildcard()
+TSUNIT_DEFINE_TEST(Wildcard)
 {
     const ts::UString dirName(ts::TempFile(u""));
     const ts::UString filePrefix(dirName + fs::path::preferred_separator + u"foo.");
@@ -578,7 +553,7 @@ void SysUtilsTest::testWildcard()
     TSUNIT_ASSERT(!fs::exists(dirName));
 }
 
-void SysUtilsTest::testSearchWildcard()
+TSUNIT_DEFINE_TEST(SearchWildcard)
 {
 #if defined(TS_LINUX)
     ts::UStringList files;
@@ -590,7 +565,7 @@ void SysUtilsTest::testSearchWildcard()
 #endif
 }
 
-void SysUtilsTest::testHomeDirectory()
+TSUNIT_DEFINE_TEST(HomeDirectory)
 {
     const ts::UString dir(ts::UserHomeDirectory());
     debug() << "SysUtilsTest: UserHomeDirectory() = \"" << dir << "\"" << std::endl;
@@ -600,7 +575,7 @@ void SysUtilsTest::testHomeDirectory()
     TSUNIT_ASSERT(fs::is_directory(dir));
 }
 
-void SysUtilsTest::testProcessCpuTime()
+TSUNIT_DEFINE_TEST(ProcessCpuTime)
 {
     const cn::milliseconds t1 = ts::GetProcessCpuTime();
     debug() << "SysUtilsTest: CPU time (1) = " << ts::UString::Chrono(t1) << std::endl;
@@ -618,7 +593,7 @@ void SysUtilsTest::testProcessCpuTime()
     TSUNIT_ASSERT(t2 >= t1);
 }
 
-void SysUtilsTest::testProcessVirtualSize()
+TSUNIT_DEFINE_TEST(ProcessVirtualSize)
 {
     const size_t m1 = ts::GetProcessVirtualSize();
     debug() << "SysUtilsTest: virtual memory (1) = " << m1 << " bytes" << std::endl;
@@ -633,7 +608,7 @@ void SysUtilsTest::testProcessVirtualSize()
     TSUNIT_ASSERT(m2 > 0);
 }
 
-void SysUtilsTest::testIsTerminal()
+TSUNIT_DEFINE_TEST(IsTerminal)
 {
 #if defined(TS_WINDOWS)
     debug() << "SysUtilsTest::testIsTerminal: stdin  = \"" << ts::WinDeviceName(::GetStdHandle(STD_INPUT_HANDLE)) << "\"" << std::endl
@@ -646,7 +621,7 @@ void SysUtilsTest::testIsTerminal()
             << std::endl;
 }
 
-void SysUtilsTest::testSysInfo()
+TSUNIT_DEFINE_TEST(SysInfo)
 {
     debug() << "SysUtilsTest::testSysInfo: " << std::endl
             << "    isLinux = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isLinux()) << std::endl
@@ -857,7 +832,7 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(ts::SysInfo::Instance().memoryPageSize() % 256 == 0);
 }
 
-void SysUtilsTest::testIsAbsoluteFilePath()
+TSUNIT_DEFINE_TEST(IsAbsoluteFilePath)
 {
 #if defined(TS_WINDOWS)
     TSUNIT_ASSERT(ts::IsAbsoluteFilePath(u"C:\\foo\\bar"));
@@ -872,7 +847,7 @@ void SysUtilsTest::testIsAbsoluteFilePath()
 #endif
 }
 
-void SysUtilsTest::testAbsoluteFilePath()
+TSUNIT_DEFINE_TEST(AbsoluteFilePath)
 {
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(u"C:\\foo\\bar\\ab\\cd", ts::AbsoluteFilePath(u"ab\\cd", u"C:\\foo\\bar"));
@@ -885,7 +860,7 @@ void SysUtilsTest::testAbsoluteFilePath()
 #endif
 }
 
-void SysUtilsTest::testCleanupFilePath()
+TSUNIT_DEFINE_TEST(CleanupFilePath)
 {
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(u"ab\\cd", ts::CleanupFilePath(u"ab\\cd"));
@@ -904,7 +879,7 @@ void SysUtilsTest::testCleanupFilePath()
 #endif
 }
 
-void SysUtilsTest::testRelativeFilePath()
+TSUNIT_DEFINE_TEST(RelativeFilePath)
 {
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(u"ef", ts::RelativeFilePath(u"C:\\ab\\cd\\ef", u"C:\\ab\\cd\\"));

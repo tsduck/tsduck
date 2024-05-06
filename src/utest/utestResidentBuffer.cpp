@@ -20,40 +20,17 @@
 
 class ResidentBufferTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testResidentBuffer();
-
-    TSUNIT_TEST_BEGIN(ResidentBufferTest);
-    TSUNIT_TEST(testResidentBuffer);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(ResidentBuffer);
 };
 
 TSUNIT_REGISTER(ResidentBufferTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void ResidentBufferTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void ResidentBufferTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void ResidentBufferTest::testResidentBuffer()
+TSUNIT_DEFINE_TEST(ResidentBuffer)
 {
     const size_t buf_size = 10000;
 

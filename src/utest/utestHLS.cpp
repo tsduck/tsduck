@@ -20,23 +20,15 @@
 
 class HLSTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(MasterPlaylist);
+    TSUNIT_DECLARE_TEST(MasterPlaylistWithAlternate);
+    TSUNIT_DECLARE_TEST(MediaPlaylist);
+    TSUNIT_DECLARE_TEST(BuildMasterPlaylist);
+    TSUNIT_DECLARE_TEST(BuildMediaPlaylist);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testMasterPlaylist();
-    void testMasterPlaylistWithAlternate();
-    void testMediaPlaylist();
-    void testBuildMasterPlaylist();
-    void testBuildMediaPlaylist();
-
-    TSUNIT_TEST_BEGIN(HLSTest);
-    TSUNIT_TEST(testMasterPlaylist);
-    TSUNIT_TEST(testMasterPlaylistWithAlternate);
-    TSUNIT_TEST(testMediaPlaylist);
-    TSUNIT_TEST(testBuildMasterPlaylist);
-    TSUNIT_TEST(testBuildMediaPlaylist);
-    TSUNIT_TEST_END();
 
 private:
     int _previousSeverity = 0;
@@ -69,7 +61,7 @@ void HLSTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void HLSTest::testMasterPlaylist()
+TSUNIT_DEFINE_TEST(MasterPlaylist)
 {
     // Test file downloaded from TSDuck web site.
     // Copied from Apple test file at
@@ -133,7 +125,7 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(7, pl.selectPlayListLowestResolution());
 }
 
-void HLSTest::testMasterPlaylistWithAlternate()
+TSUNIT_DEFINE_TEST(MasterPlaylistWithAlternate)
 {
     // Test file downloaded from TSDuck web site.
 
@@ -194,7 +186,7 @@ void HLSTest::testMasterPlaylistWithAlternate()
     TSUNIT_ASSERT(!pl.altPlayList(1).forced);
 }
 
-void HLSTest::testMediaPlaylist()
+TSUNIT_DEFINE_TEST(MediaPlaylist)
 {
     // Test file downloaded from TSDuck web site.
     // Copied from Apple test file at
@@ -239,7 +231,7 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_ASSERT(!seg.gap);
 }
 
-void HLSTest::testBuildMasterPlaylist()
+TSUNIT_DEFINE_TEST(BuildMasterPlaylist)
 {
     ts::hls::PlayList pl;
     pl.reset(ts::hls::PlayListType::MASTER, u"/c/test/path/master/test.m3u8");
@@ -290,7 +282,7 @@ void HLSTest::testBuildMasterPlaylist()
     TSUNIT_EQUAL(refContent, pl.textContent());
 }
 
-void HLSTest::testBuildMediaPlaylist()
+TSUNIT_DEFINE_TEST(BuildMediaPlaylist)
 {
     ts::hls::PlayList pl;
     pl.reset(ts::hls::PlayListType::LIVE, u"/c/test/path/master/test.m3u8");

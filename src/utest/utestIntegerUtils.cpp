@@ -20,64 +20,29 @@
 
 class IntegerUtilsTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testMakeSigned();
-    void testbounded_add();
-    void testbounded_sub();
-    void testround_down();
-    void testround_up();
-    void testSignExtend();
-    void testBitSize();
-    void testPower10();
-    void testBoundCheck();
-    void testBoundedCast();
-    void testGCD();
-    void testOverflow();
-    void testSmallerUnsigned();
-
-    TSUNIT_TEST_BEGIN(IntegerUtilsTest);
-    TSUNIT_TEST(testMakeSigned);
-    TSUNIT_TEST(testbounded_add);
-    TSUNIT_TEST(testbounded_sub);
-    TSUNIT_TEST(testround_down);
-    TSUNIT_TEST(testround_up);
-    TSUNIT_TEST(testSignExtend);
-    TSUNIT_TEST(testBitSize);
-    TSUNIT_TEST(testPower10);
-    TSUNIT_TEST(testBoundCheck);
-    TSUNIT_TEST(testBoundedCast);
-    TSUNIT_TEST(testGCD);
-    TSUNIT_TEST(testOverflow);
-    TSUNIT_TEST(testSmallerUnsigned);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(MakeSigned);
+    TSUNIT_DECLARE_TEST(bounded_add);
+    TSUNIT_DECLARE_TEST(bounded_sub);
+    TSUNIT_DECLARE_TEST(round_down);
+    TSUNIT_DECLARE_TEST(round_up);
+    TSUNIT_DECLARE_TEST(SignExtend);
+    TSUNIT_DECLARE_TEST(BitSize);
+    TSUNIT_DECLARE_TEST(Power10);
+    TSUNIT_DECLARE_TEST(BoundCheck);
+    TSUNIT_DECLARE_TEST(BoundedCast);
+    TSUNIT_DECLARE_TEST(GCD);
+    TSUNIT_DECLARE_TEST(Overflow);
+    TSUNIT_DECLARE_TEST(SmallerUnsigned);
 };
 
 TSUNIT_REGISTER(IntegerUtilsTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void IntegerUtilsTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void IntegerUtilsTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void IntegerUtilsTest::testMakeSigned()
+TSUNIT_DEFINE_TEST(MakeSigned)
 {
     TSUNIT_ASSERT(std::is_unsigned<bool>::value);
     TSUNIT_ASSERT(std::is_signed<ts::make_signed<bool>::type>::value);
@@ -110,7 +75,7 @@ void IntegerUtilsTest::testMakeSigned()
     TSUNIT_EQUAL(sizeof(double), sizeof(ts::make_signed<double>::type));
 }
 
-void IntegerUtilsTest::testbounded_add()
+TSUNIT_DEFINE_TEST(bounded_add)
 {
     TSUNIT_EQUAL(201, ts::bounded_add(uint8_t(1),   uint8_t(200)));
     TSUNIT_EQUAL(255, ts::bounded_add(uint8_t(0),   uint8_t(255)));
@@ -124,7 +89,7 @@ void IntegerUtilsTest::testbounded_add()
     TSUNIT_EQUAL(-128, ts::bounded_add(int8_t(-100), int8_t(-60)));
 }
 
-void IntegerUtilsTest::testbounded_sub()
+TSUNIT_DEFINE_TEST(bounded_sub)
 {
     TSUNIT_EQUAL(80,  ts::bounded_sub(uint8_t(100), uint8_t(20)));
     TSUNIT_EQUAL(0,   ts::bounded_sub(uint8_t(100), uint8_t(200)));
@@ -139,7 +104,7 @@ void IntegerUtilsTest::testbounded_sub()
     TSUNIT_EQUAL(-128, ts::bounded_sub(int8_t(-100), int8_t(40)));
 }
 
-void IntegerUtilsTest::testround_down()
+TSUNIT_DEFINE_TEST(round_down)
 {
     TSUNIT_EQUAL(-1, -11 % 5);
     TSUNIT_EQUAL(-4, -14 % 5);
@@ -174,7 +139,7 @@ void IntegerUtilsTest::testround_down()
     TSUNIT_EQUAL(0, ts::round_down(0, -27));
 }
 
-void IntegerUtilsTest::testround_up()
+TSUNIT_DEFINE_TEST(round_up)
 {
     TSUNIT_EQUAL(20, ts::round_up(20, 5));
     TSUNIT_EQUAL(25, ts::round_up(21, 5));
@@ -208,7 +173,7 @@ void IntegerUtilsTest::testround_up()
     TSUNIT_EQUAL(0, ts::round_up(0, -27));
 }
 
-void IntegerUtilsTest::testSignExtend()
+TSUNIT_DEFINE_TEST(SignExtend)
 {
     TSUNIT_EQUAL(25, ts::SignExtend(int32_t(25), 12));
     TSUNIT_EQUAL(0x07FF, ts::SignExtend(int16_t(0x07FF), 12));
@@ -217,7 +182,7 @@ void IntegerUtilsTest::testSignExtend()
     TSUNIT_EQUAL(-2048, ts::SignExtend(int16_t(0x2800), 12));
 }
 
-void IntegerUtilsTest::testBitSize()
+TSUNIT_DEFINE_TEST(BitSize)
 {
     TSUNIT_EQUAL(1, ts::BitSize(uint8_t(0)));
     TSUNIT_EQUAL(1, ts::BitSize(int8_t(0)));
@@ -231,7 +196,7 @@ void IntegerUtilsTest::testBitSize()
     TSUNIT_EQUAL(51, ts::BitSize(0x000500000A003000));
 }
 
-void IntegerUtilsTest::testPower10()
+TSUNIT_DEFINE_TEST(Power10)
 {
     TSUNIT_EQUAL(1, ts::Power10(0));
     TSUNIT_EQUAL(10, ts::Power10(1));
@@ -250,7 +215,7 @@ void IntegerUtilsTest::testPower10()
     TSUNIT_EQUAL(1000000000000000, (ts::static_power10<uint64_t, 15>::value));
 }
 
-void IntegerUtilsTest::testBoundCheck()
+TSUNIT_DEFINE_TEST(BoundCheck)
 {
     TSUNIT_ASSERT(ts::bound_check<uint8_t>(int(20)));
     TSUNIT_ASSERT(ts::bound_check<uint8_t>(int(255)));
@@ -268,7 +233,7 @@ void IntegerUtilsTest::testBoundCheck()
     TSUNIT_ASSERT(!ts::bound_check<int8_t>(uint32_t(128)));
 }
 
-void IntegerUtilsTest::testBoundedCast()
+TSUNIT_DEFINE_TEST(BoundedCast)
 {
     TSUNIT_EQUAL(20, ts::bounded_cast<uint8_t>(int(20)));
     TSUNIT_EQUAL(0, ts::bounded_cast<uint8_t>(-20));
@@ -280,7 +245,7 @@ void IntegerUtilsTest::testBoundedCast()
     TSUNIT_EQUAL(127, ts::bounded_cast<int8_t>(int16_t(1000)));
 }
 
-void IntegerUtilsTest::testGCD()
+TSUNIT_DEFINE_TEST(GCD)
 {
     TSUNIT_EQUAL(0,  ts::GCD(0, 0));
     TSUNIT_EQUAL(12, ts::GCD(0, 12));
@@ -297,7 +262,7 @@ void IntegerUtilsTest::testGCD()
     TSUNIT_EQUAL(14, ts::GCD<uint32_t>(7 * 3 * 2, 7 * 5 * 2));
 }
 
-void IntegerUtilsTest::testOverflow()
+TSUNIT_DEFINE_TEST(Overflow)
 {
     int64_t a = 292021270;
     int64_t b = 31590000000;
@@ -307,7 +272,7 @@ void IntegerUtilsTest::testOverflow()
     TSUNIT_ASSERT(ts::mul_overflow(a, b));
 }
 
-void IntegerUtilsTest::testSmallerUnsigned()
+TSUNIT_DEFINE_TEST(SmallerUnsigned)
 {
     TSUNIT_EQUAL(1, sizeof(ts::smaller_unsigned<1>::type));
     TSUNIT_ASSERT((std::is_same<uint8_t, ts::smaller_unsigned<1>::type>::value));

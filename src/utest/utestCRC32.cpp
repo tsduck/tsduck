@@ -21,33 +21,10 @@
 
 class CRC32Test: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testCRC();
-
-    TSUNIT_TEST_BEGIN(CRC32Test);
-    TSUNIT_TEST(testCRC);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(CRC);
 };
 
 TSUNIT_REGISTER(CRC32Test);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void CRC32Test::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void CRC32Test::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -155,7 +132,7 @@ namespace {
     };
 }
 
-void CRC32Test::testCRC()
+TSUNIT_DEFINE_TEST(CRC)
 {
     // Support for benchmarking.
     utest::TSUnitBenchmark bench(u"TSUNIT_CRC32_ITERATIONS");

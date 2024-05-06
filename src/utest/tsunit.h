@@ -55,6 +55,8 @@
 #pragma clang diagnostic ignored "-Wunused-member-function" // Unused member function
 #pragma clang diagnostic ignored "-Wdocumentation-unknown-command" // Should work but fails with clang 10.0.0 on Linux
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"    // "unsafe pointer arithmetic" (new with clang 16)
+#pragma clang diagnostic ignored "-Wweak-vtables"           // Test classes may have no explicit virtual method
+#pragma clang diagnostic ignored "-Wmissing-noreturn"       // Test cases with expected exception may be detected as [[noreturn]]
 #endif
 
 #include <limits>
@@ -64,6 +66,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <typeindex>
 #include <filesystem>
 #include <exception>
 #include <cstdlib>
@@ -85,6 +88,14 @@ namespace tsunit {
         //! Virtual destructor.
         //!
         virtual ~Test();
+        //!
+        //! Invoked once before starting the test suite (all test cases in the test class).
+        //!
+        virtual void beforeTestSuite();
+        //!
+        //! Invoked once after the completion of the test suite (all test cases in the test class).
+        //!
+        virtual void afterTestSuite();
         //!
         //! Invoked once before each individual test case.
         //!
@@ -165,11 +176,11 @@ namespace tsunit {
         int run();
 
     private:
-        std::string _argv0;       // program name
-        std::string _testName;    // name of test to run
-        bool        _listMode;    // list tests, do not execute
-        bool        _debug;       // enable debug messages
-        int         _exitStatus;  // EXIT_SUCCESS or EXIT_FAILURE
+        std::string _argv0 {};          // program name
+        std::string _testName {};       // name of test to run
+        bool        _listMode = false;  // list tests, do not execute
+        bool        _debug = false;     // enable debug messages
+        int         _exitStatus = EXIT_SUCCESS;
 
         // Inaccessible operations.
         Main() = delete;
@@ -188,80 +199,88 @@ namespace tsunit {
 //! @endcond
 
 //!
-//! Start the description of a test suite inside a test class.
-//! @hideinitializer
-//! @param classname Simple class name. The macro shall be invoked inside
-//! the class declaration. See the sample code below.
-//!
-//! @code
-//! class ExcTest: public std::exception { ... };
-//!
-//! namespace foo
-//! {
-//!     class Bar: public tsunit::Test
-//!     {
-//!     public:
-//!         void test1();
-//!         void test2();
-//!         void test3();
-//!
-//!         TSUNIT_TEST_BEGIN(Bar);
-//!         TSUNIT_TEST(test1);
-//!         TSUNIT_TEST(test2);
-//!         TSUNIT_TEST_EXCEPTION(test3, ExcTest);
-//!         TSUNIT_TEST_END();
-//!     };
-//! }
-//!
-//! TSUNIT_REGISTER(foo::Bar);
-//! @endcode
-//!
-#define TSUNIT_TEST_BEGIN(classname)                                  \
-    public:                                                           \
-        static tsunit::TestSuite* testSuite()                         \
-        {                                                             \
-            using _TestClass = classname;                             \
-            _TestClass* instance = new _TestClass;                    \
-            tsunit::TestSuite* suite = new tsunit::TestSuite(#classname, instance)
-
-//!
-//! Add a test method to the test suite inside a test class.
-//! @hideinitializer
-//! @param method Simple name of a test method. Must be a <code>void (*)()</code> method.
-//! @see TSUNIT_TEST_BEGIN
-//!
-#define TSUNIT_TEST(method)  \
-            suite->addTestCase(new tsunit::TestCaseWrapper<_TestClass>(#method, &_TestClass::method, instance))
-
-//!
-//! Add a test method which should raise an exception to the test suite inside a test class.
-//! @hideinitializer
-//! @param method Simple name of a test method. Must be a <code>void (*)()</code> method.
-//! @param exceptclass Name
-//! @see TSUNIT_TEST_BEGIN
-//!
-#define TSUNIT_TEST_EXCEPTION(method, exceptclass)  \
-            suite->addTestCase(new tsunit::TestExceptionWrapper<_TestClass, exceptclass>(#method, #exceptclass, &_TestClass::method, instance, __FILE__, __LINE__))
-
-//!
-//! End of the test suite inside a test class.
-//! @hideinitializer
-//! @see TSUNIT_TEST_BEGIN
-//!
-#define TSUNIT_TEST_END()  \
-            return suite;  \
-        }                  \
-    private:               \
-        using TSUNIT_NAME(for_trailing_semicolon) = int
-
-//!
 //! Register a test class as a test suite.
 //! @hideinitializer
 //! @param classname Fully qualified class name. The macro shall be invoked outside the class.
-//! @see TSUNIT_TEST_BEGIN
+//! See the sample code below.
+//!
+//! At most one test class can be registered per compilation unit. All defined methods (using
+//! TSUNIT_DEFINE_TEST for instance) implicitly belong to this class.
+//!
+//! @code
+//! namespace foo
+//! {
+//!     class BarTest: public tsunit::Test
+//!     {
+//!         TSUNIT_DECLARE_TEST(Feature1);
+//!         TSUNIT_DECLARE_TEST(Feature2);
+//!         TSUNIT_DECLARE_TEST(Feature3);
+//!     };
+//!
+//!     class Exc: public std::exception { ... };
+//! }
+//!
+//! TSUNIT_REGISTER(foo::BarTest);
+//!
+//! TSUNIT_DEFINE_TEST(Feature1)
+//! {
+//!     TSUNIT_ASSERT(...);
+//! }
+//!
+//! TSUNIT_DEFINE_TEST(Feature2)
+//! {
+//!     TSUNIT_ASSERT(...);
+//! }
+//!
+//! TSUNIT_DEFINE_TEST_EXCEPTION(Feature3, foo::Exc)
+//! {
+//!     TSUNIT_ASSERT(...);
+//! }
+//! @endcode
 //!
 #define TSUNIT_REGISTER(classname) \
-    static const tsunit::TestRepository::Register TSUNIT_NAME(_Registrar)(classname::testSuite())
+    using _TestClass = classname;  \
+    static const tsunit::TestRepository::Register TSUNIT_NAME(_Registrar)(std::type_index(typeid(_TestClass)), #classname, new _TestClass)
+
+//!
+//! Declare a test method to the test suite inside a test class.
+//! @hideinitializer
+//! @param name Simple name of a test method.
+//!
+#define TSUNIT_DECLARE_TEST(name) \
+    public:                       \
+        void test##name()
+
+//!
+//! Define a test method to the test suite outside the test class.
+//! @hideinitializer
+//! @param name Simple name of the test method, as used in TSUNIT_DECLARE_TEST().
+//! @see TSUNIT_DECLARE_TEST
+//!
+#define TSUNIT_DEFINE_TEST(name)                                          \
+    static const tsunit::TestRepository::Register TSUNIT_NAME(_Registrar) \
+        (std::type_index(typeid(_TestClass)),                             \
+         new tsunit::TestCaseWrapper<_TestClass>(#name, &_TestClass::test##name, tsunit::TestRepository::instance()->getTest<_TestClass>(std::type_index(typeid(_TestClass))))); \
+    void _TestClass::test##name()
+
+//!
+//! Define a test method which should raise an exception to the test suite outside the test class.
+//! @hideinitializer
+//! @param name Simple name of the test method, as used in TSUNIT_DECLARE_TEST().
+//! @param exceptclass Name of the exception class which is expected to be thrown.
+//! @see TSUNIT_DECLARE_TEST
+//!
+#define TSUNIT_DEFINE_TEST_EXCEPTION(name, exceptclass)                   \
+    static const tsunit::TestRepository::Register TSUNIT_NAME(_Registrar) \
+        (std::type_index(typeid(_TestClass)),                             \
+         new tsunit::TestExceptionWrapper<_TestClass, exceptclass>        \
+             (#name,                                                      \
+              #exceptclass,                                               \
+              &_TestClass::test##name,                                    \
+              tsunit::TestRepository::instance()->getTest<_TestClass>(std::type_index(typeid(_TestClass))), \
+              __FILE__,                                                   \
+              __LINE__));                                                 \
+    void _TestClass::test##name()
 
 //!
 //! Report a test case as failed.
@@ -321,8 +340,7 @@ namespace tsunit {
     class TestCase : public Named
     {
     public:
-        TestCase(const std::string& name);
-        virtual ~TestCase() override;
+        TestCase(const std::string& name) : Named(name) {}
         virtual void run() = 0;
     private:
         TestCase() = delete;
@@ -384,11 +402,17 @@ namespace tsunit {
         void addTestCase(TestCase* test);
         TestCase* getTestCase(const std::string& name) const;
         void getAllTestNames(std::list<std::string>&) const;
-        void runBeforeTest();
-        void runAfterTest();
+        bool runBeforeTestSuite();
+        bool runBeforeTest(const TestCase*);
+        bool runTest(TestCase*);
+        bool runAfterTest(const TestCase*);
+        bool runAfterTestSuite();
+        // Get the test class instance, as a subclass, can be nullptr.
+        template<class TEST, typename std::enable_if<std::is_base_of<Test, TEST>::value>::type* = nullptr>
+        TEST* getTest() const { return dynamic_cast<TEST*>(_test); }
     private:
-        Test* _test;
-        std::map<std::string, TestCase*> _testmap;
+        Test* _test = nullptr;
+        std::map<std::string, TestCase*> _testmap {};
         TestSuite() = delete;
         TestSuite(TestSuite&&) = delete;
         TestSuite(const TestSuite&) = delete;
@@ -401,20 +425,26 @@ namespace tsunit {
     {
     public:
         ~TestRepository();
-        void addTestSuite(TestSuite* test);
         TestSuite* getTestSuite(const std::string& name) const;
         void getAllTestSuiteNames(std::list<std::string>&) const;
-        static TestRepository* instance(); // singleton instance.
-        class Register // an inner class with constructors which register test suites.
+        // Get the test class instance of a test suite, as a Test subclass, can be nullptr.
+        template<class TEST, typename std::enable_if<std::is_base_of<Test, TEST>::value>::type* = nullptr>
+        TEST* getTest(std::type_index index) const;
+        // Singleton instance.
+        static TestRepository* instance();
+        // An inner class with constructors which register test suites.
+        class Register
         {
         public:
-            Register(TestSuite* test);
+            Register(std::type_index index, const std::string& name, Test* test);
+            Register(std::type_index index, TestCase* test);
         };
     private:
-        std::map<std::string,TestSuite*> _testsuites;
+        std::map<std::string,TestSuite*> _testsuites {};
+        std::map<std::type_index,TestSuite*> _testindex {};
         static TestRepository* _instance;
         static void cleanupInstance();
-        TestRepository();
+        TestRepository() = default;
         TestRepository(TestRepository&&) = delete;
         TestRepository(const TestRepository&) = delete;
         TestRepository& operator=(TestRepository&&) = delete;
@@ -425,15 +455,15 @@ namespace tsunit {
     class TestRunner
     {
     public:
-        TestRunner();
-        bool run(TestSuite* suite = nullptr, TestCase* test = nullptr);
+        TestRunner() = default;
+        bool run(TestSuite* suite = nullptr, TestCase* test = nullptr, bool prepost = true);
         size_t getPassedCount() const { return _passedCount; }
         size_t getFailedCount() const { return _failedCount; }
         static std::string getCurrentTestName() { return _currentTestName; }
     private:
         static std::string _currentTestName;
-        size_t _passedCount;
-        size_t _failedCount;
+        size_t _passedCount = 0;
+        size_t _failedCount = 0;
         TestRunner(TestRunner&&) = delete;
         TestRunner(const TestRunner&) = delete;
         TestRunner& operator=(TestRunner&&) = delete;
@@ -632,6 +662,14 @@ void tsunit::TestExceptionWrapper<TEST,EXCEP,T1,T2>::run()
         // Expected exception, exit normally.
     }
 }
+
+template<class TEST, typename std::enable_if<std::is_base_of<tsunit::Test, TEST>::value>::type*>
+TEST* tsunit::TestRepository::getTest(std::type_index index) const
+{
+    const auto it = _testindex.find(index);
+    return it == _testindex.end() || it->second == nullptr ? nullptr : it->second->getTest<TEST>();
+}
+
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push

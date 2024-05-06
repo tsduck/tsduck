@@ -28,71 +28,39 @@
 
 class ArgsTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(Accessors);
+    TSUNIT_DECLARE_TEST(HelpDefault);
+    TSUNIT_DECLARE_TEST(CopyOptions);
+    TSUNIT_DECLARE_TEST(HelpCustom);
+    TSUNIT_DECLARE_TEST(ValidCommandVariableArgs);
+    TSUNIT_DECLARE_TEST(ValidCommandArgcArgv);
+    TSUNIT_DECLARE_TEST(ValidCommandContainer);
+    TSUNIT_DECLARE_TEST(OptionalValue);
+    TSUNIT_DECLARE_TEST(ThousandsSeparator);
+    TSUNIT_DECLARE_TEST(MissingParameter);
+    TSUNIT_DECLARE_TEST(TooManyParameters);
+    TSUNIT_DECLARE_TEST(AmbiguousOption);
+    TSUNIT_DECLARE_TEST(InvalidIntegerOption);
+    TSUNIT_DECLARE_TEST(IntegerTooLow);
+    TSUNIT_DECLARE_TEST(IntegerTooHigh);
+    TSUNIT_DECLARE_TEST(InvalidEnum);
+    TSUNIT_DECLARE_TEST(ValidEnum);
+    TSUNIT_DECLARE_TEST(BitMask);
+    TSUNIT_DECLARE_TEST(GatherParameters);
+    TSUNIT_DECLARE_TEST(Redirection);
+    TSUNIT_DECLARE_TEST(Tristate);
+    TSUNIT_DECLARE_TEST(Ranges);
+    TSUNIT_DECLARE_TEST(Decimals);
+    TSUNIT_DECLARE_TEST(FixedPoint);
+    TSUNIT_DECLARE_TEST(Fraction);
+    TSUNIT_DECLARE_TEST(Double);
+    TSUNIT_DECLARE_TEST(Chrono);
+    TSUNIT_DECLARE_TEST(InvalidFraction);
+    TSUNIT_DECLARE_TEST(InvalidDouble);
+
 public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
-
-    void testAccessors();
-    void testHelpDefault();
-    void testCopyOptions();
-    void testHelpCustom();
-    void testValidCommandVariableArgs();
-    void testValidCommandArgcArgv();
-    void testValidCommandContainer();
-    void testOptionalValue();
-    void testThousandsSeparator();
-    void testMissingParameter();
-    void testTooManyParameters();
-    void testAmbiguousOption();
-    void testInvalidIntegerOption();
-    void testIntegerTooLow();
-    void testIntegerTooHigh();
-    void testInvalidEnum();
-    void testValidEnum();
-    void testBitMask();
-    void testGatherParameters();
-    void testRedirection();
-    void testTristate();
-    void testRanges();
-    void testDecimals();
-    void testFixedPoint();
-    void testFraction();
-    void testDouble();
-    void testChrono();
-    void testInvalidFraction();
-    void testInvalidDouble();
-
-    TSUNIT_TEST_BEGIN(ArgsTest);
-    TSUNIT_TEST(testAccessors);
-    TSUNIT_TEST(testHelpDefault);
-    TSUNIT_TEST(testCopyOptions);
-    TSUNIT_TEST(testHelpCustom);
-    TSUNIT_TEST(testValidCommandVariableArgs);
-    TSUNIT_TEST(testValidCommandArgcArgv);
-    TSUNIT_TEST(testValidCommandContainer);
-    TSUNIT_TEST(testOptionalValue);
-    TSUNIT_TEST(testThousandsSeparator);
-    TSUNIT_TEST(testMissingParameter);
-    TSUNIT_TEST(testTooManyParameters);
-    TSUNIT_TEST(testAmbiguousOption);
-    TSUNIT_TEST(testInvalidIntegerOption);
-    TSUNIT_TEST(testIntegerTooLow);
-    TSUNIT_TEST(testIntegerTooHigh);
-    TSUNIT_TEST(testInvalidEnum);
-    TSUNIT_TEST(testValidEnum);
-    TSUNIT_TEST(testBitMask);
-    TSUNIT_TEST(testGatherParameters);
-    TSUNIT_TEST(testRedirection);
-    TSUNIT_TEST(testTristate);
-    TSUNIT_TEST(testRanges);
-    TSUNIT_TEST(testDecimals);
-    TSUNIT_TEST(testFixedPoint);
-    TSUNIT_TEST(testFraction);
-    TSUNIT_TEST(testDouble);
-    TSUNIT_TEST(testChrono);
-    TSUNIT_TEST(testInvalidFraction);
-    TSUNIT_TEST(testInvalidDouble);
-    TSUNIT_TEST_END();
 
 private:
     using Double = ts::FloatingPoint<double>;
@@ -128,7 +96,7 @@ void ArgsTest::afterTest()
 //----------------------------------------------------------------------------
 
 // Test case: basic accessors
-void ArgsTest::testAccessors()
+TSUNIT_DEFINE_TEST(Accessors)
 {
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
 
@@ -150,7 +118,7 @@ void ArgsTest::testAccessors()
 }
 
 // Test case: help text with default options
-void ArgsTest::testHelpDefault()
+TSUNIT_DEFINE_TEST(HelpDefault)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
@@ -222,7 +190,7 @@ void ArgsTest::testHelpDefault()
 }
 
 // Test case: copy options
-void ArgsTest::testCopyOptions()
+TSUNIT_DEFINE_TEST(CopyOptions)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     ts::Args args1(u"{description1}", u"{syntax1}", ts::Args::NO_EXIT_ON_ERROR);
@@ -282,7 +250,7 @@ namespace {
 }
 
 // Test case: help text of a custom commmand.
-void ArgsTest::testHelpCustom()
+TSUNIT_DEFINE_TEST(HelpCustom)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -363,7 +331,7 @@ void ArgsTest::testHelpCustom()
 }
 
 // Test case: analyze valid command, get option values, use analyze() with variable length argument list
-void ArgsTest::testValidCommandVariableArgs()
+TSUNIT_DEFINE_TEST(ValidCommandVariableArgs)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -435,7 +403,7 @@ void ArgsTest::testValidCommandVariableArgs()
 }
 
 // Test case: analyze valid command, get option values, use analyze() with argc, argv parameters.
-void ArgsTest::testValidCommandArgcArgv()
+TSUNIT_DEFINE_TEST(ValidCommandArgcArgv)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -509,7 +477,7 @@ void ArgsTest::testValidCommandArgcArgv()
 }
 
 // Test case: analyze valid command, get option values, use analyze() with container of arguments
-void ArgsTest::testValidCommandContainer()
+TSUNIT_DEFINE_TEST(ValidCommandContainer)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -581,7 +549,7 @@ void ArgsTest::testValidCommandContainer()
 }
 
 // Test case: presence of thousands separator
-void ArgsTest::testThousandsSeparator()
+TSUNIT_DEFINE_TEST(ThousandsSeparator)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -597,7 +565,7 @@ void ArgsTest::testThousandsSeparator()
 
 
 // Test case: syntax of optional values
-void ArgsTest::testOptionalValue()
+TSUNIT_DEFINE_TEST(OptionalValue)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -614,7 +582,7 @@ void ArgsTest::testOptionalValue()
 }
 
 // Test case:
-void ArgsTest::testMissingParameter()
+TSUNIT_DEFINE_TEST(MissingParameter)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -625,7 +593,7 @@ void ArgsTest::testMissingParameter()
 }
 
 // Test case:
-void ArgsTest::testTooManyParameters()
+TSUNIT_DEFINE_TEST(TooManyParameters)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -636,7 +604,7 @@ void ArgsTest::testTooManyParameters()
 }
 
 // Test case:
-void ArgsTest::testAmbiguousOption()
+TSUNIT_DEFINE_TEST(AmbiguousOption)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -647,7 +615,7 @@ void ArgsTest::testAmbiguousOption()
 }
 
 // Test case:
-void ArgsTest::testInvalidIntegerOption()
+TSUNIT_DEFINE_TEST(InvalidIntegerOption)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -658,7 +626,7 @@ void ArgsTest::testInvalidIntegerOption()
 }
 
 // Test case:
-void ArgsTest::testIntegerTooLow()
+TSUNIT_DEFINE_TEST(IntegerTooLow)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -669,7 +637,7 @@ void ArgsTest::testIntegerTooLow()
 }
 
 // Test case:
-void ArgsTest::testIntegerTooHigh()
+TSUNIT_DEFINE_TEST(IntegerTooHigh)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -680,7 +648,7 @@ void ArgsTest::testIntegerTooHigh()
 }
 
 // Test case:
-void ArgsTest::testInvalidEnum()
+TSUNIT_DEFINE_TEST(InvalidEnum)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -691,7 +659,7 @@ void ArgsTest::testInvalidEnum()
 }
 
 // Test case:
-void ArgsTest::testValidEnum()
+TSUNIT_DEFINE_TEST(ValidEnum)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -701,7 +669,7 @@ void ArgsTest::testValidEnum()
 }
 
 // Test case: bitmask of integer values.
-void ArgsTest::testBitMask()
+TSUNIT_DEFINE_TEST(BitMask)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     TestArgs args(&log);
@@ -717,7 +685,7 @@ void ArgsTest::testBitMask()
 }
 
 // Test case: "gather parameters" option
-void ArgsTest::testGatherParameters()
+TSUNIT_DEFINE_TEST(GatherParameters)
 {
     ts::ReportBuffer<ts::ThreadSafety::None> log;
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
@@ -743,7 +711,7 @@ void ArgsTest::testGatherParameters()
 }
 
 // Test case: redirect parameters from file
-void ArgsTest::testRedirection()
+TSUNIT_DEFINE_TEST(Redirection)
 {
     TestArgs args(&CERR);
 
@@ -769,7 +737,7 @@ void ArgsTest::testRedirection()
 }
 
 // Test case: tristate parameters.
-void ArgsTest::testTristate()
+TSUNIT_DEFINE_TEST(Tristate)
 {
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
     args.option(u"opt1", 0, ts::Args::TRISTATE);
@@ -803,7 +771,7 @@ void ArgsTest::testTristate()
 }
 
 // Test case: ranges of integer values.
-void ArgsTest::testRanges()
+TSUNIT_DEFINE_TEST(Ranges)
 {
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR);
     args.option(u"opt1", 0, ts::Args::UINT8, 0, ts::Args::UNLIMITED_COUNT);
@@ -847,7 +815,7 @@ void ArgsTest::testRanges()
 }
 
 // Test case: decimal values.
-void ArgsTest::testDecimals()
+TSUNIT_DEFINE_TEST(Decimals)
 {
     TestArgs args(&CERR);
 
@@ -861,7 +829,7 @@ void ArgsTest::testDecimals()
 }
 
 // Test case: fixed point types.
-void ArgsTest::testFixedPoint()
+TSUNIT_DEFINE_TEST(FixedPoint)
 {
     using Fixed = ts::FixedPoint<int32_t, 3>;
 
@@ -883,7 +851,7 @@ void ArgsTest::testFixedPoint()
 }
 
 // Test case: fraction types.
-void ArgsTest::testFraction()
+TSUNIT_DEFINE_TEST(Fraction)
 {
     using Frac = ts::Fraction<int32_t>;
 
@@ -914,7 +882,7 @@ void ArgsTest::testFraction()
 }
 
 // Test case: floating-point types.
-void ArgsTest::testDouble()
+TSUNIT_DEFINE_TEST(Double)
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.delegateReport(&CERR);
@@ -930,7 +898,7 @@ void ArgsTest::testDouble()
 }
 
 // Test case: std::chrono::duration types.
-void ArgsTest::testChrono()
+TSUNIT_DEFINE_TEST(Chrono)
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.delegateReport(&CERR);
@@ -968,7 +936,7 @@ void ArgsTest::testChrono()
 }
 
 // Test case:
-void ArgsTest::testInvalidFraction()
+TSUNIT_DEFINE_TEST(InvalidFraction)
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 
@@ -984,7 +952,7 @@ void ArgsTest::testInvalidFraction()
 }
 
 // Test case:
-void ArgsTest::testInvalidDouble()
+TSUNIT_DEFINE_TEST(InvalidDouble)
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 

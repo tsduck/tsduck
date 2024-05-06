@@ -22,58 +22,26 @@
 
 class TSPacketTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testPacket();
-    void testConstruction();
-    void testInit();
-    void testCreatePCR();
-    void testAFStuffingSize();
-    void testSetPayloadSize();
-    void testFlags();
-    void testPrivateData();
-    void testBitRate();
-    void testPCR();
-
-    TSUNIT_TEST_BEGIN(TSPacketTest);
-    TSUNIT_TEST(testPacket);
-    TSUNIT_TEST(testConstruction);
-    TSUNIT_TEST(testInit);
-    TSUNIT_TEST(testCreatePCR);
-    TSUNIT_TEST(testAFStuffingSize);
-    TSUNIT_TEST(testSetPayloadSize);
-    TSUNIT_TEST(testFlags);
-    TSUNIT_TEST(testPrivateData);
-    TSUNIT_TEST(testBitRate);
-    TSUNIT_TEST(testPCR);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Packet);
+    TSUNIT_DECLARE_TEST(Construction);
+    TSUNIT_DECLARE_TEST(Init);
+    TSUNIT_DECLARE_TEST(CreatePCR);
+    TSUNIT_DECLARE_TEST(AFStuffingSize);
+    TSUNIT_DECLARE_TEST(SetPayloadSize);
+    TSUNIT_DECLARE_TEST(Flags);
+    TSUNIT_DECLARE_TEST(PrivateData);
+    TSUNIT_DECLARE_TEST(BitRate);
+    TSUNIT_DECLARE_TEST(PCR);
 };
 
 TSUNIT_REGISTER(TSPacketTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TSPacketTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TSPacketTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TSPacketTest::testPacket()
+TSUNIT_DEFINE_TEST(Packet)
 {
     ts::TSPacket::SanityCheck();
 
@@ -85,7 +53,7 @@ void TSPacketTest::testPacket()
     TSUNIT_EQUAL(7 * ts::PKT_SIZE, sizeof(packets));
 }
 
-void TSPacketTest::testConstruction()
+TSUNIT_DEFINE_TEST(Construction)
 {
     // Test aggregate initialization.
     ts::TSPacket p1 = {{
@@ -131,7 +99,7 @@ void TSPacketTest::testConstruction()
     }
 }
 
-void TSPacketTest::testInit()
+TSUNIT_DEFINE_TEST(Init)
 {
     ts::TSPacket pkt;
     pkt.init(0x1ABC, 7, 0x35);
@@ -146,7 +114,7 @@ void TSPacketTest::testInit()
     }
 }
 
-void TSPacketTest::testCreatePCR()
+TSUNIT_DEFINE_TEST(CreatePCR)
 {
     ts::TSPacket pkt;
     pkt.init(0x1ABC);
@@ -234,7 +202,7 @@ void TSPacketTest::testCreatePCR()
     TSUNIT_EQUAL(-97, int(pkt.getSpliceCountdown()));
 }
 
-void TSPacketTest::testAFStuffingSize()
+TSUNIT_DEFINE_TEST(AFStuffingSize)
 {
     ts::TSPacket pkt;
 
@@ -254,7 +222,7 @@ void TSPacketTest::testAFStuffingSize()
     TSUNIT_EQUAL(25, pkt.getAFStuffingSize());
 }
 
-void TSPacketTest::testSetPayloadSize()
+TSUNIT_DEFINE_TEST(SetPayloadSize)
 {
     ts::TSPacket pkt;
 
@@ -330,7 +298,7 @@ void TSPacketTest::testSetPayloadSize()
     TSUNIT_EQUAL(0x15, pkt.getPayload()[4]);
 }
 
-void TSPacketTest::testFlags()
+TSUNIT_DEFINE_TEST(Flags)
 {
     ts::TSPacket pkt;
     pkt.init();
@@ -405,7 +373,7 @@ void TSPacketTest::testFlags()
     TSUNIT_ASSERT(pkt.getESPI());
 }
 
-void TSPacketTest::testPrivateData()
+TSUNIT_DEFINE_TEST(PrivateData)
 {
     ts::ByteBlock data;
     ts::TSPacket pkt;
@@ -525,7 +493,7 @@ void TSPacketTest::testPrivateData()
     TSUNIT_ASSERT(data.empty());
 }
 
-void TSPacketTest::testBitRate()
+TSUNIT_DEFINE_TEST(BitRate)
 {
     TSUNIT_EQUAL(8 * 188 * 1000, ts::PacketBitRate(1000, cn::seconds(1)).toInt64());
     TSUNIT_EQUAL(8 * 188 * 1000, ts::PacketBitRate(1000, cn::milliseconds(1000)).toInt64());
@@ -548,7 +516,7 @@ void TSPacketTest::testBitRate()
             << std::endl;
 }
 
-void TSPacketTest::testPCR()
+TSUNIT_DEFINE_TEST(PCR)
 {
     TSUNIT_EQUAL(1100, ts::AddPCR(1000, 100));
     TSUNIT_EQUAL(900, ts::AddPCR(1000, -100));

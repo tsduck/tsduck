@@ -20,137 +20,62 @@
 
 class MemoryTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testGetUInt8();
-    void testGetUInt16BE();
-    void testGetUInt16LE();
-    void testGetUInt24BE();
-    void testGetUInt24LE();
-    void testGetUInt32BE();
-    void testGetUInt32LE();
-    void testGetUInt40BE();
-    void testGetUInt40LE();
-    void testGetUInt48BE();
-    void testGetUInt48LE();
-    void testGetUInt64BE();
-    void testGetUInt64LE();
-    void testGetInt8();
-    void testGetInt16BE();
-    void testGetInt16LE();
-    void testGetInt24BE();
-    void testGetInt24LE();
-    void testGetInt32BE();
-    void testGetInt32LE();
-    void testGetInt40BE();
-    void testGetInt40LE();
-    void testGetInt48BE();
-    void testGetInt48LE();
-    void testGetInt64BE();
-    void testGetInt64LE();
-    void testPutUInt8();
-    void testPutUInt16BE();
-    void testPutUInt16LE();
-    void testPutUInt24BE();
-    void testPutUInt24LE();
-    void testPutUInt32BE();
-    void testPutUInt32LE();
-    void testPutUInt64BE();
-    void testPutUInt64LE();
-    void testPutUInt48BE();
-    void testPutUInt48LE();
-    void testPutInt8();
-    void testPutInt16BE();
-    void testPutInt16LE();
-    void testPutInt24BE();
-    void testPutInt24LE();
-    void testPutInt32BE();
-    void testPutInt32LE();
-    void testPutInt64BE();
-    void testPutInt64LE();
-    void testGetIntVarBE();
-    void testGetIntVarLE();
-    void testPutIntVarBE();
-    void testPutIntVarLE();
-    void testLocatePattern();
-    void testLocateZeroZero();
-    void testXor();
-
-    TSUNIT_TEST_BEGIN(MemoryTest);
-    TSUNIT_TEST(testGetUInt8);
-    TSUNIT_TEST(testGetUInt16BE);
-    TSUNIT_TEST(testGetUInt16LE);
-    TSUNIT_TEST(testGetUInt24BE);
-    TSUNIT_TEST(testGetUInt24LE);
-    TSUNIT_TEST(testGetUInt32BE);
-    TSUNIT_TEST(testGetUInt32LE);
-    TSUNIT_TEST(testGetUInt40BE);
-    TSUNIT_TEST(testGetUInt40LE);
-    TSUNIT_TEST(testGetUInt48BE);
-    TSUNIT_TEST(testGetUInt48LE);
-    TSUNIT_TEST(testGetUInt64BE);
-    TSUNIT_TEST(testGetUInt64LE);
-    TSUNIT_TEST(testGetInt8);
-    TSUNIT_TEST(testGetInt16BE);
-    TSUNIT_TEST(testGetInt16LE);
-    TSUNIT_TEST(testGetInt24BE);
-    TSUNIT_TEST(testGetInt24LE);
-    TSUNIT_TEST(testGetInt32BE);
-    TSUNIT_TEST(testGetInt32LE);
-    TSUNIT_TEST(testGetInt40BE);
-    TSUNIT_TEST(testGetInt40LE);
-    TSUNIT_TEST(testGetInt48BE);
-    TSUNIT_TEST(testGetInt48LE);
-    TSUNIT_TEST(testGetInt64BE);
-    TSUNIT_TEST(testGetInt64LE);
-    TSUNIT_TEST(testPutUInt8);
-    TSUNIT_TEST(testPutUInt16BE);
-    TSUNIT_TEST(testPutUInt16LE);
-    TSUNIT_TEST(testPutUInt24BE);
-    TSUNIT_TEST(testPutUInt24LE);
-    TSUNIT_TEST(testPutUInt32BE);
-    TSUNIT_TEST(testPutUInt32LE);
-    TSUNIT_TEST(testPutUInt64BE);
-    TSUNIT_TEST(testPutUInt64LE);
-    TSUNIT_TEST(testPutUInt48BE);
-    TSUNIT_TEST(testPutUInt48LE);
-    TSUNIT_TEST(testPutInt8);
-    TSUNIT_TEST(testPutInt16BE);
-    TSUNIT_TEST(testPutInt16LE);
-    TSUNIT_TEST(testPutInt24BE);
-    TSUNIT_TEST(testPutInt24LE);
-    TSUNIT_TEST(testPutInt32BE);
-    TSUNIT_TEST(testPutInt32LE);
-    TSUNIT_TEST(testPutInt64BE);
-    TSUNIT_TEST(testPutInt64LE);
-    TSUNIT_TEST(testGetIntVarBE);
-    TSUNIT_TEST(testGetIntVarLE);
-    TSUNIT_TEST(testPutIntVarBE);
-    TSUNIT_TEST(testPutIntVarLE);
-    TSUNIT_TEST(testLocatePattern);
-    TSUNIT_TEST(testLocateZeroZero);
-    TSUNIT_TEST(testXor);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(GetUInt8);
+    TSUNIT_DECLARE_TEST(GetUInt16BE);
+    TSUNIT_DECLARE_TEST(GetUInt16LE);
+    TSUNIT_DECLARE_TEST(GetUInt24BE);
+    TSUNIT_DECLARE_TEST(GetUInt24LE);
+    TSUNIT_DECLARE_TEST(GetUInt32BE);
+    TSUNIT_DECLARE_TEST(GetUInt32LE);
+    TSUNIT_DECLARE_TEST(GetUInt40BE);
+    TSUNIT_DECLARE_TEST(GetUInt40LE);
+    TSUNIT_DECLARE_TEST(GetUInt48BE);
+    TSUNIT_DECLARE_TEST(GetUInt48LE);
+    TSUNIT_DECLARE_TEST(GetUInt64BE);
+    TSUNIT_DECLARE_TEST(GetUInt64LE);
+    TSUNIT_DECLARE_TEST(GetInt8);
+    TSUNIT_DECLARE_TEST(GetInt16BE);
+    TSUNIT_DECLARE_TEST(GetInt16LE);
+    TSUNIT_DECLARE_TEST(GetInt24BE);
+    TSUNIT_DECLARE_TEST(GetInt24LE);
+    TSUNIT_DECLARE_TEST(GetInt32BE);
+    TSUNIT_DECLARE_TEST(GetInt32LE);
+    TSUNIT_DECLARE_TEST(GetInt40BE);
+    TSUNIT_DECLARE_TEST(GetInt40LE);
+    TSUNIT_DECLARE_TEST(GetInt48BE);
+    TSUNIT_DECLARE_TEST(GetInt48LE);
+    TSUNIT_DECLARE_TEST(GetInt64BE);
+    TSUNIT_DECLARE_TEST(GetInt64LE);
+    TSUNIT_DECLARE_TEST(PutUInt8);
+    TSUNIT_DECLARE_TEST(PutUInt16BE);
+    TSUNIT_DECLARE_TEST(PutUInt16LE);
+    TSUNIT_DECLARE_TEST(PutUInt24BE);
+    TSUNIT_DECLARE_TEST(PutUInt24LE);
+    TSUNIT_DECLARE_TEST(PutUInt32BE);
+    TSUNIT_DECLARE_TEST(PutUInt32LE);
+    TSUNIT_DECLARE_TEST(PutUInt64BE);
+    TSUNIT_DECLARE_TEST(PutUInt64LE);
+    TSUNIT_DECLARE_TEST(PutUInt48BE);
+    TSUNIT_DECLARE_TEST(PutUInt48LE);
+    TSUNIT_DECLARE_TEST(PutInt8);
+    TSUNIT_DECLARE_TEST(PutInt16BE);
+    TSUNIT_DECLARE_TEST(PutInt16LE);
+    TSUNIT_DECLARE_TEST(PutInt24BE);
+    TSUNIT_DECLARE_TEST(PutInt24LE);
+    TSUNIT_DECLARE_TEST(PutInt32BE);
+    TSUNIT_DECLARE_TEST(PutInt32LE);
+    TSUNIT_DECLARE_TEST(PutInt64BE);
+    TSUNIT_DECLARE_TEST(PutInt64LE);
+    TSUNIT_DECLARE_TEST(GetIntVarBE);
+    TSUNIT_DECLARE_TEST(GetIntVarLE);
+    TSUNIT_DECLARE_TEST(PutIntVarBE);
+    TSUNIT_DECLARE_TEST(PutIntVarLE);
+    TSUNIT_DECLARE_TEST(LocatePattern);
+    TSUNIT_DECLARE_TEST(LocateZeroZero);
+    TSUNIT_DECLARE_TEST(Xor);
 };
 
 TSUNIT_REGISTER(MemoryTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void MemoryTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void MemoryTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -179,197 +104,197 @@ namespace {
     };
 }
 
-void MemoryTest::testGetUInt8()
+TSUNIT_DEFINE_TEST(GetUInt8)
 {
     TSUNIT_EQUAL(0x07, ts::GetUInt8(_bytes + 0x07));
 }
 
-void MemoryTest::testGetUInt16BE()
+TSUNIT_DEFINE_TEST(GetUInt16BE)
 {
     TSUNIT_EQUAL(0x2324, ts::GetUInt16BE(_bytes + 0x23));
 }
 
-void MemoryTest::testGetUInt16LE()
+TSUNIT_DEFINE_TEST(GetUInt16LE)
 {
     TSUNIT_EQUAL(0x2423, ts::GetUInt16LE(_bytes + 0x23));
 }
 
-void MemoryTest::testGetUInt24BE()
+TSUNIT_DEFINE_TEST(GetUInt24BE)
 {
     TSUNIT_EQUAL(0x101112, ts::GetUInt24BE(_bytes + 0x10));
     TSUNIT_EQUAL(0xCECFD0, ts::GetUInt24BE(_bytes + 0xCE));
 }
 
-void MemoryTest::testGetUInt24LE()
+TSUNIT_DEFINE_TEST(GetUInt24LE)
 {
     TSUNIT_EQUAL(0x121110, ts::GetUInt24LE(_bytes + 0x10));
     TSUNIT_EQUAL(0xD0CFCE, ts::GetUInt24LE(_bytes + 0xCE));
 }
 
-void MemoryTest::testGetUInt32BE()
+TSUNIT_DEFINE_TEST(GetUInt32BE)
 {
     TSUNIT_EQUAL(0x4748494A, ts::GetUInt32BE(_bytes + 0x47));
 }
 
-void MemoryTest::testGetUInt32LE()
+TSUNIT_DEFINE_TEST(GetUInt32LE)
 {
     TSUNIT_EQUAL(0x4A494847, ts::GetUInt32LE(_bytes + 0x47));
 }
 
-void MemoryTest::testGetUInt40BE()
+TSUNIT_DEFINE_TEST(GetUInt40BE)
 {
     TSUNIT_EQUAL(0x000000898A8B8C8D, ts::GetUInt40BE(_bytes + 0x89));
 }
 
-void MemoryTest::testGetUInt40LE()
+TSUNIT_DEFINE_TEST(GetUInt40LE)
 {
     TSUNIT_EQUAL(0x0000008D8C8B8A89, ts::GetUInt40LE(_bytes + 0x89));
 }
 
-void MemoryTest::testGetUInt48BE()
+TSUNIT_DEFINE_TEST(GetUInt48BE)
 {
     TSUNIT_EQUAL(0x0000898A8B8C8D8E, ts::GetUInt48BE(_bytes + 0x89));
 }
 
-void MemoryTest::testGetUInt48LE()
+TSUNIT_DEFINE_TEST(GetUInt48LE)
 {
     TSUNIT_EQUAL(0x00008E8D8C8B8A89, ts::GetUInt48LE(_bytes + 0x89));
 }
 
-void MemoryTest::testGetUInt64BE()
+TSUNIT_DEFINE_TEST(GetUInt64BE)
 {
     TSUNIT_EQUAL(0x898A8B8C8D8E8F90, ts::GetUInt64BE(_bytes + 0x89));
 }
 
-void MemoryTest::testGetUInt64LE()
+TSUNIT_DEFINE_TEST(GetUInt64LE)
 {
     TSUNIT_EQUAL(0x908F8E8D8C8B8A89, ts::GetUInt64LE(_bytes + 0x89));
 }
 
-void MemoryTest::testGetInt8()
+TSUNIT_DEFINE_TEST(GetInt8)
 {
     TSUNIT_EQUAL(3, ts::GetInt8(_bytes + 0x03));
 }
 
-void MemoryTest::testGetInt16BE()
+TSUNIT_DEFINE_TEST(GetInt16BE)
 {
     TSUNIT_EQUAL(-12593, ts::GetInt16BE(_bytes + 0xCE)); // 0xCECF
 }
 
-void MemoryTest::testGetInt16LE()
+TSUNIT_DEFINE_TEST(GetInt16LE)
 {
     TSUNIT_EQUAL(-12338, ts::GetInt16LE(_bytes + 0xCE)); // 0xCFCE
 }
 
-void MemoryTest::testGetInt24BE()
+TSUNIT_DEFINE_TEST(GetInt24BE)
 {
     TSUNIT_EQUAL(0x101112, ts::GetInt24BE(_bytes + 0x10));
     TSUNIT_EQUAL(-3223600, ts::GetInt24BE(_bytes + 0xCE)); // 0xFFCECFD0
 }
 
-void MemoryTest::testGetInt24LE()
+TSUNIT_DEFINE_TEST(GetInt24LE)
 {
     TSUNIT_EQUAL(0x121110, ts::GetInt24LE(_bytes + 0x10));
     TSUNIT_EQUAL(-3092530, ts::GetInt24LE(_bytes + 0xCE)); // 0xFFD0CFCE
 }
 
-void MemoryTest::testGetInt32BE()
+TSUNIT_DEFINE_TEST(GetInt32BE)
 {
     TSUNIT_EQUAL(-2122153084, ts::GetInt32BE(_bytes + 0x81)); // 0x81828384
 }
 
-void MemoryTest::testGetInt32LE()
+TSUNIT_DEFINE_TEST(GetInt32LE)
 {
     TSUNIT_EQUAL(-2071756159, ts::GetInt32LE(_bytes + 0x81)); // 0x84838281
 }
 
-void MemoryTest::testGetInt40BE()
+TSUNIT_DEFINE_TEST(GetInt40BE)
 {
     TSUNIT_EQUAL(-219885416496, ts::GetInt40BE(_bytes + 0xCC)); // 0xCCCDCECFD0
 }
 
-void MemoryTest::testGetInt40LE()
+TSUNIT_DEFINE_TEST(GetInt40LE)
 {
     TSUNIT_EQUAL(-202671993396, ts::GetInt40LE(_bytes + 0xCC)); // 0xD0CFCECDCC
 }
 
-void MemoryTest::testGetInt48BE()
+TSUNIT_DEFINE_TEST(GetInt48BE)
 {
     TSUNIT_EQUAL(-56290666622767, ts::GetInt48BE(_bytes + 0xCC)); // 0xCCCDCECFD0D1
 }
 
-void MemoryTest::testGetInt48LE()
+TSUNIT_DEFINE_TEST(GetInt48LE)
 {
     TSUNIT_EQUAL(-50780206871092, ts::GetInt48LE(_bytes + 0xCC)); // 0xD1D0CFCECDCC
 }
 
-void MemoryTest::testGetInt64BE()
+TSUNIT_DEFINE_TEST(GetInt64BE)
 {
     TSUNIT_EQUAL(-3689065127789604141, ts::GetInt64BE(_bytes + 0xCC)); // 0xCCCDCECFD0D1D2D3
 }
 
-void MemoryTest::testGetInt64LE()
+TSUNIT_DEFINE_TEST(GetInt64LE)
 {
     TSUNIT_EQUAL(-3183251291827679796, ts::GetInt64LE(_bytes + 0xCC)); // 0xD3D2D1D0CFCECDCC
 }
 
-void MemoryTest::testPutUInt8()
+TSUNIT_DEFINE_TEST(PutUInt8)
 {
     uint8_t out[16];
     ts::PutUInt8(out, 0x78);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x78, 1));
 }
 
-void MemoryTest::testPutUInt16BE()
+TSUNIT_DEFINE_TEST(PutUInt16BE)
 {
     uint8_t out[16];
     ts::PutUInt16BE(out, 0x898A);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 2));
 }
 
-void MemoryTest::testPutUInt16LE()
+TSUNIT_DEFINE_TEST(PutUInt16LE)
 {
     uint8_t out[16];
     ts::PutUInt16LE(out, 0x8A89);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 2));
 }
 
-void MemoryTest::testPutUInt24BE()
+TSUNIT_DEFINE_TEST(PutUInt24BE)
 {
     uint8_t out[16];
     ts::PutUInt24BE(out, 0x898A8B);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 3));
 }
 
-void MemoryTest::testPutUInt24LE()
+TSUNIT_DEFINE_TEST(PutUInt24LE)
 {
     uint8_t out[16];
     ts::PutUInt24LE(out, 0x8B8A89);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 3));
 }
 
-void MemoryTest::testPutUInt32BE()
+TSUNIT_DEFINE_TEST(PutUInt32BE)
 {
     uint8_t out[16];
     ts::PutUInt32BE(out, 0x56575859);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x56, 4));
 }
 
-void MemoryTest::testPutUInt32LE()
+TSUNIT_DEFINE_TEST(PutUInt32LE)
 {
     uint8_t out[16];
     ts::PutUInt32LE(out, 0x59585756);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x56, 4));
 }
 
-void MemoryTest::testPutUInt64BE()
+TSUNIT_DEFINE_TEST(PutUInt64BE)
 {
     uint8_t out[16];
     ts::PutUInt64BE(out, 0x898A8B8C8D8E8F90);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 8));
 }
 
-void MemoryTest::testPutUInt64LE()
+TSUNIT_DEFINE_TEST(PutUInt64LE)
 {
     uint8_t out[16];
     ts::PutUInt64LE(out, 0x908F8E8D8C8B8A89);
@@ -377,14 +302,14 @@ void MemoryTest::testPutUInt64LE()
 }
 
 
-void MemoryTest::testPutUInt48BE()
+TSUNIT_DEFINE_TEST(PutUInt48BE)
 {
     uint8_t out[16];
     ts::PutUInt48BE(out, 0x0000898A8B8C8D8E);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 6));
 }
 
-void MemoryTest::testPutUInt48LE()
+TSUNIT_DEFINE_TEST(PutUInt48LE)
 {
     uint8_t out[16];
     ts::PutUInt48LE(out, 0x00008E8D8C8B8A89);
@@ -392,28 +317,28 @@ void MemoryTest::testPutUInt48LE()
 }
 
 
-void MemoryTest::testPutInt8()
+TSUNIT_DEFINE_TEST(PutInt8)
 {
     uint8_t out[16];
     ts::PutInt8(out, -2);
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xFE, 1));
 }
 
-void MemoryTest::testPutInt16BE()
+TSUNIT_DEFINE_TEST(PutInt16BE)
 {
     uint8_t out[16];
     ts::PutInt16BE(out, -12593); // 0xCECF
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCE, 2));
 }
 
-void MemoryTest::testPutInt16LE()
+TSUNIT_DEFINE_TEST(PutInt16LE)
 {
     uint8_t out[16];
     ts::PutInt16LE(out, -12338); // 0xCFCE
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCE, 2));
 }
 
-void MemoryTest::testPutInt24BE()
+TSUNIT_DEFINE_TEST(PutInt24BE)
 {
     uint8_t out[16];
     ts::PutInt24BE(out, -3223600); // 0xFFCECFD0
@@ -422,7 +347,7 @@ void MemoryTest::testPutInt24BE()
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x10, 3));
 }
 
-void MemoryTest::testPutInt24LE()
+TSUNIT_DEFINE_TEST(PutInt24LE)
 {
     uint8_t out[16];
     ts::PutInt24LE(out, -3092530); // 0xFFD0CFCE
@@ -431,35 +356,35 @@ void MemoryTest::testPutInt24LE()
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x10, 3));
 }
 
-void MemoryTest::testPutInt32BE()
+TSUNIT_DEFINE_TEST(PutInt32BE)
 {
     uint8_t out[16];
     ts::PutInt32BE(out, -2122153084); // 0x81828384
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x81, 4));
 }
 
-void MemoryTest::testPutInt32LE()
+TSUNIT_DEFINE_TEST(PutInt32LE)
 {
     uint8_t out[16];
     ts::PutInt32LE(out, -2071756159); // 0x84838281
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x81, 4));
 }
 
-void MemoryTest::testPutInt64BE()
+TSUNIT_DEFINE_TEST(PutInt64BE)
 {
     uint8_t out[16];
     ts::PutInt64BE(out, -3689065127789604141); // 0xCCCDCECFD0D1D2D3
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCC, 8));
 }
 
-void MemoryTest::testPutInt64LE()
+TSUNIT_DEFINE_TEST(PutInt64LE)
 {
     uint8_t out[16];
     ts::PutInt64LE(out, -3183251291827679796); // 0xD3D2D1D0CFCECDCC
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0xCC, 8));
 }
 
-void MemoryTest::testGetIntVarBE()
+TSUNIT_DEFINE_TEST(GetIntVarBE)
 {
     TSUNIT_EQUAL(0x07, ts::GetIntVarBE<uint8_t>(_bytes + 0x07, 1));
     TSUNIT_EQUAL(0x2324, ts::GetIntVarBE<uint16_t>(_bytes + 0x23, 2));
@@ -471,7 +396,7 @@ void MemoryTest::testGetIntVarBE()
     TSUNIT_EQUAL(0x898A8B8C8D8E8F90, ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 8));
 }
 
-void MemoryTest::testGetIntVarLE()
+TSUNIT_DEFINE_TEST(GetIntVarLE)
 {
     TSUNIT_EQUAL(0x07, ts::GetIntVarLE<uint8_t>(_bytes + 0x07, 1));
     TSUNIT_EQUAL(0x2423, ts::GetIntVarLE<uint16_t>(_bytes + 0x23, 2));
@@ -483,7 +408,7 @@ void MemoryTest::testGetIntVarLE()
     TSUNIT_EQUAL(0x908F8E8D8C8B8A89, ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 8));
 }
 
-void MemoryTest::testPutIntVarBE()
+TSUNIT_DEFINE_TEST(PutIntVarBE)
 {
     uint8_t out[16];
     ts::PutIntVarBE(out, 1, 0x78);
@@ -500,7 +425,7 @@ void MemoryTest::testPutIntVarBE()
     TSUNIT_EQUAL(0, ts::MemCompare(out, _bytes + 0x89, 8));
 }
 
-void MemoryTest::testPutIntVarLE()
+TSUNIT_DEFINE_TEST(PutIntVarLE)
 {
     uint8_t out[16];
     ts::PutIntVarLE(out, 1, 0x78);
@@ -532,13 +457,13 @@ namespace {
     };
 }
 
-void MemoryTest::testLocatePattern()
+TSUNIT_DEFINE_TEST(LocatePattern)
 {
     TSUNIT_ASSERT(ts::LocatePattern(data1, sizeof(data1), data2 + 7, 6) == nullptr);
     TSUNIT_ASSERT(ts::LocatePattern(data1, sizeof(data1), data1 + 7, 6) == data1 + 7);
 }
 
-void MemoryTest::testLocateZeroZero()
+TSUNIT_DEFINE_TEST(LocateZeroZero)
 {
     TSUNIT_ASSERT(ts::LocateZeroZero(data1, sizeof(data1), 7) == nullptr);
     TSUNIT_ASSERT(ts::LocateZeroZero(data1, sizeof(data1), 1) == data1 + 21);
@@ -547,7 +472,7 @@ void MemoryTest::testLocateZeroZero()
     TSUNIT_ASSERT(ts::LocateZeroZero(data2, sizeof(data2) - 1, 12) == nullptr);
 }
 
-void MemoryTest::testXor()
+TSUNIT_DEFINE_TEST(Xor)
 {
     static const uint8_t src1[] = {
         0x8F, 0xE4, 0x48, 0xE8, 0xA1, 0xFA, 0x28, 0xBE, 0xCF, 0x25, 0x62, 0x09, 0x89, 0x2D, 0x56, 0x88,

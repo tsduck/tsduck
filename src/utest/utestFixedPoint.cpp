@@ -20,54 +20,24 @@
 
 class FixedPointTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testUnit();
-    void testSubUnit();
-    void testAssignment();
-    void testComparison();
-    void testBounds();
-    void testOverflow();
-    void testToString();
-    void testFromString();
-
-    TSUNIT_TEST_BEGIN(FixedPointTest);
-    TSUNIT_TEST(testUnit);
-    TSUNIT_TEST(testSubUnit);
-    TSUNIT_TEST(testAssignment);
-    TSUNIT_TEST(testComparison);
-    TSUNIT_TEST(testBounds);
-    TSUNIT_TEST(testOverflow);
-    TSUNIT_TEST(testToString);
-    TSUNIT_TEST(testFromString);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Unit);
+    TSUNIT_DECLARE_TEST(SubUnit);
+    TSUNIT_DECLARE_TEST(Assignment);
+    TSUNIT_DECLARE_TEST(Comparison);
+    TSUNIT_DECLARE_TEST(Bounds);
+    TSUNIT_DECLARE_TEST(Overflow);
+    TSUNIT_DECLARE_TEST(ToString);
+    TSUNIT_DECLARE_TEST(FromString);
 };
 
 TSUNIT_REGISTER(FixedPointTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void FixedPointTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void FixedPointTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void FixedPointTest::testUnit()
+TSUNIT_DEFINE_TEST(Unit)
 {
     using Fixed = ts::FixedPoint<int32_t, 0>;
 
@@ -113,7 +83,7 @@ void FixedPointTest::testUnit()
     TSUNIT_EQUAL(2, (Fixed(10) / 4).raw());
 }
 
-void FixedPointTest::testSubUnit()
+TSUNIT_DEFINE_TEST(SubUnit)
 {
     using Fixed = ts::FixedPoint<int32_t, 3>;
 
@@ -159,7 +129,7 @@ void FixedPointTest::testSubUnit()
     TSUNIT_EQUAL(2500, (Fixed(10) / 4).raw());
 }
 
-void FixedPointTest::testAssignment()
+TSUNIT_DEFINE_TEST(Assignment)
 {
     using Fixed = ts::FixedPoint<int32_t, 3>;
 
@@ -208,7 +178,7 @@ void FixedPointTest::testAssignment()
     TSUNIT_EQUAL(7500, n.raw());
 }
 
-void FixedPointTest::testComparison()
+TSUNIT_DEFINE_TEST(Comparison)
 {
     using Fixed = ts::FixedPoint<int32_t, 3>;
 
@@ -247,7 +217,7 @@ void FixedPointTest::testComparison()
     TSUNIT_ASSERT(4 >= Fixed(4));
 }
 
-void FixedPointTest::testBounds()
+TSUNIT_DEFINE_TEST(Bounds)
 {
     using Fixed = ts::FixedPoint<int16_t, 3>;
 
@@ -257,7 +227,7 @@ void FixedPointTest::testBounds()
     TSUNIT_EQUAL(32767, Fixed::MAX.raw());
 }
 
-void FixedPointTest::testOverflow()
+TSUNIT_DEFINE_TEST(Overflow)
 {
     using Fixed1 = ts::FixedPoint<int16_t, 1>;
     using Fixed2 = ts::FixedPoint<int16_t, 2>;
@@ -282,7 +252,7 @@ void FixedPointTest::testOverflow()
     TSUNIT_ASSERT(a.mulOverflow(b));
 }
 
-void FixedPointTest::testToString()
+TSUNIT_DEFINE_TEST(ToString)
 {
     using Fix0 = ts::FixedPoint<int32_t, 0>;
     using Fix3 = ts::FixedPoint<int32_t, 3>;
@@ -318,7 +288,7 @@ void FixedPointTest::testToString()
 }
 
 
-void FixedPointTest::testFromString()
+TSUNIT_DEFINE_TEST(FromString)
 {
     using Fix0 = ts::FixedPoint<int32_t, 0>;
     using Fix3 = ts::FixedPoint<int32_t, 3>;

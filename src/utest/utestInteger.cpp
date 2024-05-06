@@ -20,50 +20,22 @@
 
 class IntegerTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testUnit();
-    void testAssignment();
-    void testComparison();
-    void testBounds();
-    void testToString();
-    void testFromString();
-
-    TSUNIT_TEST_BEGIN(IntegerTest);
-    TSUNIT_TEST(testUnit);
-    TSUNIT_TEST(testAssignment);
-    TSUNIT_TEST(testComparison);
-    TSUNIT_TEST(testBounds);
-    TSUNIT_TEST(testToString);
-    TSUNIT_TEST(testFromString);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Unit);
+    TSUNIT_DECLARE_TEST(Assignment);
+    TSUNIT_DECLARE_TEST(Comparison);
+    TSUNIT_DECLARE_TEST(Bounds);
+    TSUNIT_DECLARE_TEST(ToString);
+    TSUNIT_DECLARE_TEST(FromString);
 };
 
 TSUNIT_REGISTER(IntegerTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void IntegerTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void IntegerTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void IntegerTest::testUnit()
+TSUNIT_DEFINE_TEST(Unit)
 {
     using Int = ts::Integer<int32_t>;
 
@@ -99,7 +71,7 @@ void IntegerTest::testUnit()
     TSUNIT_EQUAL(2, (Int(10) / 4).toInt());
 }
 
-void IntegerTest::testAssignment()
+TSUNIT_DEFINE_TEST(Assignment)
 {
     using Int = ts::Integer<int32_t>;
 
@@ -135,7 +107,7 @@ void IntegerTest::testAssignment()
     TSUNIT_EQUAL(7, n.toInt());
 }
 
-void IntegerTest::testComparison()
+TSUNIT_DEFINE_TEST(Comparison)
 {
     using Int = ts::Integer<int32_t>;
 
@@ -172,7 +144,7 @@ void IntegerTest::testComparison()
     TSUNIT_ASSERT(4 >= Int(4));
 }
 
-void IntegerTest::testBounds()
+TSUNIT_DEFINE_TEST(Bounds)
 {
     using Int = ts::Integer<int16_t>;
 
@@ -180,7 +152,7 @@ void IntegerTest::testBounds()
     TSUNIT_EQUAL(32767, Int::MAX.toInt());
 }
 
-void IntegerTest::testToString()
+TSUNIT_DEFINE_TEST(ToString)
 {
     using Int = ts::Integer<int32_t>;
 
@@ -190,7 +162,7 @@ void IntegerTest::testToString()
 }
 
 
-void IntegerTest::testFromString()
+TSUNIT_DEFINE_TEST(FromString)
 {
     using Int = ts::Integer<int32_t>;
 

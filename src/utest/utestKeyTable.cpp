@@ -22,40 +22,17 @@
 
 class KeyTableTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testXML();
-
-    TSUNIT_TEST_BEGIN(KeyTableTest);
-    TSUNIT_TEST(testXML);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(XML);
 };
 
 TSUNIT_REGISTER(KeyTableTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void KeyTableTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void KeyTableTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void KeyTableTest::testXML()
+TSUNIT_DEFINE_TEST(XML)
 {
     static const ts::UChar* const xmlText =
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

@@ -20,40 +20,17 @@
 
 class TSPacketWindowTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testAll();
-
-    TSUNIT_TEST_BEGIN(TSPacketWindowTest);
-    TSUNIT_TEST(testAll);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(All);
 };
 
 TSUNIT_REGISTER(TSPacketWindowTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TSPacketWindowTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TSPacketWindowTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TSPacketWindowTest::testAll()
+TSUNIT_DEFINE_TEST(All)
 {
     // Physical buffer of 10 packets, PID 100 to 109.
     ts::TSPacket packets[10];

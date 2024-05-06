@@ -20,50 +20,22 @@
 
 class FloatingPointTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testConstructor();
-    void testComparison();
-    void testArithmetics();
-    void testToInt();
-    void testToString();
-    void testFromString();
-
-    TSUNIT_TEST_BEGIN(FloatingPointTest);
-    TSUNIT_TEST(testConstructor);
-    TSUNIT_TEST(testComparison);
-    TSUNIT_TEST(testArithmetics);
-    TSUNIT_TEST(testToInt);
-    TSUNIT_TEST(testToString);
-    TSUNIT_TEST(testFromString);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Constructor);
+    TSUNIT_DECLARE_TEST(Comparison);
+    TSUNIT_DECLARE_TEST(Arithmetics);
+    TSUNIT_DECLARE_TEST(ToInt);
+    TSUNIT_DECLARE_TEST(ToString);
+    TSUNIT_DECLARE_TEST(FromString);
 };
 
 TSUNIT_REGISTER(FloatingPointTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void FloatingPointTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void FloatingPointTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void FloatingPointTest::testConstructor()
+TSUNIT_DEFINE_TEST(Constructor)
 {
     using Double = ts::FloatingPoint<double>;
 
@@ -84,7 +56,7 @@ void FloatingPointTest::testConstructor()
     TSUNIT_EQUAL(-12.3, a4.toDouble());
 }
 
-void FloatingPointTest::testComparison()
+TSUNIT_DEFINE_TEST(Comparison)
 {
     using Double = ts::FloatingPoint<double>;
 
@@ -118,7 +90,7 @@ void FloatingPointTest::testComparison()
     TSUNIT_ASSERT(2 <= Double(5.2));
 }
 
-void FloatingPointTest::testArithmetics()
+TSUNIT_DEFINE_TEST(Arithmetics)
 {
     using Double = ts::FloatingPoint<double>;
 
@@ -197,7 +169,7 @@ void FloatingPointTest::testArithmetics()
     TSUNIT_EQUAL(0.5625, a1.toDouble());
 }
 
-void FloatingPointTest::testToInt()
+TSUNIT_DEFINE_TEST(ToInt)
 {
     using Double = ts::FloatingPoint<double>;
 
@@ -212,7 +184,7 @@ void FloatingPointTest::testToInt()
     TSUNIT_EQUAL(-4, Double(-3.5001).toInt64());
 }
 
-void FloatingPointTest::testToString()
+TSUNIT_DEFINE_TEST(ToString)
 {
     using Double = ts::FloatingPoint<double>;
 
@@ -231,7 +203,7 @@ void FloatingPointTest::testToString()
     TSUNIT_EQUAL(u"1.33", ts::UString::Format(u"%f", Double2(4) / Double2(3)));
 }
 
-void FloatingPointTest::testFromString()
+TSUNIT_DEFINE_TEST(FromString)
 {
     using Double = ts::FloatingPoint<double>;
 

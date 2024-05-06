@@ -22,42 +22,18 @@
 
 class PSIRepositoryTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testRegistrations();
-    void testSharedTID();
-
-    TSUNIT_TEST_BEGIN(PSIRepositoryTest);
-    TSUNIT_TEST(testRegistrations);
-    TSUNIT_TEST(testSharedTID);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Registrations);
+    TSUNIT_DECLARE_TEST(SharedTID);
 };
 
 TSUNIT_REGISTER(PSIRepositoryTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void PSIRepositoryTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void PSIRepositoryTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void PSIRepositoryTest::testRegistrations()
+TSUNIT_DEFINE_TEST(Registrations)
 {
     ts::UStringList names;
 
@@ -75,7 +51,7 @@ void PSIRepositoryTest::testRegistrations()
     TSUNIT_ASSERT(ts::UString(u"ca_descriptor").isContainedSimilarIn(names));
 }
 
-void PSIRepositoryTest::testSharedTID()
+TSUNIT_DEFINE_TEST(SharedTID)
 {
     // Shared table ids between ATSC and ISDB.
     TSUNIT_EQUAL(ts::TID_MGT, ts::TID_LDT);

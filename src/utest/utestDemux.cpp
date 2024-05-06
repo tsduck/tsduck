@@ -56,35 +56,17 @@
 
 class DemuxTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testPAT();
-    void testCATR3();
-    void testCATR6();
-    void testPMT();
-    void testSDT();
-    void testNIT();
-    void testBATTvNumeric();
-    void testBATCanalPlus();
-    void testTDT();
-    void testTOT();
-    void testHEVC();
-
-    TSUNIT_TEST_BEGIN(DemuxTest);
-    TSUNIT_TEST(testPAT);
-    TSUNIT_TEST(testCATR3);
-    TSUNIT_TEST(testCATR6);
-    TSUNIT_TEST(testPMT);
-    TSUNIT_TEST(testSDT);
-    TSUNIT_TEST(testNIT);
-    TSUNIT_TEST(testBATTvNumeric);
-    TSUNIT_TEST(testBATCanalPlus);
-    TSUNIT_TEST(testTDT);
-    TSUNIT_TEST(testTOT);
-    TSUNIT_TEST(testHEVC);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(PAT);
+    TSUNIT_DECLARE_TEST(CATR3);
+    TSUNIT_DECLARE_TEST(CATR6);
+    TSUNIT_DECLARE_TEST(PMT);
+    TSUNIT_DECLARE_TEST(SDT);
+    TSUNIT_DECLARE_TEST(NIT);
+    TSUNIT_DECLARE_TEST(BATTvNumeric);
+    TSUNIT_DECLARE_TEST(BATCanalPlus);
+    TSUNIT_DECLARE_TEST(TDT);
+    TSUNIT_DECLARE_TEST(TOT);
+    TSUNIT_DECLARE_TEST(HEVC);
 
 private:
     // Compare a table with the list of reference sections
@@ -98,21 +80,6 @@ private:
 };
 
 TSUNIT_REGISTER(DemuxTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void DemuxTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void DemuxTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -414,57 +381,57 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
          psi_##name##_packets, sizeof(psi_##name##_packets),  \
          psi_##name##_sections, sizeof(psi_##name##_sections))
 
-void DemuxTest::testPAT()
+TSUNIT_DEFINE_TEST(PAT)
 {
     TEST_TABLE("PAT: TNT R4", pat_r4);
 }
 
-void DemuxTest::testCATR3()
+TSUNIT_DEFINE_TEST(CATR3)
 {
     TEST_TABLE("CAT: TNT R3", cat_r3);
 }
 
-void DemuxTest::testCATR6()
+TSUNIT_DEFINE_TEST(CATR6)
 {
     TEST_TABLE("CAT: TNT R6", cat_r6);
 }
 
-void DemuxTest::testPMT()
+TSUNIT_DEFINE_TEST(PMT)
 {
     TEST_TABLE("PMT: Planete (TNT R3)", pmt_planete);
 }
 
-void DemuxTest::testSDT()
+TSUNIT_DEFINE_TEST(SDT)
 {
     TEST_TABLE("SDT: TNT R3", sdt_r3);
 }
 
-void DemuxTest::testNIT()
+TSUNIT_DEFINE_TEST(NIT)
 {
     TEST_TABLE("NIT: TNT v23", nit_tntv23);
 }
 
-void DemuxTest::testBATTvNumeric()
+TSUNIT_DEFINE_TEST(BATTvNumeric)
 {
     TEST_TABLE("BAT: Tv Numeric", bat_tvnum);
 }
 
-void DemuxTest::testBATCanalPlus()
+TSUNIT_DEFINE_TEST(BATCanalPlus)
 {
     TEST_TABLE("BAT: Canal+ TNT", bat_cplus);
 }
 
-void DemuxTest::testTDT()
+TSUNIT_DEFINE_TEST(TDT)
 {
     TEST_TABLE("TDT: TNT", tdt_tnt);
 }
 
-void DemuxTest::testTOT()
+TSUNIT_DEFINE_TEST(TOT)
 {
     TEST_TABLE("TOT: TNT", tot_tnt);
 }
 
-void DemuxTest::testHEVC()
+TSUNIT_DEFINE_TEST(HEVC)
 {
     TEST_TABLE("PMT with HEVC descriptor", pmt_hevc);
 }

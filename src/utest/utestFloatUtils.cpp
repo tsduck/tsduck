@@ -25,60 +25,27 @@ TS_MSC_NOWARNING(4305) // truncation from 'double' to 'ts::ieee_float32_t'
 
 class FloatUtilsTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testEqualFloat();
-    void testFloat32();
-    void testFloat64();
-    void testGetFloat32LE();
-    void testGetFloat32BE();
-    void testGetFloat64LE();
-    void testGetFloat64BE();
-    void testPutFloat32LE();
-    void testPutFloat32BE();
-    void testPutFloat64LE();
-    void testPutFloat64BE();
-
-    TSUNIT_TEST_BEGIN(FloatUtilsTest);
-    TSUNIT_TEST(testEqualFloat);
-    TSUNIT_TEST(testFloat32);
-    TSUNIT_TEST(testFloat64);
-    TSUNIT_TEST(testGetFloat32LE);
-    TSUNIT_TEST(testGetFloat32BE);
-    TSUNIT_TEST(testGetFloat64LE);
-    TSUNIT_TEST(testGetFloat64BE);
-    TSUNIT_TEST(testPutFloat32LE);
-    TSUNIT_TEST(testPutFloat32BE);
-    TSUNIT_TEST(testPutFloat64LE);
-    TSUNIT_TEST(testPutFloat64BE);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(EqualFloat);
+    TSUNIT_DECLARE_TEST(Float32);
+    TSUNIT_DECLARE_TEST(Float64);
+    TSUNIT_DECLARE_TEST(GetFloat32LE);
+    TSUNIT_DECLARE_TEST(GetFloat32BE);
+    TSUNIT_DECLARE_TEST(GetFloat64LE);
+    TSUNIT_DECLARE_TEST(GetFloat64BE);
+    TSUNIT_DECLARE_TEST(PutFloat32LE);
+    TSUNIT_DECLARE_TEST(PutFloat32BE);
+    TSUNIT_DECLARE_TEST(PutFloat64LE);
+    TSUNIT_DECLARE_TEST(PutFloat64BE);
 };
 
 TSUNIT_REGISTER(FloatUtilsTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void FloatUtilsTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void FloatUtilsTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void FloatUtilsTest::testEqualFloat()
+TSUNIT_DEFINE_TEST(EqualFloat)
 {
     double d1 = 1.0;
     double d2 = d1 + std::numeric_limits<double>::epsilon();
@@ -90,7 +57,7 @@ void FloatUtilsTest::testEqualFloat()
     TSUNIT_ASSERT(!ts::equal_float(d1, d3));
 }
 
-void FloatUtilsTest::testFloat32()
+TSUNIT_DEFINE_TEST(Float32)
 {
     TSUNIT_ASSERT(std::is_floating_point<ts::ieee_float32_t>::value);
     TSUNIT_ASSERT(std::numeric_limits<ts::ieee_float32_t>::is_iec559);
@@ -101,7 +68,7 @@ void FloatUtilsTest::testFloat32()
     TSUNIT_ASSERT(std::numeric_limits<ts::ieee_float32_t>::max_exponent - std::numeric_limits<ts::ieee_float32_t>::min_exponent < 0x0100);
 }
 
-void FloatUtilsTest::testFloat64()
+TSUNIT_DEFINE_TEST(Float64)
 {
     TSUNIT_ASSERT(std::is_floating_point<ts::ieee_float64_t>::value);
     TSUNIT_ASSERT(std::numeric_limits<ts::ieee_float64_t>::is_iec559);
@@ -175,7 +142,7 @@ void FloatUtilsTest::testFloat64()
 //  64-bit : +0000000000000000  6.4751751194380251e-4966 (UNDERFLOW)
 // ------------------------------------------------------------------------
 
-void FloatUtilsTest::testGetFloat32LE()
+TSUNIT_DEFINE_TEST(GetFloat32LE)
 {
     static const uint8_t bin1[] = {0x00, 0x00, 0x00, 0x34};
     TSUNIT_EQUAL(1.1920929e-07, ts::GetFloat32LE(bin1));
@@ -193,7 +160,7 @@ void FloatUtilsTest::testGetFloat32LE()
     TSUNIT_EQUAL(3.4028235e+38, ts::GetFloat32LE(bin5));
 }
 
-void FloatUtilsTest::testGetFloat32BE()
+TSUNIT_DEFINE_TEST(GetFloat32BE)
 {
     static const uint8_t bin1[] = {0x34, 0x00, 0x00, 0x00};
     TSUNIT_EQUAL(1.1920929e-07, ts::GetFloat32BE(bin1));
@@ -211,7 +178,7 @@ void FloatUtilsTest::testGetFloat32BE()
     TSUNIT_EQUAL(3.4028235e+38, ts::GetFloat32BE(bin5));
 }
 
-void FloatUtilsTest::testGetFloat64LE()
+TSUNIT_DEFINE_TEST(GetFloat64LE)
 {
     static const uint8_t bin1[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3E};
     TSUNIT_EQUAL(1.1920928955078125e-07, ts::GetFloat64LE(bin1));
@@ -235,7 +202,7 @@ void FloatUtilsTest::testGetFloat64LE()
     TSUNIT_EQUAL(2.2250738585072014e-308, ts::GetFloat64LE(bin9));
 }
 
-void FloatUtilsTest::testGetFloat64BE()
+TSUNIT_DEFINE_TEST(GetFloat64BE)
 {
     static const uint8_t bin1[] = {0x3E, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     TSUNIT_EQUAL(1.1920928955078125e-07, ts::GetFloat64BE(bin1));
@@ -265,7 +232,7 @@ void FloatUtilsTest::testGetFloat64BE()
     // TSUNIT_EQUAL(1.4012984643248171e-45, ts::GetFloat64BE(bin10));
 }
 
-void FloatUtilsTest::testPutFloat32LE()
+TSUNIT_DEFINE_TEST(PutFloat32LE)
 {
     tsunit::Bytes buf;
 
@@ -290,7 +257,7 @@ void FloatUtilsTest::testPutFloat32LE()
     TSUNIT_EQUAL((tsunit::Bytes{0xFF, 0xFF, 0x7F, 0x7F}), buf);
 }
 
-void FloatUtilsTest::testPutFloat32BE()
+TSUNIT_DEFINE_TEST(PutFloat32BE)
 {
     tsunit::Bytes buf;
 
@@ -315,7 +282,7 @@ void FloatUtilsTest::testPutFloat32BE()
     TSUNIT_EQUAL((tsunit::Bytes{0x7F, 0x7F, 0xFF, 0xFF}), buf);
 }
 
-void FloatUtilsTest::testPutFloat64LE()
+TSUNIT_DEFINE_TEST(PutFloat64LE)
 {
     tsunit::Bytes buf;
 
@@ -348,7 +315,7 @@ void FloatUtilsTest::testPutFloat64LE()
     TSUNIT_EQUAL((tsunit::Bytes{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00}), buf);
 }
 
-void FloatUtilsTest::testPutFloat64BE()
+TSUNIT_DEFINE_TEST(PutFloat64BE)
 {
     tsunit::Bytes buf;
 

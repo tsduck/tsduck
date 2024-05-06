@@ -20,40 +20,17 @@
 
 class TSPacketMetadataTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testSize();
-
-    TSUNIT_TEST_BEGIN(TSPacketMetadataTest);
-    TSUNIT_TEST(testSize);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(Size);
 };
 
 TSUNIT_REGISTER(TSPacketMetadataTest);
 
 
 //----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void TSPacketMetadataTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void TSPacketMetadataTest::afterTest()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void TSPacketMetadataTest::testSize()
+TSUNIT_DEFINE_TEST(Size)
 {
     ts::TSPacketMetadata arr[10];
     ts::TSPacketMetadataVector vec(10);

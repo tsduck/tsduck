@@ -23,33 +23,10 @@
 
 class MemoryPluginTest: public tsunit::Test
 {
-public:
-    virtual void beforeTest() override;
-    virtual void afterTest() override;
-
-    void testAll();
-
-    TSUNIT_TEST_BEGIN(MemoryPluginTest);
-    TSUNIT_TEST(testAll);
-    TSUNIT_TEST_END();
+    TSUNIT_DECLARE_TEST(All);
 };
 
 TSUNIT_REGISTER(MemoryPluginTest);
-
-
-//----------------------------------------------------------------------------
-// Initialization.
-//----------------------------------------------------------------------------
-
-// Test suite initialization method.
-void MemoryPluginTest::beforeTest()
-{
-}
-
-// Test suite cleanup method.
-void MemoryPluginTest::afterTest()
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -209,7 +186,7 @@ namespace {
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void MemoryPluginTest::testAll()
+TSUNIT_DEFINE_TEST(All)
 {
     ts::UString log_buffer;
     TestReport log(log_buffer);
