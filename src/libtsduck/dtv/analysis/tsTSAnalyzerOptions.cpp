@@ -42,7 +42,7 @@ void ts::TSAnalyzerOptions::defineArgs(Args& args)
     args.option(u"error-analysis");
     args.help(u"error-analysis", u"Report analysis about detected errors.");
 
-    json.defineArgs(args, false, u"Complete report about the transport stream, the services and the PID's in JSON format (useful for automatic analysis).");
+    json.defineArgs(args, false, u"Complete report about the transport stream, the services and the PID's in JSON format.");
 
     args.option(u"normalized");
     args.help(u"normalized",

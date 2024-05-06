@@ -133,7 +133,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"splicemonitor", ts::SpliceMonitorPlugin);
 ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Monitor SCTE 35 splice information", u"[options]")
 {
-    _json_args.defineArgs(*this, true, u"Build a JSON report into the specified file. Using '-' means standard output.");
+    _json_args.defineArgs(*this, true, u"Build a JSON description of splice events.");
 
     option(u"alarm-command", 0, STRING);
     help(u"alarm-command", u"'command'",
