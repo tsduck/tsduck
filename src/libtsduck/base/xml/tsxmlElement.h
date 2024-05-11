@@ -410,6 +410,18 @@ namespace ts {
             }
 
             //!
+            //! Set an optional date/time attribute of an XML element.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setOptionalDateTimeAttribute(const UString& name, const std::optional<Time>& value)
+            {
+                if (value.has_value()) {
+                    refAttribute(name).setDateTime(value.value());
+                }
+            }
+
+            //!
             //! Set a date (xithout hours) attribute of an XML element.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
@@ -417,6 +429,18 @@ namespace ts {
             void setDateAttribute(const UString& name, const Time& value)
             {
                 refAttribute(name).setDate(value);
+            }
+
+            //!
+            //! Set an optional date (xithout hours) attribute of an XML element.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setOptionalDateAttribute(const UString& name, const std::optional<Time>& value)
+            {
+                if (value.has_value()) {
+                    refAttribute(name).setDate(value.value());
+                }
             }
 
             //!
@@ -428,6 +452,19 @@ namespace ts {
             void setTimeAttribute(const UString& name, const cn::duration<Rep,Period>& value)
             {
                 refAttribute(name).setTime(value);
+            }
+
+            //!
+            //! Set an optional time attribute of an XML element in "hh:mm:ss" format.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            template <class Rep, class Period>
+            void setOptionalTimeAttribute(const UString& name, const std::optional<cn::duration<Rep,Period>>& value)
+            {
+                if (value.has_value()) {
+                    refAttribute(name).setTime(value.value());
+                }
             }
 
             //!
@@ -776,6 +813,7 @@ namespace ts {
                                     const cn::duration<Rep, Period>& defValue = cn::duration<Rep, Period>::zero(),
                                     const cn::duration<Rep, Period>& minValue = cn::duration<Rep, Period>::min(),
                                     const cn::duration<Rep, Period>& maxValue = cn::duration<Rep, Period>::max()) const;
+
             //!
             //! Get a date/time attribute of an XML element.
             //! @param [out] value Returned value of the attribute.
@@ -787,6 +825,14 @@ namespace ts {
             bool getDateTimeAttribute(Time& value, const UString& name, bool required = false, const Time& defValue = Time()) const;
 
             //!
+            //! Get an optional date/time attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @return True on success, false on error.
+            //!
+            bool getOptionalDateTimeAttribute(std::optional<Time>& value, const UString& name) const;
+
+            //!
             //! Get a date (without hours) attribute of an XML element.
             //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
@@ -795,6 +841,14 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool getDateAttribute(Time& value, const UString& name, bool required = false, const Time& defValue = Time()) const;
+
+            //!
+            //! Get an optional date (without hours) attribute of an XML element.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @return True on success, false on error.
+            //!
+            bool getOptionalDateAttribute(std::optional<Time>& value, const UString& name) const;
 
             //!
             //! Get a time attribute of an XML element in "hh:mm:ss" format.
@@ -819,6 +873,15 @@ namespace ts {
             //!
             template <class Rep1, class Period1, class Rep2, class Period2>
             bool getTimeAttribute(cn::duration<Rep1,Period1>& value, const UString& name, bool required, const cn::duration<Rep2,Period2>& defValue) const;
+
+            //!
+            //! Get an optional time attribute of an XML element in "hh:mm:ss" format.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <class Rep, class Period>
+            bool getOptionalTimeAttribute(std::optional<cn::duration<Rep,Period>>& value, const UString& name) const;
 
             //!
             //! Get an IPv4 address attribute of an XML element in "x.x.x.x" format or host name.
@@ -1080,6 +1143,25 @@ bool ts::xml::Element::getTimeAttribute(cn::duration<Rep1,Period1>& value, const
         report().error(u"'%s' is not a valid time for attribute '%s' in <%s>, line %d, use \"hh:mm:ss\"", str, name, this->name(), lineNumber());
     }
     return ok;
+}
+
+// Get an optional time attribute of an XML element in "hh:mm:ss" format.
+template <class Rep, class Period>
+bool ts::xml::Element::getOptionalTimeAttribute(std::optional<cn::duration<Rep,Period>>& value, const UString& name) const
+{
+    if (!hasAttribute(name)) {
+        // Attribute not present, ok.
+        value.reset();
+        return true;
+    }
+    else {
+        value.emplace(0);
+        const bool ok = getTimeAttribute(value.value(), name, true);
+        if (!ok) {
+            value.reset();
+        }
+        return ok;
+    }
 }
 
 // Get a std::chrono::duration attribute of an XML element.

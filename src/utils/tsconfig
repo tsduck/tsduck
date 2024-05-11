@@ -115,7 +115,7 @@ cmd_cflags() {
     local std="{{STDCPP}}"
     [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-I/usr/include/PCSC"
     [[ -n "$TS_NOSTDCPP" ]] && std=""
-    echo "$(brewprefix -I /include) -I$(cmd_include) $pcsc $std"
+    echo "-I$(cmd_include) $(brewprefix -I /include) $pcsc $std"
 }
 
 cmd_so() {
