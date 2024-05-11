@@ -258,6 +258,7 @@ void ts::DVBInputPlugin::jsonReport()
 
         // Build current report.
         json::Object obj;
+        obj.add(u"#name", u"dvbstatus");
         obj.add(u"time", xml::Attribute::DateTimeToString(Time::CurrentLocalTime()));
         obj.add(u"packet-index", int64_t(tsp->pluginPackets()));
         if (_previous_bitrate > 0) {

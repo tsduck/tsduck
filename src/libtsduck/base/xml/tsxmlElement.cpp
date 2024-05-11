@@ -578,6 +578,23 @@ bool ts::xml::Element::getDateTimeAttribute(Time& value, const UString& name, bo
     return ok;
 }
 
+bool ts::xml::Element::getOptionalDateTimeAttribute(std::optional<Time>& value, const UString& name) const
+{
+    if (!hasAttribute(name)) {
+        // Attribute not present, ok.
+        value.reset();
+        return true;
+    }
+    else {
+        value.emplace();
+        const bool ok = getDateTimeAttribute(value.value(), name, true);
+        if (!ok) {
+            value.reset();
+        }
+        return ok;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Get a date attribute of an XML element.
@@ -600,6 +617,23 @@ bool ts::xml::Element::getDateAttribute(Time& value, const UString& name, bool r
         report().error(u"'%s' is not a valid date for attribute '%s' in <%s>, line %d, use \"YYYY-MM-DD\"", str, name, this->name(), lineNumber());
     }
     return ok;
+}
+
+bool ts::xml::Element::getOptionalDateAttribute(std::optional<Time>& value, const UString& name) const
+{
+    if (!hasAttribute(name)) {
+        // Attribute not present, ok.
+        value.reset();
+        return true;
+    }
+    else {
+        value.emplace();
+        const bool ok = getDateAttribute(value.value(), name, true);
+        if (!ok) {
+            value.reset();
+        }
+        return ok;
+    }
 }
 
 
