@@ -50,12 +50,12 @@ namespace ts {
         class TSDUCKDLL ContentDescriptor
         {
         public:
-            uint8_t  descriptor_type = 0;              //!< See ARIB STD-B21, 12.2.1.1.
-            uint8_t  specifier_type = 0;               //!< See ARIB STD-B21, 12.2.1.1.
-            uint32_t specifier_data = 0;               //!< 24 bits. See ARIB STD-B21, 12.2.1.1.
-            uint16_t model = 0;                        //!< See ARIB STD-B21, 12.2.1.1.
-            uint16_t version = 0;                      //!< See ARIB STD-B21, 12.2.1.1.
-            std::list<ContentSubdescriptor> subdescs;  //!< List of subdescriptors.
+            uint8_t  descriptor_type = 0;                 //!< See ARIB STD-B21, 12.2.1.1.
+            uint8_t  specifier_type = 0;                  //!< See ARIB STD-B21, 12.2.1.1.
+            uint32_t specifier_data = 0;                  //!< 24 bits. See ARIB STD-B21, 12.2.1.1.
+            uint16_t model = 0;                           //!< See ARIB STD-B21, 12.2.1.1.
+            uint16_t version = 0;                         //!< See ARIB STD-B21, 12.2.1.1.
+            std::list<ContentSubdescriptor> subdescs {};  //!< List of subdescriptors.
 
             //! @cond nodoxygen
             // Delegated methods.
@@ -144,13 +144,13 @@ namespace ts {
         };
 
         // DownloadContentDescriptor public members:
-        bool     reboot = false;          //!< See ARIB STD-B21, 12.2.1.1.
-        bool     add_on = false;          //!< See ARIB STD-B21, 12.2.1.1.
-        uint32_t component_size = 0;      //!< See ARIB STD-B21, 12.2.1.1.
-        uint32_t download_id = 0;         //!< See ARIB STD-B21, 12.2.1.1.
-        uint32_t time_out_value_DII = 0;  //!< See ARIB STD-B21, 12.2.1.1.
-        uint32_t leak_rate = 0;           //!< 22 bits. See ARIB STD-B21, 12.2.1.1.
-        uint8_t  component_tag = 0;       //!< See ARIB STD-B21, 12.2.1.1.
+        bool                    reboot = false;              //!< See ARIB STD-B21, 12.2.1.1.
+        bool                    add_on = false;              //!< See ARIB STD-B21, 12.2.1.1.
+        uint32_t                component_size = 0;          //!< See ARIB STD-B21, 12.2.1.1.
+        uint32_t                download_id = 0;             //!< See ARIB STD-B21, 12.2.1.1.
+        uint32_t                time_out_value_DII = 0;      //!< See ARIB STD-B21, 12.2.1.1.
+        uint32_t                leak_rate = 0;               //!< 22 bits. See ARIB STD-B21, 12.2.1.1.
+        uint8_t                 component_tag = 0;           //!< See ARIB STD-B21, 12.2.1.1.
         CompatibilityDescriptor compatibility_descriptor {}; //!< Compatibility descriptor.
         ModuleInfo              module_info {};              //!< List of modules.
         ByteBlock               private_data {};             //!< Private data.
