@@ -76,7 +76,10 @@ void ts::DownloadContentDescriptor::serializePayload(PSIBuffer& buf) const
         compatibility_descriptor.serializePayload(buf);
     }
     if (!module_info.empty()) {
-        module_info.serializePayload(buf);
+        buf.putUInt16(uint16_t(module_info.size()));
+        for (const auto& module : module_info) {
+            module.serializePayload(buf);
+        }
     }
     buf.putUInt8(uint8_t(private_data.size()));
     buf.putBytes(private_data);
@@ -110,8 +113,8 @@ void ts::DownloadContentDescriptor::ContentDescriptor::serializePayload(PSIBuffe
 void ts::DownloadContentDescriptor::CompatibilityDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.pushWriteSequenceWithLeadingLength(16);
-    buf.putUInt16(uint16_t(size()));
-    for (const auto& desc : *this) {
+    buf.putUInt16(uint16_t(descs.size()));
+    for (const auto& desc : descs) {
         desc.serializePayload(buf);
     }
     buf.popState();
@@ -123,14 +126,6 @@ void ts::DownloadContentDescriptor::Module::serializePayload(PSIBuffer& buf) con
     buf.putUInt32(module_size);
     buf.putUInt8(uint8_t(module_info.size()));
     buf.putBytes(module_info);
-}
-
-void ts::DownloadContentDescriptor::ModuleInfo::serializePayload(PSIBuffer& buf) const
-{
-    buf.putUInt16(uint16_t(size()));
-    for (const auto& module : *this) {
-        module.serializePayload(buf);
-    }
 }
 
 void ts::DownloadContentDescriptor::TextInfo::serializePayload(PSIBuffer& buf) const
@@ -162,7 +157,10 @@ void ts::DownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
         compatibility_descriptor.deserializePayload(buf);
     }
     if (module_info_flag) {
-        module_info.deserializePayload(buf);
+        for (size_t count = buf.getUInt16(); count > 0; --count) {
+            module_info.emplace_back();
+            module_info.back().deserializePayload(buf);
+        }
     }
     buf.getBytes(private_data, buf.getUInt8());
     if (text_info_flag) {
@@ -196,8 +194,8 @@ void ts::DownloadContentDescriptor::CompatibilityDescriptor::deserializePayload(
 {
     buf.pushReadSizeFromLength(16);
     for (size_t subcount = buf.getUInt16(); subcount > 0; --subcount) {
-        emplace_back();
-        back().deserializePayload(buf);
+        descs.emplace_back();
+        descs.back().deserializePayload(buf);
     }
     buf.popState();
 }
@@ -207,14 +205,6 @@ void ts::DownloadContentDescriptor::Module::deserializePayload(PSIBuffer& buf)
     module_id = buf.getUInt16();
     module_size = buf.getUInt32();
     buf.getBytes(module_info, buf.getUInt8());
-}
-
-void ts::DownloadContentDescriptor::ModuleInfo::deserializePayload(PSIBuffer& buf)
-{
-    for (size_t count = buf.getUInt16(); count > 0; --count) {
-        emplace_back();
-        back().deserializePayload(buf);
-    }
 }
 
 void ts::DownloadContentDescriptor::TextInfo::deserializePayload(PSIBuffer& buf)
@@ -248,7 +238,15 @@ void ts::DownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
             ok = CompatibilityDescriptor::Display(disp, buf, margin);
         }
         if (ok && module_info_flag) {
-            ok = ModuleInfo::Display(disp, buf, margin);
+            ok = buf.canReadBytes(2);
+            if (ok) {
+                const size_t count = buf.getUInt16();
+                disp << margin << "Number of modules: " << count << std::endl;
+                for (size_t i = 0; ok && i < count; ++i) {
+                    disp << margin << "- Module #" << i << std::endl;
+                    ok = Module::Display(disp, buf, margin + u"  ");
+                }
+            }
         }
         if (ok) {
             ok = buf.canReadBytes(1);
@@ -327,20 +325,6 @@ bool ts::DownloadContentDescriptor::Module::Display(TablesDisplay& disp, PSIBuff
     return ok;
 }
 
-bool ts::DownloadContentDescriptor::ModuleInfo::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
-{
-    bool ok = buf.canReadBytes(2);
-    if (ok) {
-        const size_t count = buf.getUInt16();
-        disp << margin << "Number of modules: " << count << std::endl;
-        for (size_t i = 0; ok && i < count; ++i) {
-            disp << margin << "- Module #" << i << std::endl;
-            ok = Module::Display(disp, buf, margin + u"  ");
-        }
-    }
-    return ok;
-}
-
 bool ts::DownloadContentDescriptor::TextInfo::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     bool ok = buf.canReadBytes(4);
@@ -368,7 +352,9 @@ void ts::DownloadContentDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     if (!compatibility_descriptor.empty()) {
         compatibility_descriptor.buildXML(duck, root);
     }
-    module_info.buildXML(duck, root);
+    for (const auto& module : module_info) {
+        module.buildXML(duck, root);
+    }
     root->addHexaTextChild(u"private_data", private_data, true);
     if (text_info.has_value()) {
         text_info.value().buildXML(duck, root);
@@ -398,7 +384,7 @@ void ts::DownloadContentDescriptor::ContentDescriptor::buildXML(DuckContext& duc
 void ts::DownloadContentDescriptor::CompatibilityDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     xml::Element* e = root->addElement(u"compatibility_descriptor");
-    for (const auto& desc : *this) {
+    for (const auto& desc : descs) {
         desc.buildXML(duck, e);
     }
 }
@@ -409,13 +395,6 @@ void ts::DownloadContentDescriptor::Module::buildXML(DuckContext& duck, xml::Ele
     e->setIntAttribute(u"module_id", module_id, true);
     e->setIntAttribute(u"module_size", module_size);
     e->addHexaTextChild(u"module_info", module_info, true);
-}
-
-void ts::DownloadContentDescriptor::ModuleInfo::buildXML(DuckContext& duck, xml::Element* root) const
-{
-    for (const auto& module : *this) {
-        module.buildXML(duck, root);
-    }
 }
 
 void ts::DownloadContentDescriptor::TextInfo::buildXML(DuckContext& duck, xml::Element* root) const
@@ -432,7 +411,7 @@ void ts::DownloadContentDescriptor::TextInfo::buildXML(DuckContext& duck, xml::E
 
 bool ts::DownloadContentDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    xml::ElementVector xtext;
+    xml::ElementVector xtext, xmods;
     bool ok =
         element->getBoolAttribute(reboot, u"reboot", true) &&
         element->getBoolAttribute(add_on, u"add_on", true) &&
@@ -442,9 +421,14 @@ bool ts::DownloadContentDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
         element->getIntAttribute(leak_rate, u"leak_rate", true, 0, 0, 0x003FFFFF) &&
         element->getIntAttribute(component_tag, u"component_tag", true) &&
         compatibility_descriptor.analyzeXML(duck, element) &&
-        module_info.analyzeXML(duck, element) &&
+        element->getChildren(xmods, u"module") &&
         element->getHexaTextChild(private_data, u"private_data", false) &&
         element->getChildren(xtext, u"text_info", 0, 1);
+
+    for (size_t i = 0; ok && i < xmods.size(); ++i) {
+        module_info.emplace_back();
+        ok = module_info.back().analyzeXML(duck, xmods[i]);
+    }
     if (ok && !xtext.empty()) {
         text_info.emplace();
         ok = text_info.value().analyzeXML(duck, xtext[0]);
@@ -483,8 +467,8 @@ bool ts::DownloadContentDescriptor::CompatibilityDescriptor::analyzeXML(DuckCont
         xml::ElementVector xdesc;
         ok = xcompat[0]->getChildren(xdesc, u"descriptor");
         for (size_t i = 0; ok && i < xdesc.size(); ++i) {
-            emplace_back();
-            ok = back().analyzeXML(duck, xdesc[i]);
+            descs.emplace_back();
+            ok = descs.back().analyzeXML(duck, xdesc[i]);
         }
     }
     return ok;
@@ -495,17 +479,6 @@ bool ts::DownloadContentDescriptor::Module::analyzeXML(DuckContext& duck, const 
     return element->getIntAttribute(module_id, u"module_id", true) &&
            element->getIntAttribute(module_size, u"module_size", true) &&
            element->getHexaTextChild(module_info, u"module_info");
-}
-
-bool ts::DownloadContentDescriptor::ModuleInfo::analyzeXML(DuckContext& duck, const xml::Element* parent)
-{
-    xml::ElementVector xmods;
-    bool ok = parent->getChildren(xmods, u"module");
-    for (size_t i = 0; ok && i < xmods.size(); ++i) {
-        emplace_back();
-        ok = back().analyzeXML(duck, xmods[i]);
-    }
-    return ok;
 }
 
 bool ts::DownloadContentDescriptor::TextInfo::analyzeXML(DuckContext& duck, const xml::Element* element)

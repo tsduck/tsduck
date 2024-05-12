@@ -28,6 +28,7 @@ namespace ts {
     //!
     class TSDUCKDLL IPv6SocketAddress: public IPv6Address
     {
+        TS_RULE_OF_FIVE(IPv6SocketAddress, override);
     private:
         uint16_t _port {AnyPort};  // Port in host byte order
     public:
@@ -123,11 +124,6 @@ namespace ts {
         {
             IPv6SocketAddress::resolve(name, report);
         }
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~IPv6SocketAddress() override;
 
         // Inherited methods.
         virtual Port port() const override;

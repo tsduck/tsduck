@@ -71,12 +71,16 @@ namespace ts {
         //!
         //! ISDB download content compatibility descriptor.
         //!
-        class TSDUCKDLL CompatibilityDescriptor : public std::list<ContentDescriptor>
+        class TSDUCKDLL CompatibilityDescriptor
         {
         public:
+            std::list<ContentDescriptor> descs {}; //!< List of compatibility desciptors.
+
             //! @cond nodoxygen
             // Delegated methods.
             CompatibilityDescriptor() = default;
+            bool empty() const { return descs.empty(); }
+            void clear() { descs.clear(); }
             void serializePayload(PSIBuffer&) const;
             void deserializePayload(PSIBuffer&);
             void buildXML(DuckContext& duck, xml::Element* root) const;
@@ -102,23 +106,6 @@ namespace ts {
             void deserializePayload(PSIBuffer&);
             void buildXML(DuckContext& duck, xml::Element* root) const;
             bool analyzeXML(DuckContext& duck, const xml::Element* element);
-            static bool Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin);
-            //! @endcond
-        };
-
-        //!
-        //! List of ISDB download content modules.
-        //!
-        class TSDUCKDLL ModuleInfo : public std::list<Module>
-        {
-        public:
-            //! @cond nodoxygen
-            // Delegated methods.
-            ModuleInfo() = default;
-            void serializePayload(PSIBuffer&) const;
-            void deserializePayload(PSIBuffer&);
-            void buildXML(DuckContext& duck, xml::Element* root) const;
-            bool analyzeXML(DuckContext& duck, const xml::Element* parent);
             static bool Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin);
             //! @endcond
         };
@@ -152,7 +139,7 @@ namespace ts {
         uint32_t                leak_rate = 0;               //!< 22 bits. See ARIB STD-B21, 12.2.1.1.
         uint8_t                 component_tag = 0;           //!< See ARIB STD-B21, 12.2.1.1.
         CompatibilityDescriptor compatibility_descriptor {}; //!< Compatibility descriptor.
-        ModuleInfo              module_info {};              //!< List of modules.
+        std::list<Module>       module_info {};              //!< List of modules.
         ByteBlock               private_data {};             //!< Private data.
         std::optional<TextInfo> text_info {};                //!< Optional text info.
 
