@@ -28,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::NetworkDownloadContentDescriptor::NetworkDownloadContentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDownloadContentDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

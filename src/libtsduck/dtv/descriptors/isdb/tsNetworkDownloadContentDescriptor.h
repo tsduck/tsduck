@@ -12,8 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDescriptor.h"
-#include "tsDownloadContentDescriptor.h"
+#include "tsAbstractDownloadContentDescriptor.h"
 #include "tsIPv4SocketAddress.h"
 #include "tsIPv6SocketAddress.h"
 
@@ -23,17 +22,9 @@ namespace ts {
     //! @see ARIB STD-B21, 12.2.1.1
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL NetworkDownloadContentDescriptor : public AbstractDescriptor
+    class TSDUCKDLL NetworkDownloadContentDescriptor : public AbstractDownloadContentDescriptor
     {
     public:
-        //! @cond nodoxygen
-        // Reuse structures from DownloadContentDescriptor.
-        using ContentSubdescriptor = DownloadContentDescriptor::ContentSubdescriptor;
-        using ContentDescriptor = DownloadContentDescriptor::ContentDescriptor;
-        using CompatibilityDescriptor = DownloadContentDescriptor::CompatibilityDescriptor;
-        using TextInfo = DownloadContentDescriptor::TextInfo;
-        //! @endcond
-
         // NetworkDownloadContentDescriptor public members:
         bool                             reboot = false;              //!< See ARIB STD-B21, 12.2.1.1.
         bool                             add_on = false;              //!< See ARIB STD-B21, 12.2.1.1.
