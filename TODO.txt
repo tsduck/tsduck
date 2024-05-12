@@ -5,6 +5,7 @@ TSDuck - List of features to be implemented or fixed
 * Issue #324: Fix tsswitch --delayed-switch --receive-timeout.
 
 * Add documentation in user's guide for:
+  - ISDB carousel_compatible_composite_descriptor
   - ISDB download_content_descriptor
   - ISDB network_download_content_descriptor
 
@@ -24,10 +25,6 @@ TSDuck - List of features to be implemented or fixed
 
   ETSI TS 102 323 (Carriage and signalling of TV-Anytime information)
   - 10.4.2  RCT (Related Content Table)
-
-  ARIB STD-B10 (ISDB Service Information)
-  - Part 2:
-    - 6.2.46  carousel_compatible_composite_descriptor
 
   ARIB STD-B21 (ISDB Receiver for Digital Broadcasting)
   - 12.2.1.1  SDTT (Software Download Trigger Table)

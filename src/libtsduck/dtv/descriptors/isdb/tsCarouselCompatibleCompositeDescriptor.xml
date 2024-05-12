@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <carousel_compatible_composite_descriptor>
+      <!-- Any number of subdescriptors -->
+      <subdescriptor type="uint8, required">
+        Hexadecimal content
+      </subdescriptor>
+    </carousel_compatible_composite_descriptor>
+
+  </_descriptors>
+</tsduck>
