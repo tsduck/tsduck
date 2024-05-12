@@ -32,6 +32,7 @@ namespace ts {
     //!
     class TSDUCKDLL IPv6Address: public AbstractNetworkAddress
     {
+        TS_RULE_OF_FIVE(IPv6Address, override);
     public:
         //!
         //! Size in bits of an IPv6 address.
