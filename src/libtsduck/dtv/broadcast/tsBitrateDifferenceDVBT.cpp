@@ -33,7 +33,7 @@ namespace {
     const ts::InnerFEC pref_fec[] = {ts::FEC_2_3, ts::FEC_3_4, ts::FEC_5_6, ts::FEC_7_8, ts::FEC_1_2};
     const ts::GuardInterval pref_guard[] = {ts::GUARD_1_32, ts::GUARD_1_8, ts::GUARD_1_16, ts::GUARD_1_4};
 
-#define ARRSIZE(array) (sizeof(array) / (ts::uint8_ptr((array)+1) - ts::uint8_ptr(array)))
+#define ARRSIZE(array) (sizeof(array) / (ts::const_uint8_ptr((array)+1) - ts::const_uint8_ptr(array)))
     const size_t pref_bw_size    = ARRSIZE(pref_bw);
     const size_t pref_mod_size   = ARRSIZE(pref_mod);
     const size_t pref_fec_size   = ARRSIZE(pref_fec);

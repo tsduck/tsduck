@@ -268,7 +268,7 @@ namespace ts {
 #elif defined(TS_WINDOWS)
     using SysSendBufferPointer = const char*;
 #elif defined(TS_UNIX)
-    using SysSendBufferPointer = void*;
+    using SysSendBufferPointer = const void*;
 #endif
 
     //!
