@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <network_download_content_descriptor
+        reboot="bool, required"
+        add_on="bool, required"
+        component_size="uint32, required"
+        session_protocol_number="uint8, required"
+        session_id="uint32, required"
+        retry="uint8, required"
+        connect_timer="uint24, required">
+
+      <!-- Exactly one of ipv4, ipv6, url -->
+      <ipv4 address="IPv4 address, required" port="uint16, required"/>
+      <ipv6 address="IPv6 address, required" port="uint16, required"/>
+      <url url="string, required"/>
+
+      <!-- At most one compatibility_descriptor -->
+      <compatibility_descriptor>
+        <!-- Any number of descriptors -->
+        <descriptor
+            descriptor_type="uint8, required"
+            specifier_type="uint8, required"
+            specifier_data="uint24, required"
+            model="uint16, required"
+            version="uint16, required">
+          <!-- Any number of subdescriptors -->
+          <subdescriptor type="uint8, required">
+            Hexadecimal content
+          </subdescriptor>
+        </descriptor>
+      </compatibility_descriptor>
+
+      <!-- At most one -->
+      <private_data>
+        Hexadecimal content
+      </private_data>
+
+      <!-- At most one -->
+      <text_info ISO_639_language_code="char3, required" text="string, required"/>
+
+    </network_download_content_descriptor>
+
+  </_descriptors>
+</tsduck>

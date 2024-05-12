@@ -179,7 +179,7 @@ bool ts::RARoverDVBstreamDescriptor::analyzeXML(DuckContext& duck, const xml::El
         uint8_t optional_count = download_start_time.has_value() + download_period_duration.has_value() + download_cycle_time.has_value();
         if (optional_count != 0 && optional_count != 3) {
             ok = false;
-            element->report().error(u"download_start_time, download_period_duration and download_cycle_time to be specified together  in <%s>, line %d", element->name(), element->lineNumber());
+            element->report().error(u"download_start_time, download_period_duration and download_cycle_time to be specified together in <%s>, line %d", element->name(), element->lineNumber());
         }
     }
     return ok;

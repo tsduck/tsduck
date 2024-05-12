@@ -99,9 +99,9 @@ void ts::TargetIPSourceSlashDescriptor::buildXML(DuckContext& duck, xml::Element
 {
     for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPAttribute(u"IPv4_source_addr", it.IPv4_source_addr);
+        e->setIPv4Attribute(u"IPv4_source_addr", it.IPv4_source_addr);
         e->setIntAttribute(u"IPv4_source_slash_mask", it.IPv4_source_slash_mask);
-        e->setIPAttribute(u"IPv4_dest_addr", it.IPv4_dest_addr);
+        e->setIPv4Attribute(u"IPv4_dest_addr", it.IPv4_dest_addr);
         e->setIntAttribute(u"IPv4_dest_slash_mask", it.IPv4_dest_slash_mask);
     }
 }
@@ -118,9 +118,9 @@ bool ts::TargetIPSourceSlashDescriptor::analyzeXML(DuckContext& duck, const xml:
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        ok = children[i]->getIPAttribute(addr.IPv4_source_addr, u"IPv4_source_addr", true) &&
+        ok = children[i]->getIPv4Attribute(addr.IPv4_source_addr, u"IPv4_source_addr", true) &&
              children[i]->getIntAttribute(addr.IPv4_source_slash_mask, u"IPv4_source_slash_mask", true) &&
-             children[i]->getIPAttribute(addr.IPv4_dest_addr, u"IPv4_dest_addr", true) &&
+             children[i]->getIPv4Attribute(addr.IPv4_dest_addr, u"IPv4_dest_addr", true) &&
              children[i]->getIntAttribute(addr.IPv4_dest_slash_mask, u"IPv4_dest_slash_mask", true);
         addresses.push_back(addr);
     }

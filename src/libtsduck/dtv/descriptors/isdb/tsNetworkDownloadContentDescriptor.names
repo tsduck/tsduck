@@ -1,0 +1,5 @@
+[network_download_content_descriptor.address_type]
+Bits = 8
+0x00 = IPv4 address
+0x01 = IPv6 address
+0x02 = URL

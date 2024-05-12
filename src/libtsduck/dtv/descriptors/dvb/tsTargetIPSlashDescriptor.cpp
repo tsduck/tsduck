@@ -93,7 +93,7 @@ void ts::TargetIPSlashDescriptor::buildXML(DuckContext& duck, xml::Element* root
 {
     for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPAttribute(u"IPv4_addr", it.IPv4_addr);
+        e->setIPv4Attribute(u"IPv4_addr", it.IPv4_addr);
         e->setIntAttribute(u"IPv4_slash_mask", it.IPv4_slash_mask);
     }
 }
@@ -110,7 +110,7 @@ bool ts::TargetIPSlashDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        ok = children[i]->getIPAttribute(addr.IPv4_addr, u"IPv4_addr", true) &&
+        ok = children[i]->getIPv4Attribute(addr.IPv4_addr, u"IPv4_addr", true) &&
              children[i]->getIntAttribute(addr.IPv4_slash_mask, u"IPv4_slash_mask", true);
         addresses.push_back(addr);
     }
