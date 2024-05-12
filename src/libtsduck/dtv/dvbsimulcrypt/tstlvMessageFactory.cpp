@@ -146,7 +146,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
             // Parameter tag not found in protocol definition
             _error_status = UnknownParameterTag;
             _error_info_is_offset = true;
-            _error_info = uint16_t(uint8_ptr(tlv_addr) - _msg_base); // offset
+            _error_info = uint16_t(const_uint8_ptr(tlv_addr) - _msg_base); // offset
             return;
         }
 
@@ -162,7 +162,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
                 _error_info = it->second.compound->_error_info;
                 _error_info_is_offset = it->second.compound->_error_info_is_offset;
                 if (_error_info_is_offset) {
-                    _error_info += uint16_t(uint8_ptr(tlv_addr) - _msg_base); // offset
+                    _error_info += uint16_t(const_uint8_ptr(tlv_addr) - _msg_base); // offset
                 }
                 return;
             }
@@ -171,13 +171,13 @@ void ts::tlv::MessageFactory::analyzeMessage()
             // The parameter is not a compound TLV and its length is not in protocol-defined range
             _error_status = InvalidParameterLength;
             _error_info_is_offset = true;
-            _error_info = uint16_t(uint8_ptr(tlv_addr) - _msg_base); // offset
+            _error_info = uint16_t(const_uint8_ptr(tlv_addr) - _msg_base); // offset
             return;
         }
         else {
             // The parameter is not a compound TLV and its length is fine.
             // Store the parameter value in the multimap for this command
-            _params.insert(ParameterMultimap::value_type (parm_tag, ExtParameter(tlv_addr, tlv_size, value_addr, value_length)));
+            _params.insert(ParameterMultimap::value_type(parm_tag, ExtParameter(tlv_addr, tlv_size, value_addr, value_length)));
         }
 
         // Advance to next parameter
@@ -188,7 +188,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
     if (!parm_anl.valid()) {
         _error_status = InvalidMessage;
         _error_info_is_offset = true;
-        _error_info = uint16_t(uint8_ptr(parm_anl.fieldAddr()) - _msg_base); // offset
+        _error_info = uint16_t(const_uint8_ptr(parm_anl.fieldAddr()) - _msg_base); // offset
         return;
     }
 
