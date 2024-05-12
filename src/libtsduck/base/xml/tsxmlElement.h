@@ -472,7 +472,7 @@ namespace ts {
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
             //!
-            void setIPAttribute(const UString& name, const IPv4Address& value)
+            void setIPv4Attribute(const UString& name, const IPv4Address& value)
             {
                 setAttribute(name, value.toString());
             }
@@ -891,7 +891,7 @@ namespace ts {
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            bool getIPAttribute(IPv4Address& value, const UString& name, bool required = false, const IPv4Address& defValue = IPv4Address()) const;
+            bool getIPv4Attribute(IPv4Address& value, const UString& name, bool required = false, const IPv4Address& defValue = IPv4Address()) const;
 
             //!
             //! Get an IPv6 address attribute of an XML element.

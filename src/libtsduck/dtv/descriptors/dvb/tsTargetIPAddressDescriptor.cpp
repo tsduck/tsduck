@@ -92,9 +92,9 @@ void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 
 void ts::TargetIPAddressDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIPAttribute(u"IPv4_addr_mask", IPv4_addr_mask);
+    root->setIPv4Attribute(u"IPv4_addr_mask", IPv4_addr_mask);
     for (const auto& it : IPv4_addr) {
-        root->addElement(u"address")->setIPAttribute(u"IPv4_addr", it);
+        root->addElement(u"address")->setIPv4Attribute(u"IPv4_addr", it);
     }
 }
 
@@ -107,12 +107,12 @@ bool ts::TargetIPAddressDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
 {
     xml::ElementVector children;
     bool ok =
-        element->getIPAttribute(IPv4_addr_mask, u"IPv4_addr_mask", true) &&
+        element->getIPv4Attribute(IPv4_addr_mask, u"IPv4_addr_mask", true) &&
         element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         IPv4Address addr;
-        ok = children[i]->getIPAttribute(addr, u"IPv4_addr", true);
+        ok = children[i]->getIPv4Attribute(addr, u"IPv4_addr", true);
         IPv4_addr.push_back(addr);
     }
     return ok;

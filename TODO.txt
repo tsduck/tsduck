@@ -5,7 +5,8 @@ TSDuck - List of features to be implemented or fixed
 * Issue #324: Fix tsswitch --delayed-switch --receive-timeout.
 
 * Add documentation in user's guide for:
-  - download_content_descriptor
+  - ISDB download_content_descriptor
+  - ISDB network_download_content_descriptor
 
 * Implement missing PSI/SI tables and descriptors (list below).
 
@@ -30,7 +31,6 @@ TSDuck - List of features to be implemented or fixed
 
   ARIB STD-B21 (ISDB Receiver for Digital Broadcasting)
   - 12.2.1.1  SDTT (Software Download Trigger Table)
-  - 12.2.1.1  network_download_content_descriptor
 
   ARIB STD-B16 (ISDB Standard Digital Receiver for Satellite - not free, not available in English)
   - DCT (Download Control Table)
