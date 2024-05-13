@@ -383,7 +383,7 @@ namespace ts {
         //!
         //! For long tables, the section number is always one more than the current last section in the table.
         //!
-        //! It the @a payload buffer has a pushed read/write state, this state is restored and immediately pushed again.
+        //! If the @a payload buffer has a pushed read/write state, this state is restored and immediately pushed again.
         //! The typical use case is the following:
         //! - A table may create more than one section.
         //! - The payload of all sections starts with the same fixed data.

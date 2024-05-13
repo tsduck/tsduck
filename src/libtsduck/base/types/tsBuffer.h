@@ -326,7 +326,7 @@ namespace ts {
 
         //!
         //! Reset writing at the specified offset in the buffer.
-        //! Seeking backward beyon the read pointer moves the write pointer to the read pointer
+        //! Seeking backward beyond the read pointer moves the write pointer to the read pointer
         //! and generates a write error. Seeking forward past the end of buffer moves the write
         //! pointer to the end of the buffer and generates a write error.
         //! @param [in] byte Index of next byte to write.
@@ -337,7 +337,7 @@ namespace ts {
 
         //!
         //! Reset writing at the specified offset in the buffer and trash forward memory.
-        //! Seeking backward beyon the read pointer moves the write pointer to the read pointer
+        //! Seeking backward beyond the read pointer moves the write pointer to the read pointer
         //! and generates a write error. Seeking forward past the end of buffer moves the write
         //! pointer to the end of the buffer and generates a write error.
         //! @param [in] byte Index of next byte to write.
