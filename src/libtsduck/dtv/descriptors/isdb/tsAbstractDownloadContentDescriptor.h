@@ -22,6 +22,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractDownloadContentDescriptor : public AbstractDescriptor
     {
+        TS_RULE_OF_FIVE(AbstractDownloadContentDescriptor, override);
     public:
         //!
         //! ISDB download content subdescriptor.
@@ -128,11 +129,6 @@ namespace ts {
             static bool Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin);
             //! @endcond
         };
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~AbstractDownloadContentDescriptor() override;
 
     protected:
         //!
