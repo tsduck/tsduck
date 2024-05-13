@@ -179,11 +179,11 @@ void ts::SDTT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             buf.putFullMJD(it2->start_time);
             buf.putSecondsBCD(it2->duration);
         }
-        const int sched_size = buf.currentWriteByteOffset() - sched_pos;
+        const size_t sched_size = buf.currentWriteByteOffset() - sched_pos;
 
         // Serialize as many descriptors as possible.
         buf.putPartialDescriptorList(cnt.descs);
-        const int content_size = buf.currentWriteByteOffset() - sched_pos;
+        const size_t content_size = buf.currentWriteByteOffset() - sched_pos;
 
         // Now adjust content_description_length / maker_id_flag / reserved / schedule_description_length / schedule_timeshift_information
         buf.pushState();
