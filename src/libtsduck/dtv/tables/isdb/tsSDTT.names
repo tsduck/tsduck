@@ -1,0 +1,30 @@
+[SDTT.download_level]
+Bits = 2
+0 = Discretionary downloading
+1 = Compulsory downloading
+
+[SDTT.version_indicator]
+Bits = 2
+0 = All versions
+1 = Version specified or later
+2 = Version specified or earlier
+3 = Only specified version
+
+[SDTT.schedule_timeshift_information]
+Bits = 4
+0  = Same schedule with multiple service_id
+1  = Timeshift of 1 hour for each service_id
+2  = Timeshift of 2 hours for each service_id
+3  = Timeshift of 3 hours for each service_id
+4  = Timeshift of 4 hours for each service_id
+5  = Timeshift of 5 hours for each service_id
+6  = Timeshift of 6 hours for each service_id
+7  = Timeshift of 7 hours for each service_id
+8  = Timeshift of 8 hours for each service_id
+9  = Timeshift of 9 hours for each service_id
+10 = Timeshift of 10 hours for each service_id
+11 = Timeshift of 11 hours for each service_id
+12 = Timeshift of 12 hours for each service_id
+13 = Reserved
+14 = Reserved
+15 = Single service_id

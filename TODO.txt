@@ -4,6 +4,9 @@ TSDuck - List of features to be implemented or fixed
 
 * Issue #324: Fix tsswitch --delayed-switch --receive-timeout.
 
+* Add in user's guide:
+  - ISDB SDTT (Software Download Trigger Table) (STD-B21
+
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
@@ -20,9 +23,6 @@ TSDuck - List of features to be implemented or fixed
 
   ETSI TS 102 323 (Carriage and signalling of TV-Anytime information)
   - 10.4.2  RCT (Related Content Table)
-
-  ARIB STD-B21 (ISDB Receiver for Digital Broadcasting)
-  - 12.2.1.1  SDTT (Software Download Trigger Table)
 
   ARIB STD-B16 (ISDB Standard Digital Receiver for Satellite - not free, not available in English)
   - DCT (Download Control Table)
