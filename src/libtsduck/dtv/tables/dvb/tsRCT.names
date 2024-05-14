@@ -1,0 +1,22 @@
+[RCT.link_type]
+Bits = 4
+0x0 = URI string only
+0x1 = Binary locator only
+0x2 = Both a binary locator and a URI string
+0x3 = Through means of a descriptor
+0x4-0xF = DVB reserved
+
+[RCT.how_related_classification_scheme_id]
+Bits = 6
+0x00 = urn:tva:metadata:HowRelatedCS:2004
+0x01 = urn:tva:metadata:HowRelatedCS:2005
+0x02 = urn:tva:metadata:HowRelatedCS:2007
+0x03-0x2F = DVB reserved
+0x30-0x3F = User Private
+
+[RCT.dvb_identifier_type]
+Bits = 2
+0 = No event identifier field is present
+1 = Event identifier is an event_id
+2 = Event identifier is a TVA_id carried in EIT
+3 = Event identifier is a TVA_id carried in PES

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Related Content Table -->
+    <RCT version="uint5, default=0"
+         current="bool, default=true"
+         service_id="uint16, required"
+         year_offset="uint16, required">
+      <_any in="_metadata"/>
+      <!-- One per link -->
+      <link link_type="uint4, required"
+            how_related_classification_scheme_id="uint6, required"
+            term_id="uint12, required"
+            group_id="uint4, required"
+            precedence="uint4, required"
+            media_uri="string, required when link_type == 0 or 2"
+            default_icon_flag="bool, required"
+            icon_id="uint3, required">
+        <!-- If link_type == 1 or 2 -->
+        <dvb_binary_locator
+            identifier_type="uint2, required"
+            scheduled_time_reliability="bool, required"
+            inline_service="bool, required"
+            start_date="uint9, required"
+            dvb_service_triplet_id="uint10, required when inline_service == false"
+            transport_stream_id="uint16, required when inline_service == true"
+            original_network_id="uint16, required when inline_service == true"
+            service_id="uint16, required when inline_service == true"
+            start_time="uint16, required"
+            duration="uint16, required"
+            event_id="uint16, required when identifier_type == 1"
+            TVA_id="uint16, required when identifier_type == 2 or 3"
+            component_tag="uint8, required when identifier_type == 3"
+            early_start_window="uint3, required when identifier_type == 0 and scheduled_time_reliability == true"
+            late_end_window="uint5, required when identifier_type == 0 and scheduled_time_reliability == true"/>
+        <!-- One per text -->
+        <promotional_text language_code="char3, required" text="string, required"/>
+        <_any in="_descriptors"/>
+      </link>
+      <_any in="_descriptors"/>
+    </RCT>
+
+  </_tables>
+</tsduck>
