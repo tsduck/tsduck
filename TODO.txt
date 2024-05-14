@@ -4,10 +4,6 @@ TSDuck - List of features to be implemented or fixed
 
 * Issue #324: Fix tsswitch --delayed-switch --receive-timeout.
 
-* Add in user's guide:
-  - DVB RCT (Related Content Table), ETSI TS 102 323
-  - ISDB SDTT (Software Download Trigger Table), STD-B21
-
 * Implement missing PSI/SI tables and descriptors (list below).
 
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
