@@ -489,12 +489,12 @@ namespace {
         // Get system info to determine which command to run.
         const ts::SysInfo& sys(ts::SysInfo::Instance());
 
-        if (files.empty() && !sys.isMacOS()) {
+        if (files.empty() && sys.os() != ts::SysInfo::MACOS) {
             opt.error(u"no binary installer available for your system");
             return false;
         }
 
-        if (sys.isWindows()) {
+        if (sys.os() == ts::SysInfo::WINDOWS) {
             // On Windows, there should be only one installer.
             if (files.size() != 1) {
                 opt.error(u"found %d installers for this version, manually run one of: %s", files.size(), ts::UString::Join(files, u" "));
@@ -506,13 +506,13 @@ namespace {
             // tsduck.dll, which would be locked if tsversion is still executing.
             return RunUpgradeCommand(opt, files.front(), true);
         }
-        else if (sys.isMacOS()) {
+        else if (sys.os() == ts::SysInfo::MACOS) {
             return RunUpgradeCommand(opt, u"brew upgrade tsduck", false);
         }
-        else if (sys.isFedora() || sys.isRedHat()) {
+        else if (sys.osFlavor() == ts::SysInfo::FEDORA || sys.osFlavor() == ts::SysInfo::REDHAT) {
             return RunUpgradeCommand(opt, u"rpm -Uvh " + ts::UString::Join(files, u" "), true);
         }
-        else if (sys.isUbuntu() || sys.isDebian() || sys.isRaspbian()) {
+        else if (sys.osFlavor() == ts::SysInfo::UBUNTU || sys.osFlavor() == ts::SysInfo::DEBIAN || sys.osFlavor() == ts::SysInfo::RASPBIAN) {
             return RunUpgradeCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true);
         }
         else {

@@ -25,8 +25,8 @@ WORKDIR /tmp/tsduck
 COPY tsduck.tgz .
 
 RUN tar -xpzf tsduck.tgz && \
-    make -j8 NOPCSC=1 NODEKTEC=1 NOVATEK=1 NOHIDES=1 NOJAVA=1 NOTEST=1 && \
-    make install-tools SYSROOT=/tmp/root
+    make NOPCSC=1 NODEKTEC=1 NOVATEK=1 NOHIDES=1 NOJAVA=1 NOTEST=1 -j8 && \
+    make NOPCSC=1 NODEKTEC=1 NOVATEK=1 NOHIDES=1 NOJAVA=1 NOTEST=1 install-tools SYSROOT=/tmp/root
 
 FROM alpine
 
