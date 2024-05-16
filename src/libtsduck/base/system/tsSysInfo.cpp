@@ -223,6 +223,7 @@ ts::SysInfo::SysInfo() :
     if (::IsWow64Process(::GetCurrentProcess(), &wow64) && wow64) {
         // 32-bit application on 64-bit system => set system characteristics, not application.
         _arch = INTEL64;
+        _cpuName = u"Intel x86-64";
     }
 
 #endif
