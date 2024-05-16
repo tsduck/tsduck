@@ -32,87 +32,76 @@ TS_DEFINE_SINGLETON(ts::SysInfo);
 //----------------------------------------------------------------------------
 
 ts::SysInfo::SysInfo() :
-#if defined(TS_LINUX)
-    _isLinux(true),
-#endif
-#if defined(TS_MAC)
-    _isMacOS(true),
-#endif
-#if defined(TS_BSD)
-    _isBSD(true),
-#endif
-#if defined(TS_FREEBSD)
-    _isFreeBSD(true),
-#endif
-#if defined(TS_NETBSD)
-    _isNetBSD(true),
-#endif
-#if defined(TS_OPENBSD)
-    _isOpenBSD(true),
-#endif
-#if defined(TS_DRAGONFLYBSD)
-    _isDragonFlyBSD(true),
-#endif
-#if defined(TS_WINDOWS)
-    _isWindows(true),
-#endif
+
 #if defined(TS_I386)
-    _isIntel32(true),
-#endif
-#if defined(TS_X86_64)
-    _isIntel64(true),
-#endif
-#if defined(TS_ARM32)
-    _isArm32(true),
-#endif
-#if defined(TS_ARM64)
-    _isArm64(true),
-#endif
-#if defined(TS_RISCV64)
-    _isRISCV64(true),
-#endif
-#if defined(TS_S390X)
-    _isS390x(true),
-#endif
-#if defined(TS_POWERPC)
-    _isPPC32(true),
-#endif
-#if defined(TS_POWERPC64)
-    _isPPC64(true),
-#endif
-#if defined(TS_MIPS)
-    _isMIPS32(true),
-#endif
-#if defined(TS_MIPS64)
-    _isMIPS64(true),
-#endif
-#if defined(TS_I386)
+    _arch(INTEL32),
     _cpuName(u"Intel x86"),
 #elif defined(TS_X86_64)
+    _arch(INTEL64),
     _cpuName(u"Intel x86-64"),
 #elif defined(TS_ARM64)
+    _arch(ARM64),
     _cpuName(u"Arm-64"),
 #elif defined(TS_ARM32)
+    _arch(ARM32),
     _cpuName(u"Arm-32"),
 #elif defined(TS_MIPS64)
+    _arch(MIPS64),
     _cpuName(u"MIPS64"),
 #elif defined(TS_MIPS)
+    _arch(MIPS32),
     _cpuName(u"MIPS"),
 #elif defined(TS_SPARC)
+    _arch(SPARC),
     _cpuName(u"SPARC"),
-#elif defined(TS_ALPHA)
-    _cpuName(u"Alpha"),
 #elif defined(TS_POWERPC64)
+    _arch(PPC64),
     _cpuName(u"PowerPC-64"),
 #elif defined(TS_POWERPC)
+    _arch(PPC32),
     _cpuName(u"PowerPC"),
 #elif defined(TS_RISCV64)
+    _arch(RISCV64),
     _cpuName(u"RISCV-64"),
 #elif defined(TS_S390X)
+    _arch(S390X),
     _cpuName(u"S390X"),
 #else
-    _cpuName(u"unknown CPU"),
+    #error "Unsupported CPU architecture"
 #endif
+
+#if defined(TS_LINUX)
+    _osFamily(LINUX),
+    _osFlavor(UNKNOWN),
+    _systemName(u"Linux"),
+#elif defined(TS_MAC)
+    _osFamily(MACOS),
+    _osFlavor(NONE),
+    _systemName(u"macOS"),
+#elif defined(TS_FREEBSD)
+    _osFamily(BSD),
+    _osFlavor(FREEBSD),
+    _systemName(u"FreeBSD"),
+^#elif defined(TS_NETBSD)
+    _osFamily(BSD),
+    _osFlavor(NETBSD),
+    _systemName(u"NetBSD"),
+#elif defined(TS_OPENBSD)
+    _osFamily(BSD),
+    _osFlavor(OPENBSD),
+    _systemName(u"OpenBSD"),
+#elif defined(TS_DRAGONFLYBSD)
+    _osFamily(BSD),
+    _osFlavor(DFLYBSD),
+    _systemName(u"DragonFlyBSD"),
+#elif defined(TS_WINDOWS)
+    _osFamily(WINDOWS),
+    _osFlavor(NONE),
+    _systemName(u"Windows"),
+#else
+    #error "Unsupported operating system"
+#endif
+
     _memoryPageSize(0)
 {
     //
@@ -124,31 +113,46 @@ ts::SysInfo::SysInfo() :
     UStringList lines;
     Environment env;
     if (UString::Load(lines, u"/etc/fedora-release") && !lines.empty()) {
-        _isFedora = true;
+        _osFlavor = FEDORA;
         _systemName = u"Fedora";
         _systemVersion = lines.front();
     }
     else if (UString::Load(lines, u"/etc/redhat-release") && !lines.empty()) {
-        _isRedHat = true;
+        _osFlavor = REDHAT;
         _systemName = u"Red Hat Entreprise Linux";
         _systemVersion = lines.front();
     }
+    else if (UString::Load(lines, u"/etc/alpine-release") && !lines.empty()) {
+        _osFlavor = ALPINE;
+        _systemName = u"Alpine Linux";
+        _systemVersion = lines.front();
+    }
     else if (LoadEnvironment(env, u"/etc/lsb-release")) {
-        _systemName = env[u"DISTRIB_ID"];
+        if (!env[u"DISTRIB_ID"].empty()) {
+            _systemName = env[u"DISTRIB_ID"];
+        }
         _systemVersion = env[u"DISTRIB_DESCRIPTION"];
         if (_systemVersion.empty()) {
             _systemVersion = env[u"DISTRIB_RELEASE"];
         }
-        _isUbuntu = _systemName.similar(u"Ubuntu");
-        _isDebian = _systemName.similar(u"Debian");
-        _isRaspbian = _systemName.similar(u"Raspbian");
+        if (_systemName.similar(u"Ubuntu")) {
+            _osFlavor = UBUNTU;
+        }
+        else if (_systemName.similar(u"Debian")) {
+            _osFlavor = DEBIAN;
+        }
+        else if (_systemName.similar(u"Raspbian")) {
+            _osFlavor = RASPBIAN;
+        }
     }
-    if (_systemName.empty() && UString::Load(lines, u"/etc/debian_version") && !lines.empty()) {
+    if (_systemName == "Linux" && UString::Load(lines, u"/etc/debian_version") && !lines.empty()) {
         _systemName = u"Debian";
-        _systemVersion = u"Debian " + lines.front();
-    }
-    if (_systemName.empty()) {
-        _systemName = u"Linux";
+        if (_osFlavor == UNKNOWN) {
+            _osFlavor = DEBIAN;
+        }
+        if (_systemVersion.empty()) {
+            _systemVersion = u"Debian " + lines.front();
+        }
     }
 
 #elif defined(TS_MAC)
@@ -160,9 +164,6 @@ ts::SysInfo::SysInfo() :
     if (!sysName.empty() && !sysVersion.empty()) {
         _systemName = sysName;
         _systemVersion = sysName + u" " + sysVersion;
-    }
-    else {
-        _systemName = u"macOS";
     }
 
     // Get kernel version.
@@ -177,17 +178,9 @@ ts::SysInfo::SysInfo() :
 
 #elif defined(TS_BSD)
 
-    _systemName = SysCtrlString({CTL_KERN, KERN_OSTYPE});
-    if (_systemName.empty()) {
-#if defined(TS_FREEBSD)
-        _systemName = u"FreeBSD";
-#elif defined(TS_OPENBSD)
-        _systemName = u"OpenBSD";
-#elif defined(TS_NETBSD)
-        _systemName = u"NetBSD";
-#elif defined(TS_DRAGONFLYBSD)
-        _systemName = u"DragonFlyBSD";
-#endif
+    const UString sysname(SysCtrlString({CTL_KERN, KERN_OSTYPE}));
+    if (!sysname.empty()) {
+        _systemName = sysname;
     }
 
     UString osrelease(SysCtrlString({CTL_KERN, KERN_OSRELEASE}));
@@ -211,8 +204,6 @@ ts::SysInfo::SysInfo() :
 
 #elif defined(TS_WINDOWS)
 
-    _systemName = u"Windows";
-
     TS_PUSH_WARNING()
     TS_MSC_NOWARNING(4996) // warning C4996: 'GetVersionExW': was declared deprecated
 
@@ -231,8 +222,7 @@ ts::SysInfo::SysInfo() :
     ::BOOL wow64 = 0;
     if (::IsWow64Process(::GetCurrentProcess(), &wow64) && wow64) {
         // 32-bit application on 64-bit system => set system characteristics, not application.
-        _isIntel32 = false;
-        _isIntel64 = true;
+        _arch = INTEL64;
     }
 
 #endif

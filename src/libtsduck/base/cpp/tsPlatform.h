@@ -338,14 +338,6 @@
     //!
     #define TS_ARM64
     //!
-    //! Defined when the target processor architecture is STxP70.
-    //!
-    #define TS_STXP70
-    //!
-    //! Defined when the target processor architecture is Intel IA-64 architecture, also known as Itanium.
-    //!
-    #define TS_IA64
-    //!
     //! Defined when the target processor architecture is 32-bit Power PC.
     //!
     #define TS_POWERPC
@@ -353,10 +345,6 @@
     //! Defined when the target processor architecture is 64-bit Power PC.
     //!
     #define TS_POWERPC64
-    //!
-    //! Defined when the target processor architecture is Digital Alpha architecture.
-    //!
-    #define TS_ALPHA
     //!
     //! Defined when the target processor architecture is Sun SPARC architecture.
     //!
@@ -412,20 +400,6 @@
     #endif
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 32
-    #endif
-#elif defined(__stxp70__) || defined(__STxP70__)
-    #if !defined(TS_STXP70)
-        #define TS_STXP70 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
-    #endif
-#elif defined(__alpha__)
-    #if !defined(TS_ALPHA)
-        #define TS_ALPHA 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 64
     #endif
 #elif defined(__sparc__)
     #if !defined(TS_SPARC)

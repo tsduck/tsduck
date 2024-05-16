@@ -624,26 +624,9 @@ TSUNIT_DEFINE_TEST(IsTerminal)
 TSUNIT_DEFINE_TEST(SysInfo)
 {
     debug() << "SysUtilsTest::testSysInfo: " << std::endl
-            << "    isLinux = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isLinux()) << std::endl
-            << "    isFedora = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isFedora()) << std::endl
-            << "    isRedHat = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isRedHat()) << std::endl
-            << "    isUbuntu = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isUbuntu()) << std::endl
-            << "    isDebian = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isDebian()) << std::endl
-            << "    isMacOS = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isMacOS()) << std::endl
-            << "    isBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isBSD()) << std::endl
-            << "    isFreeBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isFreeBSD()) << std::endl
-            << "    isNetBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isNetBSD()) << std::endl
-            << "    isOpenBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isOpenBSD()) << std::endl
-            << "    isDragonFlyBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isDragonFlyBSD()) << std::endl
-            << "    isWindows = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isWindows()) << std::endl
-            << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isIntel32()) << std::endl
-            << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isIntel64()) << std::endl
-            << "    isArm32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isArm32()) << std::endl
-            << "    isArm64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isArm64()) << std::endl
-            << "    isRISCV64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isRISCV64()) << std::endl
-            << "    isS390x = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isS390x()) << std::endl
-            << "    isPPC32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isPPC32()) << std::endl
-            << "    isPPC64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance().isPPC64()) << std::endl
+            << "    arch() = " << int(ts::SysInfo::Instance().arch()) << std::endl
+            << "    os() = " << int(ts::SysInfo::Instance().os()) << std::endl
+            << "    osFlavor() = " << int(ts::SysInfo::Instance().osFlavor()) << std::endl
             << "    systemVersion = \"" << ts::SysInfo::Instance().systemVersion() << '"' << std::endl
             << "    systemMajorVersion = " << ts::SysInfo::Instance().systemMajorVersion() << std::endl
             << "    systemName = \"" << ts::SysInfo::Instance().systemName() << '"' << std::endl
@@ -651,180 +634,49 @@ TSUNIT_DEFINE_TEST(SysInfo)
             << "    memoryPageSize = " << ts::SysInfo::Instance().memoryPageSize() << std::endl;
 
 #if defined(TS_WINDOWS)
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isWindows());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isLinux());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMacOS());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isNetBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isOpenBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isDragonFlyBSD());
+    TSUNIT_EQUAL(ts::SysInfo::WINDOWS, ts::SysInfo::Instance().os());
+    TSUNIT_EQUAL(ts::SysInfo::NONE, ts::SysInfo::Instance().osFlavor());
 #elif defined(TS_LINUX)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isWindows());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isLinux());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMacOS());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isFreeBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isNetBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isOpenBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isDragonFlyBSD());
+    TSUNIT_EQUAL(ts::SysInfo::LINUX, ts::SysInfo::Instance().os());
 #elif defined(TS_MAC)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isWindows());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isLinux());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isMacOS());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isFreeBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isNetBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isOpenBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isDragonFlyBSD());
+    TSUNIT_EQUAL(ts::SysInfo::MACOS, ts::SysInfo::Instance().os());
+    TSUNIT_EQUAL(ts::SysInfo::NONE, ts::SysInfo::Instance().osFlavor());
 #elif defined(TS_FREEBSD)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isWindows());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isLinux());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMacOS());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isBSD());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isFreeBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isNetBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isOpenBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isDragonFlyBSD());
+    TSUNIT_EQUAL(ts::SysInfo::BSD, ts::SysInfo::Instance().os());
+    TSUNIT_EQUAL(ts::SysInfo::FREEBSD, ts::SysInfo::Instance().osFlavor());
 #elif defined(TS_NETBSD)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isWindows());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isLinux());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMacOS());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isFreeBSD());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isNetBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isOpenBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isDragonFlyBSD());
+    TSUNIT_EQUAL(ts::SysInfo::BSD, ts::SysInfo::Instance().os());
+    TSUNIT_EQUAL(ts::SysInfo::NETBSD, ts::SysInfo::Instance().osFlavor());
 #elif defined(TS_OPENBSD)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isWindows());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isLinux());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMacOS());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isFreeBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isNetBSD());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isOpenBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isDragonFlyBSD());
+    TSUNIT_EQUAL(ts::SysInfo::BSD, ts::SysInfo::Instance().os());
+    TSUNIT_EQUAL(ts::SysInfo::OPENBSD, ts::SysInfo::Instance().osFlavor());
 #elif defined(TS_DRAGONFLYBSD)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isWindows());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isLinux());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMacOS());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isFreeBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isNetBSD());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isOpenBSD());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isDragonFlyBSD());
+    TSUNIT_EQUAL(ts::SysInfo::BSD, ts::SysInfo::Instance().os());
+    TSUNIT_EQUAL(ts::SysInfo::DFLYBSD, ts::SysInfo::Instance().osFlavor());
 #endif
 
 #if defined(TS_I386)
     // TS_I386 means 32-bit compiled code.
     // Win32 code can run on Win32 or Win64 systems.
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isIntel32() || ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_ASSERT(ts::SysInfo::Instance().arch() == ts::SysInfo::INTEL32 || ts::SysInfo::Instance().arch() == ts::SysInfo::INTEL64);
 #elif defined(TS_X86_64)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::INTEL64, ts::SysInfo::Instance().arch());
 #elif defined(TS_ARM32)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::ARM32, ts::SysInfo::Instance().arch());
 #elif defined(TS_ARM64)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::ARM64, ts::SysInfo::Instance().arch());
 #elif defined(TS_POWERPC)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::PPC32, ts::SysInfo::Instance().arch());
 #elif defined(TS_POWERPC64)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::PPC64, ts::SysInfo::Instance().arch());
 #elif defined(TS_MIPS)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::MIPS32, ts::SysInfo::Instance().arch());
 #elif defined(TS_MIPS64)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::MIPS64, ts::SysInfo::Instance().arch());
 #elif defined(TS_RISCV64)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::RISCV64, ts::SysInfo::Instance().arch());
 #elif defined(TS_S390X)
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isIntel64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isArm64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isRISCV64());
-    TSUNIT_ASSERT(ts::SysInfo::Instance().isS390x());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isPPC64());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS32());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance().isMIPS64());
+    TSUNIT_EQUAL(ts::SysInfo::S390X, ts::SysInfo::Instance().arch());
 #endif
 
     // We can't predict the memory page size, except that it must be a multiple of 256.

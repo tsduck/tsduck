@@ -6,10 +6,22 @@
 #  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  This script builds the TSDuck installers on a remote system. The remote
-#  system can be a running physical machine or a local VM. In the case of
-#  a local VM, it is booted and shutdown if it does not already runs.
-#  Currently supports VMWare only as hypervisor for local VM's.
-#  Remotely built installers are copied into the local installers directory.
+#  system can be a running physical machine or a local VM.
+#
+#  - In the case of a local VM, it is booted and shutdown if it does not
+#    already run. Currently supported hypervisors for booting VM's:
+#    - VMware (Player & Fusion)
+#    - VirtualBox
+#    - Parallels Desktop
+#  - This script can be run from Linux, macOS or Windows (Cygwin, Git Bash).
+#  - SSH access to remote systems and VM's shall be configured for direct
+#    access without password. The corresponding user names and ports shall
+#    be configured in the local ~/.ssh/config and the required public keys
+#    shall be configured in the remote ~/.ssh/authorized_keys.
+#  - Remotely built installers are copied bac into the local "installers"
+#    subdirectory.
+#  - An additional "backup directory" can be specified to store the built
+#    installers (typically a network drive).
 #
 #  Sample user's script to build TSDuck binaries on four platforms, one
 #  physical Raspberry Pi and three VMWare virtual machines:
