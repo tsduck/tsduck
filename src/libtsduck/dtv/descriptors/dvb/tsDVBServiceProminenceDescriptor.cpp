@@ -175,12 +175,12 @@ void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, 
                     const uint8_t region_depth = buf.getBits<uint8_t>(2);
                     bool drawn = false;
                     if (country_code_flag && buf.canReadBytes(3)) {
-                        disp << margin << "Country: " << buf.getLanguageCode();
+                        disp << margin << " Country: " << buf.getLanguageCode();
                         drawn = true;
                     }
                     if (region_depth >= 1 && buf.canReadBytes(1)) {
                         if (!drawn) {
-                            disp << margin << "P";
+                            disp << margin << " P";
                             drawn = true;
                         }
                         else {
@@ -188,9 +188,23 @@ void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, 
                         }
                         disp << "rimary region: " << int(buf.getUInt8());
                         if (region_depth >= 2 && buf.canReadBytes(1)) {
-                            disp << ", secondary region: " << int(buf.getUInt8());
+                            if (!drawn) {
+                                disp << margin << " S";
+                                drawn = true;
+                            }
+                            else {
+                                disp << ", s";
+                            }
+                            disp << "econdary region: " << int(buf.getUInt8());
                             if (region_depth >= 3 && buf.canReadBytes(2)) {
-                                disp << ", tertiary region: " << buf.getUInt16();
+                                if (!drawn) {
+                                    disp << margin << " T";
+                                    drawn = true;
+                                }
+                                else {
+                                    disp << ", t";
+                                }
+                                disp << "ertiary region: " << buf.getUInt16();
                             }
                         }
                     }
