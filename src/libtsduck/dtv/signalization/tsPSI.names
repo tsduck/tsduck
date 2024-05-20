@@ -770,6 +770,10 @@ Bits = 8
 0x49534442_FC = ISDB Emergency Information
 0x49534442_FD = ISDB Data Component
 0x49534442_FE = ISDB System Management
+# With PDS for UWA.
+# Descriptors are defined by the UHD World Association.
+0x63757676_F3 = HDR Vivid Video
+
 
 [MPEGExtendedDescriptorId]
 Bits = 8

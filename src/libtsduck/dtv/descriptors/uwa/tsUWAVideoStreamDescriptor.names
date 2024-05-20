@@ -1,0 +1,11 @@
+[CUVV_video_stream_descriptor.CUVV_tag]
+Bits = 32
+0x63757676 = cuvv
+
+[CUVV_video_stream_descriptor.terminal_provide_oriented_code]
+Bits = 16
+# see Table 5 of T/UWA 005-2.1
+0x0005 = 1.0
+0x0006 = 2.0
+0x0007 = 3.0
+0x0008 = 4.0
