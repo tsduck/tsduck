@@ -156,6 +156,7 @@ Bits = 16
 0xBF07 = ETSI TS 103 433 (SL-HDR2) DMI
 0xBF08 = SMPTE ST 2094-40 (HDR10+) DMI
 0xBF09 = PQ10 HDR
+0xBF0A = T/UWA 005-1 (HDR Vivid) DMI
 
 [component_descriptor.component_type.japan]
 # Japanese version.
