@@ -22,7 +22,6 @@ namespace ts {
     //
     using TID = uint8_t ;  //!< Table identifier.
     using DID = uint8_t ;  //!< Descriptor identifier.
-    using DID = uint8_t ;  //!< Descriptor identifier.
     using PDS = uint32_t;  //!< Private data specifier.
 
     //!
