@@ -38,6 +38,7 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
     {u"Australia", ts::PDS_AUSTRALIA},
     {u"AVS",       ts::PDS_AVS},
     {u"AOM",       ts::PDS_AOM},
+    {u"cuvv",      ts::PDS_CUVV},
 });
 
 
