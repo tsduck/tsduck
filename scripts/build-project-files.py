@@ -140,7 +140,7 @@ def build_ms_files(names, srcdir, props):
             f.write('    <Import Project="msvc-common-begin.props"/>\n')
             f.write('  </ImportGroup>\n')
             f.write('  <ItemGroup>\n')
-            f.write('    <ClCompile Include="..\..\src\%s\%s.cpp"/>\n' % (srcdir, name))
+            f.write('    <ClCompile Include="..\\..\\src\\%s\\%s.cpp"/>\n' % (srcdir, name))
             f.write('  </ItemGroup>\n')
             f.write('  <PropertyGroup Label="Globals">\n')
             f.write('    <ProjectGuid>{%s}</ProjectGuid>\n' % (guid))
