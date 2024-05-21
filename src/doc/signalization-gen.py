@@ -38,9 +38,9 @@ def list_all_structures(output, dirname, title, label):
     # Build a list of lines to display.
     lines = []
     # Loop on all .h files in the directory.
-    for header in glob.glob(dirname + os.sep + 'ts*.h'):
+    for header in glob.glob(dirname + os.sep + '**' + os.sep + 'ts*.h', recursive=True):
         classname = re.search(r'^ts(.*)\.h$', os.path.basename(header)).group(1)
-        source = dirname + os.sep + 'ts' + classname + '.cpp'
+        source = os.path.splitext(header)[0] + '.cpp'
         xml = ''
         if os.path.exists(source):
             with open(source, 'r', encoding='utf-8') as input:

@@ -33,7 +33,6 @@ const ts::Enumeration ts::UWAVideoStreamDescriptor::VersionNumbers({
     {u"2.0", 0x0006},
     {u"3.0", 0x0007},
     {u"4.0", 0x0008},
-
 });
 
 //----------------------------------------------------------------------------

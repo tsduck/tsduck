@@ -13,12 +13,10 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsByteBlock.h"
 
 namespace ts {
     //!
     //! Representation of an CUVV_video_stream_descriptor.
-    //!
     //! @see T/UWA 005-2.1.
     //! @ingroup descriptor
     //!
@@ -26,10 +24,10 @@ namespace ts {
     {
     public:
         // Public members:
-        uint32_t  cuvv_tag = 0;
-        uint16_t  cuva_version_map = 0;
-        uint16_t  terminal_provide_code = 0;
-        int       terminal_provide_oriented_code = 0;
+        uint32_t  cuvv_tag = 0;                        //!< See T/UWA 005-2.1.
+        uint16_t  cuva_version_map = 0;                //!< See T/UWA 005-2.1.
+        uint16_t  terminal_provide_code = 0;           //!< See T/UWA 005-2.1.
+        int       terminal_provide_oriented_code = 0;  //!< See T/UWA 005-2.1.
 
         //!
         //! Default constructor.
