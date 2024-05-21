@@ -3,10 +3,10 @@
   <_descriptors>
 
     <CUVV_video_stream_descriptor
-      cuvv_tag="uint32, required to be 0x63757676"
-      cuva_version_map="uint16, required"
-      terminal_provide_code="uint16, required to be 0x0004"
-      terminal_provide_oriented_code="1.0|2.0|3.0|4.0, required"/>
+        cuvv_tag="uint32, required to be 0x63757676"
+        cuva_version_map="uint16, required"
+        terminal_provide_code="uint16, required to be 0x0004"
+        terminal_provide_oriented_code="1.0|2.0|3.0|4.0, required"/>
 
   </_descriptors>
 </tsduck>
