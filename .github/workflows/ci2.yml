@@ -41,10 +41,14 @@ jobs:
 #      run: make test
     - name: Download test suite
       run: |
+        echo "1. https://github.com/${ORIGIN_REPO}-test/tarball/${BRANCH_NAME}"
+        echo "2. https://github.com/${ORIGIN_REPO}-test/tarball/master"
+        echo "3. https://github.com/${REFERENCE_REPO}-test/tarball/master"
+        
         # Try to download '<repo>-test' from the pull request owner, if there is one.
         if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/${BRANCH_NAME}" -o test.tgz; then
             echo "Downloaded test suite from ${BRANCH_NAME} branch of $ORIGIN_REPO"
-        else if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+        elif curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
             echo "Downloaded test suite from master branch $ORIGIN_REPO"
         else
             curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
