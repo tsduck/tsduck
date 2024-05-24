@@ -1,0 +1,185 @@
+name: Continuous integration 2
+
+on:
+#  push:
+#    branches: [master, main]
+#  pull_request:
+#    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+
+  build_unix:
+    strategy:
+      fail-fast: false
+      matrix:
+#        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
+#        compiler: [gcc, clang]
+        compiler: [clang]
+#        std: [17, 20]
+        std: [20]
+        include:
+        - os: ubuntu-latest
+          compiler: clang
+          llvm: true
+    name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
+    runs-on: ${{ matrix.os }}
+    env:
+      LLVM: ${{ matrix.llvm }}
+      BINDIR: ${{ matrix.bindir }}
+      CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
+      ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      REFERENCE_REPO: tsduck/tsduck
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: |
+        scripts/install-prerequisites.sh
+        ${{ matrix.compiler }} --version
+        scripts/java-config.sh
+    - name: Build TSDuck
+      run: make -j5
+    - name: Check built version
+      run: make show-version
+    - name: Run unitary tests
+      run: make test
+    - name: Download test suite
+      run: |
+        # Try to download '<repo>-test' from the pull request owner, if there is one.
+        if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/${BRANCH_NAME}" -o test.tgz; then
+            echo "Downloaded test suite from ${BRANCH_NAME} branch of $ORIGIN_REPO"
+        else if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+            echo "Downloaded test suite from master branch $ORIGIN_REPO"
+        else
+            curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
+            echo "Downloaded test suite from $REFERENCE_REPO"
+        fi
+        mkdir -p ../tsduck-test
+        tar -C ../tsduck-test -x -z -f test.tgz --strip 1
+    - name: Run test suite
+      run: |
+        make test-suite && status=$? || status=$?
+        cd ../tsduck-test
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+    - name: Build sample applications
+      run: |
+        # Fake installation in a temporary directory.
+        export PREFIX=$(pwd)/bin/systest
+        make install SYSPREFIX=$PREFIX
+        # Build the test applications using that installation.
+        export PATH=$PREFIX/bin:$PATH:
+        export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH:
+        export LD_LIBRARY_PATH2=$LD_LIBRARY_PATH
+        export PYTHONPATH=$PREFIX/share/tsduck/python:$PYTHONPATH:
+        export CLASSPATH=$PREFIX/share/tsduck/java/tsduck.jar:$CLASSPATH:
+        make -C sample
+
+  build_windows:
+    strategy:
+      fail-fast: false
+      matrix:
+#        target: [Win64, Win32]
+        target: [Win64]
+        configuration: [Release]
+#        std: [17, 20]
+        std: [20]
+        include:
+        - target: Win64
+          suffix: x64
+          testopt: --dev
+#        - target: Win32
+#          suffix: Win32
+#          testopt: --dev32
+#        exclude:
+#        - target: Win32
+#          std: 20
+    name: Build on ${{ matrix.target }} with VC++, C++${{ matrix.std }}
+    runs-on: windows-latest
+    env:
+      STDCPP: stdcpp${{ matrix.std }}
+      ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      REFERENCE_REPO: tsduck/tsduck
+      BRANCH_NAME:  ${{ github.head_ref || github.ref_name }} 
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: |
+        scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoInstaller -NoPause
+    - name: Dependencies check
+      run: |
+        Write-Output "Path=${env:Path}"
+        python --version
+    - name: Build TSDuck
+      run: |
+        scripts/build.ps1 -${{ matrix.target }} -${{ matrix.configuration }} -Parallel 5 -NoLowPriority -NoPause
+        Get-ChildItem bin/${{ matrix.configuration }}-${{ matrix.suffix }}
+    - name: Check built version
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/tsversion.exe --version=all
+    - name: Check plugins list
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/tsp.exe --list
+    - name: Run unitary tests
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/utests-tsduckdll.exe
+    - name: Run unitary tests (static)
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/utests-tsducklib.exe
+    - name: Download test suite
+      run: |
+        # Try to download '<repo>-test' from the pull request owner, if there is one.
+        $Previous = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+        $ProgressPreference = 'SilentlyContinue'
+        $ErrorActionPreference = $Previous
+        Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/${env:BRANCH_NAME}.zip
+        if (Test-Path test.zip) {
+            Write-Output "Downloaded test suite from ${env:BRANCH_NAME} of ${env:ORIGIN_REPO}"
+        }
+        else {
+            Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/master.zip
+            
+            if (Test-Path test.zip) {
+                Write-Output "Downloaded test suite from ${env:ORIGIN_REPO}"
+            }
+            else {
+                Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:REFERENCE_REPO}-test/archive/master.zip
+                Write-Output "Downloaded test suite from ${env:REFERENCE_REPO}"
+            }
+        }
+        [void] (New-Item -Type Directory -Force tmp)
+        Expand-Archive test.zip -DestinationPath tmp -Force
+        Move-Item tmp\* ..\tsduck-test -Force
+    - name: Run test suite
+      shell: bash
+      run: |
+        cd ../tsduck-test
+        ./run-all-tests.sh ${{ matrix.testopt }} && status=$? || status=$?
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+
+  build_doxygen:
+    name: Doxygen documentation
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: |
+        scripts/install-prerequisites.sh
+        echo "Doxygen version: $(doxygen --version)"
+    - name: Build TSDuck documentation
+      run: |
+        make doxygen DOXYFLAGS=--update-doxygen
