@@ -71,6 +71,7 @@ jobs:
       CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       REFERENCE_REPO: tsduck/tsduck
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@master
@@ -88,7 +89,9 @@ jobs:
     - name: Download test suite
       run: |
         # Try to download '<repo>-test' from the pull request owner, if there is one.
-        if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+        if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/${BRANCH_NAME}" -o test.tgz; then
+            echo "Downloaded test suite from ${BRANCH_NAME} branch of $ORIGIN_REPO"
+        elif curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
             echo "Downloaded test suite from $ORIGIN_REPO"
         else
             curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
@@ -141,6 +144,7 @@ jobs:
       STDCPP: stdcpp${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       REFERENCE_REPO: tsduck/tsduck
+      BRANCH_NAME:  ${{ github.head_ref || github.ref_name }} 
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@master
@@ -173,14 +177,21 @@ jobs:
         $Previous = $ErrorActionPreference
         $ErrorActionPreference = 'SilentlyContinue'
         $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/master.zip
-        $ErrorActionPreference = $Previous
+        Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/${env:BRANCH_NAME}.zip
         if (Test-Path test.zip) {
-            Write-Output "Downloaded test suite from ${env:ORIGIN_REPO}"
+            $ErrorActionPreference = $Previous
+            Write-Output "Downloaded test suite from ${env:BRANCH_NAME} branch of ${env:ORIGIN_REPO}"
         }
         else {
-            Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:REFERENCE_REPO}-test/archive/master.zip
-            Write-Output "Downloaded test suite from ${env:REFERENCE_REPO}"
+            Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/master.zip
+            $ErrorActionPreference = $Previous
+            if (Test-Path test.zip) {
+                Write-Output "Downloaded test suite from ${env:ORIGIN_REPO}"
+            }
+            else {
+                Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:REFERENCE_REPO}-test/archive/master.zip
+                Write-Output "Downloaded test suite from ${env:REFERENCE_REPO}"
+            }
         }
         [void] (New-Item -Type Directory -Force tmp)
         Expand-Archive test.zip -DestinationPath tmp -Force
