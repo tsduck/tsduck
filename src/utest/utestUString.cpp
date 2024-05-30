@@ -70,6 +70,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(HexaDump);
     TSUNIT_DECLARE_TEST(ArgMixIn);
     TSUNIT_DECLARE_TEST(ArgMixOut);
+    TSUNIT_DECLARE_TEST(ArgMixOutFloat);
     TSUNIT_DECLARE_TEST(Format);
     TSUNIT_DECLARE_TEST(Scan);
     TSUNIT_DECLARE_TEST(CommonPrefix);
@@ -1955,6 +1956,18 @@ TSUNIT_DEFINE_TEST(ArgMixOut)
     TSUNIT_EQUAL(E21, e2);
 }
 
+TSUNIT_DEFINE_TEST(ArgMixOutFloat)
+{
+    double d = 0.0;
+    ts::ArgMixOut a(&d);
+
+    a.storeFloat(4.5);
+    TSUNIT_EQUAL(4.5, d);
+
+    a.storeFloat(-3.25);
+    TSUNIT_EQUAL(-3.25, d);
+}
+
 void UStringTest::testArgMixOutCalled(std::initializer_list<ts::ArgMixOut> list)
 {
     TSUNIT_EQUAL(11, list.size());
@@ -2080,6 +2093,7 @@ TSUNIT_DEFINE_TEST(Scan)
     int16_t i16 = 0;
     uint32_t u32 = 0;
     int64_t i64 = 0;
+    double d = 0.0;
     ts::UChar uc = ts::CHAR_NULL;
 
     TSUNIT_ASSERT(ts::UString(u"").scan(count, index, u""));
@@ -2154,6 +2168,24 @@ TSUNIT_DEFINE_TEST(Scan)
 
     TSUNIT_ASSERT(ts::UString(u"67,654").scan(u"%'d", &i));
     TSUNIT_EQUAL(67654, i);
+
+    TSUNIT_ASSERT(ts::UString(u"1.5").scan(u"%f", &d));
+    TSUNIT_EQUAL(1.5, d);
+
+    TSUNIT_ASSERT(ts::UString(u"  1,234.5").scan(u"%'f", &d));
+    TSUNIT_EQUAL(1234.5, d);
+
+    u32 = 97;
+    TSUNIT_ASSERT(!ts::UString(u" 1,234.5  ").scan(count, index, u" %f", &d, &u32));
+    TSUNIT_EQUAL(1, count);
+    TSUNIT_EQUAL(2, index);
+    TSUNIT_EQUAL(1.0, d);
+
+    TSUNIT_ASSERT(ts::UString(u"-3.5e+4").scan(u"%f", &d));
+    TSUNIT_EQUAL(-35000.0, d);
+
+    TSUNIT_ASSERT(ts::UString(u"3.5e-3").scan(u"%f", &d));
+    TSUNIT_EQUAL(0.0035, d);
 }
 
 TSUNIT_DEFINE_TEST(CommonPrefix)

@@ -2086,6 +2086,7 @@ namespace ts {
         //! - @c \%i : Same as \%d.
         //! - @c \%x : Matches an integer in hexadecimal, case-insensitive, without 0x or 0X prefix.
         //! - @c \%X : Same as \%x.
+        //! - @c \%f : Matches a floating point value.
         //! - @c \%c : Matches the next non-space character. The Unicode code point is returned.
         //! - @c \%\% : Matches a literal \%.
         //!
