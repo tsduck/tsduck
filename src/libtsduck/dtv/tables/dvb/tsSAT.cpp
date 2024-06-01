@@ -919,7 +919,7 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_time::display(Tables
     disp << "(year=" << int(buf.getUInt8());
     buf.skipReservedBits(7, 0);
     disp << ", day=" << buf.getBits<uint16_t>(9);
-    disp << ", fraction=" <<UString::Float((double)buf.getFloat32()) << ")";
+    disp << ", fraction=" <<UString::Float(double(buf.getFloat32())) << ")";
 }
 
 
@@ -1123,7 +1123,7 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_c
 {
     covariace_epoch.toXML(root->addElement(u"epoch"));
     for (auto j : covariance_element) {
-        root->addElement(u"element")->addText(UString::Float((double)j));
+        root->addElement(u"element")->addText(UString::Float(double(j)));
     }
 }
 
@@ -1359,16 +1359,16 @@ void ts::SAT::satellite_position_v3_info_type::display(TablesDisplay& disp, PSIB
             ieee_float32_t x = buf.getFloat32();  //ephemeris_x
             ieee_float32_t y = buf.getFloat32();  //ephemeris_y
             ieee_float32_t z = buf.getFloat32();  //ephemeris_z
-            disp << margin << UString::Format(u"Position x: %f, y: %f, z: %f", (double)x, (double)y, (double)z);
+            disp << margin << UString::Format(u"Position x: %f, y: %f, z: %f", double(x), double(y), double(z));
             x = buf.getFloat32();  //ephemeris_x_dot
             y = buf.getFloat32();  //ephemeris_y_dot
             z = buf.getFloat32();  //ephemeris_z_dot
-            disp << UString::Format(u", Velocity x: %f, y: %f, z: %f", (double)x, (double)y, (double)z) << std::endl;
+            disp << UString::Format(u", Velocity x: %f, y: %f, z: %f", double(x), double(y), double(z)) << std::endl;
             if (ephemeris_accel_flag) {
                 x = buf.getFloat32();  //ephemeris_x_ddot
                 y = buf.getFloat32();  //ephemeris_y_ddot
                 z = buf.getFloat32();  //ephemeris_z_ddot
-                disp << margin << UString::Format(u"Acceleration x: %f, y: %f, z: %f ", (double)x, (double)y, (double)z) << std::endl;
+                disp << margin << UString::Format(u"Acceleration x: %f, y: %f, z: %f ", double(x), double(y), double(z)) << std::endl;
             }
         }
         if (covariance_flag) {
@@ -1378,7 +1378,7 @@ void ts::SAT::satellite_position_v3_info_type::display(TablesDisplay& disp, PSIB
             UStringVector covariance_element;
             const UString _zero = UString::Float(0);
             for (auto j = 1; j <= NUM_COVARIANCE_ELEMENTS; j++) {
-                covariance_element.push_back(UString::Float((double)buf.getFloat32()));
+                covariance_element.push_back(UString::Float(double(buf.getFloat32())));
                 if (j == 1) {
                     covariance_element.push_back(_zero);
                     covariance_element.push_back(_zero);
