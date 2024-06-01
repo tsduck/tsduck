@@ -12,13 +12,31 @@ Bits = 4
 5 = S2X superframe (Annex E) + timeslicing (Annex M)
 
 [S2Xv2_satellite_delivery_system_descriptor.NCR_version]
+# Table 144d of EN 300 468
 Bits = 1
 0 = NCR
 1 = NCR_v2
 
 [S2Xv2_satellite_delivery_system_descriptor.channel_bond]
+# Table 144e of EN 300 468
 Bits = 2
 0 = Not part of a channel bond
 1 = Channel bond master
 2 = Channel bond secondary
 3 = reserved
+
+[S2Xv2_satellite_delivery_system_descriptor.postamble_PLI]
+# Table 144g of EN 300 468
+Bits = 3
+0 = Identical to the Superframe PLI
+1-3 = Reserved
+4 = L=180 symbols
+5 = L=360 symbols
+6 = L=900 symbols
+7 = L=90 symbols
+
+[S2Xv2_satellite_delivery_system_descriptor.NCR_reference]
+# Table 144f of EN 300 468
+Bits = 1
+0 = The first symbol of the Start Of Frame field of the relevant DVB-S2(X) physical layer frame 
+1 = The first symbol of the Start Of Superframe (SOSF) field of the DVB-S2X Annex E superframe

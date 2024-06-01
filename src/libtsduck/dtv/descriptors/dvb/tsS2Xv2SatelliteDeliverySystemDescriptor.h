@@ -30,8 +30,9 @@ namespace ts {
         uint8_t                 S2Xv2_mode = 0;                            //!< 4 bits, S2Xv2 mode.
         bool                    multiple_input_stream_flag = false;        //!< 1 bit
         uint8_t                 roll_off = 0;                              //!< 3 bits, roll-off factor.
-        uint8_t                 NCR_version = 0;                           //!< 1 bit
-        uint8_t                 channel_bond = 0;                          //!< 2 bits
+        uint8_t                 NCR_reference = 0;                         //!< 1 bit, indicates which is the forward link timing reference symbol indicated by the NCR value
+        uint8_t                 NCR_version = 0;                           //!< 1 bit, indicates the NCR version per EN 201 545-2
+        uint8_t                 channel_bond = 0;                          //!< 2 bits, indicates the role that this delivery system has in a channel bond
         uint8_t                 polarization = 0;                          //!< 2 bits, polarization.
         uint8_t                 TS_GS_S2X_mode = 0;                        //!< 2 bits, TS-GS S2X mode.
         uint8_t                 receiver_profiles = 0;                     //!< 5 bits, receiver_profiles bit mask.
@@ -49,6 +50,7 @@ namespace ts {
         uint32_t                payload_scrambling_index = 0;              //!< 20 bits
         std::optional<uint32_t> beamhopping_time_plan_id {};               //!< 32 bits
         uint8_t                 superframe_pilots_WH_sequence_number = 0;  //!< 5 bits
+        uint8_t                 postamble_PLI = 0;                         //!< 3 bits, the protection level required for the postamble
         ByteBlock               reserved_future_use {};                    //!< For future modes.
 
         //!
