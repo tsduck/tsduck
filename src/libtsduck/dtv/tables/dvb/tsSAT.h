@@ -531,8 +531,8 @@ namespace ts {
                 class v3_satellite_metadata_type {
                     TS_DEFAULT_COPY_MOVE(v3_satellite_metadata_type);
                 public:
-                    v3_satellite_time total_start_time {};  //!< start of the total time span covered by the ephemeris data and optional covariance data
-                    v3_satellite_time total_stop_time {};   //!< end of the total time span covered by the ephemeris data and optional covariance data
+                    v3_satellite_time                total_start_time {};     //!< start of the total time span covered by the ephemeris data and optional covariance data
+                    v3_satellite_time                total_stop_time {};      //!< end of the total time span covered by the ephemeris data and optional covariance data
 
                     std::optional<uint8_t>           interpolation_type {};   //!< 3 bits. the recommended interpolation method (in @InterpolationTypes enumeration)
                     std::optional<uint8_t>           interpolation_degree {}; //!< 3 bits. the recommended order of the interpolation
