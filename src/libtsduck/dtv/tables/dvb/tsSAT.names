@@ -20,3 +20,9 @@ Bits = 2
 0 = one transmission each cycle
 1 = multiple transmission each cycle
 2 = only grid size is siganlled, not illuminance
+
+[SAT.interpolation_type]
+Bits = 3
+1 = Linear
+2 = Lagrange
+4 = Hermite
