@@ -919,7 +919,7 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_time::display(Tables
     disp << "(year=" << int(buf.getUInt8());
     buf.skipReservedBits(7, 0);
     disp << ", day=" << buf.getBits<uint16_t>(9);
-    disp << ", fraction=" <<UString::Float(buf.getFloat32()) << ")";
+    disp << ", fraction=" <<UString::Float((double)buf.getFloat32()) << ")";
 }
 
 
@@ -1074,13 +1074,13 @@ bool ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_e
               element->getOptionalFloatAttribute(ephemeris_z_ddot, u"ephemeris_z_ddot");
     uint8_t optional_count = ephemeris_x_ddot.has_value() + ephemeris_y_ddot.has_value() + ephemeris_z_ddot.has_value();
     if (optional_count != 0 && optional_count != 3) {
-        element->report().error(u"all or none of the ddot values (x, y and z) must be specified in <%s>, line %d", element->name(), element->lineNumber());
+        element->report().error(u"all or none of the ephemeris acceleration values (ddot values x, y and z) must be specified in <%s>, line %d", element->name(), element->lineNumber());
         ok = false;
     }
     switch (ephemeris_accel_check_type) {
         case CHECK_UNSPECIFIED:
             // first time through - set the state for remainder of <empheris_data> elements
-            ephemeris_accel_check_type = optional_count == 3 ? CHECK_REQUIRED : CHECK_DISALLOWED;
+            ephemeris_accel_check_type = (optional_count == 3) ? CHECK_REQUIRED : CHECK_DISALLOWED;
             break;
         case CHECK_REQUIRED:
             if (optional_count != 3) {
@@ -1093,6 +1093,10 @@ bool ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_e
                 element->report().error(u"ephemeris acceleration values (x_ddot, y_ddot and z_ddot) must not be specified in <%s>, line %d", element->name(), element->lineNumber());
                 ok = false;
             }
+            break;
+        default:
+            element->report().severe(u"unhandled ephemeris_accel_check_type value(%d) in v3_satellite_ephemeris_data_type::fromXML", ephemeris_accel_check_type);
+            ok = false;
             break;
     }
     return ok;
@@ -1119,7 +1123,7 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_c
 {
     covariace_epoch.toXML(root->addElement(u"epoch"));
     for (auto j : covariance_element) {
-        root->addElement(u"element")->addText(UString::Float(j));
+        root->addElement(u"element")->addText(UString::Float((double)j));
     }
 }
 
@@ -1144,15 +1148,25 @@ bool ts::SAT::satellite_position_v3_info_type::v3_satellite_type::v3_satellite_c
     return ok;
 }
 
+bool ts::SAT::satellite_position_v3_info_type::v3_satellite_type::hasEphemerisAcceleration()
+{
+    bool rc = !ephemeris_data.empty();
+    rc &= ephemeris_data[0].hasAcceleration();
+    // we only need to check the first ephemeris element as all elements are the same.
+    // for (size_t i = 0; rc && i < ephemeris_data.size(); i++) {
+    //    rc &= ephemeris_data[i].hasAcceleration();
+    //}
+    return rc;
+}
 
-void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::serialize(PSIBuffer& buf) const
+void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::serialize(PSIBuffer& buf)
 {
     buf.putUInt24(satellite_id);
     buf.putBits(0x00, 3);
     buf.putBit(metadata.has_value());
     buf.putBit(metadata.has_value() && metadata.value().usable_start_time.has_value());  // usable_start_time_flag
     buf.putBit(metadata.has_value() && metadata.value().usable_stop_time.has_value());  // usable_stop_time_flag
-    buf.putBit(!ephemeris_data.empty() && ephemeris_data[0].ephemeris_x_ddot.has_value() );  // ephemeris_accel_flag
+    buf.putBit(hasEphemerisAcceleration2());  // ephemeris_accel_flag
     buf.putBit(covariance.has_value());  //covariance_flag
     if (metadata.has_value()) {
         metadata.value().serialize(buf);
@@ -1345,16 +1359,16 @@ void ts::SAT::satellite_position_v3_info_type::display(TablesDisplay& disp, PSIB
             ieee_float32_t x = buf.getFloat32();  //ephemeris_x
             ieee_float32_t y = buf.getFloat32();  //ephemeris_y
             ieee_float32_t z = buf.getFloat32();  //ephemeris_z
-            disp << margin << UString::Format(u"Position x: %f, y: %f, z: %f", x, y, z);
+            disp << margin << UString::Format(u"Position x: %f, y: %f, z: %f", (double)x, (double)y, (double)z);
             x = buf.getFloat32();  //ephemeris_x_dot
             y = buf.getFloat32();  //ephemeris_y_dot
             z = buf.getFloat32();  //ephemeris_z_dot
-            disp << UString::Format(u", Velocity x: %f, y: %f, z: %f", x, y, z) << std::endl;
+            disp << UString::Format(u", Velocity x: %f, y: %f, z: %f", (double)x, (double)y, (double)z) << std::endl;
             if (ephemeris_accel_flag) {
                 x = buf.getFloat32();  //ephemeris_x_ddot
                 y = buf.getFloat32();  //ephemeris_y_ddot
                 z = buf.getFloat32();  //ephemeris_z_ddot
-                disp << margin << UString::Format(u"Acceleration x: %f, y: %f, z: %f ", x, y, z) << std::endl;
+                disp << margin << UString::Format(u"Acceleration x: %f, y: %f, z: %f ", (double)x, (double)y, (double)z) << std::endl;
             }
         }
         if (covariance_flag) {
@@ -1364,7 +1378,7 @@ void ts::SAT::satellite_position_v3_info_type::display(TablesDisplay& disp, PSIB
             UStringVector covariance_element;
             const UString _zero = UString::Float(0);
             for (auto j = 1; j <= NUM_COVARIANCE_ELEMENTS; j++) {
-                covariance_element.push_back(UString::Float(buf.getFloat32()));
+                covariance_element.push_back(UString::Float((double)buf.getFloat32()));
                 if (j == 1) {
                     covariance_element.push_back(_zero);
                     covariance_element.push_back(_zero);
