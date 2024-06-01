@@ -128,6 +128,42 @@
         </beamhopping_timeplan>
       </beamhopping_timeplan_info>
 
+      <!-- satellite_table_id=4 -> satellite_position_v3_info -->
+      <satellite_position_v3_info
+        oem_version_major="uint4, required"
+        oem_version_minor="uint4, required">
+        <creation_date year="uint8, required" day="uint9, required" day_fraction="float32, required"/>
+
+        <v3_satellite satellite_id="uint24, required"
+            interpolation_type="Linear|Lagrange|Hermite, optional" interpolation_degree="uint3, optional">
+          
+          <total_start_time year="uint8, required" day="uint9, required" day_fraction="float32, required"/>
+          <total_stop_time year="uint8, required" day="uint9, required" day_fraction="float32, required"/>
+
+          <!-- usable start and stop time are optional but only used when total_start_time, total_stop_time, and the three interpolation values are given-->
+          <usable_start_time year="uint8, required" day="uint9, required" day_fraction="float32, required"/>
+          <usable_stop_time year="uint8, required" day="uint9, required" day_fraction="float32, required"/>
+
+          <ephemeris_data
+            ephemeris_x="float32, required"
+            ephemeris_y="float32, required"
+            ephemeris_z="float32, required"
+            ephemeris_x_dot="float32, required"
+            ephemeris_y_dot="float32, required"
+            ephemeris_z_dot="float32, required"
+            ephemeris_x_ddot="float32, optional"
+            ephemeris_y_ddot="float32, optional"
+            ephemeris_z_ddot="float32, optional">
+            <epoch year="uint8, required" day="uint9, required" day_fraction="float32, required"/>
+          </ephemeris_data>
+          <covariance>
+            <epoch year="uint8, required" day="uint9, required" day_fraction="float32, required"/>
+            <element>float32</element>
+          </covariance>  
+        </v3_satellite>
+        
+      </satellite_position_v3_info>
+
     </SAT>
 
   </_tables>

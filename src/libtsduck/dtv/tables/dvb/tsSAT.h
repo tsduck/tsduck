@@ -20,6 +20,8 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 
+constexpr auto NUM_COVARIANCE_ELEMENTS = 21;
+
 namespace ts {
     //!
     //! Representation of a Satellite Access Table (SAT).
@@ -497,6 +499,133 @@ namespace ts {
             virtual void deserialize(PSIBuffer& buf) override;
         };
 
+        class satellite_position_v3_info_type : public SAT_base {
+            //!
+            //! Representation of a non-geostationary satellite position
+            //! @see ETSI EN 300 648, 5.2.11.6
+            //!
+            TS_DEFAULT_COPY_MOVE(satellite_position_v3_info_type);
+
+        public:
+            class v3_satellite_time {
+                TS_DEFAULT_COPY_MOVE(v3_satellite_time);
+            public:
+                uint8_t        year = 0;         //!< last 2 digits of the year (0 .. 99)
+                uint16_t       day = 0;          //!< 9 bits. day of the year (1 .. 366)
+                ieee_float32_t day_fraction = 0; //!< fraction of the day (0.0 .. 1.0)
+
+                v3_satellite_time() = default;
+                v3_satellite_time(PSIBuffer& buf) : v3_satellite_time() { deserialize(buf); }
+
+                static void display(TablesDisplay& disp, PSIBuffer& buf);
+
+                // Inherited methods
+                bool fromXML(const xml::Element* element, const UString& name);
+                void toXML(xml::Element* root);
+                void serialize(PSIBuffer& buf) const;
+                void deserialize(PSIBuffer& buf);
+            };
+
+            class v3_satellite_type : SAT_base {
+                TS_DEFAULT_COPY_MOVE(v3_satellite_type);
+            public:
+                class v3_satellite_metadata_type {
+                    TS_DEFAULT_COPY_MOVE(v3_satellite_metadata_type);
+                public:
+                    v3_satellite_time total_start_time {};  //!< start of the total time span covered by the ephemeris data and optional covariance data
+                    v3_satellite_time total_stop_time {};   //!< end of the total time span covered by the ephemeris data and optional covariance data
+
+                    std::optional<uint8_t>           interpolation_type {};   //!< 3 bits. the recommended interpolation method (in @InterpolationTypes enumeration)
+                    std::optional<uint8_t>           interpolation_degree {}; //!< 3 bits. the recommended order of the interpolation
+                    std::optional<v3_satellite_time> usable_start_time {};    //!< start of the time span covered by the ephemeris data
+                    std::optional<v3_satellite_time> usable_stop_time {};     //!< end of the time span covered by the ephemeris data
+
+                    v3_satellite_metadata_type() = default;
+                    v3_satellite_metadata_type(PSIBuffer& buf, bool usable_start_time_flag, bool usable_stop_time_flag) :
+                        v3_satellite_metadata_type() { deserialize(buf, usable_start_time_flag, usable_stop_time_flag); }
+
+                    bool fromXML(const xml::Element* element);
+                    void toXML(xml::Element* root);
+                    void deserialize(PSIBuffer& buf, bool usable_start_time_flag, bool usable_stop_time_flag);
+                    void serialize(PSIBuffer& buf) const;
+                private:
+                    static const Enumeration InterpolationTypes;
+                };
+
+                class v3_satellite_ephemeris_data_type {
+                    TS_DEFAULT_COPY_MOVE(v3_satellite_ephemeris_data_type);
+                public:
+                    v3_satellite_time             epoch {};               //!< the date of the ephemeris data
+                    ieee_float32_t                ephemeris_x = 0;        //!< cartesian x coordinate of the satellite, in meters.
+                    ieee_float32_t                ephemeris_y = 0;        //!< cartesian x coordinate of the satellite, in meters.
+                    ieee_float32_t                ephemeris_z = 0;        //!< cartesian x coordinate of the satellite, in meters.
+                    ieee_float32_t                ephemeris_x_dot = 0;    //!< velocity in the x direction of the satelite, in meters per second.
+                    ieee_float32_t                ephemeris_y_dot = 0;    //!< velocity in the y direction of the satelite, in meters per second.
+                    ieee_float32_t                ephemeris_z_dot = 0;    //!< velocity in the z direction of the satelite, in meters per second.
+                    std::optional<ieee_float32_t> ephemeris_x_ddot {};    //!< acceleration of the salettite in the x direction, in meters per second per second.
+                    std::optional<ieee_float32_t> ephemeris_y_ddot {};    //!< acceleration of the salettite in the y direction, in meters per second per second.
+                    std::optional<ieee_float32_t> ephemeris_z_ddot {};    //!< acceleration of the salettite in the z direction, in meters per second per second.
+
+                    v3_satellite_ephemeris_data_type() = default;
+                    v3_satellite_ephemeris_data_type(PSIBuffer& buf, bool ephemeris_accel_flag) :
+                        v3_satellite_ephemeris_data_type() { deserialize(buf, ephemeris_accel_flag); }
+
+                    bool fromXML(const xml::Element* element, uint8_t &ephemeris_accel_check_type);
+                    void toXML(xml::Element* root);
+                    void deserialize(PSIBuffer& buf, bool ephemeris_accel_flag);
+                    void serialize(PSIBuffer& buf) const;
+                };
+
+                class v3_satellite_covariance_data_type {
+                    TS_DEFAULT_COPY_MOVE(v3_satellite_covariance_data_type);
+                public:
+                    v3_satellite_time               covariace_epoch {}; //!< epoch of the covariance matrix
+                    std::vector<ieee_float32_t> covariance_element {};  /**< the covariance matrix.The elements shall be ordered sequentially from
+                                                                             upper left [1,1] to lower right [6,6], lower triangular form, row by row left to right.*/
+
+                    v3_satellite_covariance_data_type() = default;
+                    v3_satellite_covariance_data_type(PSIBuffer& buf ) : v3_satellite_covariance_data_type() { deserialize(buf); }
+
+                    bool fromXML(const xml::Element* element);
+                    void toXML(xml::Element* root);
+                    void serialize(PSIBuffer& buf) const;
+                    void deserialize(PSIBuffer& buf);
+                };
+
+                v3_satellite_type() = default;
+                v3_satellite_type(PSIBuffer& buf) : v3_satellite_type() { deserialize(buf); }
+               
+                uint32_t                                         satellite_id = 0;  //!< 24 bits. label of the satellite 
+                std::optional<v3_satellite_metadata_type>        metadata {};       //!< metadata group for this satellite
+                std::vector<v3_satellite_ephemeris_data_type>    ephemeris_data {}; //!< ephemeris data for this satellite
+                std::optional<v3_satellite_covariance_data_type> covariance {};     //!< covariance data for this satellite
+
+                // Inherited methods
+                virtual bool fromXML(const xml::Element* element) override;
+                virtual void toXML(xml::Element* root) override;
+                virtual void serialize(PSIBuffer& buf) const override;
+                virtual void deserialize(PSIBuffer& buf) override;
+            };
+
+            uint8_t           oem_version_major = 0;            //!< 4 bits. major version number of the OEM standard underlying the data record
+            uint8_t           oem_version_minor = 0;            //!< 4 bits. minor version number of the OEM standard underlying the data record
+
+            v3_satellite_time creation_date {};                 //!< date that the data set is created
+
+            std::vector<v3_satellite_type> v3_satellites {};    //!< satellite information
+
+            satellite_position_v3_info_type() = default;
+            satellite_position_v3_info_type(PSIBuffer& buf) :
+                satellite_position_v3_info_type() {deserialize(buf); }
+
+            static void display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin);
+
+            // Inherited methods
+            virtual bool fromXML(const xml::Element* element) override;
+            virtual void toXML(xml::Element* root) override;
+            virtual void serialize(PSIBuffer& buf) const override;
+            virtual void deserialize(PSIBuffer& buf) override;
+        };
 
         // SAT public members:
         std::vector<satellite_position_v2_info_type>  satellite_position_v2_info {};      //!< Satellite ephemeris data for DVB - S2Xv2 delivery.
@@ -508,6 +637,7 @@ namespace ts {
         std::vector<beam_hopping_time_plan_info_type> beam_hopping_time_plan_info {};     /**< Beamhopping time plan, identified by the beamhopping_time_plan_id
                                                                                                with information relating to the period(s) in time that the beam will
                                                                                                illuminate the cell each beamhopping cycle. */
+        std::optional<satellite_position_v3_info_type> satellite_position_v3_info {};     //!< Satellite ephemeris data for NGSO satellite.
 
         //!
         //! Default constructor.
@@ -572,9 +702,12 @@ namespace ts {
 
     // for satellite access table
     constexpr auto SATELLITE_POSITION_V2_INFO = 0;      //!< satellite access table contains satellite positioning information
+    constexpr auto satellite_table_id_min = SATELLITE_POSITION_V2_INFO;
     constexpr auto CELL_FRAGMENT_INFO = 1;              //!< satellite access table contains cell fragment definitions
     constexpr auto TIME_ASSOCIATION_INFO = 2;           //!< satellite access table contains time association information
     constexpr auto BEAMHOPPING_TIME_PLAN_INFO = 3;      //!< satellite access table contains beam hopping timeplans
+    constexpr auto SATELLITE_POSITION_V3_INFO = 4;      //!< satellite access table contains NGSO positioning information
+    constexpr auto satellite_table_id_max = SATELLITE_POSITION_V3_INFO;
 
     // for satellite position v2 info
     constexpr auto POSITION_SYSTEM_GEOSTATIONARY = 0;   //!< satellite is geostationary
