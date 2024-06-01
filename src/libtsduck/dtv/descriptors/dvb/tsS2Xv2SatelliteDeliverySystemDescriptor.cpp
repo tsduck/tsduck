@@ -40,6 +40,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::clearContent()
     S2Xv2_mode = 0;
     multiple_input_stream_flag = false;
     roll_off = 0;
+    NCR_reference = 0;
     NCR_version = 0;
     channel_bond = 0;
     polarization = 0;
@@ -59,6 +60,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::clearContent()
     payload_scrambling_index = 0;
     beamhopping_time_plan_id.reset();
     superframe_pilots_WH_sequence_number = 0;
+    postamble_PLI = 0;
     reserved_future_use.clear();
 }
 
@@ -88,7 +90,8 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
     buf.putBits(S2Xv2_mode, 4);
     buf.putBit(multiple_input_stream_flag);
     buf.putBits(roll_off, 3);
-    buf.putBits(0x00, 3);
+    buf.putBits(0x00, 2);
+    buf.putBits(NCR_reference, 1);
     buf.putBits(NCR_version, 1);
     buf.putBits(channel_bond, 2);
     buf.putBits(polarization, 2);
@@ -128,7 +131,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
             buf.putUInt32(beamhopping_time_plan_id.value());
         }
         buf.putBits(superframe_pilots_WH_sequence_number, 5);
-        buf.putBits(0x00, 3);
+        buf.putBits(postamble_PLI, 3);
     }
     buf.putBytes(reserved_future_use);
 }
@@ -144,7 +147,8 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
     S2Xv2_mode = buf.getBits<uint8_t>(4);
     multiple_input_stream_flag = buf.getBool();
     roll_off = buf.getBits<uint8_t>(3);
-    buf.skipBits(3);
+    buf.skipBits(2);
+    NCR_reference = buf.getBits<uint8_t>(1);
     NCR_version = buf.getBits<uint8_t>(1);
     channel_bond = buf.getBits<uint8_t>(2);
     polarization = buf.getBits<uint8_t>(2);
@@ -196,7 +200,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
             beamhopping_time_plan_id = buf.getUInt32();
         }
         superframe_pilots_WH_sequence_number = buf.getBits<uint8_t>(5);
-        buf.skipBits(3);
+        postamble_PLI = buf.getBits<uint8_t>(3);
     }
     buf.getBytes(reserved_future_use);
 }
@@ -214,7 +218,8 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         disp << ", S2Xv2 mode: " << DataName(MY_XML_NAME, u"S2Xv2_mode", _S2Xv2_mode, NamesFlags::VALUE);
         bool _multiple_input_stream_flag = buf.getBool();
         disp << ", Roll-off factor: " << S2XSatelliteDeliverySystemDescriptor::RollOffNames.name(buf.getBits<uint8_t>(3)) << std::endl;
-        buf.skipReservedBits(3, 0);
+        buf.skipReservedBits(2, 0);
+        disp << margin << "NCR reference: " << DataName(MY_XML_NAME, u"NCR_reference", buf.getBits<uint8_t>(1), NamesFlags::VALUE) << std::endl;
         disp << margin << "NCR version: " << DataName(MY_XML_NAME, u"NCR_version", buf.getBits<uint8_t>(1), NamesFlags::VALUE);
         uint8_t _channel_bond = buf.getBits<uint8_t>(2);
         disp << ", channel bond: " << DataName(MY_XML_NAME, u"channel_bond", _channel_bond, NamesFlags::VALUE);
@@ -294,7 +299,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
                 disp << ", beamhopping time plan selector: " << buf.getUInt32();
             }
             disp << ", superframe pilots WH sequence number: " << int(buf.getBits<uint8_t>(5)) << std::endl;
-            buf.skipReservedBits(3, 0);
+            disp << margin << "Postamble PLI: " << DataName(MY_XML_NAME, u"postamble_PLI", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         }
         disp.displayPrivateData(u"Reserved for future use", buf, NPOS, margin);
     }
@@ -310,6 +315,8 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml
     root->setIntAttribute(u"delivery_system_id", delivery_system_id, true);
     root->setIntAttribute(u"S2Xv2_mode", S2Xv2_mode);
     root->setIntEnumAttribute(S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", roll_off);
+    root->setIntAttribute(u"NCR_reference", NCR_reference);
+    root->setIntAttribute(u"NCR_version", NCR_version);
     root->setIntAttribute(u"NCR_version", NCR_version);
     root->setIntAttribute(u"channel_bond", channel_bond);
     root->setIntEnumAttribute(SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", polarization);
@@ -342,6 +349,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml
         e->setIntAttribute(u"payload_scrambling_index", payload_scrambling_index, true);
         e->setOptionalIntAttribute(u"beamhopping_time_plan_id", beamhopping_time_plan_id, true);
         e->setIntAttribute(u"superframe_pilots_WH_sequence_number", superframe_pilots_WH_sequence_number, true);
+        e->setIntAttribute(u"postamble_PLI", postamble_PLI);
     }
 
     if (!reserved_future_use.empty()) {
@@ -360,6 +368,7 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
         element->getIntAttribute(delivery_system_id, u"delivery_system_id", true) &&
         element->getIntAttribute(S2Xv2_mode, u"S2Xv2_mode", true, 0, 0, 0x0F) &&
         element->getIntEnumAttribute(roll_off, S2XSatelliteDeliverySystemDescriptor::RollOffNames, u"roll_off", true) &&
+        element->getIntAttribute(NCR_reference, u"NCR_reference", true, 0, 0, 0x01) &&
         element->getIntAttribute(NCR_version, u"NCR_version", true, 0, 0, 0x01) &&
         element->getIntAttribute(channel_bond, u"channel_bond", true, 0, 0, 0x03) &&
         element->getIntEnumAttribute(polarization, SatelliteDeliverySystemDescriptor::PolarizationNames, u"polarization", true) &&
@@ -399,10 +408,11 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
         xml::ElementVector _superframes;
         ok &= element->getChildren(_superframes, u"superframe", 1, 1);
         if (ok) {
-            ok &= _superframes[0]->getIntAttribute(SOSF_WH_sequence_number, u"SOSF_WH_sequence_number", true) &&
-                _superframes[0]->getIntAttribute(reference_scrambling_index, u"reference_scrambling_index", true, 0, 0, 0xFFFFF) &&
-                _superframes[0]->getIntAttribute(payload_scrambling_index, u"payload_scrambling_index", true, 0, 0, 0xFFFFF) &&
-                _superframes[0]->getIntAttribute(superframe_pilots_WH_sequence_number, u"superframe_pilots_WH_sequence_number", true, 0, 0, 0x1F);
+            ok = _superframes[0]->getIntAttribute(SOSF_WH_sequence_number, u"SOSF_WH_sequence_number", true) &&
+                 _superframes[0]->getIntAttribute(reference_scrambling_index, u"reference_scrambling_index", true, 0, 0, 0xFFFFF) &&
+                 _superframes[0]->getIntAttribute(payload_scrambling_index, u"payload_scrambling_index", true, 0, 0, 0xFFFFF) &&
+                 _superframes[0]->getIntAttribute(superframe_pilots_WH_sequence_number, u"superframe_pilots_WH_sequence_number", true, 0, 0, 0x1F) &&
+                 _superframes[0]->getIntAttribute(postamble_PLI, u"postamble_PLI", true, 0, 0, 7);
             if (ok && _superframes[0]->hasAttribute(u"SFFI")) {
                 ok &= _superframes[0]->getOptionalIntAttribute(SFFI, u"SFFI", 0, 0xF);
             }
