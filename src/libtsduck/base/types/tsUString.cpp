@@ -2400,6 +2400,7 @@ bool ts::UString::ArgMixOutContext::processField()
     // - %d : Matches an integer in decimal or hexadecimal.
     // - %x : Matches an integer in hexadecimal, case-insensitive, without 0x or 0X prefix.
     // - %X : Same as %x.
+    // - %f : Matches a floating point value.
     // - %c : Matches the next non-space character. The Unicode code point is returned.
     // - %% : Matches a literal % (already done).
     // The allowed options, between the '%' and the letter are:
@@ -2417,7 +2418,7 @@ bool ts::UString::ArgMixOutContext::processField()
     }
 
     // Process invalid '%' sequence.
-    if (cmd != u'c' && cmd != u'd' && cmd != u'i' && cmd != u'x' && cmd != u'X') {
+    if (cmd != u'c' && cmd != u'd' && cmd != u'i' && cmd != u'x' && cmd != u'X' && cmd != u'f') {
         if (debugActive()) {
             debug(u"invalid '%' sequence", cmd);
         }
@@ -2433,9 +2434,9 @@ bool ts::UString::ArgMixOutContext::processField()
     }
 
     // Process incorrect argument (internal error, bug).
-    if (!_arg->isOutputInteger()) {
-        // This should never occur since ArgMixOut can be constructed only from pointer to integer.
-        debug(u"internal error, scan() argument is not a pointer to integer");
+    if (!_arg->isOutputInteger() && !_arg->isOutputFloat()) {
+        // This should never occur since ArgMixOut can be constructed only from pointer to integer or float.
+        debug(u"internal error, scan() argument is not a pointer to integer or float");
         return false;
     }
 
@@ -2445,10 +2446,54 @@ bool ts::UString::ArgMixOutContext::processField()
         return true;
     }
 
-    // Extract an integer value.
-    UString value;
     const UChar* const start = _input;
+    UString value;
 
+    // Extract a floating point value.
+    if (cmd == u'f') {
+        // Not a precise parsing, rely on toFloat() later.
+        const UChar* dot = nullptr;
+        const UChar* exp = nullptr;
+        for (;;) {
+            if (IsDigit(*_input)) {
+                value.push_back(*_input++);
+            }
+            else if (*_input == u'+' && (_input == start || _input - 1 == exp)) {
+                _input++;
+            }
+            else if (*_input == u'-' && (_input == start || _input - 1 == exp)) {
+                value.push_back(*_input++);
+            }
+            else if (*_input == u',' && skipSeparator) {
+                _input++;
+            }
+            else if (*_input == u'.' && dot == nullptr) {
+                dot = _input;
+                value.push_back(*_input++);
+            }
+            else if ((*_input == u'e' || *_input == u'E') && exp == nullptr) {
+                exp = _input;
+                value.push_back(*_input++);
+            }
+            else {
+                break;
+            }
+        }
+
+        // Extract the hexadecimal value with an added prefix.
+        double d = 0.0;
+        if (_input > start && value.toFloat(d)) {
+            // Successfully decoded a float.
+            (_arg++)->storeFloat(d);
+            return true;
+        }
+        else {
+            // Invalid input.
+            return false;
+        }
+    }
+
+    // Extract an integer value.
     if (cmd == u'x' || cmd == u'X') {
         // Extract an hexadecimal value, without prefix.
         while (IsHexa(*_input)) {
@@ -2478,7 +2523,7 @@ bool ts::UString::ArgMixOutContext::processField()
 
     // Process value not found, invalid input, not a programming error.
     if (_input == start) {
-        // No hexa value found
+        // No integer value found
         return false;
     }
 
