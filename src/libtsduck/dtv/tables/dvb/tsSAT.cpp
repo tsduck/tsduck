@@ -10,8 +10,6 @@
 #include "tsPSIRepository.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
 
-#include <algorithm>
-
 #define MY_XML_NAME u"SAT"
 #define MY_CLASS ts::SAT
 #define MY_TID ts::TID_SAT
@@ -22,10 +20,10 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 using Double = ts::FloatingPoint<double>;
 
-
 constexpr auto CHECK_UNSPECIFIED = 0;
 constexpr auto CHECK_REQUIRED = 1;
 constexpr auto CHECK_DISALLOWED = 2;
+
 
 //----------------------------------------------------------------------------
 // Constructors and assignment.
@@ -1345,7 +1343,7 @@ void ts::SAT::satellite_position_v3_info_type::display(TablesDisplay& disp, PSIB
             }
             if (usable_stop_time_flag) {
                 disp << (usable_start_time_flag ? ", u" : " U") << "sable end time: ";
-                v3_satellite_time::display(disp, buf);   
+                v3_satellite_time::display(disp, buf);
             }
             if (usable_start_time_flag || usable_stop_time_flag) {
                 disp << std::endl;
@@ -1354,7 +1352,7 @@ void ts::SAT::satellite_position_v3_info_type::display(TablesDisplay& disp, PSIB
         uint16_t ephemeris_data_count = buf.getUInt16();
         for (uint16_t j = 0; j < ephemeris_data_count; j++) {
             disp << margin << " Ephemeris data [" << j << "] epoch: ";
-            v3_satellite_time::display(disp, buf);   
+            v3_satellite_time::display(disp, buf);
             disp << std::endl;
             ieee_float32_t x = buf.getFloat32();  //ephemeris_x
             ieee_float32_t y = buf.getFloat32();  //ephemeris_y

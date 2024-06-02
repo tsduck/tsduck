@@ -20,8 +20,6 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 
-constexpr auto NUM_COVARIANCE_ELEMENTS = 21;
-
 namespace ts {
     //!
     //! Representation of a Satellite Access Table (SAT).
@@ -34,7 +32,7 @@ namespace ts {
         //!
         //! Base capabilities to be defined/extended by Satellite Access Table processing functions
         //!
-        class SAT_base
+        class TSDUCKDLL SAT_base
         {
             TS_INTERFACE(SAT_base);
         public:
@@ -67,17 +65,17 @@ namespace ts {
         };
 
         //!
-        //! Representation of a satellite position
+        //! Representation of a satellite position (version 2).
         //! @see ETSI EN 300 648, 5.2.11.2
         //!
-        class satellite_position_v2_info_type : public SAT_base
+        class TSDUCKDLL satellite_position_v2_info_type : public SAT_base
         {
         public:
             //!
             //! Representation of a geostationary satellite position
             //! @see ETSI EN 300 648, 5.2.11.2
             //!
-            class geostationary_position_type : SAT_base
+            class TSDUCKDLL geostationary_position_type : SAT_base
             {
                 TS_DEFAULT_COPY_MOVE(geostationary_position_type);
             public:
@@ -106,7 +104,7 @@ namespace ts {
             //! Representation of an earth orbiting satellite position
             //! @see ETSI EN 300 648, 5.2.11.2
             //!
-            class earth_orbiting_satallite_type : public SAT_base
+            class TSDUCKDLL earth_orbiting_satallite_type : public SAT_base
             {
                 TS_DEFAULT_COPY_MOVE(earth_orbiting_satallite_type);
             public:
@@ -176,7 +174,7 @@ namespace ts {
         //!
         //! Network Clock Reference
         //!
-        class NCR_type : public SAT_base
+        class TSDUCKDLL NCR_type : public SAT_base
         {
             TS_DEFAULT_COPY_MOVE(NCR_type);
         public:
@@ -223,7 +221,7 @@ namespace ts {
         //! that is associated with none, one or multiple delivery systems
         //! @see ETSI EN 300 648, 5.2.11.3
         //!
-        class cell_fragment_info_type : public SAT_base
+        class TSDUCKDLL cell_fragment_info_type : public SAT_base
         {
             TS_DEFAULT_COPY_MOVE(cell_fragment_info_type);
         public:
@@ -232,7 +230,7 @@ namespace ts {
             //! A new delivery system that is soon serving this cell fragment.
             //! @see ETSI EN 300 648, 5.2.11.3
             //!
-            class new_delivery_system_id_type : public SAT_base
+            class TSDUCKDLL new_delivery_system_id_type : public SAT_base
             {
                 TS_DEFAULT_COPY_MOVE(new_delivery_system_id_type);
             public:
@@ -263,7 +261,7 @@ namespace ts {
             //! A delivery system that will soon stop serving this cell fragment.
             //! @see ETSI EN 300 648, 5.2.11.3
             //!
-            class obsolescent_delivery_system_id_type : public SAT_base
+            class TSDUCKDLL obsolescent_delivery_system_id_type : public SAT_base
             {
                 TS_DEFAULT_COPY_MOVE(obsolescent_delivery_system_id_type);
             public:
@@ -333,7 +331,7 @@ namespace ts {
         //! Representation of a time assocition between NCR and UTC
         //! @see ETSI EN 300 648, 5.2.11.4
         //!
-        class time_association_info_type : public SAT_base
+        class TSDUCKDLL time_association_info_type : public SAT_base
         {
             TS_DEFAULT_COPY_MOVE(time_association_info_type);
         public:
@@ -395,7 +393,7 @@ namespace ts {
         //! period(s) in time that the beam will illuminate the cell each beamhopping cycle.
         //! @see ETSI EN 300 648, 5.2.11.3
         //!
-        class beam_hopping_time_plan_info_type : public SAT_base
+        class TSDUCKDLL beam_hopping_time_plan_info_type : public SAT_base
         {
             TS_DEFAULT_COPY_MOVE(beam_hopping_time_plan_info_type);
         public:
@@ -499,60 +497,97 @@ namespace ts {
             virtual void deserialize(PSIBuffer& buf) override;
         };
 
-        class satellite_position_v3_info_type : public SAT_base {
-            //!
-            //! Representation of a non-geostationary satellite position
-            //! @see ETSI EN 300 648, 5.2.11.6
-            //!
+        //!
+        //! Representation of a non-geostationary satellite position
+        //! @see ETSI EN 300 648, 5.2.11.6
+        //!
+        class TSDUCKDLL satellite_position_v3_info_type : public SAT_base
+        {
             TS_DEFAULT_COPY_MOVE(satellite_position_v3_info_type);
-
         public:
-            class v3_satellite_time {
+            //!
+            //! Satellite time (V3).
+            //!
+            class TSDUCKDLL v3_satellite_time
+            {
                 TS_DEFAULT_COPY_MOVE(v3_satellite_time);
             private:
                 uint8_t        year = 0;         //!< last 2 digits of the year (0 .. 99)
                 uint16_t       day = 0;          //!< 9 bits. day of the year (1 .. 366)
                 ieee_float32_t day_fraction = 0; //!< fraction of the day (0.0 .. 1.0)
             public:
+                //!
+                //! Default constructor.
+                //!
                 v3_satellite_time() = default;
-                v3_satellite_time(PSIBuffer& buf) : v3_satellite_time() { deserialize(buf); }
+                //!
+                //! Read-in constructor.
+                //! @param [in,out] buf Deserialization buffer.
+                //!
+                v3_satellite_time(PSIBuffer& buf) { deserialize(buf); }
 
+                //! @cond nodoxygen
+                // Delegated methods.
                 static void display(TablesDisplay& disp, PSIBuffer& buf);
-
                 bool fromXML(const xml::Element* element, const UString& name);
                 void toXML(xml::Element* root);
                 void serialize(PSIBuffer& buf) const;
                 void deserialize(PSIBuffer& buf);
+                //! @endcond
             };
 
-            class v3_satellite_type  {
+            //!
+            //! Satellite type (V3).
+            //!
+            class TSDUCKDLL v3_satellite_type
+            {
                 TS_DEFAULT_COPY_MOVE(v3_satellite_type);
             public:
-                class v3_satellite_metadata_type {
+                //!
+                //! Satellite metadata (V3).
+                //!
+                class TSDUCKDLL v3_satellite_metadata_type
+                {
                     TS_DEFAULT_COPY_MOVE(v3_satellite_metadata_type);
                 public:
                     v3_satellite_time                total_start_time {};     //!< start of the total time span covered by the ephemeris data and optional covariance data
                     v3_satellite_time                total_stop_time {};      //!< end of the total time span covered by the ephemeris data and optional covariance data
 
-                    std::optional<uint8_t>           interpolation_type {};   //!< 3 bits. the recommended interpolation method (in @InterpolationTypes enumeration)
+                    std::optional<uint8_t>           interpolation_type {};   //!< 3 bits. the recommended interpolation method (in InterpolationTypes enumeration)
                     std::optional<uint8_t>           interpolation_degree {}; //!< 3 bits. the recommended order of the interpolation
                     std::optional<v3_satellite_time> usable_start_time {};    //!< start of the time span covered by the ephemeris data
                     std::optional<v3_satellite_time> usable_stop_time {};     //!< end of the time span covered by the ephemeris data
 
                 public:
+                    //!
+                    //! Default constructor.
+                    //!
                     v3_satellite_metadata_type() = default;
-                    v3_satellite_metadata_type(PSIBuffer& buf, bool usable_start_time_flag, bool usable_stop_time_flag) :
-                        v3_satellite_metadata_type() { deserialize(buf, usable_start_time_flag, usable_stop_time_flag); }
+                    //!
+                    //! Read-in constructor.
+                    //! @param [in,out] buf Deserialization buffer.
+                    //! @param [in] usable_start_time_flag Start time flag.
+                    //! @param [in] usable_stop_time_flag Stop time flag.
+                    //!
+                    v3_satellite_metadata_type(PSIBuffer& buf, bool usable_start_time_flag, bool usable_stop_time_flag)
+                        { deserialize(buf, usable_start_time_flag, usable_stop_time_flag); }
 
+                    //! @cond nodoxygen
+                    // Delegated methods.
                     bool fromXML(const xml::Element* element);
                     void toXML(xml::Element* root);
                     void deserialize(PSIBuffer& buf, bool usable_start_time_flag, bool usable_stop_time_flag);
                     void serialize(PSIBuffer& buf) const;
+                    //! @endcond
                 private:
                     static const Enumeration InterpolationTypes;
                 };
 
-                class v3_satellite_ephemeris_data_type {
+                //!
+                //! Satellite ephemeris data (V3).
+                //!
+                class TSDUCKDLL v3_satellite_ephemeris_data_type
+                {
                     TS_DEFAULT_COPY_MOVE(v3_satellite_ephemeris_data_type);
                 private:
                     v3_satellite_time             epoch {};               //!< the date of the ephemeris data
@@ -567,51 +602,88 @@ namespace ts {
                     std::optional<ieee_float32_t> ephemeris_y_ddot {};    //!< acceleration of the salettite in the y direction, in meters per second per second.
                     std::optional<ieee_float32_t> ephemeris_z_ddot {};    //!< acceleration of the salettite in the z direction, in meters per second per second.
                 public:
+                    //!
+                    //! Default constructor.
+                    //!
                     v3_satellite_ephemeris_data_type() = default;
-                    v3_satellite_ephemeris_data_type(PSIBuffer& buf, bool ephemeris_accel_flag) :
-                        v3_satellite_ephemeris_data_type() { deserialize(buf, ephemeris_accel_flag); }
+                    //!
+                    //! Read-in constructor.
+                    //! @param [in,out] buf Deserialization buffer.
+                    //! @param [in] ephemeris_accel_flag Accel flag.
+                    //!
+                    v3_satellite_ephemeris_data_type(PSIBuffer& buf, bool ephemeris_accel_flag)
+                        { deserialize(buf, ephemeris_accel_flag); }
+                    //!
+                    //! Check the acceleration flag.
+                    //! @return The acceleration flag.
+                    //!
+                    bool hasAcceleration() {
+                        return ephemeris_x_ddot.has_value() && ephemeris_y_ddot.has_value() && ephemeris_z_ddot.has_value();
+                    }
 
+                    //! @cond nodoxygen
+                    // Delegated methods.
                     bool fromXML(const xml::Element* element, uint8_t &ephemeris_accel_check_type);
                     void toXML(xml::Element* root);
                     void deserialize(PSIBuffer& buf, bool ephemeris_accel_flag);
                     void serialize(PSIBuffer& buf) const;
-
-                    bool hasAcceleration() {
-                        return ephemeris_x_ddot.has_value() && ephemeris_y_ddot.has_value() && ephemeris_z_ddot.has_value();
-                    }
+                    //! @endcond
                 };
 
-                class v3_satellite_covariance_data_type {
+                //!
+                //! Satellite covariance data (V3).
+                //!
+                class TSDUCKDLL v3_satellite_covariance_data_type
+                {
                     TS_DEFAULT_COPY_MOVE(v3_satellite_covariance_data_type);
                 private:
                     v3_satellite_time           covariace_epoch {};     //!< epoch of the covariance matrix
                     std::vector<ieee_float32_t> covariance_element {};  /**< the covariance matrix.The elements shall be ordered sequentially from
                                                                              upper left [1,1] to lower right [6,6], lower triangular form, row by row left to right.*/
                 public:
+                    //!
+                    //! Default constructor.
+                    //!
                     v3_satellite_covariance_data_type() = default;
-                    v3_satellite_covariance_data_type(PSIBuffer& buf ) : v3_satellite_covariance_data_type() { deserialize(buf); }
+                    //!
+                    //! Read-in constructor.
+                    //! @param [in,out] buf Deserialization buffer.
+                    //!
+                    v3_satellite_covariance_data_type(PSIBuffer& buf) { deserialize(buf); }
 
+                    //! @cond nodoxygen
+                    // Delegated methods.
                     bool fromXML(const xml::Element* element);
                     void toXML(xml::Element* root);
                     void serialize(PSIBuffer& buf) const;
                     void deserialize(PSIBuffer& buf);
+                    //! @endcond
                 };
 
-            private:  
-                uint32_t                                         satellite_id = 0;  //!< 24 bits. label of the satellite 
+            private:
+                uint32_t                                         satellite_id = 0;  //!< 24 bits. label of the satellite
                 std::optional<v3_satellite_metadata_type>        metadata {};       //!< metadata group for this satellite
                 std::optional<v3_satellite_covariance_data_type> covariance {};     //!< covariance data for this satellite
             public:
                 std::vector<v3_satellite_ephemeris_data_type>    ephemeris_data {};  //!< ephemeris data for this satellite
             public:
+                //!
+                //! Default constructor.
+                //!
                 v3_satellite_type() = default;
-                v3_satellite_type(PSIBuffer& buf) : v3_satellite_type() { deserialize(buf); }
+                //!
+                //! Read-in constructor.
+                //! @param [in,out] buf Deserialization buffer.
+                //!
+                v3_satellite_type(PSIBuffer& buf) { deserialize(buf); }
 
-                // Inherited methods
+                //! @cond nodoxygen
+                // Delegated methods.
                 bool fromXML(const xml::Element* element);
                 void toXML(xml::Element* root);
                 void serialize(PSIBuffer& buf);
                 void deserialize(PSIBuffer& buf);
+                //! @endcond
 
             private:
                 bool hasEphemerisAcceleration();
@@ -626,11 +698,20 @@ namespace ts {
             v3_satellite_time              creation_date {};      //!< date that the data set is created
             std::vector<v3_satellite_type> v3_satellites {};      //!< satellite information
         public:
+            //!
+            //! Default constructor.
+            //!
             satellite_position_v3_info_type() = default;
-            satellite_position_v3_info_type(PSIBuffer& buf) :
-                satellite_position_v3_info_type() {deserialize(buf); }
+            //!
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer.
+            //!
+            satellite_position_v3_info_type(PSIBuffer& buf) { deserialize(buf); }
 
+            //! @cond nodoxygen
+            // Delegated methods.
             static void display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin);
+            //! @endcond
 
             // Inherited methods
             virtual bool fromXML(const xml::Element* element) override;
@@ -710,23 +791,26 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&, const Section&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+
+    public:
+        // for satellite access table
+        static constexpr auto SATELLITE_POSITION_V2_INFO = 0;      //!< satellite access table contains satellite positioning information
+        static constexpr auto satellite_table_id_min = SATELLITE_POSITION_V2_INFO;  //!< Min satellite table id.
+        static constexpr auto CELL_FRAGMENT_INFO = 1;              //!< satellite access table contains cell fragment definitions
+        static constexpr auto TIME_ASSOCIATION_INFO = 2;           //!< satellite access table contains time association information
+        static constexpr auto BEAMHOPPING_TIME_PLAN_INFO = 3;      //!< satellite access table contains beam hopping timeplans
+        static constexpr auto SATELLITE_POSITION_V3_INFO = 4;      //!< satellite access table contains NGSO positioning information
+        static constexpr auto satellite_table_id_max = SATELLITE_POSITION_V3_INFO;  //!< Max satellite table id.
+
+        // for satellite position v2 info
+        static constexpr auto POSITION_SYSTEM_GEOSTATIONARY = 0;   //!< satellite is geostationary
+        static constexpr auto POSITION_SYSTEM_EARTH_ORBITING = 1;  //!< satellite is earth orbiting
+
+        // for beam hopping time plan mode
+        static constexpr auto HOP_1_TRANSMISSION = 0;              //!< 1 transmission each cycle
+        static constexpr auto HOP_MULTI_TRANSMISSION = 1;          //!< multiple transmissions in each cycle
+        static constexpr auto HOP_GRID = 2;                        //!< grid_size will be signalled, but when the illumination will take place is not signalled
+
+        static constexpr auto NUM_COVARIANCE_ELEMENTS = 21;        //!< Max number of covariances.
     };
-
-    // for satellite access table
-    constexpr auto SATELLITE_POSITION_V2_INFO = 0;      //!< satellite access table contains satellite positioning information
-    constexpr auto satellite_table_id_min = SATELLITE_POSITION_V2_INFO;
-    constexpr auto CELL_FRAGMENT_INFO = 1;              //!< satellite access table contains cell fragment definitions
-    constexpr auto TIME_ASSOCIATION_INFO = 2;           //!< satellite access table contains time association information
-    constexpr auto BEAMHOPPING_TIME_PLAN_INFO = 3;      //!< satellite access table contains beam hopping timeplans
-    constexpr auto SATELLITE_POSITION_V3_INFO = 4;      //!< satellite access table contains NGSO positioning information
-    constexpr auto satellite_table_id_max = SATELLITE_POSITION_V3_INFO;
-
-    // for satellite position v2 info
-    constexpr auto POSITION_SYSTEM_GEOSTATIONARY = 0;   //!< satellite is geostationary
-    constexpr auto POSITION_SYSTEM_EARTH_ORBITING = 1;  //!< satellite is earth orbiting
-
-    // for beam hopping time plan mode
-    constexpr auto HOP_1_TRANSMISSION = 0;              //!< 1 transmission each cycle
-    constexpr auto HOP_MULTI_TRANSMISSION = 1;          //!< multiple transmissions in each cycle
-    constexpr auto HOP_GRID = 2;                        //!< grid_size will be signalled, but when the illumination will take place is not signalled
 }
