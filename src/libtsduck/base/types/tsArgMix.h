@@ -73,6 +73,11 @@ namespace ts {
         //!
         bool isOutputInteger() const { return (_type & (INTEGER | POINTER)) == (INTEGER | POINTER); }
         //!
+        //! Check if the argument value is an output floating point.
+        //! @return True if the argument value is an output integer.
+        //!
+        bool isOutputFloat() const { return (_type & (DOUBLE | POINTER)) == (DOUBLE | POINTER); }
+        //!
         //! Check if the argument value is a signed integer, either input or output.
         //! @return True if the argument value is a signed integer.
         //!
@@ -229,6 +234,14 @@ namespace ts {
         bool storeInteger(INT i) const;
 
         //!
+        //! Store a floating point value in the argument data, for pointers to double.
+        //! @param [in] f The floating point value to store in the argument data.
+        //! @return True on success, false if the argument data is not a pointer to double.
+        //!
+        template <typename FLOAT, typename std::enable_if<std::is_floating_point<FLOAT>::value>::type* = nullptr>
+        bool storeFloat(FLOAT f) const;
+
+        //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
@@ -296,14 +309,14 @@ namespace ts {
             double                    dbl;
             const char*               charptr;
             const UChar*              ucharptr;
-            void*                     intptr;  // output
+            void*                     vptr;  // output
             const std::string*        string;
             const UString*            ustring;
             const StringifyInterface* stringify;
             const fs::path*           path;
             const AbstractNumber*     anumber;
 
-            Value(void* p)              : intptr(p) {}
+            Value(void* p)              : vptr(p) {}
             Value(bool b)               : uint32(b) {}
             Value(int32_t i)            : int32(i) {}
             Value(uint32_t i)           : uint32(i) {}
@@ -569,6 +582,11 @@ namespace ts {
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
         ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr)) {}
+        //!
+        //! Constructor from the address of floating point data.
+        //! @param [in] ptr Address of a double floating point.
+        //!
+        ArgMixOut(double* ptr) : ArgMix(POINTER | DOUBLE, 0, Value(ptr)) {}
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.
@@ -598,21 +616,21 @@ INT ts::ArgMix::toInteger(bool raw) const
         case INTEGER | BIT64:
             return static_cast<INT>(_value.uint64);
         case POINTER | INTEGER | BIT8  | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int8_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int8_t*>(_value.vptr));
         case POINTER | INTEGER | BIT8:
-            return static_cast<INT>(*reinterpret_cast<uint8_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint8_t*>(_value.vptr));
         case POINTER | INTEGER | BIT16 | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int16_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int16_t*>(_value.vptr));
         case POINTER | INTEGER | BIT16:
-            return static_cast<INT>(*reinterpret_cast<uint16_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint16_t*>(_value.vptr));
         case POINTER | INTEGER | BIT32 | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int32_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int32_t*>(_value.vptr));
         case POINTER | INTEGER | BIT32:
-            return static_cast<INT>(*reinterpret_cast<uint32_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint32_t*>(_value.vptr));
         case POINTER | INTEGER | BIT64 | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int64_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int64_t*>(_value.vptr));
         case POINTER | INTEGER | BIT64:
-            return static_cast<INT>(*reinterpret_cast<uint64_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint64_t*>(_value.vptr));
         case ANUMBER:
             return static_cast<INT>(_value.anumber->toInt64());
         default:
@@ -626,31 +644,48 @@ bool ts::ArgMix::storeInteger(INT i) const
 {
     switch (_type) {
         case POINTER | INTEGER | BIT8  | SIGNED:
-            *reinterpret_cast<int8_t*>(_value.intptr) = static_cast<int8_t>(i);
+            *reinterpret_cast<int8_t*>(_value.vptr) = static_cast<int8_t>(i);
             return true;
         case POINTER | INTEGER | BIT8:
-            *reinterpret_cast<uint8_t*>(_value.intptr) = static_cast<uint8_t>(i);
+            *reinterpret_cast<uint8_t*>(_value.vptr) = static_cast<uint8_t>(i);
             return true;
         case POINTER | INTEGER | BIT16 | SIGNED:
-            *reinterpret_cast<int16_t*>(_value.intptr) = static_cast<int16_t>(i);
+            *reinterpret_cast<int16_t*>(_value.vptr) = static_cast<int16_t>(i);
             return true;
         case POINTER | INTEGER | BIT16:
-            *reinterpret_cast<uint16_t*>(_value.intptr) = static_cast<uint16_t>(i);
+            *reinterpret_cast<uint16_t*>(_value.vptr) = static_cast<uint16_t>(i);
             return true;
         case POINTER | INTEGER | BIT32 | SIGNED:
-            *reinterpret_cast<int32_t*>(_value.intptr) = static_cast<int32_t>(i);
+            *reinterpret_cast<int32_t*>(_value.vptr) = static_cast<int32_t>(i);
             return true;
         case POINTER | INTEGER | BIT32:
-            *reinterpret_cast<uint32_t*>(_value.intptr) = static_cast<uint32_t>(i);
+            *reinterpret_cast<uint32_t*>(_value.vptr) = static_cast<uint32_t>(i);
             return true;
         case POINTER | INTEGER | BIT64 | SIGNED:
-            *reinterpret_cast<int64_t*>(_value.intptr) = static_cast<int64_t>(i);
+            *reinterpret_cast<int64_t*>(_value.vptr) = static_cast<int64_t>(i);
             return true;
         case POINTER | INTEGER | BIT64:
-            *reinterpret_cast<uint64_t*>(_value.intptr) = static_cast<uint64_t>(i);
+            *reinterpret_cast<uint64_t*>(_value.vptr) = static_cast<uint64_t>(i);
+            return true;
+        case POINTER | DOUBLE:
+            *reinterpret_cast<double*>(_value.vptr) = static_cast<double>(i);
             return true;
         default:
-            // Not a pointer to integer.
+            // Not a pointer to integer or float.
             return false;
+    }
+}
+
+// Store a floating point value in the argument data, for pointers to double.
+template <typename FLOAT, typename std::enable_if<std::is_floating_point<FLOAT>::value>::type*>
+bool ts::ArgMix::storeFloat(FLOAT f) const
+{
+    if (_type == (POINTER | DOUBLE)) {
+        *reinterpret_cast<double*>(_value.vptr) = static_cast<double>(f);
+        return true;
+    }
+    else {
+        // Not a pointer to double, try integer or error.
+        return storeInteger(std::intmax_t(f));
     }
 }
