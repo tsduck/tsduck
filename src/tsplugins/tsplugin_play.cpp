@@ -135,9 +135,8 @@ bool ts::PlayPlugin::start()
 
 #if defined(TS_WINDOWS)
 
-    // On Windows, VLC is the only known media player that can read an MPEG
-    // transport stream on its standard input. Try to locate vlc.exe using
-    // various means.
+    // On Windows, VLC is the only known media player that can read an MPEG transport stream on its standard input.
+    // Try to locate vlc.exe using various means.
 
     // Look into some registry location
     UString ent = Registry::GetValue(u"HKLM\\SOFTWARE\\VideoLAN\\VLC", u"InstallDir");
@@ -166,8 +165,12 @@ bool ts::PlayPlugin::start()
 
 #else // UNIX
 
-    // On macOS, additional applications are installed on /usr/local because of system integrity protection.
+    // On macOS, additional applications are installed outside /usr because of system integrity protection.
 #if defined(TS_MAC)
+    // On Apple Silicon Mac's, Homebrew is installed in /opt/homebrew.
+    #if defined(TS_ARM64)
+        search_path.push_back(u"/opt/homebrew/bin");
+    #endif
     search_path.push_back(u"/usr/local/bin");
 #endif
 
