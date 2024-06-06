@@ -20,6 +20,8 @@
 #include "tsByteBlock.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
+#include "tsSysUtils.h"
+#include "tsWinUtils.h"
 #include "tsRegistry.h"
 
 
@@ -32,7 +34,7 @@ class Options: public ts::Args
     TS_NOBUILD_NOCOPY(Options);
 public:
     Options(int argc, char *argv[]);
-    enum UpdateCommand {APPEND, PREPEND, REMOVE};
+    enum UpdateCommand {APPEND, PREPEND, REMOVE, STATUS};
     ts::UString   directory;
     ts::UString   environment;
     UpdateCommand command;
@@ -76,13 +78,16 @@ Options::Options(int argc, char *argv[]) :
     option(u"remove", 'r');
     help(u"remove", u"Remove the directory from the system path.");
 
+    option(u"status", 's');
+    help(u"status", u"Don't update any path. Use the parameter as an integer value and display the corresponding error code.");
+
     analyze(argc, argv);
 
-    directory = value(u"");
+    getValue(directory, u"");
+    getValue(environment, u"environment", u"Path");
     initialSeparator = present(u"initial-separator");
     finalSeparator = present(u"final-separator");
     dryRun = present(u"dry-run");
-    getValue(environment, u"environment", u"Path");
 
     if (present(u"append")) {
         command = APPEND;
@@ -92,6 +97,9 @@ Options::Options(int argc, char *argv[]) :
     }
     if (present(u"remove")) {
         command = REMOVE;
+    }
+    if (present(u"status")) {
+        command = STATUS;
     }
 }
 
@@ -121,6 +129,20 @@ int main(int argc, char* argv[])
     // Decode command line.
     Options opt(argc, argv);
 
+    // Specific case of displaying a Windows error code.
+    if (opt.command == Options::STATUS) {
+        std::intmax_t status = 0;
+        if (!opt.directory.toInteger(status, ts::UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+            opt.fatal(u"invalid integer status value: %s", opt.directory);
+        }
+        ::DWORD status32 = ::DWORD(status & 0xFFFFFFFF);
+        if (opt.verbose()) {
+            std::cout << ts::UString::Format(u"0x%08X => ", status32);
+        }
+        std::cout << ts::WinErrorMessage(status32) << std::endl;
+        return EXIT_SUCCESS;
+    }
+
     // Get the Path value.
     ts::UString path(ts::Registry::GetValue(ts::Registry::SystemEnvironmentKey, opt.environment, opt));
     if (path.empty() && opt.environment.similar(u"Path")) {
@@ -149,6 +171,7 @@ int main(int argc, char* argv[])
             dirs.push_front(opt.directory);
             break;
         case Options::REMOVE:
+        case Options::STATUS:
         default:
             // Nothing to do
             break;
