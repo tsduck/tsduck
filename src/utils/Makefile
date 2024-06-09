@@ -8,6 +8,9 @@
 #
 #-----------------------------------------------------------------------------
 
+# Don't generate .dep for these:
+NODEPS_SRC = setpath.cpp
+
 include ../../Makefile.inc
 
 default: execs

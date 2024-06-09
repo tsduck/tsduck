@@ -31,6 +31,7 @@ SRCROOT      = $(ROOTDIR)/src
 LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
 TSPLUGINSDIR = $(SRCROOT)/tsplugins
+BINROOT      = $(ROOTDIR)/bin
 
 # TSDuck library files. See BINDIR later.
 
@@ -874,7 +875,6 @@ THEMESDIR  = $(DOCROOT)/themes
 
 # Documentation binaries.
 
-BINROOT    = $(ROOTDIR)/bin
 BINDOC     = $(BINROOT)/doc
 BINDOCINFO = $(BINROOT)/docinfo
 
@@ -921,6 +921,10 @@ ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(THEMESDIR)" -a pdf-theme=tsduc
 # $(NODEPS) lists the make targets in the parent makefile which shall
 # not enforce the generation of header dependency files. This is a bit
 # complicated and, most of the time, there is no need to set this variable.
+#
+# $(NODEPS_SRC) lists local source files for which we should not generate
+# a .dep, probably because they are not used on that platform and trying
+# to parse them for .dep would return an error.
 #-----------------------------------------------------------------------------
 
 $(OBJDIR)/%.dep: %.cpp
@@ -937,7 +941,7 @@ ifeq ($(DONT_BUILD_DEPS),)
 endif
 
 ifeq ($(DONT_BUILD_DEPS),)
-    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(CURCPP) $(filter-out tsduck.cpp,$(wildcard *.cpp))))))
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(filter-out $(NODEPS_SRC),$(wildcard *.cpp))))))
 endif
 
 #-----------------------------------------------------------------------------
