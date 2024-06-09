@@ -54,10 +54,11 @@ if (-not $NoDoxygen) {
 if (-not $NoInstaller) {
     & "$InsDir\install-nsis.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 }
-& "$InsDir\install-git.ps1"     -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-python.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-libsrt.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-librist.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-java.ps1"    -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-vatek.ps1"   -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-dektec.ps1"  -NoPause:$NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-git.ps1"         -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-python.ps1"      -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-asciidoctor.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-libsrt.ps1"      -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-librist.ps1"     -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-java.ps1"        -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-vatek.ps1"       -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-dektec.ps1"      -NoPause:$NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions

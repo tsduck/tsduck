@@ -24,7 +24,7 @@
  .PARAMETER NoOpen
 
   Do not open the generated documentation. By default, run the default HTML
-  browser on the generated documentation hom page.
+  browser on the generated documentation home page.
 
  .PARAMETER NoPause
 

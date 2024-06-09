@@ -895,7 +895,7 @@ ASCIIDOCTOR_PDF = asciidoctor-pdf
 
 ADOCFLAGS      = -v -a revnumber="$(shell $(GET_VERSION))" -a revdate="$(shell $(DATE) '+%B %Y')" -a imagesdir="$(IMAGESDIR)"
 ADOCFLAGS_HTML = $(ADOCFLAGS) -a stylesheet="$(CSSFILE)" -a rouge-style="$(ROUGE_HTML)"
-ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(THEMESDIR)" -a pdf-theme=tsduck -a rouge-style="$(ROUGE_PDF)"
+ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(THEMESDIR)" -a pdf-theme="$(THEME)" -a rouge-style="$(ROUGE_PDF)"
 
 #-----------------------------------------------------------------------------
 # Dependency (.dep) files: For each xxx.cpp source file, there is one
