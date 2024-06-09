@@ -41,6 +41,10 @@ ifeq ($(NOVATEK),)
     endif
 endif
 
+# Don't generate .dep for these:
+
+NODEPS_SRC = tsduck.cpp
+
 # Now, we can include the common makefile.
 
 include ../../Makefile.inc
