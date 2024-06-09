@@ -1,0 +1,249 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+=== ATSC-defined descriptors
+
+==== AC3_audio_stream_descriptor
+
+Defined by ATSC in <<ATSC-A52>>.
+
+This is the ATSC version of the AC-3 descriptor.
+DVB uses a distinct descriptor.
+In <<ATSC-A52>>, the so-called "System A" designates ATSC while "System B" designates DVB.
+
+[source,xml]
+----
+<ATSC_AC3_audio_stream_descriptor
+    sample_rate_code="uint3, required"
+    bsid="uint5, required"
+    bit_rate_code="uint6, required"
+    surround_mode="uint2, required"
+    bsmod="uint3, required"
+    num_channels="uint4, required"
+    full_svc="bool, required"
+    mainid="uint3, optional"
+    priority="uint2, optional"
+    asvcflags="uint8, optional"
+    text="string, optional"
+    language="char3, optional"
+    language_2="char3, optional">
+
+  <additional_info>
+    Hexadecimal content
+  </additional_info>
+
+</ATSC_AC3_audio_stream_descriptor>
+----
+
+==== caption_service_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<caption_service_descriptor>
+
+  <!-- One per service -->
+  <service language="char3, required"
+           digital_cc="bool, required"
+           line21_field="bool, optional"
+           caption_service_number="uint6, required"
+           easy_reader="bool, required"
+           wide_aspect_ratio="bool, required"/>
+
+</caption_service_descriptor>
+----
+
+==== component_name_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<component_name_descriptor>
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <component_name_string>
+    <string language="char3, required" text="string, required"/>
+  </component_name_string>
+
+</component_name_descriptor>
+----
+
+==== content_advisory_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<content_advisory_descriptor>
+
+  <!-- One per rating region -->
+  <region rating_region="uint8, required">
+    <!-- One per rated dimension -->
+    <dimension rating_dimension_j="uint8, required" rating_value="uint4, required"/>
+    <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+    <rating_description>
+      <string language="char3, required" text="string, required"/>
+    </rating_description>
+  </region>
+
+</content_advisory_descriptor>
+----
+
+==== dcc_arriving_request_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<dcc_arriving_request_descriptor dcc_arriving_request_type="uint8, required">
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <dcc_arriving_request_text>
+    <string language="char3, required" text="string, required"/>
+  </dcc_arriving_request_text>
+
+</dcc_arriving_request_descriptor>
+----
+
+==== dcc_departing_request_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<dcc_departing_request_descriptor dcc_departing_request_type="uint8, required">
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <dcc_departing_request_text>
+    <string language="char3, required" text="string, required"/>
+  </dcc_departing_request_text>
+
+</dcc_departing_request_descriptor>
+----
+
+==== EAC3_audio_descriptor
+
+Defined by ATSC in <<ATSC-A52>>.
+
+This is the ATSC version of the Enhanced-AC-3 descriptor.
+DVB uses a distinct descriptor.
+
+[source,xml]
+----
+<ATSC_EAC3_audio_descriptor
+    mixinfoexists="bool, required"
+    full_service="bool, required"
+    audio_service_type="uint3, required"
+    number_of_channels="uint3, required"
+    bsid="uint5, optional"
+    priority="uint2, optional"
+    mainid="uint3, optional"
+    asvc="uint8, optional"
+    substream1="uint8, optional"
+    substream2="uint8, optional"
+    substream3="uint8, optional"
+    language="char3, optional"
+    language_2="char3, optional"
+    substream1_lang="char3, optional"
+    substream2_lang="char3, optional"
+    substream3_lang="char3, optional">
+
+  <additional_info>
+    Hexadecimal content
+  </additional_info>
+
+</ATSC_EAC3_audio_descriptor>
+----
+
+==== extended_channel_name_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<extended_channel_name_descriptor>
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <long_channel_name_text>
+    <string language="char3, required" text="string, required"/>
+  </long_channel_name_text>
+
+</extended_channel_name_descriptor>
+----
+
+==== genre_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<genre_descriptor>
+  <!-- One per attribute -->
+  <attribute value="uint8, required"/>
+</genre_descriptor>
+----
+
+==== redistribution_control_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<redistribution_control_descriptor>
+  <rc_information>
+    Hexadecimal content
+  </rc_information>
+</redistribution_control_descriptor>
+----
+
+==== service_location_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<service_location_descriptor PCR_PID="uint13, optional">
+  <!-- One per component -->
+  <component stream_type="uint8, required"
+             elementary_PID="uint13, required"
+             ISO_639_language_code="char3, optional"/>
+</service_location_descriptor>
+----
+
+==== stuffing_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+This is the ATSC version of the `stuffing_descriptor`.
+DVB uses a distinct descriptor.
+
+[source,xml]
+----
+<ATSC_stuffing_descriptor>
+  Hexadecimal content
+</ATSC_stuffing_descriptor>
+----
+
+==== time_shifted_service_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+This is the ATSC version of the `time_shifted_service_descriptor`.
+DVB uses a distinct descriptor.
+
+[source,xml]
+----
+<ATSC_time_shifted_service_descriptor>
+  <!-- One per service -->
+  <service time_shift="uint10, required"
+           major_channel_number="uint10, required"
+           minor_channel_number="uint10, required"/>
+</ATSC_time_shifted_service_descriptor>
+----

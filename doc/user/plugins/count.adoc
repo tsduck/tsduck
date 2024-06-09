@@ -1,0 +1,100 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== count
+
+[.cmd-header]
+Count TS packets per PID
+
+This plugin counts packets per PID and provides either a summary of packet counts or a detailed list of packet per PID.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P count [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--all*
+
+[.optdoc]
+Report packet index and PID for all packets from the selected PID's.
+By default, only a final summary is reported.
+
+[.opt]
+*-b* +
+*--brief*
+
+[.optdoc]
+Brief display.
+Report only the numerical values, not comment on their usage.
+This option is useful for automatic processing of the resulting output.
+
+[.opt]
+*-i* _value_ +
+*--interval* _value_
+
+[.optdoc]
+Report a timestamp and global packet counts at regular intervals.
+The specified value is a number of packets.
+
+[.opt]
+*-n* +
+*--negate*
+
+[.optdoc]
+Negate the filter: specified PID's are excluded.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the output file for reporting packet counters.
+By default, report on standard error using the `tsp` logging mechanism.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+PID filter: select packets with these PID values.
+Several `--pid` options may be specified.
+By default, if `--pid` is not specified, all PID's are selected.
+
+[.opt]
+*-s* +
+*--summary*
+
+[.optdoc]
+Display a final summary of packet counts per PID.
+This is the default, unless `--all` or `--total` is specified,
+in which case the final summary is reported only if `--summary` is specified.
+
+[.opt]
+*--tag* _"string"_
+
+[.optdoc]
+Message tag to be displayed with count report lines.
+Useful when the plugin is used several times in the same command line.
+
+[.opt]
+*-t* +
+*--total*
+
+[.optdoc]
+Display the total packet counts in all PID's.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

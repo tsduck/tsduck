@@ -1,0 +1,139 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== reduce
+
+[.cmd-header]
+Reduce the bitrate by removing stuffing (null packets)
+
+This plugin reduces the bitrate of the transport stream by removing stuffing packets.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P reduce [options] [rempkt inpkt]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_rempkt inpkt_
+
+[.optdoc]
+Legacy syntax: For compatibility, two integer parameters can be used to specify _rempkt_ and _inpkt_,
+the removal of packets in fixed proportion. Now preferably use option `--fixed-proportion`.
+
+[.optdoc]
+The parameters specify that _rempkt_ TS packets must be automatically removed
+after every _inpkt_ input TS packets in the transport stream.
+Only stuffing packets can be removed.
+Both _rempkt_ and _inpkt_ must be non-zero integer values.
+
+[.usage]
+Options
+
+[.opt]
+*-f* _rempkt/inpkt_ +
+*--fixed-proportion* _rempkt/inpkt_
+
+[.optdoc]
+Reduce the bitrate in fixed proportion: _rempkt_ TS packets are automatically removed
+after every _inpkt_ input TS packets in the transport stream.
+
+[.optdoc]
+Only stuffing packets can be removed.
+Both _rempkt_ and _inpkt_ must be non-zero integer values.
+
+[.optdoc]
+Exactly one of `--target-bitrate` or `--fixed-proportion` must be specified.
+
+[.opt]
+*-i* _value_ +
+*--input-bitrate* _value_
+
+[.optdoc]
+Specify the input bitrate in bits/second.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+By default, the input bitrate is permanently evaluated by previous plugins.
+
+[.opt]
+*--packet-window* _packet-count_
+
+[.optdoc]
+With `--target-bitrate`, define the number of packets over which they are analyzed and extra packets are removed.
+
+[.optdoc]
+The default is 10,000 packets.
+
+[.optdoc]
+Options `--time-window` and `--packet-window` are mutually exclusive.
+
+[.opt]
+*-p* +
+*--pcr-based*
+
+[.optdoc]
+With `--target-bitrate`, use PCR's in each packet window to determine how many packets should be removed in each window.
+
+[.optdoc]
+By default, the input bitrate is used.
+In the case of highly variable bitrate (VBR), using PCR's on each time window gives better results
+but PCR's must be present and accurate and the window size must be large enough to contain more than one PCR on at least one PID.
+
+[.opt]
+*-r* _pid1[-pid2]_ +
+*--reference-pcr-pid* _pid1[-pid2]_
+
+[.optdoc]
+With `--pcr-based`, use PCR's from the specified reference PID's only.
+
+[.optdoc]
+The option `--reference-pcr-pid` can be present multiple time.
+
+[.optdoc]
+By default, PCR's are used from any PID.
+
+[.opt]
+*-t* _value_ +
+*--target-bitrate* _value_
+
+[.optdoc]
+Reduce the bitrate to this target value in bits/second.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+Only stuffing packets can be removed.
+
+[.optdoc]
+Exactly one of `--target-bitrate` or `--fixed-proportion` must be specified.
+
+[.optdoc]
+Using the target bitrate method introduces an uncompressable latency in the stream,
+see options `--time-window` and `--packet-window`.
+
+[.opt]
+*--time-window* _milli-seconds_
+
+[.optdoc]
+With `--target-bitrate`, define the latency period over which packets are analyzed and extra packets are removed.
+To use this method, the bitrate must be known during the starting phase so that it can be turned into a number of packets.
+
+[.optdoc]
+Options `--time-window` and `--packet-window` are mutually exclusive.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

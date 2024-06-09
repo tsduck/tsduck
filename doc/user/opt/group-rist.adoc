@@ -1,0 +1,137 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::RISTPluginData.
+//
+// tags: input, output
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Parameters
+
+[.opt]
+_url_
+
+[.optdoc]
+Specify RIST URL's as parameters to specify the location of the sending peer.
+More than one URL can be specified to receive from multiple paths at the same time.
+
+[.optdoc]
+A RIST URL starts with `rist://`.
+It usually starts with `rist://__remote-ip__:__port__` (to connect to a peer) or
+`rist://@__local-ip__:__port__` (to listen for incoming connections from a peer).
+
+[.optdoc]
+A `rist://` URL may also include tuning parameters in addition to the address and port.
+This is the reason why the `rist` plugin has so few options.
+Most options are in the URL.
+
+[.optdoc]
+See <<RIST-URL>> for more details on the syntax of `rist://` URL’s.
+
+[.usage]
+Options	
+
+[.opt]
+*-a* _ip-address[:port]_ +
+*--allow* _ip-address[:port]_
+
+[.optdoc]
+In listener mode (`rist://@...`), allow the specified client IP address (and optional port) to connect.
+
+[.optdoc]
+More than one `--allow` option can be used to specify several allowed addresses.
+If at least one `--allow` option is specified, any client which is not explicitly allowed is denied.
+
+[.opt]
+*-b* _milliseconds_ +
+*--buffer-size* _milliseconds_
+
+[.optdoc]
+Default buffer size in milliseconds for packet retransmissions.
+
+[.optdoc]
+This value overrides the `buffer=` parameter in the URL.
+
+[.opt]
+*-d* _ip-address[:port]_ +
+*--deny* _ip-address[:port]_
+
+[.optdoc]
+In listener mode (`rist://@...`), deny the specified client IP address (and optional port) to connect.
+
+[.optdoc]
+More than one `--deny` option can be used to specify several denied addresses.
+
+[.opt]
+*-e* _name_ +
+*--encryption-type* _name_
+
+[.optdoc]
+Specify the encryption type (none by default).
+Must be one of `AES-128` or `AES-256`.
+
+[.optdoc]
+This value is used when the `aes-type=` parameter is not present in the URL.
+
+// tag::input[]
+[.opt]
+*--ignore-rist-timestamps*
+
+[.optdoc]
+Ignore source timestamps, use reception time as packet timestamps.
+
+[.optdoc]
+By default, use the source timestamps from the sender as packet timestamp.
+// end::input[]
+
+// tag::output[]
+[.opt]
+*-n* +
+*--null-packet-deletion*
+
+[.optdoc]
+Enable null packet deletion.
+The receiver needs to support this.
+// end::output[]
+
+[.opt]
+*-p* _name_ +
+*--profile* _name_
+
+[.optdoc]
+Specify the RIST profile to use.
+The name must be one of `advanced`, `main`, `simple`.
+The default profile is `main`.
+
+[.opt]
+*-s* _'string'_ +
+*--secret* _'string'_
+
+[.optdoc]
+Default pre-shared encryption secret.
+
+[.optdoc]
+If a pre-shared secret is specified without `--encryption-type`, AES-128 is used by default.
+
+[.optdoc]
+This value is used when the `secret=` parameter is not present in the URL.
+
+[.opt]
+*--stats-interval* _milliseconds_
+
+[.optdoc]
+Periodically report a line of statistics.
+The interval is in milliseconds.
+The statistics are in JSON format, on one line.
+
+[.opt]
+*--stats-prefix* _'prefix'_
+
+[.optdoc]
+With `--stats-interval`,
+specify a prefix to prepend on the statistics line before the JSON text to locate the appropriate line in the logs.

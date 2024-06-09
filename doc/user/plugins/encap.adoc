@@ -1,0 +1,259 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+[#encap-ref]
+=== encap
+
+[.cmd-header]
+Encapsulate packets from several PID's into one single PID
+
+This plugin encapsulates all packets from several PID’s into one single PID.
+This unique output PID replaces all input PID’s in the transport stream.
+The output PID is called the _tunnel_ or _outer_ PID through which all original or _inner_ PID’s are conveyed.
+
+The reverse operation, the decapsulation, is performed by the `decap` plugin.
+It replaces the tunnel PID by all original PID’s.
+
+The default encapsulation format is proprietary and defined below.
+Since this is not a standard format, it is not interoperable with external systems.
+The `encap` and `decap` plugins are typically used to hide the structure of some part of
+the transport stream into a private PID to cross some equipment which does not support
+the structure of the original stream or could damage its original structure.
+
+Because of the encapsulation overhead, the total volume of encapsulated packets is slightly greater
+(by approximately 2%) than the original PID’s.
+The encapsulation operation consequently needs some null packets in the original transport stream in addition to the original packets.
+The output tunnel PID replaces all original packets from the encapsulated PID’s plus some null packets.
+If the original input stream has no stuffing at all,
+then the `tsp` option `--add-input-stuffing 1/50` is sufficient to reserve the additional overhead.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P encap [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-i* +
+*--ignore-errors*
+
+[.optdoc]
+Ignore errors such as PID conflict or packet overflow.
+
+[.optdoc]
+By default, a PID conflict is reported when the output PID is already present on input but not encapsulated.
+A packet overflow is reported when the input stream does not contain enough null packets to absorb the encapsulation overhead.
+
+[.opt]
+*-m* _value_ +
+*--max-buffered-packets* _value_
+
+[.optdoc]
+Specify the maximum number of buffered packets.
+The buffered packets are produced by the encapsulation overhead.
+An overflow is usually caused by insufficient null packets in the input stream.
+
+[.optdoc]
+The default is 1,024 packets.
+
+[.opt]
+*-o* _value_ +
+*--output-pid* _value_
+
+[.optdoc]
+Specify the output PID containing all encapsulated PID's.
+This is a mandatory parameter, there is no default.
+The null PID 0x1FFF cannot be the output PID.
+
+[.opt]
+*--pack[=value]*
+
+[.optdoc]
+Emit outer packets when they are full only.
+
+[.optdoc]
+By default, emit outer packets as soon as possible, when null packets are available on input.
+With the default behavior, inner packets are decapsulated with a better time accuracy,
+at the expense of a higher bitrate of the outer PID when there are many null packets in input.
+
+[.optdoc]
+With the option `--pack`, the emission of an outer packet is delayed until it is full.
+The bitrate of the outer PID is usually smaller but inner packets may be decapsulated later.
+
+[.optdoc]
+When packing is on, it is possible to limit the distance between packed packets by specifying a positive value.
+When an outer packet is not yet full but no other input packet is found after the specified number of packets in the TS,
+then the outer packet is forced to be emitted.
+With a zero value the distance is disabled (ie. the distance between input packets is unlimited).
+The value 1 is equivalent to not using the pack mode since outer packets are emitted after one TS packet.
+
+[.opt]
+*--pcr-pid* _value_
+
+[.optdoc]
+Specify a reference PID containing PCR's.
+The output PID will contain PCR's, based on the same clock.
+By default, the output PID does not contain any PCR.
+
+[.opt]
+*--pes-mode* _mode_
+
+[.optdoc]
+Enable PES mode encapsulation.
+See the description of the encapsulation below.
+
+[.optdoc]
+Must be one of `disabled`, `fixed`, `variable`.
+
+[.opt]
+*--pes-offset* _value_
+
+[.optdoc]
+Specify the offset used in Synchronous PES mode encapsulation.
+The value (positive or negative) is added to the current PCR to generate the PTS timestamp inserted in the PES header.
+
+[.optdoc]
+The recommended values are between -90000 and +90000 (1 second).
+The value 0 is equivalent to use the Asynchronous PES encapsulation.
+
+[.optdoc]
+It requires to use the PCR option `--pcr-pid`.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specify an input PID or range of PID’s to encapsulate.
+
+[.optdoc]
+Several `--pid` options can be specified.
+The null PID 0x1FFF cannot be encapsulated.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
+
+[.usage]
+Encapsulation format
+
+This section describes the private encapsulation format.
+It is informative only.
+
+Due to the encapsulation overhead, the number of output packets is slightly larger than the input packets.
+The input stream must contain a few null packets to absorb the extra output packets.
+For this reason, null packets (PID 0x1FFF) are never encapsulated.
+
+There are two encapsulation formats, the _plain_ mode and the _PES_ mode.
+The plain mode is more compact but its structure is specific to TSDuck.
+The PES mode uses more overhead but it encapsulates the TS packets into PES packets,
+which may be easier to process in some cases.
+
+[.usage]
+Plain encapsulation format
+
+We define the output elementary stream (ES) as the concatenation of all payloads of all TS packets in the output tunnel PID.
+In this ES, all input TS packets are contiguous, without encapsulation.
+The initial 0x47 synchronization byte is removed from all input packets since it is redundant and contains no information.
+Only the remaining 187 bytes are copied in the output ES.
+
+The Payload Unit Start Indicator (PUSI) bit is set in the header of outer TS packets containing the start of an encapsulated packet.
+When the PUSI bit is set, the first byte of the payload is a _pointer field_ to the beginning of the first encapsulated packet.
+This packetization method is directly adapted from the standard packetization process for sections,
+with 187-byte packets instead of sections.
+
+[.usage]
+PES encapsulation format
+
+The same plain elementary stream is used, but with a PES envelope.
+This reduces the payload size for encapsulated packets but this makes the outer encapsulation more transparent.
+The overhead is increased by approximately 14 to 20%.
+
+The PES envelope uses a KLVA SMPTE-336M encapsulation to insert the inner payload into one private
+(testing) key (see <<Impleo-KLV>>).
+Each TS packet contains only one key, with a size no larger than the payload of one TS packet.
+So each PES packet fits into a single TS packet.
+
+The SMPTE-336M encapsulation can be either asynchronous (without timestamps) or synchronous (with PTS).
+The latter consumes more space (+10 bytes) and is only useful when it is needed to remux
+the encapsulated stream with an external tool that requires to use PTS marks.
+No other advantages are provided.
+
+Two variant strategies are implemented.
+The _fixed_ mode uses the short (7-bit) BER encoding.
+This limits the PES payload to a maximum of 127 bytes.
+And the adaptation field of the outer packet is enlarged with some stuff.
+However, the advantage is that the PES is sufficient small to include more data in the outer TS packet.
+This reduces the possibility than some external processing will split the outer packet in two to accommodate the entire PES data.
+
+The _variable_ mode does not impose this restriction and outer packets are filled to the maximum.
+The drawback is that sometimes the long form of BER encoding is used with two bytes and others the short form with one byte.
+Furthermore, this increases the chances that some external processing occupies two outer packets for the same inner PES packet.
+Still, support for those split PES packets is included.
+The only requirement is that the 26 or 27 PES+KLVA header is inserted in the first packet (with PUSI on).
+The remaining payload can be distributed in the following TS packets.
+
+The PES envelope has an overhead of 26, 27, 36 or 37 bytes based on:
+
+* 9 bytes for the PES header.
+* 0 or 5 bytes for the PTS (synchronous mode).
+* 0 or 5 bytes for the Metadata AU Header (synchronous mode)
+* 16 bytes for the UL key.
+* 1 or 2 bytes for the payload size (BER short or long format).
+
+To enable the use of the Synchronous encapsulation, it is required to use PCR’s and provide an offset.
+This value (positive or negative) will be added to the PCR to compute the PTS.
+Recommended values are between -90000 and +90000 (-1 and +1 second, respectively).
+If you use negative values, then you can restore in advance the encapsulated stream after remuxing.
+However, this will be valid only if you use an external tool to remux.
+If you're unsure, then don't enable it.
+
+Warning about the Synchronous mode: At start, the PTS marks can't be synchronized with the target PCR PID.
+This is because the PCR value is not read at start. But the PTS is required to be in all PES packets of the encapsulation.
+So, it is recommended to discard the outcoming stream until valid PTS values appear in the encapsulated stream.
+
+In order to correctly identify the encapsulated PES stream,
+it is recommended to declare its PID as a component of an existing or new service.
+This PID component shall be described as follow in the PMT of the service:
+
+* Stream type:
+** Asynchronous mode: Private Type (0x06)
+** Synchronous mode: Metadata Type (0x15)
+* Descriptors:
+** Add a registration descriptor for "KLVA" (0x4B4C5641)
+
+[.usage]
+Example
+
+We encapsulate several PID’s in outer PID 7777.
+We attach this outer PID to service id 100.
+We add a _registration_descriptor_ in the description of the outer PID in the PMT.
+
+Asynchronous PES mode encapsulation:
+
+[source,shell]
+----
+$ tsp ... \
+      -P encap --output-pid 7777 --pes-mode fixed ... \
+      -P pmt --service 100 --add-pid 7777/0x06 --add-pid-registration 7777/0x4B4C5641 \
+      ...
+----
+
+Synchronous PES mode encapsulation (with PCR):
+
+[source,shell]
+----
+$ tsp ... \
+      -P encap --output-pid 7777 --pes-mode fixed --pes-offset -50000 --pcr-pid 101 ... \
+      -P pmt --service 100 --add-pid 7777/0x15 --add-pid-registration 7777/0x4B4C5641 \
+      ...
+----

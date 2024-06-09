@@ -1,0 +1,123 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== http (input)
+
+[.cmd-header]
+Read a transport stream from an HTTP server
+
+This plugin reads a transport stream from a URL.
+The HTTP server is expected to send a valid transport stream without encapsulation.
+
+It is possible to repeat the operation a number of times.
+In that case, the URL is re-opened each time and the content may be different if the served stream is not a static file.
+
+The expected MIME type for an MPEG transport stream is `video/mp2t`.
+If a different type is reported by the server,
+a warning message is displayed but the content is accepted as long as it is a valid transport stream.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I http [options] url
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_url_
+
+[.optdoc]
+Specify the URL from which to read the transport stream.
+
+[.usage]
+Options
+
+[.opt]
+*--compressed*
+
+[.optdoc]
+Accept compressed HTTP responses.
+
+[.optdoc]
+By default, compressed responses are not accepted.
+
+[.opt]
+*--connection-timeout* _value_
+
+[.optdoc]
+Specify the connection timeout in milliseconds.
+
+[.optdoc]
+By default, let the operating system decide.
+
+[.opt]
+*--headers* _'header: value'_
+
+[.optdoc]
+Specify a custom header, e. g. `x-header-name: value` for HTTP requests.
+
+[.optdoc]
+This option can be set multiple times.
+
+[.opt]
+*--ignore-errors*
+
+[.optdoc]
+With `--repeat` or `--infinite`, repeat also in case of error.
+
+[.optdoc]
+By default, repetition stops on error.
+
+[.opt]
+*-i* +
+*--infinite*
+
+[.optdoc]
+Repeat the playout of the content infinitely (default: only once).
+
+[.opt]
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify the data reception timeout in milliseconds.
+
+[.optdoc]
+This timeout applies to each receive operation, individually.
+
+[.optdoc]
+By default, let the operating system decide.
+
+[.opt]
+*--reconnect-delay* _value_
+
+[.optdoc]
+With `--repeat` or `--infinite`, wait the specified number of milliseconds between reconnections.
+
+[.optdoc]
+By default, repeat immediately.
+
+[.opt]
+*-r* _count_ +
+*--repeat* _count_
+
+[.optdoc]
+Repeat the playout of the content the specified number of times (default: only once).
+
+[.opt]
+*--user-agent* _string_
+
+[.optdoc]
+Specify the user agent string to send in HTTP requests.
+
+include::{docdir}/opt/group-proxy.adoc[tags=!*]
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

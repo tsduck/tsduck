@@ -1,0 +1,218 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsemmg
+
+[.cmd-header]
+Minimal generic DVB SimulCrypt-compliant EMMG
+
+This utility behaves as a DVB SimulCrypt compliant EMMG.
+It can be used to debug system integration, replacing any standard EMM Generator.
+Most DVB SimulCrypt parameters can be adjusted from the command line to test the behaviour of a MUX.
+
+This fake EMMG can be used with the tsp plugin named datainject to build an end-to-end demo of a DVB SimulCrypt system.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsemmg [options] [section-file ...]
+----
+
+[.usage]
+Parameters
+
+[.optdoc]
+The parameters are files containing sections in binary or XML format.
+Several files can be specified.
+All sections are loaded and injected in the MUX using the EMMG/PDG{d-arrow}MUX protocol.
+The list of all sections from all files is cycled as long as tsemmg is running.
+The sections can be of any type, not only EMM's.
+
+[.optdoc]
+By default, when no input file is specified, this EMMG generates fake EMM sections of a fixed size
+and all payload bytes contain the same value.
+The value of the fake EMM `table_id` and the value of the payload bytes are incremented in each new section.
+See options `--emm-size`, `--emm-min-table-id` and `--emm-max-table-id`.
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bandwidth* _value_
+
+[.optdoc]
+Specify the bandwidth of the data which are sent to the MUX in kilobits per second.
+The default is 100 kb/s.
+
+[.opt]
+*--bytes-per-send* _value_
+
+[.optdoc]
+Specify the average size in bytes of each data provision.
+The exact value depends on sections and packets sizes.
+Default: 500 bytes.
+
+[.opt]
+*--channel-id* _value_
+
+[.optdoc]
+This option sets the DVB SimulCrypt parameter data_channel_id.
+The default is 1.
+
+[.opt]
+*-c* _value_ +
+*--client-id* _value_
+
+[.optdoc]
+This option sets the DVB SimulCrypt parameter client_id.
+The default is 0.
+
+[.optdoc]
+For EMM injection, the most signification 16 bits shall be the CA_system_id of the corresponding CAS.
+
+[.opt]
+*--cycles* _value_
+
+[.optdoc]
+Inject the sections from the input files the specified number of times.
+By default, inject sections indefinitely.
+
+[.opt]
+*-d* _value_ +
+*--data-id* _value_
+
+[.optdoc]
+This option sets the DVB SimulCrypt parameter data_id.
+The default is 0.
+
+[.opt]
+*--emm-max-table-id* _value_
+
+[.optdoc]
+Specify the maximum table id of the automatically generated fake EMM's.
+The default is 0x8F.
+
+[.optdoc]
+When generating fake EMM's, the table ids are cycled from the minimum to the maximum value.
+
+[.opt]
+*--emm-min-table-id* _value_
+
+[.optdoc]
+Specify the minimum table id of the automatically generated fake EMM's.
+The default is 0x82.
+
+[.opt]
+*--emm-size* _value_
+
+[.optdoc]
+Specify the size in bytes of the automatically generated fake EMM's.
+The default is 100 bytes.
+
+[.opt]
+*--emmg-mux-version* _value_
+
+[.optdoc]
+Specify the version of the EMMG/PDG{d-arrow}MUX DVB SimulCrypt protocol.
+Valid values are 1 to 5. The default is 2.
+
+[.opt]
+*-i* +
+*--ignore-allocated*
+
+[.optdoc]
+Ignore the allocated bandwidth as returned by the MUX.
+Continue to send data at the planned bandwidth, even if it is higher than the allocated bandwidth.
+
+[.opt]
+*--max-bytes* _value_
+
+[.optdoc]
+Stop after sending the specified number of bytes.
+By default, send data indefinitely.
+
+[.opt]
+*-m* _address:port_ +
+*--mux* _address:port_
+
+[.optdoc]
+Specify the IP address (or host name) and TCP port of the MUX.
+
+[.optdoc]
+This is a required parameter, there is no default.
+
+[.opt]
+*--requested-bandwidth* _value_
+
+[.optdoc]
+This option sets the DVB SimulCrypt parameter bandwidth in the stream_BW_request message.
+The value is in kilobits per second.
+
+[.optdoc]
+The default is the value of the `--bandwidth` option.
+Specifying distinct values for `--bandwidth` and `--requested-bandwidth` can be used for testing the behavior of a MUX.
+
+[.opt]
+*-s* +
+*--section-mode*
+
+[.optdoc]
+Send EMM's or data in section format.
+This option sets the DVB SimulCrypt parameter section_TSpkt_flag to zero.
+By default, EMM's and data are sent in TS packet format.
+
+[.opt]
+*--stream-id* _value_
+
+[.optdoc]
+This option sets the DVB SimulCrypt parameter data_stream_id.
+The default is 1.
+
+[.opt]
+*-t* _value_ +
+*--type* _value_
+
+[.optdoc]
+This option sets the DVB SimulCrypt parameter data_type.
+The default is 0 (EMM).
+
+[.optdoc]
+In addition to integer values, the following names can be used: `emm` (0), `private-data` (1) and `ecm` (2).
+
+[.opt]
+*-u* _[address:]port_ +
+*--udp* _[address:]port_
+
+[.optdoc]
+Specify that the data_provision messages shall be sent using UDP.
+
+[.optdoc]
+By default, the data_provision messages are sent over TCP using the same TCP connection as the management commands.
+
+[.optdoc]
+If the IP address (or host name) is not specified, use the same IP address as the `--mux` option.
+The port number is required, even if it is the same as the TCP port.
+
+[.opt]
+*-w* _milliseconds_ +
+*--udp-end-wait* _milliseconds_
+
+[.optdoc]
+With `--udp`, specify the number of milliseconds to wait after the last data_provision message (UDP)
+and before the stream_close_request message (TCP).
+
+[.optdoc]
+This can be necesssary to ensure that the stream_close_request is processed after the processing of the last data_provision.
+The default is 100 ms.
+
+include::{docdir}/opt/group-dvbsim-log.adoc[tags=!*;emmg]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

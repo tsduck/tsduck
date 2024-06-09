@@ -1,0 +1,27 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for resource monitoring options.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Monitoring options
+
+[.opt]
+**-m**__[filename]__ +
+**--monitor**__[=filename]__
+
+[.optdoc]
+Continuously monitor the system resources which are used by the application process.
+This includes CPU load, virtual memory usage.
+Useful to verify the stability of the application or benchmarking the packet processing performance.
+
+[.optdoc]
+The optional file is an XML monitoring configuration file.
+See xref:monconfig-format[xrefstyle=short], for more details on resource monitoring configuration files.

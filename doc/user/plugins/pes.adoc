@@ -1,0 +1,271 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pes
+
+[.cmd-header]
+Analyze PES packets
+
+This plugin detects and analyzes PES packets in all selected PID’s (all PID’s by default).
+Note that, without any option, this plugin does not report anything, you need to specify what you want to  analyze.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pes [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--audio-attributes*
+
+[.optdoc]
+Display audio attributes such as audio layer, stereo mode or sampling rate in MPEG-1, MPEG-2, AC-3 and Enhanced-AC-3 audio.
+
+[.opt]
+*--avc-access-unit*
+
+[.optdoc]
+Dump all AVC (H.264), HEVC (H.265) or VVC (H.266) access units (aka "NALunits").
+
+[.opt]
+*-b* +
+*--binary*
+
+[.optdoc]
+Include binary dump in addition to hexadecimal.
+
+[.opt]
+*-f* +
+*--flush-last-unbounded-pes*
+
+[.optdoc]
+At end of stream, consider the last unbounded PES packet as complete in each PID.
+
+[.optdoc]
+By default, there is no guarantee that the unbounded buffered data
+at end of stream form a valid PES packet and they are discarded.
+
+[.opt]
+*--h26x-default-format* _name_
+
+[.optdoc]
+The video formats AVC (H.264), HEVC (H.265) and VVC (H.266) use the same binary bitstream format.
+But the formats of their NALunits are different.
+
+[.optdoc]
+When analyzing PES packets of one of these formats, the plugin must know which the actual one is.
+This is usually automatically done from the stream type in the PMT of the service.
+However, if the PID is unreferenced or if the PMT was previously filtered out, this option indicates which format to use.
+
+[.optdoc]
+Must be one of `AVC`, `H.264`, `HEVC`, `H.265`, `VVC`, `H.266`. The default is `AVC`.
+
+[.opt]
+*-h* +
+*--header*
+
+[.optdoc]
+Dump all PES packets header.
+
+[.opt]
+*-i* +
+*--intra-image*
+
+[.optdoc]
+Report intra images.
+
+[.opt]
+*-x* _value_ +
+*--max-dump-count* _value_
+
+[.optdoc]
+Specify the maximum number of times data dump occurs with options
+`--trace-packets`, `--header`, `--payload`, `--start-code`, `--avc-access-unit`.
+Default: unlimited.
+
+[.opt]
+*-m* _value_ +
+*--max-dump-size* _value_
+
+[.optdoc]
+Specify the maximum dump size for options `--header`, `--payload`, `--start-code`, `--avc-access-unit`.
+By default, the complete data section (payload, access unit, etc.) is displayed.
+
+[.opt]
+*--max-payload-size* _value_
+
+[.optdoc]
+Display PES packets with no payload or with a payload the size (in bytes) of which is not greater than the specified value.
+
+[.opt]
+*--min-payload-size* _value_
+
+[.optdoc]
+Display PES packets with a payload the size (in bytes) of which is equal to or greater than the specified value.
+
+[.opt]
+*--multiple-files*
+
+[.optdoc]
+With options `--save-pes` and `--save-es`, save each PES packet in a distinct file.
+
+[.optdoc]
+The specified file name in `--save-pes` or `--save-es` is considered as a template
+and a unique number is automatically added to the name part so that successive files receive distinct names.
+Example: if the specified file name is `base.pes`, the various files are named `base-000000.pes`, `base-000001.pes`, etc.
+
+[.optdoc]
+If the specified template already contains trailing digits, this unmodified name is used for the first file.
+Then, the integer part is incremented.
+Example: if the specified file name is `base-027.pes`, the various files are named `base-027.pes`, `base-028.pes`, etc.
+
+[.opt]
+*--nal-unit-type* _value_
+
+[.optdoc]
+AVC (H.264), HEVC (H.265) or VVC (H.266) NAL unit filter:
+with `--avc-access-unit`, select access units with the specified type (default: all access units).
+
+[.optdoc]
+Several `--nal-unit-type` options may be specified.
+
+[.opt]
+*--negate-nal-unit-type*
+
+[.optdoc]
+Negate the NAL unit filter: specified access units types are excluded.
+
+[.opt]
+*-n* +
+*--negate-pid*
+
+[.optdoc]
+Negate the PID filter: specified PID's are excluded.
+
+[.opt]
+*--nibble*
+
+[.optdoc]
+Same as `--binary` but add separator between 4-bit nibbles.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the output file for the report (default: standard output).
+
+[.opt]
+*--packet-index*
+
+[.optdoc]
+Display the index of the first and last TS packet of each displayed PES packet.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+PID filter: select packets with this PID value (default: all PID's containing PES packets).
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+[.opt]
+*--payload*
+
+[.optdoc]
+Dump all PES packets payload.
+
+[.opt]
+*--save-es* _filename_
+
+[.optdoc]
+Save the elementary stream in the specified file.
+The payloads of all PES packets are saved in a raw binary form without encapsulation.
+The PES headers are dropped.
+
+[.optdoc]
+When the specified output file is a dash (`-`), the standard output is used.
+Thus, the binary content of an elementary stream can be pipelined to another command
+using the following command skeleton:
+
+[.optdoc]
+[source,shell]
+----
+$ tsp -I ... -P pes --pid 100 --save-es - -O drop | ...
+----
+
+[.opt]
+*--save-pes* _filename_
+
+[.optdoc]
+Save all PES packets, header and payload, in the specified file.
+All PES packets are saved in a raw binary form without encapsulation.
+
+[.optdoc]
+When the specified output file is a dash (`-`), the standard output is used.
+
+[.opt]
+*--sei-avc*
+
+[.optdoc]
+Dump all SEI (Supplemental Enhancement Information) in AVC (H.264), HEVC (H.265) or VVC (H.266) access units.
+
+[.opt]
+*--sei-type* _value_
+
+[.optdoc]
+SEI type filter: with `--sei-avc`, select SEI access units with this type (default: all SEI access units).
+
+[.optdoc]
+Several `--sei-type` options may be specified.
+
+[.opt]
+*-s* +
+*--start-code*
+
+[.optdoc]
+Dump all start codes in PES packet payload.
+
+[.opt]
+*-t* +
+*--trace-packets*
+
+[.optdoc]
+Trace all PES packets (display a one-line description per packet).
+
+[.opt]
+*--uuid-sei* _value_
+
+[.optdoc]
+SEI filter: with `--sei-avc`, only select user data unregistered SEI access units with the specified UUID value.
+By default, with `--sei-avc`, all SEI are displayed.
+
+[.optdoc]
+Several `--uuid-sei` options may be specified.
+
+[.optdoc]
+The UUID value must be 16 bytes long.
+It must be either an ASCII string of exactly 16 characters or a hexadecimal value representing 16 bytes.
+
+[.opt]
+*-v* +
+*--video-attributes*
+
+[.optdoc]
+Display video attributes such as frame size, frame rate or profile in MPEG-1, MPEG-2 and AVC.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,280 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-references]
+[appendix]
+== References
+
+[#acronyms]
+=== Acronyms and abbreviations
+
+[.compact-table]
+[cols="<1,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|ABNT |_Associação Brasileira de Normas Técnicas_ (Brazilian standardization committee)
+|AC-3 |Audio Compression Standard 3 (Dolby)
+|AES |Advanced Encryption Standard
+|AIT |Application Information Table (DVB)
+|ANSI |American National Standards Institute
+|ARIB |Association of Radio Industries and Businesses (Japan)
+|ASI |Asynchronous Serial Interface
+|ATIS |Alliance for Telecommunications Industry Solutions
+|ATSC |Advanced Television Systems Committee
+|ATR |Answer To Reset (smartcard)
+|AVC |Advanced Video Coding
+|BAT |Bouquet Association Table (DVB)
+|BDA |Broadcast Device Architecture (Microsoft Windows)
+|BDT |Binary Data Table
+|BER |Bit Error Ratio
+|BIT |Broadcaster Information Table (ISDB)
+|BPSK |Binary Phase Shift Keying
+|CA |Conditional Access
+|CAM |Conditional Access Module
+|CAS |Conditional Access System
+|CAT |Conditional Access Table (MPEG)
+|CIT |Content Identifier Table (DVB)
+|CMT |CA Message Table
+|COFDM |Coded Orthogonal Frequency Division Multiplexing
+|CP |Crypto-Period
+|CRC |Cyclic Redundancy Check
+|CSA |_Conseil Supérieur de l’Audiovisuel_ (French national regulator for TV)
+|CVCT |Cable Virtual Channel Table (ATSC)
+|CW |Control Word
+|DCCT |Directed Channel Change Table (ATSC)
+|DCCSCT |Directed Channel Change Selection Code Table (ATSC)
+|DIT |Discontinuity Information Table (DVB)
+|DKMS |Dynamic Kernel Module Support (Linux)
+|DOCSIS |Data Over Cable Service Interface Specification
+|DRM |Digital Rights Management
+|DSM-CC |Digital Storage Media Command and Control (MPEG)
+|DTH |Direct To Home
+|DTS |Decoding Time Stamp
+|DTTV |Digital Terrestrial Television
+|DTV |Digital Television
+|DVB |Digital Video Broadcasting
+|DVB-C |DVB Cable modulation
+|DVB-C2 |DVB Cable modulation, 2nd generation
+|DVB-CISSA |DVB Common IPTV Software-oriented Scrambling Algorithm
+|DVB-CSA |DVB Common Scrambling Algorithm
+|DVB-S |DVB Satellite modulation
+|DVB-S2 |DVB Satellite modulation, 2nd generation
+|DVB-T |DVB Terrestrial modulation
+|DVB-T2 |DVB Terrestrial modulation, 2nd generation
+|ECM |Entitlement Control Message
+|ECMG |ECM Generator
+|EIS |Event Information Scheduler
+|EIT |Event Information Table (DVB, ATSC, ISDB)
+|EMM |Entitlement Management Message
+|EMMG |EMM Generator
+|EPG |Electronic Program Guide
+|ERT |Event Relation Table (ISDB)
+|ES |Elementary Stream
+|ETSI |European Telecommunications Standards Institute
+|ETT |Extended Text Table (ATSC)
+|FEC |Forward Error Correction
+|FIPS |Federal Information Processing Standard
+|FLUTE |File Delivery over Unidirectional Transport (RFC 3926)
+|FTA |Free To Air
+|GOP |Group Of Pictures
+|HbbTV |Hybrid broadcast/broadband Television
+|HE-AAC |High Efficiency Advanced Audio Coding
+|HLS |HTTP Live Streaming
+|HTTP |Hyper-Text Transfer Protocol
+|HTTPS |Hyper-Text Transfer Protocol - Secure
+|IDSA |IIF Default Scrambling Algorithm
+|IEC |International Electrotechnical Commission
+|IEEE |Institute of Electrical and Electronics Engineers
+|IETF |Internet Engineering Task Force
+|IIF |IP-TV Interoperability Forum
+|INT |IP/MAC Notification Table (DVB)
+|IP |Internet Protocol
+|IPTV |Internet Protocol Television
+|ISDB |Integrated Services Digital Broadcasting
+|ISDB-S |ISDB Satellite modulation (ARIB)
+|ISDB-T |ISDB Terrestrial modulation (ARIB)
+|ISDB-Tb |ISDB Terrestrial modulation (ABNT-defined Brazilian version)
+|ISO |International Standardization Organization
+|ITT |Index Transmission information Table (ISDB)
+|ITU |International Telecommunication Union
+|IV |Initialization Vector (cryptography)
+|LDT |Linked Description Table (ISDB)
+|LIT |Local event Information Table (ISDB)
+|LNB |Low-Noise Block down-converter (satellite)
+|MAC |Media Access Control (networking)
+|MAC |Message Authentication Code (cryptography)
+|MGT |Master Guide Table (ATSC)
+|MPE |Multi-Protocol Encapsulation (DVB)
+|MPEG |Moving Picture Experts Group
+|MUX |Multiplexer
+|NBIT |Network Board Information Table (ISDB)
+|NIST |National Institute of Standards and Technology
+|NIT |Network Information Table (DVB)
+|NTSC |National Television Systems Committee
+|OQPSK |Offset Quadrature Phase Shift Keying
+|OUI |Organizationally Unique Identifier (IEEE assigned)
+|PAT |Program Association Table (MPEG)
+|PCAT |Partial Content Announcement Table (ISDB)
+|PCR |Program Clock Reference
+|PES |Packetized Elementary Stream
+|PID |Packet Identifier
+|PLP |Physical Layer Pipe
+|PMT |Program Map Table (MPEG)
+|PSI |Program Specific Information (MPEG)
+|PSK |Phase Shift Keying
+|PTS |Presentation Time Stamp
+|QPSK |Quadrature Phase Shift Keying
+|QAM |Quadrature Amplitude Modulation
+|RIST |Reliable Internet Stream Transport (network protocol)
+|RNT |Resolution provider Notification Table (DVB)
+|RRT |Rating Region Table (ATSC)
+|RST |Running Status Table (DVB)
+|RTP |Real-Time Protocol
+|RTT |Rating Text Tavle (ATSC)
+|SCS |SimulCrypt Synchronizer
+|SCTE |Society of Cable Telecommunications Engineers
+|SDT |Service Description Table (DVB)
+|SFN |Single Frequency Network
+|SI |Service Information (DVB)
+|SIT |Selection Information Table (DVB)
+|SMPTE |Society of Motion Picture and Television Engineers
+|SRT |Secure Reliable Transport (network protocol)
+|SRT |SubRip Text (subtitles format)
+|STB |Set-Top Box
+|STD |System Target Decoder
+|STT |System Time Table (ATSC)
+|T2-MI |DVB-T2 Modulator Interface
+|TDT |Time and Date Table (DVB)
+|TID |Table Identifier
+|TNT |_Télévision Numérique Terrestre_ (French DTTV network)
+|TOT |Time Offset Table (DVB)
+|TPS |Transmission Parameter Signalling
+|TS |Transport Stream
+|TSDT |Transport Stream Description Table (MPEG)
+|TVCT |Terrestrial Virtual Channel Table (ATSC)
+|UDP |User Datagram Protocol
+|UNT |Update Notification Table (DVB)
+|URI |Uniform Resource Identifier
+|URL |Uniform Resource Locator
+|UTC |Coordinated Universal Time
+|UUID |Universal Unique Identifier
+|VBI |Vertical Blanking Interval
+|VCT |Virtual Channel Table (ATSC)
+|===
+
+<<<
+[#bibliography]
+[bibliography]
+=== Bibliography
+
+* [[[AOM-AV1]]] Alliance for Open Media (AOM):
+  "Carriage of AV1 in MPEG-2 TS", October 2021, https://aomediacodec.github.io/av1-mpeg2-ts/
+* [[[ARIB-B10]]] ARIB STD-B10, V4.6, June 2008:
+  "Service Information for digital broadcasting system" (English version).
+* [[[ARIB-B10J]]] ARIB STD-B10, V5.7, December 2015:
+  "Service Information for digital broadcasting system" (Japanese version).
+* [[[ARIB-B21]]] ARIB STD-B21, V5.11, December 2019:
+  "Receiver for digital broadcasting" (English version).
+* [[[ARIB-B24]]] ARIB STD-B24, V6.4, July 2017:
+  "Data Coding and Transmission Specification for Digital Broadcasting".
+* [[[ARIB-B25]]] ARIB STD-B25, V5.0, March 2007:
+  "Conditional Access System Specifications for Digital Broadcasting".
+* [[[ATSC-A52]]] ATSC A52, January 2018,
+  "Digital Audio Compression (AC-3, E-AC-3)".
+* [[[ATSC-A65]]] ATSC A65/2013, August 2013:
+  "ATSC Standard: Program and System Information Protocol for Terrestrial Broadcast and Cable".
+* [[[ATSC-A69]]] ATSC A69/2009, December 2009:
+  "ATSC Recommended Practice: Program and System Information Protocol Implementation Guidelines for Broadcasters".
+* [[[Dektec]]] Dektec Digital Video B.V. corporate home page, http://www.dektec.com/
+* [[[Dektec-Drivers]]] Linux DKMS for Dektec device drivers, https://github.com/tsduck/dektec-dkms 
+* [[[Dektec-SDK]]] Dektec drivers and SDK’s downloads, http://www.dektec.com/downloads/SDK/
+* [[[DTG-DBOOK]]] DTG:
+  "Digital Terrestrial Television; Requirements for Interoperability; The D-Book 7 Part A", V1, March 2011.
+* [[[EACEM-030]]] EACEM TR 030, V1.0, February 2000:
+  "Baseline Digital Terrestrial TV Receiver Specification".
+* [[[ETSI-101-162]]] ETSI TR 101 162, V1.2.2, May 2003:
+  "Digital Video Broadcasting (DVB); Allocation of Service Information (SI) and data broadcasting codes for DVB systems".
+* [[[ETSI-101-211]]] ETSI TS 101 211 V1.13.1, May 2021:
+  "Digital Video Broadcasting (DVB); Guidelines on implementation and usage of Service Information (SI)".
+* [[[ETSI-101-812]]] ETSI TS 101 812, V1.3.2, August 2006:
+  "Digital Video Broadcasting (DVB); Multimedia Home Platform (MHP) Specification 1.0.3".
+* [[[ETSI-102-006]]] ETSI TS 102 006, V1.4.1, June 2015:
+  "Digital Video Broadcasting (DVB); Specification for System Software Update in DVB Systems".
+* [[[ETSI-102-323]]] ETSI TS 102 323, V1.5.1, January 2012:
+  "Digital Video Broadcasting (DVB); Carriage and signalling of TV-Anytime information in DVB transport streams".
+* [[[ETSI-102-773]]] ETSI TS 102 773, V1.2.1, December 2010,
+  "Modulator Interface (T2-MI) for a second-generation digital terrestrial television broadcasting system (DVB-T2)".
+* [[[ETSI-102-809]]] ETSI TS 102 809, V1.3.1, June 2017:
+  "Digital Video Broadcasting (DVB); Signalling and carriage of interactive applications and services
+  in Hybrid broadcast/broadband environments" (HbbTV).
+* [[[ETSI-102-825-4]]] ETSI TS 102 825-4 V1.2.2, December 2013:
+  "Digital Video Broadcasting (DVB); Content Protection and Copy Management (DVB-CPCM); Part 4: CPCM System Specification".
+* [[[ETSI-102-825-9]]] ETSI TS 102 825-9 V1.2.1, February 2011:
+  "Digital Video Broadcasting (DVB); Content Protection and Copy Management (DVB-CPCM); Part 9: CPCM System Adaptation Layers".
+* [[[ETSI-103-127]]] ETSI TS 103 127, V1.1.1, May 2013:
+  "Digital Video Broadcasting (DVB); Content Scrambling Algorithms for DVB-IPTV Services using MPEG2 Transport Streams".
+* [[[ETSI-103-197]]] ETSI TS 103 197, V1.4.1, September 2004:
+  "Digital Video Broadcasting (DVB); Head-end implementation of DVB SimulCrypt".
+* [[[ETSI-289]]] ETSI, ETR 289, October 1996:
+  "Digital Video Broadcasting (DVB); Support for use of scrambling and Conditional Access (CA) within digital broadcasting systems".
+* [[[ETSI-300-468]]] ETSI EN 300 468, V1.16.1, August 2019:
+  "Digital Video Broadcasting (DVB); Specification for Service Information (SI) in DVB systems".
+* [[[ETSI-301-192]]] ETSI EN 301 192, V1.6.1, August 2015:
+  "Digital Video Broadcasting (DVB); DVB specification for data broadcasting".
+* [[[ETSI-301-210]]] ETSI EN 301 210, V1.1.1, March 1999;
+  "Digital Video Broadcasting (DVB); Framing structure, channel coding and modulation for
+  Digital Satellite News Gathering (DSNG) and other contribution applications by satellite".
+* [[[ETSI-302-755]]] ETSI EN 302 755, V1.4.1, July 2015,
+  "Frame structure channel coding and modulation for a second-generation digital terrestrial television broadcasting system (DVB-T2)".
+* [[[ETSI-303-560]]] ETSI EN 303 560, V1.1.1, May 2018;
+  "Digital Video Broadcasting (DVB); TTML subtitling systems".
+* [[[Fransat]]] Via Eutelsat Fransat:
+  "Set-Top-Box Specification DVB MPEG-4 HD", V0.0.7, October 2009.
+* [[[FTV-AUS]]] Free TV Australia:
+  "Operational Practice OP-41; Logical Channel Descriptor and Allocation of Logical Channel Numbers", Issue 8, July 2016.
+* [[[HiDes]]] HiDes USB DVB-T modulator adaptors,
+  http://www.hides.com.tw/product_cg74469_eng.html 
+* [[[HiDes-Drivers]]] Device drivers for HiDes modulators,
+  https://github.com/tsduck/hides-drivers/
+* [[[HomeBrew]]] HomeBrew, open-source package manager for macOS (or Linux), https://brew.sh/
+* [[[Impleo-KLV]]] Impleo TV Systems Ltd, February 2017,
+  "KLV encoded metadata in STANAG 4609 streams",
+  https://impleotv.com/2017/02/17/klv-encoded-metadata-in-stanag-4609-streams/
+* [[[ISO-13818-1]]] ISO/IEC 13818-1:2018 | ITU-T Recommendation H.222 (2017):
+  "Generic coding of moving pictures and associated audio information: Systems" (also known as "MPEG-2 System Layer").
+* [[[ISO-13818-6]]] ISO/IEC 13818-6, July 1998:
+  "Digital Storage Media Command & Control" (DSM-CC).
+* [[[LinuxTV]]] Linux TV Wiki:
+  "How to install DVB device drivers",
+  http://linuxtv.org/wiki/index.php/How_to_install_DVB_device_drivers 
+* [[[NorDig]]] NorDig:
+  "Unified Requirements for Integrated Receiver Decoders for use in cable,
+  satellite, terrestrial and managed IPTV based networks", V3.1.1, September 2019.
+* [[[RIST]]] RIST, librist documentation,
+  https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation 
+* [[[RIST-URL]]] RIST, URL syntax,
+  https://code.videolan.org/rist/librist/-/wikis/risturl-Syntax-as-of-v.-0.2.0
+* [[[SCTE-18]]] ANSI/SCTE 18 2007,
+  "Emergency Alert Messaging for Cable".
+* [[[SCTE-35]]] ANSI/SCTE 35 2017,
+  "Digital Program Insertion Cueing Message for Cable".
+* [[[SCTE-52]]] ANSI/SCTE 52 2018,
+  "Data Encryption Standard - Cipher Block Chaining Packet Encryption Specification".
+* [[[SCTE-164]]] ANSI/SCTE 164 2019,
+  "Emergency Alert Metadata Descriptor".
+* [[[SRT]]] SRT, libsrt site, https://github.com/Haivision/srt/ 
+* [[[Suntech]]] Suntechtv U3 USB modulator (VATek-based),
+  https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673 
+* [[[TSDuck]]] TSDuck Web site, https://tsduck.io/ 
+* [[[TSDuck-Prog]]] TSDuck programmer’s guide, https://tsduck.io/doxy/ 
+* [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, https://github.com/tsduck/tsduck/issues
+* [[[TSDuck-Streams]]] Repository of sample real-life transport streams, https://tsduck.io/streams
+* [[[UWA]]] UHD World Association, T/UWA 005.2-1-2022
+  "HDR Video Technology Part 2-1 Application Guide to System Integration".
+* [[[VATek]]] Vision Advance Technology Inc (VATek) corporate home page: https://www.vatek.com.tw/
+* [[[VATek-SDK]]] VATek SDK source code: https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2
+* [[[VLC]]] VideoLAN VLC Media Player home page, http://www.videolan.org/vlc/ 

@@ -95,7 +95,7 @@ VERSION=$(($MAJOR * 100 + $MINOR))
 
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
-    PKGLIST+=(git gnu-sed grep dos2unix coreutils python3 openssl)
+    PKGLIST+=(git gnu-sed grep dos2unix coreutils python3 openssl ruby asciidoctor)
     [[ -z $NORIST    ]] && PKGLIST+=(librist)
     [[ -z $NOSRT     ]] && PKGLIST+=(srt)
     [[ -z $NOVATEK   ]] && PKGLIST+=(libvatek)
@@ -217,7 +217,7 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor ruby-asciidoctor-pdf ruby-rouge)
     [[ -z $NOEDITLINE                                      ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                          ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 17                         ]] && PKGLIST+=(libcurl3 libcurl3-dev)
@@ -248,7 +248,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor ruby-asciidoctor-pdf ruby-rouge)
     [[ -z $NOEDITLINE                              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOSRT && $MAJOR -ge 20 && $MAJOR -lt 21 ]] && PKGLIST+=(libsrt-dev)
@@ -273,7 +273,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor ruby-asciidoctor-pdf ruby-rouge)
     [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 9  ]] && PKGLIST+=(libcurl3 libcurl3-dev)
@@ -301,7 +301,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel)
+    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel rubygem-asciidoctor rubygem-asciidoctor-pdf rubygem-rouge)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
     [[ -z $NORIST && $FC -ge 36 ]] && PKGLIST+=(librist-devel)
@@ -329,7 +329,7 @@ elif [[ -f /etc/redhat-release ]]; then
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel)
+    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel ruby-devel rubygem-asciidoctor rubygem-rouge)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
     [[ -z $NORIST && $EL -ge 902 ]] && PKGLIST+=(librist-devel)

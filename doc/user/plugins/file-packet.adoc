@@ -1,0 +1,27 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== file (packet processing)
+
+[.cmd-header]
+Save packets to a file and pass to next plugin
+
+This plugin writes the TS packets to a file and passes them to the next plugin in the chain.
+The output file receives a flow of contiguous 188-bytes TS packets.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P file [options] file-name
+----
+
+include::{docdir}/opt/group-file-output.adoc[tags=!*]
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

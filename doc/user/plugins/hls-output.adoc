@@ -1,0 +1,253 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== hls (output)
+
+[.cmd-header]
+Generate HTTP Live Streaming (HLS) media
+
+This output plugin generates HLS playlists and media segments on local files only.
+It can also purge obsolete media segments and regenerate live playlists.
+
+The plugin always generate media segments.
+The playlist generation is optional.
+
+To setup a complete HLS server, it is necessary to setup an external HTTP server such as Apache
+which simply serves the files, playlist and media segments.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O hls [options] filename
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_filename_
+
+[.optdoc]
+Specify the name template of the output media segment files.
+A number is automatically added to the name part so that successive segment files receive distinct names.
+
+[.optdoc]
+Example: if the specified file name is `foo.ts`, the various segment files are named `foo-000000.ts`, `foo-000001.ts`, etc.
+
+[.optdoc]
+If the specified template already contains trailing digits, this unmodified name is used for the first segment.
+Then, the integer part is incremented.
+
+[.optdoc]
+Example: if the specified file name is `foo-027.ts`, the various segment files are named `foo-027.ts`, `foo-028.ts`, etc.
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--align-first-segment*
+
+[.optdoc]
+Force the standard alignment of the first output segment:
+
+[.optdoc]
+* Start with a PAT and PMT.
+* Force the reference video PID to start on a PES packet boundary.
+* With `--intra-close`, also force this video PID to start on an intra-coded image (I-Frame).
+
+[.optdoc]
+Using this option, all packets before these starting conditions are dropped.
+
+[.optdoc]
+By default, the first output segment starts with the first packets in the TS.
+
+[.optdoc]
+Note that all subsequent output segments always start with a copy of the last PAT and PMT,
+on a video PES packet boundary, with or without this option.
+
+[.opt]
+*-c* _'string'_ +
+*--custom-tag* _'string'_
+
+[.optdoc]
+Specify a custom tag to add in the playlist files.
+The specified string shall start with `#`.
+If omitted, the leading `#` is automatically added.
+
+[.optdoc]
+Several `--custom-tag` options can be specified.
+Each tag is added as an independent tag line.
+
+[.opt]
+*-d* _value_ +
+*--duration* _value_
+
+[.optdoc]
+Specify the target duration in seconds of media segments.
+
+[.optdoc]
+The default is 10 seconds per segment for VoD streams and 5 seconds for live streams.
+
+[.opt]
+*-e* +
+*--event*
+
+[.optdoc]
+Specify that the output is a event playlist.
+
+[.optdoc]
+By default, the output stream is considered as VoD.
+
+[.opt]
+*-f* _value_ +
+*--fixed-segment-size* _value_
+
+[.optdoc]
+Specify the size in bytes of all media segments.
+By default, the segment size is variable and based on the `--duration` parameter.
+When `--fixed-segment-size` is specified, the `--duration` parameter is only used as a hint in the playlist file.
+
+[.opt]
+*-i* +
+*--intra-close*
+
+[.optdoc]
+Start new segments on the start of an intra-coded image (I-frame) of the reference video PID.
+
+[.optdoc]
+The reference video PID is the first video PID of the first service in the PAT.
+
+[.optdoc]
+By default, a new segment starts on a PES packet boundary on this video PID.
+
+[.optdoc]
+Note that it is not always possible to guarantee the detection of I-frames
+if the video coding format is not fully supported,
+if the start of an intra-image cannot be found in the start of the PES packet which is contained in a TS packet or
+if the TS packet is encrypted.
+
+[.opt]
+*--label-close* _label1[-label2]_
+
+[.optdoc]
+Close the current segment as soon as possible after a packet with any of the specified labels.
+Labels should have typically been set by a previous plugin in the chain.
+In practice, the current segment is closed and renewed at the start of the next PES packet on the video PID.
+
+[.optdoc]
+Several `--label-close` options may be specified.
+
+[.optdoc]
+This option is compatible with `--duration`.
+The current segment is closed on a labelled packed or segment duration, whichever comes first.
+
+[.opt]
+*-l* _value_ +
+*--live* _value_
+
+[.optdoc]
+Specify that the output is a live stream.
+The specified value indicates the number of simultaneously available media segments.
+Obsolete media segment files are automatically deleted.
+
+[.optdoc]
+By default, the output stream is considered as VoD and all created media segments are preserved.
+
+[.opt]
+*--live-extra-segments* _value_
+
+[.optdoc]
+In a live stream, specify the number of unreferenced segments to keep on disk before deleting them.
+The extra segments were recently referenced in the playlist and can be downloaded by clients after their removal from the playlist.
+
+[.optdoc]
+The default is 1 extra segment.
+
+[.opt]
+*-m* _value_ +
+*--max-extra-duration* _value_
+
+[.optdoc]
+With `--intra-close`, specify the maximum additional duration in seconds
+after which the segment is closed on the next video PES packet, even if no intra-coded image was found.
+
+[.optdoc]
+The default is to wait for an intra-coded image up to 2 additional seconds after the theoretical end of the segment.
+
+[.opt]
+*--no-bitrate*
+
+[.optdoc]
+With `--playlist`, do not specify `#EXT-X-BITRATE` tags for each segment in the playlist.
+
+[.optdoc]
+This optional tag is present by default.
+
+[.opt]
+*-p* _filename_ +
+*--playlist* _filename_
+
+[.optdoc]
+Specify the name of the playlist file.
+The playlist file is rewritten each time a new segment file is completed or an obsolete one is deleted.
+
+[.optdoc]
+The playlist and the segment files can be written to distinct directories but, in all cases,
+the URI of the segment files in the playlist are always relative to the playlist location.
+
+[.optdoc]
+By default, no playlist file is created (the plugin creates media segments only).
+
+[.optdoc]
+An HLS playlist can be of one of the following types:
+
+[.optdoc]
+* VoD playlist.
+  A static media playlist for a fully recorded content.
+  The list of media segments cannot change.
+  This is the default with the `hls` output plugin.
+* Event playlist.
+  A growing media playlist for a running event.
+  It is possible to move backward in the event, up to the beginning.
+  New media segments can be added at the end of the playlist.
+  No segment can be removed.
+  Use option `--event` to generate such a playlist.
+* Live playlist.
+  A sliding media playlist for a live channel, without backward browsing.
+  The initial segments are regularly removed.
+  New segments are regularly added at the end of the list.
+  Use option `--live` to generate such a playlist.
+* Master playlist:
+  A higher-level playlist which contains references to several media playlists.
+  Each media playlist typically represents the same content with various bitrates.
+  The `hls` output plugin can only create media playlists, not master playlists.
+
+[.opt]
+*--slice-only*
+
+[.optdoc]
+Disable the insertion of the PAT and PMT at start of each segment.
+
+[.optdoc]
+Note that this generates a non-standard HLS output.
+
+[.opt]
+*-s* _value_ +
+*--start-media-sequence* _value_
+
+[.optdoc]
+Initial media sequence number in `#EXT-X-MEDIA-SEQUENCE` directive in the playlist.
+
+[.optdoc]
+The default is zero.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

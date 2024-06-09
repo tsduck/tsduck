@@ -1,0 +1,104 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsresync
+
+[.cmd-header]
+Resynchronize corrupted transport stream files
+
+This utility resynchronizes a corrupted transport stream file.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsresync [options] [input-file]
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_input-file_
+
+[.optdoc]
+MPEG transport stream, either a capture file or a pipe from a live stream.
+Must be a binary stream of transport stream packets, with various encapsulation or possible corruptions.
+
+[.optdoc]
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+
+[.usage]
+Options	
+
+[.opt]
+*-c* +
+*--continue*
+
+[.optdoc]
+Continue re-resynchronizing after loss of synchronization.
+By default, stop after first packet not starting with 0x47.
+
+[.opt]
+*-h* _value_ +
+*--header-size* _value_
+
+[.optdoc]
+When used with `--packet-size`, specifies the size of extra data preceeding each packet in the input file.
+The default is zero.
+
+[.opt]
+*-k* +
+*--keep*
+
+[.optdoc]
+Keep TS packet size from input to output file.
+By default, strip extra data and reduce packets to 188 bytes.
+See option `--packet-size` for a description of supported input packet sizes.
+
+[.opt]
+*-m* _value_ +
+*--min-contiguous* _value_
+
+[.optdoc]
+Minimum size containing contiguous valid packets to consider a slice of input file as containing actual packets
+(default: 512 kB).
+
+[.opt]
+*-o* _file-name_ +
+*--output* _file-name_
+
+[.optdoc]
+Output file name (standard output by default).
+
+[.opt]
+*-p* _value_ +
+*--packet-size* _value_
+
+[.optdoc]
+Expected TS packet size in bytes. By default, try:
+
+[.optdoc]
+* 188-byte (standard)
+* 204-byte (trailing 16-byte Reed-Solomon outer FEC)
+* 192-byte (leading 4-byte timestamp in M2TS/Blu-ray disc files).
+
+[.optdoc]
+If the input file contains any other type of packet encapsulation,
+use options `--packet-size` and `--header-size`.
+
+[.opt]
+*-s* _value_ +
+*--sync-size* _value_
+
+[.optdoc]
+Number of initial bytes to analyze to find start of packet synchronization (default: 1 MB).
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

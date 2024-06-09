@@ -1,0 +1,1010 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-hardware]
+== Hardware Device Support
+
+[#tuner-devices]
+=== Tuner receiver devices (DVB, ATSC, ISDB)
+
+==== Overview
+
+The tuner receiver devices are specialized hardware devices which receive DVB-T, DVB-S, DVB-C, ATSC, ISDB-T,
+ISDB-S signals and transmit the demodulated binary transport stream to the computer system.
+
+The input of a tuner receiver device is the antenna cable.
+The receiver device has either an F-connector (satellite, cable) or a standard TV connector (terrestrial, cable).
+
+Most terrestrial receivers come with a small linear antenna.
+The usage of such an antenna should be avoided when possible since the reception is usually very poor.
+Always use the signal coming from a classical roof TV antenna when available (wall TV socket).
+
+The physical output of a tuner receiver is a standard PC bus, usually PCIe or USB.
+Legacy devices also included PCI, PCMCIA (PC Card) or Express Card.
+Some PCIe devices are actually composed of one or more USB receivers and a USB-to-PCI bridge.
+
+Most receivers simply contain a tuner and a demodulator.
+They transmit the complete transport stream over the bus (PCIe, USB, etc.)
+The demultiplexing and MPEG audio / video decoding is performed by some software,
+either in the kernel of the operating system or in a user-space application.
+Since TSDuck works on transport streams, the embedded hardware demux are never used.
+So, the simplest and cheapest receivers are usually fine for TSDuck.
+
+Some receivers contain two or more tuners in order to receive several independent transport streams.
+They usually appear as distinct devices in the operating system.
+
+Some receivers support multiple protocols, for instance DVB-T/T2 and DVB-C.
+The way they appear on a system depends on the vendor driver.
+For instance, the same device may appear as one single tuner supporting DVB-T/T2/C on Linux
+and two distincts tuners on Windows (one for DVB-T/T2 and one for DVB-C).
+
+==== Operating system integration
+
+===== Linux platforms
+
+The tuner receiver devices are managed by Linux under the common "LinuxTV" framework which is part of V4L ("Video for Linux").
+
+*Drivers*
+
+The drivers for the DVB receiver devices come with the Linux kernel.
+
+The drivers for recent devices may not be integrated yet into the mainstream Linux kernel,
+see <<LinuxTV>> for details on how to install the latest Linux drivers for DVB devices.
+
+*Firmware*
+
+Some devices need a firmware file in `/lib/firmware` which is loaded by the driver when the system boots or
+when the device is plugged-in (USB device for instance).
+
+Some firmware files are packaged with the Linux kernel, but only when no copyright applies.
+Most firmware files are extracted from the proprietary Windows drivers of the device and are not free.
+Consequently, they are not included in the kernel distributions.
+Such proprietary firmware files must be fetched from various sites all over the Web.
+Some distros provide a package named `linux-firmware` which contains firmware for many devices,
+including some DVB devices.
+The OpenELEC community has collected a large number of tuner firmware files which can be downloaded as an archive.
+
+To simplify the firmware downloading and installation, the command `tsconfig --install-dvb-firmware`
+collects all known DVB firmware online and installs them in `/lib/firmware`.
+
+See the documentation of the `tsconfig` command in xref:tsconfig-ref[xrefstyle=short].
+
+*Device naming*
+
+The DVB devices are identified as `/dev/dvb/adapter__N__`,
+where `_N_` is a number between 0 and the number of DVB adapters in the system.
+
+When several DVB devices are present in the system,
+the allocation of the adapter numbers depends on the kernel initialization sequence,
+the PCI slots, the way the USB devices are plugged and unplugged.
+It is possible to assign a specific adapter number to each device using the `adapter_nr` parameter
+in the relevant drivers (kernel modules) configuration.
+
+For instance, let’s take the example of a system with a Hauppauge WinTV Nova-T-500 (dual DVB-T tuner)
+and a Hauppauge WinTV Nova-HD-S2 (DVB-S/S2 tuner).
+The two tuners in the DVB-T PCI board are actually USB devices with an embedded USB hub
+and the numbering of the tuners is not deterministic.
+The adapter number for each tuner may vary after each boot.
+To always allocate adapter numbers 0 and 1 to the DVB-T dual tuner and adapter number 2 to the DVB-S tuner,
+add the following lines to a `modprobe` configuration file, for instance `/etc/modprobe.d/local.conf`:
+
+[source,text]
+----
+options dvb-usb-dib0700 adapter_nr=0,1
+options cx88-dvb adapter_nr=2
+----
+
+Then, the following allocation is always used:
+
+[source,shell]
+----
+$ tslsdvb
+/dev/dvb/adapter0 (DiBcom 3000MC/P, DVB-T)
+/dev/dvb/adapter1 (DiBcom 3000MC/P, DVB-T)
+/dev/dvb/adapter2 (Conexant CX24116/CX24118, DVB-S)
+----
+
+[#tuners-windows]
+===== Microsoft Windows platforms
+
+*DirectShow framework*
+
+Starting from Windows XP, the DVB devices are managed by DirectShow, a Microsoft framework for multimedia.
+The specific subsystem of DirectShow for DVB receiver devices is BDA (Broadcast Device Architecture).
+Most of the time, the hardware vendors provide BDA drivers for their receivers.
+Windows does not include any predefined BDA driver.
+
+On all Windows platforms, TSDuck uses basic DirectShow features to access the BDA drivers of the receiver devices.
+
+*Retrieving actual modulation parameters*
+
+On Windows, it is not possible to retrieve the actual tuning parameters of a transport stream as detected by the tuner device.
+
+This can be annoying in a DVB-T environment where many transmission parameters may be inaccurate
+but the tuner device will detect the actual parameters.
+For instance, you may tune on a transport specifying a FEC 2/3 and a guard interval 1/32.
+If the actual signal uses different values, for instance a FEC 3/4 and a guard interval 1/8,
+the tuner device will automatically adjust the parameters.
+On Linux, the command `tslsdvb -v` displays the actual parameters, as reported by the tuner device.
+Moreover, the `dvb` plugin can compute the exact theoretical bitrate of the transport stream based on the actual transmission parameters.
+On Windows, it is not possible to query the tuner device for the actual parameters.
+It is not possible to display the actual transmission parameters.
+The `dvb` plugin must use the analysis of PCR’s to evaluate the bitrate.
+
+===== macOS platforms
+
+There is no uniform or standard software framework to support tuners on macOS.
+Some tuners are officially supported on macOS but they are shipped with proprietary drivers and proprietary TV-watching applications.
+The driver API’s are not documented.
+
+Therefore, TSDuck provides no support for hardware tuner devices on macOS.
+
+[#tuner-naming]
+==== Device naming
+
+All TSDuck modules using DVB receivers (`tslsdvb`, `tsscan`, `dvb` plugin) use a device name to designate a receiver device.
+The syntax of the device name depends on the operating system.
+
+Use the command `tslsdvb` to list all available receiver devices.
+
+By default, when no device name is specified, the TSDuck commands and plugins use the _first_ receiver device,
+that is the say the device which appears first when the command `tslsdvb` is invoked.
+
+In all cases (`tslsdvb`, `tsscan`, `dvb` plugin), the option `--adapter` (or `-a`)
+can be used to simply designate the Nth receiver device in the system, the first index being zero.
+When the system has several receiver devices, `tslsdvb` also displays the corresponding device index.
+
+===== Linux platforms
+
+On Linux, a receiver device is named as `/dev/dvb/adapterA[:F[:M[:V]]]` where:
+
+[.compact-list]
+* `A` = adapter number
+* `F` = frontend number (default: 0).
+* `M` = demux number (default: same as frontend number).
+* `V` = dvr number (default: same as frontend number).
+
+When unspecified, the demux and dvr numbers default to the same number as the frontend or,
+if the corresponding demux or dvr does not exist, to the highest existing demux or dvr number.
+
+Usually, only the adapter number is important if there is more than one receiver device in the system.
+The frontend number is useful only if a device adapter includes several tuners.
+
+On most adapters, there are as many demux and dvr as frontends and the default demux and dvr numbers are appropriate.
+There are some adapters with less demux or dvr than frontends.
+In that case, all frontends cannot be used at the same time.
+It may also be impossible to list the characteristics of all tuner devices at the same time.
+With such tuners, the user needs to know exactly how the frontends are allocated
+and specify the right full device name with frontend, demux and dvr number.
+
+Additionally, the full unique description of a tuner can be used instead of the classical device name.
+The full description, when available, includes some unique identification of a device such as the serial number ("SN").
+
+Example:
+
+[source,shell]
+----
+$ tslsdvb
+/dev/dvb/adapter0 ("Silicon Labs Si2168, AVerMedia TD310 Device 2.00 SN:202866000009", DVB-T, DVB-T2, DVB-C)
+/dev/dvb/adapter1 ("DiBcom 7000MA/MB/PA/PB/MC, Hauppauge Nova-T Stick 2.00 SN:4027216814", DVB-T)
+----
+
+The following commands are then equivalent:
+
+[source,shell]
+----
+$ tsp -I dvb -d "Silicon Labs Si2168, AVerMedia TD310 Device 2.00 SN:202866000009" ...
+$ tsp -I dvb -d /dev/dvb/adapter0 ...
+$ tsp -I dvb -a 0 ...
+----
+
+This type of identification can be useful when using several USB tuners of the same model.
+USB devices have no fixed `/dev/dvb/adapter__N__` identification.
+After unplugging and replugging the device or after rebooting the system, the tuner ordering can change.
+Using a complete identification, including a unique serial number, provides a way to address a specific physical tuner without ambiguity.
+
+===== Microsoft Windows platforms
+
+On Windows, a receiver device name is the name of a DirectShow tuner filter.
+Since these names are usually complicated, with spaces and mixed cases ("Nova-T Stick DVB-T Tuner (Dev1 Path0)" for instance),
+the specified name is not case sensitive and spaces are ignored.
+
+As an alternative, the name `:__N__` can be used to designate the __N__^th^ receiver device in the system, the first index being zero.
+So, the following commands are equivalent:
+
+[source,powershell]
+----
+C:\> tsp -I dvb -d :0 ...
+C:\> tsp -I dvb -a 0 ...
+----
+
+When several tuners of identical models are used, the DirectShow tuner filters will have identical names.
+To address a specific tuner, it is possible to use the adapter number.
+However, if the tuners are connected to distinct antenna sources, we must be sure to address a specific physical tuner.
+If the tuners are USB devices, they may be assigned different adapter numbers each time they are plugged in.
+
+To solve this problem, it is possible to use the device path of a tuner as tuner name.
+The device path remains contant for a given physical tuner.
+
+To get the device paths, use the following command:
+
+[source,powershell]
+----
+C:\> tslsdvb -v
+
+0: "AVerMedia TD310 BDA C Filter" (ATSC, DVB-C, DVB-C/C)
+   Device: @device:pnp:\\?\usb#vid_07ca&pid_1871#202866000009#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\{cacacefd-1b5f-49f4-af24-0ce559cc1e90}
+....
+1: "AVerMedia TD310 BDA Filter" (DVB-T, DVB-T2)
+   Device: @device:pnp:\\?\usb#vid_07ca&pid_1871#202866000009#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\{cacacefd-1b5f-49f4-af24-0ce559cc1f6d}
+....
+----
+
+The following commands are then equivalent:
+
+[source,powershell]
+----
+C:\> tsp -I dvb -d "AVerMedia TD310 BDA Filter" ...
+C:\> tsp -I dvb -d "@@device:pnp:\\?\usb#vid_07ca&pid_1871#202866000009#{71985f48-1ca1-11d3-9cc8-00c04f7971e0}\{cacacefd-1b5f-49f4-af24-0ce559cc1f6d}" ...
+C:\> tsp -I dvb -d :1 ...
+C:\> tsp -I dvb -a 1 ...
+----
+
+Note that, when the device path starts with `@`,
+we must double it (`@@`) to avoid the interpretation as partial command line redirection
+(see xref:cmd-redirection[xrefstyle=short] for more details).
+
+[#tuner-emulator]
+==== Tuner emulator
+
+For specific tasks such as troubleshooting scanning issues on a remote location,
+TSDuck includes a _tuner emulator_ feature.
+
+The tuner emulator is not connected to a physical device.
+Instead, it emulates the behavior of a regular tuner using pure software and transport stream data files.
+Being pure software, the tuner emulator is available on all operating systems, including macOS.
+
+===== Principles
+
+A tuner emulator can be used anywhere a physical tuner is used,
+for instance with the `tsscan` command or the `dvb` input plugin.
+
+The _device name_ of a tuner is the path of an XML file.
+Using a name ending in `.xml` as tuner device name means that the corresponding command or plugin will automatically use the tuner emulator.
+
+The XML file contains the characteristics of the tuner, namely its type and the list of frequencies (or _channels_)
+which are populated with a signal.
+
+For each frequency, there is either an associated transport stream file or
+a shell command which generates a transport stream on its standard output.
+Receiving packets from that frequency means reading packets from the transport stream file,
+endlessly (at end of file, loop back at the beginning of the file) or reading packets from the output of the command.
+
+Each channel has a _bandwidth_ which is centered on the declared frequency.
+Reception is possible in all frequencies within that bandwidth.
+The reported signal quality and strength ranges from 100% at the center frequency to 50% at the edges of the bandwidth.
+
+Note that the command `tslsdvb` does not list tuner emulators.
+Physical tuners are explicitly defined in the system
+while there is a potentially unlimited number of XML files which can be used as tuner emulators.
+
+===== Tuner emulator XML file
+
+An XML file which describes a tuner emulator has the following structure:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <!-- Default values for channel entries -->
+  <defaults delivery="string, optional"
+            bandwidth="uint64, optional"
+            directory="string, optional"/>
+
+  <!-- One channel entry per frequency -->
+  <channel frequency="uint64, required"
+           delivery="string, optional"
+           bandwidth="uint64, optional"
+           file="string, optional"
+           pipe="string, optional"/>
+
+</tsduck>
+----
+
+The `<default>` entry is optional.
+It contains default values for the `<channel>` entries.
+The `delivery` and `bandwidth` attributes values are used when missing in a `<channel>` entry.
+
+The value of the delivery attribute shall be one of the names which are documented in the `dvb` plugin option `--delivery-system`
+typically `DVB-T`, `DVB-S`, `ATSC`, etc.)
+
+The optional `directory` attribute indicates the root directory of transport stream file paths in the `<channel>` entries.
+If the directory path is not absolute, it is interpreted relatively to the XML file location,
+not the current directory of the command which uses the terminal emulator.
+This allows a more flexible and portable file structure.
+
+Each `<channel>` entry describes a frequency.
+The frequency attribute describes the center frequency in Hz
+and the bandwidth attribute the width in Hz around the center frequency where reception is possible.
+
+Exactly one of `file` or `pipe` attributes shall be present and not empty.
+
+The `file` attribute points to a transport stream file which is read as "content of the frequency".
+If the file path is not absolute, it is interpreted relatively to the directory attribute of the `<default>` entry.
+If there is no default directory, it is interpreted relatively to the XML file location.
+
+The `pipe` attribute contains a shell command which generates a transport stream on its standard output (a pipe in that case).
+The process is started when the tuner reception is started (after the tune operation).
+This command is expected to never complete until the pipe is closed.
+Receiving packets on the tuner emulator after the completion of the process generates an error.
+
+See an example of tuner emulator usage in xref:tuner-emulator-example[xrefstyle=short].
+
+==== Tested devices
+
+On Linux, TSDuck works indifferently with any supported tuner device.
+If a driver exists (with optional firmware) for a given receiver, it should work with TSDuck.
+
+On Windows, TSDuck should work with any receiver coming with a BDA driver but
+the integration is less straightforward than on Linux and additional testing should be performed.
+Typically, if the device comes with a "DVB Network Tuner" DirectShow filter and
+an optional "BDA Receiver Component" DirectShow filter, it should work with TSDuck.
+At least one device (one from TechniSat) has exhibited different software architecture and could not be used by TSDuck.
+
+The following table summarizes the DVB receiver devices which have been tested with TSDuck.
+
+Please note that this table is informational only.
+It was built from various users’ feedback at some point in time.
+There is no exhaustive test suite using all these devices.
+Probably no one, neither the author of TSDuck nor any of its users, have all these devices.
+So, keep in mind that these devices are not tested for every new version of TSDuck.
+
+.Tested tuner receiver devices
+[cols="<1,<1,<1,<1,<1,<1,<1",stripes=none,options="autowidth"]
+|===
+|Brand |Model |Network |# ^(xref:tt1[1])^ |Bus |Linux |Windows
+
+|Artek ^(xref:tt2[2])^
+|TV Tuner Stick USB Dongle
+|DVB-T2/C
+|2
+|USB
+|Tested OK
+|Not tested
+
+|AVerMedia
+|TD310
+|DVB-T2/C
+|1
+|USB
+|Tested OK ^(xref:tt31[31])^
+|Tested OK
+
+|BlackGold
+|BGT3620
+|DVB-T2/C
+|6
+|PCIe
+|Not tested
+|Tested OK
+
+|DVBSky
+|S960
+|DVB-S/S2
+|1
+|USB
+|Tested OK
+|Tested OK
+
+|DVBSky
+|S960C ^(xref:tt4[4])^
+|DVB-S/S2
+|1
+|USB
+|Tested OK
+|Tested OK
+
+|GoTView
+|MasterHD3
+|DVB-T2/C
+|2 ^(xref:tt5[5])^
+|USB
+|Tested OK ^(xref:tt6[6])^
+|Tested OK
+
+|Hauppauge
+|WinTV Nova-T-500 ^(xref:tt7[7])^
+|DVB-T
+|2
+|PCI
+|Tested OK ^(xref:tt8[8])^
+|Not tested
+
+|Hauppauge
+|WinTV Nova-TD-500 ^(xref:tt9[9])^
+|DVB-T
+|2
+|PCI
+|Tested OK ^(xref:tt8[8],{sp}xref:tt10[10])^
+|Not tested
+
+|Hauppauge
+|WinTV Nova-T-Stick ^(xref:tt11[11])^
+|DVB-T
+|1
+|USB
+|Tested OK ^(xref:tt8[8],{sp}xref:tt12[12])^
+|Tested OK ^(xref:tt13[13])^
+
+|Hauppauge
+|WinTV Nova-T-Stick SE
+|DVB-T
+|1
+|USB
+|Tested OK ^(xref:tt8[8],{sp}xref:tt14[14])^
+|Tested OK ^(xref:tt14[14])^
+
+|Hauppauge
+|WinTV Nova-S
+|DVB-S
+|1
+|PCI
+|Tested OK
+|Not tested
+
+|Hauppauge
+|WinTV Nova-HD-S2 ^(xref:tt15[15])^
+|DVB-S/S2
+|1
+|PCI
+|Tested OK  ^(xref:tt16[16])^
+|Tested OK
+
+|Hauppauge
+|WinTV-soloHD ^(xref:tt3[3])^
+|DVB-T2/C
+|1
+|USB
+|Not tested
+|Tested OK ^(xref:tt17[17])^
+
+|Hauppauge
+|WinTV-dualHD ^(xref:tt3[3])^
+|DVB-T2/C
+|2
+|USB
+|Tested OK
+|Not tested
+
+|Hauppauge
+|WinTV-HVR-935
+|DVB-T2/C
+|1
+|USB
+|Tested OK
+|Not tested
+
+|MaxMedia
+|HU 372 ^(xref:tt25[25])^
+|DVB-T2/C
+|2 ^(xref:tt5[5])^
+|USB
+|Tested OK ^(xref:tt6[6])^
+|Tested OK
+
+|MyGica
+|T230C
+|DVB-T/T2
+|1
+|USB
+|Tested OK
+|Tested OK
+
+|MyGica
+|PT362
+|DVB-T/T2
+|1
+|USB
+|Not tested
+|Tested OK
+
+|MyGica
+|S270 ^(xref:tt27[27])^
+|ISDB-T
+|1
+|USB
+|Tested OK ^(xref:tt28[28])^
+|Tested OK
+
+|MyGica
+|S2870
+|ISDB-T
+|2
+|USB
+|Tested OK ^(xref:tt29[29])^
+|Tested OK
+
+|Pinnacle
+|PCTV DVB-T Stick 72e
+|DVB-T
+|1
+|USB
+|Tested OK ^(xref:tt8[8])^
+|Tested OK
+
+|Pinnacle
+|PCTV nanoStick T2 290e ^(xref:tt3[3])^
+|DVB-T2/C
+|2
+|USB
+|Tested OK ^(xref:tt18[18])^
+|Tested OK
+
+|Pinnacle
+|PCTV DVB-S2 Stick 461e ^(xref:tt3[3])^
+|DVB-S/S2
+|1
+|USB
+|Not working ^(xref:tt19[19],{sp}xref:tt20[20])^
+|Tested OK ^(xref:tt21[21])^
+
+|PLEX
+|PX-S1UD ^(xref:tt27[27])^
+|ISDB-T
+|1
+|USB
+|Tested OK ^(xref:tt28[28])^
+|Tested OK
+
+|Raspberry
+|Raspberry Pi TV HAT
+|DVB-T/T2
+|1
+|Pi ^(xref:tt32[32])^
+|Tested OK
+|Not tested
+
+|TBS
+|TBS 6284
+|DVB-T/T2
+|4
+|PCIe
+|Not tested
+|Tested OK
+
+|TBS
+|TBS 6903
+|DVB-S/S2
+|2
+|PCIe
+|Not tested
+|Tested OK
+
+|TBS
+|TBS 5922
+|DVB-S/S2
+|1
+|USB
+|Not tested
+|Tested OK
+
+|TBS
+|TBS 5925
+|DVB-S/S2
+|1
+|USB
+|Not tested
+|Tested OK
+
+|TBS
+|TBS 5580
+|Multiple ^(xref:tt30[30])^
+|2
+|USB
+|Tested OK
+|Tested OK
+
+|TBS
+|TBS 5520-SE +
+ DVB-T2/T, DVB-S2X/S2/S, +
+ DVB-C2/C, ISDB-T
+|Multiple
+|1
+|USB
+|Not tested
+|Tested OK
+
+|TBS
+|TBS 5530 +
+ DVB-T2/T, DVB-S2X/S2/S, +
+ DVB-C2/C, ISDB-T, ISDB-C, +
+ J83B, ATSC1.0
+|Multiple
+|1
+|USB
+|Tested OK
+|Not tested
+
+|TBS
+|TBS 6704
+|ATSC
+|4
+|PCIe
+|Tested OK
+|Not tested
+
+|TBS
+|TBS 6904
+|DVB-S/S2
+|4
+|PCIe
+|Tested OK
+|Not tested
+
+|TechniSat
+|SkyStar USB HD
+|DVB-S/S2
+|1
+|USB
+|Not tested
+|Not working ^(xref:tt22[22])^
+
+|TechnoTrend
+|TT-connect CT-3650 CI
+|DVB-T/C
+|1
+|USB
+|Tested OK
+|Not tested
+
+|TechnoTrend
+|TT-connect S2-3600
+|DVB-S/S2
+|1
+|USB
+|Not tested
+|Tested OK ^(xref:tt23[23])^
+
+|TechnoTrend
+|TT-connect S2-4600
+|DVB-S/S2
+|1
+|USB
+|Not tested
+|Tested OK
+
+|TechnoTrend
+|TT-budget S2-4100
+|DVB-S/S2
+|1
+|PCIe
+|Not tested
+|Tested OK
+
+|Terratec
+|Cinergy T USB XE Rev 2 ^(xref:tt24[24])^
+|DVB-T
+|1
+|USB
+|Tested OK ^(xref:tt25[25])^
+|Tested OK
+
+|TeVii
+|H640 ^(xref:tt25[25])^
+|DVB-T2/C
+|2 ^(xref:tt5[5])^
+|USB
+|Tested OK ^(xref:tt6[6])^
+|Tested OK
+
+|TeVii
+|S482 DVB-S2
+|DVB-S/S2
+|2
+|PCIe
+|Not tested
+|Tested OK
+
+|===
+
+Notes from the table:
+
+1.  [[tt1]] Number of tuners. When more than one is present,
+    they usually appear as different receiver devices in the operating system.
+2.  [[tt2]] Also known as HanfTek or Astrometa. The first tuner supports DVB-T only.
+    The second tuner supports DVB-T/T2 and DVB-C.
+    The second tuner was tested on 64-QAM DVB-C cable in India.
+3.  [[tt3]] This tuner discards null packets and cannot be used to modify a running TS on the fly
+    and cannot compute reliable bitrates.
+4.  [[tt4]] The DVBSky S960C has a DVB-CI CAM slot (not CI+).
+5.  [[tt5]] The GoTView MasterHD3 has two demodulators, one for DVB-T and one for DVB-T2/C.
+    On Windows, they appear as one single DVB-T tuner.
+    On Linux, they appear as two frontends, one for DVB-T and one for DVB-T2/C.
+6.  [[tt6]] With Linux kernels 4.2 up to 4.7, two frontends are available: `frontend0` is DVB-T, `frontend1` is DVB-T2/DVB-C.
+    The support in kernels after version 4.7 is partial, something was broken.
+    The device starts but only with the one (DVB-T) frontend.
+    The second frontend (Si2168 demodulator for DVB-T2 and DVB-C) doesn't start due to i2c error.
+7.  [[tt7]] The Hauppauge WinTV Nova-T-500 is a PCI board which embeds two USB tuners and a USB-to-PCI bridge.
+8.  [[tt8]] Need the firmware file revision 1.20 for DiBcom-based DVB receiver devices on Linux, +
+    http://www.wi-bw.tfh-wildau.de/~pboettch/home/files/dvb-usb-dib0700-1.20.fw
+9.  [[tt9]] The Nova-TD-500 is similar to the Nova-T-500 but has two aerial inputs instead of one.
+10. [[tt10]] Do not plug antenna cables in both aerial inputs, this leads to garbage reception.
+    Use only the top aerial input and this feeds the two tuners.
+    The bottom aerial input is not used.
+    Also specify the following options in /etc/modprobe.d/options: +
+    `options dvb_usb_dib0700 force_lna_activation=1` +
+    `options dvb_usb disable_rc_polling=1`
+11. [[tt11]] Two different revisions exist: 70001 and 70009 (read the sticker).
+12. [[tt12]] Revision 70001 tested, works OK. Revision 70009 not tested.
+13. [[tt13]] Revision 70001 tested, works OK with the Hauppauge driver CD version 2.5E but
+    does not work with recent drivers versions 3.x and 4.x.
+    Revision 70009 not tested (requires drivers CD version 4.x).
+14. [[tt14]] Model 203, revision D1F4 70019 tested.
+15. [[tt15]] This is a "lite" version of the Hauppauge HVR-4000.
+16. [[tt16]] Need the `dvb-fe-cx24116.fw` firmware file.
+    Known limitation: Some PCI DMA transfers are aborted without known reason, resulting in packet loss.
+    The problem appears only on some hardware systems and may be related to PCI bus configuration.
+    The problem is characterized by the following error messages from `dmesg`: +
+    `cx88[0]: irq mpeg  [0x80000] pci_abort*` +
+    `cx88[0]/2-mpeg: general errors: 0x00080000`
+17. [[tt17]] On Windows, the Hauppauge software installation is incomplete.
+    After installing the drivers, the WinTV-soloHD initially appears as one single DVB-T tuner.
+    DVB-C is not accessible.
+    The bundled application WinTV must be run at least once and tuned to a DVB-C transport.
+    Afterwards, a second tuner is installed for DVB-C. This tuner is persistent after reboots.
+18. [[tt18]] Need the firmware file `dvb-demod-si2168-b40-01.fw`.
+19. [[tt19]] Need the firmware file for Montage M88DS3103-based DVB receiver devices on Linux
+    from the OpenELEC dvb-firmware package,
+    https://github.com/OpenELEC/dvb-firmware/blob/master/firmware/dvb-demod-m88ds3103.fw
+20. [[tt20]] Documented to work on Linux. But the experience demonstrates that it is mostly unreliable.
+    The first tuning operation after insertion of the USB device works.
+    Subsequent tuning operations fail.
+21. [[tt21]] On Windows, it has been observed that the PCTV 461e discards all null packets (PID 0x1FFF).
+    As a consequence, transport stream analyses are incorrect,
+    bitrates are incorrect and all `tsp` plugins which use stuffing to insert new packets do not work correctly.
+22. [[tt22]] The TechniSat drivers for Windows have a proprietary and unusual interface.
+    They cannot be integrated in a DirectShow reception graph and, consequently, cannot be used by TSDuck.
+23. [[tt23]] DVB tuners drivers for Windows: http://www.tt-pc.com/2959/PC_Products.html
+24. [[tt24]] Two different revisions exist: Rev 1 and Rev 2.
+    They use different chipsets and need different drivers.
+    Only the Rev 2 has been tested with TSDuck.
+25. [[tt25]] Reported as identical to GoTView Master HD3.
+26. [[tt26]] Need the firmware file for Afatech-based DVB receiver devices on Linux,
+    http://www.otit.fi/~crope/v4l-dvb/af9015/af9015_firmware_cutter/firmware_files/4.95.0/dvb-usb-af9015.fw
+27. [[tt27]] The ISDB-T tuners MyGica S270 and PLEX PX-S1UD are internally identical.
+28. [[tt28]] Need the firmware file from http://plex-net.co.jp/plex/px-s1ud/PX-S1UD_driver_Ver.1.0.1.zip
+    or https://www.linuxtv.org/downloads/firmware/isdbt_rio.inp
+29. [[tt29]] Need the firmware file https://linuxtv.org/downloads/firmware/dvb-usb-dib0700-1.20.fw
+30. [[tt30]] The TBS 5580 device has two tuners. The first one supports DVB-T/T2, DVB-C/C2 and ISDB-T.
+    The second tuner supports DVB-S/S2/S2X with a CI interface.
+31. [[tt31]] Need the firmware files `dvb-usb-it9303-01.fw`, `dvb-demod-si2168-b40-01.fw` and `dvb-demod-si2168-02.fw`
+    from https://github.com/OpenELEC/dvb-firmware/blob/master/firmware/
+32. [[tt32]] The Raspberry Pi TV HAT can be connected to Raspberry Pi boards only.
+    It uses the 40-pin Raspberry Pi board connector.
+    It is top-mounted using the _Raspberry HAT_ form factor.
+
+=== Dektec devices
+
+==== Overview
+
+Dektec is a company from The Netherlands which designs professional Digital TV devices (see <<Dektec>>).
+
+The Dektec devices include a wide range of professional MPEG/DVB devices:
+ASI input or output, modulators (QPSK, QAM, OFDM, ATSC, DMB, ISDB, etc), demodulators and IP multicasting.
+The PCI devices are named DTA-1xx and the USB devices are named DTU-2xx.
+The ASI devices can perform either input, output or both.
+See <<Dektec>> for more details.
+
+The `tsp` plugin named `dektec` can perform input or output on any Dektec device,
+provided that the appropriate drivers are installed on the system.
+Dektec provides drivers and API for their devices on Windows and Linux (see <<Dektec-SDK>>).
+For each operating system, there are at least two Dektec drivers: one for all PCI devices and one for all USB devices.
+
+==== Linux platforms
+
+The Dektec drivers are provided in source format.
+They must be compiled for each specific version of the Linux kernel.
+
+For a better integration with the various distros,
+an independent project has been setup to create DKMS packages for Dektec drivers (see <<Dektec-Drivers>>).
+This project provides a script to build packages for Red Hat & clones, Fedora, Debian and Ubuntu distros,
+using the source code from the Dektec site.
+
+Pre-built packages are also available from the releases section in <<Dektec-Drivers>>.
+
+==== Microsoft Windows platforms
+
+The Dektec drivers are provided in binary format and can be directly installed.
+An installation guide is included in the zip file of each driver.
+See <<Dektec-SDK>>.
+
+==== macOS platforms
+
+Dektec provides no support for macOS.
+All Dektec features of TSDuck are disabled on macOS.
+
+==== Tested devices
+
+The following Dektec devices have been successfully tested with TSDuck:
+
+[.compact-list]
+* DTA-140: PCI ASI input and output.
+* DTU-245: USB ASI input and output.
+* DTA-107: PCI DVB-S modulator.
+* DTA-107S2: PCI DVB-S2 modulator.
+* DTA-110T: PCI DVB-T modulator.
+* DTA-115: PCI multi-standard modulator (some modulation types are subject to optional licences) with an additional bidirectional ASI port.
+* DTU-315: USB-3 multi-standard modulator (subject to optional licences).
+* DTA-2137C: PCIe DVB-S/S2 demodulator with ASI outputs.
+* DTA-2138B: PCIe DVB-T/T2, DVB-C/C2, ISDB-T demodulator.
+
+Any other Dektec device should work with TSDuck.
+Not having a Dektec device listed above is usually not an issue.
+The Dektec software interface is stable and consistent between Linux and Windows.
+The experience has demonstrated that using new Dektec devices using recent builds of TSDuck
+(i.e. containing a recent version of the Dektec API library) has always worked.
+
+It is possible that new Dektec devices introduce new features or protocols which are not yet supported by TSDuck.
+Please report this in the TSDuck issue tracker (see <<TSDuck-Issues>>) so that the new feature can be implemented.
+
+=== HiDes devices
+
+==== Overview
+
+HiDes is a company from Taiwan, a manufacturer of cheap DVB-T devices (see <<HiDes>>).
+These devices are based on chips from ITE Technologies Inc., also from Taiwan.
+
+The UT-100C model is a USB DVB-T modulator adaptor (transmission).
+This device is one of the cheapest modulators for Digital TV.
+
+Other models from HiDes include reception, ISDB-T support or PCIe interface.
+Currently, only USB DVB-T modulators are supported by TSDuck.
+
+The `tsp` plugin named `hides` can perform output on HiDes devices,
+provided that the appropriate drivers are installed on the system.
+These drivers are available at <<HiDes-Drivers>>.
+
+==== Linux platforms
+
+The drivers for HiDes devices are provided in source form.
+It is unclear if these drivers were provided by HiDes or ITE.
+They must be compiled for each specific version of the Linux kernel.
+
+For a better integration with the various distros,
+an independent project has been setup to create DKMS packages for HiDes drivers (see <<HiDes-Drivers>>).
+This project provides a script to build packages for Red Hat & clones, Fedora, Debian, and Ubuntu distros.
+Pre-built packages are also available from the releases section in <<HiDes-Drivers>>.
+
+The name of a HiDes device is illustrated below:
+
+[source,shell]
+----
+$ tshides -v
+Found 1 HiDes device
+
+Index ........... 0
+Name ............ "usb-it950x0"
+Device .......... /dev/usb-it950x0
+Chip type ....... 0x9507
+Device type ..... 11
+Driver version .. v16.11.10.1w
+API version ..... 1.3.20160929.0
+Link firmware ... 255.39.2.0
+OFDM firmware ... 255.9.11.0
+Company ......... ITEtech
+Hardware info ... Eagle DVBT
+----
+
+Note the `w` at the end of the driver version.
+This indicates a modified "waiting" version of the driver as provided in <<HiDes-Drivers>>.
+
+The original driver from HiDes or ITE has a "polling" design which is much less efficient.
+If you have a driver version without trailing `w`, this is probably an original version of the driver.
+TSDuck will work but in a very inefficient way: each time packets shall be sent to the modulator,
+the `tsp` application has to actively wait (looping on very short timers) for the modulator to be ready,
+unnecessarily consuming CPU and lacking accuracy.
+
+With the modified `w` version, the output thread of the `tsp` application is simply suspended
+until the very precise moment where the modulator is ready.
+
+==== Microsoft Windows platforms
+
+The HiDes driver is provided in binary format and can be directly installed.
+The installer is in a zip file.
+
+There is no known fixed reference URL for the latest version of the Windows driver.
+To make sure that TSDuck users can always find a working version of this driver,
+it is also available from the releases section in <<HiDes-Drivers>>.
+
+Unlike the Linux driver, the Windows driver has not been modified for TSDuck.
+The original driver is anyway delivered in binary form and cannot be easily modified.
+Note that the original Windows driver has a standard "waiting" design
+and does not suffer from the "polling" design of the original Linux driver.
+
+The name of a HiDes device is a DirectShow filter name, as illustrated below:
+
+[source,powershell]
+----
+C:\> tshides -v
+Found 1 HiDes device
+
+Index ........... 0
+Name ............ "IT9507 TX Filter"
+Device .......... \\?\usb#vid_048d&pid_9507#ut100cv4201504240422#{fbf6f530-07b9-11d2-a71e-0000f8004788}\{9963cc0e-ee70-11e0-ba8f-92d34824019b}
+USB mode ........ 0x0200
+Vendor id ....... 0x048D
+Product id ...... 0x9507
+Chip type ....... 0x9507
+Device type ..... 11
+Driver version .. 21.17.39.1
+Link firmware ... 255.39.2.0
+OFDM firmware ... 255.9.11.0
+----
+
+Identical devices use the same DirectShow filter and have probably identical names.
+The device path is unique but is a complicated Windows device reference and is barely usable.
+So, when we have several identical HiDes devices on the same machine,
+it is probably easier to reference them by adapter index (0, 1, 2, etc.) using option `--adapter`.
+
+Note that the verbose display (option `-v`) is different between Windows and Linux.
+This is due to the distinct API’s of the HiDes drivers on distinct operating system.
+The command `tshides` displays what is available for the platform it is running on.
+
+==== macOS platforms
+
+HiDes provides no support for macOS.
+All HiDes features of TSDuck are disabled on macOS.
+
+==== Tested devices
+
+The following HiDes devices have been successfully tested with TSDuck:
+
+[.compact-list]
+* UT-100C: USB DVB-T modulator.
+* UT-100A: USB DVB-T receptor and modulator. Only the modulator is supported with TSDuck.
+
+==== Power constraints
+
+The HiDes devices have no external power.
+They are exclusively powered through the USB port.
+It has been reported that some USB ports did not provide sufficient power to the device,
+resulting in random corruptions in the output stream.
+
+In case of problem, try to connect the HiDes device to a powered USB 3.0 hub.
+
+In <<HiDes>>, the documentation states that the maximum required power is 390 mA.
+But it is currently unclear if the HiDes device requires more than the normalized maximum of 500 mA from the USB port or
+if some USB ports fail to provide the required 500 mA.
+
+=== VATek-based modulators
+
+==== Overview
+
+Vision Advance Technology Inc. (aka. VATek, see <<VATek>>) is a company from Taiwan which designs modulator chips.
+The final modulator device products can be from different manufacturers.
+
+Note that, unlike Dektec and HiDes devices which are available on Linux and Windows only,
+VATek-based devices are available on all operating systems, including macOS,
+because VATek chips do not need a dedicated device driver.
+They are accessed through the portable `libusb` library which is available on all operating systems.
+
+There is no "device name" for VATek-based modulators, only device indexes, from 0 to N-1
+(with N being the number of VATek-based devices in the system).
+
+==== Tested devices
+
+The tested devices were based on the A3 chip from VATek:
+
+[.compact-list]
+* A3 developer board from VATek.
+* Suntechtv U3 USB modulator (see <<Suntech>>).
+
+Note that the software (the `tsvatek` command and the `vatek` output plugin)
+is developed and maintained by VATek and controls all devices using VATek chips.
+Thus, all modulator products based on the A3 chip should work identically.

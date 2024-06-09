@@ -1,0 +1,155 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== hides (output)
+
+[.cmd-header]
+Send the transport stream to a HiDes modulator device
+
+This plugin sends the output transport stream to a HiDes modulator device.
+
+[.usage]
+Restrictions
+
+This plugin is available on Linux and Windows only.
+There is no HiDes device drivers on macOS and BSD systems.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O hides [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* _value_ +
+*--adapter* _value_
+
+[.optdoc]
+Specify the HiDes adapter number to use.
+By default, the first HiDes device is selected.
+
+[.optdoc]
+Use the command `tshides` to list all HiDes devices.
+
+[.optdoc]
+Use `--adapter` or `--device` but not both.
+
+[.opt]
+*-b* _value_ +
+*--bandwidth* _value_
+
+[.optdoc]
+Bandwidth in Hz.
+
+[.optdoc]
+For compatibility with old versions, low values (below 1000) are interpreted in MHz.
+This means that values 8 and 8,000,000 are identical. Both mean 8 MHz.
+
+[.optdoc]
+The default is 8 MHz.
+
+[.opt]
+*-c* _value_ +
+*--constellation* _value_
+
+[.optdoc]
+Constellation type.
+Must be one of `QPSK`, `16-QAM`, `64-QAM`.
+
+[.optdoc]
+The default is `64-QAM`.
+
+[.opt]
+*--dc-compensation* _i-value/q-value_
+
+[.optdoc]
+Specify the DC offset compensation values for I and Q.
+Each offset value shall be in the range -512 to 512.
+
+[.opt]
+*-d* _"name"_ +
+*--device* _"name"_
+
+[.optdoc]
+Specify the HiDes device name to use.
+By default, the first HiDes device is selected.
+
+[.optdoc]
+Use the command `tshides` to list all HiDes devices.
+
+[.optdoc]
+Use `--adapter` or `--device` but not both.
+
+[.opt]
+*-f* _value_ +
+*--frequency* _value_
+
+[.optdoc]
+Frequency, in Hz, of the output carrier.
+There is no default, this is a mandatory parameter.
+
+[.opt]
+*--gain* _value_
+
+[.optdoc]
+Adjust the output gain to the specified value in dB.
+
+[.opt]
+*-g* _value_ +
+*--guard-interval* _value_
+
+[.optdoc]
+Guard interval.
+Must be one of `1/32`, `1/16`, `1/8`, `1/4`.
+
+[.optdoc]
+The default is `1/32`.
+
+[.opt]
+*-h* _value_
+*--high-priority-fec* _value_
+
+[.optdoc]
+Error correction for high priority streams.
+Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`.
+
+[.optdoc]
+The default is `2/3`.
+
+[.opt]
+*-s* _value_
+*--spectral-inversion* _value_
+
+[.optdoc]
+Spectral inversion.
+Must be one of `off`, `on`, `auto`.
+
+[.optdoc]
+The default is `auto`.
+
+[.optdoc]
+Note that this option is ignored on Windows.
+
+[.opt]
+*-t* _value_ +
+*--transmission-mode* _value_
+
+[.optdoc]
+Transmission mode.
+Must be one of `4K`, `2K`, `8K`.
+
+[.optdoc]
+The default is `8K`.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

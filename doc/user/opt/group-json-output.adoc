@@ -1,0 +1,133 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::json::OutputArgs.
+//
+// tags: notitle, json, json-short, dektec
+//
+//----------------------------------------------------------------------------
+
+//---- ugly tag tricks ----
+
+:!opt-notitle:
+:!opt-json:
+:!opt-dektec:
+
+// tag::notitle[]
+:opt-notitle: true
+// end::notitle[]
+
+// tag::json[]
+:opt-json: true
+// end::json[]
+
+// tag::json-short[]
+:opt-json: true
+// end::json-short[]
+
+// tag::dektec[]
+:opt-dektec: true
+// end::dektec[]
+
+//---- end of tag tricks ----
+
+ifndef::opt-notitle[]
+[.usage]
+JSON output options
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --json (optionally -j)
+//----------------------------------------------------------------------------
+
+ifdef::opt-json[]
+[.opt]
+// tag::json-short[]
+*-j* +
+// end::json-short[]
+*--json*
+
+[.optdoc]
+ifdef::opt-dektec[]
+With `--all`, list the Dektec devices in JSON format.
+endif::[]
+ifndef::opt-dektec[]
+Produce a report in JSON output format.
+endif::[]
+Useful for automatic analysis.
+endif::[]
+
+//----------------------------------------------------------------------------
+// options --json-*
+//----------------------------------------------------------------------------
+
+[.opt]
+*--json-buffer-size* _value_
+
+[.optdoc]
+With `--json-tcp` or `--json-udp`, specify the network socket send buffer size.
+
+[.opt]
+**--json-line**__[='prefix']__
+
+[.optdoc]
+Same as `--json` but report the JSON text as one single line in the message logger instead of fully formatted output file.
+
+[.optdoc]
+The optional _string_ parameter specifies a prefix to prepend on the log line before the JSON text
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+*--json-tcp* _address:port_
+
+[.optdoc]
+Same as `--json` but report the JSON text as one single line in a TCP connection instead of the output file.
+
+[.optdoc]
+The _address_ specifies an IP address or a host name that translates to an IP address.
+The _port_ specifies the destination TCP port.
+
+[.optdoc]
+By default, a new TCP connection is established each time a JSON message is produced (see also option `--json-tcp-keep`).
+Be aware that a complete TCP connection cycle may introduce some latency in the processing.
+If latency is an issue, consider using '--json-udp'.
+
+[.opt]
+*--json-tcp-keep*
+
+[.optdoc]
+With `--json-tcp`, keep the TCP connection open for all JSON messages.
+By default, a new TCP connection is established each time a JSON message is produced.
+
+[.opt]
+*--json-udp* _address:port_
+
+[.optdoc]
+Same as `--json` but report the JSON text as one single line in a UDP datagram instead of the output file.
+
+[.optdoc]
+The _address_ specifies an IP address which can be either unicast or multicast.
+It can be also a host name that translates to an IP address.
+The _port_ specifies the destination UDP port.
+
+[.optdoc]
+Be aware that the size of UDP datagrams is limited by design to 64 kB.
+If larger JSON contents are expected, consider using `--json-tcp`.
+
+[.opt]
+*--json-udp-local* _address_
+
+[.optdoc]
+With `--json-udp`, when the destination is a multicast address, specify the IP address of the outgoing local interface.
+It can be also a host name that translates to a local address.
+
+[.opt]
+*--json-udp-ttl* _value_
+
+[.optdoc]
+With `--json-udp`, specifies the TTL (Time-To-Live) socket option.
+The actual option is either "Unicast TTL" or "Multicast TTL", depending on the destination address.
+Remember that the default Multicast TTL is 1 on most systems.

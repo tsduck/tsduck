@@ -1,0 +1,143 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tstestecmg
+
+[.cmd-header]
+Test a DVB SimulCrypt compliant ECMG with an artificial load
+
+This utility is designed to test the resistance of an ECMG.
+It behaves as a DVB SimulCrypt SCS and connects to one ECMG.
+It creates several "ECM channels" and several "ECM streams" per channel.
+
+In each ECM stream, `tstestecm` emulates crypto-periods.
+At the beginning of each crypto-period, it requests one ECM.
+The returned ECM is not used, no scrambling is performed, this is just a stress test on the ECMG.
+
+It is possible to run `tstestecmg` from multiple systems in parallel, connecting to the same ECMG, to emulate very hight loads.
+Each instance creates multiple channels
+(be sure to correctly distribute the channel numbers between instances, see option `--first-channel-id`).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tstestecmg [options] host:port
+----
+
+[.usage]
+Test options
+
+[.opt]
+*--max-ecm* _count_
+
+[.optdoc]
+Stop the test after generating the specified number of ECM's.
+By default, the test endlessly runs.
+
+[.opt]
+*--max-seconds* _seconds_
+
+[.optdoc]
+Stop the test after the specified number of seconds.
+By default, the test endlessly runs.
+
+[.opt]
+*--statistics-interval* _seconds_
+
+[.optdoc]
+Specify the interval in seconds between the display of two statistics lines.
+When set to zero, disable periodic statistics, only display final statistics.
+The default is 10 seconds.
+
+[.usage]
+DVB SimulCrypt options
+
+[.opt]
+*-a* _hexa-digits_ +
+*--access-criteria* _hexa-digits_
+
+[.optdoc]
+Specifies the access criteria as sent to the ECMG.
+The value must be a suite of hexadecimal digits.
+All ECM's are generated using these access criteria.
+Empty by default.
+
+[.opt]
+*-c* _value_ +
+*--channels* _value_
+
+[.optdoc]
+Specify the number of ECM channels to open.
+There is one TCP connection to the ECMG per channel.
+The default is 10 channels.
+
+[.opt]
+*--cp-duration* _seconds_
+
+[.optdoc]
+Specify the crypto-period duration in seconds.
+The default is 10 seconds.
+
+[.opt]
+*--cw-size* _bytes_
+
+[.optdoc]
+Specify the size in bytes of control words.
+The default is 8 bytes.
+
+[.opt]
+*--ecmg-scs-version* _value_
+
+[.optdoc]
+Specify the version of the ECMG{d-arrow}SCS DVB SimulCrypt protocol.
+Valid values are 2 and 3. The default is 2.
+
+[.opt]
+*--first-channel-id* _value_
+
+[.optdoc]
+Specify the first _ECM_channel_id_ value for the ECMG.
+Subsequent connections use sequential values.
+The default is 0.
+
+[.opt]
+*--first-ecm-id* _value_
+
+[.optdoc]
+Specify the first _ECM_id_ value to use in the first stream.
+Subsequent streams use sequential values.
+The default is the value of `--first-channel-id` times the value of `--streams-per-channel`.
+
+[.opt]
+*--first-stream-id* _value_
+
+[.optdoc]
+Specify the first _ECM_stream_id_ to use in each channel.
+Subsequent streams use sequential values.
+The default is 0.
+
+[.opt]
+*-s* _value_ +
+*--streams-per-channel* _value_
+
+[.optdoc]
+Specify the number of streams to open in each channel.
+The default is 10.
+
+[.opt]
+*--super-cas-id* _value_
+
+[.optdoc]
+Specify the DVB SimulCrypt _Super_CAS_Id_. This is a required parameter.
+
+include::{docdir}/opt/group-dvbsim-log.adoc[tags=!*;ecmg]
+include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

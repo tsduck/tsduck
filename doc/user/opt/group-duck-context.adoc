@@ -1,0 +1,427 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::DuckContext.
+//
+// tags: notitle, charset, hf, hf-short, std, pds, cas, timeref
+//
+//----------------------------------------------------------------------------
+
+//---- ugly tag tricks ----
+
+:!opt-notitle:
+:!opt-hf:
+:!opt-brazil:
+:!opt-japan:
+:!opt-philippines:
+:!opt-usa:
+
+// tag::notitle[]
+:opt-notitle: true
+// end::notitle[]
+
+// tag::charset[]
+:opt-brazil: true
+:opt-japan: true
+:opt-philippines: true
+// end::charset[]
+
+// tag::hf[]
+:opt-hf: true
+:opt-brazil: true
+:opt-japan: true
+:opt-philippines: true
+:opt-usa: true
+// end::hf[]
+
+// tag::hf-short[]
+:opt-hf: true
+:opt-brazil: true
+:opt-japan: true
+:opt-philippines: true
+:opt-usa: true
+// end::hf-short[]
+
+// tag::std[]
+:opt-brazil: true
+:opt-japan: true
+:opt-philippines: true
+:opt-usa: true
+// end::std[]
+
+// tag::timeref[]
+:opt-brazil: true
+:opt-japan: true
+:opt-philippines: true
+// end::timeref[]
+
+//---- end of tag tricks ----
+
+ifndef::opt-notitle[]
+[.usage]
+Interpretation of the transport stream content
+
+These options controls the peculiarities of local Digital TV standards and how they are used.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --abnt
+//----------------------------------------------------------------------------
+
+// tag::std[]
+[.opt]
+*--abnt*
+
+[.optdoc]
+Assume that the transport stream is an ISDB one with ABNT-defined variants.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::std[]
+
+//----------------------------------------------------------------------------
+// option --atsc
+//----------------------------------------------------------------------------
+
+// tag::std[]
+[.opt]
+*--atsc*
+
+[.optdoc]
+Assume that the transport stream is an ATSC one.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::std[]
+
+//----------------------------------------------------------------------------
+// option --brazil
+//----------------------------------------------------------------------------
+
+ifdef::opt-brazil[]
+[.opt]
+*--brazil*
+
+[.optdoc]
+A synonym for
+// tag::std[]
+`--isdb`
+`--abnt`
+// end::std[]
+// tag::charset[]
+`--default-charset RAW-ISO-8859-15`
+// end::charset[]
+// tag::hf[]
+`--hf-band-region brazil`
+// end::hf[]
+// tag::hf-short[]
+`--hf-band-region brazil`
+// end::hf-short[]
+// tag::timeref[]
+`--time-reference UTC-3`
+// end::timeref[]
+.
+This is a handy shortcut when working on South American ISDB-Tb transport streams.
+See xref:opt-default-std[xrefstyle=short] and xref:opt-charsets[xrefstyle=short] for more details.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --conax
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+*--conax*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from Conax.
+Equivalent to `--default-cas-id 0x0B00`.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --default-cas-id
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--default-cas-id* _value_
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from the specified CA_System_Id.
+
+[.optdoc]
+By default, EMM's and ECM's are interpreted according to the CA_descriptor which references their PID.
+This option is useful when analyzing partial transport streams without CAT or PMT to correctly identify the CA PID's.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --default-charset
+//----------------------------------------------------------------------------
+
+// tag::charset[]
+[.opt]
+*--default-charset* _name_
+
+[.optdoc]
+Default character set to use when interpreting strings from tables and descriptors.
+By default, the standard DVB encoding is used.
+See xref:charsets[xrefstyle=short] for more details.
+// end::charset[]
+
+//----------------------------------------------------------------------------
+// option --default-pds
+//----------------------------------------------------------------------------
+
+// tag::pds[]
+[.opt]
+*--default-pds* _value_
+
+[.optdoc]
+Default DVB-defined private data specifier (PDS).
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::pds[]
+
+//----------------------------------------------------------------------------
+// option --europe
+//----------------------------------------------------------------------------
+
+// tag::charset[]
+[.opt]
+*--europe*
+
+[.optdoc]
+A synonym for `--default-charset ISO-8859-15`.
+See xref:charsets[xrefstyle=short] for more details.
+// end::charset[]
+
+//----------------------------------------------------------------------------
+// option --hf-band-region (optionally -r)
+//----------------------------------------------------------------------------
+
+ifdef::opt-hf[]
+[.opt]
+// tag::hf-short[]
+*-r* _name_ +
+// end::hf-short[]
+*--hf-band-region* _name_
+
+[.optdoc]
+Specify the region for UHF/VHF band frequency layout.
+The default region is `europe`.
+Another default region may be specified per user in the TSDuck configuration file.
+See xref:hfband-config[xrefstyle=short] for more details.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --ignore-leap-seconds
+//----------------------------------------------------------------------------
+
+// tag::std[]
+[.opt]
+*--ignore-leap-seconds*
+
+[.optdoc]
+Do not explicitly include leap seconds in some UTC computations.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::std[]
+
+//----------------------------------------------------------------------------
+// option --irdeto
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--irdeto*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from Irdeto.
+Equivalent to `--default-cas-id 0x0600`.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --isdb
+//----------------------------------------------------------------------------
+
+// tag::std[]
+[.opt]
+*--isdb*
+
+[.optdoc]
+Assume that the transport stream is an ISDB one.
+ISDB streams are normally automatically detected from their signalization.
+This option is only useful when ISDB-related stuff are found in the TS before the first ISDB-specific table.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::std[]
+
+//----------------------------------------------------------------------------
+// option --japan
+//----------------------------------------------------------------------------
+
+ifdef::opt-japan[]
+[.opt]
+*--japan*
+
+[.optdoc]
+A synonym for
+// tag::std[]
+`--isdb`
+// end::std[]
+// tag::charset[]
+`--default-charset ARIB-STD-B24`
+// end::charset[]
+// tag::hf[]
+`--hf-band-region japan`
+// end::hf[]
+// tag::hf-short[]
+`--hf-band-region japan`
+// end::hf-short[]
+// tag::timeref[]
+`--time-reference JST`
+// end::timeref[]
+.
+See xref:opt-default-std[xrefstyle=short] and xref:opt-charsets[xrefstyle=short] for more details.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --mediaguard
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--mediaguard*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from MediaGuard.
+Equivalent to `--default-cas-id 0x0100`.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --nagravision
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--nagravision*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from NagraVision.
+Equivalent to `--default-cas-id 0x1800`.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --nds
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--nds*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from Synamedia (formerly known as NDS).
+Equivalent to `--default-cas-id 0x0900`.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --philippines
+//----------------------------------------------------------------------------
+
+ifdef::opt-philippines[]
+[.opt]
+*--philippines*
+
+[.optdoc]
+A synonym for
+// tag::std[]
+`--isdb`
+`--abnt`
+// end::std[]
+// tag::charset[]
+`--default-charset RAW-UTF-8`
+// end::charset[]
+// tag::hf[]
+`--hf-band-region philippines`
+// end::hf[]
+// tag::hf-short[]
+`--hf-band-region philippines`
+// end::hf-short[]
+// tag::timeref[]
+`--time-reference UTC+8`
+// end::timeref[]
+.
+This is a handy shortcut when working on Philippines transport streams.
+See xref:opt-default-std[xrefstyle=short] and xref:opt-charsets[xrefstyle=short] for more details.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --safeaccess
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--safeaccess*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from SafeAccess.
+Equivalent to `--default-cas-id 0x4ADC`.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --time-reference
+//----------------------------------------------------------------------------
+
+// tag::timeref[]
+[.opt]
+*--time-reference* _name_
+
+[.optdoc]
+Use a non-standard time reference in DVB or ISDB-defined SI.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::timeref[]
+
+//----------------------------------------------------------------------------
+// option --usa
+//----------------------------------------------------------------------------
+
+ifdef::opt-usa[]
+[.opt]
+*--usa*
+
+[.optdoc]
+A synonym for
+// tag::std[]
+`--atsc`
+// end::std[]
+// tag::hf[]
+`--hf-band-region usa`
+// end::hf[]
+// tag::hf-short[]
+`--hf-band-region usa`
+// end::hf-short[]
+.
+This is a handy shortcut when working on North American transport streams.
+See xref:opt-default-std[xrefstyle=short] and xref:opt-charsets[xrefstyle=short] for more details.
+endif::[]
+
+//----------------------------------------------------------------------------
+// option --viaccess
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--viaccess*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from Viaccess.
+Equivalent to `--default-cas-id 0x0500`.
+// end::cas[]
+
+//----------------------------------------------------------------------------
+// option --widevine
+//----------------------------------------------------------------------------
+
+// tag::cas[]
+[.opt]
+*--widevine*
+
+[.optdoc]
+Interpret all EMM's and ECM's from unknown CAS as coming from Widevine CAS.
+Equivalent to `--default-cas-id 0x4AD4`.
+// end::cas[]

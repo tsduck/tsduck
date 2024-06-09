@@ -1,0 +1,88 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsrename
+
+[.cmd-header]
+Rename a transport stream
+
+This plugin renames the transport stream.
+It assigns a new transport stream id and/or an original network id.
+
+The PAT, SDT-Actual, NIT-Actual and BAT are modified.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P tsrename [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--add*
+
+[.optdoc]
+Equivalent to `--add-bat --add-nit`.
+
+[.opt]
+*--add-bat*
+
+[.optdoc]
+Add a new entry for the renamed TS in the BAT and keep the previous entry.
+By default, the TS entry is renamed.
+Note that if no previous entry existed for this TS in the BAT, none is created.
+
+[.opt]
+*--add-nit*
+
+[.optdoc]
+Add a new entry for the renamed TS in the NIT and keep the previous entry.
+By default, the TS entry is renamed.
+Note that if no previous entry existed for this TS in the NIT, none is created.
+
+[.opt]
+*--ignore-bat*
+
+[.optdoc]
+Do not modify the BAT.
+
+[.opt]
+*--ignore-eit*
+
+[.optdoc]
+Do not modify the EIT's for this transport stream.
+
+[.opt]
+*--ignore-nit*
+
+[.optdoc]
+Do not modify the NIT.
+
+[.opt]
+*-o* _value_ +
+*--original-network-id* _value_
+
+[.optdoc]
+Modify the original network id.
+By default, it is unchanged.
+
+[.opt]
+*-t* _value_ +
+*--ts-id* _value_
+
+[.optdoc]
+Modify the transport stream id.
+By default, it is unchanged.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

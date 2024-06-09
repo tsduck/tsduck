@@ -1,0 +1,52 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== decap
+
+[.cmd-header]
+Decapsulate TS packets from a PID produced by the encap plugin
+
+This plugin is the counterpart of the `encap` plugin.
+It decapsulates the original TS packets from a "tunnel PID" which was created by `encap`.
+See the documentation of the `encap` plugin for more details.
+
+The decapsulated packets replace the tunnel PID.
+Because of the encapsulation overhead, the total volume of decapsulated packets is slightly smaller
+(approximately 2%) than the encapsulation PID.
+The packets in excess are replaced by null packets after decapsulation.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P decap [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-i* +
+*--ignore-errors*
+
+[.optdoc]
+Ignore errors such as malformed encapsulated stream.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the input PID containing all encapsulated PID's.
+
+[.optdoc]
+This is a mandatory parameter, there is no default.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

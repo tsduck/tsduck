@@ -1,0 +1,52 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for option --io-standard in dektec plugins
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.opt]
+*--io-standard* _name_
+
+[.optdoc]
+Specify the I/O standard to use on the device port.
+This option applies to multi-standard ports such as ASI/SDI ports.
+The list possible values for this option is given in the table below.
+
+[.optdoc]
+Which modes are supported in practice depend on the device model.
+See the Dektec documentation for more details.
+
+[.optdoc]
+.Values for option `--io-standard` (`dektec` plugins)
+[cols="<1m,<1",stripes=none,options="autowidth"]
+|===
+|Value |Description
+
+|ASI
+|DVB-ASI transport stream
+
+|SPI
+|DVB-SPI transport stream
+
+|IF-AD-converter
+|IF A/D converter
+
+|IP
+|Transport stream over IP
+
+|dektec-streaming
+|DekTec Streaming-data Interface
+
+|demodulator
+|Demodulator input
+
+|modulator
+|Modulator output
+
+|===

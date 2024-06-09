@@ -1,0 +1,94 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsbitrate
+
+[.cmd-header]
+Bitrate evaluation from PCR
+
+This utility evaluates the original bitrate of a transport stream based on an analysis of the PCR’s
+(Program Clock Reference timestamps) and the interval between them.
+This is especially useful for captured files where the transmission bitrate information is lost.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsbitrate [options] [input-file]
+----
+
+[.usage]
+Input file
+
+[.optdoc]
+MPEG transport stream, either a capture file or a pipe from a live stream (see option `--format` for binary formats).
+
+[.optdoc]
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--all*
+
+[.optdoc]
+Analyze all packets in the input file.
+By default, stop analysis when enough PCR information has been collected.
+
+[.opt]
+*-d* +
+*--dts*
+
+[.optdoc]
+Use DTS (Decoding Time Stamps) from video PID's instead of PCR (Program Clock Reference) from the transport layer.
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;input]
+
+[.opt]
+*-f* +
+*--full*
+
+[.optdoc]
+Full analysis.
+The file is entirely analyzed (as with `--all`) and the final report includes a complete per PID bitrate analysis.
+
+[.opt]
+*-i* +
+*--ignore-errors*
+
+[.optdoc]
+Ignore transport stream errors such as discontinuities.
+When errors are not ignored (the default), the bitrate of the original stream (before corruptions) is evaluated.
+When errors are ignored, the bitrate of the received stream is evaluated, missing packets being considered as non-existent.
+
+[.opt]
+*--min-pcr* _value_
+
+[.optdoc]
+Stop analysis when that number of PCR’s are read from the required minimum number of PID’s
+(default: stop after 64 PCR’s on 1 PID).
+
+[.opt]
+*--min-pid* _value_
+
+[.optdoc]
+Minimum number of PID to get PCR’s from (default: stop after 64 PCR’s on 1 PID).
+
+[.opt]
+*-v* +
+*--value-only*
+
+[.optdoc]
+Display only the bitrate value, in bits/seconds, based on 188-byte packets.
+Useful to reuse the value in command lines.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

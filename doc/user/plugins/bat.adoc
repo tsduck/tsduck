@@ -1,0 +1,78 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== bat
+
+[.cmd-header]
+Perform various transformations on a BAT
+
+This plugin performs various transformations on the BAT,
+either all BAT’s of the transport stream or one specific BAT for one specific bouquet.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P bat [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bouquet-id* _value_
+
+[.optdoc]
+Specify the bouquet id of the BAT to modify and leave other BAT's unmodified.
+By default, all BAT's are modified.
+
+[.opt]
+*--cleanup-private-descriptors*
+
+[.optdoc]
+Remove all private descriptors without preceding _private_data_specifier_descriptor_.
+
+[.opt]
+*--pds* _value_
+
+[.optdoc]
+With option `--remove-descriptor`,
+specify the private data specifier which applies to the descriptor tag values above 0x80.
+
+[.opt]
+*--remove-descriptor* _value_
+
+[.optdoc]
+Remove from the BAT all descriptors with the specified tag. Several --remove-descriptor
+options may be specified to remove several types of descriptors. See also option --pds.
+
+[.opt]
+*-r* _value_ +
+*--remove-service* _value_
+
+[.optdoc]
+Remove the specified _service_id_ from the following descriptors:
+_service_list_descriptor_, _logical_channel_number_descriptor_.
+
+[.optdoc]
+Several `--remove-service` options may be specified to remove several services.
+
+[.opt]
+*--remove-ts* _value_
+
+[.optdoc]
+Remove from the BAT all references to the transport stream with the specified _ts_id_ value.
+
+[.optdoc]
+Several `--remove-ts` options may be specified to remove several TS.
+
+include::{docdir}/opt/group-table-plugin.adoc[tags=!*;bat]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,201 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pidshift
+
+[.cmd-header]
+Shift one or more PID's forward in the transport stream
+
+This plugin considers a set of selected PID’s and moves all their packets forward in the transport stream.
+Packets from all other (non-selected) PID’s are not moved.
+
+If all selected PID’s globally have a constant bitrate (even if they individually have variable bitrates),
+shifting the packets keeps a consistent multiplexing: their offsets from non-selected non-moved packets remains constant.
+
+Since a `tsp` plugin cannot go back in the past, the move can be forward only,
+buffering selected packets by a fixed amount of packets.
+The initial selected packets are replaced by null packets, until the shift buffer is full.
+The trailing buffered packets, at the end of the input stream, are lost.
+
+To move a list of selected PID’s "backward", the plugin moves all other PID’s forward instead
+(see the option `--backward`).
+Again, the multiplexing remains consistent only if all other PID’s globally have a constant bitrate.
+
+This plugin is typically used to slightly move back and forth an audio PID.
+Since most audio PID’s have a constant bitrate, it works well for forward moves.
+Backward moves work well if the entire transport stream also has a constant bitrate, which is the case for broadcast streams.
+
+[.usage]
+Forward vs. backward
+
+To avoid any confusion between the terms "forward" and "backward",
+please note that moving the packets of a PID forward in the transport stream
+makes the time stamps of that PID moving backward relatively to the transport stream.
+So, depending on your standpoint, you may find the terms "forward" and "backward" either natural or counter-intuitive.
+
+To illustrate this paradox, consider an audio PID which is shifted forward 1000 packets in the transport stream.
+The audio packets numbered 10, 20, 30 and 40 in the PID have a presentation time stamp (PTS).
+These packets are initially at positions 1000, 2000, 3000 and 4000 in the transport stream.
+The following table illustrates the forward vs. backward paradox
+after moving the PID 1000 packets forward in the transport stream.
+
+.Moving packets forward means moving timestamps backward
+[cols="^1,^1,^1,^1,^1",stripes=none,options="autowidth"]
+|===
+|Packet index in TS 2+|Before shift 2+|After shift
+
+|
+|Index in PID
+|PTS
+|Index in PID
+|PTS
+
+|1000
+|10
+|PTS-1
+2+|null packet
+
+|2000
+|20
+|PTS-2
+|10
+|PTS-1
+
+|3000
+|30
+|PTS-3
+|20
+|PTS-2
+
+|4000
+|40
+|PTS-4
+|30
+|PTS-3
+
+|===
+
+The packet #10 in the audio PID is shifted forward in the TS, moving from the global position 1000 to 2000.
+But, if you are an observer at global position 2000 in the TS, you see that PTS-2 becomes PTS-1,
+giving the impression that the PID shifted backward in time.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pidshift [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* +
+*--backward*
+
+[.optdoc]
+Revert the list of selected PID's, meaning that a shift forward is performed on all PID's except those in `--pid` options.
+
+[.optdoc]
+In practice, this can be seen as shifting backward the selected PID's from the rest of the transport stream.
+
+[.opt]
+*--directory* _path_
+
+[.optdoc]
+Specify a directory where the temporary buffer file is created (if one is needed).
+
+[.optdoc]
+By default, the system-specific area for temporary files is used.
+
+[.optdoc]
+The temporary file is hidden and automatically deleted on termination.
+Specifying another location can be useful to redirect very large buffers on another disk.
+
+[.optdoc]
+If the reserved memory area is large enough to hold the buffer, no file is created.
+
+[.opt]
+*--ignore-errors*
+
+[.optdoc]
+Ignore shift buffer size evaluation errors or shift buffer write errors.
+Pass subsequent packets without shifting.
+
+[.opt]
+*-i* _milliseconds_ +
+*--initial-evaluation* _milliseconds_
+
+[.optdoc]
+With `--time`, specify the duration of the initial evaluation phase in milliseconds.
+This is a transport stream playout duration, not a wall-clock duration.
+
+[.optdoc]
+The default is 1,000 milliseconds.
+
+[.opt]
+*-m* _count_ +
+*--memory-packets* _count_
+
+[.optdoc]
+Specify the number of packets which are cached in memory. Having a larger memory cache improves the performances.
+
+[.optdoc]
+By default, the size of the memory cache is 128 packets.
+
+[.opt]
+*--packets* _count_
+
+[.optdoc]
+Specify the size of the shift buffer in packets.
+
+[.optdoc]
+The shift buffer contains packets from the selected PID’s which are removed from the transport stream and reinserted later,
+replacing packets from the same set of selected PID’s.
+Here, "removing" packets means replacing them with null packets in the initial phase.
+When the shift buffer is full, the "removed" packets are replaced from previous packets from the shifted PID’s.
+
+[.optdoc]
+Using `--packets` is less intuitive than `--time` but allows starting the shift from the beginning of the transport stream,
+without initial evaluation period.
+
+[.optdoc]
+There is no default, the size of the buffer shall be specified either using `--packets` or `--time`.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specify a PID or range of PID's to shift forward.
+
+[.optdoc]
+Several `--pid` options may be specified. At least one of them is required.
+
+[.opt]
+*-t* _milliseconds_ +
+*--time* _milliseconds_
+
+[.optdoc]
+Specify the size of the shift buffer in milliseconds.
+
+[.optdoc]
+During an initial evaluation phase (see option `--initial-evaluation`),
+the global bitrate of all PID's to shift forward is evaluated.
+This global bitrate is then used to convert the specified `--time` duration in a number of packets
+and this value is used as fixed-size for the shift buffer.
+
+[.optdoc]
+Actual shifting the PID's starts at the end of this evaluation phase.
+
+[.optdoc]
+There is no default, the size of the buffer shall be specified either using `--packets` or `--time`.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

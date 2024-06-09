@@ -1,0 +1,158 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tspcontrol
+
+[.cmd-header]
+Send control commands to a running tsp process
+
+This utility controls the execution of a running `tsp` process.
+The target `tsp` command shall listen to control commands using the option `--control-port`
+(see the documentation of `tsp`).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tspcontrol [options] command ...
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_command ..._
+
+[.optdoc]
+The control command to send to the target `tsp` process.
+See the list of control commands below.
+
+[.optdoc]
+Note that everything after the control command name is considered as options and parameters of this control command.
+The options of `tspcontrol` must be placed before the control command name.
+
+[.usage]
+Options
+
+[.opt]
+*-t* _[address:]port_ +
+*--tsp* _[address:]port_
+
+[.optdoc]
+Specify the IP address (or host name) and port where the target `tsp` process expects control commands
+(`tsp` option `--control-port`).
+If the IP address is omitted, the local host is used.
+
+[.optdoc]
+This is a required parameter, there is no default.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]
+
+[.usage]
+List of control commands
+
+[cols="<10m,<12,<78",frame=none,grid=none,stripes=none,options="noheader"]
+|===
+|*exit*
+2+|Terminate the tsp process.
+
+|
+|Usage:
+m|*tspcontrol exit* _[options]_
+
+|
+m|*--abort*
+|Specify to immediately abort the tsp process. By default, this command notifies each plugin to terminate and let the processing continue until the process naturally exits.
+
+|*list*
+2+|List all running plugins. The listed plugin indexes can be used with other control commands
+   such as `suspend`, `resume` or `restart`.
+
+|
+|Usage:
+m|*tspcontrol list* [options]
+
+|
+m|*-v* +
+  *--verbose*
+|Produce verbose output.
+
+|*restart*
+2+|Restart a plugin with different parameters.
+
+|
+|Usage:
+m|*tspcontrol restart* _[options] index [plugin-options ...]_
+
+|
+|Parameters:
+|Index of the plugin to restart, followed by the new plugin parameters to use.
+
+|
+m|*-s* +
+  *--same*
+|Restart the plugin with the same options and parameters as the current ones.
+ By default, when no plugin options are specified, restart with no option at all.
+
+|
+m|*-v* +
+  *--verbose*
+|Produce verbose output.
+
+|*resume*
+2+|Resume a suspended plugin.
+
+|
+|Usage:
+m|*tspcontrol resume* _[options] index_
+
+|
+|Parameter:
+|Index of the plugin to resume.
+
+|
+m|*-v* +
+  *--verbose*
+|Produce verbose output.
+
+|*set-log*
+2+|Change the log level in the `tsp` process.
+
+|
+|Usage:
+m|*tspcontrol set-log* _level_
+
+|
+|Parameter:
+|Specify a new logging level for the `tsp` process. It can be one of
+ `fatal`, `severe`, `error`, `warning`, `info`, `verbose`, `debug` or a
+ positive value for higher debug levels.
+
+|*suspend*
+2+|Suspend a plugin.
+   When a packet processing plugin is suspended, the TS packets are directly passed from the previous to the next plugin,
+   without going through the suspended one.
+   When the output plugin is suspended, the output packets are dropped.
+   The input plugin cannot be suspended.
+
+|
+|Usage:
+m|*tspcontrol suspend* _[options] index_
+
+|
+|Parameters:
+|Index of the plugin to suspend.
+
+|
+m|*-v* +
+  *--verbose*
+|Produce verbose output.
+
+|===

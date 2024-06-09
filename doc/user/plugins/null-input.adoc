@@ -1,0 +1,49 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== null (input)
+
+[.cmd-header]
+Null input packets generator
+
+This input module generates null packets.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I null [options] [count]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_count_
+
+[.optdoc]
+Specify the number of null packets to generate.
+After the last packet, an end-of-file condition is generated.
+
+[.optdoc]
+By default, if _count_ is not specified, null packets are generated endlessly.
+
+[.usage]
+Options
+
+[.opt]
+*-j* +
+*--joint-termination*
+
+[.optdoc]
+When the number of null packets is specified, perform a joint termination when completed instead of unconditional termination.
+See the xref:tsp-reference[`tsp` reference documentation] for more details on xref:joint-termination[joint termination].
+
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

@@ -1,0 +1,76 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== fork (output)
+
+[.cmd-header]
+Send packets to a forked process
+
+This output plugin forks a process and sends all TS packets to the standard input of this process.
+
+Using this output plugin with `tsp` is equivalent to writing to the output pipe.
+The following two commands have the same effect (the command `send` being a fictitious one):
+
+[source,shell]
+----
+$ tsp ... | send stream
+$ tsp ... -O fork 'send stream'
+----
+
+So, this plugin is redundant with the shell pipe features.
+However, this plugin is useful when the `tsp` process is created from another native application (not a shell script).
+In that case, it is much easier for this application to create a simple binary process rather than a shell and its commands.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O fork [options] 'command'
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_'command'_
+
+[.optdoc]
+The _'command'_ parameter specifies the shell command to execute in the forked process.
+The standard input of this process is a pipe receiving the TS packets.
+If the command contains spaces or shell special sequences, the complete command string must be surrounded by quotes.
+
+[.optdoc]
+If the command is too long or too complicated, it is recommended to use a script.
+If the created command is another TSDuck command, it is possible to shorten the command using partial command line redirection
+(see xref:cmd-redirection[xrefstyle=short]).
+
+[.usage]
+Options
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;output]
+
+[.opt]
+*-n* +
+*--nowait*
+
+[.optdoc]
+Do not wait for child process termination at end of input.
+
+[.usage]
+Windows specific options
+
+[.opt]
+*-b* _value_ +
+*--buffered-packets* _value_
+
+[.optdoc]
+Specifies the pipe buffer size in number of TS packets.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

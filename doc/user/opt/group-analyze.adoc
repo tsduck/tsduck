@@ -1,0 +1,160 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TSAnalyzerOptions.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Analysis control options
+
+These options are identical in the command `tsanalyze` and the `tsp` plugin `analyze`.
+
+[.opt]
+*--suspect-max-consecutive* _value_
+
+[.optdoc]
+Specifies the maximum number of consecutive suspect packets.
+The default value is one.
+If set to zero, the suspect packet detection is disabled.
+
+[.optdoc]
+Suspect packets are TS packets which are technically correct but which may be suspected of being incorrect,
+resulting in analysis errors.
+Typically, in the middle of a suite of packets with un-correctable binary errors,
+one packet may appear to have no such error while it has some errors in fact.
+To avoid adding this type of packets in the analysis,
+a packet is declared as suspect (and consequently ignored in the analysis) when:
+
+[.optdoc]
+* its PID is unknown (no other packet was found in this PID)
+* it immediately follows a certain amount of packet containing errors (see option `--suspect-min-error-count`)
+* it immediately follows no more than the specified number consecutive suspect packets.
+
+[.opt]
+*--suspect-min-error-count* _value_
+
+[.optdoc]
+Specifies the minimum number of consecutive packets with errors before starting _suspect_ packet detection.
+See also option `--suspect-max-consecutive`.
+
+[.optdoc]
+The default value is one.
+If set to zero, the suspect packet detection is disabled.
+
+[.usage]
+Output control options
+
+[.optdoc]
+These options are identical in the command `tsanalyze` and the `tsp` plugin `analyze`.
+
+[.opt]
+*--deterministic*
+
+[.optdoc]
+Enforce a deterministic and reproduceable output.
+Do not output non-reproduceable information such as system time (useful for automated tests).
+
+[.opt]
+*--error-analysis*
+
+[.optdoc]
+Report analysis about detected errors.
+
+[.opt]
+*--global-pid-list*
+
+[.optdoc]
+Report the list of all global PID's,
+that is to say PID's which are not referenced by a specific service but are standard DVB PSI/SI PID’s or are referenced by them.
+This include, for instance, PID's of the PAT, EMM's, EIT's, stuffing, etc.
+
+[.opt]
+*--normalized*
+
+[.optdoc]
+Complete report about the transport stream, services, PID's and tables in the old normalized output format.
+This type of output is useful for automatic analysis in scripts.
+
+[.opt]
+*--pes-pid-list*
+
+[.optdoc]
+Report the list of all PID's which are declared as carrying PES packets (audio, video, subtitles, etc).
+
+[.opt]
+*--pid-analysis*
+
+[.optdoc]
+Report analysis for each PID.
+
+[.opt]
+*--pid-list*
+
+[.optdoc]
+Report the list of all PID's.
+
+[.opt]
+*--prefix* _'string'_
+
+[.optdoc]
+For one-line displays (options `--*-list`), prepend the specified string to all values.
+For instance, options `--global --prefix -p` outputs something like `-p 0 -p 1 -p 16`,
+which is an acceptable option list for the `tsp` plugin `filter`.
+
+[.opt]
+*--service-analysis*
+
+[.optdoc]
+Report analysis for each service.
+
+[.opt]
+*--service-list*
+
+[.optdoc]
+Report the list of all service ids.
+
+[.opt]
+*--service-pid-list* _value_
+
+[.optdoc]
+Report the list of all PID's which are referenced by the specified service id.
+
+[.opt]
+*--table-analysis*
+
+[.optdoc]
+Report analysis for each table.
+
+[.opt]
+*--title* _'string'_
+
+[.optdoc]
+Display the specified string as title header.
+
+[.opt]
+*--ts-analysis*
+
+[.optdoc]
+Report global transport stream analysis.
+
+[.opt]
+*--unreferenced-pid-list*
+
+[.optdoc]
+Report the list of all unreferenced PID's,
+that is to say PID's which are neither referenced by a service nor known as or referenced by the standard DVB PSI/SI.
+
+[.opt]
+*-w* +
+*--wide-display*
+
+[.optdoc]
+Use a wider grid display with more information on each line.
+
+include::{docdir}/opt/group-json-output.adoc[tags=!*;json]

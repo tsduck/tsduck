@@ -1,0 +1,400 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== filter
+
+[.cmd-header]
+General-purpose packet filter
+
+This plugin filters TS packets according to various conditions.
+When a packet meets at least one of the specified conditions, it is passed to the next packet in the chain.
+Otherwise, it is dropped.
+
+To filter packets which meets several simultaneous conditions ("and" instead of "or"),
+simply chain several filter plugins on the command line.
+
+Some specific options (`--set-label`, `--reset-label`, `--set-permanent-label`, `--reset-permanent-label`)
+do not drop unfiltered packets.
+Instead, these options set or reset labels on the filtered packets.
+This is a way to mark selected packets in the stream with specific labels.
+The marked packets can then be selectively processed by another plugin using the option `--only-label`.
+See the reference section of `tsp`, xref:tsp-reference[xrefstyle=short], for more details on packet labelling.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P filter [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--adaptation-field*
+
+[.optdoc]
+Select packets with an adaptation field.
+
+[.opt]
+*--after-packets* _count_
+
+[.optdoc]
+Let the specified number of packets pass transparently without filtering.
+Start to apply the filtering criteria after that number of packets.
+
+[.opt]
+*--audio*
+
+[.optdoc]
+Select packets from an audio PID.
+
+[.opt]
+*-c* +
+*--clear*
+
+[.optdoc]
+Select clear (unscrambled) packets.
+Equivalent to `--scrambling-control 0`.
+
+[.opt]
+*--codec* _name_
+
+[.optdoc]
+Select packets from PID's which were encoded with the specified codec format.
+
+[.optdoc]
+The name must be one of `AAC`, `AC3`, `AC4`, `AV1`, `AVC`, `AVS3`, `DTS`, `DTSHD`, `DVBSubtitles`,
+`EAC3`, `EVC`, `H264`, `H265`, `H266`, `HEAAC`, `HEVC`, `JPEG2000`, `LCEVC`, `MP1Audio`, `MPEG-1-Audio`,
+`MP1Video`, `MPEG-1-Video`, `MP2Audio`, `MPEG-2-Audio`, `MP2Video`, `MPEG-2-Video`, `MP3`, `MP4Video`,
+`MPEG-4-Video`, `Teletext`, `VP9`, `VVC`, `undefined`.
+
+[.opt]
+*--ecm*
+
+[.optdoc]
+Select packets from any ECM PID.
+
+[.opt]
+*--emm*
+
+[.optdoc]
+Select packets from any EMM PID.
+
+[.opt]
+*--every* _count_
+
+[.optdoc]
+Select one packet every that number of packets.
+
+[.opt]
+*--has-splice-countdown*
+
+[.optdoc]
+Select packets which contain a _splice_countdown_ value in adaptation field.
+
+[.opt]
+*--input-stuffing*
+
+[.optdoc]
+Select packets which were artificially inserted as stuffing before the input plugin using
+`tsp` options `--add-start-stuffing`, `--add-input-stuffing` and `--add-stop-stuffing`.
+
+[.optdoc]
+Be aware that these packets may no longer be null packets if some previous plugin injected data, replacing stuffing.
+
+[.opt]
+*-i* _index1[-[index2]]_ +
+*--interval* _index1[-[index2]]_
+
+[.optdoc]
+Select all packets in the specified interval from the start of the stream.
+The packets in the stream are indexed starting at zero.
+
+[.optdoc]
+* In the form _index1_, only one packet is selected, at the specified index.
+* In the form _index1-index2_, all packets in the specified range of indexes, inclusive, are selected.
+* In the form _index1-_, all packets starting at the specified index are selected, up to the end of the stream.
+
+[.optdoc]
+Several options `--interval` can be specified.
+
+[.opt]
+*--intra-frame*
+
+[.optdoc]
+Select packets which contain the start of a video intra-frame.
+
+[.optdoc]
+The accurate detection of intra-frame depends on the codec.
+There is also a minimal risk of false positive on non-video PID's.
+
+[.opt]
+*-l* _label1[-label2]_ +
+*--label* _label1[-label2]_
+
+[.optdoc]
+Select packets with any of the specified labels.
+Labels should have typically been set by a previous plugin in the chain.
+
+[.optdoc]
+Several `--label` options may be specified.
+
+[.optdoc]
+Note that the option `--label` is different from the generic option `--only-label`.
+The generic option `--only-label` acts at `tsp` level and controls which packets are passed to the plugin.
+All other packets are directly passed to the next plugin without going through this plugin.
+The option `--label`, on the other hand, is specific to the `filter` plugin and
+selects packets with specific labels among the packets which are passed to this plugin.
+
+[.opt]
+*--max-adaptation-field-size* _value_
+
+[.optdoc]
+Select packets with no adaptation field or with an adaptation field the size (in bytes) of which is not greater than the specified value.
+
+[.opt]
+*--max-payload-size* _value_
+
+[.optdoc]
+Select packets with no payload or with a payload the size (in bytes) of which is not greater than the specified value.
+
+[.opt]
+*--max-splice-countdown* _value_
+
+[.optdoc]
+Select packets with a _splice_countdown_ value in adaptation field which is lower than or equal to the specified value.
+
+[.opt]
+*--min-adaptation-field-size* _value_
+
+[.optdoc]
+Select packets with an adaptation field the size (in bytes) of which is equal to or greater than the specified value.
+
+[.opt]
+*--min-payload-size* _value_
+
+[.optdoc]
+Select packets with a payload the size (in bytes) of which is equal to or greater than the specified value.
+
+[.opt]
+*--min-splice-countdown* _value_
+
+[.optdoc]
+Select packets with a _splice_countdown_ value in adaptation field which is greater than or equal to the specified value.
+
+[.opt]
+*-n* +
+*--negate*
+
+[.optdoc]
+Negate the filter: specified packets are excluded.
+
+[.opt]
+*--nullified*
+
+[.optdoc]
+Select packets which were explicitly turned into null packets by some previous plugin in the chain
+(typically using a `--stuffing` option).
+
+[.optdoc]
+Be aware that these packets may no longer be null packets if some intermediate plugin injected data, replacing stuffing.
+
+[.opt]
+*--pattern* _hexa-digits_
+
+[.optdoc]
+Select packets containing the specified pattern bytes.
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+By default, the packet is selected when the value is anywhere inside the packet.
+
+[.optdoc]
+With option `--search-payload`, only search the pattern in the payload of the packet.
+
+[.optdoc]
+With option `--search-offset`, the packet is selected only if the pattern is at the specified offset in the packet.
+
+[.optdoc]
+When `--search-payload` and `--search-offset` are both specified,
+the packet is selected only if the pattern is at the specified offset in the payload.
+
+[.opt]
+*--payload*
+
+[.optdoc]
+Select packets with a payload.
+
+[.opt]
+*--pcr*
+
+[.optdoc]
+Select packets with PCR or OPCR.
+
+[.opt]
+*--pes*
+
+[.optdoc]
+Select packets with clear PES headers.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+PID filter: select packets with these PID values.
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+[.opt]
+*--psi-si*
+
+[.optdoc]
+Select packets from any PSI/SI PID.
+This includes global signalization PID’s for DVB, ATSC and ISDB standards as well as the PMT of each service.
+
+[.opt]
+*--reset-label* _label1[-label2]_
+
+[.optdoc]
+Clear the specified labels on the selected packets.
+
+[.optdoc]
+Do not drop unselected packets, simply clear one or more labels on selected ones.
+
+[.optdoc]
+Several `--reset-label` options may be specified.
+
+[.opt]
+*--reset-permanent-label* _label1[-label2]_
+
+[.optdoc]
+Clear the specified labels on all packets, selected and unselected ones, after at least one was selected.
+
+[.optdoc]
+Do not drop unselected packets, simply use selected ones as trigger.
+
+[.optdoc]
+Several `--reset-permanent-label` options may be specified.
+
+[.opt]
+*--scrambling-control* _value_
+
+[.optdoc]
+Select packets with the specified scrambling control value.
+
+[.optdoc]
+Valid values are 0 (clear), 1 (reserved), 2 (even key), 3 (odd key).
+
+[.opt]
+*--search-offset* _value_
+
+[.optdoc]
+With `--pattern`, only search the set of bytes at the specified offset in the packet (the default)
+or in the payload (with `--search-payload`).
+
+[.opt]
+*--search-payload*
+
+[.optdoc]
+With `--pattern`, only search the set of bytes in the payload of the packet.
+Do not search the pattern in the header or adaptation field.
+
+[.opt]
+*--service* _id-or-name_
+
+[.optdoc]
+Select packets belonging to any of the specified services as PMT, component or ECM.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+Several `--service` options may be specified.
+
+[.opt]
+*--set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on the selected packets.
+
+[.optdoc]
+Do not drop unselected packets, simply mark selected ones with one or more labels.
+
+[.optdoc]
+Several `--set-label` options may be specified.
+
+[.opt]
+*--set-permanent-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on all packets, selected and unselected ones, after at least one was selected.
+
+[.optdoc]
+Do not drop unselected packets, simply use selected ones as trigger.
+
+[.optdoc]
+Several `--set-permanent-label` options may be specified.
+
+[.opt]
+*--splice-countdown* _value_
+
+[.optdoc]
+Select packets with the specified _splice_countdown_ value in adaptation field.
+
+[.opt]
+*--stream-id* _id1[-id2]_
+
+[.optdoc]
+Select PES PID's with any of the specified stream ids.
+
+[.optdoc]
+The PID’s are dynamically selected.
+A PID starts to be selected when a specified stream id is detected in a PES header.
+Such a PID becomes no longer selected when a non-specified stream id is found in this PID.
+
+[.optdoc]
+Several `--stream-id` options may be specified.
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Replace excluded packets with stuffing (null packets) instead of removing them.
+Useful to preserve bitrate.
+
+[.opt]
+*--subtitles*
+
+[.optdoc]
+Select packets from any PID carrying subtitles.
+
+[.opt]
+*--unit-start*
+
+[.optdoc]
+Select packets with payload unit start indicator.
+
+[.opt]
+*-v* +
+*--valid*
+
+[.optdoc]
+Select valid packets.
+A valid packet starts with 0x47 and has its _transport_error_indicator_ is cleared.
+
+[.opt]
+*--video*
+
+[.optdoc]
+Select packets from a video PID.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,79 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+=== MPEG-defined tables
+
+==== Conditional Access Table (CAT)
+
+Defined by MPEG in <<ISO-13818-1>>.
+[source,xml]
+----
+<CAT version="uint5, default=0" current="bool, default=true">
+  <DESCRIPTOR_LIST>
+</CAT>
+----
+
+==== DSM-CC Stream Descriptors Table
+
+Defined by MPEG in <<ISO-13818-6>>.
+[source,xml]
+----
+<DSMCC_stream_descriptors_table
+    version="uint5, default=0"
+    current="bool, default=true"
+    table_id_extension="uint16, default=0xFFFF">
+  <DESCRIPTOR_LIST>	
+</DSMCC_stream_descriptors_table>
+----
+
+==== Program Association Table (PAT)
+
+Defined by MPEG in <<ISO-13818-1>>.
+[source,xml]
+----
+<PAT version="uint5, default=0"
+     current="bool, default=true"
+     transport_stream_id="uint16, required"
+     network_PID="uint13, optional">
+
+  <!-- One per service -->
+  <service service_id="uint16, required" program_map_PID="uint13, required"/>
+
+</PAT>
+----
+
+==== Program Map Table (PMT)
+
+Defined by MPEG in <<ISO-13818-1>>.
+[source,xml]
+----
+<PMT version="uint5, default=0"
+     current="bool, default=true"
+     service_id="uint16, required"
+     PCR_PID="uint13, default=0x1FFF">
+
+  <!-- Program-level descriptors -->
+  <DESCRIPTOR_LIST>
+
+  <!-- One per elementary stream -->
+  <component stream_type="uint8, required" elementary_PID="uint13, required">
+    <DESCRIPTOR_LIST>
+  </component>
+
+</PMT>
+----
+
+==== Transport Stream Description Table (TSDT)
+
+Defined by MPEG in <<ISO-13818-1>>.
+[source,xml]
+----
+<TSDT version="uint5, default=0" current="bool, default=true">
+  <DESCRIPTOR_LIST>
+</TSDT>
+----

@@ -1,0 +1,162 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== nit
+
+[.cmd-header]
+Perform various transformations on a NIT
+
+This plugin performs various transformations on a NIT, either the NIT-Actual or some specific NIT-Other.
+The other NIT’s, if present, are left unchanged.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P nit [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--build-service-list-descriptors*
+
+[.optdoc]
+Build service list descriptors in the NIT according to the information which is collected in the PAT and the SDT.
+
+[.optdoc]
+See also option `--default-service-type`.
+
+[.opt]
+*--cleanup-private-descriptors*
+
+[.optdoc]
+Remove all private descriptors without preceding _private_data_specifier_descriptor_.
+
+[.opt]
+*--default-service-type* _value_
+
+[.optdoc]
+With `--build-service-list-descriptors`,
+specify the default service type of services which are found in the PAT but not in the SDT.
+
+[.optdoc]
+By default, services without known service type are not added in created service list descriptors.
+
+[.opt]
+*-l* _value_ +
+*--lcn* _value_
+
+[.optdoc]
+Specify which operation to perform on logical_channel_number (LCN) descriptors.
+The specified _value_ is a positive integer: +
+1 : Remove all LCN descriptors. +
+2 : Remove one entry every two entries in each LCN descriptor. +
+3 : Duplicate one entry every two entries in each LCN descriptor.
+
+[.opt]
+*--mpe-fec* _value_
+
+[.optdoc]
+Set the MPE-FEC_indicator in all _terrestrial_delivery_system_descriptors_ to the specified value (0 or 1).
+
+[.opt]
+*--network-id* _id_
+
+[.optdoc]
+Set the specified new value as network id in the NIT.
+
+[.opt]
+*--network-name* _name_
+
+[.optdoc]
+Set the specified value as network name in the NIT.
+Any existing _network_name_descriptor_ is removed.
+A new _network_name_descriptor_ is created with the new name.
+
+[.opt]
+*-o* _id_ +
+*--other* _id_
+
+[.optdoc]
+Do not modify the NIT-Actual.
+Modify the NIT-Other with the specified network id.
+
+[.opt]
+*--nit-other* _id_
+
+[.optdoc]
+Same as `--other` (for compatibility).
+
+[.opt]
+*--pds* _value_
+
+[.optdoc]
+With option `--remove-descriptor`, specify the private data specifier which applies to the descriptor tag values above 0x80.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID on which the NIT is expected.
+
+[.optdoc]
+By default, use PID 16 (0x0010), as specified for DVB-compliant networks.
+
+[.opt]
+*--remove-descriptor* _value_
+
+[.optdoc]
+Remove from the NIT all descriptors with the specified tag.
+
+[.optdoc]
+Several `--remove-descriptor` options may be specified to remove several types of descriptors.
+See also option `--pds`.
+
+[.opt]
+*-r* _value_ +
+*--remove-service* _value_
+
+[.optdoc]
+Remove the specified _service_id_ from the following descriptors:
+_service_list_descriptor_, _logical_channel_number_descriptor_.
+
+[.optdoc]
+Several `--remove-service` options may be specified to remove several services.
+
+[.opt]
+*--remove-ts* _value_
+
+[.optdoc]
+Remove from the NIT all references to the transport stream with the specified transport stream id value.
+
+[.optdoc]
+Several `--remove-ts` options may be specified to remove several TS.
+
+[.opt]
+*-s* _value_ +
+*--sld* _value_
+
+[.optdoc]
+Specify which operation to perform on _service_list_descriptor_.
+The value is a positive integer: +
+1 : Remove all service_list_descriptors. +
+2 : Remove one entry every two entries in each service_list_descriptor.
+
+[.opt]
+*--time-slicing* _value_
+
+[.optdoc]
+Set the Time_Slicing_indicator in all _terrestrial_delivery_system_descriptors_ to the specified value (0 or 1).
+
+include::{docdir}/opt/group-table-plugin.adoc[tags=!*;nit]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

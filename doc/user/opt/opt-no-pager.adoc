@@ -1,0 +1,19 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::PagerArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.opt]
+*--no-pager*
+
+[.optdoc]
+Do not send output through a pager process.
+By default, if the output device is a terminal, the output is paged.
+See xref:pager-command[xrefstyle=short] for more details.

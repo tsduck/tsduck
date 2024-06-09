@@ -1,0 +1,88 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== slice
+
+[.cmd-header]
+Pass or drop packets based on packet numbers
+
+This plugin passes or drops packets based on packet numbers or relative transport stream time.
+It can be used to extract selected portions of a TS and group them into one single output.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P slice [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-d* _value_ +
+*--drop* _value_
+
+[.optdoc]
+All packets are dropped after the specified packet number.
+
+[.optdoc]
+Several `--drop` options may be specified.
+
+[.opt]
+*-i* +
+*--ignore-pcr*
+
+[.optdoc]
+When `--seconds` or `--milli-seconds` is used, do not use PCR's to compute time values.
+Only rely on bitrate as determined by previous plugins in the chain.
+
+[.opt]
+*-m* +
+*--milli-seconds*
+
+[.optdoc]
+With options `--drop`, `--null`, `--pass` and `--stop`, interpret the integer values as milli-seconds from the beginning, not as packet numbers.
+Time is measured based on bitrate and packet count, not on real time.
+
+[.opt]
+*-n* _value_ +
+*--null* _value_
+
+[.optdoc]
+All packets are replaced by null packets after the specified packet number.
+Several --null options may be specified.
+
+[.opt]
+*-p* _value_ +
+*--pass* _value_
+
+[.optdoc]
+All packets are passed unmodified after the specified packet number.
+
+[.optdoc]
+Several `--pass` options may be specified.
+This is the default for the initial packets.
+
+[.opt]
+*--seconds*
+
+[.optdoc]
+With options `--drop`, `--null`, `--pass` and `--stop`, interpret the integer values as seconds from the beginning, not as packet numbers.
+Time is measured based on bitrate and packet count, not on real time.
+
+[.opt]
+*-s* _value_ +
+*--stop* _value_
+
+[.optdoc]
+Packet transmission stops after the specified packet number and `tsp` terminates.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

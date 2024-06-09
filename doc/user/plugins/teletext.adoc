@@ -1,0 +1,110 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== teletext
+
+[.cmd-header]
+Extract Teletext subtitles in SubRip format
+
+This plugin extracts a Teletext subtitle stream from a service and exports it in SRT format, also known as SubRip format.
+SRT is a text format which can be manipulated by many video processing tools.
+
+Teletext subtitles are contained in a PID which is signalled in the PMT of the service.
+Unlike DVB subtitles, a single Teletext PID can contain more than one subtitle stream.
+Typically, one PID can contain a multiplex of the standard and _for hard of hearing_ subtitles.
+Each subtitle stream is defined by its _Teletext Page_ number.
+All page numbers inside a single Teletext PID are normally listed in a Teletext descriptor in the PMT of the service.
+
+NOTE: The acronym SRT has a double meaning, "SubRip Text" is a subtitle format,
+"Secure Reliable Transport" is a network protocol.
+The two concepts are unrelated.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P teletext [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--colors*
+
+[.optdoc]
+Add font color tags in the subtitles.
+By default, no color is specified.
+
+[.opt]
+*-l* _name_ +
+*--language* _name_
+
+[.optdoc]
+Specify the language of the subtitles to select.
+This option is useful only with `--service`,
+when the PMT of the service declares Teletext subtitles in different languages.
+
+[.opt]
+*-m* _value_ +
+*--max-frames* _value_
+
+[.optdoc]
+Specifies the maximum number of Teletext frames to extract.
+The processing is then stopped.
+
+[.optdoc]
+By default, all frames are extracted.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the SRT output file name.
+This is a text file.
+By default, the SRT subtitles are displayed on the standard output.
+
+[.opt]
+*--page* _value_
+
+[.optdoc]
+Specify the Teletext page to extract.
+This option is useful only when the Teletext PID contains several pages.
+By default, the first Teletext frame defines the page to use.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID carrying Teletext subtitles.
+
+[.optdoc]
+Alternatively, if the Teletext PID is properly signalled in the PMT of its service,
+the option `--service` can be used instead.
+
+[.opt]
+*-s* _value_ +
+*--service* _value_
+
+[.optdoc]
+Specify the service with Teletext subtitles.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+The first _teletext_descriptor_ in the PMT of the service is used to identify the PID carrying Teletext subtitles.
+
+[.optdoc]
+If neither `--service` nor `--pid` is specified, the first service in the PAT is used.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

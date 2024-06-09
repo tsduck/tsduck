@@ -1,0 +1,27 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== drop (output)
+
+[.cmd-header]
+Drop output packets
+
+This output plugin simply drops all packets.
+This plugin is useful when the interesting work is done by the various packet processing plugins
+and the actual output packets are useless.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O drop [options]
+----
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

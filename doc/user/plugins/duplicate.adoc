@@ -1,0 +1,114 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== duplicate
+
+[.cmd-header]
+Duplicate PID's, reusing null packets
+
+This plugin duplicates the content of several PID’s into new PID’s.
+The duplicated packets are created by replacing existing null packets.
+The input stream shall consequently contain at least as many null packets as packets to duplicate.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P duplicate [options] [pid[-pid]=newpid ...]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_pid[-pid]=newpid_
+
+[.optdoc]
+Each PID duplication is specified as `_pid=newpid_` or `_pid1-pid2=newpid_`.
+All PID's can be specified as decimal or hexadecimal values.
+More than one PID duplication can be specified.
+
+[.optdoc]
+In the first form, the PID `_pid_` is duplicated as `_newpid_`.
+
+[.optdoc]
+In the second form, all PID's within the range `_pid1_` to `_pid2_` (inclusive)
+are respectively duplicated as `_newpid_`, `_newpid+1_`, etc. (this behaviour is changed using option `--single`).
+
+[.optdoc]
+The null PID 0x1FFF cannot be duplicated.
+
+[.usage]
+Options
+
+[.opt]
+*-d* +
+*--drop-overflow*
+
+[.optdoc]
+Silently drop overflow packets.
+By default, overflow packets trigger warnings.
+
+[.optdoc]
+See also option `--max-buffered-packets`.
+
+[.opt]
+*-m* _value_ +
+*--max-buffered-packets* _value_
+
+[.optdoc]
+Specify the maximum number of buffered packets.
+The input packets to duplicate are internally buffered until a null packet is found and replaced by the buffered packet.
+An overflow is usually caused by insufficient null packets in the input stream.
+
+[.optdoc]
+The default is 1,024 packets.
+
+[.opt]
+*--reset-label* _label1[-label2]_
+
+[.optdoc]
+Clear the specified labels on the duplicated packets.
+
+[.optdoc]
+Several `--reset-label` options may be specified.
+
+[.opt]
+*--set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on the duplicated packets.
+
+[.optdoc]
+Several `--set-label` options may be specified.
+
+[.opt]
+*-s* +
+*--single*
+
+[.optdoc]
+When a duplication is in the form `_pid1-pid2=newpid_`, duplicate all input PID's within the
+range `_pid1_` to `_pid2_` to the same `_newpid_` value, not `_newpid_`, `_newpid+1_`, etc.
+
+[.optdoc]
+This option forces `--unchecked` since distinct PID's are duplicated to the same one.
+
+[.opt]
+*-u* +
+*--unchecked*
+
+[.optdoc]
+Do not perform any consistency checking while duplicating PID's.
+Duplicating two PID's to the same PID or to a PID which is already present in the input is accepted.
+
+[.optdoc]
+Note that this option should be used with care since the resulting stream can be illegal or inconsistent.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

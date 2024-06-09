@@ -1,0 +1,115 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcrverify
+
+[.cmd-header]
+Verify the PCR's values
+
+This plugin verifies the values of all PCR’s and report invalid values.
+
+By default, each PCR is compared to its expected theoretical value
+as computed from the previous PCR value and the transport bitrate.
+Note that this method works perfectly on constant bitrate streams (CBR) only.
+With variable bitrate streams (VBR) with high amplitudes of variation, the reported errors are usually meaningless.
+
+For real-time streams, it is possible to use the input timestamps as reference which is a better alternative for VBR streams.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pcrverify [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--absolute*
+
+[.optdoc]
+Use absolute values in PCR units.
+By default, use microseconds equivalent values (one microsecond = 27 PCR units).
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Verify the PCR's according to this transport bitrate.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+By default, use the input bitrate as reported by the input device.
+
+[.opt]
+*-i* +
+*--input-synchronous*
+
+[.optdoc]
+Verify the PCR's according to each packet input timestamp.
+See the documentation of `tsp` for a description of input timestamps.
+
+[.optdoc]
+This method is meaningful only with real-time input sources
+or if the input source can recreate reliable input timestamps (M2TS files for instance).
+With this option, the bitrate is ignored.
+
+[.opt]
+*-j* _value_ +
+*--jitter-max* _value_
+
+[.optdoc]
+Maximum allowed jitter.
+PCR's with a higher jitter are reported, others are ignored.
+
+[.optdoc]
+If `--absolute`, the specified value is in PCR units, otherwise it is in micro-seconds.
+
+[.optdoc]
+The default is 27,000 PCR units or 1,000 micro-seconds.
+Use `--jitter` 0 to check that all PCR have their exact expected value.
+
+[.opt]
+*--jitter-unreal* _value_
+
+[.optdoc]
+Maximum realistic jitter.
+Any jitter above this value is unrealistic and ignored (probably because of a PCR leap).
+
+[.optdoc]
+If `--absolute`, the specified value is in PCR units, otherwise it is in micro-seconds.
+
+[.optdoc]
+The default is 270,000,000 PCR units (10 seconds).
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+PID filter: select packets with these PID values.
+
+[.optdoc]
+Several `--pid` options may be specified.
+Without `--pid` option, PCR's from all PID's are used.
+
+[.opt]
+*-t* +
+*--time-stamp*
+
+[.optdoc]
+Display time of each event.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

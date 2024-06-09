@@ -1,0 +1,106 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== time
+
+[.cmd-header]
+Schedule packets pass or drop
+
+This plugin schedules in time the processing of packets
+(drop packets, pass packets or replace them by null packets).
+This plugin may be used to schedule the recording of a program at a specified time, for instance.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P time [options]
+----
+
+[.usage]
+Specifying time values
+
+A time value must be in the format `YYYY/MM/DD:hh:mm:ss`.
+
+If `--relative` is specified, the time value is a number of seconds from the start of execution.
+It may contain a decimal part if milliseconds are required.
+
+An empty value ("") means from the beginning, that is to say when `tsp` started.
+
+By default, packets are passed when `tsp` starts.
+
+[.usage]
+Options
+
+[.opt]
+*-d* _time_ +
+*--drop* _time_
+
+[.optdoc]
+All packets are dropped after the specified time.
+
+[.optdoc]
+Several `--drop` options may be specified.
+
+[.opt]
+*-n* _time_ +
+*--null* _time_
+
+[.optdoc]
+All packets are replaced by null packets after the specified time.
+
+[.optdoc]
+Several `--null` options may be specified.
+
+[.opt]
+*-p* _time_ +
+*--pass* _time_
+
+[.optdoc]
+All packets are passed unmodified after the specified time.
+
+[.optdoc]
+Several `--pass` options may be specified.
+
+[.opt]
+*-r* +
+*--relative*
+
+[.optdoc]
+All time values are interpreted as a number of seconds relative to the `tsp` start time.
+
+[.optdoc]
+By default, all time values are interpreted as an absolute time in the format `YYYY/MM/DD:hh:mm:ss`.
+Option `--relative` is incompatible with `--tdt` or `--utc`.
+
+[.opt]
+*-s* _time_ +
+*--stop* _time_
+
+[.optdoc]
+Packet transmission stops after the specified time and `tsp` terminates.
+
+[.opt]
+*-t* +
+*--tdt*
+
+[.optdoc]
+Use the Time & Date Table (TDT) from the transport stream as time reference instead of the system clock.
+Since the TDT contains UTC time, all time values in the command line must be UTC also.
+
+[.opt]
+*-u* +
+*--utc*
+
+[.optdoc]
+Specifies that all time values in the command line are in UTC.
+By default, the time values are interpreted as system local time.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

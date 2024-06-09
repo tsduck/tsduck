@@ -1,0 +1,130 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== trigger
+
+[.cmd-header]
+Trigger actions on selected TS packets
+
+This plugin triggers an action (running an external command, sending an UDP packet)
+each time a TS packet is marked with a given label.
+Labels are typically set on packets by a previous plugin in the chain, such as the `filter` plugin.
+
+By default, without option `--label`, `--start` or `--stop`, the actions are triggered on all packets in the stream.
+To avoid "avalanche effects" of too many triggers, the options `--min-inter-packet` and `--min-inter-time` can be used.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P trigger [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--all-labels*
+
+[.optdoc]
+All labels from options `--label` shall be set on a packet to be selected (logical _and_).
+
+[.optdoc]
+By default, a packet is selected if any label is set (logical _or_).
+
+[.opt]
+*-e* _'command'_ +
+*--execute* _'command'_
+
+[.optdoc]
+Run the specified command when the current packet triggers the actions.
+
+[.opt]
+*-l* _label1[-label2]_ +
+*--label* _label1[-label2]_
+
+[.optdoc]
+Trigger the actions on packets with any of the specified labels.
+Labels should have typically be set by a previous plugin in the chain.
+
+[.optdoc]
+Several `--label` options may be specified.
+
+[.optdoc]
+Note that the option `--label` is different from the generic option `--only-label`.
+The generic option `--only-label` acts at `tsp` level and controls which packets are passed to the plugin.
+All other packets are directly passed to the next plugin without going through this plugin.
+The option `--label`, on the other hand, is specific to the trigger plugin and
+selects packets with specific labels among the packets which are passed to this plugin.
+
+[.opt]
+*--local-address* _address_
+
+[.optdoc]
+With `--udp`, when the destination is a multicast address, specify the IP address of the outgoing local interface.
+It can be also a host name that translates to a local address.
+
+[.opt]
+*--min-inter-packet* _count_
+
+[.optdoc]
+Specify the minimum number of packets between two triggered actions.
+
+[.optdoc]
+Actions which should be triggered in the meantime are ignored.
+
+[.opt]
+*--min-inter-time* _milliseconds_
+
+[.optdoc]
+Specify the minimum time, in milliseconds, between two triggered actions.
+
+[.optdoc]
+Actions which should be triggered in the meantime are ignored.
+
+[.opt]
+*--start*
+
+[.optdoc]
+Trigger the actions on `tsp` start.
+
+[.opt]
+*--stop*
+
+[.optdoc]
+Trigger the actions on `tsp` stop.
+
+[.opt]
+*--ttl* _value_
+
+[.optdoc]
+With `--udp`, specifies the TTL (Time-To-Live) socket option.
+The actual option is either "Unicast TTL" or "Multicast TTL", depending on the destination address.
+Remember that the default Multicast TTL is 1 on most systems.
+
+[.opt]
+*-u* _address:port_ +
+*--udp* _address:port_
+
+[.optdoc]
+Send a UDP/IP message to the specified destination when the current packet triggers the actions.
+The _address_ specifies an IP address which can be either unicast or multicast.
+It can be also a host name that translates to an IP address.
+The _port_ specifies the destination UDP port.
+
+[.opt]
+*--udp-message* _hexa-string_
+
+[.optdoc]
+With `--udp`, specifies the binary message to send as UDP datagram.
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

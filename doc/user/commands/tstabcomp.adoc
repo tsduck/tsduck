@@ -1,0 +1,146 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tstabcomp
+
+[.cmd-header]
+Compile or decompile MPEG tables from XML files
+
+This utility is an MPEG table compiler which takes MPEG tables in source form as XML files and produces binary section files.
+
+The `tstabcomp` utility is also an MPEG table decompiler.
+From a binary file containing sections, it recreates an XML file.
+This XML file can be edited by hand and recompiled for instance.
+
+See xref:psisi-sig[xrefstyle=short] for a description of the format of PSI/SI files which can be manipulated by TSDuck and
+more specifically xref:psi-xml-format[xrefstyle=short] for a complete description of XML files.
+
+Additionally, TSDuck defines automated XML-to-JSON translation rules (see section xref:xml-json-conv[xrefstyle=short]).
+The command `tstabcomp` can use these translation rules to read input source files in JSON format and
+write output decompiled tables in JSON format.
+However, in all cases, XML is used as intermediate format.
+Input JSON files are translated to XML first and then compiled in binary format.
+On output, the tables are first decompiled in XML format and then translated to JSON.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tstabcomp [options] input-file ...
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+XML or JSON source files to compile or binary table files to decompile.
+
+[.optdoc]
+By default, files ending in `.xml` or `.json` are compiled and files ending in `.bin` are decompiled.
+For other files, explicitly specify `--compile` or `--decompile`.
+
+[.optdoc]
+If an input file name is a dash (`-`), the standard input is used.
+In that case, `--compile` or `--decompile` must be specified since the input file type cannot be deduced from its name.
+
+[.optdoc]
+If an input file name starts with `<?xml`, it is considered as _inline XML content_.
+Similarly, if an input file name starts with `{` or `[`, it is considered as _inline JSON content_.
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--compile*
+
+[.optdoc]
+Compile all files as XML or JSON source files into binary files.
+This is the default for `.xml` or `.json` files.
+
+[.opt]
+*-d* +
+*--decompile*
+
+[.optdoc]
+Decompile all files as binary files into XML files.
+This is the default for `.bin` files.
+
+[.opt]
+*-e* +
+*--extensions*
+
+[.optdoc]
+With `--xml-model`, include the content of the available extensions.
+
+[.opt]
+*-f* +
+*--from-json*
+
+[.optdoc]
+Each input file must be a JSON file, typically from a previous automated XML-to-JSON conversion or in a similar format.
+
+[.optdoc]
+This is automatically detected for file names ending in `.json`.
+This option is only required when the input file name has a non-standard extension or is the standard input.
+
+[.optdoc]
+By default, in decompilation mode, in the absence of `.json` extension, input files are read as XML.
+
+[.opt]
+*-j* +
+*--json*
+
+[.optdoc]
+When decompiling, perform an automated XML-to-JSON conversion.
+The output file is in JSON format instead of XML.
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+[.opt]
+*-o* _file-name_
+*--output* _file-name_
+
+[.optdoc]
+Specify the output file name.
+
+[.optdoc]
+If the specified path is a directory, the output file is built from this directory and default file name.
+
+[.optdoc]
+If the specified name is a dash (`-`), the standard output is used.
+
+[.optdoc]
+By default, the output file has the same name as the input and extension `.bin` (compile), `.xml` or `.json` (decompile).
+The default output file for the standard input (`-`) is the standard output (`-`).
+
+[.optdoc]
+If more than one input file is specified, the output path, if present,
+must be either a directory name or the standard output (`-`).
+
+[.opt]
+*-x* +
+*--xml-model*
+
+[.optdoc]
+Display the XML model of the table files.
+This model is not a full XML-Schema, this is an informal template file which describes the expected syntax of TSDuck XML files.
+See xref:xml-models[xrefstyle=short] for a description of XML model files.
+
+[.optdoc]
+If `--output` is specified, the model is saved here.
+Do not specify input files.
+
+include::{docdir}/opt/group-xml-tweaks.adoc[tags=!*]
+include::{docdir}/opt/group-section-file.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;std;timeref;charset]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

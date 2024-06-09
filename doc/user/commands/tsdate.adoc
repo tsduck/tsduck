@@ -1,0 +1,60 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsdate
+
+[.cmd-header]
+Date and time extraction
+
+This utility extracts date and time information from a transport stream,
+namely the TDT (Time and Data Table) and the TOT (Time Offset Table).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsdate [options] [input-file]
+----
+
+[.usage]
+Input file
+
+[.optdoc]
+MPEG transport stream, either a capture file or a pipe from a live stream (see option `--format` for binary formats).
+
+[.optdoc]
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--all*
+
+[.optdoc]
+Report all TDT/TOT tables (default: report only the first table of each type).
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;short;input]
+
+[.opt]
+*--notdt*
+
+[.optdoc]
+Ignore Time & Date Table (TDT).
+
+[.opt]
+*--notot*
+
+[.optdoc]
+Ignore Time Offset Table (TOT).
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;std;timeref]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

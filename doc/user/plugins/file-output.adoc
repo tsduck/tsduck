@@ -1,0 +1,31 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== file (output)
+
+[.cmd-header]
+Transport stream files output
+
+This output plugin writes the TS packets to a file.
+The output file receives a flow of contiguous 188-bytes TS packets (unless `--format` is used).
+
+The default file is the standard output, which can be a pipe.
+Since the plugin `file` is the default output plugin (if no option `-O` is specified),
+this means that the default `tsp` output is the standard output.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O file [options] [file-name]
+----
+
+include::{docdir}/opt/group-file-output.adoc[tags=!*]
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

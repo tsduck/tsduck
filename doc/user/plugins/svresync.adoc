@@ -1,0 +1,86 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== svresync
+
+[.cmd-header]
+Resynchronize the clock of a service based on another service
+
+This plugin resynchronizes time stamps (PCR, PTS, DTS) of a target service based on the reference clock of another service.
+The two services then share the same time reference and it is possible, for instance,
+to migrate a component from one service to the other using subsequent manipulations of the two PMT’s.
+
+Resynchronization principles:
+
+* The PCR values from the reference service are directly copied into the target service,
+  with respect to the packet distance between reference and target PCR.
+* When a target PCR is replaced, the applied time offset is recorded and uniformly applied
+  to all subsequent PTS and DTS, until the next target PCR where a slightly different time offset
+  may be computed if the stream does not have a constant bitrate.
+
+WARNING: This plugin won’t work well if the target service is scrambled.
+The PCR will be replaced but not the PTS and DTS since they are in the scrambled part of the TS packet.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P svresync [options] service
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_service_
+
+[.optdoc]
+Specifies the target service to resynchronize to the reference clock.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.usage]
+Options
+
+[.opt]
+*-p* _value_ +
+*--pid-reference* _value_
+
+[.optdoc]
+Specifies the PID containing the reference PCR clock.
+This option can be used instead of a reference service if the reference PCR PID is known.
+
+[.optdoc]
+Exactly one of `--service-reference` and `--pid-reference` must be specified.
+
+[.opt]
+*-s* _value_ +
+*--service-reference* _value_
+
+[.optdoc]
+Specifies the service containing the reference clock.
+Only the PCR PID is used in this service.
+Other components are ignored.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+Exactly one of `--service-reference` and `--pid-reference` must be specified.
+
+[.opt]
+*--set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on the modified PID's.
+On each PID, the label is first set on the first modified packet, and then on all packets of the PID.
+
+[.optdoc]
+Several `--set-label` options may be specified.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,779 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+[#dvb-plugin]
+=== dvb (input)
+
+[.cmd-header]
+DVB, ATSC, ISDB tuner receivers input
+
+This input plugin receives TS packets from a tuner receiver device.
+These devices include a wide range of satellite, cable and terrestrial adapters.
+Most of them are simple tuners.
+See xref:tuner-devices[xrefstyle=short] for more details on tuner receiver devices.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults
+(see the reference documentation for `tsp`).
+
+NOTE: This plugin originally supported DVB receivers only.
+Later, support was added for ATSC and ISDB receivers, but the plugin retained its original name `dvb`.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I dvb [options]
+----
+
+[.usage]
+Reception options
+
+[.opt]
+*-a* _N_ +
+*--adapter* _N_
+
+[.optdoc]
+Specify the _N_^th^ tuner device in the system, the first index being zero.
+This option can be used instead of device name.
+
+[.optdoc]
+On Linux systems, this means `/dev/dvb/adapterN`.
+
+[.opt]
+*-d* _"name"_ +
+*--device-name* _"name"_
+
+[.optdoc]
+Specify the name of the receiver device to use.
+Use the `tslsdvb` utility to list all available devices.
+
+[.optdoc]
+By default, the first receiver device is used.
+The syntax of the device name depends on the operating system.
+See xref:tuner-naming[xrefstyle=short] for more details on receiver devices naming.
+
+[.optdoc]
+The specified name can also be the path of an XML file (a file name ending in `.xml`) which is used as tuner emulator.
+See xref:tuner-emulator[xrefstyle=short] for more details on tuner emulators.
+
+[.opt]
+*--lnb* _string_
+
+[.optdoc]
+For satellite reception, specifies the description of the LNB (Low-Noise Block in the dish).
+See xref:lnb-config[xrefstyle=short] for more details.
+
+[.opt]
+*--receive-timeout* _milliseconds_
+
+[.optdoc]
+Specify the timeout, *in milliseconds*, for each receive operation.
+To disable the timeout and wait indefinitely for packets, specify zero.
+This is the default.
+
+[.opt]
+*--signal-timeout* _seconds_
+
+[.optdoc]
+Specify the timeout, *in seconds*, for the DVB frontend signal locking.
+If no signal is detected within this timeout, the command aborts.
+To disable the timeout and wait indefinitely for the signal, specify zero.
+The default is 5 seconds.
+
+[.usage]
+Linux-specific options
+
+[.opt]
+*--demux-buffer-size* _value_
+
+[.optdoc]
+Default buffer size, in bytes, of the demux device.
+The default is 1 MB.
+
+[.usage]
+Windows-specific options
+
+[.opt]
+*--demux-queue-size* _value_
+
+[.optdoc]
+Specify the maximum number of media samples in the queue between the DirectShow capture thread and the input plugin thread.
+The default is 1000 media samples.
+
+[.opt]
+*--receiver-name* _"name"_
+
+[.optdoc]
+Specify the name of the DirectShow receiver filter to use.
+
+[.optdoc]
+By default, first try a direct connection from the tuner filter to the rest of the graph.
+Then, try all receiver filters and concatenate them all.
+
+[.usage]
+Status reporting options
+
+Using these options, it is possible to send a status report of the reception at regular interval.
+The status report is in JSON format and can be displayed or sent over UDP or TCP.
+
+[.opt]
+*--json-interval* _seconds_
+
+[.optdoc]
+With `--json-line`, `--json-tcp`, `--json-udp`, specify the interval between two status reports.
+
+[.optdoc]
+The default is 60 seconds.
+
+include::{docdir}/opt/group-json-output.adoc[tags=!*;notitle]
+
+[.usage]
+Tuning options
+
+By default, no tuning is performed on the DVB frontend.
+The transponder on which the frontend is currently tuned is used.
+
+There are two ways to specify a new transponder:
+
+* Specifying individual tuning options, one for each tuning parameters.
+  Common values are provided as default.
+* The name of a channel contained in the transponder, using a channels configuration file.
+  See xref:chap-chanconfig[xrefstyle=short] for more details on channels configuration files.
+
+[.usage]
+Tuning method 1: Individual tuning options
+
+[.opt]
+*--bandwidth* _value_
+
+[.optdoc]
+Used for terrestrial tuners only.
+Specify the bandwidth in Hz.
+
+[.optdoc]
+For compatibility with old versions, low values (below 1000) are interpreted in MHz.
+This means that values 8 and 8,000,000 are identical.
+Both mean 8 MHz.
+
+[.optdoc]
+The default is 8 MHz for DVB-T/T2 and 6 MHz for ISDB-T.
+
+[.opt]
+*--delivery-system* _value_
+
+[.optdoc]
+Specify which delivery system to use.
+Must be one of the following values:
+
+[.optdoc]
+.Values for option `--delivery-system` (`dvb` plugin)
+[cols="<15m,<25,<60",stripes=none]
+|===
+|Value |Description |Supported options
+
+|ATSC
+|ATSC
+|`--frequency --modulation --spectral-inversion`
+
+|ATSC-MH
+|ATSC -M/H (handheld)
+|Unsupported
+
+|CMMB
+|CMMB Terrestrial
+|Unsupported
+
+|DAB
+|DAB (digital audio)
+|Unsupported
+
+|DSS
+|DSS Satellite
+|Unsupported
+
+|DTMB
+|DTMB Terrestrial
+|Unsupported
+
+|DVB-C
+|DVB-C (same as `DVB-C/A`)
+|Same as `DVB-C/A`
+
+|DVB-C/A
+|DVB-C ITU-T J.83 Annex A
+|`--fec-inner --frequency --modulation --spectral-inversion --symbol-rate`
+
+|DVB-C/B
+|DVB-C ITU-T J.83 Annex B
+|Unsupported
+
+|DVB-C/C
+|DVB-C ITU-T J.83 Annex C
+|Same as DVB-C/A
+
+|DVB-C2
+|DVB-C2
+|Unsupported
+
+|DVB-H
+|DVB-H (deprecated)
+|Unsupported
+
+|DVB-S
+|DVB-S
+|`--fec-inner --frequency --polarity --satellite-number --spectral-inversion --symbol-rate`
+
+|DVB-S-Turbo
+|DVB-S Turbo
+|Unsupported
+
+|DVB-S2
+|DVB-S2
+|`--fec-inner --frequency --isi --modulation --pilots --pls-code --pls-mode --polarity --roll-off
+ --satellite-number --spectral-inversion --symbol-rate`
+
+|DVB-T
+|DVB-T
+|`--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
+ --low-priority-fec --modulation --spectral-inversion --transmission-mode`
+
+|DVB-T2
+|DVB-T2
+|`--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
+ --low-priority-fec --modulation --plp --spectral-inversion --transmission-mode`
+
+|ISDB-C
+|ISDB-C
+|Unsupported
+
+|ISDB-S
+|ISDB-S
+|`--fec-inner --frequency --polarity --satellite-number --spectral-inversion --stream-id --symbol-rate`
+
+|ISDB-T
+|ISDB-T
+|`--bandwidth --frequency --guard-interval --isdbt-layer-a-fec --isdbt-layer-a-modulation
+ --isdbt-layer-a-segment-count --isdbt-layer-a-time-interleaving --isdbt-layer-b-fec
+ --isdbt-layer-b-modulation --isdbt-layer-b-segment-count --isdbt-layer-b-time-interleaving
+ --isdbt-layer-c-fec --isdbt-layer-c-modulation --isdbt-layer-c-segment-count
+ --isdbt-layer-c-time-interleaving --sb-segment-count --sb-segment-index --sb-subchannel-id
+ --sound-broadcasting --spectral-inversion --transmission-mode`
+
+|undefined
+|Undefined
+|Unsupported
+
+|===
+
+[.optdoc]
+Note that some delivery systems are not available on some operating systems.
+
+[.optdoc]
+By default, use the default system for the tuner.
+
+[.opt]
+*--fec-inner* _value_
+
+[.optdoc]
+Used for satellite and cable tuners only.
+
+[.optdoc]
+Specify the Inner Forward Error Correction.
+Must be one of `none`, `auto`, `1/2`, `1/3`, `1/4`, `2/3`, `2/5`, `3/4`, `3/5`, `4/5`, `5/6`, `5/11`, `6/7`, `7/8`, `8/9`, `9/10`.
+The default is `auto`.
+
+[.opt]
+*-f* _value_ +
+*--frequency* _value_
+
+[.optdoc]
+Specify the carrier frequency in Hz (all tuners).
+
+[.optdoc]
+For DVB-T tuners, the options `--uhf-channel` or `--vhf-channel` (and associated optional `--offset-count`)
+can be used instead of `--frequency`.
+
+[.opt]
+*--guard-interval* _value_
+
+[.optdoc]
+Used for terrestrial tuners only.
+
+[.optdoc]
+Must be one of `auto`, `1/32`, `1/16`, `1/8`, `1/4`.
+
+[.optdoc]
+For DVB-T2, also accept `1/128`, `19/128`, `19/256`.
+
+[.optdoc]
+The default is `1/32`.
+
+[.opt]
+*--hierarchy* _value_
+
+[.optdoc]
+Used for DVB-T tuners only.
+
+[.optdoc]
+Must be one of `auto`, `none`, `1`, `2`, `4`.
+The default is `none`.
+
+[.opt]
+*--high-priority-fec* _value_
+
+[.optdoc]
+Used for DVB-T tuners only.
+
+[.optdoc]
+Error correction for high priority streams.
+See option `--fec-inner` for the list of possible values.
+The default is `auto`.
+
+[.opt]
+*--isdbt-layer-a-fec* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Error correction for layer A.
+Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`, `auto`.
+The default is `auto`.
+
+[.opt]
+*--isdbt-layer-a-modulation* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Modulation for layer A.
+The default is automatically detected.
+Must be one of `QPSK`, `DQPSK`, `16-QAM`, `64-QAM`, `QAM` (auto).
+
+[.opt]
+*--isdbt-layer-a-segment-count* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Number of segments for layer A.
+Possible values: 0 to 13.
+The default is automatically detected.
+
+[.opt]
+*--isdbt-layer-a-time-interleaving* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Time interleaving for layer A.
+Possible values: 0 to 3.
+The default is automatically detected.
+
+[.opt]
+*--isdbt-layer-b-fec* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Error correction for layer B.
+The default is automatically detected.
+Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`, `auto`.
+
+[.opt]
+*--isdbt-layer-b-modulation* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Modulation for layer B.
+The default is automatically detected.
+Must be one of `QPSK`, `DQPSK`, `16-QAM`, `64-QAM`, `QAM` (auto).
+
+[.opt]
+*--isdbt-layer-b-segment-count* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Number of segments for layer B.
+Possible values: 0 to 13.
+The default is automatically detected.
+
+[.opt]
+*--isdbt-layer-b-time-interleaving* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Time interleaving for layer B.
+Possible values: 0 to 3.
+The default is automatically detected.
+
+[.opt]
+*--isdbt-layer-c-fec* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Error correction for layer C.
+The default is automatically detected.
+Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`, `auto`.
+
+[.opt]
+*--isdbt-layer-c-modulation* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Modulation for layer C.
+The default is automatically detected.
+Must be one of `QPSK`, `DQPSK`, `16-QAM`, `64-QAM`, `QAM` (auto).
+
+[.opt]
+*--isdbt-layer-c-segment-count* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Number of segments for layer C.
+Possible values: 0 to 13.
+The default is automatically detected.
+
+[.opt]
+*--isdbt-layer-c-time-interleaving* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Time interleaving for layer C.
+Possible values: 0 to 3.
+The default is automatically detected.
+
+[.opt]
+*--isdbt-layers* _'string'_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Hierarchical reception in ISDB-T is achieved by enabling or disabling layers in the decoding process.
+The specified string contains a combination of characters `A`, `B`, `C`, indicating which layers shall be used.
+The default is `ABC` (all layers).
+
+[.opt]
+*--isdbt-partial-reception*
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Specify that the reception of the ISDB-T channel is in partial reception mode.
+The default is automatically detected.
+
+[.opt]
+*--isi* _value_
+
+[.optdoc]
+Used for DVB-S2 tuners only.
+
+[.optdoc]
+Specify the Input Stream Id (ISI) number to select, from 0 to 255.
+Used with multi-stream, see also options `--pls-code` and `--pls-mode`.
+
+[.optdoc]
+The default is to keep the entire stream, without multi-stream selection.
+
+[.optdoc]
+*Warning*: this option is supported on Linux only.
+Currently, Windows provides no support for multi-stream.
+
+[.opt]
+*--low-priority-fec* _value_
+
+[.optdoc]
+Used for DVB-T tuners only.
+
+[.optdoc]
+Error correction for low priority streams.
+See option `--fec-inner` for the list of possible values.
+The default is `auto`.
+
+[.opt]
+*-m* _value_ +
+*--modulation* _value_
+
+[.optdoc]
+Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.
+
+[.optdoc]
+Modulation type (aka constellation for DVB-T).
+
+[.optdoc]
+Must be one of `QPSK`, `8-PSK`, `16-APSK`, `32-APSK`, `QAM` (auto-detected QAM),
+`16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`, `8-VSB`, `16-VSB`.
+
+[.optdoc]
+The default is 64-QAM for DVB-T and DVB-C, QPSK for DVB-S2, 8-VSB for ATSC.
+
+[.opt]
+*--offset-count* _value_
+
+[.optdoc]
+Used for terrestrial tuners only.
+
+[.optdoc]
+Specify the number of offsets from the UHF or VHF channel.
+The default is zero.
+See options `--uhf-channel` and `--vhf-channel`.
+
+[.opt]
+*--pilots* _value_
+
+[.optdoc]
+Used for DVB-S2 tuners only.
+
+[.optdoc]
+Presence of pilots frames.
+Must be one of `auto`, `on` or `off`.
+The default is `off`.
+
+[.opt]
+*--plp* _value_
+
+[.optdoc]
+Used for DVB-T2 tuners only.
+
+[.optdoc]
+Specify the Physical Layer Pipe (PLP) number to select, from 0 to 255.
+The default is to keep the entire stream, without PLP selection.
+
+[.opt]
+*--pls-code* _value_
+
+[.optdoc]
+Used for DVB-S2 tuners only.
+
+[.optdoc]
+Specifiy the Physical Layer Scrambling (PLS) code value, from 0 to 262143 (0x3FFFF).
+Used with multi-stream, see also option `--isi`.
+
+[.optdoc]
+*Warning*: this option is supported on Linux only.
+Currently, Windows provides no support for multi-stream.
+
+[.opt]
+*--pls-mode* _mode_
+
+[.optdoc]
+Used for DVB-S2 tuners only.
+
+[.optdoc]
+Specify the Physical Layer Scrambling (PLS) mode.
+Used with multi-stream, see also option `--isi`.
+Must be one of `COMBO`, `GOLD`, `ROOT`.
+The default is `ROOT`.
+
+[.optdoc]
+*Warning*: this option is supported on Linux only.
+Currently, Windows provides no support for multi-stream.
+
+[.opt]
+*--polarity* _value_
+
+[.optdoc]
+Used for satellite tuners only.
+
+[.optdoc]
+Must be one of `horizontal` or `vertical` for linear polarization, `left` or `right` for circular polarization.
+The default is `vertical`.
+
+[.opt]
+*--roll-off* _value_
+
+[.optdoc]
+Used for DVB-S2 tuners only.
+
+[.optdoc]
+Roll-off factor.
+Must be one of `auto`, `0.35`, `0.25`, `0.20`.
+The default is `0.35` (implicit for DVB-S, default for DVB-S2).
+
+[.opt]
+*--satellite-number* _value_
+
+[.optdoc]
+Used for satellite tuners only.
+
+[.optdoc]
+Satellite/dish number.
+Must be 0 to 3 with DiSEqC switches and 0 to 1 for non-DiSEqC switches.
+The default is zero.
+
+[.opt]
+*--sb-segment-count* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+With `--sound-broadcasting`, specify the total count of connected ISDB-Tsb channels.
+Possible values: 1 to 13. The default is 13.
+
+[.opt]
+*--sb-segment-index* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+With `--sound-broadcasting`, specify the index of the segment to be demodulated
+for an ISDB-Tsb channel where several of them are transmitted in the connected manner.
+Possible values: 0 to value of `--sb-segment-count` minus 1.
+The default is 0.
+
+[.opt]
+*--sb-subchannel-id* _value_
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+With `--sound-broadcasting`, specify the sub-channel id of the segment to be demodulated in the ISDB-Tsb channel.
+Possible values: 0 to 41.
+The default is 0.
+
+[.opt]
+*--sound-broadcasting*
+
+[.optdoc]
+Used for ISDB-T tuners only.
+
+[.optdoc]
+Specify that the reception is an ISDB-Tsb (sound broadcasting) channel instead of an ISDB-T one.
+
+[.opt]
+*--spectral-inversion* _value_
+
+[.optdoc]
+Spectral inversion.
+Must be one of `on`, `off`, `auto`.
+The default is `auto`.
+
+[.opt]
+*--stream-id* _value_
+
+[.optdoc]
+Used for ISDB-S tuners only.
+
+[.optdoc]
+In the case of multi-stream broadcasting, specify the inner transport stream id.
+By default, use the first inner transport stream, if any is found.
+
+[.optdoc]
+*Warning*: this option is supported on Linux only.
+Currently, Windows provides no support for multi-stream.
+
+[.opt]
+*-s* _value_ +
+*--symbol-rate* _value_
+
+[.optdoc]
+Used for satellite and cable tuners only.
+
+[.optdoc]
+Symbol rate in symbols/second.
+The default is 27.5 mega-symbols/second for DVB-S, 6.9 mega-symbols/second for DVB-C, 28.86 mega-symbols/second for ISDB-S.
+
+[.opt]
+*--transmission-mode* _value_
+
+[.optdoc]
+Used for terrestrial tuners only.
+
+[.optdoc]
+Must be one of `auto`, `2K`, `4K`, `8K`.
+For DVB-T2, also accept `1K`, `2K-interleaved`, `4K-interleaved`, `16K`, `32K`.
+The default is `8K`.
+
+[.opt]
+*--uhf-channel* _value_
+
+[.optdoc]
+Used for terrestrial tuners only.
+
+[.optdoc]
+Specify the UHF channel number of the carrier.
+Can be used in replacement to `--frequency`.
+Can be combined with an `--offset-count` option.
+The UHF frequency layout depends on the region, see `--hf-band-region` option.
+
+[.opt]
+*--vhf-channel* _value_
+
+[.optdoc]
+Used for terrestrial tuners only.
+
+[.optdoc]
+Specify the VHF channel number of the carrier.
+Can be used in replacement to `--frequency`.
+Can be combined with an `--offset-count` option.
+The VHF frequency layout depends on the region, see `--hf-band-region` option.
+
+[.usage]
+Tuning method 2: Locating the transponder by channel name
+
+[.opt]
+*-c* _name_ +
+*--channel-transponder* _name_
+
+[.optdoc]
+Tune to the transponder containing the specified channel.
+The channel name is not case-sensitive and blanks are ignored.
+It is either an "HF band channel" or a "TV channel".
+
+[.optdoc]
+A "HF band channel" has the format `_band-number_` such as `UHF-22` (terrestrial) or `BS-12` (Japanese satellite).
+See also option `--offset-count`.
+
+[.optdoc]
+A "TV channel" name is searched in a channels configuration file and the corresponding tuning information in this file is used.
+See also option `--tuning-file`.
+
+[.optdoc]
+For ATSC networks, the channel name can be replaced by the channel id using the format
+`_major-id.minor-id_` (e.g. `1.2` or `12.8`).
+
+[.opt]
+*--tuning-file* _file-name_
+
+[.optdoc]
+Specify the channels configuration file to use for option `--channel-transponder`.
+
+[.optdoc]
+Channel configuration files can be created manually or using the utility `tsscan` or the plugin `nitscan`.
+The location of the default configuration file depends on the system.
+
+[.optdoc]
+See xref:chap-chanconfig[xrefstyle=short] for more details on channels configuration files.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;hf]
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

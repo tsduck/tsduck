@@ -1,0 +1,32 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== ip (output)
+
+[.cmd-header]
+UDP/IP unicast or multicast output
+
+This output plugin sends TS packets using UDP/IP, multicast or unicast.
+
+Each UDP datagram is filled with one or more TS packets (see option `--packet-burst`).
+By default, the datagrams contain TS packets without any extra information or encapsulation.
+Use the option `--rtp` to generate RTP datagrams.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for tsp).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O ip [options] address:port
+----
+
+include::{docdir}/opt/group-datagram-output.adoc[tags=!*;raw;rtp]
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

@@ -1,0 +1,644 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+[#tsp-reference]
+=== tsp
+
+[.cmd-header]
+Transport stream processor
+
+The transport stream processor is a general-purpose packet processing framework.
+
+It receives an MPEG Transport Stream from a user-specified input plugin,
+applies MPEG packet processing through several user-specified packet processor plugins,
+and sends the processed stream to a user-specified output plugin.
+
+All input, packet processing, and output plugins are shared libraries
+(`.so` files on Linux, `.dylib` on macOS, `.dll` on Windows).
+
+The following figure illustrates the structure of a `tsp` process using three packet processing plugins.
+
+.Transport stream processor diagram
+image::tsp.png[align="center",alt="tsp diagram",width=500]
+
+This section describes the general syntax and usage of the `tsp` command.
+All plugins are documented in detail, in alphabetical order, in xref:chap-plugins[xrefstyle=short].
+The xref:tsp-examples[xrefstyle=short] gives a few examples of `tsp` commands, both simple and complex examples.
+
+[.usage]
+Usage
+
+The general syntax of the tsp command is the following:
+
+[source,shell]
+----
+$ tsp [tsp-options] \
+      [-I input-name [input-options]] \
+      [-P processor-name [processor-options]] ... \
+      [-O output-name [output-options]]
+----
+
+All `_tsp-options_` must be placed on the command line before the input, packet processing and output plugin specifications.
+There must be at most one input and one output plugin.
+There may be any number of packet processing plugins.
+
+On the command line, the order of the packet processing plugins is significant:
+the TS packets are passed from one processor to the other in this order.
+The input and output plugin, however, can be located anywhere on the command line.
+They are implicitly used as first and last plugin in the chain, respectively.
+
+[.usage]
+Offline and real-time defaults
+
+There are two main classes of usage for `tsp`, offline and real-time processing.
+Offline processing works on static data such as transport stream files without specific timing constraints.
+Real-time processing applies to streaming devices such as tuners, Dektec devices or IP streams.
+
+In the `tsp` command and in many plugins, some command line options affect tuning and performances.
+Roughly, we have to find a balance between throughput and latency.
+
+* To get a higher throughput, we must minimize the data copy and thread context switching operations.
+  This is achieved using larger buffer sizes and letting plugins work on larger amounts of TS packets.
+  This requires less CPU and provides better overall performances.
+  But this also has the side effect of increasing the latency.
+* To get a lower latency, we must basically do the opposite:
+  work on smaller data chunks, pass data faster (more frequently) from plugin to plugin.
+  The drawback is an increase of CPU requirement.
+
+There is no unique choice.
+When working on offline files, increasing the throughput and reducing the CPU load is the right choice.
+But for streaming and real-time processing, reducing the latency is the priority.
+
+To optimize the offline or real-time processing, many tuning options can be adjusted.
+While fine tuning is sometimes useful, the user mainly needs two sets of default options: offline or real-time.
+
+By default, `tsp` and all plugins use the offline defaults,
+the tuning options which give good performances at the expense of a higher latency.
+
+The real-time defaults are used without having to specify all individual options in two cases:
+
+* The option `-r` or `--realtime` is specified in the `tsp` command line.
+* At least one plugin in the chain is designed to work in real-time.
+
+In these two cases, `tsp` and all plugins use their real-time defaults (unless, of course, options are individually set).
+
+The second condition, "designed to work in real-time", is an intrinsic property of a plugin.
+Examples of "real-time" plugins include `dvb`, `dektec`, `ip`, `play` or `regulate`.
+These plugins are somehow designed to work on real-time streams.
+Their simple presence in the `tsp` command is sufficient to trigger the use of real-time defaults for all plugins.
+It is still possible to force the use of offline defaults using the `tsp` option `--realtime=off`,
+even if a real-time plugin is present.
+
+[.usage]
+Rendering speed and transmission speed
+
+With `tsp`, a stream has a _rendering speed_ (the speed of the audio / video) and a _transmission speed_
+(the speed at which packets go through `tsp`).
+
+As a general rule, the word _bitrate_ refers to the rendering speed.
+So, when a plugin inserts data with a "bitrate of 100 kb/s" for instance,
+this means that the data will be received at this bitrate when the transport stream is played in real time
+(independently of the file processing speed, if the data insertion was previously performed on an offline file).
+
+It is important to understand the differences between the two.
+Real-time streams, from broadcast or multicast, have identical transmission and rendering speeds
+because they are transmitted to watch TV.
+Files, on the other hand, have a very high transmission speed, typically the I/O speed of the disk,
+maybe 1 Gb/s or more on SSD.
+
+Some plugins explicitly manipulate the rendering or transmission speed.
+The plugin `pcrbitrate`, for instance, is designed to evaluate the rendering speed based on embedded time stamps in the stream.
+The plugin `regulate`, on the other hand, is designed to alter the transmission speed.
+
+Let’s review some examples of where these plugins should be used.
+
+Consider that you have recorded a 6 Mb/s single program transport stream,
+and you want to send it through UDP/IP to a remote media player.
+Using `tsp -I file`, you read it and send it to `-O ip`.
+The effective reading speed of the file will be 500 M/b for instance.
+So, on a gigabit network, you send a 6 Mb/s video stream at 1 Gb/s, 166 times faster as it should be.
+Thus, a 15 minute video is received in 5 seconds and the player displays almost nothing.
+In this case, you must use the plugin `regulate` between `-I file` and `-O ip`.
+The plugin acts as a bottleneck and lets packets flow out at 6 Mb/s only.
+
+But, when the source has the same transmission and rendering speeds (DVB tuner, IP source),
+the plugin `regulate` is useless.
+At best, it does nothing.
+At worst, it introduces undesirable artifacts.
+There are also cases where the transmission speed regulation is done automatically.
+If the media player is a local application such as VLC and is started using `-O play`,
+`tsp` communicates with the player through a pipe.
+A pipe is a self-regulated communication mechanism.
+So, even if the input is a disk file with a high reading speed,
+using `regulate` is not necessary because the same role is played here by the pipe.
+The difference with the previous example is that UDP/IP is not a regulated communication channel,
+unlike pipes and TCP/IP.
+
+[.usage]
+Bitrate propagation
+
+At any point in the chain, all plugins have some knowledge of the transport stream bitrate or rendering speed.
+Some plugins use that bitrate information, some others don’t.
+The plugin `regulate` is a typical example.
+It uses the rendering speed as information to lower the transmission speed.
+As a general rule, `tsp` collects the input bitrate,
+either from the input plugin itself which extracts the bitrate from a hardware input device
+(this is the case for ASI cards for instance) or,
+if the input plugin is not able to report a bitrate, `tsp` automatically analyzes PCR's
+at the output of the input plugin and computes the corresponding bitrate.
+
+Then, the bitrate is transmitted from plugin to plugin.
+
+Some plugins may inadvertently propagate incorrect bitrates while some plugins may force a (correct) recomputation of the bitrate.
+To illustrate the first case, consider `-I file ... -P zap ...` using sample bitrate values.
+You read a complete 36 Mb/s input file and `tsp` evaluates this bitrate.
+Then, `-P zap` extracts a 4 Mb/s service and removes everything else.
+But it does not recompute the transport stream bitrate.
+So, the propagated bitrate information is still 36 Mb/s.
+If this information is not used downstream in other plugins, we don't care.
+But if we use the bitrate information in `-P regulate -O ip` for instance,
+we will regulate at 36 Mb/s a stream which should be played at 4 Mb/s.
+This is why, in specific situations like this, we need to recompute the bitrate using `-P pcrbitrate` before `-P regulate`.
+
+[.usage]
+Input timestamps
+
+For each input packet, an _input timestamp_ is collected.
+When the source can provide its own timestamps (RTP, SRT, M2TS file), this value is used.
+Otherwise, `tsp` uses the system time after the input plugin returns a bulk of packets.
+When an input plugin is able to generate its own input timestamps, its documentation describes how this is accomplished.
+
+The input timestamps are propagated all along the chain of plugins.
+Some plugins may use them.
+For instance:
+
+* The plugin `pcrverify` can use them as time reference.
+* The output plugin `file` uses them to create files in M2TS format.
+
+[#inserting-packets]
+[.usage]
+Modifying, inserting and deleting packets
+
+In the complete chain of processing, between the input and the output plugin, each TS packet goes through
+all packet processing plugins, one after the other, in the order of the command line.
+
+NOTE: In fact, a TS packet never _moves_. It is loaded in a large circular buffer and stays there.
+Each plugin uses a sliding window over the circular buffer and inspects or modifies packets without moving them.
+
+A packet processing plugin may read, modify or delete existing packets.
+*But it cannot add new packets*.
+
+Roughly, each packet processing plugin has one of the following functions
+(or sometimes a combination of them):
+
+* Analysis (read packets).
+* Modification (modify existing packets).
+* Removal (delete packets from the stream).
+* Data injection (add new packets).
+
+The last case cannot be directly implemented.
+To achieve data injection, a plugin usually _steals_ stuffing.
+Each time a new TS packet needs to be injected,
+a plugin waits for the next _null packet_ (i.e. a packet in PID 0x1FFF)
+and replaces this null packet with the new packet to insert.
+
+Consequently, the original amount of stuffing and its distribution in a stream
+directly influences the insertion profile of new packets.
+Specifically, it is not possible to add more data than the stuffing bitrate.
+Moreover, precise timing cannot be always achieved.
+When data need to be inserted at a given bitrate, the plugin tries to reach this average bitrate
+(provided that there is enough stuffing) but cannot guarantee a precise constant inter-packet distance.
+
+In broadcast streams, where the modulation parameters impose a fixed bitrate,
+there is always some stuffing.
+With variable bitrate, simple-program transport streams for IP, there can be no stuffing at all.
+
+What are the options when the original amount of stuffing is not sufficient to insert the required data?
+It depends on the requirements on the stream.
+
+If the stream is targeted for broadcast, with a given target bitrate which cannot be changed,
+there is no other solution than removing existing data to make room for the new data.
+Some plugins such as `filter` or `svremove` delete individual PID’s or complete services.
+By default, the deleted packets are simply removed from the stream.
+But these plugins also have a `--stuffing` option which replaces deleted packets by stuffing instead of removing them.
+Thus, you can increase the stuffing bitrate without altering the global transport stream bitrate.
+
+If there is no requirement on the global bitrate,
+it is possible to insert artificial stuffing at input level using the global `tsp` option `--add-input-stuffing`.
+The option adds a given number of null packets after a given number of input packets
+(for instance, add 1 null packet every 15 input packets).
+The parameters influence the amount and distribution of the artificial stuffing.
+Do not be afraid of inserting too much stuffing.
+It is always possible to remove the stuffing in excess using `-P filter -n -p 0x1FFF` at the end of the chain,
+after all injection plugins.
+
+[.usage]
+Merging and forking
+
+As indicated above, `tsp` processes one single transport stream.
+However, specific plugins such as `merge` and `fork` respectively combine and duplicate transport streams.
+They are designed to route transport streams from and to other applications.
+When the "other" application is another instance of `tsp`, we can create complex processing graphs.
+
+This is illustrated in the diagram below.
+
+.Merging and forking transport streams
+image::mergefork.png[align="center",alt="Merging and forking TS"]
+
+[#joint-termination]
+[.usage]
+Joint termination
+
+Some plugins have termination conditions.
+
+For instance, the plugin `until` passes packets until some specified condition.
+The plugins `mux` and `inject` may terminate `tsp` after completing the data insertion, etc.
+
+Therefore, a plugin can decide to terminate `tsp` on its own.
+The termination is unconditional, regardless of the state of the other plugins.
+Thus, if several plugins have termination conditions, `tsp` stops when the first plugin decides to terminate.
+In other words, there is an _or_ operator between the various termination conditions.
+
+The idea behind _joint termination_ is to terminate `tsp` when several plugins have jointly terminated their processing.
+
+If several plugins have a _joint termination_ condition (usually using the option `--joint-termination`),
+`tsp` stops when the last plugin triggers the joint termination condition.
+In other words, there is an _and_ operator between the various joint termination conditions.
+
+Additionally, the `tsp` option `--ignore-joint-termination` disables this behavior.
+When this options is used,
+all plugins continue to pass packets as if some additional joint termination condition was still pending.
+
+[.usage]
+Packet labelling
+
+Transport streams packets may receive one or more _label_ from any packet processing plugin.
+A label is an integer value from 0 to 31, inclusive.
+A label remains attached to the packet all along the chain, from plugin to plugin.
+Later, it is possible to select packets with a label value or invoke a specific plugin only on packets having a given label.
+
+The plugin `filter` has an option named `--set-label` to assign a label to the selected packets.
+Note that, with this option, the plugin `filter` does not drop unselected packets;
+it keeps all packets but assigns the specified label to the selected packets.
+
+All packet processing plugins accept the option `--only-label` which selects only the packets with a given label.
+Thus, only the packets with that label pass through the plugin.
+All other packets, without that label, are directly passed to the next plugin in the chain.
+
+The following example illustrates the usage of labels.
+The first three plugins select different kinds of packets and assign a label value depending on the kind of packet.
+These `filter` plugins do not drop any packet, they just assign labels to some of them.
+Later, three other plugins are applied only to one of these labels.
+In this example, we consequently count packets with unit start indicator and scrambling control value 2 and 3, respectively.
+
+[source,shell]
+----
+$ tsp -I ... \
+      -P filter --unit-start --set-label 2 \
+      -P filter --scrambling 2 --set-label 10 \
+      -P filter --scrambling 3 --set-label 11 \
+      -P count --only-label 2 --total --tag unit \
+      -P count --only-label 10 --total --tag scr2 \
+      -P count --only-label 11 --total --tag scr3 \
+      -O ...
+
+* count: unit: total: counted 5,311 packets out of 5,311
+* count: scr2: total: counted 8,378 packets out of 8,378
+* count: scr3: total: counted 7,439 packets out of 7,439
+----
+
+[.usage]
+Global tsp options
+
+These options apply to the execution of the `tsp` framework.
+They must be placed on the command line before any plugin specification.
+
+[.opt]
+*-a* _nullpkt/inpkt_ +
+*--add-input-stuffing* _nullpkt/inpkt_
+
+[.optdoc]
+Specify that `_nullpkt_` null TS packets must be automatically inserted after every `_inpkt_` input TS packets.
+Both `_nullpkt_` and `_inpkt_` must be non-zero integer values.
+This option is useful to artificially increase the input bitrate by adding stuffing.
+
+[.optdoc]
+Example: the option `-a 14/24` adds 14 null packets every 24 input packets,
+effectively turning a 24 Mb/s input stream (terrestrial) into a 38 Mb/s stream (satellite).
+
+[.opt]
+*--add-start-stuffing* _count_
+
+[.optdoc]
+Specify that `_count_` null TS packets must be automatically inserted at the start of the processing,
+before the first packet coming from the input plugin.
+
+[.opt]
+*--add-stop-stuffing* _count_
+
+[.optdoc]
+Specify that `_count_` null TS packets must be automatically inserted at the end of the processing,
+after the last packet coming from the input plugin.
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specify the transport stream input bitrate, in bits/seconds.
+By default, the input bitrate is provided by the input plugin or by analysis of the PCR’s at the beginning of the input stream.
+If no or not enough PCR are found, the DTS from video PID’s are used.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+Use option `--bitrate` when you know precisely the input bitrate and you do not trust the input device, the PCR’s or the DTS.
+
+[.optdoc]
+See also the plugin `pcrbitrate` for permanent recomputation of the bitrate based on PCR’s or DTS.
+
+[.opt]
+*--bitrate-adjust-interval* _value_
+
+[.optdoc]
+Specify the interval in seconds between bitrate adjustments, ie. when the output bitrate is adjusted to the input one.
+The default is 5 seconds.
+Some output processors ignore this setting.
+Typically, ASI or modulator devices use it, while file devices ignore it.
+This option is ignored if `--bitrate` is specified.
+
+[.opt]
+*--buffer-size-mb* _value_
+
+[.optdoc]
+Specify the global buffer size in mega-bytes.
+This is the size of the buffer between the input and output devices.
+The default is 16 MB.
+Increasing the buffer size may improve the performance at the expense of increasing the overall latency (implicit time-shifting).
+
+[.optdoc]
+The value (in mega-bytes) can be decimal, for instance `--buffer-size-mb 0.5`,
+but note that there is no good reason to decrease the buffer size below 1 MB.
+
+[.optdoc]
+See also the options `--max-input-packets` and `--max-flushed-packets`
+to adjust the latency without modifying the global buffer size.
+
+[.opt]
+*--final-wait* _milliseconds_
+
+[.optdoc]
+Wait the specified number of milliseconds after the last input packet.
+Zero means wait forever.
+
+[.opt]
+*-i* +
+*--ignore-joint-termination*
+
+[.optdoc]
+Ignore all `--joint-termination` options in plugins.
+The plugins continue to pass packets as if some additional joint termination condition was still pending.
+
+[.optdoc]
+See the description of xref:joint-termination[joint termination] above for more details.
+
+[.opt]
+*--initial-input-packets* _value_
+
+[.optdoc]
+Specify the number of packets to initially read in the buffer before starting the processing.
+
+[.optdoc]
+The initial load is used to evaluate the bitrate
+so that all subsequent plugins can have a valid global bitrate value from the beginning.
+It is also used to make sure that the global buffer is optimally used.
+
+[.optdoc]
+The default initial load is half the size of the global buffer.
+For offline files and real-time devices with a sustained bitrate, it is a good idea to keep the default value.
+
+[.optdoc]
+The side effect of waiting for a significant amount of initial packets before starting the processing is that,
+with very low bitrates, `tsp` seems to do nothing until the global buffer is half full.
+The option `--initial-input-packets` is used to adjust this effect when necessary.
+
+[.optdoc]
+The downside of using a lower initial buffer load is that
+some plugins may not be able to use a valid bitrate for the initial part of the stream.
+Another downside is that the usage of the global buffer will probably be suboptimal and may even starve,
+creating output glitches, depending on the processing time of the intermediate plugins.
+
+[.opt]
+*-l* +
+*--list-plugins*
+
+[.optdoc]
+List all available plugins.
+
+[.opt]
+*--log-plugin-index*
+
+[.optdoc]
+In log messages, add the plugin index to the plugin name.
+This can be useful if the same plugin is used several times and all instances log many messages.
+
+[.opt]
+*--max-flushed-packets* _value_
+
+[.optdoc]
+Specify the maximum number of packets to be processed before flushing them to the next plugin or the output.
+When the processing time is high and some packets are lost, try decreasing this value.
+
+[.optdoc]
+The offline default is 10,000 packets.
+The real-time default is 1,000 packets.
+
+[.opt]
+*--max-input-packets* _value_
+
+[.optdoc]
+Specify the maximum number of packets to be received at a time from the input plugin.
+
+[.optdoc]
+By default, in offline mode, `tsp` reads as many packets as it can, depending on the free space in the buffer.
+The real-time default is 1,000 packets.
+
+[.opt]
+*--max-output-packets* _value_
+
+[.optdoc]
+Specify the maximum number of packets to be sent at a time by the output plugin.
+
+[.optdoc]
+By default, `tsp` sends as many packets as available.
+This option is useful only when an output plugin or a specific output device has problems with large output requests.
+This option forces multiple smaller send operations.
+
+[.opt]
+**-r**__[keyword]__ +
+**--realtime**__[=keyword]__
+
+[.optdoc]
+Specifies if `tsp` and all plugins should use default values for real-time or offline processing.
+
+[.optdoc]
+By default, if any plugin prefers real-time, the real-time defaults are used.
+If no plugin prefers real-time, the offline default are used.
+
+[.optdoc]
+If `-r` or `--realtime` is used alone, the real-time defaults are enforced.
+The explicit values `no`, `false`, `off` are used to enforce the offline defaults and
+the explicit values `yes`, `true`, `on` are used to enforce the real-time defaults.
+
+[.opt]
+*--receive-timeout* _milliseconds_
+
+[.optdoc]
+Specify a timeout in milliseconds for all input operations.
+
+[.optdoc]
+Equivalent to the same `--receive-timeout` option in some input plugins.
+In practice, when an input plugin natively supports a receive timeout, this global parameter is passed to the plugin.
+Otherwise, `tsp` handles the receive timeout and tries to abort the stalled input operation in case of timeout.
+
+[.optdoc]
+By default, there is no input timeout.
+
+[.usage]
+Control commands options
+
+It is possible to send commands to a running `tsp` process using the command `tspcontrol`.
+See the documentation of this command for more details on control commands.
+The following options control how these control commands are received.
+
+[.opt]
+*--control-local* _address_
+
+[.optdoc]
+With `--control-port`, specify the IP address of the local interface on which to listen for control commands.
+It can be also a host name that translates to a local address.
+By default, listen on all local interfaces.
+
+[.opt]
+*--control-port* _value_
+
+[.optdoc]
+Specify the TCP port on which `tsp` listens for control commands.
+If unspecified, no control commands are expected.
+
+[.opt]
+*--control-reuse-port*
+
+[.optdoc]
+With `--control-port`, set the reuse port socket option on the control TCP server port.
+
+[.optdoc]
+This option is not enabled by default to avoid accidentally running two identical `tsp` commands with the same control port.
+
+[.opt]
+*--control-source* _address_
+
+[.optdoc]
+With `--control-port`, specify a remote IP address which is allowed to send control commands.
+
+[.optdoc]
+By default, as a security precaution, only the local host is allowed to connect.
+
+[.optdoc]
+Several `--control-source` options are allowed.
+
+[.opt]
+*--control-timeout* _milliseconds_
+
+[.optdoc]
+With `--control-port`, specify the reception timeout in milliseconds for control commands.
+The default timeout is 5000 ms.
+
+include::{docdir}/opt/group-monitor.adoc[tags=!*]
+include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*]
+
+[.usage]
+Default values for plugins options
+
+The following options are commonly found in many different plugins.
+They typically influence the way the signalization is interpreted or generated.
+
+These options can also be specified at `tsp` level, before specifying any plugin.
+They have have no effect on the `tsp` framework.
+They are only passed as initial default values for all plugins which accept the equivalent options.
+Explicit options at plugin level take precedence over these global defaults.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;notitle;cas;std;hf;charset;timeref;pds]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]
+
+[.usage]
+Plugin activation options
+
+[.opt]
+*-I* _name_
+
+[.optdoc]
+Designate the shared library plugin for packet input.
+By default, read packets from standard input.
+
+[.opt]
+*-O* _name_
+
+[.optdoc]
+Designate the shared library plugin for packet output.
+By default, write packets to standard output.
+
+[.opt]
+*-P* _name_
+
+[.optdoc]
+Designate a shared library plugin for packet processing.
+Several packet processors are allowed.
+Each packet is successively processed by each processor, in the order of the command line.
+By default, there is no processor and the packets are directly passed from the input to the output.
+
+The specified plugin _name_ is used to locate a shared library for the plugin
+(`.so` file on Linux, `.dylib` on macOS, `.dll` on Windows).
+On Windows, usually, all plugins files are in the same directory as the `tsp` executable.
+More generally, a plugin can be designated in a number of ways, in the following order.
+When a method fails, the next one is attempted.
+
+* If the plugin name is a complete path name, with a directory, this path name is used.
+* Without directory in the plugin name, a list of directories is searched:
+** If the environment `TSPLUGINS_PATH` is defined, a list of directories is parsed.
+   Directories are separated by a semicolon `;` on Windows and a colon `:` on UNIX systems.
+** The same directory as the `tsp` executable file is used as last choice.
+** In each of these directories, the file named `tsplugin_name.so` or `.dylib` or `.dll` is searched.
+** If not found, the file `name` and then `name.so` or `.dylib` or `.dll` is searched.
+* If still not found, the standard algorithm of the operating system is applied to locate the shared library file,
+  using the specified name (on Linux, see the man page of `dlopen(3)` for more details).
+
+The _input-options_, _processor-options_ and _output-options_, as specified in the general syntax of the `tsp` command,
+are specific to their corresponding plugin.
+All available plugins are documented in xref:chap-plugins[xrefstyle=short].
+
+[.usage]
+Common plugin options
+
+All plugins accept the following common options:	
+
+[.opt]
+*--help*
+
+[.optdoc]
+The plugin displays its syntax and exits.
+
+[.optdoc]
+This means that the following type of command can be used to display the help text for a specific plugin:
+
+[source,shell]
+----
+$ tsp {-I|-O|-P} name --help
+----

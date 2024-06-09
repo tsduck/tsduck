@@ -1,0 +1,73 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pat
+
+[.cmd-header]
+Null input packets generator
+
+This plugin performs various transformations on the PAT.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pat [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* _sid/pid_ +
+*--add-service* _sid/pid_
+
+[.optdoc]
+Add the specified service_id / PMT-PID in the PAT.
+
+[.optdoc]
+Several `--add-service` options may be specified to add several services.
+
+[.opt]
+*-n* _pid_ +
+*--nit* _pid_
+
+[.optdoc]
+Add or modify the NIT PID in the PAT.
+
+[.opt]
+*-r* _sid_ +
+*--remove-service* _sid_
+
+[.optdoc]
+Remove the specified service_id from the PAT. Several --remove-service options may be
+specified to remove several services.
+
+[.opt]
+*-u* +
+*--remove-nit*
+
+[.optdoc]
+Remove the NIT PID from the PAT.
+
+[.opt]
+*-t* _id_ +
+*--ts-id* _id_
+
+[.optdoc]
+
+[.opt]
+*--tsid* _id_
+
+[.optdoc]
+Specify a new value for the transport stream id in the PAT.
+
+include::{docdir}/opt/group-table-plugin.adoc[tags=!*;pat]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,165 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== aes
+
+[.cmd-header]
+Experimental AES scrambling
+
+This plugin scrambles or descrambles the payload of packets from a specified service using AES and a fixed key.
+Various chaining modes are allowed.
+All video, audio and subtitles components of the service are scrambled.
+
+By default, the plugin scrambles the packets.
+Use the option `--descramble` to descramble the packets.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P aes [options] [service]
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_service_
+
+[.optdoc]
+Specifies the service to scramble or descramble.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+If the service is unspecified, individual PID's are scrambled (see option `--pid`).
+
+[.usage]
+Options
+
+[.opt]
+*--cbc*
+
+[.optdoc]
+Use Cipher Block Chaining (CBC) mode without padding.
+The residue (last part of the packet payload, shorter than 16 bytes) is left clear.
+
+[.opt]
+*--cts1*
+
+[.optdoc]
+Use Cipher Text Stealing (CTS) mode.
+TS packets with a payload shorter than 17 bytes are left clear.
+
+[.optdoc]
+Several incompatible designs of CTS exist. This one implements the description in:
+
+[.optdoc]
+1. Bruce Schneier, Applied Cryptography (2nd, Ed.), pp 191, 195
+2. RFC 2040, The RC5, RC5-CBC, RC5-CBC-Pad, and RC5-CTS Algorithms
+3. "CBC ciphertext stealing" in http://en.wikipedia.org/wiki/Ciphertext_stealing
+
+[.opt]
+*--cts2*
+
+[.optdoc]
+Use Cipher Text Stealing (CTS) mode.
+TS packets with a payload shorter than 16 bytes are left clear.
+
+[.optdoc]
+Several incompatible designs of CTS exist.
+This one implements the description in http://csrc.nist.gov/groups/ST/toolkit/BCM/documents/ciphertext%20stealing%20proposal.pdf
+
+[.opt]
+*--cts3*
+
+[.optdoc]
+Use ECB Cipher Text Stealing (CTS) mode.
+TS packets with a payload shorter than 17 bytes are left clear.
+
+[.optdoc]
+Several incompatible designs of CTS exist.
+This one implements the description of "ECB ciphertext stealing" in http://en.wikipedia.org/wiki/Ciphertext_stealing
+
+[.opt]
+*--cts4*
+
+[.optdoc]
+Use ECB Cipher Text Stealing (CTS) mode.
+TS packets with a payload shorter than 17 bytes are left clear.
+
+[.optdoc]
+Several incompatible designs of CTS exist.
+This one implements the ECB ciphertext stealing which is used in ST 71xx chips.
+
+[.opt]
+*-d* +
+*--descramble*
+
+[.optdoc]
+Descramble instead of scramble.
+
+[.opt]
+*--dvs042*
+
+[.optdoc]
+Use DVS 042 (now ANSI/SCTE 52 2003) cipher block chaining mode.
+See <<SCTE-52>>.
+
+[.optdoc]
+TS packets with a payload shorter than 16 bytes are left clear.
+Note that the DVS 042 standard allows the scrambling of short messages
+(shorter than the cipher block size, ie. 16 bytes with AES)
+but the two versions of the standard (ANSI/SCTE 52 2003 and ANSI/SCTE 52 2008) have incompatible descriptions of the processing of short messages.
+To avoid conflicts, this plugin does not scramble these short messages.
+
+[.opt]
+*--ecb*
+
+[.optdoc]
+Use Electronic Code Book (ECB) mode without padding.
+The residue (last part of the packet payload, shorter than 16 bytes) is left clear.
+
+[.optdoc]
+This is the default mode.
+
+[.opt]
+*-i* _hexa-digits_ +
+*--iv* _hexa-digits_
+
+[.optdoc]
+Specifies the initialization vector.
+Must be a string of 32 hexadecimal digits.
+Must not be used in ECB mode and the various ECB-CTS modes (CTS3, CTS4).
+
+[.optdoc]
+The default IV is all zeroes.
+
+[.opt]
+*-k* _hexa-digits_ +
+*--key* _hexa-digits_
+
+[.optdoc]
+Specifies a fixed and constant AES key for all TS packets.
+The value must be a string of 32 or 64 hexadecimal digits.
+This is a mandatory parameter.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specifies PID’s to scramble.
+Can be used instead of specifying a service.
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

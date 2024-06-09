@@ -1,0 +1,113 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== sifilter
+
+[.cmd-header]
+Extract PSI/SI PID’s
+
+This plugin filters PID's containing the specified PSI/SI. Other PID's are removed.
+
+Extracting PSI/SI on predefined PID’s (such as PAT or SDT) can also be performed using the plugin `filter --pid`.
+For these types of PSI/SI, the plugin `sifilter` is simply more user-friendly
+(`sifilter --sdt` instead of `filter --pid 0x0011`).
+
+But the plugin `sifilter` can also detect PSI/SI on non-predefined PID’s (such as PMT, ECM or EMM).
+It can also filter CA-related SI according to the CA System Id or CA Operator (a vendor-dependent concept).
+
+If you want to extract the PMT or ECM for one particular service, use the plugin `zap` before `sifilter` in the plugin chain.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P sifilter [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--bat*
+
+[.optdoc]
+Extract PID 0x0011 (SDT/BAT). Same as `--sdt`.
+
+[.opt]
+*--cat*
+
+[.optdoc]
+Extract PID 0x0001 (CAT).
+
+[.opt]
+*--eit*
+
+[.optdoc]
+Extract PID 0x0012 (EIT).
+
+[.opt]
+*--nit*
+
+[.optdoc]
+Extract PID 0x0010 (NIT).
+
+[.opt]
+*--pat*
+
+[.optdoc]
+Extract PID 0x0000 (PAT).
+
+[.opt]
+*-p* +
+*--pmt*
+
+[.optdoc]
+Extract all PMT PID's.
+
+[.opt]
+*--rst*
+
+[.optdoc]
+Extract PID 0x0013 (RST).
+
+[.opt]
+*--sdt*
+
+[.optdoc]
+Extract PID 0x0011 (SDT/BAT). Same as `--bat`.
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Replace excluded packets with stuffing (null packets) instead of removing them.
+Useful to preserve bitrate.
+
+[.opt]
+*--tdt*
+
+[.optdoc]
+Extract PID 0x0014 (TDT/TOT). Same as `--tot`.
+
+[.opt]
+*--tot*
+
+[.optdoc]
+Extract PID 0x0014 (TDT/TOT). Same as `--tdt`.
+
+[.opt]
+*--tsdt*
+
+[.optdoc]
+Extract PID 0x0002 (TSDT).
+
+include::{docdir}/opt/group-cas-selection.adoc[tags=!*]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

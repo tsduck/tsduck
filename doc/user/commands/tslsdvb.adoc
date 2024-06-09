@@ -1,0 +1,121 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tslsdvb
+
+[.cmd-header]
+List DVB, ATSC, ISDB tuner receiver devices
+
+This utility lists the physical tuner receiver devices in the system with their characteristics.
+Despite the legacy `dvb` name, all tuner devices are listed, DVB, ISDB or ATSC, terrestrial, satellite or cable.
+
+This command lists physical devices only.
+It does not list _tuner emulators_ (see xref:tuner-emulator[xrefstyle=short]).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tslsdvb [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* _N	_ +
+*--adapter* _N_
+
+[.optdoc]
+Specify the Nth tuner device in the system, the first index being zero.
+This option can be used instead of device name.
+
+[.optdoc]
+On Linux systems, this means `/dev/dvb/adapterN`.
+
+[.opt]
+*-d* _"name"_ +
+*--device-name* _"name"_
+
+[.optdoc]
+Specify the name of the DVB receiver device to use.
+The syntax of the device name depends on the operating system.
+See xref:tuner-naming[xrefstyle=short] for more details on receiver devices naming.
+
+[.optdoc]
+By default, when no device name or adapter is specified, `tslsdvb` lists all available receiver devices.
+
+[.opt]
+*-e* +
+*--extended-info*
+
+[.optdoc]
+Display extended information.
+
+[.optdoc]
+This option comes in addition to `--verbose` to display extremely verbose information about a device
+such as the associated DirectShow graph on Windows.
+
+[.usage]
+Windows-specific options:
+
+[.opt]
+*-l* +
+*--list-devices*
+
+[.optdoc]
+Get a list of all tuner and receiver DirectShow filters, equivalent to `--test list-devices`.
+
+[.opt]
+*--receiver-name* _"name"_
+
+[.optdoc]
+Specify the name of the DirectShow receiver filter to use.
+
+[.optdoc]
+By default, first try a direct connection from the tuner filter to the rest of the graph.
+Then, try all receiver filters and concatenate them all.
+
+[.optdoc]
+This option is used only when a specific device name or adapter number is specified.
+It is ignored when all devices are listed since distinct tuner filters may need distinct receiver filters.
+
+[.opt]
+*-t* _name_ +
+*--test* _name_
+
+[.optdoc]
+Run a specific DirectShow test.
+Produce a very verbose output, for debug only.
+The names of the available tests are listed below.
+
+[.optdoc]
+[.compact-table]
+[cols="<20m,<80",frame=none,grid=none,stripes=none,options="noheader"]
+|===
+|none
+|Do not run any test. This is the default.
+
+|list-devices
+|Get a short list of all tuner and receiver DirectShow filters.
+
+|enumerate-devices
+|Enumerate all DirectShow devices which are used with DVB tuners.
+ This test is useful to detect all devices which may not be recognized as valid tuners by TSDuck.
+
+|tuning-spaces
+|List all DirectShow tuning spaces which are installed in the system and their compatibility with the various network providers.
+
+|bda-tuners
+|List all BDA tuners and their compatibility with the various predefined "network provider" filters.
+
+|===
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

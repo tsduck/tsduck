@@ -1,0 +1,155 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== timeref
+
+[.cmd-header]
+Update TDT and TOT with a new time reference
+
+This plugin updates all TDT and TOT (and optionally EIT) in the transport stream according to a new time reference.
+This new reference can be completely new or an offset from the original TS.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P timeref [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* _seconds_ +
+*--add* _seconds_
+
+[.optdoc]
+Add the specified number of seconds to all UTC time.
+
+[.optdoc]
+Specify a negative value to make the time reference go backward.
+
+[.opt]
+*--eit*
+
+[.optdoc]
+Update events start time in EIT's. By default, EIT's are not modified.
+
+[.optdoc]
+When `--add` is used, the specified offset is applied to all events start time.
+
+[.optdoc]
+When `--start` is used, EIT's are dropped until the first TDT or TOT is encountered.
+Then, the difference between the first TDT or TOT time and the new time reference at this point is applied.
+
+[.opt]
+*--eit-date-only*
+
+[.optdoc]
+Same as `--eit` but update the date field only in the event start dates in EIT's.
+The hour, minute and second fields of the event start dates are left unchanged.
+
+[.opt]
+*-l* _minutes_ +
+*--local-time-offset* _minutes_
+
+[.optdoc]
+Specify a new local time offset in minutes to set in the TOT.
+The allowed range is -720 to 720 (from -12 hours to +12 hours).
+
+[.optdoc]
+By default, the local time offset is unchanged.
+
+[.opt]
+*--next-change* _value_
+
+[.optdoc]
+Specify a new UTC date & time for the next DST change, to set in the TOT.
+
+[.optdoc]
+The time value must be in the format "year/month/day:hour:minute:second".
+
+[.optdoc]
+By default, the time of next DST change is unmodified.
+
+[.opt]
+*--next-time-offset* _minutes_
+
+[.optdoc]
+Specify a new local time offset to be applied after the next DST change, to set in the TOT.
+The value is in minutes, similar to `--local-time-offset`.
+
+[.optdoc]
+By default, the next time offset is unchanged.
+
+[.opt]
+*--notdt*
+
+[.optdoc]
+Do not update TDT.
+
+[.opt]
+*--notot*
+
+[.optdoc]
+Do not update TOT.
+
+[.opt]
+*--only-country* _name_
+
+[.optdoc]
+Restrict the modification of `--local-time-offset`, `--next-change` and `--next-time-offset` to the specified 3-letter country code.
+
+[.optdoc]
+Several --only-country options are allowed.
+
+[.opt]
+*--only-region* _id1[-id2]_
+
+[.optdoc]
+Restrict the modification of `--local-time-offset`, `--next-change` and `--next-time-offset` to the specified region id inside a country.
+
+[.optdoc]
+Several `--only-region` options are allowed.
+
+[.opt]
+*-s* _time_ +
+*--start* _time_
+
+[.optdoc]
+Specify a new UTC date & time reference for the first packet in the stream.
+Then, the time reference is updated according to the number of packets and the bitrate.
+
+[.optdoc]
+A time value must be in the format "YYYY/MM/DD:hh:mm:ss".
+
+[.optdoc]
+The predefined name `system` can be used to specify the current UTC time from the system clock
+(use `--start system`).
+
+[.opt]
+*--system-synchronous*
+
+[.optdoc]
+Keep the TDT and TOT time synchronous with the system clock.
+Each time a TDT or TOT is updated, the system clock value is used.
+
+[.optdoc]
+It implicitely uses `--start system` but is immune to the jitter which may happen on the long run
+without system clock synchronization.
+If `--start` is specified with a specific date, the difference between that date and the initial
+UTC system clock is stored.
+This offset is then consistently applied to the current system clock in all TDT and TOT.
+
+[.optdoc]
+This option is meaningful on live streams only.
+It is useless on offline file processing.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

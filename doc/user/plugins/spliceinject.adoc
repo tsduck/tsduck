@@ -1,0 +1,296 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+[#spliceinject-ref]
+=== spliceinject
+
+[.cmd-header]
+Inject SCTE 35 splice commands in a transport stream
+
+This plugin injects splice commands as _splice information sections_, as defined by the <<SCTE-35>> standard.
+All forms of splice information sections can be injected.
+The sections shall be provided by some external equipment, in real time.
+
+The format of the sections can be binary, XML or JSON (see xref:psisi-sig[xrefstyle=short]).
+The reference source format for sections is XML.
+JSON files are first translated to XML using the "automated XML-to-JSON conversion" rules of TSDuck
+(see xref:xml-json-conv[xrefstyle=short] and then compiled to binary.
+
+All sections or tables shall be _splice information sections_ (table id 0xFC).
+
+[.usage]
+Injection principles
+
+The whole point about splice information is synchronization with video.
+There are roughly two classes of splice events:
+
+* Non-immediate `splice_insert()` and `time_signal()` commands.
+  These commands contain a specific PTS value for the event.
+  This PTS refers to a time stamp in the video and audio PID’s of the service.
+* Everything else.
+
+Any splice command in the "everything else" category is injected as soon as possible after reception.
+
+A non-immediate `splice_insert()` or `time_signal()` command is injected a specific number of times (2 by default)
+within a short period of time (2 seconds by default) preceding the specified PTS timestamp in the video stream.
+
+When such a command is received in the plugin, the PTS of the event is compared with the current (or latest) PTS in the service.
+If the command is late and the PTS of the event is already in the past, the command is dropped.
+Otherwise, the command is placed in a waiting queue until the event time minus some predefined duration (see option `--start-delay`).
+At this time, the command is sent for the first time.
+It is later re-sent zero or more times. When the event time occurs, the command is no longer needed and is dropped.
+
+[.usage]
+Providing splice information tables
+
+There are two possible mechanisms to provide the sections: files or UDP.
+The two options may be used simultaneously.
+
+Files shall be specified as one single specification with optional wildcards.
+
+Example:
+
+[source,shell]
+----
+$ tsp ... -P spliceinject --files '/path/to/dir/splice*.xml' ...
+----
+
+All files named `splice*.xml` which are copied or updated into this directory are automatically loaded and injected.
+It is possible to automatically delete all files after being loaded.
+
+UDP datagrams shall contain exactly one XML document or several binary sections.
+The XML document may contain several tables.
+The sections are injected upon reception.
+UDP reception is enabled by specifying a local port number.
+
+Example, listening on UDP port number 4444:
+
+[source,shell]
+----
+$ tsp ... -P spliceinject --udp 4444 ...
+----
+
+Using UDP usually provides a better reactivity than files.
+UDP messages are processed immediately after reception while files are detected on polling sequences only.
+
+On a usability standpoint, remember that the `bash` shell provides an easy way to send data or a file in an UDP message.
+So, sending a file though UDP is not more difficult than copying it to a directory.
+
+The following first command sends an XML file as one single UDP message on port 4444 to system 127.0.0.1 (the local host).
+The second command illustrates the file option.
+
+[source,shell]
+----
+$ cat splice_12.xml >/dev/udp/127.0.0.1/4444
+$ cp splice_12.xml /path/to/dir
+----
+
+Note that the redirection at `/dev/udp/__address__/__port__` is a feature of `bash`, not a Linux feature.
+It is available on all platforms, including macOS and Cygwin or Msys on Windows.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P spliceinject [options]
+----
+
+[.usage]
+General options
+
+[.opt]
+*--inject-count* _value_
+
+[.optdoc]
+For non-immediate `splice_insert()` and `time_signal()` commands,
+specifies the number of times the same splice information section is injected.
+The default is 2.
+Other splice commands are injected once only.
+
+[.opt]
+*--inject-interval* _value_
+
+[.optdoc]
+For non-immediate `splice_insert()` and `time_signal()` commands,
+specifies the interval in milliseconds between two insertions of the same splice information section.
+The default is 800 ms.
+
+
+[.opt]
+*--min-bitrate* _value_
+
+[.optdoc]
+The minimum bitrate to maintain in the PID carrying the splice information tables.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+By default, the PID remains inactive when there is no splice information.
+If this is a problem for monitoring tools,
+an artificial minimum bitrate can be maintained for that PID using `splice_null()` commands.
+
+[.opt]
+*--min-inter-packet* _value_
+
+[.optdoc]
+This option can be used instead of `--min-bitrate` when the bitrate of the transport stream is unknown or unreliable.
+The specified value is the number of TS packets between two splice commands to insert,
+using `splice_null()` commands when necessary.
+
+[.opt]
+*--pcr-pid* _value_
+
+[.optdoc]
+Specifies the PID carrying the PCR reference clock.
+By default, use the PCR PID as declared in the PMT of the service.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specifies the PID for the injection of the splice information tables.
+By default, the injection of splice commands is done in the component of the service with a stream type equal to 0x86 in the PMT,
+as specified by SCTE 35 standard.
+
+[.opt]
+*--pts-pid* _value_
+
+[.optdoc]
+Specifies the PID carrying PTS reference clock.
+By default, use the video PID as declared in the PMT of the service.
+
+[.opt]
+*--queue-size* _value_
+
+[.optdoc]
+Specifies the maximum number of sections in the internal queue,
+sections which are received from files or UDP but not yet inserted into the TS.
+The default is 100.
+
+[.opt]
+*-s* _value_ +
+*--service* _value_
+
+[.optdoc]
+Specifies the service for the insertion of the splice information tables.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+If no service is specified, the options `--pid` and `--pts-pid` must be specified (`--pcr-pid` is optional).
+
+[.opt]
+*--start-delay* _value_
+
+[.optdoc]
+For non-immediate `splice_insert()` and `time_signal()` commands,
+start to insert the first section this number of milliseconds before the specified splice PTS value.
+The default is 2000 ms.
+
+[.opt]
+*-w* +
+*--wait-first-batch*
+
+[.optdoc]
+When this option is specified,
+the start of the plugin is suspended until the first batch of splice commands is loaded and queued.
+Without this option, the input files or messages are loaded and queued asynchronously.
+
+[.optdoc]
+This option is typically useful when inserting splice commands from an XML file into a transport stream file.
+Since files are read much faster than the normal playout speed,
+it is possible that the splice points are already passed in the transport stream processing when the XML file is loaded.
+With this option, we have the guarantee that the XML file is loaded before the transport stream processing starts.
+
+[.optdoc]
+On the other hand, this option should not be used on live transport streams.
+In that case, the transport stream processing must be allowed to start without splice information tables to inject.
+These tables may be sent much later.
+
+[.usage]
+File input options
+
+[.opt]
+*-d* +
+*--delete-files*
+
+[.optdoc]
+Specifies that the files should be deleted after being loaded.
+By default, the files are left unmodified after being loaded.
+When a loaded file is modified later, it is reloaded and re-injected.
+
+[.opt]
+*-f* _'file-wildcard'_ +
+*--files* _'file-wildcard'_
+
+[.optdoc]
+A file specification with optional wildcards indicating which files should be polled.
+When such a file is created or updated, it is loaded and its content is interpreted as binary, XML or JSON tables.
+All tables shall be splice information tables.
+
+[.opt]
+*--max-file-size* _value_
+
+[.optdoc]
+Files larger than the specified size are ignored.
+This avoids loading large spurious files which could clutter memory.
+The default is 2048 bytes.
+
+[.opt]
+*--min-stable-delay* _value_
+
+[.optdoc]
+A file size needs to be stable during that duration, in milliseconds, for the file to be reported as added or modified.
+This prevents too frequent poll notifications when a file is being written and his size modified at each poll.
+The default is 500 ms.
+
+[.opt]
+*--poll-interval* _value_
+
+[.optdoc]
+Specifies the interval in milliseconds between two poll operations.
+The default is 500 ms.
+
+[.usage]
+UDP input options
+
+[.opt]
+*--buffer-size* _value_
+
+[.optdoc]
+Specifies the UDP socket receive buffer size in bytes (socket option).
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option.
+Do not use unless completely necessary.
+
+[.opt]
+*-r* +
+*--reuse-port*
+
+[.optdoc]
+Set the reuse port socket option.
+This is now enabled by default, the option is present for legacy only.
+
+[.opt]
+*-u* _[address:]port_ +
+*--udp* _[address:]port_
+
+[.optdoc]
+Specifies the local UDP port on which the plugin listens for incoming binary or XML splice information tables.
+When present, the optional address shall specify a local IP address or host name
+(by default, the plugin accepts connections on any local IP interface).
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

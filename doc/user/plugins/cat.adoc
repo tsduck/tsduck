@@ -1,0 +1,65 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== cat
+
+[.cmd-header]
+Perform various transformations on the CAT
+
+This plugin performs various transformations on the CAT.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P cat [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* _casid/pid[/private-data]_ +
+*--add-ca-descriptor* _casid/pid[/private-data]_
+
+[.optdoc]
+Add a _CA_descriptor_ in the CAT with the specified _CA_System_Id_ and EMM PID.
+The optional private data must be a suite of hexadecimal digits.
+
+[.optdoc]
+Several `--add-ca-descriptor` options may be specified to add several descriptors.
+
+[.opt]
+*--cleanup-private-descriptors*
+
+[.optdoc]
+Remove all private descriptors without preceding _private_data_specifier_descriptor_.
+
+[.opt]
+*-r* _id1[-id2]_ +
+*--remove-casid* _id1[-id2]_
+
+[.optdoc]
+Remove all _CA_descriptor_ with any of the specified _CA_System_Id_.
+
+[.optdoc]
+Several `--remove-casid` options may be specified.
+
+[.opt]
+*--remove-pid* _pid1[-pid2]_
+
+[.optdoc]
+Remove all _CA_descriptor_ with the specified EMM PID values.
+
+[.optdoc]
+Several `--remove-pid` options may be specified.
+
+include::{docdir}/opt/group-table-plugin.adoc[tags=!*;cat]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,177 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== craft (input)
+
+[.cmd-header]
+Build specifically crafted input packets
+
+This plugin generates fake transport stream packets from scratch.
+The various fields in the packets are specified using command line options.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I craft [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--cc* _value_
+
+[.optdoc]
+Specify the initial value of the continuity counter field (0 by default).
+
+[.opt]
+*--constant-cc*
+
+[.optdoc]
+Do not increment the continuity counter.
+
+[.optdoc]
+By default, the continuity counter in incremented when the packet has a payload.
+
+[.opt]
+*-c* _value_ +
+*--count* _value_
+
+[.optdoc]
+Specify the number of crafted packets to generate.
+After the last packet, an end-of-file condition is generated.
+
+[.optdoc]
+By default, if `--count` is not specified, crafted packets are generated endlessly.
+
+[.opt]
+*--discontinuity*
+
+[.optdoc]
+Set the _discontinuity_indicator_ in the packets.
+An adaptation field is created.
+
+[.opt]
+*--error*
+
+[.optdoc]
+Set the _transport_error_indicator_ in the packets.
+
+[.opt]
+*--es-priority*
+
+[.optdoc]
+Set the _elementary_stream_priority_indicator_ in the packets.
+An adaptation field is created.
+
+[.opt]
+*-j* +
+*--joint-termination*
+
+[.optdoc]
+When `--count` is specified, perform a joint termination when completed instead of unconditional termination.
+See the xref:tsp-reference[`tsp` reference documentation] for more details on xref:joint-termination[joint termination].
+
+[.opt]
+*--no-payload*
+
+[.optdoc]
+Do not use a payload.
+
+[.opt]
+*--opcr* _value_
+
+[.optdoc]
+Set this OPCR value in the packets.
+An adaptation field is created.
+
+[.opt]
+*--payload-pattern* _hexa-digits_
+
+[.optdoc]
+Specify the binary pattern to apply on packets payload.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+The pattern is repeated to fill the payload.
+The last repetition of the pattern is truncated if necessary.
+
+[.optdoc]
+The default is FF.
+
+[.opt]
+*--payload-size* _value_
+
+[.optdoc]
+Specify the size of the packet payload in bytes.
+When necessary, an adaptation field is created.
+
+[.optdoc]
+Note that `--payload-size 0` specifies that a payload exists with a zero size.
+This is different from `--no-payload` which also specifies that the payload does not exist.
+
+[.optdoc]
+By default, the payload uses all free space in the packet.
+
+[.opt]
+*--pcr* _value_
+
+[.optdoc]
+Set this PCR value in the packets.
+An adaptation field is created.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID for the packets (0 by default).
+
+[.opt]
+*--priority*
+
+[.optdoc]
+Set the _transport_priority_ flag in the packets.
+
+[.opt]
+*--private-data* _hexa-digits_
+
+[.optdoc]
+Specify the complete binary content of the _transport_private_data_ in the adaptation field.
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.opt]
+*--pusi*
+
+[.optdoc]
+Set the _payload_unit_start_indicator_ in the packets.
+
+[.opt]
+*--random-access*
+
+[.optdoc]
+Set the _random_access_indicator_ in the packets.
+An adaptation field is created.
+
+[.opt]
+*--scrambling* _value_
+
+[.optdoc]
+Specify the value of the _transport_scrambling_control_ field (0 by default).
+
+[.opt]
+*--splice-countdown* _value_
+
+[.optdoc]
+Create a splicing point and set this splice countdown value in the packets.
+An adaptation field is created.
+
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

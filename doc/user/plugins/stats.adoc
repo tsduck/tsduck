@@ -1,0 +1,115 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== stats
+
+[.cmd-header]
+Report various statistics on PID's and labels
+
+This plugin analyzes the selected PID’s or labels and reports statistics.
+It currently focuses on inter-packet distances, the number of packets in the TS between two packets of the same PID or label.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P stats [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--csv*
+
+[.optdoc]
+Report the statistics in CSV (comma-separated values) format.
+All values are reported in decimal.
+It is suitable for later analysis using tools such as Microsoft Excel.
+
+[.opt]
+*-i* _seconds_ +
+*--interval* _seconds_
+
+[.optdoc]
+Produce a new output file at regular intervals.
+The interval value is in seconds.
+After outputting a file, the statistics are reset, i.e. each output file contains a fully independent analysis.
+
+[.opt]
+*-l* _label1[-label2]_ +
+*--label* _label1[-label2]_
+
+[.optdoc]
+Analyze packets with the specified labels or range of labels.
+
+[.optdoc]
+Several `--label` options may be specified.
+
+[.optdoc]
+By default, PID's are analyzed.
+The options `--label` and `--pid` are mutually exclusive.
+
+[.opt]
+*--log*
+
+[.optdoc]
+Report the statistics in the common transport stream logger, not in a file.
+
+[.opt]
+*-m* +
+*--multiple-files*
+
+[.optdoc]
+When used with `--interval` and `--output-file`,
+create a new file for each statistics report instead of rewriting the previous file.
+Assuming that the specified output file name has the form `base.ext`,
+each file is created with a time stamp in its name as `base-YYYYMMDD-hhmmss.ext`.
+
+[.opt]
+*-n* +
+*--noheader*
+
+[.optdoc]
+Do not output initial header line in CSV and text format.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the output text file for the analysis result.
+
+[.optdoc]
+By default, use the standard output.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Analyze the specified PID or range of PID's.
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+[.optdoc]
+By default, all PID's are analyzed.
+
+[.opt]
+*-s* _'string'_ +
+*--separator* _'string'_
+
+[.optdoc]
+Field separator string in CSV output.
+The default is a comma (`,`).
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

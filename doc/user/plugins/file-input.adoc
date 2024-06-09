@@ -1,0 +1,44 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== file (input)
+
+[.cmd-header]
+Transport stream files input
+
+This input module reads transport stream packets from one or more files.
+The specified files do not need to be regular files, they can be named pipes or anything that can be named and read from.
+
+The default file is the standard input, which can also be a pipe.
+Since the plugin `file` is the default input plugin (if no option `-I` is specified),
+this means that the default `tsp` input is the standard input.
+
+By default, the input files must contain a flow of contiguous 188-bytes TS packets.
+If this is not the case, see option `--format` or consider using the `tsresync` utility.
+
+[.usage]
+Input timestamps
+
+With M2TS files, each TS packet is preceded by a 4-byte header containing a timestamp.
+This value is used as input timestamp by `tsp`.
+
+The specific TSDuck proprietary format (option `--format duck`) propagates all metadata of all TS packets.
+When the input is such a file (typically piped from another instance of `tsp`),
+the original input timestamps from the first instance of `tsp` are propagated and used as input timestamps by the receiving instance of tsp.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I file [options] [file-name ...]
+----
+
+include::{docdir}/opt/group-file-input.adoc[tags=!*]
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

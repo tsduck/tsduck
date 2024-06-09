@@ -1,0 +1,221 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsxml
+
+[.cmd-header]
+Test tool for TSDuck XML manipulation
+
+This simple utility can be used to test some XML files which are manipulated by TSDuck.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsxml [options] [input-file ...]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-files_
+
+[.optdoc]
+Any number of XML files.
+Input files are processed in sequence.
+
+[.optdoc]
+If an input file is specified as a dash (`-`), the standard input is used.
+
+[.usage]
+General options
+
+[.opt]
+*--attributes-merge* _name_
+
+[.optdoc]
+With `--merge`, specify how attributes coming from the XML nodes to merge are processed.
+
+[.optdoc]
+Must be one of:
+
+[.optdoc]
+* `add`: New attributes, not present in the base node, are added.
+  Attributes already existing in the base node are ignored.
+  This is the default.
+* `none`: No attribute is copied from the node to merge.
+* `replace`: All attributes from the nodes to merge are copied in the base node, replacing existing ones.
+
+[.opt]
+*-c* +
+*--channel*
+
+[.optdoc]
+A shortcut for `--model tsduck.channels.model.xml`.
+
+[.optdoc]
+This option verifies that the input files are valid channel configuration files.
+
+[.opt]
+*-f* +
+*--from-json*
+
+[.optdoc]
+Each input file must be a JSON file, typically from a previous automated XML-to-JSON conversion or in a similar format.
+A reverse automated JSON-to-XML conversion is performed first and the resulting XML document is processed as input.
+
+[.optdoc]
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+[.opt]
+*-h* +
+*--hf-band*
+
+[.optdoc]
+A shortcut for `--model tsduck.hfbands.model.xml`.
+
+[.optdoc]
+This option verifies that the input files are valid HF bands definition files.
+
+[.opt]
+*-i* _value_ +
+*--indent* _value_
+
+[.optdoc]
+Specify the indentation size of output files.
+The default is 2 spaces.
+
+[.opt]
+*-j* +
+*--json*
+
+[.optdoc]
+Perform an automated XML-to-JSON conversion.
+The output file is in JSON format instead of XML.
+
+[.optdoc]
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+[.opt]
+*-l* +
+*--lnb*
+
+[.optdoc]
+A shortcut for `--model tsduck.lnbs.model.xml`.
+
+[.optdoc]
+This option verifies that the input files are valid satellite LNB definition files.
+
+[.opt]
+*--merge*
+
+[.optdoc]
+Merge all input files into one single XML document, instead of processing all input files one by one.
+
+[.optdoc]
+With this option, all input XML files must have the same root tag.
+
+[.opt]
+*-m* _filename_ +
+*--model* _filename_
+
+[.optdoc]
+Specify an XML model file which is used to validate all input files.
+
+[.optdoc]
+The file is automatically searched in the directories for TSDuck configuration files.
+
+[.opt]
+*--monitor*
+
+[.optdoc]
+A shortcut for `--model tsduck.monitor.model.xml`.
+
+[.optdoc]
+This option verifies that the input files are valid resource monitoring configuration files.
+
+[.opt]
+*-o* _filename_ +
+*--output* _filename_
+
+[.optdoc]
+Specify the name of the output file (standard output by default).
+
+[.optdoc]
+An output file is produced only if `--patch`, `--reformat` or `--json` are specified.
+
+[.opt]
+*-p* _filename_ +
+*--patch* _filename_
+
+[.optdoc]
+Specify an XML patch file.
+See xref:xml-patch[xrefstyle=short] for more details on XML patch files.
+
+[.optdoc]
+All operations which are specified in this file are applied on each input XML file.
+Several `--patch` options can be specified.
+Patch files are sequentially applied on each input file.
+
+[.optdoc]
+This option is useful to test the XML patch files which are applied on the signalisation in various plugins using option `--patch-xml`.
+
+[.opt]
+*-r* +
+*--reformat*
+
+[.optdoc]
+Reformat the input XML files according to the default XML layout for TSDuck XML files.
+This option is useful to generate an expected output file format.
+
+[.optdoc]
+If more than one input file is specified, they are all reformatted in the same output file.
+
+[.opt]
+*-s* _name_ +
+*--sort* _name_
+
+[.optdoc]
+Specify that the sub-elements of all XML structures with the specified tag name will be sorted in alphanumerical order.
+
+[.optdoc]
+Several `--sort` options can be specified.
+
+[.opt]
+*-t* +
+*--tables*
+
+[.optdoc]
+A shortcut for `--model tsduck.tables.model.xml`.
+Table definitions for installed TSDuck extensions are also merged in the main model.
+
+[.optdoc]
+This option verifies that the input files are valid PSI/SI table files.
+
+[.opt]
+*--uncomment*
+
+[.optdoc]
+Remove comments from the XML documents.
+
+[.opt]
+*--xml-line[='prefix']*
+
+[.optdoc]
+Output each transformed input XML file as one single XML line in the message logger instead of an output file.
+
+[.optdoc]
+The optional string parameter specifies a prefix to prepend on the log line before the XML text
+to facilitate the filtering of the appropriate line in the logs.
+
+include::{docdir}/opt/group-xml-tweaks.adoc[tags=!*]
+include::{docdir}/opt/group-json-output.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

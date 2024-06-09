@@ -1,0 +1,442 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-userconfig]
+[appendix]
+== User’s Configuration File
+
+The TSDuck user’s configuration file is used to specify default command line options or
+alternate options for all or selected TSDuck commands.
+This configuration file is specific per user.
+
+If the environment variable `TSDUCK_NO_USER_CONFIG` is defined to some non-empty value,
+the configuration file is ignored.
+This can be useful to bypass the defaults from this file or
+to troubleshoot problems and test if they come from the user’s configuration file.
+
+[#conf-file-loc]
+=== Configuration file location
+
+The location of the user’s TSDuck configuration file depends on the operating system.
+
+[.compact-table]
+[cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|UNIX: |$HOME/.tsduck
+|Windows: |%APPDATA%\tsduck\tsduck.ini
+|===
+
+[#conf-file-format]
+=== Configuration file format
+
+The format of this file resembles the old `.ini` files on Windows systems.
+There is one main section, followed by several command-specific sections.
+
+Here are the main rules for the configuration files:
+
+[.compact-list]
+* The main section comes first.
+* A section starts with the section name enclosed in square brackets.
+* The name of a section is the name of a TSDuck command (e.g. `[tsp]`, `[tsswitch]`, etc.)
+* In a section, an entry has the syntax `_name = value_`.
+* An entry can be specified several times in a section when multiple values are allowed.
+* When a TSDuck command searches for an entry in the configuration file,
+  it searches first in the section with the name of the command.
+  If the entry is not found here, it is searched in the top main section.
+* Lines starting with a dieresis (`#`) are comments and are ignored.
+* Lines ending with a back-slash (`\`) are continued on the next text line.
+* Quotes can be used to group command line arguments when necessary.
+* Back-slashes in the middle of a line are used to escape characters.
+
+The following table lists the supported entries in the configuration file.
+
+.Configuration file entries
+[cols="<20m,<60,<20",stripes=none]
+|===
+|Entry name |Description |Apply to
+
+|default.options
+|Used as command line options when none are specified.
+|All commands
+
+|prepend.options
+|Options to prepend before the actual options.
+|All commands
+
+|append.options
+|Options to append after the actual options.
+|All commands
+
+|default.input
+|Default input plugin (with options) when none are specified.
+|`tsp`, `tsswitch`
+
+|default.plugin
+|Default packet processing plugin (with options) when none are specified.
+|`tsp`
+
+|default.output
+|Default output plugin (with options) when none are specified.
+|`tsp`, `tsswitch`
+
+|default.lnb
+|Default LNB type for satellite reception. See xref:lnb-config[xrefstyle=short].
+|All commands
+
+|default.region
+|Default region for UHF / VHF frequency layout. See xref:hfband-config[xrefstyle=short].
+|All commands
+
+|default.time
+|Default value for `--time-reference` option. See xref:opt-default-std[xrefstyle=short].
+|All commands
+
+|leap.seconds
+|Use explicit leap seconds in time computations. The value shall be true or false (default is true). See xref:opt-default-std[xrefstyle=short].
+|All commands
+
+|===
+
+[#lnb-config]
+=== LNB names
+
+In the configuration file entry `default.lnb` and the command line option `--lnb`,
+the specified string is the name (or an alias for that name) of a preconfigured LNB
+in the configuration file named `tsduck.lnbs.xml`.
+
+The location of this file depends on the operating system.
+
+[.compact-table]
+[cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|Linux: |/usr/share/tsduck/tsduck.lnbs.xml
+|macOS (Intel): |/usr/local/share/tsduck/tsduck.lnbs.xml
+|macOS (Arm): |/opt/hombrew/share/tsduck/tsduck.lnbs.xml
+|Windows: |%TSDUCK%\bin\tsduck.lnbs.xml
+|NetBSD: |/usr/pkg/share/tsduck/tsduck.lnbs.xml
+|Other BSD: |/usr/local/share/tsduck/tsduck.lnbs.xml
+|===
+
+The default value describes a dual-band so-called _European Universal Ku (extended) LNB_.
+
+The table below summarizes known LNB names and aliases.
+This list may be incomplete.
+See the file `tsduck.lnbs.xml` for a complete reference.
+
+.Preconfigured LNB names and aliases
+[cols="<1m,<1m,<1m,<1m",stripes=none,options="autowidth"]
+|===
+|Name 3+|Aliases
+
+|European Universal Ku (extended)
+|Astra 19.2E
+|Extended
+|
+
+|European Universal (old)
+|Universal
+|
+|
+
+|Astra
+|Enhanced
+|
+|
+
+|Expressvu
+|DBS
+|
+|
+
+|Standard
+|
+|
+|
+
+|L10700
+|
+|
+|
+
+|L10750
+|
+|
+|
+
+|L11300
+|
+|
+|
+
+|Invacom QPH-031
+|QPH031
+|
+|
+
+|Big Dish Monopoint
+|C-Band
+|
+|
+
+|Big Dish Multipoint
+|C-Multi
+|
+|
+
+|DishPro
+|
+|
+|
+
+|Japan 110BS/CS
+|Japan
+|110BS
+|110CS
+
+|BrasilSat Stacked
+|Stacked-Brasilsat
+|
+|
+
+|BrasilSat Oi
+|Oi-BrasilSat
+|
+|
+
+|BrasilSat Amazonas 1/2, 3 Oscillators
+|Amazonas3
+|
+|
+
+|BrasilSat Amazonas 1/2, 2 Oscillators
+|Amazonas2
+|
+|
+
+|BrasilSat custom GVT
+|GVT-BrasilSat
+|
+|
+
+|None
+|Null
+|
+|
+
+|===
+
+For compatibility, the legacy format `_low_freq[,high_freq,switch_freq]_` is also accepted as LNB name.
+The three frequencies are the low-band oscillator, the high-band oscillator and the switch frequency.
+All frequencies are in MHz.
+The last two values are used only with a dual-band LNB.
+
+[#hfband-config]
+=== HF band region names
+
+A list of all supported regions can be found in the file named `tsduck.hfbands.xml`,
+the location of which depends on the operating system.
+
+[.compact-table]
+[cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|Linux: |/usr/share/tsduck/tsduck.hfbands.xml
+|macOS (Intel): |/usr/local/share/tsduck/tsduck.hfbands.xml
+|macOS (Arm): |/opt/hombrew/share/tsduck/tsduck.hfbands.xml
+|Windows: |%TSDUCK%\bin\tsduck.hfbands.xml
+|NetBSD: |/usr/pkg/share/tsduck/tsduck.hfbands.xml
+|Other BSD: |/usr/local/share/tsduck/tsduck.hfbands.xml
+|===
+
+The table below summarizes known regions.
+This list may be incomplete.
+See the file `tsduck.hfbands.xml` for a complete reference.
+
+.HF band region names
+[cols="<1m,<1m,^1,^1,^1,^1,<1",stripes=none,options="autowidth"]
+|===
+|Region name |Aliases |UHF |VHF |BS |CS |Standards
+
+|europe
+|uk france
+|×
+|×
+|
+|
+|DVB
+
+|north-america
+|us usa
+|×
+|×
+|
+|
+|ATSC
+
+|japan
+|
+|×
+|×
+|×
+|×
+|ISDB
+
+|south-america
+|abnt brazil
+|×
+|×
+|
+|
+|ISDB
+
+|paraguay
+|
+|×
+|×
+|
+|
+|ISDB
+
+|argentina
+|
+|×
+|
+|
+|
+|ISDB
+
+|chile
+|
+|×
+|
+|
+|
+|ISDB
+
+|ecuador
+|
+|×
+|
+|
+|
+|ISDB
+
+|philippines
+|
+|×
+|
+|
+|
+|ISDB
+
+|botswana
+|
+|×
+|
+|
+|
+|ISDB
+
+|===
+
+NOTE: The names `BS` and `CS` designate satellite frequency bands which are used in Japan only.
+In other regions, the frequency allocation inside satellite bands is not regulated and planned using channel numbers.
+
+=== Sample configuration files
+
+==== Generic example
+
+The following example configuration file illustrates most entries.
+
+[source,text]
+----
+# Sample configuration file
+prepend.options = --verbose
+
+[tsversion]
+default.options = --all
+
+[tsp]
+default.input  = file '/home/john doe/name with spaces \' and quotes\'.ts'
+default.plugin = until --packet 1,000,000
+default.plugin = analyze
+default.output = drop
+----
+
+In this case, when the command `tsp` is used alone without arguments, the actual command will be:
+
+[source,shell]
+----
+$ tsp --verbose \
+      -I file '/home/john doe/name with spaces \' and quotes\'.ts' \
+      -P until --packet 1,000,000 \
+      -P analyze \
+      -O drop
+----
+
+If one type of plugin is specified, the defaults no longer apply.
+For instance, the command:
+
+[source,shell]
+----
+$ tsp -P regulate
+----
+
+will become:
+
+[source,shell]
+----
+$ tsp --verbose \
+      -I file '/home/john doe/name with spaces \' and quotes\'.ts' \
+      -P regulate \
+      -O drop
+----
+
+==== Using TSDuck on Japanese ISDB transport streams
+
+A user who routinely analyzes Japanese transport streams only will have to use specific options in all TSDuck commands.
+It is consequently easier to setup a configuration file as follow:
+
+[source,text]
+----
+default.region = japan
+default.lnb = japan
+default.time = jst
+
+[tsp]
+prepend.options = --japan
+
+[tsanalyze]
+prepend.options = --japan
+
+[tsdate]
+prepend.options = --japan
+
+[tscharset]
+prepend.options = --japan
+
+[tspacketize]
+prepend.options = --japan
+
+[tspsi]
+prepend.options = --japan
+
+[tsscan]
+prepend.options = --japan
+
+[tstabcomp]
+prepend.options = --japan
+
+[tstabdump]
+prepend.options = --japan
+
+[tstables]
+prepend.options = --japan
+
+[tsterinfo]
+prepend.options = --japan
+----

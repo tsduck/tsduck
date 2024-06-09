@@ -1,0 +1,153 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== zap
+
+[.cmd-header]
+Zap on one or more services, remove all other services
+
+This plugin keeps one or more services in the transport stream and remove all others.
+If only one service is specified, this plugin produces a Single Program Transport Stream (SPTS) containing only the specified service.
+
+The PAT and SDT are modified in order to contain only the specified services.
+Unless specified otherwise (see the relevant options), the PMT and all elementary streams of the services are passed transparently.
+All other PID’s in the transport streams are removed.
+If some elementary streams (audio, subtitles) must be removed from the service, the PMT is modified accordingly.
+
+For ATSC transport streams, the service is extracted as with any MPEG-compliant transport stream but
+the PSIP signalization (PID 0x1FFB) is not modified.
+The TVCT or CVCT still contains the description of all previous (and now removed) services in the transport stream.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P zap [options] service ...
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_service_
+
+[.optdoc]
+The parameters specify the services to keep.
+Several services can be selected.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.usage]
+Options
+
+[.opt]
+*-a* _name_ +
+*--audio* _name_
+
+[.optdoc]
+Specify a three-letter audio language code to keep.
+All other audio components are removed (unless specified in an `--audio-pid` option).
+
+[.optdoc]
+Several `--audio` options can be specified.
+
+[.optdoc]
+By default, keep all audio components.
+
+[.opt]
+*--audio-pid* _value_
+
+[.optdoc]
+Specify an audio PID to keep.
+All other audio components are removed (unless specified in an `--audio` option).
+
+[.optdoc]
+Several `--audio-pid` options can be specified.
+
+[.optdoc]
+By default, keep all audio components.
+
+[.opt]
+*-c* +
+*--cas*
+
+[.optdoc]
+Keep Conditional Access System sections (CAT and EMM's).
+Remove them by default.
+Note that the ECM's for the specified services are always kept (unless `--no-ecm` is specified).
+
+[.opt]
+*--eit*
+
+[.optdoc]
+Keep EIT sections for the specified services.
+EIT sections for other services are removed.
+By default, all EIT's are removed.
+
+[.opt]
+*-e* +
+*--no-ecm*
+
+[.optdoc]
+Remove all ECM PID's.
+By default, keep all ECM PID's for the selected services.
+
+[.opt]
+*-n* +
+*--no-subtitles*
+
+[.optdoc]
+Remove all subtitles.
+By default, keep all subtitles for the selected services.
+
+[.opt]
+*-p* +
+*--pes-only*
+
+[.optdoc]
+Keep only the PES elementary streams (audio, video, subtitles) for the selected services.
+Remove all PSI/SI and CAS information.
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Replace excluded packets with stuffing (null packets) instead of removing them.
+Useful to preserve bitrate.
+
+[.opt]
+*-t* _name_ +
+*--subtitles* _name_
+
+[.optdoc]
+Specify a three-letter subtitles language code to keep.
+All other subtitles components are removed (unless specified in a `--subtitles-pid` option).
+
+[.optdoc]
+Several `--subtitles` options can be specified.
+
+[.optdoc]
+By default, keep all subtitles components.
+
+[.opt]
+*--subtitles-pid* _value_
+
+[.optdoc]
+Specify a subtitles PID to keep.
+All other subtitles components are removed (unless specified in a `--subtitles` option).
+
+[.optdoc]
+Several `--subtitles-pid` options can be specified.
+
+[.optdoc]
+By default, keep all subtitles components.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

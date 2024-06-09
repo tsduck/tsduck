@@ -26,6 +26,7 @@ ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
 INSTALLERDIR = $(ROOTDIR)/pkg/installers
 SCRIPTSDIR   = $(ROOTDIR)/scripts
+IMAGESDIR    = $(ROOTDIR)/images
 SRCROOT      = $(ROOTDIR)/src
 LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
@@ -105,6 +106,7 @@ ifeq ($(SED),)
     export GREP  := $(call F_COMMAND,ggrep,grep)
     export FGREP := $(call F_COMMAND,gfgrep,fgrep)
     export CHMOD := $(call F_COMMAND,gchmod,chmod)
+    export DATE  := $(call F_COMMAND,gdate,date)
 endif
 
 # Use command python3 when available, fallback as python alone.
@@ -288,9 +290,9 @@ ifneq ($(BINDIR),)
     override BINDIR := $(abspath $(INBINDIR))
     MAKEOVERRIDES := $(subst BINDIR=$(INBINDIR),BINDIR=$(BINDIR),$(MAKEOVERRIDES))
 else ifneq ($(DEBUG),)
-    BINDIR = $(ROOTDIR)/bin/debug-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
+    BINDIR = $(BINROOT)/debug-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 else
-    BINDIR = $(ROOTDIR)/bin/release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
+    BINDIR = $(BINROOT)/release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 endif
 
 OBJDIR = $(BINDIR)/objs-$(notdir $(CURDIR))
@@ -858,6 +860,42 @@ ifeq ($(TSPLUGINS),)
     TSPLUGINS := $(filter-out $(NO_TSPLUGINS),$(TSPLUGINS))
     export TSPLUGINS TSTOOLS NO_TSTOOLS NO_TSPLUGINS
 endif
+
+#-----------------------------------------------------------------------------
+# Documentation generation.
+#-----------------------------------------------------------------------------
+
+# Documentation sources.
+
+DOCROOT    = $(ROOTDIR)/doc
+CSSDIR     = $(DOCROOT)/css
+TOCBOTDIR  = $(DOCROOT)/tocbot
+THEMESDIR  = $(DOCROOT)/themes
+
+# Documentation binaries.
+
+BINROOT    = $(ROOTDIR)/bin
+BINDOC     = $(BINROOT)/doc
+BINDOCINFO = $(BINROOT)/docinfo
+
+# Common themes.
+
+CSSFILE    = $(CSSDIR)/tsduck.css
+THEME      = tsduck
+THEMEFILE  = $(THEMESDIR)/$(THEME)-theme.yml
+ROUGE_HTML = thankful_eyes
+ROUGE_PDF  = github
+
+# Documentation tools.
+
+ASCIIDOCTOR     = asciidoctor
+ASCIIDOCTOR_PDF = asciidoctor-pdf
+
+# Documentation generation flags.
+
+ADOCFLAGS      = -v -a revnumber="$(shell $(GET_VERSION))" -a revdate="$(shell $(DATE) '+%B %Y')" -a imagesdir="$(IMAGESDIR)"
+ADOCFLAGS_HTML = $(ADOCFLAGS) -a stylesheet="$(CSSFILE)" -a rouge-style="$(ROUGE_HTML)"
+ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(THEMESDIR)" -a pdf-theme=tsduck -a rouge-style="$(ROUGE_PDF)"
 
 #-----------------------------------------------------------------------------
 # Dependency (.dep) files: For each xxx.cpp source file, there is one

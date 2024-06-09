@@ -1,0 +1,62 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-license]
+[appendix]
+== Licenses
+
+=== TSDuck license
+
+TSDuck is released under the terms of the license which is commonly referred to as
+"BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
+See http://opensource.org/licenses/BSD-2-Clause.
+
+[.license]
+Copyright © 2005-2024, Thierry Lelégard +
+All rights reserved. +
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+[.license]
+. Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer. 
+. Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+[.license]
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=== Third-party libraries
+
+TSDuck includes a few third-party libraries, either in source form, binary form or both.
+For more details about the licenses of these third-party libraries, see the file named `OTHERS.txt`
+in the TSDuck source code repository.
+
+*DTAPI*: On Linux and Windows, the TSDuck binary distributions contain the DTAPI library in static form.
+This software is available in binary format only and is distributed under the BSD 2-Clause License
+(see <<Dektec-SDK>>). _"Copyright (c) 2017 by Dektec Digital Video B.V."_
+
+*LIBSRT*: On Windows, the TSDuck binary distribution contains the SRT library in static form.
+This is an open-source library which is distributed under the Mozilla Public License v2.0 (see <<SRT>>).
+_"Copyright (c) 2018 Haivision Systems Inc."_
+
+*LIBRIST*: On Windows, the TSDuck binary distribution contains the RIST library in static form.
+This is an open-source library which is distributed under the BSD 2-Clause License (see <<RIST>>).
+_"Copyright © 2019-2020 SipRadius LLC. All right reserved."_
+
+*LibVatek*: On Windows and Linux, the TSDuck binary distribution contains the LibVatek library in static form.
+This is an open-source library which is distributed under the BSD 2-Clause License (see <<VATek-SDK>>).
+_"Copyright © 2022, Richie Chang."_

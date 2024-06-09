@@ -1,0 +1,129 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::AbstractTablePlugin.
+//
+// tags: bat, cat, nit, pat, pmt, sdt
+//
+//----------------------------------------------------------------------------
+
+//---- ugly tag tricks ----
+
+:opt-table: table
+:opt-bitrate: 3000
+:opt-short-bitrate: true
+:opt-short-increment: true
+:!opt-optional:
+// tag::pat[]
+:opt-table: PAT
+:!opt-short-bitrate:
+// end::pat[]
+// tag::cat[]
+:opt-table: CAT
+:opt-optional: true
+// end::cat[]
+// tag::pmt[]
+:opt-table: PMT
+:!opt-short-increment:
+// end::pmt[]
+// tag::sdt[]
+:opt-table: SDT
+// end::sdt[]
+// tag::nit[]
+:opt-table: NIT 
+// end::nit[]
+// tag::bat[]
+:opt-table: BAT
+:opt-optional: true
+// end::bat[]
+
+//---- end of tag tricks ----
+
+[.usage]
+Generic options for table manipulation
+
+[.opt]
+ifdef::opt-short-bitrate[]
+*-b* _value_ +
+endif::[]
+*--bitrate* _value_
+
+[.optdoc]
+Specifies the bitrate in bits / second of the PID containing the {opt-table} if a new one is created.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+The default is {opt-bitrate} b/s.
+
+[.opt]
+*-c* +
+*--create*
+
+[.optdoc]
+Create a new empty {opt-table} if none was received after one second.
+
+[.optdoc]
+This is equivalent to `--create-after 1000`.
+
+[.opt]
+*--create-after* _milliseconds_
+
+[.optdoc]
+Create a new empty {opt-table} if none was received after the specified number of milliseconds.
+If an actual {opt-table} is received later, it will be used as the base for transformations instead of the empty one.
+
+ifdef::opt-optional[]
+[.optdoc]
+This can be useful to force the creation of a {opt-table} in a TS which has none (the {opt-table} is an optional table).
+endif::[]
+
+[.opt]
+ifdef::opt-short-increment[]
+*-i* +
+endif::[]
+*--increment-version*
+
+[.optdoc]
+Increment the version number of the {opt-table}.
+
+[.opt]
+*--inter-packet* _value_
+
+[.optdoc]
+When a new {opt-table} is created and `--bitrate` is not present,
+this option specifies the packet interval for the {opt-table} PID,
+that is to say the number of TS packets in the transport between two packets of the PID.
+
+[.optdoc]
+Use instead of `--bitrate` if the global bitrate of the TS cannot be determined.
+
+[.opt]
+*--patch-xml* _filename_
+
+[.optdoc]
+Specify an XML patch file which is applied to each {opt-table} on the fly.
+The XML patches are applied first.
+The other options of this plugin are applied on the patched table.
+
+[.optdoc]
+If the specified name starts with `<?xml`, it is considered as inline XML content,
+meaning that the string in the command line is directly the XML content and not a file name.
+
+[.optdoc]
+Several `--patch-xml` options can be specified.
+Patch files are sequentially applied on each table.
+
+[.optdoc]
+See xref:xml-patch[xrefstyle=short] for more details on XML patch files.
+
+[.opt]
+*-v* _value_ +
+*--new-version* _value_
+
+[.optdoc]
+Specify a new value for the version of the {opt-table}.

@@ -1,0 +1,144 @@
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2024, Thierry Lelegard
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#
+#  PDF theme for TSDuck documentation, using asciidoctor.
+#
+#-----------------------------------------------------------------------------
+
+extends: default-sans
+
+brand:
+  # Color palette (see images/palette.png)
+  dark-spring-green: 2C6E49    # logo, right side
+  middle-green:      4C956C    # logo, left side
+  light-green:       85C19F
+  teal-green:        009688    # web site
+  light-yellow:      FEFEE3    # logo, curve
+  melon:             FFC9B9
+  persian-orange:    D68C45
+  black:             000000
+  white:             FFFFFF
+
+page:
+  size: A4
+  margin: [20mm, 20mm, 20mm, 20mm] # [top,right,bottom,left]
+  margin-inner: 24mm
+  margin-outer: 18mm
+  numbering:
+    start-at: cover
+
+base:
+  font-color: $brand-black
+  text-align: justify
+  font-size: 9
+
+prose:
+  margin-bottom: 6
+
+codespan:
+  # font_color: $brand-persian-orange
+
+code:
+  font_size: floor($base_font_size)
+  padding: $code_font_size
+  line_height: 1.25
+
+role:
+  title:
+    font-color: $brand-dark-spring-green
+  subtitle:
+    font-color: $brand-dark-spring-green
+  usage:
+    font-size: 11
+    font-style: bold    
+  opt:
+    font-color: $brand-dark-spring-green
+    font_family: M+ 1mn
+  optdoc:
+    # None of these work, not supported in custom roles :(
+    # indent: $horizontal_rhythm * 4
+    # indent: 10pt
+    # padding: [0, 0, 0, 10pt]  # [top, right, bottom, left]
+    # margin: [0, 0, 0, 10pt]  # [top, right, bottom, left]
+
+link:
+  font-color: $brand-middle-green
+
+heading:
+  font-color: $brand-dark-spring-green
+  h1-font-size: floor($base-font-size * 2.6)
+  h2-font-size: floor($base-font-size * 2.15)
+  h3-font-size: round($base-font-size * 1.7)
+  h4-font-size: $base-font-size-large
+  h5-font-size: $base-font-size
+  h6-font-size: $base-font-size-small
+
+title-page:
+  text-align: right
+  logo:
+    top: 25%
+    align: left
+    image: image:../../images/tsduck-256.png[pdfwidth=1.5in]
+  title:
+    top: 24%
+    font-size: $heading-h1-font-size * 1.25
+    font-color: $brand-dark-spring-green
+    line-height: 0.9
+    font-style: bold
+  authors:
+    margin-top: $base-font-size * 40
+    font-size: $base-font-size
+    font-color: 181818
+  revision:
+    margin-top: $base-font-size * 2
+    font-size: $base-font-size-large
+
+running-content:
+  start-at: toc
+
+header:
+  height: 16mm
+  vertical-align: bottom
+  border-color: DDDDDD
+  border-width: 0.25
+  recto:
+    left: &header_inner
+      content: 'Version {revnumber}'
+    right: &header_outer
+      content: '{document-title}'
+      font-style: bold
+  verso:
+    left: *header_outer
+    right: *header_inner
+
+footer:
+  height: 18mm
+  vertical-align: top
+  border-color: DDDDDD
+  border-width: 0.25
+  recto:
+    left: &footer_inner
+      content: ''
+    right: &footer_outer
+      content: '{page-number}'
+  verso:
+    left: *footer_outer
+    right: *footer_inner
+
+image:
+  caption:
+    font-color: $brand-dark-spring-green
+    text-align: center
+
+table:
+  border-color: $brand-black
+  cell-padding: 3
+  head:
+    background-color: $brand-dark-spring-green
+    font-color: $brand-white
+    font-style: bold
+  caption:
+    font-color: $brand-dark-spring-green

@@ -1,0 +1,133 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== datainject
+
+[.cmd-header]
+DVB-SimulCrypt EMM and private data injector
+
+This plugin receives EMM’s and/or private data using the DVB SimulCrypt EMMG/PDG{d-arrow}MUX protocol
+and injects them into the transport stream in a specific PID.
+
+This plugin is a TCP server (MUX side of the protocol).
+It accepts only one EMMG/PDG connection at a time.
+
+If the injected data are EMM’s, make sure to update the CAT accordingly (see the plugin `cat`).
+	
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P datainject [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bitrate-max* _value_
+
+[.optdoc]
+Specifies the maximum bitrate for the data PID in bits / second.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+By default, the data PID bitrate is limited by the stuffing bitrate (data insertion is performed by replacing stuffing packets).
+
+[.opt]
+*--buffer-size* _value_
+
+[.optdoc]
+Specify the TCP and UDP socket receive buffer size in bytes (socket option).
+
+[.opt]
+*-v* _value_ +
+*--emmg-mux-version* _value_
+
+[.optdoc]
+Specifies the version of the EMMG/PDG{d-arrow}MUX DVB SimulCrypt protocol.
+Valid values are 1 to 5. The default is 2.
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option.
+Do not use unless completely necessary.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specifies the PID for the data insertion.
+
+[.optdoc]
+This option is mandatory, there is no default.
+
+[.opt]
+*-q* _value_ +
+*--queue-size* _value_
+
+[.optdoc]
+Specifies the maximum number of data sections or TS packets in the internal queue,
+i.e. messages which are received from the EMMG/PDG client but not yet inserted into the transport stream.
+
+[.optdoc]
+The default is 1000.
+
+[.opt]
+*-r* +
+*--reuse-port*
+
+[.optdoc]
+Set the reuse port socket option.
+This is now enabled by default, the option is present for legacy only.
+
+[.opt]
+*-s* _[address:]port_ +
+*--server* _[address:]port_
+
+[.optdoc]
+Specifies the local TCP port on which the plugin listens for an incoming EMMG/PDG connection.
+This option is mandatory.
+
+[.optdoc]
+When present, the optional address shall specify a local IP address or host name
+(by default, the plugin accepts connections on any local IP interface).
+
+[.optdoc]
+This plugin behaves as a MUX, ie. a TCP server, and accepts only one EMMG/PDG connection at a time.
+
+[.opt]
+*-u* _[address:]port_ +
+*--udp* _[address:]port_
+
+[.optdoc]
+Specifies the local UDP port on which the plugin listens for data provision messages (these messages can be sent using TCP or UDP).
+
+[.optdoc]
+By default, the UDP reception uses the same port and optional local address as specified for TCP using option `--server`.
+
+[.opt]
+*--unregulated*
+
+[.optdoc]
+Insert data packets immediately.
+Do not regulate the insertion of data packets, do not limit the data bitrate.
+
+[.optdoc]
+This is useful to test invalid EMMG’s which do not comply with the allocated bitrate policy.
+
+include::{docdir}/opt/group-dvbsim-log.adoc[tags=!*;emmg]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,3465 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-examples]
+== Usage Examples
+
+=== TSDuck utilities
+
+==== tsdektec examples
+
+Listing all (`-a`) Dektec devices:
+
+[source,shell]
+----
+$ tsdektec -a
+0: DTA-110 (DTA-110T Modulator with UHF Upconverter)
+1: DTA-140 (DTA-140 DVB/ASI Input+Output)
+----
+
+Listing all (`-a`) Dektec devices in verbose format (`-v`):
+
+[source,shell]
+----
+$ tsdektec -av
+
+DTAPI version: 4.1.1.108
+PCI device driver: 2.2.0.124
+USB device driver: unknown
+
+* Device 0: DTA-110 (DTA-110T Modulator with UHF Upconverter)
+  Physical ports: 1
+  Channels: input: 0, output: 1
+  Output 0: Port 1, Modulator, Failsafe, ATSC/VSB, DVB-T/DVB-H, DVB-C,
+      QAM-B (USA), QAM-C (Japan), UHF
+  Subsystem id: 0xD10A (DTA-110)
+  Subsystem vendor id: 0x14B4
+  Device id: 0x9056
+  Vendor id: 0x10B5
+  Serial number: 00000000F50268FF
+  Firmware version: 4 (0x00000004)
+  Firmware variant: 4 (0x00000004)
+  PCI bus: 5, slot: 5
+  Customer id: 301819
+  Engineering change level: Rev 3
+  Manufacture id: 03
+  Production date: 2002.07
+  Part number: DTA-110T
+  Serial number: 4110575871
+  Crystal stability: RF:1ppm;Sym:25ppm
+
+* Device 1: DTA-140 (DTA-140 DVB/ASI Input+Output)
+  Physical ports: 2
+  Channels: input: 1, output: 1
+  Input 0: Port 1, top socket, ASI/SDI, ASI
+  Output 0: Port 2, ASI/SDI, ASI
+  Subsystem id: 0xD128 (DTA-140)
+  Subsystem vendor id: 0x14B4
+  Device id: 0x9056
+  Vendor id: 0x10B5
+  Serial number: 00000000F6C458E8
+  Firmware version: 2 (0x00000002)
+  Firmware variant: 0 (0x00000000)
+  PCI bus: 5, slot: 6
+  Customer id: 301819
+  Engineering change level: Rev 1A
+  Manufacture id: 03
+  Production date: 2003.05
+  Part number: DTA-140
+  Serial number: 4140062952
+  Crystal stability: 10ppm
+----
+
+==== tslsdvb examples
+
+Listing all DVB receiver devices on a Linux system with a dual-tuner Hauppauge Nova-T 500.
+Each tuner of the single PCI board is seen as one DVB receiver device:
+
+[source,shell]
+----
+$ tslsdvb
+/dev/dvb/adapter0 (DiBcom 3000MC/P, DVB-T)
+/dev/dvb/adapter1 (DiBcom 3000MC/P, DVB-T)
+----
+
+The DVB receiver device name is `/dev/dvb/adapter0` but it can also be specified using the option
+`--adapter` (`-a`) in all TSDuck commands:
+the options `--device-name /dev/dvb/adapter1` and `-a 1` are equivalent.
+
+Listing all DVB receiver devices on a Windows system with one USB receiver:
+
+[source,powershell]
+----
+C:\> tslsdvb
+0: "Nova-T Stick DVB-T Tuner (Dev1 Path0)" (DVB-T)
+----
+
+The DVB receiver device name is "Nova-T Stick DVB-T Tuner (Dev1 Path0)".
+This is the name of the DirectShow tuner filter supplied by the hardware vendor.
+
+Listing all DVB receiver devices on a Windows system with two other USB receivers:
+
+[source,powershell]
+----
+C:\> tslsdvb
+0: "Cinergy T USB XE (MKII) Tuner" (DVB-T)
+1: "PCTV DiBcom BDA Digital Tuner (Dev1 Path0)" (DVB-T)
+----
+
+Listing all DVB receiver devices on a Linux system in verbose (`-v`) format.
+Note that the current modulation parameters are usually accessible on Linux systems only.
+On Windows systems, most tuner drivers do not return them and
+`tslsdvb` cannot display the characteristics of the current transponder.
+
+[source,shell]
+----
+$ tslsdvb -v
+
+/dev/dvb/adapter0 (DiBcom 3000MC/P, DVB-T)
+
+  Status: has signal, has carrier, has viterbi, has sync, has lock
+
+  Bit error rate ................................. 0 (0%)
+  Signal/noise ratio ............................. 0 (0%)
+  Signal strength ........................... 39,586 (60%)
+  Uncorrected blocks ............................. 0
+  Frequencies:
+    Current ............................ 562,000,000 Hz
+    UHF channel ................................. 32
+    Min ................................. 48,000,000 Hz
+    Max ................................ 860,000,000 Hz
+    Step .................................... 62,500 Hz
+    Tolerance .................................... 0 Hz
+  Spectral inversion .......................... auto
+  Bandwidth .................................. 8-MHz
+  FEC (high priority) .......................... 2/3
+  FEC (low priority) ........................... 1/2
+  Constellation ............................. 64-QAM
+  Transmission mode ............................. 8K
+  Guard interval .............................. 1/32
+  Hierarchy ................................... none
+
+  Capabilities: inversion auto, FEC 1/2, FEC 2/3, FEC 3/4, FEC 5/6, FEC 7/8,
+    FEC auto, QPSK, 16-QAM, 64-QAM, QAM auto, transmission mode auto,
+    guard interval auto, hierarchy auto, recover
+
+/dev/dvb/adapter1 (DiBcom 3000MC/P, DVB-T)
+
+  Status: has signal, has carrier, has viterbi, has sync, has lock
+
+  Bit error rate ................................. 0 (0%)
+  Signal/noise ratio ............................. 0 (0%)
+  Signal strength ........................... 40,690 (62%)
+  Uncorrected blocks ............................. 0
+  Frequencies:
+    Current ............................ 490,000,000 Hz
+    UHF channel ................................. 23
+    Min ................................. 48,000,000 Hz
+    Max ................................ 860,000,000 Hz
+    Step .................................... 62,500 Hz
+    Tolerance .................................... 0 Hz
+  Spectral inversion .......................... auto
+  Bandwidth .................................. 8-MHz
+  FEC (high priority) .......................... 2/3
+  FEC (low priority) ........................... 1/2
+  Constellation ............................. 16-QAM
+  Transmission mode ............................. 8K
+  Guard interval .............................. 1/32
+  Hierarchy ................................... none
+
+  Capabilities: inversion auto, FEC 1/2, FEC 2/3, FEC 3/4, FEC 5/6, FEC 7/8,
+    FEC auto, QPSK, 16-QAM, 64-QAM, QAM auto, transmission mode auto,
+    guard interval auto, hierarchy auto, recover
+----
+
+==== tsscan examples
+
+UHF-band scanning, including a global service list at end of network scanning:
+
+[source,shell]
+----
+$ tsscan -g
+* UHF channel 21, offset +1 (474.166 MHz), strength: 59%
+  Transport stream id: 2, 0x0002
+* UHF channel 23, offset +1 (490.166 MHz), strength: 62%
+  Transport stream id: 8, 0x0008
+* UHF channel 24, offset +1 (498.166 MHz), strength: 62%
+  Transport stream id: 4, 0x0004
+* UHF channel 27, offset +1 (522.166 MHz), strength: 63%
+  Transport stream id: 3, 0x0003
+* UHF channel 32, offset +1 (562.166 MHz), strength: 61%
+  Transport stream id: 6, 0x0006
+* UHF channel 35, offset +1 (586.166 MHz), strength: 63%
+  Transport stream id: 1, 0x0001
+
+LCN Name             Provider ServId TSId   ONetId Type PMTPID
+--- ---------------- -------- ------ ------ ------ ---- ------
+
+  1 TF1              SMR6     0x0601 0x0006 0x20FA 0x01 0x0064
+  2 France 2         GR1      0x0101 0x0001 0x20FA 0x01 0x006E
+  3 France 3         GR1      0x0111 0x0001 0x20FA 0x01 0x00D2
+  4 CANAL+           CNH      0x0301 0x0003 0x20FA 0x01 0x0500
+  5 France 5         GR1      0x0104 0x0001 0x20FA 0x01 0x0136
+  6 M6               MULTI4   0x0401 0x0004 0x20FA 0x01 0x006E
+  7 ARTE             GR1      0x0105 0x0001 0x20FA 0x01 0x01FE
+  8 Direct 8         NTN      0x0201 0x0002 0x20FA 0x01 0x0500
+  9 W9               MULTI4   0x0402 0x0004 0x20FA 0x01 0x00D2
+ 10 TMC              SMR6     0x0606 0x0006 0x20FA 0x01 0x0258
+ 11 NT1              MULTI4   0x0403 0x0004 0x20FA 0x01 0x0136
+ 12 NRJ12            SMR6     0x0602 0x0006 0x20FA 0x01 0x00C8
+ 13 LCP              GR1      0x0106 0x0001 0x20FA 0x01 0x0262
+ 14 France 4         NTN      0x0207 0x0002 0x20FA 0x01 0x0506
+ 15 BFM TV           NTN      0x0203 0x0002 0x20FA 0x01 0x0502
+ 16 i>TELE           NTN      0x0204 0x0002 0x20FA 0x01 0x0503
+ 17 Virgin 17        NTN      0x0205 0x0002 0x20FA 0x01 0x0504
+ 18 Gulli            NTN      0x0206 0x0002 0x20FA 0x01 0x0505
+ 20 France Ô         GR1      0x0176 0x0001 0x20FA 0x01 0x02C6
+ 21 Canal 21         Multi-7  0x0802 0x0008 0x20FA 0x01 0x10E1
+ 22 IDF1             Multi-7  0x0803 0x0008 0x20FA 0x01 0x10E2
+ 23 NRJ Paris        Multi-7  0x0804 0x0008 0x20FA 0x01 0x10E3
+ 24 CAP 24           Multi-7  0x0805 0x0008 0x20FA 0x01 0x10E4
+ 30 TPS STAR         CNH      0x0306 0x0003 0x20FA 0x01 0x0505
+ 31 PARIS PREMIERE   MULTI4   0x0404 0x0004 0x20FA 0x01 0x019A
+ 32 CANAL+ SPORT     CNH      0x0303 0x0003 0x20FA 0x01 0x0502
+ 33 CANAL+ CINEMA    CNH      0x0302 0x0003 0x20FA 0x01 0x0501
+ 34 AB1              MULTI4   0x0406 0x0004 0x20FA 0x01 0x0262
+ 35 PLANETE          CNH      0x0304 0x0003 0x20FA 0x01 0x0503
+ 36 TF6              MULTI4   0x0405 0x0004 0x20FA 0x01 0x01FE
+ 37 CANAL J          CNH      0x0305 0x0003 0x20FA 0x01 0x0504
+ 38 LCI              SMR6     0x0603 0x0006 0x20FA 0x01 0x012C
+ 39 Eurosport France SMR6     0x0604 0x0006 0x20FA 0x01 0x0190
+                              0x01FF 0x0001 0x20FA      0x03F2
+                              0x02FF 0x0002 0x20FA      0x050A
+                     CNH      0x03F0 0x0003 0x20FA 0x0C 0x050A
+                     CNH      0x03F1 0x0003 0x20FA 0x0C 0x050B
+                              0x04FF 0x0004 0x20FA 0x0C 0x03F2
+----
+
+UHF-band scanning, including modulation parameters information
+(usually unavailable on Windows, depending on the tuner driver):
+
+[source,shell]
+----
+$ tsscan -m
+* UHF channel 21, offset +1 (474.166 MHz), strength: 59%
+  Transport stream id: 2, 0x0002
+  Carrier frequency: 474,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 23, offset +1 (490.166 MHz), strength: 62%
+  Transport stream id: 8, 0x0008
+  Carrier frequency: 490,166,666 Hz
+  Constellation: 16-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 24, offset +1 (498.166 MHz), strength: 62%
+  Transport stream id: 4, 0x0004
+  Carrier frequency: 498,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 27, offset +1 (522.166 MHz), strength: 63%
+  Transport stream id: 3, 0x0003
+  Carrier frequency: 522,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 32, offset +1 (562.166 MHz), strength: 61%
+  Transport stream id: 6, 0x0006
+  Carrier frequency: 562,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 2/3
+  LP streams FEC: 1/2
+  Guard interval: 1/32
+  Transmission mode: 8K
+  Hierarchy: none
+* UHF channel 35, offset +1 (586.166 MHz), strength: 63%
+  Transport stream id: 1, 0x0001
+  Carrier frequency: 586,166,666 Hz
+  Constellation: 64-QAM
+  HP streams FEC: 3/4
+  LP streams FEC: 1/2
+  Guard interval: 1/8
+  Transmission mode: 8K
+  Hierarchy: none
+----
+
+==== tssmartcard examples
+
+Listing all smartcard readers in the system:
+
+[source,shell]
+----
+$ tssmartcard
+OmniKey CardMan 3121 00 00
+OmniKey CardMan 3121 01 00
+OmniKey CardMan 3121 02 00
+OmniKey CardMan 3121 03 00
+----
+
+Listing all smartcard readers in the system, in verbose (`-v`) format:
+
+
+[source,shell]
+----
+$ tssmartcard -v
+OmniKey CardMan 3121 00 00: empty
+OmniKey CardMan 3121 01 00: smartcard present
+    ATR: 3B DE 18 00 40 11 90 28 43 29 4C 6F 67 69 77 61 79 73 AA 55
+OmniKey CardMan 3121 02 00: empty
+OmniKey CardMan 3121 03 00: smartcard present
+    ATR: 3B DE 18 00 40 11 90 28 43 29 4C 6F 67 69 77 61 79 73 AA 55
+----
+
+Perform a warm (`-w`) reset on the second smartcard then list all readers in verbose format again:
+the smartcard now returns its "warm reset" ATR.
+
+[source,shell]
+----
+$ tssmartcard "OmniKey CardMan 3121 01 00" -w
+$ tssmartcard -v
+OmniKey CardMan 3121 00 00: empty
+OmniKey CardMan 3121 01 00: smartcard present
+    ATR: 3B D3 18 00 40 11 90 AA 55
+OmniKey CardMan 3121 02 00: empty
+OmniKey CardMan 3121 03 00: smartcard present
+    ATR: 3B DE 18 00 40 11 90 28 43 29 4C 6F 67 69 77 61 79 73 AA 55
+----
+
+[#tsterinfo-examples]
+==== tsterinfo examples
+
+Converting UHF channels to frequencies:
+
+[source,shell]
+----
+$ tsterinfo -u 21
+Carrier Frequency: 474,000,000 Hz
+$
+$ tsterinfo -u 21 -o 1
+Carrier Frequency: 474,166,666 Hz
+$
+$ tsterinfo -u 21 -o 1 -s
+474166666
+----
+
+Converting frequencies to UHF channels:
+
+[source,shell]
+----
+$ tsterinfo -f 474166666
+UHF channel: 21, offset: 1
+$
+$ tsterinfo -f 474166000
+UHF channel: 21, offset: 1
+Warning: exact frequency for channel 21, offset 1 is 474,166,666 Hz, differ by -666 Hz
+----
+
+Computing transport stream bitrate from OFDM modulation parameters:
+
+[source,shell]
+----
+$ tsterinfo -h 2/3 -g 1/32
+Transport stream bitrate: 24,128,342 b/s
+$
+$ tsterinfo -h 2/3 -g 1/32 -c QPSK
+Transport stream bitrate: 8,042,780 b/s
+$
+$ tsterinfo -h 2/3 -g 1/32 -c QPSK -s
+8042780
+----
+
+Retrieving OFDM modulation parameters from the transport stream bitrate.
+Note that the second example gives two possible sets of parameters with the same bitrate difference.
+
+[source,shell]
+----
+$ tsterinfo -b 24128300
+  Nominal bitrate .......... 24,128,342 b/s
+  Bitrate difference .............. -42 b/s
+  Bandwidth ..................... 8-MHz
+  FEC (high priority) ............. 2/3
+  Constellation ................ 64-QAM
+  Guard interval ................. 1/32
+$
+$ tsterinfo -b 24882000
+  Nominal bitrate .......... 24,882,352 b/s
+  Bitrate difference ............. -352 b/s
+  Bandwidth ..................... 8-MHz
+  FEC (high priority) ............. 3/4
+  Constellation ................ 64-QAM
+  Guard interval .................. 1/8
+
+  Nominal bitrate .......... 24,882,352 b/s
+  Bitrate difference ............. -352 b/s
+  Bandwidth ..................... 8-MHz
+  FEC (high priority) ............. 5/6
+  Constellation ................ 64-QAM
+  Guard interval .................. 1/4
+----
+
+==== tshides examples
+
+The command `tshides` lists the HiDes devices, typically cheap modulators.
+Since these devices are simple encapsulations around chips from ITE Technologies,
+using device drivers from ITE, they usually appear as ITE 950x,
+from the model name of the main chip in the HiDes device.
+
+Using `tshides` on Windows:
+
+[source,powershell]
+----
+C:\> tshides
+0: "IT9507 TX Filter"
+
+C:\> tshides -v
+Found 1 HiDes device
+
+Index ........... 0
+Name ............ "IT9507 TX Filter"
+Device .......... \\?\usb#vid_048d&pid_9507#ut100cv4201504240422#{fbf6f530-07b9-11d2-
+a71e-0000f8004788}\{9963cc0e-ee70-11e0-ba8f-92d34824019b}
+USB mode ........ 0x0200
+Vendor id ....... 0x048D
+Product id ...... 0x9507
+Chip type ....... 0x9507
+Device type ..... 11
+Driver version .. 21.17.39.1
+Link firmware ... 255.39.2.0
+OFDM firmware ... 255.9.11.0
+----
+
+The option `--gain-range` is used to display the adjustable gain range for a given frequency and a given bandwidth.
+Sample usage on Windows, using the default values for frequency and bandwidth:
+
+[source,shell]
+----
+C:\> tshides --gain-range
+Device: 0: "IT9507 TX Filter"
+Frequency: 474,000,000 Hz
+Bandwidth: 8-MHz
+Min. gain: -52 dB
+Max. gain: 6 dB
+----
+
+Using `tshides` on Linux with the same HiDes device.
+Notice the naming difference.
+
+[source,shell]
+----
+$ tshides
+0: "usb-it950x0" (/dev/usb-it950x0)
+$
+$ tshides -v
+Found 1 HiDes device
+
+Index ........... 0
+Name ............ "usb-it950x0"
+Device .......... /dev/usb-it950x0
+Chip type ....... 0x9507
+Device type ..... 11
+Driver version .. v16.11.10.1
+API version ..... 1.3.20160929.0
+Link firmware ... 255.39.2.0
+OFDM firmware ... 255.9.11.0
+Company ......... ITEtech
+Hardware info ... Eagle DVBT
+----
+
+[#tsswitch-examples]
+==== tsswitch examples
+
+The following diagram illustrates a sample usage of the `tsswitch` command.
+
+.Sample input switching configuration
+image::tsswitch.png[align="center",alt="Sample input switching"]
+
+In the example above, four inputs are used.
+Each input contains an SPTS (single-program transport stream).
+
+Two of these inputs are network streams already containing an SPTS.
+They can be directly received by an input plugin in `tsswitch`
+(the plugin `ip` is used to receive an UDP/IP multicast stream and the plugin `http` is used to receive an HTTP unicast stream).
+
+The two other inputs are taken from broadcast transport streams which contain multiple services.
+The target service must be extracted before input to `tsswitch`.
+To achieve that, we run two `tsp` commands which extract the target services
+and we inject the output into an input of `tsswitch`.
+
+The complete command skeleton is the following:
+
+[source,shell]
+----
+$ tsswitch --remote 4444 \
+           -I fork 'tsp -I dvb ... -P zap service0' \
+           -I ip 226.2.2.2:1234 \
+           -I http --infinite http://server.foo.com/service2/ \
+           -I fork 'tsp -I dvb ... -P zap service3' \
+  | tsp -P ... -O ...
+----
+
+In this command, the remote control will send commands to UDP port 4444. For instance:
+
+[source,shell]
+----
+$ echo >/dev/udp/127.0.0.1/4444 2
+$ echo >/dev/udp/127.0.0.1/4444 0
+$ echo >/dev/udp/127.0.0.1/4444 next
+$ echo >/dev/udp/127.0.0.1/4444 prev
+----
+
+Note that the syntax `>/dev/udp/127.0.0.1/4444` is a feature of the `bash` shell
+to redirect the command output into a UDP datagram.
+This a feature of `bash`, not a Linux feature.
+It is available on all platforms, including macOS and Cygwin or Msys on Windows, as long as you use `bash`.
+
+[#tsxml-examples]
+==== tsxml examples
+
+The `tsxml` utility is mainly used to test the effect of XML patch files,
+as used with option `--patch-xml` in various plugins.
+
+In this example, we want to patch PAT’s, the simplest form of table.
+
+Consider the following patch file:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <!-- The following transformations are applied on all PAT’s -->
+  <PAT>
+    <!-- Add this service in all PAT's -->
+    <service service_id="123" program_map_PID="7777" x-node="add"/>
+    <!-- Change PMT PID of service 102 in any PAT -->
+    <service service_id="102" x-update-program_map_PID="2121"/>
+    <!-- Delete service 202 in any PAT -->
+    <service service_id="202" x-node="delete"/>
+  </PAT>
+
+  <!-- The following transformations are applied only on PAT’s with TS id 2 -->
+  <PAT transport_stream_id="2">
+    <!-- Add this service in all PAT's with TS id 2 -->
+    <service service_id="456" program_map_PID="8888" x-node="add"/>
+  </PAT>
+
+</tsduck>
+----
+
+Consider the following input file:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service service_id="101" program_map_PID="1111"/>
+    <service service_id="102" program_map_PID="1222"/>
+    <service service_id="103" program_map_PID="1333"/>
+  </PAT>
+  <PAT transport_stream_id="2">
+    <service service_id="201" program_map_PID="2111"/>
+    <service service_id="202" program_map_PID="2222"/>
+    <service service_id="203" program_map_PID="2333"/>
+    <service service_id="204" program_map_PID="2444"/>
+    <service service_id="205" program_map_PID="2555"/>
+  </PAT>
+</tsduck>
+----
+
+Let’s apply the XML patch on it:
+
+[source,shell]
+----
+$ tsxml pat.xml --patch patch.xml -o updated-pat.xml
+----
+
+The output file contains this:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service service_id="101" program_map_PID="1111"/>
+    <service service_id="102" program_map_pid="2121"/>
+    <service service_id="103" program_map_PID="1333"/>
+    <service service_id="123" program_map_PID="7777"/>
+  </PAT>
+  <PAT transport_stream_id="2">
+    <service service_id="201" program_map_PID="2111"/>
+    <service service_id="203" program_map_PID="2333"/>
+    <service service_id="204" program_map_PID="2444"/>
+    <service service_id="205" program_map_PID="2555"/>
+    <service service_id="123" program_map_PID="7777"/>
+    <service service_id="456" program_map_PID="8888"/>
+  </PAT>
+</tsduck>
+----
+
+[#tuner-emulator-example]
+==== tsscan using a tuner emulator
+
+The command `tsscan` scans a broadcast network using a tuner.
+In case of problem analysis, the user must be present in the corresponding geographical area
+or have an easy access to a remote system with a reception equipment in that area.
+To simulate the environment elsewhere, it is possible to locally collect one capture file per frequency
+and use them to emulate the tuning operations.
+
+See xref:tuner-emulator[xrefstyle=short] for more details on tuner emulators.
+
+The following XML file `tuner.xml` describes our tuner emulator:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <defaults delivery="DVB-T" bandwidth="4,000,000" directory="../italy-sardinia-dttv"/>
+  <channel frequency="474,000,000" file="mux1rai.ts"/>
+  <channel frequency="482,000,000" file="mux2canaleitalia.ts"/>
+  <channel frequency="490,000,000" file="mux3mediaset.ts"/>
+  <channel frequency="498,000,000" file="mux4rai.ts"/>
+  <channel frequency="506,000,000" file="muxsardegna1.ts"/>
+  <channel frequency="514,000,000" file="muxtcs.ts"/>
+  <channel frequency="522,000,000" file="muxtelesardegna.ts"/>
+  <channel frequency="530,000,000" file="muxvideolina.ts"/>
+</tsduck>
+----
+
+The frequencies are chosen from UHF channels 21 to 28 in Western Europe (the default HF band region in TSDuck).
+The listed files were captured in a local area and are available in <<TSDuck-Streams>>.
+
+The files are organized as follow:
+
+----
+test:
+    tuner.xml
+italy-sardinia-dttv:
+    mux1rai.ts
+    mux2canaleitalia.ts
+    mux3mediaset.ts
+    mux4rai.ts
+    muxsardegna1.ts
+    muxtcs.ts
+    muxtelesardegna.ts
+    muxvideolina.ts
+----
+
+The following command is a standard `tsscan` operation,
+except that the tuner device name is the XML file which describes the tuner emulator.
+
+The option `--default-pds eacem` is required because the signalization of these streams is incorrect,
+the private data specifier descriptors are missing.
+
+[source,shell]
+----
+$ tsscan -d test/tuner.xml -u -l --last-channel 28 --default-pds eacem
+
+* UHF channel 21 (474 MHz), strength: 100%, quality: 100%
+  Transport stream id: 1, 0x0001
+
+  LCN Name               Provider ServId TSId   ONetId Type PMTPID
+  --- ------------------ -------- ------ ------ ------ ---- ------
+    1 Rai 1              RAI      0x0D49 0x0001 0x013E 0x01 0x0102
+    2 Rai 2              RAI      0x0D4A 0x0001 0x013E 0x01 0x0101
+    3 Rai 3 TGR Sardegna RAI      0x0D4B 0x0001 0x013E 0x01 0x0100
+   48 Rai News 24        RAI      0x0D53 0x0001 0x013E 0x01 0x0118
+  100 Test HEVC main10   Rai      0x0D52 0x0001 0x013E 0x1F 0x012C
+      Rai Radio1         RAI      0x0D4C 0x0001 0x013E 0x02 0x0103
+      Rai Radio2         RAI      0x0D4D 0x0001 0x013E 0x02 0x0104
+      Rai Radio3         RAI      0x0D4E 0x0001 0x013E 0x02 0x0105
+
+* UHF channel 22 (482 MHz), strength: 100%, quality: 100%
+  Transport stream id: 18385, 0x47D1
+
+  ServId TSId   ONetId PMTPID
+  ------ ------ ------ ------
+  0x0001 0x47D1 0x217C 0x0064
+  0x0002 0x47D1 0x217C 0x0020
+  0x0003 0x47D1 0x217C 0x0021
+  0x0004 0x47D1 0x217C 0x0022
+  0x0005 0x47D1 0x217C 0x0023
+  0x0006 0x47D1 0x217C 0x0024
+  0x0007 0x47D1 0x217C 0x0025
+  0x0008 0x47D1 0x217C 0x0026
+  0x0009 0x47D1 0x217C 0x0027
+  0x000A 0x47D1 0x217C 0x0028
+  0x000B 0x47D1 0x217C 0x0029
+  0x000C 0x47D1 0x217C 0x002A
+  0x000D 0x47D1 0x217C 0x002B
+  0x000E 0x47D1 0x217C 0x002C
+  0x000F 0x47D1 0x217C 0x002D
+  0x0010 0x47D1 0x217C 0x002E
+  0x0011 0x47D1 0x217C 0x002F
+  0x0012 0x47D1 0x217C 0x0030
+  0x0013 0x47D1 0x217C 0x0031
+  0x0014 0x47D1 0x217C 0x0032
+  0x0015 0x47D1 0x217C 0x0033
+  0x0016 0x47D1 0x217C 0x0034
+  0x0017 0x47D1 0x217C 0x0035
+  0x0018 0x47D1 0x217C 0x0036
+  0x0019 0x47D1 0x217C 0x0038
+  0x001A 0x47D1 0x217C 0x0039
+  0x001B 0x47D1 0x217C 0x003A
+  0x001C 0x47D1 0x217C 0x003C
+  0x001D 0x47D1 0x217C 0x003B
+  0x001E 0x47D1 0x217C 0x003E
+  0x001F 0x47D1 0x217C 0x003D
+  0x0020 0x47D1 0x217C 0x0037
+
+* UHF channel 23 (490 MHz), strength: 100%, quality: 100%
+  Transport stream id: 930, 0x03A2
+
+  LCN Name                ServId TSId   ONetId Type PMTPID
+  --- ------------------- ------ ------ ------ ---- ------
+    4 Rete4 HD            0x0BBC 0x03A2 0x0110 0x19 0x00D6
+    5 Canale5 HD          0x0BBD 0x03A2 0x0110 0x19 0x00D7
+    6 Italia1 HD          0x0BBE 0x03A2 0x0110 0x19 0x0041
+   55 Mediaset Extra      0x0BEF 0x03A2 0x0110 0x01 0x00FF
+   66 Mediaset Italia Due 0x0BFA 0x03A2 0x0110 0x01 0x010A
+  504 Rete4 HD            0x0C20 0x03A2 0x0110 0x19 0x00CC
+  505 Canale5 HD          0x0C21 0x03A2 0x0110 0x19 0x00CD
+  506 Italia1 HD          0x0C22 0x03A2 0x0110 0x19 0x00CE
+  566 Mediaset Italia Due 0x0C5E 0x03A2 0x0110 0x01 0x010B
+      Servizio 31         0x001F 0x03A2 0x0110      0x0065
+      Servizio 32         0x0020 0x03A2 0x0110      0x0066
+      Servizio 33         0x0021 0x03A2 0x0110      0x0067
+      Servizio 34         0x0022 0x03A2 0x0110      0x0068
+      Servizio 35         0x0023 0x03A2 0x0110      0x0069
+      Servizio 36         0x0024 0x03A2 0x0110      0x006A
+      Servizio 37         0x0025 0x03A2 0x0110      0x006B
+      Servizio 38         0x0026 0x03A2 0x0110      0x006C
+      Servizio 39         0x0027 0x03A2 0x0110      0x006D
+      Ghost               0x0063 0x03A2 0x0110      0x0063
+
+* UHF channel 24 (498 MHz), strength: 100%, quality: 100%
+  Transport stream id: 5, 0x0005
+
+  LCN Name           Provider ServId TSId   ONetId Type PMTPID
+  --- -------------- -------- ------ ------ ------ ---- ------
+   57 Rai Sport + HD Rai      0x2197 0x0005 0x013E 0x01 0x0211
+  502 Rai 2 HD       Rai      0x2190 0x0005 0x013E 0x01 0x020D
+  503 Rai 3 HD       Rai      0x2191 0x0005 0x013E 0x01 0x0229
+
+* UHF channel 25 (506 MHz), strength: 100%, quality: 100%
+  Transport stream id: 6001, 0x1771
+
+  LCN Name               Provider     ServId TSId   ONetId Type PMTPID
+  --- ------------------ ------------ ------ ------ ------ ---- ------
+   19 Sardegna1          Sardegna1 TV 0x0001 0x1771 0x1F41 0x01 0x0100
+  172 Sardegna2 - EjaTV  Sardegna1 TV 0x0002 0x1771 0x1F41 0x01 0x0200
+  272 Sardegna3 - MATEX  Sardegna1 TV 0x0003 0x1771 0x1F41 0x01 0x0300
+  607 Canale40 Regionale SARDEGNA TV  0x000B 0x1771 0x1F41 0x01 0x0BBE
+  641 Sardegna4          Sardegna1 TV 0x0007 0x1771 0x1F41 0x01 0x010A
+  642 Sardegna5          Sardegna1 TV 0x0008 0x1771 0x1F41 0x01 0x0114
+  643 Sardegna6          Sardegna1 TV 0x0009 0x1771 0x1F41 0x01 0x011E
+      Radio SuperSound   Sardegna1 TV 0x0006 0x1771 0x1F41 0x02 0x00E3
+
+* UHF channel 26 (514 MHz), strength: 100%, quality: 100%
+  Transport stream id: 130, 0x0082
+
+  LCN Name              Provider  ServId TSId   ONetId Type PMTPID
+  --- ----------------- --------- ------ ------ ------ ---- ------
+   13 Telecostasmeralda Harmonic  0x0001 0x0082 0x01CA 0x01 0x1029
+  113 TCS 2             videolina 0x000D 0x0082 0x01CA 0x01 0x0110
+
+* UHF channel 27 (522 MHz), strength: 100%, quality: 100%
+  Transport stream id: 43008, 0xA800
+
+  LCN Name             Provider         ServId TSId   ONetId Type PMTPID
+  --- ---------------- ---------------- ------ ------ ------ ---- ------
+   14 Telesardegna     Telesardegna     0x0001 0xA800 0x3001 0x01 0x0820
+  114 Telesardegna 1   Telesardegna     0x0002 0xA800 0x3001 0x01 0x0821
+  214 Telesardegna 2   Telesardegna     0x0003 0xA800 0x3001 0x01 0x0822
+  609 Telesardegna 3   Telesardegna     0x0004 0xA800 0x3001 0x01 0x0823
+
+* UHF channel 28 (530 MHz), strength: 100%, quality: 100%
+  Transport stream id: 297, 0x0129
+
+  LCN Name              Provider  ServId TSId   ONetId Type PMTPID
+  --- ----------------- --------- ------ ------ ------ ---- ------
+   10 Videolina         Videolina 0x0001 0x0129 0x217C 0x01 0x0405
+   13 TeleCostaSmeralda Videolina 0x0005 0x0129 0x217C 0x01 0x0407
+  110 Videolina 2       Videolina 0x0002 0x0129 0x217C 0x01 0x0402
+  210 Videolina  3      Videolina 0x0003 0x0129 0x217C 0x01 0x0403
+  510 Videolina HD Test Videolina 0x0006 0x0129 0x217C 0x01 0x0406
+  601 Videolina 4       Videolina 0x0004 0x0129 0x217C 0x01 0x0404
+      Radiolina         Videolina 0x000A 0x0129 0x217C 0x02 0x0210
+      Rad1              Videolina 0x000B 0x0129 0x217C 0x0C 0x006F
+      Radio Bonaria     Videolina 0x000C 0x0129 0x217C 0x02 0x0070
+----
+
+[#tspcap-examples]
+==== tspcap examples
+
+The `tspcap` utility analyzes `.pcapng` files, as saved by Wireshark.
+While Wireshark remains the easiest and most useful tool to investigate network problems and analyze `.pcapng` files,
+let’s see how `tspcap` can help in the analysis of a real-world problem.
+
+A problem has been identified in the communication between an EMMG and a MUX.
+A network capture has been saved.
+When analyzing the capture using Wireshark, we can see that the EMMG/PDG{d-arrow}MUX protocol is implemented correctly but,
+by the end of the capture, the MUX reports a stream error with an exceed bandwidth message.
+Is there really an increase of EMM bandwidth and by how much?
+Using Wireshark, it is not easy to precisely answer that question.
+So, let’s use `tspcap`.
+
+First, let’s get a global summary of the file content:
+
+[source,shell]
+----
+$ tspcap test.pcapng
+
+File summary:
+  Total packets in file: 704
+  Total IPv4 packets:    698
+  File size:             707,960 bytes
+  Total packets size:    684,150 bytes
+  Total IPv4 size:       674,018 bytes
+
+Filtered packets summary:
+  Packets:               698
+  Packets size:          674,018
+  Payload data size:     646,098
+  Start time:            2021/08/14 15:39:44.011 (+0 micro-seconds)
+  End time:              2021/08/14 15:39:46.593 (+2,582,174 micro-seconds)
+  Duration:              2,582,174 micro-seconds
+  IP bitrate:            2,088,218 bits/second
+  Data bitrate:          2,001,717 bits/second
+----
+
+Now, let’s identify which streams are present in the file:
+
+[source,shell]
+----
+$ tspcap test.pcapng --list-streams
+
+Source                 Destination            Protocol  Packets   Data bytes     Bitrate
+192.168.201.18:5000    192.168.201.100:59054  TCP           208        1,572       4,870
+192.168.201.100:59054  192.168.201.18:5000    TCP           490      644,526   1,996,847
+----
+
+The MUX accepts connections on the TCP port 5000.
+Let’s list the statistics of the connection to that destination by intervals of 200 milliseconds (200,000 micro-seconds):
+
+[source,shell]
+----
+$ tspcap test.pcapng --destination 192.168.201.18:5000 --interval 200,000
+
+Date                        Micro-seconds     Packets      Data bytes      Bitrate
+2021/08/14 15:39:44.011               +13           4           3,368      134,720
+2021/08/14 15:39:44.211          +200,013           3           3,032      121,280
+2021/08/14 15:39:44.411          +400,013           2           2,882      115,280
+2021/08/14 15:39:44.611          +600,013           3           3,144      125,760
+2021/08/14 15:39:44.811          +800,013           4           3,256      130,240
+2021/08/14 15:39:45.011        +1,000,013           2           2,882      115,280
+2021/08/14 15:39:45.211        +1,200,013           3           3,144      125,760
+2021/08/14 15:39:45.411        +1,400,013         136         165,210    6,608,400
+2021/08/14 15:39:45.611        +1,600,013          60          84,568    3,382,720
+2021/08/14 15:39:45.811        +1,800,013          61          84,300    3,372,000
+2021/08/14 15:39:46.011        +2,000,013          57          77,872    3,114,880
+2021/08/14 15:39:46.211        +2,200,013          60          83,696    3,347,840
+2021/08/14 15:39:46.411        +2,400,013          95         127,172    5,086,880
+----
+
+Now we see the problem.
+The bitrate of the stream from the EMMG to the MUX is stable above 100 kb/s
+(the EMM bandwidth is 100 kb/s but the displayed bitrate includes the EMMG/PDG{d-arrow}MUX protocol overhead).
+
+And, at some point, the EMM bandwidth suddenly jumps to 6 Mb/s and then remains stable at 3 Mb/s.
+Now, we know that the problem is on the EMMG side.
+
+[#tsp-examples]
+=== TSP examples
+
+This section demonstrates the usage of the transport stream processor on some typical examples.
+Refer to the documentation of each specific plugin for more details.
+
+==== Capturing a TS from an external source
+
+The following example captures 20 seconds of the satellite transponder containing the Canal+ service and saves it into a file.
+
+We assume that we have a DVB-S adapter and a dish which is pointed to the Astra satellite.
+We also assume that we have a fully defined _channel file_ with the description of services
+(see xref:chap-chanconfig[xrefstyle=short] for a description of channel files).
+
+[source,shell]
+----
+$ tsp -I dvb --channel canal+ \
+      -P until --seconds 20 \
+      -O file ts_capture.ts
+----
+
+Same example, using specific tuning information for the satellite transponder
+(carrier 11.856 GHz, vertical polarity, 27.5 mega-symbols / second):
+
+[source,shell]
+----
+$ tsp -I dvb --frequency 11,856,000,000 --polarity vertical --symbol-rate 27,500,000 \
+      -P until --seconds 20 \
+      -O file ts_capture.ts
+----
+
+Same example using short names for options, knowing that the default polarity is vertical:
+
+[source,shell]
+----
+$ tsp -I dvb -f 11856000000 -s 27500000 -P until -s 20 -O file ts_capture.ts
+----
+
+==== Routing a TS between several physical transports
+
+The following example reads the same satellite transponder and redirects its content to the first Dektec DVB-ASI output device.
+The output bitrate of the ASI stream is locked to the input bitrate (from the satellite transponder).
+
+[source,shell]
+----
+$ tsp -I dvb -t 11856:v:0:27500 -O dektec
+----
+
+==== Using IP multicast
+
+The following example reads a transport stream from the second Dektec DVB-ASI input device ("device 1"),
+extracts the service named "Arte", with French audio track only (identified as "fra" in the PMT)
+and broadcasts the resulting SPTS on the LAN using multicast IP (port 1000 on multicast address 224.10.11.12).
+
+[source,shell]
+----
+$ tsp -I dektec -d 1 \
+      -P zap arte -a fra \
+      -O ip 224.10.11.12:1000
+----
+
+Then, the service Arte can be received from any workstation on the LAN using, for instance, the free VLC media player.
+
+As an alternative to VLC, the Linux receivers may use the following example to view the channel
+using another standard Linux media player:
+
+[source,shell]
+----
+$ tsp -I ip 224.10.11.12:1000 | mplayer -
+----
+
+==== Regulating the output speed
+
+The following example reads a captured transport stream file, extracts the service Arte and broadcasts it on the LAN.
+
+[source,shell]
+----
+$ tsp -I file -i ts_capture.ts \
+      -P zap arte \
+      -P pcrbitrate \
+      -P regulate \
+      -O ip 224.10.11.12:1000
+----
+
+Since reading a file can be extremely fast, it is not reasonable to broadcast the TS packets without regulation.
+If the receivers wish to play the TV program, the TS packets arrive too fast.
+The `pcrbitrate` plugin re-computes the expected TS bitrate after extraction of the selected service.
+Then, the `regulate` plugin introduces wait periods to slow down the stream to the previously computed bitrate.
+
+On the contrary, when the input source is a live transponder,
+this kind of regulation is useless since the input source is already regulated at the appropriate speed.
+
+Unfortunately, this is not completely true in all cases.
+The average bitrate is regulated by the source (the live transponder) but there is a potential burst problem.
+If the broadcaster system and all receivers use the same type in connection to the LAN (1 Gb/s for instance)
+and if the LAN backbone does not slow down the bandwidth, this is fine.
+However, there is a problem if the broadcaster has a faster connection to the LAN than the receivers (say 1 Gb/s vs. 100 Mb/s).
+Of course, 100 Mb/s is enough to receive one service which usually needs around 4 Mb/s.
+However, there is a potential burst problem.
+
+To avoid burst in case of non-homogeneous access speed to the LAN, the broadcaster should smooth the flow at all stages,
+as illustrated in the following command:
+
+[source,shell]
+----
+$ tsp --max-input-packets 128 \
+      -I dvb -c arte \
+      -P zap arte \
+      -P pcrbitrate --min-pcr 256 \
+      -P regulate --packet-burst 128 \
+      -O ip 224.10.11.12:1000 --packet-burst 128
+----
+
+==== Scheduling the recording of a program
+
+The following example records the contents of the channel named "France 2" between 17:15 and 17:30, the 6th of July 2006.
+
+[source,shell]
+----
+$ tsp -I dvb -c france2 \
+      -P time --drop "" --pass "2006/07/06:17:15:00" --stop "2006/07/06:17:30:00" \
+      -P zap france2 \
+      -O file program.ts
+----
+
+The `-I` option selects the first DVB input device, tuning on the transponder containing the channel named "France 2".
+
+The first `-P` option specifies to:
+
+[.compact-list]
+* Initially drop packets (`--drop ""`)
+* Start passing packets at 17:15 the 6th of July 2006.
+* Stop packet processing (and make `tsp` terminate) at 17:30 the 6th of July 2006.
+
+The second `-P` option extracts only the service named "France 2"
+and the `-O` option finally saves the resulting SPTS in the file `program.ts`.
+
+==== Extracting selected packets
+
+The following silly example dumps the content of the 20^th^ TS packet with the payload unit start indicator set in PID 0x0208:
+
+[source,shell]
+----
+$ tsp -I file /data1/mpeg/test/frtv_tnt.mpg \
+      -P filter --pid 0x208 \
+      -P filter --unit-start \
+      -P skip 19 \
+      -P until --packets 1 \
+      -P dump \
+      -O drop
+----
+
+Note that the filter `plugin` selects packets matching any of the specified conditions (an "or" selection).
+Here, to select packets matching two conditions (an "and" selection), we chain two `filter` plugins.
+
+==== Monitoring selected MPEG tables (here, EMM’s)
+
+The following example demonstrates how to monitor the EMM’s for a given operator.
+
+The first command determines on which PID are sent the EMM`s.
+This command analyzes the satellite transponder which carries the channel Canal+ during 2 seconds.
+Instead of the full human-readable analysis report, we ask for a _normalized_ output format
+and we filter the conditions we need:
+a line starting with `pid:` for description of a PID,
+`:emm:` for a PID carrying EMM’s,
+`:cas=256:` to filter EMM’s for CA System Id 256 (0x100, ie. MediaGuard).
+
+[source,shell]
+----
+$ tsp -I dvb -c canal+ \
+      -P until -s 2 \
+      -P analyze --normalized \
+      -O drop | \
+      grep ^pid: | grep :emm: | grep :cas=256:
+----
+
+The output of this command is:
+
+[source,text]
+----
+pid:pid=193:emm:cas=256:access=clear: […]
+pid:pid=196:emm:cas=256:operator=129:access=clear: […]
+----
+
+We now know that PID 193 carries the MediaGuard individual EMM’s
+and PID 196 carries the MediaGuard group EMM’s for operator 129 (OPI of Canal+).
+
+The second command, below, filters the contents of those two PID’s
+and formats the contents of the MPEG tables that are carried in those PID’s.
+
+[source,shell]
+----
+$ tsp -I dvb -c canal+ -P filter -p 193 -p 196 -P tables -O drop
+----
+
+Of course, since EMM’s are ciphered, their contents are obscure to the user and the display looks like:
+
+[source,text]
+----
+* EMM (0x82), TID 130 (0x82), PID 193 (0x00C1)
+  Version: 0, sections: 1, total size: 117 bytes
+  - Section 0:
+    0000:  00 00 09 F3 87 00 00 80 00 B0 10 01 5E E7 07 85  ...ó.....°..^ç..
+    0010:  22 C3 DB 13 75 43 3B 5C 1E 08 DC 4A 05 35 AD 54  "ÃÛ.uC;\..ÜJ.5­T
+    0020:  B5 52 35 B1 61 FB 37 BB EC 6D 55 F5 21 B6 4C 58  µR5±aû7»ìmUõ!LX
+    0030:  80 F4 FA FB D9 C5 D0 A2 C7 22 BA 77 51 B9 C8 96  .ôúûÙÅÐ¢Ç"ºwQ¹È.
+    0040:  A3 79 9E 5A 24 74 2A 01 7D 00 62 A3 EC D4 AF DF  £y.Z$t*.}.b£ìÔ¯ß
+    0050:  F2 43 B1 3A 72 B5 B3 E0 C9 22 68 2D 50 F0 FE 82  òC±:rµ³àÉ"h-Pðþ.
+    0060:  47 1F AC 95 5F D2 59 E6 C8 C6 78 BE F3 C5 A9 CF  G.._ÒYæÈÆx¾óÅ©Ï
+    0070:  05 90                                            ..
+
+* EMM (0x82), TID 130 (0x82), PID 193 (0x00C1)
+  Version: 0, sections: 1, total size: 105 bytes
+  - Section 0:
+    0000:  00 00 F1 F2 F3 F4 00 00 00 B0 10 01 98 3E EF 81  ..ñòóô...°...>ï.
+    0010:  45 E1 A1 D3 76 B9 B0 21 D6 F9 5F AB 4B 07 9D 13  Eá¡Óv¹°!Öù_«K...
+    ...
+----
+
+[#sample-cas-scan]
+==== Scanning all services by CAS operator
+
+The following complex example scans a complete satellite network,
+looking for the list of services which are scrambled for an operator.
+
+We assume that we have a DVB-S adapter and a dish which is pointed to the Astra satellite.
+
+The first command scans the NIT (Network Information Table) of a known transponder.
+The output is the list of all transponders in the network.
+This list is sorted and duplicate lines are removed (`sort -u`).
+
+Then, each transponder is analyzed during 3 seconds (`-P until -s 3`)
+and the result of the analysis in _normalized_ format is saved in a temporary file.
+From this analysis file, we extract the PID’s carrying ECM’s
+with CA system id 256 (MediaGuard) and MediaGuard OPI 128 (CanalSat).
+For each ECM PID, we extract the list of services this PID belongs to.
+
+Thus, for each transponder, we get a list of services (actually, a list of service ids)
+which are scrambled for the CanalSat MediaGuard operator.
+Finally, we use again the transponder analysis in normalized format to get the service name for each of these service ids.
+
+For this kind of complex examples, we now use shell-scripts instead of interactive commands.
+
+[source,shell]
+----
+inittune=’-f 11856000000’  # Initial transponder to scan the NIT
+cas=256                    # MediaGuard CA system id
+opi=128                    # MediaGuard OPI for CanalSat
+
+tsp -I dvb $inittune -P nitscan -t -O drop | \
+sort -u | \
+while read tune; do
+    tsp -I dvb -t $tune \
+        -P until -s 3 \
+        -P analyze --normalized -o tmp.tmp \
+        -O drop
+    grep "^pid:" tmp.tmp | \
+    grep ":ecm:" | \
+    grep ":cas=$cas:" | \
+    grep ":operator=$opi:" | \
+    sed -e 's/^.*:servlist=//' -e 's/:.*$//' -e 's/,/\n/' | \
+    while read serv; do
+        grep "^service:" tmp.tmp | \
+        grep ":id=$serv:" | \
+        sed -e "s/^.*:name=/Transponder: $tune  Service: /"
+    done
+    rm -f tmp.tmp
+done
+----
+
+The output of this script gives the following output (107 lines):
+
+[source,text]
+----
+Transponder: 11739:v:0:27500  Service: MTV F
+Transponder: 11739:v:0:27500  Service: MTV HITS.
+Transponder: 11739:v:0:27500  Service: MTV Base.
+...
+Transponder: 12640:v:0:22000  Service: TOON DISNEY
+Transponder: 12640:v:0:22000  Service: MOTORS TV
+Transponder: 12640:v:0:22000  Service: E! ENTERTAINMENT
+----
+
+==== On-the-fly replacement of an SI table
+
+The following example tests an updated version of a Bouquet Association Table (BAT) on a live transport stream.
+The updated stream is then reinjected in a local network or set-top box.
+
+We assume to have a DVB-T tuner card to capture live streams and a Dektec DTA-110T DVB-T modulator (PCI card)
+to send the modified stream into a local distribution network (or even to one single directly-connected STB).
+
+We capture one transport stream (the "R4" from the French DTTV network, on UHF channel 24).
+We remove the BAT of the 'Tv Numéric' operator and we replace it with a new one, the table we wish to test.
+The new table is stored in binary section format into a file named `BAT_TvNumeric_V3.si`.
+
+First, we capture all tables from the PID 0x0011 (the one which carries the SDT’s and the BAT’s).
+
+[source,shell]
+----
+$ tsp -I dvb --uhf 24 -P until -s 10 -P filter -p 0x011 | tstables -m -b r4.si
+$ rm -f r4_p0011_t4A_e0086_*.si # remove current Tv Numeric BAT
+----
+
+These commands capture and save all tables (SDT’s and BAT’s) in binary files named `r4_p0011_*.si` during 10 seconds.
+Each section is stored in a separate file (option `-m` in tstables).
+The current "TV Numeric" BAT is removed.
+Note the file name `r4_p0011_t4A_e0086_*.si` which means all sections from PID 0x0011
+with TID 0x4A (BAT) and TID extension 0x0086 (bouquet identifier for operator "TV Numeric").
+
+The following command now performs the live replacement.
+The `inject` plugin is used to replace the content of PID 0x0011 with the sections in all the specified files.
+These files are all the previously captured sections from this PID (minus the previous BAT which was deleted) and the new BAT.
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P inject --replace 0x0011 r4_p0011_*.si BAT_TvNumeric_V3.si \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+[#sample-ts-analysis]
+==== Performing the global analysis of a transponder
+
+The following command receives a DVB-T transport stream from UHF channel 35 during 100 seconds
+and produces an analysis report in the text file `R1.analysis`.
+The first 5000 packets are ignored since the signal may not be quite stable right after the tuning operation.
+
+[source,shell]
+----
+$ tsp -I dvb --uhf-channel 35 \
+      -P skip 5000 \
+      -P until -s 100 \
+      -P analyze --title "R1 (Channel 35)" -o R1.analysis \
+      -O drop
+----
+
+The report file is quite large:
+
+[source,text]
+----
+===============================================================================
+|  TRANSPORT STREAM ANALYSIS REPORT                          R1 (Channel 35)  |
+|=============================================================================|
+|  Transport Stream Id: .......... 1 (0x0001)  |  PID's: Total: ......... 35  |
+|  Bytes: ....................... 317,825,468  |         Clear: ......... 35  |
+|  TS packets: .................... 1,690,561  |         Scrambled: ...... 0  |
+|  Invalid TS packets: .................... 0  |         With PCR's: ..... 6  |
+|  Services: .............................. 7  |         Unreferenced: ... 0  |
+|-----------------------------------------------------------------------------|
+|  Transport stream bitrate, based on ....... 188 bytes/pkt    204 bytes/pkt  |
+|  User-specified: ......................... 24,882,352 b/s   26,999,998 b/s  |
+|  Estimated based on PCR's: ............... 24,882,351 b/s   26,999,998 b/s  |
+|-----------------------------------------------------------------------------|
+|  Broadcast time: ................................... 102 sec (1 mn 42 sec)  |
+|  First TDT time stamp: ............................... 2008/06/11 09:34:25  |
+|  Last TDT time stamp: ................................ 2008/06/11 09:35:37  |
+|  TOT country code: ................................................... FRA  |
+|-----------------------------------------------------------------------------|
+| Serv.Id  Service Name                              Access          Bitrate  |
+|  0x0101  France 2 ....................................  C    3,637,078 b/s  |
+|  0x0104  France 5 ....................................  C    4,567,443 b/s  |
+|  0x0105  ARTE ........................................  C    3,688,018 b/s  |
+|  0x0106  LCP .........................................  C    3,554,581 b/s  |
+|  0x0111  France 3 ....................................  C    4,828,238 b/s  |
+|  0x0176  .France Ô ...................................  C    3,286,441 b/s  |
+|  0x01FF  (System Software Update) ....................  C       35,015 b/s  |
+|                                                                             |
+|  Note 1: C=Clear, S=Scrambled                                               |
+|  Note 2: Unless explicitely specified otherwise, all bitrates are based on  |
+|  188 bytes per packet.                                                      |
+===============================================================================
+
+
+===============================================================================
+|  SERVICES ANALYSIS REPORT                                  R1 (Channel 35)  |
+|=============================================================================|
+|  Global PID's                                                               |
+|  TS packets: 87,342, PID's: 7 (clear: 7, scrambled: 0)                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Global PID's  ...............................  C    1,285,534 b/s  |
+|  0x0000  PAT  ........................................  C       15,027 b/s  |
+|  0x0010  DVB-NIT  ....................................  C        4,503 b/s  |
+|  0x0011  SDT/BAT  ....................................  C          750 b/s  |
+|  0x0012  EIT  ........................................  C       37,075 b/s  |
+|  0x0014  TDT/TOT  ....................................  C          132 b/s  |
+|  0x0015  Network Synchronization  ....................  C        2,737 b/s  |
+|  0x1FFF  Stuffing  ...................................  C    1,225,306 b/s  |
+|=============================================================================|
+|  Service: 257 (0x0101), TS: 1 (0x0001), Original Netw: 8442 (0x20FA)        |
+|  Service name: France 2, provider: GR1                                      |
+|  Service type: 1 (0x01), Digital television service                         |
+|  TS packets: 247,111, PID's: 4 (clear: 4, scrambled: 0)                     |
+|  PMT PID: 110 (0x006E), PCR PID: 120 (0x0078)                               |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Digital television service  .................  C    3,637,078 b/s  |
+|  0x006E  PMT  ........................................  C       15,042 b/s  |
+|  0x0078  MPEG-2 Video  ...............................  C    3,404,836 b/s  |
+|  0x0082  MPEG-1 Audio (fra)  .........................  C      198,433 b/s  |
+|  0x008C  Subtitles (fra, DVB subtitles, no aspect rati  C       18,765 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+|  Service: 260 (0x0104), TS: 1 (0x0001), Original Netw: 8442 (0x20FA)        |
+
+… more services skipped …
+
+|=============================================================================|
+|  Service: 511 (0x01FF), TS: 1 (0x0001), Original Netw: 8442 (0x20FA)        |
+|  Service name: (System Software Update), provider: (unknown)                |
+|  Service type: 0 (0x00), Reserved service type 0x00                         |
+|  TS packets: 2,379, PID's: 2 (clear: 2, scrambled: 0)                       |
+|  PMT PID: 1010 (0x03F2), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Reserved service type 0x00  .................  C       35,015 b/s  |
+|  0x0294  DSM-CC U-N (SSU Sagem Communication)  .......  C       19,987 b/s  |
+|  0x03F2  PMT  ........................................  C       15,027 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+===============================================================================
+
+
+===============================================================================
+|  PIDS ANALYSIS REPORT                                      R1 (Channel 35)  |
+|=============================================================================|
+|  PID: 0 (0x0000)                                                       PAT  |
+|-----------------------------------------------------------------------------|
+|  Global PID                Transport:                Discontinuities:       |
+|  Bitrate: .... 15,027 b/s  Packets: ......... 1,021  Expected: ......... 0  |
+|  Access: Clear             Adapt.F.: ............ 0  Unexpect: ......... 0  |
+|                            Duplicated: .......... 0  Sections:              |
+|                            PCR: ................. 0  Unit start: ... 1,021  |
+|                                                                             |
+|=============================================================================|
+|  PID: 16 (0x0010)                                                  DVB-NIT  |
+
+… more PID’s skipped …
+
+|=============================================================================|
+|  PID: 8191 (0x1FFF)                                               Stuffing  |
+|-----------------------------------------------------------------------------|
+|  Global PID                Transport:                Discontinuities:       |
+|  Bitrate: . 1,225,306 b/s  Packets: ........ 83,250  Expected: ......... 0  |
+|  Access: Clear             Adapt.F.: ............ 0  Unexpect: ......... 0  |
+|                            Duplicated: .......... 0  Sections:              |
+|                            PCR: ................. 0  Unit start: ....... 0  |
+|                                                                             |
+===============================================================================
+----
+
+[#sample-network-analysis]
+==== Performing the global analysis of a network
+
+This section presents an automated way to analyze a network (here, the French terrestrial network) using a GNU makefile.
+
+Using the simple command `make`, each known transport stream (designated by its UHF channel number) is analyzed.
+For each TS, for instance the one named "R1", the following text files are created:
+
+[.compact-list]
+* `R1.analysis`: Global analysis of the TS in human-readable format, as in xref:sample-ts-analysis[xrefstyle=short].
+* `R1.anl`: Global analysis of the TS in normalized format, for use by other scripts.
+* `R1.psi`: Analysis of the main PSI/SI tables (PAT, CAT, PMT, SDT, NIT, BAT).
+
+Individual targets, such as `make R1`, can be used to analyze only one TS.
+Use the make option `-B` to force the analysis again when the files already exist.
+
+The command `make capture` captures 120 seconds of each TS in files named `R1.ts`, `R2.ts`, etc.
+Similarly, commands like `make R1.ts` capture only one TS.
+
+The content of the makefile is the following:
+
+[source,make]
+----
+# === This is a GNU makefile ===
+
+# List of UHF channels:
+
+ALL_CHAN = R1 R2 R3 R4 R5 R6 L8
+
+R1_CHAN = 35
+R2_CHAN = 21
+R3_CHAN = 27
+R4_CHAN = 24
+R5_CHAN = 29
+R6_CHAN = 32
+L8_CHAN = 23
+
+# Channel full names:
+
+$(foreach R,$(ALL_CHAN),$(eval $R_NAME=$R (Channel $($R_CHAN))))
+
+# Default target is analysis of all TS
+
+all: $(ALL_CHAN)
+
+$(ALL_CHAN): %: %.analysis %.anl %.psi
+
+%.analysis %.services %.anl %.psi:
+	tsp -I dvb $(DEVICE) --uhf $($(*F)_CHAN) \
+	    -P skip 5000 \
+	    -P until -s 100 \
+	    -P analyze --title "$($(*F)_NAME)" -o $*.analysis \
+	    -P analyze --title "$($(*F)_NAME)" -o $*.anl --normalized \
+	    -P psi -a -o $*.psi \
+	    -O drop
+
+# Capture TS content:
+
+capture: $(foreach R,$(ALL_CHAN),$R.ts)
+
+%.ts:
+	tsp -I dvb $(DEVICE) --uhf $($(*F)_CHAN) \
+	    -P skip 5000 \
+	    -P until -s 120 \
+	    -O file $@
+----
+
+[#sample-mon-stuffing]
+==== Monitoring the stuffing rate of all transponders in a network
+
+The following script monitors the stuffing bitrate of a list of selected transport streams.
+The output is suitable for import into Microsoft Excel so that further analysis can be performed.
+It can be executed on Linux or Windows (using the Cygwin shell).
+
+In this script, the transport streams are designated by a list of UHF channels, meaning DVB-T only.
+Here, the UHF channels represent the 5 main MUX of the French DTTV in the Paris area.
+
+[source,shell]
+----
+# List of UHF channels
+UHF_CHANNELS="35 21 27 24 32"
+
+# Analysis time per TS, in seconds
+ANALYSIS_TIME=20
+
+# Sample interval, in seconds
+SAMPLE_INTERVAL=300
+
+# Excel separator character for "csv" files (depends on Excel locale)
+EXCEL_SEPARATOR=’;’
+
+# Main loop
+while true; do
+
+    # Current date in seconds since epoch
+    curtime=$(date "+%s")
+
+    # Loop on all TS
+    outline=
+    for uhf in $UHF_CHANNELS; do
+        stuffing=$(
+            tsp -I dvb --uhf-channel $uhf \
+                -P until -s $ANALYSIS_TIME \
+                -P analyze --normalized \
+                -O drop | \
+                grep '^pid:' | \
+                grep ':pid=8191:' | \
+                sed -e 's/^.*:bitrate=//' -e 's/:.*//')
+        outline="${outline}${EXCEL_SEPARATOR}${stuffing}"
+    done
+
+    # Current date and stuffing rates in Excel format
+    echo "$(date -d @$curtime '+%d/%m/%Y %H:%M')${outline}"
+
+    # Sleep until next sample time
+    sleeptime=$(( $curtime + $SAMPLE_INTERVAL - $(date "+%s") ))
+    [[ $sleeptime -le 0 ]] || sleep $sleeptime
+done
+----
+
+The script runs infinitely and produces the following output:
+
+[source,text]
+----
+12/06/2008 14:01;1208706;4501497;3762828;626932;1145037
+12/06/2008 14:06;1232543;4505620;3782431;621524;1172479
+12/06/2008 14:11;1225293;4505553;3487315;613616;1151119
+12/06/2008 14:16;1231288;4505958;3415868;665393;1156933
+....
+----
+
+It may be imported into Microsoft Excel to produce the following graph:
+
+.Stuffing bitrate sample diagram
+image::stuffing-graph.png[align="center",alt="Stuffing bitrate diagram"]
+
+[#sample-analyze-bitrate]
+==== Analyzing the bitrate of all services in a network
+
+The following script demonstrates a way to produce a report of the bitrate of all services in a network.
+
+First, you need to analyze all TS in the network and get the result in normalized format
+(see xref:sample-network-analysis[xrefstyle=short] for an example).
+Then run the following script on all normalized analysis files.
+
+[source,shell]
+----
+echo "MUX  Service                    Bitrate   Video bitrate  Access"
+echo "---  ------------------  --------------  --------------  ---------"
+
+for f in $*; do
+    tsid=$(grep '^ts:' $f | sed -e 's/.*:id=//' -e 's/:.*//')
+    grep '^service:' $f | grep ':servtype=1:' | \
+    while read line; do
+        name=$(sed <<<"$line" -e 's/.*:name=//')
+        bitrate=$(sed <<<"$line" -e 's/.*:bitrate=//' -e 's/:.*//')
+        access=$(sed <<<"$line" -e 's/.*:access=//' -e 's/:.*//')
+        pidgrep=$(sed <<<"$line" -e 's/.*:pidlist=//' -e 's/:.*//' \
+                                 -e 's/^/-e :pid=/' \
+                                 -e 's/,/: -e :pid=/g' -e 's/$/:/')
+        vbitrate=0
+        for br in $(grep '^pid:' $f | grep $pidgrep | grep ':video:' | \
+                    sed -e 's/.*:bitrate=//' -e 's/:.*//')
+        do
+            vbitrate=$(( $vbitrate + $br ))
+        done
+        printf "R%d   %-18s  %'10d b/s  %'10d b/s  %s\n" \
+            $tsid "$name" $bitrate $vbitrate $access
+    done
+done
+----
+
+Let's name that script `bitrate-summary`.
+When used in conjunction with the makefile from xref:sample-network-analysis[xrefstyle=short], you get:
+
+[source,shell]
+----
+$ make -f Makefile.tnt
+...
+$ bitrate-summary *.anl
+
+MUX  Service                    Bitrate   Video bitrate  Access
+---  ------------------  --------------  --------------  ---------
+R8   Canal 21             2,803,938 b/s   2,588,374 b/s  clear
+R8   IDF1                 3,502,350 b/s   3,254,550 b/s  clear
+R8   NRJ Paris            6,462,333 b/s   6,214,518 b/s  clear
+R8   CAP 24               2,929,000 b/s   2,681,200 b/s  clear
+R1   France 2             3,655,962 b/s   3,419,466 b/s  clear
+R1   France 5             4,600,309 b/s   4,379,003 b/s  clear
+R1   ARTE                 5,052,002 b/s   4,627,464 b/s  clear
+R1   LCP                  2,867,453 b/s   2,649,782 b/s  clear
+R1   France 3             3,510,985 b/s   3,293,801 b/s  clear
+R1   .France Ô            3,857,456 b/s   3,643,981 b/s  clear
+R2   Direct 8             2,740,873 b/s   2,432,179 b/s  clear
+R2   BFM TV               3,120,068 b/s   2,913,715 b/s  clear
+R2   i>TELE               2,699,497 b/s   2,493,143 b/s  clear
+R2   Virgin 17            4,947,397 b/s   4,676,283 b/s  clear
+R2   Gulli                3,280,344 b/s   3,036,397 b/s  clear
+R2   France 4             2,748,753 b/s   2,477,639 b/s  clear
+R3   CANAL+               8,369,816 b/s   7,477,442 b/s  scrambled
+R3   CANAL+ CINEMA        2,975,779 b/s   2,531,416 b/s  scrambled
+R3   CANAL+ SPORT         2,930,938 b/s   2,493,595 b/s  scrambled
+R3   PLANETE              2,340,974 b/s   2,095,053 b/s  scrambled
+R3   CANAL J              2,609,858 b/s   2,371,848 b/s  scrambled
+R3   TPS STAR             3,203,408 b/s   2,779,778 b/s  scrambled
+R4   M6                   4,628,819 b/s   3,834,868 b/s  clear
+R4   W9                   3,231,344 b/s   2,694,826 b/s  clear
+R4   NT1                  3,278,883 b/s   2,887,844 b/s  clear
+R4   PARIS PREMIERE       4,009,594 b/s   3,404,277 b/s  scrambled
+R4   ARTE HD              7,725,247 b/s   7,171,310 b/s  clear
+R5   TF1 HD               9,032,166 b/s   8,635,108 b/s  clear
+R5   France 2 HD          7,593,045 b/s   7,080,227 b/s  clear
+R5   M6HD                 7,301,165 b/s   6,714,945 b/s  clear
+R6   TF1                  5,022,465 b/s   3,951,056 b/s  clear
+R6   NRJ12                6,883,049 b/s   6,026,657 b/s  clear
+R6   LCI                  1,379,288 b/s   1,224,422 b/s  scrambled
+R6   Eurosport            3,535,155 b/s   3,380,304 b/s  scrambled
+R6   TF6                  1,701,739 b/s   1,543,181 b/s  scrambled
+R6   TMC                  4,103,693 b/s   3,890,212 b/s  clear
+----
+
+[#sample-pcr-per-sec]
+==== Analyzing the number of PCR per second
+
+It is sometimes useful to get a complete overview of the number of PCR per second in each service of a network.
+The following script illustrates this.
+
+First, you need to analyze all TS in the network and get the result in _normalized format_
+(see xref:sample-network-analysis[xrefstyle=short] for an example).
+Then run the following script on all normalized analysis files.
+
+[source,shell]
+----
+for file in $*; do
+    sec=$(grep '^ts:' $file | grep ':duration=' | \
+          sed -e 's/.*:duration=//' -e 's/:.*//')
+    if [[ "$sec" -gt 1 ]]; then
+        grep '^service:' $file | grep ':pcrpid=' | grep ':name=' |
+        while read line; do
+            pid=$(sed <<<$line -e 's/.*:pcrpid=//' -e 's/:.*//')
+            name=$(sed <<<$line -e 's/.*:name=//')
+            count=$(grep '^pid:' $file | grep ":pid=$pid:" | grep ':pcr=' | \
+                    sed -e 's/.*:pcr=//' -e 's/:.*//')
+            if [[ "$count" -ne 0 ]]; then
+                printf "%4d PCR/s - %s\n" \
+                       $((($count + ($sec / 2)) / $sec)) "$name"
+            fi
+        done
+    fi
+done | sort
+----
+
+Let's name that script `pcrrate`.
+When used in conjunction with the makefile from xref:sample-network-analysis[xrefstyle=short], you get:
+
+[source,shell]
+----
+$ make -f Makefile.tnt
+...
+$ pcrrate *.anl
+
+  29 PCR/s - France 2 HD
+  29 PCR/s - TF1 HD
+  30 PCR/s - ARTE
+  30 PCR/s - ARTE HD
+  30 PCR/s - BFM TV
+  30 PCR/s - Canal 21
+  30 PCR/s - CAP 24
+  30 PCR/s - Direct 8
+  30 PCR/s - France 2
+  30 PCR/s - France 3
+  30 PCR/s - France 4
+  30 PCR/s - France 5
+  30 PCR/s - .France Ô
+  30 PCR/s - Gulli
+  30 PCR/s - IDF1
+  30 PCR/s - i>TELE
+  30 PCR/s - LCP
+  30 PCR/s - M6
+  30 PCR/s - M6HD
+  30 PCR/s - NRJ12
+  30 PCR/s - NRJ Paris
+  30 PCR/s - NT1
+  30 PCR/s - Virgin 17
+  30 PCR/s - W9
+  31 PCR/s - CANAL+
+  31 PCR/s - TF1
+  31 PCR/s - TMC
+  50 PCR/s - CANAL+ CINEMA
+  50 PCR/s - CANAL J
+  50 PCR/s - CANAL+ SPORT
+  50 PCR/s - Eurosport
+  50 PCR/s - LCI
+  50 PCR/s - PARIS PREMIERE
+  50 PCR/s - PLANETE
+  50 PCR/s - TF6
+  50 PCR/s - TPS STAR
+----
+
+==== Injecting a System Software Update (SSU) service
+
+This example illustrates how to inject a new System Software Update (SSU) service
+into a transport stream as defined in <<ETSI-102-006>>.
+This type of procedure can be used to test the SSU capabilities of a set-top box in real conditions,
+using a live transport stream.
+
+The test scenario is the following:
+
+* A DVB-T transport stream is received on UHF channel 24.
+* This transport stream has at least 56 kb/s of stuffing packets (much more actually).
+  Our `tsp` command steals 56 kb/s of stuffing and replaces them with a new service
+  (16 kb/s for the new service’s PMT and 40 kb/s for the SSU data PID).
+* The STB software provider delivers three types of SSU tables: a DSI, a DII and a lot of DDB’s.
+  The tables are provided as binary files containing the sections.
+  There is one file `dsi.bin` containing the DSI section,
+  one file `dii.bin` containing the DII section,
+  and one file `ddb.bin` containing all DDB sections.
+* These tables are multiplexed in the same SSU data PID but have different repetition rates constraints.
+  Here, we use 14 seconds for the DSI and 60 seconds for the DII.
+  The DDB use the rest of the available bitrate in the SSU data PID.
+* After analysis of the transport stream,
+  the new SSU service will use the service id 0x04F0 and PID values 0x1F00 (SSU data) and 0x1F01 (PMT).
+  These values are chosen since they are not used in the original transport stream.
+* The resulting transport stream with the added SSU service in sent to an embedded Dektec OFDM modulator
+  on the same frequency as the original service.
+  The output of the modulator can be directly connected to a STB.
+
+The PMT of the service is defined as follow in file `pmt.xml`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PMT service_id="0x04F0">
+    <component elementary_PID="0x1F00" stream_type="0x0B">
+      <data_broadcast_id_descriptor data_broadcast_id="0x000A">
+        <selector_bytes>
+          0C 00 12 22 F1 DF 06 FF FF FF FF F0 F0
+        </selector_bytes>
+      </data_broadcast_id_descriptor>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+In this example, the specified OUI value and selector bytes are those which are used by Logiways SSU on Skardin-based STB.
+
+The files `pmt.xml`, `dsi.bin`, `dii.bin` and `ddb.bin` are injected in the transport stream using the following command:
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P pat -a 0x04F0/0x1F01 --increment-version \
+      -P inject -b 16000 -p 0x1F01 -s pmt.xml \
+      -P inject -b 40000 -p 0x1F00 -s dsi.bin=14000 dii.bin=60000 ddb.bin \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+By incrementing the version of the PAT, we state that the content of the PAT has changed.
+Thus, the STB will analyze it again and will discover the new service.
+
+In case the transport stream does not initially contain enough stuffing to inject the SSU service,
+it is possible to remove a service and replace it with stuffing.
+In the following command, the service named AB1 is first replaced by stuffing, representing a stuffing increase of 4 Mb/s.
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P svremove -s AB1 \
+      -P pat -a 0x04F0/0x1F01 --increment-version \
+      -P inject -b 16000 -p 0x1F01 -s pmt.xml \
+      -P inject -b 40000 -p 0x1F00 -s dsi.bin=14000 dii.bin=60000 ddb.bin \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+[#sample-epg-analysis]
+==== Analyzing EPG data
+
+This example illustrates how to analyze EIT sections and report which service supports EPG data (EIT schedule)
+and for how many days.
+The command analyzes the content of UHF channel 27 (DVB-T) during 30 seconds and reports a summary of EIT analysis.
+
+[source,shell]
+----
+$ tsp -I dvb -u 27 -P until -s 30 -P eit -O drop
+Summary
+-------
+TS id:         3 (0x0003)
+Last UTC:      2008/08/13 14:19:28
+EITp/f actual: 186
+EITp/f other:  435
+EITs actual:   461
+EITs other:    0
+
+TS      Services  With EITp/f  With EITs  EPG days
+------  --------  -----------  ---------  --------
+Actual         8            6          6         3
+Other         66           66          0         0
+
+A/O  TS Id   Srv Id  Name           EITp/f  EITs  EPG days
+---  ------  ------  -------------  ------  ----  --------
+Oth  0x0001  0x0101                 Yes     No           0
+Oth  0x0001  0x0104                 Yes     No           0
+Oth  0x0001  0x0105                 Yes     No           0
+Oth  0x0001  0x0106                 Yes     No           0
+Oth  0x0001  0x0110                 Yes     No           0
+Oth  0x0001  0x0111                 Yes     No           0
+Oth  0x0001  0x0112                 Yes     No           0
+Oth  0x0001  0x0113                 Yes     No           0
+Oth  0x0001  0x0114                 Yes     No           0
+Oth  0x0001  0x0115                 Yes     No           0
+Oth  0x0001  0x0116                 Yes     No           0
+Oth  0x0001  0x0117                 Yes     No           0
+Oth  0x0001  0x0118                 Yes     No           0
+Oth  0x0001  0x0119                 Yes     No           0
+Oth  0x0001  0x011A                 Yes     No           0
+Oth  0x0001  0x011B                 Yes     No           0
+Oth  0x0001  0x011C                 Yes     No           0
+Oth  0x0001  0x011D                 Yes     No           0
+Oth  0x0001  0x011E                 Yes     No           0
+Oth  0x0001  0x011F                 Yes     No           0
+Oth  0x0001  0x0120                 Yes     No           0
+Oth  0x0001  0x0121                 Yes     No           0
+Oth  0x0001  0x0122                 Yes     No           0
+Oth  0x0001  0x0123                 Yes     No           0
+Oth  0x0001  0x0124                 Yes     No           0
+Oth  0x0001  0x0125                 Yes     No           0
+Oth  0x0001  0x0126                 Yes     No           0
+Oth  0x0001  0x0127                 Yes     No           0
+Oth  0x0001  0x0128                 Yes     No           0
+Oth  0x0001  0x0129                 Yes     No           0
+Oth  0x0001  0x012A                 Yes     No           0
+Oth  0x0001  0x012B                 Yes     No           0
+Oth  0x0001  0x012C                 Yes     No           0
+Oth  0x0001  0x012D                 Yes     No           0
+Oth  0x0001  0x012E                 Yes     No           0
+Oth  0x0001  0x012F                 Yes     No           0
+Oth  0x0001  0x0130                 Yes     No           0
+Oth  0x0001  0x0131                 Yes     No           0
+Oth  0x0001  0x0132                 Yes     No           0
+Oth  0x0001  0x0133                 Yes     No           0
+Oth  0x0001  0x0134                 Yes     No           0
+Oth  0x0001  0x0135                 Yes     No           0
+Oth  0x0001  0x0136                 Yes     No           0
+Oth  0x0001  0x0137                 Yes     No           0
+Oth  0x0001  0x0138                 Yes     No           0
+Oth  0x0001  0x0139                 Yes     No           0
+Oth  0x0001  0x013A                 Yes     No           0
+Oth  0x0001  0x013B                 Yes     No           0
+Oth  0x0001  0x0176                 Yes     No           0
+Oth  0x0002  0x0201                 Yes     No           0
+Oth  0x0002  0x0203                 Yes     No           0
+Oth  0x0002  0x0204                 Yes     No           0
+Oth  0x0002  0x0205                 Yes     No           0
+Oth  0x0002  0x0206                 Yes     No           0
+Oth  0x0002  0x0207                 Yes     No           0
+Act  0x0003  0x0301  CANAL+         Yes     Yes          3
+Act  0x0003  0x0302  CANAL+ CINEMA  Yes     Yes          3
+Act  0x0003  0x0303  CANAL+ SPORT   Yes     Yes          3
+Act  0x0003  0x0304  PLANETE        Yes     Yes          3
+Act  0x0003  0x0305  CANAL J        Yes     Yes          3
+Act  0x0003  0x0306  TPS STAR       Yes     Yes          3
+Act  0x0003  0x03F0                 No      No           0
+Act  0x0003  0x03F1                 No      No           0
+Oth  0x0004  0x0401                 Yes     No           0
+Oth  0x0004  0x0402                 Yes     No           0
+Oth  0x0004  0x0403                 Yes     No           0
+Oth  0x0004  0x0404                 Yes     No           0
+Oth  0x0004  0x0405                 Yes     No           0
+Oth  0x0004  0x0406                 Yes     No           0
+Oth  0x0006  0x0601                 Yes     No           0
+Oth  0x0006  0x0602                 Yes     No           0
+Oth  0x0006  0x0603                 Yes     No           0
+Oth  0x0006  0x0604                 Yes     No           0
+Oth  0x0006  0x0606                 Yes     No           0
+----
+
+==== Analyzing audio and video attributes
+
+This example illustrates how to display the audio and video attributes from a captured transport stream file.
+
+[source,shell]
+----
+$ tsp -I file cap.ts -P pes -a -v -O drop
+* PID 0x0083, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 160 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x014A, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 192 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x0085, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 64 kb/s, sampled at 48,000 Hz, single channel
+* PID 0x0082, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 192 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x0276, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 192 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x01AE, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 256 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x00E6, stream_id 0xC0 (Audio 0), audio attributes:
+  Audio layer II, 256 kb/s, sampled at 48,000 Hz, stereo
+* PID 0x0078, stream_id 0xE0 (Video 0), video attributes:
+  720x576i, 25 Hz, 16/9, 4:2:0
+  Maximum bitrate: 15,000,000 b/s, VBV buffer size: 1,835,008 bits
+* PID 0x01A4, stream_id 0xE0 (Video 0), AVC video attributes:
+  720x576, AVC main profile (77), level 30
+* PID 0x00DC, stream_id 0xE0 (Video 0), video attributes:
+  720x576i, 25 Hz, 16/9, 4:2:0
+  Maximum bitrate: 15,000,000 b/s, VBV buffer size: 1,835,008 bits
+* PID 0x026C, stream_id 0xE0 (Video 0), video attributes:
+  720x576i, 24 Hz, 4/3, 4:2:0
+  Maximum bitrate: 15,000,000 b/s, VBV buffer size: 1,835,008 bits
+* PID 0x0140, stream_id 0xE0 (Video 0), AVC video attributes:
+  704x576, AVC main profile (77), level 30
+----
+
+==== Conditional Access System scrambling and ECM functional tests
+
+The following command receives a DVB-T live stream on UHF channel 21
+and remodulates it on the same frequency using a Dektec modulator.
+
+In the middle, the service named BFM TV is scrambled.
+
+[.compact-list]
+* An external ECMG is used (host name `ecmg1`, on TCP port 10000).
+* The crypto-periods are scheduled using the default duration of 10 seconds.
+* A new control word is generated for each crypto-period.
+* The corresponding ECM’s are generated using the specified ECMG
+  (Super_CAS_Id and access criteria specified by options `-s` and `-a`) and inserted in the TS.
+* The PMT of the service is modified to include a _CA_descriptor_.
+  The private part of this descriptor is specified using option `-p`.
+
+[source,shell]
+----
+$ tsp -I dvb -u 21 \
+      -P scrambler bfmtv \
+         -e ecmg1:10000 \
+         -s 0x4ADC0001 \
+         -a 6B0A010100000000000000006B0A0102000000000000000061050000005000660400000002 \
+         -p FE \
+      -O dektec -u 21 --conv 2/3 --guard 1/32
+----
+
+==== Complete Conditional Access System test bed
+
+The following command implements a complete Conditional Access System test bed in one single `tsp` process.
+It emulates all functions of a MUX system for testing a CAS.
+
+The command uses the French DVB-T network, but it can be easily adapted to any environment.
+
+.Conditional Access System sample test bed
+image::castest.png[align="center",width=600,alt="CAS sample test bed"]
+
+The command transforms the R2 MUX into a new R9 MUX with new services (actually renamed services from R2)
+and outputs the resulting TS to a modulator on a different UHF channel.
+In the meantime, the service named "Gulli Test" is scrambled using an external ECMG
+and EMM injection is allowed from an external EMMG.
+
+The modulated output stream can be used alone (direct connection to a set-top box)
+or mixed with the public antenna signals using a UHF coupler.
+
+For the sake of clarity of this example, all significant parameters are first assigned into environment
+variables, then the `tsp` command references these variables.
+
+[source,shell]
+----
+# Transmission parameters:
+UHF_INPUT=21
+UHF_OUTPUT=60
+
+# EMM parameters
+MUX_SERVER_PORT=32000
+CAS_ID=0x4ADC
+EMM_PID=0x01F0
+EMM_MAX_BITRATE=50000
+CAT_CADESC_PRIVATE=FF0001
+
+# ECM parameters
+ECMG=ecmg1:10000
+SUPER_CAS_ID=0x4ADC0001
+ECM_PID=0x01F1
+ECM_BITRATE=30000
+PMT_CADESC_PRIVATE=FE
+AC=6B0A010100000000000000006B0A0102000000000000000061050000005000660400000002
+
+# One single command implementing the CAS test bed:
+tsp -v \
+    -I dvb -u $UHF_INPUT \
+    -P tsrename -t 9 -a \
+    -P svrename direct8  -i 0x0901 -l 41 -n "Direct 8 Test" \
+    -P svrename bfmtv    -i 0x0903 -l 42 -n "BFM TV Test" \
+    -P svrename 'i>tele' -i 0x0904 -l 43 -n "i>TELE Test" \
+    -P svrename virgin17 -i 0x0905 -l 44 -n "Virgin 17 Test" \
+    -P svrename gulli    -i 0x0906 -l 45 -n "Gulli Test" \
+    -P svrename france4  -i 0x0907 -l 46 -n "France 4 Test" \
+    -P svrename 0x02FF   -i 0x09FF \
+    -P scrambler GulliTest -e $ECMG -s $SUPER_CAS_ID -p $PMT_CADESC_PRIVATE \
+                 -a $AC -b $ECM_BITRATE --pid $ECM_PID \
+    -P cat -c -a $CAS_ID/$EMM_PID/$CAT_CADESC_PRIVATE \
+    -P datainject -r -s $MUX_SERVER_PORT -b $EMM_MAX_BITRATE -p $EMM_PID \
+    -O dektec --uhf $UHF_OUTPUT --convolution 2/3 --guard 1/32
+----
+
+==== Emulation of a Conditional Access head-end
+
+This example is a variant of the previous one.
+Instead of using a real ECMG from a real Conditional Access System, we use the command `tsecmg`.
+
+The utility `tsecmg` implements the DVB SimulCrypt ECMG{d-arrow}SCS protocol and behaves like a real ECMG.
+All ECM generation requests are accepted but, instead of generating robust ciphered proprietary ECM’s,
+`tsecmg` returns pseudo ECM’s which contain the control words and the access criteria in the clear.
+
+The utility `tsecmg` can be used anywhere a DVB SimulCrypt ECMG can be used.
+Consequently, it can be used from any real MUX or from the `tsp` plugin `scrambler`.
+Used from a real MUX, `tsecmg` becomes a useful debugging tool.
+All ECMG{d-arrow}SCS messages are displayed (using option `--verbose`).
+The returned ECM’s are inserted in the stream like any real ECM.
+Since these ECM’s contain the access criteria in the clear, this is also a useful debug tool for the EIS or ACG or both.
+
+*Important:* Note that the control words are also inserted in the clear.
+It is consequently obvious that `tsecmg` shall never be used on a production system,
+alone or in addition to any real operational CAS.
+This is a debug tool, nothing more.
+
+The `tsp` plugin `descrambler` is normally a static descrambler using fixed control words.
+But, to facilitate the prototyping of end-to-end systems,
+the plugin `descrambler` can also recognize the clear ECM’s which are generated by `tsecmg`
+and use their control words to descramble the stream.
+
+Thus, it is easy to build a complete end-to-end Conditional Access System using TSDuck components only.
+This kind of configuration is mainly useless in itself (except maybe as a tutorial for DVB SimulCrypt).
+But because all components are replaceable, this can become a very useful integration framework.
+
+First, start with a complete configuration using TSDuck components only.
+Verify that the system works as expected.
+Then, replace the TSDuck components one by one with the real components which shall be tested.
+
+Sample configurations:
+
+* Testing a MUX: Replace the plugin `scrambler` with the real MUX.
+  Use `tsecmg` to generate ECM’s.
+  Use the plugin `analyze` to analyze the output of the MUX.
+  Use the plugin `descrambler` to verify the insertion and synchronization of ECM’s.
+* Testing a CAS: Replace `tsecmg` with the real ECMG.
+  Replace the plugin `descrambler` with a real set-top box.
+  Use plugin `scrambler` to make the link between to two end-points of the CAS (ECMG and STB).
+
+Let’s have a look at a real demo.
+
+First, run the utility `tsecmg`.
+Without option, it simply creates a TCP server on port 2222.
+The option `--verbose` (or simply `-v`) is useful to dump all protocol exchanges.
+
+[source,shell]
+----
+$ tsecmg -v
+* TCP server listening on 0.0.0.0:2222, using ECMG <=> SCS protocol version 2
+----
+
+Then, the following command performs a complete end-to-end CAS demo in one single process,
+using a live satellite stream as input:
+
+[source,shell]
+----
+$ tsp -v \
+      -I dvb --freq 12,012,000,000 --symbol 29,700,000 --fec 5/6 --polarity vertical \
+             --delivery DVB-S2 --modulation QPSK \
+      -P scrambler cnews --ecmg localhost:2222 --super-cas-id 0xDEADBEEF \
+             --access-criteria 0123456789 \
+      -P analyze --interval 30 -o cas_scrambled.txt \
+      -P descrambler cnews \
+      -P analyze --interval 30 -o cas_descrambled.txt \
+      -P zap cnews \
+      -O play
+----
+
+The first plugin receives a live transport stream from a DVB-S2 satellite.
+In this TS, there is a clear service named "CNEWS".
+We are going to use this clear channel as a test.
+
+The next plugin scrambles the service using our instance of `tsecmg` on the same system.
+The Super CAS Id is here a fake value (`tsecmg`, unlike a real ECMG, accepts to serve any Super CAS Id).
+The access criteria are also fake values.
+
+The next plugin permanently analyzes the stream at this point in the chain
+and produces a report every 30 seconds in a text file named `cas_scrambled.txt`.
+Looking at this text file, we can see that the service "CNEWS" is now scrambled
+and there is an ECM stream in its PMT with CA_system_id 0xDEAD (the MSB part of the Super CAS Id).
+The bitrate of the ECM stream is reported as 30 kb/s, the default ECM bitrate for the plugin `scrambler`.
+
+The next plugin is a descrambler.
+Only the service name is required.
+The plugin automatically locates the ECM stream in the PMT (there is only one here),
+collects the ECM’s and uses the clear control words from these fake ECM’s to descramble the stream.
+
+The next plugin performs the same periodic analysis as the previous one.
+This time, the report demonstrates that the service "CNEWS" is back in the clear.
+
+Finally, the plugin `zap` extracts the service "CNEWS"
+and the output plugin `play` sends the output to a media player (VLC by default).
+
+We can see that the service is in the clear and plays correctly.
+If we restart the command without the plugin `descrambler`,
+the player stays with a black screen because the service stays scrambled.
+
+If we are interested in the DVB SimulCrypt ECMG{d-arrow}SCS protocol,
+the option `--verbose` of `tsecmg` displays all exchanges, as listed below.
+This can be useful to debug an ECMG{d-arrow}SCS integration.
+
+[source,text]
+----
+* 127.0.0.1:1302: 2018/04/10 23:11:58: session started
+* 127.0.0.1:1302: 2018/04/10 23:11:58: received message:
+    channel_setup (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0001
+    ECM_channel_id = 0x0001
+    Super_CAS_id = 0xDEADBEEF
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: sending message:
+    channel_status (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0003
+    ECM_channel_id = 0x0001
+    section_TSpkt_flag = 1
+    AC_delay_start = 200
+    AC_delay_stop = 200
+    delay_start = 200
+    delay_stop = 200
+    transition_delay_start = -500
+    transition_delay_stop = 0
+    ECM_rep_period = 100
+    max_streams = 0
+    min_CP_duration = 10
+    lead_CW = 1
+    CW_per_msg = 2
+    max_comp_time = 100
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: received message:
+    stream_setup (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0101
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    ECM_id = 0x0001
+    nominal_CP_duration = 100
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: sending message:
+    stream_status (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0103
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    ECM_id = 0x0001
+    access_criteria_transfer_mode = 0
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: received message:
+    CW_provision (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0201
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    CP_number = 0
+    CP_duration = 100
+    access_criteria (5 bytes) =
+        01 23 45 67 89
+    CP = 0
+    CW (8 bytes) = 26 E9 2C D9 C8 96 06 B2
+    CP = 1
+    CW (8 bytes) = 8B 37 0B 94 69 64 93 CE
+
+* 127.0.0.1:1302: 2018/04/10 23:11:58: sending message:
+    ECM_response (ECMG<=>SCS)
+    protocol_version = 0x02
+    message_type = 0x0202
+    ECM_channel_id = 0x0001
+    ECM_stream_id = 0x0001
+    CP_number = 0
+    ECM_datagram (188 bytes) =
+        47 5F FF 10 00 80 70 26 80 AA 03 00 21 00 10 00 08 26 E9 2C D9 C8
+        96 06 B2 00 11 00 08 8B 37 0B 94 69 64 93 CE 00 12 00 05 01 23 45
+        67 89 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+        FF FF FF FF FF FF FF FF FF FF FF FF
+----
+
+The returned ECM is a TS packet containing a section with _table_id_ 0x80 (an ECM).
+The payload of the ECM is a TLV structure following the same syntax as DVB SimulCrypt protocols.
+The command and parameter tags are private to TSDuck and documented in its development documentation
+(Doxygen-generated, available online).
+
+To create a more realistic environment, we can split the big command into two parts,
+a "head-end part" which can be replaced by a real MUX and a "set-top box part" which can be replaced by a real set-top box.
+The communication between the two parts can be done using a modulator-tuner pair, an ASI link or UDP/IP.
+All these interconnections are supported by TSDuck and can be driven directly from `tsp`.
+
+Let’s have a look at the head-end emulation command, using an UDP/IP output link:
+
+[source,shell]
+----
+$ tsp -v \
+      -I dvb --freq 12,012,000,000 --symbol 29,700,000 --fec 5/6 --polarity vertical \
+             --delivery DVB-S2 --modulation QPSK \
+      -P scrambler cnews --ecmg localhost:2222 --super-cas-id 0xDEADBEEF \
+             --access-criteria 0123456789 --atis-idsa \
+      -P zap cnews \
+      -O ip 224.10.11.12:9999
+----
+
+The output is a multicast address.
+
+Also note that we used the option `--atis-idsa` in the plugin `scrambler`.
+This means that we use the ATIS IIF Default Scrambling Algorithm (IDSA)
+instead of the default DVB Common Scrambling Algorithm (CSA2).
+ATIS being based on AES-128, we can see in the ECMG{d-arrow}SCS exchanges that the control words are now 16-byte long.
+There is no particular reason to use ATIS in this demo
+(except that ATIS is typically used in IP-TV while DVB-CSA2 is mainly used in broadcast).
+
+The set-top box emulation command is simply:
+
+[source,shell]
+----
+$ tsp -v \
+      -I ip 224.10.11.12:9999 \
+      -P descrambler cnews \
+      -O play
+----
+
+Note that we do not need to specify `--atis-idsa` in the plugin `descrambler`.
+During the scrambling, the plugin `scrambler` has inserted a _scrambling_descriptor_ in the PMT of the service
+to indicate the non-default scrambling type.
+This descriptor is automatically recognized by the plugin `descrambler`
+and the right descrambling algorithm is used, just like any properly integrated set-top box would do.
+
+==== Multi-Protocol Encapsulation (MPE)
+
+These examples describe a test bed or demo infrastructure for MPE injection and MPE extraction.
+See <<ETSI-301-192>> for more details on MPE.
+
+===== MPE insertion in an existing transport stream
+
+In this example, we insert MPE in an existing transport stream.
+The input TS is read from a tuner, the MPE stream is inserted on the fly and the resulting TS is output on a modulator.
+
+The network infrastructure is illustrated in the diagram below.
+
+.Multi-Protocol Encapsulation (MPE) sample test bed
+image::mpedemo.png[align="center",width=700,alt="MPE sample test bed"]
+
+In network 1, a media server multicasts a transport stream on address 224.250.250.1, port 9000.
+
+We want to encapsulate this UDP multicast stream in an existing transport stream using MPE.
+We do this using `tsp`.
+We also change the multicast destination address for the UDP stream to 230.2.3.4, port 7000, in the MPE-encapsulated datagrams.
+There is no particular reason for this, we just illustrate the feasibility.
+
+The resulting transport stream with embedded MPE is then broadcast.
+Here, the broadcast network is a Dektec modulator, followed by another computer using a DVB tuner.
+
+The receiving computer is connected to a second network.
+Another instance of `tsp` extracts the datagrams from the MPE stream
+and multicasts them on its network using the modified destination address.
+
+Let’s review the various steps and commands in detail.
+
+The existing transport stream is here a live satellite TS which is received on a Linux or Windows computer using a DVB tuner.
+The insertion of the MPE stream adds two new services.
+We carefully select service ids and PID’s which are not used in the existing transport stream.
+
+[.compact-list]
+* A service carrying the IP/MAC Notification Table (INT).
+** Service id: 700
+** Service name: "Demo INT"
+** PMT PID: 5000
+** PID of the component carrying the INT: 5001
+* A service carrying the MPE stream. Such a service may carry many MPE streams. Here, we use only one.
+** Service id: 701
+** Service name: "Demo MPE"
+** PMT PID: 5002
+** PID of the component carrying the MPE stream: 5003
+
+We need to create three tables from scratch, the PMT’s of the two new services and the INT.
+We create them using XML files.
+
+PMT of the service carrying the INT (file `pmt-int.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 8.3 -->
+  <PMT service_id="700">
+    <component elementary_PID="5001" stream_type="0x05">
+      <data_broadcast_id_descriptor data_broadcast_id="0x000B"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+PMT of the service carrying the MPE stream (file `pmt-mpe.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 7.2 -->
+  <PMT service_id="701">
+    <component elementary_PID="5003" stream_type="0x0D">
+      <stream_identifier_descriptor component_tag="1"/>
+      <data_broadcast_id_descriptor data_broadcast_id="0x0005"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+IP/MAC Notification Table (file `int.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 8.4 -->
+  <INT platform_id="0x123456">
+    <IPMAC_platform_name_descriptor language_code="eng" text="Demo"/>
+    <IPMAC_platform_provider_name_descriptor language_code="eng" text="TSDuck"/>
+    <device>
+      <target>
+        <target_IP_slash_descriptor>
+          <address IPv4_addr="230.2.3.4" IPv4_slash_mask="32"/>
+        </target_IP_slash_descriptor>
+      </target>
+      <operational>
+        <IPMAC_stream_location_descriptor
+            network_id="1"
+            original_network_id="1"
+            transport_stream_id="1080"
+            service_id="701"
+            component_tag="1"/>
+      </operational>
+    </device>
+  </INT>
+</tsduck>
+----
+
+On the first system, the following command is used to insert the MPE stream:
+
+[source,shell]
+----
+$ tsp -I dvb --frequency ... \
+      -P svremove Service1 --stuffing \
+      -P pat --add-service 700/5000 --add-service 701/5002 \
+      -P inject pmt-int.xml --pid 5000 --bitrate 15000 \
+      -P inject int.xml --pid 5001 --bitrate 15000 \
+      -P inject pmt-mpe.xml --pid 5002 --bitrate 15000 \
+      -P sdt --service-id 700 --name "Demo INT" --provider "TSDuck" --type 0x0C \
+      -P sdt --service-id 701 --name "Demo MPE" --provider "TSDuck" --type 0x0C \
+      -P mpeinject 224.250.250.1:9000 --max-queue 512 \
+                   --new-destination 230.2.3.4:7000 --pid 5003 \
+      -O dektec --frequency ...
+----
+
+The following chain of plugins is used:
+
+[.compact-list]
+* The input plugin `dvb` receives an existing satellite stream.
+* The plugin `svremove` removes one service from the TS and replaces it with stuffing.
+  We are going to insert an MPE stream and we need bandwidth for it.
+  If the existing TS does not have enough stuffing bandwidth, we need to create some.
+  Depending on the target MPE bandwidth, we may need to remove several existing services.
+* The plugin `pat` adds the two new services in the PAT.
+* The three `plugin` inject insert the three XML tables we created, each one on its own PID.
+* The two plugins `sdt` add the descriptions of the two new services in the SDT.
+* The plugin `mpeinject` inserts the MPE stream.
+  It receives the UDP multicast datagrams for address 224.250.250.1, port 9000.
+  In each datagram, the destination address is modified as 230.2.3.4, port 7000.
+  The UDP datagrams are encapsulated into MPE sections which are injected in PID 5003.
+  The option `--max-queue` is a tuning parameter.
+  It specifies the number of UDP datagrams which can be buffered before insertion in the MPE stream.
+  The parameter shall be tuned according to the receiving multicast rate and bursts,
+  and the placement of stuffing packets in the exiting TS.
+  We need to tune it when we get "UDP overflow" messages.
+* Finally, the plugin `dektec` sends the resulting TS on a modulator.
+
+On the second system, the following command is used to extract the MPE stream and to re-multicast it on the network 2:
+
+[source,shell]
+----
+$ tsp -I dvb --frequency ... -P mpe --udp-forward -O drop
+----
+
+Here, the command is simple since we assume that there is only one MPE stream in the TS
+and it is properly signaled in the PSI/SI.
+If there are several MPE streams in the TS, more options are required in the plugin `mpe`.
+
+The option `--udp-forward` specifies that the UDP datagrams shall be forwarded on the local network.
+Note that when the UDP packets are multicast and the system running `tsp` has several network interfaces,
+it may be necessary to specify the `--local-address` option to select
+through which local interface the multicast packets shall be sent.
+
+We may want to use `tsanalyze` on the intermediate transport stream.
+The two services we created are described as follow:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x02BC (700), TS: 0x0438 (1080), Original Netw: 0x0001 (1)        |
+|  Service name: Demo INT, provider: TSDuck                                   |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 600, PID's: 2 (clear: 2, scrambled: 0)                         |
+|  PMT PID: 0x1388 (5000), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C       29,938 b/s  |
+|  0x1388  PMT .......................................... C       14,969 b/s  |
+|  0x1389  MPEG-2 Private sections (INT, IP/MAC Notifica  C       14,969 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+|  Service: 0x02BD (701), TS: 0x0438 (1080), Original Netw: 0x0001 (1)        |
+|  Service name: Demo MPE, provider: TSDuck                                   |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 154,507, PID's: 2 (clear: 2, scrambled: 0)                     |
+|  PMT PID: 0x138A (5002), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C    7,709,471 b/s  |
+|  0x138A  PMT .......................................... C       14,969 b/s  |
+|  0x138B  DSM-CC Sections (MPE) ........................ C    7,694,502 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+===== Creating a transport stream from scratch
+
+This example is a variant of the previous one.
+This time, we do not have access to an existing transport stream.
+Instead, a new transport stream is created from scratch by TSDuck and MPE is inserted on the fly.
+The resulting stream is a SPTS (single program transport stream) which is output on UDP/IP.
+This UDP/IP stream is then typically collected by a MUX for insertion in a MPTS (multiple programs transport stream).
+
+The generated TS is not really a SPTS because it contains two services, one for the INT and one for the MPE sections.
+This is how MPE is structured.
+But, logically, the two services serve a common function: an MPE stream.
+So, by extension, we will call it a SPTS.
+
+Creating a TS from scratch using TSDuck is usually done using the input plugin `null`,
+a plugin which generates an endless stream of null packets.
+Then, all tables and elementary streams are inserted using appropriate plugins.
+Remember that inserting packets means replacing null packets.
+
+The TS will contain the same two services which were created in the previous example.
+We already have XML files for their PMT.
+To create a minimal TS, we also need a PAT and an SDT.
+For the sake of consistency, we reuse the same PID’s as the previous example.
+
+PAT of the new TS (file `pat.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service service_id="700" program_map_PID="5000"/>
+    <service service_id="701" program_map_PID="5002"/>
+  </PAT>
+</tsduck>
+----
+
+SDT of the new TS (file `sdt.xml`):
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <SDT transport_stream_id="1" original_network_id="1">
+    <service service_id="700" running_status="running">
+      <service_descriptor service_type="0x0C"
+                          service_name="MPE Demo (INT)"
+                          service_provider_name="TSDuck"/>
+    </service>
+    <service service_id="701" running_status="running">
+      <service_descriptor service_type="0x0C"
+                          service_name="MPE Demo"
+                          service_provider_name="TSDuck"/>
+    </service>
+  </SDT>
+</tsduck>
+----
+
+The `tsp` command which generates the TS and inserts MPE is the following:
+
+[source,shell]
+----
+$ tsp --verbose --bitrate 30,000,000 --max-flushed-packets 70 \
+      -I null \
+      -P regulate --packet-burst 14 \
+      -P inject pat.xml --pid 0 --bitrate 15000 \
+      -P inject sdt.xml --pid 17 --bitrate 15000 \
+      -P inject pmt-int.xml --pid 5000 --bitrate 15000 \
+      -P inject int.xml --pid 5001 --bitrate 15000 \
+      -P inject pmt-mpe.xml --pid 5002 --bitrate 15000 \
+      -P mpeinject 230.2.3.4:4000 --pid 5003 --max-queue 512 \
+      -O ip 230.5.6.7:4500 --packet-burst 7 --enforce-burst
+----
+
+The following chain of plugins is used:
+
+[.compact-list]
+* The input plugin `null` generates null packets.
+* The plugin `regulate` slows down the playout speed at the target TS bitrate.
+  Unlike the previous example where the playout speed was naturally regulated at the input speed of the tuner,
+  here the input plugin generates null packets at full speed (CPU-bound).
+  Note that the bitrate is specified here at `tsp` level and is propagated to all plugins.
+  We have chosen an arbitrary value of 30 Mb/s.
+* The subsequent plugins are similar to the previous example,
+  except that the PAT and SDT are inserted from XML file because they did not exist in the input TS.
+* The output plugin `ip` sends the resulting SPTS to multicast IP address 230.5.6.7, port 4500.
+
+===== Creating a transport stream from scratch with PCR
+
+Most the time, the command in the previous example will do the job.
+The generated SPTS is perfectly valid and can be multiplexed in a MPTS when necessary.
+
+However, this SPTS contains only section data (basic signalization, INT and DSM-CC sections for MPE).
+It does not contain any clock reference.
+There is no PCR.
+Usually, this is not a problem since there is no need for a clock in the absence of video or audio streams.
+However, some MUX or monitoring equipment may generate errors in the absence of PCR.
+
+Additionally, on the receiving side, TSDuck will not be able to determine the bitrate of this MPTS
+(not important in practice, but annoying for us).
+
+Let’s see how to modify the previous `tsp` command to generate a valid PCR stream.
+
+We will create a dedicated PCR PID and attach it to the service carrying the MPE stream.
+We need to modify the XML file for its PMT to reference the new PCR PID.
+
+PMT of the service carrying the MPE stream (file `pmt-mpe-with-pcr.xml`) with and add `PCR_PID` attribute:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <!-- See ETSI EN 301 192, section 7.2 -->
+  <PMT service_id="701" PCR_PID="5004">
+    <component elementary_PID="5003" stream_type="0x0D">
+      <stream_identifier_descriptor component_tag="1"/>
+      <data_broadcast_id_descriptor data_broadcast_id="0x0005"/>
+    </component>
+  </PMT>
+</tsduck>
+----
+
+The new `tsp` command is the following:
+
+[source,shell]
+----
+BITRATE=30000000
+PCR_PER_SEC=5
+PCR_DISTANCE=$(( $BITRATE / $(( $PCR_PER_SEC * 188 * 8 )) ))
+PCR_PID=5004
+
+tsp --verbose --bitrate $BITRATE --max-flushed-packets 70 \
+    -I null \
+    -P regulate --packet-burst 14 \
+    -P filter --every $PCR_DISTANCE --set-label 1 \
+    -P craft --only-label 1 --pid $PCR_PID --no-payload --pcr 0 \
+    -P continuity --pid $PCR_PID --fix \
+    -P pcradjust --pid $PCR_PID \
+    -P inject pat.xml --pid 0 --bitrate 15000 \
+    -P inject sdt.xml --pid 17 --bitrate 15000 \
+    -P inject pmt-int.xml --pid 5000 --bitrate 15000 \
+    -P inject int.xml --pid 5001 --bitrate 15000 \
+    -P inject pmt-mpe-with-pcr.xml --pid 5002 --bitrate 15000 \
+    -P mpeinject 230.2.3.4:4000 --pid 5003 --max-queue 512 \
+    -O ip 230.5.6.7:4500 --packet-burst 7 --enforce-burst
+----
+
+Note the initial shell variables.
+We decide that the number of PCR’s per second shall be 5 (`PCR_PER_SEC`).
+From the bitrate (30 Mb/s, now in variable `BITRATE`), we compute the interval between two PCR packets (`PCR_DISTANCE`).
+This is the number of TS packets between two packets containing a PCR.
+
+To generate a PCR PID in the TS, the following chain of plugins was added:
+
+[.compact-list]
+* The plugin `filter` selects one packet every `PCR_DISTANCE` packets.
+  The selected packets will become the PCR packets.
+  Note that we use the option `--set-label 1` which means that the selected packets are flagged with label 1.
+  No modification is applied to the TS, only flagging some packets.
+* The plugin `craft` is applied only on the previously selected packets (option `--only-label 1`).
+  The plugin `craft` performs low-level modifications on the packets.
+  Here, we modify the PID value, we remove the payload and we insert a PCR (with value zero for now).
+* The plugin `continuity` fixes the continuity counters on the PCR PID.
+* The plugin `pcradjust` fixes the PCR values based on the bitrate.
+
+We now have a valid PCR PID in the MPE service.
+Let’s see how `tsanalyze` evaluates the generated SPTS:
+
+[source,text]
+----
+===============================================================================
+|  TRANSPORT STREAM ANALYSIS REPORT                                           |
+|=============================================================================|
+|  Transport Stream Id: .......... 1 (0x0001)  |  Services: .............. 2  |
+|  Bytes: ....................... 112,355,004  |  PID's: Total: .......... 8  |
+|  TS packets: ...................... 597,633  |         Clear: .......... 8  |
+|     With invalid sync: .................. 0  |         Scrambled: ...... 0  |
+|     With transport error: ............... 0  |         With PCR's: ..... 1  |
+|     Suspect and ignored: ................ 0  |         Unreferenced: ... 0  |
+|-----------------------------------------------------------------------------|
+|  Transport stream bitrate, based on ....... 188 bytes/pkt    204 bytes/pkt  |
+|  User-specified: ......................... 29,996,462 b/s   32,549,352 b/s  |
+|  Estimated based on PCR's: ............... 29,934,196 b/s   32,481,787 b/s  |
+|-----------------------------------------------------------------------------|
+|  Broadcast time: ................................... 29 sec (0 min 29 sec)  |
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x02BC  MPE Demo (INT) ............................... C       30,115 b/s  |
+|  0x02BD  MPE Demo ..................................... C    6,638,107 b/s  |
+|                                                                             |
+|  Note 1: C=Clear, S=Scrambled                                               |
+|  Note 2: Unless specified otherwise, bitrates are based on 188 bytes/pkt    |
+===============================================================================
+
+
+===============================================================================
+|  SERVICES ANALYSIS REPORT                                                   |
+|=============================================================================|
+|  Global PID's                                                               |
+|  TS packets: 464,779, PID's: 3 (clear: 3, scrambled: 0)                     |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Global PID's ................................. C   23,328,239 b/s  |
+|   Subt.  Global PSI/SI PID's (0x00-0x1F) .............. C       30,115 b/s  |
+|  0x0000  PAT .......................................... C       15,057 b/s  |
+|  0x0011  SDT/BAT ...................................... C       15,057 b/s  |
+|  0x1FFF  Stuffing ..................................... C   23,298,123 b/s  |
+|=============================================================================|
+|  Service: 0x02BC (700), TS: 0x0001 (1), Original Netw: 0x0001 (1)           |
+|  Service name: MPE Demo (INT), provider: TSDuck                             |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 600, PID's: 2 (clear: 2, scrambled: 0)                         |
+|  PMT PID: 0x1388 (5000), PCR PID: None                                      |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C       30,115 b/s  |
+|  0x1388  PMT .......................................... C       15,057 b/s  |
+|  0x1389  MPEG-2 Private sections (INT) ................ C       15,057 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+|  Service: 0x02BD (701), TS: 0x0001 (1), Original Netw: 0x0001 (1)           |
+|  Service name: MPE Demo, provider: TSDuck                                   |
+|  Service type: 0x0C (Data broadcast service)                                |
+|  TS packets: 132,254, PID's: 3 (clear: 3, scrambled: 0)                     |
+|  PMT PID: 0x138A (5002), PCR PID: 0x138C (5004)                             |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Data broadcast service ....................... C    6,638,107 b/s  |
+|  0x138A  PMT .......................................... C       15,057 b/s  |
+|  0x138B  DSM-CC Sections (MPE) ........................ C    6,615,571 b/s  |
+|  0x138C  PCR (not otherwise referenced) ............... C        7,478 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+===============================================================================
+----
+
+==== DVB-T2 Modulator Interface (T2-MI)
+
+A DVB T2-MI stream is encapsulated into one PID of a TS.
+A DVB-T2 stream may contain several Physical Layer Pipes (PLP).
+Each PLP contains a complete TS.
+The plugin `t2mi` is designed to extract the TS from a PLP of a T2-MI stream.
+
+With a fully DVB-compliant signalization, the PID carrying T2-MI is signaled in the PMT of its service using a T2-MI descriptor.
+
+Sample PMT using tstables:
+
+[source,text]
+----
+* PMT, TID 2 (0x02), PID 33 (0x0021)
+  Version: 11, sections: 1, total size: 27 bytes
+  - Section 0:
+    Program: 800 (0x0320), PCR PID: none
+    Elementary stream: type 0x06 (MPEG-2 PES private data), PID: 64 (0x0040)
+    - Descriptor 0: Extension Descriptor (0x7F, 127), 4 bytes
+      Extended descriptor: T2MI (0x11, 17)
+      T2-MI stream id: 0, T2-MI stream count: 1, PCR/ISCR common clock: no
+----
+
+Excerpt from `tsanalyze` for the service containing the T2-MI stream:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x0320 (800), TS: 0x03A2 (930), Original Netw: 0x0000 (0)         |
+|  Service name: (T2-MI), provider: (unknown)                                 |
+|  Service type: 0x00 (unknown)                                               |
+|  TS packets: 145,024, PID's: 2 (clear: 2, scrambled: 0)                     |
+|  PMT PID: 0x0021 (33), PCR PID: None                                        |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  unknown (0x00) ............................... C          Unknown  |
+|  0x0021  PMT .......................................... C          Unknown  |
+|  0x0040  T2-MI (PLP: 0x66 (102)) ...................... C          Unknown  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+The option `--identify` of the plugin `t2mi` lists the same information.
+With this option, the plugin does not modify the stream, it only identify T2-MI PID’s and PLP’s.
+
+[source,shell]
+----
+$ tsp -I dvb ... -P t2mi --identify -O drop
+* t2mi: found T2-MI PID 0x0040 (64)
+* t2mi: PID 0x0040 (64), found PLP 102
+^C
+* tsp: user interrupt, terminating...
+* t2mi: summary: found 1 PID's with T2-MI
+* t2mi: PID 0x0040 (64): PLP 102
+$
+----
+
+But since T2-MI streams are received by designated professional equipment,
+many operators do not setup the required signalization and it is necessary to guess which PID in which service may carry T2-MI.
+
+Example service which is a good candidate for T2-MI:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x0320 (800), TS: 0x03A2 (930), Original Netw: 0x0000 (0)         |
+|  Service name: (unknown), provider: (unknown)                               |
+|  Service type: 0x00 (unknown)                                               |
+|  TS packets: 27,805,661, PID's: 2 (clear: 2, scrambled: 0)                  |
+|  PMT PID: 0x0100 (256), PCR PID: None                                       |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  unknown (0x00) ............................... C          Unknown  |
+|  0x0100  PMT .......................................... C          Unknown  |
+|  0x1000  MPEG-2 PES private data ...................... C          Unknown  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+In this example, the TS contains only one service.
+This service contains only one component and it carries private sections.
+Since there is no video PID, there is no PCR and `tsanalyze` is not able to compute bitrates.
+If we know, from other sources, that the TS contains T2-MI, it must be there.
+In this case, we need to explicitly provide the PID number to the plugin `t2mi`:
+
+[source,shell]
+----
+$ tsp -I dvb ... -P t2mi --pid 0x1000 --identify -O drop
+* t2mi: PID 0x1000 (4096), found PLP 0
+* t2mi: PID 0x1000 (4096), found PLP 2
+* t2mi: PID 0x1000 (4096), found PLP 1
+^C
+* tsp: user interrupt, terminating...
+* t2mi: summary: found 1 PID's with T2-MI
+* t2mi: PID 0x1000 (4096): PLP 0, 1, 2
+$
+----
+
+If we want to redistribute on a local DVB network one of these PLP’s, the command is the following:
+
+[source,shell]
+----
+$ tsp -I dvb ... -P t2mi --pid 0x1000 --plp 1 -O dektec ...
+----
+
+Without the option `--identify`, the plugin `t2mi` extracts the TS from the specified PLP
+and completely replaces the TS with the extracted one.
+The output of the plugin is the extracted TS, the original TS carrying T2-MI has disappeared.
+The final output is a Dektec modulator (or ASI board) which broadcasts the extracted TS.
+
+The plugin `t2mi` can extract only one PLP because this is the basic principle of `tsp`:
+end-to-end processing of one single TS.
+Even if one plugin produces a radical transformation such as completely replacing the TS with another one
+(here, the extracted PLP), there is only one TS at all points in the chain.
+
+If we want to process all PLP’s at the same time, we must re-route the original TS in parallel instances of `tsp` using the plugin fork.
+Each instance of `tsp` extracts one PLP.
+
+This is illustrated by the following command:
+
+[source,shell]
+----
+$ tsp -I dvb ... \
+      -P until --seconds 30 \
+      -P fork 'tsp -P t2mi --pid 0x1000 --plp 0 -P analyze -o plp0.txt -O drop' \
+      -P fork 'tsp -P t2mi --pid 0x1000 --plp 1 -P analyze -o plp1.txt -O drop' \
+      -P fork 'tsp -P t2mi --pid 0x1000 --plp 2 -P analyze -o plp2.txt -O drop' \
+      -P analyze -o main.txt
+      -O drop
+----
+
+This command analyzes the enclosing stream and the three different PLP’s in parallel during 30 seconds.
+Each plugin `fork` creates a process and passes the complete TS to this process.
+Each created process runs another instance of `tsp` which extracts one PLP.
+Note that the default input plugin of `tsp` is the plugin `file` which, by default, reads the standard input.
+
+==== Merging transport streams
+
+The plugin `merge` can be used to merge a transport stream into another one.
+The service references are correctly merged into the final transport stream.
+
+Let’s illustrate this using two live transport streams from satellite Astra 19.2 E.
+We use one transport stream as base.
+We remove one service from this stream and we replace it with another live service coming from another transport stream.
+
+We use the transport stream with id 1028 as base.
+Using the plugin `dvb`, the tuning options are:
+
+[source,shell]
+----
+--frequency 11,626,500,000 --symbol 22,000,000 --fec 5/6 --polarity vertical --delivery DVB-S
+----
+
+To simplify the command lines, we save these options, one per line,
+in a text file named `ts1028.txt` to be used by partial command line redirection (see xref:cmd-redirection[xrefstyle=short]).
+
+The structure of this transport stream can be seen using the plugin `analyze`.
+Here is the list of services from the analyze output:
+
+[source,text]
+----
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x1131  TVE INTERNACIONAL EUROPA ..................... C    3,572,410 b/s  |
+|  0x1132  CANAL 24 HORAS ............................... C    3,423,043 b/s  |
+|  0x113B  RNE RADIO 1 .................................. C      140,998 b/s  |
+|  0x113C  RNE RADIO 3 .................................. C      278,941 b/s  |
+|  0x113D  RNE RADIO 4 .................................. C      141,045 b/s  |
+|  0x113E  RNE RADIO 5 TODO NOTICIAS .................... C      141,092 b/s  |
+|  0x113F  RNE RADIO CLASICA ............................ C      347,819 b/s  |
+|  0x1140  RNE RADIO EXTERIOR DE ESPAÑA ................. C      141,139 b/s  |
+|  0x1146  CNN Int. ..................................... C    4,008,806 b/s  |
+|  0x114E  DW (English) ................................. C    3,488,065 b/s  |
+|  0x1158  Al Jazeera English ........................... C    3,803,631 b/s  |
+|-----------------------------------------------------------------------------|
+----
+
+We use the transport stream with id 1022 to extract a service and inject it into the previous transport stream.
+The `dvb` tuning options are:
+
+[source,shell]
+----
+--frequency 11,538,000,000 --symbol 22,000,000 --fec 5/6 --polarity vertical --delivery DVB-S
+----
+
+Again, we save them, one by line, in a text file named `ts1022.txt`.
+
+The list of services from transport stream 1022 is shown below.
+Note that we use transport streams with clear channels only to be able to watch the result.
+
+[source,text]
+----
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x1AF4  DATASYSTEM ................................... C       44,884 b/s  |
+|  0x1AF8  Russia Today ................................. C    4,038,071 b/s  |
+|  0x1AF9  France 24 (en Français) ...................... C    2,703,659 b/s  |
+|  0x1AFA  France 24 (in English) ....................... C    2,700,842 b/s  |
+|  0x1AFE  France 24 (in Arabic) ........................ C    2,465,576 b/s  |
+|  0x1B00  CGTN Documentary ............................. C    2,504,263 b/s  |
+|  0x1B01  CGTN F ....................................... C    2,247,071 b/s  |
+|  0x1B02  CGTN ......................................... C    2,443,463 b/s  |
+|  0x1B03  TV5MONDE EUROPE .............................. C    3,619,747 b/s  |
+|  0x1B06  TRT World HD ................................. C    5,984,240 b/s  |
+|-----------------------------------------------------------------------------|
+----
+
+We assume that we have two satellite tuners in the system.
+Adapter 0 will be used to receive TS 1022 and adapter 1 will be used to receive TS 1028.
+
+We also have a Dektec modulator to redistribute the resulting transport stream.
+Again, to shorten the command line, we place all modulation options into one text file named `modulation.txt`.
+
+In our example, we extract the service "TV5MONDE EUROPE" from TS 1022 and we merge it into TS 1028.
+To make sure that the transport stream has enough free space, we remove the service "Al Jazeera English" from TS 1028 before the merge.
+
+NOTE: In practice, on the day of this experiment,
+the TS 1028 had more than enough stuffing to insert one or two services without removing any other.
+However, in the general case, we need to make some room first. So, let’s do it anyway.
+
+The merging command is the following:
+
+[source,shell]
+----
+$ tsp -I dvb -a 1 @ts1028.txt \
+      -P svremove -s AlJazeeraEnglish \
+      -P merge "tsp -I dvb -a 0 @ts1022.txt -P zap TV5MondeEurope" \
+      -P analyze -i 30 -o merged.txt \
+      -O dektec @modulation.txt
+----
+
+Note that the service "Al Jazeera English" is replaced by stuffing (option -s) in TS 1028.
+
+In the created command, everything is removed from TS 1022, except service "TV5MONDE EUROPE"
+(the service names are not case-sensitive and spaces are ignored).
+
+The final plugin `analyze` continuously analyzes the output stream and produces a report file every 30 seconds.
+Here is the merged list of services from this report:
+
+[source,text]
+----
+|-----------------------------------------------------------------------------|
+|  Srv Id  Service Name                              Access          Bitrate  |
+|  0x1131  TVE INTERNACIONAL EUROPA ..................... C    3,529,507 b/s  |
+|  0x1132  CANAL 24 HORAS ............................... C    3,382,237 b/s  |
+|  0x113B  RNE RADIO 1 .................................. C      139,475 b/s  |
+|  0x113C  RNE RADIO 3 .................................. C      275,915 b/s  |
+|  0x113D  RNE RADIO 4 .................................. C      139,425 b/s  |
+|  0x113E  RNE RADIO 5 TODO NOTICIAS .................... C      139,374 b/s  |
+|  0x113F  RNE RADIO CLASICA ............................ C      343,831 b/s  |
+|  0x1140  RNE RADIO EXTERIOR DE ESPAÑA ................. C      139,425 b/s  |
+|  0x1146  CNN Int. ..................................... C    3,963,218 b/s  |
+|  0x114E  DW (English) ................................. C    3,448,180 b/s  |
+|  0x1B03  TV5MONDE EUROPE .............................. C    3,566,805 b/s  |
+|-----------------------------------------------------------------------------|
+----
+
+We can see that the service "Al Jazeera English" has been replaced with "TV5MONDE EUROPE".
+
+Luckily, there was no PID or service id conflict between the two transport streams.
+If the same service id or PID had existed in the two streams,
+the plugin `merge` would have reported an error and the component from the merged stream would have been dropped.
+In case of conflict, we use the plugin `remap` to modify PID’s or the plugin `svrename` to rename a service
+(including modifying its service id).
+
+==== Injecting SCTE 35 cue information
+
+SCTE 35 cue information are single-section tables which are sent in one dedicated PID in a service.
+These commands are used to signal video splicing points where alternate content (typically ads) can replace the original video content.
+The video splicing points are defined by PTS (presentation time stamp) values in the video PID of the service.
+
+Inserting SCTE 35 cue information is consequently different from traditional signalization.
+Each section defines one specific splicing event.
+It is not cycled.
+It is inserted once or twice only in the PID.
+The traffic on this PID is very low and not regular (it depends on the occurrences of the splicing events).
+
+The splicing points are usually defined on the fly, with the cooperation of the video encoder.
+The exact PTS values of the splicing points are defined in real time.
+It is usually impossible to define in advance the list of all splicing events in the life of a service.
+Moreover, inserting cue information section needs to be synchronized with the associated video PID.
+Typically, a splice event is signaled twice, once two seconds before the event and once one second before.
+
+Because of this dynamics, there are two distinct use cases: real-time live streams and offline test files.
+
+===== Real-time live stream
+
+This example illustrates the insertion of cue information in a real-time live transport stream.
+We receive a DTTV stream from a DVB-T tuner, we insert cue information for one service,
+and we restream the result through a DVB-T modulator.
+
+The transmission chain is processed by a `tsp` command.
+The generation of the cue information is externally performed by some real-time system,
+cooperating with the content management system and the video encoder.
+The format of the splice commands is defined by <<SCTE-35>>.
+Splice information sections can be provided in binary or XML format (see xref:psisi-sig[xrefstyle=short]).
+
+Here is an XML example of a pair of splice commands, a _splice out_ event, followed 20 seconds later by a _splice in_ event.
+This is typically an ads replacement opportunity.
+Here, the sections are minimal.
+You may want to add break duration information or additional descriptors.
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <splice_information_table>
+    <splice_insert splice_event_id="100" unique_program_id="1"
+                   out_of_network="true" pts_time="0x078CA4459"/>
+  </splice_information_table>
+
+  <splice_information_table>
+    <splice_insert splice_event_id="100" unique_program_id="1"
+                   out_of_network="false" pts_time="0x78E5BB99"/>
+  </splice_information_table>
+
+</tsduck>
+----
+
+The PTS timestamps are synchronized with the video PID.
+Moreover, these timestamp shall correspond to video splice points,
+i.e. frames where the binary replacement of the encoded video content is smooth.
+This is why splicing shall be done with the cooperation of the video encoder.
+
+The following command performs the real-time processing.
+
+[source,shell]
+----
+$ tsp -I dvb -u 24 \
+      -P pmt --service 1010 --add-programinfo-id 0x43554549 --add-pid 600/0x86 \
+      -P spliceinject --service 1010 --files 'splice-*.xml' --udp 4444 \
+      -O dektec -u 24 --convolution 2/3 --guard 1/32
+----
+
+The input plugin `dvb` reads a DVB-T live stream from UHF channel 24.
+At the end of the processing, the output plugin `dektec` sends the stream to a Dektec DVB-T modulator on the same frequency.
+
+The transport stream contains several services.
+We will add cue information on service id 1010.
+We could process multiple services using successive instances of the plugin `spliceinject` in the same command.
+
+The plugin `pmt` modifies the PMT of the target service on the fly.
+To comply with the SCTE 35 standard, we add a _registration_descriptor_ with id 0x43554549,
+and we add the declaration of the PID 600 with stream type 0x86 (meaning SCTE 35 cue information).
+
+The plugin `spliceinject` performs the injection.
+The service id is sufficient to locate the target PID:
+the plugin searches the service and then searches a component with stream type 0x86 in its PMT.
+
+The splice information sections can be supplied in real time using two methods: file (binary or XML) and UDP datagrams.
+Here, for the sake of the example, we use both.
+We can also use only one.
+The file specification is a wildcard because different files can be provided.
+It is also possible to rewrite the same file.
+Each time a file is modified, it is reloaded.
+We can also receive UDP datagrams (here on port number 4444).
+The datagram can contain binary or XML sections.
+
+See the xref:spliceinject-ref[reference documentation of the plugin `spliceinject`] for more details.
+
+===== Cue insertion in offline files
+
+Sometimes, it is necessary to prepare a transport stream file for demo or test.
+Usually, the same `tsp` command can be used indifferently on live streams and offline files.
+For SCTE 35 cue information, this is a bit different because of the dynamics.
+
+The plugin `spliceinject` processes a transport stream and, on the other hand, it asynchronously receives splice information sections.
+On a real time stream, the events are received slightly in advance but in a timely fashion.
+The plugin does not expect any section file to be present at the time the processing starts.
+It does not wait for the section files.
+
+With an offline transport stream file, the processing is very fast, running at the speed of the disk storage.
+So, even if the splice information section files are already present, they are read asynchronously from the transport stream processing.
+Specifically, they can be read after the processing the target event in the stream.
+In that case, no section would be injected.
+To avoid this problem, we use the option `--wait-first-batch`
+which forces the transport stream processing to wait for at least the first batch of splice section files.
+Thus, if the section files are present at the time the command is run, it is guaranteed that they are loaded and injected.
+
+Additionally, in the following example, we use a SPTS file (containing only one service).
+These files usually contain no stuffing.
+However, `tsp` cannot insert new packets in a transport stream.
+It can only replace stuffing packets.
+So, unlike broadcast transport streams which always contain some stuffing, nothing can be injected in such a stream.
+To make room for insertion, we use the tsp option `--add-input-stuffing` which artificially injects null packets at input level
+(here one null packet every 10 input packets).
+This artificial stuffing will be used by `spliceinject` to insert its sections.
+Note that we remove the extra unused stuffing before the output plugin using the plugin `filter`.
+
+The rest of the command is similar to the previous example.
+
+[source,shell]
+----
+$ tsp --add-input-stuffing 1/10 \
+      -I file spts.ts \
+      -P pmt --service 1010 --add-programinfo-id 0x43554549 --add-pid 600/0x86 \
+      -P spliceinject --service 1010 --files splice.xml --wait-first-batch \
+      -P filter --negate --pid 0x1FFF \
+      -O file spts-out.ts
+----
+
+==== Encapsulating PID’s into a private tunnel
+
+In this example, we start from a transport stream containing two services, "CANAL+ DECALE" (id 0x2262) and "CNEWS" (id 0x226A).
+We want to process the first service through some external equipment (transcoder, transrater, etc.)
+However, this equipment can only process SPTS (single-program transport stream).
+
+To preserve the structure of the transport stream while crossing this equipment, we use the following trick.
+We encapsulate the second service into one single "tunnel" PID and then we erase this service from the structure of the TS.
+This tunnel PID is added as a private component of the first service.
+Now, we have a true SPTS which can be processed by the external equipment.
+
+The structure of the service "CNEWS" is reported as follow by `tsanalyze`:
+
+[source,text]
+----
+|=============================================================================|
+|  Service: 0x226A (8810), TS: 0x0438 (1080), Original Netw: 0x0001 (1)       |
+|  Service name: CNEWS, provider: CSAT                                        |
+|  Service type: 0x19 (Advanced codec HD digital television service)          |
+|  TS packets: 9,298, PID's: 4 (clear: 4, scrambled: 0)                       |
+|  PMT PID: 0x03E8 (1000), PCR PID: 0x03F2 (1010)                             |
+|-----------------------------------------------------------------------------|
+|     PID  Usage                                     Access          Bitrate  |
+|   Total  Advanced codec HD digital television service . C    3,983,427 b/s  |
+|  0x03E8  PMT .......................................... C       14,994 b/s  |
+|  0x03F2  AVC video (1920x1080, high profile, level 4.0  C    3,771,361 b/s  |
+|  0x03FD  AC-3 Audio (fra, AC-3, stereo (L,R), @48,000   C      197,072 b/s  |
+|  0x0413  Subtitles (fra, DVB subtitles for hard of hea  C            0 b/s  |
+|          (C=Clear, S=Scrambled, +=Shared)                                   |
+|=============================================================================|
+----
+
+The first step is performed using the following command.
+
+[source,shell]
+----
+$ tsp -I ... \
+      -P encap -o 0x1000 -p 0x03E8 -p 0x03F2 -p 0x03FD -p 0x0413 \
+      -P pat --remove-service 0x226A \
+      -P sdt --remove-service 0x226A \
+      -P pmt -s 0x2262 -a 0x1000/0x99 \
+      -O ...
+----
+
+The plugin `encap` creates a tunnel PID 0x1000.
+This tunnel contains the 4 PID’s of the service "CNEWS", PMT, video, audio and subtitles.
+The plugins `pat` and `sdt` remove the service from the PAT and SDT, respectively.
+At this point, the service "CNEWS" has disappeared but the new PID 0x1000 is orphan.
+
+To preserve this PID through the processing of the service "CANAL+ DECALE", we add it to the PMT of the service using the plugin `pmt.
+We use the reserve stream type 0x99 for this PID to indicate some private type (any other reserved stream type should be OK).
+
+After processing the SPTS through the external equipment
+(and hoping that the equipment has preserved the private components of the service),
+we restore the structure of the transport stream using the following command:
+
+[source,shell]
+----
+$ tsp -I ... \
+      -P decap -p 0x1000 \
+      -P pat -a 0x226A/0x03E8 \
+      -P sdt -s 0x226A -n CNEWS -p CSAT \
+      -P pmt -s 0x2262 -r 0x1000 \
+      -O ...
+----
+
+The plugin `decap` decapsulates the content of the tunnel PID 0x1000.
+It is replaced by all original PID’s of the service "CNEWS".
+Then, we need to restore the reference to the service in the PAT and SDT using the plugins `pat` and `sdt`.
+Finally, since the private component 0x1000 no longer exists, we remove it from the PMT of the service "CANAL+ DECALE" using the plugin `pmt`.
+
+NOTE: In a real-life example, the MPTS would probably contain more than two services.
+In that case, we would encapsulate all other services in the private tunnel PID as well.
+The principle remains the same.
+The command is only a bit longer.
+
+==== Interleaving input files and merging their PSI
+
+This example command reads two input files `file1.ts` and `file2.ts`.
+We assume here that the two files have no conflicting allocation of service ids and no conflicting PID’s into services.
+Only the PSI/SI PID’s are common.
+
+Using the option `--interleave` in the file input plugin, we read one packet of `file1.ts`,
+then one packet of `file2.ts`, then one packet of `file1.ts` again, and so on.
+So, the two input files are multiplexed one by one.
+
+Using the option `--label-base`, we assign the label 1 to all packets from `file1.ts` and label 2 to all packets from `file2.ts`.
+
+[source,shell]
+----
+$ tsp -I file --interleave file1.ts file2.ts --label-base 1 \
+      -P psimerge --main-label 1 --merge-label 2 \
+      ...
+----
+
+The plugin `psimerge` uses all packets with label 1 as a main stream and all packets with label 2 as a merge stream.
+It merges the PSI/SI from the two streams, creating a PAT and SDT-Actual containing all services from the two streams,
+creating a CAT containing all EMM PID’s from the two streams.
+All EIT sections are multiplexed into the EIT PID.
+
+==== Using Secure Reliable Transport (SRT) transmission
+
+The input and output plugins `srt` can be used to send and receive a transport stream
+using the Secure Reliable Transport (SRT) protocol.
+
+These plugins are not available everywhere, the `libsrt` (SRT library, see <<SRT>>)
+must be present during the compilation of TSDuck.
+
+First example: On a system named `vmfedora`, a `tsp` command sends a stream (here, a simple file playback) using SRT.
+The system is the SRT listener.
+It waits for an incoming connection on port 12345.
+
+[source,shell]
+----
+$ tsp -v \
+      -I file input.ts --infinite \
+      -P regulate \
+      -O srt --listener 12345 --transtype live --messageapi
+----
+
+On a receiver system, a `tsp` command connects to `vmfedora` on port 12345 and receives the stream over SRT.
+Here, the processing of the stream is simply an analysis during 30 seconds.
+
+[source,shell]
+----
+$ tsp -v \
+      -I srt --caller vmfedora:12345 --transtype live --messageapi --conn-timeout 100000 \
+      -P until --seconds 30 \
+      -P analyze \
+      -O drop
+----
+
+Second example with encrypted transmission: The passphrase is used to derive the encryption key.
+The passphrase must be 10 to 64 characters long.
+The option `--pbkeylen` selects the actual derived encryption key length.
+The option `--min-version` rejects connection with a libsrt version lower than 1.4.0 in this case.
+
+[source,shell]
+----
+$ tsp -v \
+      -I file input.ts --infinite \
+      -P regulate \
+      -O srt --listener 12345 --transtype live --messageapi \
+             --passphrase baguettess --pbkeylen 16 \
+             --enforce-encryption --min-version 0x010400
+----
+
+On the receiver system:
+
+[source,shell]
+----
+$ tsp -v \
+      -I srt --caller vmfedora:12345 --transtype live --messageapi \
+             --passphrase baguettess --pbkeylen 16 \
+      -P until --seconds 30 \
+      -P analyze \
+      -O drop
+----
+
+Third example using `--transtype` file and buffer API (equivalent to not setting `--messageapi`).
+
+[source,shell]
+----
+$ tsp -v \
+      -I file input.ts --infinite \
+      -P regulate \
+      -O srt --listener 12345 --transtype file
+----
+
+On the receiver system:
+
+[source,shell]
+----
+$ tsp -v \
+      -I srt --caller vmfedora:12345 --transtype file --conn-timeout 100000 \
+      -P until --seconds 30 \
+      -P analyze \
+      -O drop
+----
+
+==== Preserving EIT’s through ffmpeg processing
+
+TSDuck is often used in combination with `ffmpeg`.
+The former processes the system layer and the latter processes the video and audio.
+
+However, `ffmpeg` removes the TS signalization, system or data PID’s.
+So, while `ffmpeg` is extremely useful to transcode video and audio, it is inconvenient to process a complete TS.
+In this example, we demonstrate how to process an SPTS through `ffmpeg` while preserving EIT’s.
+It can be easily adapted to preserve any other data PID.
+
+The plugin `encap` encapsulates one or more PID's into one tunnel PID.
+There are several encapsulation modes, include a _PES mode_ which builds a PES stream
+containing the encapsulated data (see the xref:encap-ref[`encap` reference documentation]).
+
+We use this trick to preserve EIT’s through `ffmpeg`.
+
+[source,shell]
+$ tsp --add-input-stuffing 1/10 \
+      -I dvb --uhf-channel 30 \
+      -P zap arte --audio fra --no-subtitles --eit --stuffing \
+      -P encap --pes-mode fixed --pid 0x12 --output-pid 0x900 \
+      -P pmt --add-pid 0x900/0x06 --add-pid-registration 0x900/0x4B4C5641 \
+      -P filter --negate --pid 0x1FFF | \
+  ffmpeg -f mpegts -i - \
+      -map 0:d -codec:d copy \
+      -map 0:v -codec:v ... \
+      -map 0:a -codec:a ... \
+      -mpegts_start_pid 0x900 \
+      -mpegts_transport_stream_id 0x0004 \
+      -mpegts_original_network_id 0x20FA \
+      -mpegts_service_id 0x0407 \
+      -metadata service_name="Arte" \
+      -f mpegts - | \
+  tsp -P decap --pid 0x900 \
+      -P pmt --remove-pid 0x900 \
+      -P filter --negate --pid 0x1FFF \
+      -O ...
+----
+
+In this example, we extract one service named "Arte" from a DVB-T transport stream on UHF channel 30.
+
+Analysis of this command:
+
+[.compact-list]
+* Initial `tsp` command:
+** Add one null packet every 10 input packets (`--add-input-stuffing 1/10`) to accomodate the encapsulation overhead.
+   In this specific example, this is useless because a broadcast TS always contain some stuffing.
+   But it would be required if you read an IP stream without stuffing, for instance.
+** Receive a DVB-T transport stream from a tuner on UHF channel 30.
+** Extract the service named "Arte", using the French audio track, no subtitles and keep all EIT’s for this service.
+** Encapsulate the PID 0x12 (EIT's) in PES mode, creating a tunnel PID 0x900.
+   Make sure that this PID number is not already used in your stream.
+** Reference this PID in the PMT of the service with stream type 0x06 (PES private data)
+   and registration type KLVA (0x4B4C5641).
+   Thus, the encapsulated EIT's become a data component of the service.
+** Remove remaining null packets.
+* Intermediate `ffmpeg` command:
+** Map the first "data" stream `0:d` to output and use `copy` codec (ie. no transformation of the PES stream).
+   Thus, the PES stream containing the encapsulated EIT's will pass unmodified.
+** Then, map video and audio PID's `0:v` and `0:a` with their respective codecs
+   (unspecified here, select your favorite codecs).
+** Important: Be sure to map the data stream first to enforce it as first output PID.
+   This way, you can specify exactly the first PID using the ffmpeg option `-mpegts_start_pid` afterwards.
+** Respecify the original TS id, original network id and service id using dedicated `ffmpeg` options.
+   This is important to preserve the references of the EIT's.
+   By default, `ffmpeg` would generate TS id 1 and service id 1 which would not match with the EIT's.
+   We also respecify the orginal service name (`ffmpeg` generates a dummy name by default).
+   All these values shall be adapted according to the input stream.
+* Final `tsp` command:
+** Decapsulate the tunnel PID. We have forced it in `ffmpeg` as PID 0x900 using `-mpegts_start_pid`.
+   The PID 0x12 (EIT's) reappears in the stream.
+** Dereference the PID 0x900 from the PMT.
+   The tunnel PID disappears after decapsulation and it is cleaner to dereference it.
+** Remove spurious null packets which were created from encapsulation overhead.
+
+[#sample-json-analyze]
+==== JSON analysis of a transport stream
+
+The option `--json` is used with `tsanalyze` or the pugin `analyze` to produce a JSON output.
+Such output can be used with many tools.
+In shell scripts, the open source tool `jq` (for "JSON Query") is extremely powerful.
+
+Getting a JSON analysis of a transport stream from the TSDuck repository:
+
+[source,shell]
+----
+$ tsp -I http https://tsduck.io/streams/france-dttv/tnt-uhf30-546MHz-2019-01-22.ts \
+      -P analyze --json -o ts.json \
+      -O drop
+----
+
+First sample commands using `jq` to get the number of services and their names:
+
+[source,shell]
+----
+$ jq <ts.json -r '.services | length'
+5
+$ jq <ts.json -r '.services[].name'
+M6
+W9
+Arte
+France 5
+6ter
+----
+
+Now, let’s write a shell script to display all services and a description of each of their PID’s.
+This illustrates the power of `jq`, including field selection and array lookup based on the value of a property.
+
+[source,shell]
+----
+JSON=ts.json
+SRVCOUNT=$(jq <$JSON -r ".services | length")
+
+for ((i=0; i<$SRVCOUNT; i++)); do
+    SRVNAME=$(jq <$JSON -r ".services[$i].name")
+    PIDCOUNT=$(jq <$JSON -r ".services[$i].pids | length")
+    echo "Service $SRVNAME, $PIDCOUNT PID's"
+    for ((p=0; p<$PIDCOUNT; p++)); do
+        PID=$(jq <$JSON -r ".services[$i].pids[$p]")
+        DESC=$(jq <$JSON -r ".pids[] | select(.id==$PID) | .description")
+        printf "  PID 0x%04X, %s\n" "$PID" "$DESC"
+    done
+done
+----
+
+The output of this script is the following (truncated for clarity):
+
+[source,text]
+----
+Service M6, 9 PID's
+  PID 0x0064, PMT
+  PID 0x0078, AVC video (1920x1080, high profile, level 4.0, 4:2:0)
+  PID 0x0082, E-AC-3 Audio (fra, E-AC-3, 3/2 (L,C,R,SL,SR), @48,000 Hz, complete m...
+  PID 0x0083, E-AC-3 Audio (qad, E-AC-3, stereo (L,R), @48,000 Hz, visually impair...
+  PID 0x0084, E-AC-3 Audio (qaa, E-AC-3, stereo (L,R), @48,000 Hz, complete main, ...
+  PID 0x008C, Subtitles (fra, DVB subtitles for hard of hearing, high definition)
+  PID 0x008D, Subtitles (fra, DVB subtitles, high definition)
+  PID 0x00AA, MPEG-2 Private sections (AIT)
+  PID 0x00AB, DSM-CC U-N (HbbTV)
+Service W9, 9 PID's
+  PID 0x00C8, PMT
+  PID 0x00DC, AVC video (1920x1080, high profile, level 4.0, 4:2:0)
+  PID 0x00E6, E-AC-3 Audio (fra, E-AC-3, 3/2 (L,C,R,SL,SR), @48,000 Hz, complete m...
+  PID 0x00E7, E-AC-3 Audio (qad, E-AC-3, stereo (L,R), @48,000 Hz, visually impair...
+  PID 0x00E8, E-AC-3 Audio (qaa, E-AC-3, stereo (L,R), @48,000 Hz, complete main, ...
+  PID 0x00F0, Subtitles (fra, DVB subtitles for hard of hearing, high definition)
+  PID 0x00F1, Subtitles (fra, DVB subtitles, high definition)
+  PID 0x010E, MPEG-2 Private sections (AIT)
+  PID 0x010F, DSM-CC U-N (HbbTV)
+Service Arte, 11 PID's
+  PID 0x012C, PMT
+  PID 0x0140, AVC video (1920x1080, high profile, level 4.0, 4:2:0)
+  ...
+----
+
+[#sample-mon-pid]
+==== Monitoring the bitrate of a PID
+
+This example demonstrates how to monitor the bitrate of a PID,
+and raise alarms when the bitrate of that PID goes out of range or back to normal.
+
+Here, we want to make sure that the bitrate of the PID 100 of a transport stream remains in the 1 to 2 Mb/s range.
+Assuming that the input is a UDP/IP stream on local UDP port 12345, the monitoring command is the following:
+
+[source,shell]
+----
+$ tsp --timed-log \
+      -I ip 12345 \
+      -P bitrate_monitor --pid 100 --min 1,000,000 --max 2,000,000 \
+                         --time-interval 1 --alarm-command './alarm.sh' \
+      -O drop
+----
+
+This command analyzes the bitrate of PID 100 by periods of 1 second.
+Each time the bitrate goes out of range or back to normal, the script `alarm.sh` is run.
+
+The sample `alarm.sh` script contains:
+
+[source,shell]
+----
+#!/usr/bin/env bash
+(
+    echo -n "Date: "; date '+%Y/%m/%d %H:%M:%S'
+    echo "Message: $1"
+    echo "Target PID: $2"
+    echo "Alarm state: $3"
+    echo "Current bitrate: $4"
+    echo "Minimum bitrate: $5"
+    echo "Maximum bitrate: $6"
+    echo
+) >>monitor.log
+----
+
+This script simply accumulates the alarms in a log file.
+See the xref:bitratemonitor-ref[reference description of the `bitrate_monitor` plugin]
+for a description of the six parameters which are passed to the alarm command.
+
+To exercise the script, we run the following shell script:
+
+[source,shell]
+----
+for bitrate in 1,500,000 500,000 1,500,000 2,500,000 1,500,000; do
+    tsp -I craft --pid 100 \
+        -P regulate --bitrate $bitrate \
+        -P until --seconds 10 \
+        -O ip localhost:12345
+done
+----
+
+This script simply generates a transport stream full of PID 100 packets.
+By sequences of 10 seconds, the stream has a bitrate of 1.5, 0.5, 1.5, 2.5, 1.5 Mb/s.
+Thus, the bitrate of the monitored PID is first in range, then too low, back in range, to high, back in range and finally zero.
+
+The test scenario is the following:
+
+* Run the source command from one terminal.
+* Immediately after, run the monitoring command from another terminal.
+* Once the source command completes, we may interrupt the monitoring command.
+
+The monitoring command generates warning messages each time an alarm is raised:
+
+[source,text]
+----
+* 2020/12/30 15:01:17 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (964,064 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+* 2020/12/30 15:01:28 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (1,516,032 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+* 2020/12/30 15:01:38 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (2,496,640 bits/s) is greater than allowed maximum (2,000,000 bits/s)
+* 2020/12/30 15:01:48 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (1,491,968 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+* 2020/12/30 15:01:58 - Warning: bitrate_monitor: PID 0x0064 (100) bitrate (0 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+----
+
+The file `monitor.log` is filled with the various alarms and contains the following:
+
+[source,text]
+----
+Date: 2020/12/30 15:01:17
+Message: PID 0x0064 (100) bitrate (964,064 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+Target PID: 100
+Alarm state: lower
+Current bitrate: 964064
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:28
+Message: PID 0x0064 (100) bitrate (1,516,032 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+Target PID: 100
+Alarm state: normal
+Current bitrate: 1516032
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:38
+Message: PID 0x0064 (100) bitrate (2,496,640 bits/s) is greater than allowed maximum (2,000,000 bits/s)
+Target PID: 100
+Alarm state: greater
+Current bitrate: 2496640
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:48
+Message: PID 0x0064 (100) bitrate (1,491,968 bits/s) is back in allowed range (1,000,000-2,000,000 bits/s)
+Target PID: 100
+Alarm state: normal
+Current bitrate: 1491968
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+
+Date: 2020/12/30 15:01:58
+Message: PID 0x0064 (100) bitrate (0 bits/s) is lower than allowed minimum (1,000,000 bits/s)
+Target PID: 100
+Alarm state: lower
+Current bitrate: 0
+Minimum bitrate: 1000000
+Maximum bitrate: 2000000
+----
+
+NOTE: The same example can be used to monitor the global bitrate of the transport stream.
+Just remove the `--pid` option in the `bitrate_monitor` plugin.

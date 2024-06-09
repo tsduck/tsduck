@@ -1,0 +1,139 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== nitscan
+
+[.cmd-header]
+Scan NIT for tuning information
+
+This plugin analyzes the NIT (Network Information Table) of the transport stream and
+outputs a list of tuning information, one per transport.
+The format of the tuning information is compatible with the `dvb` input plugin.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P nitscan [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--all-nits*
+
+[.optdoc]
+Analyze all NIT's (the NIT-Actual and all NIT-Other).
+
+[.optdoc]
+By default, only the NIT-Actual is analyzed.
+
+[.opt]
+**-c**__[prefix]__ +
+**--comment**__[=prefix]__
+
+[.optdoc]
+Add a comment line before each tuning information.
+The optional prefix designates the comment prefix.
+If the option `--comment` is present but the prefix is omitted, the default prefix is `'# '`.
+
+[.opt]
+*-d* +
+*--dvb-options*
+
+[.optdoc]
+The characteristics of each transponder are formatted as a list of command-line options
+for the `dvb` input plugin such as `--frequency`, `--symbol-rate`, etc.
+
+[.optdoc]
+This is the default when no `--save-channels` or `--update-channels` is specified.
+
+[.opt]
+*-n* _value_ +
+*--network-id* _value_
+
+[.optdoc]
+Specify the network-id of a NIT-Other to analyze instead of the NIT-Actual.
+
+[.optdoc]
+By default, the NIT-Actual is analyzed.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the output text file for the analysis result.
+By default, use the standard output.
+
+[.optdoc]
+WARNING: If you do not specify this option, be sure to redirect the output plugin to something different from the default.
+Otherwise, the text output of the analysis will be mixed with the binary output of the TS packets.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID on which the NIT is expected.
+
+[.optdoc]
+By default, the PAT is analyzed to get the PID of the NIT.
+DVB-compliant networks should use PID 16 (0x0010) for the NIT and signal it in the PAT.
+
+[.opt]
+*--save-channels* _filename_
+
+[.optdoc]
+Save the description of all transport streams in the specified XML file.
+See xref:chap-chanconfig[xrefstyle=short] for more details on channels configuration files.
+
+[.optdoc]
+If the file name is a dash (`-`), use the default tuning configuration file.
+
+[.optdoc]
+See also option `--update-channels`.
+
+[.opt]
+*-t* +
+*--terminate*
+
+[.optdoc]
+Stop the packet transmission after the first NIT is analyzed.
+Should be specified when `tsp` is used only to scan the NIT and nothing else.
+
+[.opt]
+*--update-channels* _filename_
+
+[.optdoc]
+Update the description of all transport streams in the specified XML file.
+The content of each transport stream is preserved, only the tuning information is updated.
+If the file does not exist, it is created.
+See xref:chap-chanconfig[xrefstyle=short] for more details on channels configuration files.
+
+[.optdoc]
+If the file name is a dash (`-`), use the default tuning configuration file.
+
+[.optdoc]
+See also option `--save-channels`.
+
+[.opt]
+**-v**__[prefix]__ +
+**--variable**__[=prefix]__
+
+[.optdoc]
+Each tuning information line is output as a shell environment variable definition.
+The name of each variable is built from a prefix and the TS id.
+The default prefix is TS and can be changed through the optional value of the option `--variable`.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

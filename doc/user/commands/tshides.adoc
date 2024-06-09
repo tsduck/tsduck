@@ -1,0 +1,95 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tshides
+
+[.cmd-header]
+List HiDes modulator devices
+
+This utility lists HiDes modulator devices and their characteristics.
+
+[.usage]
+Restrictions
+
+This command is available on Linux and Windows only.
+There is no HiDes device drivers on macOS or BSD systems.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tshides [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* _value_ +
+*--adapter* _value_
+
+[.optdoc]
+Specify the HiDes adapter number to list.
+By default, list all HiDes devices.
+
+[.optdoc]
+Use `--adapter` or `--device` but not both.
+
+[.opt]
+*-b* _value_ +
+*--bandwidth* _value_
+
+[.optdoc]
+Specify the bandwidth in Hz with `--gain-range`.
+The default is 8 MHz.
+
+[.optdoc]
+For compatibility with old versions, "low" values (below 1000) are interpreted in MHz.
+This means that values 8 and 8,000,000 are identical. Both mean 8 MHz.
+
+[.opt]
+*-c* +
+*--count*
+
+[.optdoc]
+Only display the number of devices, not their names or characteristics.
+
+[.opt]
+*-d* _"name"_ +
+*--device* _"name"_
+
+[.optdoc]
+Specify the HiDes device name to list.
+By default, list all HiDes devices.
+
+[.optdoc]
+Use `--adapter` or `--device` but not both.
+
+[.opt]
+*-f* _value_ +
+*--frequency* _value_
+
+[.optdoc]
+Frequency, in Hz, of the output carrier with `--gain-range`.
+The default is the first UHF channel.
+
+[.opt]
+*-g* +
+*--gain-range*
+
+[.optdoc]
+Display the allowed range of output gain for the specified device.
+
+[.optdoc]
+Usually, the allowed range of gain depends on the frequency and the bandwidth.
+This is why the gain range is not displayed with the other characteristics.
+Use the options `--frequency` and `--bandwidth` to display the corresponding gain range.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

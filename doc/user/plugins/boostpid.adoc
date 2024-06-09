@@ -1,0 +1,51 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== boostpid
+
+[.cmd-header]
+Boost the bitrate of a PID
+
+This plugin artificially increases the bitrate of a selected PID by adding empty packets (ie. without payload).
+The plugin does not really insert new packets in the TS, it "steals" stuffing packets.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P boostpid [options] pid addpkt inpkt
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_pid_
+
+[.optdoc]
+The first parameter specifies the PID to boost.
+
+[.opt]
+_addpkt inpkt_
+
+[.optdoc]
+The second and third parameters specify that _addpkt_ TS packets must be automatically added after every _inpkt_ input TS packets in the PID.
+Both _addpkt_ and _inpkt_ must be non-zero integer values.
+
+[.optdoc]
+As an example, the parameters `3 1` indicate to add 3 new empty packets in the PID for every existing packet.
+The resulting bitrate of the PID is multiplied by 4.
+
+[.optdoc]
+Take care to limit the added packet ratio to something realistic.
+The value `1000 1`, for instance, is unrealistic since it is impossible, in most cases,
+to find 1000 stuffing packets to replace between all existing packets of the PID.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

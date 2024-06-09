@@ -1,0 +1,55 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsvatek
+
+[.cmd-header]
+List VATek-based modulator devices
+
+This utility lists modulator devices which are based on chips from Vision Advance Technology Inc. (VATek).
+The final modulator device products can be from different manufacturers.
+
+[.usage]
+System support
+
+Unlike Dektec and HiDes devices which are available on Linux and Windows only,
+VATek-based devices are available on all operating systems, including macOS,
+because VATek chips do not need a dedicated device driver.
+They are accessed through the portable `libusb` library which is available on all operating systems.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tshides [options] [device]
+----
+
+[.usage]
+Parameters
+
+[.optdoc]
+The optional device index, from 0 to N-1 (with N being the number of VATek-based devices in the system)
+indicates which device to display.
+
+[.optdoc]
+The default is 0.
+Use option `--all` to have a complete list of devices in the system.
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--all*
+
+[.optdoc]
+List all VATek-based devices available on the system.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

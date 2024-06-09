@@ -1,0 +1,1244 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-data]
+== Data Formats
+
+=== Transport stream
+
+Transport streams shall conform to the MPEG-2 system layer format as defined in ISO/IEC 13818-1 (<<ISO-13818-1>>).
+
+==== Live transport streams
+
+Live transport streams can be read by TSDuck from:
+
+* Live sources using specialized hardware, cheap DVB tuners or Dektec devices.
+* UDP/IP using various encapsulations (the encapsulation of TS packets in UDP packets does
+  not matter since TSDuck automatically retrieves the TS packets inside UDP packets and simply
+  ignores everything in between).
+* HTTP or HTTPS streams without encapsulation (ie. raw TS streams, but not manifest-based
+  formats such as DASH or HLS).
+* HLS (HTTP Live Streaming) with transport stream segments (not fMP4).
+* SRT and RIST transport protocols.
+
+See the documentation of the plugins `dvb`, `dektec`, `ip`, `http`, `hls`, `srt`, `rist` for
+more details on the reception of live transport streams.
+
+The same plugins can also transmit live streams on Dektec devices, on UDP/IP streams (multicast or
+unicast), SRT and RIST transport protocols.
+
+HLS output is possible with the help of an independent HTTP server such as Apache.
+The `hls` output plugin produces the playlist and segment files.
+These files can then be served by any HTTP server.
+
+Additionally, output plugins are provided for HiDes and VATek modulator devices.
+These devices do not have input equivalent and the plugins are output only.
+
+[#ts-formats]
+==== Stored transport streams
+
+Transport streams can be read from and written to binary files, called "TS files".
+
+A standard TS file must contain contiguous 188-byte TS packets without any encapsulation.
+All TS packets shall start with the MPEG-defined synchronization byte `0x47`.
+Any packet not starting with this synchronization byte is considered invalid and rejected.
+
+Unless specified otherwise, most TSDuck utilities and plugins can read or write several non-standard TS formats.
+The supported formats are listed in the table below.
+
+The command line option `--format _name_` can be used to specify a precise file format.
+
+On input, the file format is automatically detected for each file.
+But the auto-detection may fail in some cases (for instance when the first timestamp of an M2TS file
+starts with `0x47` in which case the file would be incorrectly identified as TS).
+Using the option `--format` forces a specific format to avoid ambiguities.
+
+On output, the default format is a standard TS file.
+
+The table below lists all possible format names as used with the option `--format`.
+
+// PDF backend does not correctly process "autowidth" tables.
+.Transport stream file formats
+ifndef::backend-pdf[]
+[cols="<1m,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<15m,<85",stripes=none]
+endif::[]
+|===
+|Name |Description
+
+|autodetect
+|Auto-detection of the file format. This is the default for input files and is usually appropriate. This will always work with TS files but may fail in rare cases with M2TS files. This value is not applicable to output files.
+
+|TS
+|Standard transport stream file containing contiguous 188-byte TS packets without any encapsulation. This is the default for output files.
+
+|RS204
+|Raw transport stream capture with Reed-Solomon outer FEC. Each standard 188-byte TS packet is followed by a 16-byte Reed-Solomon FEC. On input, these 16 bytes are ignored. On output, they are set to zero (placeholder for real FEC).
+
+|M2TS
+|Blu-ray compatible format. Also found in recording files from some DVR devices. This is the same as TS format, except that each 188-byte TS packet is preceded by a 4-byte time stamp. The 2 most significant bits are copy control indicators and are ignored. The 30 least significant bits represent a time stamp in 27 MHz unit (same unit as PCR values). Note that those time stamps wrap up every 39 seconds approximately since they use only 30 bits while full PCR values use 42 bits.
+
+|duck
+|This is a TSDuck proprietary format. It is similar to M2TS except that the header before each TS packet uses 14 bytes and contains all packet metada. Since this is a TSDuck proprietary format, it can be used only in pipes between instances of tsp. The only advantage of this format is to transport complete original time stamps, packet labels and other metadata between instances of tsp.
+
+|===
+
+When dealing with non-conformant TS files coming from outside, the utility `tsresync` can be used to
+extract the TS packets and recreate a pure 188-byte TS file which can be manipulated by the various
+utilities and plugins from the TSDuck suite.
+
+[#bitrates]
+=== Bit rates
+
+==== Interpretation
+
+In the manipulation of transport streams, using "bitrates" is quite common.
+Unless specified otherwise, all bitrate values are in bits per second, based on 188-byte TS packets.
+
+==== Representation
+
+Although it is quite common to manipulate bitrates as integral values, there are some cases where the fractional value may have some importance.
+In broadcast systems, for instance, the bitrate of a transport stream is directly computed from the modulation method and its parameters.
+And the result is rarely an integral value.
+
+When manipulating multi-megabits-per-second transport streams, a fraction of bit per second is usually negligible, but not always.
+When a TSDuck tool runs for hours or days, these small fractions can make a difference.
+
+There were several user requests to use more precise representations of bitrates instead of integers.
+However, requirements from different users are sometimes conflicting.
+Representing smaller fractions may lead to less accuracy or overflows in intermediate computations.
+There is no perfect representation for all needs.
+
+As a consequence, TSDuck can be compiled with four different representations of bitrates.
+The default one provides the best balance so far between precision and performance.
+For specific needs, TSDuck may be rebuilt with a customized representation.
+
+The four possible representations are listed below:
+
+* *64-bit fixed-point value with 1 decimal digit*:
+  The underlying representation is a 64-bit integer type. The performances are correct.
+  The accurancy is better than with integers but with one decimal only.
+  Using more than one decimal is possible but may lead to intermediate overflows.
+* *64-bit integer values*:
+  This provides the best performance but no accuracy below one bit per second.
+* *Fractions of two 64-bit integer values*:
+  The accuracy of bitrates is formally preserved, especially when computed from modulation parameters.
+  But intermediate overflows are so frequent that this representation is hardly usable beyond basic usages.
+  The performances are also worse than with any other representation.
+* *64-bit floating-point values*:
+  This is the default.
+  The precision is preserved, there is almost no intermediate overflow.
+  But the accuracy of computations is not always preserved.
+
+To verify the bitrate representation of a given build of TSDuck, use the option `--version=_bitrate_` with
+any TSDuck command (see xref:predef-options[xrefstyle=short]).
+
+==== Specifying bitrate in command lines
+
+Many TSDuck tools or plugins get bitrates values from command line options.
+With all representations of bitrates, it is possible to specify integer values
+(see xref:integer-options[xrefstyle=short] about specifying integer values in command lines).
+
+Depending on the representation, it is also possible to specify more precise values.
+Using fixed-point or floating-point values, it is possible to use a decimal point.
+With fixed-point values, do not provide more decimal digits than the precision.
+With fractions, it is possible to provide fractional values, for instance `12345/67`.
+
+==== Rebuilding with a different bitrate representation
+
+When compiling TSDuck, the default bitrate representation is a floating-point value.
+This is also the representation in pre-built binaries.
+
+Rebuilding TSDuck with another representation is possible but must be consistent.
+All tools and shared libraries must have been built with the same representation.
+Special symbols and linker dependencies are generated to prevent mixing binaries and libraries with different representations.
+
+To select a different representation of bitrates, simply define the corresponding C++ macro in the build system.
+See the source file `src/libtsduck/base/types/tsBitRate.h` for the various macros.
+
+On Linux and macOS, the `make` command accepts direct parameters, one of the following:
+
+[source,shell]
+----
+make -j10 BITRATE_FLOAT=1
+make -j10 BITRATE_FRACTION=1
+make -j10 BITRATE_INTEGER=1
+make -j10 BITRATE_FIXED=1 BITRATE_DECIMALS=3
+----
+
+The last command rebuilds with fixed-point and three decimal digits instead of one.
+
+[#psisi-sig]
+=== PSI/SI signalization
+
+TSDuck can manipulate PSI/SI sections and tables outside of transport streams.
+Sections and tables can be extracted from a transport stream, saved and manipulated
+in various file formats and injected in other transport streams.
+
+There are two main file formats for PSI/SI: binary section files and XML text files.
+
+These two formats are documented in the next sections.
+In the general case, tools which extract PSI/SI sections and tables can save in any format
+and tools which use PSI/SI can read them from any format as well.
+The utility `tstabcomp`, the table compiler, can translate between the two formats.
+
+Some key differences between the two formats are:
+
+* Binary section files contain collections of individual sections in any order, not necessarily complete tables.
+  XML files contain complete tables only.
+* Binary section files contain the exact representation, byte by byte, of sections which were extracted from a transport stream.
+  XML files contain a higher-level representation.
+* Binary section files are not easily modifiable.
+  XML files contain text which can be manually edited using any text editor or XML tool.
+
+There is a third possible format: JSON.
+This format is formally equivalent to XML.
+In practice, TSDuck uses XML as internal representation and performs an automated conversion between XML and JSON when necessary.
+See xref:xml-json-conv[xrefstyle=short] for more details on this conversion process.
+In this document, the only documented format for tables and descriptors is XML.
+Use the transformation rules in xref:xml-json-conv[xrefstyle=short] to determine the JSON equivalent.
+
+[#psi-bin-format]
+==== PSI/SI binary format
+
+A PSI/SI binary file contains one or more sections in a simple binary format.
+Each section is directly written in the file without any encapsulation or synchronization information.
+All sections are contiguous in the file.
+
+A binary file must be read from the beginning.
+The header of each section contains the section length.
+Using this length information, it is possible to locate the next section, starting right after the current section,
+and so on down to the end of the file.
+
+===== Creating PSI/SI binary files
+
+PSI/SI binary files can be extracted from live streams or TS files using the command `tstables` or the plugin `tables`.
+The extracted sections are identical, byte by byte, to the transported sections.
+By default, all sections of a given table are contiguously saved in the binary file, in increasing order of section number.
+Thus, a complete table can be easily rebuilt by reading sections one by one.
+
+With the option `--all-sections`, `tstables` and the plugin `tables` save all individual sections in their order of reception.
+In that case, the order and repetition of sections in the binary files are not defined.
+
+PSI/SI binary files can also be created by `tstabcomp`, the table compiler.
+Tables are described in XML format (see xref:psi-xml-format[xrefstyle=short]) and compiled into a binary file.
+Since `tstabcomp` processes complete tables, all sections of a table are also contiguously saved in the binary file,
+in increasing order of section number, just like `tstables` by default.
+
+===== Using PSI/SI binary files
+
+The content of binary section files can be viewed using `tstabdump`.
+This utility displays the content of each individual section in a human-readable format,
+regardless of the order of sections in the file.
+
+Binary section files can be used to packetize or inject sections in a stream (command `tspacketize` and plugin `inject`).
+The sections are packetized or injected in their order of appearance in the file.
+
+Finally, binary section files can also be decompiled by `tstabcomp` to recreate the corresponding XML files from the binary tables.
+But note that XML files contain complete tables only.
+This means that tables can be recreated only when their sections are contiguous and in increasing order of section number in the binary file.
+
+[#psi-xml-format]
+==== PSI/SI XML format
+
+An XML file containing PSI/SI tables for TSDuck uses `<tsduck>` as root node.
+The root node contains any number of tables.
+
+Unlike binary files which may contain individual sections, XML files can only contain complete tables.
+The XML format represents a higher-level view of a table, regardless of the binary implementation in one or more sections.
+
+The following sample XML file contains the definition for simple (and incomplete) PAT and PMT.
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <PAT version="8" transport_stream_id="0x0012" network_PID="0x0010">
+    <service service_id="0x0001" program_map_PID="0x1234"/>
+    <service service_id="0x0002" program_map_PID="0x0678"/>
+  </PAT>
+
+  <PMT version="4" service_id="0x0456" PCR_PID="0x1234">
+    <CA_descriptor CA_system_id="0x0777" CA_PID="0x0251"/>
+    <component elementary_PID="0x0567" stream_type="0x12">
+      <CA_descriptor CA_system_id="0x4444" CA_PID="0x0252"/>
+      <ISO_639_language_descriptor>
+        <language code="fre" audio_type="0x45"/>
+        <language code="deu" audio_type="0x78"/>
+      </ISO_639_language_descriptor>
+    </component>
+  </PMT>
+
+</tsduck>
+----
+
+All XML files shall be encoded in UTF-8 format to allow
+international character sets in service names or event descriptions for instance.
+The initial declaration line `<?xml version="1.0" encoding="UTF-8"?>` is optional but recommended.
+The complete definition of the XML model can be found in xref:chap-sixmlref[xrefstyle=short].
+
+[#compat-standards]
+=== Compatibility and conflicts between standards
+
+==== Supported standards
+
+The imbrication of digital TV standards is complex and sometimes problematic
+for the user who wants to analyze the structure of a transport stream.
+TSDuck tries to help, either using command line utilities and plugins,
+and C++ classes for applications which are built on top of the TSDuck library.
+
+The first layer of standard is MPEG <<ISO-13818-1>>.
+It is the common root of all regional or international standards in digital TV.
+The MPEG standard defines the transport stream format, PES, sections and descriptors,
+the PSI (Program-Specific Information such as PAT, CAT, PMT) and several descriptors.
+The allocated ranges of tables ids and descriptor tags for MPEG is reserved and never conflicts
+with other standards.
+
+NOTE: The DVB-defined _table-specific_ descriptors are exceptions.
+These descriptors reuse MPEG-defined descriptor tags but are used only in very specific DVB-defined sections
+where the MPEG-defined descriptors with the same tags are normally not used.
+
+At the second layer, then come the regional standards: DVB (Europe), ATSC (USA), ISDB (Japan).
+Note that these standards are also used in other parts of the world, in addition to their original regions.
+
+The third layer is made of ANSI/SCTE standards.
+They are application-level standards such as emergency alerts <<SCTE-18>>,
+splice signalization for advertisement <<SCTE-35>> or encryption <<SCTE-52>>.
+These standards were originally designed to complement ATSC in the USA but they are sometimes used in conjunction with DVB (especially <<SCTE-35>>).
+Parts of the <<SCTE-52>> standard were also reused in ATIS-defined standards for IP-TV encryption.
+
+DVB and ATSC are independent and mutually exclusive standards.
+They are never used together in the same transport stream.
+Most of their table ids and descriptor tags use distinct ranges.
+It is consequently easy to "guess" the second layer of standard of a transport stream, when one of their specific sections or descriptors is used.
+
+DVB adds a non-ambiguous concept of _private descriptors_ where properly registered entities,
+operators or industries may define their own privately defined descriptors.
+
+ISDB is the troublemaker which makes things complicated and often requires manual setup using
+TSDuck command line options or default configuration.
+
+* ISDB was originally defined in Japan by ARIB in two flavors, ISDB-T and ISDB-S.
+* ISDB was later adopted by other countries, starting with Brazil, for terrestrial TV.
+  At this time, the standards were redefined by ABNT (Brazil) under the name ISDB-Tb,
+  to amend features which were too Japanese-specific, creating two branches of ISDB.
+  The two branches diverged until a "harmonization committee" was created to limit the conflicts between the two.
+* ISDB reuses some parts of DVB but not all. Each iteration of the standard incorporates more
+  DVB descriptors, making it hard to define a stable common subset between DVB and ISDB.
+* While ISDB reuses sections and descriptors ids and syntax, it sometimes redefines the
+  semantics of some fields such as character sets or time reference.
+* The semantics of some DVB-defined fields even varies between the variants of ISDB.
+  As an example, time values are defined as UTC in DVB. In Japan, ARIB-defined ISDB
+  redefines the same fields as JST (Japan Standard Time). In South America, ABNT-defined ISDB-Tb
+  redefines it as UTC-3. In African countries, the field is loosely defined as local time,
+  without more details.
+* ISDB even redefines tiny details of the syntax of some DVB descriptors it reuses.
+  This is the case for the `satellite_delivery_system_descriptor` for instance.
+
+Therefore, an ISDB stream is sometimes hard to characterize.
+A transport stream first appears as MPEG-defined when we get the PAT and PMT’s.
+Then, it looks like DVB when tables such as SDT or TDT are encountered.
+But later it can appear as ISDB when ISDB-specific tables such as a BIT or CDT are found.
+The problem is that, as this time, all information such as dates and time in TDT which were
+previously interpreted in the DVB semantics shall be retroactively reinterpreted in the ISDB semantics
+(or the multiple possible ISDB semantics in the case of date and time).
+
+TSDuck tries to dynamically guess the type of standard based on the sections and descriptors it progressively discovers in the stream.
+The list of standards is consequently evolving along the packet processing.
+It usually starts with "MPEG" and may later evolve to "MPEG, DVB" or "MPEG, ATSC" or "MPEG, DVB, SCTE" or "MPEG, DVB, ISDB".
+
+Because of this progressive discovery of the standards, it is possible that data structures
+are incorrectly interpreted in the initial phase, before a new standard becomes clear.
+This is especially critical in the case of ISDB where a transport stream is often initially interpreted as a DVB one.
+
+TSDuck defines a few command-line options which can be used to specify the right standards from the beginning (see xref:opt-default-std[xrefstyle=short]).
+Some default options are also available in the user’s TSDuck configuration file (see xref:chap-userconfig[xrefstyle=short]).
+
+Also note that the xref:chap-sixmlref[xrefstyle=short] lists the XML format of all tables and descriptors, structured by original
+standards.
+
+[#opt-default-std]
+==== TSDuck options for default standard selection
+
+By default, TSDuck tries to guess the standards which are used in a transport stream.
+The following options can be used to indicate from the beginning how tables and descriptors should be interpreted.
+They are briefly repeated in the documentation of all commands to which they apply.
+
+[.opt]
+*--abnt*
+
+[.optdoc]
+Assume that the transport stream is an ISDB one with ABNT-defined variants.
+
+[.optdoc]
+ISDB streams are normally automatically detected from their signalization but there is no way
+to determine if this is an original ARIB-defined ISDB or an ABNT-defined variant.
+
+[.opt]
+*--atsc*
+
+[.optdoc]
+Assume that the transport stream is an ATSC one.
+
+[.optdoc]
+ATSC streams are normally automatically detected from their signalization.
+This option is only useful when ATSC-related stuff is found in the TS before the first ATSC-specific table.
+For instance, when a PMT with ATSC-specific descriptors is found before the first ATSC MGT or VCT.
+
+[.opt]
+*--brazil*
+
+[.optdoc]
+A synonym for `--isdb --abnt --time-reference UTC-3`.
+
+[.optdoc]
+This is a handy shortcut when working on South American ISDB-Tb transport streams.
+
+[.opt]
+*--default-pds* _value_
+
+[.optdoc]
+Specify a default DVB-defined Private Data Specifier (PDS).
+The specified value is used as private data specifier to interpret private descriptors
+in the absence of preceding `private_data_specifier_descriptor`.
+
+[.optdoc]
+This option is meaningful only when the signalization is incorrect, when DVB private
+descriptors appear in tables without a preceding `private_data_specifier_descriptor`.
+
+[.optdoc]
+This type of invalid signalization is sometimes seen in operator-controlled networks,
+when operators specify their receivers and do not always care about the standards.
+
+[.optdoc]
+The specified PDS value must be either a 32-bit integer or one of the predefined identifiers from the table below.
+These identifiers are not case-sensitive.
+
+// PDF backend does not correctly process "autowidth" tables.
+.Values for option `--default-pds`
+ifndef::backend-pdf[]
+[cols="<1m,<1m,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<15m,<15m,<70",stripes=none]
+endif::[]
+|===
+|Name |Value |Description
+
+|AOM
+|0x414F4D53
+|Alliance for Open Media
+
+|Australia
+|0x00003200
+|Free TV Australia
+
+|AVS
+|0x41565356
+|AVS Working Group of China
+
+|BskyB
+|0x00000002
+|BskyB British TV operator
+
+|CanalPlus
+|0x000000C0
+|Canal+ French TV operator
+
+|cuvv
+|0x63757676
+|UHD World Association (UWA)
+
+|EACEM
+|0x00000028
+|European Association of Consumer Electronics Manufacturers, now renamed as DigitalEurope
+
+|EICTA
+|0x00000028
+|European Information, Communications and Consumer Electronics Technology Industry Associations. Merged with EACEM.
+
+|Eutelsat
+|0x0000055F
+|Eutelsat European satellite provider
+
+|Logiways
+|0x000000A2
+|Former CAS vendor
+
+|Nagra
+|0x00000009
+|Kudelski, Nagravision, CAS vendor
+
+|NorDig
+|0x00000029
+|NorDig standard committee (Northern Europe and Ireland)
+
+|OFCOM
+|0x0000233A
+|British regulator, formerly ITC
+
+|TPS
+|0x00000010
+|Former French TV operator
+|===
+
+[.opt]
+*--ignore-leap-seconds*
+
+[.optdoc]
+Do not explicitly include leap seconds in some precise UTC computations where leap seconds are specified as important.
+
+[.optdoc]
+According to Wikipedia, _"a leap second is a one-second adjustment that is occasionally
+applied to Coordinated Universal Time (UTC), to accommodate the difference between precise
+time (as measured by atomic clocks) and imprecise observed solar time (known as UT1 and
+which varies due to irregularities and long-term slowdown in the Earth's rotation)."_
+
+[.optdoc]
+Most computer systems (Linux, macOS, Windows) don’t include leap seconds in their
+evaluation of UTC time, making their reported UTC times formally incorrect.
+
+[.optdoc]
+Some parts of Digital TV standards specify that leap seconds should be included in some specific computations.
+By default, TSDuck explicitly adds the leap seconds to the UTC time, as reported by the operating system, when necessary.
+
+[.optdoc]
+This option can be useful to disable the addition of leap seconds in the presence of
+some non-conformant external equipment which ignore leap seconds.
+
+[.optdoc]
+Currently, this option applies to SCTE 35 `splice_schedule()` commands only.
+
+[.optdoc]
+This option can also be set from the TSDuck user’s configuration file using option `leap.seconds`
+(see xref:conf-file-format[xrefstyle=short]).
+
+[.opt]
+*--isdb*
+
+[.optdoc]
+Assume that the transport stream is an ISDB one.
+
+[.optdoc]
+ISDB streams are normally automatically detected from their signalization.
+This option is only useful when ISDB-related stuff is found in the TS before the first ISDB-specific table.
+
+[.opt]
+*--japan*
+
+[.optdoc]
+A synonym for `--isdb --time-reference JST`.
+
+[.optdoc]
+This is a handy shortcut when working on Japanese transport streams.
+
+[.optdoc]
+Beyond ISDB standard, in most applications this option also uses ARIB STD-B24 character sets,
+uses Japan as default region name for UHF/VHF bands and activates some specificities for
+Japan such as different semantics for component types.
+
+[.opt]
+*--philippines*
+
+[.optdoc]
+A synonym for --isdb --abnt --time-reference UTC+8.
+This is a handy shortcut when working on Philippines transport streams.
+
+[.opt]
+*--time-reference* _name_
+
+[.optdoc]
+Use a non-standard (non-UTC) time reference in DVB-defined TDT/TOT.
+
+[.optdoc]
+This is typically used in ARIB-defined ISDB and ABNT-defined ISDB-Tb standards.
+These standards reuse DVB-defined SI but change the semantics of the date and time fields,
+using another time reference.
+
+[.optdoc]
+The specified name can be either UTC (the DVB-defined default), JST (Japan Standard Time)
+or `UTC+|-hh[:mm]`.
+
+[.optdoc]
+Examples: `UTC+9` (same as `JST`, for ARIB-defined ISDB),
+`UTC-3` (for ABNT-defined ISDB-Tb in Brazil and South America)
+or `UTC+2:30` (if such reference should be used).
+
+[.opt]
+*--usa*
+
+[.optdoc]
+A synonym for --atsc --hf-band-region usa.
+
+[.optdoc]
+This is a handy shortcut when working on North American transport streams.
+
+[#charsets]
+=== Character sets
+
+==== Standards and character sets
+
+Each standard defines its own way of representing characters in tables and descriptors.
+
+[cols="<15,<90",frame=none,grid=none,stripes=none,options="noheader"]
+|===
+|DVB:
+|Each string is encoded using one single character set.
+ The default character set is a modified version of ISO-6937.
+ For strings which cannot be encoded using ISO-6937, another character set can be selected
+ using a specific leading binary sequence.
+ Since DVB character sets include UTF-8 and UTF-16, all Unicode characters can be eventually represented.
+ See <<ETSI-300-468>>, annex A.
+
+|ISDB (ARIB):
+|Each string is encoded using ARIB STD-B24 (see <<ARIB-B24>> part 2, chapter 7).
+ A string may alternate between several character sets, typically Kanji, Hiragana, Katakana and alpha-numerical characters.
+ The switching between character sets is performed using control binary sequences.
+ While all Japanese characters can be encoded, many European accented character cannot be represented.
+ There is no way to encode arbitrary Unicode character in ARIB STD-B24.
+
+|ISDB (ABNT):
+|There is no standard ABNT-defined representation of strings.
+ Each country which adopted the ABNT-defined variant of ISDB uses its own representation.
+ For instance, Brazil and other South American countries use ISO-8859-15 while the Philippines use UTF-8.
+ To make things worse, although these character sets are included in the DVB standard,
+ these countries do not use the DVB-defined leading binary sequences which indicate the character set
+ and do not allow switching to other character sets.
+
+|ATSC:
+|Simple strings are encoded in 7-bit ASCII.
+ But most strings are encoded using "multiple string structures" where all Unicode characters can be represented.
+
+|XML:
+|TSDuck-defined XML files use some predefined non-ambiguous character set as indicated in the first directive.
+ This is usually UTF-8. All XML strings are encoded in the same character set.
+ It is the responsibility of TSDuck to convert them in the appropriate character set when serializing tables and descriptors.
+
+|===
+
+With ATSC multiple string structures, there is no ambiguity.
+They are part of the ATSC tables and descriptors definition and are always encoded using the same standard.
+
+With DVB and ISDB, there are several types of ambiguities:
+
+* The ISDB signalization reuses some DVB-defined tables and descriptors,
+  but texts are represented with a non-DVB character encoding.
+  When analyzing or creating such structures, the context (DVB vs. ISDB)
+  must be known to select the appropriate encoding method.
+* Invalid DVB encoding: According to <<ETSI-300-468>>, the default DVB character set
+  (without explicit character table code) is ISO-6937.
+  However, some bogus signalization may assume that the default character set is different,
+  typically the usual local character table for the region of the operator.
+  The non-standard default character table must be specified using an option.
+
+[#opt-charsets]
+==== TSDuck options for character sets
+
+TSDuck commands and plugins which manipulate tables and descriptors have specialized options
+to indicate the character set to use.
+
+By default, the standard DVB text encoding is used in DVB and ISDB structures.
+
+The following options can be used to alter the behavior of TSDuck.
+They are briefly repeated in the documentation of all commands to which they apply.
+
+[.opt]
+*--brazil*
+
+[.optdoc]
+A synonym for `--default-charset RAW-ISO-8859-15`.
+
+[.optdoc]
+All strings are interpreted and generated as ISO-8859-15 without explicit leading table code.
+
+[.optdoc]
+This is a handy shortcut when working on South American ISDB-Tb transport streams.
+
+[.opt]
+*--default-charset* _name_
+
+[.optdoc]
+When reading binary sections, this option specifies the default character set to use when
+interpreting strings from tables and descriptors, when there is no initial DVB sequence for
+character table selection. This overrides the DVB defaults and should be used with invalid
+streams which omit the initial DVB sequence for character table selection when using a non-
+default character set.
+
+[.optdoc]
+By default, standard DVB encoding is used.
+
+[.optdoc]
+When generating binary sections (from XML or JSON files for instance), this option specifies
+the preferred character encoding. The DVB rules are applied : when a non-default DVB
+character set is selected, the appropriate initial DVB sequence for character table selection is
+inserted.
+
+[.optdoc]
+By default, TSDuck tries several character sets until one is capable of encoding the string.
+The order of selection is ISO 6937 (DVB default character set), ISO 8859-15 (convenient with most European languages) and UTF-8.
+Since UTF-8 can encode everything, the string will always be successfully encoded.
+
+[.optdoc]
+See xref:charset-names[xrefstyle=short] below for a list of available character set names.
+
+[.opt]
+*--europe*
+
+[.optdoc]
+A synonym for `--default-charset ISO-8859-15`.
+
+[.optdoc]
+Using this option, all DVB strings without explicit leading table code are assumed to use ISO-8859-15
+instead of the standard ISO-6937 encoding.
+
+[.optdoc]
+This is a handy shortcut for commonly incorrect DVB signalization on some European satellites.
+In that signalization, the default character encoding (without leading table code) is ISO-8859-15,
+the most common encoding for Latin & Western Europe languages.
+When an explicit leading table code is present, then the corresponding character set is used.
+
+[.opt]
+*--japan*
+
+[.optdoc]
+A synonym for `--default-charset ARIB-STD-B24`.
+
+[.optdoc]
+This is a handy shortcut when working on Japanese transport streams.
+
+[.optdoc]
+Beyond character sets, in most applications, this option also declares ISDB as default standard,
+use Japan as default region name for UHF/VHF bands and activates some specificities for Japan
+such as the use of JST time instead of UTC or different semantics for component types.
+
+[.opt]
+*--philippines*
+
+[.optdoc]
+A synonym for `--default-charset RAW-UTF-8`.
+
+[.optdoc]
+All strings are interpreted and generated as UTF-8 without explicit leading table code.
+
+[.optdoc]
+This is a handy shortcut when working on Philippines transport streams.
+
+[#charset-names]
+==== Character set names
+
+The available table names for option `--default-charset` are:
+
+* DVB character sets. The name specifies a standard DVB encoding with a different default character set.
+  Without leading table code, the specified character set is used.
+  But if a leading table code is present, the appropriate character set for that table code is used.
+[.compact-list]
+** `ISO-6937`
+** `DVB` (synonym for `ISO-6937`)
+** `ISO-8859-1`
+** `ISO-8859-2`
+** `ISO-8859-3`
+** `ISO-8859-4`
+** `ISO-8859-5`
+** `ISO-8859-6`
+** `ISO-8859-7`
+** `ISO-8859-8`
+** `ISO-8859-9`
+** `ISO-8859-10`
+** `ISO-8859-11`
+** `ISO-8859-13`
+** `ISO-8859-14`
+** `ISO-8859-15`
+** `UTF-8`
+** `UNICODE` (in fact `UTF-16`)
+* ARIB character sets (Japan):
+[.compact-list]
+** `ARIB-STD-B24`
+** `ARIB` (synonym for `ARIB-STD-B24`)
+* Raw character sets.
+  They use the same encoding as their DVB-defined counterpart but without any leading table code.
+  No leading code is interpreted, the specified case is unconditionally used.
+  Using these character sets shall be reserved to specific situations.
+[.compact-list]
+** `RAW-ISO-6937`
+** `RAW-ISO-8859-1`
+** `RAW-ISO-8859-2`
+** `RAW-ISO-8859-3`
+** `RAW-ISO-8859-4`
+** `RAW-ISO-8859-5`
+** `RAW-ISO-8859-6`
+** `RAW-ISO-8859-7`
+** `RAW-ISO-8859-8`
+** `RAW-ISO-8859-9`
+** `RAW-ISO-8859-10`
+** `RAW-ISO-8859-11`
+** `RAW-ISO-8859-13`
+** `RAW-ISO-8859-14`
+** `RAW-ISO-8859-15`
+** `RAW-UTF-8`
+** `RAW-UNICODE (in fact `UTF-16`)
+* Debug character set.
+[.compact-list]
+** `DUMP`
+
+The `DUMP` character set can be used for debugging.
+This is not a real character set in the sense that it does not return a Unicode string from a binary representation.
+
+With this character set, _decoding_ binary data returns a string containing a hexadecimal dump of the binary data.
+It is typically used with `tstables` or `tstabdump` to display the exact binary content of strings in tables and descriptors.
+
+Similarly, _encoding_ a string means translating the hexadecimal characters which are contained in that string into binary data.
+The input string shall contain only hexadecimal digits and spaces.
+This character set is typically used in XML files to force specific binary contents in text areas of tables and descriptors.
+
+=== XML files
+
+==== Usage of XML files in TSDuck
+
+XML files are used as configuration and data files.
+They are used as input and output by TSDuck.
+
+All TSDuck XML files use `<tsduck>` as root node.
+They shall be encoded in UTF-8 format.
+The initial declaration line `<?xml version="1.0" encoding="UTF-8"?>` is optional but recommended.
+
+For TSDuck users, XML files are mostly used to represent PSI/SI tables.
+This format can be used anywhere tables are used, either on input or output.
+See xref:psi-xml-format[xrefstyle=short] and xref:chap-sixmlref[xrefstyle=short].
+
+XML files are also used as _channel files_ containing lists of TV channels and
+the tuning characteristics of their respective transport streams.
+Channel files can be created and updated using the command `tsscan`.
+They can be used with the `dvb` input plugin as "tune to the transport stream of channel ABC, wherever it is".
+The format of channel files is documented in xref:chap-chanconfig[xrefstyle=short].
+
+Finally, XML files are used as configuration files (read-only).
+They describe the characteristics of UHF and VHF frequency bands by region
+(`tsduck.hfbands.xml`, see xref:chap-userconfig[xrefstyle=short], xref:hfband-config[xrefstyle=short]),
+the technical specifications of various models of LNB’s for satellite dishes
+(`tsduck.lnbs.xml`, see xref:chap-userconfig[xrefstyle=short], xref:lnb-config[xrefstyle=short])
+or resource monitoring configurations (`tsduck.monitor.xml`, see xref:chap-monconfig[xrefstyle=short]).
+These configuration files are augmented when new information is available.
+Do not hesitate to request enhancement of these files through the TSDuck issue tracker (see <<TSDuck-Issues>>).
+
+[#inline-xml]
+==== Inline XML content
+
+In most TSDuck commands, if the name of an input XML file starts with `<?xml`,
+it is considered as _inline_ XML content, meaning that the string in the command line
+is directly the XML content and not a file name.
+
+A similar mechanism exists for output XML files.
+When an application such as `tsp` runs for a long time, possibly forever,
+other applications may want to grab XML output files are soon as they are created.
+In that case, it is possible to output the whole content of an output XML file
+as one single line through the message logger (the standard error device by default).
+If another application filters the `tsp` standard error, it will get each XML file as one single text line.
+To facilitate the filtering of actual XML lines, it is possible to specify a _marker_ prefix in the line,
+typically some easily recognizable pattern.
+See the description of the option `--log-xml-line` in the command `tstables` and the plugin `tables`.
+
+The output of XML files as one single line is also extremely useful for third party applications which use TSDuck as a library.
+The C++, Java or Python class named `TSProcessor` is the equivalent of `tsp` inside an application.
+The log messages which are produced by this class can be processed by user-defined classes.
+These user-defined classes can then filter and process XML outputs as soon as they are produced.
+Java and Python examples of this features are provided with the TSDuck source code.
+
+[#xml-models]
+==== XML model files
+
+For each type of XML file, TSDuck uses a _model file_ which describes the expected XML structure of
+the corresponding data or configuration file.
+XML model files use the extension `.model.xml`.
+
+This XML model mechanism can be considered as a minimalist equivalent of XML-Schema,
+with less features but much more light-weight.
+
+In a model file, all allowed nodes and attributes are present as template.
+The contents of attributes in this template are comments describing the expected content
+of the corresponding attribute in real XML files.
+The values of these attributes in the template are descriptive only;
+they would be invalid if directly used in input XML files for TSDuck.
+
+Notes on types and formats:
+
+* Tags and attributes are not case-sensitive.
+* Integer values can be represented in decimal or hexadecimal (`0x` prefix).
+* Booleans are `true` or `false`.
+* When an attribute or text node is described as _hexadecimal content_,
+  it must contain an even number of hexadecimal digits.
+  All forms of spaces, including line breaks, are ignored.
+* Attributes values for date, time and date/time are represented as "YYYY-MM-DD", "hh:mm:ss"
+  and "YYYY-MM-DD hh:mm:ss" respectively.
+  On output, these attributes values are exactly formatted as indicated.
+  In input, to accommodate various conventions, all non-digit characters are considered as valid separators.
+  Therefore, an ISO 8601 date such as "2020-12-01T15:10:21Z" is accepted and interpreted as "2020-12-01 15:10:21".
+* Some attributes accept symbols in addition to plain numerical values.
+  The names of accepted symbols are listed in the attribute.
+  Example: `type="ATSC|DVB-C|DVB-S|DVB-T|ISDB-T"`
+
+The command `tsxml` can be used to test to conformance of XML files to a specific model.
+
+All XML configuration and model files are located in the global TSDuck configuration directory:
+
+[.compact-list]
+* Linux : `/usr/share/tsduck`
+* macOS : `/usr/local/share/tsduck` (Intel) or `/opt/homebrew/share/tsduck` (Arm)
+* Windows : `%TSDUCK%\bin`
+* BSD :	`/usr/local/share/tsduck` or `/usr/pkg/share/tsduck` (NetBSD)
+
+[#xml-patch]
+==== XML patch files
+
+An XML patch file is a template for transformations to apply on XML files.
+It is typically used to apply on-the-fly transformations on various PSI/SI tables by plugins such as
+`pat`, `pmt`, `bat`, `cat`, `sdt`, `nit` when the requested transformations cannot be handled by other options.
+
+This XML patching mechanism can be considered as a minimalist equivalent of XSLT, with less features but much more light weight.
+
+The command `tsxml` can be used to test XML patch files on any arbitrary XML file.
+
+===== Structure matching
+
+A patch file is also an XML file.
+Its structure mimics the structure of XML input files.
+This is a template which is compared with the input file.
+
+More precisely, each XML element in the patch file (including its parent hierarchy)
+is compared with equivalent structures in the input file.
+To have a match, the node name and all parent node names must be identical and all attributes
+which are specified in the node in the patch file must be present and have the same value in the input file.
+
+It is also possible to match a node according to an attribute having a value different from the specified one (see below).
+
+As an example, consider the following input XML file:
+
+[source,xml]
+----
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service service_id="10" program_map_PID="300"/>  <!-- [1] -->
+  </PAT>
+  <PAT transport_stream_id="2">
+    <service service_id="10" program_map_PID="400"/>  <!-- [2] -->
+    <service service_id="20" program_map_PID="500"/>  <!-- [3] -->
+  </PAT>
+</tsduck>
+----
+
+Using the following patch file, the `<service>` entry matches [1], [2] and [3].
+
+[source,xml]
+----
+<tsduck>
+  <PAT>
+    <service>
+  </PAT>
+</tsduck>
+----
+
+With the following patch file, the `<service>` entry matches [1] and [2] because of the `service_id` attribute:
+
+[source,xml]
+----
+<tsduck>
+  <PAT>
+    <service service_id="10"/>
+  </PAT>
+</tsduck>
+----
+
+The next patch file matches only [2] because of the combination of a `<PAT>` with
+`transport_stream_id` 2 and `<service>` with `service_id` 10.
+
+[source,xml]
+----
+<tsduck>
+  <PAT transport_stream_id="2">
+    <service service_id="10"/>
+  </PAT>
+</tsduck>
+----
+
+The next example illustrates how to match an attribute having any value except the specified one.
+In a patch file, when an attribute value starts with a `"!"`, the structure matches any node where the
+specified attribute has a different value (or the attribute is not present).
+
+Thus, the following patch file matches [1] and [3].
+
+[source,xml]
+----
+<tsduck>
+  <PAT transport_stream_id="1">
+    <service program_map_PID="!400"/>
+  </PAT>
+</tsduck>
+----
+
+NOTE: It could have been tempting to use the operator `"!="`, the syntax `program_map_PID!="400"` instead of `="!400"`.
+However, `!="400"` is not a valid XML syntax.
+
+===== Attribute patching
+
+Once a match is found for a given XML element, it is possible to alter the value of the attributes of this
+matching element using special attributes starting with `"x-"`.
+
+The name of these special attributes has the form `x-command-name`.
+The name part is the name of an attribute to alter in the element.
+
+The possible special attributes are:
+
+* `x-add-name="value"` +
+  Add the attribute `name` with the specified value in the matching element.
+  If the attribute already existed, it is replaced.
+* `x-update-name="value"` +
+  Update the attribute `name` with the specified value in the matching element,
+  only if the attribute already existed.
+* `x-delete-name=""` +
+  Delete the attribute name in the matching element.
+
+===== Element patching
+
+Similarly, the special attribute `x-node` is used to add or delete an entire XML element.
+
+* `x-node="delete"` +
+  The matching node is completely removed.
+* `x-node="delete(X)"' +
+  The next parent with name `X` above the matching node is completely removed.
+* `x-node="add"`
+  In this case, the matching node is the parent one.
+  The inner node with attribute `x-node="add"` is added in the matching node (without the special attributes, of course).
+
+===== Examples
+
+Complete examples are available in xref:tsxml-examples[xrefstyle=short].
+
+Smaller examples are shown in the patch file below:
+
+[source,xml]
+----
+<tsduck>
+
+  <PAT>
+    <service service_id="10" x-add-program_map_PID="1000"/>        <!-- [1] -->
+    <service service_id="20" x-delete-program_map_PID=""/>         <!-- [2] -->
+    <service service_id="30" x-node="delete"/>                     <!-- [3] -->
+    <service>
+  </PAT>
+
+  <PAT transport_stream_id="100">
+    <service service_id="80" program_map_PID="800" x-node="add"/>  <!-- [4] -->
+  </PAT>
+
+  <PAT transport_stream_id="200" x-node="delete"/>                 <!-- [5] -->
+
+  <EIT>
+    <event>
+      <parental_rating_descriptor>
+        <country rating="0x07" x-node="delete(EIT)"/>              <!-- [6] -->
+      </parental_rating_descriptor>
+    </event>
+  </EIT>
+
+</tsduck>
+----
+
+In [1], any service with id 10 in any PAT is updated with attribute `program_map_PID="1000"`.
+
+In [2], in any service with id 20 in any PAT, the attribute `program_map_PID` is deleted
+(this results in an invalid PAT but this is for the demonstation only).
+
+In [3], any service with id 30 in any PAT is deleted.
+
+In [4], in any PAT with `transport_stream_id` 100, a new service is added with `service_id` 80 and `program_map_PID` 800.
+
+In [5], any PAT with `transport_stream_id` 200 is deleted.
+
+In [6], an EIT is deleted when it contains an event which contains a `parental_rating_descriptor` with rating equals to `0x07`.
+
+=== JSON and “normalized” report formats
+
+TSDuck uses various text formats for report files.
+They are briefly described here.
+
+==== “Normalized” reports
+
+The name _normalized report_ refers to a predictable text format which can be easily parsed using scripts to automate operations.
+This is an alternative output format for tools which otherwise produce reports in a human-friendly readable format
+which is harder to parse and may change in future versions.
+
+Normalized reports are created by the commands `tsanalyze`, `tscmp`, `tsdektec` and the plugin `analyze`.
+Each command documents its own normalized format.
+A normalized report is usually requested using the option `--normalized`.
+
+The original idea of normalized reports was a format which could be easily parsed using basic UNIX tools such as `grep` and `sed`.
+See sample usages in xref:sample-cas-scan[xrefstyle=short], xref:sample-mon-stuffing[xrefstyle=short],
+xref:sample-analyze-bitrate[xrefstyle=short], xref:sample-pcr-per-sec[xrefstyle=short].
+
+==== JSON files
+
+While the previous normalized reports are easy to parse in scripts,
+they were created in a time where no widely used standard parser-friendly format existed.
+Nowadays, most standard parsable files use the JSON format.
+
+The open-source tool named `jq` (for JSON Query) is available on all operating systems as a standard package
+and makes the use of JSON files in scripts even easier than `grep` and `sed` with normalized report files.
+
+All TSDuck tools and plugins which can produce normalized report can also produce JSON reports using the option `--json`.
+
+With the option `--json-line`, the JSON text is output as one single line through the message logger
+(the standard error device by default).
+This feature is equivalent to the inline output XML format and can be useful for third party applications.
+See xref:inline-xml[xrefstyle=short] for details and usage examples.
+
+[#xml-json-conv]
+==== Automated XML-to-JSON conversion
+
+With TSDuck, JSON is used for analysis reports while XML is used to store
+more complex configuration or data structures such as PSI/SI tables.
+
+An application which needs to analyze the PSI/SI tables which are extracted by some TSDuck command or plugin
+can simply parse the extracted XML text.
+Although many tools and libraries exist to parse XML, some developers may prefer to parse JSON rather than XML.
+In that case, TSDuck provides an automated XML-to-JSON conversion.
+
+===== Conversion rules
+
+There is no standard way to convert XML to JSON.
+Several tools exist and each of them has its own conversion rules.
+Because of the differences between XML and JSON, no conversion is perfect,
+and the result is sometimes not what would have been specified if JSON had been used from the beginning.
+However, the result is usually good enough for automatic parsing in an application.
+
+The translation rules for the TSDuck automated XML-to-JSON conversion are described below.
+Note that the default rules can be fine-tuned using an XML model for the input document (see xref:xml-models[xrefstyle=short])
+and specific command line options (see xref:opt-xml-to-json[xrefstyle=short]).
+
+* Each XML element is converted to a JSON object `{...}`.
+* The name of the XML element is an attribute `"#name"` inside the object.
+* All attributes of the XML element are directly mapped into attributes in the JSON object.
+** By default, attribute values are converted to JSON strings.
+** If the XML model has a value for this attribute and if this model value starts with `"int"` or `"uint"`
+   (not case sensitive) and the attribute value can be successfully converted to an integer,
+   then the value becomes a JSON number.
+** Similarly, if the XML model value for this attribute starts with `"bool"` and the value can be successfully
+   converted to a boolean, then the value becomes a JSON literal `True` or `False`.
+* The children nodes inside an element are placed in a JSON array with name `"#nodes"`.
+* Each XML text node is converted to a JSON string.
+  If the XML model has a value for this text node and if this XML model value starts with `"hexa"` (not case sensitive),
+  then all spaces are collapsed inside the string.
+* XML declarations, comments and unknown nodes are dropped.
+
+The introduction of the two artificial attributes `"#name"` and `"#nodes"` was necessary
+because of the differences between XML and JSON.
+It could have been tempting to use the XML element name as JSON attribute name and
+the rest of the XML element (attributes and children nodes inside a JSON object) as JSON attribute value.
+However, while an XML element may contain several children elements with the same name,
+a JSON object cannot have several attributes with the same name.
+Thus, the XML element name had to be pushed inside the JSON element, not as its name, outside of the object.
+
+Sample XML source:
+
+[source,xml]
+----
+<PAT version="12" current="true" transport_stream_id="0x0438" network_PID="0x0010">
+  <service service_id="0x2261" program_map_PID="0x0064"/>
+  <service service_id="0x2262" program_map_PID="0x00C8"/>
+</PAT>
+----
+
+Converted JSON:
+
+[source,json]
+----
+{
+  "#name": "PAT",
+  "current": true,
+  "network_pid": 16,
+  "transport_stream_id": 1080,
+  "version": 12,
+  "#nodes": [
+    {
+      "#name": "service",
+      "program_map_pid": 100,
+      "service_id": 8801
+    },
+    {
+      "#name": "service",
+      "program_map_pid": 200,
+      "service_id": 8802
+    }
+  ]
+}
+----
+
+The command `tsxml` can be used to test the JSON conversion of any arbitrary XML file.
+
+[#opt-xml-to-json]
+===== TSDuck options for automated XML-to-JSON conversion
+
+The following command line options are used in various TSDuck commands and plugins
+to fine-tune the automated XML-to-JSON conversion.
+
+[.opt]
+*--x2j-collapse-text*
+
+[.optdoc]
+When converting all XML text nodes into JSON strings, remove leading and trailing spaces.
+Also replace all other sequences of space characters (including line breaks) with one single space.
+
+[.optdoc]
+By default, text nodes are collapsed only when there is an XML model which
+identifies the text node as containing hexadecimal content.
+
+[.opt]
+*--x2j-enforce-boolean*
+
+[.optdoc]
+When an attribute in an element contains a boolean value (ie. the string `"true"` or `"false"`) but
+there is no XML model file to tell if this is really a boolean, force the creation of a JSON literal `True` or `False`.
+
+[.optdoc]
+By default, when there is no XML model, all element attributes are converted as JSON strings.
+
+[.opt]
+*--x2j-enforce-integer*
+
+[.optdoc]
+When an attribute in an element contains an integer value but there is no XML model file to tell if this is really an integer,
+force the creation of a JSON number.
+
+By default, when there is no XML model, all element attributes are converted as JSON strings.
+
+[.opt]
+*--x2j-include-root*
+
+[.optdoc]
+Keep the root of the XML document as a JSON object.
+
+[.optdoc]
+By default, the JSON document is made of a JSON array containing all JSON objects
+resulting from the conversion of all XML elements under the root.
+
+[.optdoc]
+Usually, in an XML file, there is one root element without attributes.
+The root of all TSDuck XML files is a simple `<tsduck>` element.
+This single root XML element is required by the XML syntax but usually carries no useful information.
+This is why it is removed by default in the XML-to-JSON conversion.
+
+[.opt]
+*--x2j-trim-text*
+
+[.optdoc]
+When converting all XML text nodes into JSON strings, remove leading and trailing spaces.
+
+[.optdoc]
+By default, text nodes are trimmed only when there is an XML model which
+identifies the text node as containing hexadecimal content.

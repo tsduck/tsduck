@@ -1,0 +1,23 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+=== Free TV Australia-defined descriptors (DVB private descriptors)
+
+==== australia_logical_channel_descriptor
+
+Defined by Free TV Australia in <<FTV-AUS>>.
+
+[source,xml]
+----
+<australia_logical_channel_descriptor>
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           logical_channel_number="uint14, required"
+           visible_service="bool, default=true"/>
+</australia_logical_channel_descriptor>
+----

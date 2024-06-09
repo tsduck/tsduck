@@ -1,0 +1,222 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsscan
+
+[.cmd-header]
+Digital TV network scanning of frequencies and services
+
+This utility scans frequencies, transport streams and services in a DTV network.
+
+There are two types of scanning:
+
+* NIT-based scanning: Modulation parameters must be given.
+  In a first phase, the specified "reference" transport stream is acquired,
+  its NIT is read and all transport stream descriptions (with their delivery system descriptors) are interpreted.
+  In a second phase, all these transport streams are acquired to check their content.
+* Blind band scanning: This method applies to UHF and VHF bands only, for terrestrial DTV networks.
+  All predefined channels in the selected band in the selected region or country are scanned one by one.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsscan [options]
+----
+
+[.usage]
+Scanning method selection
+
+[.opt]
+*-n* +
+*--nit-scan*
+
+[.optdoc]
+Perform a NIT-based scanning.
+
+[.optdoc]
+Tuning parameters for a reference transport stream must be present (frequency or channel reference).
+The NIT is read on the specified frequency and a full scan of the corresponding network is performed.
+
+[.opt]
+*-u* +
+*--uhf-band*
+
+[.optdoc]
+Perform a complete UHF-band scanning (DVB-T, ISDB-T or ATSC).
+
+[.optdoc]
+Use the predefined UHF frequency layout of the specified region (see option `--hf-band-region`).
+
+[.optdoc]
+By default, scan the center frequency of each channel only.
+Use option `--use-offsets` to scan all predefined offsets in each channel.
+
+[.opt]
+*-v* +
+*--vhf-band*
+
+[.optdoc]
+Perform a complete VHF-band scanning.
+
+[.optdoc]
+See also option --uhf-band.
+
+[.usage]
+Tuner device options and tuning parameters
+
+All options from the `dvb` input plugin are also available to `tsscan`.
+See xref:dvb-plugin[xrefstyle=short] for the list of options.
+
+In the `dvb` input plugin documentation, the "reception options" specify which tuner to use and basic reception timeouts.
+These options are used by `tsscan` in all types of scanning.
+
+Specific tuning parameters are used with `--nit-scan only`.
+They are used to receive the initial reference transport stream from which the NIT is analyzed.
+
+[.usage]
+Scanning options
+
+[.opt]
+*--best-strength*
+
+[.optdoc]
+With UHF/VHF-band scanning, for each channel, use the offset with the best signal strength.
+By default, use the average of lowest and highest offsets with required minimum strength.
+
+[.optdoc]
+Note that some tuners cannot report a correct signal strength, making this option useless.
+
+[.opt]
+*--first-channel* _value_
+
+[.optdoc]
+For UHF/VHF-band scanning, specify the first channel to scan (default: lowest channel in band).
+
+[.opt]
+*--first-offset* _value_
+
+[.optdoc]
+For UHF/VHF-band scanning, specify the first offset to scan on each channel.
+Note that `tsscan` may scan lower offsets.
+As long as some signal is found at a specified offset, `tsscan` continues to check up to 3 lower offsets below the "first" one.
+This means that if a signal is found at offset -2, offset -3 will be checked anyway, etc. up to offset -5.
+
+[.opt]
+*-g* +
+*--global-service-list*
+
+[.optdoc]
+Same as `--service-list` but display a global list of services at the end of scanning instead of per transport stream.
+
+[.opt]
+*--last-channel* _value_
+
+[.optdoc]
+For UHF/VHF-band scanning, specify the last channel to scan (default: highest channel in band).
+
+[.opt]
+*--last-offset* _value_
+
+[.optdoc]
+For UHF/VHF-band scanning, specify the last offset to scan on each channel.
+Note that `tsscan` may scan higher offsets.
+As long as some signal is found at a specified offset, `tsscan` continues to check up to 3 higher offsets above the "last" one.
+This means that if a signal is found at offset +2, offset +3 will be checked anyway, etc. up to offset +5.
+
+[.opt]
+*--min-strength* _value_
+
+[.optdoc]
+Minimum signal strength. Frequencies with lower signal strength are ignored.
+
+[.optdoc]
+The value can be in milli-dB or percentage. It depends on the tuner and its driver.
+Check the displayed unit. The default is 10, whatever unit it is.
+
+[.opt]
+*--no-offset*
+
+[.optdoc]
+For UHF/VHF-band scanning, scan only the central frequency of each channel.
+This is now the default.
+Specify option `--use-offsets` to scan all offsets.
+
+[.opt]
+*--psi-timeout* _milliseconds_
+
+[.optdoc]
+Specifies the timeout, in milliseconds, for PSI/SI table collection.
+Useful with `--service-list` or NIT-based scan.
+The default is 10,000 milli-seconds.
+
+[.opt]
+*--save-channels* _filename_
+
+[.optdoc]
+Save the description of all channels in the specified XML file.
+See xref:chap-chanconfig[xrefstyle=short], for more details on channels configuration files.
+
+[.optdoc]
+If the file name is `-`, use the default tuning configuration file.
+
+[.optdoc]
+See also option `--update-channels`.
+
+[.opt]
+*-l* +
+*--service-list*
+
+[.optdoc]
+Read the SDT of each channel and display the list of services.
+
+[.opt]
+*--show-modulation*
+
+[.optdoc]
+Display modulation parameters.
+
+[.optdoc]
+NOTE: On Windows, with UHF band scanning, the actual modulation parameters of a transponder may not be available.
+This depends on the driver of the tuner.
+Most Windows drivers do not report the correct values.
+
+[.opt]
+*--update-channels* _filename_
+
+[.optdoc]
+Update the description of all channels in the specified XML file.
+The content of each scanned transport stream is replaced in the file.
+If the file does not exist, it is created.
+See xref:chap-chanconfig[xrefstyle=short], for more details on channels configuration files.
+
+[.optdoc]
+If the file name is `-`, use the default tuning configuration file.
+
+[.optdoc]
+See also option `--save-channels`.
+
+[.opt]
+*--use-offsets*
+
+[.optdoc]
+For UHF/VHF-band scanning, do not scan only the central frequency of each channel.
+Also scan frequencies with offsets.
+
+[.optdoc]
+As an example, if a signal is transmitted at offset +1, the reception may be successful at offsets -1 to +3 (but not -2 and +4).
+With this option, `tsscan` checks all offsets and reports that the signal is at offset +1 (central point between offsets -1 and +3).
+
+[.optdoc]
+By default, `tsscan` reports that the signal is found at the central frequency of the channel (offset zero).
+This significantly speeds up the scanning process but does not provide any offset information.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset;hf;pds;std]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

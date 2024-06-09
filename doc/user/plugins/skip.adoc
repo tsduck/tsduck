@@ -1,0 +1,46 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== skip
+
+[.cmd-header]
+Skip leading packets in a TS
+
+The plugin skips leading TS packets of a stream.
+The specified number of initial TS packets are dropped and not transmitted to the next plugin in the chain.
+After that, all packets are transparently passed.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P skip [options] count
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_count_
+
+[.optdoc]
+Number of leading TS packets to skip.
+
+[.usage]
+Options
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Replace excluded leading packets with stuffing (null packets) instead of removing them.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

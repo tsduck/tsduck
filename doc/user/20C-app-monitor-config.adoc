@@ -1,0 +1,175 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-monconfig]
+[appendix]
+== Monitoring Configuration File
+
+This appendix describes the usage and XML reference format for the resource monitoring
+configuration files as used with option `--monitor` in `tsp` and `tsswitch`.
+
+=== Resource monitoring in TSDuck
+
+When TSDuck is used in lab activities, most commands run a short time only.
+The stability of the application over time is not an issue.
+However, during very long tests or basic production activities,
+commands such as `tsp` or `tsswitch` can run during days, weeks or possibly forever.
+
+In that case, there is always a risk that some system resource is exhausted,
+typically the virtual memory of the process in case of memory leak.
+TSDuck is carefully developed to avoid such leaks.
+However, nobody can guarantee that no mishap will ever appear.
+
+To detect problems in resource usage, `tsp` or `tsswitch` define the `--monitor` option.
+Using this option, the application periodically logs messages such as the following:
+
+[source,shell]
+----
+* [MON] 2021/03/14 18:23, VM: 389 MB (stable), CPU:2.19% (average:2.17%)
+----
+
+Each message contains a summary of the memory and CPU usage,
+both at the time of the message and its evolution over time.
+
+The monitoring strategy is flexible and defined in resource monitoring configuration files (they are XML files).
+Each command can use a dedicated resource monitoring configuration, although the default one is fine for most usages.
+
+Since the resource usage of an application typically evolves over time,
+from rapid jumps at the beginning to stability on the long run,
+the monitoring strategy is divided into several periods.
+Each period can have a distinct monitoring strategy.
+
+When anomalies are detected, it is possible to trigger external alarm commands,
+in addition to log messages (although the default configuration doesn’t).
+
+[#monconfig-format]
+=== Resource monitoring configuration file format
+
+The XML format which is used here is informal.
+See xref:xml-models[xrefstyle=short] about XML model files.
+
+The template structure of a resource monitoring configuration file is the following:
+
+[source,xml]
+----
+<tsduck>
+
+  <!-- Default behaviour -->
+  <defaults max_cpu="uint, 0-100, required"
+            stable_memory="bool, required"
+            log="bool, required">
+    <alarm>shell command (optional)</alarm>
+  </defaults>
+
+  <!-- Time profile. All time values are in seconds. -->
+  <profile>
+    <!-- One entry per period. -->
+    <period duration="uint64, optional"
+            interval="uint64, required"
+            max_cpu="uint, 0-100, optional"
+            stable_memory="bool, optional"
+            log="bool, optional">
+      <alarm>shell command (optional)</alarm>
+    </period>
+  </profile>
+
+</tsduck>
+----
+
+The `<tsduck>` root node shall contain exactly one `<defaults>` node and one `<profile>` node.
+The profile is made of at least one `<period>` node.
+
+In the definition of a period, the `duration` attribute indicates the total duration of the period in seconds.
+If this attribute is missing, the period extends forever and is consequently the last one.
+The `interval` attribute indicates the interval between two probes of the resource usage during the period.
+
+Other attributes and nodes are optional and their default values are read from the `<defaults>` node.
+
+The `max_cpu` attribute indicates the maximum CPU percentage that the TSDuck application should use during a monitoring interval.
+If the application CPU usage exceeds this value, an alarm is triggered.
+Keep in mind that multi-threaded applications such as `tsp` or `tsswitch`,
+running on multi-core systems, may use more than 100% of a CPU.
+
+The `stable_memory` attribute is a boolean which indicates
+if the amount of virtual memory which is used by the TSDuck application should remain stable during the period.
+Usually, the virtual memory size of a process takes some time to stabilize and then it should remain stable.
+It is therefore recommended to set the attribute to `false` in the initial monitoring periods
+and to set it to `true` in the last period at least.
+The idea is to detect potential memory leaks on the long term.
+
+The `log` attribute is a boolean which indicates if monitoring messages should be displayed in the log during the period.
+These messages are useful to understand the behavior of the application.
+But when the application is running 24 hours a day, it creates an infinitely large log file.
+To avoid this issue, it is recommended to set this attribute to true in all periods except the last one,
+to keep a finite number of monitoring messages in the log file.
+
+The `<alarm>` node contains a shell command to run when an alarm is triggered.
+This can be a user-defined shell script which notifies some larger monitoring infrastructure.
+If the `<alarm>` node is empty or omitted, no alarm is triggered and the resource monitoring is limited to messages in the log file.
+
+In the `<alarm>` node, the leading and trailing spaces are ignored, as well as line breaks.
+Thus, if the command is very long, it is possible to freely format it in the XML file.
+
+The alarm command automatically receives three additional parameters:
+
+[.compact-list]
+1. A human-readable message, the same as the monitoring message in the log file.
+2. The type of alarm, either `cpu` or `memory`.
+3. The alarm value.
+   In the case of a CPU alarm, this is the CPU percentage of the application during the last monitoring interval.
+   In the case of a memory alarm, this is the size in bytes of the virtual memory space of the application.
+
+=== Default resource monitoring configuration
+
+The default resource monitoring configuration can be found in the file named `tsduck.monitor.xml`
+the location of which depends on the operating system.
+
+[.compact-table]
+[cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|Linux: |/usr/share/tsduck/tsduck.monitor.xml
+|macOS (Intel): |/usr/local/share/tsduck/tsduck.monitor.xml
+|macOS (Arm): |/opt/hombrew/share/tsduck/tsduck.monitor.xml
+|Windows: |%TSDUCK%\bin\tsduck.monitor.xml
+|NetBSD: |/usr/pkg/share/tsduck/tsduck.monitor.xml
+|Other BSD: |/usr/local/share/tsduck/tsduck.monitor.xml
+|===
+
+It is recommended to never modify this default file.
+Any modification would be overwritten when TSDuck is upgraded to a new version.
+To use an alternative resource monitoring configuration, specify the XML file in the monitoring option,
+for instance `--monitor=myconfig.xml`.
+
+The default configuration is defined as follow.
+It is relatively liberal, and no alarm command is defined.
+
+[source,xml]
+----
+<tsduck>
+  <defaults max_cpu="80" stable_memory="false" log="true"/>
+  <profile>
+    <period duration="120" interval="10" max_cpu="100"/>
+    <period duration="480" interval="60"/>
+    <period duration="600" interval="120"/>
+    <period duration="2400" interval="300"/>
+    <period duration="32400" interval="1800"/>
+    <period interval="1800" stable_memory="true" log="false"/>
+  </profile>
+</tsduck>
+----
+
+It can be interpreted as follow:
+
+[.compact-list]
+* During the first 2 minutes, monitor every 10 seconds, no CPU limitation.
+* During the next 8 minutes (up to start + 10 mn), monitor every minute.
+* During the next 10 minutes (up to start + 20 mn), monitor every 2 minutes.
+* During the next 40 minutes (up to start + 1 hour), monitor every 5 minutes.
+* During the next 9 hours (up to start + 10 hours), monitor every 30 minutes.
+* After 10 hours, monitor every 30 minutes, raise an alarm when the memory is not stable,
+  stop logging messages to avoid flooding the log file.

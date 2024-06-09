@@ -1,0 +1,258 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== mpe
+
+[.cmd-header]
+Extract MPE (Multi-Protocol Encapsulation) datagrams
+
+This plugin extracts MPE (Multi-Protocol Encapsulation) datagrams from one or more PID’s.
+The extracted datagrams can be either forwarded on the local network, saved in a binary file or simply logged for monitoring.
+See <<ETSI-301-192>> for more details on MPE.
+
+The extracted datagrams must be valid UDP/IP datagrams.
+Otherwise, they are ignored.
+When saved in a binary file or forwarded on the network, only the UDP payload is used.
+The original IP and UDP headers are dropped.
+
+If the extracted datagrams are forwarded on the local network,
+it is recommended to activate the real-time defaults of `tsp` using the option `--realtime`
+(see the reference documentation for `tsp`).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P mpe [options]
+----
+
+[.usage]
+General options
+
+[.opt]
+*-m* _value_ +
+*--max-datagram* _value_
+
+[.optdoc]
+Specify the maximum number of datagrams to extract, then stop.
+By default, all datagrams are extracted.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Extract MPE datagrams from these PID’s.
+Several `--pid` options may be specified.
+When no PID is specified, use all PID's carrying MPE which are properly declared in the signalization.
+
+[.usage]
+MPE filtering options
+
+[.opt]
+*-d* _address[:port]_ +
+*--destination* _address[:port]_
+
+[.optdoc]
+Filter MPE UDP datagrams based on the specified destination IP address.
+
+[.opt]
+*--net-size* _value_
+
+[.optdoc]
+Specify the exact size in bytes of the complete network datagrams to filter, including IP headers.
+
+[.optdoc]
+This option is incompatible with `--min-net-size` and `--max-net-size`.
+
+[.opt]
+*--min-net-size* _value_
+
+[.optdoc]
+Specify the minimum size in bytes of the complete network datagrams to filter.
+
+[.opt]
+*--max-net-size* _value_
+
+[.optdoc]
+Specify the maximum size in bytes of the complete network datagrams to filter.
+
+[.opt]
+*-s* _address[:port]_ +
+*--source* _address[:port]_
+
+[.optdoc]
+Filter MPE UDP datagrams based on the specified source IP address.
+
+[.opt]
+*--udp-size* _value_
+
+[.optdoc]
+Specify the exact size in bytes of the UDP datagrams to filter.
+
+[.optdoc]
+This option is incompatible with `--min-udp-size` and `--max-udp-size`.
+
+[.opt]
+*--min-udp-size* _value_
+
+[.optdoc]
+Specify the minimum size in bytes of the UDP datagrams to filter.
+
+[.opt]
+*--max-udp-size* _value_
+
+[.optdoc]
+Specify the maximum size in bytes of the UDP datagrams to filter.
+
+[.usage]
+Display options
+
+[.opt]
+*--dump-datagram*
+
+[.optdoc]
+With `--log` or `--log-hexa-line`, dump each complete network datagram.
+
+[.opt]
+*--dump-max* _value_
+
+[.optdoc]
+With `--dump-datagram`, `--dump-udp` or `--log-hexa-line`, specify the maximum number of bytes to dump.
+By default, dump everything.
+
+[.opt]
+*--dump-udp*
+
+[.optdoc]
+With `--log` or `--log-hexa-line`, dump the UDP payload of each network datagram.
+
+[.opt]
+*-l* +
+*--log*
+
+[.optdoc]
+Log all MPE datagrams using a short summary for each of them.
+
+[.opt]
+*--log-hexa-line[='prefix']*
+
+[.optdoc]
+Same as `--log` but log the full content of each datagram as one single hexadecimal line in the message logger.
+Dump either the full datagram (the default) or the UDP payload (with `--dump-udp`).
+
+[.optdoc]
+The optional string parameter specifies a prefix to prepend on the log line before the hexadecimal text
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+*--skip* _value_
+
+[.optdoc]
+With `--output-file`, `--dump-datagram`, `--dump-udp` or `--log-hexa-line`, specify the initial number of bytes to skip.
+By default, save or dump from the beginning.
+
+[.opt]
+*--sync-layout*
+
+[.optdoc]
+With `--log`, display the layout of 0x47 sync bytes in the UDP payload.
+
+[.usage]
+Save options
+
+[.opt]
+*-a* +
+*--append*
+
+[.optdoc]
+With `--output-file`, if the file already exists, append to the end of the file.
+By default, existing files are overwritten.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify that the extracted UDP datagrams are saved in this file.
+The UDP messages are written without any encapsulation.
+
+[.usage]
+UDP forwarding options
+
+[.opt]
+*--local-address* _address_
+
+[.optdoc]
+With `--udp-forward`, specify the IP address of the outgoing local interface for multicast traffic.
+It can be also a host name that translates to a local address.
+
+[.opt]
+*--local-port* _value_
+
+[.optdoc]
+With `--udp-forward`, specify the local UDP source port for outgoing packets.
+
+[.optdoc]
+By default, a random source port is used.
+
+[.opt]
+*-r* _address[:port]_ +
+*--redirect* _address[:port]_
+
+[.optdoc]
+With `--udp-forward`, redirect all UDP datagrams to the specified socket address.
+
+[.optdoc]
+By default, all datagram are forwarded to their original destination address.
+If you specify a redirected address, it is recommended to use `--destination` to filter a specific stream.
+
+[.optdoc]
+If the port is not specified, the original destination port from the MPE datagram is used.
+
+[.opt]
+*--ttl* _value_
+
+[.optdoc]
+With `--udp-forward`, specify the TTL (Time-To-Live) socket option.
+
+[.optdoc]
+The actual option is either Unicast TTL or Multicast TTL, depending on the destination address.
+
+[.optdoc]
+By default, use the same TTL as specified in the received MPE encapsulated datagram.
+
+[.opt]
+*-u* +
+*--udp-forward*
+
+[.optdoc]
+Forward all received MPE encapsulated UDP datagrams on the local network.
+
+[.optdoc]
+By default, the destination address and port of each datagram is left unchanged.
+The source address of the forwarded datagrams will be the address of the local machine.
+
+[.usage]
+Developers options
+
+The following options are reserved to C++, Java or Python developers.
+They are useful only when the plugin is used inside a custom application.
+
+[.opt]
+*--event-code* _value_
+
+[.optdoc]
+Signal a plugin event with the specified code for each MPE packet.
+
+[.optdoc]
+The event data is an instance of `PluginEventData` pointing to the network datagram (default) or the UDP payload (with `--dump-udp`).
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

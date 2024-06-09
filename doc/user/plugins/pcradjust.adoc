@@ -1,0 +1,100 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcradjust
+
+[.cmd-header]
+Adjust PCR's according to a constant bitrate
+
+This plugin recomputes all PCR values, assuming that the transport stream has a constant bitrate.
+
+In the general case, it is impossible to recompute PCR values in non-real-time streams with a variable bitrate
+because the instant bitrate is usually computed according to the PCR values which are found in the stream,
+hence assuming that these PCR values are correct and do not need any adjustment.
+
+In each PID, the first PCR is left unmodified and all others are recomputed
+according to the constant bitrate and the distance between packets.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pcradjust [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specify a constant bitrate for the transport stream.
+The PCR values will be adjusted according to this bitrate.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+By default, use the input bitrate as reported by the input device or a previous plugin.
+
+[.opt]
+*--ignore-dts*
+
+[.optdoc]
+Do not modify DTS (decoding time stamps) values.
+
+[.optdoc]
+By default, the DTS are modified according to the PCR adjustment.
+
+[.opt]
+*--ignore-pts*
+
+[.optdoc]
+Do not modify PTS (presentation time stamps) values.
+
+[.optdoc]
+By default, the PTS are modified according to the PCR adjustment.
+
+[.opt]
+*--ignore-scrambled*
+
+[.optdoc]
+Do not modify PCR values on PID's containing scrambled packets.
+
+[.optdoc]
+By default, on scrambled PID's, the PCR's are modified but not the PTS and DTS since they are scrambled.
+This may result in problems when playing video and audio.
+
+[.opt]
+*--min-ms-interval* _milliseconds_
+
+[.optdoc]
+Specify the minimum interval between two PCR's in milliseconds.
+
+[.optdoc]
+On a given PID, if the interval between two PCR's is larger than the minimum,
+the next null packet will be replaced with an empty packet with a PCR for that PID.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specifies PID's where PCR, DTS and PTS values shall be adjusted.
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+[.optdoc]
+By default, all PID's are modified.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

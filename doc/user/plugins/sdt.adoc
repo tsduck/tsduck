@@ -1,0 +1,125 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== sdt
+
+[.cmd-header]
+Perform various transformations on an SDT
+
+This plugin performs various transformations on an SDT, either the SDT-Actual or some specific SDT-Other.
+The other SDT’s, if present, are left unchanged.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P sdt [options]
+----
+
+[.usage]
+SDT modification options
+
+[.opt]
+*--cleanup-private-descriptors*
+
+[.optdoc]
+Remove all private descriptors without preceding _private_data_specifier_descriptor_.
+
+[.opt]
+*--eit-pf* _value_
+
+[.optdoc]
+Specify a new _EIT_present_following_flag_ value (0 or 1) for the added or modified service.
+For new services, the default is 0.
+
+[.opt]
+*--eit-schedule* _value_
+
+[.optdoc]
+Specify a new _EIT_schedule_flag_ value (0 or 1) for the added or modified service.
+For new services, the default is 0.
+
+[.opt]
+*-f* _value_ +
+*--free-ca-mode* _value_
+
+[.optdoc]
+Specify a new _free_CA_mode_ value (0 or 1) for the added or modified service.
+For new services, the default is 0.
+
+[.opt]
+*-n* _value_ +
+*--name* _value_
+
+[.optdoc]
+Specify a new service name for the added or modified service.
+For new services, the default is an empty string.
+
+[.opt]
+*--original-network-id* _id_
+
+[.optdoc]
+Modify the original network id in the SDT with the specified value.
+
+[.opt]
+*-o* _id_ +
+*--other* _id_
+
+[.optdoc]
+Modify the SDT-Other with the specified TS id.
+By default, modify the SDT-Actual.
+
+[.opt]
+*-p* _value_ +
+*--provider* _value_
+
+[.optdoc]
+Specify a new provider name for the added or modified service.
+For new services, the default is an empty string.
+
+[.opt]
+*--remove-service* _sid_
+
+[.optdoc]
+Remove the specified service-id from the SDT.
+Several `--remove-service` options may be specified to remove several services.
+
+[.opt]
+*-r* _value_ +
+*--running-status* _value_
+
+[.optdoc]
+Specify a new running_status value (0 to 7) for the added or modified service.
+For new services, the default is 4 ("running").
+
+[.opt]
+*-s* _value_ +
+*--service-id* _value_
+
+[.optdoc]
+Add a new service or modify the existing service with the specified service-id.
+
+[.opt]
+*--ts-id* _id_
+
+[.optdoc]
+Modify the transport stream id in the SDT with the specified value.
+
+[.opt]
+*-t* _value_ +
+*--type* _value_
+
+[.optdoc]
+Specify a new service type for the added or modified service.
+For new services, the default is 0x01 ("digital television service").
+
+include::{docdir}/opt/group-table-plugin.adoc[tags=!*;sdt]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

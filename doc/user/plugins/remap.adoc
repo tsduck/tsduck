@@ -1,0 +1,106 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== remap
+
+[.cmd-header]
+Generic PID remapping
+
+This plugin modifies the PID value in selected packets. By default, the PSI are modified accordingly to
+preserve the consistency of the transport stream.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P remap [options] [pid[-pid]=newpid ...]
+----
+
+[.usage]
+Parameters (specifying PID remapping)
+
+[.opt]
+_pid=newpid, pid1-pid2=newpid_ 
+
+[.optdoc]
+Each remapping is specified as `_pid=newpid_` or `_pid1-pid2=newpid_`.
+All PID's can be specified as decimal or hexadecimal values.
+More than one PID remapping can be specified.
+
+[.optdoc]
+In the first form, the PID `_pid_` is remapped to `_newpid_`.
+
+[.optdoc]
+In the latter form, all PID's within the range `_pid1_` to `_pid2_` (inclusive)
+are respectively remapped to `_newpid_`, `__newpid__+1`, etc.
+This behaviour can be changed using option `--single`.
+
+[.optdoc]
+The null PID 0x1FFF cannot be remapped.
+
+[.usage]
+Options
+
+[.opt]
+*-n* +
+*--no-psi*
+
+[.optdoc]
+Do not modify the PSI.
+
+[.optdoc]
+By default, the PAT, CAT and PMT's are modified
+so that previous references to the remapped PID's will point to the new PID values.
+
+[.opt]
+*--reset-label* _label1[-label2]_
+
+[.optdoc]
+Clear the specified labels on the remapped packets.
+
+[.optdoc]
+Several `--reset-label` options may be specified.
+
+[.opt]
+*--set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on the remapped packets.
+
+[.optdoc]
+Several `--set-label` options may be specified.
+
+[.opt]
+*-s* +
+*--single*
+
+[.optdoc]
+When a remapping is in the form `_pid1-pid2=newpid_`, remap all input PID's within the range `_pid1_` to `_pid2_`
+to the same `_newpid_` value, not `_newpid_`, `__newpid__+1`, etc.
+
+[.optdoc]
+This option forces `--unchecked` since distinct PID's are remapped to the same one.
+
+[.opt]
+*-u* +
+*--unchecked*
+
+[.optdoc]
+Do not perform any consistency checking while remapping PID's:
+
+[.optdoc]
+[.compact-list]
+* Remapping to or from a predefined PID is accepted.
+* Remapping two PID's to the same PID or to a PID which is already present in the input is accepted.
+
+[.optdoc]
+Note that this option should be used with care since the resulting stream can be illegal or inconsistent.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

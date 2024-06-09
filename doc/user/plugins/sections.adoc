@@ -1,0 +1,234 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== sections
+
+[.cmd-header]
+Remove, keep or merge sections from various PID's
+
+This plugin extracts sections from one or more PID’s and merges them inside an output PID.
+
+Various filtering options can be used to selectively keep or remove sections.
+By default, the selected sections are removed.
+Using the option `--keep`, the selected sections are kept and all others are removed.
+Without selection option, the sections are simply merged from the various input PID’s into the output PID.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P sections [options]
+----
+
+[.usage]
+General options
+
+[.opt]
+*-a* +
+*--and*
+
+[.optdoc]
+Remove or keep a section when all conditions are true ("and" on conditions).
+
+[.optdoc]
+By default, a section is removed or kept as soon as one remove condition is true ("or" on conditions).
+
+[.optdoc]
+*Example:* The options `--tid 2 --version 6` remove all PMT sections (table id 2)
+and all sections with version 6 (any table id).
+On the other hand, `--and --tid 2 --version 6` remove only PMT sections with version 6.
+
+[.opt]
+*-k* +
+*--keep*
+
+[.optdoc]
+Keep selected sections and remove others.
+The selection options are `--tid`, `--etid`, `--version`, etc.
+
+[.optdoc]
+By default, when selection options are present, the selected sections are removed.
+If no selection option is present, the sections are simply merged from the various input PID's.
+
+[.opt]
+*-n* +
+*--null-pid-reuse*
+
+[.optdoc]
+With this option, null packets can be replaced by packets for the output PID.
+
+[.optdoc]
+By default, only packets from input PID's are replaced by output packets.
+This option may need to be used when `--stuffing` is specified and the input PID's contained packed sections.
+In that case, the output payload can be larger than the input and additional packets must be used.
+
+[.opt]
+*--patch-xml* _filename_
+
+[.optdoc]
+Specify an XML patch file which is applied to each section on the fly.
+
+[.optdoc]
+Here, the behavior of `--patch-xml` is slightly different, compared to other commands or plugins.
+While XML representation and patch normally apply to a complete table, they process one single section here.
+This means that the result of the patch must fit into one single section.
+Otherwise, only the first section of the result is kept (with the original section number of the input section).
+
+[.optdoc]
+If the specified name starts with `<?xml`, it is considered as inline XML content,
+meaning that the string in the command line is directly the XML content and not a file name.
+
+[.optdoc]
+Several `--patch-xml` options can be specified.
+Patch files are sequentially applied on each section.
+
+[.optdoc]
+See xref:xml-patch[xrefstyle=short] for more details on XML patch files.
+
+[.opt]
+*-o* _value_ +
+*--output-pid* _value_
+
+[.optdoc]
+Specify the output PID.
+By default, the first input PID on the command line is used as output PID.
+
+[.optdoc]
+If the output PID is different from all input PID's and this output PID already exists in the transport stream,
+an error is generated.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specify input PID’s.
+More than one input PID can be specified.
+All sections from all input PID's are merged into the output PID.
+At least one input PID must be specified.
+
+[.opt]
+*-r* +
+*--reverse-etid*
+
+[.optdoc]
+With option `--etid`, reverse the table id and the table id extension parts in the _extended table id_ values.
+With this option, the values in `--etid` are of the form 0x__EEEETT__ instead of 0x__TTEEEE__
+where _TT_ is the table id part and _EEEE_ the table id extension part.
+
+[.optdoc]
+This option can be useful when specifying ranges of values.
+For instance, the option `--etid 0x4A1234-0x4A1250` removes BAT sections (table id 0x4A)
+for all service ids in the range 0x1234 to 0x1250.
+On the other hand, the options -`-etid 0x12344E-0x12346F --reverse-etid` remove all EIT sections
+(table ids 0x4E to 0x6F) for the service id 0x1234.
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Insert stuffing at end of each section, up to the next TS packet boundary.
+By default, sections are packed and start in the middle of a TS packet, after the previous section.
+Note, however, that section headers are never scattered over a packet boundary.
+
+[.usage]
+Section selection options
+
+[.opt]
+*--etid* _id1[-id2]_
+
+[.optdoc]
+Remove or keep all sections with the corresponding _extended table id_ values.
+The value is a combination of the table id and the table id extension.
+
+[.optdoc]
+*Example:* The option `-e 0x4A1234` removes all BAT sections (table id 0x4A) for bouquet id 0x1234 (table id extension).
+
+[.optdoc]
+Several options `--etid` can be specified.
+
+[.optdoc]
+This option is now considered legacy.
+The option `--etid 0xTTEEEE`, where _TT_ is the table id part and _EEEE_ the table id extension part,
+can now be more clearly specified as `--and --tid 0xTT --tid-ext 0xEEEE`.
+
+[.opt]
+*--section-content* _hexa-data_
+
+[.optdoc]
+Remove or keep all sections the binary content of which starts with the specified binary data.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+See also option `--section-mask` to specify selected bits or bytes only.
+
+[.optdoc]
+Several options `--section-content` can be specified.
+
+[.opt]
+*--section-mask* _hexa-data_
+
+[.optdoc]
+With `--section-content`, specify a mask of meaningful bits in the binary data that must match the beginning of the section.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+If omitted or shorter than the `--section-content` parameter, the mask is implicitely padded with FF bytes.
+
+[.optdoc]
+If several options `--section-content` are specified, several options `--section-mask` can be specified.
+The first mask applies to the first content, the second mask to the second content, etc.
+If there are less masks than contents, the last mask is implicitly repeated.
+
+[.opt]
+*--section-number* _num1[-num2]_
+
+[.optdoc]
+Remove/keep all sections with the corresponding section number.
+
+[.optdoc]
+Several options `--section-number` can be specified.
+
+[.opt]
+*-t* _id1[-id2]_ +
+*--tid* _id1[-id2]_
+
+[.optdoc]
+Remove or keep all sections with the corresponding table ids.
+
+[.optdoc]
+Several options `--tid` can be specified.
+
+[.opt]
+*-e* _id1[-id2]_ +
+*--tid-ext* _id1[-id2]_
+
+[.optdoc]
+Remove or keep all sections with the corresponding table id extensions.
+
+[.optdoc]
+Several options `--tid-ext` can be specified.
+
+[.opt]
+*-v* _v1[-v2]_ +
+*--version* _v1[-v2]_
+
+[.optdoc]
+Remove or keep all sections with the corresponding versions.
+
+[.optdoc]
+Several options `--version` can be specified.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

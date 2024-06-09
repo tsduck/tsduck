@@ -1,0 +1,37 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== eit
+
+[.cmd-header]
+Analyze EIT sections
+
+This plugin analyzes EIT sections and produces a report of EIT present/following and EIT schedule by transport stream and by service.
+The EPG depth in days is also reported by service (number of days in advance an event is signaled by an EIT schedule).
+See xref:sample-epg-analysis[xrefstyle=short] for an example of report.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P eit [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_
+
+[.optdoc]
+Specify the output file for the report (default: standard output).
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

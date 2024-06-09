@@ -1,0 +1,62 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsgenecm
+
+[.cmd-header]
+Generate one ECM using any DVB SimulCrypt-compliant ECMG
+
+This command connects to a DVB SimulCrypt compliant ECMG and requests the generation of one ECM.
+
+[.usage]
+Restriction
+
+The target ECMG shall support current or current/next control words in ECM,
+meaning CW_per_msg = 1 or 2 and lead_CW = 0 or 1.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsgenecm [options] output-file
+----
+
+[.usage]
+Output file
+
+[.optdoc]
+Name of the binary output section file which receives the generated ECM.
+If the specified name is "-", the standard output is used.
+
+[.usage]
+ECM content options
+
+[.opt]
+*--cp-number* _value_
+
+[.optdoc]
+Crypto-period number (default: 0).
+
+[.opt]
+*-c* _hexa-digits_ +
+*--cw-current* _hexa-digits_
+
+[.optdoc]
+Current control word (required). The value must be a suite of hexadecimal digits.
+
+[.opt]
+*-n* _hexa-digits_ +
+*--cw-next* _hexa-digits_
+
+[.optdoc]
+Next control word (optional). The value must be a suite of hexadecimal digits.
+
+include::{docdir}/opt/group-ecmg-client.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

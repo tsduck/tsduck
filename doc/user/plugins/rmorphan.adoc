@@ -1,0 +1,41 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== rmorphan
+
+[.cmd-header]
+Remove unreferenced PID’s
+
+This plugin removes unreferenced (aka orphan) PID’s from the transport stream. The plugin analyzes
+the complete TS structure, starting from the PAT and the CAT. Any packet which neither belongs to a
+predefined PID’s nor to a referenced PID in the TS structure is removed.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P rmorphan [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Replace excluded packets with stuffing (null packets) instead of removing them.
+
+[.optdoc]
+Useful to preserve the TS bitrate.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;std]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

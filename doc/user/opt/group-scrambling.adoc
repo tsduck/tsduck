@@ -1,0 +1,147 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TSScrambling.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Transport stream scrambling options
+
+[.opt]
+*--aes-cbc*
+
+[.optdoc]
+Use AES-CBC scrambling instead of DVB-CSA2 (the default).
+
+[.optdoc]
+The control words are 16-byte long instead of 8-byte.
+The residue is left clear.
+Specify a fixed initialization vector using the `--iv` option.
+
+[.optdoc]
+Note that this is a non-standard TS scrambling mode.
+The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA (DVB-CISSA is the same as AES-CBC with a DVB-defined IV).
+
+[.optdoc]
+With the plugin `scrambler', a _scrambling_descriptor_ is automatically added to the PMT of the service
+to indicate the use of AES-CBC scrambling.
+Since there is no standard value for AES-CBC, the user-defined _scrambling_mode_ value 0xF0 is used.
+
+[.opt]
+*--aes-ctr*
+
+[.optdoc]
+Use AES-CTR scrambling instead of DVB-CSA2 (the default).
+
+[.optdoc]
+The control words are 16-byte long instead of 8-byte.
+The residue is included in the scrambling.
+Specify a fixed initialization vector using the `--iv` option.
+See the option `--ctr-counter-bits` for the size of the counter part in the IV.
+
+[.optdoc]
+Note that this is a non-standard TS scrambling mode.
+The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA.
+
+[.optdoc]
+With the plugin `scrambler', a _scrambling_descriptor_ is automatically added to the PMT of the service
+to indicate the use of AES-CTR scrambling.
+Since there is no standard value for AES-CTR, the user-defined _scrambling_mode_ value 0xF1 is used.
+
+[.opt]
+*--atis-idsa*
+
+[.optdoc]
+Use ATIS-IDSA descrambling (ATIS-0800006) instead of DVB-CSA2 (the default).
+
+[.optdoc]
+The control words are 16-byte long instead of 8-byte.
+
+[.opt]
+*--ctr-counter-bits* _value_
+
+[.optdoc]
+With `--aes-ctr`, specifies the size in bits of the counter part.
+
+[.optdoc]
+In the initialization vector, the fixed nonce part uses the first 128-N bits and the counter part uses the last N bits.
+
+[.optdoc]
+By default, the counter part uses the second half of the IV (64 bits).
+
+[.opt]
+*-c* _hexa-digits_ +
+*--cw* _hexa-digits_
+
+[.optdoc]
+Specifies a fixed and constant control word for all TS packets (no crypto-period scheduling, no ECM).
+
+[.optdoc]
+The value must be a string of 16 hexadecimal digits
+(32 digits with `--atis-idsa`, `--dvb-cissa`, `--aes-cbc`, `--aes-ctr`).
+
+[.opt]
+*--dvb-cissa*
+
+[.optdoc]
+Use DVB-CISSA descrambling (see <<ETSI-103-127>>) instead of DVB-CSA2 (the default).
+
+[.optdoc]
+The control words are 16-byte long instead of 8-byte.
+
+[.opt]
+*--dvb-csa2*
+
+[.optdoc]
+Use DVB-CSA2 descrambling.
+This is the default.
+
+[.opt]
+*-f* _name_ +
+*--cw-file* _name_
+
+[.optdoc]
+Specifies a text file containing the list of control words to apply.
+Each line of the file must contain exactly 16 hexadecimal digits
+(32 digits with `--atis-idsa`, `--dvb-cissa`, `--aes-cbc`, `--aes-ctr`).
+
+[.optdoc]
+During descrambling, the next control word is used
+each time a new _transport_scrambling_control_ value is found in the header of a TS packet.
+At the end of the list of control words, restart with the first one.
+
+[.opt]
+*--iv* _hexa-digits_
+
+[.optdoc]
+With `--aes-cbc` or `--aes-ctr`, specifies a fixed initialization vector for all TS packets.
+
+[.optdoc]
+The value must be a string of 32 hexadecimal digits.
+The default IV is all zeroes.
+
+[.opt]
+*-n* +
+*--no-entropy-reduction*
+
+[.optdoc]
+Do not perform DVB-CSA2 control word entropy reduction to 48 bits, keep full 64-bit control words.
+This option is ignored with other encryption algorithms.
+
+[.opt]
+*--output-cw-file* _name_
+
+[.optdoc]
+Specifies a text file to create with all control words.
+Each line of the file will contain a control word with 16 or 32 hexadecimal digits, depending on the scrambling algorithm.
+Each time a new control word is used to descramble packets, it is logged in the file.
+
+[.optdoc]
+This option is specifically useful when the control words are dynamically extracted from ECM’s.
+The created file can be used later using `--cw-file` to perform a direct descrambling test.

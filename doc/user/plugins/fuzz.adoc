@@ -1,0 +1,35 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== fuzz
+
+[.cmd-header]
+Introduce random errors in the transport stream
+
+This plugin randomly corrupts packets in the transport stream.
+It is equivalent to the `tsfuzz` utility.
+
+In practice, the following two commands produce the same result:
+
+[source,shell]
+----
+$ tsfuzz options infile -o outfile
+$ tsp -I file infile -P fuzz options -O file outfile
+----
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P fuzz [options]
+----
+
+include::{docdir}/opt/group-fuzz.adoc[tags=!*]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

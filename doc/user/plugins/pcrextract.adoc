@@ -1,0 +1,168 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcrextract
+
+[.cmd-header]
+Extracts PCR, OPCR, PTS, DTS from TS packets
+
+This plugin extracts PCR, OPCR, PTS and DTS from TS packets.
+The output is typically suitable for analysis with tools like Microsoft Excel.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pcrextract [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--csv*
+
+[.optdoc]
+Report data in CSV (comma-separated values) format.
+All values are reported in decimal.
+This is the default output format.
+It is suitable for later analysis using tools such as Microsoft Excel.
+
+[.opt]
+*-d* +
+*--dts*
+
+[.optdoc]
+Report Decoding Time Stamps (DTS).
+
+[.optdoc]
+By default, if none of `--pcr`, `--opcr`, `--pts`, `--dts` is specified, report them all.
+
+[.opt]
+*-e* +
+*--evaluate-pcr-offset*
+
+[.optdoc]
+Evaluate the offset from the PCR to PTS/DTS for packets with PTS/DTS but without PCR.
+This evaluation may be incorrect if the bitrate is not constant or incorrectly estimated.
+
+[.optdoc]
+By default, the offset is reported only for packets containing a PTS/DTS and a PCR.
+
+[.opt]
+*-g* +
+*--good-pts-only*
+
+[.optdoc]
+Keep only "good" PTS, ie. PTS which have a higher value than the previous good PTS.
+This eliminates PTS from out-of-sequence B-frames.
+
+[.opt]
+*-i* +
+*--input-timestamp*
+
+[.optdoc]
+Add an input timestamp of the corresponding TS packet, if available.
+This can be an RTP, SRT, kernel timestamp.
+This input timestamp value is always converted in PCR units.
+
+[.optdoc]
+In CSV output format, the type of input timestamp is indicated (`rtp`, `srt`, etc.),
+as well as the difference between the timestamp value and the input timestamp.
+If the timestamp is a PTS or DTS, the input timestamp is converted to the corresponding unit before computing the difference.
+
+[.optdoc]
+There is no synchronization between the input timestamps and the PCR, PTS, DTS in the stream.
+Therefore, the difference between a timestamp and its input timestamp is some arbitrary value.
+Inside a given PID, only the fluctuation of that difference is meaningful.
+
+[.opt]
+*-l* +
+*--log*
+
+[.optdoc]
+Report data in log format through the standard tsp logging system.
+All values are reported in hexadecimal.
+
+[.opt]
+*-n* +
+*--noheader*
+
+[.optdoc]
+Do not output initial header line in CSV format.
+
+[.opt]
+*--opcr*
+
+[.optdoc]
+Report Original Program Clock References (OPCR).
+
+[.optdoc]
+By default, if none of `--pcr`, `--opcr`, `--pts`, `--dts` is specified, report them all.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Output file name for CSV format (standard error by default).
+
+[.opt]
+*--pcr*
+
+[.optdoc]
+Report Program Clock References (PCR).
+
+[.optdoc]
+By default, if none of `--pcr`, `--opcr`, `--pts`, `--dts` is specified, report them all.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specifies PID’s to analyze. By default, all PID's are analyzed.
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+[.opt]
+*--pts*
+
+[.optdoc]
+Report Presentation Time Stamps (PTS).
+
+[.optdoc]
+By default, if none of `--pcr`, `--opcr`, `--pts`, `--dts` is specified, report them all.
+
+[.opt]
+*--scte35*
+
+[.optdoc]
+Also detect and report PTS in SCTE 35 commands.
+This option forces `--log` and `--pts`.
+
+[.optdoc]
+If no `--pid` option is specified, detect all PID's carrying SCTE 35 splice information.
+
+[.optdoc]
+If some `--pid` options are specified, they designate PID’s carrying PCR or PTS.
+In that case, SCTE 35 commands are analyzed only from PID's
+which are referenced by the same services as the specified `--pid` options.
+
+[.opt]
+*-s* _'string'_ +
+*--separator* _'string'_
+
+[.optdoc]
+Field separator string in CSV format. The default is a comma (`,`).
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,32 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== rist (output)
+
+[.cmd-header]
+Send TS packets to Reliable Internet Stream Transport (RIST)
+
+This output plugin sends TS packets using the Reliable Internet Stream Transport (RIST) protocol.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for tsp).
+
+This plugin is provided only when `librist` is officially supported on the target platform.
+See <<RIST>>.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O rist [options] url [url...]
+----
+
+include::{docdir}/opt/group-rist.adoc[tags=!*;output]
+include::{docdir}/opt/group-datagram-output.adoc[tags=!*]
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

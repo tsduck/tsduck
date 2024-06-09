@@ -1,0 +1,62 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TSFuzzingArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Fuzzing options
+
+These options are identical in the command `tsfuzz` and the `tsp` plugin `fuzz`.
+
+[.opt]
+*-c* _value_ +
+*--corrupt-probability* _value_
+
+[.optdoc]
+Probability to corrupt a byte in the transport stream. The default is zero, meaning no corruption.
+
+[.optdoc]
+The value must be a fraction, e.g. 1/20, 1/1000, 3/20000, etc.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+PID filter: corrupt packets with these PID values only.
+
+[.optdoc]
+Several `--pid` options may be specified.
+By default, without `--pid` option, all PID's are eligible for random corruption.
+
+[.opt]
+*-s* _hexa-data_ +
+*--seed* _hexa-data_
+
+[.optdoc]
+Initial seed for the pseudo-random number generator.
+
+[.optdoc]
+Specify hexadecimal data.
+The size is not limited but at least 32 bytes are recommended.
+
+[.optdoc]
+Using the same seed on the same TS file will result in exactly the same corruptions.
+Without this parameter, a random seed is used, and the corruptions cannot be identically reproduced.
+
+[.opt]
+*--sync-byte*
+
+[.optdoc]
+May corrupt the 0x47 sync byte in TS packets.
+This may invalidate the synchronization of the transport stream.
+
+[.optdoc]
+By default, sync bytes are preserved.

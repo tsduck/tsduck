@@ -1,0 +1,449 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TablesLogger.
+//
+// tags: pager
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Tables selection and manipulation options
+
+[.opt]
+*--all-once*
+
+[.optdoc]
+Same as `--all-sections` but collect each section only once per combination of PID, table id,
+table id extension, section number and version.
+
+[.opt]
+*-a* +
+*--all-sections*
+
+[.optdoc]
+Display/save all sections, as they appear in the stream.
+By default, collect complete tables, with all sections of the tables grouped
+and ordered and collect each version of a table only once.
+Note that this mode is incompatible with all forms of XML and JSON output
+since valid XML and JSON structures may contain complete tables only.
+
+[.opt]
+*-d* +
+*--diversified-payload*
+
+[.optdoc]
+Select only sections with diversified payload.
+This means that section payloads containing the same byte value (all 0x00 or all 0xFF for instance) are ignored.
+Typically, such sections are stuffing and can be ignored that way.
+
+[.opt]
+*--exclude-current*
+
+[.optdoc]
+Exclude short sections and long sections with "current" indicator.
+This is rarely necessary.
+
+[.optdoc]
+See also `--include-next`.
+
+[.opt]
+*--fill-eit*
+
+[.optdoc]
+Before exiting, add missing empty sections in EIT's and flush them.
+This can be useful with segmented EIT schedule where empty sections at end of segments are usually not transmitted.
+
+[.opt]
+*--include-next*
+
+[.optdoc]
+Include long sections with "next" indicator.
+By default, they are excluded.
+
+[.opt]
+*--invalid-sections*
+
+[.optdoc]
+Display and dump invalid sections.
+These sections are normally dropped because they are truncated, incomplete, corrupted, have an invalid CRC32, etc.
+Because these sections are invalid, they cannot be formatted as normal sections.
+Instead, a binary and text dump is displayed.
+
+[.opt]
+*--invalid-versions*
+
+[.optdoc]
+Track invalid version numbers in sections.
+
+[.optdoc]
+Per MPEG rules, the version number of a section with long header shall be updated each time the content of the section is updated.
+With this option, the content of the sections is tracked to detect modified sections without version updates.
+
+[.optdoc]
+These events are considered as errors.
+
+[.opt]
+*-x* _value_ +
+*--max-tables* _value_
+
+[.optdoc]
+Maximum number of tables to dump.
+Stop execution when this limit is reached.
+
+[.opt]
+*--negate-pid*
+
+[.optdoc]
+Negate the PID filter: specified PID's are excluded.
+
+[.optdoc]
+*Warning*: this can be a dangerous option on complete transport streams since PID's not containing sections can be accidentally selected.
+
+[.opt]
+*--negate-section-number*
+
+[.optdoc]
+Negate the section number filter: specified sections are excluded.
+
+[.opt]
+*-n* +
+*--negate-tid*
+
+[.optdoc]
+Negate the TID filter: specified TID's are excluded.
+
+[.opt]
+*--negate-tid-ext*
+
+[.optdoc]
+Negate the TID extension filter: specified TID extensions are excluded.
+
+[.opt]
+*--no-deep-duplicate*
+
+[.optdoc]
+Do not report identical sections in the same PID, even when non-consecutive.
+A hash of each section is kept for each PID and later identical sections are not reported.
+
+[.optdoc]
+*Warning*: This option accumulates memory for hash values of all sections since the beginning.
+Do not use that option for commands running too long or the process may crash with insufficient memory.
+
+[.opt]
+*--no-duplicate*
+
+[.optdoc]
+Do not report consecutive identical tables with a short section in the same PID.
+
+[.optdoc]
+This can be useful for ECM's. This is the way to display new ECM's only.
+
+[.optdoc]
+By default, tables with long sections are reported only when a new version is detected but
+tables with a short section are all reported.
+
+[.opt]
+*--only-invalid-sections*
+
+[.optdoc]
+Same as `--invalid-sections` but do not display valid tables and sections, only invalid sections.
+
+[.opt]
+*--pack-all-sections*
+
+[.optdoc]
+Same as `--all-sections` but also modify each long section so that it becomes a valid complete table.
+Its _section_number_ and _last_section_number_ are forced to zero.
+Use with care because this may create inconsistent tables.
+This option can be useful with tables with sparse sections such as EIT's to save them in XML format
+(as an alternative, see also `--fill-eit`).
+
+[.opt]
+*--pack-and-flush*
+
+[.optdoc]
+Before exiting, pack incomplete tables, ignoring missing sections, and flush them.
+Use with care because this may create inconsistent tables.
+Unlike option `--pack-all-sections`, `--pack-and-flush` does not force `--all-sections`
+because it only applies to the last incomplete tables before exiting.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+PID filter: select packets with these PID values.
+
+[.optdoc]
+Several `--pid` options may be specified.
+By default, without `--pid` option, all PID's are used.
+
+[.optdoc]
+PID’s containing PES data are automatically ignored.
+
+[.opt]
+*--psi-si*
+
+[.optdoc]
+Add all PID's containing PSI/SI tables, ie. PAT, CAT, PMT, NIT, SDT and BAT.
+The PMT PID’s are dynamically collected each time a new PAT is encountered.
+
+[.optdoc]
+Note that EIT, TDT and TOT are not included.
+Use `--pid 18` to get EIT and `--pid 20` to get TDT and TOT.
+
+[.opt]
+*--section-content* _hexa-data_
+
+[.optdoc]
+Binary content filter: Specify binary data that must match the beginning of the section.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+See also option `--section-mask` to specify selected bits or bytes only.
+
+[.opt]
+*--section-mask* _hexa-data_
+
+[.optdoc]
+With `--section-content`, specify a mask of meaningful bits in the binary data that must match the beginning of the section.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+If omitted or shorter than the `--section-content` parameter, the mask is implicitely padded with FF bytes.
+
+[.opt]
+*--section-number* _num1[-num2]_
+
+[.optdoc]
+Section number filter: when sections are filtered individually instead of complete tables (`--all-sections`),
+select sections with this section number or range of section numbers.
+
+[.optdoc]
+Several `--section-number` options may be specified.
+
+[.opt]
+*-t* _id1[-id2]_ +
+*--tid* _id1[-id2]_
+
+[.optdoc]
+TID filter: select sections with these TID (table id) values.
+
+[.optdoc]
+Several `--tid` options may be specified.
+Without `--tid` option, all tables are saved.
+
+[.opt]
+*-e* _id1[-id2]_ +
+*--tid-ext* _id1[-id2]_
+
+[.optdoc]
+TID extension filter: select sections with these table id extension values (apply to long sections only).
+
+[.optdoc]
+Several `--tid-ext` options may be specified.
+Without `--tid-ext` option, all tables are saved.
+
+[.usage]
+Output options
+
+[.opt]
+*-b* _file-name_ +
+*--binary-output* _file-name_
+
+[.optdoc]
+Save the sections in raw binary format in the specified output file name.
+
+[.optdoc]
+If the file name is empty or a dash (`-`), the binary sections are written to the standard output.
+
+[.optdoc]
+See also option `--multiple-files`.
+
+[.opt]
+*-f* +
+*--flush*
+
+[.optdoc]
+Flush standard output after each display.
+Useful to monitor the content if the output has been redirected to a disk file.
+
+[.opt]
+*--json-output* _file-name_
+
+[.optdoc]
+Save the tables in JSON format in the specified file.
+To output the JSON text on the standard output, explicitly specify this option with `-` as output file name.
+The tables are initially formatted as XML and an automated XML-to-JSON conversion is applied.
+
+[.optdoc]
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+[.opt]
+*--log*
+
+[.optdoc]
+Display a short one-line log of each table instead of full table display.
+
+[.opt]
+**--log-hexa-line**__[='prefix']__
+
+[.optdoc]
+Log each binary table (or section with `--all-sections`)
+as one single hexadecimal line in the message logger instead of an output binary file.
+
+[.optdoc]
+The optional string parameter specifies a prefix to prepend on the log line before the hexadecimal text
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+**--log-json-line**__[='prefix']__
+
+[.optdoc]
+Log each table as one single JSON line in the message logger instead of an output file.
+
+[.optdoc]
+Each table is initially formatted as XML and an automated XML-to-JSON conversion is applied.
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+[.optdoc]
+The optional string parameter specifies a prefix to prepend on the log line before the JSON text
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+*--log-size* _value_
+
+[.optdoc]
+With option `--log`, specify how many bytes are displayed at the beginning of the table payload
+(the header is not displayed).
+The default is 8 bytes.
+
+[.opt]
+**--log-xml-line**__[='prefix']__
+
+[.optdoc]
+Log each table as one single XML line in the message logger instead of an output file.
+The optional string parameter specifies a prefix to prepend on the log line before the XML text
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+*--meta-sections*
+
+[.optdoc]
+Add an hexadecimal dump of each section in the XML and JSON metadata.
+
+[.opt]
+*-m* +
+*--multiple-files*
+
+[.optdoc]
+Create multiple binary output files, one per section.
+A binary output file name must be specified (option `--binary-output`).
+
+[.optdoc]
+Assuming that the specified file name has the form `base.ext`,
+each file is created with the name `base_pXXXX_tXX.ext` for short sections and
+`base_pXXXX_tXX_eXXXX_vXX_sXX.ext` for long sections, where the `XX` respectively specify
+the hexadecimal values of the PID, TID (table id), TIDext (table id extension), version and section index.
+
+// tag::pager[]
+include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
+// end::pager[]
+
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_ +
+*--text-output* _file-name_
+
+[.optdoc]
+Save the tables or sections in human-readable text format in the specified file name.
+By default, when no output option is specified, text is produced on the standard output.
+
+[.optdoc]
+If you need text formatting on the standard output in addition to other output like binary files (`--binary-output`)
+or UPD/IP (`--ip-udp`), explicitly specify this option with `-` as output file name.
+
+[.opt]
+*--packet-index*
+
+[.optdoc]
+Display the index of the first and last TS packet of each displayed section or table.
+
+[.opt]
+*--rewrite-binary*
+
+[.optdoc]
+With `--binary-output`, rewrite the same file with each table.
+The specified file always contains one single table, the latest one.
+
+[.opt]
+*--rewrite-json*
+
+[.optdoc]
+With `--json-output`, rewrite the same file with each table.
+The specified file always contains one single table, the latest one.
+
+[.opt]
+*--rewrite-xml*
+
+[.optdoc]
+With `--xml-output`, rewrite the same file with each table.
+The specified file always contains one single table, the latest one.
+
+[.opt]
+*--time-stamp*
+
+[.optdoc]
+Display a time stamp (current local time) with each table.
+
+[.opt]
+*--xml-output* _file-name_
+
+[.optdoc]
+Save the tables in XML format in the specified file.
+To output the XML text on the standard output, explicitly specify this option with `-` as output file name.
+
+[.usage]
+UDP/IP logging options
+
+[.opt]
+*-i* _address:port_ +
+*--ip-udp* _address:port_
+
+[.optdoc]
+Send binary tables over UDP/IP to the specified destination.
+The address specifies an IP address which can be either unicast or multicast.
+It can be also a host name that translates to an IP address.
+The port specifies the destination UDP port.
+
+[.opt]
+*--local-udp* _address_
+
+[.optdoc]
+With `--ip-udp`, when the destination is a multicast address, specify the IP address of the outgoing local interface.
+It can be also a host name that translates to a local address.
+
+[.opt]
+*--no-encapsulation*
+
+[.optdoc]
+With `--ip-udp`, send the tables as raw binary messages in UDP packets.
+By default, the tables are formatted into TLV messages.
+
+[.opt]
+*--ttl* _value_
+
+[.optdoc]
+With `--ip-udp`, specifies the TTL (Time-To-Live) socket option.
+The actual option is either "Unicast TTL" or "Multicast TTL", depending on the destination address.
+Remember that the default Multicast TTL is 1 on most systems.
+
+include::{docdir}/opt/group-xml-tweaks.adoc[tags=!*]
