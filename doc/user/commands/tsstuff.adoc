@@ -1,0 +1,142 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsstuff
+
+[.cmd-header]
+Add stuffing to a TS file to reach a target bitrate
+
+This utility adds stuffing packets to a TS file to reach a target bitrate.
+Time stamps (PCR or DTS) are extracted from one reference PID in the input file and
+stuffing packets are added so that the time stamps are approximately synchronized with the TS target bitrate.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsstuff [options] [input-file]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+The input file is a TS file, typically with variable bitrate content.
+
+[.optdoc]
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Target constant bitrate of the output file.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+This is mandatory parameter, there is no default.
+
+[.opt]
+*--buffer-size* _value_
+
+[.optdoc]
+Input buffer size, in bytes.
+Must be large enough to always contain two time stamps in the reference PID.
+The default is 4,194,304 bytes (4 MB).
+
+[.opt]
+*-d* +
+*--dts-based*
+
+[.optdoc]
+Use Decoding Time Stamps (DTS) in the reference PID to evaluate the amount of stuffing to insert.
+The default is to use Program Clock References (PCR) instead of DTS.
+
+[.opt]
+*-f* _value_ +
+*--final-inter-packet* _value_
+
+[.optdoc]
+Number of stuffing packets to add between input packets after the last time stamp (PCR or DTS).
+By default, use the same number as in the previous segment, between the last two time stamps.
+
+[.opt]
+*-i* _value_ +
+*--initial-inter-packet* _value_
+
+[.optdoc]
+Number of stuffing packets to add between input packets before the first time stamp (PCR or DTS).
+By default, use the same number as in the first segment, between the first two time stamps.
+
+[.opt]
+*--input-format* _name_
+
+[.optdoc]
+Specify the format of the input transport stream file.
+See xref:ts-formats[xrefstyle=short] for more details.
+
+[.opt]
+*-l* _value_ +
+*--leading-packets* _value_
+
+[.optdoc]
+Number of consecutive stuffing packets to add at the beginning of the output file, before the first input packet.
+The default is zero.
+
+[.opt]
+*-m* _milliseconds_ +
+*--min-interval* _milliseconds_
+
+[.optdoc]
+Minimum interval, in milli-seconds, between two recomputations of the amount of stuffing to insert.
+This duration is based on timestamps, not real time. The default is 100 ms.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Output file name (standard output by default).
+The output file is a TS file with the same packets as the input file with interspersed stuffing packets and a constant bitrate.
+
+[.opt]
+*--output-format* _name_
+
+[.optdoc]
+Specify the format of the output file.
+See xref:ts-formats[xrefstyle=short] for more details.
+By default, the format is a standard TS file.
+
+[.opt]
+*-r* _value_ +
+*--reference-pid* _value_
+
+[.optdoc]
+PID in which to collect time stamps (PCR or DTS) to use as reference for the insertion of stuffing packets.
+By default, use the first PID containing the specified type of time stamps (PCR or DTS).
+
+[.opt]
+*-t* _value_ +
+*--trailing-packets* _value_
+
+[.optdoc]
+Number of consecutive stuffing packets to add at the end of the output file, after the last input packet.
+The default is zero.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

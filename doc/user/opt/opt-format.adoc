@@ -1,0 +1,40 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in ts::DefineTSPacketFormatInputOption.
+//
+// tags: short, input, output, multiple
+//
+//----------------------------------------------------------------------------
+
+[.opt]
+// tag::short[]
+*-f* _name_ +
+// end::short[]
+*--format* _name_
+
+[.optdoc]
+Specify the format of the
+// tag::input[]
+input
+// end::input[]
+// tag::output[]
+output
+// end::output[]
+transport stream.
+See xref:ts-formats[xrefstyle=short] for more details.
+
+// tag::multiple[]
+[.optdoc]
+By default, the format of each input file is automatically detected and can be different from one file to another.
+When the option `--format` is specified, all input files must have the same format.
+// end::multiple[]
+
+// tag::output[]
+[.optdoc]
+By default, the output format is a standard TS file.
+If the format is M2TS, the inserted time stamp is identical to the input time stamp for each packet.
+// end::output[]

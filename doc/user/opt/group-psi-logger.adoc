@@ -1,0 +1,115 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::PSILogger.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+PSI selection and logging options
+
+[.opt]
+*-a* +
+*--all-versions*
+
+[.optdoc]
+Display all versions of PSI tables (need to read the complete transport stream).
+By default, display only the first version of each PSI table and stop when all expected PSI are extracted.
+
+[.opt]
+*--cat-only*
+
+[.optdoc]
+Display only the CAT, ignore other PSI tables.
+
+[.opt]
+*-c* +
+*--clear*
+
+[.optdoc]
+Indicate that this is a clear transport stream, without conditional access information.
+Useful to avoid further reading the transport stream, waiting for a non-existent CAT.
+
+[.opt]
+*-d* +
+*--dump*
+
+[.optdoc]
+Dump all PSI sections.
+
+[.opt]
+*--exclude-current*
+
+[.optdoc]
+Exclude PSI tables with "current" indicator. This is rarely necessary.
+See also `--include-next`.
+
+[.opt]
+*--include-next*
+
+[.optdoc]
+Include PSI tables with "next" indicator. By default, they are excluded.
+
+[.opt]
+*-j* _file-name_ +
+*--json-output* _file-name_
+
+[.optdoc]
+Save the tables in JSON format in the specified file.
+To output the JSON text on the standard output, explicitly specify this option with `-` as output file name.
+
+[.optdoc]
+The tables are initially formatted as XML and an automated XML-to-JSON conversion is applied.
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+[.opt]
+**--log-json-line**__[='prefix']__
+
+[.optdoc]
+Log each table as one single JSON line in the message logger instead of an output file.
+
+[.optdoc]
+Each table is initially formatted as XML and an automated XML-to-JSON conversion is applied.
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+[.optdoc]
+The optional string parameter specifies a prefix to prepend on the log line, before the JSON text,
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+**--log-xml-line**__[='prefix']__
+
+[.optdoc]
+Log each table as one single XML line in the message logger instead of an output file.
+
+[.optdoc]
+The optional string parameter specifies a prefix to prepend on the log line, before the XML text,
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_ +
+*--text-output* _file-name_
+
+[.optdoc]
+Save the tables or sections in human-readable text format in the specified file name.
+By default, when no output option is specified, text is produced on the standard output.
+
+[.optdoc]
+If you need text formatting on the standard output in addition to other output such as XML,
+explicitly specify this option with `-` as output file name.
+
+[.opt]
+*-x* _file-name_ +
+*--xml-output* _file-name_
+
+[.optdoc]
+Save the tables in XML format in the specified file.
+To output the XML text on the standard output, explicitly specify this option with `-` as output file name.
+
+include::{docdir}/opt/group-xml-tweaks.adoc[tags=!*]

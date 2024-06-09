@@ -1,0 +1,295 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== craft (packet processing)
+
+[.cmd-header]
+Craft specific low-level transformations on packets
+
+This plugin modifies precise fields in all TS packets.
+
+Some operations may need space in the adaptation field.
+By default, the payload is left unmodified and a transformation is rejected
+if it needs to enlarge the adaptation field since this would destroy part of the existing payload.
+Enlarging the adaptation field is possible only when `--payload-pattern` is specified,
+in which case the payload is overwritten anyway.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P craft [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--clear-discontinuity*
+
+[.optdoc]
+Clear the _discontinuity_indicator_ in the packets.
+
+[.opt]
+*--clear-error*
+
+[.optdoc]
+Clear the _transport_error_indicator_ in the packets.
+
+[.opt]
+*--clear-es-priority*
+
+[.optdoc]
+Clear the _elementary_stream_priority_indicator_ in the packets.
+
+[.opt]
+*--clear-priority*
+
+[.optdoc]
+Clear the _transport_priority_ flag in the packets.
+
+[.opt]
+*--clear-pusi*
+
+[.optdoc]
+Clear the _payload_unit_start_indicator_ in the packets.
+
+[.opt]
+*--clear-random-access*
+
+[.optdoc]
+Clear the _random_access_indicator_ in the packets.
+
+[.opt]
+*--continuity-counter* _value_
+
+[.optdoc]
+Specify the value of the _continuity_counter_ field.
+
+[.opt]
+*--discontinuity*
+
+[.optdoc]
+Set the _discontinuity_indicator_ in the packets.
+Space is required in the adaptation field.
+
+[.opt]
+*--error*
+
+[.optdoc]
+Set the _transport_error_indicator_ in the packets.
+
+[.opt]
+*--es-priority*
+
+[.optdoc]
+Set the _elementary_stream_priority_indicator_ in the packets.
+Space is required in the adaptation field.
+
+[.opt]
+*--no-opcr*
+
+[.optdoc]
+Remove the OPCR from the packets.
+
+[.opt]
+*--no-payload*
+
+[.optdoc]
+Remove the payload.
+
+[.opt]
+*--no-pcr*
+
+[.optdoc]
+Remove the PCR from the packets.
+
+[.opt]
+*--no-private-data*
+
+[.optdoc]
+Remove the private data from adaptation field.
+
+[.opt]
+*--no-repeat*
+
+[.optdoc]
+Do not repeat payload pattern operations as specified by options
+`--payload-pattern`, `--payload-and`, `--payload-or`, `--payload-xor`.
+The operation is performed once only.
+
+[.opt]
+*--no-splice-countdown*
+
+[.optdoc]
+Remove the splicing point from the packets.
+
+[.opt]
+*--offset-pattern* _value_
+
+[.optdoc]
+Specify starting offset in payload when using `--payload-pattern`.
+By default, the pattern replacement starts at the beginning of the packet payload.
+
+[.opt]
+*--opcr* _value_
+
+[.optdoc]
+Set this OPCR value in the packets.
+Space is required in the adaptation field.
+
+[.opt]
+*--pack-pes-header*
+
+[.optdoc]
+When a TS packet contains the start of a PES packet and the header of this PES packet contains stuffing,
+shift the TS payload to remove all possible stuffing from the PES header.
+Create TS stuffing in the adaptation field to compensate.
+
+[.optdoc]
+With PES data streams such as subtitles,
+the PES header sometimes contains stuffing to make sure that the PES packet uses an integral number of full TS packets.
+This option is a way to create space in the adaptation field of TS packets without destroying data.
+Then, PCR or other data can be added in the adaptation fields.
+
+[.opt]
+*--payload-and* _hexa-digits_
+
+[.optdoc]
+Apply a binary "and" operation on the payload using the specified hexvalue binary pattern.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+The "and" operation is repeated up to the end of the payload (unless `--no-repeat` is specified).
+
+[.opt]
+*--payload-or* _hexa-digits_
+
+[.optdoc]
+Apply a binary "or" operation on the payload using the specified hexvalue binary pattern.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+The "or" operation is repeated up to the end of the payload (unless `--no-repeat` is specified).
+
+[.opt]
+*--payload-pattern* _hexa-digits_
+
+[.optdoc]
+Overwrite the payload with the specified hexvalue binary pattern.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+The pattern is repeated to fill the payload (unless `--no-repeat` is specified).
+
+[.opt]
+*--payload-size* _size_
+
+[.optdoc]
+Resize the packet payload to the specified value in bytes.
+
+[.optdoc]
+When necessary, an adaptation field is created or enlarged.
+Without `--payload-pattern`, the existing payload is either shrunk or enlarged.
+
+[.optdoc]
+When an existing payload is shrunk, the end of the payload is truncated.
+When an existing payload is enlarged, its end is padded with 0xFF bytes.
+
+[.optdoc]
+Note that `--payload-size 0` specifies that a payload exists with a zero size.
+This is different from `--no-payload` which also specifies that the payload does not exist.
+
+[.opt]
+*--payload-xor* _hexa-digits_
+
+[.optdoc]
+Apply a binary "exclusive or" operation on the payload using the specified binary pattern.
+
+[.optdoc]
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.optdoc]
+The "exclusive or" operation is repeated up to the end of the payload (unless `--no-repeat` is specified).
+
+[.opt]
+*--pcr* _value_
+
+[.optdoc]
+Set this PCR value in the packets.
+Space is required in the adaptation field.
+
+[.opt]
+*--pes-payload*
+
+[.optdoc]
+With this option, the modified payload is the PES payload, not the TS payload.
+When the TS packet does not contain the start of a PES packet, the TS payload is not modified.
+
+[.optdoc]
+With `--payload-size`, the TS payload is resized so that the part of the PES payload which is in the TS packet gets the specified size.
+
+[.optdoc]
+With `--payload-pattern` and `--offset-pattern`, the pattern is applied inside the PES payload at the specified offset.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Modify the PID to the specified value.
+
+[.opt]
+*--priority*
+
+[.optdoc]
+Set the _transport_priority_ flag in the packets.
+
+[.opt]
+*--private-data* _hexa-digits_
+
+[.optdoc]
+Specify the binary content of the _transport_private_data_ in the adaptation field.
+The value must be a string of hexadecimal digits specifying any number of bytes.
+Space is required in the adaptation field.
+
+[.opt]
+*--pusi*
+
+[.optdoc]
+Set the _payload_unit_start_indicator_ in the packets.
+
+[.opt]
+*--random-access*
+
+[.optdoc]
+Set the _random_access_indicator_ in the packets.
+Space is required in the adaptation field.
+
+[.opt]
+*--scrambling* _value_
+
+[.optdoc]
+Specify the value of the _transport_scrambling_control_ field.
+
+[.opt]
+*--splice-countdown* _value_
+
+[.optdoc]
+Create a splicing point and set this splice countdown value in the packets.
+Space is required in the adaptation field.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

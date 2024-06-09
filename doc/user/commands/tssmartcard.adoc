@@ -1,0 +1,89 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tssmartcard
+
+[.cmd-header]
+Smartcard utility
+
+This utility lists or resets the smart-card readers in the system.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tssmartcard [options] [reader-name]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_reader-name_
+
+[.optdoc]
+The optional `_reader-name_` parameter indicates the smart-card reader device name to list or reset.
+
+[.optdoc]
+By default, without any option or parameter, the command lists all smart-card reader devices in the system.
+
+[.usage]
+Options
+
+[.opt]
+*-a* _hexa-data_ +
+*--apdu* _hexa-data_
+
+[.optdoc]
+Send an APDU to the smartcard.
+The APDU shall be specified using an even number of hexadecimal digits.
+In verbose mode, the APDU, the status word and the response are displayed.
+
+[.optdoc]
+Several `--apdu` options can be specified. All APDU's are sent in sequence.
+
+[.opt]
+*-c* +
+*--cold-reset*
+
+[.optdoc]
+Perform a cold reset on the smart-card.
+
+[.opt]
+*--continue-on-error*
+
+[.optdoc]
+With `--apdu`, continue sending next APDU's after a PC/SC error.
+
+[.optdoc]
+By default, stop when an APDU triggered an error.
+
+[.opt]
+*-e* +
+*--eject*
+
+[.optdoc]
+Eject the smart-card (if supported by the reader device).
+
+[.opt]
+*-t* _value_ +
+*--timeout* _value_
+
+[.optdoc]
+Timeout in milliseconds. The default is 1000 ms (1 second).
+
+[.opt]
+*-w* +
+*--warm-reset*
+
+[.optdoc]
+Perform a warm reset on the smart-card.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

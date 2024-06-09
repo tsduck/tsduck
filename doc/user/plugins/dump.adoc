@@ -1,0 +1,40 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== dump
+
+[.cmd-header]
+Dump transport stream packets
+
+This plugin is equivalent to the command `tsdump`.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P dump [options]
+----
+
+[.usage]
+General options
+
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_
+
+[.optdoc]
+Output file for dumped packets.
+By default, use the standard output.
+
+[.optdoc]
+The options `--log` and `--output-file` are mutually exclusive.
+
+include::{docdir}/opt/group-dump.adoc[tags=!*]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

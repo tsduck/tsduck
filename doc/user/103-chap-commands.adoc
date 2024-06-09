@@ -1,0 +1,448 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-commands]
+== Transport Stream Utilities
+
+The TSDuck transport stream toolkit provides several command-line utilities.
+The main one is `tsp`, the transport stream processor.
+The other utilities are small tools which work on transport stream files.
+
+With a few exceptions, the transport stream files are continuous streams of 188-byte TS packets.
+These files can also be pipes.
+With the help of `tsp` and its input and output plugins, the TS packets can be piped from and to various devices and protocols
+(files, DVB-ASI, DVB-S, DVB-C, DVB-T, multicast IP, etc.)
+
+The following table lists all transport stream utilities:
+
+// PDF backend does not correctly process "autowidth" tables.
+.TSDuck utilities
+ifndef::backend-pdf[]
+[cols="<1m,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<20m,<80",stripes=none]
+endif::[]
+|===
+|Command |Description
+
+|tsanalyze
+|Analyze a TS file and display various information about the transport stream and each individual service and PID.
+
+|tsbitrate
+|Evaluate the original bitrate of a TS based on the analysis of the PCR's and the number of packets between them.
+
+|tscharset
+|Test tool for DVB and ARIB character sets.
+
+|tscmp
+|Compare the binary content of two TS files.
+
+|tsconfig
+|Configuration options to build applications (developers only).
+
+|tscrc32
+|Compute MPEG-style CRC32 values.
+
+|tsdate
+|Display the date & time information (TDT & TOT) from a TS file.
+
+|tsdektec
+|Control a Dektec device.
+
+|tsdump
+|Dump the content of a TS file.
+
+|tsecmg
+|DVB SimulCrypt-compliant ECMG stub for system integration and debug.
+
+|tseit
+|Manipulate EIT’s using commands and scripts.
+
+|tsemmg
+|DVB SimulCrypt-compliant EMMG stub for system integration and debug.
+
+|tsfclean
+|Cleanup the structure and boundaries of a TS file.
+
+|tsfixcc
+|Fix continuity counters in a TS file.
+
+|tsftrunc
+|Truncate a TS file, removing extraneous bytes (last incomplete TS packet) or truncating after a specified TS packet.
+
+|tsfuzz
+|Introduce random errors in transport stream files.
+
+|tsgenecm
+|Generate one ECM using any DVB SimulCrypt compliant ECMG.
+
+|tshides
+|List HiDes modulator devices.
+
+|tslatencymonitor
+|Monitor latency between two TS input sources.
+
+|tslsdvb
+|List DVB receiver devices.
+
+|tsp
+|General-purpose TS processor: receive a TS from a user-specified input plugin,
+ apply MPEG packet processing through several user-specified packet processor plugins
+ and send the processed stream to a user-specified output plugin.
+
+|tspacketize
+|Packetize PSI/SI tables in a transport stream PID.
+
+|tspcap
+|Analyze pcap and pcap-ng files.
+
+|tspcontrol
+|Send control commands to a running `tsp`.
+
+|tspsi
+|Display the PSI (PAT, CAT, NIT, PMT, SDT) from a TS file.
+
+|tsresync
+|Resynchronize a captured TS file: locate start of first packet, resynchronize to next packet after holes,
+ convert to 188-byte packets (if captured with 204-byte packets).
+
+|tsscan
+|Scan frequencies in a DVB network.
+
+|tssmartcard
+|List or reset smart-card reader devices.
+
+|tsstuff
+|Add stuffing to a TS file to reach a target bitrate.
+
+|tsswitch
+|Transport stream input source switch using remote control.
+
+|tstabcomp
+|PSI / SI table compiler from / to XML files.
+
+|tstabdump
+|Dump binary table files, as previously saved by `tstables`.
+
+|tstables
+|Collect specified PSI/SI tables from a TS file. Either display them or save them in binary files.
+
+|tsterinfo
+|Compute or retrieve various DVB-T (terrestrial) information.
+
+|tstestecmg
+|Test a DVB SimulCrypt compliant ECMG with an artificial load.
+
+|tsvatek
+|List VATek-based modulator devices.
+
+|tsversion
+|Check version, download and upgrade TSDuck.
+
+|tsxml
+|Test tool for TSDuck XML files manipulation.
+
+|===
+
+=== Command line syntax
+
+==== Command line options
+
+All utilities are simple command-line tools.
+They accept _options_ and _parameters_.
+The syntax of options follows the GNU `getopt_long(3)` conventions.
+See the corresponding Linux manual page for details.
+
+In short, this means that all options have a _long name_ preceded by a double dash and optionally a _short name_ (one dash, one letter).
+Long options can be abbreviated if there is no ambiguity.
+
+Although this syntax is inspired by Linux and the GNU utilities, the same syntax is used on TSDuck for Windows.
+
+As an example, consider a utility which accepts the two options `--verbose` (short name `-v`) and `--version` (no short name).
+Then, the verbose mode can be equally triggered by `-v`, `--verbose`, `--verb` but not `--ver` since there is an ambiguity with `--version`.
+
+[#integer-options]
+==== Integer values in command line options
+
+When an option or parameter is documented to require an integer value (PID, identifier, etc.),
+this value can be uniformly specified in decimal or hexadecimal format with the `0x` prefix.
+
+In decimal values, the commas which are used as separators for groups of thousands are ignored.
+Most commands display large values with separators in order to improve the readability.
+Therefore, these values can be simply copied / pasted in subsequent command lines.
+
+*Example*: The following options are equivalent:
+
+[source,shell]
+----
+--count 3,100,456
+--count 3100456
+----
+
+When the same option is allowed to be specified several times in one command,
+it is possible to use ranges of integer values (two values, separated with a dash)
+instead of specifying all values individually.
+
+*Example*: The following sets of options are equivalent:
+
+[source,shell]
+----
+--pid 0 --pid 0x20 --pid 0x21 --pid 0x22 --pid 0x23 --pid 0x24 --pid 0x25 --pid 0x40
+--pid 0 --pid 0x20-0x25 --pid 0x40
+----
+
+[#predef-options]
+==== Predefined common options
+
+All commands accept the following common options:
+
+[.opt]
+**--debug**__[=N]__
+
+[.optdoc]
+Produce verbose debug output.
+Specify an optional debug level _N_.
+Do not use this option in normal operation.
+
+[.optdoc]
+Without this option, no debug output is produced.
+When the option is specified but not the level _N_, the default debug level is 1, that is to say a reasonable amount of information.
+The higher the debug level is, the more output is produced.
+
+[.optdoc]
+The amount of debug information depends on the command.
+Some commands do not generate any debug information.
+
+[.opt]
+*--help*
+
+[.optdoc]
+The option displays the syntax of the command and exits.
+
+[.optdoc]
+If either the standard output or the standard error is a terminal,
+the help text is "paged" through a system utility such as `less` or `more`, whichever is available.
+The environment variable `PAGER` can be used to specify an alternate pager command with its parameters
+(see xref:pager-command[xrefstyle=short]).
+
+[.optdoc]
+To redirect the help text to a file, you must redirect both the standard output and standard error.
+Otherwise, since at least one of the two is a terminal, the pager will be used.
+Example: `tsp --help &>help.txt`
+
+[.optdoc]
+All `tsp` plugins also accept the option `--help` which provides help on this specific plugin.
+
+[.opt]
+*--verbose*
+
+[.optdoc]
+Display verbose information.
+
+[.opt]
+**--version**__[=name]__
+
+[.optdoc]
+The option displays the TSDuck version and exits.
+
+[.optdoc]
+The optional _name_ indicates which type or format of version to display.
+The default is `long`.
+Other values are described in the table below.
+
+// PDF backend does not correctly process "autowidth" tables.
+.Values for option `--version`
+ifndef::backend-pdf[]
+[cols="<1m,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<15m,<85",stripes=none]
+endif::[]
+|===
+|Name |Description
+
+|acceleration
+|Availability of accelerated instructions for CRC32, AES, etc.
+
+|all
+|All information.
+
+|bitrate
+|Representation of bitrate values in computations.
+ Using compilation options, bitrates can be represented as fixed-point values, floating-point values, integer values or integer fractions.
+ See xref:bitrates[xrefstyle=short] for more details.
+
+|compiler
+|Compiler name and version.
+
+|crypto
+|Version of the cryptographic library.
+
+|date
+|Build date.
+
+|dektec
+|Version of the Dektec drivers and DTAPI library.
+
+|http
+|Version of the HTTP/HTTPS library.
+
+|integer
+|TSDuck version as one integer value which can be used in scripts to test against minimum required versions.
+ Example: "32802466".
+
+|long
+|TSDuck version in long string format. This is the default.
+
+|nsis
+|TSDuck version in NSIS directive format (legacy, no longer used).
+
+|rist
+|Version of the RIST library.
+
+|short
+|TSDuck version is short format. Example: "3.28-2466".
+
+|srt
+|Version of the SRT library.
+
+|system
+|Description of the running system.
+
+|vatek
+|Version of the VATek library (for VATek-based modulators).
+
+|===
+
+*Example*:
+
+[source,shell]
+----
+$ tsp --version=all
+tsp: TSDuck - The MPEG Transport Stream Toolkit - version 3.28-2466
+Built Aug 10 2021 - 23:09:27
+Using GCC 10.3.0, C++ std 2011.03
+System: Ubuntu (Ubuntu 21.04), on Intel x86-64, 64-bit, little-endian, page size:
+4096 bytes
+Bitrate: 64-bit fixed-point with 1 decimals
+Web library: libcurl: 7.74.0, ssl: OpenSSL/1.1.1j, libz: 1.2.11
+SRT library: libsrt version 1.4.2
+Dektec: DTAPI: 5.45.0.172
+----
+
+[#pager-command]
+==== Using a pager command
+
+Some commands which produce a very verbose output are automatically redirected to a _pager_ command such as `less` or `more`, whichever is available.
+The redirection is performed only when the standard output is a terminal.
+
+The environment variable `PAGER` can be used to specify an alternate pager command with its parameters.
+
+The TSDuck commands which can send their output to a pager always define the `--no-pager` option
+to disable the redirection even when the standard output is a terminal.
+
+[#cmd-redirection]
+==== Partial command line redirection from a file
+
+In any TSDuck command, it is possible to read some or all options and parameter from a file.
+The syntax is `@filename` where `filename` is a text file containing options and parameters.
+
+In the text file, each line must contain exactly one item (option name, option value or parameter).
+
+Sample command:
+
+[source,shell]
+----
+$ tsp -v @dvb.txt -P until --seconds 20 -P analyze -o out.txt -O drop
+----
+
+The file `dvb.txt` contains a list of command line items, one per line.
+The content of the file `dvb.txt` exactly replaces the expression `@dvb.txt`.
+
+Sample content of this file:
+
+[source,text]
+----
+-I
+dvb
+--frequency
+12,169,000,000
+--symbol-rate
+27,500,000
+--fec-inner
+3/4
+--polarity
+horizontal
+--delivery-system
+DVB-S2
+--modulation
+8-PSK
+----
+
+Note that each line contains exactly one command line item.
+Spaces or special characters are not filtered or interpreted.
+Using that kind of command can be useful in several situations:
+
+* When a custom application generates long and complicated TSDuck commands.
+* When the options or parameters contain special characters,
+  spaces or any other sequence which must be properly escaped with some shells,
+  possibly differently between shells or operating systems.
+
+Command line parameter redirections can be nested.
+When one line of such a text file contains a pattern `@filename`, the second file is inserted here.
+
+Finally, if a parameter really starts with a `@` character (which can be possible in a service or device name for instance),
+use a double `@@` to indicate that this is a literal `@` character and not a redirection.
+
+Consider the following command:
+
+[source,shell]
+----
+$ tsp -v @dvb.txt -P zap @@home -O drop
+----
+
+This command reads parameters from the file `dvb.txt` to find the tuning options and extracts the service named `@home` (with one `@`).
+The double `@` has been used to indicate that this is a literal `@`.
+
+And since redirections can be nested, the initial `@@` escape sequence can also be used inside text files containing parameters.
+
+==== Default options from the TSDuck configuration file
+
+It is possible to specify default command line options or alternate options in a global configuration file.
+This configuration file is specific per user.
+
+See xref:chap-userconfig[xrefstyle=short] for a complete reference of the TSDuck configuration file.
+
+==== Bash command line completion
+
+For `bash users, when the `bash-completion` package is installed, specific completion scripts are added for TSDuck.
+Plugin names, command and plugin options, predefined enumeration values for options are automatically completed.
+
+On Linux, the completions are automatically defined.
+
+On macOS with Homebrew, there is no TSDuck-specific setup but the Homebrew-defined bash completions,
+as a whole, must have been previously enabled.
+Add the following line to your `.bashrc` file:
+
+[source,shell]
+----
+[[ -e $(brew --prefix)/etc/profile.d/bash_completion.sh ]] && \
+    source $(brew --prefix)/etc/profile.d/bash_completion.sh
+----
+
+On Windows with Cygwin or Msys, add the following TSDuck-specific line to your `.bashrc` file:
+
+[source,shell]
+----
+source "$TSDUCK/setup/tsduck-completion.bash"
+----
+
+The rest of this chapter documents all TSDuck utilities, in alphabetical order.
+
+include::.all.commands.adoc[]

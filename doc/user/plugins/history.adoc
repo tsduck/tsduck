@@ -1,0 +1,152 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== history
+
+[.cmd-header]
+Report a history of major events on the transport stream
+
+This plugin reports a history of the major events on the transport stream:
+new PID’s, new tables, clear {d-arrow} scrambled transitions, suspended and restarted PID’s, etc.
+
+[.usage]
+Event reporting format
+
+By default, the messages are reported, like all other `tsp` messages, on the standard error file.
+Each output line is formatted as follow:
+
+[source,shell]
+----
+* history: packet-number: MESSAGE
+----
+
+With option `--milli-seconds`, the packet-number is replaced by a number of milliseconds (based on the TS bitrate).
+
+Some events are detected only some time after they occurred.
+Determining if a PID is suspended, for instance, is detected long after the last packet on this PID.
+As a consequence, some messages may be unsorted.
+To sort messages according to packet numbers, use a command like:
+
+[source,shell]
+----
+$ tsp -P history ...  2>&1 | grep '* history:' | sort -t : -k 2 -n
+----
+
+When an output file is specified using option `--output-file`, the log prefix `* history:` is not present.
+In this case, the sort command becomes:
+
+[source,shell]
+----
+$ sort -n output-file-name
+----
+
+[.usage]
+Reported events
+
+By default, the following events are reported:
+
+[.compact-list]
+* New versions of PAT, CAT, PMT, SDT, TSDT, BAT, NIT.
+* First and last packet of each PID, including when a PID is suspended for a while.
+* The last TDT or TOT time before an event.
+* Per-PID clear to scrambled and scrambled to clear transistions.
+* Per-PID first PES stream id.
+
+With option `--cas`:
+
+[.compact-list]
+* All occurrences of a new ECM. Repeated values of the same ECM are not reported.
+* Per-PID crypto-period boundaries.
+
+With option `--eit`:
+
+[.compact-list]
+* All EIT sections.
+
+With option `--time-all`:
+
+[.compact-list]
+* All system time tables (TDT, TOT).
+
+Without option `--ignore-stream-id-change`:
+
+[.compact-list]
+* Change of PES stream id in a PID.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P history [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--cas*
+
+[.optdoc]
+Report all CAS events (new ECM, crypto-period change).
+By default, only clear to/from scrambled transitions are reported.
+
+[.opt]
+*-e* +
+*--eit*
+
+[.optdoc]
+Report all EIT.
+By default, EIT are not reported.
+
+[.opt]
+*-i* +
+*--ignore-stream-id-change*
+
+[.optdoc]
+Do not report _stream_id_ modifications in a stream.
+Some subtitle streams may constantly swap between "private stream" and "padding stream".
+This option suppresses these annoying messages.
+
+[.opt]
+*-m* +
+*--milli-seconds*
+
+[.optdoc]
+For each message, report time in milli-seconds from the beginning of the stream instead of the TS packet number.
+This time is a playback time based on the current TS bitrate
+(use plugin `pcrbitrate` just before plugin history when necessary).
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the output file for reporting history lines.
+By default, report history lines on standard error using the `tsp` logging mechanism.
+
+[.opt]
+*-s* _value_ +
+*--suspend-packet-threshold* _value_
+
+[.optdoc]
+Number of packets in the TS after which a PID is considered as suspended.
+By default, if no packet is found in a PID during 60 seconds (according to the TS bitrate),
+the PID is considered as suspended.
+
+[.opt]
+*-t* +
+*--time-all*
+
+[.optdoc]
+Report all TDT and TOT.
+By default, only report TDT preceeding another event.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

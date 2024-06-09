@@ -1,0 +1,32 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for generic options for all packet processing plugins.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Generic packet processing plugin options
+
+The following options are implicitly defined in all packet processing plugins.
+
+[.opt]
+*--help*
+
+[.optdoc]
+Display the plugin help text.
+
+[.opt]
+*--only-label* _label1[-label2]_
+
+[.optdoc]
+Invoke this plugin only for packets with any of the specified labels.
+Other packets are transparently passed to the next plugin, without going through this one.
+
+[.optdoc]
+Several `--only-label` options may be specified.

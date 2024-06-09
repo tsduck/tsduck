@@ -1,0 +1,102 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::CASSelectionArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+CAS selection options
+
+[.opt]
+*--cas* _value_
+
+[.optdoc]
+With options `--ecm` or `--emm`, select only ECM’s or EMM’s for the specified CA system id value.
+Equivalent to `--min-cas _value_ --max-cas _value_`.
+
+[.opt]
+*--conax*
+
+[.optdoc]
+Equivalent to `--min-cas 0x0B00 --max-cas 0x0BFF`.
+
+[.opt]
+*--ecm*
+
+[.optdoc]
+Select PID's containing ECM's.
+
+[.opt]
+*--emm*
+
+[.optdoc]
+Select PID's containing EMM's.
+
+[.opt]
+*--irdeto*
+
+[.optdoc]
+Equivalent to `--min-cas 0x0600 --max-cas 0x06FF`.
+
+[.opt]
+*--max-cas* _value_
+
+[.optdoc]
+With options `--ecm` or `--emm`,
+select only ECM’s or EMM’s for the CA system id values in the range `--min-cas` to `--max-cas`.
+
+[.opt]
+*--mediaguard*
+
+[.optdoc]
+Equivalent to `--min-cas 0x0100 --max-cas 0x01FF`.
+
+[.opt]
+*--min-cas* _value_
+
+[.optdoc]
+With options `--ecm` or `--emm`,
+select only ECM’s or EMM’s for the CA system id values in the range `--min-cas` to `--max-cas`.
+
+[.opt]
+*--nagravision*
+
+[.optdoc]
+Equivalent to `--min-cas 0x1800 --max-cas 0x18FF`.
+
+[.opt]
+*--nds*
+
+[.optdoc]
+Equivalent to `--min-cas 0x0900 --max-cas 0x09FF`.
+
+[.opt]
+*--operator* _value_
+
+[.optdoc]
+When a CAS is specified, select only ECM’s or EMM’s for the specified CAS operator.
+The _CAS operator_ is a non-standard vendor-dependent concept and is recognized for some CAS only.
+
+[.opt]
+*--safeaccess*
+
+[.optdoc]
+Equivalent to `--cas 0x4ADC`.
+
+[.opt]
+*--viaccess*
+
+[.optdoc]
+Equivalent to `--min-cas 0x0500 --max-cas 0x05FF`.
+
+[.opt]
+*--widevine*
+
+[.optdoc]
+Equivalent to `--min-cas 0x4AD4 --max-cas 0x4AD5`.

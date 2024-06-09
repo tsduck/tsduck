@@ -1,0 +1,47 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tstables
+
+[.cmd-header]
+Collect MPEG tables and sections
+
+This utility collects MPEG tables or individual sections from a transport stream.
+The tables can be saved in a human readable format, in binary or XML files or sent over UDP/IP to some collecting server.
+It is possible to save the tables in several formats at the same time.
+By default, the tables are displayed in human-readable format on the standard output.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tstables [options] [input-file]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+MPEG transport stream, either a capture file or a pipe from a live stream (see option `--format` for binary formats).
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+Tables and sections selection options
+
+[.usage]
+Input options
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;input]
+
+include::{docdir}/opt/group-section-logger.adoc[tags=!*;pager]
+include::{docdir}/opt/group-section-display.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;cas;pds;std;timeref;charset]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

@@ -1,0 +1,368 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== vatek (output)
+
+[.cmd-header]
+Send the transport stream to a VATek-based modulator device
+
+This plugin sends the output transport stream to a modulator device
+which is based on chips from Vision Advance Technology Inc. (VATek).
+The final modulator device product can be from a different manufacturer.
+
+NOTE: Unlike Dektec and HiDes devices which are available on Linux and Windows only,
+VATek-based devices are available on all operating systems, including macOS,
+because VATek chips do not need a dedicated device driver.
+They are accessed through the portable `libusb` library which is available on all operating systems.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O vatek [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--bandwidth* _value_
+
+[.optdoc]
+DVB-T, DVB-T2, DMB-T (DTMB): indicate bandwidth in MHz.
+
+[.optdoc]
+Must be one of `1.7`, `5`, `6`, `7`, `8`, `10`.
+The bandwidth values 1.7 and 10 MHz are valid for DVB-T2 only.
+The default is 8 MHz.
+
+[.opt]
+*--bandwidth-extension*
+
+[.optdoc]
+DVB-T2: indicate that the extended carrier mode is used.
+
+[.optdoc]
+By default, use normal carrier mode.
+
+[.opt]
+*--constellation* _value_
+
+[.optdoc]
+DVB-T, ISDB-T: indicate the constellation type.
+
+[.optdoc]
+Must be one of `16-QAM`, `64-QAM`, `QPSK`.
+The default is `64-QAM`.
+
+[.opt]
+*-r* _value_ +
+*--convolutional-rate* _value_
+
+[.optdoc]
+Indicate the convolutional rate.
+The specified value depends on the modulation type.
+
+[.optdoc]
+Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`.
+The default is `5/6`.
+
+[.opt]
+*-d* _value_ +
+*--device* _value_
+
+[.optdoc]
+Device index, from 0 to N-1 (with N being the number of VATek-based devices in the system).
+
+[.optdoc]
+Use the command `tsvatek --all` to have a complete list of devices in the system.
+
+[.optdoc]
+By default, use the first VATek-based device (index 0).
+
+[.opt]
+*--dmb-carrier* _value_
+
+[.optdoc]
+DMB-T (DTMB): indicate the carrier mode.
+Must be one of `1`, `3780`.
+The default is `3780`.
+
+[.opt]
+*--dmb-constellation* _value_
+
+[.optdoc]
+DMB-T (DTMB): indicate the constellation type.
+
+[.optdoc]
+Must be one of `4-QAM`, `4-QAM-NR`, `16-QAM`, `32-QAM`, `64-QAM`.
+The default is `64-QAM`.
+`4-QAM-NR` and `32-QAM` can be used only with `--dmb-fec 0.8`.
+
+[.opt]
+*--dmb-fec* _value_
+
+[.optdoc]
+DMB-T (DTMB): indicate the FEC code rate.
+
+[.optdoc]
+Must be one of `0.4`, `0.6`, `0.8`.
+The default is `0.8`.
+
+[.opt]
+*--dmb-frame-numbering*
+
+[.optdoc]
+DMB-T/H, ADTB-T: indicate to use frame numbering.
+
+[.optdoc]
+The default is to use no frame numbering.
+
+[.opt]
+*--dmb-header* _value_
+
+[.optdoc]
+DMB-T/H, ADTB-T: indicate the FEC frame header mode.
+
+[.optdoc]
+Must be one of `PN420`, `PN595`, `PN945`.
+The default is `PN945`.
+
+[.opt]
+*--dmb-interleaver* _value_
+
+[.optdoc]
+DMB-T (DTMB): indicate the interleaver mode.
+
+[.optdoc]
+Must be one of 1 (B=54, M=240) or 2 (B=54, M=720).
+The default is 1.
+
+[.opt]
+*--fft-mode* _value_
+
+[.optdoc]
+DVB-T2: indicate the FFT mode.
+
+[.optdoc]
+Must be one of `1K`, `2K`, `4K`, `8K`, `16K`.
+The default is `8K`.
+
+[.opt]
+*-f* _value_ +
+*--frequency* _value_
+
+[.optdoc]
+Indicate the frequency, in Hz, of the output carrier.
+The valid range is 50,000,000 Hz to 1,000,000,000 Hz.
+
+[.optdoc]
+The default is 473,000,000 Hz.
+
+[.opt]
+*-g* _value_ +
+*--guard-interval* _value_
+
+[.optdoc]
+DVB-T and ISDB-T modulators: indicate the guard interval.
+
+[.optdoc]
+Must be one of `1/16`, `1/32`, `1/4`, `1/8`.
+The default is `1/16`.
+
+[.opt]
+*--j83-qam* _value_
+
+[.optdoc]
+Indicate J83 the modulation type.
+
+[.optdoc]
+Must be one of `16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`.
+
+[.optdoc]
+The specified value and default depend on the modulation type. +
+J83A : `16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`. Default: `64-QAM`. +
+J83B : `64-QAM`, `256-QAM`. Default: `256-QAM`. +
+J83C : `64-QAM`, `256-QAM`. Default: `256-QAM`.
+
+[.opt]
+*-m* _value_ +
+*--modulation* _value_
+
+[.optdoc]
+Indicate the modulation type.
+The supported modulation types depend on the device model.
+
+[.optdoc]
+Must be one of `ATSC-VSB`, `DMB-T`, `DTMB`, `DVB-T`, `DVB-T2`, `ISDB-T`, `J83A`, `J83B`, `J83C`.
+The default is `DVB-T`.
+
+[.opt]
+*--pcradjust* _name_
+
+[.optdoc]
+Adjust the buffer transmission speed according to different application.
+
+[.optdoc]
+Must be one of `adjust`, `disable` (default).
+
+[.opt]
+*-p* _value_ +
+*--pilot-pattern* _value_
+
+[.optdoc]
+DVB-T2: indicate the pilot pattern to use, a value in the range 1 to 8.
+
+[.optdoc]
+Must be one of 1, 2, 3, 4, 5, 6, 7, 8. The default is 7.
+
+[.opt]
+*--pilots*
+
+[.optdoc]
+DVB-S2 and ADTB-T: enable pilots. Default: no pilot.
+
+[.opt]
+*--plp0-code-rate* _value_
+
+[.optdoc]
+DVB-T2: indicate the convolutional coding rate used by the PLP #0.
+
+[.optdoc]
+Must be one of `1/2`, `2/3`, `3/4`, `3/5`, `4/5`, `5/6`.
+The default is `2/3`.
+
+[.opt]
+*--plp0-fec-type* _value_
+
+[.optdoc]
+DVB-T2: indicate the FEC type used by the PLP #0.
+Must be one of `16K`, `64K`. The default is `64K`.
+
+[.opt]
+*--plp0-high-efficiency*
+
+[.optdoc]
+DVB-T2: indicate that the PLP #0 uses High Efficiency Mode (HEM).
+Otherwise, normal Mode (NM) is used.
+
+[.opt]
+*--plp0-issy* _value_
+
+[.optdoc]
+DVB-T2: type of ISSY field to compute and insert in PLP #0.
+
+[.optdoc]
+Must be one of `NONE`, `SHORT`, `LONG`. The default is `NONE`.
+
+[.opt]
+*--plp0-modulation* _value_
+
+[.optdoc]
+DVB-T2: indicate the modulation used by PLP #0.
+
+[.optdoc]
+Must be one of `16-QAM`, `256-QAM`, `64-QAM`, `QPSK`.
+The default is `256-QAM`.
+
+[.opt]
+*--plp0-null-packet-deletion*
+
+[.optdoc]
+DVB-T2: indicate that null-packet deletion is active in PLP #0.
+
+[.optdoc]
+Otherwise, it is not active.
+
+[.opt]
+*--plp0-rotation*
+
+[.optdoc]
+DVB-T2: indicate that constellation rotation is used for PLP #0.
+
+[.optdoc]
+Otherwise, it is not used.
+
+[.opt]
+*--remux* _value_
+
+[.optdoc]
+Must be one of:
+
+[.optdoc]
+[.compact-list]
+* `remux`: Lock the first PCR to keep USB transfer TS stable, TS must contain some PCR to operate. This is the default.
+* `passthrough`: Bypass TS without padding null packets (input bitrate = output bitrate).
+
+[.opt]
+*--symbol-rate* _value_
+
+[.optdoc]
+J83a: Specify the symbol rate in symbols/second.
+
+[.optdoc]
+The default is 5,120,000 symbols/second
+
+[.opt]
+*--t2-guard-interval* _value_
+
+[.optdoc]
+DVB-T2: indicates the guard interval.
+
+[.optdoc]
+Must be one of `1/128`, `1/16`, `1/32`, `1/4`, `1/8`, `19/128`, `19/256`.
+The default is `1/128`.
+
+[.opt]
+*--t2-l1-modulation* _value_
+
+[.optdoc]
+DVB-T2: indicate the modulation type used for the L1-post signalling block.
+
+[.optdoc]
+Must be one of `BPSK`, `QPSK`, `16-QAM`, `64-QAM`.
+The default is `16-QAM`.
+
+[.opt]
+*--t2-network-id* _value_
+
+[.optdoc]
+DVB-T2: indicate the DVB-T2 network identification.
+The default is 0.
+
+[.opt]
+*--t2-system-id* _value_
+
+[.optdoc]
+DVB-T2: indicate the DVB-T2 system identification.
+The default is 0.
+
+[.opt]
+*--t2-version* _value_
+
+[.optdoc]
+DVB-T2: version tag.
+
+[.optdoc]
+Must be one of `ver131`, `ver131_lite`.
+The default is `ver131`.
+
+[.opt]
+*-t* _value_ +
+*--transmission-mode* _value_
+
+[.optdoc]
+DVB-T, ISDB-T: indicate the transmission mode.
+
+[.optdoc]
+Must be one of `2K`, `4K`, `8K`.
+The default is `8K`.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

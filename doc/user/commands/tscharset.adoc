@@ -1,0 +1,106 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tscharset
+
+[.cmd-header]
+Test tool for DVB and ARIB character sets
+
+This utility performs manual string encoding and decoding using various DVB and ARIB character sets.
+It can be used to evaluate the validity of conversions.
+
+By default, the converted data is displayed on one line.
+With the `--verbose` option, more details are displayed such as the string in UTF-8 or UTF-16 format.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tscharset [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--c-style*
+
+[.optdoc]
+Output binary data in C/C++ syntax, using 0x prefix.
+The result can be easily copied into C/C++ source code.
+
+[.opt]
+*-d* _hexa-digits_ +
+*--decode* _hexa-digits_
+
+[.optdoc]
+Decode the specified binary data according to the default character set.
+The encoded data shall be represented as binary digits.
+Spaces are ignored.
+
+[.opt]
+*-e* _"string"_ +
+*--encode* _"string"_
+
+[.optdoc]
+Encode the specified string according to the default character set.
+See also options `--from-utf-8` and `--from-utf-16`.
+
+[.opt]
+*-6*
+*--from-utf-16*
+
+[.optdoc]
+With `--encode`, specify that the parameter value is a suite of binary digits representing the string in UTF-16 format.
+There must be an even number of bytes.
+
+[.opt]
+*-8*
+*--from-utf-8*
+
+[.optdoc]
+With `--encode`, specify that the parameter value is a suite of binary digits representing the string in UTF-8 format.
+
+[.opt]
+*-l* +
+*--list-charsets*
+
+[.optdoc]
+List all known character set names.
+
+[.opt]
+*-o* _file-name_ +
+*--output* _file-name_
+
+[.optdoc]
+Output file name.
+By default, use standard output.
+
+[.opt]
+*--to-utf-16*
+
+[.optdoc]
+With `--decode`, display an hexadecimal representation of the decoded string in UTF-16 format.
+
+[.optdoc]
+With `--verbose`, this option is redundant because the string is already displayed in plain form and in UTF-16 representation.
+
+[.opt]
+*--to-utf-8*
+
+[.optdoc]
+With `--decode`, display an hexadecimal representation of the decoded string in UTF-8 format.
+
+[.optdoc]
+With `--verbose`, use UTF-8 instead of UTF-16 for the alternate representation of the string.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

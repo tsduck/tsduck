@@ -1,0 +1,1364 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+=== MPEG-defined descriptors
+
+==== af_extensions_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<af_extensions_descriptor/>
+----
+
+==== association_tag_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<association_tag_descriptor
+    association_tag="uint16, required"
+    use="uint16, required">
+  <selector_bytes>
+    Hexadecimal content
+  </selector_bytes>
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</association_tag_descriptor>
+----
+
+==== audio_stream_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<audio_stream_descriptor
+    free_format="bool, required"
+    ID="uint1, required"
+    layer="uint2, required"
+    variable_rate_audio="bool, required"/>
+----
+
+==== auxiliary_video_stream_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<auxiliary_video_stream_descriptor aux_video_codestreamtype="uint8, required">
+
+  <si_message payload_type="uint32, required">
+    <generic_params
+      aux_is_bottom_field="bool, optional"
+      aux_is_interlaced="bool, optional"
+      position_offset_h="uint8, required"
+      position_offset_v="uint8, required"/>
+    <depth_params
+      kfar_numerator="uint8, required"
+      knear_numerator="uint8, required"/>
+    <parallax_params
+      parallax_zero="uint16, required"
+      parallax_scale="uint16, required"
+      dref="uint16, required"
+      wref="uint16, required"/>
+    <reserved_si_message>
+      Hexadecimal content
+    </reserved_si_message>
+  </si_message>
+
+</auxiliary_video_stream_descriptor>
+----
+
+==== AVC_timing_and_HRD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<AVC_timing_and_HRD_descriptor
+    hrd_management_valid="bool, required"
+    N_90khz="uint32, optional"
+    K_90khz="uint32, optional"
+    num_units_in_tick="uint32, optional"
+    fixed_frame_rate="bool, required"
+    temporal_poc="bool, required"
+    picture_to_display_conversion="bool, required"/>
+----
+
+==== AVC_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<AVC_video_descriptor
+    profile_idc="uint8, required"
+    constraint_set0="bool, required"
+    constraint_set1="bool, required"
+    constraint_set2="bool, required"
+    constraint_set3="bool, default=false"
+    constraint_set4="bool, default=false"
+    constraint_set5="bool, default=false"
+    AVC_compatible_flags="uint2, required"
+    level_idc="uint8, required"
+    AVC_still_present="bool, required"
+    AVC_24_hour_picture="bool, required"
+    frame_packing_SEI_not_present="bool, default=false"/>
+----
+
+==== CA_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<CA_descriptor CA_system_id="uint16, required" CA_PID="uint13, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</CA_descriptor>
+----
+
+==== carousel_identifier_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<carousel_identifier_descriptor carousel_id="uint32, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</carousel_identifier_descriptor>
+----
+
+==== content_labelling_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<content_labelling_descriptor
+    metadata_application_format="uint16, required"
+    metadata_application_format_identifier="uint32, optional"
+    content_time_base_indicator="uint4, required"
+    content_time_base_value="uint33, optional"
+    metadata_time_base_value="uint33, optional"
+    content_id="uint7, optional">
+
+  <content_reference_id>
+    Hexadecimal content
+  </content_reference_id>
+
+  <time_base_association_data>
+    Hexadecimal content
+  </time_base_association_data>
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</content_labelling_descriptor>
+----
+
+==== copyright_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<copyright_descriptor copyright_identifier="uint32, required">
+  <additional_copyright_info>
+    Hexadecimal content (optional element)
+  </additional_copyright_info>
+</copyright_descriptor>
+----
+
+==== data_stream_alignment_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<data_stream_alignment_descriptor alignment_type="uint8, required"/>
+----
+
+==== deferred_association_tags_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<deferred_association_tags_descriptor
+    transport_stream_id="uint16, required"
+    program_number="uint16, required">
+  <!-- One per association tag -->
+  <association tag="uint16, required"/>
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</deferred_association_tags_descriptor>
+----
+
+==== external_ES_ID_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<external_ES_ID_descriptor external_ES_ID="uint16, required"/>
+----
+
+==== EVC_timing_and_HRD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<EVC_timing_and_HRD_descriptor
+    hrd_management_valid="bool, required"
+    N_90khz="uint32, optional"
+    K_90khz="uint32, optional"
+    num_units_in_tick="uint32, optional"/>
+----
+
+==== EVC_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<EVC_video_descriptor
+    profile_idc="uint8, required"
+    level_idc="uint8, required"
+    toolset_idc_h="uint32, required"
+    toolset_idc_l="uint32, required"
+    progressive_source_flag="bool, required"
+    interlaced_source_flag="bool, required"
+    non_packed_constraint_flag="bool, required"
+    frame_only_constraint_flag="bool, required"
+    EVC_still_present_flag="bool, required"
+    EVC_24hr_picture_present_flag="bool, required"
+    HDR_WCG_idc="uint2, default=3"
+    video_properties_tag="uint4, default=0"
+    temporal_id_min="uint3, optional, specify both min and max or none"
+    temporal_id_max="uint3, optional, specify both min and max or none"/>
+----
+
+==== FMC_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<FMC_descriptor>
+  <!-- One per SL_packetized stream -->
+  <stream ES_ID="uint16, required" M4MuxChannel="uint8, required"/>
+</FMC_descriptor>
+----
+
+==== green_extension_descriptor>
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<green_extension_descriptor>
+
+  <!-- One per time interval -->
+  <constant_backlight_voltage_time_interval value="uint16, required"/>
+
+  <!-- One per variation -->
+  <max_variation value="uint16, required"/>
+
+</green_extension_descriptor>
+----
+
+==== HEVC_hierarchy_extension_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<HEVC_hierarchy_extension_descriptor
+    extension_dimension_bits="uint16, required"
+    hierarchy_layer_index="uint6, required"
+    temporal_id="uint3, required"
+    nuh_layer_id="uint6, required"
+    tref_present="bool, required"
+    hierarchy_channel="uint6, required">
+
+  <!-- One per embedded layer -->
+  <embedded_layer hierarchy_layer_index="uint6, required"/>
+
+</HEVC_hierarchy_extension_descriptor>
+----
+
+==== HEVC_operation_point_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<HEVC_operation_point_descriptor>
+
+  <profile_tier_level_info>
+    Hexadecimal Content
+  </profile_tier_level_info>
+
+  <operation_point
+      target_ols="uint8, required"
+      constant_frame_rate_info_idc="uint2, required"
+      applicable_temporal_id="uint3, required"
+      frame_rate_indicator="uint12, default=0"
+      avg_bit_rate="uint24, default=0"
+      max_bit_rate="uint24, default=0">
+    <ES
+        prepend_dependencies="bool, required"
+        ES_reference="uint6, required"/>
+    <ESinOP
+        necessary_layer="bool, required"
+        output_layer="bool, required"
+        ptl_ref_idx="uint6, required"/>
+  </operation_point>
+
+</HEVC_operation_point_descriptor>
+----
+
+==== HEVC_subregion_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<HEVC_subregion_descriptor
+    SubstreamIDsPerLine="uint7, required"
+    TotalSubstreamIDs="uint8, required"
+    LevelFullPanorama="uint8, required">
+
+  <SubregionLayout
+      PreambleSubstreamID="uint7, optional"
+      Level="uint8, required"
+      PictureSizeHor="uint16, required"
+      PictureSizeVer="uint16, required">
+
+    <Pattern>
+      <Substream offset="int8, required"/>
+    </Pattern>
+
+  </SubregionLayout>
+
+</HEVC_subregion_descriptor>
+----
+
+==== HEVC_tile_substream_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+Either one single `Reference` element or multiple `Substream` elements can be present (or none).
+
+[source,xml]
+----
+<HEVC_tile_substream_descriptor
+    SubstreamID="uint7, required">
+
+  <Reference
+      PreambleFlag="uint1, required"
+      PatternReference="uint7, required"/>
+
+  <Substream
+      Flag="uint1, required"
+      AdditionalSubstreamID="uint7, required"/>
+
+</HEVC_tile_substream_descriptor>
+----
+
+==== HEVC_timing_and_HRD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<HEVC_timing_and_HRD_descriptor
+    hrd_management_valid="bool, required"
+    target_schedule_idx="uint5, optional"
+    N_90khz="uint32, optional, specify both N and K or none"
+    K_90khz="uint32, optional, specify both N and K or none"
+    num_units_in_tick="uint32, optional"/>
+----
+
+==== HEVC_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<HEVC_video_descriptor
+    profile_space="uint2, required"
+    tier_flag="bool, required"
+    profile_idc="uint5, required"
+    profile_compatibility_indication="uint32, required"
+    progressive_source_flag="bool, required"
+    interlaced_source_flag="bool, required"
+    non_packed_constraint_flag="bool, required"
+    frame_only_constraint_flag="bool, required"
+    copied_44bits="uint44, default=0"
+    reserved_zero_44bits="uint44, default=0"
+    level_idc="uint8, required"
+    HEVC_still_present_flag="bool, required"
+    HEVC_24hr_picture_present_flag="bool, required"
+    sub_pic_hrd_params_not_present="bool, default=true"
+    HDR_WCG_idc="uint2, default=3"
+    temporal_id_min="uint3, optional, specify both min and max or none"
+    temporal_id_max="uint3, optional, specify both min and max or none"/>
+----
+
+Note: The attributes `reserved_zero_44bits` and `copied_44bits` are identical.
+The former is the original name in amendment 3 of <<ISO-13818-1>> and
+the latter is the new name when the amendment was integrated in <<ISO-13818-1>>.
+Both attributes are optional but only one shall be specified.
+
+==== hierarchy_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<hierarchy_descriptor
+    no_view_scalability_flag="bool, default=true"
+    no_temporal_scalability="bool, default=true"
+    no_spatial_scalability="bool, default=true"
+    no_quality_scalability="bool, default=true"
+    hierarchy_type="uint4, required"
+    hierarchy_layer_index="uint6, required"
+    tref_present="bool, required"
+    hierarchy_embedded_layer_index="uint6, required"
+    hierarchy_channel="uint6, required"/>
+----
+
+==== IBP_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<IBP_descriptor
+    closed_gop="bool, required"
+    identical_gop="bool, required"
+    max_gop_length="uint14, required"/>
+----
+
+==== ISO_639_language_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<ISO_639_language_descriptor>
+  <!-- One per language -->
+  <language code="char3, required" audio_type="uint8, required"/>
+</ISO_639_language_descriptor>
+----
+
+==== J2K_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<J2K_video_descriptor
+    profile_and_level="uint15, required"
+    horizontal_size="uint32, required"
+    vertical_size="uint32, required"
+    max_bit_rate="uint32, required"
+    max_buffer_size="uint32, required"
+    DEN_frame_rate="uint16, required"
+    NUM_frame_rate="uint16, required"
+    color_specification="uint8, required when extended_capability_flag == false"
+    still_mode="bool, required"
+    interlaced_video="bool, required"
+    colour_primaries="uint8, required when extended_capability_flag == true"
+    transfer_characteristics="uint8, required when extended_capability_flag == true"
+    matrix_coefficients="uint8, required when extended_capability_flag == true"
+    video_full_range_flag="bool, required when extended_capability_flag == true">
+
+  <stripe
+    strp_max_idx="uint8, required"
+    strp_height="uint16, required"/>
+
+  <block
+    full_horizontal_size="uint32, required"
+    full_vertical_size="uint32, required"
+    blk_width="uint16, required"
+    blk_height="uint16, required"
+    max_blk_idx_h="uint8, required"
+    max_blk_idx_v="uint8, required"
+    blk_idx_h="uint8, required"
+    blk_idx_v="uint8, required"/>
+
+  <!-- one element allowed when extended_capability_flag == true -->
+  <mdm
+    X_c0="uint16, required"
+    Y_c0="uint16, required"
+    X_c1="uint16, required"
+    Y_c1="uint16, required"
+    X_c2="uint16, required"
+    Y_c2="uint16, required"
+    X_wp="uint16, required"
+    Y_wp="uint16, required"
+    L_max="uint32, required"
+    L_min="uint32, required"
+    MaxCLL="uint16, required"
+    MaxFALL="uint16, required"/>
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</J2K_video_descriptor>
+----
+
+==== JPEG_XS_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<JPEG_XS_video_descriptor
+    descriptor_version="uint8, required"
+    horizontal_size="uint16, required"
+    vertical_size="uint16, required"
+    brat="uint32, required"
+    interlace_mode = "uint2, required"
+    framerate_DEN="1|1.001, required"
+    framerate_NUM="uint16, required"
+    sample_bitdepth="uint4, together with sampling_structure"
+    sampling_structure="uint4, together with bit_depth"
+    Ppih="unit16, required"
+    level="uint8, required"
+    sublevel="uint8, required"
+    max_buffer_size="uint32, required"
+    buffer_model_type="uint8, required"
+    colour_primaries="unit8, required"
+    transfer_characteristics="unit8, required"
+    matrix_coefficients="unit8, required"
+    video_full_range_flag="bool, required"
+    still_mode="bool, required">
+
+  <mdm
+    X_c0="uint16, required"
+    Y_c0="uint16, required"
+    X_c1="uint16, required"
+    Y_c1="uint16, required"
+    X_c2="uint16, required"
+    Y_c2="uint16, required"
+    X_wp="uint16, required"
+    Y_wp="uint16, required"
+    L_max="uint32, required"
+    L_min="uint32, required"
+    MaxCLL="uint16, required"
+    MaxFALL="uint16, required"/>
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</JPEG_XS_video_descriptor>
+----
+
+==== LCEVC_linkage_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<LCEVC_linkage_descriptor>
+
+  <lcevc_stream_tag>
+    Hexadecimal content
+  </lcevc_stream_tag>
+
+</LCEVC_linkage_descriptor>
+----
+
+==== LCEVC_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<LCEVC_video_descriptor
+    lcevc_stream_tag="uint8, required"
+    profile_idc="uint4, required"
+    level_idc="uint4, required"
+    sublevel_idc="uint2, required"
+    processed_planes_type_flag="bool, required"
+    picture_type_bit_flag="bool, required"
+    field_type_bit_flag="bool, required"
+    HDR_WCG_idc="uint2, default=3"
+    video_properties_tag="uint4, default=0"/>
+----
+
+==== M4MuxBufferSize_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<M4MuxBufferSize_descriptor>
+
+  <!-- always required -->
+  <DefaultM4MuxBufferDescriptor
+      m4MuxChannel="uint8, required"
+      FB_BufferSize="uint24, required"/>
+
+  <!-- 0..n -->
+  <M4MuxBufferDescriptor
+      m4MuxChannel="uint8, required"
+      FB_BufferSize="uint24, required"/>
+
+</M4MuxBufferSize_descriptor>
+----
+
+==== m4mux_timing_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<m4mux_timing_descriptor
+    FCR_ES_ID="uint16, required"
+    FCRResolution="uint32, required"
+    FCRLength="uint8, required"
+    FmxRateLength="uint8, required"/>
+----
+
+==== maximum_bitrate_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<maximum_bitrate_descriptor maximum_bitrate="uint32, in bits/second, required"/>
+----
+
+==== Media_service_kind_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<Media_service_kind_descriptor>
+
+  <media_service_kind
+      media_description="self|associate, required"
+      media_type="unknown|video|audio|text/data, required"
+      ID_length_code="uint3, optional"
+      ID_type="uint13, optional"
+      ID_len="uint8, optional"
+      media_ID="string, optional">
+
+    <language_media_pair
+        configuration_type="uint2, required"
+        lang_len_idc="uint2, required"
+        lang_len="uint8, optional"
+        BCP47_language_code="string, required">
+
+      <media_service_type purpose="uint8, required"/>
+
+    </language_media_pair>
+  </Media_service_kind>
+</Media_service_kind_descriptor>
+----
+
+==== metadata_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<metadata_descriptor
+    metadata_application_format="uint16, required"
+    metadata_application_format_identifier="uint32, optional"
+    metadata_format="uint8, required"
+    metadata_format_identifier="uint32, optional"
+    metadata_service_id="uint8, required"
+    decoder_config_flags="uint3, required"
+    decoder_config_metadata_service_id="uint8, optional">
+
+  <service_identification>
+    Hexadecimal content
+  </service_identification>
+
+  <decoder_config>
+    Hexadecimal content
+  </decoder_config>
+
+  <dec_config_identification>
+    Hexadecimal content
+  </dec_config_identification>
+
+  <reserved_data>
+    Hexadecimal content
+  </reserved_data>
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</metadata_descriptor>
+----
+
+==== metadata_pointer_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<metadata_pointer_descriptor
+    metadata_application_format="uint16, required"
+    metadata_application_format_identifier="uint32, optional"
+    metadata_format="uint8, required"
+    metadata_format_identifier="uint32, optional"
+    metadata_service_id="uint8, required"
+    MPEG_carriage_flags="uint2, required"
+    program_number="uint16, optional"
+    transport_stream_location="uint16, optional"
+    transport_stream_id="uint16, optional">
+
+  <metadata_locator>
+    Hexadecimal content
+  </metadata_locator>
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</metadata_pointer_descriptor>
+----
+
+==== metadata_STD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<metadata_STD_descriptor
+    metadata_input_leak_rate="uint22, required"
+    metadata_buffer_size="uint22, required"
+    metadata_output_leak_rate="uint22, required"/>
+----
+
+==== MPEG2_AAC_audio_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG2_AAC_audio_descriptor
+    MPEG2_AAC_profile="uint8, required"
+    MPEG2_AAC_channel_configuration="uint8, required"
+    MPEG2_AAC_additional_information="uint8, required"/>
+----
+
+==== MPEG2_stereoscopic_video_format_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG2_stereoscopic_video_format_descriptor arrangement_type="uint7, optional"/>
+----
+
+==== MPEG4_audio_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
+----
+
+==== MPEG4_text_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG4_text_descriptor
+    textFormat="uint8, required"
+    ThreeGPPBaseFormat="uint8, required"
+    profileLevel="uint8, required"
+    durationClock="uint24, required"
+    sampleDescriptionFlags="uint2, required"
+    layer="uint8, required"
+    text_track_width="uint16, required"
+    text_track_height="uint16, required"
+    scene_width="uint16, optional"
+    scene_height="uint16, optional"
+    horizontal_scene_offset="uint16, optional"
+    vertical_scene_offset="uint16, optional">
+
+  <Compatible_3GPPFormat value="uint8, required"/>
+
+  <Sample_index_and_description
+      sample_index="uint8, required"
+      textFormat="uint8, required">
+    Hexadecimal Content
+  </Sample_index_and_description>
+
+</MPEG4_text_descriptor>
+----
+
+==== MPEG4_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG4_video_descriptor MPEG4_visual_profile_and_level="uint8, required"/>
+----
+
+==== MPEGH_3D_audio_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEGH_3D_audio_descriptor
+    mpegh_3da_profile_level_indication="uint8, required"
+    interactivity_enabled="bool, required"
+    reference_channel_layout="uint6, required">
+
+  <reserved>
+    Hexadecimal content
+  </reserved>
+
+</MPEGH_3D_audio_descriptor>
+----
+
+==== MPEGH_3D_audio_multi_stream_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEGH_3D_audio_multi_stream_descriptor
+    this_is_main_stream="bool, required"
+    this_stream_id="uint7, required"
+    num_auxiliary_streams="uint7, optional">
+
+  <!-- One per group -->
+  <mae_group
+      mae_group_id="uint7, required"
+      is_in_main_stream="bool, required"
+      is_in_ts="bool, optional"
+      auxiliary_stream_id="uint7, optional"/>
+
+  <CompatibleSetIndication>
+    Hexadecimal content
+  </CompatibleSetIndication>
+
+  <reserved>
+    Hexadecimal content
+  </reserved>
+
+</MPEGH_3D_audio_multi_stream_descriptor>
+----
+
+==== MPEGH_3D_audio_scene_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEGH_3D_audio_scene_descriptor sceneID="uint8, required">
+
+  <!-- up to 127 interactivity groups -->
+  <InteractivityGroup
+    groupID="uint7, required"
+    allowOnOff="bool, required"
+    defaultOnOff="bool, required"
+    contentKind="uint4, required"
+    contentLanguage="char3, optional">
+
+    <PositionInteractivity
+      azimuthOffsetMin="uint7, required"
+      azimuthOffsetMax="uint7, required"
+      elevationOffsetMin="uint5, required"
+      elevationOffsetMax="uint5, required"
+      distanceOffsetMin="uint4, required"
+      distanceOffsetMax="uint4, required"/>
+
+    <GainInteractivity
+      interactivityGainMin="uint6, required"
+      interactivityGainMax="uint5, required"/>
+
+  </InteractivityGroup>
+
+  <!-- up to 31 switch groups -->
+  <SwitchGroup
+    switchGroupID="uint5, required"
+    switchGroupAllowOnOff="bool, required"
+    switchGroupDefaultOnOff="bool, required"
+    switchGroupDefaultGroupID="uint7, required">
+
+    <!-- required -->
+    <SwitchGroupMembers>
+      7bit Hexadecimal content, 1 to 32 values
+    </SwitchGroupMembers>
+
+  </SwitchGroup>
+
+  <!-- up to 31 preset groups -->
+  <PresetGroup
+    groupPresetID="uint5, required"
+    groupPresetKind="uint4, required">
+
+    <!-- 1 to 16 preset conditions -->
+    <PresetConditions
+      groupPresetGroupID="uint7, required"
+      groupPresetDisableGainInteractivity="bool,
+          required in groupPresetConditionOnOff=true group"
+      groupPresetDisablePositionInteractivity="bool,
+          required in groupPresetConditionOnOff=true group"
+      groupPresetGain="uint8,
+          optional in groupPresetConditionOnOff=true group"
+      groupPresetAzOffset="uint8,
+          optional in groupPresetConditionOnOff=true group -
+          must be specified with groupPresetElOffset and groupPresetDistFactor"
+      groupPresetElOffset="uint6,
+          optional in groupPresetConditionOnOff=true group -
+          must be specified with groupPresetAzOffset and groupPresetDistFactor"
+      groupPresetDistFactor="uint4,
+          optional in groupPresetConditionOnOff=true group -
+          must be specified with groupPresetAzOffset and groupPresetElOffset"/>
+  </PresetGroup>
+
+  <reserved>
+    Hexadecimal content
+  </reserved>
+
+</MPEGH_3D_audio_scene_descriptor>
+----
+
+==== MPEGH_3D_audio_text_label_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEGH_3D_audio_text_label_descriptor
+    _3dAudioSceneInfoID="uint8, required"
+    numReservedBytes="uint16, optional">
+
+  <DescriptionLanguage descriptionLanguage="char3, required">
+
+    <GroupDescription
+        mae_descriptionGroupID="uint7, required"
+        groupDescription="string, required"/>
+
+    <SwitchGroupDescription
+        mae_descriptionSwitchGroupID="uint5, required"
+        switchGroupDescription="string, required"/>
+
+    <GroupPresetDescription
+        mae_descriptionGroupPresetID="uint5, required"
+        groupPresetDescription="string, required"/>
+
+  </DescriptionLanguage>
+
+</MPEGH_3D_audio_text_label_descriptor>
+----
+
+==== multiplex_buffer_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<multiplex_buffer_descriptor
+    MB_buffer_size="uint24, required"
+    TB_leak_rate="uint24, required"/>
+----
+
+==== multiplex_buffer_utilization_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+The two attributes must be both present or both absent.
+
+[source,xml]
+----
+<multiplex_buffer_utilization_descriptor
+    LTW_offset_lower_bound="uint15, optional"
+    LTW_offset_upper_bound="uint15, optional"/>
+----
+
+==== MuxCode_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MuxCode_descriptor>
+
+  <MuxCodeEntry
+      MuxCode="uint4, required"
+      version="uint4, required">
+
+    <substructure repetitionCount="uint3, required">
+      <slot m4MuxChannel="uint8, required"
+            numberOfBytes="uint8, required"/>
+    </substructure>
+
+  </MuxCodeEntry>
+
+</MuxCode_descriptor>
+----
+
+==== MVC_extension_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MVC_extension_descriptor
+    average_bitrate="uint16, required"
+    maximum_bitrate="uint16, required"
+    view_association_not_present="bool, required"
+    base_view_is_left_eyeview="bool, required"
+    view_order_index_min="uint10, required"
+    view_order_index_max="uint10, required"
+    temporal_id_start="uint3, required"
+    temporal_id_end="uint3, required"
+    no_sei_nal_unit_present="bool, required"
+    no_prefix_nal_unit_present="bool, required"/>
+----
+
+==== MVC_operation_point_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MVC_operation_point_descriptor
+    profile_idc="uint8, required"
+    constraint_set0="bool, required"
+    constraint_set1="bool, required"
+    constraint_set2="bool, required"
+    constraint_set3="bool, required"
+    constraint_set4="bool, required"
+    constraint_set5="bool, required"
+    AVC_compatible_flags="uint2, required">
+
+  <!-- One per level -->
+  <level level_idc="uint8, required">
+    <operation_point
+        applicable_temporal_id="uint3, required"
+        num_target_output_views="uint8, required">
+
+      <!-- One per ES reference-->
+      <ES reference="uint6, required"/>
+
+    </operation_point>
+  </level>
+
+</MVC_operation_point_descriptor>
+----
+
+==== NPT_endpoint_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<NPT_endpoint_descriptor
+    start_NPT="uint33, required"
+    stop_NPT="uint33, required"/>
+----
+
+==== NPT_reference_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<NPT_reference_descriptor
+    post_discontinuity="bool, default=false"
+    content_id="uint7, default=0x7F"
+    STC_reference="uint33, required"
+    NPT_reference="uint33, required"
+    scale_numerator="uint16, required"
+    scale_denominator="uint16, required"/>
+----
+
+==== private_data_indicator_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<private_data_indicator_descriptor private_data_indicator="uint32, required"/>
+----
+
+==== quality_extension_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<quality_extension_descriptor field_size_bytes="uint8, required">
+
+  <!-- between 1 and 255 metric codes to be provied (although only 7 are defined) -->
+  <metric code="uint32, required"/>
+
+</quality_extension_descriptor>
+----
+
+==== registration_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<registration_descriptor format_identifier="uint32, required">
+  <additional_identification_info>
+    Hexadecimal content (optional element)
+  </additional_identification_info>
+</registration_descriptor>
+----
+
+==== SL_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<SL_descriptor ES_ID="uint16, required"/>
+----
+
+==== smoothing_buffer_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<smoothing_buffer_descriptor
+    sb_leak_rate="uint22, required"
+    sb_size="uint22, required"/>
+----
+
+==== STD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<STD_descriptor leak_valid="bool, required"/>
+----
+
+==== stereoscopic_program_info_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<stereoscopic_program_info_descriptor stereoscopic_service_type="uint3, required"/>
+----
+
+==== stereoscopic_video_info_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<stereoscopic_video_info_descriptor
+    base_video="bool, required"
+    leftview="bool, optional"
+    usable_as_2D="bool, optional"
+    horizontal_upsampling_factor="uint4, optional"
+    vertical_upsampling_factor="uint4, optional"/>
+----
+
+==== stream_event_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+Note: `<private_data>` and `<private_text>` are mutually exclusive.
+They both define the same private data part, the former using hexadecimal format and the latter ASCII text.
+
+[source,xml]
+----
+<stream_event_descriptor
+    event_id="uint16, required"
+    event_NPT="uint33, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+  <private_text>
+    ASCII string to be used instead of private_data
+  </private_text>
+</stream_event_descriptor>
+----
+
+==== stream_mode_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<stream_mode_descriptor stream_mode="uint8, required"/>
+----
+
+==== SVC_extension_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<SVC_extension_descriptor
+    width="uint16, required"
+    height="uint16, required"
+    frame_rate="uint16, required"
+    average_bitrate="uint16, required"
+    maximum_bitrate="uint16, required"
+    dependency_id="uint3, required"
+    quality_id_start="uint4, required"
+    quality_id_end="uint4, required"
+    temporal_id_start="uint3, required"
+    temporal_id_end="uint3, required"
+    no_sei_nal_unit_present="bool, required"/>
+----
+
+==== system_clock_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<system_clock_descriptor
+    external_clock_reference="bool required"
+    clock_accuracy_integer="uint6, required"
+    clock_accuracy_exponent="uint3, required"/>
+----
+
+==== target_background_grid_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<target_background_grid_descriptor
+    horizontal_size="uint14, required"
+    vertical_size="uint14, required"
+    aspect_ratio_information="uint4, required"/>
+----
+
+==== transport_profile_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<transport_profile_descriptor transport_profile="uint8, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</transport_profile_descriptor>
+----
+
+==== video_stream_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<video_stream_descriptor
+    multiple_frame_rate="bool, required"
+    frame_rate_code="uint4, required"
+    MPEG_1_only="bool, required"
+    constrained_parameter="bool, required"
+    still_picture="bool, required"
+    profile_and_level_indication="uint8, required when MPEG_1_only='false'"
+    chroma_format="uint2, required when MPEG_1_only='false'"
+    frame_rate_extension="bool, required when MPEG_1_only='false'"/>
+----
+
+==== video_window_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<video_window_descriptor
+    horizontal_offset="uint14, required"
+    vertical_offset="uint14, required"
+    window_priority="uint4, required"/>
+----
+
+==== virtual_segmentation_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<virtual_segmentation_descriptor ticks_per_second="uint21, optional">
+
+  <!-- One per partition -->
+  <partition
+      partition_id="uint3, required"
+      SAP_type_max="uint3, required"
+      boundary_PID="uint13, optional"
+      maximum_duration="uint29, optional"/>
+
+</virtual_segmentation_descriptor>
+----
+
+==== VVC_timing_and_HRD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<VVC_timing_and_HRD_descriptor
+    hrd_management_valid="bool, required"
+    N_90khz="uint32, optional"
+    K_90khz="uint32, optional"
+    num_units_in_tick="uint32, optional"/>
+----
+
+==== VVC_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<VVC_video_descriptor
+    profile_idc="uint7, required"
+    tier_flag="bool, required"
+    progressive_source_flag="bool, required"
+    interlaced_source_flag="bool, required"
+    non_packed_constraint_flag="bool, required"
+    frame_only_constraint_flag="bool, required"
+    level_idc="uint8, required"
+    VVC_still_present_flag="bool, required"
+    VVC_24hr_picture_present_flag="bool, required"
+    HDR_WCG_idc="uint2, required"
+    video_properties_tag="uint4, required"
+    temporal_id_min="uint3, optional, specify both min and max or none"
+    temporal_id_max="uint3, optional, specify both min and max or none">
+
+  <sub_profile_idc value="uint32, required"/>
+
+</VVC_video_descriptor>
+----

@@ -1,0 +1,74 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== memory (input)
+
+[.cmd-header]
+Direct memory input from an application
+
+This input plugin receives TS packets from the calling application using memory buffers.
+
+This is a developer plugin.
+It is useful only to C++, Java or Python developers who run an instance of `TSProcessor` pipeline inside their applications
+and want this application to directly interact with the input of the pipeline.
+Using this plugin in a `tsp` command line does nothing.
+
+In practice, this plugin is useful to Java and Python developers only since
+it is not possible to develop TSDuck plugins in these languages.
+To develop some custom form of transport stream input, C++ developers should rather develop their own input plugin.
+This is simpler and more efficient than handling input events for the `memory` plugin.
+
+Developers may start from the sample code which is available for the three languages
+in the TSDuck source code tree in the directory `sample/sample-memory-plugins`.
+
+[.usage]
+Principle of operation
+
+Each time the `memory` input plugin needs to receive TS packets, it signals an event.
+The application shall register an event handler which handles this event and waits for input packets as long as necessary.
+When input packets are available, the event handler returns them to the memory plugin.
+
+The way an event handler returns data to the plugin depends on the language:
+
+[.compact-list]
+* In C++, the event data is an instance of `PluginEventData` pointing to the input buffer.
+  The event handler shall return TS packets in this buffer.
+* In Java, the event handler shall pass a byte[] containing the TS packets
+  to the method `setOutputData()` of the `PluginEventContext`.
+* In Python, the event handler shall return a `bytearray` containing the TS packets.
+
+Returning zero packet (or not handling the event at all) means end if input.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I memory [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-e* _value_ +
+*--event-code* _value_
+
+[.optdoc]
+Event code of the plugin event which is signalled each time the plugin needs input packets.
+
+[.optdoc]
+The default is zero.
+
+[.optdoc]
+Specifying a non-default value is necessary only when the application registers its input event handler by event code value.
+If the application registers its event handler by plugin type (here for input plugins),
+it is not necessary to specify an event code value.
+
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

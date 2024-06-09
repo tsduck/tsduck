@@ -1,0 +1,211 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== cutoff
+
+[.cmd-header]
+Set labels on TS packets upon reception of UDP messages
+
+This plugin sets or clears labels on the TS packets upon reception of text commands from UDP.
+
+This plugin is typically used as a remote command reception.
+Depending on the remote commands, packets are marked and can be processed differently in subsequent plugins in the chain.
+
+[.usage]
+Remote commands
+
+The plugin `cutoff` listens to UDP datagrams on a given port.
+Each datagram contains exactly one command.
+A command is an ASCII string.
+Any trailing control characters such as CR or LF is ignored.
+
+The command string can be one of:
+
+[.optdoc]
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|pulse-label _n_ |Set the label _n_ on the next TS packet (only once).
+|start-label _n_ |Set the label _n_ on all TS packets (until the next `stop-label` command).
+|stop-label _n_ |Stop setting the label _n_ on all TS packets.
+|exit |Exit the tsp execution, simulate an end of stream at the next TS packet.
+|===
+
+The `bash` shell provides an easy way to redirect output to a UDP message.
+The following sample commands send UDP messages on port 4444 to system 127.0.0.1 (the local host).
+
+[source,shell]
+----
+$ echo >/dev/udp/127.0.0.1/4444 pulse-label 1
+$ echo >/dev/udp/127.0.0.1/4444 start-label 2
+$ echo >/dev/udp/127.0.0.1/4444 stop-label 2
+$ echo >/dev/udp/127.0.0.1/4444 exit
+----
+
+This is the easiest way to control the plugin `cutoff`.
+Note that this is a feature of `bash`, not a Linux feature.
+It is available on all platforms, including macOS and Cygwin or Msys on Windows.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P cutoff [options] [[source@]address:]port
+----
+
+[.usage]
+Parameter
+
+[.optdoc]
+The parameter _[address:]port_ describes the destination of incoming UDP datagrams.
+All datagrams which are received on this stream are text commands.
+
+[.optdoc]
+The _port_ part is mandatory and specifies the UDP port to listen on.
+The _address_ part is optional.
+It specifies an IP multicast address to listen on.
+It can be also a host name that translates to a multicast address.
+
+[.optdoc]
+An optional source address can be specified as _source@address:port_ in the case of source-specific multicast (SSM).
+
+[.optdoc]
+If the _address_ is not specified, the plugin simply listens on the specified local port
+and receives the packets which are sent to one of the local (unicast) IP addresses of the system.
+
+[.usage]
+Options
+
+[.opt]
+*-a* _address_ +
+*--allow* _address_
+
+[.optdoc]
+Specify an IP address or host name which is allowed to send remote commands.
+Several `--allow` options can be used to specify several allowed remote control systems.
+
+[.optdoc]
+By default, all received commands are accepted.
+If at least one `--allow` option is specified, any remote command which is not sent by an allowed host is rejected.
+
+[.optdoc]
+This is a security feature, but not a perfect one since IP address spoofing is trivial with UDP.
+
+[.opt]
+*-b* _value_ +
+*--buffer-size* _value_
+
+[.optdoc]
+Specify the UDP socket receive buffer size in bytes (socket option).
+
+[.opt]
+*--default-interface*
+
+[.optdoc]
+Let the system find the appropriate local interface on which to listen.
+By default, listen on all local interfaces.
+
+[.opt]
+*--disable-multicast-loop*
+
+[.optdoc]
+Disable multicast loopback.
+
+[.optdoc]
+By default, incoming multicast packets are looped back on local interfaces,
+if an application sends packets to the same group from the same system.
+This option disables this.
+
+[.optdoc]
+*Warning*: On input sockets, this option is effective only on Windows systems.
+On UNIX systems (Linux, macOS, BSD), this option applies only to output sockets.
+
+[.opt]
+*-f* +
+*--first-source*
+
+[.optdoc]
+Filter UDP packets based on the source address.
+Use the sender address of the first received packet as only allowed source.
+
+[.optdoc]
+This option is useful when several sources send packets to the same destination address and port.
+Accepting all commands could result in inconsistent processing and only one sender shall be accepted.
+
+[.optdoc]
+To allow a more precise selection of the sender, use option `--source`.
+Options `--first-source` and `--source` are mutually exclusive.
+
+[.opt]
+*-l* _address_ +
+*--local-address* _address_
+
+[.optdoc]
+Specify the IP address of the local interface on which to listen.
+It can be also a host name that translates to a local address.
+By default, listen on all local interfaces.
+
+[.opt]
+*--max-queue* _value_
+
+[.optdoc]
+Specify the maximum number of queued UDP commands before their execution into the stream.
+The default is 128.
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option.
+Do not use unless completely necessary.
+
+[.opt]
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify the UDP reception timeout in milliseconds.
+This timeout applies to each receive operation, individually.
+
+[.optdoc]
+By default, receive operations wait for commands, possibly forever.
+
+[.opt]
+*-r* +
+*--reuse-port*
+
+[.optdoc]
+Set the reuse port socket option.
+This is now enabled by default, the option is present for legacy only.
+
+[.opt]
+*-s* _address[:port]_ +
+*--source* _address[:port]_
+
+[.optdoc]
+Filter UDP packets based on the specified source address.
+
+[.optdoc]
+This option is useful when several sources send packets to the same destination address and port.
+Accepting all commands could result in inconsistent processing and only one sender shall be accepted.
+
+[.optdoc]
+Options `--first-source` and `--source` are mutually exclusive.
+
+[.opt]
+*--ssm*
+
+[.optdoc]
+This option forces the usage of source-specific multicast (SSM) using the source address which is specified by the option `--source`.
+Without `--ssm`, standard ("any-source’) multicast is used and the option `--source` is used to filter incoming packets.
+
+[.optdoc]
+The --ssm option is implicit when the classical SSM syntax _source@address:port_ is used.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

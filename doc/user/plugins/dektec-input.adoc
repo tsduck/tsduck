@@ -1,0 +1,384 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== dektec (input)
+
+[.cmd-header]
+Dektec DTA-1xx and DTU-2xx ASI, GigE and demodulator devices
+
+This input plugin receives packets from a Dektec DTA-1xx or DTU-2xx DVB-ASI or demodulator device.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for `tsp`).
+
+[.usage]
+Restrictions
+
+This plugin is available on Linux and Windows only, Intel processors only.
+Dektec provides no software support on macOS and other processors.
+Moreover, this plugin may be unavailable on some Linux distributions since
+it integrates a closed-source library from Dektec, which is prohibited by the policy of some distributions.
+
+TSDuck manipulates transport stream packets only.
+Consequently, this plugin only supports input/output modes which process MPEG-TS packets.
+Some Dektec devices support other modes such as SDI, HDMI, ATSC-3.0 which handle other formats.
+These modes cannot be used with TSDuck.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I dektec [options]
+----
+
+[.usage]
+General options
+
+[.opt]
+*-c* _value_ +
+*--channel* _value_
+
+[.optdoc]
+Channel index on the input Dektec device.
+By default, use the first input channel on the device.
+
+[.opt]
+*-d* _value_ +
+*--device* _value_
+
+[.optdoc]
+Device index, from 0 to N-1 (with N being the number of Dektec devices in the system).
+Use the command `tsdektec -a` to have a complete list of devices in the system.
+
+[.optdoc]
+By default, use the first input Dektec device.
+
+[.opt]
+*--fifo-size* _value_
+
+[.optdoc]
+Set the reception FIFO size in bytes of the input channel in the Dektec device.
+
+[.optdoc]
+The default value depends on the device type.
+
+include::{docdir}/opt/opt-dektec-io-standard.adoc[tags=!*]
+
+[.opt]
+*--preload-fifo*
+
+[.optdoc]
+Wait for the reception FIFO (hardware buffer) to be half-full before starting reception.
+
+[.opt]
+*-t* _value_ +
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify the data reception timeout in milliseconds.
+This timeout applies to each receive operation, individually.
+By default, receive operations wait for data, possibly forever.
+
+[.usage]
+Demodulators options
+
+The following options are used with Dektec demodulator devices.
+
+[.opt]
+*--c2-bandwidth* _value_
+
+[.optdoc]
+DVB-C2 demodulators: indicate the DVB-C2 bandwidth.
+
+[.optdoc]
+Must be one of `6-MHz`, `8-MHz`.
+The default is `8-MHz`.
+
+[.opt]
+*--code-rate* _value_
+
+[.optdoc]
+For demodulator devices only: specify the code rate.
+The specified value depends on the modulation type.
+
+include::{docdir}/opt/table-dektec-code-rate.adoc[tags=!*]
+
+[.optdoc]
+The value `auto` can be used to automatically detect the code rate.
+This is the default.
+
+[.opt]
+*--constellation* _value_
+
+[.optdoc]
+DVB-T demodulators: indicate the constellation type.
+
+[.optdoc]
+Must be one of `16-QAM`, `64-QAM`, `QPSK`, `auto`.
+
+[.optdoc]
+The value `auto` can be used to automatically detect the constellation.
+This is the default.
+
+[.opt]
+*--dvbt-bandwidth* _value_
+
+[.optdoc]
+DVB-T/T2 demodulators: indicate the bandwidth in MHz.
+The default is 8 MHz.
+
+[.optdoc]
+Must be one of `1.7`, `10`, `5`, `6`, `7`, `8`.
+The bandwidth values 1.7, 5 and 10 MHz are valid for DVB-T2 only.
+
+[.opt]
+*-f* _value_ +
+*--frequency* _value_
+
+[.optdoc]
+For demodulator devices only: specify the frequency, in Hz, of the input carrier.
+There is no default.
+
+[.optdoc]
+For DVB-S/S2 receivers, the specified frequency is the intermediate frequency.
+For convenience, the option `--satellite-frequency` can be used instead of `--frequency` when the intermediate frequency is unknown.
+When `--frequency` is used with DVB-S/S2, the original satellite frequency is unknown,
+it is impossible to determine if a high band is used and no "high band 22 kHz tone" is send to the LNB.
+
+[.optdoc]
+For DTA-2137 receivers, the valid range is 950 MHz to 2150 MHz (L Band).
+
+[.opt]
+*--guard-interval* _value_
+
+[.optdoc]
+DVB-T demodulators: indicate the guard interval.
+
+[.optdoc]
+Must be one of `1/16`, `1/32`, `1/4`, `1/8`, `auto`. The default is `auto`.
+
+[.opt]
+*--isdbt-bandwidth* _value_
+
+[.optdoc]
+ISDB-T demodulators: indicate the bandwidth in MHz.
+
+[.optdoc]
+Must be one of `5`, `6`, `7`, `8`.
+The default is 8 MHz.
+
+[.opt]
+*--isdbt-segments* _value_
+
+[.optdoc]
+ISDB-T demodulators: indicate the number of segments.
+
+[.optdoc]
+Must be one of `1`, `3` or `13`.
+The default is 1.
+
+[.opt]
+*--isdbt-subchannel* _value_
+
+[.optdoc]
+ISDB-T demodulators: indicate the sub-channel number (0 to 41) of the centre segment of the spectrum.
+The default is 22.
+
+[.opt]
+*--j83* _value_
+
+[.optdoc]
+QAM demodulators: indicate the ITU-T J.83 annex to use.
+Must be one of `A`, `B`, `C`.
+`A` is DVB-C, `B` is "American QAM", `C` is "Japanese QAM".
+The default is `A`.
+
+[.opt]
+*--lnb* _string_
+
+[.optdoc]
+DVB-S/S2 receivers: description of the LNB which is used to convert the `--satellite-frequency` into an intermediate frequency.
+This option is useless when `--satellite-frequency` is not specified.
+
+[.optdoc]
+See xref:lnb-config[xrefstyle=short] for more details.
+
+[.opt]
+*-m* _value_ +
+*--modulation* _value_
+
+[.optdoc]
+For demodulators, indicate the modulation type.
+The supported modulation types depend on the device model.
+The default modulation type is DVB-S.
+
+[.optdoc]
+Must be one of `ATSC-VSB`, `DAB`, `DVB-C2`, `DVB-S`, `DVB-S-QPSK` (same as `DVB-S`), `DVB-S2`,
+`DVB-S2-QPSK` (same as `DVB-S2`), `DVB-S2-8PSK`, `DVB-S2-16APSK`, `DVB-S2-32APSK`, `DVB-T`, `DVB-T2`,
+`ISDB-T`, `QAM` (auto-detection of QAM type), `16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`.
+
+[.opt]
+*--polarity* _value_
+
+[.optdoc]
+DVB-S/S2 receivers: indicate the polarity.
+
+[.optdoc]
+Must be one of `horizontal`, `vertical`. The default is `vertical`.
+
+[.opt]
+*--qam-b* _value_
+
+[.optdoc]
+QAM demodulators: with `--j83 B`, indicate the QAM-B interleaver mode.
+
+[.optdoc]
+Must be one of `I8-J16`, `I16-J8`, `I32-J4`, `I64-J2`, `I128-J1`, `I128-J1D`, `I128-J2`, `I128-J3`, `I128-J4`,
+`I128-J5`, `I128-J6`, `I128-J7`, `I128-J8`, `auto`.
+The default is `auto`.
+
+[.opt]
+*--satellite-frequency* _value_
+
+[.optdoc]
+DVB-S/S2 receivers: indicate the target satellite frequency, in Hz, of the input carrier.
+The actual frequency at the input of the receiver is the intermediate frequency
+which is computed based on the characteristics of the LNB (see option `--lnb`).
+This option is useful when the satellite frequency is better known than the intermediate frequency.
+
+[.optdoc]
+The options `--frequency` and `--satellite-frequency` are mutually exclusive.
+
+[.opt]
+*--satellite-number* _value_
+
+[.optdoc]
+DVB-S/S2 receivers: indicate the satellite/dish number.
+
+[.optdoc]
+Must be 0 to 3 with DiSEqC switches and 0 to 1 for non-DiSEqC switches.
+The default is 0.
+
+[.opt]
+*--symbol-rate* _value_
+
+[.optdoc]
+DVB-C/S/S2 demodulators: Specify the symbol rate in symbols/second.
+
+[.optdoc]
+By default, automatically detect the symbol rate.
+
+[.opt]
+*--t2-profile* _value_
+
+[.optdoc]
+DVB-T2 demodulators: indicate the DVB-T2 profile.
+
+[.optdoc]
+Must be one of `base`, `lite`. The default is `base`.
+
+[.opt]
+*--transmission-mode* _value_
+
+[.optdoc]
+DVB-T demodulators: indicate the transmission mode.
+
+[.optdoc]
+Must be one of `2K`, `8K`, `auto`.
+The default is `auto`.
+
+[.opt]
+*--vsb* _value_
+
+[.optdoc]
+ATSC demodulators: indicate the VSB constellation.
+
+[.optdoc]
+Must be one of `8`, `16`.
+The default is `8`.
+
+[.usage]
+TS-over-IP options
+
+The following options are used with Dektec Ethernet devices.
+
+[.opt]
+*--ip4* _ipv4-address:port_
+
+[.optdoc]
+TS-over-IP: Destination IPv4 address and port.
+
+[.optdoc]
+Either `--ip4` or `--ip6` must be specified with Dektec Ethernet devices.
+The address part is mandatory for multicast, optional for unicast.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+[.opt]
+*--ip6* _[ipv6-address]:port_
+
+[.optdoc]
+TS-over-IP: Destination IPv6 address and port.
+
+[.optdoc]
+*Important*: The square brackets are literal, as in any IPv6 URL, not an indication of an optional field.
+
+[.optdoc]
+Either `--ip4` or `--ip6` must be specified with Dektec Ethernet devices.
+The address part is mandatory for multicast, optional for unicast.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+[.opt]
+*--smpte-2022-fec*
+
+[.optdoc]
+TS-over-IP: Use SMPTE-2022 error correction.
+
+[.opt]
+*--ssm4-filter* _ipv4-address:port_
+
+[.optdoc]
+TS-over-IP: Specify optional IPv4 source-specific multicast (SSM) filter.
+
+[.optdoc]
+The port number is optional.
+This option may be repeated to filter on multiple sources.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, the same list of filters is used in both links.
+
+[.opt]
+*--ssm6-filter* _[ipv6-address]:port_
+
+[.optdoc]
+TS-over-IP: Specify optional IPv6 source-specific multicast (SSM) filter.
+
+[.optdoc]
+*Important*: The square brackets are literal, as in any IPv6 URL, not an indication of an optional field.
+
+[.optdoc]
+The port number is optional.
+This option may be repeated to filter on multiple sources.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, the same list of filters is used in both links.
+
+[.opt]
+*--vlan-id* _value_
+
+[.optdoc]
+TS-over-IP: Optional VLAN identifier as specified in IEEE 802.1Q.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

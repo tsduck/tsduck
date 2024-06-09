@@ -1,0 +1,80 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== svremove
+
+[.cmd-header]
+Remove a service
+
+This plugin removes a service from the transport stream.
+The PAT, SDT-Actual, NIT-Actual and BAT are modified.
+The PMT and all components, including ECM streams, of the removed service are either removed or replaced by stuffing.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P svremove [options] service
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_service_
+
+[.optdoc]
+Specifies the service to remove.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--ignore-absent*
+
+[.optdoc]
+Ignore service if not present in the transport stream.
+
+[.optdoc]
+By default, `tsp` fails if the service is not found.
+
+[.opt]
+*-b* +
+*--ignore-bat*
+
+[.optdoc]
+Do not modify the BAT.
+
+[.opt]
+*-e* +
+*--ignore-eit*
+
+[.optdoc]
+Do not remove the EIT's for this service.
+
+[.opt]
+*-n* +
+*--ignore-nit*
+
+[.optdoc]
+Do not modify the NIT.
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Replace excluded packets with stuffing (null packets) instead of removing them.
+Useful to preserve bitrate.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,258 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== hls (input)
+
+[.cmd-header]
+Receive HTTP Live Streaming (HLS) media
+
+This plugin reads a combined transport stream from an HLS streaming server.
+All media segments are concatenated into one single transport stream.
+
+In the case of live content, the HLS playlist is reloaded as often as necessary to get a continuous content.
+
+[.usage]
+Restriction
+
+The HLS specification allows two kinds of media content: TS and fMP4 (fragmented MP4).
+Since TSDuck is a transport stream toolkit, this plugin can only receive TS media.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I hls [options] url
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_url_
+
+[.optdoc]
+Specify the URL of an HLS manifest or playlist.
+This is typically an URL ending in `.m3u8`.
+
+[.optdoc]
+This can be a _master playlist_, referencing several versions of the same content (with various bitrates or resolutions).
+This can also be a _media playlist_, referencing all segments of one single content.
+
+[.optdoc]
+When the playlist is a master one, the first media playlist is selected by default.
+Specific options can be used to select a playlist based on criteria (bandwidth or resolution for instance).
+When a media playlist failed to load, the next one is used (with respect to the selection criteria), etc.
+
+[.optdoc]
+Although HLS is inherently based on HTTP, it is possible to specify a local file as playlist,
+either using a `file:` URI or a simple file specification.
+This is typically useful to test the files which are produced by the `hls` output plugin.
+
+[.usage]
+Options
+
+[.opt]
+*--alt-group-id* _'string'_
+
+[.optdoc]
+When the URL is a master playlist, use the _alternative rendition content_ with the specified group id.
+
+[.optdoc]
+If several `--alt-*` options are specified, the selected alternative rendition content must match all of them.
+
+[.opt]
+*--alt-language* _'string'_
+
+[.optdoc]
+When the URL is a master playlist, use the first _alternative rendition content_ with the specified language.
+
+[.optdoc]
+If several `--alt-*` options are specified, the selected alternative rendition content must match all of them.
+
+[.opt]
+*--alt-name* _'string'_
+
+[.optdoc]
+When the URL is a master playlist, use the _alternative rendition content_ with the specified name.
+
+[.optdoc]
+If several `--alt-*` options are specified, the selected alternative rendition content must match all of them.
+
+[.opt]
+*--alt-type* _'string'_
+
+[.optdoc]
+When the URL is a master playlist, use the first _alternative rendition content_ with the specified type.
+
+[.optdoc]
+If several --alt-* options are specified, the selected alternative rendition content must match all of them.
+
+[.opt]
+*--compressed*
+
+[.optdoc]
+Accept compressed HTTP responses.
+
+[.optdoc]
+By default, compressed responses are not accepted.
+
+[.opt]
+*--connection-timeout* _value_
+
+[.optdoc]
+Specify the connection timeout in milliseconds.
+
+[.optdoc]
+By default, let the operating system decide.
+
+[.opt]
+*--headers* _'header: value'_
+
+[.optdoc]
+Specify a custom header, e. g. `x-header-name: value` for all HTTP requests (playlists and media segments).
+
+[.optdoc]
+This option can be set multiple times.
+
+[.opt]
+*--highest-bitrate*
+
+[.optdoc]
+When the URL is a master playlist, use the content with the highest bitrate.
+
+[.opt]
+*--highest-resolution*
+
+[.optdoc]
+When the URL is a master playlist, use the content with the highest screen resolution.
+
+[.opt]
+*-l* +
+*--list-variants*
+
+[.optdoc]
+When the URL is a master playlist, list all possible streams bitrates and resolutions.
+
+[.opt]
+*--live*
+
+[.optdoc]
+Specify that the input is a live stream and the playout shall start at the last segment in the playlist.
+
+[.optdoc]
+This is an alias for `--start-segment -1`.
+
+[.opt]
+*--lowest-bitrate*
+
+[.optdoc]
+When the URL is a master playlist, use the content with the lowest bitrate.
+
+[.opt]
+*--lowest-resolution*
+
+[.optdoc]
+When the URL is a master playlist, use the content with the lowest screen resolution.
+
+[.opt]
+*--max-bitrate* _value_
+
+[.optdoc]
+When the URL is a master playlist, select a content the bitrate of which is lower than the specified maximum.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.opt]
+*--max-height* _value_
+
+[.optdoc]
+When the URL is a master playlist, select a content the resolution of which has a lower height than the specified maximum.
+
+[.opt]
+*--max-width* _value_
+
+[.optdoc]
+When the URL is a master playlist, select a content the resolution of which has a lower width than the specified maximum.
+
+[.opt]
+*--min-bitrate* _value_
+
+[.optdoc]
+When the URL is a master playlist, select a content the bitrate of which is higher than the specified minimum.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.opt]
+*--min-height* _value_
+
+[.optdoc]
+When the URL is a master playlist, select a content the resolution of which has a higher height than the specified minimum.
+
+[.opt]
+*--min-width* _value_
+
+[.optdoc]
+When the URL is a master playlist, select a content the resolution of which has a higher width than the specified minimum.
+
+[.opt]
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify the data reception timeout in milliseconds.
+This timeout applies to each receive operation, individually.
+
+[.optdoc]
+By default, let the operating system decide.
+
+[.opt]
+*--save-files* _directory-name_
+
+[.optdoc]
+Specify a directory where all downloaded files, media segments and playlists, are saved before being passed to the next plugin.
+
+[.optdoc]
+This is typically a debug option to analyze the input HLS structure.
+
+[.opt]
+*-s* _value_ +
+*--segment-count* _value_
+
+[.optdoc]
+Stop receiving the HLS stream after receiving the specified number of media segments.
+
+[.optdoc]
+By default, receive the complete content.
+
+[.opt]
+*--start-segment* _value_
+
+[.optdoc]
+Start at the specified segment in the initial playlist.
+
+[.optdoc]
+The value can be positive or negative.
+Positive values are indexes from the start of the playlist:
+0 is the first segment (the default), +1 is the second segment, etc.
+Negative values are indexes from the end of the playlist:
+-1 is the last segment, -2 is the preceding segment, etc.
+
+[.optdoc]
+By default, start with the first media segment.
+
+[.opt]
+*--user-agent* _string_
+
+[.optdoc]
+Specify the user agent string to send in HTTP requests.
+
+include::{docdir}/opt/group-proxy.adoc[tags=!*]
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

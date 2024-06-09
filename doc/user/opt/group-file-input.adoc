@@ -1,0 +1,127 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TSFileInputArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Parameters
+
+[.opt]
+_file-name_
+
+[.optdoc]
+Name of the input files.
+The files are read in sequence, unless `--interleave` is specified.
+
+[.optdoc]
+If no file is specified, the standard input is read by default.
+When several files are specified, use a dash (`-`) as file name to specify the standard input.
+
+[.usage]
+Options
+
+[.opt]
+*--add-start-stuffing* _count_
+
+[.optdoc]
+Specify that _count_ null TS packets must be automatically inserted at the start of the input file,
+before the first actual packet in the file.
+
+[.optdoc]
+If several input files are specified, several options `--add-start-stuffing` are allowed.
+If there are less options than input files, the last value is used for subsequent files.
+
+[.opt]
+*--add-stop-stuffing* _count_
+
+[.optdoc]
+Specify that _count_ null TS packets must be automatically appended at the end of the input file,
+after the last actual packet in the file.
+
+[.optdoc]
+If several input files are specified, several options `--add-stop-stuffing` are allowed.
+If there are less options than input files, the last value is used for subsequent files.
+
+[.opt]
+*-b* _value_ +
+*--byte-offset* _value_
+
+[.optdoc]
+Start reading each file at the specified byte offset (default: zero).
+This option is allowed only if the input file is a regular file.
+
+[.opt]
+*-f* +
+*--first-terminate*
+
+[.optdoc]
+With `--interleave`, terminate the processing when any file reaches the end of file.
+
+[.optdoc]
+By default, continue reading until the last file reaches the end of file
+(other files are replaced with null packets after their end of file).
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;input;multiple]
+
+[.opt]
+*-i* +
+*--infinite*
+
+[.optdoc]
+Repeat the playout of the file infinitely (default: only once).
+This option is allowed only if the input file is a regular file and there is only one input file.
+
+[.opt]
+*--interleave[=value]*
+
+[.optdoc]
+Interleave files instead of reading them one by one.
+All files are simultaneously opened.
+
+[.optdoc]
+The optional value is a chunk size _N_, a packet count (default is 1).
+_N_ packets are read from the first file, then _N_ from the second file, etc.
+and then loop back to _N_ packets again from the first file, etc.
+
+[.opt]
+*-l* _value_ +
+*--label-base* _value_
+
+[.optdoc]
+Set a label on each input packet.
+Packets from the first file are tagged with the specified base label,
+packets from the second file with base label plus one, and so on.
+
+[.optdoc]
+For a given file, if the computed label is above the maximum (31), its packets are not labelled.
+
+[.opt]
+*-p* _value_ +
+*--packet-offset* _value_
+
+[.optdoc]
+Start reading each file at the specified TS packet (default: zero).
+
+[.optdoc]
+This option is allowed only if all input files are regular file.
+
+[.opt]
+*-r* _count_ +
+*--repeat* _count_
+
+[.optdoc]
+Repeat the playout of each file the specified number of times (default: only once).
+
+[.optdoc]
+This option is allowed only if all input files are regular files.
+
+[.optdoc]
+If several input files are specified, the first file is repeated the specified number of times,
+then the second file is repeated the same number of times, and so on.

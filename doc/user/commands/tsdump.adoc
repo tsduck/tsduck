@@ -1,0 +1,89 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsdump
+
+[.cmd-header]
+Dump TS packets
+
+This utility dumps the contents of MPEG transport stream packets.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsdump [options] [input-file ...]
+----
+
+[.usage]
+Input files
+
+[.optdoc]
+Any number of MPEG transport stream files.
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+
+[.optdoc]
+Note that if the option `--raw` is used, the input files can be any type of file,
+not necessarily MPEG transport stream files.
+
+[.usage]
+Input file options
+
+[.opt]
+*--byte-offset* _value_
+
+[.optdoc]
+Start reading each file at the specified byte offset (default: 0).
+
+[.optdoc]
+This option is allowed only if all input files are regular files.
+
+[.opt]
+*-c* +
+*--c-style*
+
+[.optdoc]
+Same as `--raw-dump` (no interpretation of packets) but dump the bytes in C-language style,
+e.g. `0x01, 0x02,` instead of `01 02`.
+Useful to include tsdump output as data in a C or C++ source file.
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;short;input;multiple]
+
+[.optdoc]
+This option is ignored with `--raw-file`, the complete raw structure of the file is dumped.
+
+[.opt]
+*-m* _value_ +
+*--max-packets* _value_
+
+[.optdoc]
+Maximum number of packets to dump per file.
+
+include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
+
+[.opt]
+*--packet-offset* _value_
+
+[.optdoc]
+Start reading each file at the specified TS packet (default: 0).
+
+[.optdoc]
+This option is allowed only if all input files are regular files.
+
+[.opt]
+*-r* +
+*--raw-file*
+
+[.optdoc]
+Raw dump of file, do not interpret as TS packets.
+With this option, `tsdump` simply acts as a hexa / ASCII file dumper.
+
+include::{docdir}/opt/group-dump.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

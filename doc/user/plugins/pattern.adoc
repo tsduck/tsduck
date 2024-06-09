@@ -1,0 +1,80 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pattern
+
+[.cmd-header]
+Replace packet payload with a binary pattern
+
+This plugin replaces the payload of TS packets with a binary pattern on selected PID's.
+The resulting packets are meaningless on an MPEG standpoint but can be used to trace packets
+in order to debug transport stream routing problems either inside a transmission system or inside a set-top box.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pattern [options] hexa-data
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_hexa-data_
+
+[.optdoc]
+Specifies the binary pattern to apply on TS packets payload.
+The value must be a string of hexadecimal digits specifying any number of bytes.
+
+[.usage]
+Options
+
+[.opt]
+*-n* +
+*--negate*
+
+[.optdoc]
+Negate the PID filter: modify packets on all PID's, except the specified ones.
+
+[.opt]
+*-o* _value_ +
+*--offset-non-pusi* _value_
+
+[.optdoc]
+Specify starting offset in payload of packets with the PUSI (payload unit start indicator) not set.
+
+[.optdoc]
+By default, the pattern replacement starts at the beginning of the packet payload (offset 0).
+
+[.opt]
+*-u* _value_ +
+*--offset-pusi* _value_
+
+[.optdoc]
+Specify starting offset in payload of packets with the PUSI (payload unit start indicator) set.
+
+[.optdoc]
+By default, the pattern replacement starts at the beginning of the packet payload (offset 0).
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Select packets with these PID values.
+
+[.optdoc]
+Several `--pid` options may be specified to select multiple PID's.
+
+[.optdoc]
+If no such option is specified, packets from all PID's are modified.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

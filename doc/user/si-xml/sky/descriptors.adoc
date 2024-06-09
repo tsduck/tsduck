@@ -1,0 +1,25 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+=== BSkyB-defined descriptors (DVB private descriptors)
+
+No public reference is available for BskyB private descriptors.
+
+==== sky_logical_channel_number_descriptor
+
+[source,xml]
+----
+<sky_logical_channel_number_descriptor region_id="uint16, required">
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           service_type="uint8, required"
+           channel_id="uint16, required"
+           logical_channel_number="uint16, required"
+           sky_id="uint16, required"/>
+</sky_logical_channel_number_descriptor>
+----

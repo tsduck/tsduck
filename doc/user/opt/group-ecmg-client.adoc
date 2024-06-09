@@ -1,0 +1,73 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::ECMGClientArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+ECMG client options
+
+[.opt]
+*-a* _hexa-digits_ +
+*--access-criteria* _hexa-digits_
+
+[.optdoc]
+Specifies the access criteria for the service as sent to the ECMG.
+The value must be a suite of hexadecimal digits.
+
+[.opt]
+*--channel-id* _value_
+
+[.optdoc]
+Specifies the DVB SimulCrypt ECM_channel_id for the ECMG (default: 1).
+
+[.opt]
+*-d* _seconds_ +
+*--cp-duration* _seconds_
+
+[.optdoc]
+Specifies the crypto-period duration in seconds (default: 10 seconds).
+
+[.opt]
+*-i* _value_ +
+*--ecm-id* _value_
+
+[.optdoc]
+Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).
+
+[.opt]
+*-e* _host:port_ +
+*--ecmg* _host:port_
+
+[.optdoc]
+Specify an ECM Generator host name (or IP address) and TCP port.
+
+[.opt]
+*-v* _value_ +
+*--ecmg-scs-version* _value_
+
+[.optdoc]
+Specifies the version of the ECMG{d-arrow}SCS DVB SimulCrypt protocol.
+Valid values are 2 and 3. The default is 2.
+
+[.opt]
+*--stream-id* _value_
+
+[.optdoc]
+Specifies the DVB SimulCrypt ECM_stream_id for the ECMG (default: 1).
+
+[.opt]
+*-s* _value_ +
+*--super-cas-id* _value_
+
+[.optdoc]
+Specify the DVB SimulCrypt Super_CAS_Id.
+This is required when `--ecmg` is specified.
+
+include::{docdir}/opt/group-dvbsim-log.adoc[tags=!*;ecmg]

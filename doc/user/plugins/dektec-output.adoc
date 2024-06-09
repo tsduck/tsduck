@@ -1,0 +1,1002 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== dektec (output)
+
+[.cmd-header]
+Dektec DTA-1xx and DTU-2xx ASI, GigE and modulator devices
+
+This output plugin sends packets to a DVB-ASI Dektec DTA-1xx or DTU-2xx device or a Dektec DTA-1xx modulator.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for `tsp`).
+
+[.usage]
+Restrictions
+
+This plugin is available on Linux and Windows only, Intel processors only.
+Dektec provides no software support on macOS and other processors.
+Moreover, this plugin may be unavailable on some Linux distributions
+since it integrates a closed-source library from Dektec, which is prohibited by the policy of some distributions.
+
+TSDuck manipulates transport stream packets only.
+Consequently, this plugin only supports input/output modes which process MPEG-TS packets.
+Some Dektec devices support other modes such as SDI, HDMI, ATSC-3.0 which handle other formats.
+These modes cannot be used with TSDuck.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O dektec [options]
+----
+
+[.usage]
+Overview of options
+
+For multi-standard modulators such as the DTA-115,
+the type of required modulation must be specified if it is different from the default modulation.
+See the table below for the default modulation type by device model.
+
+.Dektec modulators default modulation types
+[cols="<1,<1",stripes=none,options="autowidth"]
+|===
+|Device model |Default modulation
+
+|DTA-107
+|DVB-S (QPSK)
+
+|DTA-107.S2
+|DVB-S2 (QPSK)
+
+|DTA-110
+|DVB-C (64-QAM)
+
+|DTA-110T
+|DVB-T
+
+|DTA-115
+|DVB-T
+
+|===
+
+Depending on the type of output, the combination of required and optional options is different.
+See the next table for the applicability of options by modulation type.
+The modulation type is specified using option `--modulation`.
+
+.Command line options for Dektec modulators
+[cols="<20,<80m",stripes=none]
+|===
+|Modulation |Applicable options
+
+|All (common options)
+|--bitrate --channel --device --stuffing --fifo-size
+
+|DVB-ASI
+|--204
+
+|All except DVB-ASI
+|--frequency --instant-detach --inversion --level --modulation --offset-count --uhf-channel --vhf-channel
+
+|x-QAM
+|--j83 --qam-b
+
+|ADBT-T, DMB-T/H
+|--bandwidth --dmb-constellation --dmb-fec --dmb-frame-numbering --dmb-header --dmb-interleaver --pilots
+
+|ATSC
+|--vsb --vsb-taps
+
+|DVB-S
+|--convolutional-rate --lnb --satellite-frequency --symbol-rate
+
+|DVB-S2
+|--convolutional-rate --lnb --pilots --roll-off --s2-gold-code --s2-short-fec-frame --satellite-frequency --symbol-rate
+
+|DVB-T
+|--bandwidth --cell-id --constellation --convolutional-rate --guard-interval --indepth-interleave --mpe-fec --time-slice --transmission-mode
+
+|DVB-T2
+|--bandwidth --bandwidth-extension --cell-id --fef --fef-interval --fef-length --fef-s1 --fef-s2 --fef-signal --fef-type --fft-mode
+ --miso --papr --pilot-pattern --plp0-code-rate --plp0-fec-type --plp0-group-id --plp0-high-efficiency --plp0-id --plp0-il-length
+ --plp0-il-type --plp0-in-band --plp0-issy --plp0-modulation --plp0-null-packet-deletion --plp0-rotation --plp0-tsrate --plp0-type
+ --t2-fpsf --t2-guard-interval --t2-l1-modulation --t2-network-id --t2-system-id
+
+|===
+
+[.usage]
+General options
+
+[.opt]
+*--204*
+
+[.optdoc]
+For DVB-ASI devices only:
+Send 204-byte packets (188 meaningful bytes plus 16 stuffing bytes for Reed-Solomon coding).
+By default, send 188-byte packets.
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specify the output bitrate in bits/second.
+
+[.optdoc]
+This option is not mandatory but highly recommende to get a precise output.
+By default, use the input device bitrate or, if the input device cannot report bitrate,
+analyze some PCR's at the beginning of the input stream to evaluate the original bitrate of the transport stream.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.opt]
+*-c* _value_ +
+*--channel* _value_
+
+[.optdoc]
+Channel index on the output Dektec device.
+By default, use the first output channel on the device.
+
+[.opt]
+*-d* _value_ +
+*--device* _value_
+
+[.optdoc]
+Device index, from 0 to N-1 (with N being the number of Dektec devices in the system).
+Use the command `tsdektec -a` to have a complete list of devices in the system.
+By default, use the first output Dektec device.
+
+[.opt]
+*--drop-to-maintain-preload*
+
+[.optdoc]
+If the FIFO were preloaded, and maintaining the preload via option `--maintain-preload`,
+drop any packets that would exceed the preload FIFO size plus a small threshold.
+
+[.opt]
+*--fifo-size* _value_
+
+[.optdoc]
+Set the FIFO size in bytes of the output channel in the Dektec device.
+The default value depends on the device type.
+
+[.opt]
+*--instant-detach*
+
+[.optdoc]
+At end of stream, perform an instant detach of the output channel.
+The transmit FIFO is immediately cleared without waiting for all data to be transmitted.
+With some Dektec devices, the default mode may hang at end of stream and `--instant-detach` avoids this.
+
+[.optdoc]
+The options `--instant-detach` and `--wait-detach` are mutually exclusive.
+
+include::{docdir}/opt/opt-dektec-io-standard.adoc[tags=!*]
+
+[.opt]
+*--maintain-preload*
+
+[.optdoc]
+If the FIFO were preloaded (see options `--preload-fifo` and `--drop-to-maintain-preload`),
+roughly maintain the FIFO buffer size in order to maintain the delay from real-time.
+If the FIFO size drops to zero bytes, pause transmission till it gets back to the preload FIFO size.
+
+[.opt]
+*--power-mode* _value_
+
+[.optdoc]
+DTU-315 modulators: set the power mode to the specified value.
+
+[.optdoc]
+Must be one of `high-quality`, `low-power`.
+
+[.opt]
+*--preload-fifo*
+
+[.optdoc]
+Preload FIFO (hardware buffer) before starting transmission.
+
+[.optdoc]
+Preloading the FIFO will introduce a variable delay to the start of transmission,
+if the delivery of packets to the plug-in is pre-regulated, based on the size of the FIFO,
+the TS bit rate, and the size of the FIFO to preload,
+as controlled by the `--preload-fifo-percentage` or `--preload-fifo-delay` options.
+
+[.optdoc]
+If the delivery of packets to the plug-in is not self-regulated
+(i.e. they are delivered faster than real-time, as might occur when loading from file),
+there is no benefit to preloading the FIFO, because in that case, the FIFO will fill up quickly anyway.
+
+[.optdoc]
+This option is implicitly set when using a modulator for output.
+
+[.opt]
+*--preload-fifo-delay* _value_
+
+[.optdoc]
+The use of this option indicates that the size of the FIFO to preload prior to starting transmission
+should be calculated based on the specified delay, in milliseconds, and the configured bit rate.
+That is, transmission will start after the specified delay worth of media has been preloaded.
+
+[.optdoc]
+This option takes precedence over the `--preload-fifo-percentage` option.
+
+[.optdoc]
+There is no default value, and the valid range is 100-100000.
+
+[.opt]
+*--preload-fifo-percentage* _value_
+
+[.optdoc]
+Percentage of size of FIFO to preload prior to starting transmission (default: 80%).
+
+[.opt]
+*-s +
+*--stuffing*
+
+[.optdoc]
+Automatically generate stuffing packets if `tsp` fails to provide packets fast enough.
+
+[.optdoc]
+This option applies only to ASI, SDI and hardware-based modulators (DVB-C, DVB-S).
+This option is ineffective on modulators which are partially software-based (DVB-T on DTA-110T or DTA-115).
+
+[.opt]
+*--wait-detach*
+
+[.optdoc]
+At end of stream, the plugin waits until all bytes in the transmit FIFO are sent.
+Some Dektec devices may hang on detach in that case.
+You should try first.
+
+[.optdoc]
+The options `--instant-detach` and `--wait-detach` are mutually exclusive.
+
+[.usage]
+Modulators options
+
+The following options are used with Dektec modulator devices.
+
+[.opt]
+*--bandwidth* _value_
+
+[.optdoc]
+DVB-T/H, DVB-T2, ADTB-T and DMB-T/H modulators: indicate bandwidth in MHz.
+
+[.optdoc]
+Must be one of `1.7`, `5`, `6`, `7`, `8` or `10`.
+The default is 8 MHz.
+The bandwidth values 1.7 and 10 MHz are valid for DVB-T2 only.
+
+[.opt]
+*--bandwidth-extension*
+
+[.optdoc]
+DVB-T2 modulators: indicate that the extended carrier mode is used.
+
+[.optdoc]
+By default, use normal carrier mode.
+
+[.opt]
+*--carrier-only*
+
+[.optdoc]
+Output the carrier frequency only, without modulated transport stream.
+All output packets are dropped.
+
+[.optdoc]
+Sample usage: To generate an empty carrier and wait forever, use the following command:
+
+[.optdoc]
+[source,shell]
+----
+$ tsp --final-wait 0 -I null 1 -O dektec --carrier-only --frequency ...
+----
+
+[.optdoc]
+This is a minimal command which generates only one input packet and then wait forever.
+Using the `null` input plugin alone would also work.
+However, it would saturate the CPU, looping on null packet generation, dropping them later.
+The above command just generates one packet (this is the required minimum to start the output plugin)
+and then does nothing except maintaining the output carrier frequency.
+
+[.opt]
+*--cell-id* _value_
+
+[.optdoc]
+DVB-T and DVB-T2 modulators: indicate the cell identifier to set in the transmission parameters signaling (TPS).
+Disabled by default with DVB-T.
+Default value is 0 with DVB-T2.
+
+[.opt]
+*--constellation* _value_
+
+[.optdoc]
+DVB-T modulators: indicate the constellation type.
+Must be one of `QPSK`, `16-QAM`, `64-QAM`.
+The default is 64-QAM.
+
+[.opt]
+*-r* _rate_ +
+*--convolutional-rate* _rate_
+
+[.optdoc]
+For modulators devices only: specify the convolutional rate.
+The specified value depends on the modulation type.
+The default is `3/4`.
+
+include::{docdir}/opt/table-dektec-code-rate.adoc[tags=!*]
+
+[.opt]
+*--dmb-constellation* _value_
+
+[.optdoc]
+DMB-T/H, ADTB-T modulators: indicate the constellation type.
+Must be one of: `4-QAM-NR`, `4-QAM`, `16-QAM`, `32-QAM`, `64-QAM`.
+The default is `64-QAM`.
+`4-QAM-NR` and `32-QAM` can be used only with `--dmb-fec 0.8`.
+
+[.opt]
+*--dmb-fec* _value_
+
+[.optdoc]
+DMB-T/H, ADTB-T modulators: indicate the FEC code rate.
+Must be one of `0.4`, `0.6`, `0.8`.
+The default is `0.8`.
+
+[.opt]
+*--dmb-frame-numbering*
+
+[.optdoc]
+DMB-T/H, ADTB-T modulators: indicate to use frame numbering.
+The default is to use no frame numbering.
+
+[.opt]
+*--dmb-header* _value_
+
+[.optdoc]
+DMB-T/H, ADTB-T modulators: indicate the FEC frame header mode.
+Must be one of `PN420`, `PN595` (ADTB-T only) or `PN945`.
+The default is `PN945`.
+
+[.opt]
+*--dmb-interleaver* _value_
+
+[.optdoc]
+DMB-T/H, ADTB-T modulators: indicate the interleaver mode.
+Must be one of `1` (B=54, M=240) or `2` (B=54, M=720).
+The default is `1`.
+
+[.opt]
+*--fef*
+
+[.optdoc]
+DVB-T2 modulators: enable insertion of FEF (Future Extension Frames).
+Not enabled by default.
+
+[.opt]
+*--fef-interval* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the number of T2 frames between two FEF parts.
+The valid range is 1 to 255 and `--t2-fpsf` shall be divisible by `--fef-interval`.
+The default is 1.
+
+[.opt]
+*--fef-length* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the length of a FEF-part in number of T-units (= samples).
+The valid range is 0 to 0x3FFFFF.
+The default is 1.
+
+[.opt]
+*--fef-s1* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the S1-field value in the P1 signalling data.
+Valid values: 2, 3, 4, 5, 6 and 7.
+The default is 2.
+
+[.opt]
+*--fef-s2* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the S2-field value in the P1 signalling data.
+Valid values: 1, 3, 5, 7, 9, 11, 13 and 15. The default is 1.
+
+[.opt]
+*--fef-signal* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the type of signal generated during the FEF period.
+Must be one of `0` (zero I/Q samples during FEF),
+`1K` (1K OFDM symbols with 852 active carriers containing BPSK symbols, same PRBS as the T2 dummy cells, not reset between symbols)
+or `1K-384` (1K OFDM symbols with 384 active carriers containing BPSK symbols).
+The default is `0`.
+
+[.opt]
+*--fef-type* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the FEF type.
+The valid range is 0 ... 15. The default is 0.
+
+[.opt]
+*--fft-mode* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the FFT mode.
+Must be one of `1K`, `2K`, `4K`, `8K`, `16K` or `32K`.
+The default is `32K`.
+
+[.opt]
+*-f* _value_ +
+*--frequency* _value_
+
+[.optdoc]
+For modulator devices only: specify the frequency, in Hz, of the output carrier.
+There is no default.
+
+[.optdoc]
+For OFDM modulators, the options `--uhf-channel` or `--vhf-channel` and `--offset-count` (optional) may be used instead.
+
+[.optdoc]
+For DVB-S/S2 modulators, the specified frequency is the intermediate frequency.
+For convenience, the option `--satellite-frequency` can be used instead of `--frequency` when the intermediate frequency is unknown.
+
+[.optdoc]
+For DTA-107 (DVB-S) modulators, the valid range is 950 MHz to 2150 MHz.
+
+[.optdoc]
+For DTA-110 (DVB-C) and 110T (DVB-T/H) modulators, the valid range is 400 MHz to 862 MHz.
+
+[.optdoc]
+For DTA-115 (DVB-C/T/H) modulators, the valid range is 47 MHz to 862 MHz.
+
+[.opt]
+*-g* _value_ +
+*--guard-interval* _value_
+
+[.optdoc]
+DVB-T modulators: indicate the guard interval.
+Must be one of: `1/32`, `1/16`, `1/8`, `1/4`.
+The default is `1/32`.
+
+[.opt]
+*--hf-band-region* _name_
+
+[.optdoc]
+Specify the region for UHF/VHF band frequency layout.
+
+[.optdoc]
+The default region is `europe`.
+Another default region may be specified per user in the TSDuck configuration file.
+See xref:hfband-config[xrefstyle=short] for more details.
+
+[.opt]
+*--indepth-interleave*
+
+[.optdoc]
+DVB-T modulators: use in-depth interleave.
+The default is native interleave.
+
+[.opt]
+*-i* +
+*--input-modulation*
+
+[.optdoc]
+All modulators devices: try to guess default modulation parameters from input stream.
+All explicitely specified parameters override these defaults.
+
+[.optdoc]
+If the input plugin is `dvb`,
+use the modulation parameters of the input signal as default values for their counterparts in the Dektec modulator.
+On Linux systems, the actual modulation parameters of the input signal are used.
+On Windows systems, the DirectShow/BDA drivers cannot return the actual modulation parameters and
+only the user-specified parameters in the input plugin are used (they can be different from the actual parameters of the input signal).
+
+[.optdoc]
+With other input plugins, if the specified output modulation is DVB-T or DVB-T2,
+try to guess the following modulation parameters from the input bitrate:
+`--bandwidth` `--constellation` `--convolutional-rate` `--guard-interval`.
+When a specific bitrate can be produced by distinct combinations of modulation parameters,
+a deterministic order is applied to select the prefered combination.
+
+[.opt]
+*--inversion*
+
+[.optdoc]
+For modulators devices only: enable spectral inversion.
+
+[.opt]
+*--j83* _value_
+
+[.optdoc]
+QAM modulators: indicate the ITU-T J.83 annex to use.
+Must be one of `A` (DVB-C), `B` (American QAM) or `C` (Japanese QAM).
+The default is `A`.
+
+[.opt]
+*-l* _value_ +
+*--level* _value_
+
+[.optdoc]
+Modulators: indicate the output level in units of 0.1 dBm (e.g. `--level -30` means -3 dBm).
+Not supported by all devices.
+
+[.optdoc]
+For DTA-107 modulators, the valid range is -47.0 to -27.0 dBm.
+
+[.optdoc]
+For DTA-115, QAM, the valid range is -35.0 to 0.0 dBm.
+
+[.optdoc]
+For DTA-115, OFDM, ISDB-T, the valid range is -38.0 to -3.0 dBm.
+
+[.opt]
+*--lnb* _string_
+
+[.optdoc]
+DVB-S/S2 modulators: description of the LNB which is used to convert the `--satellite-frequency` into an intermediate frequency.
+This option is useless when `--satellite-frequency` is not specified.
+
+[.optdoc]
+See xref:[xrefstyle=short] A.3 page 492 for more details.
+
+[.opt]
+*--miso* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the MISO mode.
+Must be one of `OFF`, `1, `2` or `BOTH`.
+The default is `OFF`.
+This mode can be used to simulate antenna 1, antenna 2, or the average of antenna 1 and antenna 2
+to simulate reception halfway between the antennas.
+
+[.opt]
+*-m* _value_ +
+*--modulation* _value_
+
+[.optdoc]
+For modulators, indicate the modulation type.
+Must be one of: `4-QAM`, `16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`,
+`ADTB-T`, `ATSC-VSB`, `DMB-T`, `DVB-S`, `DVB-S-QPSK` (same as `DVB-S`),
+`DVB-S-BPSK`, `DVB-S2`, `DVB-S2-QPSK` (same as `DVB-S2`), `DVB-S2-8PSK`,
+`DVB-S2-16APSK`, `DVB-S2-32APSK`, `DVB-T`, `DVB-T2`, `ISDB-T`.
+For DVB-H, specify `DVB-T`.
+For DMB-H, specify `DMB-T`.
+
+[.optdoc]
+The supported modulation types depend on the device model.
+See the table above for the default modulation type by device model.
+
+[.opt]
+*--mpe-fec*
+
+[.optdoc]
+DVB-T/H modulators: indicate that at least one elementary stream uses MPE-FEC (DVB-H signalling).
+
+[.opt]
+*-o* _value_ +
+*--offset-count* _value_
+
+[.optdoc]
+UHF and VHF modulators: specify the number of offsets from the UHF or VHF channel.
+Can be positive or negative.
+The default is zero.
+See options `--uhf-channel` and `--vhf-channel`.
+
+[.opt]
+*--papr* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the Peak to Average Power Reduction method.
+Must be one of `NONE`, `ACE` (Active Constellation Extension), `TR` (power reduction with reserved carriers) or `BOTH` (both ACE and TS).
+The default is `NONE`.
+
+[.opt]
+*--pilots*
+
+[.optdoc]
+DVB-S2 and ADTB-T modulators: enable pilots (default: no pilot).
+
+[.opt]
+*-p* _value_ +
+*--pilot-pattern* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the pilot pattern to use, a value in the range 1 to 8.
+The default is 7.
+
+[.opt]
+*--plp0-code-rate* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the convolutional coding rate used by the PLP #0.
+Must be one of `1/2`, `3/5`, `2/3`, `3/4`, `4/5`, `5/6`.
+The default is `2/3`.
+
+[.opt]
+*--plp0-fec-type* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the FEC type used by the PLP #0.
+Must be one of `16K`, `64K`.
+The default is 64K LPDC.
+
+[.opt]
+*--plp0-group-id* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the PLP group with which the PLP #0 is associated.
+The valid range is 0 to 255.
+The default is 0.
+
+[.opt]
+*--plp0-high-efficiency*
+
+[.optdoc]
+DVB-T2 modulators: indicate that the PLP #0 uses High Efficiency Mode (HEM).
+Otherwise Normal Mode (NM) is used.
+
+[.opt]
+*--plp0-id* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the unique identification of the PLP #0 within the T2 system.
+The valid range is 0 to 255.
+The default is 0.
+
+[.opt]
+*--plp0-il-length* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the time interleaving length for PLP #0.
+The valid range is 0 to 255. The default is 3.
+
+[.optdoc]
+If `--plp0-il-type` is set to `ONE-TO-ONE` (the default), this parameter specifies the number of TI-blocks per interleaving frame.
+
+[.optdoc]
+If `--plp0-il-type` is set to `MULTI`, this parameter specifies the number of T2 frames to which each interleaving frame is mapped.
+
+[.opt]
+*--plp0-il-type* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the type of interleaving used by the PLP #0.
+Must be one of `ONE-TO-ONE` (one interleaving frame corresponds to one T2 frame)
+or `MULTI` (one interleaving frame is carried in multiple T2 frames).
+The default is `ONE-TO-ONE`.
+
+[.opt]
+*--plp0-in-band*
+
+[.optdoc]
+DVB-T2 modulators: indicate that the in-band flag is set and in-band signalling information is inserted in PLP #0.
+
+[.opt]
+*--plp0-issy* _value_
+
+[.optdoc]
+DVB-T2 modulators: type of ISSY field to compute and insert in PLP #0.
+Must be one of `NONE`, `SHORT`, `LONG`.
+The default is `NONE`.
+
+[.opt]
+*--plp0-modulation* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the modulation used by PLP #0.
+Must be one of `BPSK`, `QPSK`, `16-QAM`, `64-QAM`, `256-QAM`.
+The default is `256-QAM`.
+
+[.opt]
+*--plp0-null-packet-deletion*
+
+[.optdoc]
+DVB-T2 modulators: indicate that null-packet deletion is active in PLP #0. Otherwise it is not
+active.
+
+[.opt]
+*--plp0-rotation*
+
+[.optdoc]
+DVB-T2 modulators: indicate that constellation rotation is used for PLP #0. Otherwise not.
+
+[.opt]
+*--plp0-tsrate* _value_
+
+[.optdoc]
+DVB-T2 modulators: PLP #0 bitrate.
+The default is 0 (use all available).
+
+[.opt]
+*--plp0-type* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the PLP type for PLP #0.
+Must be one of `COMMON`, `1`, `2`.
+The default is `COMMON`.
+
+[.opt]
+*-q* _value_ +
+*--qam-b* _value_
+
+[.optdoc]
+QAM modulators: with `--j83 B`, indicate the QAM-B interleaver mode.
+Must be one of: `I128-J1D`, `I64-J2`, `I32-J4`, `I16-J8`, `I8-J16`, `I128-J1`,
+`I128-J2`, `I128-J3`, `I128-J4`, `I128-J5`, `I128-J6`, `I128-J7`, `I128-J8`.
+The default is `I128-J1D`.
+
+[.opt]
+*--roll-off* _value_
+
+[.optdoc]
+DVB-S2/S2X modulators: indicate the roll-off factor.
+Must be one of `0.03`, `0.05`, `0.10`, `0.15`, `0.20`, `0.25`, `0.35`, `auto`, `none`.
+The default is `auto`.
+
+[.opt]
+*--s2-gold-code* _value_
+
+[.optdoc]
+DVB-S2 modulators: indicate the physical layer scrambling initialization sequence, aka gold code.
+
+[.opt]
+*--s2-short-fec-frame*
+
+[.optdoc]
+DVB-S2 modulators: use short FEC frames, 12 000 bits (default: long FEC frames, 64 800 bits).
+
+[.opt]
+*--satellite-frequency* _value_
+
+[.optdoc]
+DVB-S/S2 modulators: indicate the target satellite frequency, in Hz, of the output carrier.
+The actual frequency at the output of the modulator is the intermediate frequency
+which is computed based on the characteristics of the LNB (see option `--lnb`).
+This option is useful when the satellite frequency is better known than the intermediate frequency.
+
+[.optdoc]
+The options `--frequency` and `--satellite-frequency` are mutually exclusive.
+
+[.opt]
+*--symbol-rate* _value_
+
+[.optdoc]
+DVB-C/S/S2 modulators: Specify the symbol rate in symbols/second.
+
+[.optdoc]
+By default, the symbol rate is implicitly computed from the convolutional rate, the modulation type and the bitrate.
+But when `--symbol-rate` is specified, the input bitrate is ignored and the output bitrate is forced to the value
+resulting from the combination of the specified symbol rate, convolutional rate and modulation type.
+
+[.optdoc]
+The options `--symbol-rate` and `--bitrate` are mutually exclusive.
+
+[.opt]
+*--t2-fpsf* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the number of T2 frames per super-frame.
+Must be in the range 1 to 255.
+The default is 2.
+
+[.opt]
+*--t2-guard-interval* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicates the guard interval.
+Must be one of: `1/128`, `1/32`, `1/16`, `19/256`, `1/8`, `19/128`, `1/4`.
+The default is `1/128`.
+
+[.opt]
+*--t2-l1-modulation* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the modulation type used for the L1-post signalling block.
+Must be one of `BPSK`, `QPSK`, `16-QAM`, `64-QAM`.
+The default is `16-QAM`.
+
+[.opt]
+*--t2-network-id* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the DVB-T2 network identification.
+The default is 0.
+
+[.opt]
+*--t2-system-id* _value_
+
+[.optdoc]
+DVB-T2 modulators: indicate the DVB-T2 system identification.
+The default is 0.
+
+[.opt]
+*--time-slice*
+
+[.optdoc]
+DVB-T/H modulators: indicate that at least one elementary stream uses time slicing (DVB-H signalling).
+
+[.opt]
+*-t* _value_ +
+*--transmission-mode* _value_
+
+[.optdoc]
+DVB-T modulators: indicates the transmission mode. Must be one of `2K`, `4K` or `8K`.
+The default is `8K`.
+
+[.opt]
+*-u* _value_ +
+*--uhf-channel* _value_
+
+[.optdoc]
+UHF modulators: specify the UHF channel number of the output carrier.
+Can be used in replacement to `--frequency`.
+Can be combined with an `--offset-count` option.
+The UHF frequency layout depends on the region, see `--hf-band-region` option.
+
+[.opt]
+*-v* _value_ +
+*--vhf-channel* _value_
+
+[.optdoc]
+VHF modulators: specify the VHF channel number of the output carrier.
+Can be used in replacement to `--frequency`.
+Can be combined with an `--offset-count` option.
+The VHF frequency layout depends on the region, see `--hf-band-region` option.
+
+[.opt]
+*--vsb* _value_
+
+[.optdoc]
+ATSC modulators: indicate the VSB constellation.
+Must be one of `8` (19,392,658 Mb/s) or `16` (38,785,317 Mb/s).
+The default is `8`.
+
+[.opt]
+*--vsb-taps* _value_
+
+[.optdoc]
+ATSC modulators: indicate the number of taps of each phase of the root-raised cosine filter that is used to shape the spectrum of the output signal.
+The number of taps can have any value between 2 and 256 (the implementation is optimized for powers of 2).
+Specifying more taps improves the spectrum, but increases processor overhead.
+The recommend (and default) number of taps is 64 taps.
+If insufficient CPU power is available, 32 taps produces acceptable results, too.
+
+[.usage]
+TS-over-IP options
+
+The following options are used with Dektec Ethernet devices.
+
+[.opt]
+*--gw4* _ipv4-address_
+
+[.optdoc]
+TS-over-IP: Specify a non-default IPv4 gateway address.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+[.opt]
+*--gw6* _ipv6-address_
+
+[.optdoc]
+TS-over-IP: Specify a non-default IPv6 gateway address.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+[.opt]
+*--ip4* _ipv4-address:port_
+
+[.optdoc]
+TS-over-IP: Destination IPv4 address and port.
+
+[.optdoc]
+Either `--ip4` or `--ip6` must be specified with Dektec Ethernet devices.
+The address part is mandatory for multicast, optional for unicast.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+[.opt]
+*--ip6* _[ipv6-address]:port_
+
+[.optdoc]
+TS-over-IP: Destination IPv6 address and port.
+
+[.optdoc]
+*Important*: The square brackets are literal, as in any IPv6 URL, not an indication of an optional field.
+
+[.optdoc]
+Either `--ip4` or `--ip6` must be specified with Dektec Ethernet devices.
+The address part is mandatory for multicast, optional for unicast.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+[.opt]
+*--rtp*
+
+[.optdoc]
+TS-over-IP: Use RTP protocol.
+By default, TS packets are sent in UDP datagrams without RTP or other protocol header.
+
+[.opt]
+*--smpte-2022-fec* _type_
+
+[.optdoc]
+TS-over-IP: Specify type of SMPTE-2022 error correction mode to use.
+Must be one of `2d-m1`, `2d-m1-b`, `2d-m2`, `2d-m2-b` or `none`.
+The default is `none`.
+
+[.opt]
+*--smpte-2022-d* _value_
+
+[.optdoc]
+TS-over-IP with SMPTE-2022 error correction: Specify the number of rows in the FEC matrix, aka 'D' parameter.
+
+[.opt]
+*--smpte-2022-l* _value_
+
+[.optdoc]
+TS-over-IP with SMPTE-2022 error correction: Specify the number of columns in the FEC matrix, aka 'L' parameter.
+
+[.opt]
+*--source-port* _value_
+
+[.optdoc]
+TS-over-IP: Optional UDP source port for outgoing packets.
+By default, use a random port.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter must be specified twice, main and redundant link.
+
+[.opt]
+*--tos* _value_
+
+[.optdoc]
+TS-over-IP: Type-of-service (TOS) or differentiated services value of outgoing IP datagrams.
+
+[.opt]
+*--ts-per-ip* _value_
+
+[.optdoc]
+TS-over-IP: Number of TS packets per IP datagram.
+The default is 7.
+
+[.opt]
+*--ttl* _value_
+
+[.optdoc]
+TS-over-IP: Time-to-live (TTL) value of outgoing IP datagrams.
+
+[.opt]
+*--vlan-id* _value_
+
+[.optdoc]
+TS-over-IP: Optional VLAN identifier as specified in IEEE 802.1Q.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+[.opt]
+*--vlan-priority* _value_
+
+[.optdoc]
+TS-over-IP: Optional VLAN priority code point as specified in IEEE 802.1Q.
+
+[.optdoc]
+With SMPTE 2022-7 network redundancy, this parameter can be specified twice, main and redundant link.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

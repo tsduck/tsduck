@@ -1,0 +1,440 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== eitinject
+
+[.cmd-header]
+Generate and inject EIT's in a transport stream
+
+This plugin generates EIT’s from a database of events and injects those EIT’s on time in the transport stream.
+The plugin can selectively generate "EIT actual" and/or "EIT other" and "EIT present/following" (or "p/f") and/or "EIT schedule".
+
+EIT’s are "injected" in the transport stream by replacing null packets or pre-existing EIT packets.
+All EIT’s are injected by default in the DVB-defined PID for EIT’s, the PID number 18 (see also option `--pid').
+There must be enough null or EIT packets to replace, otherwise EIT’s won’t be correctly injected or not injected at all.
+
+The events can be loaded at any time but the actual EIT injection can start only
+when the actual transport stream id and the current time reference are known.
+The actual transport stream id is required to determine if events for a given service shall be included in EIT actual or EIT other.
+The current time is required to generate EIT p/f on time and drop obsolete events from EIT schedule.
+The organization of EIT schedule table ids also depends on the current date.
+
+By default, the actual transport stream id is extracted from the first PAT.
+The current time is permanently resynchronized on TDT and TOT.
+See also options `--ts-id` and `--time`.
+
+Note that the concept of "current time" is always relative to the transport stream.
+It is possible to inject EIT’s in a transport stream file at the speed of file read/write.
+The "current time" of a packet (for EIT generation and insertion) is based on the last reference
+(typically from a TDT or TOT), the transport stream bitrate and the number of packets since the last reference.
+
+[.usage]
+Electronic Program Guide (EPG) database
+
+The events are loaded in an EPG database in memory.
+There are several sources for events: files and incoming EIT’s (from the TS upstream).
+
+Event files shall contain EIT tables or sections in binary, XML or JSON format.
+The organization of events in the EIT’s and the type of EIT’s are ignored.
+Only the events descriptions and the DVB triplets (service id, transport stream id and original network id) are important,
+all the rest is ignored.
+
+When event files are loaded or when incoming EIT’s are received,
+all events are individually extracted and stored in the EPG database in memory.
+The EIT encapsulation is just a convenient pre-existing format to store events, nothing more.
+
+The event input files can be specified using wildcards
+(be sure to use quotes in order to avoid the interpretation of the wildcards by the shell).
+The `eitinject` plugin polls the corresponding files at regular intervals.
+Whenever a file matching the wildcards is created or updated, the file is loaded.
+Existing events are ignored.
+
+Events are automatically removed from the EPG database when they become obsolete
+(the current transport stream time goes beyong the end time of the event).
+There is currently no way to delete an event from the database before its completion.
+
+[.usage]
+Injection profiles
+
+The EIT’s are injected and cycled according to ETSI TS 101 211 section 4.4 (see <<ETSI-101-211>>).
+Several cycle profiles can be used.
+A profile defines the repetition cycle of each type of EIT.
+
+The default profile is defined in <<ETSI-101-211>> for satellite and cable networks.
+It is possible to select the profile for terrestrial networks (generating a lower EIT bandwidth).
+In addition to a predefined profile, it is possible to tune individual cycle values.
+
+EIT schedule are divided into two periods:
+
+* The _prime_ period extends over the next few days.
+  The repetition rate of those EIT's is typically longer than EIT present/following but still reasonably fast.
+  The duration in days of the prime period depends on the type of network.
+* The _later_ period includes all events after the prime period.
+  The repetition rate of those EIT's is typically longer that in the prime period.
+
+The following table lists the details of the two standard EIT profiles as defined in ETSI TS 101 211.
+
+.Standard EIT repetition rates
+[cols="<1,<1,<1",stripes=none,options="autowidth"]
+|===
+|EIT section type |Satellite and cable |Terrestrial
+
+|EIT p/f actual
+|2 seconds
+|2 seconds
+
+|EIT p/f other
+|10 seconds
+|20 seconds
+
+|EIT schedule prime days
+|8 days
+|1 day
+
+|EIT schedule actual (prime)
+|10 seconds
+|10 seconds
+
+|EIT schedule other (prime)
+|10 seconds
+|60 seconds
+
+|EIT schedule actual (later)
+|30 seconds
+|30 seconds
+
+|EIT schedule other (later)
+|30 seconds
+|300 seconds
+
+|===
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P eitinject [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--actual*
+
+[.optdoc]
+Generate all EIT actual.
+Same as `--actual-pf --actual-schedule`.
+
+[.opt]
+*--actual-pf*
+
+[.optdoc]
+Generate EIT p/f actual.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*--actual-schedule*
+
+[.optdoc]
+Generate EIT schedule actual.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specify the maximum bitrate of the EIT PID in bits/second.
+
+[.optdoc]
+By default, the EIT sections are inserted as soon as possible, with respect to their individual cycle time.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.opt]
+*--cycle-pf-actual* _value_
+
+[.optdoc]
+Repetition cycle in seconds for EIT p/f actual.
+The default is 2 seconds.
+
+[.opt]
+*--cycle-pf-other* _value_
+
+[.optdoc]
+Repetition cycle in seconds for EIT p/f other.
+The default is 10 seconds.
+
+[.opt]
+*--cycle-schedule-actual-later* _value_
+
+[.optdoc]
+Repetition cycle in seconds for EIT schedule actual after the "prime" period.
+The default is 30 seconds.
+See options `--prime-days`.
+
+[.opt]
+*--cycle-schedule-actual-prime* _value_
+
+[.optdoc]
+Repetition cycle in seconds for EIT schedule actual in the "prime" period.
+The default is 10 seconds.
+See options `--prime-days`.
+
+[.opt]
+*--cycle-schedule-other-later* _value_
+
+[.optdoc]
+Repetition cycle in seconds for EIT schedule other after the "prime"period.
+The default is 30 seconds.
+See options `--prime-days`.
+
+[.opt]
+*--cycle-schedule-other-prime* _value_
+
+[.optdoc]
+Repetition cycle in seconds for EIT schedule other in the "prime" period.
+The default is 10 seconds.
+See options `--prime-days`.
+
+[.opt]
+*-d* +
+*--delete-files*
+
+[.optdoc]
+Specifies that the event input files should be deleted after being loaded.
+
+[.optdoc]
+By default, the files are left unmodified after being loaded.
+
+[.optdoc]
+When a loaded file is modified later, it is reloaded and re-injected.
+
+[.opt]
+*-f* _'file-wildcard '_ +
+*--files* _'file-wildcard '_
+
+[.optdoc]
+A file specification with optional wildcards indicating which event files should be polled.
+When such a file is created or updated, it is loaded and its content is interpreted as binary, XML or JSON tables.
+
+[.optdoc]
+If the specified name contains wildcards,
+be sure to surround it with quotes to prevent the interpretation of the wildcards by the shell.
+
+[.optdoc]
+All tables shall be EIT's.
+The structure and organization of events inside the input EIT tables is ignored.
+All events are individually extracted from the EIT tables and loaded in the EPG.
+They are later reorganized in the injected EIT's p/f and schedule.
+In the input files, the EIT structure shall be only considered as a convenient format to describe events.
+
+[.opt]
+*--incoming-eits*
+
+[.optdoc]
+Load events from incoming EIT's in the EPG.
+A typical use case is the generation of EIT p/f from EIT schedule.
+
+[.optdoc]
+By default, events are loaded from EIT files only.
+
+[.optdoc]
+Since events must be loaded from somewhere, either `--incoming-eits` or `--files` must be specified.
+If both are specified, events are merged from the two sources.
+
+[.opt]
+*--lazy-schedule-update*
+
+[.optdoc]
+When an event completes, do not remove it from the current EIT schedule segment.
+Obsolete events are removed from the EPG only when their 3-hour segment is completed.
+
+[.optdoc]
+By default, each time an event completes, the EIT schedule section which contains that event is updated
+(the terminated event is removed).
+
+[.optdoc]
+With this option, EIT schedule update is less frequent and the load on the plugin and the receiver is lower.
+This option is recommended with `--synchronous-versions`
+where all sections of an EIT schedule sub-table are updated each time one of them is updated.
+
+[.opt]
+*--min-stable-delay* _milliseconds_
+
+[.optdoc]
+An input file size needs to be stable during that duration, in milliseconds, for the file to be reported as added or modified.
+This prevents too frequent poll notifications when a file is being written and his size modified at each poll.
+
+[.optdoc]
+The default is 500 ms.
+
+[.opt]
+*--other*
+
+[.optdoc]
+Generate all EIT other.
+Same as `--other-pf --other-schedule`.
+
+[.opt]
+*--other-pf*
+
+[.optdoc]
+Generate EIT p/f other.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*--other-schedule*
+
+[.optdoc]
+Generate EIT schedule actual.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*--pf*
+
+[.optdoc]
+Generate all EIT p/f (present/following).
+Same as `--actual-pf --other-pf`.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID for EIT injection.
+
+[.optdoc]
+The default is 18, the standard PID for EIT’s.
+
+[.opt]
+*--poll-interval* _milliseconds_
+
+[.optdoc]
+Interval, in milliseconds, between two poll operations to detect new or modified input files.
+
+[.optdoc]
+The default is 500 ms.
+
+[.opt]
+*--prime-days* _value_
+
+[.optdoc]
+Duration, in days, of the "prime" period for EIT schedule.
+EIT schedule for events in the prime period (i.e. the next few days)
+are repeated more frequently than EIT schedule for later events.
+
+[.optdoc]
+The default is 8 days.
+
+[.opt]
+*--schedule*
+
+[.optdoc]
+Generate all EIT schedule.
+Same as `--actual-schedule --other-schedule`.
+
+[.opt]
+*--stuffing*
+
+[.optdoc]
+Insert stuffing inside TS packets at end of EIT sections.
+Do not pack EIT sections.
+
+[.optdoc]
+By default, EIT sections are packed.
+
+[.opt]
+*--synchronous-versions*
+
+[.optdoc]
+Keep version numbers synchronous on all sections of an EIT sub-table.
+
+[.optdoc]
+By default, since EIT's are sparse sections and not full tables,
+the version number of an EIT section is updated only when the section is modified.
+This is more efficient and reduces the load on the receivers.
+
+[.optdoc]
+An EIT schedule sub-table is an aggregate of sparse sections which covers an EPG duration of 4 days.
+There are between 32 and 256 sections in an EIT schedule sub-table.
+Using this option, all sections are regenerated each time one event is updated.
+Consequently, the load on the receivers is much higher.
+Using it should be reserved for situations where some receivers are unable to update individual EIT sections.
+It is also recommended to specify `--lazy-schedule-update` with `--synchronous-versions`.
+
+[.opt]
+*--terrestrial*
+
+[.optdoc]
+Use the EIT cycle profile for terrestrial networks as specified in ETSI TS 101 211, section 4.4.
+
+[.optdoc]
+By default, use the cycle profile for satellite and cable networks from the same standard.
+
+[.optdoc]
+See also options `--cycle-*` and `--prime-days` to modify individual values.
+
+[.opt]
+*--time* _value_
+
+[.optdoc]
+Specify the UTC date & time reference for the first packet in the stream.
+Then, the time reference is updated according to the number of packets and the bitrate.
+
+[.optdoc]
+The time value must be in the format `YYYY/MM/DD:hh:mm:ss`.
+
+[.optdoc]
+The predefined name `system` can be used to specify the current UTC time from the system clock
+(use `--time system`).
+
+[.optdoc]
+By default, the current time is resynchronized on all TDT and TOT.
+
+[.optdoc]
+EIT injection starts when the time reference and actual transport stream id are known.
+
+[.opt]
+*--ts-id* _value_
+
+[.optdoc]
+Specify the actual transport stream id.
+This is used to differentiate events for EIT actual and EIT other.
+
+[.optdoc]
+By default, the actual transport stream id is read from the PAT.
+
+[.optdoc]
+EIT injection starts when the actual transport stream id and time reference are known.
+
+[.opt]
+*-w* +
+*--wait-first-batch*
+
+[.optdoc]
+When this option is specified, the start of the plugin is suspended until the first batch of events is loaded from files.
+Without this option, the input files are asynchronously loaded.
+
+[.optdoc]
+This option is typically useful when inserting events into a transport stream file.
+Since files are read much faster than the normal playout speed,
+it is possible that the input transport stream file is already mostly processed when the event files are loaded.
+With this option, we have the guarantee that the event files are loaded before the transport stream processing starts.
+
+[.optdoc]
+On the other hand, this option should not be used on live transport streams.
+In that case, the transport stream processing must be allowed to start without event to inject.
+The EIT’s may be sent much later.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

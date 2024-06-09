@@ -1,0 +1,56 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsfuzz
+
+[.cmd-header]
+Introduce random errors in transport stream files
+
+This utility randomly corrupts transport stream files,
+typically to perform fuzzing attacks on media tools or receiver equipment.
+
+The same effect can be obtained in transport stream processing pipeline using the `tsp` plugin `fuzz`.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsfuzz [options] file ...
+----
+
+[.usage]
+File
+
+[.optdoc]
+MPEG transport stream input files to corrupt.
+
+[.optdoc]
+If more than one file is specified, the output name shall specify a directory.
+
+[.usage]
+General options
+
+[.opt]
+*-o* _path_ +
+*--output* _path_
+
+[.optdoc]
+Specify the output file or directory.
+If the specified path is a directory, the output file is created in that directory,
+with the same base name as the input file.
+
+[.optdoc]
+This is a mandatory parameter, there is no default.
+
+[.optdoc]
+If more than one input file is specified, the output name shall specify a directory.
+
+include::{docdir}/opt/group-fuzz.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

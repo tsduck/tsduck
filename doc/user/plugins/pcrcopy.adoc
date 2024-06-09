@@ -1,0 +1,111 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcrcopy
+
+[.cmd-header]
+Copy and synchronize PCR's from one PID to another
+
+This plugin uses a PID with exiting PCR’s as time reference and copies or recomputes PCR’s in another PID.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pcrcopy [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-e* _packet-count_ +
+*--every* _packet-count_
+
+[.optdoc]
+Insert a PCR every N packets in the target PID.
+
+[.optdoc]
+By default, insert a PCR in packets with a payload unit start only.
+
+[.opt]
+*--max-shift* _bytes_
+
+[.optdoc]
+When a PCR is inserted in a TS packet which did not have one, the TS adaptation field must be created or extended.
+Consequently, the TS payload must be shrunk.
+The end of the payload must then be shifted to the next TS packet in the PID.
+When several PCR’s are included in the PID, shifted bytes accumulate.
+When enough shifted bytes have been accumulated to fill a TS packet,
+the next null packet is replaced by a new packet for the target PID.
+
+[.optdoc]
+If the transport stream does not include enough null packets to absorb the shifted bytes, there is a risk of overflow.
+
+[.optdoc]
+This options specifies the maximum number of target packet payload bytes which can be shifted, due to PCR insertion.
+When this value is reached, usually because of a lack of null packets, the current PES packet is truncated.
+
+[.optdoc]
+By default, allow the buffering of up to 16 packet payloads.
+
+[.opt]
+*-n* +
+*--no-pusi*
+
+[.optdoc]
+Do not insert a PCR in packets with a payload unit start indicator (PUSI).
+
+[.optdoc]
+By default, a PCR is inserted in all PUSI packets, even if `--every` is also specified.
+
+[.opt]
+*--reference-label* _value_
+
+[.optdoc]
+Packet label indicating the PID containing the reference PCR to copy.
+Each time a packet with that label is encountered, the reference PID switches to the PID of this packet,
+if different from the previous reference PID.
+
+[.optdoc]
+Exactly one of `--reference-pid` and `--reference-label` shall be specified.
+
+[.opt]
+*-r* _value_ +
+*--reference-pid* _value_
+
+[.optdoc]
+PID containing the reference PCR to copy.
+
+[.optdoc]
+Exactly one of `--reference-pid` and `--reference-label` shall be specified.
+
+[.opt]
+*--target-label* _value_
+
+[.optdoc]
+Packet label indicating the PID containing the target PID into which PCR’s shall be created and copied.
+Each time a packet with that label is encountered, the target PID switches to the PID of this packet,
+if different from the previous target PID.
+
+[.optdoc]
+Exactly one of `--target-pid` and `--target-label` shall be specified.
+
+[.opt]
+*-t* _value_ +
+*--target-pid* _value_
+
+[.optdoc]
+PID into which PCR’s shall be created and copied.
+
+[.optdoc]
+Exactly one of `--target-pid` and `--target-label` shall be specified.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

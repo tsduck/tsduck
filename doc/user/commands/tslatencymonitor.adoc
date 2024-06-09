@@ -1,0 +1,60 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tslatencymonitor
+
+[.cmd-header]
+Monitor latency between two TS input sources
+
+This utility uses the same input plugins as `tsp` or `tsswitch` to monitor the latency between these input sources.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tslatencymonitor [options] \
+    -I input-name-1 [input-options] \
+    -I input-name-2 [input-options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* _seconds_ +
+*--buffer-time* _seconds_
+
+[.optdoc]
+Specify the buffer time of timing data list in seconds.
+By default, the buffer time is 1 second.
+
+[.opt]
+*-l* +
+*--list-plugins*
+
+[.optdoc]
+List all available plugins.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Output file name for CSV reporting (standard error by default).
+
+[.opt]
+*--output-interval* _seconds_
+
+[.optdoc]
+Specify the time interval between each output in seconds.
+The default is 1 second.
+
+include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

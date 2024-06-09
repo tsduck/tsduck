@@ -1,0 +1,96 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== http (output)
+
+[.cmd-header]
+Act as an HTTP server and send TS packets to the incoming client
+
+This plugin implements a rudimentary HTTP server.
+This server accepts only one client.
+The output is suspended until a clients connects.
+Then, all TS packets are transmitted to the client.
+
+No SSL/TLS is supported, only the `http:` protocol is accepted.
+
+Only one client is accepted at a time.
+By default, `tsp` terminates if the client disconnects.
+Use the option `--multiple-clients` to wait for the next incoming client
+and continue the output when the previous client disconnects.
+
+The HTTP request `GET /` returns the transport stream content.
+All other requests are considered as invalid (see option `--ignore-bad-request`).
+Therefore, the only valid URL to access the server is `http://hostname:port/`
+where `_hostname_` designates the system on which `tsp` runa and `_port_` is specified in the plugin options.
+
+There is no `Content-Length` response header since the size of the returned TS is unknown
+at the time the client connects and the HTTP request is received.
+
+The server disconnects at the end of the data.
+The `Keep-Alive` option is not supported.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O http [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--buffer-size* _value_
+
+[.optdoc]
+Specifies the TCP socket send buffer size in bytes to the client connection (socket option).
+
+[.opt]
+*--ignore-bad-request*
+
+[.optdoc]
+Ignore invalid HTTP requests and unconditionally send the transport stream.
+
+[.optdoc]
+By default, any HTTP request other than `GET /` is rejected and an error status is returned to the client.
+
+[.opt]
+*-m* +
+*--multiple-clients*
+
+[.optdoc]
+Specifies that the server handle multiple clients, one after the other.
+If a client disconnects, the output is suspended until a new client connects.
+The TS packets are then sent to the new client.
+
+[.optdoc]
+By default, the plugin terminates the `tsp` session when the first client disconnects.
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option.
+Do not use unless completely necessary.
+
+[.opt]
+*-s* _[ip-address:]port_ +
+*--server* _[ip-address:]port_
+
+[.optdoc]
+Specifies the local TCP port on which the plugin listens for incoming HTTP connections.
+This option is mandatory.
+The server accepts only one HTTP connection at a time.
+
+[.optdoc]
+When present, the optional address shall specify a local IP address or host name.
+By default, the server listens on all local interfaces.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

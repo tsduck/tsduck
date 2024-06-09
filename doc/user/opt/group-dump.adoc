@@ -1,0 +1,94 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TSDumpArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Packet dump options
+
+[.opt]
+*--adaptation-field*
+
+[.optdoc]
+Include formatting of the adaptation field.
+
+[.opt]
+*-a* +
+*--ascii*
+
+[.optdoc]
+Include ASCII dump in addition to hexadecimal.
+
+[.opt]
+*-b* +
+*--binary*
+
+[.optdoc]
+Include binary dump in addition to hexadecimal.
+
+[.opt]
+*-h* +
+*--headers-only*
+
+[.optdoc]
+Dump packet headers only, not payload.
+
+[.opt]
+*-l* +
+*--log*
+
+[.optdoc]
+Display a short one-line log of each packet instead of full dump.
+
+[.opt]
+*--log-size* _value_
+
+[.optdoc]
+With option `--log`, specify how many bytes are displayed in each packet.
+
+[.optdoc]
+The default is 188 bytes (complete packet).
+
+[.opt]
+*-n* +
+*--nibble*
+
+[.optdoc]
+Same as `--binary` but add separator between 4-bit nibbles.
+
+[.opt]
+*--no-headers*
+
+[.optdoc]
+Do not display packet header information.
+
+[.opt]
+*-o* +
+*--offset*
+
+[.optdoc]
+Display offset from start of packet with hexadecimal dump.
+
+[.opt]
+*--payload*
+
+[.optdoc]
+Hexadecimal dump of TS payload only, skip TS header.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Dump only packets with these PID values.
+Several `--pid` options may be specified.
+
+[.optdoc]
+By default, all packets are displayed.

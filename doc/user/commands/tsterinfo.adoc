@@ -1,0 +1,166 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsterinfo
+
+[.cmd-header]
+DVB-Terrestrial Information
+
+This utility performs various operations and conversions on DVB-T transmission and modulation parameters:
+
+* Compute the carrier frequency from a UHF or VHF channel number and optional offset count. +
+  Triggered when option `--uhf-channel`, `--vhf-channel`, and optionally `--offset-count`, are specified.
+* Retrieve the UHF or VHF channel number and offset count from a carrier frequency. +
+  Triggered when option `--frequency` is specified.
+* Compute the nominal transport stream bitrate from OFDM modulation parameters
+  (bandwidth, high-priority stream error correction rate, constellation and guard interval).
+  Supported for non-hierarchical transmission only. +
+  Triggered when options `--guard-interval` and `--high-priority-fec`, and optionally `--bandwidth`
+  and `--constellation`, are specified.
+* Given a transport stream bitrate, retrieve the OFDM modulation parameters
+  (bandwidth, high-priority stream error correction rate, constellation and guard interval).
+  Sometimes, several combinations of parameters are possible; they are all reported (see also option --max-guess).
+  This could be useful on Windows systems where the tuners are not able to report their current parameters.
+  In that case, you can use `tsanalyze`, `tsbitrate`, or `tsp -v` to evaluate the transport stream bitrate based on PCR analysis.
+  Then, `tsterinfo` will retrieve the most probable modulation parameters.
+  Note that only the four mentioned parameters can be retrieved.
+  All other DVB-T transmission parameters are independent from the transport stream bitrate. +
+  Triggered when option `--bitrate` is specified.
+
+See some examples in xref:tsterinfo-examples[xrefstyle=short].
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsterinfo [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-w* _value_ +
+*--bandwidth* _value_
+
+[.optdoc]
+Specify the OFMD bandwith in Hz, used to compute the resulting bitrate.
+
+[.optdoc]
+For compatibility with old versions, "low" values (below 1000) are interpreted in MHz.
+This means that values 8 and 8,000,000 are identical. Both mean 8 MHz.
+
+[.optdoc]
+The default is 8 MHz.
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Transport stream bitrate in bits/second, based on 188-byte packets.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+Given this bitrate, tsterinfo will try to guess the OFDM modulation parameters:
+bandwidth, high-priority stream error correction rate, constellation and guard interval.
+
+[.opt]
+*-c* _value_ +
+*--constellation* _value_
+
+[.optdoc]
+Specify the OFMD constellation, used to compute the resulting bitrate.
+Must be one of `QPSK`, `16-QAM`, `64-QAM` (default: `64-QAM`).
+
+[.opt]
+*-d* +
+*--default-region*
+
+[.optdoc]
+Display the default region for UHF/VHF band frequency layout.
+See also option `--hf-band-region`.
+
+[.opt]
+*-f* _value_ +
+*--frequency* _value_
+
+[.optdoc]
+Carrier frequency in Hz.
+UHF or VHF channel and offset will be displayed.
+
+[.opt]
+*-g* _value_ +
+*--guard-interval* _value_
+
+[.optdoc]
+Specify the OFMD guard interval, used to compute the resulting bitrate.
+Must be one of `1/32`, `1/16`, `1/8`, `1/4` (no default).
+
+[.opt]
+*-h* _value_ +
+*--high-priority-fec* _value_
+
+[.optdoc]
+Specify the OFMD error correction for high priority streams, used to compute the resulting bitrate.
+Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8` (no default).
+
+[.opt]
+*-m* _value_ +
+*--max-guess* _value_
+
+[.optdoc]
+When used with `--bitrate`, specify the maximum number of sets of modulation parameters to display.
+By default, display only one set of parameters, the one giving the closest bitrate.
+When the given bitrate is not exact and the transmission parameters are uncertain,
+it may be useful to display more than one possible set of values.
+The difference between the specified bitrate and nominal bitrate is displayed for each set of parameters.
+The various sets of parameters are displayed in increasing order of bitrate difference (ie. most probable parameters first).
+When more than one set of parameters give the same bitrate, they are all displayed, regardless of `--max-guess`.
+
+[.opt]
+*-o* _value_ +
+*--offset-count* _value_
+
+[.optdoc]
+Specify the number of offsets from the UHF or VHF channel.
+The default is zero.
+See options `--uhf-channel` and `--vhf-channel`.
+
+[.opt]
+*-s* +
+*--simple*
+
+[.optdoc]
+Produce simple output: only numbers, no comment, no formatting.
+Typically useful to write scripts and reuse `tsterinfo` output.
+
+[.opt]
+*-u* _value_ +
+*--uhf-channel* _value_
+
+[.optdoc]
+Specify the UHF channel number of the carrier.
+Can be combined with an `--offset-count` option.
+The resulting frequency will be displayed.
+
+[.opt]
+*-v* _value_ +
+*--vhf-channel* _value_
+
+[.optdoc]
+Specify the VHF channel number of the carrier.
+Can be combined with an `--offset-count` option.
+The resulting frequency will be displayed.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;hf-short]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

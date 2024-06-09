@@ -1,0 +1,43 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::AsyncReportArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Asynchronous logging options
+
+This application is multi-threaded.
+Each thread may log messages at any time.
+To avoid delaying an application thread, the messages are displayed asynchronously in a low priority thread.
+
+[.opt]
+*--log-message-count* _value_
+
+[.optdoc]
+Specify the maximum number of buffered log messages.
+This value specifies the maximum number of buffered log messages in memory, before being displayed.
+When too many messages are logged in a short period of time, while plugins use all CPU power,
+the low-priority log thread has no resource.
+If it cannot display on time, the buffered messages and extra messages are dropped.
+Increase this value if you think that too many messages are dropped.
+
+[.opt]
+*--synchronous-log*
+
+[.optdoc]
+With this option, each logged message is guaranteed to be displayed, synchronously, without any loss of message.
+The downside is that an application thread may be blocked for a short while when too many messages are logged.
+
+[.opt]
+*-t* +
+*--timed-log*
+
+[.optdoc]
+Each logged message contains a time stamp.

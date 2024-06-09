@@ -1,0 +1,41 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+= TSDuck User's Guide
+:author: Thierry Lelégard
+:description: TSDuck User's Guide
+:keywords: tsduck
+:doctype: book
+:toc: left
+:toclevels: 5
+:sectnums:
+:sectnumlevels: 4
+:source-highlighter: rouge
+:experimental:
+:icons: font
+:reproducible:
+:toc-title: Contents
+:appendix-caption: Appendix
+:chapter-refsig: chapter
+:section-refsig: section
+:appendix-refsig: appendix
+:d-arrow: pass:q[[.big]#&#x21D4;#]
+
+include::000-preface.adoc[]
+include::101-chap-overview.adoc[]
+include::102-chap-data-formats.adoc[]
+include::103-chap-commands.adoc[]
+include::104-chap-plugins.adoc[]
+include::105-chap-examples.adoc[]
+include::106-chap-troubleshooting.adoc[]
+include::107-chap-hardware.adoc[]
+include::20A-app-user-config.adoc[]
+include::20B-app-channel-config.adoc[]
+include::20C-app-monitor-config.adoc[]
+include::20D-app-si-xml.adoc[]
+include::20E-app-license.adoc[]
+include::20F-app-references.adoc[]

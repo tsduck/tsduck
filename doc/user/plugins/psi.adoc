@@ -1,0 +1,53 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== psi
+
+[.cmd-header]
+Collect PSI structure information
+
+This plugin extracts all PSI tables (PAT, CAT, PMT, NIT, BAT, SDT) from a transport stream.
+
+It is equivalent to the `tspsi` utility.
+Actually, the following two commands produce the same result:
+
+[source,shell]
+----
+$ tspsi options filename
+$ tsp -I file filename -P psi options -O drop
+----
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P psi [options]
+----
+
+include::{docdir}/opt/group-psi-logger.adoc[tags=!*]
+include::{docdir}/opt/group-section-display.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;cas;pds;std;timeref;charset]
+
+[.usage]
+Developers options
+
+The following options are reserved to C++, Java or Python developers.
+They are useful only when the plugin is used inside a custom application.
+
+[.opt]
+*--event-code* _value_
+
+[.optdoc]
+Signal a plugin event with the specified code for each section.
+
+[.optdoc]
+The event data is an instance of `PluginEventData` pointing to the section content.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

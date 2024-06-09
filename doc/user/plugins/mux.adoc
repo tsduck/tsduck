@@ -1,0 +1,186 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== mux
+
+[.cmd-header]
+Inject TS packets in a transport stream
+
+This plugin injects TS packets from a file into a transport stream, replacing packets from stuffing.
+
+NOTE: The name "mux" is probably a poor choice.
+This plugin a not a _multiplexer_ in the common sense of Digital TV.
+It only injects packets as they arrive,
+without the advanced synchonization features which are usually expected from a real multiplexer.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P mux [options] input-file
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+Name of the binary transport stream file to inject in the main transport stream.
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specifies the bitrate for the inserted packets, in bits/second.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+By default, all stuffing packets are replaced which means that the bitrate is neither constant nor guaranteed.
+
+[.opt]
+*--byte-offset* _value_
+
+[.optdoc]
+Start reading the file at the specified byte offset (default: 0).
+
+[.optdoc]
+This option is allowed only if the input file is a regular file.
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;input]
+
+[.opt]
+*-i* _value_ +
+*--inter-packet* _value_
+
+[.optdoc]
+Specifies the packet interval for the inserted packets,
+that is to say the number of TS packets in the main transport between two new packets.
+Use instead of `--bitrate` if the global bitrate of the TS cannot be determined.
+
+[.opt]
+*--inter-time* _milliseconds_
+
+[.optdoc]
+Specifies the time interval for the inserted packets,
+that is to say the difference between the nearest PCR clock value at the point of insertion in milliseconds.
+
+[.optdoc]
+*Example:* `--inter-time 1000` will keep roughly 1 second space between two inserted packets.
+The default is zero, it means inter-time is disabled.
+Use `--pts-pid` to specify the PID carrying the PCR clock of interest.
+
+[.opt]
+*-j* +
+*--joint-termination*
+
+[.optdoc]
+Perform a joint termination when the file insertion is complete.
+See the xref:tsp-reference[`tsp` reference documentation] for more details on xref:joint-termination[joint termination].
+
+[.opt]
+*--max-insert-count* _value_
+
+[.optdoc]
+Stop inserting packets after this number of packets was inserted.
+
+[.opt]
+*--max-pts* _value_
+
+[.optdoc]
+Stop inserting packets when this PTS time has passed in the `--pts-pid`.
+
+[.opt]
+*--min-pts* _value_
+
+[.optdoc]
+Start inserting packets when this PTS time has passed in the `--pts-pid`.
+
+[.opt]
+*--no-continuity-update*
+
+[.optdoc]
+Do not update continuity counters in the inserted packets.
+By default, the continuity counters are updated in each inserted PID to preserve the continuity.
+
+[.opt]
+*--no-pid-conflict-check*
+
+[.optdoc]
+Do not check PID conflicts between the TS and the new inserted packets.
+By default, the processing is aborted if packets from the same PID are found both in the TS and the inserted packets.
+
+[.opt]
+*--packet-offset* _value_
+
+[.optdoc]
+Start reading the file at the specified TS packet (default: 0).
+This option is allowed only if the input file is a regular file.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Force the PID value of all inserted packets.
+
+[.opt]
+*--pts-pid* _value_
+
+[.optdoc]
+Defines the PID carrying PCR or PTS values for `--min-pts` and `--max-pts`.
+When no PTS values are found, PCR are used.
+PCR values are divided by 300, the system clock sub-factor, to get the corresponding PTS values.
+
+[.opt]
+*-r* _count_ +
+*--repeat* _count_
+
+[.optdoc]
+Repeat the playout of the file the specified number of times.
+
+[.optdoc]
+By default, the file is infinitely repeated.
+This option is allowed only if the input file is a regular file.
+
+[.opt]
+*--reset-label* _label1[-label2]_
+
+[.optdoc]
+Clear the specified labels on the muxed packets.
+
+[.optdoc]
+Several `--reset-label` options may be specified.
+
+[.opt]
+*--set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on the muxed packets.
+
+[.optdoc]
+Several `--set-label` options may be specified.
+
+[.opt]
+*-t* +
+*--terminate*
+
+[.optdoc]
+Terminate packet processing when the file insertion is complete.
+By default, when packet insertion is complete, the transmission continues and the stuffing is no longer modified.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

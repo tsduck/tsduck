@@ -1,0 +1,53 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== stuffanalyze
+
+[.cmd-header]
+Analyze the level of stuffing in sections
+
+This plugin analyzes the level of "stuffing" in sections in a list of selected PID's.
+A section is considered as "stuffed" when its payload is larger than 2 bytes and filled with the same byte value
+(all 0x00 or all 0xFF for instance).
+
+The PID's to analyze can be selected manually or using CAS criteria.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P stuffanalyze [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_
+
+[.optdoc]
+Specify the output text file for the analysis result.
+By default, use the standard output.
+
+[.optdoc]
+WARNING: If you do not specify this option, be sure to redirect the output plugin to something different from the default.
+Otherwise, the text output of the analysis will be mixed with the binary output of the TS packets.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Analyze all sections from these PID values.
+Several `--pid` options may be specified.
+
+include::{docdir}/opt/group-cas-selection.adoc[tags=!*]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

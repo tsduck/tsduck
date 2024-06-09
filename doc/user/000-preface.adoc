@@ -1,0 +1,72 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-preface]
+[preface]
+== Preface
+
+TSDuck is a free and open-source MPEG Transport Stream Toolkit.
+It contains a set of simple but flexible command-line utilities that run on Linux, Windows, macOS and BSD systems.
+
+Through `tsp`, the "transport stream processor", many types of analysis and transformation can be applied on live or recorded transport streams.
+This utility can be extended through "plugins".
+Existing plugins can be enhanced, and new plugins can be developed using a library of C++ classes.
+
+This document is the user's guide for TSDuck.
+It explains the basic concepts of TSDuck and contains reference sections for all commands and plugins.
+
+Structure of this guide:
+
+* The xref:chap-data[xrefstyle=short] describes the data formats (transport stream, binary sections files, XML files).
+* The xref:chap-commands[xrefstyle=short] describes all TSDuck commands.
+* The xref:chap-plugins[xrefstyle=short] describes all `tsp` plugins.
+* The xref:chap-examples[xrefstyle=short] provides some concrete examples of TSDuck usage.
+* The xref:chap-hardware[xrefstyle=short] describes the level of test and support for some hardware devices, mainly
+  DVB receivers and Dektec, HiDes or VATek devices.
+
+The world of Digital Television is built on top of a set of robust standards from various bodies.
+Understanding these standards and how they interact is essential to use TSDuck.
+The relationships between these standards are explained in xref:compat-standards[xrefstyle=short].
+
+A bibliography of the main standard documents, as well as other useful links,
+is provided in the xref:bibliography[xrefstyle=short] at the very end of this guide.
+Each time it is necessary to refer to a standard document, a link similar to this one is present: <<ISO-13818-1>>.
+Just follow the link to have the complete description of the document in the bibliography.
+
+Like any technical field, Digital Television uses a lot of acronyms.
+A like of them is provided in xref:acronyms[xrefstyle=short].
+
+[.usage]
+License
+
+TSDuck is released under the terms of the license which is commonly referred to as
+"BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
+This is a liberal license which allows TSDuck to be used in a large number of environments.
+See the xref:chap-license[xrefstyle=short] for more details.
+
+[.usage]
+Documentation format
+
+The TSDuck user's guide is now formatted for HTML.
+The file `tsduck.html` is monolithic and self-sufficient, without reference to external images.
+Therefore, this HTML file can be downloaded, saved, and copied, as long as the license and content are not modified.
+
+The TSDuck user's guide is now built using https://asciidoctor.org[asciidoctor],
+from a set of text files which are maintained alongside the source code,
+in the same `git` repository.
+Up to TSDuck version 3.37, the user's guide was a Microsoft Word document.
+The document was distributed and available online as a PDF file only.
+
+PDF files are primarily designed as page-oriented documents for printing.
+The TSDuck user's guide is now too large to be printed and a PDF file is no longer
+necessary because the HTML version proposes the same navigation features
+as the previous PDF file (expandable table of contents in a left-side panel).
+
+A PDF version xref:tsduck.pdf[] is still available.
+However, due to limitations in the PDF generator of asciidoctor,
+the rendering is sometimes not as good as the HTML document.

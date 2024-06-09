@@ -1,0 +1,108 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== feed
+
+[.cmd-header]
+Extract an encapsulated TS from an outer feed TS
+
+This plugin is experimental and implements no identified specification.
+
+It selects one PID from the input transport stream.
+This PID shall contain an encapsulated transport stream.
+This plugin extracts the embedded transport stream from the original PID.
+
+The encapsulation format has been observed in a few real-world feeds.
+It is rudimentary and unreliable.
+The TS packets of the inner transport stream are concatenated and
+the resulting stream is simply spread over the payloads of the encapsulation PID.
+There is no synchronization mechanism.
+There is no payload unit start indicator in any TS packet of the encapsulation PID.
+Resynchronization of the inner TS is empirically done on 0x47 bytes,
+even though such a byte can be in fact a data byte inside a packet payload.
+
+By default, the input transport stream is completely replaced with the extracted stream.
+Using the option `--output-file`, the extracted encapsulated transport stream is saved in a file and,
+in that case, the input transport stream is passed unmodified.
+
+The encapsulation PID is automatically detected as the first PID with stream type 0x90
+in the PMT of a service which has service type 0x80.
+Options exist to override these values.
+If there are several encapsulation PID’s in the outer TS or if the encapsulation PID is not correctly identified in the PMT,
+use the option `--pid` to specify the target encapsulation PID.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P feed [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--append*
+
+[.optdoc]
+With `--output-file`, if the file already exists, append to the end of the file.
+
+[.optdoc]
+By default, existing files are overwritten.
+
+[.opt]
+*-k* +
+*--keep*
+
+[.optdoc]
+With `--output-file`, keep existing file (abort if the specified file already exists).
+
+[.optdoc]
+By default, existing files are overwritten.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify that the extracted stream is saved in this file.
+In that case, the outer transport stream is passed unchanged to the next plugin.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID carrying the inner encapsulated stream.
+
+[.optdoc]
+By default, the plugin automatically locates and uses the first component
+with the specified stream type in a service with the specified service type.
+
+[.opt]
+*--service-type* _value_
+
+[.optdoc]
+Specify the service type carrying inner encapsulated streams.
+
+[.optdoc]
+By default, use 0x80.
+
+[.opt]
+*--stream-type* _value_
+
+[.optdoc]
+Specify the stream type carrying inner encapsulated streams inside a service.
+
+[.optdoc]
+By default, use 0x90.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

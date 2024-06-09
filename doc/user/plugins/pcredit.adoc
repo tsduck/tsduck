@@ -1,0 +1,120 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcredit
+
+[.cmd-header]
+Edit PCR, PTS and DTS values in various ways
+
+This plugin edits PCR, PTS and DTS values in selected PID’s, shifting the corresponding timestamps.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pcredit [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--add-dts* _value_
+
+[.optdoc]
+Add the specified quantity to all DTS values (can be negative).
+
+[.optdoc]
+See options `--unit` and `--random` for the interpretation of the value.
+
+[.opt]
+*--add-pcr* _value_
+
+[.optdoc]
+Add the specified quantity to all PCR values (can be negative).
+
+[.optdoc]
+See options `--unit` and `--random` for the interpretation of the value.
+
+[.opt]
+*--add-pts* _value_
+
+[.optdoc]
+Add the specified quantity to all PTS values (can be negative).
+
+[.optdoc]
+See options `--unit` and `--random` for the interpretation of the value.
+
+[.opt]
+*-i* +
+*--ignore-scrambled*
+
+[.optdoc]
+Do not modify PCR values on PID's containing scrambled packets.
+
+[.optdoc]
+On scrambled PID's, only the PCR's can be modified.
+The PTS and DTS are scrambled and cannot be edited.
+
+[.opt]
+*-n* +
+*--negate-pids*
+
+[.optdoc]
+Negate the selection of `--pid` options.
+
+[.optdoc]
+All PID's except the specified ones will have their timestamps edited.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specifies PID's where PCR, DTS and PTS values shall be edited.
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+[.optdoc]
+By default, all PID's are modified.
+
+[.opt]
+*-r* +
+*--random*
+
+[.optdoc]
+The absolute values of `--add-pcr`, `--add-dts`, `--add-pts` are used as maximum values.
+For each time stamp to modify, the added value is a new random number in the range _-n_ to _+n_
+where _n_ is the absolute value of the corresponding parameter.
+
+[.optdoc]
+This option is typically used to intentionally corrupt time stamps.
+
+[.opt]
+*-u* _name_ +
+*--unit* _name_
+
+[.optdoc]
+Specify the unit of numeric values for options such as `--add-pcr`, `--add-pts` or `--add-dts`.
+
+[.optdoc]
+Must be one of `default`, `dts`, `millisecond`, `nanosecond`, `pcr`, `pts`.
+
+[.optdoc]
+The default unit is `default`, meaning that each value is a raw number to be applied
+(`--add-pcr` value is in PCR units, `--add-pts` value is in PTS units, etc.)
+
+[.optdoc]
+Otherwise, it is possible to provide uniform values for all options in PCR units,
+PTS/DTS units (the same), nanoseconds or milliseconds.
+The specified values will be converted into the appropriate PCR or PTS/DTS units for each edited field.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

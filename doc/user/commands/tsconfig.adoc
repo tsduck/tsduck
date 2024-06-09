@@ -1,0 +1,203 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+[#tsconfig-ref]
+=== tsconfig
+
+[.cmd-header]
+Configuration options to build applications (developers only)
+
+This command is installed on UNIX systems only (Linux, macOS, BSD).
+
+For developers, it generates the various build options for
+the current operating system and is used by developers to build their applications.
+
+Without any option, `tsconfig` displays all configuration options.
+With one or more specific options, it outputs command line options for the compiler, the linker or installation commands.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsconfig [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--bin*
+
+[.optdoc]
+Display the directory for TSDuck executables.
+
+[.opt]
+*--cflags*
+
+[.optdoc]
+Display the pre-processor and compiler flags.
+In a makefile, this is used in `CFLAGS` and `CXXFLAGS`.
+
+[.opt]
+*--config*
+
+[.optdoc]
+Display the directory for TSDuck configuration files.
+
+[.optdoc]
+TSDuck extensions should store their `.xml` or `.names` files there.
+
+[.opt]
+*--help*
+
+[.optdoc]
+Display command help text.
+
+[.opt]
+*--include*
+
+[.optdoc]
+Display the include directory.
+
+[.opt]
+*--install-dvb-firmware*
+
+[.optdoc]
+*Linux only*: download and install additional DVB firmware.
+
+[.optdoc]
+Depending on the distro, some firmware files are installed with standard packages such as `linux-firmware`.
+Some USB tuners need additional firmware from non-standard sources.
+Using this option, `tsconfig` downloads and installs some known additional firmware files for DVB tuners.
+
+[.optdoc]
+Must be root to use that option.
+
+[.opt]
+*--java*
+
+[.optdoc]
+Display the jar file for TSDuck Java bindings, to be added in `CLASSPATH`.
+
+[.opt]
+*--lib*
+
+[.optdoc]
+Display the directory for TSDuck dynamic libraries (except plugins).
+
+[.optdoc]
+TSDuck extensions should store their `tslibext_xxx.so` libraries there
+(`.dylib` on macOS, `.dll` on Windows).
+
+[.opt]
+*--libs*
+
+[.optdoc]
+Display the library linking flags.
+In a makefile, this is used in `LDLIBS`.
+
+[.opt]
+*--nostdcpp*
+
+[.optdoc]
+When present before `--cflags`, no C++ standard level is imposed in the compilation flags.
+
+[.optdoc]
+By default, the command `tsconfig --cflags` forces C++17 as level of C++ language standard.
+If your application requires a more recent level, define the environment variable `TS_NOSTDCPP` to any non-empty value.
+This disables the C++ standard option in `tsconfig`.
+The application shall then define its own C++ standard in its command line.
+This user-specified C++ standard cannot be lower than C++17.
+
+[.optdoc]
+Alternatively, the command `tsconfig --nostdcpp --cflags` can be used to omit the C++ standard
+from the compilation options without defining the environment variable `TS_NOSTDCPP`.
+
+[.opt]
+*--plugin*
+
+[.optdoc]
+Display the directory for TSDuck plugins.
+
+[.optdoc]
+TSDuck extensions should store their `tsplugin_xxx.so` libraries there (`.dylib` on macOS, `.dll` on Windows).
+
+[.opt]
+*--prefix*
+
+[.optdoc]
+Display the installation prefix.
+
+[.opt]
+*--python*
+
+[.optdoc]
+Display the directory for TSDuck Python bindings, to be added in `PYTHONPATH`.
+
+[.opt]
+*--so*
+
+[.optdoc]
+Display the shared object files extension (`.so`, `.dylib`, `.dll`).
+
+[.opt]
+*--static-libs*
+
+[.optdoc]
+Display the static library linking flags.
+In a makefile, this is used in `LDLIBS`.
+
+[.opt]
+*--vernum*
+
+[.optdoc]
+Display the TSDuck version as a number.
+
+[.opt]
+*--version*
+
+[.optdoc]
+Display the TSDuck version as found in the development environment.
+
+[.usage]
+Sample usages
+
+The following commands are used to build an application using the TSDuck library:
+
+[source,shell]
+----
+$ gcc $(tsconfig --cflags) app.cpp -o app.o
+$ gcc app.o $(tsconfig --libs) -o app
+----
+
+In a GNU makefile, the developer should use:
+
+[source,shell]
+----
+CXXFLAGS += $(shell tsconfig --cflags)
+LDLIBS += $(shell tsconfig --libs)
+----
+
+If the application is a TSDuck extension providing one or more plugins,
+the installation commands in the makefile are like this:
+
+[source,shell]
+----
+$ install -m 644 tslibext_foo.so $(shell tsconfig --lib)
+$ install -m 644 tsplugin_*.so $(shell tsconfig --plugin)
+----
+
+To use the Java and Python bindings:
+
+[source,shell]
+----
+$ export CLASSPATH="$(tsconfig --java):$CLASSPATH"
+$ export PYTHONPATH="$(tsconfig --python):$PYTHONPATH"
+----

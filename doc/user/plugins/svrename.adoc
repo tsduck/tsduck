@@ -1,0 +1,118 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== svrename
+
+[.cmd-header]
+Rename a service
+
+This plugin renames a service.
+It assigns a new service name and/or a new service id.
+
+The PAT, PMT of the service, SDT-Actual, NIT-Actual and BAT are modified.
+
+The service id is modified in the PAT, PMT and SDT Actual.
+It is modified in the _service_list_descriptor_ and _logical_channel_number_descriptor_ (EACEM/EICTA private descriptor)
+of the NIT-Actual and the BAT.
+The service name is modified in the SDT-Actual.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P svrename [options] [service]
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_service_
+
+[.optdoc]
+Specifies the service to rename.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+When the service is omitted, the first service in the PAT is used.
+This is especially convenient when the transport stream is an SPTS.
+
+[.usage]
+Options
+
+[.opt]
+*-f* _value_ +
+*--free-ca-mode* _value_
+
+[.optdoc]
+Specify a new _free_CA_mode_ to set in the SDT (0 or 1).
+
+[.opt]
+*-i* _value_ +
+*--id* _value_
+
+[.optdoc]
+Specify a new service id value.
+
+[.opt]
+*--ignore-bat*
+
+[.optdoc]
+Do not modify the BAT.
+
+[.opt]
+*--ignore-eit*
+
+[.optdoc]
+Do not modify the EIT's for this service.
+
+[.opt]
+*--ignore-nit*
+
+[.optdoc]
+Do not modify the NIT.
+
+[.opt]
+*-l* _value_ +
+*--lcn* _value_
+
+[.optdoc]
+Specify a new logical channel number (LCN).
+
+[.opt]
+*-n* _name_ +
+*--name* _name_
+
+[.optdoc]
+Specify a new service name.
+
+[.opt]
+*-p* _name_ +
+*--provider* _name_
+
+[.optdoc]
+Specify a new provider name.
+
+[.opt]
+*-r* _value_ +
+*--running-status* _value_
+
+[.optdoc]
+Specify a new running_status to set in the SDT (0 to 7).
+
+[.opt]
+*-t* _value_ +
+*--type* _value_
+
+[.optdoc]
+Specify a new service type.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

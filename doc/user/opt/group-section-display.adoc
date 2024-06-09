@@ -1,0 +1,59 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TablesDisplay.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Sections display format options
+
+These options affect the way individual sections are displayed.
+
+[.opt]
+*-c* +
+*--c-style*
+
+[.optdoc]
+Same as `--raw-dump` (no interpretation of section) but dump the bytes in C-language style,
+e.g. "0x01, 0x02," instead of "01 02".
+Useful to include this output as data in a C source file.
+
+[.opt]
+**--nested-tlv**__[=min-size]__
+
+[.optdoc]
+With option `--tlv`, try to interpret the value field of each TLV record as another TLV area.
+If the `_min-size_` value is specified, the nested TLV interpretation is performed only on value fields larger than this size.
+The syntax of the nested TLV is the same as the enclosing TLV.
+
+[.opt]
+*-r* +
+*--raw-dump*
+
+[.optdoc]
+Raw dump of section, no interpretation.
+
+[.opt]
+*--tlv* _syntax_
+
+[.optdoc]
+For sections of unknown types, this option specifies how to interpret some parts of the section payload as TLV records.
+Several `--tlv` options are allowed, each one describes a part of the section payload.
+
+[.optdoc]
+Each syntax string has the form `_start,size,tagSize,lengthSize,order_`.
+The `_start_` and `_size_` fields define the offset and size of the TLV area in the section payload.
+If the size field is `auto`, the TLV extends up to the end of the section.
+If the start field is `auto`, the longest TLV area in the section payload will be used.
+The fields `_tagSize_` and `_lengthSize_` indicate the size in bytes of the Tag and Length fields in the TLV structure.
+The field `_order_` must be either `msb` or `lsb` and indicates the byte order of the Tag and Length fields.
+
+[.optdoc]
+All fields are optional.
+The default values are `auto,auto,1,1,msb`.

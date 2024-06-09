@@ -1,0 +1,281 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsdektec
+
+[.cmd-header]
+Dektec device control
+
+This utility controls Dektec devices, which include input and/or output DVB-ASI devices or modulators (see <<Dektec>>).
+
+[.usage]
+Restrictions
+
+This command is available on Linux and Windows only, Intel processors only.
+Dektec provides no software support on macOS and other processors.
+Moreover, this command may be unavailable on some Linux distributions since it integrates a closed-source library from Dektec,
+which is prohibited by the policy of some distributions.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsdektec [options] [device]
+----
+
+[.usage]
+Device
+
+[.optdoc]
+The optional parameter is a device index, from 0 to N-1 (with N being the number of Dektec devices in the system).
+The default is 0, the first device.
+
+[.optdoc]
+Use option `--list-all` (or `-a`) to have a complete list of devices in the system.
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--list-all*
+
+[.optdoc]
+List all Dektec devices available on the system.
+
+[.opt]
+*-i* _port-number_ +
+*--input* _port-number_
+
+[.optdoc]
+Set the specified port in input mode.
+This applies to bidirectional ports which can be either set in input or output mode.
+The port number of each channel can be seen using the command `tsdektec -av`.
+
+[.opt]
+*-l* _state_ +
+*--led* _state_
+
+[.optdoc]
+Set the state of the LED on the rear panel.
+Useful to identify a Dektec device when more than one is present.
+The state is one of `off`, `green`, `red`, `yellow`, `blue`, `hardware`.
+See also option `--wait` (the led state is automatically returned to `hardware` after exit).
+
+[.opt]
+*-n* +
+*--normalized*
+
+[.optdoc]
+With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).
+
+[.opt]
+*-o* _port-number_ +
+*--output* _port-number_
+
+[.optdoc]
+Set the specified port in output mode.
+This applies to bidirectional ports which can be either set in input or output mode.
+The port number of each channel can be seen using the command `tsdektec -av`.
+
+[.opt]
+*-p* _value_ +
+*--power-mode* _value_
+
+[.optdoc]
+On DTU-315 USB modulators, set the power mode to the specified value.
+
+[.optdoc]
+Must be one of `high-quality`, `low-power`.
+
+[.opt]
+*-r* +
+*--reset*
+
+[.optdoc]
+Reset the device.
+
+[.opt]
+*-w* _seconds_ +
+*--wait* _seconds_
+
+[.optdoc]
+Wait the specified number of seconds before exiting.
+
+[.optdoc]
+The default if 5 seconds if option `--led` is specified and 0 otherwise.
+
+include::{docdir}/opt/group-json-output.adoc[tags=!*;json-short;dektec]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]
+
+[.usage]
+Normalized output format
+
+In normalized output, each line describes one object (driver, device, channel, etc).
+The format of each line is:
+
+[source,text]
+----
+type:name[=value]:...
+----
+
+The _type_ identifies the kind of object which is described by the line.
+The _name_ identifies a characteristics for the object with an optional value.
+There is no space characters.
+All integer values are in decimal format.
+
+The normalized syntax can be used to search for specific objects with specific characteristics.
+See also the description of the command `tsanalyze` for another example of normalized output.
+
+[.usage]
+Normalized object types
+
+The list of types, at beginning of lines, is the following:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|dtapi: |Description of the Dektec runtime library ("DTAPI"). There is always one single dtapi line.
+|driver: |Description of one type of Dektec device driver.
+|device: |Description of one Dektec device.
+|channel: |Description of one channel inside a Dektec device.
+|===
+
+[.usage]
+Normalized DTAPI characteristics
+
+The characteristics in `dtapi:` lines are:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|:version=string: |Version of the DTAPI.
+|===
+
+[.usage]
+Normalized driver characteristics
+
+The characteristics in `driver:` lines are:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|:pci: |This is a PCI driver (Dta1xx)
+|:usb: |This is a USB driver (Dtu2xx)
+|:version=string: |Version of the driver.
+|===
+
+[.usage]
+Normalized device characteristics
+
+The characteristics in `device:` lines are:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|:address=int: |USB address.
+|:bus=int: |PCI bus number.
+|:device=int: |Device index.
+|:device-id=int: |Device id
+|:fw-variant=int: |Firmware variant.
+|:fw-version=int: |Firmware version.
+|:model=string: |Device model name.
+|:nb-input=int: |Count of input ports.
+|:nb-output=int: |Count of output ports.
+|:nb-port=int: |Count of all ports.
+|:pci: |This is a PCI device.
+|:serial=int: |Serial number.
+|:slot=int: |PCI slot number in the PCI bus.
+|:subsys-id=int: |Subsystem id
+|:subsys-vendor-id=int: |Subsystem vendor id
+|:usb: |This is a USB device.
+|:vendor-id=int: |Vendor id
+|:vpd-bo=string: |Bitrate offset (from Vital Product Data area)
+|:vpd-cl=string: |Customer id (from Vital Product Data area)
+|:vpd-ec=string: |Engineering change level (from Vital Product Data area)
+|:vpd-id=string: |Device description (from Vital Product Data area)
+|:vpd-mn=string: |Manufacture id (from Vital Product Data area)
+|:vpd-pd=string: |Production date (from Vital Product Data area)
+|:vpd-pn=string: |Part number (from Vital Product Data area)
+|:vpd-sn=string: |Serial number (from Vital Product Data area)
+|:vpd-xt=string: |Crystal stability (from Vital Product Data area)
+|===
+
+[.usage]
+Normalized channel characteristics
+
+The characteristics in `channel:` lines are:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|:access-downconverted: |Access to downconverted signal.
+|:adjust-level: |Adjustable level
+|:asi: |This is a DVB/ASI port.
+|:asi-raw-10bit: |Raw 10-bit ASI mode available.
+|:atsc: |ATSC modulator.
+|:bidir: |This is a bidirectional port.
+|:channel=int: |Channel index inside device.
+|:channel-modelling: |Channel modelling available.
+|:cmmb: |CMMB modulator.
+|:dedicated-clock-input: |Dedicated clock input available.
+|:dedicated-clock-input-ratio: |Dedicated clock input available, can be divided by providing a ratio.
+|:device=int: |Device index of the device containing the channel.
+|:diversity: |Diversity mode available.
+|:double-buffer: |This is a double-buffered device.
+|:dtmb: |DTMB modulator.
+|:dvb-c: |DVB-C modulator.
+|:dvb-c2: |DVB-C2 modulator.
+|:dvb-raw-10bit: |DVB 10-bit raw mode available.
+|:dvb-s: |DVB-S modulator.
+|:dvb-s2: |DVB-S2 modulator.
+|:dvb-t: |DVB-T modulator.
+|:dvb-t2: |DVB-T2 modulator.
+|:dvb-t2-mi: |DVB-T2-MI modulator.
+|:failsafe: |Failsafe
+|:if-output: |IF output
+|:ip=string: |IP address
+|:io-clock-select: |I/O clock selection available.
+|:io-config: |I/O standard and mode configuration available.
+|:io-rate-select: |TS rate clock selection available.
+|:iq-output: |Digital IQ output.
+|:iq-samples: |Direct I/Q samples available.
+|:isdb-s: |ISDB-S modulator.
+|:isdb-t: |ISDB-T modulator.
+|:lband: |L-Band
+|:lock-io-rate: |Lock output to input TS rate available.
+|:loop-through: |Loop-through available.
+|:lvds1: |SPI LVDS1 available.
+|:lvds2: |SPI LVDS2 available.
+|:lvttl: |SPI LVTTL available.
+|:mac=string: |MAC address
+|:modulator: |This is a modulator port.
+|:port=int: |Port number.
+|:qam: |QAM modulator.
+|:qam-a: |QAM-A (DVB-C) modulator.
+|:qam-b: |QAM-B (USA) modulator.
+|:qam-c: |QAM-C (Japan) modulator.
+|:shared-input: |Shared antenna input available.
+|:sdi: |This is an SDI port.
+|:sdi-time-stamp: |SDI frames time-stamping available.
+|:sdi-time-stamp-64: |SDI frames 64-bit time-stamping available.
+|:snr-setting: |SNR setting available.
+|:spi: |This is an SPI port.
+|:spi-external-clock: |SPI external clock available.
+|:spi-fixed-clock: |SPI fixed clock available.
+|:spi-serial-8-bit: |SPI serial 8-bit available.
+|:spi-serial-10-bit: |SPI serial 10-bit available.
+|:transmit-on-time-stamp: |Transmission on time-stamp available.
+|:transparent: |Transparent mode available.
+|:ts-over-ip: |This an IP port, for TS over IP.
+|:uhf: |UHF modulator.
+|:vhf: |VHF modulator.
+|:virtual-stream: |Virtual stream channel.
+|===

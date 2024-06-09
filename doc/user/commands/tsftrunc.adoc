@@ -1,0 +1,73 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsftrunc
+
+[.cmd-header]
+Transport stream file truncation
+
+This utility truncates a captured transport stream file to remove trailing incomplete packets.
+
+See also the utility `tsresync` for a more powerful way to recover corrupted transport stream files.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsftrunc [options] file ...
+----
+
+[.usage]
+Files
+
+[.optdoc]
+MPEG transport stream files. They must be binary streams of 188-byte packets.
+
+[.optdoc]
+The files must be regular files (cannot be pipes). They are open in read/write mode and are directly updated.
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--byte* _value_
+
+[.optdoc]
+Truncate the file at the next packet boundary after the specified size in bytes.
+Mutually exclusive with `--packet`.
+
+[.opt]
+*-n* +
+*--noaction*
+
+[.optdoc]
+Do not perform truncation, check mode only.
+
+[.opt]
+*-p* _value_ +
+*--packet* _value_
+
+[.optdoc]
+Index of first packet to truncate.
+If unspecified, all complete packets are kept in the file.
+Extraneous bytes at end of file (after last multiple of 188 bytes) are truncated.
+
+[.opt]
+*-s* _value_ +
+*--size-of-packet* _value_
+
+[.optdoc]
+Specify the TS packet size in bytes. The default is 188 bytes.
+
+[.optdoc]
+Alternate packet sizes are useful for M2TS or other TS file formats.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

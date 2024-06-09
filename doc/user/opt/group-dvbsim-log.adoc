@@ -1,0 +1,48 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options to log DVB SimulCrypt protocols.
+//
+// tags: ecmg, emmg
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+DVB SimulCrypt logging options
+
+:opt-proto: DVB SimulCrypt
+:opt-data: data
+
+// tag::ecmg[]
+:opt-proto: ECMG{d-arrow}SCS
+:opt-data: CW_provision and ECM_response
+// end::ecmg[]
+
+// tag::emmg[]
+:opt-proto: EMMG/PDG{d-arrow}MUX
+:opt-data: data_provision
+// end::emmg[]
+
+[.opt]
+**--log-data**__[=level]__
+
+[.optdoc]
+Same as `--log-protocol` but applies to _{opt-data}_ messages only.
+
+[.optdoc]
+To debug the session management without being flooded by data messages, use `--log-protocol=info --log-data=debug`.
+
+[.opt]
+*--log-protocol[=level]*
+
+[.optdoc]
+Log all {opt-proto} protocol messages using the specified level.
+If the option is not present, the messages are logged at `debug` level only.
+If the option is present without value, the messages are logged at `info` level.
+
+[.optdoc]
+A level can be a numerical debug level or any of the following:
+`fatal`, `severe`, `error`, `warning`, `info`, `verbose`, `debug`.

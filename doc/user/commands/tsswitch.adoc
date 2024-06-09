@@ -1,0 +1,454 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsswitch
+
+[.cmd-header]
+Transport stream input source switch using remote control
+
+This utility uses several transport stream inputs and one single output.
+One input is selected and passed to the output.
+Using either predefined policies or remote control, it is possible to switch back and forth between inputs.
+
+All inputs and output are performed using external plugins.
+These plugins are the same as the plugins which are used by `tsp`.
+
+Using the input plugins `file` or `fork`, it is possible to connect applications to some `tsswitch` input.
+One of these applications can be `tsp`,
+in which case it is possible to insert specific processing between the input plugin and the switch.
+
+See a sample usage with a system diagram in xref:tsswitch-examples[xrefstyle=short].
+
+[.usage]
+Cycling through input plugins
+
+The list of input plugins is ordered by index on the command line, from 0 to n-1.
+By default, the input plugin 0 is started when the command starts.
+When a plugin terminates (end of input or error), the next one is started.
+When the last plugin terminates, the `tsswitch` command terminates.
+
+Running all input plugins in sequence, from 0 to n-1, is called a cycle.
+By default, only one cycle is executed before `tsswitch` terminates.
+Using the option `--cycle`, it is possible to execute a given number of cycles.
+With the option` --infinite`, `tsswitch` runs endlessly.
+
+With the option `--terminate`, `tsswitch` terminates when the current plugin terminates.
+In this case, without remote control, `tsswitch` only executes the first plugin.
+If the remote control was used to switch to another input,
+`tsswitch` terminates when the current plugin terminates, whichever it is.
+
+[.usage]
+Input switching modes
+
+There are three different modes when switching from an input plugin to another one.
+
+By default, only one input plugin is active at a time.
+When `tsswitch` starts, the first plugin is started.
+When an input switch is requested, the current plugin is first stopped.
+When the stop operation is complete, the next plugin is started.
+This mode is required when two plugins use the same input device such as a tuner.
+Since the device cannot be shared, it must be completely stopped and closed before being reused by the next plugin.
+This is the safest mode.
+The downside is that there could be a transmission hole in the output during the switch.
+
+With option `--delayed-switch`, the switching operation is slightly different.
+The next plugin is started first.
+In the meantime, output packets continue to be fetched from the previous input plugin.
+When the next plugin starts to receive packets, the switch is performed:
+output packets are now read from the next plugin.
+Finally, the previous input plugin is stopped.
+This mode guarantees a smooth transition.
+However, the actual output switch is delayed until the next plugin is fully operational.
+
+With option `--fast-switch`, all input plugins are started in parallel from the beginning and are never stopped.
+All input plugins continuously read packets and fill their buffer.
+The current plugin performs normal flow control with the output plugin, without packet loss.
+All other input plugins continuously overwrite their circular input buffer.
+When an input switch is requested,
+the output plugin immediately jumps into the next plugin buffer where the latest packets are already available.
+This mode guarantees a smooth and immediate switch.
+It is appropriate for live streams only.
+
+[.usage]
+Remote control
+
+Using the option `--remote`, `tsswitch` listens to UDP datagrams on a given port.
+Each datagram contains one switch command.
+A command is an ASCII string.
+Any trailing control characters such as CR or LF is ignored.
+
+The command string can be one of:
+
+* An input index (e.g. `0`, `1`, `2`", etc.)
+  Upon reception, tsswitch immediately switches to the selected input plugin.
+* Strings `next` and `previous` (or `prev`) to switch to the next and previous input, respectively.
+* Strings `exit` or `quit` to properly terminate `tsswitch`.
+* Strings `halt` or `abort` to immediately abort the `tsswitch` process.
+
+The `bash` shell provides an easy way to redirect output to a UDP message.
+The following sample commands send UDP messages on port 4444 to system 127.0.0.1 (the local host).
+
+[source,shell]
+----
+$ echo >/dev/udp/127.0.0.1/4444 2
+$ echo >/dev/udp/127.0.0.1/4444 next
+$ echo >/dev/udp/127.0.0.1/4444 prev
+$ echo >/dev/udp/127.0.0.1/4444 exit
+----
+
+This is the easiest way to use the `tsswitch` remote control.
+Note that this is a feature of `bash`, not a Linux feature.
+It is available on all platforms, including macOS and Cygwin or Msys on Windows.
+
+[.usage]
+Event notification
+
+It is possible to notify some external system of switching events, typically when a new input is selected.
+This can be done in two ways.
+First, it is possible to launch an external shell command each time a switching event occurs.
+Second, it is possible to send a JSON description of the event over UDP (possibly on a multicast address if necessary).
+
+As an example, the following command demonstrates both methods at the same time:
+
+[source,shell]
+----
+$ tsswitch --infinite --event-command "echo ==== EVENT" --event-udp localhost:4444 \
+    -I fork "tsp -I file $FILE1 -P regulate -P until --second 5" \
+    -I fork "tsp -I file $FILE2 -P regulate -P until --second 5" \
+    -O drop
+----
+
+The output of the command illustrates how the `--event-command` option works:
+
+[source,text]
+----
+==== EVENT newinput 0 0
+==== EVENT newinput 0 1
+==== EVENT newinput 1 0
+==== EVENT newinput 0 1
+==== EVENT newinput 1 0
+==== EVENT newinput 0 1
+...
+----
+
+The first message refers to the command startup, using input #0 as initial input.
+All other messages refer to switching events from input #0 to input #1 or vice-versa.
+
+To demonstrate the usage of the JSON UDP messages, we use the following command from another session running in parallel.
+It loops on reception of one UDP message using the command `nc` (netcat).
+The output of `nc` is piped into `jq` (JSON query) to display an indented and colored output of the JSON message.
+
+[source,shell]
+----
+$ while true; do nc -u -l -w 0 4444 | jq; done
+{
+  "command": "tsswitch",
+  "event": "newinput",
+  "new-input": 0,
+  "origin": "tsduck",
+  "previous-input": 1,
+  "timestamp": "2021/03/13 19:33:42.595"
+}
+{
+  "command": "tsswitch",
+  "event": "newinput",
+  "new-input": 1,
+  "origin": "tsduck",
+  "previous-input": 0,
+  "timestamp": "2021/03/13 19:33:47.688"
+}
+{
+  "command": "tsswitch",
+  "event": "newinput",
+  "new-input": 0,
+  "origin": "tsduck",
+  "previous-input": 1,
+  "timestamp": "2021/03/13 19:33:52.780"
+}
+...
+----
+
+[.usage]
+Usage
+
+The general syntax of the tsswitch command is the following:
+
+[source,shell]
+----
+$ tsswitch [tsswitch-options] \
+           -I input-name [input-options] ... \
+           [-O output-name [output-options]]
+----
+
+All `_tsswitch-options_` must be placed on the command line before the input and output plugin specifications.
+There must be at least one input plugin and at most one output plugin.
+The default output plugin is `file`, sending all packets to the standard output.
+
+On the command line, the order of the input plugins is significant.
+They are indexed from 0 to n-1.
+This index value is used in the remote control protocol to select an input stream.
+
+[.usage]
+Plugin activation options
+
+[.opt]
+*-I* _name_
+
+[.optdoc]
+Designate a shared library plugin for packet input.
+There is no default.
+At least one input plugin shall be specified.
+
+[.opt]
+*-O* _name_
+
+[.optdoc]
+Designate the shared library plugin for packet output.
+By default, write packets to standard output.
+
+All input and output plugins which are available for `tsp` can be used by `tsswitch`.
+See the description of the command `tsp` for the method to locate the plugin files.
+
+[.usage]
+General options
+
+[.opt]
+*-b* _value_ +
+*--buffer-packets* _value_
+
+[.optdoc]
+Specify the size in TS packets of each input plugin buffer.
+The default is 512 packets.
+
+[.opt]
+*-l* +
+*--list-plugins*
+
+[.optdoc]
+List all available plugins.
+
+[.opt]
+*--max-input-packets* _value_
+
+[.optdoc]
+Specify the maximum number of TS packets to read at a time. This value may impact the
+switch response time. The default is 128 packets. The actual value is never more than half the -
+-buffer-packets value.
+
+[.opt]
+*--max-output-packets* _value_
+
+[.optdoc]
+Specify the maximum number of TS packets to write at a time.
+The default is 128 packets.
+
+[.usage]
+Input cycles options
+
+[.opt]
+*-c* _value_ +
+*--cycle* _value_
+
+[.optdoc]
+Specify how many times to repeat the cycle through all input plugins in sequence.
+By default, all input plugins are executed in sequence only once (`--cycle 1`).
+The options `--cycle`, `--infinite` and `--terminate` are mutually exclusive.
+
+[.opt]
+*--first-input* _value_
+
+[.optdoc]
+Specify the index of the first input plugin to start.
+By default, the first plugin (index 0) is used.
+
+[.opt]
+*-i* +
+*--infinite*
+
+[.optdoc]
+Infinitely repeat the cycle through all input plugins in sequence.
+
+[.opt]
+*-t* +
+*--terminate*
+
+[.optdoc]
+Terminate execution when the current input plugin terminates.
+
+[.usage]
+Input modes options
+
+[.opt]
+*-d* +
+*--delayed-switch*
+
+[.optdoc]
+Perform delayed input switching.
+When switching from one input plugin to another one, the second plugin is started first.
+Packets from the first plugin continue to be output while the second plugin is starting.
+Then, after the second plugin starts to receive packets, the switch occurs:
+packets are now fetched from the second plugin.
+Finally, after the switch, the first plugin is stopped.
+
+[.optdoc]
+By default, the current input is first stopped and then the next one is started.
+Options `--delayed-switch` and `--fast-switch` are mutually exclusive.
+
+[.opt]
+*-f* +
+*--fast-switch*
+
+[.optdoc]
+Perform fast input switching.
+All input plugins are started at once and they continuously receive packets in parallel.
+Packets are dropped, except for the current input plugin.
+This option is typically used when all inputs are live streams on distinct devices
+(not the same DVB tuner for instance).
+
+[.optdoc]
+By default, only one input plugin is started at a time.
+When switching, the current input is first stopped and then the next one is started.
+Options `--delayed-switch` and `--fast-switch` are mutually exclusive.
+
+[.opt]
+*-p* _value_ +
+*--primary-input* _value_
+
+[.optdoc]
+Specify the index of the input plugin which is considered as primary or preferred.
+
+[.optdoc]
+This input plugin is always started, never stopped, even without `--fast-switch`.
+When no packet is received on this plugin, the normal switching rules apply.
+However, as soon as packets are back on the primary input, the reception is immediately switched back to it.
+
+[.optdoc]
+By default, there is no primary input, all input plugins are equal.
+
+[.opt]
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify a receive timeout in milliseconds (independently of any equivalent feature the input plugins).
+
+[.optdoc]
+When the current input plugin has received no packet within this timeout, automatically switch to the next plugin.
+
+[.optdoc]
+By default, without `--primary-input`, there is no automatic switch when the current input plugin is waiting for packets.
+With `--primary-input`, the default is 2,000 ms.
+
+[.usage]
+Remote control options
+
+[.opt]
+*-a* _address_ +
+*--allow* _address_
+
+[.optdoc]
+Specify an IP address or host name which is allowed to send remote commands.
+Several `--allow` options can be used to specify several allowed remote control systems.
+
+[.optdoc]
+By default, all received commands are accepted.
+If at least one `--allow` option is specified, any remote command which is not sent by an allowed host is rejected.
+
+[.optdoc]
+This is a security feature, but not a perfect one since IP address spoofing is trivial with UDP.
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option. Do not use unless completely necessary.
+
+[.opt]
+*-r* _[address:]port_ +
+*--remote* _[address:]port_
+
+[.optdoc]
+Specify the local UDP port which is used to receive remote commands.
+If an optional address is specified, it must be a local IP address of the system.
+By default, there is no remote control.
+
+[.opt]
+*--udp-buffer-size* _value_
+
+[.optdoc]
+Specifies the UDP socket receive buffer size in bytes (socket option).
+
+[.usage]
+Event notification options
+
+The following options are used to notify external systems of events occurring in `tsswitch`.
+Currently, only one type of event is defined:
+its name is `newinput and is signalled when input switching occurs
+(including the first input when `tsswitch` starts).
+
+[.opt]
+*--event-command* _"command"_
+
+[.optdoc]
+When a switch event occurs, run the specified external shell command.
+This can be used to notify some external system of the event.
+
+[.optdoc]
+The command receives additional parameters:
+
+[.optdoc]
+1. Event name, currently only `newinput` is defined.
+2. The input index before the event.
+3. The input index after the event.
+4. Optional: the user data string from `--event-user-data` option.
+
+[.optdoc]
+These parameters can be used or ignored by the alarm command.
+
+[.opt]
+*--event-local-address* _address_
+
+[.optdoc]
+With `--event-udp`, when the destination is a multicast address, specify the IP address of the outgoing local interface.
+It can be also a host name that translates to a local address.
+
+[.opt]
+*--event-ttl* _value_
+
+[.optdoc]
+With `--event-udp`, specifies the TTL (Time-To-Live) socket option.
+The actual option is either "Unicast TTL" or "Multicast TTL", depending on the destination address.
+Remember that the default Multicast TTL is 1 on most systems.
+
+[.opt]
+*--event-udp* _address:port_
+
+[.optdoc]
+When a switch event occurs, send a short JSON description over UDP/IP to the specified destination.
+This can be used to notify some external system of the event.
+
+[.optdoc]
+The address specifies an IP address which can be either unicast or multicast.
+It can be also a host name that translates to an IP address.
+The port specifies the destination UDP port.
+
+[.opt]
+*--event-user-data* _'string '_
+
+[.optdoc]
+A user-defined string which is passed to the event processing.
+
+[.optdoc]
+With `--event-command`, this string is passed as last parameter of the user-specified command.
+
+[.optdoc]
+With `--event-udp`, this string is passed as `user-data` JSON value.
+
+include::{docdir}/opt/group-monitor.adoc[tags=!*]
+include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

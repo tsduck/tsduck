@@ -1,0 +1,348 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tseit
+
+[.cmd-header]
+Manipulate EIT’s using commands and scripts
+
+This utility manipulates DVB Event Information Tables (EIT) using commands.
+Scripts can be used to reproduce specific test cases.
+
+This utility is typically reserved to offline testing.
+To generate and inject EIT’s in actual transport streams, use the `tsp` plugin `eitinject`.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tseit [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* _'string'_ +
+*--command* _'string'_
+
+[.optdoc]
+Specify an EIT manipulation command.
+See the list of available commands below.
+
+[.optdoc]
+Several `--command` options can be specified.
+All commands are executed in sequence.
+
+[.optdoc]
+The commands from `--file` options are executed first, then the `--command options`.
+If there is no `--file` and no `--command`, the commands are read from the standard input.
+
+[.opt]
+*-e* +
+*--exit-on-error*
+
+[.optdoc]
+Stop executing commands when an error is encountered.
+By default, continue execution on error.
+
+[.opt]
+*-f* _file-name_ +
+*--file* _file-name_
+
+[.optdoc]
+Specify a text file containing EIT manipulation commands to execute (command script).
+If the file name is a dash (`-`), the standard input is used.
+
+[.optdoc]
+As usual in scripts, each text line is a command.
+Lines starting with ‘#’ are considered as comments and ignored.
+Lines ending with a backslash (‘\’) continue on the next line.
+
+[.optdoc]
+Several `--file` options can be specified.
+All scripts are executed in sequence.
+The commands from `--file` options are executed first, then the `--command` options.
+If there is no `--file` and no `--command`, the commands are read from the standard input.
+
+[.opt]
+*-i* _path_ +
+*--input-directory* _path_
+
+[.optdoc]
+Default directory of input files in EIT manipulation commands.
+
+[.optdoc]
+In all commands and scripts, each time an input file is specified without directory or with a relative path,
+this default directory is used as base.
+It is consequently possible to write position-independent scripts and
+specify the actual directory or base path in the `tseit` command.
+
+[.opt]
+*-o* _path_ +
+*--output-directory* _path_
+
+[.optdoc]
+Default directory of output files in EIT manipulation commands.
+
+[.optdoc]
+This is equivalent to option `--input-directory`, applied to output files.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]
+
+[.usage]
+List of EIT manipulation commands
+
+[cols="<10m,<22,<68",frame=none,grid=none,stripes=none,options="noheader"]
+|===
+|*dump*
+2+|Dump the content of the EIT database.
+
+|
+|Usage:
+m|*dump*
+
+|*exit*
+2+|Exit `tseit`. Useful in interactive sessions.
+
+|
+|Usage:
+m|*exit*
+
+|*generate*
+2+|Generate TS packets, injecting EIT’s from the event database according to the injection profile.
+   Non-EIT packets are null packets.
+   The TS id, TS bitrate and initial date/time must have been specified first (see command `set`).
+
+|
+|Usage:
+m|*generate* [_options_] _filename_
+
+|
+m|_filename_
+|Name of the output TS file to generate.
+
+|
+m|*-b* _value_ +
+  *--bytes* _value_
+|Stop after generating the specified number of bytes.
+
+|
+m|*-p* _value_ +
+  *--packets* _value_
+|Stop after generating the specified number of TS packets.
+
+|
+m|*-s* _value_ +
+  *--seconds* _value_
+|Stop after generating the specified number of seconds of contents.
+ The duration is based on the TS bitrate.
+
+|
+m|*-u* _time_ +
+  *--until* _time_
+|Generate packets up to the specified date in the stream.
+ The current date in the stream is based on the initial date and the bitrate.
+ Use "year/month/day:hour:minute:second.millisecond" format.
+
+|*help*
+2+|List all internal commands. This command is useful in interactive session.
+
+|
+|Usage:
+m|*help*
+
+|*load*
+2+| Load events from a file.
+
+|
+|Usage:
+m|*load* _filename_
+
+|
+m|_filename_
+|A binary, XML or JSON file containing EIT sections.
+ See the `tsp` plugin `eitinject` for more details on event database files.
+
+|*process*
+2+|Process a transport stream file with EIT generation.
+   The input file is read, EIT’s are injected using the event database.
+   The TS bitrate must have been specified first (see command `set`).
+
+|
+|Usage:
+m|*process* [_options_] _infile outfile_
+
+|
+m|_infile_
+|Name of the input TS file. Input EIT’s are used to populate the event database.
+
+|
+m|_outfile_
+|Name of the output TS file to generate, after EIT injection.
+
+|
+m|*-b* _value_ +
+  *--bytes* _value_
+|Stop after generating the specified number of bytes.
+
+|
+m|*-i* +
+  *--infinite*
+|Repeat the input file infinitely.
+
+|
+m|*-p* _value_ +
+  *--packets* _value_
+|Stop after generating the specified number of TS packets.
+
+|
+m|*-r* _value_ +
+  *--repeat* _value_
+|Repeat the input file the specified number of times. By default, the input file is read once.
+
+|
+m|*-s* _value_ +
+  *--seconds* _value_
+|Stop after generating the specified number of seconds of contents. The duration is based on the TS bitrate.
+
+|
+m|*-o* _value_ +
+  *--start-offset* _value_
+|Start reading the input file at the specified offset in bytes.
+
+|
+m|*-u* _time_ +
+  *--until* _time_
+|Generate packets up to the specified date in the stream.
+ The current date in the stream is based on the initial date and the bitrate.
+ Use "year/month/day:hour:minute:second.millisecond" format.
+
+|*quit*
+2+|Exit `tseit`. Useful in interactive sessions. Same as `exit`.
+
+|
+|Usage:
+m|*quit*
+
+|*reset*
+2+|Reset the content of the event database.
+
+|
+|Usage:
+m|*reset*
+
+|*save*
+2+|Save all current EIT sections in a file.
+
+|
+|Usage:
+m|*save* _filename_
+
+|
+m|_filename_
+|Name of the output file receiving EIT sections in binary format.
+
+|*set*
+2+|Set EIT generation options.
+
+|
+|Usage:
+m|*set* [_options_]
+
+|
+m|*--actual*
+|Enable the generation of all EIT actual.
+
+|
+m|*--actual-pf*
+|Enable the generation of EIT p/f actual.
+
+|
+m|*--actual-schedule*
+|Enable the generation of EIT schedule actual.
+
+|
+m|*--eit-bitrate* _value_
+|Set the EIT maximum bitrate in bits/second.
+
+|
+m|*--no-actual*
+|Disable the generation of all EIT actual.
+
+|
+m|*--no-actual-pf*
+|Disable the generation of EIT p/f actual.
+
+|
+m|*--no-actual-schedule*
+|Disable the generation of EIT schedule actual.
+
+|
+m|*--no-other*
+|Disable the generation of all EIT other.
+
+|
+m|*--no-other-pf*
+|Disable the generation of EIT p/f other.
+
+|
+m|*--no-other-schedule*
+|Disable the generation of EIT schedule other.
+
+|
+m|*--no-pf*
+|Disable the generation of all EIT p/f.
+
+|
+m|*--no-schedule*
+|Disable the generation of all EIT schedule.
+
+|
+m|*--other*
+|Enable the generation of all EIT other.
+
+|
+m|*--other-pf*
+|Enable the generation of EIT p/f other.
+
+|
+m|*--other-schedule*
+|Enable the generation of EIT schedule other.
+
+|
+m|*--pf*
+|Enable the generation of all EIT p/f.
+
+|
+m|*--satellite*
+|Use the EIT cycle profile for satellite and cable networks as specified in <<ETSI-101-211>>.
+
+|
+m|*--schedule*
+|Enable the generation of all EIT schedule.
+
+|
+m|*--terrestrial*
+|Use the EIT cycle profile for terrestrial networks as specified in <<ETSI-101-211>>.
+
+|
+m|*--time* _time_
+|Set the current date and time in the transport stream. Use "year/month/day:hour:minute:second.millisecond" format.
+
+|
+m|*--ts-bitrate* _value_
+|Set the transport stream bitrate in bits/second.
+
+|
+m|*--ts-id* _value_
+|Set the actual transport stream id.
+
+|===

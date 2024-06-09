@@ -1,0 +1,107 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== regulate
+
+[.cmd-header]
+Regulate packets flow according to a bitrate or PCR’s
+
+This plugin regulates the TS packets flow according to a specified bitrate
+or based on the Program Clock Reference from the transport stream.
+
+It is useful to play a non-regulated input (such as a TS file) to a non-regulated output (such as IP multicast).
+Without this plugin, in this example, the IP packets will be sent as fast as the TS packets are read from the file,
+that is to say at a very much higher bitrate than expected.
+When inserted between the input and the output plugins,
+the `regulate` plugin regularly suspends the `tsp` process to slow down the output.
+
+Note that this plugin can only slow down the stream but not accelerate it
+If the input is not fast enough, there is nothing that a plugin can do!
+
+By default, the plugin uses a bitrate value.
+The plugin suspends the execution at regular intervals to ensure that its output does not exceed the target bitrate.
+A fixed bitrate can be specified.
+Otherwise, the plugin uses the bitrate information coming from the previous plugins in the chain.
+In the latter case, the bitrate can be variable.
+
+When the option `--pcr-synchronous` is specified, the plugin does not use any bitrate information.
+It regulates the flow to be synchronous with the Program Clock Reference (PCR) in the transport stream.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for tsp).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P regulate [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specify the bitrate in bits/second.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+By default, use the input bitrate, typically resulting from the PCR analysis of the input stream.
+Note that this default is the bitrate which is presented by `tsp` at the input of the `regulate` plugin.
+This is not necessarily the bitrate at the input plugin if another plugin (such as `pcrbitrate`)
+has altered the bitrate between the input plugin and `regulate`.
+
+[.opt]
+*-p* _value_ +
+*--packet-burst* _value_
+
+[.optdoc]
+Number of packets to burst at a time.
+Does not modify the average output bitrate but influence smoothing and CPU load.
+The default is 16 packets.
+
+[.optdoc]
+It is inefficient, and most of the time impossible, to suspend a process too often and for a too short time.
+To regulate a stream at 38 Mb/s, for instance, the process must be suspended 40 micro-seconds between each TS packets.
+This is not possible in practice on most Linux or Windows kernels with the default configuration.
+If the packet burst is set to 64, the wait time is 2.5 milli-seconds, which becomes feasible.
+
+[.opt]
+*--pcr-synchronous*
+
+[.optdoc]
+Regulate the flow based on the Program Clock Reference from the transport stream.
+
+[.optdoc]
+By default, use a bitrate, not PCR's.
+
+[.opt]
+*--pid-pcr* _value_
+
+[.optdoc]
+With `--pcr-synchronous`, specify the reference PID for the Program Clock Reference.
+
+[.optdoc]
+By default, use the first PID containing PCR's.
+
+[.opt]
+*--wait-min* _value_
+
+[.optdoc]
+With `--pcr-synchronous`, specify the minimum wait time in milli-seconds.
+
+[.optdoc]
+The default is 50 ms.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

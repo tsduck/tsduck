@@ -1,0 +1,178 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== scrambler
+
+[.cmd-header]
+DVB scrambler
+
+This plugin is a DVB scrambler, either using a static control word or using an external ECMG.
+In the latter case, the plugin generates the control words, schedules crypto-periods and inserts ECM’s.
+
+The control words are generated using
+the default pseudo-random number generator of the operating system with additional security improvements.
+Although these values are reasonably random, there is no security commitment
+and this scrambler should be used for test purpose only, not for production.
+
+When inserting ECM’s, the plugin uses the _delay_start_ parameter, as returned by the ECMG,
+to synchronize the start of the crypto-period with the first insertion of an ECM.
+Both positive and negative _delay_start_ values are supported.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P scrambler [options] [service]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_service_
+
+[.optdoc]
+The optional parameter specifies the service to scramble.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+If no service is specified, a list of PID's to scramble must be provided using `--pid` options.
+When specific PID's are provided, fixed control words must be specified as well.
+
+[.optdoc]
+If no fixed CW is specified, a random CW is generated for each crypto-period
+and ECM's containing the current and next CW's are created and inserted in the stream.
+ECM's can be created only when a service is specified.
+
+[.usage]
+General options
+
+[.opt]
+*-b* _value_ +
+*--bitrate-ecm* _value_
+
+[.optdoc]
+Specifies the bitrate for ECM PID's in bits / second.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+The default is 30,000 b/s.
+
+[.opt]
+*--clear-period* _seconds_
+
+[.optdoc]
+Set the size of the initial clear period, in seconds.
+
+[.optdoc]
+The default value is 0, meaning that all packets are scrambled.
+
+[.opt]
+*--component-level*
+
+[.optdoc]
+Add _CA_descriptor_ at component level in the PMT, for each scrambled PID.
+By default, one single _CA_descriptor_ is added at program level.
+
+[.opt]
+*--ignore-scrambled*
+
+[.optdoc]
+Ignore packets which are already scrambled.
+Since these packets are likely scrambled with a different control word, descrambling will not be possible the usual way.
+
+[.opt]
+*--no-audio*
+
+[.optdoc]
+Do not scramble audio components in the selected service.
+By default, all audio components are scrambled.
+
+[.opt]
+*--no-video*
+
+[.optdoc]
+Do not scramble video components in the selected service.
+By default, all video components are scrambled.
+
+[.opt]
+*--partial-scrambling* _count_
+
+[.optdoc]
+Do not scramble all packets, only one packet every count packets.
+The default value is 1, meaning that all packets are scrambled.
+Specifying higher values is a way to reduce the scrambling CPU load while keeping the service "mostly" scrambled.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Scramble packets with these PID values.
+Several `--pid` options may be specified.
+By default, scramble the specified service.
+
+[.opt]
+*--pid-ecm* _value_
+
+[.optdoc]
+Specifies the new ECM PID for the service.
+By defaut, use the first unused PID immediately following the PMT PID.
+Using the default, there is a risk to later discover that this PID is already used.
+In that case, specify `--pid-ecm` with a notoriously unused PID value.
+
+[.opt]
+*--pre-reduce-cw*
+
+[.optdoc]
+With DVB-CSA2, when entropy reduction is on (the default), make sure that control words are reduced from the beginning,
+including when transmitted to an ECMG.
+
+[.optdoc]
+By default, entropy reduction is applied just before encryption only, and the ECMG receives a full random CW,
+without entropy reduction.
+The default behavior is suitable to test if the CAS correctly handles entropy reduction without implicitly reduced control words.
+
+[.opt]
+*--private-data* _hexa-digits_
+
+[.optdoc]
+Specifies the private data to insert in the _CA_descriptor_ in the PMT.
+The value must be a suite of hexadecimal digits.
+
+[.opt]
+*--subtitles*
+
+[.optdoc]
+Scramble subtitles components in the selected service.
+By default, the subtitles components are not scrambled.
+
+[.opt]
+*--synchronous*
+
+[.optdoc]
+Specify to synchronously generate the ECM's.
+
+[.optdoc]
+In real-time mode, the processing of packets continues in parallel while ECM's are generated in the ECMG.
+Use this option to force the stream processing to wait for ECM’s.
+
+[.optdoc]
+In offline mode, this option is always on.
+This is usually the right thing to do.
+Otherwise, if an ECM takes too long to be generated,
+the stream processing may reach the first insertion point of the ECM before it is available.
+
+include::{docdir}/opt/group-scrambling.adoc[tags=!*]
+include::{docdir}/opt/group-ecmg-client.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

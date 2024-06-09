@@ -1,0 +1,44 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tspsi
+
+[.cmd-header]
+Dump all PSI tables
+
+This utility extracts all PSI tables (PAT, CAT, PMT, NIT, BAT, SDT ) from a transport stream.
+The output is rather primitive, but it exactly exhibits the structure of tables, sections and descriptors.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tspsi [options] [input-file]
+----
+
+[.usage]
+Input file
+
+[.optdoc]
+MPEG transport stream, either a capture file or a pipe from a live stream (see option `--format` for binary formats).
+
+[.optdoc]
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+
+[.usage]
+General options
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;input]
+include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
+
+include::{docdir}/opt/group-psi-logger.adoc[tags=!*]
+include::{docdir}/opt/group-section-display.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;cas;pds;std;timeref;charset]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

@@ -1,0 +1,193 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsversion
+
+[.cmd-header]
+Check version, download and upgrade TSDuck
+
+By default, this utility simply displays the TSDuck version.
+
+Additionally, in prebuilt binary packages of TSDuck as available from
+https://tsduck.io/download/tsduck[tsduck.io] or https://github.com/tsduck/tsduck/releases[github.com],
+the `tsversion` command can also connect to GitHub to list all available releases of TSDuck,
+check for a new version, download it or upgrade TSDuck to the latest version.
+
+These capabilities are usually disabled in TSDuck packages which are available
+through a package manager on Linux or through Homebrew on macOS.
+In these cases, the package manager handles the installation and upgrades of all packages, including TSDuck.
+
+As an example, the following command checks for a new version online and, if one is available, downloads it and upgrades TSDuck:
+
+[source,shell]
+----
+$ tsversion --upgrade
+----
+
+Detecting the availability of a new release always works.
+However, to perform an upgrade, the binary packages for the current operating system and architecture must be available online.
+Not all combinations of binary packages are available.
+It is only guaranteed that TSDuck can be upgraded by `tsversion` for Windows 64 bits,
+the latest version of most 64-bit Linux distros (Fedora, Red Hat & clones, Debian, Ubuntu) and macOS (through Homebrew).
+For other platforms, you must recompile TSDuck from sources.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsversion [options]
+----
+
+[.usage]
+Common options
+
+[.opt]
+*-e* +
+*--extensions*
+
+[.optdoc]
+List all installed TSDuck extensions.
+
+[.opt]
+*-i* +
+*--integer*
+
+[.optdoc]
+Display the current version of TSDuck in integer format, suitable for comparison in a script.
+
+[.optdoc]
+Example: 31000669 for 3.10-669 (5 digits are used for the last commit number).
+
+[.opt]
+*--support* _name_
+
+[.optdoc]
+Check support for a specific feature.
+
+[.optdoc]
+By default, TSDuck is built with all features.
+However, it may be compiled with specific `make` options such as `NODEKTEC=1` or `NOPCSC=1` to remove dependencies on some libraries.
+The option `--support` can be used to test if a feature is available.
+
+[.optdoc]
+The feature name must be one of `all`, `dektec`, `hides`, `http`, `pcsc`, `rist`, `srt`, `vatek`.
+
+[.optdoc]
+Using `all` displays all features.
+
+[.optdoc]
+With any other option, `tsversion` simply exits with a success or failure status, depending if the corresponding feature is implemented or not.
+
+[.usage]
+Upgrade options
+
+The following options are available in prebuilt binary packages of TSDuck from
+https://tsduck.io/download/tsduck[tsduck.io] or https://github.com/tsduck/tsduck/releases[github.com].
+They may be disabled in TSDuck packages which are available through a package manager on Linux or through Homebrew on macOS.
+
+[.opt]
+*--all*
+
+[.optdoc]
+List all available versions of TSDuck from GitHub.
+
+[.opt]
+*-b* +
+*--binary*
+
+[.optdoc]
+With `--download`, fetch the binary installers of the latest version.
+
+[.optdoc]
+This is the default.
+When `--source` is specified, you have to explicitly specify `--binary` if you also need the binary installers.
+
+[.opt]
+*-c* +
+*--check*
+
+[.optdoc]
+Check if a new version of TSDuck is available from GitHub.
+
+[.opt]
+*-d* +
+*--download*
+
+[.optdoc]
+Download the latest version (or the version specified by `--name`) from GitHub.
+By default, download the binary installers for the current operating system and architecture.
+Specify `--source` to download the source code.
+
+[.optdoc]
+If a local file with the same name and size already exists, the local file is reused and the download operation is skipped.
+
+[.opt]
+*-f* +
+*--force*
+
+[.optdoc]
+Force downloads even if a file with same name and size already exists.
+
+[.opt]
+*-l* +
+*--latest*
+
+[.optdoc]
+Display the latest version of TSDuck from GitHub.
+
+[.opt]
+*-n* _version-name_ +
+*--name* _version-name_
+
+[.optdoc]
+Get information or download from GitHub the specified version, not the latest one.
+
+[.opt]
+*-o* _dir-name_ +
+*--output-directory* _dir-name_
+
+[.optdoc]
+Specify the output directory for downloaded files (current directory by default).
+
+[.opt]
+*-s* +
+*--source*
+
+[.optdoc]
+With `--download`, download the source code archive instead of the binary installers.
+
+[.opt]
+*-t* +
+*--this*
+
+[.optdoc]
+Display the current version of TSDuck (_this_ executable).
+
+[.opt]
+*-u* +
+*--upgrade*
+
+[.optdoc]
+Upgrade TSDuck to the latest version.
+
+include::{docdir}/opt/group-proxy.adoc[tags=!*]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]
+
+[.usage]
+Environment variables
+
+Listing versions and information about versions accesses the GitHub site.
+Remote information is requested from the GitHub API.
+GitHub limits the anonymous access to its API to a certain number of requests per hour per source IP address.
+If you get an error such as "API rate limit exceeded", you may have to wait for the next hour and retry.
+Alternatively, if you are a registered GitHub user and you have a registered authentication token, this rate limit is removed.
+
+Set the value of your authentication token into the environment variable `TSDUCK_GITHUB_API_TOKEN` before using `tsversion`.
+For macOS users, if the environment variable `HOMEBREW_GITHUB_API_TOKEN` is already defined, it will be used.

@@ -1,0 +1,71 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== memory (output)
+
+[.cmd-header]
+Direct memory output to an application
+
+This output plugin sends TS packets to the calling application using memory buffers.
+
+This is a developer plugin.
+It is useful only to C++, Java or Python developers who run an instance of `TSProcessor` pipeline inside their applications
+and want this application to directly interact with the output of the pipeline.
+Using this plugin in a `tsp` command line does nothing.
+
+In practice, this plugin is useful to Java and Python developers only since
+it is not possible to develop TSDuck plugins in these languages.
+To develop some custom form of transport stream output, C++ developers should rather develop their own output plugin.
+This is simpler and more efficient than handling output events for the memory plugin.
+
+Developers may start from the sample code which is available for the three languages
+in the TSDuck source code tree in the directory `sample/sample-memory-plugins`.
+
+[.usage]
+Principle of operation
+
+Each time the memory output plugin needs to send TS packets, it signals an event.
+The application shall register an event handler which handles this event.
+The TS packets to output are referenced by the event data.
+
+[.compact-list]
+* In C++, the event data is an instance of `PluginEventData` pointing to the output TS packets.
+  To abort the transmission, the event handler shall set the error indicator in the event data.
+* In Java, the event handler receives the TS packets in the event data array of bytes.
+  To abort the transmission, the event handler shall return false.
+* In Python, the event handler receives the TS packets in the event data `bytearray`.
+  To abort the transmission, the event handler shall return False.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O memory [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-e* _value_ +
+*--event-code* _value_
+
+[.optdoc]
+Event code of the plugin event which is signalled each time the plugin outputs packets.
+
+[.optdoc]
+The default is zero.
+
+[.optdoc]
+Specifying a non-default value is necessary only when the application registers its output event handler by event code value.
+If the application registers its event handler by plugin type (here for output plugins),
+it is not necessary to specify an event code value.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

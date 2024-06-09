@@ -1,0 +1,78 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== clear
+
+[.cmd-header]
+Extract clear (non scrambled) sequences
+
+This plugin extracts clear (non scrambled) sequences of a transport stream.
+
+The extraction is based on one "reference" service (see option `--service`).
+When a clear packet is found on any audio or video stream of the reference service, all subsequent packets in the TS are transmitted.
+When no clear packet has been found in the last second, all subsequent packets in the TS are dropped.
+
+This plugin is typically used after the plugin `zap`.
+It let the service pass when it is clear and drops it when it is scrambled.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P clear [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--audio*
+
+[.optdoc]
+Check only audio PIDs for clear packets.
+By default, audio and video PIDs are checked.
+
+[.opt]
+*-d* _value_ +
+*--drop-after-packets* _value_
+
+[.optdoc]
+Specifies the number of packets after the last clear packet to wait before stopping the packet
+transmission. By default, stop 1 second after the last clear packet (based on current bitrate).
+
+[.opt]
+*-s* _name-or-id_ +
+*--service* _name-or-id_
+
+[.optdoc]
+Specify the reference service.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+If this option is not specified, the first service in the PAT is used.
+
+[.opt]
+*--stuffing*
+
+[.optdoc]
+Replace excluded packets with stuffing (null packets) instead of removing them.
+Useful to preserve bitrate.
+
+[.opt]
+*-v* +
+*--video*
+
+[.optdoc]
+Check only video PIDs for clear packets.
+By default, audio and video PIDs are checked.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

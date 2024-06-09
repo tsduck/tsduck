@@ -1,0 +1,75 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== fork (packet processing)
+
+[.cmd-header]
+Redirect packets to a forked process
+
+This plugin forks a process and sends all TS packets to the standard input of this process.
+The TS packets are also normally passed to the next processor in the chain.
+
+This plugin can be used to duplicate the output stream at any point in the packet processing chain.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P fork [options] 'command'
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_'command'_
+
+[.optdoc]
+The _'command'_ parameter specifies the shell command to execute in the forked process.
+The standard input of this process is a pipe receiving the TS packets.
+If the command contains spaces or shell special sequences, the complete command string must be surrounded by quotes.
+
+[.optdoc]
+If the command is too long or too complicated, it is recommended to use a script.
+If the created command is another TSDuck command, it is possible to shorten the command using partial command line redirection
+(see xref:cmd-redirection[xrefstyle=short]).
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--buffered-packets* _value_
+
+[.optdoc]
+Specifies the number of TS packets to buffer before sending them through the pipe to the forked process.
+When set to zero, the packets are not buffered and sent one by one.
+
+[.optdoc]
+The default is 500 packets in real-time mode and 1000 packets in offline mode.
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;output]
+
+[.opt]
+*-i* +
+*--ignore-abort*
+
+[.optdoc]
+Ignore early termination of child process.
+By default, if the child process aborts and no longer reads the packets, `tsp` also aborts.
+
+[.opt]
+*-n* +
+*--nowait*
+
+[.optdoc]
+Do not wait for child process termination at end of input.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -1,0 +1,41 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for generic options for all commands.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Generic common command options
+
+The following options are implicitly defined in all commands.
+
+[.opt]
+**--debug**__[=N]__
+
+[.optdoc]
+Produce verbose debug output.
+Specify an optional debug level _N_ (1 by default).
+
+[.opt]
+*--help*
+
+[.optdoc]
+Display the command help text.
+
+[.opt]
+*--verbose*
+
+[.optdoc]
+Produce verbose messages.
+
+[.opt]
+*--version*
+
+[.optdoc]
+Display the version number.

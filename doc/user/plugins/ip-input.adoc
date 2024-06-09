@@ -1,0 +1,208 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== ip (input)
+
+[.cmd-header]
+UDP/IP unicast or multicast input
+
+This input plugin receives TS packets from UDP/IP, multicast or unicast.
+
+The received UDP datagrams are analyzed and all TS packets are extracted.
+Optional extra data at the beginning of the datagram (such as RTP headers) are discarded.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for `tsp`).
+
+[.usage]
+Input timestamps
+
+When the input is an RTP stream, the RTP timestamp value is used as input timestamp by `tsp`.
+
+On Linux systems, the kernel reports a system timestamp for each UDP datagram.
+This value is used as input timestamp by `tsp` for all TS packets in the UDP datagram.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I ip [options] [[source@]address:]port
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_[[source@]address:]port_
+
+[.optdoc]
+The parameter `_[address:]port_` describes the destination of UDP packets to receive.
+The `_port_` part is mandatory and specifies the UDP port to listen on.
+The `_address_` part is optional.
+It specifies an IP multicast address to listen on.
+It can be also a host name that translates to a multicast address.
+
+[.optdoc]
+An optional source address can be specified as `_source@address:port_` in the case of source-specific multicast (SSM).
+
+[.optdoc]
+If the address is not specified, the plugin simply listens on the specified local port
+and receives the packets which are sent to one of the local (unicast) IP addresses of the system.
+
+[.usage]
+UDP reception options
+
+[.opt]
+*-b* _value_ +
+*--buffer-size* _value_
+
+[.optdoc]
+Specify the UDP socket receive buffer size in bytes (socket option).
+
+[.opt]
+*--default-interface*
+
+[.optdoc]
+Let the system find the appropriate local interface on which to listen.
+By default, listen on all local interfaces.
+
+[.opt]
+*--disable-multicast-loop*
+
+[.optdoc]
+Disable multicast loopback.
+
+[.optdoc]
+By default, incoming multicast packets are looped back on local interfaces,
+if an application sends packets to the same group from the same system.
+This option disables this.
+
+[.optdoc]
+*Warning*: On input sockets, this option is effective only on Windows systems.
+On UNIX systems (Linux, macOS, BSD), this option applies only to output sockets.
+
+[.opt]
+*-f* +
+*--first-source*
+
+[.optdoc]
+Filter UDP packets based on the source address.
+Use the sender address of the first received packet as only allowed source.
+
+[.optdoc]
+This option is useful when several sources send packets to the same destination address and port.
+Accepting all packets could result in a corrupted stream and only one sender shall be accepted.
+
+[.optdoc]
+To allow a more precise selection of the sender, use option `--source`.
+Options `--first-source` and `--source` are mutually exclusive.
+
+[.opt]
+*-l* _address_ +
+*--local-address* _address_
+
+[.optdoc]
+Specify the IP address of the local interface on which to listen.
+It can be also a host name that translates to a local address.
+By default, listen on all local interfaces.
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option.
+Do not use unless completely necessary.
+
+[.opt]
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify the UDP reception timeout in milliseconds.
+This timeout applies to each receive operation, individually.
+By default, receive operations wait for data, possibly forever.
+
+[.opt]
+*-r* +
+*--reuse-port*
+
+[.optdoc]
+Set the reuse port socket option.
+This is now enabled by default, the option is present for legacy only.
+
+[.opt]
+*-s* _address[:port]_ +
+*--source* _address[:port]_
+
+[.optdoc]
+Filter UDP packets based on the specified source address.
+
+[.optdoc]
+This option is useful when several sources send packets to the same destination address and port.
+Accepting all packets could result in a corrupted stream and only one sender shall be accepted.
+
+[.optdoc]
+Options `--first-source` and `--source` are mutually exclusive.
+
+[.opt]
+*--ssm*
+
+[.optdoc]
+This option forces the usage of _source-specific multicast_ (SSM)
+using the source address which is specified by the option `--source`.
+Without `--ssm`, standard ("any-source’) multicast is used and the option `--source` is used to filter incoming packets.
+
+[.optdoc]
+The `--ssm` option is implicit when the classical SSM syntax _source@address:port_ is used.
+
+[.usage]
+Other options	
+
+[.opt]
+*-d* _value_ +
+*--display-interval* _value_
+
+[.optdoc]
+Specify the interval in seconds between two displays of the evaluated real-time input bitrate.
+The default is to never display the bitrate.
+This option is ignored if `--evaluation-interval` is not specified.
+
+[.opt]
+*-e* _value_ +
+*--evaluation-interval* _value_
+
+[.optdoc]
+Specify that the real-time input bitrate shall be evaluated on a regular basis.
+The value specifies the number of seconds between two evaluations.
+By default, the real-time input bitrate is never evaluated
+and the input bitrate is evaluated from the PCR in the input packets.
+
+[.opt]
+*--timestamp-priority* _name_
+
+[.optdoc]
+Specify how the input timestamp of each packet is computed.
+
+[.optdoc]
+The name specifies an ordered list of timestamp sources.
+The first available timestamp value is used as input timestamp.
+The name must be one of `rtp-kernel-tsp`, `kernel-rtp-tsp`, `kernel-tsp`, `rtp-tsp`, `tsp`.
+
+[.optdoc]
+The possible timestamp sources are:
+
+[.optdoc]
+* `rtp`: The RTP time stamp, when the UDP packet is an RTP packet.
+* `kernel`: A kernel-provided timestamp for the packet, when available (Linux only).
+* `tsp`: A software timestamp, provided by `tsp` when the input plugin returns a chunk of packets.
+  The `tsp`-provided timestamp is always available, always comes last and is less precise.
+
+[.optdoc]
+The default is `rtp-kernel-tsp`.
+
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

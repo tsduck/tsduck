@@ -1,0 +1,109 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== limit
+
+[.cmd-header]
+Limit the global bitrate by dropping packets
+
+This plugin limits the global bitrate of the transport stream.
+Packets are dropped when necessary to maintain the overall bitrate below a given maximum.
+The bitrate is computed from PCR's (the default) or from the processing wall clock time.
+
+Packets are not dropped randomly.
+Some packets are more likely to be dropped than others.
+When the bitrate exceeds the maximum, the number of packets in excess is permanently recomputed.
+The type of packets to drop depends on the number of packets in excess.
+There are several thresholds which are specified by the corresponding options:
+
+[.compact-list]
+* Below `--threshold1`, only null packets are dropped.
+* Below `--threshold2`, if `--pid` options are specified,
+  video packets from the specified PID's are dropped (except packets containing a PUSI or a PCR).
+* Below `--threshold3`, if `--pid` options are specified,
+  all packets (not only video) from the specified PID's are dropped (except packets containing a PUSI or a PCR).
+* Below `--threshold4`, packets from any video or audio PID are dropped (except packets containing a PUSI or a PCR).
+* Above the last threshold, any packet can be dropped.
+
+Note: All thresholds, except the last one, can be disabled using a zero value.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P limit [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Limit the overall bitrate of the transport stream to the specified value in bits/second.
+This is a mandatory option, there is no default.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specify PID’s the content of which can be dropped when the maximum bitrate is exceeded.
+
+[.optdoc]
+Several `--pid` options can be specified.
+
+[.opt]
+*-1* _value_ +
+*--threshold1* _value_
+
+[.optdoc]
+Specify the first threshold for the number of packets in excess.
+The default is 10 packets.
+
+[.opt]
+*-2* _value_ +
+*--threshold2* _value_
+
+[.optdoc]
+Specify the second threshold for the number of packets in excess.
+The default is 100 packets.
+
+[.opt]
+*-3* _value_ +
+*--threshold3* _value_
+
+[.optdoc]
+Specify the third threshold for the number of packets in excess.
+The default is 500 packets.
+
+[.opt]
+*-4* _value_ +
+*--threshold4* _value_
+
+[.optdoc]
+Specify the fourth threshold for the number of packets in excess.
+The default is 1000 packets.
+
+[.opt]
+*-w* +
+*--wall-clock*
+
+[.optdoc]
+Compute bitrates based on real wall-clock time.
+The option is meaningful with live streams only.
+By default, compute bitrates based on PCR's.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

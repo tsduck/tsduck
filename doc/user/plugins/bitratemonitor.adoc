@@ -1,0 +1,201 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+[#bitratemonitor-ref]
+=== bitrate_monitor
+
+[.cmd-header]
+Monitor the bitrate of the transport stream or a given set of PID’s
+
+This plugin is used to monitor the bitrate of the complete transport stream or a given set of PID’s.
+Note that the bitrate is the instantaneous bitrate, meaning that it is computed from the packets received during the last _n_ seconds
+(_n_ is a plugin parameter, the default value is 5 seconds).
+
+If the bitrate value is outside of the specified range, an alarm is reported.
+
+An alarm command can be specified to report anomalies in a custom way.
+If such a command is present, it will be called with the problem description as parameters.
+See an example in xref:sample-mon-pid[xrefstyle=short].
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P bitrate_monitor [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-a* _"command"_ +
+*--alarm-command* _"command"_
+
+[.optdoc]
+Command to run when the bitrate goes either out of range or back to normal.
+
+[.optdoc]
+The command receives the following additional parameters:
+
+[.optdoc]
+1. A human-readable alarm message.
+2. Either `ts` or the decimal integer value of the first PID to monitor.
+3. Bitrate alarm state string, one of `lower`, `greater`, `normal`.
+4. Current bitrate in b/s (decimal integer) of TS or set of PID’s.
+5. Minimum bitrate in b/s (decimal integer).
+6. Maximum bitrate in b/s (decimal integer).
+7. Net bitrate, without null packets, in b/s (decimal integer).
+
+[.optdoc]
+These parameters can be used or ignored by the alarm command.
+
+[.opt]
+**--json-line**__[='prefix']__
+
+[.optdoc]
+Report the bitrate information as one single line in JSON format.
+
+[.optdoc]
+The optional string parameter specifies a prefix to prepend on the log line before the JSON text
+to facilitate the filtering of the appropriate line in the logs.
+
+[.opt]
+*--min* _value_
+
+[.optdoc]
+Set minimum allowed value for bitrate in bits/s.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+The default is 10 bits/s.
+
+[.opt]
+*--max* _value_
+
+[.optdoc]
+Set maximum allowed value for bitrate bits/s.
+
+[.optdoc]
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.optdoc]
+The default is 2^32^ bits/s.
+Note that default values for minimum and maximum bitrate are only useful to detect if the given PID is present or not.
+
+[.opt]
+*-p* _value_ +
+*--periodic-bitrate* _value_
+
+[.optdoc]
+Always report the bitrate and net bitrate (without null packets) at the specific intervals in seconds, even if the bitrate is in range.
+
+[.opt]
+*--periodic-command* _value_
+
+[.optdoc]
+Run the `--alarm-command` at the specific intervals in seconds, even if the bitrate is in range.
+
+[.optdoc]
+With this option, the alarm command is run on state change and at periodic intervals.
+
+[.opt]
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Specifies the PID or set of PID’s to monitor.
+
+[.optdoc]
+By default, when no `--pid` is specified, monitor the bitrate of the full TS.
+Several `--pid` options may be specified.
+When several PID's are specified, the tested bitrate is the global bitrate of all the selected PID's.
+
+[.optdoc]
+Compatibility: Previously, the PID to monitor could be specified as a command line parameter, without explicit `--pid` option.
+This is still accepted for compatibility for old scripts.
+
+[.opt]
+*--set-label-above* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on all packets while the bitrate is above normal.
+
+[.optdoc]
+Several `--set-label-above` options may be specified.
+
+[.opt]
+*--set-label-below* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on all packets while the bitrate is below normal.
+
+[.optdoc]
+Several `--set-label-below` options may be specified.
+
+[.opt]
+*--set-label-go-above* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on one packet when the bitrate goes above normal.
+
+[.optdoc]
+Several `--set-label-go-above` options may be specified.
+
+[.opt]
+*--set-label-go-below* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on one packet when the bitrate goes below normal.
+
+[.optdoc]
+Several `--set-label-go-below` options may be specified.
+
+[.opt]
+*--set-label-go-normal* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on one packet when the bitrate goes back to normal (within range).
+
+[.optdoc]
+Several `--set-label-go-normal` options may be specified.
+
+[.opt]
+*--set-label-normal* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on all packets while the bitrate is normal (within range).
+
+[.optdoc]
+Several `--set-label-normal` options may be specified.
+
+[.opt]
+*--tag* _'string'_
+
+[.optdoc]
+Message tag to be displayed in alarms.
+Useful when the plugin is used several times in the same process.
+
+[.opt]
+*-s* +
+*--summary*
+
+[.optdoc]
+Display a final summary of bitrate statistics.
+
+[.opt]
+*-t* _value_ +
+*--time-interval* _value_
+
+[.optdoc]
+Time interval in seconds used to compute the bitrate.
+The default is 5 seconds.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

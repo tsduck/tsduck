@@ -1,0 +1,182 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-troubleshooting]
+== Troubleshooting
+
+This chapter provides some troubleshooting guidelines when encountering problems when using TSDuck.
+
+=== Environment variables
+
+The following environment variables affect the behavior of TSDuck.
+
+// PDF backend does not correctly process "autowidth" tables.
+.Environment variables
+.Transport stream file formats
+ifndef::backend-pdf[]
+[cols="<1m,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<30m,<70",stripes=none]
+endif::[]
+|===
+|Variable name |Description
+
+|APPDATA
+|On Windows systems, used to locate user-specific TSDuck configuration files
+ (see xref:conf-file-loc[xrefstyle=short] and xref:chan-usage[xrefstyle=short]).
+
+|GITHUB_API_TOKEN
+|Used instead of `TSDUCK_GITHUB_API_TOKEN` when the latter is not defined.
+
+|HOME
+|On UNIX systems (Linux, macOS, BSD), used to locate user-specific TSDuck configuration files
+ (see xref:conf-file-loc[xrefstyle=short] and xref:chan-usage[xrefstyle=short]).
+
+|HOMEBREW_GITHUB_API_TOKEN
+|On macOS, used instead of `TSDUCK_GITHUB_API_TOKEN` and `GITHUB_API_TOKEN` when none of them is defined.
+
+|http_proxy
+|Define a default proxy URL for commands and plugins which access the Internet.
+ The syntax is `http://[__username__[:__password__]@]__server__[:__port__]/`
+
+|https_proxy
+|Same as `http_proxy`.
+
+|LD_LIBRARY_PATH
+|On UNIX systems (Linux, macOS, BSD), used to locate shareable libraries such as `tsp` plugins or TSDuck extensions.
+
+|PAGER
+|Defined to a pager command to output commands such as `tstables`, `tsdump` or `--help` option anywhere.
+ The default is `less -QFX` or `more` when the `less` command is not available.
+
+|Path
+|On Windows systems, the system-defined search path of executables is also used to search `tsp` plugins,
+ TSDuck extensions and global configuration files.
+
+|PATH
+|On UNIX systems (Linux, macOS, BSD), the system-defined search path of executables is also
+ used to search TSDuck extensions and global configuration files.
+
+|TS_CERR_DEBUG_LEVEL
+|A debug level to initially set to the standard error device
+ (same values as specified with `--debug` command line, see xref:predef-options[xrefstyle=short]).
+ This can be used to troubleshoot initialization steps such as loading plugins or extensions.
+
+|TS_CURL_RETRY
+|On UNIX systems (Linux, macOS, BSD), define a retry policy for Web requests (HTTP, HLS, etc.)
+ See xref:web-retry[xrefstyle=short] below.
+
+|TS_DEBUG_OPENSSL
+|On UNIX systems (Linux, macOS, BSD), display OpenSSL error messages on standard error.
+
+|TS_NO_CRC32_INSTRUCTIONS
+|Do not use CRC32 accelerated instructions even when available on the current CPU.
+ Currently, this applies to Arm64 CPU only.
+
+|TS_NO_HARDWARE_ACCELERATION
+|Do not use any form of accelerated instructions even when available on the current CPU.
+
+|TS_FORCED_VERSION
+|When it contains a string in the form `x.y-z`, it is used as a fake version number for TSDuck.
+ This is only useful to test the detection of new versions. Avoid playing with this otherwise.
+
+|TSDUCK_GITHUB_API_TOKEN
+|Used with `tsversion` to authenticate to GitHub when checking or downloading the TSDuck latest versions from GitHub.
+ This is not required but it enhances the access to the GitHub API.
+ See GitHub documentation for details.
+
+|TSDUCK_NO_USER_CONFIG
+|When defined to any non-empty value, do not load the TSDuck user’s configuration file.
+ See xref:chap-chanconfig[xrefstyle=short].
+
+|TSDUCK_NO_VERSION_CHECK
+|When defined to any non-empty value, do not check new versions.
+ By default, `tsp` checks the availability of a new version at most once a day (unless TSDuck was built without version check).
+
+|TSLIBEXT_IGNORE
+|A comma-separated list of extension names to ignore.
+ This can be used to prevent loading a specific list of extensions.
+
+|TSLIBEXT_NONE
+|When defined to any non-empty value, do not load any extension.
+
+|TSPLUGINS_PATH
+|A search path of additional directories containing `tsp` plugins.
+
+|TSPLUGINS_STACK_SIZE
+|When defined to an integer value, it specifies the stack size in bytes of all `tsp` plugin threads.
+ By default, an "appropriate" stack size is used. This is a debug tool, use with care.
+
+|===
+
+==== Search paths
+
+The directory search paths such as the system-defined `PATH` and the TSDuck-defined `TSPLUGINS_PATH` use a system-specific syntax.
+On UNIX systems (Linux, macOS), the directory names are separated with colons ‘:’.
+On Windows systems, they are separated with semi-colons ‘;’.
+
+[#web-retry]
+==== Web requests retry policy
+
+On UNIX systems (Linux, macOS, BSD), TSDuck uses `libcurl` to perform Web requests.
+In rare cases, it has been noted that `curl` fails with "connection reset by peer"
+right after sending the SSL/TLS client hello message.
+Retrying usually succeeds after of a couple of times.
+This is typically seen on some specific servers.
+The reason for this issue is currently unknown.
+
+All other Web clients, including all browsers and the Windows WinInet library, perform the same request without error.
+Only the `curl` command and `libcurl` fail.
+
+As a dirty workaround, the environment variable `TS_CURL_RETRY` can be set to specify a per-site retry policy.
+The value must be a comma-separated list of directives:
+
+[.compact-list]
+* `RETRY=__value__` : number of retries for following hosts.
+* `INTERVAL=__value__` : milliseconds between retries for following hosts.
+* `HOST=__name__` : host name, as used in Web URL’s.
+
+*Example*
+
+[source,shell]
+----
+$ export TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=foo1.com,RETRY=2,HOST=foo2.com"
+----
+
+Web requests on host `foo1.com` are retried 5 times after an initial failure, waiting 100 milliseconds between retries.
+Web requests on host `foo2.com` are retried 2 times only and the waiting interval remains 100 milliseconds.
+
+=== Typical issues with TSP
+
+This section lists a few typical issues when using tsp and provides some troubleshooting recipes.
+
+*The screen is garbled with strange characters*
+
+[.optdoc]
+This is typically observed when no output plugin is specified.
+The default output plugin is `file` and the default output file for this plugin is the standard output.
+This is quite useful to pipe transport streams between commands.
+However, if the binary transport stream is sent to the console, the screen is garbled.
+
+[.optdoc]
+*Solution*: If you don’t need the output transport stream, use `-O drop` as output plugin.
+
+*A plugin which is supposed to insert some data in the stream does not insert anything*
+
+[.optdoc]
+The `tsp` command processes a transport stream.
+It can modify or delete existing packets but it cannot create new packets.
+Inserting packets essentially means replacing null packets (aka. stuffing) from the transport stream with new data.
+When there is not enough or no null packets, no data can be inserted.
+
+[.optdoc]
+*Solution*: Make sure that enough input stuffing exist.
+The more appropriate way to do this depends on the context.
+See the xref:tsp-reference[`tsp` reference documentation] in xref:chap-commands[xrefstyle=short],
+especially the section named xref:inserting-packets["modifying, inserting and deleting packets"].

@@ -1,0 +1,285 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== merge
+
+[.cmd-header]
+Merge TS packets coming from the standard output of a command
+
+This plugin creates a process.
+This process is expected to write TS packets on its standard output.
+The resulting transport stream is merged with the main transport stream which is processed by `tsp` and the chain of plugins.
+
+As usual with `tsp` plugins, the TS packets which come from the merged transport stream
+are inserted into the main transport stream by replacing stuffing packets.
+The obvious requirement is that the stuffing bitrate of the main stream is greater than the overall bitrate of the merged stream.
+Otherwise, it wouldn't fit in the main transport steam.
+
+Typically (although not required), the created process is another `tsp` command which prepares the merged transport stream.
+Preparing the transport stream may include reducing the bitrate by removing stuffing and services,
+remapping PID’s or renaming services which could conflict with existing PID’s or services in the other transport stream.
+
+By default, the following operations are performed while merging transport streams.
+These defaults can be changed using appropriate options.
+
+* The PAT and SDT from the merged transport stream are merged into the corresponding tables in the main transport stream.
+  The merged services are consequently correctly referenced in the main transport stream. +
+  More precisely, the PAT and SDT tables in the main transport stream are modified to include all services from the merged stream.
+  The original PAT and SDT PID’s from the merged stream are nullified.
+* Similarly, the CAT is also merged so that EMM PID’s from the merged transport stream
+  are correctly referenced in the main transport stream. +
+  Warning: The CAT is an optional table, and the `merge` plugin will not create one if there is none.
+  If you want to make sure that a merged CAT will be present, use an instance of the `cat` plugin before merge.
+* The EIT sections from the two transport streams are merged.
+  Unlike PAT, SDT and CAT, the EIT sections are left unmodified.
+  The EIT sections from the two streams are interspersed into one larger EIT PID.
+* The PID's 0x00 to 0x1F are dropped from the merged transport stream.
+  These PID’s contain the base PSI/SI which are normally present in all transport streams.
+  Merging these PID’s would create conflicts.
+  Instead, the most important PSI/SI tables are correctly merged as previously described
+  (unless -`-no-psi-merge` is used). +
+  All other PID's are passed.
+  This can be modified using options `--drop` and `--pass`.
+* PID conflicts are detected.
+  If packets from the same PID are found in the two transport streams, the PID is dropped from the merged stream.
+* In packets coming from the merged transport stream,
+  the PCR’s are restamped according to their new placement in the main transport stream.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P merge [options] 'command'
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_'command'_
+
+[.optdoc]
+The command parameter specifies the shell command to execute in the forked process.
+The standard output of this process is a pipe into which the TS packets are written.
+If the command contains spaces or shell special sequences, the complete command string must be surrounded by quotes.
+
+[.optdoc]
+If the command is too long or too complicated, it is recommended to use a script.
+If the created command is another TSDuck command, it is possible to shorten the command
+using partial command line redirection (see xref:cmd-redirection[xrefstyle=short]).
+
+[.usage]
+Options
+
+[.opt]
+*--acceleration-threshold* _value_
+
+[.optdoc]
+When the insertion of the merged stream is smoothened, packets are inserted in the main stream at some regular interval,
+leaving additional packets in the queue until their natural insertion point.
+However, to avoid losing packets, if the number of packets in the queue is above the specified threshold,
+the insertion is accelerated.
+
+[.optdoc]
+When set to zero, insertion is never accelerated, the packet queue may overflow, and packets may be dropped.
+
+[.optdoc]
+The default threshold is half the size of the packet queue. See option `--max-queue`.
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specify the target bitrate of the merged stream, in bits/seconds.
+
+[.optdoc]
+By default, the bitrate of the merged stream is computed from its PCR.
+
+[.optdoc]
+The value of the bitrate of the merged stream is used to smoothen packet insertion in the main stream.
+
+[.opt]
+*-d* _pid[-pid]_ +
+*--drop* _pid[-pid]_
+
+[.optdoc]
+Drop the specified PID or range of PID's from the merged stream.
+Several options `--drop` can be specified.
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;short;input]
+
+[.opt]
+*-i* +
+*--ignore-conflicts*
+
+[.optdoc]
+Ignore PID conflicts.
+By default, when packets with the same PID are present in the two streams, the PID is dropped from the merged stream.
+
+[.optdoc]
+*Warning*: this is a dangerous option which can result in an inconsistent transport stream.
+
+[.opt]
+*--incremental-pcr-restamp*
+
+[.optdoc]
+When restamping PCR's from the merged TS into the main TS, compute each new PCR from the last restampted one.
+
+[.optdoc]
+By default, all PCR's are restampted from the initial PCR in the PID.
+
+[.optdoc]
+The default method is more precise on constant bitrate (CBR) streams.
+The incremental method gives better results on variable bitrate (VBR) streams.
+
+[.optdoc]
+See also option `--no-pcr-restamp`.
+
+[.opt]
+*-j* +
+*--joint-termination*
+
+[.optdoc]
+Perform a joint termination when the merged stream is terminated.
+See the xref:tsp-reference[`tsp` reference documentation] for more details on xref:joint-termination[joint termination].
+
+[.opt]
+*-m* _value_ +
+*--max-queue* _value_
+
+[.optdoc]
+Specify the maximum number of queued TS packets before their insertion into the stream.
+The default is 1000.
+
+[.opt]
+*--no-pcr-restamp*
+
+[.optdoc]
+Do not restamp PCR's from the merged TS into the main TS.
+By default, PCR's in the merged stream are restamped to match their position in the final stream.
+
+[.optdoc]
+The DTS and PTS are never restamped because they are independent from their position in the stream.
+When the PCR's in the merged stream have discontinuities (such as when cycling a TS file),
+restamping the PCR's can break the video playout since they become decorrelated with the DTS and PTS.
+
+[.opt]
+*--no-psi-merge*
+
+[.optdoc]
+Do not merge PSI/SI from the merged TS into the main TS.
+By default, the PAT, CAT, SDT and EIT’s are merged so that
+the services from the merged stream are properly referenced and PID's 0x00 to 0x1F are dropped from the merged stream.
+
+[.opt]
+*--no-smoothing*
+
+[.optdoc]
+Do not attempt to smoothen the insertion of the merged stream.
+Incoming packets from the merged stream are inserted as soon as null packets are available in the main stream.
+If the main stream contains a lot of null packets, this may lead to bursts in the merged packets.
+
+[.optdoc]
+By default, if the bitrate of the merged stream is known, the merged packets are inserted at the target interval in the main stream.
+
+[.opt]
+*--no-wait*
+
+[.optdoc]
+Do not wait for child process termination at end of processing.
+
+[.opt]
+*-p* _pid[-pid]_ +
+*--pass* _pid[-pid]_
+
+[.optdoc]
+Pass the specified PID or range of PID's from the merged stream.
+Several options `--pass` can be specified.
+
+[.opt]
+*--pcr-reset-backwards*
+
+[.optdoc]
+When restamping PCR's, the PCR adjustment is usually small and stays behind the PTS and DTS.
+But, after hours of continuous restamping, some inaccuracy may appear and the recomputed PCR may move ahead of PCR and DTS.
+This prevents proper decoding of video and audio.
+
+[.optdoc]
+With this option, as soon as a recomputed PCR is ahead of the PTS or DTS in the same packet,
+PCR restamping is reset and restarts from the original PCR value in this packet.
+Note that this creates a small PCR leap in the stream.
+
+[.optdoc]
+This option has, of course, no effect on scrambled streams.
+
+[.opt]
+*--reset-label* _label1[-label2]_
+
+[.optdoc]
+Clear the specified labels on the merged packets.
+Apply to original packets from the merged stream only, not to updated PSI packets.
+
+[.optdoc]
+Several `--reset-label` options may be specified.
+
+[.opt]
+*-r* +
+*--restart*
+
+[.optdoc]
+Restart the merge command whenever it terminates or fails.
+
+[.optdoc]
+By default, when packet insertion is complete, the transmission continues and the stuffing is no longer modified.
+
+[.optdoc]
+The options `--restart` and `--terminate` are mutually exclusive.
+
+[.opt]
+*--restart-interval* _milliseconds_
+
+[.optdoc]
+With `--restart`, specify the number of milliseconds to wait before restarting the merge command.
+
+[.optdoc]
+By default, with `--restart`, the merge command is restarted immediately after termination.
+
+[.opt]
+*--set-label* _label1[-label2]_
+
+[.optdoc]
+Set the specified labels on the merged packets.
+Apply to original packets from the merged stream only, not to updated PSI packets.
+
+[.optdoc]
+Several `--set-label` options may be specified.
+
+[.opt]
+*--terminate*
+
+[.optdoc]
+Terminate packet processing when the merged stream is terminated.
+By default, when packet insertion is complete, the transmission continues, and the stuffing is no longer modified.
+
+[.optdoc]
+The options `--restart` and `--terminate` are mutually exclusive.
+
+[.opt]
+*-t* +
+*--transparent*
+
+[.optdoc]
+Pass all PID's without logical transformation.
+
+[.optdoc]
+Equivalent to `--no-psi-merge --ignore-conflicts --pass 0x00-0x1F`.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

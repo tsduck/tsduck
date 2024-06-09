@@ -1,0 +1,80 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcrbitrate
+
+[.cmd-header]
+Permanently recompute bitrate based on PCR's
+
+This plugin permanently recomputes the bitrate based on the analysis of PCR’s on the packets.
+All packets are transparently passed.
+
+Normally, `tsp` determines the input bitrate at the input plugin:
+either the input plugin itself can report the actual input bitrate (from a hardware device for instance)
+or `tsp` computes the bitrate based on PCR analysis.
+Then, the bitrate information is automatically propagated from one plugin to another, up to the output plugin.
+The output plugin may use or ignore this information.
+Typically, output to a file ignores the bitrate information
+while output to a hardware device (ASI or modulator) will use it as device parameter.
+
+There may be a problem if some packet processor plugin drops packets from the transport stream.
+The `zap` plugin, for instance, creates an SPTS containing only one service, dropping all other packets.
+
+Let’s take an example: `tsp` is used to read a full MPTS from a file, extract one channel and send it to a Dektec ASI device.
+`tsp` reads the input bitrate (here, it analyzes the PCR from the input file and finds, say, 38 Mb/s).
+Then, `tsp` propagates this bitrate along the plugin chain, up to the output plugin.
+By default, the output plugin will send the SPTS at 38 Mb/s, the bitrate of the original MPTS,
+which is a non-sense since the "normal" bitrate of the SPTS is more likely something like 3 or 4 Mb/s.
+
+By inserting the `pcrbitrate` plugin between the `zap` plugin and the `dektec` output plugin,
+the bitrate information will be altered and the output plugin receives a bitrate value
+which is consistent with the PCR’s in the SPTS.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pcrbitrate [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-d* +
+*--dts*
+
+[.optdoc]
+Use DTS (Decoding Time Stamps) from video PID's instead of PCR (Program Clock Reference) from the transport layer.
+
+[.opt]
+*-i* +
+*--ignore-errors*
+
+[.optdoc]
+Ignore transport stream errors such as discontinuities.
+
+[.optdoc]
+When errors are not ignored (the default), the bitrate of the original stream (before corruptions) is evaluated.
+When errors are ignored, the bitrate of the received stream is evaluated, missing packets being considered as non-existent.
+
+[.opt]
+*--min-pcr* _value_
+
+[.optdoc]
+Stop analysis when that number of PCR are read from the required minimum number of PID (default: 128).
+
+[.opt]
+*--min-pid* _value_
+
+[.optdoc]
+Minimum number of PID to get PCR from (default: 1).
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

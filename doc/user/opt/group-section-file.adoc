@@ -1,0 +1,115 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::SectionFileArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Sections files options
+
+These options affect the way sections are loaded from binary, XML or JSON files.
+They are used in commands `tspacketize`, `tstabcomp`, and plugin `inject`.
+
+[.opt]
+*--eit-actual*
+
+[.optdoc]
+With `--eit-normalization`, generate all EIT Actual.
+Same as `--eit-actual-pf --eit-actual-schedule`.
+
+[.opt]
+*--eit-actual-pf*
+
+[.optdoc]
+With `--eit-normalization`, generate EIT p/f Actual.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*--eit-actual-schedule*
+
+[.optdoc]
+With `--eit-normalization`, generate EIT Schedule Actual.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*--eit-base-date* _date_
+
+[.optdoc]
+With `--eit-normalization`, use the specified date as reference for
+the allocation of the various EIT events in sections and segments.
+
+[.optdoc]
+The date must be in the format "YYYY/MM/DD  [hh:mm:ss]".
+If only the date is present, it is used as base for the allocation of EIT schedule.
+If the time is also specified, it is the current time for the snapshot of EIT p/f.
+By default, use the oldest date in all EIT sections as base date.
+
+[.opt]
+*--eit-normalization*
+
+[.optdoc]
+Reorganize all EIT sections according to the rules from <<ETSI-101-211>>.
+
+[.optdoc]
+* EIT present/following: One single EIT p/f subtable is built per service.
+  It is split in two sections, one for present and one for following events.
+* EIT schedule: All EIT schedule are kept but they are completely reorganized.
+  All events are extracted and spread over new EIT sections according to ETSI TS 101 211 rules.
+
+[.optdoc]
+If several files are specified, the reorganization of EIT's is performed inside each file independently.
+This is fine as long as all EIT's for a given service are in the same input file.
+
+[.optdoc]
+See also option `--eit-base-date`.
+
+[.opt]
+*--eit-other*
+
+[.optdoc]
+With `--eit-normalization`, generate all EIT Other.
+Same as `--eit-other-pf --eit-other-schedule`.
+
+[.opt]
+*--eit-other-pf*
+
+[.optdoc]
+With `--eit-normalization`, generate EIT p/f Other.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*--eit-other-schedule*
+
+[.optdoc]
+With `--eit-normalization`, generate EIT Schedule Other.
+If no EIT selection option is specified, all EIT’s are generated.
+
+[.opt]
+*--eit-pf*
+
+[.optdoc]
+With `--eit-normalization`, generate all EIT p/f.
+Same as `--eit-actual-pf --eit-other-pf`.
+
+[.opt]
+*--eit-schedule*
+
+[.optdoc]
+With `--eit-normalization`, generate all EIT Schedule.
+Same as `--eit-actual-schedule --eit-other-schedule`.
+
+[.opt]
+*--pack-and-flush*
+
+[.optdoc]
+When loading a binary section file, pack incomplete tables, ignoring missing sections, and flush them.
+Sections are renumbered to remove any hole between sections.
+
+[.optdoc]
+Use with care because this may create inconsistent tables.

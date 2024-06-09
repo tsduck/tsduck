@@ -1,0 +1,118 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== rmsplice
+
+[.cmd-header]
+Remove ads insertions using SCTE 35 splice information
+
+This plugin removes part of a program (typically ads insertions) based on SCTE 35 splice cueing information.
+
+According to the <<SCTE-35>> standard, a dedicated elementary stream is declared in the PMT of a service,
+carrying private tables.
+These private tables describe upcoming _splice points_.
+They define specific points in the program where the audio and video can be "cut" and
+replaced by some alternate content, typically local ads sequences.
+
+_Splice out_ points define places where the main program can be left to switch to local content.
+
+_Splice in_ points define places where the content should return back to the original program.
+
+The plugin `rmsplice` uses the specific SCTE 35 splice information stream to locate what could be
+uninteresting sequences of ads and simply removes the program content, audio, video, subtitles, during these sequences.
+The content of the program is not replaced, as originally intended by the SCTE 35 standard, it is simply removed.
+Consequently, using this plugin makes sense on SPTS only (see the plugin `zap` for instance).
+
+The removal is based on Presentation Time Stamps (PTS) in the various content PID’s of the program.
+The PTS of the starting (_splice out_) and ending (_splice in_) points are defined
+by the SCTE 35 commands in the dedicated stream.
+Currently, `rmsplice` removes entire PES packets and does not dig into the video encoding.
+
+If the original video encoding is carefully performed to resist to identified splice points, the transition should be smooth.
+However, it has been observed transient glitches and macro blocks in the resulting stream after removing ads sequences,
+even though the PTS of the splice points exactly match the signalled PTS values.
+VLC reports one _"unref short failure"_ at that point.
+It is currently unknown if this is due to a non-splice-resistant video encoding
+or if the cutting method of `rmsplice` is too harsh.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P rmsplice [options] [service]
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_service_
+
+[.optdoc]
+The optional parameter specifies the service to modify.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+When the parameter is omitted, the first service which is found in the PAT is selected.
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--adjust-time*
+
+[.optdoc]
+Adjust all time stamps (PCR, OPCR, PTS and DTS) after removing splice-out / splice-in sequences.
+This can be necessary to improve the video transition.
+
+[.opt]
+*-c* +
+*--continue*
+
+[.optdoc]
+Continue stream processing even if no splice information stream is found for the service.
+Without this information stream, ads cannot be located and consequently not removed.
+By default, `tsp` aborts when the splice information stream is not found in the PMT of the service.
+
+[.opt]
+*-n* +
+*--dry-run*
+
+[.optdoc]
+Perform a dry run, report what operations would be performed.
+Use with `--verbose`.
+
+[.opt]
+*--event-id* _pid1[-pid2]_
+
+[.optdoc]
+Only remove splices associated with the specified event ID’s.
+
+[.optdoc]
+Several `--event-id` options may be specified.
+
+[.opt]
+*-f* +
+*--fix-cc*
+
+[.optdoc]
+Fix continuity counters after removing splice-out / splice-in sequences.
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Replace excluded packets with stuffing (null packets) instead of removing them.
+Useful to preserve the bitrate.
+
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

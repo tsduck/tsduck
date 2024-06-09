@@ -1,0 +1,88 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== until
+
+[.cmd-header]
+Pass packets until some specified condition
+
+This plugin passes all TS packets to the next plugin in the chain, until one of the specified conditions is met.
+At this point, the plugin simulates an end of input stream and all subsequent packets are dropped.
+The previous plugins in the chain are notified to stop.
+When the next plugins in the chain finish the processing of the passed packet, `tsp` terminates.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P until [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-b* _value_ +
+*--bytes* _value_
+
+[.optdoc]
+Stop after processing the specified number of bytes.
+
+[.opt]
+*-e* +
+*--exclude-last*
+
+[.optdoc]
+Exclude the last packet (the one which triggers the final condition).
+
+[.opt]
+*-j* +
+*--joint-termination*
+
+[.optdoc]
+When the final condition is triggered, perform a joint termination instead of unconditional termination.
+See the xref:tsp-reference[`tsp` reference documentation] for more details on xref:joint-termination[joint termination].
+
+[.opt]
+*-m* _value_ +
+*--milli-seconds* _value_
+
+[.optdoc]
+Stop the specified number of milli-seconds after receiving the first packet.
+
+[.opt]
+*-n* _value_ +
+*--null-sequence-count* _value_
+
+[.optdoc]
+Stop when the specified number of sequences of consecutive null packets is encountered.
+
+[.opt]
+*-p* _value_ +
+*--packets* _value_
+
+[.optdoc]
+Stop after the specified number of packets.
+
+[.opt]
+*-s* _value_ +
+*--seconds* _value_
+
+[.optdoc]
+Stop the specified number of seconds after receiving the first packet.
+
+[.opt]
+*-u* _value_ +
+*--unit-start-count* _value_
+
+[.optdoc]
+Stop when the specified number of packets containing a payload unit start indicator is encountered.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

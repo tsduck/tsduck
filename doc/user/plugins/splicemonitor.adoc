@@ -1,0 +1,197 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== splicemonitor
+
+[.cmd-header]
+Monitor SCTE 35 splice information
+
+This plugin monitors splice information sections, as defined by the <<SCTE-35>> standard.
+The event reference, the number of occurrences of each command and the time between the command
+and the event itself (sometimes called _pre-roll time_) are displayed.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P splicemonitor [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--alarm-command* _"command"_
+
+[.optdoc]
+Command to run when a splice event is outside the nominal range as specified by other `--min` and `--max` options.
+
+[.optdoc]
+The command receives seven additional parameters:
+
+[.optdoc]
+[.compact-list]
+1. A human-readable message, the same as logged by the plugin.
+2. The PID of the splice command.
+3. The event id.
+4. The string `in` or `out` for splice in / splice out command.
+5. The adjusted PTS value in the splice command.
+6. Pre-roll time in milliseconds. This is the time between the first occurrence of a splice command and the corresponding event.
+7. Number of occurences of the command before the event.
+
+[.optdoc]
+These parameters can be used or ignored by the alarm command.
+
+[.opt]
+*-a* +
+*--all-commands*
+
+[.optdoc]
+Same as `--display-commands` but display all SCTE-35 splice information commands.
+This is equivalent to `--select-commands 0-255`.
+
+[.optdoc]
+By default, only display splice insert commands.
+
+[.opt]
+*-d* +
+*--display-commands*
+
+[.optdoc]
+Display the content of SCTE-35 splice insert commands.
+
+[.optdoc]
+By default, only log a short event description.
+
+[.opt]
+*--max-pre-roll-time* _value_
+
+[.optdoc]
+Specify a maximum pre-roll time in milliseconds for splice commands.
+
+[.optdoc]
+See option `--alarm-command` for the processing of non-nominal cases.
+
+[.opt]
+*--max-repetition* _value_
+
+[.optdoc]
+Specify a maximum number of repetitions for each splice command.
+
+[.optdoc]
+See option `--alarm-command` for the processing of non-nominal cases.
+
+[.opt]
+*--meta-sections*
+
+[.optdoc]
+Add an hexadecimal dump of each section in the XML and JSON metadata.
+
+[.opt]
+*--min-pre-roll-time* _value_
+
+[.optdoc]
+Specify a minimum pre-roll time in milliseconds for splice commands.
+
+[.optdoc]
+See option `--alarm-command` for the processing of non-nominal cases.
+
+[.opt]
+*--min-repetition* _value_
+
+[.optdoc]
+Specify a minimum number of repetitions for each splice command.
+
+[.optdoc]
+See option `--alarm-command` for the processing of non-nominal cases.
+
+[.opt]
+*-n* +
+*--no-adjustment*
+
+[.optdoc]
+When computing the anticipated pre-roll time at reception of a splice command,
+do not try to adjust the time using the distance between the last PTS and the splice command.
+
+[.optdoc]
+By default, use the bitrate to adjust the supposed PTS of the splice command itself.
+
+[.opt]
+*-o* _file-name_ +
+*--output-file* _file-name_
+
+[.optdoc]
+Specify an output text file.
+With `--json`, this will be a JSON file.
+
+[.optdoc]
+By default, use the message logging system for short messages and the standard output with `--display-commands`.
+
+[.opt]
+*-i* +
+*--packet-index*
+
+[.optdoc]
+Display the current TS packet index for each message or event.
+
+[.opt]
+*--select-commands* _value1[-value2]_
+
+[.optdoc]
+Same as `--display-commands` but display the specified SCTE-35 command types only.
+
+[.optdoc]
+By default, only display splice insert commands.
+
+[.optdoc]
+Several `--select-commands` can be specified.
+
+[.opt]
+*-s* _value_ +
+*--splice-pid* _value_
+
+[.optdoc]
+Specify one single PID carrying SCTE-35 sections to monitor.
+
+[.optdoc]
+By default, all SCTE-35 PID's are monitored, based in their signalization in the PMT’s.
+
+[.opt]
+*-t* _value_ +
+*--time-pid* _value_
+
+[.optdoc]
+Specify one video or audio PID containing PTS time stamps to link with SCTE-35 sections to monitor.
+
+[.optdoc]
+By default, the PMT's are used to link between PTS PID's and SCTE-35 PID's.
+
+[.opt]
+*--time-stamp*
+
+[.optdoc]
+Add a time stamp (current local time) inside each JSON structure (tables and events).
+
+[.usage]
+JSON logging options
+
+[.opt]
+*-j* +
+*--json*
+
+[.optdoc]
+Build a JSON description of the splice event (see option `--output-file`).
+
+[.optdoc]
+When `--all-commands` is specified, each SCTE-35 table is initially formatted as XML and an automated XML-to-JSON conversion is applied.
+See xref:xml-json-conv[xrefstyle=short] for more details on XML-to-JSON conversion.
+
+include::{docdir}/opt/group-json-output.adoc[tags=!*;notitle]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

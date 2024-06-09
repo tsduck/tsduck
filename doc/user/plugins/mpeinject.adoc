@@ -1,0 +1,265 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== mpeinject
+
+[.cmd-header]
+Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)
+
+This plugin receives UDP datagrams from the local network,
+encapsulates them, and inserts them in an MPE (Multi-Protocol Encapsulation) PID.
+See <<ETSI-301-192>> for more details on MPE.
+
+By default, the inserted PID containing MPE sections replaces null packets.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults
+(see the reference documentation for `tsp`).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P mpeinject [options] [[source@]address:]port ...
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_[[source@]address:]port_
+
+[.optdoc]
+The parameter `_[address:]port_` describes the destination of incoming UDP datagrams.
+All datagrams which are received on this stream will be MPE-encapsulated.
+
+[.optdoc]
+The `_port_` part is mandatory and specifies the UDP port to listen on.
+The `_address_` part is optional.
+It specifies an IP multicast address to listen on.
+It can be also a host name that translates to a multicast address.
+
+[.optdoc]
+An optional source address can be specified as `_source@address:port_` in the case of source-specific multicast (SSM).
+
+[.optdoc]
+If the address is not specified, the plugin simply listens on the specified local port
+and receives the packets which are sent to one of the local (unicast) IP addresses of the system.
+
+[.optdoc]
+Several `_[address:]port_` parameters can be specified to receive multiple UDP streams.
+All UDP streams are multiplexed in the same output MPE PID.
+
+[.optdoc]
+WARNING: When several `_[address:]port_` parameters are specified with the same port value,
+this may work or not, depending on the operating system.
+
+[.usage]
+UDP reception options
+
+These options apply to the incoming UDP/IP stream from the local network.
+
+[.opt]
+*-b* _value_ +
+*--buffer-size* _value_
+
+[.optdoc]
+Specify the UDP socket receive buffer size in bytes (socket option).
+
+[.opt]
+*--default-interface*
+
+[.optdoc]
+Let the system find the appropriate local interface on which to listen.
+By default, listen on all local interfaces.
+
+[.opt]
+*--disable-multicast-loop*
+
+[.optdoc]
+Disable multicast loopback.
+
+[.optdoc]
+By default, incoming multicast packets are looped back on local interfaces,
+if an application sends packets to the same group from the same system.
+This option disables this.
+
+[.optdoc]
+*Warning*: On input sockets, this option is effective only on Windows systems.
+On UNIX systems (Linux, macOS, BSD), this option applies only to output sockets.
+
+[.opt]
+*-f* +
+*--first-source*
+
+[.optdoc]
+Filter UDP packets based on the source address. Use the sender address of the first received
+packet as only allowed source.
+This option is useful when several sources send packets to the same destination address and
+port. Accepting all packets could result in a corrupted stream and only one sender shall be
+accepted.
+To allow a more precise selection of the sender, use option --source. Options --first-source
+and --source are mutually exclusive.
+
+[.opt]
+*-l* _address_ +
+*--local-address* _address_
+
+[.optdoc]
+Specify the IP address of the local interface on which to listen.
+It can be also a host name that translates to a local address.
+
+[.optdoc]
+If several `_[address:]port_` parameters are specified, several `--local-address` options can be specified,
+one for each received stream, in the same order as the `_[address:]port_` parameters.
+If there are less `--local-address` options than receivers, the last `--local-address` option applies to remaining receivers.
+
+[.optdoc]
+By default, listen on all local interfaces.
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option.
+Do not use unless completely necessary.
+
+[.opt]
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify the UDP reception timeout in milliseconds.
+This timeout applies to each receive operation, individually.
+
+[.optdoc]
+By default, receive operations wait for data, possibly forever.
+
+[.opt]
+*-r* +
+*--reuse-port*
+
+[.optdoc]
+Set the reuse port socket option.
+This is now enabled by default, the option is present for legacy only.
+
+[.opt]
+*-s* _address[:port]_ +
+*--source* _address[:port]_
+
+[.optdoc]
+Filter UDP packets based on the specified source address.
+
+[.optdoc]
+This option is useful when several sources send packets to the same destination address and port.
+Accepting all packets could result in a corrupted stream and only one sender shall be accepted.
+
+[.optdoc]
+If several `_[address:]port_` parameters are specified, several `--source` options can be specified,
+one for each received stream, in the same order as the `_[address:]port_` parameters.
+If there are less `--source` options than receivers, the last `--source` option applies to remaining receivers.
+
+[.optdoc]
+Options `--first-source` and `--source` are mutually exclusive.
+
+[.opt]
+*--ssm*
+
+[.optdoc]
+This option forces the usage of source-specific multicast (SSM)
+using the source address which is specified by the option `--source`.
+Without `--ssm`, standard ("any-source’) multicast is used and the option `--source` is used to filter incoming packets.
+
+[.optdoc]
+The `--ssm` option is implicit when the classical SSM syntax `_source@address:port_` is used.
+
+[.usage]
+MPE encapsulation options
+
+These options specify how the incoming UDP datagrams are encapsulated into MPE sections.
+
+[.opt]
+*--mac-address* _nn:nn:nn:nn:nn:nn_
+
+[.optdoc]
+Specify the default destination MAC address to set in MPE sections for unicast IP packets.
+The default is `00:00:00:00:00:00`.
+
+[.optdoc]
+For multicast IP packets, the MAC address is automatically computed.
+
+[.opt]
+*--new-destination* _address[:port]_
+
+[.optdoc]
+Change the destination IP address and UDP port of the network datagram in MPE sections.
+If the port is not specified, the original destination port from the UDP datagram is used.
+
+[.optdoc]
+If several `_[address:]port_` parameters are specified, several `--new-destination` options can be specified,
+one for each received stream, in the same order as the `_[address:]port_` parameters.
+If there are less `--new-destination` options than receivers, the last `--new-destination` option applies to remaining receivers.
+
+[.optdoc]
+By default, the destination address is not modified.
+
+[.opt]
+*--new-source* _address[:port]_
+
+[.optdoc]
+Change the source IP address and UDP port of the network datagram in MPE sections.
+If the port is not specified, the original source port from the UDP datagram is used.
+
+[.optdoc]
+If several `_[address:]port_` parameters are specified, several `--new-source` options can be specified,
+one for each received stream, in the same order as the `_[address:]port_` parameters.
+If there are less `--new-source` options than receivers, the last `--new-source` option applies to remaining receivers.
+
+[.optdoc]
+By default, the source address is not modified.
+
+[.usage]
+Other options
+
+[.opt]
+*--max-queue* _value_
+
+[.optdoc]
+Specify the maximum number of queued UDP datagrams before their insertion into the MPE stream.
+The default is 32.
+
+[.optdoc]
+If incoming datagrams arrive too fast, and more than this number of UDP datagrams are internally
+buffered before having the opportunity to be inserted in the transport stream,
+additional datagrams are dropped and a warning message is reported.
+
+[.opt]
+*--pack-sections*
+
+[.optdoc]
+Specify to pack DSM-CC sections containing MPE datagrams.
+With this option, each DSM-CC section starts in the same TS packet as the previous section, when possible.
+
+[.optdoc]
+By default, the last TS packet of a DSM-CC section is stuffed and the next section starts in the next TS packet of the PID.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+Specify the PID into which the MPE datagrams shall be inserted. This is a mandatory parameter.
+
+[.opt]
+*--replace*
+
+[.optdoc]
+Replace the target PID if it exists.
+By default, the plugin only replaces null packets and `tsp` stops with an error if incoming packets are found with the target PID.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

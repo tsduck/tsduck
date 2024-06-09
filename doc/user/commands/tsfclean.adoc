@@ -1,0 +1,87 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsfclean
+
+[.cmd-header]
+Cleanup the structure and boundaries of a transport stream file
+
+In its most general form, an MPEG transport stream file is just a set of TS packets.
+It can be a capture of a live stream, in which case the file starts and ends at arbitrary points in an endless transmission.
+
+However, when a media player manipulates stored contents,
+it expects the files to start with the actual beginning of an audio/video content.
+When the file format is an MPEG transport stream,
+the player expects some characteristics such as
+immediate identification of the services and PID’s, initial intra video frame, etc.
+Not matching these characteristics does not prevent the content from being rendered by the player
+but glitches are usually present at startup.
+
+The `tsfclean` command cleans up a TS file to make it more consistent for media players and other similar tools.
+The following transformations are applied:
+
+* The output file starts with the PAT, the CAT (if present on input), the SDT (if present on input)
+  and the PMT’s of all services. Thus, the player is aware of the exact structure of the TS before
+  processing the first audio / video data.
+* EIT present/following for actual existing services are kept. All other EIT’s are removed.
+* All other PSI/SI (including NIT, BAT, TDT and other broadcast-related tables), all null packets
+  and all orphan PID’s are deleted.
+* In each video PID, all packets preceding the first intra-frame are deleted. If no intra-frame can
+  be found (unknown video codec or scrambled contents), all packets preceding the first
+  complete PES packet are deleted.
+* In each audio, subtitles or data component of the services, all packets preceding the first
+  complete PES packet or section are deleted.
+
+If the input file contains several versions of a table (PAT, CAT, SDT or PMT’s),
+all successive versions are merged into one single version of the table.
+Some players are known to read the first table of each kind only
+and are not able to handle table updates as a TV receiver would do.
+Consequently, if a service or a component of a service appears and disappears several times,
+it becomes in fact declared from the start to the end of the output file.
+If incompatible non-cumulative changes are introduced in a table update, an error is reported.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsfclean [options] file ...
+----
+
+[.usage]
+File
+
+[.optdoc]
+MPEG transport stream input files to cleanup.
+All input files must be regular files (no pipe) since the processing is done on two passes.
+
+[.optdoc]
+If more than one file is specified, the output name shall specify a directory.
+
+[.usage]
+Options
+
+[.opt]
+*-o* _path_ +
+*--output* _path_
+
+[.optdoc]
+Specify the output file or directory.
+
+[.optdoc]
+If the specified path is a directory, the output file is created in that directory,
+with the same base name as the input file.
+
+[.optdoc]
+This is a mandatory parameter, there is no default.
+
+[.optdoc]
+If more than one input file is specified, the output name shall specify a directory.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

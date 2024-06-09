@@ -1,0 +1,205 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tspcap
+
+[.cmd-header]
+Analyze pcap and pcap-ng files
+
+This simple utility provides a summary of the content of _pcap_ and _pcap-ng_ files.
+These files contain network packets, typically captured and saved by Wireshark.
+
+The `tspcap` utility is not meant to replace Wireshark.
+It only computes global analysis data which are not otherwise available in Wireshark,
+for instance the data bitrate over a range of packets in the file.
+
+Wireshark is typically used to investigate issues on a network capture.
+Then, if some specific global analysis is required, use `tspcap`.
+
+See some usage examples in xref:tspcap-examples[xrefstyle=short].
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tspcap [options] [input-file]
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file_
+
+[.optdoc]
+Input file in pcap or pcap-ng format, typically as saved by Wireshark.
+
+[.optdoc]
+Use the standard input if no file name is specified.
+
+[.usage]
+Options
+
+[.opt]
+*-d* _[address][:port]_ +
+*--destination* _[address][:port]_
+
+[.optdoc]
+Filter IPv4 packets based on the specified destination socket address.
+The optional port number is used for TCP and UDP packets only.
+If the address part is omitted, all TCP or UDP packets with any destination address but
+with that destination port number are used.
+
+[.opt]
+*--dvb-simulcrypt*
+
+[.optdoc]
+Dump the content of a session as DVB SimulCrypt protocol.
+
+[.optdoc]
+Without `--udp`, the first TCP session matching the `--source` and `--destination` options is selected.
+The content of the session is interpreted as one of the TLV-based DVB SimulCrypt protocols and all messages are formatted.
+
+[.optdoc]
+With `--udp`, all packets matching the `--source` and `--destination` options are interpreted as EMMG/PDG{d-arrow}MUX protocol
+(this is the only DVB SimulCrypt protocol which is based on UDP).
+
+[.opt]
+*-e* +
+*--extract-tcp-stream*
+
+[.optdoc]
+Extract the content of a TCP session as hexadecimal dump.
+
+[.optdoc]
+The two directions of the TCP session are dumped.
+
+[.optdoc]
+The first TCP session matching the `--source` and `--destination` options is selected.
+
+[.opt]
+*--first-date* _date-time_
+
+[.optdoc]
+Filter packets starting at the specified date.
+Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
+
+[.opt]
+*--first-packet* _value_
+
+[.optdoc]
+Filter packets starting at the specified number.
+
+[.optdoc]
+The packet numbering counts all captured packets from the beginning of the file, starting at 1.
+This is the same value as seen on Wireshark in the leftmost column.
+
+[.opt]
+*--first-timestamp* _micro-seconds_
+
+[.optdoc]
+Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture.
+This is the same value as seen on Wireshark in the "Time" column (in seconds).
+
+[.opt]
+*-i* _micro-seconds_ +
+*--interval* _micro-seconds_
+
+[.optdoc]
+Print a summary of exchanged data by intervals of times in micro-seconds.
+
+[.optdoc]
+By default, print a summary of the file content.
+
+[.opt]
+*--last-date* _date-time_
+
+[.optdoc]
+Filter packets up to the specified date.
+Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
+
+[.opt]
+*--last-packet* _value_
+
+[.optdoc]
+Filter packets up to the specified number.
+
+[.optdoc]
+The packet numbering counts all captured packets from the beginning of the file, starting at 1.
+This is the same value as seen on Wireshark in the leftmost column.
+
+[.opt]
+*--last-timestamp* _micro-seconds_
+
+[.optdoc]
+Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture.
+This is the same value as seen on Wireshark in the "Time" column (in seconds).
+
+[.opt]
+*-l* +
+*--list-streams*
+
+[.optdoc]
+List all data streams in the file.
+A data streams is made of all packets from one source to one destination using one protocol.
+
+[.optdoc]
+By default, print a summary of the file content.
+
+include::{docdir}/opt/opt-no-pager.adoc[tags=!*]
+
+[.opt]
+*--others*
+
+[.optdoc]
+Filter packets from "other" protocols, i.e. neither TCP nor UDP.
+
+[.opt]
+*-o* _file-name_ +
+*--output-tcp-stream* _file-name_
+
+[.optdoc]
+Extract the content of a TCP session and save it in the specified binary file.
+
+[.optdoc]
+The first TCP session matching the `--source` and `--destination` options is selected.
+
+[.optdoc]
+Unlike `--extract-tcp-stream`, only one side of the TCP session is saved, from `--source` to `--destination`.
+
+[.optdoc]
+If the file name is "-", the standard output is used.
+
+[.opt]
+*-s* _[address][:port]_ +
+*--source* _[address][:port]_
+
+[.optdoc]
+Filter IPv4 packets based on the specified source socket address.
+
+[.optdoc]
+The optional port number is used for TCP and UDP packets only.
+If the address part is omitted, all TCP or UDP packets with any source address but with that source port number are used.
+
+[.opt]
+*-t* +
+*--tcp*
+
+[.optdoc]
+Filter TCP packets.
+
+[.opt]
+*-u* +
+*--udp*
+
+[.optdoc]
+Filter UDP packets.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

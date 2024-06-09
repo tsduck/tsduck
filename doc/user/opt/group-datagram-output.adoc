@@ -1,0 +1,250 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TSDatagramOutput.
+//
+// tags: raw, rtp, burst
+//
+//----------------------------------------------------------------------------
+
+//---- ugly tag tricks ----
+
+:!opt-raw:
+:!opt-rtp:
+:!opt-burst:
+
+// tag::raw[]
+:opt-raw: true
+// end::raw[]
+
+// tag::rtp[]
+:opt-rtp: true
+// end::rtp[]
+
+// tag::burst[]
+:opt-burst: true
+// end::burst[]
+
+//---- end of tag tricks ----
+
+//----------------------------------------------------------------------------
+// Optional address:port parameter
+//----------------------------------------------------------------------------
+
+ifdef::opt-raw[]
+
+[.usage]
+Parameters
+
+[.opt]
+_address:port_
+
+[.optdoc]
+The parameter `_address:port_` describes the destination for UDP packets.
+The `_address_` specifies an IP address which can be either unicast or multicast.
+It can be also a host name that translates to an IP address.
+The `_port_` specifies the destination UDP port.
+
+endif::[]
+
+//----------------------------------------------------------------------------
+// General options
+//----------------------------------------------------------------------------
+
+[.usage]
+UDP options
+
+ifndef::opt-burst[]
+
+[.opt]
+*-e* +
+*--enforce-burst*
+
+[.optdoc]
+Enforce that the number of TS packets per UDP packet is exactly what is specified in option `--packet-burst`.
+By default, this is only a maximum value.
+
+[.optdoc]
+For instance, without `--enforce-burst` and the default `--packet-burst` value (7 packets),
+if the output plugin receives 16 TS packets,
+it immediately sends 3 UDP packets containing 7, 7 and 2 TS packets respectively.
+
+[.optdoc]
+With option `--enforce-burst`, only the first 14 TS packets would be sent, using 2 UDP packets.
+The remaining 2 TS packets are buffered, delaying their departure until 5 more TS packets are available.
+
+endif::[]
+
+[.opt]
+*-p* _value_ +
+*--packet-burst* _value_
+
+[.optdoc]
+Specifies the maximum number of TS packets to be grouped into each UDP datagram.
+
+[.optdoc]
+The default is 7, the maximum is 128.
+
+ifdef::opt-raw[]
+
+[.opt]
+*--rs204*
+
+[.optdoc]
+Use a 204-byte format for TS packets in UDP datagrams.
+Each TS packet is followed by a zeroed placeholder for a 16-byte Reed-Solomon FEC.
+
+[.optdoc]
+This format is meaningful for modulators only, but some tools also require or allow it in UDP datagrams.
+
+endif::[]
+
+//----------------------------------------------------------------------------
+// IP options
+//----------------------------------------------------------------------------
+
+ifdef::opt-raw[]
+
+[.usage]
+IP options
+
+[.opt]
+*-b* _value_ +
+*--buffer-size* _value_
+
+[.optdoc]
+Specify the UDP socket send buffer size in bytes (socket option).
+The actual impact depends on the operating system.
+Be sure to check the specificities of your system.
+
+[.opt]
+*-d* +
+*--disable-multicast-loop*
+
+[.optdoc]
+Disable multicast loopback.
+
+[.optdoc]
+By default, outgoing multicast packets are looped back on local interfaces,
+if an application added membership on the same multicast group.
+This option disables this.
+
+[.optdoc]
+*Warning*: On output sockets, this option is effective only on UNIX systems (Linux, macOS, BSD).
+On Windows systems, this option applies only to input sockets.
+
+[.opt]
+*-f* +
+*--force-local-multicast-outgoing*
+
+[.optdoc]
+When the destination is a multicast address and `--local-address` is specified,
+this option forces the multicast outgoing traffic on this local interface (using the socket option `IP_MULTICAST_IF`).
+
+[.optdoc]
+Use this option with care.
+Its usage depends on the operating system.
+If no route is declared at system level for the multicast destination address,
+this option may be necessary to force the multicast to the specified local interface.
+On the other hand, if a route is declared, this option may transport multicast IP packets in unicast Ethernet frames to the gateway,
+preventing multicast reception on the local network (this has been seen on Linux).
+
+[.opt]
+*-l* _address_ +
+*--local-address* _address_
+
+[.optdoc]
+When the destination is a multicast address, specify the IP address of the outgoing local interface.
+It can be also a host name that translates to a local address.
+
+[.opt]
+*--local-port* _value_
+
+[.optdoc]
+Specify the local UDP source port for outgoing packets.
+By default, a random source port is used.
+
+[.opt]
+*-s* _value_ +
+*--tos* _value_
+
+[.optdoc]
+Specifies the TOS (Type-Of-Service) socket option.
+Depending on the specified value or on the operating system,
+this option may require privileges or may even have no effect at all.
+
+[.opt]
+*-t* _value_ +
+*--ttl* _value_
+
+[.optdoc]
+Specifies the TTL (Time-To-Live) socket option.
+The actual option is either "Unicast TTL" or "Multicast TTL", depending on the destination address.
+
+[.optdoc]
+*Warning*: Remember than the default Multicast TTL is 1 on most systems.
+
+endif::[]
+
+//----------------------------------------------------------------------------
+// RTP options
+//----------------------------------------------------------------------------
+
+ifdef::opt-rtp[]
+
+[.usage]
+RTP options
+
+[.opt]
+*-r* +
+*--rtp*
+
+[.optdoc]
+Use the Real-time Transport Protocol (RTP) in output UDP datagrams.
+
+[.optdoc]
+By default, TS packets are sent in UDP datagrams without encapsulation.
+
+[.opt]
+*--payload-type* _value_
+
+[.optdoc]
+With `--rtp`, specify the payload type.
+
+[.optdoc]
+By default, use 33, the standard RTP type for MPEG2-TS.
+Do not modify unless there is a good reason to do so.
+
+[.opt]
+*--pcr-pid* _value_
+
+[.optdoc]
+With `--rtp`, specify the PID containing the PCR's which are used as reference for RTP timestamps.
+
+[.optdoc]
+By default, use the first PID containing PCR's.
+
+[.opt]
+*--ssrc-identifier* _value_
+
+[.optdoc]
+With `--rtp`, specify the SSRC identifier.
+
+[.optdoc]
+By default, use a random value.
+Do not modify unless there is a good reason to do so.
+
+[.opt]
+*--start-sequence-number* _value_
+
+[.optdoc]
+With `--rtp`, specify the initial sequence number.
+
+[.optdoc]
+By default, use a random value.
+Do not modify unless there is a good reason to do so.
+
+endif::[]

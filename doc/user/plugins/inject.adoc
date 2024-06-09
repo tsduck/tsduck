@@ -1,0 +1,189 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== inject
+
+[.cmd-header]
+Inject tables in a transport stream
+
+This plugin injects MPEG tables and sections into a transport stream,
+replacing a PID or stealing packets from stuffing.
+
+When a PID is replaced, all previous content of this PID is lost and all its packets are replaced at the same position in the stream.
+The bitrate of the PID is unchanged.
+
+When a new PID is created, replacing some stuffing packets, its bitrate must be known.
+There are several explicit or implicit ways to specify the bitrate of the new PID.
+First, the option `--bitrate` can be used.
+Second, the option `--inter-packet` can be used to specify the placement of the packets in the stream.
+
+The last option is to specify an explicit repetition rate for each input section file.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P inject [options] input-file[=rate] ...
+----
+
+[.usage]
+Parameters
+
+[.opt]
+_input-file[=rate]_
+
+[.optdoc]
+Binary, XML or JSON files containing one or more sections or tables.
+By default, files with a name ending in `.bin`, `.xml`, or `.json` are automatically recognized.
+For other file names, explicitly specify `--binary`, or `--xml`, or `--json`.
+
+[.optdoc]
+The reference source format is XML.
+JSON files are first translated to XML using the "automated XML-to-JSON conversion" rules of TSDuck
+(see xref:xml-json-conv[xrefstyle=short]) and then compiled to binary.
+
+[.optdoc]
+If different repetition rates are required for different files, a parameter can be _filename=value_,
+where _value_ is the repetition rate in milliseconds for all sections in that file.
+
+[.optdoc]
+If an input file name starts with `<?xml`, it is considered as _inline XML content_.
+Similarly, if an input file name starts with `{` or `[`, it is considered as _inline JSON content_.
+In these two cases, it is not possible to specify a specific repetition rate for this XML or JSON content.
+
+[.usage]
+Options
+
+[.opt]
+*--binary*
+
+[.optdoc]
+Specify that all input files are binary, regardless of their file name.
+
+[.opt]
+*-b* _value_ +
+*--bitrate* _value_
+
+[.optdoc]
+Specifies the bitrate for the new PID, in bits / second.
+See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
+
+[.opt]
+*-e* _value_ +
+*--evaluate-interval* _value_
+
+[.optdoc]
+When used with `--replace` and when specific repetition rates are specified for some input files,
+the bitrate of the target PID is re-evaluated on a regular basis.
+The value of this option specifies the number of packet in the target PID before re-evaluating its bitrate.
+
+[.optdoc]
+The default is 100 packets.
+
+[.opt]
+*-f* +
+*--force-crc*
+
+[.optdoc]
+Force recomputation of CRC32 in long sections.
+Ignore the CRC32 values in input file.
+
+[.opt]
+*-i* _value_ +
+*--inter-packet* _value_
+
+[.optdoc]
+Specifies the packet interval for the new PID, that is to say the number of TS packets
+in the transport between two packets of the new PID.
+Use instead of `--bitrate` if the global bitrate of the TS cannot be determined.
+
+[.opt]
+*-j* +
+*--joint-termination*
+
+[.optdoc]
+Perform a joint termination when section insertion is complete.
+Meaningful only when `--repeat` is specified.
+See the xref:tsp-reference[`tsp` reference documentation] for more details on xref:joint-termination[joint termination].
+
+[.opt]
+*--json*
+
+[.optdoc]
+Specify that all input files are JSON, regardless of their file name.
+
+[.opt]
+*-p* _value_ +
+*--pid* _value_
+
+[.optdoc]
+PID of the output TS packets.
+This is a required parameter, there is no default value.
+To replace the content of an existing PID, use option `--replace`.
+To steal stuffing packets and create a new PID, use either option `--bitrate` or `--inter-packet`.
+Exactly one option `--replace`, `--bitrate` or `--inter-packet` must be specified.
+
+[.opt]
+*--poll-files*
+
+[.optdoc]
+Poll the presence and modification date of the input files at regular intervals.
+When a file is created, modified or deleted, reload all files at the next section boundary and restart the injection cycles.
+When a file is deleted, its sections are no longer injected.
+If the file reappears later, its sections will be injected again.
+
+[.optdoc]
+By default, all input files are loaded once at initialization time and an error is generated if a file is missing.
+
+[.opt]
+*--repeat* _count_
+
+[.optdoc]
+Repeat the insertion of a complete cycle of sections the specified number of times.
+
+[.optdoc]
+By default, the sections are infinitely repeated.
+
+[.opt]
+*-r* +
+*--replace*
+
+[.optdoc]
+Replace the content of an existing PID.
+Do not steal stuffing.
+
+[.opt]
+*-s* +
+*--stuffing*
+
+[.optdoc]
+Insert stuffing at end of each section, up to the next TS packet boundary.
+By default, sections are packed and start in the middle of a TS packet, after the previous section.
+Note, however, that section headers are never scattered over a packet boundary.
+
+[.opt]
+*-t* +
+*--terminate*
+
+[.optdoc]
+Terminate packet processing when section insertion is complete.
+Meaningful only when `--repeat` is specified.
+By default, when section insertion is complete, the transmission continues and the stuffing is no longer modified
+(if `--replace` is specified, the PID is then replaced by stuffing).
+
+[.opt]
+*--xml*
+
+[.optdoc]
+Specify that all input files are XML, regardless of their file name.
+
+include::{docdir}/opt/group-section-file.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

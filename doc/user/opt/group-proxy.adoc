@@ -1,0 +1,40 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options to specify proxy for Internet access.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Internet access proxy options
+
+The following options are used to specify how this system accesses Internet.
+
+[.opt]
+*--proxy-host* _name_
+
+[.optdoc]
+Optional proxy host name for Internet access.
+
+[.opt]
+*--proxy-password* _string_
+
+[.optdoc]
+Optional proxy password for Internet access (for use with `--proxy-user`).
+
+[.opt]
+*--proxy-port* _value_
+
+[.optdoc]
+Optional proxy port for Internet access (for use with `--proxy-host`).
+
+[.opt]
+*--proxy-user* _name_
+
+[.optdoc]
+Optional proxy user name for Internet access.

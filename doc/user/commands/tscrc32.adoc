@@ -1,0 +1,52 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tscrc32
+
+[.cmd-header]
+Compute MPEG-style CRC32 values
+
+This utility manually computes CRC32 values, as found in MPEG sections.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tscr32 [options] [input-file ...]
+----
+
+[.usage]
+Input files
+
+[.optdoc]
+Any number of binary input files.
+
+[.optdoc]
+If the parameter is omitted, is an empty string or a dash (`-`), the standard input is used.
+
+[.usage]
+Options
+
+[.opt]
+*-a* +
+*--accelerated*
+
+[.optdoc]
+Check if the computation of CRC32 is accelerated using specialized instructions
+(display `yes` or `no`).
+
+[.opt]
+*-d* _hexa-data_ +
+*--data* _hexa-data_
+
+[.optdoc]
+Raw input data instead of input files. Use hexadecimal digits.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

@@ -1,0 +1,165 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tscmp
+
+[.cmd-header]
+Transport stream files comparison
+
+This utility compares the binary content of two transport stream files.
+Selected fields may be omitted in the comparison to allow comparing files
+which went through different PID remapping or resynchronization process.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tscmp [options] filename-1 filename-2
+----
+
+[.usage]
+Input files
+
+[.optdoc]
+MPEG transport stream files to be compared (see option `--format` for binary formats).
+If a file name is an empty string or a dash (`-`), the standard input is used.
+
+[.usage]
+Options
+
+[.opt]
+*--buffered-packets* _value_
+
+[.optdoc]
+Specifies the files input buffer size in TS packets.
+This is used with `--search-reorder` to look for reordered packets.
+Packets which are not found within that range in the other file are considered missing.
+
+[.optdoc]
+The default is 10,000 TS packets.
+
+[.opt]
+*-b* _value_ +
+*--byte-offset* _value_
+
+[.optdoc]
+Start reading the files at the specified byte offset.
+The default is zero.
+
+[.opt]
+*--cc-ignore*
+
+[.optdoc]
+Ignore continuity counters when comparing packets.
+Useful if one file has been resynchronized.
+
+[.opt]
+*-c* +
+*--continue*
+
+[.optdoc]
+Continue the comparison up to the end of files.
+By default, stop after the first differing packet.
+
+[.opt]
+*-d* +
+*--dump*
+
+[.optdoc]
+Dump the content of all differing packets.
+Also separately dump the differing area within the packets.
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;input;multiple]
+
+[.opt]
+*-m* _count_ +
+*--min-reorder* _count_
+
+[.optdoc]
+With `--search-reorder`, this is the minimum number of consecutive packets to consider in reordered sequences of packets.
+This is used to avoid random isolated packets or small sets of packet, such as null packets,
+to be considered as a reordered sequence.
+
+[.optdoc]
+The default is 7 TS packets.
+
+[.opt]
+*-n* +
+*--normalized*
+
+[.optdoc]
+Report in a normalized output format.
+Useful for automatic analysis.
+
+[.opt]
+*-p* _value_ +
+*--packet-offset* _value_
+
+[.optdoc]
+Start reading the files at the specified TS packet.
+The default is zero.
+
+[.opt]
+*--payload-only*
+
+[.optdoc]
+Compare only the payload of the packets, ignore header and adaptation field.
+
+[.opt]
+*--pcr-ignore*
+
+[.optdoc]
+Ignore PCR and OPCR when comparing packets.
+Useful if one file has been resynchronized.
+
+[.opt]
+*--pid-ignore*
+
+[.optdoc]
+Ignore PID value when comparing packets.
+Useful if one file has gone through a remapping process.
+
+[.opt]
+*-q* +
+*--quiet*
+
+[.optdoc]
+Do not output any message.
+The process simply terminates with a success status if the files are identical and a failure status if they differ.
+
+[.opt]
+*-s* +
+*--search-reorder*
+
+[.optdoc]
+Search missing or reordered packets.
+
+[.optdoc]
+By default, packets are compared one by one without looking for equivalent packets somewhere else.
+
+[.optdoc]
+See also `--threshold-diff` and `--buffered-packets`.
+
+[.opt]
+*-t* _value_ +
+*--threshold-diff* _value_
+
+[.optdoc]
+When used with `--search-reorder`, this value specifies the maximum number of
+differing bytes in packets to declare them equal.
+When two packets have more differing bytes than this threshold,
+the packets are reported as different and the first file is read ahead.
+The default is zero, which means that two packets must be strictly identical to declare them equal.
+
+[.optdoc]
+If you find this explanation unclear, try it with a second file which contains both missing and corrupted packets.
+
+include::{docdir}/opt/group-json-output.adoc[tags=!*;json-short]
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

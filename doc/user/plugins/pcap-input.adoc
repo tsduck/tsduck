@@ -1,0 +1,235 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pcap (input)
+
+[.cmd-header]
+Read TS packets from a pcap or pcap-ng file
+
+This input plugin reads a `pcap` or `pcap-ng` file and extracts TS packets from UDP/IP captured datagrams.
+The UDP datagrams are analyzed and all TS packets are extracted.
+Optional extra data at the beginning of the datagram (such as RTP headers) are discarded.
+
+The `pcap` or `pcap-ng` files are typically created by network analysis tools such as `tcpdump` or Wireshark.
+This plugin is consequently useful to analyze problems on IP/TV networks from a capture of the traffic.
+
+To get a consistent transport stream, one single UDP stream (meaning one combination of destination IP address and UDP port)
+is selected and all TS packets in this UDP stream are read as input to 'tsp'.
+The UDP stream can be selected using option `--destination`.
+Without this option, the first UDP stream containing TS packets is selected.
+This default is convenient because most network captured traffic contains many different types of packets,
+TCP, UDP, multicast, unicast but only a few streams, maybe only one, contain transport stream packets.
+
+In addition to extracting a transport stream from UDP/IP multicast,
+this plugin can also extract TS packets from a captured EMMG/PDG{d-arrow}MUX DVB SimulCrypt connection.
+In that kind of connection, an EMM or private data generator feeds a MUX with one or more data PID’s (usually EMM PID’s).
+With `--tcp-emmg-mux` or `--udp-emmg-mux`, the plugin extract the corresponding data or EMM PID’s.
+
+[.usage]
+Input timestamps
+
+When the input is a captured RTP stream, the RTP timestamp value is used as input timestamp by `tsp`.
+Otherwise, the capture timestamp is used.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -I pcap [options] [file-name]
+----
+
+[.usage]
+Parameter
+
+[.opt]
+_file-name_
+
+[.optdoc]
+The optional parameter is the name of a `.pcap` or `.pcapng` capture file as produced by Wireshark for instance.
+This input plugin extracts IPv4 UDP datagrams which contain transport stream packets.
+
+[.optdoc]
+By default, when no file name is provided, use the standard input.
+
+[.usage]
+Options	
+
+[.opt]
+*-d* _[address][:port]_ +
+*--destination* _[address][:port]_
+
+[.optdoc]
+Filter UDP datagrams based on the specified destination socket address.
+
+[.optdoc]
+If only one of the _address_ and _port_ is specified,
+use the first UDP stream containing TS packets matching the provided criteria, address or port.
+
+[.optdoc]
+By default, use the destination of the first UDP stream containing TS packets.
+
+[.optdoc]
+Once a UDP stream is selected, either from this option or from the first UDP stream containing TS packets,
+only use UDP datagrams with this destination socket address.
+
+[.opt]
+*--emmg-client-id* _value_
+
+[.optdoc]
+With `--tcp-emmg-mux` or `--udp-emmg-mux`, select the EMMG{d-arrow}MUX client_id to extract.
+
+[.optdoc]
+By default, use all client ids.
+
+[.opt]
+*--emmg-data-id* _value_
+
+[.optdoc]
+With `--tcp-emmg-mux` or `--udp-emmg-mux`, select the EMMG{d-arrow}MUX data_id to extract.
+
+[.optdoc]
+By default, use all data ids.
+
+[.opt]
+*--first-date* _date-time_
+
+[.optdoc]
+Filter packets starting at the specified date.
+Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
+
+[.opt]
+*--first-packet* _value_
+
+[.optdoc]
+Filter packets starting at the specified number.
+
+[.optdoc]
+The packet numbering counts all captured packets from the beginning of the file, starting at 1.
+This is the same value as seen on Wireshark in the leftmost column.
+
+[.opt]
+*--first-timestamp* _micro-seconds_
+
+[.optdoc]
+Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture.
+This is the same value as seen on Wireshark in the "Time" column (in seconds).
+
+[.opt]
+*-h* +
+*--http*
+
+[.optdoc]
+Select a TCP stream in the pcap file using the HTTP protocol and extract TS packets from the response.
+To some extent, it also works with RTSP sessions.
+
+[.optdoc]
+The `--source` and `--destination` options define the TCP stream.
+At least one of the two shall be defined.
+If some address or port are undefined in these two options, the first TCP stream matching the specified portions is selected.
+
+[.opt]
+*--last-date* _date-time_
+
+[.optdoc]
+Filter packets up to the specified date.
+Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
+
+[.opt]
+*--last-packet* _value_
+
+[.optdoc]
+Filter packets up to the specified number.
+
+[.optdoc]
+The packet numbering counts all captured packets from the beginning of the file, starting at 1.
+This is the same value as seen on Wireshark in the leftmost column.
+
+[.opt]
+*--last-timestamp* _micro-seconds_
+
+[.optdoc]
+Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture.
+This is the same value as seen on Wireshark in the "Time" column (in seconds).
+
+[.opt]
+*-m* +
+*--multicast-only*
+
+[.optdoc]
+When there is no `--destination` option,
+select the first multicast address which is found in a UDP datagram containing TS packets.
+
+[.optdoc]
+By default, use the destination address of the first UDP datagram containing TS packets, unicast or multicast.
+
+[.opt]
+*-s* _[address][:port]_ +
+*--source* _[address][:port]_
+
+[.optdoc]
+Filter UDP datagrams based on the specified source socket address.
+
+[.optdoc]
+By default, do not filter on source address.
+
+[.opt]
+*--tcp-emmg-mux*
+
+[.optdoc]
+Select a TCP stream in the pcap file using the DVB SimulCrypt EMMG/PDG{d-arrow}MUX protocol.
+
+[.optdoc]
+The transport stream is made of the TS packets from the _data_provision_ messages
+(the session must have been set in packet mode, not in section mode).
+
+[.optdoc]
+This option is typically used to extract EMM PID's as produced by a standard EMMG which feeds a MUX.
+
+[.optdoc]
+The `--source` and `--destination` options define the TCP stream.
+If some address or port are undefined in these two options, the first TCP stream matching the specified portions is selected.
+
+[.opt]
+*--timestamp-priority* _name_
+
+[.optdoc]
+Specify how the input timestamp of each packet is computed.
+The name specifies an ordered list of timestamp sources.
+The first available timestamp value is used as input timestamp.
+The name must be one of `rtp-pcap-tsp`, `pcap-rtp-tsp`, `pcap-tsp`, `rtp-tsp`, `tsp`.
+
+[.optdoc]
+The possible timestamp sources are:
+
+[.optdoc]
+* `rtp: The RTP time stamp, when the UDP packet is an RTP packet.
+* `pcap`: `pcap` capture time stamp.
+* `tsp`: A software timestamp, provided by `tsp` when the input plugin returns a chunk of packets.
+   The `tsp`-provided timestamp is always available, always comes last and is less precise.
+
+[.optdoc]
+The default is `rtp-pcap-tsp`.
+
+[.opt]
+*--udp-emmg-mux*
+
+[.optdoc]
+Consider each selected UDP datagram as containing a _data_provision_ message,
+as defined by the DVB SimulCrypt EMMG/PDG{d-arrow}MUX protocol.
+The transport stream is made of the TS packets from these _data_provision_ messages
+(the session must have been set in packet mode, not in section mode).
+
+[.optdoc]
+This option is typically used to extract EMM PID's as produced by a standard EMMG which feeds a MUX.
+
+[.optdoc]
+By default, the UDP datagrams contain raw TS packets, with or without RTP headers.
+
+include::{docdir}/opt/group-common-inputs.adoc[tags=!*]

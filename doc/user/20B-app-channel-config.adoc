@@ -1,0 +1,173 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-chanconfig]
+[appendix]
+== Channels Configuration File
+
+This appendix describes the XML reference format for the channel configuration file.
+
+[#chan-usage]
+=== File usage
+
+A channel configuration file is an XML file containing the description of TV channels
+(networks, transport streams, services).
+This file is typically used to simplify the specification of tuning parameters on the command line.
+Instead of specifying all tuning parameters, use the option `--channel-transponder` followed by a service name.
+The TSDuck command retrieves the characteristics of the transport stream which contains the specified service
+and automatically uses its tuning parameters.
+
+If the same service appears in networks of different types (for instance a DVB-S and a DVB-T network),
+the TSDuck command will use the one in the same type of network as the hardware tuner in use.
+
+There is one default file per user but any other file can be specified using the option `--tuning-file`.
+The location of the user’s default file depends on the operating system.
+
+[.compact-table]
+[cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|UNIX: |$HOME/.tsduck.channels.xml
+|Windows: |%APPDATA%\tsduck\channels.xml
+|===
+
+=== Channel configuration file format
+
+The format which is used here is informal.
+See the xref:[xrefstyle=short] 2.6.3, page 37, about XML model files.
+
+The `<tsduck>` root node contains any number of networks which, in turn contain transport streams and services.
+
+The global structure of the XML channel configuration file is the following:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+
+  <!-- Several networks in an XML file -->
+  <!-- The type attribute must match the tuner type to locate a service -->
+  <network id="uint16, required" type="ATSC|DVB-C|DVB-S|DVB-T|ISDB-T, required">
+
+    <!-- Several transport streams in a network -->
+    <ts id="uint16, required" onid="uint16, optional">
+
+      <!-- Tuning information: exactly one of atsc, dvbc, dvbs, dvbt -->
+      <!-- Must match the network type -->
+
+      <!-- Several services in the TS -->
+      <service id="uint16, required"
+               name="string, optional"
+               provider="string, optional"
+               LCN="uint16, optional"
+               PMTPID="uint13, optional"
+               type="uint8, optional"
+               cas="bool, optional"
+               atsc_type="uint6, optional"
+               atsc_major_id="uint10, optional"
+               atsc_minor_id="uint10, optional"/>
+    </ts>
+  </network>
+
+</tsduck>
+----
+
+=== Tuning parameters
+
+There must be exactly one tuning parameter structure per transport stream description (`<ts>` structure).
+
+==== ATSC
+
+To be used for ATSC tuners:
+
+[source,xml]
+----
+<atsc frequency="uint64, required"
+      modulation="8-VSB|16-VSB, default=8-VSB"
+      inversion="on|off|auto, default=auto"/>
+----
+
+==== DVB-C
+
+To be used for DVB-C/C2 tuners:
+
+[source,xml]
+----
+<dvbc frequency="uint64, required"
+      symbolrate="uint32, default=6,900,000"
+      modulation="16-QAM|32-QAM|64-QAM|128-QAM|256-QAM|QAM, default=64-QAM"
+      FEC="1/2|2/3|3/4|4/5|5/6|6/7|7/8|8/9|9/10|3/5|1/3|1/4|2/5|5/11|auto|none,default=auto"
+      inversion="on|off|auto, default=auto"/>
+----
+
+==== DVB-S
+
+To be used for DVB-S/S2 tuners:
+
+[source,xml]
+----
+<dvbs satellite="uint2, default=0"
+      orbital="string, optional"
+      frequency="uint64, required"
+      symbolrate="uint32, default=27,500,000"
+      modulation="QPSK|8-PSK|16-APSK|32-APSK, default=QPSK"
+      system="DVB-S|DVB-S2, default=DVB-S"
+      polarity="horizontal|vertical|left|right|auto|none, default=auto"
+      inversion="on|off|auto, default=auto"
+      FEC="1/2|2/3|3/4|4/5|5/6|6/7|7/8|8/9|9/10|3/5|1/3|1/4|2/5|5/11|auto|none, default=auto"
+      pilots="on|off|auto, default=auto"
+      rolloff="0.20|0.25|0.35|auto, default=auto"
+      ISI="uint8, optional"
+      PLS_code="uint18, optional"
+      PLS_mode="ROOT|GOLD|COMBO, default=ROOT"/>
+----
+
+==== DVB-T
+
+To be used for DVB-T/T2 tuners:
+
+[source,xml]
+----
+<dvbt frequency="uint64, required"
+      modulation="QPSK|16-QAM|64-QAM|256-QAM, default=64-QAM"
+      inversion="on|off|auto, default=auto"
+      HPFEC="1/2|2/3|3/4|4/5|5/6|6/7|7/8|8/9|9/10|3/5|1/3|1/4|2/5|5/11|auto|none, default=auto"
+      LPFEC="1/2|2/3|3/4|4/5|5/6|6/7|7/8|8/9|9/10|3/5|1/3|1/4|2/5|5/11|auto|none, default=auto"
+      bandwidth="1.712-MHz|5-MHz|6-MHz|7-MHz|8-MHz|10-MHz|auto, default=auto"
+      transmission="1K|2K|4K|8K|16K|32K|auto, default=auto"
+      guard="1/4|1/8|1/16|1/32|1/128|19/128|19/256|auto, default=auto"
+      hierarchy="1|2|4|auto|none, default=auto"
+      PLP="uint8, optional"/>
+----
+
+==== ISDB-T
+
+To be used for ISDB-T tuners:
+
+[source,xml]
+----
+<isdbt frequency="uint64, required"
+       inversion="on|off|auto, default=auto"
+       bandwidth="5-MHz|6-MHz|7-MHz|8-MHz|auto, default=auto"
+       transmission="2K|4K|8K|auto, default=auto"
+       guard="1/4|1/8|1/16|1/32|auto, default=auto"/>
+----
+
+==== ISDB-S
+
+To be used for ISDB-S tuners:
+
+[source,xml]
+----
+<isdbs satellite="uint2, default=0"
+       orbital="string, optional"
+       frequency="uint64, required"
+       symbolrate="uint32, default=27,500,000"
+       polarity="horizontal|vertical|left|right|auto|none, default=auto"
+       inversion="on|off|auto, default=auto"
+       FEC="1/2|2/3|3/4|5/6|7/8|auto|none, default=auto"/>
+----

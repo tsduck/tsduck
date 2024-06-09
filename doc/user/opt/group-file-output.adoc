@@ -1,0 +1,148 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::TSFileOutputArgs.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Parameters
+
+[.opt]
+_file-name_
+
+[.optdoc]
+Name of the created output file.
+
+[.optdoc]
+If the parameter is omitted, is an empty string or a dash (`-`), the standard output is used.
+
+[.optdoc]
+If no file is specified, the standard input is read by default.
+When several files are specified, use a dash (`-`) as file name to specify the standard input.
+
+[.usage]
+Options
+
+[.opt]
+*--add-start-stuffing* _count_
+
+[.optdoc]
+Specify that _count_ null TS packets must be automatically written at the start of the output file,
+before what comes from the previous plugins.
+
+[.opt]
+*--add-stop-stuffing* _count_
+
+[.optdoc]
+Specify that _count_ null TS packets must be automatically appended at the end of the output file,
+after what comes from the previous plugins.
+
+[.opt]
+*-a* +
+*--append*
+
+[.optdoc]
+If the file already exists, append to the end of the file.
+By default, existing files are overwritten.
+
+include::{docdir}/opt/opt-format.adoc[tags=!*;output]
+
+[.opt]
+*-k* +
+*--keep*
+
+[.optdoc]
+Keep existing file (abort if the specified file already exists).
+By default, existing files are overwritten.
+
+[.opt]
+*--max-duration* _value_
+
+[.optdoc]
+Specify a maximum duration in seconds during which an output file is written.
+After the specified duration, the output file is closed and another one is created.
+This is a wall-clock processing duration, not a transport stream playout duration.
+
+[.optdoc]
+A timestamp is automatically added to the name part so that successive output files receive distinct names.
+
+[.optdoc]
+Example: if the specified output file name is `foo.ts`, the various files are named `foo-YYYYMMDD-hhmmss.ts`.
+
+[.optdoc]
+The options `--max-duration` and `--max-size` are mutually exclusive.
+
+[.opt]
+*--max-files* _value_
+
+[.optdoc]
+With `--max-duration` or `--max-size`, specify a maximum number of files.
+When the number of created files exceeds the specified number, the oldest files are deleted.
+
+[.optdoc]
+By default, all created files are kept.
+
+[.opt]
+*--max-retry* _value_
+
+[.optdoc]
+With `--reopen-on-error`, specify the maximum number of times the file is reopened on error.
+
+[.optdoc]
+By default, the file is indefinitely reopened.
+
+[.opt]
+*--max-size* _value_
+
+[.optdoc]
+Specify a maximum size in bytes for the output files
+When an output file grows beyond the specified limit, it is closed and another one is created.
+
+[.optdoc]
+The size limit is not exactly enforced.
+When a group of packets is written in one single write operation,
+there is no attempt to split the file at the exact specified size.
+The file is closed and the next one is opened after all packets are written in that single write operation.
+
+[.optdoc]
+A number is automatically added to the name part so that successive output files receive distinct names.
+
+[.optdoc]
+Example: if the specified file name is `foo.ts`, the various files are named `foo-000000.ts`, `foo-000001.ts`, etc.
+
+[.optdoc]
+If the specified template already contains trailing digits, this unmodified name is used for the first file.
+Then, the integer part is incremented.
+
+[.optdoc]
+Example: if the specified file name is `foo-027.ts`, the various files are named `foo-027.ts`, `foo-028.ts`, etc.
+
+[.optdoc]
+The options `--max-duration` and `--max-size` are mutually exclusive.
+
+[.opt]
+*-r* +
+*--reopen-on-error*
+
+[.optdoc]
+In case of write error, close the file and try to reopen it several times.
+After a write error, attempt to reopen or recreate the file immediately.
+Then, in case of open error, periodically retry to open the file.
+
+[.optdoc]
+See also options `--retry-interval` and `--max-retry`.
+
+[.opt]
+*--retry-interval* _milliseconds_
+
+[.optdoc]
+With `--reopen-on-error`, specify the number of milliseconds to wait before attempting to reopen the file after a failure.
+
+[.optdoc]
+The default is 2000 milliseconds.

@@ -1,0 +1,57 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== srt (output)
+
+[.cmd-header]
+Send TS packets using Secure Reliable Transport (SRT)
+
+This output plugin sends TS packets using Secure Reliable Transport (SRT).
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for `tsp`).
+
+[.usage]
+Restrictions
+
+This plugin is not available on all platforms.
+It is provided only when `libsrt` is available during the compilation of TSDuck.
+Typically, this plugin is available on macOS, Windows, Fedora 31 onwards, Ubuntu 19.04 onwards.
+
+[.usage]
+Acknowledgement
+
+This plugin is a contribution from Anthony Delannoy.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O srt [options]
+----
+
+[.usage]
+General options	
+
+[.opt]
+*-m* +
+*--multiple*
+
+[.optdoc]
+When the receiver peer disconnects, wait for another one and continue.
+
+[.opt]
+*--restart-delay* _milliseconds_
+
+[.optdoc]
+With `--multiple`, wait the specified number of milliseconds before restarting.
+
+include::{docdir}/opt/group-srt.adoc[tags=!*]
+include::{docdir}/opt/group-datagram-output.adoc[tags=!*]
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

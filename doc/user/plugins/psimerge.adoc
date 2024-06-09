@@ -1,0 +1,99 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== psimerge
+
+[.cmd-header]
+Merge PSI/SI from mixed streams
+
+This plugin assumes that the PSI/SI for two independent streams are multiplexed in the same transport streams
+but the packets from each original stream are independently labelled.
+This plugin merges the PSI/SI from these two streams into one.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P psimerge [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*--main-label* _value_
+
+[.optdoc]
+Specify the label which is set on packets from the main stream.
+The maximum label value is 31.
+
+[.optdoc]
+By default, the main stream is made of packets without label.
+
+[.optdoc]
+At least one of `--main-label` and `--merge-label` must be specified.
+
+[.opt]
+*--merge-label* _value_
+
+[.optdoc]
+Specify the label which is set on packets from the merge stream.
+The maximum label value is 31.
+
+[.optdoc]
+By default, the merge stream is made of packets without label.
+At least one of `--main-label` and `--merge-label` must be specified.
+
+[.opt]
+*--no-bat*
+
+[.optdoc]
+Do not merge the BAT.
+
+[.opt]
+*--no-cat*
+
+[.optdoc]
+Do not merge the CAT.
+
+[.opt]
+*--no-eit*
+
+[.optdoc]
+Do not merge the EIT's.
+
+[.opt]
+*--no-nit*
+
+[.optdoc]
+Do not merge the NIT Actual.
+
+[.opt]
+*--no-pat*
+
+[.optdoc]
+Do not merge the PAT.
+
+[.opt]
+*--no-sdt*
+
+[.optdoc]
+Do not merge the SDT Actual.
+
+[.opt]
+*--time-from-merge*
+
+[.optdoc]
+Use the TDT/TOT time reference from the merge stream.
+
+[.optdoc]
+By default, use the TDT/TOT time reference from the main stream.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

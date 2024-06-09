@@ -1,0 +1,141 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-overview]
+== Transport Stream Toolkit Overview
+
+=== Operating system selection guidelines
+
+TSDuck runs on Linux, Windows, macOS and BSD systems.
+Here is a brief summary of pros and cons of using TSDuck on the various operating systems.
+
+* Linux pros:
+** Availability of a powerful shell environment. TSDuck is a light-weight toolkit with elementary
+   tools and plugins which can be combined in an infinite number of ways.
+   The user can obtain even more flexibility when combining them with the bash shell and all standard
+   UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in section 5.2.
+* Linux cons:
+** When used in a mobile environment, a laptop PC with Linux is required.
+** Some DVB tuners are not supported on Linux.
+   Some supported tuners do not work well on Linux.
+   Make sure to get fully supported DVB hardware.
+* Windows pros:
+** Available on all "average user" laptop PC. Useful for transport stream capture and analysis in the field.
+* Windows cons:
+** No or limited shell environment.
+** Some limitations in the support of DVB receiver devices (see xref:tuners-windows[xrefstyle=short], for more details).
+   For instance, it is impossible to retrieve the actual tuning parameters of a transport stream as
+   detected by the tuner device.
+* macOS pros:
+** Availability of a powerful shell environment, just another UNIX system, just like Linux.
+   Powerful user-friendly system.
+* macOS cons:
+** Currently no support for hardware DVB tuners and Dektec devices.
+   So, macOS is recommended only when dealing with transport stream files, IP networking or VATek-based modulators.
+* BSD systems: For aficionados only.
+
+*Summary*: Use Linux if you can.
+Use Windows when you do not have Linux (typically a Windows laptop in the field).
+Use macOS if you have a Mac and do not need DVB or Dektec hardware.
+
+=== Developing applications using the TSDuck library
+
+TSDuck is mainly a large C++ library for Digital TV applications.
+All TSDuck commands and plugins are thin wrappers on top of C++ classes from this library.
+
+This library can be used by third-party applications, outside the TSDuck tools and plugins.
+To do that, you must install the "TSDuck development environment".
+
+Using the TSDuck library, you can develop independent Digital TV applications or TSDuck plugins.
+The provided services include low-level features such as manipulating TS packets, intermediate
+features such as demuxing and packetizing tables and high-level features such as running TS
+processing pipelines inside your application (which means something like including `tsp` in your application).
+
+See <<TSDuck-Prog>> for more details on the TSDuck library.
+This is a set of doxygen-generated pages with tutorials and reference documentation for all C++ classes in the library.
+
+Some high-level features of the TSDuck library can also be used from Python or Java, typically running
+TS processing pipelines or manipulating tables and sections inside Python or Java applications.
+The TSDuck Python and Java bindings are also documented in <<TSDuck-Prog>>.
+
+The following figure illustrates the TSDuck software and how it can interact with third-party applications.
+
+.TSDuck software architecture
+image::tsduck-soft-arch.png[align="center",alt="TSDuck software architecture"]
+
+=== Installing TSDuck
+
+The TSDuck installers are available from the "Download" section of the TSDuck Web site (see <<TSDuck>>).
+The basic installation provides all TSDuck tools and plugins.
+The command-line tools are directly accessible from the command prompt.
+
+==== Windows
+
+On Windows systems, TSDuck can be setup using a binary installer (traditional method) or
+using the `winget` package manager (modern method).
+Winget is now the preferred package manager for open source and third-party products on Windows systems.
+It is documented and supported by Microsoft.
+It should be pre-installed on all recent Windows 10 and Windows 11 systems.
+
+The TSDuck installation command is simply `winget install tsduck`.
+
+If you prefer the traditional method, binary executable installers are provided for 64-bit Windows platforms.
+Simply run the executable to install TSDuck.
+
+The directory containing the command-line tools is automatically added to the Path.
+The TSDuck development environment is included in the installer but it is not installed by default.
+You must select it explicitly.
+The Java and Python bindings are required to run Java or Python applications.
+They are also optional and must be selected when needed.
+
+Note that TSDuck is supported for Windows 10 and 11 only.
+TSDuck may work on older versions such as Windows 7 but without guarantee.
+
+For users without privilege, a so-called "portable package" is provided.
+This is simply a zip archive file which can be expanded anywhere.
+The TSDuck commands are located in the `bin` subdirectory and can be executed from here without any additional setup.
+It is probably a good idea to add this `bin` directory in the `Path` environment variable of the user.
+
+*Note*: Starting with version 3.34, pre-built 32-bit installers for Windows are no longer provided.
+However, it is still possible to build them yourself if needed.
+See the "building and installing TSDuck" section in <<TSDuck-Prog>>.
+
+==== Linux
+
+Two flavors of pre-built packages are available: `.rpm` for Fedora or Red Hat systems
+and `.deb` for Ubuntu or Debian systems.
+Currently, packages are available for Intel x64 platforms.
+Some packages are also available for Arm64.
+
+All tools are in `/usr/bin`.
+There is a separate package for the TSDuck development environment.
+
+On Linux distributions with other packaging systems, there is no pre-built binary package for TSDuck.
+It must be compiled and installed using the `make` command.
+See the "building and installing TSDuck" section in <<TSDuck-Prog>>.
+
+==== macOS
+
+On macOS, TSDuck is installed using the Homebrew packaging and delivery system (see <<HomeBrew>>).
+
+The TSDuck installation command is simply `brew install tsduck`.
+
+All tools are accessible from `/usr/local/bin` (Intel Mac) or `/opt/homebrew/bin` (Arm Apple Silicon Mac).
+This is the standard installation structure for Homebrew.
+
+The development environment is always installed with TSDuck using Homebrew.
+
+==== BSD systems
+
+There is no binary package for TSDuck on BSD systems.
+It must be compiled and installed using the make command.
+See the "building and installing TSDuck" section in <<TSDuck-Prog>>.
+
+After installation, all tools are in `/usr/local/bin` for FreeBSD, OpenBSD and DragonFly BSD.
+They are in `/usr/pkg/bin` for NetBSD.
+These are the standard locations for the installed packages on these systems.

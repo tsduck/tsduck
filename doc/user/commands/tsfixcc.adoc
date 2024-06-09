@@ -1,0 +1,85 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tsfixcc
+
+[.cmd-header]
+Fix continuity counters
+
+This utility fixes errors in the continuity counters (CC) in a transport stream file.
+If packets are missing (non continuous CC),
+the CC in all subsequent packets in the affected PID’s are modified to remove the discontinuity.
+
+If the file needs to be repeatedly played, `tsfixcc` can also add empty packets at the end of the file to
+fill the discontinuities between the end and the beginning of the file when the playback wraps to the beginning.
+
+*Warning*: Make sure that `tsfixcc` is really the right tool for what you want to do.
+`tsfixcc` can only fix the continuity counters. If the input file is corrupted with
+missing packets, `tsfxcc` cannot restore the content of the missing packets.
+Non-contiguous continuity counters are here to inform the video player that TS packets are
+missing and the PES content is probably corrupted. If you use `tsfixcc`, the continuity
+counters will become continuous again but the PES content remains corrupted because some
+binary data are still missing. The difference is that the media player will not be informed
+that the PES content is corrupted. Make sure that this is what you want to do.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsfixcc [options] file
+----
+
+[.usage]
+File
+
+[.optdoc]
+MPEG transport stream. Must be a binary stream of 188-byte packets.
+
+[.optdoc]
+This file must be a regular file (cannot be a pipe). It is open in read/write mode and is directly updated.
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--circular*
+
+[.optdoc]
+Enforce continuity when the file is played repeatedly.
+Add empty packets, if necessary, on each PID so that the continuity is preserved between end and beginning of file.
+
+[.optdoc]
+Note, however, that this method is not compliant with the MPEG-2 Transport Stream standard as defined in <<ISO-13818-1>>.
+The standard specifies that the continuity counter shall not be incremented on packets without payload.
+
+[.opt]
+*-n* +
+*--no-action*
+
+[.optdoc]
+Display what should be performed but do not modify the file.
+
+[.opt]
+*--no-replicate-duplicated*
+
+[.optdoc]
+Two successive packets in the same PID are considered as duplicated
+if they have the same continuity counter and same content (except PCR, if any).
+
+[.optdoc]
+By default, duplicated input packets are replicated as duplicated on output
+(the corresponding output packets have the same continuity counters).
+
+[.optdoc]
+When this option is specified, the input packets are not considered as duplicated and the
+output packets receive individually incremented countinuity counters.
+
+include::{docdir}/opt/group-common-commands.adoc[tags=!*]

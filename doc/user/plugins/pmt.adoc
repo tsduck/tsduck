@@ -1,0 +1,245 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== pmt
+
+[.cmd-header]
+Perform various transformations on a PMT
+
+This plugin performs various transformations on a PMT.
+
+The PMT can be specified by PID, by service id or by service name.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P pmt [options]
+----
+
+[.usage]
+PMT modification options
+
+[.opt]
+*--ac3-atsc2dvb*
+
+[.optdoc]
+Change the description of AC-3 (a.k.a. DD, Dolby Digital) audio streams from ATSC to DVB method.
+In details, this means that all components with _stream_type_ 0x81 are modified with stream_type 0x06 (PES private data)
+and a DVB _AC-3_descriptor_ is added on this component (if none was already there).
+
+[.opt]
+*--add-ca-descriptor* _casid/pid[/private-data]_
+
+[.optdoc]
+Add a _CA_descriptor_ at program-level in the PMT with the specified CA System Id and ECM PID.
+The optional private data must be a suite of hexadecimal digits.
+
+[.optdoc]
+Several `--add-ca-descriptor` options may be specified to add several descriptors.
+
+[.opt]
+*-a* _pid/type_ +
+*--add-pid* _pid/type_
+
+[.optdoc]
+Add the specified PID / stream-type component in the PMT.
+Both PID and type must be integer values, either decimal or hexadecimal.
+
+[.optdoc]
+Several `--add-pid` options may be specified to add several components.
+
+[.opt]
+*--add-pid-registration* _pid/id_
+
+[.optdoc]
+Add a _registration_descriptor_ in the descriptor list of the specified PID in the PMT.
+
+[.optdoc]
+The value is the _format_identifier_ in the _registration_descriptor_, e.g. 0x43554549 for "CUEI".
+
+[.opt]
+*--add-registration* _id_
+
+[.optdoc]
+Add a _registration_descriptor_ in the program-level descriptor list in the PMT.
+
+[.optdoc]
+The value is the _format_identifier_ in the registration_descriptor, e.g. 0x43554549 for "CUEI".
+
+[.opt]
+*--add-stream-identifier*
+
+[.optdoc]
+Add a _stream_identifier_descriptor_ on all components.
+The _component_tag_ are uniquely allocated inside the service.
+Existing _stream_identifier_descriptors_ are left unmodified.
+
+[.opt]
+*--audio-language* _language-code[:audio-type[:location]]_
+
+[.optdoc]
+Specifies the language for an audio stream in the PMT.
+
+[.optdoc]
+Several options can be specified to set the languages of several audio streams.
+
+[.optdoc]
+The _language-code_ is a 3-character string.
+
+[.optdoc]
+The _audio-type_ is optional, its default value is zero.
+
+[.optdoc]
+The _location_ indicates how to locate the audio stream.
+Its format is either `Pn` or `An`.
+In the first case, `n` designates a PID value and in the second case the audio stream number inside the PMT,
+starting with 1.
+The default location is "A1", ie. the first audio stream inside the PMT.
+
+[.opt]
+*--cleanup-private-descriptors*
+
+[.optdoc]
+Remove all private descriptors without preceding _private_data_specifier_descriptor_.
+
+[.opt]
+*--eac3-atsc2dvb*
+
+[.optdoc]
+Change the description of Enhanced-AC-3 (a.k.a. AC-3+, DD+, Dolby Digital+) audio streams from ATSC to DVB method.
+In details, this means that all components with _stream_type_ 0x87 are modified with _stream_type_ 0x06 (PES private data)
+and a DVB _enhanced_AC-3_descriptor_ is added on this component (if none was already there).
+
+[.opt]
+*-m* _old-pid/new-pid_ +
+*--move-pid* _old-pid/new-pid_
+
+[.optdoc]
+Change the PID value of a component in the PMT.
+
+[.optdoc]
+Several `--move-pid` options may be specified to move several components.
+
+[.opt]
+*-i* _value_ +
+*--new-service-id* _value_
+
+[.optdoc]
+Change the service id in the PMT.
+
+[.opt]
+*--pcr-pid* _value_
+
+[.optdoc]
+Change the PCR PID value in the PMT.
+
+[.opt]
+*--pds* _value_
+
+[.optdoc]
+With option `--remove-descriptor`, specify the private data specifier which applies to the descriptor tag values above 0x80.
+
+[.opt]
+*-p* _value_ +
+*--pmt-pid* _value_
+
+[.optdoc]
+Specify the PID carrying the PMT to modify.
+All PMT's in this PID will be modified.
+Options `--pmt-pid` and `--service` are mutually exclusive.
+If neither are specified, the first service in the PAT is used.
+
+[.opt]
+*--remove-descriptor* _value_
+
+[.optdoc]
+Remove from the PMT all descriptors with the specified tag.
+Several `--remove-descriptor` options may be specified to remove several types of descriptors.
+See also option `--pds`.
+
+[.opt]
+*-r* _pid1[-pid2]_ +
+*--remove-pid* _pid1[-pid2]_
+
+[.optdoc]
+Remove the component with the specified PID’s from the PMT.
+
+[.optdoc]
+Several `--remove-pid` options may be specified to remove several components.
+
+[.opt]
+*--remove-stream-type* _value[-value]_
+
+[.optdoc]
+Remove all components with a stream type matching the specified values.
+
+[.optdoc]
+Several `--remove-stream-type` options may be specified.
+
+[.opt]
+*-s* _name-or-id_ +
+*--service* _name-or-id_
+
+[.optdoc]
+Specify the service the PMT of which must be modified.
+include::{docdir}/opt/optdoc-service.adoc[tags=!*]
+
+[.optdoc]
+Options `--pmt-pid` and `--service` are mutually exclusive.
+If neither are specified, the first service in the PAT is used.
+
+[.opt]
+*--set-cue-type* _pid/type_
+
+[.optdoc]
+In the component with the specified PID, add an SCTE 35 _cue_identifier_descriptor_ with the specified _cue_stream_type_.
+
+[.optdoc]
+Several `--set-cue-type` options may be specified.
+
+[.opt]
+*--set-data-broadcast-id* _pid/id[/selector]_
+
+[.optdoc]
+In the component with the specified PID, add a _data_broadcast_id_descriptor_ with the specified _data_broadcast_id_.
+The optional selector is a suite of hexadecimal characters representing the content of the selector bytes.
+
+[.optdoc]
+Several `--set-data-broadcast-id` options may be specified.
+
+[.opt]
+*--set-stream-identifier* _pid/id_
+
+[.optdoc]
+In the component with the specified PID, add a stream_identifier_descriptor with the specified
+id as component_tag.
+
+[.optdoc]
+Several --set-stream-identifier options may be specified.
+
+[.opt]
+*--sort-languages* _lang1,lang2,..._
+
+[.optdoc]
+Sort the elementary streams carrying audio and subtitles in the specified order of languages.
+The languages must be 3-letter ISO-639 codes.
+
+[.opt]
+*--sort-pids* _pid1,pid2,..._
+
+[.optdoc]
+Sort the elementary streams in the specified order of PID's.
+Non-existent PID's are ignored.
+Unlisted PID's, if any, are placed after the others.
+
+include::{docdir}/opt/group-table-plugin.adoc[tags=!*;pmt]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

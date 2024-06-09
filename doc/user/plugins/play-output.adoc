@@ -1,0 +1,72 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== play (output)
+
+[.cmd-header]
+Play output on a media player
+
+This output plugin sends TS packets to a supported media player.
+It is typically used when one service was isolated on the transport stream and the resulting audio/video must be monitored.
+
+The `play` plugin attempts to locate a media player application
+which can process MPEG-2 transport streams on its standard input.
+If one is found in the system, the plugin creates a process executing the media player
+(adding the required options if necessary) and sends the output stream to this process using a pipe.
+
+This plugin is consequently an easier alternative to the `fork` plugin.
+The same operation could be achieved using the `fork` plugin but it requires
+to specify the complete media player command line with options.
+
+Using this plugin forces `tsp` and all plugins to use their real-time defaults (see the reference documentation for `tsp`).
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -O play [options]
+----
+
+[.usage]
+UNIX specific options (Linux, macOS, BSD)
+
+[.opt]
+*-m* +
+*--mplayer*
+
+[.optdoc]
+Use `mplayer` for rendering.
+The default is to look for `vlc`, `mplayer` and `xine`, in this order, and use the first available one.
+
+[.opt]
+*-x* +
+*--xine*
+
+[.optdoc]
+Use `xine` for rendering.
+The default is to look for `vlc`, `mplayer` and `xine`, in this order, and use the first available one.
+
+include::{docdir}/opt/group-common-outputs.adoc[tags=!*]
+
+[.usage]
+Supported media players
+
+* Linux: Look for VLC, `mplayer` and `xine`. Use the `PATH` environment variable to locate the applications.
+* macOS: Same a Linux but also search into `/usr/local/bin` (`/opt/homebrew/bin` on Arm) and `/Applications`.
+* Windows: Look for VLC using the `Path` environment variable and various information
+  that is normally filled in the registry by the VLC installation procedure.
+  See <<VLC>> for downloading and installing VLC Media Player.
+
+To use another media player or with specific options, use the `fork` plugin instead:
+
+[source,shell]
+----
+$ tsp ... -O fork [options] "media player command line"
+----

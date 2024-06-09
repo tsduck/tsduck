@@ -1,0 +1,396 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-plugins]
+== TSP Plugins
+
+This chapter contains the reference documentation of all plugins for `tsp`, the _transport stream processor_.
+The input and output plugins can also be used by the command `tsswitch`.
+
+The following table lists all available plugins.
+
+// PDF backend does not correctly process "autowidth" tables.
+.tsp plugins
+ifndef::backend-pdf[]
+[cols="<1m,^1,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<18m,^15,<67",stripes=none]
+endif::[]
+|===
+|Plugin |Type |Description
+
+|aes
+|packet
+|Experimental AES scrambling
+
+|analyze
+|packet
+|Analyze the structure of the transport stream
+
+|bat
+|packet
+|Perform various transformations on the BAT
+
+|bitrate_monitor
+|packet
+|Monitor the bitrate of the TS or a given set of PID’s
+
+|boostpid
+|packet
+|Boost the bitrate of a PID, stealing stuffing packets
+
+|cat
+|packet
+|Perform various transformations on the CAT
+
+|clear
+|packet
+|Extract clear (non-scrambled) sequences
+
+|continuity
+|packet
+|Check TS continuity counters
+
+|count
+|packet
+|Count TS packets per PID
+
+|craft
+|input, packet
+|Build or modify specifically crafted packets
+
+|cutoff
+|packet
+|Set labels on TS packets upon reception of UDP messages
+
+|datainject
+|packet
+|DVB SimulCrypt-compliant EMM and private data injector
+
+|decap
+|packet
+|Decapsulate TS packets from a PID produced by `encap` plugin
+
+|dektec
+|input, output
+|Dektec DTA-1xx DVB-ASI and modulator devices I/O
+
+|descrambler
+|packet
+|Generic DVB descrambler
+
+|drop
+|output
+|Drop output packets
+
+|dump
+|packet
+|Dump transport stream packets
+
+|duplicate
+|packet
+|Duplicate PID's, reusing null packets
+
+|dvb
+|input
+|DVB receiver devices (DVB-S, DVB-C, DVB-T)  input
+
+|eit
+|packet
+|Analyze EIT sections
+
+|eitinject
+|packet
+|Generate and inject EIT's in a transport stream
+
+|encap
+|packet
+|Encapsulate packets from several PID's into one single PID
+
+|feed
+|packet
+|Extract an inner TS from an outer feed TS (experimental)
+
+|file
+|input, output, packet
+|Transport stream files input / output. As packet processor plugin, save packets to a file and pass to next plugin
+
+|filter
+|packet
+|Filter TS packets according to various criteria
+
+|fork
+|input, output, packet
+|Exchange packets with a created process, either input or output
+
+|fuzz
+|packet
+|Introduce random errors in the transport stream
+
+|hides
+|output
+|Send the transport stream to a HiDes modulator device
+
+|history
+|packet
+|Report a history of major events on the transport stream
+
+|hls
+|input, output
+|Receive or generate HTTP Live Streaming (HLS) media
+
+|http
+|input, output
+|Send / receive a transport stream as / from an HTTP server
+
+|inject
+|packet
+|Inject a table into a transport stream
+
+|ip
+|input, output, packet
+|Send / receive UDP/IP datagrams, including multicast IP and RTP
+
+|limit
+|packet
+|Limit the global bitrate by dropping packets
+
+|memory
+|input, output
+|Direct memory input / output with an application
+
+|merge
+|packet
+|Merge TS packets coming from the output of a created process
+
+|mpe
+|packet
+|Extract MPE (Multi-Protocol Encapsulation) datagrams
+
+|mpeinject
+|packet
+|Encapsulate and inject an incoming UDP stream into MPE
+
+|mux
+|packet
+|Inject TS packets from a file into the transport
+
+|nit
+|packet
+|Perform various transformations on the NIT
+
+|nitscan
+|packet
+|Scan the NIT for tuning information
+
+|null
+|input
+|Null packets generator
+
+|pat
+|packet
+|Perform various transformations on the PAT
+
+|pattern
+|packet
+|Replace packet payload with a binary pattern
+
+|pcap
+|input
+|Read TS packets from a pcap or pcap-ng file
+
+|pcradjust
+|packet
+|Adjust PCR's according to a constant bitrate
+
+|pcrbitrate
+|packet
+|Permanently recompute bitrate based on PCR's
+
+|pcrcopy
+|packet
+|Copy and synchronize PCR's from one PID to another
+
+|pcredit
+|packet
+|Edit PCR, PTS and DTS values in various ways
+
+|pcrextract
+|packet
+|Extract PCR's from TS packets
+
+|pcrverify
+|packet
+|Verify PCR values
+
+|pes
+|packet
+|Analyze PES packets
+
+|pidshift
+|packet
+|Shift one or more PID's forward in the transport stream
+
+|play
+|output
+|Play output TS on a media player
+
+|pmt
+|packet
+|Perform various transformations on the PMT
+
+|psi
+|packet
+|Extract all PSI tables (PAT, CAT, PMT, NIT, BAT, SDT)
+
+|psimerge
+|packet
+|Merge PSI/SI from mixed streams
+
+|reduce
+|packet
+|Reduce the bitrate by removing stuffing packets
+
+|regulate
+|packet
+|Regulate TS packets flow according to a bitrate or PCR
+
+|remap
+|packet
+|Generic PID remapper
+
+|rist
+|input, output
+|Send / receive using Reliable Internet Stream Transport (RIST)
+
+|rmorphan
+|packet
+|Remove unreferenced ("orphan") PID’s
+
+|rmsplice
+|packet
+|Remove ads insertions using SCTE 35 splicing information
+
+|scrambler
+|packet
+|DVB scrambler
+
+|sdt
+|packet
+|Perform various transformations on the SDT
+
+|sections
+|packet
+|Remove or merge sections from various PID's
+
+|sifilter
+|packet
+|Extract PSI/SI PID’s
+
+|skip
+|packet
+|Skip leading packets in a TS
+
+|slice
+|packet
+|Pass or drop packets based on packet numbers or relative time
+
+|spliceinject
+|packet
+|Inject SCTE 35 splice commands in a transport stream
+
+|splicemonitor
+|packet
+|Monitor SCTE 35 splice information
+
+|srt
+|input, output
+|Send / receive packets using Secure Reliable Transport (SRT)
+
+|stats
+|packet
+|Report various statistics on PID's and labels
+
+|stuffanalyze
+|packet
+|Analyze the level of stuffing in sections
+
+|svremove
+|packet
+|Remove a service
+
+|svrename
+|packet
+|Rename a service (modify service id, name, type, etc.)
+
+|svresync
+|packet
+|Resynchronize the clock of a service based on another service
+
+|t2mi
+|packet
+|Extract T2-MI (DVB-T2 Modulator Interface) packets
+
+|tables
+|packet
+|Collect MPEG tables
+
+|teletext
+|packet
+|Extract Teletext subtitles in SRT format
+
+|time
+|packet
+|Schedule packets pass or drop
+
+|timeref
+|packet
+|Update TDT and TOT with a new time reference
+
+|timeshift
+|packet
+|Delay transmission by a fixed amount of packets
+
+|trigger
+|packet
+|Trigger actions on selected labeled TS packets
+
+|tsrename
+|packet
+|Rename a transport stream (modify ts id, etc.)
+
+|until
+|packet
+|Pass TS packets until specified conditions
+
+|vatek
+|output
+|Send the transport stream to a VATek-based modulator device
+
+|zap
+|packet
+|Zap on one or more services, remove all other services
+
+|===
+
+Some plugins are related to the scrambling of TS packets and Conditional Access Systems.
+Please note the following:
+
+* The DVB-CSA scrambling algorithm is inherently and purposely very slow with a software implementation.
+  A 3.4 GHz Pentium 4 CPU, for instance, cannot (de)scramble more than 20 Mb/s.
+  Be cautious not to ask for impossible tasks, like real time (de)scrambling of a complete TS on a regular PC.
+* These `tsp` plugins are implemented for testing Conditional Access Systems, either on the head-end or set-top box side.
+  TSDuck does not provide any support to hack or circumvent Conditional Access Systems and will never do so.
+  The CAS-related plugins require and use external CAS-provided systems (ECMG, EMMG and smartcards).
+  All secrecy and proprietary CAS information remain isolated inside these external systems and
+  TSDuck does not attempt to access this type of secret and private information.
+  TSDuck only interacts with these systems using their external communication protocols.
+
+
+include::.all.plugins.adoc[]

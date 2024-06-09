@@ -1,0 +1,85 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== analyze
+
+[.cmd-header]
+Global transport stream analysis
+
+This plugin performs various types of global analysis on the transport stream.
+
+It is equivalent to the `tsanalyze` utility.
+The following two commands produce the same result:
+
+[source,shell]
+----
+$ tsanalyze options ... filename
+$ tsp -I file filename -P analyze options ... -O drop
+----
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P analyze [options]
+----
+
+[.usage]
+General purpose options
+
+[.opt]
+*-c* +
+*--cumulative*
+
+[.optdoc]
+With `--interval`, accumulate analysis data of all intervals.
+With this option, each new report is an analysis from the beginning of the stream.
+
+[.optdoc]
+By default, the analyzed data are reset after each report.
+
+[.opt]
+*-i* _seconds_ +
+*--interval* _seconds_
+
+[.optdoc]
+Produce a new output file at regular intervals.
+After outputting a file, the analysis context is reset, i.e. each output file contains a fully independent analysis.
+
+[.opt]
+*-m* +
+*--multiple-files*
+
+[.optdoc]
+When used with `--interval` and `--output-file`, create a new file for each analysis instead of rewriting the previous file.
+Assuming that the specified output file name has the form `base.ext`,
+each file is created with a time stamp in its name as `base-YYYYMMDD-hhmmss.ext`.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the output text file for the analysis result.
+By default, use the standard output.
+
+[.optdoc]
+WARNING: If you do not specify this option,
+be sure to use a `tsp` output plugin which redirects the output TS to something different from the default.
+Otherwise, the text output of the analysis will be mixed with the binary output of the TS packets!
+
+include::{docdir}/opt/group-analyze.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;std;charset;timeref;pds]
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
+
+[.usage]
+Normalized output format
+
+See the link:#normalized-analyze[corresponding description] in the documentation of the `tsanalyze` command.

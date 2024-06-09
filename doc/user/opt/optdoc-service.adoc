@@ -1,0 +1,18 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation paragraph for service parameters.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.optdoc]
+If the parameter is an integer value (either decimal or hexadecimal), it is interpreted as a service id.
+If its format is `_integer.integer_`, it is interpreted as major and minor ids on ATSC streams.
+Otherwise, the parameter is interpreted as a service name, as specified in the SDT (DVB, ISDB) or VCT (ATSC).
+Service names are not case sensitive and blanks are ignored.
+If the input TS does not contain an SDT (DVB, ISDB) or VCT (ATSC), use a service id.

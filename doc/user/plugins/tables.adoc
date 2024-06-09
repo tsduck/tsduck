@@ -1,0 +1,72 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== tables
+
+[.cmd-header]
+Collect tables or sections
+
+This plugin collects tables or sections from a transport stream.
+The tables can be displayed or saved in a human readable format, saved in binary or XML files
+or sent over UDP/IP to some collecting server.
+
+This plugin is equivalent to the `tstables` utility.
+Actually, the following two commands produce the same result:
+
+[source,shell]
+----
+$ tstables options filename
+$ tsp -I file filename -P tables options -O drop
+----
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P tables [options]
+----
+
+include::{docdir}/opt/group-section-logger.adoc[tags=!*]
+include::{docdir}/opt/group-section-display.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;cas;pds;std;timeref;charset]
+
+[.usage]
+Plugin options
+
+[.opt]
+*-j* +
+*--joint-termination*
+
+[.optdoc]
+With `--max-tables`, when the final table is collected, perform a joint termination instead of unconditional termination.
+
+[.optdoc]
+See the xref:tsp-reference[`tsp` reference documentation] for more details on xref:joint-termination[joint termination].
+
+[.usage]
+Developers options
+
+The following options are reserved to C++, Java or Python developers.
+They are useful only when the plugin is used inside a custom application.
+
+[.opt]
+*--event-code* _value_
+
+[.optdoc]
+Signal a plugin event with the specified code for each section.
+
+[.optdoc]
+The event data is an instance of `PluginEventData` pointing to the section content.
+
+[.optdoc]
+With `--all-sections`, an event is signaled for each section.
+Without `--all-sections`, an event is signaled for each section of each complete new table.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
