@@ -12,6 +12,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsPlatform.h"
+
 #if !defined(TS_NO_VATEK) || defined(DOXYGEN)
 
 #include "tsOutputPlugin.h"

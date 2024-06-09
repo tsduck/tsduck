@@ -354,27 +354,71 @@ Export-ModuleMember -Function New-ZipFile
 
 <#
  .SYNOPSIS
-  Find MSBuild.exe, regardless of Visual Studion version.
+  Find MSBuild.exe, regardless of Visual Studio version.
 
  .OUTPUTS
   Return the MSBuild.exe with the highest version or exit script if none is found.
 #>
 function Find-MSBuild
 {
-    $MSRoots = @("C:\Program Files*\MSBuild", "C:\Program Files*\Microsoft Visual Studio")
-
-    $Path = Get-ChildItem -Recurse -Path $MSRoots -Include MSBuild.exe -ErrorAction Ignore |
-            ForEach-Object { (Get-Command $_).FileVersionInfo } |
-            Sort-Object -Unique -Property FileVersion |
-            ForEach-Object { $_.FileName} |
-            Select-Object -Last 1
-
+    # Try fast path first
+    $Path = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Current\Bin\MSBuild.exe" | Select-Object -Last 1
+    if ($Path -ne $null) {
+        $Path = $Path.FullName
+    }
+    else {
+        # Fallback: search everywhere
+        $MSRoots = @("C:\Program Files*\MSBuild", "C:\Program Files*\Microsoft Visual Studio")
+        $Path = Get-ChildItem -Recurse -Path $MSRoots -Include MSBuild.exe -ErrorAction Ignore |
+                ForEach-Object { (Get-Command $_).FileVersionInfo } |
+                Sort-Object -Unique -Property FileVersion |
+                ForEach-Object { $_.FileName} |
+                Select-Object -Last 1
+    }
     if (-not $Path) {
-        Exit-Script -NoPause:$NoPause "$File not found"
+        Exit-Script -NoPause:$NoPause "MSBuild not found"
     }
     return $Path
 }
 Export-ModuleMember -Function Find-MSBuild
+
+<#
+ .SYNOPSIS
+  Find MSVC runtime redistributable package, regardless of Visual Studio version.
+
+ .PARAMETER
+  Wildcard for package name, typically "vc*redist*x64.exe" or "vc*redist*86.exe".
+  The name of the package has slightly changed over the years and it is dangerous
+  to specify a fixed name.
+
+ .OUTPUTS
+  Return the package exe with the highest version or exit script if none is found.
+#>
+function Find-VCRedist
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,Position=1)][String] $Name
+    )
+
+    # Try fast path first
+    $Path = Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\VC\Redist\MSVC\*\$Name" | Select-Object -Last 1
+    if ($Path -ne $null) {
+        $Path = $Path.FullName
+    }
+    else {
+        # Fallback: search everywhere
+        $Path = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include $Name -ErrorAction Ignore |
+                 ForEach-Object { (Get-Command $_).FileVersionInfo } |
+                 Sort-Object -Unique -Property FileVersion  |
+                 ForEach-Object { $_.FileName} | Select-Object -Last 1
+    }
+    if (-not $Path) {
+        Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries Installer $Name not found"
+    }
+    return $Path
+}
+Export-ModuleMember -Function Find-VCRedist
 
 <#
  .SYNOPSIS

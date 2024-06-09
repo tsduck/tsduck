@@ -93,21 +93,11 @@ if (-not $NoInstaller) {
 if (-not $NoInstaller -or -not $NoPortable) {
     Write-Output "Searching MSVC Redistributable Libraries Installers..."
     # Use "*x64" instead of "*64" since some VS installations may include an arm64 version.
-    $VCRedist64 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*x64.exe" -ErrorAction Ignore |
-                  ForEach-Object { (Get-Command $_).FileVersionInfo } |
-                  Sort-Object -Unique -Property FileVersion  |
-                  ForEach-Object { $_.FileName} | Select-Object -Last 1
-    if (-not $VCRedist64) {
-        Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries 64-bit  Installer not found"
-    }
+    $VCRedist64 = Find-VCRedist "vc*redist*x64.exe"
+    Write-Output "MSVC Redistributable 64-bit: $VCRedist64"
     if ($Win32) {
-        $VCRedist32 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*86.exe" -ErrorAction Ignore |
-                      ForEach-Object { (Get-Command $_).FileVersionInfo } |
-                      Sort-Object -Unique -Property FileVersion  |
-                      ForEach-Object { $_.FileName} | Select-Object -Last 1
-        if (-not $VCRedist32) {
-            Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries 32-bit Installer not found"
-        }
+        $VCRedist32 = Find-VCRedist "vc*redist*86.exe"
+        Write-Output "MSVC Redistributable 32-bit: $VCRedist32"
     }
 }
 

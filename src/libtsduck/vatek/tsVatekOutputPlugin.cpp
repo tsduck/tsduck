@@ -6,13 +6,13 @@
 //
 //----------------------------------------------------------------------------
 
+#include "tsVatekOutputPlugin.h"
+
 #if defined(TS_NO_VATEK)
-#include "tsPlatform.h"
 TS_LLVM_NOWARNING(missing-variable-declarations)
 bool tsVatekOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #else
 
-#include "tsVatekOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsFatal.h"
 
