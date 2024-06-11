@@ -26,7 +26,6 @@ ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
 INSTALLERDIR = $(ROOTDIR)/pkg/installers
 SCRIPTSDIR   = $(ROOTDIR)/scripts
-IMAGESDIR    = $(ROOTDIR)/images
 SRCROOT      = $(ROOTDIR)/src
 LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
@@ -55,9 +54,9 @@ COMMA = ,
 
 # Some nerds define exotic shells as default. Stay to a known shell.
 # Skip initialization files to speed up and reproduceability.
-# Print all commands if VERBOSE is defined.
+# Print all commands if SHELL_VERBOSE is defined.
 
-SHELL = /usr/bin/env bash --noprofile --norc $(if $(VERBOSE),-x)
+SHELL = /usr/bin/env bash --noprofile --norc $(if $(SHELL_VERBOSE),-x)
 
 # Recursive invocations of make should be silent.
 
@@ -861,41 +860,6 @@ ifeq ($(TSPLUGINS),)
     TSPLUGINS := $(filter-out $(NO_TSPLUGINS),$(TSPLUGINS))
     export TSPLUGINS TSTOOLS NO_TSTOOLS NO_TSPLUGINS
 endif
-
-#-----------------------------------------------------------------------------
-# Documentation generation.
-#-----------------------------------------------------------------------------
-
-# Documentation sources.
-
-DOCROOT    = $(ROOTDIR)/doc
-CSSDIR     = $(DOCROOT)/css
-TOCBOTDIR  = $(DOCROOT)/tocbot
-THEMESDIR  = $(DOCROOT)/themes
-
-# Documentation binaries.
-
-BINDOC     = $(BINROOT)/doc
-BINDOCINFO = $(BINROOT)/docinfo
-
-# Common themes.
-
-CSSFILE    = $(CSSDIR)/tsduck.css
-THEME      = tsduck
-THEMEFILE  = $(THEMESDIR)/$(THEME)-theme.yml
-ROUGE_HTML = thankful_eyes
-ROUGE_PDF  = github
-
-# Documentation tools.
-
-ASCIIDOCTOR     = asciidoctor
-ASCIIDOCTOR_PDF = asciidoctor-pdf
-
-# Documentation generation flags.
-
-ADOCFLAGS      = -v -a revnumber="$(shell $(GET_VERSION))" -a revdate="$(shell $(DATE) '+%B %Y')" -a imagesdir="$(IMAGESDIR)"
-ADOCFLAGS_HTML = $(ADOCFLAGS) -a stylesheet="$(CSSFILE)" -a rouge-style="$(ROUGE_HTML)"
-ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(THEMESDIR)" -a pdf-theme="$(THEME)" -a rouge-style="$(ROUGE_PDF)"
 
 #-----------------------------------------------------------------------------
 # Dependency (.dep) files: For each xxx.cpp source file, there is one

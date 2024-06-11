@@ -45,8 +45,8 @@ Use macOS if you have a Mac and do not need DVB or Dektec hardware.
 
 === Developing applications using the TSDuck library
 
-TSDuck is mainly a large C++ library for Digital TV applications.
-All TSDuck commands and plugins are thin wrappers on top of C++ classes from this library.
+TSDuck is mainly a large {cpp} library for Digital TV applications.
+All TSDuck commands and plugins are thin wrappers on top of {cpp} classes from this library.
 
 This library can be used by third-party applications, outside the TSDuck tools and plugins.
 To do that, you must install the "TSDuck development environment".
@@ -57,7 +57,7 @@ features such as demuxing and packetizing tables and high-level features such as
 processing pipelines inside your application (which means something like including `tsp` in your application).
 
 See <<TSDuck-Prog>> for more details on the TSDuck library.
-This is a set of doxygen-generated pages with tutorials and reference documentation for all C++ classes in the library.
+This is a set of doxygen-generated pages with tutorials and reference documentation for all {cpp} classes in the library.
 
 Some high-level features of the TSDuck library can also be used from Python or Java, typically running
 TS processing pipelines or manipulating tables and sections inside Python or Java applications.

@@ -6,24 +6,8 @@
 //
 //----------------------------------------------------------------------------
 = TSDuck User's Guide
-:author: Thierry Lelégard
 :description: TSDuck User's Guide
-:keywords: tsduck
-:doctype: book
-:toc: left
-:toclevels: 5
-:sectnums:
-:sectnumlevels: 4
-:source-highlighter: rouge
-:experimental:
-:icons: font
-:reproducible:
-:toc-title: Contents
-:appendix-caption: Appendix
-:chapter-refsig: chapter
-:section-refsig: section
-:appendix-refsig: appendix
-:d-arrow: pass:q[[.big]#&#x21D4;#]
+include::../attributes.adoc[]
 
 include::000-preface.adoc[]
 include::101-chap-overview.adoc[]

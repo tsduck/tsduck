@@ -23,8 +23,6 @@ deb-tools:
 	rm -rf $(TMPROOT)
 	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true
 	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true install-tools SYSROOT=$(TMPROOT)
-	install -d -m 755 $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
-	install -m 644 $(ROOTDIR)/CHANGELOG.txt $(ROOTDIR)/LICENSE.txt $(ROOTDIR)/OTHERS.txt $(ROOTDIR)/doc/tsduck.pdf $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
 	$(MAKE) NOTEST=true deb-tools-control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)

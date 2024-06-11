@@ -1,0 +1,70 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-preface]
+[preface]
+== Preface
+
+TSDuck is a toolkit which manipulates MPEG Transport Streams (TS).
+
+As a product, TSDuck provides many different command-line tools and plugins.
+Internally, the architecture of TSDuck is made of a large shareable library
+(`tsduck.dll` on Windows, `libtsduck.so` on Linux and BSD systems, `libtsduck.dylib` on macOS).
+Most of the valuable processing is performed by the various {cpp} classes from the TSDuck library.
+All command-line tools and plugins are usually small wrappers around this library.
+
+The TSDuck library offers generic {cpp} classes as well as specialized classes for MPEG transport streams.
+This library can be used as a general-purpose {cpp} library for third-party applications, outside the TSDuck tools and plugins.
+
+The following figure illustrates the TSDuck software architecture and how it interacts with third-party applications.
+
+.TSDuck software architecture
+image::tsduck-soft-arch.png[align="center",alt="TSDuck software architecture"]
+
+This document is the TSDuck Developer's Guide.
+It can be equally used by TSDuck maintainers and developers of third-party applications.
+
+Structure of this guide:
+
+* The xref:chap-build[xrefstyle=short] describes how to build and install TSDuck.
+  This section is especially useful on platforms for which there is not pre-built binary package.
+  TSDuck users should read this chapter to build and install TSDuck on their system.
+* The xref:chap-application[xrefstyle=short] is an introduction for developers who
+  use the TSDuck library in their application, outside TSDuck itself.
+* The xref:chap-contribution[xrefstyle=short] is a guide for advanced users who wish to
+  contribute to TSDuck development, submit new features, improvements, or bug fixes.
+* The xref:chap-maintenance[xrefstyle=short] is a reference section for TSDuck maintainers.
+  It describes how the code is organized, the test and delivery processes, the automation
+  of the project.
+
+In addition to this developer's guide, a comprehensive
+https://tsduck.io/doxy/[reference programming documentation] is available online.
+It documents all TSDuck public {cpp} classes, as well as the Python and Java API's.
+This is a reference documentation which is automatically generated from the source files
+using https://doxygen.nl/[doxygen].
+
+[.usage]
+License
+
+TSDuck is released under the terms of the license which is commonly referred to as
+"BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
+This is a liberal license which allows TSDuck to be used in a large number of environments.
+See the xref:chap-license[xrefstyle=short] for more details.
+
+[.usage]
+Documentation format
+
+The TSDuck developer's guide is built using https://asciidoctor.org[asciidoctor],
+from a set of text files which are maintained alongside the source code, in the same `git` repository.
+
+This guide is formatted for HTML.
+The file `tsduck-dev.html` is monolithic and self-sufficient, without reference to external images.
+Therefore, this HTML file can be downloaded, saved, and copied, as long as the license and content are not modified.
+
+A PDF version xref:tsduck-dev.pdf[] is also available.
+However, due to limitations in the PDF generator of asciidoctor, the rendering is sometimes not as good as the HTML document.

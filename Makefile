@@ -115,9 +115,13 @@ m32:
 
 # Generate the documentation.
 
-.PHONY: doxygen
-doxygen:
-	@doc/build-doxygen.sh $(DOXYFLAGS)
+DOC_TARGETS = doxygen docs \
+    userguide userguide-html userguide-pdf open-userguide open-userguide-html open-userguide-pdf \
+    devguide devguide-html devguide-pdf open-devguide open-devguide-html open-devguide-pdf
+
+.PHONY: $(DOC_TARGETS)
+$(DOC_TARGETS):
+	@$(MAKE) -C doc $@
 
 # Cleanup utilities
 
@@ -142,6 +146,7 @@ show-version: default
 .PHONY: install install-tools install-devel
 install install-tools install-devel:
 	@$(MAKE) NOTEST=true -C src $@
+	@$(MAKE) NOTEST=true -C doc $@
 
 # Build installer packages.
 

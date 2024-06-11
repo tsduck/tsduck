@@ -1,0 +1,22 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-application]
+== Developing Applications with TSDuck
+
+=== Tutorial: using the TSDuck library
+
+==== Building an application using the TSDuck library
+
+==== Main features
+
+==== Java and Python Bindings
+
+=== Developing a TSDuck plugin
+
+=== Developing a TSDuck extension

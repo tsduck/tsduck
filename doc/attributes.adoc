@@ -1,0 +1,27 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Common attributes for asciidoctor documents.
+// Warning: Do not add any blank line here.
+//
+//----------------------------------------------------------------------------
+:author: Thierry Lelégard
+:keywords: tsduck
+:doctype: book
+:toc: left
+:toclevels: 5
+:sectnums:
+:sectnumlevels: 4
+:source-highlighter: rouge
+:experimental:
+:icons: font
+:reproducible:
+:toc-title: Contents
+:appendix-caption: Appendix
+:chapter-refsig: chapter
+:section-refsig: section
+:appendix-refsig: appendix
+:d-arrow: pass:q[[.big]#&#x21D4;#]

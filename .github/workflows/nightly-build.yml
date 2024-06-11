@@ -252,9 +252,18 @@ jobs:
     - name: Build documentation
       if: env.REBUILD == 'true'
       run: |
-        make doxygen DOXYFLAGS=--update-doxygen
+        make docs doxygen DOXYFLAGS=--update-doxygen
         echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
         (cd bin; zip -qr9 ../doxy.zip doxy)
+        (cd bin; zip -qr9 ../doc.zip doc)
+
+    - name: Upload doc package
+      if: env.REBUILD == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: doc-package
+        path: doc.zip
+        retention-days: 5
 
     - name: Upload doxygen package
       if: env.REBUILD == 'true'

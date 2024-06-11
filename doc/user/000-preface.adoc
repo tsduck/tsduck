@@ -15,7 +15,7 @@ It contains a set of simple but flexible command-line utilities that run on Linu
 
 Through `tsp`, the "transport stream processor", many types of analysis and transformation can be applied on live or recorded transport streams.
 This utility can be extended through "plugins".
-Existing plugins can be enhanced, and new plugins can be developed using a library of C++ classes.
+Existing plugins can be enhanced, and new plugins can be developed using a library of {cpp} classes.
 
 This document is the user's guide for TSDuck.
 It explains the basic concepts of TSDuck and contains reference sections for all commands and plugins.

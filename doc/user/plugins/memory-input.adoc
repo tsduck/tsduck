@@ -15,13 +15,13 @@ Direct memory input from an application
 This input plugin receives TS packets from the calling application using memory buffers.
 
 This is a developer plugin.
-It is useful only to C++, Java or Python developers who run an instance of `TSProcessor` pipeline inside their applications
+It is useful only to {cpp}, Java or Python developers who run an instance of `TSProcessor` pipeline inside their applications
 and want this application to directly interact with the input of the pipeline.
 Using this plugin in a `tsp` command line does nothing.
 
 In practice, this plugin is useful to Java and Python developers only since
 it is not possible to develop TSDuck plugins in these languages.
-To develop some custom form of transport stream input, C++ developers should rather develop their own input plugin.
+To develop some custom form of transport stream input, {cpp} developers should rather develop their own input plugin.
 This is simpler and more efficient than handling input events for the `memory` plugin.
 
 Developers may start from the sample code which is available for the three languages
@@ -37,7 +37,7 @@ When input packets are available, the event handler returns them to the memory p
 The way an event handler returns data to the plugin depends on the language:
 
 [.compact-list]
-* In C++, the event data is an instance of `PluginEventData` pointing to the input buffer.
+* In {cpp}, the event data is an instance of `PluginEventData` pointing to the input buffer.
   The event handler shall return TS packets in this buffer.
 * In Java, the event handler shall pass a byte[] containing the TS packets
   to the method `setOutputData()` of the `PluginEventContext`.

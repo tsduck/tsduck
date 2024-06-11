@@ -243,7 +243,7 @@ The source address of the forwarded datagrams will be the address of the local m
 [.usage]
 Developers options
 
-The following options are reserved to C++, Java or Python developers.
+The following options are reserved to {cpp}, Java or Python developers.
 They are useful only when the plugin is used inside a custom application.
 
 [.opt]
