@@ -63,6 +63,7 @@ DRYRUN=false
 STATIC=
 PKGOPTS=()
 PKGLIST=()
+GEMLIST=()
 
 # Decode command line options.
 while [[ $# -gt 0 ]]; do
@@ -217,7 +218,8 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor ruby-asciidoctor-pdf ruby-rouge)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor)
+    GEMLIST+=(asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE                                      ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                          ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 17                         ]] && PKGLIST+=(libcurl3 libcurl3-dev)
@@ -239,6 +241,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt update
     sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+    sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Linux Mint ==
@@ -248,7 +251,8 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor ruby-asciidoctor-pdf ruby-rouge)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor)
+    GEMLIST+=(asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE                              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOSRT && $MAJOR -ge 20 && $MAJOR -lt 21 ]] && PKGLIST+=(libsrt-dev)
@@ -264,6 +268,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
     sudo apt update
     sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+    sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Debian, Raspbian (Raspberry Pi) ==
@@ -273,7 +278,8 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor ruby-asciidoctor-pdf ruby-rouge)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor)
+    GEMLIST+=(asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 9  ]] && PKGLIST+=(libcurl3 libcurl3-dev)
@@ -290,6 +296,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     sudo apt update
     sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+    sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Fedora ==
@@ -301,7 +308,8 @@ elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel rubygem-asciidoctor rubygem-asciidoctor-pdf rubygem-rouge)
+    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel rubygem-asciidoctor)
+    GEMLIST+=(asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
     [[ -z $NORIST && $FC -ge 36 ]] && PKGLIST+=(librist-devel)
@@ -317,6 +325,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo alternatives --set python /usr/bin/python3
+    sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Red Hat, CentOS, Alma Linux, Rocky Linux ==
@@ -329,7 +338,8 @@ elif [[ -f /etc/redhat-release ]]; then
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel ruby-devel rubygem-asciidoctor rubygem-rouge)
+    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel ruby-devel)
+    GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
     [[ -z $NORIST && $EL -ge 902 ]] && PKGLIST+=(librist-devel)
@@ -362,6 +372,7 @@ elif [[ -f /etc/redhat-release ]]; then
         sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     fi
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+    sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == openSUSE ==
