@@ -156,12 +156,14 @@ Section "Documentation" SectionDocumentation
     ; Documentation files.
     CreateDirectory "$INSTDIR\doc"
     SetOutPath "$INSTDIR\doc"
-    File "${RootDir}\doc\tsduck.pdf"
+    File "${RootDir}\bin\doc\tsduck.html"
+    File "${RootDir}\bin\doc\tsduck-dev.html"
     File "${RootDir}\CHANGELOG.txt"
 
     ; Create shortcuts in start menu.
     CreateDirectory "$SMPROGRAMS\TSDuck"
-    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck User's Guide.lnk" "$INSTDIR\doc\tsduck.pdf"
+    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck User's Guide.lnk" "$INSTDIR\doc\tsduck.html"
+    CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck Developer's Guide.lnk" "$INSTDIR\doc\tsduck-dev.html"
     CreateShortCut "$SMPROGRAMS\TSDuck\TSDuck Release Notes.lnk" "$INSTDIR\doc\CHANGELOG.txt"
 
 SectionEnd

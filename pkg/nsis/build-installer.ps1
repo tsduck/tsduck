@@ -68,6 +68,7 @@ $RootDir    = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 $ScriptsDir = "${RootDir}\scripts"
 $MsvcDir    = "${ScriptsDir}\msvc"
 $SrcDir     = "${RootDir}\src"
+$DocDir     = "${RootDir}\doc"
 $BinRoot    = "${RootDir}\bin"
 $BinInclude = "${BinRoot}\include"
 $JarFile    = "${BinRoot}\java\tsduck.jar"
@@ -116,6 +117,7 @@ if (-not $NoBuild) {
     if ($Code -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building the product"
     }
+    & "${DocDir}\build-doc.ps1" -NoPause -NoOpen
 }
 
 # Get version name.
@@ -213,7 +215,8 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         Copy-Item "${BinDir}\ts*.names" -Destination $TempBin
 
         $TempDoc = (New-Directory "${TempRoot}\doc")
-        Copy-Item "${RootDir}\doc\tsduck.pdf" -Destination $TempDoc
+        Copy-Item "${RootDir}\bin\doc\tsduck.html" -Destination $TempDoc
+        Copy-Item "${RootDir}\bin\doc\tsduck-dev.html" -Destination $TempDoc
         Copy-Item "${RootDir}\CHANGELOG.txt" -Destination $TempDoc
 
         $TempPython = (New-Directory "${TempRoot}\python")

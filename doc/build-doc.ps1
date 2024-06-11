@@ -47,7 +47,7 @@ $CssDir       = "$DocRoot\css"
 $TocBotDir    = "$DocRoot\tocbot"
 $ThemesDir    = "$DocRoot\themes"
 $UserGuideDir = "$DocRoot\user"
-$DevGuideDir  = "$DocRoot\user"
+$DevGuideDir  = "$DocRoot\developer"
 $BinRoot      = "$RootDir\bin"
 $BinDoc       = "$BinRoot\doc"
 $BinDocInfo   = "$BinRoot\docinfo"
@@ -73,7 +73,7 @@ if (-not $Version) {
 
 # Asciidoctor flags
 $ADocFlags     = @("-v", "-a", "revnumber=$Version", "-a", "revdate=$Date", "-a", "imagesdir=$ImagesDir")
-$ADocFlagsHtml = $ADocFlags + @("-a", "stylesheet=$CssFile", "-a", "rouge-style=$RougeHtml")
+$ADocFlagsHtml = $ADocFlags + @("-a", "stylesheet=$CssFile", "-a", "rouge-style=$RougeHtml", "-a", "data-uri", "-a", "docinfo=shared", "-a", "docinfodir=$BinDocInfo")
 $ADocFlagsPdf  = $ADocFlags + @("-a", "pdf-themesdir=$ThemesDir", "-a", "pdf-theme=$Theme", "-a", "rouge-style=$RougePdf")
 
 # Exit the script.
@@ -120,14 +120,20 @@ function Build-IncludeAll($OutFile, $DocDir, $SubDir)
 Build-IncludeAll "$UserGuideDir\.all.commands.adoc" $UserGuideDir "commands"
 Build-IncludeAll "$UserGuideDir\.all.plugins.adoc" $UserGuideDir "plugins"
 
-# Generate user's guide in HTML format.
-Write-Output "Generating tsduck.html ..."
-asciidoctor @ADocFlagsHtml -a data-uri -a docinfo=shared -a "docinfodir=$BinDocInfo" "$UserGuideDir\tsduck.adoc" -D $BinDoc -o tsduck.html
-Open-Doc "$BinDoc\tsduck.html"
+# Generate one document in HTML and PDF formats.
+function Build-Document($Dir, $BaseName)
+{
+    Write-Output "Generating $BaseName.html ..."
+    asciidoctor @ADocFlagsHtml "$Dir\$BaseName.adoc" -D $BinDoc -o "$BaseName.html"
+    Open-Doc "$BinDoc\$BaseName.html"
 
-# Generate user's guide in PDF format.
-Write-Output "Generating tsduck.pdf ..."
-asciidoctor-pdf @ADocFlagsPdf "$UserGuideDir\tsduck.adoc" -D $BinDoc -o tsduck.pdf
-Open-Doc "$BinDoc\tsduck.pdf"
+    Write-Output "Generating $BaseName.pdf ..."
+    asciidoctor-pdf @ADocFlagsPdf "$Dir\$BaseName.adoc" -D $BinDoc -o "$BaseName.pdf"
+    Open-Doc "$BinDoc\tsduck.pdf"
+}
+
+# Generate guides
+Build-Document $UserGuideDir "tsduck"
+Build-Document $DevGuideDir "tsduck-dev"
 
 Exit-Script
