@@ -52,7 +52,7 @@ This option is allowed only if all input files are regular files.
 [.optdoc]
 Same as `--raw-dump` (no interpretation of packets) but dump the bytes in C-language style,
 e.g. `0x01, 0x02,` instead of `01 02`.
-Useful to include tsdump output as data in a C or C++ source file.
+Useful to include tsdump output as data in a C or {cpp} source file.
 
 include::{docdir}/opt/opt-format.adoc[tags=!*;short;input;multiple]
 

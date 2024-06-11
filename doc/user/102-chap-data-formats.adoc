@@ -160,7 +160,7 @@ Rebuilding TSDuck with another representation is possible but must be consistent
 All tools and shared libraries must have been built with the same representation.
 Special symbols and linker dependencies are generated to prevent mixing binaries and libraries with different representations.
 
-To select a different representation of bitrates, simply define the corresponding C++ macro in the build system.
+To select a different representation of bitrates, simply define the corresponding {cpp} macro in the build system.
 See the source file `src/libtsduck/base/types/tsBitRate.h` for the various macros.
 
 On Linux and macOS, the `make` command accepts direct parameters, one of the following:
@@ -293,7 +293,7 @@ The complete definition of the XML model can be found in xref:chap-sixmlref[xref
 The imbrication of digital TV standards is complex and sometimes problematic
 for the user who wants to analyze the structure of a transport stream.
 TSDuck tries to help, either using command line utilities and plugins,
-and C++ classes for applications which are built on top of the TSDuck library.
+and {cpp} classes for applications which are built on top of the TSDuck library.
 
 The first layer of standard is MPEG <<ISO-13818-1>>.
 It is the common root of all regional or international standards in digital TV.
@@ -846,7 +846,7 @@ typically some easily recognizable pattern.
 See the description of the option `--log-xml-line` in the command `tstables` and the plugin `tables`.
 
 The output of XML files as one single line is also extremely useful for third party applications which use TSDuck as a library.
-The C++, Java or Python class named `TSProcessor` is the equivalent of `tsp` inside an application.
+The {cpp}, Java or Python class named `TSProcessor` is the equivalent of `tsp` inside an application.
 The log messages which are produced by this class can be processed by user-defined classes.
 These user-defined classes can then filter and process XML outputs as soon as they are produced.
 Java and Python examples of this features are provided with the TSDuck source code.

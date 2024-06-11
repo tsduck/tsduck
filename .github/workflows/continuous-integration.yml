@@ -209,8 +209,8 @@ jobs:
         done
         exit $status
 
-  build_doxygen:
-    name: Doxygen documentation
+  build_docs:
+    name: Build documentation
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -220,6 +220,9 @@ jobs:
       run: |
         scripts/install-prerequisites.sh
         echo "Doxygen version: $(doxygen --version)"
-    - name: Build TSDuck documentation
+    - name: Build guides
+      run: |
+        make docs
+    - name: Build Doxygen reference
       run: |
         make doxygen DOXYFLAGS=--update-doxygen

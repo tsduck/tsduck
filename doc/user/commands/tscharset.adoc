@@ -34,8 +34,8 @@ Options
 *--c-style*
 
 [.optdoc]
-Output binary data in C/C++ syntax, using 0x prefix.
-The result can be easily copied into C/C++ source code.
+Output binary data in C/{cpp} syntax, using 0x prefix.
+The result can be easily copied into C/{cpp} source code.
 
 [.opt]
 *-d* _hexa-digits_ +

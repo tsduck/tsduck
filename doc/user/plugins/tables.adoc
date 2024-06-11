@@ -53,7 +53,7 @@ See the xref:tsp-reference[`tsp` reference documentation] for more details on xr
 [.usage]
 Developers options
 
-The following options are reserved to C++, Java or Python developers.
+The following options are reserved to {cpp}, Java or Python developers.
 They are useful only when the plugin is used inside a custom application.
 
 [.opt]

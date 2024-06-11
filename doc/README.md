@@ -1,4 +1,4 @@
-TSDuck documentation files
+# TSDuck documentation files
 
 - tsduck.docx tsduck.pdf
 TSDuck user's guide (Microsoft Word).
