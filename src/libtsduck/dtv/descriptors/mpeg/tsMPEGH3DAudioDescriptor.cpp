@@ -37,7 +37,7 @@ void ts::MPEGH3DAudioDescriptor::clearContent()
     mpegh_3da_profile_level_indication = 0;
     interactivity_enabled = false;
     reference_channel_layout = 0;
-    CompatibleSetIndication.clear();
+    compatibleSetIndication.clear();
     reserved.clear();
 }
 
@@ -66,13 +66,13 @@ void ts::MPEGH3DAudioDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(mpegh_3da_profile_level_indication);
     buf.putBit(interactivity_enabled);
-    const bool compatibleProfileSetsPresent = !CompatibleSetIndication.empty();
+    const bool compatibleProfileSetsPresent = !compatibleSetIndication.empty();
     buf.putBit(!compatibleProfileSetsPresent); // bit=0 means present
     buf.putBits(0xFF, 8);
     buf.putBits(reference_channel_layout, 6);
     if (compatibleProfileSetsPresent) {
-        buf.putBits(CompatibleSetIndication.size(), 8);
-        buf.putBytes(CompatibleSetIndication);
+        buf.putBits(compatibleSetIndication.size(), 8);
+        buf.putBytes(compatibleSetIndication);
     }
     buf.putBytes(reserved);
 }
@@ -91,7 +91,7 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBits(reference_channel_layout, 6);
     if (compatibleProfileSetsPresent) {
         const uint8_t numCompatibleSets = buf.getUInt8();
-        buf.getBytes(CompatibleSetIndication, numCompatibleSets);
+        buf.getBytes(compatibleSetIndication, numCompatibleSets);
     }
     buf.getBytes(reserved);
 }
@@ -128,7 +128,7 @@ void ts::MPEGH3DAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root)
     root->setIntAttribute(u"mpegh_3da_profile_level_indication", mpegh_3da_profile_level_indication, true);
     root->setBoolAttribute(u"interactivity_enabled", interactivity_enabled);
     root->setIntAttribute(u"reference_channel_layout", reference_channel_layout, true);
-    root->addHexaTextChild(u"CompatibleSetIndication", CompatibleSetIndication, true);
+    root->addHexaTextChild(u"compatibleSetIndication", compatibleSetIndication, true);
     root->addHexaTextChild(u"reserved", reserved, true);
 }
 
@@ -142,6 +142,6 @@ bool ts::MPEGH3DAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
     return element->getIntAttribute(mpegh_3da_profile_level_indication, u"mpegh_3da_profile_level_indication", true) &&
            element->getBoolAttribute(interactivity_enabled, u"interactivity_enabled", true) &&
            element->getIntAttribute(reference_channel_layout, u"reference_channel_layout", true, 0, 0, 0x3F) &&
-           element->getHexaTextChild(CompatibleSetIndication, u"CompatibleSetIndication", false, 0, 251) &&
+           element->getHexaTextChild(compatibleSetIndication, u"compatibleSetIndication", false, 0, 251) &&
            element->getHexaTextChild(reserved, u"reserved", false, 0, 251);
 }
