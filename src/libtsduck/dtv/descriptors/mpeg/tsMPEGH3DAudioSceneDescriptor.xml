@@ -48,7 +48,7 @@
 
         <!-- 1 to 16 preset conditions -->
         <PresetConditions
-          groupPresetGroupID="uint7, required"
+          groupPresetReferenceID="uint7, required"
           groupPresetDisableGainInteractivity="bool, required in groupPresetConditionOnOff=true group"
           groupPresetDisablePositionInteractivity="bool, required in groupPresetConditionOnOff=true group"
           groupPresetGain="uint8, optional in groupPresetConditionOnOff=true group"
