@@ -1,3 +1,2 @@
-*.docx.files
-*.pptx.files
-*.xlsx.files
+# Auto-generated files.
+.*.adoc
