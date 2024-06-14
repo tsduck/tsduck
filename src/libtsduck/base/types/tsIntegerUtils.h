@@ -61,6 +61,26 @@ namespace ts {
         using type = typename make_signed_impl<T, sizeof(T), std::is_signed<T>::value>::type;
     };
 
+    //
+    // Implementation tools for int_max.
+    //
+    //! @cond nodoxygen
+    template<bool ISSIGNED> struct int_max_impl { using type = void; };
+    template<> struct int_max_impl<true> { using type = std::intmax_t; };
+    template<> struct int_max_impl<false> { using type = std::uintmax_t; };
+    //! @endcond
+
+    //!
+    //! The meta-type ts::int_max selects the integer type with largest width and same signedness as another integer type.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    struct int_max {
+        //! The integer type with the same signedness and largest width.
+        //! In practice, it is either @c std::uintmax_t or @c std::intmax_t.
+        using type = typename int_max_impl<std::is_signed<INT>::value>::type;
+    };
+
     //!
     //! Absolute value of integer types, also working on unsigned types.
     //! @tparam INT An integer type, any size, signed or unsigned.

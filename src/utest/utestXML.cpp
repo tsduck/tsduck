@@ -42,6 +42,7 @@ class XMLTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(GetFloat);
     TSUNIT_DECLARE_TEST(SetFloat);
     TSUNIT_DECLARE_TEST(PreserveSpace);
+    TSUNIT_DECLARE_TEST(IntValue);
 
 public:
     virtual void beforeTest() override;
@@ -769,4 +770,25 @@ TSUNIT_DEFINE_TEST(PreserveSpace)
         u"  <w:t>  a  b  </w:t>\n"
         u"</w:document>\n",
         doc.toString());
+}
+
+TSUNIT_DEFINE_TEST(IntValue)
+{
+    static const ts::UChar* const document =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<document a='1000'/>";
+
+    ts::xml::Document doc(report());
+    TSUNIT_ASSERT(doc.parse(document));
+    TSUNIT_EQUAL(2, doc.childrenCount());
+
+    ts::xml::Element* root = doc.rootElement();
+    TSUNIT_ASSERT(root != nullptr);
+
+    int i = 0;
+    TSUNIT_ASSERT(root->getIntAttribute(i, u"a"));
+    TSUNIT_EQUAL(1000, i);
+
+    int8_t i8 = 0;
+    TSUNIT_ASSERT(!root->getIntAttribute(i8, u"a"));
 }
