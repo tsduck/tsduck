@@ -120,6 +120,10 @@ function Build-IncludeAll($OutFile, $DocDir, $SubDir)
 Build-IncludeAll "$UserGuideDir\.all.commands.adoc" $UserGuideDir "commands"
 Build-IncludeAll "$UserGuideDir\.all.plugins.adoc" $UserGuideDir "plugins"
 
+# Generate subdoc files for all tables and all descriptors.
+python "$DevGuideDir\build-sigref.py" tables "$DevGuideDir\.all.tables.adoc"
+python "$DevGuideDir\build-sigref.py" descriptors "$DevGuideDir\.all.descriptors.adoc"
+
 # Generate one document in HTML and PDF formats.
 function Build-Document($Dir, $BaseName)
 {
@@ -129,7 +133,7 @@ function Build-Document($Dir, $BaseName)
 
     Write-Output "Generating $BaseName.pdf ..."
     asciidoctor-pdf @ADocFlagsPdf "$Dir\$BaseName.adoc" -D $BinDoc -o "$BaseName.pdf"
-    Open-Doc "$BinDoc\tsduck.pdf"
+    Open-Doc "$BinDoc\$BaseName.pdf"
 }
 
 # Generate guides
