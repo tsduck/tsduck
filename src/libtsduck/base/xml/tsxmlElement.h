@@ -18,6 +18,7 @@
 #include "tsIPv4Address.h"
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
+#include "tsIntegerUtils.h"
 
 namespace ts {
     namespace xml {
@@ -606,7 +607,7 @@ namespace ts {
             template <typename ENUM,
                       typename INT1 = typename ts::underlying_type<ENUM>::type,
                       typename INT2 = typename ts::underlying_type<ENUM>::type,
-                      typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr, typename INT = typename std::underlying_type<ENUM>::type>
+                      typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
             bool getIntAttribute(ENUM& value,
                                  const UString& name,
                                  bool required = false,
@@ -992,26 +993,28 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
     }
 
     // Attribute found, get its value.
+    using INTMAX = typename ts::int_max<INT>::type;
     UString str(attr.value());
-    INT val = INT(0);
+    INTMAX val = INTMAX(0);
     if (!str.toInteger(val, u",")) {
         report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
-    else if (val < INT(minValue) || val > INT(maxValue)) {
+    else if (val < INTMAX(minValue) || val > INTMAX(maxValue)) {
         report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", str, minValue, maxValue, name, this->name(), lineNumber());
         return false;
     }
     else {
-        value = val;
+        value = INT(val);
         return true;
     }
 }
 
 // Get an integer attribute of an XML element.
-template <typename ENUM, typename INT1, typename INT2, typename std::enable_if<std::is_enum<ENUM>::value>::type*, typename INT>
+template <typename ENUM, typename INT1, typename INT2, typename std::enable_if<std::is_enum<ENUM>::value>::type*>
 bool ts::xml::Element::getIntAttribute(ENUM& value, const UString& name, bool required, ENUM defValue, INT1 minValue, INT2 maxValue) const
 {
+    using INT = typename std::underlying_type<ENUM>;
     INT val = INT(0);
     const bool ok = getIntAttribute<INT>(val, name, required, defValue, minValue, maxValue);
     if (ok) {
