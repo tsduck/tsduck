@@ -27,16 +27,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 // Constructors
 //----------------------------------------------------------------------------
 
-void ts::AuxiliaryVideoStreamDescriptor::si_message_type::clear()
-{
-    payload_type.clear();
-    payload_size.clear();
-    generic_params.reset();
-    depth_params.reset();
-    parallax_params.reset();
-    reserved_si_message.reset();
-}
-
 ts::AuxiliaryVideoStreamDescriptor::AuxiliaryVideoStreamDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
@@ -50,30 +40,40 @@ ts::AuxiliaryVideoStreamDescriptor::AuxiliaryVideoStreamDescriptor(DuckContext& 
 
 void ts::AuxiliaryVideoStreamDescriptor::clearContent()
 {
-    aux_video_codestreamtype = 0;
+    aux_video_codedstreamtype = 0;
     si_messages.clear();
 }
 
-void ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::clear()
-{
-    aux_is_bottom_field.reset();
-    aux_is_interlaced.reset();
-    position_offset_h = 0;
-    position_offset_v = 0;
-}
 
-void ts::AuxiliaryVideoStreamDescriptor::si_message_type::depth_params_type::clear()
-{
-    nkfar = 0;
-    nknear = 0;
-}
+//----------------------------------------------------------------------------
+// Specific methods
+//----------------------------------------------------------------------------
 
-void ts::AuxiliaryVideoStreamDescriptor::si_message_type::parallax_params_type::clear()
+uint32_t ts::AuxiliaryVideoStreamDescriptor::si_message_type::get_message_size() const
 {
-    parallax_zero = 0;
-    parallax_scale = 0;
-    dref = 0;
-    wref = 0;
+    uint32_t _size = 0;
+    const uint32_t _payload_type = payload_type.value();
+    if (_payload_type == 0 || _payload_type == 1) {
+        if (generic_params.has_value()) {
+            _size += generic_params.value().get_size();
+        }
+    }
+    if (_payload_type == 0) {
+        if (depth_params.has_value()) {
+            _size += depth_params.value().get_size();
+        }
+    }
+    else if (_payload_type == 1) {
+        if (parallax_params.has_value()) {
+            _size += parallax_params.value().get_size();
+        }
+    }
+    else {
+        if (reserved_si_message.has_value()) {
+            _size += uint32_t(reserved_si_message.value().size());
+        }
+    }
+    return _size;
 }
 
 
@@ -91,7 +91,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::iso23002_2_value_codin
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::serialize(PSIBuffer& buf) const
 {
-    bool aux_is_one_field = aux_is_bottom_field.has_value();
+    const bool aux_is_one_field = aux_is_bottom_field.has_value();
     buf.putBit(aux_is_one_field);
     buf.putBit(aux_is_one_field ? aux_is_bottom_field.value_or(false) : aux_is_interlaced.value_or(false));
     buf.putBits(0xFF, 6);
@@ -116,7 +116,8 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::parallax_params_type::
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::serialize(PSIBuffer& buf) const
 {
     payload_type.serialize(buf);
-    payload_size.serialize(buf);
+    si_message_type::iso23002_2_value_coding si_message_size(get_message_size());
+    si_message_size.serialize(buf);
     if ((payload_type.value() == 0) || (payload_type.value() == 1)) {
         if (generic_params.has_value()) {
             generic_params.value().serialize(buf);
@@ -141,7 +142,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::serialize(PSIBuffer& b
 
 void ts::AuxiliaryVideoStreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putUInt8(aux_video_codestreamtype);
+    buf.putUInt8(aux_video_codedstreamtype);
     for (const auto& si : si_messages) {
         si.serialize(buf);
     }
@@ -166,7 +167,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::iso23002_2_value_codin
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::deserialize(PSIBuffer& buf)
 {
-    bool aux_is_one_field = buf.getBool();
+    const bool aux_is_one_field = buf.getBool();
     if (aux_is_one_field) {
         aux_is_bottom_field = buf.getBool();
     }
@@ -215,7 +216,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::deserialize(PSIBuffer&
 
 void ts::AuxiliaryVideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    aux_video_codestreamtype = buf.getUInt8();
+    aux_video_codedstreamtype = buf.getUInt8();
     while (buf.canRead()) {
         si_message_type newSImessage(buf);
         si_messages.push_back(newSImessage);
@@ -229,28 +230,28 @@ void ts::AuxiliaryVideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
-    bool aux_is_one_field = buf.getBool();
-    bool next_bool = buf.getBool();
+    const bool aux_is_one_field = buf.getBool();
+    const bool next_bool = buf.getBool();
     buf.skipReservedBits(6);
-    disp << margin << (aux_is_one_field ? "bottom field" : "interlaced") << ": " << UString::TrueFalse(next_bool) << std::endl;
-    disp << margin << "Position offset h: " << int(buf.getUInt8());
+    disp << margin << (aux_is_one_field ? "Bottom field" : "Interlaced") << ": " << UString::TrueFalse(next_bool);
+    disp << ", position offset h: " << int(buf.getUInt8());
     disp << ", v: " << int(buf.getUInt8()) << std::endl;
 }
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::depth_params_type::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
-    uint8_t _nkfar = buf.getUInt8();
-    uint8_t _nknear = buf.getUInt8();
+    const uint8_t _nkfar = buf.getUInt8();
+    const uint8_t _nknear = buf.getUInt8();
     disp << margin
-         << UString::Format(u"kfar: %.5f (numerator=%d), knear: %.5f (numberator=%d)", (double(_nkfar) / 16), _nkfar, (double(_nknear) / 16), _nknear)
+         << UString::Format(u"kfar: %.5f (numerator=%d), knear: %.5f (numerator=%d)", (double(_nkfar) / 16), _nkfar, (double(_nknear) / 16), _nknear)
          << std::endl;
 }
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::parallax_params_type::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     disp << margin << "Parallax zero: " << buf.getUInt16();
-    disp << ", scale: " << buf.getUInt16() << std::endl;
-    disp << margin << "wref: " << buf.getUInt16() << "cm, dref: ";
+    disp << ", scale: " << buf.getUInt16();
+    disp << ", wref: " << buf.getUInt16() << "cm, dref: ";
     disp << buf.getUInt16() << "cm" << std::endl;
 }
 
@@ -258,8 +259,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::display(TablesDisplay&
 {
     si_message_type::iso23002_2_value_coding p_type(buf);
     si_message_type::iso23002_2_value_coding p_size(buf);
-    disp << margin << "SI Message, type: " << p_type.value() << ", size: " << p_size.value();
-    disp << std::endl;
+    disp << margin << UString::Format(u"SI Message, type: 0x%x", p_type.value()) << ", size: " << p_size.value() << std::endl;
     if ((p_type.value() == 0) || (p_type.value() == 1)) {
         si_message_type::generic_params_type gp;
         gp.display(disp, buf, margin + u" ");
@@ -280,7 +280,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::display(TablesDisplay&
 void ts::AuxiliaryVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Auxiliary video code stream type: %n",  buf.getUInt8() ) << std::endl;
+        disp << margin << UString::Format(u"Auxiliary video coded stream type: 0x%x", buf.getUInt8()) << std::endl;
         while (buf.canReadBytes(2)) {
             si_message_type d;
             d.display(disp, buf, margin);
@@ -292,13 +292,6 @@ void ts::AuxiliaryVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, 
 //----------------------------------------------------------------------------
 // XML serialization
 //----------------------------------------------------------------------------
-
-void ts::AuxiliaryVideoStreamDescriptor::si_message_type::iso23002_2_value_coding::toXML(xml::Element* root) const
-{
-    ts::ByteBlock bb(numFF_bytes, 0xFF);
-    bb.append(last_byte);
-    root->addHexaText(bb);
-}
 
 void ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::toXML(xml::Element* root) const
 {
@@ -337,7 +330,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::toXML(xml::Element* ro
     }
     else if (payload_type.value() == 1) {
         if (parallax_params.has_value()) {
-            parallax_params.value().toXML(root->addElement(u"parallax_parameters"));
+            parallax_params.value().toXML(root->addElement(u"parallax_params"));
         }
     }
     else {
@@ -349,7 +342,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::toXML(xml::Element* ro
 
 void ts::AuxiliaryVideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntAttribute(u"aux_video_codestreamtype", aux_video_codestreamtype, true);
+    root->setIntAttribute(u"aux_video_codedstreamtype", aux_video_codedstreamtype, true);
     for (const auto& m : si_messages) {
         m.toXML(root->addElement(u"si_message"));
     }
@@ -359,39 +352,6 @@ void ts::AuxiliaryVideoStreamDescriptor::buildXML(DuckContext& duck, xml::Elemen
 //----------------------------------------------------------------------------
 // XML deserialization
 //----------------------------------------------------------------------------
-
-bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::iso23002_2_value_coding::fromXML(const xml::Element* element, const UString& parent_name)
-{
-    ByteBlock block;
-    bool ok = element->getHexaText(block, 1);
-    if (!ok) {
-        return ok;
-    }
-    if (block.size() == 1) {
-        numFF_bytes = 0;
-        last_byte = block[0];
-    }
-    else {
-        if (block[block.size() - 1] == 0xFF) {
-            element->report().error(u"last byte of <%s> cannot be 0xFF in <%s>, line %d", element->name(), parent_name, element->lineNumber());
-            ok = false;
-        }
-        else {
-            numFF_bytes = 0;
-            for (size_t i = 0; i < block.size() - 1; i++) {
-                if (block[i] == 0xFF) {
-                    numFF_bytes++;
-                }
-                else {
-                    element->report().error(u"leading bytes of <%s> must be 0xFF in <%s>, line %d", element->name(), parent_name, element->lineNumber());
-                    ok = false;
-                }
-            }
-            last_byte = block[block.size() - 1];
-        }
-    }
-    return ok;
-}
 
 bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::generic_params_type::fromXML(const xml::Element* element)
 {
@@ -501,7 +461,7 @@ bool ts::AuxiliaryVideoStreamDescriptor::si_message_type::fromXML(const xml::Ele
 bool ts::AuxiliaryVideoStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     ts::xml::ElementVector si_msgs;
-    bool ok = element->getIntAttribute(aux_video_codestreamtype, u"aux_video_codestreamtype", true) &&
+    bool ok = element->getIntAttribute(aux_video_codedstreamtype, u"aux_video_codedstreamtype", true) &&
               element->getChildren(si_msgs, u"si_message", 1);
     if (ok) {
         for (size_t i = 0; i < si_msgs.size(); i++) {

@@ -2,7 +2,7 @@
 <tsduck>
   <_descriptors>
 
-    <auxiliary_video_stream_descriptor aux_video_codestreamtype="uint8, required">
+    <auxiliary_video_stream_descriptor aux_video_codedstreamtype="uint8, required">
       <si_message payload_type="uint32, required">
         <generic_params
           aux_is_bottom_field="bool, optional"
