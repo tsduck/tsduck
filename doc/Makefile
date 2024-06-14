@@ -148,13 +148,11 @@ DEVGUIDE_INPUTS = $(wildcard $(DEVDOCDIR)/*.adoc) \
 
 $(DEVDOCDIR)/.all.tables.adoc: $(wildcard $(LIBTSDUCKDIR)/dtv/tables/*.cpp $(LIBTSDUCKDIR)/dtv/tables/*/*.cpp)
 	$(call LOG,[GEN] $@) \
-	echo "// Automatically generated file, do not edit" >$@; \
-	$(PYTHON) $(DEVDOCDIR)/build-sigref.py tables >>$@
+	$(PYTHON) $(DEVDOCDIR)/build-sigref.py tables "$@"
 
 $(DEVDOCDIR)/.all.descriptors.adoc: $(wildcard $(LIBTSDUCKDIR)/dtv/descriptors/*.cpp $(LIBTSDUCKDIR)/dtv/descriptors/*/*.cpp)
 	$(call LOG,[GEN] $@) \
-	echo "// Automatically generated file, do not edit" >$@; \
-	$(PYTHON) $(DEVDOCDIR)/build-sigref.py descriptors >>$@
+	$(PYTHON) $(DEVDOCDIR)/build-sigref.py descriptors "$@"
 
 $(BINDOC)/tsduck-dev.html: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_HTML)
 	$(call LOG,[ASCIIDOC] $@) \
