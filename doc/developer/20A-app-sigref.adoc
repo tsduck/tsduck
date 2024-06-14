@@ -1,0 +1,38 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-sigref]
+[appendix]
+== PSI/SI Signalization Reference
+
+All signalization tables and descriptors which are supported by TSDuck are
+documented in the TSDuck user's guide, appendix D "PSI/SI XML Reference Model".
+
+=== PSI/SI tables
+
+The table below summarize all available PSI/SI tables in TSDuck and
+the reference of the standard which specifies them.
+
+[cols="<1m,<1m,<1",stripes=none,options="autowidth"]
+|===
+|XML name |{cpp} class |Defining document
+
+include::.all.tables.adoc[]
+|===
+
+=== PSI/SI descriptors
+
+The table below summarize all available PSI/SI desciptors in TSDuck and
+the reference of the standard which specifies them.
+
+[cols="<1m,<1m,<1",stripes=none,options="autowidth"]
+|===
+|XML name |{cpp} class |Defining document
+
+include::.all.descriptors.adoc[]
+|===

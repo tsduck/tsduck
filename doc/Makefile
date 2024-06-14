@@ -143,7 +143,16 @@ open-devguide-pdf: $(BINDOC)/tsduck-dev.pdf
 
 # Documentation generation.
 
-DEVGUIDE_INPUTS = $(wildcard $(DEVDOCDIR)/*.adoc)
+DEVGUIDE_INPUTS = $(wildcard $(DEVDOCDIR)/*.adoc) \
+    $(DEVDOCDIR)/.all.tables.adoc $(DEVDOCDIR)/.all.descriptors.adoc
+
+$(DEVDOCDIR)/.all.tables.adoc: $(wildcard $(LIBTSDUCKDIR)/dtv/tables/*.cpp $(LIBTSDUCKDIR)/dtv/tables/*/*.cpp)
+	$(call LOG,[GEN] $@) \
+	$(PYTHON) $(DEVDOCDIR)/build-sigref.py tables "$@"
+
+$(DEVDOCDIR)/.all.descriptors.adoc: $(wildcard $(LIBTSDUCKDIR)/dtv/descriptors/*.cpp $(LIBTSDUCKDIR)/dtv/descriptors/*/*.cpp)
+	$(call LOG,[GEN] $@) \
+	$(PYTHON) $(DEVDOCDIR)/build-sigref.py descriptors "$@"
 
 $(BINDOC)/tsduck-dev.html: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_HTML)
 	$(call LOG,[ASCIIDOC] $@) \
