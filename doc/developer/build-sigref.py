@@ -14,11 +14,12 @@ import sys, os, re, glob
 
 # Need a src/libtsduck/dtv subdirectory as parameter.
 if len(sys.argv) < 2:
-    print("syntax: %s dtv-subdirectory" % sys.argv[0], file=sys.stderr)
+    print("syntax: %s dtv-subdirectory [output-file]" % sys.argv[0], file=sys.stderr)
     exit(1)
 
 src_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + os.sep + 'src'
 sig_dir = src_dir + os.sep + 'libtsduck' + os.sep + 'dtv' + os.sep + sys.argv[1]
+out_file = sys.argv[2] if len(sys.argv) >= 3 else None
 
 if not os.path.isdir(sig_dir):
     print("%s: directory %s not found" % (sys.argv[0], sig_dir), file=sys.stderr)
@@ -55,10 +56,18 @@ for header in glob.glob(sig_dir + os.sep + '**' + os.sep + 'ts*.h', recursive=Tr
                         lines.append((xml, classname, doc))
                         break
 
+# Write the line in output file.
+def write_table(out, lines):
+    for l in lines:
+        print('|%s' % l[0], file=out)
+        print('|%s' % l[1], file=out)
+        print('|%s' % l[2], file=out)
+        print('', file=out)
+
 # Sort the lines and display them.
 lines = sorted(lines, key=lambda tup: tup[0].lower())
-for l in lines:
-    print('|%s' % l[0])
-    print('|%s' % l[1])
-    print('|%s' % l[2])
-    print('')
+if out_file is None:
+    write_table(sys.stdout, lines)
+else:
+    with open(out_file, 'w', encoding='utf-8') as out:
+        write_table(out, lines)
