@@ -316,7 +316,7 @@ Undocumented elements are reported.
 
 [.compact-list]
 * On UNIX systems (Linux, macOS, BSD), run `make doxygen`.
-* On Windows systems, run the PowerShell script `doc\build-doxygen.ps1`.
+* On Windows systems, run the PowerShell script `doc\doxy\build-doxygen.ps1`.
 
 In the initial descriptor of your {cpp}, make sure it is properly identified with the right group and standard.
 For instance:

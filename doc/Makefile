@@ -14,15 +14,14 @@ include ../Makefile.inc
 default: docs doxygen
 docs: userguide devguide
 doxygen:
-	./build-doxygen.sh $(DOXYFLAGS)
+	doxy/build-doxygen.sh $(DOXYFLAGS)
 
 # Input directories.
 
 IMAGESDIR  = $(ROOTDIR)/images
 DOCROOT    = $(ROOTDIR)/doc
-CSSDIR     = $(DOCROOT)/css
+ADOCDIR    = $(DOCROOT)/adoc
 TOCBOTDIR  = $(DOCROOT)/tocbot
-THEMESDIR  = $(DOCROOT)/themes
 USERDOCDIR = $(DOCROOT)/user
 DEVDOCDIR  = $(DOCROOT)/developer
 
@@ -33,9 +32,9 @@ BINDOCINFO = $(BINROOT)/docinfo
 
 # Common themes.
 
-CSSFILE    = $(CSSDIR)/tsduck.css
+CSSFILE    = $(ADOCDIR)/tsduck.css
 THEME      = tsduck
-THEMEFILE  = $(THEMESDIR)/$(THEME)-theme.yml
+THEMEFILE  = $(ADOCDIR)/$(THEME)-theme.yml
 ROUGE_HTML = thankful_eyes
 ROUGE_PDF  = github
 
@@ -46,16 +45,17 @@ ASCIIDOCTOR_PDF = asciidoctor-pdf
 
 # Documentation generation flags.
 
-ADOCFLAGS      = -v -a revnumber="$(shell $(GET_VERSION))" -a imagesdir="$(IMAGESDIR)" -a revdate="$(shell $(DATE) '+%B %Y')"
+ADOCFLAGS      = -v -a imagesdir="$(IMAGESDIR)" -a includedir="$(ADOCDIR)" \
+                 -a revnumber="$(shell $(GET_VERSION))" -a revdate="$(shell $(DATE) '+%B %Y')"
 ADOCFLAGS_HTML = $(ADOCFLAGS) -a stylesheet="$(CSSFILE)" -a rouge-style="$(ROUGE_HTML)" \
                  -a data-uri -a docinfo=shared -a docinfodir="$(BINDOCINFO)"
-ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(THEMESDIR)" -a pdf-theme="$(THEME)" -a rouge-style="$(ROUGE_PDF)"
+ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(ADOCDIR)" -a pdf-theme="$(THEME)" -a rouge-style="$(ROUGE_PDF)"
 
 # Common input files for asciidoctor document.
 # Not really all .png images are used, but the exact list may vary while the documents are edited.
 # So, better rebuild if an image was added or updated.
 
-COMMON_INPUTS      = attributes.adoc $(wildcard $(IMAGESDIR)/*.png)
+COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(wildcard $(IMAGESDIR)/*.png)
 COMMON_INPUTS_HTML = $(COMMON_INPUTS) $(CSSFILE) $(BINDOCINFO)/docinfo.html $(BINDOCINFO)/docinfo-footer.html
 COMMON_INPUTS_PDF  = $(COMMON_INPUTS) $(THEMEFILE)
 

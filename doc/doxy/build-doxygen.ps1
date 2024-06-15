@@ -44,7 +44,7 @@ param(
 )
 
 # Get the project directories.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
+$RootDir = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 $SrcDir = "$RootDir\src"
 $DoxyFile = "$PSScriptRoot\Doxyfile"
 
@@ -96,9 +96,6 @@ if ($DoxyExe) {
         [void](New-Item -Path $DoxyDir -ItemType Directory -Force)
     }
     $DoxyDir = (Resolve-Path $DoxyDir)
-
-    # Generate a summary file of all signalization.
-    python "$SrcDir\doc\signalization-gen.py"
 
     # Generate documentation.
     Write-Host "Running Doxygen..."

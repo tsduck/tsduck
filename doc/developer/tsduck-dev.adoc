@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 = TSDuck Developer's Guide
 :description: TSDuck Developer's Guide
-include::../attributes.adoc[]
+include::{includedir}/attributes.adoc[]
 
 include::000-preface.adoc[]
 include::101-chap-build.adoc[]

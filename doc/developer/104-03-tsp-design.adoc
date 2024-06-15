@@ -45,7 +45,7 @@ plugin thread is defined by the index of its first packet (`_pkt_first`) and its
 packets (`_pkt_cnt`).
 
 .Flat (non-circular) view of the buffer:
-image::tspbuffer.png[align="center",alt="tsp packet buffer"]
+image::tspbuffer.png[align="center",alt="tsp packet buffer",width=500]
 
 When a thread terminates the processing of a bunch of packets, it moves up its first index and,
 consequently, decreases the size of its own area and accordingly increases the size

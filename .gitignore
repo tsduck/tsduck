@@ -20,7 +20,6 @@ Debug-*
 *.deb
 *.dep
 *.dll
-doxy
 .DS_Store
 *.dylib
 *.exe

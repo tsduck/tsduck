@@ -1,1 +1,0 @@
-### PDF theme for Asciidoc
