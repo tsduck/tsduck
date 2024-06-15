@@ -1,0 +1,83 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#pdevdesign]
+=== TSP design
+
+This section is a brief description of the design and internals of `tsp`.
+It contains some reference information for `tsp` maintainers.
+
+`tsp` is designed to clearly separate the technical aspects of the buffer management
+and dynamics of a chain of plugins from the specialized plugin processing
+(TS input, TS output, packet processing).
+
+[#pdevexec]
+==== Plugin Executors
+
+Each plugin executes in a separate thread.
+The base class for all plugin threads is `ts::tsp::PluginExecutor`.
+Derived classes are used for input, output and packet processing plugins.
+
+[#pdevbuffer]
+==== Transport packets buffer
+
+There is a global buffer for TS packets. Its structure is optimized for best performance.
+
+The input thread writes incoming packets in the buffer.
+All packet processors update the packets and the output thread picks them at the same place.
+No packet is copied or moved in memory.
+
+The buffer is an array of `ts::TSPacket`.
+It is a memory-resident buffer, locked in physical memory to avoid virtual memory paging
+(see class `ts::ResidentBuffer`).
+
+The buffer is managed in a circular way.
+It is divided into logical areas, one per plugin thread (including input and output).
+These logical areas are sliding windows which move when packets are processed.
+
+Inside a `ts::tsp::PluginExecutor` object, the sliding window which is currently assigned to the
+plugin thread is defined by the index of its first packet (`_pkt_first`) and its size in
+packets (`_pkt_cnt`).
+
+.Flat (non-circular) view of the buffer:
+image::tspbuffer.png[align="center",alt="tsp packet buffer"]
+
+When a thread terminates the processing of a bunch of packets, it moves up its first index and,
+consequently, decreases the size of its own area and accordingly increases the size
+of the area of the next plugin.
+
+The modification of the starting index and size of any area must be performed under the
+protection of a mutex. There is one global mutex for simplicity. The resulting bottleneck
+is not so important since updating a few pointers is fast.
+
+When the sliding window of a plugin is empty, the plugin thread sleeps on its `_to_do` condition variable.
+Consequently, when a thread passes packets to the next plugin
+(ie. increases the size of the sliding window of the next plugin),
+it must notify the `_to_do` condition variable of the next thread.
+
+When a packet processor decides to drop a packet, the synchronization byte
+(first byte of the packet, normally 0x47) is reset to zero.
+When a packet processor or the output executor encounters a packet starting with a zero byte, it ignores it.
+Note that this is transparent to the plugin code in the shared library.
+The check is performed by the `ts::tsp::ProcessorExecutor` and `ts::tsp::OutputExecutor` objects.
+When a packet is marked as dropped, the plugin is not invoked.
+
+All `ts::tsp::PluginExecutor` are chained in a ring.
+The first one is input and the last one is output.
+The output points back to the input so that
+the output executor can easily pass free packets to be reused by the input executor.
+
+The `_input_end` flag indicates that there is no more packet to process after those in
+the plugin's area. This condition is signaled by the previous plugin in the chain.
+All plugins, except the output plugin, may signal this condition to their successor.
+
+The `_aborted flag` indicates that the current plugin has encountered an error and has
+ceased to accept packets. This condition is checked by the previous plugin in the chain
+(which, in turn, will declare itself as aborted). All plugins, except the input plugin
+may signal this condition. In case of error, all plugins should also declare
+an `_input_end` to their successor.
