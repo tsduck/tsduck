@@ -54,7 +54,7 @@ Defined by MPEG in <<ISO-13818-1>>.
 
 [source,xml]
 ----
-<auxiliary_video_stream_descriptor aux_video_codestreamtype="uint8, required">
+<auxiliary_video_stream_descriptor aux_video_codedstreamtype="uint8, required">
 
   <si_message payload_type="uint32, required">
     <generic_params
@@ -926,7 +926,7 @@ Defined by MPEG in <<ISO-13818-1>>.
 
     <!-- 1 to 16 preset conditions -->
     <PresetConditions
-      groupPresetGroupID="uint7, required"
+      groupPresetReferenceID="uint7, required"
       groupPresetDisableGainInteractivity="bool,
           required in groupPresetConditionOnOff=true group"
       groupPresetDisablePositionInteractivity="bool,

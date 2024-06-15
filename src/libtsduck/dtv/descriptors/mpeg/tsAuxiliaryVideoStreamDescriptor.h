@@ -111,7 +111,10 @@ namespace ts {
                 //!
                 generic_params_type(PSIBuffer& buf) : generic_params_type() { deserialize(buf); }
 
-                //! return the size, in bytes, of this generic_parameters() structure
+                //!
+                //! Get the size, in bytes, of this generic_parameters() structure
+                //! @return Size, in bytes, of this generic_parameters() structure
+                //!
                 uint32_t get_size() const { return 3; }
 
                 //! @cond nodoxygen
@@ -147,7 +150,10 @@ namespace ts {
                 //!
                 depth_params_type(PSIBuffer& buf) { deserialize(buf); }
 
-                //! return the size, in bytes, of this depth_parameters() structure
+                //!
+                //! Get the size, in bytes, of this depth_parameters() structure
+                //! @return Size, in bytes, of this depth_parameters() structure
+                //!
                 uint32_t get_size() const { return 2; }
 
                 //! @cond nodoxygen
@@ -181,7 +187,10 @@ namespace ts {
                 //!
                 parallax_params_type(PSIBuffer& buf) { deserialize(buf); }
 
-                //! return the size, in bytes, of this parallax_parameters() structure
+                //!
+                //! Get the size, in bytes, of this parallax_parameters() structure
+                //! @return Size, in bytes, of this parallax_parameters() structure
+                //!
                 uint32_t get_size() const { return 8; }
 
                 //! @cond nodoxygen
@@ -211,7 +220,10 @@ namespace ts {
             //!
             si_message_type(PSIBuffer& buf) : si_message_type() { deserialize(buf); }
 
-            //! return the size, in bytes, of this SI message
+            //!
+            //! Get the size, in bytes, of this SI message
+            //! @return Size, in bytes, of this SI message
+            //!
             uint32_t get_message_size() const;
 
             //! @cond nodoxygen
