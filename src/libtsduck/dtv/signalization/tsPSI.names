@@ -775,7 +775,6 @@ Bits = 8
 # Descriptors are defined by the UHD World Association.
 0x63757676_F3 = HDR Vivid Video
 
-
 [MPEGExtendedDescriptorId]
 Bits = 8
 0x02 = Object Descriptor Update

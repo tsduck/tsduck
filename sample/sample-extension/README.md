@@ -1,3 +1,5 @@
+# Sample TSDuck extension
+
 This directory contains a complete sample third-party TSDuck extension.
 
 This extension, imaginatively named "foo", illustrates all possibilities of

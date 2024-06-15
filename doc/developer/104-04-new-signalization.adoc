@@ -1,0 +1,422 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#addpsi]
+=== Adding PSI/SI tables or descriptors
+
+Adding support for new PSI/SI tables or descriptors is a welcome contribution to TSDuck.
+Users from various continents, using different standards, or participating in standardization processes,
+are in the best position to implement new tables or descriptors.
+
+We recommend to release these contributions in open source, as part of the TSDuck project.
+
+This section summarizes the main steps when implementing new tables or descriptors.
+
+See xref:chap-contribution[xrefstyle=short] for more details on the contribution process.
+
+==== Code base selection
+
+The main recommendation to start with: do not develop a new table or descriptor from scratch.
+Use an existing and proven one as code base and adapt to your new structure.
+
+Identify the right existing structure as code base, use some of these criteria:
+
+* Short single-section table vs. long multi-section table.
+* Flat vs. structured section, with descriptors or not, including substructures with descriptors (e.g. PMT).
+* Use of strings, DVB strings, ATSC strings, ISDB strings.
+* Public descriptor, DVB private descriptor, table-specific descriptor.
+
+Because the number of possible descriptor _tags_ (a.k.a. descriptor ids) is limited to 256 values,
+there is no room for all possible descriptors.
+For this reason, the various standard organizations use tricks.
+
+[.usage]
+Extended descriptors
+
+MPEG and DVB separately define the concept of _extended descriptor_.
+Because of the shortage of descriptor ids, each of the two standards have defined an _extended_descriptor_.
+This descriptor is a generic envelope for specialized descriptors.
+
+The first byte of the descriptor payload is an _extended_descriptor_id_ which defines the actual descriptor.
+TSDuck does not use any specific type for the generic _extended_descriptor_.
+Instead, there is a distinct type for each form of _extended_descriptor_.
+Each of them has its own XML element and {cpp}, just like any other descriptor.
+The extended descriptor mechanism is only considered as a binary serialization detail,
+not a different type of descriptor.
+
+If you have to implement a MPEG-defined extended descriptor,
+you may use the _HEVC_timing_and_HRD_descriptor_ as code base.
+
+If you have to implement a DVB-defined extended descriptor,
+you may use the _supplementary_audio_descriptor_ as code base.
+
+[.usage]
+Table-specific descriptors
+
+So-called _table-specific descriptors_ are specific descriptors which exist only in the context of a couple of specific tables.
+They usually re-use the tag of a standard descriptor, typically in the MPEG-defined range.
+Of course, it is assumed that the standard descriptor, the tag of which has been hijacked,
+will never be used in those specific tables to avoid ambiguities.
+
+Let's take an example, the _target_IP_address_descriptor_.
+This is a DVB-defined descriptor which can be used only inside an INT or a UNT, two DVB-defined tables.
+The _target_IP_address_descriptor_ uses tag 0x09, which is normally used by a MPEG-defined _CA_descriptor_.
+When TSDuck analyzes a descriptor list and encounters a tag 0x09, it usually starts to analyze a _CA_descriptor_,
+except when the table is an INT or a UNT, in which case it analyzes a _target_IP_address_descriptor_.
+
+This situation is supported by TSDuck.
+If you have to implement such a table-specific descriptor, use _target_IP_address_descriptor_ as code base.
+
+==== Affiliation to a standard
+
+Each table or descriptor is defined either by a standard body or an organization, committee or private company.
+Check if other PSI/SI from this organization is already implemented in TSDuck.
+This is important because source files for PSI/SI are organized by standard.
+
+Tables are implemented in the directory `src/libtsduck/dtv/tables`, using one subdirectory per standard.
+The current subdirectories are `atsc`, `dvb`, `isdb`, `mpeg`, `scte`.
+Currently, only renown standard bodies define tables.
+
+Descriptors are implemented in the directory `src/libtsduck/dtv/descriptors`, using one subdirectory per standard.
+The current subdirectories are the same as tables, plus various organizations such as `avs` or `uwa`,
+plus private companies which define private DVB descriptors such as `eacem`, `dtg`, `sky`.
+
+Try to find the right subdirectory for your new structure.
+Create another directory if required.
+
+In that descriptor, you will have to create three or four files (the last is optional).
+For instance, the MPEG-defined _ISO_639_language_descriptor_ is implemented as:
+
+[source,text]
+----
+src/libtsduck/dtv/descriptors/mpeg:
+
+    tsISO639LanguageDescriptor.xml
+    tsISO639LanguageDescriptor.h
+    tsISO639LanguageDescriptor.cpp
+    tsISO639LanguageDescriptor.names
+----
+
+More details follow in the next sections.
+
+==== Declaring identifiers
+
+You table or descriptor must have a 8-bit identifier.
+You need to add it in the TSDuck source code.
+
+Table ids and descriptor ids are defined in file `src/libtsduck/dtv/signalization/tsPSI.h`,
+in enum lists `TID` and `DID`, respectively.
+The ids are grouped by standard, be sure to add it at the right place.
+
+In the case of a table, if that table is expected on some predefined PID, also add this PID
+in file `src/libtsduck/dtv/transport/tsTS.h`, in the enum list `PID`.
+
+In the case of a private DVB descriptor, your descriptor is valid only after a _private_data_specifier_descriptor_
+which contains the _private_data_specifier_ (PDS) of the organization which defines the descriptor.
+Check if that PDS value is present in file `src/libtsduck/dtv/signalization/tsPSI.h`, in enum list `PDS`.
+Add it if not present.
+
+For TSDuck to display meaningful identifiers, the source tree contains _names files_, with a `.names` extensions.
+These files associate a unique value with a name.
+There are several sections (for PID, TID, DID, for instance).
+In each section, a value can be present only once and values must be declared in ascending order.
+
+Add the table or descriptor name in the file `src/libtsduck/dtv/signalization/tsPSI.names`,
+in sections `TableId` or `DescriptorId`, respectively.
+Carefully read the comments at the beginning of each section.
+It explains the encoding of each unique value.
+
+For table ids, the value includes the standard and the optional _CAS_id_ (useful for ECM and EMM only).
+
+For descriptor ids, the value includes the PDS for private descriptors or the _table_id_ for table-specific descriptors.
+Note that, for historical reasons, ATSC and ISDB descriptors are encoded with a "fake" dedicated PDS.
+
+If you have added a new PDS value, add its name in the `PrivateDataSpecifier` section of `tsPSI.names`.
+
+If you implement a MPEG-defined or DVB-defined extended descriptor, add the corresponding
+_extended_descriptor_id_ in `src/libtsduck/dtv/signalization/tsPSI.h`,
+in enum lists with `MPEG_EDID_` and `EDID_` symbols.
+
+Also add the corresponding name in `src/libtsduck/dtv/signalization/tsPSI.names`,
+in sections `MPEGExtendedDescriptorId` or `DVBExtendedDescriptorId`, respectively.
+
+==== XML definition
+
+You must define an XML representation for your table or descriptor in a `.xml` file.
+Use the selected code base as reference.
+
+This XML file is an _XML model file_, as defined in the TSDuck User's Guide.
+
+A table shall be defined as one XML element inside the following envelope:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+    <my_table_name ...>
+      <_any in="_metadata"/>
+      ...
+    </my_table_name>
+  </_tables>
+</tsduck>
+----
+
+Note the mandatory `<_any in="_metadata"/>`.
+
+A descriptor shall be defined as one XML element inside the following envelope:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+    <my_descriptor ...>
+      ...
+    </my_descriptor>
+  </_descriptors>
+</tsduck>
+----
+
+For attributes and element names, preferably use the exact same names as defined in the standard
+for your table or descriptor.
+
+Do not blindly copy the binary structure in the XML description.
+Define an XML equivalent representation.
+
+For instance, a common pattern for optional fields in binary structures is to define a one-bit _foo_flag_
+and a subsequent optional _foo_ field. The _foo_ field is typically present only when _foo_flag_ is 1.
+Do not define _foo_flag_ in the XML structure.
+Just define a _foo_ attribute and document it as optional.
+
+The template value of XML attributes is a short informal type declaration.
+For integer values, always start the description string with `uint__N__` or `int__N__`,
+when _N_ is the size in bits of the binary field.
+This `uint__N__` or `int__N__` is used by the automatic XML-to-JSON translation
+to generate a JSON number instead of a JSON string.
+
+Your `.xml` file will be automatically grabbed by the TSDuck build system and integrated
+into the final configuration files.
+
+==== {cpp} class
+
+The {cpp} header (`.h`) and body (`.cpp`) files for the table or descriptor class are mandatory.
+Start with the selected code base and carefully replace the structure names.
+
+In the `.cpp` file, there is a fundamental macro:
+`TS_REGISTER_TABLE()` for tables and `TS_REGISTER_DESCRIPTOR()` for descriptors.
+This is a {cpp} trick which automatically registers your structure in the PSI/SI repository
+during the initialization of the module.
+If you omit this macro, your table will not be recognized.
+
+The registration macro may take various forms depending on the type of structure
+(standard descriptor, table-specific descriptor, extended descriptor, etc.)
+Be careful to select a code base with the same characteristics in order to copy the same type of registration.
+
+==== Names file
+
+If necessary, you may provide a `.names` file.
+This is useful when a field of your structure can get distinct values with distinct meanings.
+When displaying a structure, it is more convenient for the user to get a meaningful name
+rather than a value.
+
+A `.names` file is organized in several sections.
+By convention, use section names which start with the XML name of your structure, followed by a dot.
+
+Example of the file `tsISO639LanguageDescriptor.names`, for the _ISO_639_language_descriptor_:
+
+[source,test]
+----
+[ISO_639_language_descriptor.audio_type]
+Bits = 8
+0x00 = undefined
+0x01 = clean effects
+0x02 = hearing impaired
+0x03 = visual impaired commentary
+----
+
+In the {cpp} source file, use the inherited static method `DataName()` to retrieve
+a meaningful name, with optional formatting of the value before or after the name.
+
+Example of the file `tsISO639LanguageDescriptor.cpp`:
+
+[source,c++]
+----
+void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+{
+    ...
+    disp << ", Type: " << DataName(MY_XML_NAME, u"audio_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+----
+
+Your `.names` file will be automatically grabbed by the TSDuck build system and integrated
+into the final configuration files.
+
+==== Documentation
+
+Your new table or descriptor shall be documented in two ways:
+
+[.compact-list]
+1. The XML structure is documented in the TSDuck User's Guide (asciidoc format).
+2. The {cpp} class is documented in the TSDuck Programming Reference (doxygen format).
+
+===== User's guide
+
+The user's guide must be manually updated.
+
+The asciidoc files (`.adoc`) for the PSI/SI XML structures are in the directory tree `doc/user/si-xml`.
+Just like the source files, there is one subdirectory per standard.
+In each subdirectory, there is one single `.adoc` file for all tables
+and one single `.adoc` file for all descriptors.
+
+Edit or create the corresponding file.
+If you create a new file, add an include directive in the file `doc/user/20D-app-si-xml.adoc`.
+
+Some guidelines:
+
+[.compact-list]
+* In each file, keep tables and descriptors organized in alphabetical order.
+* Copy the surrounding asciidoc syntax from other existing tables or descriptors.
+* Remove the enclosing `<tsduck>`, `<_tables>`, `<_descriptors>` structures, just keep your structure.
+* In tables, remove the `<_any in="_metadata"/>`. It is meaningless for the user.
+* Add any comment or formatting which makes the result more informative to the user.
+
+At the beginning to the section, add a reference to the defining standard, for instance:
+
+[source,adoc]
+----
+Defined by MPEG in <<ISO-13818-1>>.
+----
+
+The reference between `<<` and `>>` must be a valid one from the bibliography in
+file `doc/user/20F-app-references.adoc`, for instance:
+
+[source,adoc]
+----
+* [[[ISO-13818-1]]] ISO/IEC 13818-1:2018 | ITU-T Recommendation H.222 (2017):
+  "Generic coding of moving pictures and associated audio information: Systems" (also known as "MPEG-2 System Layer").
+----
+
+If the reference does not exist yet in the bibliography, add it.
+Keep the references sorted in alphabetical order.
+
+===== Programming reference
+
+All public structures and fields in the {cpp} header file must be documented using Doxygen tags.
+See examples in existing structure.
+This is the way your structure will become documented in the programming reference.
+
+No public element shall be left undocumented.
+To verify this, generate the documentation and check any error.
+Undocumented elements are reported.
+
+[.compact-list]
+* On UNIX systems (Linux, macOS, BSD), run `make doxygen`.
+* On Windows systems, run the PowerShell script `doc\build-doxygen.ps1`.
+
+In the initial descriptor of your {cpp}, make sure it is properly identified with the right group and standard.
+For instance:
+
+[source,c++]
+----
+//!
+//! Representation of a Program Association Table (PAT).
+//! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.3
+//! @ingroup table
+//!
+----
+
+or:
+
+[source,c++]
+----
+//!
+//! Representation of an ISO_639_language_descriptor
+//! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.18.
+//! @ingroup descriptor
+//!
+----
+
+The directive `@ingroup` is used by Doxygen to assign the class in the right group.
+
+The directive `@see` is important in three ways.
+
+[.compact-list]
+1. It is included in the Doxygen documentation.
+2. It helps the future maintainers of the code to find the right documentation and directly the section number where to look.
+3. It is also used in the automatic generation of the xref:chap-sigref[xrefstyle=short] of this document.
+
+==== Tests
+
+There are lots of traps and pitfalls in the coding of a table or descriptor.
+It is crucial to test it thoroughly.
+
+First, become familiar with the TSDuck test suite as described in xref:testtools[xrefstyle=short].
+
+Once you have cloned your forked versions of the two repositories, `tsduck` and `tsduck-test`,
+side by side in the same parent directory, you can implement a test for your table or descriptor.
+
+This kind of test is standardized.
+The idea is to start from an XML file containing several samples of your table or descriptor.
+Then, invoke the common script `standard-si-test.sh`.
+
+This standard test compiles the XML file in binary, decompiles it to generate XML and JSON,
+recompiles the output, inject the tables in a transport stream, extract them in text form, etc.
+All intermediate results are kept as reference.
+
+This kind of test is interesting in two ways. First, during the initial test, after development,
+it is a good tool to debug the serialization, deserialization, binary and XML. Second, the
+reference outputs will track any future regression.
+
+For instance, the test 027 is the reference test for SCTE 35 tables and descriptors.
+All tested structures are in the file `tsduck-test/input/test-027.xml`.
+The test script `tsduck-test/tests/test-027.sh` is very simple:
+
+[source,shell]
+----
+#!/usr/bin/env bash
+source $(dirname $0)/../common/testrc.sh
+test_cleanup "$SCRIPT.*"
+source "$COMMONDIR"/standard-si-test.sh $SCRIPT.xml
+----
+
+NOTE: In practice, _all_ test scripts for that kind of PSI/SI test are identical.
+Only the input `.xml` file changes.
+
+If your table or descriptor belongs to a set of structures which are already tested in an existing test,
+you may simply add your tested XML definitions in the existing test and update its reference output.
+
+Otherwise, especially if you plan to implement several structures, you may create a new test.
+Just use existing tests with `standard-si-test.sh` as a starting point.
+
+Pay attention to the XML structures you want to test.
+Keep in mind that you test one given structure in all possible ways, regardless of real applications.
+Your tested structures do not need to carry meaningful values.
+You test the _syntax_ of your table or descriptor, not its _semantics_.
+You just want to test code, nothing else.
+
+Here are some guidelines:
+
+* If you test a descriptor, your don't care about which table it is in.
+  Use a `<CAT>` for instance, a table which only contains descriptors and nothing else.
+* If you test a table which contains descriptors, use any kind of simple descriptors,
+  _ISO_639_language_descriptor_ for instance. You do not care if such a descriptor does
+  not make sense in your table.
+* If you test a table which contains descriptors, test each descriptor list with zero, one, two descriptors.
+* Test optional fields in structures where they are present and in other structures where
+  they are omitted.
+* More generally, when your code takes different steps or branches in the presence of different
+  forms of input, test all possible forms of input.
+* Test adjacent fields with different values. If two flags are in consecutive bits in
+  the binary structure, test once with a `true`/`false` combination and once with a
+  `false`/ `true` combination.
+* Use integer values which use the full width of a binary field to detect incorrect
+  truncation or size errors. For instance, in a `uint32` field, use value 0xDEADBEEF,
+  for instance, not 0 or 1.
+
+When the result is satisfactory, submit a pull request for each repository, `tsduck` and `tsduck-test`.
+See xref:contributor[xrefstyle=short] for more details on that.
