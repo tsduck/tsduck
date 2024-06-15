@@ -14,10 +14,276 @@
 
 TBS
 
+//----------------------------------------------------------------------------
+[#automation]
 === Automation
+//----------------------------------------------------------------------------
 
-TBS
+TSDuck is a free open-source project which is maintained on spare time by very few developers
+(only one at the time of this writing).
+As a consequence, the maintenance of the project is driven by the lack of time and resource.
+To face these constraints, automation is essential.
 
+This is briefly explained in https://tsduck.io/download/docs/tsduck-project.pdf[this presentation].
+
+For future maintainers or contributors, this page lists a few automation procedures which are used by the project.
+
+[#auto_ci]
+==== Continuous integration
+
+Each time a commit or a pull request is pushed to GitHub, the workflow
+`.github/workflows/continuous-integration.yml` is automatically run to verify
+that the project can be built on most supported platforms and contains no regression.
+
+* The workflow is run on Linux Ubuntu, macOS, and Windows (64 and 32 bits).
+* The compilation is done using two revisions of the C++ language: C++17 and C++20.
+* On Linux, the builds are repeated using two compilers, `gcc` and `clang`.
+* In each configuration of platform, compiler and language level:
+** TSDuck is fully built.
+** The unitary tests are run.
+** The full test-suite is downloaded and run.
+** The sample programs are built using a typical TSDuck installation of the binaries which were just built (Linux and macOS only).
+* The documentation is rebuilt: user's guide, developer's guide, programming reference using doxygen.
+  Missing documentation for new features can be found in the log. This is done on Ubuntu only.
+
+[#auto_nightly]
+==== Nightly builds
+
+Every night, if there were any modification in the TSDuck repo during the last day,
+"nightly builds" are automatically produced and published on the https://tsduck.io/download/prerelease/[TSDuck web site].
+No manual action is required, everything is automated.
+
+The workflow `.github/workflows/nightly-build.yml` is automatically run every day at 00:40 UTC.
+
+* On Linux Ubuntu and Windows (64 bits only), the TSDuck binary packages are built
+  for the current state of the master branch in the repository.
+* The produced binaries are installed on the CI/CD system.
+* The full test-suite is downloaded and run.
+* The complete set documentation (user's guide, developer's guide, programming reference)
+  is built and packaged in an archive. If the installed version of doxygen is known
+  to contain bugs in the generation of the TSDuck documentation (many were found),
+  the source code for a known good version of doxygen is downloaded and rebuilt first.
+  This is done to ensure that the documentation is always correct.
+- The Linux Ubuntu binaries, the Windows binaries and the documentation package are
+  published as "artefacts" of the workflow. They are publicly downloadable from
+  https://github.com/tsduck/tsduck/actions/[GitHub].
+
+At the end of the `nightly-build.yml` workflow, when all build jobs are completed,
+the update job triggers a signal on the https://tsduck.io/[TSDuck web site].
+A PHP script is automatically run on the web site to retrieve, download and publish the
+latest https://tsduck.io/download/prerelease/[nighly binaries] and documentation.
+
+[#auto_release]
+==== Release creation
+
+Creating an "official" TSDuck release is relatively easy.
+Although the build time for all binaries can be long, everything is automated and
+run in the background without requiring the maintainer's attention.
+
+Since TSDuck is maintained with little resource and time, there is no product management cycle.
+Thanks to the xref:auto_ci[continuous integration process],
+any state of the repository can be used as a release candidate,
+as long as there is no issue in the CI process and no major development or fix is in progress.
+
+As a rule of thumb, a new release is produced every 3 to 6 months, when enough
+new features or fixes are available, based on the
+https://tsduck.io/download/changelog/[CHANGELOG file].
+
+===== Building the various binaries
+
+Binaries must be built for Windows (64 bits only) and a few major Linux distros
+(Fedora, RedHat, Ubuntu, Debian, and 32-bit Raspian).
+Additional binaries are now built for some Arm64 Linux distros.
+
+The idea is to have a central system (Linux, macOS or Windows) from which the builds are orchestrated.
+The script `pkg/build-remote.sh` can be used to build TSDuck binaries on various remote systems and
+collect the resulting installers.
+
+The remote systems can be physical systems or virtual machines running on the central system.
+When a virtual machines is not active, it is automatically booted,
+the binaries are built and collected, and then the virtual machines is shut down.
+The currently supported hypervisors to managed virtual machines are VirtualBox, VMware and Parallels Desktop (macOS).
+All systems shall be preconfigured so that the central user is authorized to connect on each of them using `ssh`
+without password (use public key authentication, not passwordless accounts!)
+
+The maintainer shall typically have a personal script, outside the repository,
+which calls `build-remote.sh` on all systems.
+
+Typical example of such a script, with one physical remote system (a Raspberry Pi)
+and 5 virtual machines on the local host:
+
+[source,shell]
+----
+$HOME/tsduck/pkg/build-remote.sh --host raspberry
+$HOME/tsduck/pkg/build-remote.sh --host vmfedora --parallels Fedora
+$HOME/tsduck/pkg/build-remote.sh --host vmredhat --parallels RedHat
+$HOME/tsduck/pkg/build-remote.sh --host vmubuntu --parallels Ubuntu
+$HOME/tsduck/pkg/build-remote.sh --host vmdebian --parallels Debian
+$HOME/tsduck/pkg/build-remote.sh --host vmwindows --parallels Windows --windows --directory Documents/tsduck --timeout 20
+----
+
+So, building a release is as simple as running that script.
+After "some time", all binaries and build log files are available in the `pkg/installers` subdirectory.
+
+Be sure to check that all binaries are present.
+Check the log files if some of them are missing.
+
+===== Creating the GitHub release
+
+Once the binary installers are collected, simply run this command to
+create and publish the release on GitHub:
+
+[source,shell]
+----
+$ pkg/github/release.py --create
+----
+
+The current state of the repo on GitHub is used as base for the release.
+A tag is created with the version number.
+The release is created with a explanatory description.
+All binaries are published as assets of that release.
+
+===== Creating the HomeBrew release
+
+The GitHub release contains binaries for Linux and Windows.
+On macOS, TSDuck is distributed through https://brew.sh/[HomeBrew].
+The binaries for all macOS versions, Intel and Arm platforms, are built inside the HomeBrew CI/CD pipeline
+when an updated formula is pushed in a pull request.
+
+After the creation of the release on GitHub, create the pull request
+for the new TSDuck version in HomeBrew using the following command:
+
+[source,shell]
+----
+$ pkg/homebrew/brew-bump-formula-pr.sh -f
+----
+
+The option `-f` forces the creation of the pull request.
+Without it, it works in "dry run" mode.
+It can be safe to start with a dry run, as a test.
+
+When the HomeBrew CI/CD pipeline has finished to process the pull request,
+the new version of TSDuck is available for all flavors of macOS.
+
+NOTE: Recently, TSDuck has been placed by the Homebrew maintainers in the
+https://github.com/Homebrew/homebrew-core/blob/master/.github/autobump.txt["autobump" list of packages].
+The original projects for the 2600+ packages in this list are regularly monitored by a Homebrew workflow.
+Whenever one of these projects publishes a new version, the update of the formula is automatically done.
+Next time a new version of TSDuck is published, it should be worth waiting a couple of days before
+requesting an update using a pull request, to check if a similar pull request is automatically submitted
+by the "autobump" workflow.
+
+===== Updating the version number
+
+Once a release is published, the minor version number of TSDuck `TS_VERSION_MINOR`
+must be updated in the source file `src/libtsduck/tsVersion.h`.
+
+This is currently not automated and shall be manually updated before
+the first commit following the publication of a new release.
+
+[#auto_issues]
+==== Cleanup of long-standing issues
+
+The https://github.com/tsduck/tsduck/issues[issues area on GitHub] is used to report problems,
+ask questions, and support any discussion about TSDuck.
+When an issue is obviously completed, because a complete answer was provided or a fixed is pushed, the issue is closed.
+Sometimes, a plausible response or fix is provided but some feedback is expected from the user to confirm this.
+When a positive feedback is provided, the issue is closed.
+
+However, some users never provide a feedback after their problem is solved.
+In that case, the issue remains open forever.
+
+To solve this, there is a label named "close pending".
+When a plausible response, solution or fix is provided,
+the maintainer of the project sets the "close pending" label on the issue.
+It remains open.
+However, if the issue is not updated in the next 150 days, it will be automatically closed.
+
+This is achieved by the workflow `.github/workflows/cleanup-issues.yml`.
+This workflow is scheduled every week on Sunday at 02:00 UTC.
+It runs the Python script `pkg/github/close-pending.py`
+which automatically closes all issues with label "close pending" and no update within the last 150 days.
+
+//----------------------------------------------------------------------------
+[#pdevdesign]
+=== TSP design
+//----------------------------------------------------------------------------
+
+This section is a brief description of the design and internals of `tsp`.
+It contains some reference information for `tsp` maintainers.
+
+`tsp` is designed to clearly separate the technical aspects of the buffer management
+and dynamics of a chain of plugins from the specialized plugin processing
+(TS input, TS output, packet processing).
+
+[#pdevexec]
+==== Plugin Executors
+
+Each plugin executes in a separate thread.
+The base class for all plugin threads is `ts::tsp::PluginExecutor`.
+Derived classes are used for input, output and packet processing plugins.
+
+[#pdevbuffer]
+==== Transport packets buffer
+
+There is a global buffer for TS packets. Its structure is optimized for best performance.
+
+The input thread writes incoming packets in the buffer.
+All packet processors update the packets and the output thread picks them at the same place.
+No packet is copied or moved in memory.
+
+The buffer is an array of `ts::TSPacket`.
+It is a memory-resident buffer, locked in physical memory to avoid virtual memory paging
+(see class `ts::ResidentBuffer`).
+
+The buffer is managed in a circular way.
+It is divided into logical areas, one per plugin thread (including input and output).
+These logical areas are sliding windows which move when packets are processed.
+
+Inside a `ts::tsp::PluginExecutor` object, the sliding window which is currently assigned to the
+plugin thread is defined by the index of its first packet (`_pkt_first`) and its size in
+packets (`_pkt_cnt`).
+
+.Flat (non-circular) view of the buffer:
+image::tspbuffer.png[align="center",alt="tsp packet buffer"]
+
+When a thread terminates the processing of a bunch of packets, it moves up its first index and,
+consequently, decreases the size of its own area and accordingly increases the size
+of the area of the next plugin.
+
+The modification of the starting index and size of any area must be performed under the
+protection of a mutex. There is one global mutex for simplicity. The resulting bottleneck
+is not so important since updating a few pointers is fast.
+
+When the sliding window of a plugin is empty, the plugin thread sleeps on its `_to_do` condition variable.
+Consequently, when a thread passes packets to the next plugin
+(ie. increases the size of the sliding window of the next plugin),
+it must notify the `_to_do` condition variable of the next thread.
+
+When a packet processor decides to drop a packet, the synchronization byte
+(first byte of the packet, normally 0x47) is reset to zero.
+When a packet processor or the output executor encounters a packet starting with a zero byte, it ignores it.
+Note that this is transparent to the plugin code in the shared library.
+The check is performed by the `ts::tsp::ProcessorExecutor` and `ts::tsp::OutputExecutor` objects.
+When a packet is marked as dropped, the plugin is not invoked.
+
+All `ts::tsp::PluginExecutor` are chained in a ring.
+The first one is input and the last one is output.
+The output points back to the input so that
+the output executor can easily pass free packets to be reused by the input executor.
+
+The `_input_end` flag indicates that there is no more packet to process after those in
+the plugin's area. This condition is signaled by the previous plugin in the chain.
+All plugins, except the output plugin, may signal this condition to their successor.
+
+The `_aborted flag` indicates that the current plugin has encountered an error and has
+ceased to accept packets. This condition is checked by the previous plugin in the chain
+(which, in turn, will declare itself as aborted). All plugins, except the input plugin
+may signal this condition. In case of error, all plugins should also declare
+an `_input_end` to their successor.
+
+//----------------------------------------------------------------------------
 === Adding PSI/SI tables or descriptors
+//----------------------------------------------------------------------------
 
 TBS
