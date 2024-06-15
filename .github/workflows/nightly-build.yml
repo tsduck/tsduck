@@ -253,6 +253,7 @@ jobs:
       if: env.REBUILD == 'true'
       run: |
         make docs doxygen DOXYFLAGS=--update-doxygen
+        cp doc/presentations/*.pdf bin/doc
         echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
         (cd bin; zip -qr9 ../doxy.zip doxy)
         (cd bin; zip -qr9 ../doc.zip doc)
