@@ -21,20 +21,17 @@ The diagram below illustrates the TSDuck software architecture.
 
 @image html tsduck-soft-arch.png "TSDuck software architecture"
 
-This set of documentation is a reference for the TSDuck library. It can be
-used either by TSDuck maintainers and developers of third-party applications.
+This set of documentation is the programming reference for the TSDuck library.
 
-For developers of third-party applications:
-- @ref usinglibrary "Referencing the TSDuck library from your application"
-- @ref libtutorial "A tutorial on the TSDuck C++ classes"
 - <a href="classes.html">C++ classes in alphabetical order</a>
 - <a href="modules.html">C++ classes by category</a>
 - <a href="files.html">Header files</a>
 
-For TSDuck maintainers:
-- @ref building "Building TSDuck"
-- @ref testing "Testing TSDuck"
-- @ref devplugin "A tutorial on developing TSP plugins"
-- @ref extensions "Developing TSDuck extensions"
-- @ref contributing "Contributing to TSDuck"
+Other reference documents:
+
+- <a href="https://tsduck.io/download/docs/tsduck.html">TSDuck User's Guide</a>
+  (<a href="https://tsduck.io/download/docs/tsduck.pdf">PDF</a>)
+- <a href="https://tsduck.io/download/docs/tsduck-dev.html">TSDuck Developer's Guide</a>
+  (<a href="https://tsduck.io/download/docs/tsduck-dev.pdf">PDF</a>)
+
 */

@@ -14,16 +14,16 @@
 PROJECT_NAME   = "TSDuck"
 PROJECT_NUMBER = "v$(TS_FULL_VERSION)"
 PROJECT_BRIEF  = "MPEG Transport Stream Toolkit"
-PROJECT_LOGO   = ../images/tsduck-48.png
+PROJECT_LOGO   = ../../images/tsduck-48.png
 
 # Input and output files:
 
-INPUT            = ../src/doc ../src/libtsduck
+INPUT            = . ../../src/libtsduck
 FILE_PATTERNS    = *.h *.dox *.md *.java *.py
-EXCLUDE_PATTERNS = */private/*
+EXCLUDE_PATTERNS = */private/* README.md
 RECURSIVE        = YES
-IMAGE_PATH       = ../images
-OUTPUT_DIRECTORY = ../bin/doxy
+IMAGE_PATH       = ../../images
+OUTPUT_DIRECTORY = ../../bin/doxy
 INCLUDE_PATH     = $(DOXY_INCLUDE_PATH)
 
 # Creating subdirs is useful to create a more balanced usage of the file system.

@@ -38,7 +38,7 @@ else {
 }
 
 # Get the project directories.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
+$RootDir = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 $DocDir = $PSScriptRoot
 $SrcDir = "$RootDir\src"
 
