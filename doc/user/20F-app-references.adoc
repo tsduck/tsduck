@@ -190,7 +190,6 @@
 * [[[ATSC-A69]]] ATSC A69/2009, December 2009:
   "ATSC Recommended Practice: Program and System Information Protocol Implementation Guidelines for Broadcasters".
 * [[[Dektec]]] Dektec Digital Video B.V. corporate home page, http://www.dektec.com/
-* [[[Dektec-Drivers]]] Linux DKMS for Dektec device drivers, https://github.com/tsduck/dektec-dkms 
 * [[[Dektec-SDK]]] Dektec drivers and SDK’s downloads, http://www.dektec.com/downloads/SDK/
 * [[[DTG-DBOOK]]] DTG:
   "Digital Terrestrial Television; Requirements for Interoperability; The D-Book 7 Part A", V1, March 2011.

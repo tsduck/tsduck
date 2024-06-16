@@ -52,10 +52,8 @@ When Dektec support is disabled, `tsdektec` and the `dektec` plugins are not
 built, not installed and not present in the binary package.
 
 Even when Dektec support is disabled, the Dektec-related C++ classes exist in
-the TSDuck shared library so that applications using these classes cab be built.
+the TSDuck shared library so that applications using these classes can be built.
 However, any operation will fail with an error message.
 
 See also:
-- https://tsduck.io/download/dektec
-- https://github.com/tsduck/dektec-dkms
 - https://www.dektec.com/downloads/SDK

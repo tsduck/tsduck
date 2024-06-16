@@ -804,25 +804,56 @@ See <<Dektec>> for more details.
 The `tsp` plugin named `dektec` can perform input or output on any Dektec device,
 provided that the appropriate drivers are installed on the system.
 Dektec provides drivers and API for their devices on Windows and Linux (see <<Dektec-SDK>>).
-For each operating system, there are at least two Dektec drivers: one for all PCI devices and one for all USB devices.
-
-==== Linux platforms
-
-The Dektec drivers are provided in source format.
-They must be compiled for each specific version of the Linux kernel.
-
-For a better integration with the various distros,
-an independent project has been setup to create DKMS packages for Dektec drivers (see <<Dektec-Drivers>>).
-This project provides a script to build packages for Red Hat & clones, Fedora, Debian and Ubuntu distros,
-using the source code from the Dektec site.
-
-Pre-built packages are also available from the releases section in <<Dektec-Drivers>>.
+For each operating system, there are several Dektec drivers for
+PCI devices, PCIe devices, USB devices, network devices.
 
 ==== Microsoft Windows platforms
 
 The Dektec drivers are provided in binary format and can be directly installed.
 An installation guide is included in the zip file of each driver.
 See <<Dektec-SDK>>.
+
+==== Linux platforms
+
+The Dektec drivers are provided in source format, as part of the Dektec LinuxSDK package.
+They must be compiled for each specific version of the Linux kernel.
+
+On lab or production systems where the kernel can be periodically updated,
+dealing with drivers in source form is not very handy.
+Most Linux distros have an answer for this: DKMS, for _Dynamic Kernel Module Support_.
+The source code of the drivers are installed in `/usr/src`
+and the drivers are automatically recompiled and reinstalled in case of kernel update.
+
+Starting with version 2024.06.0, the Dektec LinuxSDK package provides its own DKMS installation.
+After downloading the LinuxSDK archive from the Dektec download page (see <<Dektec-SDK>>),
+expand it into some temporary directory.
+Everything is expanded under a root subdirectory named `LinuxSDK`.
+
+CAUTION: Before installing the drivers, verify that your system is ready for DKMS.
+On most distros, this means installing a package named `dkms` and a few dependencies.
+
+To install the Dektec device drivers into the DKMS build system, use the following command:
+
+[source,shell]
+----
+$ sudo LinuxSDK/Drivers/Install
+----
+
+The command installs the drivers source code in `/usr/src/dektec-2024.06.0/` (for version 2024.06.0)
+and builds the drivers for the current kernel in `/var/lib/dkms/dektec/2024.06.0/`.
+Each time the kernel will be upgraded, the Dektec device drivers (and all drivers in the DKMS system)
+will be automatically recompiled.
+
+To remove the Dektec device drivers from the DKMS system, use the following command:
+
+[source,shell]
+----
+$ sudo LinuxSDK/Drivers/Uninstall
+----
+
+NOTE: Before version 2024.06.0, there was no DKMS installation procedure in the Dektec LinuxSDK package.
+An independent project named `dektec-dkms` was maintained by the TSDuck team.
+This project is no longer necessary and was archived.
 
 ==== macOS platforms
 
