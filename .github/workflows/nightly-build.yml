@@ -253,8 +253,9 @@ jobs:
       if: env.REBUILD == 'true'
       run: |
         make docs doxygen DOXYFLAGS=--update-doxygen
-        cp doc/presentations/*.pdf bin/doc
+        cp doc/presentations/*.pdf doc/legacy/tsduck-coding.pdf bin/doc || true
         echo "${{ env.VERSION }}" >bin/doxy/docversion.txt
+        echo "${{ env.VERSION }}" >bin/doc/docversion.txt
         (cd bin; zip -qr9 ../doxy.zip doxy)
         (cd bin; zip -qr9 ../doc.zip doc)
 
