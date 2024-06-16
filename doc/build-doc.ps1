@@ -43,9 +43,8 @@ param(
 $RootDir      = (Split-Path -Parent $PSScriptRoot)
 $ImagesDir    = "$RootDir\images"
 $DocRoot      = "$RootDir\doc"
-$CssDir       = "$DocRoot\css"
+$AdocDir      = "$DocRoot\adoc"
 $TocBotDir    = "$DocRoot\tocbot"
-$ThemesDir    = "$DocRoot\themes"
 $UserGuideDir = "$DocRoot\user"
 $DevGuideDir  = "$DocRoot\developer"
 $BinRoot      = "$RootDir\bin"
@@ -53,9 +52,9 @@ $BinDoc       = "$BinRoot\doc"
 $BinDocInfo   = "$BinRoot\docinfo"
 
 # Common themes.
-$CssFile   = "$CssDir\tsduck.css"
+$CssFile   = "$AdocDir\tsduck.css"
 $Theme     = "tsduck"
-$ThemeFile = "$ThemesDir\${Theme}-theme.yml"
+$ThemeFile = "$AdocDir\${Theme}-theme.yml"
 $RougeHtml = "thankful_eyes"
 $RougePdf  = "github"
 
@@ -72,9 +71,9 @@ if (-not $Version) {
 }
 
 # Asciidoctor flags
-$ADocFlags     = @("-v", "-a", "revnumber=$Version", "-a", "revdate=$Date", "-a", "imagesdir=$ImagesDir")
+$ADocFlags     = @("-v", "-a", "revnumber=$Version", "-a", "revdate=$Date", "-a", "imagesdir=$ImagesDir", "-a", "includedir=$AdocDir")
 $ADocFlagsHtml = $ADocFlags + @("-a", "stylesheet=$CssFile", "-a", "rouge-style=$RougeHtml", "-a", "data-uri", "-a", "docinfo=shared", "-a", "docinfodir=$BinDocInfo")
-$ADocFlagsPdf  = $ADocFlags + @("-a", "pdf-themesdir=$ThemesDir", "-a", "pdf-theme=$Theme", "-a", "rouge-style=$RougePdf")
+$ADocFlagsPdf  = $ADocFlags + @("-a", "pdf-themesdir=$AdocDir", "-a", "pdf-theme=$Theme", "-a", "rouge-style=$RougePdf")
 
 # Exit the script.
 function Exit-Script($Message = "")
