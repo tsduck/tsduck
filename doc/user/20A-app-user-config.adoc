@@ -27,7 +27,7 @@ The location of the user’s TSDuck configuration file depends on the operating 
 [.compact-table]
 [cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
 |===
-|UNIX: |$HOME/.tsduck
+|{unix}: |$HOME/.tsduck
 |Windows: |%APPDATA%\tsduck\tsduck.ini
 |===
 

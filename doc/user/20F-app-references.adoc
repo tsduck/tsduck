@@ -47,6 +47,7 @@
 |CW |Control Word
 |DCCT |Directed Channel Change Table (ATSC)
 |DCCSCT |Directed Channel Change Selection Code Table (ATSC)
+|DID |Descriptor Identifier (or descriptor _tag_)
 |DIT |Discontinuity Information Table (DVB)
 |DKMS |Dynamic Kernel Module Support (Linux)
 |DOCSIS |Data Over Cable Service Interface Specification
@@ -102,6 +103,7 @@
 |ITT |Index Transmission information Table (ISDB)
 |ITU |International Telecommunication Union
 |IV |Initialization Vector (cryptography)
+|LCN |Logical Channel Number (a.k.a. TV channel number)
 |LDT |Linked Description Table (ISDB)
 |LIT |Local event Information Table (ISDB)
 |LNB |Low-Noise Block down-converter (satellite)
@@ -120,6 +122,7 @@
 |PAT |Program Association Table (MPEG)
 |PCAT |Partial Content Announcement Table (ISDB)
 |PCR |Program Clock Reference
+|PDS |Private Data Specifier (DVB)
 |PES |Packetized Elementary Stream
 |PID |Packet Identifier
 |PLP |Physical Layer Pipe
@@ -231,6 +234,8 @@
   "Frame structure channel coding and modulation for a second-generation digital terrestrial television broadcasting system (DVB-T2)".
 * [[[ETSI-303-560]]] ETSI EN 303 560, V1.1.1, May 2018;
   "Digital Video Broadcasting (DVB); TTML subtitling systems".
+* [[[ETSI-Ids]]] DVB Services; DVB Identifiers,
+  https://www.dvbservices.com/identifiers/
 * [[[Fransat]]] Via Eutelsat Fransat:
   "Set-Top-Box Specification DVB MPEG-4 HD", V0.0.7, October 2009.
 * [[[FTV-AUS]]] Free TV Australia:

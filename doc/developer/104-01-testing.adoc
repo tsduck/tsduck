@@ -56,7 +56,7 @@ NOTE: The structure of TSUnit is freely inspired by equivalent frameworks such a
 It has been adapted to TSDuck specificities and focuse on fast and easy development of test suites.
 
 The `utest` executable is built twice, once using the TSDuck shared library and once using
-the static library. On UNIX systems, both versions of the test suite are built and run using
+the static library. On {unix}, both versions of the test suite are built and run using
 `make test` as illustrated below
 
 [source,shell]

@@ -13,7 +13,7 @@
 [.cmd-header]
 Configuration options to build applications (developers only)
 
-This command is installed on UNIX systems only (Linux, macOS, BSD).
+This command is installed on {unix} only.
 
 For developers, it generates the various build options for
 the current operating system and is used by developers to build their applications.

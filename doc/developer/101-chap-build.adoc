@@ -134,9 +134,9 @@ The required minimum version of each compiler depends on a correct implementatio
 Previous versions of each compiler have no or buggy {cpp}17 support.
 
 [#unixbuild]
-==== Building on UNIX systems (Linux, macOS, BSD)
+==== Building on {unix}
 
-On UNIX systems, building TSDuck simply means typing `make` in the top level directory of the project.
+On {unix}, building TSDuck simply means typing `make` in the top level directory of the project.
 More details and options are provided in the next sections.
 
 [#requnix]
