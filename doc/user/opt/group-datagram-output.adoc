@@ -133,7 +133,7 @@ if an application added membership on the same multicast group.
 This option disables this.
 
 [.optdoc]
-*Warning*: On output sockets, this option is effective only on UNIX systems (Linux, macOS, BSD).
+*Warning*: On output sockets, this option is effective only on {unix}.
 On Windows systems, this option applies only to input sockets.
 
 [.opt]

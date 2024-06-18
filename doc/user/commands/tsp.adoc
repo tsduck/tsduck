@@ -613,7 +613,7 @@ When a method fails, the next one is attempted.
 * If the plugin name is a complete path name, with a directory, this path name is used.
 * Without directory in the plugin name, a list of directories is searched:
 ** If the environment `TSPLUGINS_PATH` is defined, a list of directories is parsed.
-   Directories are separated by a semicolon `;` on Windows and a colon `:` on UNIX systems.
+   Directories are separated by a semicolon `;` on Windows and a colon `:` on {unix}.
 ** The same directory as the `tsp` executable file is used as last choice.
 ** In each of these directories, the file named `tsplugin_name.so` or `.dylib` or `.dll` is searched.
 ** If not found, the file `name` and then `name.so` or `.dylib` or `.dll` is searched.

@@ -92,7 +92,7 @@ This option disables this.
 
 [.optdoc]
 *Warning*: On input sockets, this option is effective only on Windows systems.
-On UNIX systems (Linux, macOS, BSD), this option applies only to output sockets.
+On {unix}, this option applies only to output sockets.
 
 [.opt]
 *-f* +

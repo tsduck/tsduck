@@ -25,3 +25,4 @@
 :section-refsig: section
 :appendix-refsig: appendix
 :d-arrow: pass:q[[.big]#&#x21D4;#]
+:unix: UNIX systems (Linux, macOS, BSD)

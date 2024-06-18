@@ -53,7 +53,7 @@ See the xref:chap-license[xrefstyle=short] for more details.
 Documentation format
 
 The TSDuck user's guide is now formatted for HTML.
-The file `tsduck.html` is monolithic and self-sufficient, without reference to external images.
+The file xref:tsduck.html[] is monolithic and self-sufficient, without reference to external images.
 Therefore, this HTML file can be downloaded, saved, and copied, as long as the license and content are not modified.
 
 The TSDuck user's guide is now built using https://asciidoctor.org[asciidoctor],

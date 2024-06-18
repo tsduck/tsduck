@@ -17,7 +17,6 @@ The following environment variables affect the behavior of TSDuck.
 
 // PDF backend does not correctly process "autowidth" tables.
 .Environment variables
-.Transport stream file formats
 ifndef::backend-pdf[]
 [cols="<1m,<1",stripes=none,options="autowidth"]
 endif::[]
@@ -35,7 +34,7 @@ endif::[]
 |Used instead of `TSDUCK_GITHUB_API_TOKEN` when the latter is not defined.
 
 |HOME
-|On UNIX systems (Linux, macOS, BSD), used to locate user-specific TSDuck configuration files
+|On {unix}, used to locate user-specific TSDuck configuration files
  (see xref:conf-file-loc[xrefstyle=short] and xref:chan-usage[xrefstyle=short]).
 
 |HOMEBREW_GITHUB_API_TOKEN
@@ -49,7 +48,7 @@ endif::[]
 |Same as `http_proxy`.
 
 |LD_LIBRARY_PATH
-|On UNIX systems (Linux, macOS, BSD), used to locate shareable libraries such as `tsp` plugins or TSDuck extensions.
+|On {unix}, used to locate shareable libraries such as `tsp` plugins or TSDuck extensions.
 
 |PAGER
 |Defined to a pager command to output commands such as `tstables`, `tsdump` or `--help` option anywhere.
@@ -60,7 +59,7 @@ endif::[]
  TSDuck extensions and global configuration files.
 
 |PATH
-|On UNIX systems (Linux, macOS, BSD), the system-defined search path of executables is also
+|On {unix}, the system-defined search path of executables is also
  used to search TSDuck extensions and global configuration files.
 
 |TS_CERR_DEBUG_LEVEL
@@ -69,11 +68,11 @@ endif::[]
  This can be used to troubleshoot initialization steps such as loading plugins or extensions.
 
 |TS_CURL_RETRY
-|On UNIX systems (Linux, macOS, BSD), define a retry policy for Web requests (HTTP, HLS, etc.)
+|On {unix}, define a retry policy for Web requests (HTTP, HLS, etc.)
  See xref:web-retry[xrefstyle=short] below.
 
 |TS_DEBUG_OPENSSL
-|On UNIX systems (Linux, macOS, BSD), display OpenSSL error messages on standard error.
+|On {unix}, display OpenSSL error messages on standard error.
 
 |TS_NO_CRC32_INSTRUCTIONS
 |Do not use CRC32 accelerated instructions even when available on the current CPU.
@@ -118,13 +117,13 @@ endif::[]
 ==== Search paths
 
 The directory search paths such as the system-defined `PATH` and the TSDuck-defined `TSPLUGINS_PATH` use a system-specific syntax.
-On UNIX systems (Linux, macOS), the directory names are separated with colons ‘:’.
+On {unix}, the directory names are separated with colons ‘:’.
 On Windows systems, they are separated with semi-colons ‘;’.
 
 [#web-retry]
 ==== Web requests retry policy
 
-On UNIX systems (Linux, macOS, BSD), TSDuck uses `libcurl` to perform Web requests.
+On {unix}, TSDuck uses `libcurl` to perform Web requests.
 In rare cases, it has been noted that `curl` fails with "connection reset by peer"
 right after sending the SSL/TLS client hello message.
 Retrying usually succeeds after of a couple of times.

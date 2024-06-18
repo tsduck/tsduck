@@ -36,7 +36,7 @@ you must install the TSDuck development environment first.
 * On macOS systems, the development environment is always installed with TSDuck using Homebrew.
 * If you build TSDuck from sources, use `make install` (which is equivalent to `make install-tools install-devel`).
 
-==== Building applications on UNIX systems (Linux, macOS, BSD)
+==== Building applications on {unix}
 
 The command `tsconfig` generates the appropriate build options for the current operating system.
 See the TSDuck user's guide for more details on `tsconfig`.
@@ -310,8 +310,8 @@ Cryptography is a serious matter which should be left to cryptographers.
 
 Some transport stream processing operations require some cryptography, essentially block ciphers and hash functions.
 The TSDuck library proposes an homogeneous API over them.
-Standard cryptographic primitives are implemented using the standard system libraries
-(OpenSSL on UNIX systems, BCrypt on Windows).
+Standard cryptographic primitives are implemented using the standard system libraries,
+_OpenSSL_ on {unix}, _BCrypt_ on Windows.
 Less standard primitives are directly implemented in TSDuck.
 
 The abstract class `ts::BlockCipher` is the root of a hierarchy of symmetric cryptography classes,
@@ -464,7 +464,7 @@ See xref:dvbprotocols[xrefstyle=short] for more details.
 The class `ts::WebRequest` performs simple Web requests using HTTP, HTTPS or FTP.
 Using a URL, the result can be downloaded in memory or in a file.
 Multiple redirections and SSL/TLS are automatically handled.
-This class is built on top of native system libraries (_libcurl_ on UNIX systems, _WinInet_ on Windows).
+This class is built on top of native system libraries, _libcurl_ on {unix}, _WinInet_ on Windows.
 
 [#sharelibs]
 ===== Shared libraries
@@ -1275,7 +1275,7 @@ https://github.com/tsduck/tsduck/tree/master/sample/sample-plugin[sample/sample-
 To develop a new plugin named `foo`, follow these steps:
 
 * Create a source file named `tsplugin_foo.cpp` in the `tsplugins` subdirectory.
-* On UNIX systems (Linux, macOS, BSD), this new source file will be automatically recognized
+* On {unix}, this new source file will be automatically recognized
   by the Makefile and the new plugin will be built.
 * On Windows systems, the plugin needs a "project file" for Visual Studio and MSBuild.
   This project file shall be referenced in the TSDuck "solution file".
@@ -1284,7 +1284,7 @@ The last step is automated using the Python script `scripts/build-project-files.
 This script explores the source files for all commands and plugins.
 It automatically generates missing project files and references them in the solution file.
 
-This script can be run on UNIX systems or Windows systems.
+This script can be run on {unix} or Windows systems.
 On Windows, it can be easier to launch the PowerShell script `scripts/build-project-files.ps1`,
 which simply calls the Python script.
 

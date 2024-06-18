@@ -21,10 +21,10 @@ See xref:chap-contribution[xrefstyle=short] for more details on the contribution
 
 ==== Code base selection
 
-The main recommendation to start with: do not develop a new table or descriptor from scratch.
+The main recommendation to start with is: do not develop a new table or descriptor from scratch.
 Use an existing and proven one as code base and adapt to your new structure.
 
-Identify the right existing structure as code base, use some of these criteria:
+To identify the right existing structure as code base, use some of these criteria:
 
 * Short single-section table vs. long multi-section table.
 * Flat vs. structured section, with descriptors or not, including substructures with descriptors (e.g. PMT).
@@ -33,16 +33,32 @@ Identify the right existing structure as code base, use some of these criteria:
 
 Because the number of possible descriptor _tags_ (a.k.a. descriptor ids) is limited to 256 values,
 there is no room for all possible descriptors.
-For this reason, the various standard organizations use tricks.
+For this reason, the various standard organizations use tricks such as _extended descriptors_,
+_private descriptors_, or _table-specific descriptors_.
 
-[.usage]
-Extended descriptors
+In a MPEG/DVB context, the allocation of descriptor ids is the following:
 
-MPEG and DVB separately define the concept of _extended descriptor_.
-Because of the shortage of descriptor ids, each of the two standards have defined an _extended_descriptor_.
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|0x00-0x3E |MPEG-defined descriptors
+|0x3F |MPEG extension descriptor
+|0x40-0x7E |DVB-defined descriptors
+|0x7F |DVB extension descriptor
+|0x80-0xFE |Private descriptors
+|0xFF |Reserved, not allocated, typically used as "null" value
+|===
+
+===== Extended descriptors
+
+MPEG and DVB separately define the concept of _extended descriptors_.
+Because of the shortage of descriptor ids, each of the two standards have defined an _extension_descriptor_,
+typically using their last allocated descriptor id.
 This descriptor is a generic envelope for specialized descriptors.
 
-The first byte of the descriptor payload is an _extended_descriptor_id_ which defines the actual descriptor.
+The first byte of the descriptor payload is an _extended_descriptor_id_ which identifies the actual descriptor type.
+This allows the definition of up to 256 additional descriptors.
+
 TSDuck does not use any specific type for the generic _extended_descriptor_.
 Instead, there is a distinct type for each form of _extended_descriptor_.
 Each of them has its own XML element and {cpp}, just like any other descriptor.
@@ -55,8 +71,53 @@ you may use the _HEVC_timing_and_HRD_descriptor_ as code base.
 If you have to implement a DVB-defined extended descriptor,
 you may use the _supplementary_audio_descriptor_ as code base.
 
-[.usage]
-Table-specific descriptors
+===== Private descriptors (DVB)
+
+In the DVB standard, descriptor ids 0x80 to 0xFE are "private".
+They are reserved for use by private entities, typically TV operators,
+broadcast equipment vendors, Conditional Access Systems (CAS) vendors.
+
+To determine which semantics should be associated with a given descriptor id in that range,
+DVB defines a _private_data_specifier_descriptor_ which contains a 32-bit _private_data_specifier_ (PDS).
+DVB allocates a unique PDS to any private organization which requests it.
+See xref:tsduck.html#ETSI-101-162[ETSI-101-162] and https://www.dvbservices.com/identifiers/[the DVB services]
+for more details on allocated PDS values.
+
+In a descriptor list, all private descriptors which come after a _private_data_specifier_descriptor_
+are defined by the private organization which is identified in the _private_data_specifier_descriptor_.
+If several private descriptors from distinct defining entities must be placed in the same descriptor list,
+several _private_data_specifier_descriptor_ are allowed to switch from one entity to another.
+
+A descriptor with a tag in the range 0x80-0xFE and no preceding _private_data_specifier_descriptor_ is illegal.
+
+That being said, in practice, the experience has exhibited two families of bugs:
+
+* Rogue signalization: Some organizations ignore this rule and define their own private descriptors,
+  in the range 0x80-0xFE, without officially allocated PDS value.
+* Signalization bugs: Some broadcasters "forget" to insert the right _private_data_specifier_descriptor_
+  before a well-defined private descriptor.
+* Implementation bugs: Some implementers of receivers (set-top box, TV set) ignore the PDS rule
+  or forget to check the previous PDS. They blindly interpret some private descriptor based on some
+  expected descriptor id in the range 0x80-0xFE. If the same private descriptor id is used in the
+  context of another PDS, the receiver incorrectly interprets the binary descriptor.
+
+All these bugs are real and were regularly found during the development and usage of TSDuck.
+If you implement a private descriptor, be sure to follow the rules.
+
+You may use the EACEM-defined _eacem_stream_identifier_descriptor_ as code base.
+
+Most of the commonly used private descriptors are some forms of _logical_channel_number_descriptor_.
+The Logical Channel Number (LCN) is the usual concept of TV channel number,
+the oldest and most traditional way of identifying a TV channel.
+Surprisingly, neither MPEG nor DVB defined it.
+Therefore, operators or equipment vendors have to define their own way of identifying LCN's.
+For this reason, there is a wide range of variants of private _logical_channel_number_descriptor_
+which all contain the same kind of information.
+If you implement such a descriptor, with a similar implementation,
+your class should be a subclass of `AbstractLogicalChannelDescriptor`.
+Use _eacem_logical_channel_number_descriptor_ as code base.
+
+===== Table-specific descriptors
 
 So-called _table-specific descriptors_ are specific descriptors which exist only in the context of a couple of specific tables.
 They usually re-use the tag of a standard descriptor, typically in the MPEG-defined range.
@@ -285,7 +346,7 @@ Some guidelines:
 * In tables, remove the `<_any in="_metadata"/>`. It is meaningless for the user.
 * Add any comment or formatting which makes the result more informative to the user.
 
-At the beginning to the section, add a reference to the defining standard, for instance:
+At the beginning of the section, add a reference to the defining standard, for instance:
 
 [source,adoc]
 ----
@@ -315,10 +376,10 @@ To verify this, generate the documentation and check any error.
 Undocumented elements are reported.
 
 [.compact-list]
-* On UNIX systems (Linux, macOS, BSD), run `make doxygen`.
+* On {unix}, run `make doxygen`.
 * On Windows systems, run the PowerShell script `doc\doxy\build-doxygen.ps1`.
 
-In the initial descriptor of your {cpp}, make sure it is properly identified with the right group and standard.
+In the initial descriptor of your {cpp} class, make sure it is properly identified with the right group and standard.
 For instance:
 
 [source,c++]
