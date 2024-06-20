@@ -3,10 +3,6 @@
 - tsduck-presentation.pptx tsduck-presentation.pdf :
   TSDuck presentation (Microsoft PowerPoint).
 
-- tsduck-ibc2018.pptx tsduck-ibc2018.pdf :
-  TSDuck presentation at IBC 2018 (Microsoft PowerPoint).
-  Obsolete, for reference only.
-
 - mpegts-introduction.pptx mpegts-introduction.pdf :
   An introduction to MPEG-TS (Microsoft PowerPoint).
 

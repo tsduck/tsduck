@@ -11,5 +11,3 @@
 - `tocbot`: HTML expandable table of contents for Asciidoctor.
 
 - `presentations`: Various presentations on TSDuck (Microsoft Office).
-
-- `legacy`: Legacy documentation (read-only).

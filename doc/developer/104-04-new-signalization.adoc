@@ -167,7 +167,7 @@ More details follow in the next sections.
 
 ==== Declaring identifiers
 
-You table or descriptor must have a 8-bit identifier.
+Your table or descriptor must have a 8-bit identifier.
 You need to add it in the TSDuck source code.
 
 Table ids and descriptor ids are defined in file `src/libtsduck/dtv/signalization/tsPSI.h`,
