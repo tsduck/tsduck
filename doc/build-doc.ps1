@@ -44,7 +44,6 @@ $RootDir      = (Split-Path -Parent $PSScriptRoot)
 $ImagesDir    = "$RootDir\images"
 $DocRoot      = "$RootDir\doc"
 $AdocDir      = "$DocRoot\adoc"
-$TocBotDir    = "$DocRoot\tocbot"
 $UserGuideDir = "$DocRoot\user"
 $DevGuideDir  = "$DocRoot\developer"
 $BinRoot      = "$RootDir\bin"
@@ -102,8 +101,8 @@ function Open-Doc($File)
 [void](New-Item -ItemType Directory -Force $BinDocInfo)
 
 # Generate docinfo files.
-Copy-Item "$TocBotDir\docinfo.html" "$BinDocInfo\docinfo.html"
-("<script>`n" + (Get-Content "$TocBotDir\tocbot.min.js") + "`n</script>`n" + (Get-Content "$TocBotDir\docinfo-footer.in.html")) |
+Copy-Item "$AdocDir\docinfo.html" "$BinDocInfo\docinfo.html"
+("<script>`n" + (Get-Content "$AdocDir\tocbot.min.js") + "`n</script>`n" + (Get-Content "$AdocDir\docinfo-footer.in.html")) |
     Out-File "$BinDocInfo\docinfo-footer.html" -Encoding utf8
 
 # Generate a .adoc file which includes all .adoc in a given subdirectory.

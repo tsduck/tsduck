@@ -21,7 +21,6 @@ doxygen:
 IMAGESDIR  = $(ROOTDIR)/images
 DOCROOT    = $(ROOTDIR)/doc
 ADOCDIR    = $(DOCROOT)/adoc
-TOCBOTDIR  = $(DOCROOT)/tocbot
 USERDOCDIR = $(DOCROOT)/user
 DEVDOCDIR  = $(DOCROOT)/developer
 
@@ -55,7 +54,7 @@ ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(ADOCDIR)" -a pdf-theme="$(THEM
 # Not really all .png images are used, but the exact list may vary while the documents are edited.
 # So, better rebuild if an image was added or updated.
 
-COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(wildcard $(IMAGESDIR)/*.png)
+COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(wildcard $(IMAGESDIR)/*.png) $(LIBTSDUCKDIR)/tsVersion.h
 COMMON_INPUTS_HTML = $(COMMON_INPUTS) $(CSSFILE) $(BINDOCINFO)/docinfo.html $(BINDOCINFO)/docinfo-footer.html
 COMMON_INPUTS_PDF  = $(COMMON_INPUTS) $(THEMEFILE)
 
@@ -64,19 +63,19 @@ COMMON_INPUTS_PDF  = $(COMMON_INPUTS) $(THEMEFILE)
 # This setup creates an expandable table of content inside the left side bar.
 #-----------------------------------------------------------------------------
 
-$(BINDOCINFO)/docinfo.html: $(TOCBOTDIR)/docinfo.html
+$(BINDOCINFO)/docinfo.html: $(ADOCDIR)/docinfo.html
 	$(call LOG,[GEN] $@) \
 	mkdir -p $(dir $@); \
 	cp $< $@
 
-$(BINDOCINFO)/docinfo-footer.html: $(TOCBOTDIR)/docinfo-footer.in.html $(TOCBOTDIR)/tocbot.min.js
+$(BINDOCINFO)/docinfo-footer.html: $(ADOCDIR)/docinfo-footer.in.html $(ADOCDIR)/tocbot.min.js
 	$(call LOG,[GEN] $@) \
 	mkdir -p $(dir $@); \
 	echo "<script>" >$@; \
-	cat $(TOCBOTDIR)/tocbot.min.js >>$@; \
+	cat $(ADOCDIR)/tocbot.min.js >>$@; \
 	echo "" >>$@; \
 	echo "</script>" >>$@; \
-	cat $(TOCBOTDIR)/docinfo-footer.in.html >>$@
+	cat $(ADOCDIR)/docinfo-footer.in.html >>$@
 
 #-----------------------------------------------------------------------------
 # User's guide
