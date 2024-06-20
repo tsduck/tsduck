@@ -47,4 +47,5 @@ Makefile* text eol=lf linguist-language=Makefile
 *.xcf binary linguist-language=GIMP
 *.pdf binary linguist-language=PDF
 *.docx binary linguist-language=Word
+*.xlsx binary linguist-language=Excel
 *.pptx binary linguist-language=PowerPoint
