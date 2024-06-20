@@ -139,6 +139,22 @@ Previous versions of each compiler have no or buggy {cpp}17 support.
 On {unix}, building TSDuck simply means typing `make` in the top level directory of the project.
 More details and options are provided in the next sections.
 
+[.usage]
+TL;DR
+
+If you don't like the details, just run this:
+
+[source,shell]
+----
+$ git clone https://github.com/tsduck/tsduck.git
+$ cd tsduck
+$ scripts/install-prerequisites.sh
+$ make -j10
+$ sudo make install
+----
+
+If you like thinking before doing, we recommend to read the following sections.
+
 [#requnix]
 ===== Pre-requisites
 
