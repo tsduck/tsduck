@@ -70,3 +70,17 @@ as the previous PDF file (expandable table of contents in a left-side panel).
 A PDF version xref:tsduck.pdf[] is still available.
 However, due to limitations in the PDF generator of asciidoctor,
 the rendering is sometimes not as good as the HTML document.
+
+[.usage]
+Documentation set
+
+The TSDuck documentation set is made of:
+
+[.compact-list]
+1. xref:tsduck.html[TSDuck User's Guide]
+   (also from https://tsduck.io/download/docs/tsduck.html[tsduck.io]
+   and in https://tsduck.io/download/docs/tsduck.pdf[PDF] format)
+2. xref:tsduck-dev.html[TSDuck Developer's Guide]
+   (also from https://tsduck.io/download/docs/tsduck-dev.html[tsduck.io]
+   and in https://tsduck.io/download/docs/tsduck-dev.pdf[PDF] format)
+3. https://tsduck.io/doxy/[TSDuck Programming Reference]

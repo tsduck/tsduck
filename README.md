@@ -36,7 +36,7 @@ enhanced and new plugins can be developed using a library of C++ classes.
 
 ### Usage
 
-TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/download/docs/tsduck.pdf).
+TSDuck comes with a comprehensive [User's Guide](https://tsduck.io/download/docs/tsduck.html).
 
 All utilities and plugins accept the option `--help` to display their syntax.
 
