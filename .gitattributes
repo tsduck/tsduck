@@ -3,6 +3,7 @@
 .gitattributes text
 .editorconfig text
 *.txt text
+*.adoc text linguist-language=Asciidoc
 *.dox text linguist-language=Doxygen
 *.md text linguist-language=MarkDown
 *.h text linguist-language=C++

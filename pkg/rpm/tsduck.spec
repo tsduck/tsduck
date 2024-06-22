@@ -103,11 +103,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/bash-completion/completions/_tsduck
 /lib/udev/rules.d/80-tsduck.rules
 %{_sysconfdir}/security/console.perms.d/80-tsduck.perms
-%doc CHANGELOG.txt LICENSE.txt OTHERS.txt bin/doc/tsduck.pdf bin/doc/tsduck.html
+%dir %{_docdir}/tsduck
+%{_docdir}/tsduck/CHANGELOG.txt
+%{_docdir}/tsduck/LICENSE.txt
+%{_docdir}/tsduck/OTHERS.txt
+%{_docdir}/tsduck/tsduck.html
 
 %files devel
 %defattr(-,root,root,-)
 %{_libdir}/libtsduck.a
 %{_includedir}/tsduck
 %{_datadir}/pkgconfig/tsduck.pc
-%doc LICENSE.txt bin/doc/tsduck-dev.pdf bin/doc/tsduck-dev.html
+%{_docdir}/tsduck/tsduck-dev.html
