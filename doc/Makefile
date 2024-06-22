@@ -39,8 +39,8 @@ ROUGE_PDF  = github
 
 # Documentation tools.
 
-ASCIIDOCTOR     = asciidoctor
-ASCIIDOCTOR_PDF = asciidoctor-pdf
+ASCIIDOCTOR     ?= asciidoctor
+ASCIIDOCTOR_PDF ?= asciidoctor-pdf
 
 # Documentation generation flags.
 
