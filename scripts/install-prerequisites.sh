@@ -416,7 +416,8 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
 elif [[ -f /etc/arch-release ]]; then
 
-    PKGLIST+=(git make gcc cmake flex bison dos2unix core/which inetutils net-tools curl tar zip linux-api-headers python openssl)
+    PKGLIST+=(git make gcc cmake flex bison dos2unix core/which inetutils net-tools curl tar zip linux-api-headers python openssl asciidoctor qpdf)
+    GEMLIST+=(asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsclite)
     [[ -z $NOSRT      ]] && PKGLIST+=(srt)
@@ -428,6 +429,8 @@ elif [[ -f /etc/arch-release ]]; then
     $DRYRUN && exit 0
 
     sudo pacman -Sy --noconfirm "${PKGOPTS[@]}" "${PKGLIST[@]}"
+    # Ruby gems are installed in user's directory, even when used with sudo => don't use sudo.
+    gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Alpine Linux ==
