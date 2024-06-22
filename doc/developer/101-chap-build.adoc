@@ -149,7 +149,7 @@ If you don't like the details, just run this:
 $ git clone https://github.com/tsduck/tsduck.git
 $ cd tsduck
 $ scripts/install-prerequisites.sh
-$ make -j10
+$ make -j10 default docs
 $ sudo make install
 ----
 
@@ -712,6 +712,97 @@ The user can select which components shall be installed.
 The development environment is unselected by default.
 
 On macOS systems, the Homebrew package `tsduck` installs all components.
+
+//----------------------------------------------------------------------------
+[#builddoc]
+=== Building the documentation
+//----------------------------------------------------------------------------
+
+There are three sets of TSDuck documents:
+
+[.compact-list]
+1. TSDuck User's Guide (HTML and PDF)
+2. TSDuck Developer's Guide (HTML and PDF)
+3. TSDuck Programming Reference (HTML only)
+
+The first two documents are written in Asciidoc format.
+Their HTML and PDF versions are built using Asciidoctor.
+The two HTML files are large standalone files, without reference to any other local file;
+they can be safely copied without breaking the navigation.
+
+These two guides are installed with TSDuck, HTML and PDF version, on {unix} and Windows.
+
+The TSDuck Programming Reference contains the documentation of all public classes
+which can be used by applications in {cpp}, Java, or Python.
+This reference is built using Doxygen.
+
+TIP: Asciidoctor and Doxygen are automatically installed by the scripts `install-prerequisites.sh`
+on {unix} and `install-prerequisites.ps1` on Windows.
+
+On large libraries, Doxygen is extremely verbose.
+The TSDuck Programming Reference is made of a large number of HTML files, more than 14,000 files and directories.
+It also takes some time to generate.
+Therefore, the Programming Reference is neither built by default nor installed with the rest of TSDuck.
+Every night, a fresh copy is generated and published online at https://tsduck.io/doxy[].
+
+==== Building on {unix}
+
+The user's guide and the developer's guide are built using the target `docs`.
+The HTML and PDF files are built in subdirectory `bin/doc`.
+
+[source,shell]
+----
+$ make docs
+----
+
+Because the two guides are installed with the rest of TSDuck,
+the target `docs` is automatically as part of `make install`.
+
+The following targets are also available to build a subset of the guides:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|userguide-html |Build the user's guide HTML version
+|userguide-pdf |Build the user's guide PDF version
+|userguide |Build the user's guide HTML and PDF versions
+|open-userguide-html |Build the user's guide HTML version and opens it with the default HTML viewer
+|open-userguide-pdf |Build the user's guide PDF version and opens it with the default PDF viewer
+|open-userguide |Build the user's guide HTML and PDF versions and opens them with their default viewers
+|devguide-html |Build the developer's guide HTML version
+|devguide-pdf |Build the developer's guide PDF version
+|devguide |Build the developer's guide HTML and PDF versions
+|open-devguide-html |Build the developer's guide HTML version and opens it with the default HTML viewer
+|open-devguide-pdf |Build the developer's guide PDF version and opens it with the default PDF viewer
+|open-devguide |Build the developer's guide HTML and PDF versions and opens them with their default viewers
+|docs |Build the four document, user and developer, HTML and PDF
+|===
+
+The programming reference is built using the target `doxygen`.
+
+[source,shell]
+----
+$ make doxygen
+----
+
+The set of files is built in subdirectory `bin/doxy/html`.
+
+==== Building on Windows
+
+The user's guide and the developer's guide are built using the PowerShell script `doc\build-doc.ps1`.
+The HTML and PDF files are built in subdirectory `bin\doc`.
+By default, they are automatically opened using the default HTML and PDF viewers of the system.
+
+Because the two guides are installed with the rest of TSDuck,
+this script is automatically executed as part of the script `pkg\nsis\build-installer.ps1`.
+
+The programming reference is built using the PowerShell script `doc\doxy\build-doxygen.ps1`.
+The set of files is built in subdirectory `bin\doxy\html`.
+By default, the start page is automatically opened using the default HTML viewer of the system.
+
+When used in an automation system, the two scripts `doc\build-doc.ps1` and `pkg\nsis\build-installer.ps1`
+can be called with options `-NoOpen -NoPause` to skip the opening of documents using the default viewers
+and exit without waiting for a user to close the command window.
 
 //----------------------------------------------------------------------------
 [#installing]

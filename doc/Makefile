@@ -58,6 +58,12 @@ COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(wildcard $(IMAGESDIR)/*.png) $
 COMMON_INPUTS_HTML = $(COMMON_INPUTS) $(CSSFILE) $(BINDOCINFO)/docinfo.html $(BINDOCINFO)/docinfo-footer.html
 COMMON_INPUTS_PDF  = $(COMMON_INPUTS) $(THEMEFILE)
 
+# Asciidoctor creates huge PDF. They need to be compressed afterward.
+# The size is typically divided by 4.
+
+$(BINDOC)/%.pdf: $(BINDOC)/%.bigpdf
+	$(call LOG,[COMPRESS] $@) qpdf --compress-streams=y --recompress-flate --optimize-images $< $@
+
 #-----------------------------------------------------------------------------
 # Docinfo files, for asciidoctor.
 # This setup creates an expandable table of content inside the left side bar.
@@ -116,7 +122,7 @@ $(BINDOC)/tsduck.html: $(USERGUIDE_INPUTS) $(COMMON_INPUTS_HTML)
 	mkdir -p $(dir $@); \
 	$(ASCIIDOCTOR) $(ADOCFLAGS_HTML) $(USERDOCDIR)/tsduck.adoc -D $(dir $@) -o $(notdir $@)
 
-$(BINDOC)/tsduck.pdf: $(USERGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
+$(BINDOC)/tsduck.bigpdf: $(USERGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
 	$(call LOG,[ASCIIDOC] $@) \
 	mkdir -p $(dir $@); \
 	$(ASCIIDOCTOR_PDF) $(ADOCFLAGS_PDF) $(USERDOCDIR)/tsduck.adoc -D $(dir $@) -o $(notdir $@)
@@ -158,7 +164,7 @@ $(BINDOC)/tsduck-dev.html: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_HTML)
 	mkdir -p $(dir $@); \
 	$(ASCIIDOCTOR) $(ADOCFLAGS_HTML) $(DEVDOCDIR)/tsduck-dev.adoc -D $(dir $@) -o $(notdir $@)
 
-$(BINDOC)/tsduck-dev.pdf: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
+$(BINDOC)/tsduck-dev.bigpdf: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
 	$(call LOG,[ASCIIDOC] $@) \
 	mkdir -p $(dir $@); \
 	$(ASCIIDOCTOR_PDF) $(ADOCFLAGS_PDF) $(DEVDOCDIR)/tsduck-dev.adoc -D $(dir $@) -o $(notdir $@)
@@ -170,13 +176,11 @@ $(BINDOC)/tsduck-dev.pdf: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
 .PHONY: install install-tools install-devel
 install: install-tools install-devel
 
-install-tools: userguide
+install-tools: $(BINDOC)/tsduck.html
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
-	install -m 644 \
-	    $(ROOTDIR)/CHANGELOG.txt $(ROOTDIR)/LICENSE.txt $(ROOTDIR)/OTHERS.txt \
-	    $(BINDOC)/tsduck.html $(BINDOC)/tsduck.pdf \
+	install -m 644 $^ $(ROOTDIR)/CHANGELOG.txt $(ROOTDIR)/LICENSE.txt $(ROOTDIR)/OTHERS.txt \
 	    $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
 
-install-devel: devguide
+install-devel: $(BINDOC)/tsduck-dev.html
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
-	install -m 644 $(BINDOC)/tsduck-dev.html $(BINDOC)/tsduck-dev.pdf $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
+	install -m 644 $^ $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck

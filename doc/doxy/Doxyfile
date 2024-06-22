@@ -25,12 +25,7 @@ RECURSIVE        = YES
 IMAGE_PATH       = ../../images
 OUTPUT_DIRECTORY = ../../bin/doxy
 INCLUDE_PATH     = $(DOXY_INCLUDE_PATH)
-
-# Creating subdirs is useful to create a more balanced usage of the file system.
-# The problem is that it is hard to predict stable direct links to useful pages
-# such as "building TSDuck". So, this option is now disabled.
-
-CREATE_SUBDIRS = NO
+CREATE_SUBDIRS   = YES
 
 # Error reporting:
 
