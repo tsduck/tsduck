@@ -386,8 +386,14 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
     # OpenSuse Leap has a version. OpenSuse Tumbleweed is a rolling upgrde and does not have a version.
     OS=$(grep '^VERSION=' /etc/os-release | head -1 | sed -e 's/.*="//' -e 's/".*//')
     [[ $OS == *.* ]] && OS=$(( ${OS/.*/} * 100 + ${OS/*./} )) || OS=
+    grep -q -i '^ID.*-leap' /etc/os-release && LEAP=1
+    grep -q -i '^ID.*-tumbleweed' /etc/os-release && TUMBLEWEED=1
 
-    PKGLIST+=(git make gcc-c++ cmake flex bison dos2unix curl tar zip linux-glibc-devel rpmdevtools python3 libopenssl-3-devel)
+    PKGLIST+=(git make gcc-c++ cmake flex bison dos2unix curl tar zip linux-glibc-devel rpmdevtools python3 libopenssl-3-devel qpdf)
+    GEMLIST+=(asciidoctor-pdf rouge)
+    [[ -n $LEAP                                 ]] && GEMLIST+=(asciidoctor)
+    [[ -n $LEAP                                 ]] && PKGLIST+=(ruby-devel)
+    [[ -n $TUMBLEWEED                           ]] && PKGLIST+=(rubygem-asciidoctor)
     [[ -z $NOEDITLINE                           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC                               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
     [[ -z $NORIST && ( -z $OS || $OS -ge 1505 ) ]] && PKGLIST+=(librist-devel)
@@ -402,6 +408,7 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
     sudo zypper install -y -l "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+    sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Arch Linux ==
