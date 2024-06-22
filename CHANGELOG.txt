@@ -2,12 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.38-3766
+VERSION 3.38-3794
 
 [IMP] Improvements on existing commands and plugins:
 
-  * The user guide is now installed in HTML format. The PDF file remains
-    available online, but is much larger.
+  * The documentation has been reorganized and is now built from asciidoc
+    format. The user guide is now installed in HTML format. A new developer's
+    guide is also available in HTML format and installed with the development
+    environment. The PDF versions are available online.
   * New options in existing commands and plugins:
     - Option --pid in plugin "eitinject".
     - Option --joint-termination in plugin "tables".

@@ -1,5 +1,5 @@
 /**
-@mainpage TSDuck Library for C++
+@mainpage TSDuck Programming Reference
 
 TSDuck is a toolkit which manipulates MPEG Transport Streams (TS).
 <br>
@@ -16,6 +16,9 @@ The TSDuck library offers generic C++ classes for operating systems features
 as well as specialized classes for MPEG/DVB transport streams. This library
 can be used as a general-purpose C++ library for third-party applications,
 outside the TSDuck tools and plugins.
+
+For Java and Python applications, TSDuck proposes an API for some high-level
+features, such as transport stream processing through a chain of plugins.
 
 The diagram below illustrates the TSDuck software architecture.
 
