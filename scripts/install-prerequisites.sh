@@ -437,7 +437,8 @@ elif [[ -f /etc/alpine-release ]]; then
     AL=$(sed /etc/alpine-release -e '/^[0-9][0-9]*\.[0-9]/!d' -e 's/^\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
     AL=$(( ${AL/.*/} * 100 + ${AL/*./} ))
 
-    PKGLIST+=(bash coreutils diffutils procps util-linux linux-headers git make cmake flex bison g++ dos2unix curl tar zip dpkg python3 openssl-dev)
+    PKGLIST+=(bash coreutils diffutils procps util-linux linux-headers git make cmake flex bison g++ dos2unix curl tar zip dpkg python3 openssl-dev asciidoctor qpdf)
+    GEMLIST+=(asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite-dev)
     [[ -z $NORIST && $AL -ge 316 ]] && PKGLIST+=(librist-dev)
@@ -453,6 +454,7 @@ elif [[ -f /etc/alpine-release ]]; then
     sudo sed -i '/http.*\/alpine\/v/s/^#//' /etc/apk/repositories
     sudo apk add "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+    sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Gentoo Linux ==
