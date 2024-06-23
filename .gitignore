@@ -49,6 +49,7 @@ Release-*
 *.so
 *.stackdump
 *.suo
+.*.swp
 *.t2d
 *.tgz
 *.tlog
