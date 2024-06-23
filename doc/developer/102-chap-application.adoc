@@ -399,7 +399,7 @@ They are now removed and new {cpp}11 classes such as `std::mutex` and `std::cond
 Note that the {cpp}11 class `std::thread` is not used.
 Its API is too limited to be useable in complex environments:
 it does not allow to customize the priority or the stack size _before_ the creation of the thread.
-Therefore, TSDuck exclusively use `ts::Thread` and `ts::ThreadAttributes` instead.
+Therefore, TSDuck exclusively uses `ts::Thread` and `ts::ThreadAttributes` instead.
 
 TSDuck relies on {cpp} mechanisms to track the usage of resources.
 Standard classes such as `std::lock_guard` or `std::unique_lock` are used
