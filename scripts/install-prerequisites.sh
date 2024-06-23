@@ -473,7 +473,8 @@ elif [[ -f /etc/alpine-release ]]; then
 
 elif [[ -f /etc/gentoo-release ]]; then
 
-    PKGLIST+=(sys-devel/gcc dev-vcs/git dev-build/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python dev-libs/openssl)
+    PKGLIST+=(sys-devel/gcc dev-vcs/git dev-build/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python dev-libs/openssl dev-ruby/asciidoctor app-text/qpdf)
+    GEMLIST+=(asciidoctor-pdf rouge)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(dev-libs/libedit)
     [[ -z $NOPCSC     ]] && PKGLIST+=(sys-apps/pcsc-lite)
     [[ -z $NOSRT      ]] && PKGLIST+=(net-libs/srt)
@@ -485,5 +486,6 @@ elif [[ -f /etc/gentoo-release ]]; then
     $DRYRUN && exit 0
 
     sudo emerge -n "${PKGOPTS[@]}" "${PKGLIST[@]}"
+    sudo gem install "${GEMLIST[@]}"
 
 fi
