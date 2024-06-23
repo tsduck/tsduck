@@ -30,7 +30,7 @@ namespace ts {
     public:
         // EASInbandDetailsChannelDescriptor public members:
         uint8_t  details_RF_channel = 0;      //!< RF channel number of the carrier.
-        uint16_t details_program_number = 0;  //!< Programe number, aka service id.
+        uint16_t details_program_number = 0;  //!< Program number, aka service id.
 
         //!
         //! Default constructor.
