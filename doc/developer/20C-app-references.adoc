@@ -1,0 +1,67 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-references]
+[appendix]
+== References
+
+[#acronyms]
+=== Acronyms and abbreviations
+
+[.compact-table]
+[cols="<1,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|ABI |Application Binary Interface
+|API |Application Programming Interface
+|BOM |Byte Order Mark (a feature of UTF-16 and UTF-32)
+|DRY |Don't Repeat Yourself (a good practice)
+|FOSS |Free and Open Source Software
+|GCC |GNU Compiler Collection
+|GPL |GNU General Public License
+|IDE |Integrated Development Environment (e.g. Eclipse, MS Visual Studio)
+|LGPL |Lesser GPL
+|MSC |Microsoft C/C++ Compiler
+|MSVC |Microsoft Visual C/C++
+|NIH |Not Invented Here (a bad practice)
+|OOD |Object-Oriented Design
+|OOP |Object-Oriented Programming
+|RTFM |The Most Important Acronym For Developers (yes, it is)
+|RTTI |Run-Time Type Information (C++)
+|SFINAE |Substitution Failure Is Not An Error (C++)
+|STL |Standard Template Library (C++)
+|TDD |Test-Driven Development
+|UTF |Unicode Transformation Format (UTF-8, UTF-16, UTF-32, etc.)
+|XP |eXtreme Programming
+|===
+
+[#bibliography]
+[bibliography]
+=== Bibliography
+
+* [[[CERT-C]]] "SEI CERT C Coding Standard, Rules for Developing Safe, Reliable and Secure Systems",
+  Software Engineering Institute, Carnegie Mellon University, 2016 Edition.
+* [[[CERT-CPP]]] "SEI CERT C++ Coding Standard, Rules for Developing Safe, Reliable and Secure Systems in C++",
+  Aaron Ballman, Software Engineering Institute, Carnegie Mellon University, 2016 Edition.
+* [[[CPPREF]]] http://en.cppreference.com/, Online reference of the C++ language and standard library.
+* [[[GAMMA]]] "Design Patterns, Elements of Reusable Object-Oriented Software",
+  Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides, Addison-Wesley, 1995.
+* [[[ISO-14882]] ISO/IEC 14882, "Programming Languages - C++", 1998 (the C++98 standard).
+* [[[ISO-14882-11]] ISO/IEC 14882:2011, "Programming Languages - C++", 2011 (the C++11 standard).
+* [[[ISO-14882-14]] ISO/IEC 14882:2014, "Programming Languages - C++", 2014 (the C++14 standard).
+* [[[ISO-14882-17]] ISO/IEC 14882:2017, "Programming Languages - C++", 2017 (the C++17 standard).
+* [[[JOSUTTIS]]] "The C++ Standard Library, A Tutorial and Reference", Nicolai M. Josuttis, Addison-Wesley, 1999.
+* [[[MEYERS-EFF]]] "Effective C++, Third Edition, 55 Specific Ways to Improve Your Programs and Designs",
+  Scott Meyers, Addison-Wesley, 2005.
+* [[[MEYERS-MORE]]] "More Effective C++, 35 New Ways to Improve Your Programs and Designs",
+  Scott Meyers, Addison-Wesley, 2008.
+* [[[MEYERS-STL]]] "Effective STL, 50 Specific Ways to Improve Your Use of the Standard Template Library",
+  Scott Meyers, Addison-Wesley, 2001.
+* [[[STROUSTRUP]]] "The C++ Programming Language, Special Edition", Bjarne Stroustrup, Addison-Wesley, 2000.
+* [[[TSDuck]]] TSDuck Web site, https://tsduck.io/
+* [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, https://github.com/tsduck/tsduck/issues
+* [[[TSDuck-Source]]] TSDuck source code repository, https://github.com/tsduck/tsduck

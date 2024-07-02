@@ -181,11 +181,33 @@ sup {
 sub {
     bottom: -.25em;
 }
+.noprebackground pre {
+    background: inherit !important;
+}
 .license {
     font-style: italic !important;
     font-size: 75% !important;
     color: var(--dark-spring-green);
     margin-left: 2em;
+}
+.codetext {
+    font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+    margin-left: 2em;
+}
+.rule {
+    background: var(--dark-spring-green);
+    color: white;
+    font-weight: bold;
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-radius: 10px;
+}
+.rule code {
+    background: var(--middle-green) !important;
+    color: inherit !important;
+    font-weight: bold;
 }
 
 /*---- objects ----*/
@@ -394,6 +416,10 @@ table thead tr th, table tfoot tr th, table tbody tr td, table tr td, table tfoo
     padding-bottom: 0;
     margin-top: 0;
     margin-bottom: 0;
+}
+table pre {
+    background: inherit !important;
+    padding: 0 !important;
 }
 
 /*---- buttons ----*/
@@ -1704,7 +1730,7 @@ b.conum * {
     }
 }
 
-/*---- override "rouge thankful_eyes" settings ----*/
+/*---- override "rouge thankful_eyes" settings (comments are hardly readable) ----*/
 pre.rouge .c, pre.rouge .ch, pre.rouge .cd, pre.rouge .cm, pre.rouge .cpf, pre.rouge .c1, pre.rouge .cs {
     color: var(--light-green) !important;
     font-weight: bold;

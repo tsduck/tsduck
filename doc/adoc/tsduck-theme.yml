@@ -53,16 +53,23 @@ role:
     font-color: $brand-dark-spring-green
   usage:
     font-size: 11
-    font-style: bold    
+    font-style: bold
   opt:
     font-color: $brand-dark-spring-green
     font_family: M+ 1mn
   optdoc:
-    # None of these work, not supported in custom roles :(
+    # None of these work, not supported in custom roles.
     # indent: $horizontal_rhythm * 4
     # indent: 10pt
     # padding: [0, 0, 0, 10pt]  # [top, right, bottom, left]
     # margin: [0, 0, 0, 10pt]  # [top, right, bottom, left]
+  rule:
+    # background-color does not work on paragraphs for custom roles.
+    font-color: $brand-dark-spring-green
+    font-style: bold_italic
+    font-size: 10
+  codetext:
+    font-family: $codespan-font-family
 
 link:
   font-color: $brand-middle-green
