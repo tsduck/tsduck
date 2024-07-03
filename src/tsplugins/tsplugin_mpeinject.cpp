@@ -13,6 +13,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsUDPReceiver.h"
+#include "tsUDPReceiverArgsList.h"
 #include "tsMPEPacket.h"
 #include "tsPacketizer.h"
 #include "tsMessageQueue.h"
@@ -56,6 +57,7 @@ namespace ts {
         bool       _pack_sections = false;  // Packet DSM-CC section, without stuffing in TS packets.
         size_t     _max_queued = DEFAULT_MAX_QUEUED_SECTION; // Max number of queued sections.
         MACAddress _default_mac {};         // Default MAC address in MPE section for unicast packets.
+        UDPReceiverArgsList _recv_args {};  // Receiver options.
 
         // Working data.
         volatile bool  _terminate = false;  // Force termination flag for thread.
@@ -73,13 +75,7 @@ namespace ts {
             TS_NOBUILD_NOCOPY(ReceiverThread);
         public:
             // Constructor.
-            ReceiverThread(MPEInjectPlugin* plugin);
-
-            // Read command line options for this receiver.
-            bool getOptions(size_t index);
-
-            // Total number of receivers (after getOptions).
-            size_t receiverCount() const { return _sock.receiverCount(); }
+            ReceiverThread(MPEInjectPlugin* plugin, const UDPReceiverArgs& opt, size_t index, size_t receiver_count);
 
             // Open/close UDP socket.
             bool openSocket() { return _sock.open(*_plugin); }
@@ -94,7 +90,7 @@ namespace ts {
             IPv4SocketAddress _new_source {};  // Masquerade source socket in MPE section.
             IPv4SocketAddress _new_dest {};    // Masquerade destination socket in MPE section.
             UDPReceiver       _sock;           // Incoming socket with associated command line options.
-            size_t            _index = 0;      // Receiver index.
+            size_t            _index;          // Receiver index.
         };
     };
 }
@@ -109,9 +105,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"mpeinject", ts::MPEInjectPlugin);
 ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port ...")
 {
-    // Use a dummy UDP receiver to define common options.
-    UDPReceiver dummy(*this);
-    dummy.defineArgs(*this, true, true, true);
+    _recv_args.defineArgs(*this, true, true, true);
 
     option(u"mac-address", 0, STRING);
     help(u"mac-address", u"nn:nn:nn:nn:nn:nn",
@@ -124,8 +118,8 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
          u"Specify the maximum number of queued UDP datagrams before their insertion "
          u"into the MPE stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_SECTION) u".");
 
-    option(u"new-destination", 0, STRING, 0, UNLIMITED_COUNT);
-    help(u"new-destination", u"address[:port]",
+    option(u"new-destination", 0, IPSOCKADDR_OP, 0, UNLIMITED_COUNT);
+    help(u"new-destination",
          u"Change the destination IP address and UDP port in MPE sections. "
          u"If the port is not specified, the original destination port from the UDP datagram is used. "
          u"By default, the destination address is not modified.\n"
@@ -134,8 +128,8 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
          u"It there are less --new-destination options than receivers, the last --new-destination "
          u"applies for all remaining receivers.");
 
-    option(u"new-source", 0, STRING, 0, UNLIMITED_COUNT);
-    help(u"new-source", u"address[:port]",
+    option(u"new-source", 0, IPSOCKADDR_OP, 0, UNLIMITED_COUNT);
+    help(u"new-source",
          u"Change the source IP address and UDP port in MPE sections. If the port is "
          u"not specified, the original source port from the UDP datagram is used. By "
          u"default, the source address is not modified.\n"
@@ -164,19 +158,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Constructor for a receiver thread.
-//----------------------------------------------------------------------------
-
-ts::MPEInjectPlugin::ReceiverThread::ReceiverThread(MPEInjectPlugin* plugin) :
-    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _plugin(plugin),
-    _sock(*_plugin)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Get command line options at plugin level.
+// Get command line options.
 //----------------------------------------------------------------------------
 
 bool ts::MPEInjectPlugin::getOptions()
@@ -190,53 +172,51 @@ bool ts::MPEInjectPlugin::getOptions()
     if (!mac_address.empty() && !_default_mac.resolve(mac_address, *this)) {
         return false;
     }
+    if (!_recv_args.loadArgs(duck, *this)) {
+        return false;
+    }
 
     // Clearing the vector of receivers automatically deallocated previous receivers (if any).
     _receivers.clear();
 
-    // There must be at least one receiver.
-    do {
-        _receivers.push_back(std::make_shared<ReceiverThread>(this));
-        if (!_receivers.back()->getOptions(_receivers.size() - 1)) {
-            return false;
-        }
-    } while (_receivers.size() < _receivers.back()->receiverCount());
+    // Create all receivers and set options.
+    for (size_t i = 0; i < _recv_args.size(); ++i) {
+        _receivers.push_back(std::make_shared<ReceiverThread>(this, _recv_args[i], i, _recv_args.size()));
+    }
 
-    return true;
+    return !gotErrors();
 }
 
 
 //----------------------------------------------------------------------------
-// Read command line options for one receiver.
+// Constructor for a receiver thread.
 //----------------------------------------------------------------------------
 
-bool ts::MPEInjectPlugin::ReceiverThread::getOptions(size_t index)
+ts::MPEInjectPlugin::ReceiverThread::ReceiverThread(MPEInjectPlugin* plugin, const UDPReceiverArgs& opt, size_t index, size_t receiver_count) :
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
+    _plugin(plugin),
+    _sock(*_plugin),
+    _index(index)
 {
-    _index = index;
-
-    // Load UDP options. Note that the command line syntax was defined on the plugin
-    // using a separate dummy instance of UDPReceiver. So we need to respecify that
-    // the UDP destination is in the parameter, not as option --ip-udp.
-    if (!_sock.loadArgs(true, _plugin->duck, *_plugin, _index)) {
-        return false;
-    }
+    // Set UDP socket options.
+    _sock.setParameters(opt);
 
     // Get optional new source and destination.
-    const size_t max_count = _sock.receiverCount();
     const size_t dst_count = _plugin->count(u"new-destination");
     const size_t src_count = _plugin->count(u"new-source");
 
-    if (dst_count > max_count) {
+    if (dst_count > receiver_count) {
         _plugin->error(u"too many --new-destination options");
-        return false;
     }
-    if (src_count > max_count) {
+    if (src_count > receiver_count) {
         _plugin->error(u"too many --new-source options");
-        return false;
     }
-
-    return (dst_count == 0 || _new_dest.resolve(_plugin->value(u"new-destination", u"", std::min(_index, dst_count - 1)), *_plugin)) &&
-           (src_count == 0 || _new_source.resolve(_plugin->value(u"new-source", u"", std::min(_index, src_count - 1)), *_plugin));
+    if (dst_count > 0) {
+        _plugin->getSocketValue(_new_dest, u"new-destination", IPv4SocketAddress(), std::min(_index, dst_count - 1));
+    }
+    if (src_count > 0) {
+        _plugin->getSocketValue(_new_source, u"new-source", IPv4SocketAddress(), std::min(_index, src_count - 1));
+    }
 }
 
 

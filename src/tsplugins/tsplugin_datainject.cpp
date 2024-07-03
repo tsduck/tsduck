@@ -772,7 +772,9 @@ ts::DataInjectPlugin::UDPListener::UDPListener(DataInjectPlugin* plugin) :
 
 bool ts::DataInjectPlugin::UDPListener::open()
 {
-    _client.setParameters(_plugin->_udp_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
+    UDPReceiverArgs args;
+    args.setUnicast(_plugin->_udp_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
+    _client.setParameters(args);
     return _client.open(_report);
 }
 
