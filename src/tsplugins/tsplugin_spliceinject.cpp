@@ -996,7 +996,9 @@ ts::SpliceInjectPlugin::UDPListener::UDPListener(SpliceInjectPlugin* plugin) :
 // Open the UDP socket.
 bool ts::SpliceInjectPlugin::UDPListener::open()
 {
-    _client.setParameters(_plugin->_server_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
+    UDPReceiverArgs args;
+    args.setUnicast(_plugin->_server_address, _plugin->_reuse_port, _plugin->_sock_buf_size);
+    _client.setParameters(args);
     return _client.open(*_plugin);
 }
 

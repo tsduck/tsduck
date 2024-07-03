@@ -18,7 +18,6 @@
 #include "tsTablesDisplay.h"
 #include "tsUDPReceiver.h"
 #include "tsTablesLogger.h"
-#include "tsSection.h"
 #include "tsIPProtocols.h"
 #include "tsSysUtils.h"
 #include "tsPagerArgs.h"
@@ -39,7 +38,7 @@ namespace {
         ts::DuckContext       duck {this};               // TSDuck execution context.
         ts::TablesDisplay     display {duck};            // Options about displaying tables
         ts::PagerArgs         pager {true, true};        // Output paging options.
-        ts::UDPReceiver       udp {*this};               // Options about receiving UDP tables
+        ts::UDPReceiverArgs   udp {};                    // Options about receiving UDP tables
         ts::duck::Protocol    duck_protocol {};          // To analyze incoming UDP messages
         std::vector<fs::path> infiles {};                // Input file names
         ts::CRC32::Validation crc_validation = ts::CRC32::CHECK;  // Validation of CRC32 in input sections
@@ -59,7 +58,7 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForCharset(*this);
     pager.defineArgs(*this);
     display.defineArgs(*this);
-    udp.defineArgs(*this, false, false, false);
+    udp.defineArgs(*this, false, false);
 
     option(u"", 0, FILENAME);
     help(u"",
@@ -95,7 +94,7 @@ Options::Options(int argc, char *argv[]) :
     no_encapsulation = present(u"no-encapsulation");
     crc_validation = present(u"ignore-crc32") ? ts::CRC32::IGNORE : ts::CRC32::CHECK;
 
-    if (!infiles.empty() && udp.receiverSpecified()) {
+    if (!infiles.empty() && udp.destination.hasPort()) {
         error(u"specify input files or --ip-udp, but not both");
     }
 
@@ -104,14 +103,16 @@ Options::Options(int argc, char *argv[]) :
 
 
 //----------------------------------------------------------------------------
-//  Dump sections from UDP. Return true on success.
+// Dump sections from UDP. Return true on success.
 //----------------------------------------------------------------------------
 
 namespace {
     bool DumpUDP(Options& opt)
     {
         // Initialize UDP receiver.
-        if (!opt.udp.open(opt)) {
+        ts::UDPReceiver sock(opt);
+        sock.setParameters(opt.udp);
+        if (!sock.open(opt)) {
             return false;
         }
 
@@ -131,7 +132,7 @@ namespace {
 
             // Wait for a UDP message
             size_t insize = 0;
-            ok = opt.udp.receive(packet.data(), packet.size(), insize, sender, destination, nullptr, opt);
+            ok = sock.receive(packet.data(), packet.size(), insize, sender, destination, nullptr, opt);
 
             // Check packet.
             assert(insize <= packet.size());
@@ -173,7 +174,7 @@ namespace {
         }
 
         // Terminate UDP reception.
-        ok = opt.udp.close(opt) && ok;
+        ok = sock.close(opt) && ok;
         return ok;
     }
 }
@@ -221,7 +222,7 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+// Program entry point
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
@@ -232,7 +233,7 @@ int MainCode(int argc, char *argv[])
 
     // Dump files or network packets.
     opt.pager.output(opt) << std::endl;
-    if (opt.udp.receiverSpecified()) {
+    if (opt.udp.destination.hasPort()) {
         ok = DumpUDP(opt);
     }
     else if (opt.infiles.size() == 0) {

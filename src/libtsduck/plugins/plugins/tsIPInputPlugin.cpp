@@ -9,7 +9,6 @@
 #include "tsIPInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsIPProtocols.h"
-#include "tsSysUtils.h"
 
 TS_REGISTER_INPUT_PLUGIN(u"ip", ts::IPInputPlugin);
 
@@ -21,11 +20,10 @@ TS_REGISTER_INPUT_PLUGIN(u"ip", ts::IPInputPlugin);
 ts::IPInputPlugin::IPInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE, u"Receive TS packets from UDP/IP, multicast or unicast", u"[options] [address:]port",
                                 u"kernel", u"A kernel-provided time-stamp for the packet, when available (Linux only)",
-                                true), // real-time network reception
-    _sock(*tsp_)
+                                true) // real-time network reception
 {
     // Add UDP receiver common options.
-    _sock.defineArgs(*this, true, true, false);
+    _sock_args.defineArgs(*this, true, true);
 }
 
 
@@ -36,7 +34,9 @@ ts::IPInputPlugin::IPInputPlugin(TSP* tsp_) :
 bool ts::IPInputPlugin::getOptions()
 {
     // Get command line arguments for superclass and socket.
-    return AbstractDatagramInputPlugin::getOptions() && _sock.loadArgs(duck, *this);
+    const bool ok =  AbstractDatagramInputPlugin::getOptions() && _sock_args.loadArgs(duck, *this, _sock.parameters().receive_timeout);
+    _sock.setParameters(_sock_args);
+    return ok;
 }
 
 

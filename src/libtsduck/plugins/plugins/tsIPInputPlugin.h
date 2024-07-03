@@ -36,6 +36,7 @@ namespace ts {
         virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource) override;
 
     private:
-        UDPReceiver _sock; // Incoming socket with associated command line options.
+        UDPReceiverArgs _sock_args {};
+        UDPReceiver     _sock {*tsp};
     };
 }

@@ -40,8 +40,10 @@ ts::tsswitch::CommandListener::~CommandListener()
 
 bool ts::tsswitch::CommandListener::open()
 {
-    // Set command line parameters.
-    _sock.setParameters(_opt.remoteServer, _opt.reusePort, _opt.sockBuffer);
+    // Command receiver parameters.
+    UDPReceiverArgs sock_args;
+    sock_args.setUnicast(_opt.remoteServer, _opt.reusePort, _opt.sockBuffer);
+    _sock.setParameters(sock_args);
 
     // Open the UDP receiver and start the thread.
     return _sock.open(_log) && start();

@@ -45,6 +45,7 @@ namespace ts {
         volatile bool    _terminate = false;
         size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
         IPv4AddressSet   _allowedRemote {};
+        UDPReceiverArgs  _sock_args {};
         UDPReceiver      _sock {*this};
         CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};
         TSPacketLabelSet _set_labels {};
@@ -66,7 +67,7 @@ ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE))
 {
     // UDP receiver common options.
-    _sock.defineArgs(*this, true, true, false);
+    _sock_args.defineArgs(*this, true, true);
 
     option(u"allow", 'a', STRING);
     help(u"allow", u"address",
@@ -86,8 +87,11 @@ ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
 
 bool ts::CutoffPlugin::getOptions()
 {
-    bool ok = true;
     _max_queued = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_COMMANDS);
+
+    // Get UDP options.
+    bool ok = _sock_args.loadArgs(duck, *this, _sock.parameters().receive_timeout);
+    _sock.setParameters(_sock_args);
 
     // Resolve all allowed remote.
     UStringVector remotes;
@@ -103,8 +107,7 @@ bool ts::CutoffPlugin::getOptions()
         }
     }
 
-    // Get UDP options.
-    return _sock.loadArgs(duck, *this) && ok;
+    return ok;
 }
 
 
