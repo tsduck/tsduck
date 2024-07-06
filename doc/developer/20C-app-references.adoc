@@ -50,10 +50,10 @@
 * [[[CPPREF]]] http://en.cppreference.com/, Online reference of the C++ language and standard library.
 * [[[GAMMA]]] "Design Patterns, Elements of Reusable Object-Oriented Software",
   Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides, Addison-Wesley, 1995.
-* [[[ISO-14882]] ISO/IEC 14882, "Programming Languages - C++", 1998 (the C++98 standard).
-* [[[ISO-14882-11]] ISO/IEC 14882:2011, "Programming Languages - C++", 2011 (the C++11 standard).
-* [[[ISO-14882-14]] ISO/IEC 14882:2014, "Programming Languages - C++", 2014 (the C++14 standard).
-* [[[ISO-14882-17]] ISO/IEC 14882:2017, "Programming Languages - C++", 2017 (the C++17 standard).
+* [[[ISO-14882]]] ISO/IEC 14882, "Programming Languages - C++", 1998 (the C++98 standard).
+* [[[ISO-14882-11]]] ISO/IEC 14882:2011, "Programming Languages - C++", 2011 (the C++11 standard).
+* [[[ISO-14882-14]]] ISO/IEC 14882:2014, "Programming Languages - C++", 2014 (the C++14 standard).
+* [[[ISO-14882-17]]] ISO/IEC 14882:2017, "Programming Languages - C++", 2017 (the C++17 standard).
 * [[[JOSUTTIS]]] "The C++ Standard Library, A Tutorial and Reference", Nicolai M. Josuttis, Addison-Wesley, 1999.
 * [[[MEYERS-EFF]]] "Effective C++, Third Edition, 55 Specific Ways to Improve Your Programs and Designs",
   Scott Meyers, Addison-Wesley, 2005.
