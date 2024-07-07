@@ -521,6 +521,32 @@
 
 
 //----------------------------------------------------------------------------
+// Windows oddities.
+//----------------------------------------------------------------------------
+
+#if defined(TS_WINDOWS) && !defined(DOXYGEN)
+    //
+    // Workaround for MSVC runtime compatibility mess.
+    //
+    // With MSVC compiler version 19.40.33811 and mscvp140.dll 14.40.33810.00, the class std::mutex has a constexpr
+    // constructor. No explicit constructor is called, the mutex memory is correctly initialized. However, when
+    // this application code is executed in the context of an older mscvp140.dll (as brought by another application
+    // for instance), the older runtime crashes when trying to acquire the mutex, because the mutex memory area is
+    // not properly initialized, according to this older runtime.
+    //
+    // The problem originally appeared on GitHub Actions windows-2022 runner version 2.317.0, image version 20240603.1.0.
+    // But it expanded to other environments such as Java. If the installed JVM contains an older mscvp140.dll, the
+    // Java application crashes when loading the TSDuck DLL in the JNI initialization.
+    //
+    // The symbol below disables the constexpr constructor and reverts to the older behaviour. Thus, the compiled
+    // TSDuck code becomes compatible with older and newer mscvp140.dll. This definition should be removed some day,
+    // when all environments are upgraded to a recent mscvp140.dll, which means probably never...
+    //
+    #define _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR 1
+#endif
+
+
+//----------------------------------------------------------------------------
 // Static linking.
 //----------------------------------------------------------------------------
 
