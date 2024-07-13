@@ -183,6 +183,7 @@ Therefore, these values can be simply copied / pasted in subsequent command line
 ----
 --count 3,100,456
 --count 3100456
+--count 0x002F4F28
 ----
 
 When the same option is allowed to be specified several times in one command,
@@ -421,7 +422,7 @@ See xref:chap-userconfig[xrefstyle=short] for a complete reference of the TSDuck
 
 ==== Bash command line completion
 
-For `bash users, when the `bash-completion` package is installed, specific completion scripts are added for TSDuck.
+For `bash` users, when the `bash-completion` package is installed, specific completion scripts are added for TSDuck.
 Plugin names, command and plugin options, predefined enumeration values for options are automatically completed.
 
 On Linux, the completions are automatically defined.

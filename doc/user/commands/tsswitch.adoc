@@ -36,7 +36,7 @@ When the last plugin terminates, the `tsswitch` command terminates.
 Running all input plugins in sequence, from 0 to n-1, is called a cycle.
 By default, only one cycle is executed before `tsswitch` terminates.
 Using the option `--cycle`, it is possible to execute a given number of cycles.
-With the option` --infinite`, `tsswitch` runs endlessly.
+With the option `--infinite`, `tsswitch` runs endlessly.
 
 With the option `--terminate`, `tsswitch` terminates when the current plugin terminates.
 In this case, without remote control, `tsswitch` only executes the first plugin.
@@ -85,7 +85,7 @@ Any trailing control characters such as CR or LF is ignored.
 
 The command string can be one of:
 
-* An input index (e.g. `0`, `1`, `2`", etc.)
+* An input index (e.g. `0`, `1`, `2`, etc.)
   Upon reception, tsswitch immediately switches to the selected input plugin.
 * Strings `next` and `previous` (or `prev`) to switch to the next and previous input, respectively.
 * Strings `exit` or `quit` to properly terminate `tsswitch`.
@@ -388,7 +388,7 @@ Event notification options
 
 The following options are used to notify external systems of events occurring in `tsswitch`.
 Currently, only one type of event is defined:
-its name is `newinput and is signalled when input switching occurs
+its name is `newinput` and is signalled when input switching occurs
 (including the first input when `tsswitch` starts).
 
 [.opt]

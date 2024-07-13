@@ -16,7 +16,7 @@ This plugin generates EIT’s from a database of events and injects those EIT’
 The plugin can selectively generate "EIT actual" and/or "EIT other" and "EIT present/following" (or "p/f") and/or "EIT schedule".
 
 EIT’s are "injected" in the transport stream by replacing null packets or pre-existing EIT packets.
-All EIT’s are injected by default in the DVB-defined PID for EIT’s, the PID number 18 (see also option `--pid').
+All EIT’s are injected by default in the DVB-defined PID for EIT’s, the PID number 18 (see also option `--pid`).
 There must be enough null or EIT packets to replace, otherwise EIT’s won’t be correctly injected or not injected at all.
 
 The events can be loaded at any time but the actual EIT injection can start only
