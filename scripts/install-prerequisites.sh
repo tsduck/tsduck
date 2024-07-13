@@ -36,6 +36,12 @@
 #  - NetBSD
 #  - DragonFlyBSD
 #
+#  Note on Slackware: TSDuck has been built and tested on Slackware Linux.
+#  However, Slackware is not a very friendly distro for automation. It has
+#  not been possible to find an automated way to setup the required environment
+#  to build TSDuck in this script. Contributions from Slackware experts are
+#  welcome.
+#
 #  The following options are the same symbols which can be used with make.
 #  They disable a TSDuck feature and remove some dependencies. If specified
 #  when calling this script, the corresponding prerequisites are not installed.

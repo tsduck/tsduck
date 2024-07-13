@@ -57,7 +57,7 @@ TSDuck has been tested on the following operating systems on at least one CPU ar
 |Tested on Intel only
 
 |Linux
-|Ubuntu, Debian, Raspbian, Mint, Fedora, Red Hat, CentOS, Rocky, Alma, openSUSE, Arch, Alpine, Gentoo
+|Ubuntu, Debian, Raspbian, Mint, Fedora, Red Hat, CentOS, Rocky, Alma, openSUSE, Arch, Alpine, Gentoo, Slackware
 
 |BSD
 |FreeBSD, OpenBSD, NetBSD, DragonFlyBSD
@@ -177,6 +177,12 @@ there is generally no need to re-run this script later.
 The packages will be updated as part of the system system updates.
 Note, however, that a new version of TSDuck may require additional dependencies.
 In case of build error, it can be wise to run `scripts/install-prerequisites.sh` again and retry.
+
+CAUTION: Although TSDuck has been built and tested on Slackware, the script `install-prerequisites.sh`
+does not support this distro yet. Slackware is not very friendly for automation.
+Some package shall be individually searched for a specific version and installed by hand.
+It has not been possible to find an automated way to setup the required environment to build TSDuck.
+Should this be possible, contributions from Slackware experts are welcome.
 
 [#cpprequnix]
 ===== {cpp} compiler requirements
