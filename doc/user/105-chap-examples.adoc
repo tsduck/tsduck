@@ -1047,7 +1047,7 @@ Here, to select packets matching two conditions (an "and" selection), we chain t
 
 The following example demonstrates how to monitor the EMM’s for a given operator.
 
-The first command determines on which PID are sent the EMM`s.
+The first command determines on which PID the EMM's are sent.
 This command analyzes the satellite transponder which carries the channel Canal+ during 2 seconds.
 Instead of the full human-readable analysis report, we ask for a _normalized_ output format
 and we filter the conditions we need:
@@ -3055,7 +3055,8 @@ This tunnel contains the 4 PID’s of the service "CNEWS", PMT, video, audio and
 The plugins `pat` and `sdt` remove the service from the PAT and SDT, respectively.
 At this point, the service "CNEWS" has disappeared but the new PID 0x1000 is orphan.
 
-To preserve this PID through the processing of the service "CANAL+ DECALE", we add it to the PMT of the service using the plugin `pmt.
+To preserve this PID through the processing of the service "CANAL+ DECALE",
+we add it to the PMT of the service using the plugin `pmt`.
 We use the reserve stream type 0x99 for this PID to indicate some private type (any other reserved stream type should be OK).
 
 After processing the SPTS through the external equipment

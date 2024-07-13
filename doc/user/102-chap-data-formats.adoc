@@ -783,7 +783,7 @@ The available table names for option `--default-charset` are:
 ** `RAW-ISO-8859-14`
 ** `RAW-ISO-8859-15`
 ** `RAW-UTF-8`
-** `RAW-UNICODE (in fact `UTF-16`)
+** `RAW-UNICODE` (in fact `UTF-16`)
 * Debug character set.
 [.compact-list]
 ** `DUMP`
@@ -1010,7 +1010,7 @@ Similarly, the special attribute `x-node` is used to add or delete an entire XML
 
 * `x-node="delete"` +
   The matching node is completely removed.
-* `x-node="delete(X)"' +
+* `x-node="delete(X)"` +
   The next parent with name `X` above the matching node is completely removed.
 * `x-node="add"`
   In this case, the matching node is the parent one.

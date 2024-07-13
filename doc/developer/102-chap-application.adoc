@@ -899,7 +899,7 @@ m|tstabcomp
 |n/a
 |ts::PluginEventContext
 |io.tsduck.PluginEventContext
-|tsduck.PluginEventContext`
+|tsduck.PluginEventContext
 
 |===
 

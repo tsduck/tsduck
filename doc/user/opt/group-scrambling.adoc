@@ -29,7 +29,7 @@ Note that this is a non-standard TS scrambling mode.
 The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA (DVB-CISSA is the same as AES-CBC with a DVB-defined IV).
 
 [.optdoc]
-With the plugin `scrambler', a _scrambling_descriptor_ is automatically added to the PMT of the service
+With the plugin `scrambler`, a _scrambling_descriptor_ is automatically added to the PMT of the service
 to indicate the use of AES-CBC scrambling.
 Since there is no standard value for AES-CBC, the user-defined _scrambling_mode_ value 0xF0 is used.
 
@@ -50,7 +50,7 @@ Note that this is a non-standard TS scrambling mode.
 The only standard AES-based scrambling modes are ATIS-IDSA and DVB-CISSA.
 
 [.optdoc]
-With the plugin `scrambler', a _scrambling_descriptor_ is automatically added to the PMT of the service
+With the plugin `scrambler`, a _scrambling_descriptor_ is automatically added to the PMT of the service
 to indicate the use of AES-CTR scrambling.
 Since there is no standard value for AES-CTR, the user-defined _scrambling_mode_ value 0xF1 is used.
 

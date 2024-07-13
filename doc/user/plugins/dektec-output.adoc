@@ -556,7 +556,7 @@ See xref:[xrefstyle=short] A.3 page 492 for more details.
 
 [.optdoc]
 DVB-T2 modulators: indicate the MISO mode.
-Must be one of `OFF`, `1, `2` or `BOTH`.
+Must be one of `OFF`, `1`, `2` or `BOTH`.
 The default is `OFF`.
 This mode can be used to simulate antenna 1, antenna 2, or the average of antenna 1 and antenna 2
 to simulate reception halfway between the antennas.
