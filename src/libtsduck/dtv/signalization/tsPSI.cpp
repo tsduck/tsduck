@@ -116,8 +116,6 @@ bool ts::StreamTypeIsHEVC(uint8_t st)
 
 bool ts::StreamTypeIsVVC(uint8_t st)
 {
-    // Warning: at this time, the stream types for VVC / H.266 are still unclear.
-    // Be sure to verity this on further versions of the ISO 13818-1 standard.
     return st == ST_VVC_VIDEO        ||
            st == ST_VVC_VIDEO_SUBSET;
 }
