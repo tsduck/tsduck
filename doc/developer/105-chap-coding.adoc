@@ -1071,7 +1071,7 @@ of Free (_"free as in freedom"_) and Open Source Software.
 Several topics must be studied when using FOSS:
 
 [.compact-list]
-* The license of your software (FOSS or not).
+* The license of _your_ software (FOSS or not).
 * The license of the FOSS you plan to use.
 * Your usage of that FOSS.
 * The planned deployment of your software.
@@ -1094,16 +1094,23 @@ GPL is typically designed for dynamically linked libraries. But some libraries a
 And some cases are borderline. Dynamic reference (`dlopen()`) of GPL'ed shared libraries on Linux
 is a disputed subject for instance.
 
+Because the TSDuck source code is released under the BSD-2-Clause license, it is usually permitted to
+copy and paste a few lines of code from another project which is released under another permissive license.
+This license must be compatible with the BSD-2-Clause license. Don't forget to check and take any requested action,
+such as mentioning the original author, software, copyright or license.
+However, it is not permitted to copy source code which is released under a restrictive license such as GPL or LGPL.
+These licenses are not compatible with permissive licences such as the BSD licences.
+
 Finally, the type of deployment of your software matters. For proprietary software which is distributed
 outside the company where it is developed (commercially or even for free), the license of the FOSS applies.
 But for internal proprietary tools which are never distributed, you may usually do what you want.
+This rule does not apply to community projects such as TSDuck but it is worth remembering.
 
 As a rule of thumb, FOSS with a permissive license such as TSDuck may freely use other FOSS with
 another permissive license. However, using FOSS with a restrictive license must be done with care:
 
 [.compact-list]
-* LGPL libraries can be accessed through dynamic linking.
-* LGPL libraries cannot be accessed through static linking or dynamic loading (`dlopen()`).
+* LGPL libraries can be accessed through dynamic linking only. Static linking or dynamic loading (`dlopen()`) are prohibited.
 * GPL applications can be started through `exec()` system calls or equivalent.
 * GPL libraries cannot be used.
 
@@ -1111,7 +1118,9 @@ As an example, `libreadline` is one of the few libraries with a GPL license, not
 As a consequence, a BSD-licensed software such as TSDuck cannot use it.
 Fortunately, there is an equivalent library named `libedit` with almost the same features as `libreadline`
 and a BSD license. Therefore, TSDuck uses `libedit` instead of `libreadline`.
-(In practice, `libedit` has been developed only because of the unfriendly license of `libreadline`).
+
+NOTE: In practice, `libedit` has been developed only because of the unfriendly license of `libreadline`.
+Similarly, many new software now avoid the GPL license.
 
 In all cases, this subject is too complicated for us, the developers.
 In case of doubt, get a legal advice first.
@@ -1185,8 +1194,9 @@ Any people name in comment (author, developer, etc.) shall be used without accen
 
 WARNING: Avoid "national pride" of non-English characters.
 Contributors shall accept to drop them from their name, if any.
-Please consider that the main author of TSDuck is named "Lelégard", with an accent on the second "e",
+As an example, the main author of TSDuck is named "Lelégard", with an accent on the second "e",
 but the name is simply stored as "Lelegard" (no accent) in all source files.
+All contributors are kindly requested to accept this rule.
 
 [.rule]
 [Convention] Use UTF-8 encoding when internationalization is required.

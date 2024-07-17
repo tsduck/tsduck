@@ -90,7 +90,7 @@ and insert the following line just before the final `</Project>` closing tag:
 
 [source,xml]
 ----
-<Import Project="$(TSDUCK)\tsduck.props" />
+<Import Project="$(TSDUCK)\tsduck.props"/>
 ----
 
 Then build your project normally.

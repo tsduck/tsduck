@@ -115,7 +115,7 @@ m32:
 
 # Generate the documentation.
 
-DOC_TARGETS = doxygen docs \
+DOC_TARGETS = doxygen docs docs-html docs-pdf \
     userguide userguide-html userguide-pdf open-userguide open-userguide-html open-userguide-pdf \
     devguide devguide-html devguide-pdf open-devguide open-devguide-html open-devguide-pdf
 

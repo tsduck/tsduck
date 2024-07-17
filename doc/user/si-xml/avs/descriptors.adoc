@@ -10,7 +10,7 @@
 
 ==== AVS3_video_descriptor
 
-Defined by AVS in T/AI 109-6.
+Defined by AVS in <<AVS-TAI-109.6>>.
 
 [source,xml]
 ----

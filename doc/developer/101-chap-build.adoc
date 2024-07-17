@@ -149,7 +149,7 @@ If you don't like the details, just run this:
 $ git clone https://github.com/tsduck/tsduck.git
 $ cd tsduck
 $ scripts/install-prerequisites.sh
-$ make -j10 default docs
+$ make -j10 default docs-html
 $ sudo make install
 ----
 
@@ -377,10 +377,10 @@ The following `make` variables can be defined:
 |NOTEST |Do not build unitary tests.
 |NODEKTEC |No Dektec device support, remove dependency to `DTAPI`.
 |NOHIDES |No HiDes device support.
-|NOVATEK |No VATek device support (modulators based on VATek chips).
+|NOVATEK |No VATek device support (modulators based on VATek chips), remove dependency to `libvatek`.
 |NOCURL |No HTTP support, remove dependency to `libcurl`.
 |NOPCSC |No smartcard support, remove dependency to `pcsc-lite`.
-|NOEDITLINE |No interactive line editing, remove dependency to libedit.
+|NOEDITLINE |No interactive line editing, remove dependency to `libedit`.
 |NOSRT |No SRT support (Secure Reliable Transport), remove dependency to `libsrt`.
 |NORIST |No RIST support (Reliable Internet Stream Transport), remove dependency to `librist`.
 |NOHWACCEL |Disable hardware acceleration such as crypto instructions.
@@ -393,6 +393,9 @@ The following command, for instance, builds TSDuck without dependency to `pcsc-l
 ----
 $ make NOPCSC=1 NOCURL=1 NODEKTEC=1
 ----
+
+Note that some dependencies such as `openssl` (cryptographic library) cannot be removed
+because they are deeply used inside TSDuck.
 
 [#builddebug]
 ===== Building with specific debug capabilities
@@ -731,16 +734,16 @@ There are three sets of TSDuck documents:
 2. TSDuck Developer's Guide (HTML and PDF)
 3. TSDuck Programming Reference (HTML only)
 
-The first two documents are written in Asciidoc format.
-Their HTML and PDF versions are built using Asciidoctor.
+The first two documents are written in https://asciidoc.org[Asciidoc] format.
+Their HTML and PDF versions are built using https://docs.asciidoctor.org[Asciidoctor].
 The two HTML files are large standalone files, without reference to any other local file;
 they can be safely copied without breaking the navigation.
 
-These two guides are installed with TSDuck, HTML and PDF version, on {unix} and Windows.
+These two guides are installed with TSDuck on {unix} and Windows (HTML version only).
 
 The TSDuck Programming Reference contains the documentation of all public classes
 which can be used by applications in {cpp}, Java, or Python.
-This reference is built using Doxygen.
+This reference is built using https://www.doxygen.nl[Doxygen].
 
 TIP: Asciidoctor and Doxygen are automatically installed by the scripts `install-prerequisites.sh`
 on {unix} and `install-prerequisites.ps1` on Windows.
@@ -762,7 +765,7 @@ $ make docs
 ----
 
 Because the two guides are installed with the rest of TSDuck,
-the target `docs` is automatically as part of `make install`.
+they are automatically rebuilt as part of `make install`.
 
 The following targets are also available to build a subset of the guides:
 
@@ -782,6 +785,8 @@ The following targets are also available to build a subset of the guides:
 |open-devguide-pdf |Build the developer's guide PDF version and opens it with the default PDF viewer
 |open-devguide |Build the developer's guide HTML and PDF versions and opens them with their default viewers
 |docs |Build the four document, user and developer, HTML and PDF
+|docs-html |Build the user and developer's guide in HTML format
+|docs-pdf |Build the user and developer's guide in PDF format
 |===
 
 The programming reference is built using the target `doxygen`.
@@ -849,6 +854,7 @@ are available for 64-bit Windows on Intel systems.
 All tools, plugins and development environments are in the same installer.
 Running the installer provides several options:
 
+[.compact-list]
 * Tools & Plugins
 * Documentation
 * Python Bindings (optional)
@@ -928,11 +934,12 @@ $ brew install --HEAD tsduck
 https://tsduck.io/download/tsduck[Pre-build packages for the latest TSDuck version]
 are available for the following configurations:
 
-- Fedora (64-bit Intel)
-- Ubuntu (64-bit Intel and Arm)
-- RedHat, CentOS, Alma Linux (64-bit Intel)
-- Debian (64-bit Intel)
-- Raspbian (32-Bit Arm, Raspberry Pi)
+[.compact-list]
+* Fedora (64-bit Intel)
+* Ubuntu (64-bit Intel and Arm)
+* RedHat, CentOS, Alma Linux (64-bit Intel)
+* Debian (64-bit Intel)
+* Raspbian (32-Bit Arm, Raspberry Pi)
 
 The type of package, `.rpm` or `.deb`, depends on the configuration.
 The pre-built packages are provided for the latest version of each distro only.
@@ -948,7 +955,6 @@ To use older versions of the above distros, rebuilding the packages is easy:
 
 [source,shell]
 ----
-$ make -j10
 $ make installer
 ----
 
@@ -956,7 +962,7 @@ To install TSDuck on other types of Linux systems for which no package is availa
 
 [source,shell]
 ----
-$ make -j10
+$ make -j10 default docs-html
 $ sudo make install
 ----
 
@@ -970,7 +976,7 @@ You need to build and install as follow:
 
 [source,shell]
 ----
-$ gmake -j10
+$ gmake -j10 default docs-html
 $ sudo gmake install
 ----
 

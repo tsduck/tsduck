@@ -13,6 +13,8 @@ include ../Makefile.inc
 .PHONY: docs doxygen
 default: docs doxygen
 docs: userguide devguide
+docs-html: userguide-html devguide-html
+docs-pdf: userguide-pdf devguide-pdf
 doxygen:
 	doxy/build-doxygen.sh $(DOXYFLAGS)
 
