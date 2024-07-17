@@ -41,7 +41,7 @@ ts::AACDescriptor::AACDescriptor(DuckContext& duck, const Descriptor& desc) :
 void ts::AACDescriptor::clearContent()
 {
     profile_and_level = 0;
-    SAOC_DE = false;
+    SAOC_DE.reset();
     AAC_type.reset();
     additional_info.clear();
 }
@@ -54,9 +54,9 @@ void ts::AACDescriptor::clearContent()
 void ts::AACDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(profile_and_level);
-    if (SAOC_DE || AAC_type.has_value() || !additional_info.empty()) {
+    if (SAOC_DE.has_value()) {
         buf.putBit(AAC_type.has_value());
-        buf.putBit(SAOC_DE);
+        buf.putBit(SAOC_DE.value());
         buf.putBits(0, 6);
         if (AAC_type.has_value()) {
             buf.putUInt8(AAC_type.value());
@@ -131,7 +131,7 @@ ts::UString ts::AACDescriptor::aacTypeString(uint8_t type)
 void ts::AACDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"profile_and_level", profile_and_level, true);
-    root->setBoolAttribute(u"SAOC_DE", SAOC_DE);
+    root->setOptionalBoolAttribute(u"SAOC_DE", SAOC_DE);
     root->setOptionalIntAttribute(u"AAC_type", AAC_type, true);
     root->addHexaTextChild(u"additional_info", additional_info, true);
 }
@@ -143,8 +143,14 @@ void ts::AACDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 
 bool ts::AACDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(profile_and_level, u"profile_and_level", true) &&
-           element->getBoolAttribute(SAOC_DE, u"SAOC_DE", false) &&
-           element->getOptionalIntAttribute(AAC_type, u"AAC_type") &&
-           element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 5);
+    bool ok = element->getIntAttribute(profile_and_level, u"profile_and_level", true) &&
+              element->getOptionalBoolAttribute(SAOC_DE, u"SAOC_DE") &&
+              element->getOptionalIntAttribute(AAC_type, u"AAC_type") &&
+              element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 5);
+
+    if (ok && !SAOC_DE.has_value() && (AAC_type.has_value() || !additional_info.empty())) {
+        element->report().error(u"SAOC_DE is required to be specified when either AAC_type or additional_info is specified in <%s>, line %d", element->name(), element->lineNumber());
+        ok = false;
+    }
+    return ok;
 }

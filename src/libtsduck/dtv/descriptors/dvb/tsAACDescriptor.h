@@ -26,7 +26,7 @@ namespace ts {
     public:
         // Public members:
         uint8_t                profile_and_level = 0;  //!< See ETSI EN 300 468, H.2.1.
-        bool                   SAOC_DE = false;        //!< See ETSI EN 300 468, H.2.1.
+        std::optional<bool>    SAOC_DE {};             //!< See ETSI EN 300 468, H.2.1.
         std::optional<uint8_t> AAC_type {};            //!< See ETSI EN 300 468, H.2.1.
         ByteBlock              additional_info {};     //!< See ETSI EN 300 468, H.2.1.
 

@@ -4,7 +4,7 @@
 
     <AAC_descriptor
         profile_and_level="uint8, required"
-        SAOC_DE="bool, default=false"
+        SAOC_DE="bool, optional"
         AAC_type="uint8, optional">
       <additional_info>
         Hexadecimal content
