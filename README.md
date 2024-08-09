@@ -42,20 +42,22 @@ All utilities and plugins accept the option `--help` to display their syntax.
 
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
 These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB/ATSC/ISDB
-signalization and many other features. See the [programming guide](https://tsduck.io/doxy/)
-and its [tutorial](https://tsduck.io/doxy/libtutorial.html).
+signalization and many other features.
+See the [Developer's Guide](https://tsduck.io/download/docs/tsduck-dev.html)
+and the [Programming Reference](https://tsduck.io/doxy/).
 
 Python and Java bindings exist to allow running transport stream processing pipelines from
 Python or Java applications.
 
 ### Building
 
-TSDuck can be built on Windows, Linux, macOS and BSD systems (FreeBSD, OpenBSD, NetBSD, DragonFlyBSD).
-See the [building guide](https://tsduck.io/doxy/building.html) for details.
+TSDuck can be built on Windows, Linux, macOS and BSD systems.
+See the [building section](https://tsduck.io/download/docs/tsduck-dev.html#building)
+in the developer's guide for more details.
 
 ### Download
 
-- On macOS, [use the Homebrew packager](https://tsduck.io/doxy/installing.html#macinstall): `brew install tsduck`
+- On macOS, [use the Homebrew packager](https://tsduck.io/download/docs/tsduck-dev.html#macinstall): `brew install tsduck`
 - On Windows, [use winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/): `winget install tsduck`
 
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases) are available

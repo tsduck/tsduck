@@ -8,5 +8,5 @@ Code contributions from external developers are welcome and will be reviewed
 using [pull requests on GitHub](https://github.com/tsduck/tsduck/pulls)
 exclusively.
 
-For more details, see the [contribution guidelines](https://tsduck.io/doxy/contributing.html)
-in the [TSDuck programmer's guide](https://tsduck.io/doxy).
+For more details, see the [contribution guidelines](https://tsduck.io/download/docs/tsduck-dev.html#chap-contribution)
+in the [TSDuck developer's guide](https://tsduck.io/download/docs/tsduck-dev.html).

@@ -1,0 +1,2 @@
+# See README.md
+source $HOME/.local/pipx/venvs/pygithub/bin/activate

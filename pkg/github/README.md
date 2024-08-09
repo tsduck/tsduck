@@ -28,6 +28,18 @@ different contents and classes. You cannot install the two at the same
 time. If you accidentally installed `github` instead of `PyGitHub`,
 run `pip uninstall github` before `pip install PyGithub`.
 
+#### On macOS with Homebrew
+
+On macOS with Homebrew, the pip repository is now reserved to modules which
+are installed as Howebrew formulae. You need to use `pipx`:
+
+- `brew install pipx`
+- `pipx install PyGithub`
+
+Then, before executing any Python script in this directory:
+
+- `source $HOME/.local/pipx/venvs/pygithub/bin/activate`
+
 ### requests
 
 - Install: `pip install requests`

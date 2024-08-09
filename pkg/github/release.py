@@ -155,7 +155,7 @@ def build_body_text(release):
     for ins in installers:
         if not ins.dev:
             body.url(ins.name, ins.re_pattern())
-    body.ref('macOS', 'use Homebrew', 'https://tsduck.io/doxy/installing.html#macinstall')
+    body.ref('macOS', 'use Homebrew', 'https://tsduck.io/download/docs/tsduck-dev.html#macinstall')
     body.line('')
     body.line('Binaries for development environment:')
     body.line('* Windows: Included in installer (select option "Development")')

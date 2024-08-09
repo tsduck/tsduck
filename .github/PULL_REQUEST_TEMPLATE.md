@@ -1,6 +1,6 @@
 <!--
 Please read the TSDuck contribution guidelines for pull requests:
-https://tsduck.io/doxy/contributing.html
+https://tsduck.io/download/docs/tsduck-dev.html#chap-contribution
 -->
 
 #### Related issue (if any):
