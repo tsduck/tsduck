@@ -65,6 +65,7 @@
 param(
     [int]$Parallel = 0,
     [switch]$GitPull = $false,
+    [switch]$Prerequisites = $false,
     [switch]$Installer = $false,
     [switch]$NoLowPriority = $false,
     [switch]$Debug = $false,
