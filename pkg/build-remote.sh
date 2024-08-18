@@ -49,11 +49,13 @@ HOST_NAME=
 VMX_FILE=
 PRL_NAME=
 VBOX_NAME=
+QEMU_CMD=
 SSH_TIMEOUT=5
 SSH_PORT=22
 BOOT_TIMEOUT=500
 SHUTDOWN_TIMEOUT=200
 BACKUP_ROOT=
+INSPREREQ=false
 
 #-----------------------------------------------------------------------------
 # Display help text
@@ -86,7 +88,8 @@ Options:
 
   -h name
   --host name
-      Build on this remote host. Mandatory for remote hosts. Optional for VM's.
+      Build on this remote host. Mandatory for remote hosts and with --qemu.
+      Optional for native virtual machines.
 
   --local
       No remote build, build locally. Useful for OS-independent script and
@@ -100,6 +103,17 @@ Options:
   -p number
   --port number
       TCP port for ssh and scp. Default: $SSH_PORT.
+
+  --prerequisites
+      Install prerequisites (scripts/install-prerequisites.sh) before building.
+      Useful when a new version needs new dependencies which may not be installed
+      on the remote system. Requires implicit sudo access on the remote system.
+
+  --qemu 'command'
+      Start an emulated virtual machine using Qemu. The specified command is run
+      in the background, all along the build. This must be a Qemu command or a
+      shell script running the required Qemu command. After the build, a shutdown
+      command is sent to the emulated virtual machine using ssh.
 
   -t seconds
   --timeout seconds
@@ -163,6 +177,13 @@ while [[ $# -gt 0 ]]; do
             [[ $# -gt 1 ]] || usage; shift
             SSH_PORT="$1"
             ;;
+        --prereq*)
+            INSPREREQ=true
+            ;;
+        --qemu)
+            [[ $# -gt 1 ]] || usage; shift
+            QEMU_CMD="$1"
+            ;;
         -t|--timeout)
             [[ $# -gt 1 ]] || usage; shift
             SSH_TIMEOUT="$1"
@@ -215,6 +236,9 @@ if $WINDOWS && ! $LOCAL_BUILD; then
     [[ -z $(PowerShell -Command "(Get-Process -Name pageant).Name" 2>/dev/null) ]] && error "PuTTY Pageant not running, cannot SSH"
 fi
 
+# Home name is required with --qemu.
+[[ -n "$QEMU_CMD" && -z "$HOST_NAME" ]] && error "--host is required with --qemu"
+
 # Get the current date and time in normalized format.
 curdate() {
     date +%Y%m%d-%H%M
@@ -258,6 +282,8 @@ NAME="$HOST_NAME"
 VMX_SHUTDOWN=false
 PRL_SHUTDOWN=false
 VBOX_SHUTDOWN=false
+SSH_SHUTDOWN=false
+QEMU_PID=
 if $LOCAL_BUILD && [[ -z "$HOST_NAME" ]]; then
 
     if $WINDOWS; then
@@ -436,6 +462,33 @@ elif [[ -n "$VBOX_NAME" ]]; then
         # We need to shutdown the VM after building the installers.
         VBOX_SHUTDOWN=true
     fi
+
+elif [[ -n "$QEMU_CMD" ]]; then
+
+    # Run a Qemu command in the background.
+    echo "Running qemu in the background: $QEMU_CMD"
+    $QEMU_CMD &
+    QEMU_PID=$!
+
+    # Wait that the machine is accessible using ssh.
+    # Don't wait once for boot timeout, sometimes it hangs.
+    maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
+    ok=1
+    while [[ $(date +%s) -lt $maxdate ]]; do
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
+        ok=$?
+        [[ $ok -eq 0 ]] && break
+        sleep 5
+    done
+    if [[ $ok -ne 0 ]]; then
+        kill -9 $QEMU_PID
+        error "cannot contact qemu VM $BOOT_TIMEOUT seconds after boot, aborting"
+    fi
+    echo "SSH ok for $HOST_NAME"
+
+    # We need to shutdown the VM after building the installers.
+    SSH_SHUTDOWN=true
+
 fi
 
 # Check accessibility of remote host.
@@ -458,10 +511,12 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
             if $WINDOWS; then
                 powershell-cmd ". scripts/cleanup.ps1 -NoPause"
                 touch pkg/installers/timestamp.tmp
-                powershell-cmd ". pkg/nsis/build-installer.ps1 -GitPull -NoPause"
+                $INSPREREQ && PREREQ=-Prerequisites || PREREQ=
+                powershell-cmd ". pkg/nsis/build-installer.ps1 -GitPull $PREREQ -NoPause"
             else
                 make clean
                 git fetch origin && git checkout master && git pull origin master
+                $INSPREREQ && scripts/install-prerequisites.sh
                 touch pkg/installers/timestamp.tmp
                 make installer
             fi
@@ -484,8 +539,9 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
             "[void](New-Item -Type File '$REMOTE_DIR/pkg/installers/timestamp.tmp' -Force)"
 
         # Build installers after updating the repository.
+        $INSPREREQ && PREREQ=-Prerequisites || PREREQ=
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            ". '$REMOTE_DIR/pkg/nsis/build-installer.ps1' -GitPull -NoPause"
+            ". '$REMOTE_DIR/pkg/nsis/build-installer.ps1' -GitPull $PREREQ -NoPause"
 
         # Get all files from installers directory which are newer than the timestamp.
         files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
@@ -507,12 +563,14 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
         # Remote build on Unix.
         # Create a remote timestamp. Newer files will be the installers we build.
         # Build installers from scratch after updating the repository.
+        $INSPREREQ && PREREQ=scripts/install-prerequisites.sh || PREREQ=true
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             cd "$REMOTE_DIR" '&&' \
             git fetch origin '&&' \
             git checkout master '&&' \
             git pull origin master '&&' \
             make clean ';' \
+            $PREREQ ';' \
             touch "pkg/installers/timestamp.tmp" '&&' \
             make installer
 
@@ -582,6 +640,20 @@ elif $VBOX_SHUTDOWN; then
             "$VBOX" controlvm "$VBOX_NAME" poweroff
         fi
     fi
+elif $SSH_SHUTDOWN; then
+    echo "Shutting down $HOST_NAME through SSH"
+    ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" sudo shutdown -h now
+fi
+
+# Wait for Qemu process completion.
+if [[ -n "$QEMU_PID" ]]; then
+    # There is a risk that the shutdown command is not accepted or hang. We do not want to wait forever.
+    # Unfortunately, there is no timeout option on bash wait. So, we need an ancillary process to wait.
+    (sleep 30; kill -9 $QEMU_PID) &
+    WAIT_PID=$!
+    wait $QEMU_PID
+    # Kill the ancillary process in case the shutdown completed before.
+    kill -9 $WAIT_PID $QEMU_PID 2>/dev/null
 fi
 
 exit 0

@@ -46,6 +46,10 @@
 
   Do not build the portable packages.
 
+ .PARAMETER Prerequisites
+
+  Install prerequistes packages before compiling. Requires administrator access.
+
  .PARAMETER Win32
 
   Generate the 32-bit installers in addition to the 64-bit installers.
@@ -60,6 +64,7 @@ param(
     [switch]$NoInstaller = $false,
     [switch]$NoLowPriority = $false,
     [switch]$NoPortable = $false,
+    [switch]$Prerequisites = $false,
     [switch]$Win32 = $false
 )
 
@@ -111,7 +116,7 @@ if (-not $NoLowPriority) {
 if (-not $NoBuild) {
     Write-Output "Compiling..."
     Push-Location
-    & "${ScriptsDir}\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority
+    & "${ScriptsDir}\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64 -GitPull:$GitPull -Prerequisites:$Prerequisites -NoLowPriority:$NoLowPriority
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {

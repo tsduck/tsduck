@@ -15,6 +15,10 @@
 
   Perform a git pull command before building.
 
+ .PARAMETER Prerequisites
+
+  Install prerequistes packages before compiling. Requires administrator access.
+
  .PARAMETER Installer
 
   Generate everything which is needed for installer.
@@ -124,6 +128,11 @@ if ($GitPull) {
     & $git checkout master
     & $git pull origin master
     Pop-Location
+}
+
+# Update prerequisites if requested.
+if ($Prerequisites) {
+    & "${PSScriptRoot}\install-prerequisites.ps1" -NoPause
 }
 
 # A function to invoke MSBuild.
