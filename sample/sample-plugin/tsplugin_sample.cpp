@@ -23,10 +23,10 @@ namespace ts {
 
     private:
         // Command line options, stay unchanged after getOptions():
-        bool doCount;  // Option --count
+        bool doCount = false;  // Option --count
 
         // Processing data:
-        PacketCounter counter;  // Actual packet counter.
+        PacketCounter counter = 0;  // Actual packet counter.
     };
 }
 
@@ -38,9 +38,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"sample", ts::SamplePlugin);
 //----------------------------------------------------------------------------
 
 ts::SamplePlugin::SamplePlugin(TSP* tsp_) :
-   ProcessorPlugin(tsp_, u"Sample packet processor", u"[options]"),
-   doCount(false),
-   counter(0)
+    ProcessorPlugin(tsp_, u"Sample packet processor", u"[options]")
 {
     option(u"count", 'c');
     help(u"count", u"Count packets");
@@ -53,7 +51,7 @@ ts::SamplePlugin::SamplePlugin(TSP* tsp_) :
 
 bool ts::SamplePlugin::getOptions()
 {
-    tsp->verbose(u"sample plugin: get options");
+    verbose(u"sample plugin: get options");
 
     doCount = present(u"count");
     return true;
@@ -66,7 +64,7 @@ bool ts::SamplePlugin::getOptions()
 
 bool ts::SamplePlugin::start()
 {
-    tsp->verbose(u"sample plugin: start");
+    verbose(u"sample plugin: start");
 
     counter = 0;
     return true;
@@ -79,11 +77,11 @@ bool ts::SamplePlugin::start()
 
 bool ts::SamplePlugin::stop()
 {
-    tsp->verbose(u"sample plugin: stop");
+    verbose(u"sample plugin: stop");
 
     // Close resources, display final report, etc.
     if (doCount) {
-        tsp->info(u"got %d packets", counter);
+        info(u"got %d packets", counter);
     }
 
     return true;

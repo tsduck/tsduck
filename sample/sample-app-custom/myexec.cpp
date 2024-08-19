@@ -83,7 +83,7 @@ bool FooBarPlugin::start()
 // Called each time the plugin is stopped.
 bool FooBarPlugin::stop()
 {
-    tsp->info(u"PID: 0x%X (%d), packets: %'d", _pid, _pid, _count);
+    info(u"PID: 0x%X (%d), packets: %'d", _pid, _pid, _count);
     return true;
 }
 

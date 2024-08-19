@@ -2,6 +2,7 @@
 .gitignore text
 .gitattributes text
 .editorconfig text
+.classpath text
 *.txt text
 *.adoc text linguist-language=Asciidoc
 *.dox text linguist-language=Doxygen
@@ -9,6 +10,9 @@
 *.h text linguist-language=C++
 *.cpp text linguist-language=C++
 *.c text linguist-language=C
+*.java text linguist-language=Java
+*.js text linguist-language=JavaScript
+*.py text linguist-language=Python
 *.xml text linguist-language=XML
 *.yml text linguist-language=YAML
 *.pro text linguist-language=QMake
@@ -38,6 +42,7 @@
 Doxyfile* text eol=lf linguist-language=Doxygen
 Makefile* text eol=lf linguist-language=Makefile
 *.mk text eol=lf linguist-language=Makefile
+*.supp text eol=lf linguist-language=Valgrind
 
 # Binary file, do not modify on convert, whatever your git settings are.
 *.exe binary

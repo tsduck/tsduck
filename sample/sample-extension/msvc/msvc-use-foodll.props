@@ -3,10 +3,6 @@
 
   <!-- Must be included in .vcxproj files to use tslibext_foo.dll -->
 
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(TSDUCK)\tsduck.props" />
-  </ImportGroup>
-
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
