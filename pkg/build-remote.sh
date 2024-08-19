@@ -36,22 +36,25 @@
 SCRIPT=$(basename $BASH_SOURCE)
 ROOTDIR=$(cd $(dirname $BASH_SOURCE)/..; pwd)
 
+verbose() { $VERBOSE && echo >&2 "$*"; }
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 usage() { echo >&2 "invalid command, try \"$SCRIPT --help\""; exit 1; }
 
 # Default values for command line options.
 
+VERBOSE=false
 REMOTE_DIR=tsduck
 REMOTE_WIN=false
 LOCAL_BUILD=false
-USER_NAME=$(id -un)
+USER_NAME=
 HOST_NAME=
+HOST_IP=
 VMX_FILE=
 PRL_NAME=
 VBOX_NAME=
 QEMU_CMD=
 SSH_TIMEOUT=5
-SSH_PORT=22
+SSH_PORT=
 BOOT_TIMEOUT=500
 SHUTDOWN_TIMEOUT=200
 BACKUP_ROOT=
@@ -102,7 +105,7 @@ Options:
 
   -p number
   --port number
-      TCP port for ssh and scp. Default: $SSH_PORT.
+      Non-default TCP port for ssh and scp.
 
   --prerequisites
       Install prerequisites (scripts/install-prerequisites.sh) before building.
@@ -121,12 +124,17 @@ Options:
 
   -u name
   --user name
-      User name to use with ssh on the remote host. Default: $USER_NAME
+      User name to use with ssh on the remote host, if different from local
+      user name and not specified in .ssh/config.
 
-  --vbox filename
+  --vbox name
       Use the VirtualBox virtual machine with the specified name. If the VM
       is not currently running, it is booted first and shut down after building
       the installers.
+
+  -v
+  --verbose
+      Verbose mode, add more messages.
 
   --vmware filename
       Use the VMWare virtual machine from the specified .vmx file. If the VM
@@ -195,6 +203,9 @@ while [[ $# -gt 0 ]]; do
         --vbox)
             [[ $# -gt 1 ]] || usage; shift
             VBOX_NAME="$1"
+            ;;
+        -v|--verbose)
+            VERBOSE=true
             ;;
         --vmware)
             [[ $# -gt 1 ]] || usage; shift
@@ -272,11 +283,29 @@ powershell-cmd() {
 # Remote build.
 #-----------------------------------------------------------------------------
 
-$LOCAL_BUILD && [[ -n "$HOST_NAME$VMX_FILE$PRL_NAME$VBOX_NAME" ]] && error "cannot specify remote with --local"
+$LOCAL_BUILD && [[ -n "$HOST_NAME$VMX_FILE$PRL_NAME$VBOX_NAME$QEMU_CMD" ]] && error "cannot specify remote with --local"
 
-SSH_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -p $SSH_PORT"
-SCP_OPTS="-o ConnectTimeout=$SSH_TIMEOUT -P $SSH_PORT"
-NAME="$HOST_NAME"
+# SSH and SCP options.
+SSH_OPTS=()
+[[ -n "$SSH_TIMEOUT" ]] && SSH_OPTS+=("-o" "ConnectTimeout=$SSH_TIMEOUT")
+[[ -n "$SSH_PORT" ]] && SSH_OPTS+=("-p" "$SSH_PORT")
+
+# Build SSH host specification.
+ssh-name() {
+    local name="$HOST_NAME"
+    [[ -z "$name" ]] && name="$HOST_IP"
+    [[ -z "$USER_NAME" ]] && echo "$name" || echo "$USER_NAME@$name"
+}
+
+# Host name as used in log file name.
+if ! $LOCAL_BUILD; then
+    NAME="$HOST_NAME"
+elif $WINDOWS; then
+    NAME=windows
+else
+    NAME=$(hostname)
+    [[ -z "$NAME" ]] && NAME=linux
+fi
 
 # Process virtual machines startup.
 VMX_SHUTDOWN=false
@@ -284,28 +313,17 @@ PRL_SHUTDOWN=false
 VBOX_SHUTDOWN=false
 SSH_SHUTDOWN=false
 QEMU_PID=
-if $LOCAL_BUILD && [[ -z "$HOST_NAME" ]]; then
-
-    if $WINDOWS; then
-        HOST_NAME=windows
-    else
-        HOST_NAME=$(hostname)
-        [[ -z "$HOST_NAME" ]] && HOST_NAME=linux
-    fi
-
-elif [[ -n "$VMX_FILE" ]]; then
+if [[ -n "$VMX_FILE" ]]; then
 
     # Locate vmrun, the VMWare command line.
     # Try in PATH and then VMWare Fusion installation path on macOS.
     VMRUN=$(which vmrun 2>/dev/null)
     [[ -z "$VMRUN" ]] && VMRUN=$(ls "/Applications/VMware Fusion.app/Contents/Public/vmrun" 2>/dev/null)
     [[ -z "$VMRUN" ]] && error "vmrun not found, cannot manage VMWare VM's"
-
-    # Name for log file.
-    [[ -z "$HOST_NAME" ]] && NAME=$(basename "$VMX_FILE" .vmx | tr A-Z a-z) || NAME="$HOST_NAME"
+    [[ -z "$NAME" ]] && NAME=$(basename "$VMX_FILE" .vmx | tr A-Z a-z)
 
     # Try to get IP address of VM.
-    IP=$("$VMRUN" getGuestIPAddress "$VMX_FILE")
+    HOST_IP=$("$VMRUN" getGuestIPAddress "$VMX_FILE")
     if [[ $? -ne 0 ]]; then
 
         # Cannot get VM IP address, try to boot the VM.
@@ -317,14 +335,14 @@ elif [[ -n "$VMX_FILE" ]]; then
             maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
             ok=1
             while [[ $(date +%s) -lt $maxdate ]]; do
-                IP=$("$VMRUN" getGuestIPAddress "$VMX_FILE")
+                verbose "Trying to get IP address for $NAME"
+                HOST_IP=$("$VMRUN" getGuestIPAddress "$VMX_FILE")
                 ok=$?
                 [[ $ok -eq 0 ]] && break
                 sleep 5
             done
             [[ $ok -ne 0 ]] && error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
             echo "IP address for $NAME is $IP, trying to ssh..."
-            HOST_NAME="$IP"
         fi
 
         # Wait that the machine is accessible using ssh.
@@ -332,20 +350,21 @@ elif [[ -n "$VMX_FILE" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
+            verbose "Trying to ssh $(ssh-name)"
+            ssh "${SSH_OPTS[@]}" $(ssh-name) cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
         done
         [[ $ok -ne 0 ]] && error "cannot contact VM $BOOT_TIMEOUT seconds after boot, aborting"
-        echo "SSH ok for $HOST_NAME"
+        echo "SSH ok for $(ssh-name)"
 
         # We need to shutdown the VM after building the installers.
         VMX_SHUTDOWN=true
     fi
 
     # Use the IP address if no host name is provided.
-    [[ -z "$HOST_NAME" ]] && HOST_NAME="$IP"
+    [[ -z "$HOST_NAME" ]] && HOST_NAME="$HOST_IP"
 
 elif [[ -n "$PRL_NAME" ]]; then
 
@@ -358,8 +377,8 @@ elif [[ -n "$PRL_NAME" ]]; then
     [[ -z "$HOST_NAME" ]] && NAME="$PRL_NAME" || NAME="$HOST_NAME"
 
     # Try to get IP address of VM.
-    IP=$(prlctl list "$PRL_NAME" -f -j | jq -r '.[0].ip_configured')
-    if [[ "$IP" != *.*.*.* ]]; then
+    HOST_IP=$(prlctl list "$PRL_NAME" -f -j | jq -r '.[0].ip_configured')
+    if [[ "$HOST_IP" != *.*.*.* ]]; then
 
         # Cannot get VM IP address, try to boot the VM.
         echo "Booting $PRL_NAME"
@@ -369,13 +388,12 @@ elif [[ -n "$PRL_NAME" ]]; then
         if [[ -z "$HOST_NAME" ]]; then
             maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
             while [[ $(date +%s) -lt $maxdate ]]; do
-                IP=$(prlctl list "$PRL_NAME" -f -j | jq -r '.[0].ip_configured')
-                [[ "$IP" == *.*.*.* ]] && break
+                HOST_IP=$(prlctl list "$PRL_NAME" -f -j | jq -r '.[0].ip_configured')
+                [[ "$HOST_IP" == *.*.*.* ]] && break
                 sleep 5
             done
-            [[ "$IP" == *.*.*.* ]] || error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
-            echo "IP address for $NAME is $IP, trying to ssh..."
-            HOST_NAME="$IP"
+            [[ "$HOST_IP" == *.*.*.* ]] || error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
+            echo "IP address for $NAME is $HOST_IP, trying to ssh..."
         fi
 
         # Wait that the machine is accessible using ssh.
@@ -383,20 +401,21 @@ elif [[ -n "$PRL_NAME" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
+            verbose "Trying to ssh $(ssh-name)"
+            ssh "${SSH_OPTS[@]}" $(ssh-name) cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
         done
         [[ $ok -ne 0 ]] && error "cannot contact VM $BOOT_TIMEOUT seconds after boot, aborting"
-        echo "SSH ok for $HOST_NAME"
+        echo "SSH ok for $(ssh-name)"
 
         # We need to shutdown the VM after building the installers.
         PRL_SHUTDOWN=true
     fi
 
     # Use the IP address if no host name is provided.
-    [[ -z "$HOST_NAME" ]] && HOST_NAME="$IP"
+    [[ -z "$HOST_NAME" ]] && HOST_NAME="$HOST_IP"
 
 elif [[ -n "$VBOX_NAME" ]]; then
 
@@ -436,14 +455,13 @@ elif [[ -n "$VBOX_NAME" ]]; then
         if [[ -z "$HOST_NAME" ]]; then
             maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
             while [[ $(date +%s) -lt $maxdate ]]; do
-                IP=$("$VBOX" guestproperty enumerate "$VBOX_NAME" "/VirtualBox/GuestInfo/Net/*/V4/IP" |
+                HOST_IP=$("$VBOX" guestproperty enumerate "$VBOX_NAME" "/VirtualBox/GuestInfo/Net/*/V4/IP" |
                          grep "$HOST_SUBNET" | head -1 | sed -e "s/^.* *= *'//" -e "s/'.*$//")
-                [[ "$IP" == *.*.*.* ]] && break
+                [[ "$HOST_IP" == *.*.*.* ]] && break
                 sleep 5
             done
-            [[ "$IP" == *.*.*.* ]] || error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
-            echo "IP address for $NAME is $IP, trying to ssh..."
-            HOST_NAME="$IP"
+            [[ "$HOST_IP" == *.*.*.* ]] || error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
+            echo "IP address for $NAME is $HOST_IP, trying to ssh..."
         fi
 
         # Wait that the machine is accessible using ssh.
@@ -451,13 +469,14 @@ elif [[ -n "$VBOX_NAME" ]]; then
         maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
         ok=1
         while [[ $(date +%s) -lt $maxdate ]]; do
-            ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
+            verbose "Trying to ssh $(ssh-name)"
+            ssh "${SSH_OPTS[@]}" $(ssh-name) cd &>/dev/null
             ok=$?
             [[ $ok -eq 0 ]] && break
             sleep 5
         done
         [[ $ok -ne 0 ]] && error "cannot contact VM $BOOT_TIMEOUT seconds after boot, aborting"
-        echo "SSH ok for $HOST_NAME"
+        echo "SSH ok for $(ssh-name)"
 
         # We need to shutdown the VM after building the installers.
         VBOX_SHUTDOWN=true
@@ -475,7 +494,8 @@ elif [[ -n "$QEMU_CMD" ]]; then
     maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
     ok=1
     while [[ $(date +%s) -lt $maxdate ]]; do
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null
+        verbose "Trying to ssh $(ssh-name)"
+        ssh "${SSH_OPTS[@]}" $(ssh-name) cd &>/dev/null
         ok=$?
         [[ $ok -eq 0 ]] && break
         sleep 5
@@ -484,7 +504,7 @@ elif [[ -n "$QEMU_CMD" ]]; then
         kill -9 $QEMU_PID
         error "cannot contact qemu VM $BOOT_TIMEOUT seconds after boot, aborting"
     fi
-    echo "SSH ok for $HOST_NAME"
+    echo "SSH ok for $(ssh-name)"
 
     # We need to shutdown the VM after building the installers.
     SSH_SHUTDOWN=true
@@ -493,14 +513,15 @@ fi
 
 # Check accessibility of remote host.
 if ! $LOCAL_BUILD; then
-    [[ -z "$HOST_NAME" ]] && error "no remote host specified"
-    ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
+    [[ -z "$HOST_NAME$HOST_IP" ]] && error "no remote host specified"
+    verbose "Verifying ssh $(ssh-name)"
+    ssh "${SSH_OPTS[@]}" $(ssh-name) cd &>/dev/null || error "$HOST_NAME not responding"
 fi
 
 # Build remote installers.
 BACKUP_DIR=
 BACKUP_MARK='##BACKUPDIR## '
-LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
+LOGFILE="$ROOTDIR/pkg/installers/build-${NAME}-$(curdate).log"
 (
     INSTALLERS=()
 
@@ -530,21 +551,21 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
     elif $REMOTE_WIN; then
         # Remote build on Windows. Important: assume PowerShell by default in SSH session.
         # Cleanup repository, rebuild from scratch.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+        ssh "${SSH_OPTS[@]}" $(ssh-name) \
             ". '$REMOTE_DIR/scripts/cleanup.ps1' -NoPause"
 
         # Create a remote timestamp in installers subdirectory.
         # Newer files will be the installers we build.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+        ssh "${SSH_OPTS[@]}" $(ssh-name) \
             "[void](New-Item -Type File '$REMOTE_DIR/pkg/installers/timestamp.tmp' -Force)"
 
         # Build installers after updating the repository.
         $INSPREREQ && PREREQ=-Prerequisites || PREREQ=
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+        ssh "${SSH_OPTS[@]}" $(ssh-name) \
             ". '$REMOTE_DIR/pkg/nsis/build-installer.ps1' -GitPull $PREREQ -NoPause"
 
         # Get all files from installers directory which are newer than the timestamp.
-        files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+        files=$(ssh "${SSH_OPTS[@]}" $(ssh-name) \
             "Get-ChildItem '$REMOTE_DIR/pkg/installers' |
              Where-Object { \$_.LastWriteTime -gt (Get-Item '$REMOTE_DIR/pkg/installers/timestamp.tmp').LastWriteTime } |
              ForEach-Object { \$_.Name }" | tr '\r' ' ')
@@ -553,18 +574,19 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
         for f in $files; do
             echo "Fetching $f"
             INSTALLERS+=("$f")
-            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
+            scp "${SSH_OPTS[@]}" $(ssh-name):"$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
         done
 
         # Delete the temporary timestamp.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+        ssh "${SSH_OPTS[@]}" $(ssh-name) \
             "[void](Remove-Item -Force '$REMOTE_DIR/pkg/installers/timestamp.tmp' -ErrorAction Ignore)"
     else
         # Remote build on Unix.
         # Create a remote timestamp. Newer files will be the installers we build.
         # Build installers from scratch after updating the repository.
         $INSPREREQ && PREREQ=scripts/install-prerequisites.sh || PREREQ=true
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+        verbose "Starting build"
+        ssh "${SSH_OPTS[@]}" $(ssh-name) \
             cd "$REMOTE_DIR" '&&' \
             git fetch origin '&&' \
             git checkout master '&&' \
@@ -575,18 +597,19 @@ LOGFILE="$ROOTDIR/pkg/installers/build-${HOST_NAME}-$(curdate).log"
             make installer
 
         # Get all files from installers directory which are newer than the time stamp.
-        files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
+        verbose "Fetching installers"
+        files=$(ssh "${SSH_OPTS[@]}" $(ssh-name) \
             find "$REMOTE_DIR/pkg/installers" -maxdepth 1 -type f -newer "$REMOTE_DIR/pkg/installers/timestamp.tmp" -printf "'%f '")
 
         # Copy all files from installers directory which are newer than the time stamp.
         for f in $files; do
             echo "Fetching $f"
             INSTALLERS+=("$f")
-            scp $SCP_OPTS "$USER_NAME@$HOST_NAME:$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
+            scp "${SSH_OPTS[@]}" $(ssh-name):"$REMOTE_DIR/pkg/installers/$f" "$ROOTDIR/pkg/installers/"
         done
 
         # Delete the temporary timestamp.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" rm -f "$REMOTE_DIR/pkg/installers/timestamp.tmp"
+        ssh "${SSH_OPTS[@]}" $(ssh-name) rm -f "$REMOTE_DIR/pkg/installers/timestamp.tmp"
     fi
 
     # Copy the installers in the backup directory if one is specified.
@@ -641,14 +664,15 @@ elif $VBOX_SHUTDOWN; then
         fi
     fi
 elif $SSH_SHUTDOWN; then
-    echo "Shutting down $HOST_NAME through SSH"
-    ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" sudo shutdown -h now
+    echo "Shutting down $(ssh-name) through SSH"
+    ssh "${SSH_OPTS[@]}" $(ssh-name) sudo shutdown -h now
 fi
 
 # Wait for Qemu process completion.
 if [[ -n "$QEMU_PID" ]]; then
     # There is a risk that the shutdown command is not accepted or hang. We do not want to wait forever.
     # Unfortunately, there is no timeout option on bash wait. So, we need an ancillary process to wait.
+    verbose "Waiting for Qemu process termination"
     (sleep 30; kill -9 $QEMU_PID) &
     WAIT_PID=$!
     wait $QEMU_PID
