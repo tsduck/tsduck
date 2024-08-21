@@ -26,8 +26,9 @@ error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Get the formula file.
 REPO=$(brew --repo homebrew/core)
-FORMULA="$REPO/Formula/tsduck.rb"
+FORMULA="$REPO/Formula/t/tsduck.rb"
 [[ -s "$FORMULA" ]] || error "formula file not found: $FORMULA"
+info "formula: $FORMULA"
 
 # Use gsed instead of sed when available (typically on macOS).
 [[ -n $(which gsed) ]] && sed() { gsed "$@"; }

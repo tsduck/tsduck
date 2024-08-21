@@ -3204,6 +3204,7 @@ containing the encapsulated data (see the xref:encap-ref[`encap` reference docum
 We use this trick to preserve EIT’s through `ffmpeg`.
 
 [source,shell]
+----
 $ tsp --add-input-stuffing 1/10 \
       -I dvb --uhf-channel 30 \
       -P zap arte --audio fra --no-subtitles --eit --stuffing \
