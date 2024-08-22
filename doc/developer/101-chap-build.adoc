@@ -168,7 +168,7 @@ If you intend to use exclusion options in the `make` command line (for instance 
 specify them to `scripts/install-prerequisites.sh` too.
 This will prevent the installation of unused libraries.
 
-In addition to the `make` exclusion options, `install-prerequisites.sh` supports `NOJAVA=1 NODOXYGEN=1`.
+In addition to the `make` exclusion options, `install-prerequisites.sh` supports `NODOXYGEN=1`.
 
 Currently, this script supports all UNIX operating systems which were listed in xref:tabos[xrefstyle=short].
 
@@ -383,6 +383,8 @@ The following `make` variables can be defined:
 |NOEDITLINE |No interactive line editing, remove dependency to `libedit`.
 |NOSRT |No SRT support (Secure Reliable Transport), remove dependency to `libsrt`.
 |NORIST |No RIST support (Reliable Internet Stream Transport), remove dependency to `librist`.
+|NOJAVA |No Java bindings.
+|NOPYTHON |No Python bindings.
 |NOHWACCEL |Disable hardware acceleration such as crypto instructions.
 |ASSERTIONS |Keep assertions in production mode (slower code).
 |===
@@ -394,8 +396,17 @@ The following command, for instance, builds TSDuck without dependency to `pcsc-l
 $ make NOPCSC=1 NOCURL=1 NODEKTEC=1
 ----
 
-Note that some dependencies such as `openssl` (cryptographic library) cannot be removed
+Some dependencies such as `openssl` (cryptographic library) cannot be removed
 because they are deeply used inside TSDuck.
+
+The variables `NOJAVA` and `NOPYTHON` remove the bindings for the Java and Python languages, respectively.
+However, they do not remove any external dependency because these bindings do not need any.
+Therefore, removing them does not bring any benefit in terms of dependencies on the target system.
+
+They do not bring any benefit in terms of build system either.
+Building the Python bindings does not require any specific environement.
+And if the Java Development Kit (JDK) is not installed on the build system,
+the Java bindings are not built anyway, even without explicit `NOJAVA`.
 
 [#builddebug]
 ===== Building with specific debug capabilities

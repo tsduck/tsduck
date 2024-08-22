@@ -17,20 +17,6 @@ install: install-tools install-devel
 install-devel:
 	@true
 
-# Check presence of the Java compiler.
-JAVAC := $(shell $(SCRIPTSDIR)/java-config.sh --javac)
-
-# Just skip Java build if no compiler is present.
-ifeq ($(JAVAC),)
-
-default install-tools:
-	@true
-
-else
-
-# Generate classes to make sure they are compatible with Java 8.
-JAVAC_FLAGS = -source 1.8 -target 1.8 -Xlint:-options
-
 JAR      := $(shell $(SCRIPTSDIR)/java-config.sh --jar)
 CLASSDIR  = $(BINDIR)/java
 JARFILE   = $(BINDIR)/tsduck.jar
@@ -53,5 +39,3 @@ $(MANIFEST): Manifest.txt ../tsVersion.h
 install-tools: $(JARFILE)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
 	install -m 644 $(JARFILE) $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
-
-endif

@@ -29,7 +29,7 @@ endif
 # NOVATEK is automatically defined if no Vatek library is found.
 
 ifeq ($(NOVATEK),)
-    ifeq ($(filter-out default headers libs,$(MAKECMDGOALS)),)
+    ifeq ($(filter-out default headers libs listvars install%,$(MAKECMDGOALS)),)
         VATEK_CFLAGS := $(shell ../../scripts/vatek-config.sh --cflags --download)
         VATEK_LIBS := $(shell ../../scripts/vatek-config.sh --ldlibs)
     endif
@@ -51,7 +51,8 @@ include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtsduck.
 
-VPATH := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
+VPATH := $(filter-out $(addprefix %/,$(OTHER_OS)) $(if $(NOJAVA),java/% %/java) $(if $(NOPYTHON),python/% %/python), \
+           $(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
 # Implicit search directives.
@@ -72,7 +73,7 @@ OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SOURCES))))
 # Building the TSDuck library.
 
 default: headers libs
-	+@$(call F_RECURSE,config python java)
+	+@$(call F_RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
 # The tsduck.h header is automatically generated from all headers.
 
@@ -89,7 +90,7 @@ $(OBJDIR)/tsduck.o: CXXFLAGS_INCLUDES += -I$(dir $(TSDUCK_H))
 
 # Some libraries are used internally to libtsduck only.
 
-CXXFLAGS_JAVA := $(shell $(SCRIPTSDIR)/java-config.sh --cflags)
+CXXFLAGS_JAVA := $(if $(NOJAVA),,$(shell $(SCRIPTSDIR)/java-config.sh --cflags))
 CXXFLAGS_INCLUDES += $(CXXFLAGS_JAVA) $(LIBTSDUCK_CXXFLAGS_INCLUDES)
 
 # Specific (per-module) compilation options:
@@ -190,7 +191,7 @@ install-tools: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so,)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	+@$(call F_RECURSE,config python java)
+	+@$(call F_RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
 PRECONFIG = $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsPreConfiguration.h
 
@@ -208,4 +209,4 @@ install-devel: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(TSDUCK_H)
 	$(if $(NOCURL), echo '#define TS_NO_CURL 1' >>$(PRECONFIG))
 	$(if $(NOSRT), echo '#define TS_NO_SRT 1' >>$(PRECONFIG))
 	$(if $(NORIST), echo '#define TS_NO_RIST 1' >>$(PRECONFIG))
-	+@$(call F_RECURSE,config python java)
+	+@$(call F_RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))

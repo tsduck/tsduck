@@ -337,6 +337,9 @@ OBJDIR = $(BINDIR)/objs-$(notdir $(CURDIR))
 # - LDFLAGS_M32 : for 32-bit cross-compilation
 # - LDFLAGS_PTHREAD : pthread options
 # - LDLIBS : specify external libraries
+# Java commands and flags:
+# - JAVAC : Java compiler command
+# - JAVAC_FLAGS : Java compilation flags
 #-----------------------------------------------------------------------------
 
 # Use $(CXX) for compilation. Use $(GCC) to explicitly reference GCC.
@@ -619,6 +622,21 @@ $(BINDIR)/%: $(OBJDIR)/%.o
 	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	$(call LOG,[LD] $@) $(CXX) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+
+# Java environment.
+
+ifeq ($(NOJAVA)$(JAVAC_DONE),)
+    export JAVAC_DONE := true
+    export JAVAC := $(shell $(SCRIPTSDIR)/java-config.sh --javac)
+endif
+
+# Generate classes to make sure they are compatible with Java 8.
+JAVAC_FLAGS = -source 1.8 -target 1.8 -Xlint:-options
+
+# Disable Java when the JDK is not present.
+ifeq ($(NOJAVA)$(JAVAC),)
+    NOJAVA = true
+endif
 
 #-----------------------------------------------------------------------------
 # Static linking.

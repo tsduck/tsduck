@@ -17,6 +17,8 @@
 #  - NOPCSC      : No smartcard support, remove dependency to pcsc-lite.
 #  - NOSRT       : No SRT support, remove dependency to libsrt.
 #  - NORIST      : No RIST support, remove dependency to librist.
+#  - NOJAVA      : No Java bindings.
+#  - NOPYTHON    : No Python bindings.
 #  - NOEDITLINE  : No interactive line editing, remove dependency to libedit.
 #  - NOGITHUB    : No version check, no download, no upgrade from GitHub.
 #  - NOHWACCEL   : Disable hardware acceleration such as crypto instructions.
