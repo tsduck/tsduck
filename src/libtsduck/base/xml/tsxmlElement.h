@@ -268,6 +268,18 @@ namespace ts {
             void setAttribute(const UString& name, const UString& value, bool onlyIfNotEmpty = false);
 
             //!
+            //! Set an optional attribute to a node.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //!
+            void setOptionalAttribute(const UString& name, const std::optional<UString>& value)
+            {
+                if (value.has_value()) {
+                    setAttribute(name, value.value());
+                }
+            }
+
+			//!
             //! Set a bool attribute to a node.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
