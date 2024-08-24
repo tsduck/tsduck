@@ -191,4 +191,12 @@ $ git checkout master
 $ git merge NNN
 ----
 
+Alternatively, if you know that the pull request is correct and you want to directly merge it:
+
+[source,shell]
+----
+$ git fetch origin
+$ git merge pull/origin/NNN
+----
+
 Additional review and fix may be necessary before pushing the contribution.
