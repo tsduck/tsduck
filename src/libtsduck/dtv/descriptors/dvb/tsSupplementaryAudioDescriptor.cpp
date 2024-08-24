@@ -42,7 +42,7 @@ void ts::SupplementaryAudioDescriptor::clearContent()
 {
     mix_type = 0;
     editorial_classification = 0;
-    language_code.clear();
+    language_code.reset();
     private_data.clear();
 }
 
@@ -66,9 +66,9 @@ void ts::SupplementaryAudioDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(mix_type);
     buf.putBits(editorial_classification, 5);
     buf.putBit(1);
-    buf.putBit(!language_code.empty());
-    if (!language_code.empty()) {
-        buf.putLanguageCode(language_code);
+    buf.putBit(language_code.has_value());
+    if (language_code.has_value()) {
+        buf.putLanguageCode(language_code.value());
     }
     buf.putBytes(private_data);
 }
@@ -85,7 +85,7 @@ void ts::SupplementaryAudioDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(1);
     const bool has_lang = buf.getBool();
     if (has_lang) {
-        buf.getLanguageCode(language_code);
+        language_code = buf.getLanguageCode();
     }
     buf.getBytes(private_data);
 }
@@ -99,8 +99,10 @@ void ts::SupplementaryAudioDescriptor::buildXML(DuckContext& duck, xml::Element*
 {
     root->setIntAttribute(u"mix_type", mix_type);
     root->setIntAttribute(u"editorial_classification", editorial_classification, true);
-    root->setAttribute(u"language_code", language_code, true);
-    root->addHexaTextChild(u"private_data", private_data, true);
+    root->setOptionalAttribute(u"language_code", language_code);
+    if (!private_data.empty()) {
+        root->addHexaTextChild(u"private_data", private_data, true);
+    }
 }
 
 
@@ -112,7 +114,7 @@ bool ts::SupplementaryAudioDescriptor::analyzeXML(DuckContext& duck, const xml::
 {
     return element->getIntAttribute(mix_type, u"mix_type", true, 0, 0, 1) &&
            element->getIntAttribute(editorial_classification, u"editorial_classification", true, 0, 0x00, 0x1F) &&
-           element->getAttribute(language_code, u"language_code", false, u"", 3, 3) &&
+           element->getOptionalAttribute(language_code, u"language_code", 3, 3) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 7);
 }
 
