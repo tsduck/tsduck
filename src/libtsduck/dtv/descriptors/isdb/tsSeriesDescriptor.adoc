@@ -1,0 +1,15 @@
+==== series_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<series_descriptor
+    series_id="uint16, required"
+    repeat_label="uint4, required"
+    program_pattern="uint3, required"
+    expire_date="YYYY-MM-DD, optional"
+    episode_number="uint12, required"
+    last_episode_number="uint12, required"
+    series_name="string, optional"/>
+----

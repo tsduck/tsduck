@@ -1,0 +1,11 @@
+==== FMC_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<FMC_descriptor>
+  <!-- One per SL_packetized stream -->
+  <stream ES_ID="uint16, required" M4MuxChannel="uint8, required"/>
+</FMC_descriptor>
+----

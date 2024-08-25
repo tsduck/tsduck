@@ -22,7 +22,7 @@ of the global cost of the software lifetime, the reliability and the security of
 * *Costs:* In the lifetime of a software product, the initial development often costs less than the maintenance.
   Consequently, an important requirement of software development is reducing the maintenance cost.
   And sometimes this is at the expense of the initial development cost.
-  Writing good and maintainable code may cost a little bit more initially but the final cost will be beneficial. 
+  Writing good and maintainable code may cost a little bit more initially but the final cost will be beneficial.
   Writing good and maintainable code requires a set of coding guidelines which are followed by the whole development team.
 * *Reliability:* The reliability of the software is planned from the design and is achieved through the quality of the code.
   The quality of the code also requires a common set of coding guidelines.
@@ -49,23 +49,23 @@ https://raw.githubusercontent.com/tsduck/tsduck-legacy-doc/master/legacy/tsduck-
 [#ruleclassification]
 === Classification of coding guidelines
 
-There is no unique term for coding guidelines. In the industrial, academic or open-source software, 
-coding guidelines are sometimes named _coding standard_ or _coding rules_. But they all refer to the 
+There is no unique term for coding guidelines. In the industrial, academic or open-source software,
+coding guidelines are sometimes named _coding standard_ or _coding rules_. But they all refer to the
 same type of document and serve the same purpose.
 
-There are several types of coding guidelines. Some guidelines are generic; they describe general 
-software development practices. Some guidelines are more specific; they apply to details in the writing 
+There are several types of coding guidelines. Some guidelines are generic; they describe general
+software development practices. Some guidelines are more specific; they apply to details in the writing
 of source code for specific programming languages.
 
 Some rules are strictly necessary to write good code and are not negotiable in any environment.
 
-Some others are simple coding conventions, for instance the naming conventions for identifiers. Even 
-within one single programming language, many different coding conventions exist and are strongly 
-advocated by their respective supporters. These types of conventions can be initially discussed but, 
+Some others are simple coding conventions, for instance the naming conventions for identifiers.
+Even within one single programming language, many different coding conventions exist and are strongly
+advocated by their respective supporters. These types of conventions can be initially discussed but,
 once they are selected, they must be adopted by all developers in the organization or project.
 
-Several sets of conventions can be individually satisfactory but using several sets of conventions in the 
-same software project is not. Good and maintainable software must be easily understandable and 
+Several sets of conventions can be individually satisfactory but using several sets of conventions in the
+same software project is not. Good and maintainable software must be easily understandable and
 consistent coding conventions are a key part of the understanding of the code.
 
 This document adopts the following classification:
@@ -109,7 +109,7 @@ Simplicity, Clarity, Modularity, Independence, Reusability, Maintainability.
   especially new contributors.
 * *Modularity:* Break the design in smaller modules which are easier to maintain and understand.
 * *Independence:* The modules should be potentially used independently of others.
-  Modularity is not the synonym of independence. Some modular systems have so many dependencies between modules 
+  Modularity is not the synonym of independence. Some modular systems have so many dependencies between modules
   than the modularity is only an artificial division of a very big spaghetti-like module.
   Typical pitfalls which break the independence of modules are the usage of global variables,
   excessive usage of implicit state, module interdependencies, etc.
@@ -146,7 +146,7 @@ to list many cases, or rich generic classes with a lot of features and doxygen c
 We must admit that there are some of them in the TSDuck source code.
 
 [.rule]
-[Rule] All source files shall start with a legal header which references the copyright and 
+[Rule] All source files shall start with a legal header which references the copyright and
 license information for the project.
 
 All lines in the header must start with the appropriate syntax for comment lines in the language of the source file.

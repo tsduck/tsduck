@@ -1,0 +1,12 @@
+==== application_signalling_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+
+[source,xml]
+----
+<application_signalling_descriptor>
+  <!-- One per application -->
+  <application application_type="uint15, required"
+               AIT_version_number="uint5, required"/>
+</application_signalling_descriptor>
+----

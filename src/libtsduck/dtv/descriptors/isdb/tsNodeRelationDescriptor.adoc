@@ -1,0 +1,13 @@
+==== node_relation_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<node_relation_descriptor
+    reference_type="uint4, default=0"
+    information_provider_id="uint16, optional"
+    event_relation_id="uint16, optional"
+    reference_node_id="uint16, required"
+    reference_number="uint8, required"/>
+----

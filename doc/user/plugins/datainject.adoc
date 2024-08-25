@@ -19,7 +19,7 @@ This plugin is a TCP server (MUX side of the protocol).
 It accepts only one EMMG/PDG connection at a time.
 
 If the injected data are EMM’s, make sure to update the CAT accordingly (see the plugin `cat`).
-	
+
 [.usage]
 Usage
 

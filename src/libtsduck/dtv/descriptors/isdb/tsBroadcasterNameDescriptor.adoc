@@ -1,0 +1,8 @@
+==== broadcaster_name_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<broadcaster_name_descriptor name="string, required"/>
+----

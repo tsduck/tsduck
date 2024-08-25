@@ -1,0 +1,11 @@
+==== service_move_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<service_move_descriptor
+    new_original_network_id="uint16, required"
+    new_transport_stream_id="uint16, required"
+    new_service_id="uint16, required"/>
+----

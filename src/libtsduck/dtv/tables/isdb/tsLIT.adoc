@@ -1,0 +1,20 @@
+==== Local event Information Table (LIT)
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<LIT version="uint5, default=0"
+     current="bool, default=true"
+     event_id="uint16, required"
+     service_id="uint16, required"
+     transport_stream_id="uint16, required"
+     original_network_id="uint16, required">
+
+  <!-- One per local event -->
+  <event local_event_id="uint16, required">
+    <DESCRIPTOR_LIST>
+  </event>
+
+</LIT>
+----

@@ -1,0 +1,12 @@
+==== target_MAC_address_descriptor
+
+Defined by DVB in <<ETSI-301-192>> and <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B) or INT (table id 0x4C).
+
+[source,xml]
+----
+<target_MAC_address_descriptor MAC_addr_mask="MAC address, required">
+  <!-- One per MAC address: -->
+  <address MAC_addr="MAC address, required"/>
+</target_MAC_address_descriptor>
+----

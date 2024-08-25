@@ -1,0 +1,14 @@
+==== target_region_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<target_region_descriptor country_code="char3, required">
+  <!-- One per region -->
+  <region country_code="char3, optional"
+          primary_region_code="uint8, optional"
+          secondary_region_code="uint8, optional"
+          tertiary_region_code="uint16, optional"/>
+</target_region_descriptor>
+----

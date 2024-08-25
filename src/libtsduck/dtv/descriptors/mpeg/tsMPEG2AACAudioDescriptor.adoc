@@ -1,0 +1,11 @@
+==== MPEG2_AAC_audio_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG2_AAC_audio_descriptor
+    MPEG2_AAC_profile="uint8, required"
+    MPEG2_AAC_channel_configuration="uint8, required"
+    MPEG2_AAC_additional_information="uint8, required"/>
+----

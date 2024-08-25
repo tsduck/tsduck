@@ -1,0 +1,8 @@
+==== stream_mode_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<stream_mode_descriptor stream_mode="uint8, required"/>
+----

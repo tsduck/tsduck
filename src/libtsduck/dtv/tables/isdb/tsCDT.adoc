@@ -1,0 +1,21 @@
+==== Common Data Table (CDT)
+
+Defined by ARIB in <<ARIB-B21>>.
+
+[source,xml]
+----
+<CDT version="uint5, default=0"
+     current="bool, default=true"
+     download_data_id="uint16, required"
+     original_network_id="uint16, required"
+     data_type="uint8, required">
+
+  <!-- Common descriptors loop -->
+  <DESCRIPTOR_LIST>
+
+  <data_module>
+    Hexadecimal content
+  </data_module>
+
+</CDT>
+----

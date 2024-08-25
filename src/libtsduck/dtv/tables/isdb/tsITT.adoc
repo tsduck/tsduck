@@ -1,0 +1,14 @@
+==== Index Transmission information Table (ITT)
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<ITT version="uint5, default=0"
+     current="bool, default=true"
+     event_id="uint16, required">
+
+  <DESCRIPTOR_LIST>
+
+</ITT>
+----

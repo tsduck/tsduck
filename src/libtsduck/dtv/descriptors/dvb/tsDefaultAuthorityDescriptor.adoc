@@ -1,0 +1,8 @@
+==== default_authority_descriptor
+
+Defined by DVB in <<ETSI-102-323>>.
+
+[source,xml]
+----
+<default_authority_descriptor fqdn="string, required"/>
+----

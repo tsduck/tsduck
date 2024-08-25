@@ -1,0 +1,26 @@
+==== ISDB_component_group_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<ISDB_component_group_descriptor
+   component_group_type="uint3, required">
+
+  <component_group
+    component_group_id="uint4, required"
+    total_bit_rate="uint8, optional"
+    explanation="string, optional">
+
+    <CAUnit
+       CA_unit_id="uint4, required">
+
+      <component_tags>
+        Up to 16 8-bit component tags
+      </component_tags>
+
+    </CAUnit>
+  </component_group>
+
+</ISDB_component_group_descriptor>
+----

@@ -1,0 +1,16 @@
+==== target_IPv6_source_slash_descriptor
+
+Defined by DVB in <<ETSI-301-192>>.
+Must be in an INT (table id 0x4C).
+
+[source,xml]
+----
+<target_IPv6_source_slash_descriptor>
+  <!-- One per pair of IPv6 address: -->
+  <address
+      IPv6_source_addr="IPv6 address, required"
+      IPv6_source_slash_mask="uint8, required"
+      IPv6_dest_addr="IPv6 address, required"
+      IPv6_dest_slash_mask="uint8, required"/>
+</target_IPv6_source_slash_descriptor>
+----

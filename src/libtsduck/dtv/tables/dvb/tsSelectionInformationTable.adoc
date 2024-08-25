@@ -1,0 +1,20 @@
+==== Selection Information Table (SIT)
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<selection_information_table version="uint5, default=0" current="bool, default=true">
+
+  <!-- Common descriptors loop, for transmission parameters -->
+  <DESCRIPTOR_LIST>
+
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           running_status="undefined|not-running|starting|pausing|running|off-air,
+                           required">
+    <DESCRIPTOR_LIST>
+  </service>
+
+</selection_information_table>
+----

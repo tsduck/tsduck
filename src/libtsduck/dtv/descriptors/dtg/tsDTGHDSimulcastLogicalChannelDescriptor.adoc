@@ -1,0 +1,13 @@
+==== dtg_HD_simulcast_logical_channel_descriptor
+
+Defined by DTG in <<DTG-DBOOK>>.
+
+[source,xml]
+----
+<dtg_HD_simulcast_logical_channel_descriptor>
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           logical_channel_number="uint10, required"
+           visible_service="bool, default=true"/>
+</dtg_HD_simulcast_logical_channel_descriptor>
+----

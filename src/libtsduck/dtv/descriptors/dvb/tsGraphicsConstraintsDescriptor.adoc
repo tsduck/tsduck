@@ -1,0 +1,18 @@
+==== graphics_constraints_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<graphics_constraints_descriptor
+    can_run_without_visible_ui="bool, required"
+    handles_configuration_changed="bool, required"
+    handles_externally_controlled_video="bool, required">
+
+  <graphics_configuration>
+    Hexadecimal content
+  </graphics_configuration>
+
+</graphics_constraints_descriptor>
+----

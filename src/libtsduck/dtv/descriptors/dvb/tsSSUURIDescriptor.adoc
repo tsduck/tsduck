@@ -1,0 +1,15 @@
+==== SSU_uri_descriptor
+
+Defined by DVB in <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B).
+
+[source,xml]
+----
+<SSU_uri_descriptor
+    max_holdoff_time="uint8, required"
+    min_polling_interval="uint8, required"
+    uri="string, required"/>
+----
+
+Warning: As defined in <<ETSI-102-006>>,
+`max_holdoff_time` is a number of minutes and `min_polling_interval` is a number of hours.

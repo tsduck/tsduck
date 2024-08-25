@@ -1,0 +1,14 @@
+==== eutelsat_channel_number_descriptor
+
+Defined by Eutelsat in <<Fransat>>.
+
+[source,xml]
+----
+<eutelsat_channel_number_descriptor>
+  <!-- One per service -->
+  <service original_network_id="uint16, required"
+           transport_stream_id="uint16, required"
+           service_id="uint16, required"
+           eutelsat_channel_number="uint10, required"/>
+</eutelsat_channel_number_descriptor>
+----

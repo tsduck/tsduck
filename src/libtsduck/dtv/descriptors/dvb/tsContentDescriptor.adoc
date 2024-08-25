@@ -1,0 +1,15 @@
+==== content_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<content_descriptor>
+
+  <!-- One per classification -->
+  <content content_nibble_level_1="uint4, required"
+           content_nibble_level_2="uint4, required"
+           user_byte="uint8, required"/>
+
+</content_descriptor>
+----

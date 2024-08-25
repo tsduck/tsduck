@@ -1,0 +1,15 @@
+==== partialTS_time_descriptor
+
+Defined by ARIB in <<ARIB-B21>>.
+
+[source,xml]
+----
+<partialTS_time_descriptor
+    event_version_number="uint8, required"
+    event_start_time="YYYY-MM-DD hh:mm:ss, optional"
+    duration="hh:mm:ss, optional"
+    offset="hh:mm:ss, optional"
+    offset_flag="uint1, default=0"
+    other_descriptor_status="bool, default=false"
+    JST_time="YYYY-MM-DD hh:mm:ss, optional"/>
+----

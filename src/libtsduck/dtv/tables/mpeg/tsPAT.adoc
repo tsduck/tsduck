@@ -1,0 +1,16 @@
+==== Program Association Table (PAT)
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<PAT version="uint5, default=0"
+     current="bool, default=true"
+     transport_stream_id="uint16, required"
+     network_PID="uint13, optional">
+
+  <!-- One per service -->
+  <service service_id="uint16, required" program_map_PID="uint13, required"/>
+
+</PAT>
+----

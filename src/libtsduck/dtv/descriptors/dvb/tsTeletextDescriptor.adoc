@@ -1,0 +1,13 @@
+==== teletext_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<teletext_descriptor>
+  <!-- One per page -->
+  <teletext language_code="char3, required"
+            teletext_type="uint5, required"
+            page_number="uint16, required"/>
+</teletext_descriptor>
+----

@@ -1,0 +1,13 @@
+==== stuffing_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+This is the ATSC version of the `stuffing_descriptor`.
+DVB uses a distinct descriptor.
+
+[source,xml]
+----
+<ATSC_stuffing_descriptor>
+  Hexadecimal content
+</ATSC_stuffing_descriptor>
+----

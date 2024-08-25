@@ -1,0 +1,10 @@
+==== multiplex_buffer_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<multiplex_buffer_descriptor
+    MB_buffer_size="uint24, required"
+    TB_leak_rate="uint24, required"/>
+----

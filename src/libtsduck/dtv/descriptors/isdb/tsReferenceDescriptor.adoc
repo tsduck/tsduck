@@ -1,0 +1,18 @@
+==== reference_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<reference_descriptor
+    information_provider_id="uint16, required"
+    event_relation_id="uint16, required">
+
+  <!-- One per reference -->
+  <reference
+      reference_node_id="uint16, required"
+      reference_number="uint8, required"
+      last_reference_number="uint8, required"/>
+
+</reference_descriptor>
+----

@@ -1,0 +1,18 @@
+==== dtg_guidance_descriptor
+
+Defined by DTG in <<DTG-DBOOK>>.
+
+[source,xml]
+----
+<dtg_guidance_descriptor
+    guidance_type="uint2, required"
+    ISO_639_language_code="char3, optional"
+    text="string, optional"
+    guidance_mode="bool, optional">
+
+  <reserved_future_use>
+    Hexadecimal content
+  </reserved_future_use>
+
+</dtg_guidance_descriptor>
+----

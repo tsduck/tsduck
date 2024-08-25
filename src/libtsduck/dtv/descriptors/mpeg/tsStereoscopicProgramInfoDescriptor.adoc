@@ -1,0 +1,8 @@
+==== stereoscopic_program_info_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<stereoscopic_program_info_descriptor stereoscopic_service_type="uint3, required"/>
+----

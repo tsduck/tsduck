@@ -1,0 +1,18 @@
+==== update_descriptor
+
+Defined by DVB in <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B).
+
+[source,xml]
+----
+<update_descriptor
+    update_flag="uint2, required"
+    update_method="uint4, required"
+    update_priority="uint2, required">
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</update_descriptor>
+----

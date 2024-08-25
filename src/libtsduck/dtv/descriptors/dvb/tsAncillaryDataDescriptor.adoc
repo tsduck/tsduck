@@ -1,0 +1,8 @@
+==== ancillary_data_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
+----

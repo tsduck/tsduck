@@ -1,0 +1,16 @@
+==== ISDB_terrestrial_delivery_system_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<ISDB_terrestrial_delivery_system_descriptor
+    area_code="uint12, required"
+    guard_interval="1/32|1/16|1/8|1/4, required"
+    transmission_mode="2k|4k|8k|mode1|mode2|mode3, required">
+
+  <!-- More than one frequency in case of MFN -->
+  <frequency value="FrequencyHz, required"/>
+
+</ISDB_terrestrial_delivery_system_descriptor>
+----

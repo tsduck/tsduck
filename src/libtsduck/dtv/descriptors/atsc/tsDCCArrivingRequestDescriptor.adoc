@@ -1,0 +1,15 @@
+==== dcc_arriving_request_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<dcc_arriving_request_descriptor dcc_arriving_request_type="uint8, required">
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <dcc_arriving_request_text>
+    <string language="char3, required" text="string, required"/>
+  </dcc_arriving_request_text>
+
+</dcc_arriving_request_descriptor>
+----

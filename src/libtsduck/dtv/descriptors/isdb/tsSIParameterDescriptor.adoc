@@ -1,0 +1,17 @@
+==== SI_parameter_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<SI_parameter_descriptor
+    parameter_version="uint8, required"
+    update_time="YYYY-MM-DD, required">
+
+  <!-- One per SI table -->
+  <table id="uint8, required">
+    Hexadecimal content (table description bytes)
+  </table>
+
+</SI_parameter_descriptor>
+----

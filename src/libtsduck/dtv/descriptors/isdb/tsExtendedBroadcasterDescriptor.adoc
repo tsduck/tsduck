@@ -1,0 +1,28 @@
+==== extended_broadcaster_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<extended_broadcaster_descriptor
+    broadcaster_type="uint4, required"
+    terrestrial_broadcaster_id="uint16, optional">
+
+  <!-- Any number of affiliations, when broadcaster_type == 0x01 or 0x2 -->
+  <affiliation id="uint8, required"/>
+
+  <!-- Any number of broadcasters, when broadcaster_type == 0x01 or 0x2 -->
+  <broadcaster original_network_id="uint16, required" broadcaster_id="uint8, required"/>
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</extended_broadcaster_descriptor>
+----
+
+Note: While the fields have different names in <<ARIB-B10J>>,
+the structure of the descriptor is identical for `broadcaster_type` values 0x01 and 0x02.
+In the XML, the attributes are unified.
+For instance, the attribute `terrestrial_broadcaster_id` is in fact `terrestrial_sound_broadcaster_id`
+when `broadcaster_type` is 0x02.

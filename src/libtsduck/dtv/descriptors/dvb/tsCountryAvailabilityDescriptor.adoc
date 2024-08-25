@@ -1,0 +1,13 @@
+==== country_availability_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<country_availability_descriptor country_availability="bool, required">
+
+  <!-- One per country -->
+  <country country_code="char3, required"/>
+
+</country_availability_descriptor>
+----

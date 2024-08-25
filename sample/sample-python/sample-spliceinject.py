@@ -25,12 +25,10 @@ tsp.app_name = "python-sample-spliceinject" # informational only, for log messag
 tsp.input = ['craft', '--count', '1000', '--pid', '100', '--payload-pattern', '0123']
 
 # Modifies PMT To comply with the SCTE 35 standard
-plugin_pmt = ['pmt', '--service', '1010', '--add-programinfo-id', '0x43554549', 
-            '--add-pid', '600/0x86']
+plugin_pmt = ['pmt', '--service', '1010', '--add-programinfo-id', '0x43554549', '--add-pid', '600/0x86']
 
 # Actual splice injecting of splices from splice*.xml and/or udp 4444
-plugin_splice_inject = ['spliceinject', '--service', '1010', '--files', 'splice*.xml',
-                        '--udp', '4444']
+plugin_splice_inject = ['spliceinject', '--service', '1010', '--files', 'splice*.xml', '--udp', '4444']
 
 # Remove extra input stuffing
 plugin_negate_stuffing = ['filter', '--negate', '--pid', '0x1FFF']

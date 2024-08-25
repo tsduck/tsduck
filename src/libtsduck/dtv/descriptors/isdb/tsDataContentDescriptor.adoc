@@ -1,0 +1,21 @@
+==== data_content_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<data_content_descriptor
+    data_component_id="uint16, required"
+    entry_component="uint8, required"
+    ISO_639_language_code="char3, required"
+    text="string, required">
+
+  <selector_bytes>
+    Hexadecimal content
+  </selector_bytes>
+
+  <!-- One per component_ref -->
+  <component ref="uint8, required"/>
+
+</data_content_descriptor>
+----

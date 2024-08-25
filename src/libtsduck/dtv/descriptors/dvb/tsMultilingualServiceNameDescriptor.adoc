@@ -1,0 +1,13 @@
+==== multilingual_service_name_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<multilingual_service_name_descriptor>
+  <!-- One per language -->
+  <language code="char3, required"
+            service_provider_name="string, required"
+            service_name="string, required"/>
+</multilingual_service_name_descriptor>
+----

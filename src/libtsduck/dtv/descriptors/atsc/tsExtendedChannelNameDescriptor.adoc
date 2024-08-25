@@ -1,0 +1,15 @@
+==== extended_channel_name_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<extended_channel_name_descriptor>
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <long_channel_name_text>
+    <string language="char3, required" text="string, required"/>
+  </long_channel_name_text>
+
+</extended_channel_name_descriptor>
+----

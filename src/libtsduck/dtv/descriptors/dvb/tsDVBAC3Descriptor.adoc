@@ -1,0 +1,20 @@
+==== AC3_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+Because of the presence of an ATSC version of the `AC3_descriptor`,
+the XML name for the DVB version is `<DVB_AC3_descriptor>`.
+For compatibility, `<AC3_descriptor>` is still accepted.
+
+[source,xml]
+----
+<DVB_AC3_descriptor
+    component_type="uint8, optional"
+    bsid="uint8, optional"
+    mainid="uint8, optional"
+    asvc="uint8, optional">
+  <additional_info>
+    Hexadecimal content, optional
+  </additional_info>
+</DVB_AC3_descriptor>
+----

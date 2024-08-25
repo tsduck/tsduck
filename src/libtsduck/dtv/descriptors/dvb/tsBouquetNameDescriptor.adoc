@@ -1,0 +1,8 @@
+==== bouquet_name_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<bouquet_name_descriptor bouquet_name="string, required"/>
+----

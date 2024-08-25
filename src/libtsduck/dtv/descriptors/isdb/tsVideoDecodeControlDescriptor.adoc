@@ -1,0 +1,12 @@
+==== video_decode_control_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<video_decode_control_descriptor
+    still_picture="bool, required"
+    sequence_end_code="bool, required"
+    video_encode_format="uint4, required"
+    reserved_future_use="uint2, default=3"/>
+----

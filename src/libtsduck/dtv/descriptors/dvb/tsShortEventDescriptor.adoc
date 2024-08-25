@@ -1,0 +1,11 @@
+==== short_event_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<short_event_descriptor language_code="char3, required">
+  <event_name>String</event_name>
+  <text>String</text>
+</short_event_descriptor>
+----

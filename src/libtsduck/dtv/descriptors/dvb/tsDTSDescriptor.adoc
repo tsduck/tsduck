@@ -1,0 +1,19 @@
+==== DTS_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<DTS_descriptor
+    sample_rate_code="uint4, required"
+    bit_rate_code="uint6, required"
+    nblks="uint7, 0x05 to 0x1F, required"
+    fsize="uint14, 0x005F to 0x2000, required"
+    surround_mode="uint6, required"
+    lfe="bool, default=false"
+    extended_surround="uint2, default=0">
+  <additional_info>
+    Hexadecimal content
+  </additional_info>
+</DTS_descriptor>
+----

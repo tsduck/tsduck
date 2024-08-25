@@ -1,0 +1,14 @@
+==== frequency_list_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<frequency_list_descriptor
+    coding_type="undefined|satellite|cable|terrestrial|uint2, required">
+
+  <!-- List of frequencies, one element per frequency -->
+  <centre_frequency value="FrequencyHz, required"/>
+
+</frequency_list_descriptor>
+----

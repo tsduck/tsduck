@@ -1,0 +1,13 @@
+==== service_location_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<service_location_descriptor PCR_PID="uint13, optional">
+  <!-- One per component -->
+  <component stream_type="uint8, required"
+             elementary_PID="uint13, required"
+             ISO_639_language_code="char3, optional"/>
+</service_location_descriptor>
+----

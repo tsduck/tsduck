@@ -45,7 +45,7 @@ $ tsp -I srt [options]
 ----
 
 [.usage]
-General options	
+General options
 
 [.opt]
 *-d* _value_ +

@@ -1,0 +1,28 @@
+==== Partial Content Announcement Table (PCAT)
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<PCAT version="uint5, default=0"
+      current="bool, default=true"
+      service_id="uint16, required"
+      transport_stream_id="uint16, required"
+      original_network_id="uint16, required"
+      content_id="uint32, required">
+
+  <!-- One per content version -->
+  <version content_version="uint16, required"
+           content_minor_version="uint16, required"
+           version_indicator="uint2, required">
+
+    <!-- One per schedule entry -->
+    <schedule start_time="YYYY-MM-DD hh:mm:ss, required"
+              duration="hh:mm:ss, required"/>
+
+    <DESCRIPTOR_LIST>
+
+  </version>
+
+</PCAT>
+----

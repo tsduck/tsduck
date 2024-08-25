@@ -1,0 +1,11 @@
+==== partial_transport_stream_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<partial_transport_stream_descriptor
+    peak_rate="uint22, required"
+    minimum_overall_smoothing_rate="uint22, default=0x3FFFFF"
+    maximum_overall_smoothing_buffer="uint14, default=0x3FFF"/>
+----

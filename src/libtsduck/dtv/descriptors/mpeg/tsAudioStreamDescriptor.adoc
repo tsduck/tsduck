@@ -1,0 +1,12 @@
+==== audio_stream_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<audio_stream_descriptor
+    free_format="bool, required"
+    ID="uint1, required"
+    layer="uint2, required"
+    variable_rate_audio="bool, required"/>
+----

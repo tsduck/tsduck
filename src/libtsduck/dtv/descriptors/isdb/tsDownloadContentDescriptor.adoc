@@ -1,0 +1,51 @@
+==== download_content_descriptor
+
+Defined by ARIB in <<ARIB-B21>>.
+
+[source,xml]
+----
+<download_content_descriptor
+    reboot="bool, required"
+    add_on="bool, required"
+    component_size="uint32, required"
+    download_id="uint32, required"
+    time_out_value_DII="uint32, required"
+    leak_rate="uint22, required"
+    component_tag="uint8, required">
+
+  <!-- At most one compatibility_descriptor -->
+  <compatibility_descriptor>
+
+    <!-- Any number of descriptors -->
+    <descriptor
+        descriptor_type="uint8, required"
+        specifier_type="uint8, required"
+        specifier_data="uint24, required"
+        model="uint16, required"
+        version="uint16, required">
+
+      <!-- Any number of subdescriptors -->
+      <subdescriptor type="uint8, required">
+        Hexadecimal content
+      </subdescriptor>
+    </descriptor>
+
+  </compatibility_descriptor>
+
+  <!-- One per module -->
+  <module module_id="uint16, required" module_size="uint32, required">
+    <module_info>
+      Hexadecimal content
+    </module_info>
+  </module>
+
+  <!-- At most one -->
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+  <!-- At most one -->
+  <text_info ISO_639_language_code="char3, required" text="string, required"/>
+
+</download_content_descriptor>
+----

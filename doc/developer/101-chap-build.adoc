@@ -433,7 +433,7 @@ It is difficult to identify the progression of the build.
 Error messages are not clearly identified.
 
 Therefore, the `make` command only displays a synthetic line for each command such as:
- 
+
 [source,text]
 ----
 [CXX] dtv/tables/dvb/tsAIT.cpp

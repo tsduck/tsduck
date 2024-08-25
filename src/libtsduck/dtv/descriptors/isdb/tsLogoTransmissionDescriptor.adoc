@@ -1,0 +1,21 @@
+==== logo_transmission_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<logo_transmission_descriptor
+    logo_transmission_type="uint8, required"
+    logo_id="uint9, optional"
+    logo_version="uint12, optional"
+    download_data_id="uint16, optional"
+    logo_char="string, optional">
+
+  <reserved_future_use>
+    Hexadecimal content
+  </reserved_future_use>
+
+</logo_transmission_descriptor>
+----
+
+Note: the presence of the various attributes depends on the value of `logo_transmission_type` (see <<ARIB-B10J>>).

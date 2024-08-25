@@ -1,0 +1,12 @@
+==== CA_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<CA_descriptor CA_system_id="uint16, required" CA_PID="uint13, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</CA_descriptor>
+----

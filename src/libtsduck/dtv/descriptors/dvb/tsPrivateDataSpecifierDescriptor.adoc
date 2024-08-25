@@ -1,0 +1,12 @@
+==== private_data_specifier_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<private_data_specifier_descriptor private_data_specifier="uint32|name, required"/>
+----
+
+The value of the attribute is either a 32-bit private data specifier value or
+a predefined name as used in option `--default-pds`.
+See xref:opt-default-std[xrefstyle=short] for more details.

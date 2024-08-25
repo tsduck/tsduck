@@ -1,0 +1,19 @@
+==== SI_prime_TS_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<SI_prime_TS_descriptor
+    parameter_version="uint8, required"
+    update_time="YYYY-MM-DD, required"
+    SI_prime_TS_network_id="uint16, required"
+    SI_prime_transport_stream_id="uint16, required">
+
+  <!-- One per SI table -->
+  <table id="uint8, required">
+    Hexadecimal content (table description bytes)
+  </table>
+
+</SI_prime_TS_descriptor>
+----

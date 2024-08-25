@@ -1,0 +1,23 @@
+==== Event Relation Table (ERT)
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<ERT version="uint5, default=0"
+     current="bool, default=true"
+     event_relation_id="uint16, required"
+     information_provider_id="uint16, required"
+     relation_type="uint4, required">
+
+  <!-- One per event relation -->
+  <relation
+      node_id="uint16, required"
+      collection_mode="uint4, required"
+      parent_node_id="uint16, required"
+      reference_number="uint8, required">
+    <DESCRIPTOR_LIST>
+  </relation>
+
+</ERT>
+----

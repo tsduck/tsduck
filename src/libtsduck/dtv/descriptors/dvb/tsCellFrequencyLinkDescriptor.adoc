@@ -1,0 +1,17 @@
+==== cell_frequency_link_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<cell_frequency_link_descriptor>
+
+  <!-- One per cell -->
+  <cell cell_id="uint16, required" frequency="FrequencyHz, required">
+    <!-- One per subcell -->
+    <subcell cell_id_extension="uint8, required"
+             transposer_frequency="FrequencyHz, required"/>
+  </cell>
+
+</cell_frequency_link_descriptor>
+----

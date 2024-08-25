@@ -1,0 +1,17 @@
+==== MPEGH_3D_audio_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEGH_3D_audio_descriptor
+    mpegh_3da_profile_level_indication="uint8, required"
+    interactivity_enabled="bool, required"
+    reference_channel_layout="uint6, required">
+
+  <reserved>
+    Hexadecimal content
+  </reserved>
+
+</MPEGH_3D_audio_descriptor>
+----

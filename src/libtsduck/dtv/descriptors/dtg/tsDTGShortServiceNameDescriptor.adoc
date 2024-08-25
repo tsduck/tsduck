@@ -1,0 +1,8 @@
+==== dtg_short_service_name_descriptor
+
+Defined by DTG in <<DTG-DBOOK>>.
+
+[source,xml]
+----
+<dtg_short_service_name_descriptor name="string, required"/>
+----

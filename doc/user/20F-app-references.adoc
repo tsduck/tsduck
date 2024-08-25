@@ -243,7 +243,7 @@
 * [[[FTV-AUS]]] Free TV Australia:
   "Operational Practice OP-41; Logical Channel Descriptor and Allocation of Logical Channel Numbers", Issue 8, July 2016.
 * [[[HiDes]]] HiDes USB DVB-T modulator adaptors,
-  http://www.hides.com.tw/product_cg74469_eng.html 
+  http://www.hides.com.tw/product_cg74469_eng.html
 * [[[HiDes-Drivers]]] Device drivers for HiDes modulators,
   https://github.com/tsduck/hides-drivers/
 * [[[HomeBrew]]] HomeBrew, open-source package manager for macOS (or Linux), https://brew.sh/
@@ -256,12 +256,12 @@
   "Digital Storage Media Command & Control" (DSM-CC).
 * [[[LinuxTV]]] Linux TV Wiki:
   "How to install DVB device drivers",
-  http://linuxtv.org/wiki/index.php/How_to_install_DVB_device_drivers 
+  http://linuxtv.org/wiki/index.php/How_to_install_DVB_device_drivers
 * [[[NorDig]]] NorDig:
   "Unified Requirements for Integrated Receiver Decoders for use in cable,
   satellite, terrestrial and managed IPTV based networks", V3.1.1, September 2019.
 * [[[RIST]]] RIST, librist documentation,
-  https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation 
+  https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation
 * [[[RIST-URL]]] RIST, URL syntax,
   https://code.videolan.org/rist/librist/-/wikis/risturl-Syntax-as-of-v.-0.2.0
 * [[[SCTE-18]]] ANSI/SCTE 18 2007,
@@ -272,15 +272,15 @@
   "Data Encryption Standard - Cipher Block Chaining Packet Encryption Specification".
 * [[[SCTE-164]]] ANSI/SCTE 164 2019,
   "Emergency Alert Metadata Descriptor".
-* [[[SRT]]] SRT, libsrt site, https://github.com/Haivision/srt/ 
+* [[[SRT]]] SRT, libsrt site, https://github.com/Haivision/srt/
 * [[[Suntech]]] Suntechtv U3 USB modulator (VATek-based),
-  https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673 
-* [[[TSDuck]]] TSDuck Web site, https://tsduck.io/ 
-* [[[TSDuck-Prog]]] TSDuck programmer’s guide, https://tsduck.io/doxy/ 
+  https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673
+* [[[TSDuck]]] TSDuck Web site, https://tsduck.io/
+* [[[TSDuck-Prog]]] TSDuck programmer’s guide, https://tsduck.io/doxy/
 * [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, https://github.com/tsduck/tsduck/issues
 * [[[TSDuck-Streams]]] Repository of sample real-life transport streams, https://tsduck.io/streams
 * [[[UWA]]] UHD World Association, T/UWA 005.2-1-2022
   "HDR Video Technology Part 2-1 Application Guide to System Integration".
 * [[[VATek]]] Vision Advance Technology Inc (VATek) corporate home page: https://www.vatek.com.tw/
 * [[[VATek-SDK]]] VATek SDK source code: https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2
-* [[[VLC]]] VideoLAN VLC Media Player home page, http://www.videolan.org/vlc/ 
+* [[[VLC]]] VideoLAN VLC Media Player home page, http://www.videolan.org/vlc/

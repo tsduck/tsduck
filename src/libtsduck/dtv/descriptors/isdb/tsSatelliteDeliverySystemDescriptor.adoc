@@ -1,0 +1,6 @@
+==== satellite_delivery_system_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+Redefined in a slightly different way by ARIB in <<ARIB-B10J>>.
+See xref:sat-del-desc[xrefstyle=short].

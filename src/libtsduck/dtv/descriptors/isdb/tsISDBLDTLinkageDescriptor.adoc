@@ -1,0 +1,18 @@
+==== ISDB_LDT_linkage_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<ISDB_LDT_linkage_descriptor
+   original_service_id="uint16, required"
+   transport_stream_id="uint16, required"
+   original_network_id="uint16, required">
+
+  <Description
+    id="uint16, required"
+    type="uint4, required"
+    user_defined="uint8, required"/>
+
+</ISDB_LDT_linkage_descriptor>
+----

@@ -1,0 +1,12 @@
+==== DTS_neural_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<DTS_neural_descriptor config_id="uint8, required">
+  <additional_info>
+    Hexadecimal content
+  </additional_info>
+</DTS_neural_descriptor>
+----

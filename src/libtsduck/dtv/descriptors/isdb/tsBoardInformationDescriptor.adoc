@@ -1,0 +1,10 @@
+==== board_information_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<board_information_descriptor
+    title="string, required"
+    text="string, required"/>
+----

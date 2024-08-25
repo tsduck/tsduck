@@ -1,0 +1,8 @@
+==== transport_stream_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<transport_stream_descriptor compliance="string, required"/>
+----

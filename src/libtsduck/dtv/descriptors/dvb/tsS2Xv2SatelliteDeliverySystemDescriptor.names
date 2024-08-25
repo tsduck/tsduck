@@ -38,5 +38,5 @@ Bits = 3
 [S2Xv2_satellite_delivery_system_descriptor.NCR_reference]
 # Table 144f of EN 300 468
 Bits = 1
-0 = The first symbol of the Start Of Frame field of the relevant DVB-S2(X) physical layer frame 
+0 = The first symbol of the Start Of Frame field of the relevant DVB-S2(X) physical layer frame
 1 = The first symbol of the Start Of Superframe (SOSF) field of the DVB-S2X Annex E superframe

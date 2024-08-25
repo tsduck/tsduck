@@ -1,0 +1,18 @@
+==== Extended Text Table (ETT)
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<ETT version="uint5, default=0"
+     protocol_version="uint8, default=0"
+     ETT_table_id_extension="uint16, required"
+     ETM_id="uint32, required">
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <extended_text_message>
+    <string language="char3, required" text="string, required"/>
+  </extended_text_message>
+
+</ETT>
+----

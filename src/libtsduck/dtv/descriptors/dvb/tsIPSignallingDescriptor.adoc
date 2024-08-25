@@ -1,0 +1,9 @@
+==== ip_signalling_descriptor
+
+Defined by DVB in <<ETSI-101-812>>.
+Must be in an INT (table id 0x4C).
+
+[source,xml]
+----
+<ip_signalling_descriptor platform_id="uint24, required"/>
+----

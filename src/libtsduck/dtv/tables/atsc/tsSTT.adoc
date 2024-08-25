@@ -1,0 +1,17 @@
+==== System Time Table (STT)
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<STT protocol_version="uint8, default=0"
+     system_time="uint32, required"
+     GPS_UTC_offset="uint8, required"
+     DS_status="bool, required"
+     DS_day_of_month="uint5, default=0"
+     DS_hour="uint8, default=0">
+
+  <DESCRIPTOR_LIST>
+
+</STT>
+----

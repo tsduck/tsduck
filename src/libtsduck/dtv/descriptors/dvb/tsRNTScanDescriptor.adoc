@@ -1,0 +1,16 @@
+==== RNT_scan_descriptor
+
+Defined by DVB in <<ETSI-102-323>>.
+Must be in a RNT (table id 0x79).
+
+[source,xml]
+----
+<RNT_scan_descriptor>
+
+  <RNT_reference
+    transport_stream_id="uint16, required"
+    original_network_id="uint16, required"
+    scan_weighting="uint8, required"/>
+
+</RNT_scan_descriptor>
+----

@@ -1,0 +1,11 @@
+==== protection_message_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+
+[source,xml]
+----
+<protection_message_descriptor>
+  <!-- One per component, up to 15 components -->
+  <component tag="uint8, required"/>
+</protection_message_descriptor>
+----

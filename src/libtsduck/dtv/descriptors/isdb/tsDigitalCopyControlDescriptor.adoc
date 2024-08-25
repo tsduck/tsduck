@@ -1,0 +1,22 @@
+==== digital_copy_control_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<digital_copy_control_descriptor
+    digital_recording_control_data="uint2, required"
+    user_defined="uint4, default=0"
+    maximum_bitrate="uint8, optional">
+
+  <!-- One per component in the service -->
+  <component_control
+      component_tag="uint8, required"
+      digital_recording_control_data="uint2, required"
+      user_defined="uint4, default=0"
+      maximum_bitrate="uint8, optional"/>
+
+</digital_copy_control_descriptor>
+----
+
+Note: as specified in <<ARIB-B10J>>, the `maximum_bitrate` attribute is set in units of 1/4 Mb/s (250 kb/s).

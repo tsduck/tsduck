@@ -1,0 +1,13 @@
+==== quality_extension_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<quality_extension_descriptor field_size_bytes="uint8, required">
+
+  <!-- between 1 and 255 metric codes to be provied (although only 7 are defined) -->
+  <metric code="uint32, required"/>
+
+</quality_extension_descriptor>
+----

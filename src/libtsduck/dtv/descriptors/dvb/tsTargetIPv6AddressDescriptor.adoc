@@ -1,0 +1,12 @@
+==== target_IPv6_address_descriptor
+
+Defined by DVB in <<ETSI-301-192>> and <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B) or INT (table id 0x4C).
+
+[source,xml]
+----
+<target_IPv6_address_descriptor IPv6_addr_mask="IPv6 address, required">
+  <!-- One per IPv6 address: -->
+  <address IPv6_addr="IPv6 address, required"/>
+</target_IPv6_address_descriptor>
+----

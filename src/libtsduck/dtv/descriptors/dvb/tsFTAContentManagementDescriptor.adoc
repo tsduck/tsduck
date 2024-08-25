@@ -1,0 +1,12 @@
+==== FTA_content_management_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<FTA_content_management_descriptor
+    user_defined="bool, required"
+    do_not_scramble="bool, required"
+    control_remote_access_over_internet="uint2, required"
+    do_not_apply_revocation="bool, required"/>
+----

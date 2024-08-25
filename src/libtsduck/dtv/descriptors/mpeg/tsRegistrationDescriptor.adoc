@@ -1,0 +1,12 @@
+==== registration_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<registration_descriptor format_identifier="uint32, required">
+  <additional_identification_info>
+    Hexadecimal content (optional element)
+  </additional_identification_info>
+</registration_descriptor>
+----

@@ -1,0 +1,10 @@
+==== NPT_endpoint_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<NPT_endpoint_descriptor
+    start_NPT="uint33, required"
+    stop_NPT="uint33, required"/>
+----

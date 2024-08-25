@@ -1,0 +1,20 @@
+==== stream_event_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+Note: `<private_data>` and `<private_text>` are mutually exclusive.
+They both define the same private data part, the former using hexadecimal format and the latter ASCII text.
+
+[source,xml]
+----
+<stream_event_descriptor
+    event_id="uint16, required"
+    event_NPT="uint33, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+  <private_text>
+    ASCII string to be used instead of private_data
+  </private_text>
+</stream_event_descriptor>
+----

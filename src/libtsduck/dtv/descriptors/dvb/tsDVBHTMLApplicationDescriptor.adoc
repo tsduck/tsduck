@@ -1,0 +1,12 @@
+==== dvb_html_application_descriptor
+
+Defined by DVB in <<ETSI-101-812>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<dvb_html_application_descriptor parameter="string, optional">
+  <!-- One per application id: -->
+  <application id="uint16, required"/>
+</dvb_html_application_descriptor>
+----

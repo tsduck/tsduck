@@ -1,0 +1,12 @@
+==== EAS_inband_exception_channels_descriptor
+
+Defined by ANSI/SCTE in <<SCTE-18>>.
+Must be in a Cable Emergency Alert Table (table id 0xD8).
+
+[source,xml]
+----
+<EAS_inband_exception_channels_descriptor>
+  <!-- One entry per exception channel -->
+  <exception RF_channel="uint8, required" program_number="uint16, required"/>
+</EAS_inband_exception_channels_descriptor>
+----

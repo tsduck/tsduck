@@ -627,7 +627,7 @@ All available plugins are documented in xref:chap-plugins[xrefstyle=short].
 [.usage]
 Common plugin options
 
-All plugins accept the following common options:	
+All plugins accept the following common options:
 
 [.opt]
 *--help*

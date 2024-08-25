@@ -1,0 +1,11 @@
+==== genre_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<genre_descriptor>
+  <!-- One per attribute -->
+  <attribute value="uint8, required"/>
+</genre_descriptor>
+----

@@ -1,0 +1,12 @@
+==== time_shifted_service_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+Because of the presence of an ATSC version of the `time_shifted_service_descriptor`,
+the XML name for the DVB version is `<DVB_time_shifted_service_descriptor>`.
+For compatibility, `<time_shifted_service_descriptor>` is still accepted.
+
+[source,xml]
+----
+<DVB_time_shifted_service_descriptor reference_service_id="uint16, required"/>
+----

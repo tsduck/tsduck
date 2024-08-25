@@ -1,0 +1,8 @@
+==== related_content_descriptor
+
+Defined by DVB in <<ETSI-102-323>>.
+
+[source,xml]
+----
+<related_content_descriptor/>
+----

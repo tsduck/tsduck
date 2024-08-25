@@ -1,0 +1,14 @@
+==== LCEVC_linkage_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<LCEVC_linkage_descriptor>
+
+  <lcevc_stream_tag>
+    Hexadecimal content
+  </lcevc_stream_tag>
+
+</LCEVC_linkage_descriptor>
+----

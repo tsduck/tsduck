@@ -1,0 +1,12 @@
+==== redistribution_control_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<redistribution_control_descriptor>
+  <rc_information>
+    Hexadecimal content
+  </rc_information>
+</redistribution_control_descriptor>
+----

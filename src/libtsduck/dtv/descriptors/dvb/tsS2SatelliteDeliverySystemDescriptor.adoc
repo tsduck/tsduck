@@ -1,0 +1,13 @@
+==== S2_satellite_delivery_system_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<S2_satellite_delivery_system_descriptor
+    backwards_compatibility="bool, default=false"
+    TS_GS_mode="uint2, default=3"
+    scrambling_sequence_index="uint18, optional"
+    input_stream_identifier="uint8, optional"
+    timeslice_number="uint8, optional"/>
+----

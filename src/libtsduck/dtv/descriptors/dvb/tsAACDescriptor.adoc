@@ -1,0 +1,15 @@
+==== AAC_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<AAC_descriptor
+    profile_and_level="uint8, required"
+    SAOC_DE="bool, default=false"
+    AAC_type="uint8, optional">
+  <additional_info>
+    Hexadecimal content, optional
+  </additional_info>
+</AAC_descriptor>
+----

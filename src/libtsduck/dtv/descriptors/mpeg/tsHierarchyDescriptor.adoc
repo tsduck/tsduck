@@ -1,0 +1,17 @@
+==== hierarchy_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<hierarchy_descriptor
+    no_view_scalability_flag="bool, default=true"
+    no_temporal_scalability="bool, default=true"
+    no_spatial_scalability="bool, default=true"
+    no_quality_scalability="bool, default=true"
+    hierarchy_type="uint4, required"
+    hierarchy_layer_index="uint6, required"
+    tref_present="bool, required"
+    hierarchy_embedded_layer_index="uint6, required"
+    hierarchy_channel="uint6, required"/>
+----

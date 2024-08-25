@@ -1,0 +1,12 @@
+==== copyright_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<copyright_descriptor copyright_identifier="uint32, required">
+  <additional_copyright_info>
+    Hexadecimal content (optional element)
+  </additional_copyright_info>
+</copyright_descriptor>
+----

@@ -1,0 +1,13 @@
+==== DSM-CC Stream Descriptors Table
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<DSMCC_stream_descriptors_table
+    version="uint5, default=0"
+    current="bool, default=true"
+    table_id_extension="uint16, default=0xFFFF">
+  <DESCRIPTOR_LIST>
+</DSMCC_stream_descriptors_table>
+----

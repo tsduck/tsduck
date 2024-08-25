@@ -1,0 +1,10 @@
+==== Transport Stream Description Table (TSDT)
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<TSDT version="uint5, default=0" current="bool, default=true">
+  <DESCRIPTOR_LIST>
+</TSDT>
+----

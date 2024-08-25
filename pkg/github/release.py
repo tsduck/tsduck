@@ -183,7 +183,7 @@ if opt_verify:
     # Same as --update --dry-run
     opt_update = True
     repo.dry_run = True
-    
+
 if opt_update:
     release = get_latest_release()
     title = build_title(release)

@@ -1,0 +1,13 @@
+==== splice_time_descriptor
+
+Defined by ANSI/SCTE in <<SCTE-35>>.
+Must be in a Splice Information Table (table id 0xFC).
+
+[source,xml]
+----
+<splice_time_descriptor
+    identifier="uint32, default=0x43554549"
+    TAI_seconds="uint48, required"
+    TAI_ns="uint32, required"
+    UTC_offset="uint16, required"/>
+----

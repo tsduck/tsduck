@@ -1,0 +1,8 @@
+==== eacem_stream_identifier_descriptor
+
+Defined by EACEM in <<EACEM-030>>.
+
+[source,xml]
+----
+<eacem_stream_identifier_descriptor version_byte="uint8, required"/>
+----

@@ -1,0 +1,19 @@
+==== Linked Description Table (LDT)
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<LDT version="uint5, default=0"
+     current="bool, default=true"
+     original_service_id="uint16, required"
+     transport_stream_id="uint16, required"
+     original_network_id="uint16, required">
+
+  <!-- One per description -->
+  <description description_id="uint16, required">
+    <DESCRIPTOR_LIST>
+  </description>
+
+</LDT>
+----

@@ -1,0 +1,10 @@
+==== hierarchical_transmission_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<hierarchical_transmission_descriptor
+    high_quality="bool, required"
+    reference_PID="uint13, required"/>
+----

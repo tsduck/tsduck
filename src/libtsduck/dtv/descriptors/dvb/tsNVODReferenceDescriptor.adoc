@@ -1,0 +1,13 @@
+==== NVOD_reference_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<NVOD_reference_descriptor>
+  <!-- One per service -->
+  <service transport_stream_id="uint16, required"
+           original_network_id="uint16, required"
+           service_id="uint16, required"/>
+</NVOD_reference_descriptor>
+----

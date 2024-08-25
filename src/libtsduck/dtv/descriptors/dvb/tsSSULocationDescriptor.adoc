@@ -1,0 +1,17 @@
+==== SSU_location_descriptor
+
+Defined by DVB in <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B).
+
+[source,xml]
+----
+<SSU_location_descriptor
+    data_broadcast_id="uint16, required"
+    association_tag="uint16, optional">
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</SSU_location_descriptor>
+----

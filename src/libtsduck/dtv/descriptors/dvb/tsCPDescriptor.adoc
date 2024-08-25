@@ -1,0 +1,12 @@
+==== CP_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<CP_descriptor CP_system_id="uint16, required" CP_PID="uint13, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</CP_descriptor>
+----

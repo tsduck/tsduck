@@ -1,0 +1,19 @@
+==== video_depth_range_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<video_depth_range_descriptor>
+
+  <!-- One per video range -->
+  <range range_type="uint8, required"
+         video_max_disparity_hint="int12, required when range_type == 0"
+         video_min_disparity_hint="int12, required when range_type == 0">
+    <range_selector>
+      Hexadecimal content
+    </range_selector>
+  </range>
+
+</video_depth_range_descriptor>
+----

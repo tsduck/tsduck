@@ -1,0 +1,12 @@
+==== dvb_j_application_descriptor
+
+Defined by DVB in <<ETSI-101-812>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<dvb_j_application_descriptor>
+  <!-- One per parameter: -->
+  <parameter value="string, required"/>
+</dvb_j_application_descriptor>
+----

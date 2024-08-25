@@ -1,0 +1,22 @@
+==== STC_reference_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<STC_reference_descriptor
+    STC_reference_mode="uint4, required"
+    external_event_id="uint16, optional"
+    external_service_id="uint16, optional"
+    external_network_id="uint16, optional"
+    NPT_reference="uint33, optional"
+    STC_reference="uint33, optional"
+    time_reference="hh:mm:ss, optional"
+    time_reference_extension="mmm, optional">
+
+  <reserved_data>
+    Hexadecimal content
+  </reserved_data>
+
+</STC_reference_descriptor>
+----

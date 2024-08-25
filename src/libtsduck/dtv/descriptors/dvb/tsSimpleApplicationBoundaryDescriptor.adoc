@@ -1,0 +1,12 @@
+==== simple_application_boundary_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<simple_application_boundary_descriptor>
+  <!-- One per prefix: -->
+  <prefix boundary_extension="string, required"/>
+</simple_application_boundary_descriptor>
+----

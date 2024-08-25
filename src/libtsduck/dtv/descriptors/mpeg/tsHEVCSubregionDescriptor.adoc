@@ -1,0 +1,25 @@
+==== HEVC_subregion_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<HEVC_subregion_descriptor
+    SubstreamIDsPerLine="uint7, required"
+    TotalSubstreamIDs="uint8, required"
+    LevelFullPanorama="uint8, required">
+
+  <SubregionLayout
+      PreambleSubstreamID="uint7, optional"
+      Level="uint8, required"
+      PictureSizeHor="uint16, required"
+      PictureSizeVer="uint16, required">
+
+    <Pattern>
+      <Substream offset="int8, required"/>
+    </Pattern>
+
+  </SubregionLayout>
+
+</HEVC_subregion_descriptor>
+----

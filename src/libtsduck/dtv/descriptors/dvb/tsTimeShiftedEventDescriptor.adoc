@@ -1,0 +1,10 @@
+==== time_shifted_event_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<time_shifted_event_descriptor
+    reference_service_id="uint16, required"
+    reference_event_id="uint16, required"/>
+----

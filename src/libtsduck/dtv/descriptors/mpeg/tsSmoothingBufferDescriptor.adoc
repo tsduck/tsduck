@@ -1,0 +1,10 @@
+==== smoothing_buffer_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<smoothing_buffer_descriptor
+    sb_leak_rate="uint22, required"
+    sb_size="uint22, required"/>
+----

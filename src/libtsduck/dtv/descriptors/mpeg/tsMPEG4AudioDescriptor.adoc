@@ -1,0 +1,8 @@
+==== MPEG4_audio_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
+----

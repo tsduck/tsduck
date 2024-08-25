@@ -1,0 +1,15 @@
+==== external_application_authorization_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<external_application_authorization_descriptor>
+  <!-- One per application -->
+  <application
+      organization_id="uint32, required"
+      application_id="uint16, required"
+      application_priority="uint8, required"/>
+</external_application_authorization_descriptor>
+----

@@ -1,0 +1,13 @@
+==== HEVC_timing_and_HRD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<HEVC_timing_and_HRD_descriptor
+    hrd_management_valid="bool, required"
+    target_schedule_idx="uint5, optional"
+    N_90khz="uint32, optional, specify both N and K or none"
+    K_90khz="uint32, optional, specify both N and K or none"
+    num_units_in_tick="uint32, optional"/>
+----

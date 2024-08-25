@@ -1,0 +1,13 @@
+==== dtg_service_attribute_descriptor
+
+Defined by DTG in <<DTG-DBOOK>>.
+
+[source,xml]
+----
+<dtg_service_attribute_descriptor>
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           numeric_selection="bool, required"
+           visible_service="bool, required"/>
+</dtg_service_attribute_descriptor>
+----

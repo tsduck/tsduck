@@ -1,0 +1,8 @@
+==== network_name_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<network_name_descriptor network_name="string, required"/>
+----

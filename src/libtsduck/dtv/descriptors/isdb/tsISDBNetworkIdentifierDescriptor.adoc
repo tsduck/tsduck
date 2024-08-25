@@ -1,0 +1,17 @@
+==== ISDB_network_identifier_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<ISDB_network_identifier_descriptor
+    country_code="char3, required"
+    media_type="AB|AC|BS|CB|TB, required"
+    network_id="uint16, required">
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</ISDB_network_identifier_descriptor>
+----

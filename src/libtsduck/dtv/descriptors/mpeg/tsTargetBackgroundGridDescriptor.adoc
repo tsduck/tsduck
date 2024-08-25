@@ -1,0 +1,11 @@
+==== target_background_grid_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<target_background_grid_descriptor
+    horizontal_size="uint14, required"
+    vertical_size="uint14, required"
+    aspect_ratio_information="uint4, required"/>
+----

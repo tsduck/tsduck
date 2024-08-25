@@ -1,0 +1,14 @@
+==== dtg_preferred_name_list_descriptor
+
+Defined by DTG in <<DTG-DBOOK>>.
+
+[source,xml]
+----
+<dtg_preferred_name_list_descriptor>
+  <!-- One per language -->
+  <language code="char3, required">
+    <!-- One per name -->
+    <name name_id="uint8, required" name="string, required"/>
+  </language>
+</dtg_preferred_name_list_descriptor>
+----

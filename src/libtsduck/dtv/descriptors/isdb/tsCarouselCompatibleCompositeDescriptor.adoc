@@ -1,0 +1,15 @@
+==== carousel_compatible_composite_descriptor
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<carousel_compatible_composite_descriptor>
+
+  <!-- Any number of subdescriptors -->
+  <subdescriptor type="uint8, required">
+    Hexadecimal content
+  </subdescriptor>
+
+</carousel_compatible_composite_descriptor>
+----

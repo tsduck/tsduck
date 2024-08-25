@@ -1,0 +1,14 @@
+==== subtitling_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<subtitling_descriptor>
+  <!-- One per subtitle -->
+  <subtitling language_code="char3, required"
+              subtitling_type="uint8, required"
+              composition_page_id="uint16, required"
+              ancillary_page_id="uint16, required"/>
+</subtitling_descriptor>
+----

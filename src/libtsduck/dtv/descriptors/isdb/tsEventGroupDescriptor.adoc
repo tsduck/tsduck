@@ -1,0 +1,25 @@
+==== event_group_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<event_group_descriptor group_type="uint4, required">
+
+  <!-- One per event in actual network -->
+  <actual service_id="uint16, required"
+          event_id="uint16, required"/>
+
+  <!-- One per event in other networks (group_type == 4 or 5) -->
+  <other original_network_id="uint16, required"
+         transport_stream_id="uint16, required"
+         service_id="uint16, required"
+         event_id="uint16, required"/>
+
+  <!-- Optional private data for other group types -->
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</event_group_descriptor>
+----

@@ -1,0 +1,11 @@
+==== dvb_html_application_location_descriptor
+
+Defined by DVB in <<ETSI-101-812>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<dvb_html_application_location_descriptor
+    physical_root="string, required"
+    initial_path="string, required"/>
+----

@@ -1,0 +1,11 @@
+==== IBP_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<IBP_descriptor
+    closed_gop="bool, required"
+    identical_gop="bool, required"
+    max_gop_length="uint14, required"/>
+----

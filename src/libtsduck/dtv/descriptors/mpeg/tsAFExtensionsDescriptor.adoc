@@ -1,0 +1,8 @@
+==== af_extensions_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<af_extensions_descriptor/>
+----

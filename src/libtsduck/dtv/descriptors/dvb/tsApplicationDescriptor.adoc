@@ -1,0 +1,19 @@
+==== application_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<application_descriptor
+    service_bound="bool, required"
+    visibility="uint2, required"
+    application_priority="uint8, required">
+  <!-- One per profile -->
+  <profile
+      application_profile="uint16, required"
+      version="string 'major.minor.micro', required"/>
+  <!-- One per transport_protocol_label -->
+  <transport_protocol label="uint8, required"/>
+</application_descriptor>
+----

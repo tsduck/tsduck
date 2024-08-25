@@ -1,0 +1,8 @@
+==== Time and Date Table (TDT)
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<TDT UTC_time="YYYY-MM-DD hh:mm:ss, required"/>
+----

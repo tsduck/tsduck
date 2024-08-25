@@ -1,0 +1,24 @@
+==== Application Information Table (AIT)
+
+Defined by DVB in <<ETSI-102-809>> and <<ETSI-101-812>>.
+
+[source,xml]
+----
+<AIT version="uint5, default=0"
+     current="bool, default=true"
+     test_application_flag="bool, default=true"
+     application_type="uint15, required">
+
+  <!-- Common descriptors loop -->
+  <DESCRIPTOR_LIST>
+
+  <!-- One per application -->
+  <application control_code="uint8, required">
+    <application_identifier
+         organization_id="uint32, required"
+         application_id="uint16, required"/>
+    <DESCRIPTOR_LIST>
+  </application>
+
+</AIT>
+----

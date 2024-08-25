@@ -1,0 +1,8 @@
+==== adaptation_field_data_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<adaptation_field_data_descriptor adaptation_field_data_identifier="uint8, required"/>
+----

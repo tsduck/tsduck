@@ -1,0 +1,22 @@
+==== area_broadcasting_information_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<area_broadcasting_information_descriptor>
+
+  <!-- One per station -->
+  <station
+      station_id="uint24, required"
+      location_code="uint16, required"
+      broadcast_signal_format="uint8, required">
+
+    <additional_station_info>
+      Hexadecimal content
+    </additional_station_info>
+
+  </station>
+
+</area_broadcasting_information_descriptor>
+----

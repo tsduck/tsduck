@@ -1,0 +1,28 @@
+==== Media_service_kind_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<Media_service_kind_descriptor>
+
+  <media_service_kind
+      media_description="self|associate, required"
+      media_type="unknown|video|audio|text/data, required"
+      ID_length_code="uint3, optional"
+      ID_type="uint13, optional"
+      ID_len="uint8, optional"
+      media_ID="string, optional">
+
+    <language_media_pair
+        configuration_type="uint2, required"
+        lang_len_idc="uint2, required"
+        lang_len="uint8, optional"
+        BCP47_language_code="string, required">
+
+      <media_service_type purpose="uint8, required"/>
+
+    </language_media_pair>
+  </Media_service_kind>
+</Media_service_kind_descriptor>
+----

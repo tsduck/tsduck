@@ -104,10 +104,33 @@ open-userguide-html: $(BINDOC)/tsduck.html
 open-userguide-pdf: $(BINDOC)/tsduck.pdf
 	open $<
 
+# Each table and descriptor has a .adoc file in the source tree.
+# Create one .adoc file per type (table or descriptor) and standard,
+# e.g. .all.dvb.tables.adoc or .all.isdb.descriptors.adoc.
+
+TABLES_STANDARDS = $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(LIBTSDUCKDIR)/dtv/tables/*/*.adoc)))))
+TABLES_ADOC = $(patsubst %,$(USERDOCDIR)/.all.%.tables.adoc,$(TABLES_STANDARDS))
+DESCRIPTORS_STANDARDS = $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(LIBTSDUCKDIR)/dtv/descriptors/*/*.adoc)))))
+DESCRIPTORS_ADOC = $(patsubst %,$(USERDOCDIR)/.all.%.descriptors.adoc,$(DESCRIPTORS_STANDARDS))
+
+define DOCRULE =
+$$(USERDOCDIR)/.all.$(1).$(2).adoc: $$(wildcard $$(LIBTSDUCKDIR)/dtv/$(2)/$(1)/*.adoc)
+	$$(call LOG,[GEN] $$@) \
+	echo "// Automatically generated file, do not edit" >$$@; \
+	for f in $$$$(grep -H "^====" $$^ | sed -e "s|\(.*\):==== *\(.*\)|\2:\1|" | sort -d -f | sed -e "s|.*:||"); do \
+	    echo; \
+	    cat $$$$f; \
+	done >>$$@; \
+	echo >>$$@
+endef
+
+$(foreach std,$(TABLES_STANDARDS),$(eval $(call DOCRULE,$(std),tables)))
+$(foreach std,$(DESCRIPTORS_STANDARDS),$(eval $(call DOCRULE,$(std),descriptors)))
+
 # Documentation generation.
 
 USERGUIDE_INPUTS = $(wildcard $(USERDOCDIR)/*.adoc $(USERDOCDIR)/*/*.adoc $(USERDOCDIR)/*/*/*.adoc) \
-    $(USERDOCDIR)/.all.commands.adoc $(USERDOCDIR)/.all.plugins.adoc
+    $(USERDOCDIR)/.all.commands.adoc $(USERDOCDIR)/.all.plugins.adoc $(TABLES_ADOC) $(DESCRIPTORS_ADOC)
 
 $(USERDOCDIR)/.all.commands.adoc: $(wildcard $(USERDOCDIR)/commands/*.adoc)
 	$(call LOG,[GEN] $@) \

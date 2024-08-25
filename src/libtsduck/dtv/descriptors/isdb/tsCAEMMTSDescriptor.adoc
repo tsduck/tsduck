@@ -1,0 +1,12 @@
+==== CA_EMM_TS_descriptor
+
+Defined by ARIB in <<ARIB-B25>>.
+
+[source,xml]
+----
+<CA_EMM_TS_descriptor
+    CA_system_id="uint16, required"
+    transport_stream_id="uint16, required"
+    original_network_id="uint16, required"
+    power_supply_period="uint8, required"/>
+----

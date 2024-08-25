@@ -1,0 +1,17 @@
+==== SSU_enhanced_message_descriptor
+
+Defined by DVB in <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B).
+
+[source,xml]
+----
+<SSU_enhanced_message_descriptor
+    descriptor_number="uint4, required"
+    last_descriptor_number="uint4, required"
+    ISO_639_language_code="char3, required"
+    message_index="uint5, required">
+
+  <text>String</text>
+
+</SSU_enhanced_message_descriptor>
+----

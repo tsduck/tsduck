@@ -1,0 +1,11 @@
+==== metadata_STD_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<metadata_STD_descriptor
+    metadata_input_leak_rate="uint22, required"
+    metadata_buffer_size="uint22, required"
+    metadata_output_leak_rate="uint22, required"/>
+----

@@ -1,0 +1,8 @@
+==== PDC_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<PDC_descriptor programme_identification_label="MM-DD hh:mm, required"/>
+----

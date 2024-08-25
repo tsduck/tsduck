@@ -1,0 +1,12 @@
+==== transport_profile_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<transport_profile_descriptor transport_profile="uint8, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</transport_profile_descriptor>
+----

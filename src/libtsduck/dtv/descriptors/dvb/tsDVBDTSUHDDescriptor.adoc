@@ -1,0 +1,18 @@
+==== DTS_UHD_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<DTS_UHD_descriptor
+    DecoderProfileCode="uint6, required"
+    FrameDurationCode="uint2, required"
+    MaxPayloadCode="uint2, required"
+    StreamIndex="uint3, required">
+
+  <codec_selector>
+    Hexadecimal Content
+  </codec_selector>
+
+</DTS_UHD_descriptor>
+----

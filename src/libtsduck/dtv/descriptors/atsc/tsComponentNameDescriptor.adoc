@@ -1,0 +1,15 @@
+==== component_name_descriptor
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<component_name_descriptor>
+
+  <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+  <component_name_string>
+    <string language="char3, required" text="string, required"/>
+  </component_name_string>
+
+</component_name_descriptor>
+----

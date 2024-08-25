@@ -1,0 +1,21 @@
+==== HEVC_tile_substream_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+Either one single `Reference` element or multiple `Substream` elements can be present (or none).
+
+[source,xml]
+----
+<HEVC_tile_substream_descriptor
+    SubstreamID="uint7, required">
+
+  <Reference
+      PreambleFlag="uint1, required"
+      PatternReference="uint7, required"/>
+
+  <Substream
+      Flag="uint1, required"
+      AdditionalSubstreamID="uint7, required"/>
+
+</HEVC_tile_substream_descriptor>
+----

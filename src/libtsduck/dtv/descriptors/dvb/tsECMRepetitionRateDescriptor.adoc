@@ -1,0 +1,14 @@
+==== ECM_repetition_rate_descriptor
+
+Defined by DVB in <<ETSI-301-192>>.
+
+[source,xml]
+----
+<ECM_repetition_rate_descriptor
+    CA_system_id="uint16, required"
+    ECM_repetition_rate="uint16, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</ECM_repetition_rate_descriptor>
+----

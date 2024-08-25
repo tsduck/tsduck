@@ -1,0 +1,57 @@
+==== J2K_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<J2K_video_descriptor
+    profile_and_level="uint15, required"
+    horizontal_size="uint32, required"
+    vertical_size="uint32, required"
+    max_bit_rate="uint32, required"
+    max_buffer_size="uint32, required"
+    DEN_frame_rate="uint16, required"
+    NUM_frame_rate="uint16, required"
+    color_specification="uint8, required when extended_capability_flag == false"
+    still_mode="bool, required"
+    interlaced_video="bool, required"
+    colour_primaries="uint8, required when extended_capability_flag == true"
+    transfer_characteristics="uint8, required when extended_capability_flag == true"
+    matrix_coefficients="uint8, required when extended_capability_flag == true"
+    video_full_range_flag="bool, required when extended_capability_flag == true">
+
+  <stripe
+    strp_max_idx="uint8, required"
+    strp_height="uint16, required"/>
+
+  <block
+    full_horizontal_size="uint32, required"
+    full_vertical_size="uint32, required"
+    blk_width="uint16, required"
+    blk_height="uint16, required"
+    max_blk_idx_h="uint8, required"
+    max_blk_idx_v="uint8, required"
+    blk_idx_h="uint8, required"
+    blk_idx_v="uint8, required"/>
+
+  <!-- one element allowed when extended_capability_flag == true -->
+  <mdm
+    X_c0="uint16, required"
+    Y_c0="uint16, required"
+    X_c1="uint16, required"
+    Y_c1="uint16, required"
+    X_c2="uint16, required"
+    Y_c2="uint16, required"
+    X_wp="uint16, required"
+    Y_wp="uint16, required"
+    L_max="uint32, required"
+    L_min="uint32, required"
+    MaxCLL="uint16, required"
+    MaxFALL="uint16, required"/>
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</J2K_video_descriptor>
+----

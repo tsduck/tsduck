@@ -1,0 +1,45 @@
+==== Update Notification Table (UNT)
+
+Defined by DVB in <<ETSI-101-211>>.
+
+[source,xml]
+----
+<UNT version="uint5, default=0"
+     current="bool, default=true"
+     action_type="uint8, default=0x01"
+     OUI="uint24, required"
+     processing_order="uint8, default=0x00">
+
+  <!-- Common descriptors, apply to all SSU -->
+  <DESCRIPTOR_LIST>
+
+  <!-- One per set of devices -->
+  <devices>
+
+    <!-- More than one allowed, each one is an individual descriptor -->
+    <!-- inside compatibilityDescriptor() -->
+    <compatibilityDescriptor
+        descriptorType="uint8, required"
+        specifierType="uint8, default=0x01"
+        specifierData="uint24, required"
+        model="uint16, default=0x00"
+        version="uint16, default=0x00">
+      <!-- Several subdescriptors -->
+      <subDescriptor subDescriptorType="uint8, required">
+        Hexadecimal content
+      </subDescriptor>
+    </compatibilityDescriptor>
+
+    <!-- One per platform -->
+    <platform>
+      <target>
+        <DESCRIPTOR_LIST>
+      </target>
+      <operational>
+        <DESCRIPTOR_LIST>
+      </operational>
+    </platform>
+  </devices>
+
+</UNT>
+----

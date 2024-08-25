@@ -1,0 +1,10 @@
+==== TVA_id_descriptor
+
+Defined by DVB in <<ETSI-102-323>>.
+
+[source,xml]
+----
+<TVA_id_descriptor>
+  <TVA id="uint16, required" running_status="uint3, required"/>
+</TVA_id_descriptor>
+----

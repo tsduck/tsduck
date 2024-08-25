@@ -161,7 +161,7 @@ Without `--ssm`, standard ("any-source’) multicast is used and the option `--s
 The `--ssm` option is implicit when the classical SSM syntax _source@address:port_ is used.
 
 [.usage]
-Other options	
+Other options
 
 [.opt]
 *-d* _value_ +

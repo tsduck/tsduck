@@ -1,0 +1,8 @@
+==== external_ES_ID_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<external_ES_ID_descriptor external_ES_ID="uint16, required"/>
+----

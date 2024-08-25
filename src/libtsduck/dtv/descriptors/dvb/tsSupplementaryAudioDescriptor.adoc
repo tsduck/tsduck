@@ -1,0 +1,15 @@
+==== supplementary_audio_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<supplementary_audio_descriptor
+    mix_type="uint1, required"
+    editorial_classification="uint5, required"
+    language_code="char3, optional">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</supplementary_audio_descriptor>
+----

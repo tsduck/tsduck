@@ -1,0 +1,8 @@
+==== dtg_preferred_name_identifier_descriptor
+
+Defined by DTG in <<DTG-DBOOK>>.
+
+[source,xml]
+----
+<dtg_preferred_name_identifier_descriptor name_id="uint8, required"/>
+----

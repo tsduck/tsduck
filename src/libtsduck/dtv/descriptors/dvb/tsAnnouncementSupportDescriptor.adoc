@@ -1,0 +1,20 @@
+==== announcement_support_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+Note that the 16-bit field named `announcement_support_indicator` is automatically built as
+a bit-mask from all `announcement_type` values.
+
+[source,xml]
+----
+<announcement_support_descriptor>
+  <!-- One per announcement type -->
+  <announcement
+      announcement_type="uint4, required"
+      reference_type="uint3, required"
+      original_network_id="uint16, optional"
+      transport_stream_id="uint16, optional"
+      service_id="uint16, optional"
+      component_tag="uint8, optional"/>
+</announcement_support_descriptor>
+----

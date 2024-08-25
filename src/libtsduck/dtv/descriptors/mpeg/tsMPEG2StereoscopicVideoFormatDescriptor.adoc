@@ -1,0 +1,8 @@
+==== MPEG2_stereoscopic_video_format_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MPEG2_stereoscopic_video_format_descriptor arrangement_type="uint7, optional"/>
+----

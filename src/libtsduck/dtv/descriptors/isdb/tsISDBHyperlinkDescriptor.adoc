@@ -1,0 +1,63 @@
+==== ISDB_hyperlink_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<ISDB_hyperlink_descriptor
+    hyper_linkage_type="uint8, required"
+    link_destination_type="uint8, required">
+
+  <!-- link_destination_type = 0x01 -->
+  <Service
+    original_network_id="uint16, required"
+    transport_stream_id="uint16, required"
+    service_id="uint16, required"/>
+
+  <!-- link_destination_type = 0x02 -->s
+  <Event
+    original_network_id="uint16, required"
+    transport_stream_id="uint16, required"
+    service_id="uint16, required"
+    event_id="uint16, required"/>
+
+  <!-- link_destination_type = 0x03 -->
+  <Module
+    original_network_id="uint16, required"
+    transport_stream_id="uint16, required"
+    service_id="uint16, required"
+    event_id="uint16, required"
+    component_tag="uint8, required"
+    module_id="uint16, required"/>
+
+  <!-- link_destination_type = 0x04 -->
+  <Content
+    original_network_id="uint16, required"
+    transport_stream_id="uint16, required"
+    service_id="uint16, required"
+    content_id="uint16, required"/>
+
+  <!-- link_destination_type = 0x05 -->
+  <ContentModule
+    original_network_id="uint16, required"
+    transport_stream_id="uint16, required"
+    service_id="uint16, required"
+    content_id="uint16, required"
+    component_tag="uint8, required"
+    module_id="uint16, required"/>
+
+  <!-- link_destination_type = 0x06 -->
+  <ERTNode
+    information_provider_id="uint16, required"
+    event_relation_id="uint16, required"
+    node_id="uint16, required"/>
+
+  <!-- link_destination_type = 0x07 -->
+  <StoredContent uri="string, required"/>
+
+  <private_data>
+      Hexadecimal encoded private data
+  </private_data>
+
+</ISDB_hyperlink_descriptor>
+----

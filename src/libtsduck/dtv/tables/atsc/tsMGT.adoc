@@ -1,0 +1,23 @@
+==== Master Guide Table (MGT)
+
+Defined by ATSC in <<ATSC-A65>>.
+
+[source,xml]
+----
+<MGT version="uint5, default=0" protocol_version="uint8, default=0">
+
+  <!-- Common descriptors loop -->
+  <DESCRIPTOR_LIST>
+
+  <!-- One per table type -->
+  <table type="TVCT-current|TVCT-next|CVCT-current|CVCT-next|ETT|DCCSCT|
+               EIT-0..EIT-127|ETT-0..ETT-127|RRT-1..RRT-255|DCCT-0DCCT-255|
+               uint16, required"
+         PID="uint13, required"
+         version_number="uint5, required"
+         number_bytes="uint32, required">
+    <DESCRIPTOR_LIST>
+  </table>
+
+</MGT>
+----

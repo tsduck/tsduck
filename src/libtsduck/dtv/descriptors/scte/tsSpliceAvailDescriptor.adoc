@@ -1,0 +1,10 @@
+==== splice_avail_descriptor
+
+Defined by ANSI/SCTE in <<SCTE-35>>. Must be in a Splice Information Table (table id 0xFC).
+
+[source,xml]
+----
+<splice_avail_descriptor
+    identifier="uint32, default=0x43554549"
+    provider_avail_id="uint32, required"/>
+----

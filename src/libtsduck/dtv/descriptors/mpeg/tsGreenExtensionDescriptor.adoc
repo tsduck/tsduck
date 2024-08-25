@@ -1,0 +1,16 @@
+==== green_extension_descriptor>
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<green_extension_descriptor>
+
+  <!-- One per time interval -->
+  <constant_backlight_voltage_time_interval value="uint16, required"/>
+
+  <!-- One per variation -->
+  <max_variation value="uint16, required"/>
+
+</green_extension_descriptor>
+----

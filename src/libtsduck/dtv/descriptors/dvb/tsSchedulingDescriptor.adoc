@@ -1,0 +1,25 @@
+==== scheduling_descriptor
+
+Defined by DVB in <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B).
+
+[source,xml]
+----
+<scheduling_descriptor
+    start_date_time="YYYY-MM-DD hh:mm:ss, required"
+    end_date_time="YYYY-MM-DD hh:mm:ss, required"
+    final_availability="bool, required"
+    periodicity="bool, required"
+    period_unit="second|minute|hour|day|uint2, required"
+    duration_unit="second|minute|hour|day|uint2, required"
+    estimated_cycle_time_unit="second|minute|hour|day|uint2, required"
+    period="uint8, required"
+    duration="uint8, required"
+    estimated_cycle_time="uint8, required">
+
+  <private_data>
+    Hexadecimal content
+  </private_data>
+
+</scheduling_descriptor>
+----

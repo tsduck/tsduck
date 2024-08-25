@@ -1,0 +1,12 @@
+==== carousel_identifier_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<carousel_identifier_descriptor carousel_id="uint32, required">
+  <private_data>
+    Hexadecimal content
+  </private_data>
+</carousel_identifier_descriptor>
+----

@@ -1,0 +1,12 @@
+==== CI_ancillary_data_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<CI_ancillary_data_descriptor>
+  <ancillary_data>
+    Hexadecimal content
+  </ancillary_data>
+</CI_ancillary_data_descriptor>
+----

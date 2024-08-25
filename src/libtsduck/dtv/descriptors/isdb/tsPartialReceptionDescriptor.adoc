@@ -1,0 +1,10 @@
+==== partial_reception_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<partial_reception_descriptor>
+  <service id="uint16, required"/>
+</partial_reception_descriptor>
+----

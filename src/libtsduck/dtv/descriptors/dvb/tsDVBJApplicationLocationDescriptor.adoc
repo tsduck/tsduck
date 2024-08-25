@@ -1,0 +1,12 @@
+==== dvb_j_application_location_descriptor
+
+Defined by DVB in <<ETSI-101-812>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<dvb_j_application_location_descriptor
+    base_directory="string, required"
+    classpath_extension="string, required"
+    initial_class="string, required"/>
+----

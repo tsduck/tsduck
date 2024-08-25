@@ -1,0 +1,11 @@
+==== ISO_639_language_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<ISO_639_language_descriptor>
+  <!-- One per language -->
+  <language code="char3, required" audio_type="uint8, required"/>
+</ISO_639_language_descriptor>
+----

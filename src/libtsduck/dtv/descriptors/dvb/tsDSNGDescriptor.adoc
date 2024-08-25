@@ -1,0 +1,8 @@
+==== DSNG_descriptor
+
+Defined by DVB in <<ETSI-300-468>> and <<ETSI-301-210>>.
+
+[source,xml]
+----
+<DSNG_descriptor station_identification="string, required"/>
+----

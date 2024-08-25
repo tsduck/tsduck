@@ -1,0 +1,20 @@
+==== M4MuxBufferSize_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<M4MuxBufferSize_descriptor>
+
+  <!-- always required -->
+  <DefaultM4MuxBufferDescriptor
+      m4MuxChannel="uint8, required"
+      FB_BufferSize="uint24, required"/>
+
+  <!-- 0..n -->
+  <M4MuxBufferDescriptor
+      m4MuxChannel="uint8, required"
+      FB_BufferSize="uint24, required"/>
+
+</M4MuxBufferSize_descriptor>
+----

@@ -1,0 +1,25 @@
+==== VVC_video_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<VVC_video_descriptor
+    profile_idc="uint7, required"
+    tier_flag="bool, required"
+    progressive_source_flag="bool, required"
+    interlaced_source_flag="bool, required"
+    non_packed_constraint_flag="bool, required"
+    frame_only_constraint_flag="bool, required"
+    level_idc="uint8, required"
+    VVC_still_present_flag="bool, required"
+    VVC_24hr_picture_present_flag="bool, required"
+    HDR_WCG_idc="uint2, required"
+    video_properties_tag="uint4, required"
+    temporal_id_min="uint3, optional, specify both min and max or none"
+    temporal_id_max="uint3, optional, specify both min and max or none">
+
+  <sub_profile_idc value="uint32, required"/>
+
+</VVC_video_descriptor>
+----

@@ -1,0 +1,27 @@
+==== Resolution provider Notification Table (RNT)
+
+Defined by DVB in <<ETSI-102-323>>.
+
+[source,xml]
+----
+<RNT version="uint5, default=0"
+     current="bool, default=true"
+     context_id="uint16, required"
+     context_id_type="uint8, required">
+
+  <DESCRIPTOR_LIST>
+
+  <!-- One per resolution provider -->
+  <resolution_provider name="string, required">
+
+    <DESCRIPTOR_LIST>
+
+    <!-- One per CRID authority -->
+    <CRID_authority name="string, required" policy="uint2, required">
+      <DESCRIPTOR_LIST>
+    </CRID_authority>
+
+  </resolution_provider>
+
+</RNT>
+----

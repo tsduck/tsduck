@@ -1,0 +1,11 @@
+==== CA_identifier_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<CA_identifier_descriptor>
+  <!-- One per CAS -->
+  <CA_system_id value="uint16, required"/>
+</CA_identifier_descriptor>
+----

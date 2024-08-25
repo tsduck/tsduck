@@ -34,7 +34,7 @@ Most options are in the URL.
 See <<RIST-URL>> for more details on the syntax of `rist://` URL’s.
 
 [.usage]
-Options	
+Options
 
 [.opt]
 *-a* _ip-address[:port]_ +

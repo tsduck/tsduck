@@ -1,0 +1,11 @@
+==== system_clock_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<system_clock_descriptor
+    external_clock_reference="bool required"
+    clock_accuracy_integer="uint6, required"
+    clock_accuracy_exponent="uint3, required"/>
+----

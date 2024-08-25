@@ -1,0 +1,16 @@
+==== content_identifier_descriptor
+
+Defined by DVB in <<ETSI-102-323>>.
+
+[source,xml]
+----
+<content_identifier_descriptor>
+
+  <!-- One per CRID -->
+  <crid crid_type="uint6, required"
+        crid_location="uint2, required"
+        crid_ref="uint16, optional"
+        crid="string, optional"/>
+
+</content_identifier_descriptor>
+----

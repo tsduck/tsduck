@@ -1,0 +1,8 @@
+==== maximum_bitrate_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<maximum_bitrate_descriptor maximum_bitrate="uint32, in bits/second, required"/>
+----

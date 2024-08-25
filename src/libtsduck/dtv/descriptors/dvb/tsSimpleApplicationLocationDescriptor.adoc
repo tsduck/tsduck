@@ -1,0 +1,9 @@
+==== simple_application_location_descriptor
+
+Defined by DVB in <<ETSI-102-809>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<simple_application_location_descriptor initial_path="string, required"/>
+----

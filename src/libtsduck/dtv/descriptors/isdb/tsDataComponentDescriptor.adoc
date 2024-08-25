@@ -1,0 +1,12 @@
+==== data_component_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<data_component_descriptor data_component_id="uint16, required">
+  <additional_data_component_info>
+    Hexadecimal content
+  </additional_data_component_info>
+</data_component_descriptor>
+----

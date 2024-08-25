@@ -1,0 +1,11 @@
+==== service_list_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<service_list_descriptor>
+  <!-- One per service -->
+  <service service_id="uint16, required" service_type="uint8, required"/>
+</service_list_descriptor>
+----

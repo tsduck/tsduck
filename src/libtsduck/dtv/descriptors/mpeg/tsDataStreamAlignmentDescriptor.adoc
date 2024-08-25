@@ -1,0 +1,8 @@
+==== data_stream_alignment_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<data_stream_alignment_descriptor alignment_type="uint8, required"/>
+----

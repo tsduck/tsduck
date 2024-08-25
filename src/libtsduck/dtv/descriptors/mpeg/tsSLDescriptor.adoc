@@ -1,0 +1,8 @@
+==== SL_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<SL_descriptor ES_ID="uint16, required"/>
+----

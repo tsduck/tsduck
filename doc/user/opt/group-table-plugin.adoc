@@ -33,7 +33,7 @@
 :opt-table: SDT
 // end::sdt[]
 // tag::nit[]
-:opt-table: NIT 
+:opt-table: NIT
 // end::nit[]
 // tag::bat[]
 :opt-table: BAT

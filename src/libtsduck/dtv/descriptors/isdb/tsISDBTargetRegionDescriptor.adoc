@@ -1,0 +1,10 @@
+==== ISDB_target_region_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<ISDB_target_region_descriptor
+    region_spec_type="uint8, required"
+    regions_mask="string, optional"/>
+----

@@ -1,0 +1,14 @@
+==== short_smoothing_buffer_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<short_smoothing_buffer_descriptor
+    sb_size="uint2, required"
+    sb_leak_rate="uint6, required">
+
+  Hexadecimal content (optional DVB-reserved data)
+
+</short_smoothing_buffer_descriptor>
+----

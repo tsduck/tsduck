@@ -1,0 +1,14 @@
+==== stuffing_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+Because of the presence of an ATSC version of the `stuffing_descriptor`,
+the XML name for the DVB version is `<DVB_stuffing_descriptor>`.
+For compatibility, `<stuffing_descriptor>` is still accepted.
+
+[source,xml]
+----
+<DVB_stuffing_descriptor>
+  Hexadecimal content
+</DVB_stuffing_descriptor>
+----

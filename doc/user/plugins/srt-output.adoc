@@ -37,7 +37,7 @@ $ tsp -O srt [options]
 ----
 
 [.usage]
-General options	
+General options
 
 [.opt]
 *-m* +

@@ -1,0 +1,27 @@
+==== Network Information Table (NIT)
+
+Defined by DVB in <<ETSI-300-468>>.
+
+The optional attribute `preferred_section` indicates in which section
+the description of a transport stream should be preferably serialized.
+When unspecified for a TS, the corresponding TS description is serialized in an arbitrary section.
+
+[source,xml]
+----
+<NIT version="uint5, default=0"
+     current="bool, default=true"
+     network_id="uint16, required"
+     actual="bool, default=true">
+
+  <!-- Network-level descriptors -->
+  <DESCRIPTOR_LIST>
+
+  <!-- One per transport stream -->
+  <transport_stream transport_stream_id="uint16, required"
+                    original_network_id="uint16, required"
+                    preferred_section="uint8, optional">
+    <DESCRIPTOR_LIST>
+  </transport_stream>
+
+</NIT>
+----

@@ -1,0 +1,17 @@
+==== local_time_offset_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<local_time_offset_descriptor>
+  <!-- One per region -->
+  <region country_code="char3, required"
+          country_region_id="uint6, required"
+          local_time_offset="int, required"
+          time_of_change="YYYY-MM-DD hh:mm:ss, required"
+          next_time_offset="int, required"/>
+  <!-- local_time_offset and next_time_offset: -->
+  <!-- -780 to +780 minutes (-13 to +13 hours) -->
+</local_time_offset_descriptor>
+----

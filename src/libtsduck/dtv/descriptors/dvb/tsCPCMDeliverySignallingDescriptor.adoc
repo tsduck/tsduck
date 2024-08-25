@@ -1,0 +1,37 @@
+==== cpcm_delivery_signalling_descriptor
+
+Defined by DVB in <<ETSI-102-825-4>> and <<ETSI-102-825-9>>.
+
+[source,xml]
+----
+<cpcm_delivery_signalling_descriptor cpcm_version="uint8, required">
+
+  <cpcm_v1_delivery_signalling
+      copy_control="uint3, required"
+      do_not_cpcm_scramble="bool, required"
+      viewable="bool, required"
+      move_local="bool, required"
+      move_and_copy_propagation_information="uint2, required"
+      view_propagation_information="uint2, required"
+      remote_access_record_flag="bool, required"
+      export_beyond_trust="bool, required"
+      disable_analogue_sd_export="bool, required"
+      disable_analogue_sd_consumption="bool, required"
+      disable_analogue_hd_export="bool, required"
+      disable_analogue_hd_consumption="bool, required"
+      image_constraint="bool, required"
+      view_window_start="YYYY-MM-DD hh:mm:ss, optional"
+      view_window_end="YYYY-MM-DD hh:mm:ss, optional"
+      view_period_from_first_playback="uint16, optional"
+      simultaneous_view_count="uint8, optional"
+      remote_access_delay="uint16, optional"
+      remote_access_date="YYYY-MM-DD hh:mm:ss, optional">
+
+    <cps C_and_R_regime_mask="uint8, required">
+      Hexadecimal Content
+    </cps>
+
+  </cpcm_v1_delivery_signalling>
+
+</cpcm_delivery_signalling_descriptor>
+----

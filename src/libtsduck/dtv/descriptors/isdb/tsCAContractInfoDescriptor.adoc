@@ -1,0 +1,20 @@
+==== CA_contract_info_descriptor
+
+Defined by ARIB in <<ARIB-B25>>.
+
+[source,xml]
+----
+<CA_contract_info_descriptor
+    CA_system_id="uint16, required"
+    CA_unit_id="uint4, required"
+    fee_name="string, optional">
+
+  <!-- One per component -->
+  <component tag="uint8, required"/>
+
+  <contract_verification_info>
+    Hexadecimal content
+  </contract_verification_info>
+
+</CA_contract_info_descriptor>
+----

@@ -27,7 +27,7 @@ $ tsp -P remap [options] [pid[-pid]=newpid ...]
 Parameters (specifying PID remapping)
 
 [.opt]
-_pid=newpid, pid1-pid2=newpid_ 
+_pid=newpid, pid1-pid2=newpid_
 
 [.optdoc]
 Each remapping is specified as `_pid=newpid_` or `_pid1-pid2=newpid_`.

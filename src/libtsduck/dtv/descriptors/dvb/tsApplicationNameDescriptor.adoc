@@ -1,0 +1,12 @@
+==== application_name_descriptor
+
+Defined by DVB in <<ETSI-102-809>> and <<ETSI-101-812>>.
+Must be in an AIT (table id 0x74).
+
+[source,xml]
+----
+<application_name_descriptor>
+  <!-- One per language -->
+  <language code="char3, required" application_name="string, required"/>
+</application_name_descriptor>
+----

@@ -1,0 +1,12 @@
+==== m4mux_timing_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<m4mux_timing_descriptor
+    FCR_ES_ID="uint16, required"
+    FCRResolution="uint32, required"
+    FCRLength="uint8, required"
+    FmxRateLength="uint8, required"/>
+----

@@ -1,0 +1,14 @@
+==== NPT_reference_descriptor
+
+Defined by MPEG in <<ISO-13818-6>>.
+
+[source,xml]
+----
+<NPT_reference_descriptor
+    post_discontinuity="bool, default=false"
+    content_id="uint7, default=0x7F"
+    STC_reference="uint33, required"
+    NPT_reference="uint33, required"
+    scale_numerator="uint16, required"
+    scale_denominator="uint16, required"/>
+----

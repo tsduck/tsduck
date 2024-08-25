@@ -1,0 +1,24 @@
+==== Service Description Table (SDT)
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<SDT version="uint5, default=0"
+     current="bool, default=true"
+     transport_stream_id="uint16, required"
+     original_network_id="uint16, required"
+     actual="bool, default=true">
+
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           EIT_schedule="bool, default=false"
+           EIT_present_following="bool, default=false"
+           running_status="undefined|not-running|starting|pausing|running|
+                           off-air, default=undefined"
+           CA_mode="bool, default=false">
+    <DESCRIPTOR_LIST>
+  </service>
+
+</SDT>
+----

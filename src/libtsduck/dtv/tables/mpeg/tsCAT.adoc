@@ -1,0 +1,10 @@
+==== Conditional Access Table (CAT)
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<CAT version="uint5, default=0" current="bool, default=true">
+  <DESCRIPTOR_LIST>
+</CAT>
+----

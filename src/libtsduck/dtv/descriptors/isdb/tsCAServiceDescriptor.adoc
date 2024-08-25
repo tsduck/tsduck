@@ -1,0 +1,16 @@
+==== CA_service_descriptor
+
+Defined by ARIB in <<ARIB-B25>>.
+
+[source,xml]
+----
+<CA_service_descriptor
+    CA_system_id="uint16, required"
+    ca_broadcaster_group_id="uint8, required"
+    message_control="uint8, required">
+
+  <!-- One per service -->
+  <service id="uint16, required"/>
+
+</CA_service_descriptor>
+----

@@ -1,0 +1,29 @@
+==== Network Board Information Table (NBIT)
+
+Defined by ARIB in <<ARIB-B10>>.
+
+[source,xml]
+----
+<NBIT version="uint5, default=0"
+      current="bool, default=true"
+      original_network_id="uint16, required"
+      body="bool, default=true">
+
+  <!-- One per information set -->
+  <information
+      information_id="uint16, required"
+      information_type="uint4, required"
+      description_body_location="uint2, required"
+      user_defined="uint8, default=0xFF">
+
+    <!-- One per key_id entry -->
+    <key id="uint16, required"/>
+    <DESCRIPTOR_LIST>
+
+  </information>
+
+</NBIT>
+----
+
+The attribute `body` indicates if the NBIT carries actual information body (table id 0xC5 when true)
+or reference to information (table id 0xC6 when false).

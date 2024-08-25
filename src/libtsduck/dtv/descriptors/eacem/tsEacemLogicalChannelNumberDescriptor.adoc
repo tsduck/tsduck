@@ -1,0 +1,17 @@
+==== eacem_logical_channel_number_descriptor
+
+Defined by EACEM in <<EACEM-030>>.
+
+Because there are several forms of `logical_channel_number_descriptor`,
+this EACEM-defined form is named `<eacem_logical_channel_number_descriptor>`.
+For compatibility, the previous XML syntax `<logical_channel_number_descriptor>` is still accepted and is equivalent.
+
+[source,xml]
+----
+<eacem_logical_channel_number_descriptor>
+  <!-- One per service -->
+  <service service_id="uint16, required"
+           logical_channel_number="uint10, required"
+           visible_service="bool, default=true"/>
+</eacem_logical_channel_number_descriptor>
+----

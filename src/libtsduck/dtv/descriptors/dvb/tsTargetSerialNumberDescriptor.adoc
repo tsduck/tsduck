@@ -1,0 +1,12 @@
+==== target_serial_number_descriptor
+
+Defined by DVB in <<ETSI-301-192>> and <<ETSI-102-006>>.
+Must be in a UNT (table id 0x4B) or INT (table id 0x4C).
+
+[source,xml]
+----
+<target_serial_number_descriptor>
+  <!-- Serial data bytes -->
+  Hexadecimal content
+</target_serial_number_descriptor>
+----

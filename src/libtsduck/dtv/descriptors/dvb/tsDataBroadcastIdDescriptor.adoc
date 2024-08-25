@@ -1,0 +1,10 @@
+==== data_broadcast_id_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<data_broadcast_id_descriptor data_broadcast_id="uint16, required">
+  <selector_bytes>Hexadecimal content</selector_bytes>
+</data_broadcast_id_descriptor>
+----

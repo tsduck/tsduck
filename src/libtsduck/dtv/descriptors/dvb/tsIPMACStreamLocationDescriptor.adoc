@@ -1,0 +1,14 @@
+==== IPMAC_stream_location_descriptor
+
+Defined by DVB in <<ETSI-301-192>>.
+Must be in an INT (table id 0x4C).
+
+[source,xml]
+----
+<IPMAC_stream_location_descriptor
+    network_id="uint16, required"
+    original_network_id="uint16, required"
+    transport_stream_id="uint16, required"
+    service_id="uint16, required"
+    component_tag="uint8, required"/>
+----

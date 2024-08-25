@@ -1,0 +1,11 @@
+==== short_node_information_descriptor
+
+Defined by ARIB in <<ARIB-B10J>>.
+
+[source,xml]
+----
+<short_node_information_descriptor
+    ISO_639_language_code="char3, required"
+    node_name="string, optional"
+    text="string, optional"/>
+----

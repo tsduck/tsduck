@@ -1,0 +1,33 @@
+==== Software Download Trigger Table (SDTT)
+
+Defined by ARIB in <<ARIB-B21>>.
+
+[source,xml]
+----
+<SDTT version="uint5, default=0"
+      current="bool, default=true"
+      table_id_ext="uint16, required"
+      transport_stream_id="uint16, required"
+      original_network_id="uint16, required"
+      service_id="uint16, required">
+
+  <!-- One per download content -->
+  <content
+      group="uint4, required"
+      target_version="uint12, required"
+      new_version="uint12, required"
+      download_level="uint2, required"
+      version_indicator="uint2, required"
+      schedule_timeshift_information="uint4, required">
+
+    <!-- One per schedule period -->
+    <schedule
+        start_time="YYYY-MM-DD hh:mm:ss, required"
+        duration="hh:mm:ss, required"/>
+
+    <DESCRIPTOR_LIST>
+
+  </content>
+
+</SDTT>
+----

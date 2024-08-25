@@ -1,0 +1,12 @@
+==== cue_identifier_descriptor
+
+Defined by ANSI/SCTE in <<SCTE-35>>.
+
+[source,xml]
+----
+<cue_identifier_descriptor
+     cue_stream_type="insert_null_schedule|all|segmentation|tiered_splicing|
+                      tiered_segmentation|uint8, required">
+  <!-- Defined by SCTE 35 for use in PMT -->
+</cue_identifier_descriptor>
+----

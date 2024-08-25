@@ -1,0 +1,21 @@
+==== AC4_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+Because of the possible introduction of an ATSC version of the `AC4_descriptor`,
+the XML name for the DVB version is `<DVB_AC4_descriptor>`.
+For compatibility, `<AC4_descriptor>` is still accepted.
+
+[source,xml]
+----
+<DVB_AC4_descriptor
+    ac4_dialog_enhancement_enabled="bool, optional"
+    ac4_channel_mode="uint2, optional">
+  <ac4_dsi_toc>
+    Hexadecimal content, optional
+  </ac4_dsi_toc>
+  <additional_info>
+    Hexadecimal content, optional
+  </additional_info>
+</DVB_AC4_descriptor>
+----

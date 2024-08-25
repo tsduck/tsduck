@@ -1,0 +1,21 @@
+==== MuxCode_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<MuxCode_descriptor>
+
+  <MuxCodeEntry
+      MuxCode="uint4, required"
+      version="uint4, required">
+
+    <substructure repetitionCount="uint3, required">
+      <slot m4MuxChannel="uint8, required"
+            numberOfBytes="uint8, required"/>
+    </substructure>
+
+  </MuxCodeEntry>
+
+</MuxCode_descriptor>
+----

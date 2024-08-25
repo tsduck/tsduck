@@ -1,0 +1,11 @@
+==== parental_rating_descriptor
+
+Defined by DVB in <<ETSI-300-468>>.
+
+[source,xml]
+----
+<parental_rating_descriptor>
+  <!-- One per country -->
+  <country country_code="char3, required" rating="uint8, required"/>
+</parental_rating_descriptor>
+----

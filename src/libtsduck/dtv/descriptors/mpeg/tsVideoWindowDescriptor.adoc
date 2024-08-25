@@ -1,0 +1,11 @@
+==== video_window_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<video_window_descriptor
+    horizontal_offset="uint14, required"
+    vertical_offset="uint14, required"
+    window_priority="uint4, required"/>
+----

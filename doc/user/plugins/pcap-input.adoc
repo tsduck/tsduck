@@ -59,7 +59,7 @@ This input plugin extracts IPv4 UDP datagrams which contain transport stream pac
 By default, when no file name is provided, use the standard input.
 
 [.usage]
-Options	
+Options
 
 [.opt]
 *-d* _[address][:port]_ +
