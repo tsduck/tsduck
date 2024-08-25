@@ -17,6 +17,8 @@
 HOOK="$1"
 SCRIPT=$(basename ${BASH_SOURCE[0]} .sh)
 ROOTDIR=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
+[[ ! -d "$ROOTDIR/.git" && -d .git ]] && ROOTDIR=$(pwd)
+
 error() { echo >&2 "$SCRIPT: $HOOK: $*"; exit 1; }
 info()  { echo >&2 "$SCRIPT: $HOOK: $*"; }
 debug() { [[ -n "$GIT_HOOK_DEBUG" ]] && echo >&2 "$SCRIPT: (debug) $HOOK: $*"; }
@@ -29,6 +31,9 @@ MASTER=master
 
 # Do nothing if branch is not "master".
 [[ "$BRANCH" == "$MASTER" ]] || exit 0
+
+# Do nothing on git pull, we don't want to update the version.
+[[ "$GIT_REFLOG_ACTION" == "pull" ]] && exit 0
 
 # Use GNU variants of sed and grep when available.
 # Add /usr/local/bin at end of PATH in case we can find them there.
