@@ -25,6 +25,7 @@ debug() { [[ -n "$GIT_HOOK_DEBUG" ]] && echo >&2 "$SCRIPT: (debug) $HOOK: $*"; }
 
 # Get current branch (output and syntax varies across versions of git).
 BRANCH=$(git branch | sed -e '/^$/d' -e '/^[^*]/d' -e 's/^\* *//' 2>/dev/null)
+debug "entering git hook, branch '$BRANCH'"
 
 # Name of the master branch.
 MASTER=master
@@ -33,7 +34,8 @@ MASTER=master
 [[ "$BRANCH" == "$MASTER" ]] || exit 0
 
 # Do nothing on git pull, we don't want to update the version.
-[[ "$GIT_REFLOG_ACTION" == "pull" ]] && exit 0
+debug "GIT_REFLOG_ACTION='$GIT_REFLOG_ACTION'"
+[[ $GIT_REFLOG_ACTION == pull* ]] && exit 0
 
 # Use GNU variants of sed and grep when available.
 # Add /usr/local/bin at end of PATH in case we can find them there.
@@ -74,7 +76,6 @@ get-commit-count() {
 }
 
 # Filter by hook.
-debug "entering git hook"
 case "$HOOK" in
     pre-commit)
         if [[ -n "$TS_GIT_COMMIT" ]]; then
