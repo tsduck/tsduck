@@ -41,6 +41,7 @@ param(
 
 # Get the project directories.
 $RootDir      = (Split-Path -Parent $PSScriptRoot)
+$SrcDir       = "$RootDir\src"
 $ImagesDir    = "$RootDir\images"
 $DocRoot      = "$RootDir\doc"
 $AdocDir      = "$DocRoot\adoc"
@@ -114,11 +115,30 @@ function Build-IncludeAll($OutFile, $DocDir, $SubDir)
         Out-File $OutFile -Encoding utf8
 }
 
-# Generate subdoc files for all commands and all plugins.
+# Generate subdoc files for all commands and all plugins in user's guide.
 Build-IncludeAll "$UserGuideDir\.all.commands.adoc" $UserGuideDir "commands"
 Build-IncludeAll "$UserGuideDir\.all.plugins.adoc" $UserGuideDir "plugins"
 
-# Generate subdoc files for all tables and all descriptors.
+# Generate adoc files for all standards for which tables or descriptors are defined.
+foreach ($Type in @("tables", "descriptors")) {
+    $Standards = Get-ChildItem "$SrcDir\libtsduck\dtv\$Type\*\*.adoc" | ForEach-Object { Split-Path -Leaf $_.DirectoryName } | Sort-Object -Unique
+    foreach ($Std in $Standards) {
+        $OutFile = "$UserGuideDir\.all.$Std.$Type.adoc"
+        $InFiles = @{}
+        Get-ChildItem "$SrcDir\libtsduck\dtv\$Type\$Std\*.adoc" | Select-String -pattern "^==== " | ForEach-Object {
+           $file = $_ -replace ':[0-9]*:====.*',''
+           $key = $_ -replace '.*:[0-9]*:==== *',''
+           $InFiles[$key] = $file
+        }
+        ''| Out-File $OutFile -Encoding utf8
+        $InFiles.Keys | Sort-Object -Unique -Culture ([CultureInfo]::InvariantCulture) | ForEach-Object {
+            Get-Content $InFiles[$_] | Out-File $OutFile -Encoding utf8 -Append
+            '' | Out-File $OutFile -Encoding utf8 -Append
+        }
+    }
+}
+
+# Generate subdoc files for all tables and all descriptors in developer's guide.
 python "$DevGuideDir\build-sigref.py" tables "$DevGuideDir\.all.tables.adoc"
 python "$DevGuideDir\build-sigref.py" descriptors "$DevGuideDir\.all.descriptors.adoc"
 
