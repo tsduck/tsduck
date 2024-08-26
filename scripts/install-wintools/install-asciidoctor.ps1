@@ -28,6 +28,7 @@ if (-not (Search-Path "gem") -and -not (Search-Path "gem.cmd") -and -not (Search
     $env:Path = "${env:Path};$Path"
 }
 
+ruby --version
 gem install asciidoctor asciidoctor-pdf rouge
 
 Exit-Script

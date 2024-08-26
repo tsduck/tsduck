@@ -102,7 +102,7 @@ VERSION=$(($MAJOR * 100 + $MINOR))
 
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
-    PKGLIST+=(git gnu-sed grep dos2unix coreutils python3 openssl ruby asciidoctor qpdf)
+    PKGLIST+=(git gnu-sed grep make dos2unix coreutils python3 openssl ruby asciidoctor qpdf)
     [[ -z $NORIST    ]] && PKGLIST+=(librist)
     [[ -z $NOSRT     ]] && PKGLIST+=(srt)
     [[ -z $NOVATEK   ]] && PKGLIST+=(libvatek)
