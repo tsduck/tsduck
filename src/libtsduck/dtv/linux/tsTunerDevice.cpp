@@ -686,7 +686,6 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             params.pilots = Pilot(props.getByCommand(DTV_PILOT));
             params.roll_off = RollOff(props.getByCommand(DTV_ROLLOFF));
 
-            // With the Linux DVB API, all multistream selection info are passed in the "stream id".
 #if defined(DTV_STREAM_ID)
             const uint32_t id = props.getByCommand(DTV_STREAM_ID);
 #else
@@ -696,10 +695,12 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
 #if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
             if (params.pls_dvbapi) {
+                // Recent Linux DVB API provides a designated property to set a PLS (GOLD) code
                 params.pls_code = props.getByCommand(DTV_SCRAMBLING_SEQUENCE_INDEX);
                 params.pls_mode = PLS_GOLD;
             } else {
 #endif
+                // With older Linux DVB API, all multistream selection info are passed in the "stream id".
                 params.pls_code = (id >> 8) & 0x0003FFFF;
                 params.pls_mode = PLSMode(id >> 26);
 #if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
