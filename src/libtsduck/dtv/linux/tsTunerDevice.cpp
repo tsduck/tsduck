@@ -670,6 +670,9 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #if defined(DTV_STREAM_ID)
             props.add(DTV_STREAM_ID);
 #endif
+#if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
+            props.add(DTV_SCRAMBLING_SEQUENCE_INDEX);
+#endif
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 _duck.report().error(u"error getting tuning parameters from tuner %s: %s", _frontend_name, SysErrorCodeMessage());
@@ -690,8 +693,18 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             const uint32_t id = PLP_DISABLE;
 #endif
             params.isi = id & 0x000000FF;
-            params.pls_code = (id >> 8) & 0x0003FFFF;
-            params.pls_mode = PLSMode(id >> 26);
+
+#if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
+            if (params.pls_dvbapi) {
+                params.pls_code = props.getByCommand(DTV_SCRAMBLING_SEQUENCE_INDEX);
+                params.pls_mode = PLS_GOLD;
+            } else {
+#endif
+                params.pls_code = (id >> 8) & 0x0003FFFF;
+                params.pls_mode = PLSMode(id >> 26);
+#if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
+            }
+#endif
             break;
         }
         case DS_DVB_T:
@@ -1172,13 +1185,23 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
             props.addVar(DTV_PILOT, params.pilots);
 #if defined(DTV_STREAM_ID)
             if (params.isi.has_value() && params.isi.value() != ISI_DISABLE) {
-                // With the Linux DVB API, all multistream selection info are passed in the "stream id".
-                const uint32_t id =
-                    (uint32_t(params.pls_mode.value_or(ModulationArgs::DEFAULT_PLS_MODE)) << 26) |
-                    ((params.pls_code.value_or(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
-                    (params.isi.value() & 0x000000FF);
-                _duck.report().debug(u"using DVB-S2 multi-stream id %n", id);
-                props.add(DTV_STREAM_ID, id);
+#if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
+                if (params.pls_dvbapi) {
+                    // Recent Linux DVB API provides a designated property to set a PLS (GOLD) code
+                    props.add(DTV_STREAM_ID, params.isi.value() & 0x000000FF);
+                    props.add(DTV_SCRAMBLING_SEQUENCE_INDEX, params.pls_code.value_or(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF);
+                } else {
+#endif
+                    // With older Linux DVB API, all multistream selection info are passed in the "stream id".
+                    const uint32_t id =
+                        (uint32_t(params.pls_mode.value_or(ModulationArgs::DEFAULT_PLS_MODE)) << 26) |
+                        ((params.pls_code.value_or(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF) << 8) |
+                        (params.isi.value() & 0x000000FF);
+                    _duck.report().debug(u"using DVB-S2 multi-stream id %n", id);
+                    props.add(DTV_STREAM_ID, id);
+#if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
+                }
+#endif
             }
 #endif
             break;

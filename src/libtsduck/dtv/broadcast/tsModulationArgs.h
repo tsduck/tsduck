@@ -253,6 +253,13 @@ namespace ts {
         //!
         static constexpr PLSMode DEFAULT_PLS_MODE = PLS_ROOT;
         //!
+        //! Physical Layer Scrambling (PLS) DVB API property usage.
+        //! When specified to true, the PLS code is set through the designated DVB API property
+        //! instead of the older way to merge into the "stream id".
+        //! Applies to: DVB-S2.
+        //!
+        std::optional<bool> pls_dvbapi {};
+        //!
         //! Sound broadcasting.
         //! When specified to true, the reception is an ISDB-Tsb channel instead of an ISDB-T one.
         //! Applies to: ISDB-T.

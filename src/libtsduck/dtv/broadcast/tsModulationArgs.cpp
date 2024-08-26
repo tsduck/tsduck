@@ -48,6 +48,7 @@ void ts::ModulationArgs::clear()
     isi.reset();
     pls_code.reset();
     pls_mode.reset();
+    pls_dvbapi.reset();
     sound_broadcasting.reset();
     sb_subchannel_id.reset();
     sb_segment_count.reset();
@@ -119,6 +120,7 @@ bool ts::ModulationArgs::hasModulationArgs() const
         isi.has_value() ||
         pls_code.has_value() ||
         pls_mode.has_value() ||
+        pls_dvbapi.has_value() ||
         sound_broadcasting.has_value() ||
         sb_subchannel_id.has_value() ||
         sb_segment_count.has_value() ||
@@ -165,6 +167,7 @@ void ts::ModulationArgs::setDefaultValues()
             set_default(isi, DEFAULT_ISI);
             set_default(pls_code, DEFAULT_PLS_CODE);
             set_default(pls_mode, DEFAULT_PLS_MODE);
+            set_default(pls_dvbapi, false);
             [[fallthrough]];
         case DS_DVB_S_TURBO:
         case DS_DVB_S:
@@ -992,7 +995,8 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (isi.has_value() && isi != ISI_DISABLE) {
                 strm << margin << "Input stream id: " << isi.value() << std::endl
                      << margin << "PLS code: " << pls_code.value_or(DEFAULT_PLS_CODE) << std::endl
-                     << margin << "PLS mode: "<< PLSModeEnum.name(pls_mode.value_or(DEFAULT_PLS_MODE)) << std::endl;
+                     << margin << "PLS mode: "<< PLSModeEnum.name(pls_mode.value_or(DEFAULT_PLS_MODE)) << std::endl
+                     << margin << "PLS via designated DVB API property: "<< UString::OnOff(pls_dvbapi.value()) << std::endl;
             }
             if ((verbose || delivery_system != DS_DVB_S) && pilots.has_value() && pilots != PILOT_AUTO) {
                 strm << margin << "Pilots: " << PilotEnum.name(pilots.value()) << std::endl;
@@ -1178,6 +1182,9 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             }
             if (pls_mode.has_value() && pls_mode != DEFAULT_PLS_MODE) {
                 opt += UString::Format(u" --pls-mode %s", PLSModeEnum.name(pls_mode.value()));
+            }
+            if (pls_dvbapi == true) {
+                opt += u" --pls-dvbapi";
             }
             if (!no_local && lnb.has_value()) {
                 opt += UString::Format(u" --lnb %s", lnb.value());
@@ -1384,6 +1391,9 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
     args.getOptionalIntValue(isi, u"isi");
     args.getOptionalIntValue(pls_code, u"pls-code");
     args.getOptionalIntValue(pls_mode, u"pls-mode");
+    if (args.present(u"pls-dvbapi")) {
+        pls_dvbapi = true;
+    }
     if (args.present(u"sound-broadcasting")) {
         sound_broadcasting = true;
     }
@@ -1422,6 +1432,12 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
         }
     }
     args.getOptionalIntValue(satellite_number, u"satellite-number");
+
+    // DVB API's designated PLS code field requires GOLD mode
+    if (pls_dvbapi && pls_mode != PLS_GOLD) {
+        args.error(u"option --pls-dvbapi requires PLS GOLD mode");
+        status = false;
+    }
 
     // Mark arguments as invalid is some errors were found.
     if (!status) {
@@ -1548,6 +1564,13 @@ void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
     args.help(u"pls-mode", u"mode",
               u"Used for DVB-S2 tuners only. "
               u"Physical Layer Scrambling (PLS) mode. With multistream only. The default is ROOT. "
+              u"Warning: this option is supported on Linux only.");
+
+    args.option(u"pls-dvbapi");
+    args.help(u"pls-dvbapi",
+              u"Used for DVB-S2 tuners only. "
+              u"Set Physical Layer Scrambling (PLS) (GOLD) code using designated DVB API property "
+              u"instead of the older way to merge into the \"stream id\". With multistream only. "
               u"Warning: this option is supported on Linux only.");
 
     // ISDB-T specific options.

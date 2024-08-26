@@ -236,7 +236,7 @@ Must be one of the following values:
 
 |DVB-S2
 |DVB-S2
-|`--fec-inner --frequency --isi --modulation --pilots --pls-code --pls-mode --polarity --roll-off
+|`--fec-inner --frequency --isi --modulation --pilots --pls-code --pls-mode --pls-dvbapi --polarity --roll-off
  --satellite-number --spectral-inversion --symbol-rate`
 
 |DVB-T
@@ -497,7 +497,7 @@ Used for DVB-S2 tuners only.
 
 [.optdoc]
 Specify the Input Stream Id (ISI) number to select, from 0 to 255.
-Used with multi-stream, see also options `--pls-code` and `--pls-mode`.
+Used with multi-stream, see also options `--pls-code`, `--pls-mode` and `--pls-dvbapi`.
 
 [.optdoc]
 The default is to keep the entire stream, without multi-stream selection.
@@ -591,6 +591,28 @@ Specify the Physical Layer Scrambling (PLS) mode.
 Used with multi-stream, see also option `--isi`.
 Must be one of `COMBO`, `GOLD`, `ROOT`.
 The default is `ROOT`.
+
+[.optdoc]
+*Warning*: this option is supported on Linux only.
+Currently, Windows provides no support for multi-stream.
+
+[.opt]
+*--pls-dvbapi*
+
+[.optdoc]
+Used for DVB-S2 tuners only.
+
+[.optdoc]
+When specified, the PLS code is set through the designated DVB API property
+instead of the older way to merge into the "stream id".
+Used with multi-stream, see also option `--isi`.
+
+[.optdoc]
+If this parameter is used, the PLS GOLD mode must be used.
+
+[.optdoc]
+The default is to merge the (left shifted) PLS code and PLS mode into the `DTV_STREAM_ID` property.
+DVB API later added the `DTV_SCRAMBLING_SEQUENCE_INDEX` property as standardized way to specify a PLS (GOLD) code.
 
 [.optdoc]
 *Warning*: this option is supported on Linux only.
