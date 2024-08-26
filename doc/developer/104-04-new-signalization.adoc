@@ -31,6 +31,9 @@ To identify the right existing structure as code base, use some of these criteri
 * Use of strings, DVB strings, ATSC strings, ISDB strings.
 * Public descriptor, DVB private descriptor, table-specific descriptor.
 
+===== Classification of descriptors
+
+Currently, TSDuck implements nearly 300 different descriptors from various standards.
 Because the number of possible descriptor _tags_ (a.k.a. descriptor ids) is limited to 256 values,
 there is no room for all possible descriptors.
 For this reason, the various standard organizations use tricks such as _extended descriptors_,
@@ -75,7 +78,7 @@ you may use the _supplementary_audio_descriptor_ as code base.
 
 In the DVB standard, descriptor ids 0x80 to 0xFE are "private".
 They are reserved for use by private entities, typically TV operators,
-broadcast equipment vendors, Conditional Access Systems (CAS) vendors.
+broadcast equipment vendors, Conditional Access System (CAS) vendors.
 
 To determine which semantics should be associated with a given descriptor id in that range,
 DVB defines a _private_data_specifier_descriptor_ which contains a 32-bit _private_data_specifier_ (PDS).
@@ -88,12 +91,14 @@ are defined by the private organization which is identified in the _private_data
 If several private descriptors from distinct defining entities must be placed in the same descriptor list,
 several _private_data_specifier_descriptor_ are allowed to switch from one entity to another.
 
-A descriptor with a tag in the range 0x80-0xFE and no preceding _private_data_specifier_descriptor_ is illegal.
+In a DVB context, a descriptor with a tag in the range 0x80-0xFE and no preceding
+_private_data_specifier_descriptor_ is illegal.
 
 That being said, in practice, the experience has exhibited two families of bugs:
 
 * Rogue signalization: Some organizations ignore this rule and define their own private descriptors,
-  in the range 0x80-0xFE, without officially allocated PDS value.
+  in the range 0x80-0xFE, without officially allocated PDS value. They use their own arbitrary PDS value,
+  hoping that no one else will use the same PDS value.
 * Signalization bugs: Some broadcasters "forget" to insert the right _private_data_specifier_descriptor_
   before a well-defined private descriptor.
 * Implementation bugs: Some implementers of receivers (set-top box, TV set) ignore the PDS rule
@@ -150,7 +155,7 @@ plus private companies which define private DVB descriptors such as `eacem`, `dt
 Try to find the right subdirectory for your new structure.
 Create another directory if required.
 
-In that descriptor, you will have to create three or four files (the last is optional).
+In that descriptor, you will have to create four or five files (the last is optional).
 For instance, the MPEG-defined _ISO_639_language_descriptor_ is implemented as:
 
 [source,text]
@@ -158,6 +163,7 @@ For instance, the MPEG-defined _ISO_639_language_descriptor_ is implemented as:
 src/libtsduck/dtv/descriptors/mpeg:
 
     tsISO639LanguageDescriptor.xml
+    tsISO639LanguageDescriptor.adoc
     tsISO639LanguageDescriptor.h
     tsISO639LanguageDescriptor.cpp
     tsISO639LanguageDescriptor.names
@@ -264,10 +270,64 @@ to generate a JSON number instead of a JSON string.
 Your `.xml` file will be automatically grabbed by the TSDuck build system and integrated
 into the final configuration files.
 
+==== Documentation file
+
+You must describe the documentation for your table or descriptor in
+https://asciidoctor.org[asciidoc] format in a `.adoc` file.
+This file will be automatically grabbed by the TSDuck build system and integrated
+into the TSDuck User's Guide, in HTML and PDF format.
+
+Even if you do not know this format, this is pretty simple.
+All `.adoc` files for the signalization use the same pattern.
+The following is the file for the _ISO_639_language_descriptor_.
+
+[source,adoc]
+------
+==== ISO_639_language_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+[source,xml]
+----
+<ISO_639_language_descriptor>
+  <!-- One per language -->
+  <language code="char3, required" audio_type="uint8, required"/>
+</ISO_639_language_descriptor>
+----
+------
+
+The first line starts with `====` and contains the table or descriptor name.
+This is the section title in the user's guide.
+
+The sentence _"Defined by XXX in \<<YYY>>"_ is mandatory and indicates where to
+find the reference documentation for the structure.
+The syntax `\<<YYY>>` is a reference in the bibliography.
+There must be a corresponding `* +++[[[YYY]]]+++` entry in the file `doc/user/20F-app-references.adoc`,
+for instance:
+
+[source,adoc]
+----
+* [[[ISO-13818-1]]] ISO/IEC 13818-1:2018 | ITU-T Recommendation H.222 (2017):
+  "Generic coding of moving pictures and associated audio information: Systems" (also known as "MPEG-2 System Layer").
+----
+
+If the reference does not exist yet in the bibliography, add it.
+Keep the references sorted in alphabetical order.
+
+Add a copy of the XML description of the table or descriptor.
+
+[.compact-list]
+* Remove the enclosing `<tsduck>`, `<_tables>`, `<_descriptors>` structures, just keep your structure.
+* Make sure to reindent its top-level tag to the first column.
+* In tables, remove the `<_any in="_metadata"/>`. It is meaningless for the user.
+* Add any comment or formatting which makes the result more informative to the user.
+
 ==== {cpp} class
 
 The {cpp} header (`.h`) and body (`.cpp`) files for the table or descriptor class are mandatory.
 Start with the selected code base and carefully replace the structure names.
+
+===== Structure registration
 
 In the `.cpp` file, there is a fundamental macro:
 `TS_REGISTER_TABLE()` for tables and `TS_REGISTER_DESCRIPTOR()` for descriptors.
@@ -279,97 +339,11 @@ The registration macro may take various forms depending on the type of structure
 (standard descriptor, table-specific descriptor, extended descriptor, etc.)
 Be careful to select a code base with the same characteristics in order to copy the same type of registration.
 
-==== Names file
-
-If necessary, you may provide a `.names` file.
-This is useful when a field of your structure can get distinct values with distinct meanings.
-When displaying a structure, it is more convenient for the user to get a meaningful name
-rather than a value.
-
-A `.names` file is organized in several sections.
-By convention, use section names which start with the XML name of your structure, followed by a dot.
-
-Example of the file `tsISO639LanguageDescriptor.names`, for the _ISO_639_language_descriptor_:
-
-[source,test]
-----
-[ISO_639_language_descriptor.audio_type]
-Bits = 8
-0x00 = undefined
-0x01 = clean effects
-0x02 = hearing impaired
-0x03 = visual impaired commentary
-----
-
-In the {cpp} source file, use the inherited static method `DataName()` to retrieve
-a meaningful name, with optional formatting of the value before or after the name.
-
-Example of the file `tsISO639LanguageDescriptor.cpp`:
-
-[source,c++]
-----
-void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
-{
-    ...
-    disp << ", Type: " << DataName(MY_XML_NAME, u"audio_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
-----
-
-Your `.names` file will be automatically grabbed by the TSDuck build system and integrated
-into the final configuration files.
-
-==== Documentation
-
-Your new table or descriptor shall be documented in two ways:
-
-[.compact-list]
-1. The XML structure is documented in the TSDuck User's Guide (asciidoc format).
-2. The {cpp} class is documented in the TSDuck Programming Reference (doxygen format).
-
-===== User's guide
-
-The user's guide must be manually updated.
-
-The asciidoc files (`.adoc`) for the PSI/SI XML structures are in the directory tree `doc/user/si-xml`.
-Just like the source files, there is one subdirectory per standard.
-In each subdirectory, there is one single `.adoc` file for all tables
-and one single `.adoc` file for all descriptors.
-
-Edit or create the corresponding file.
-If you create a new file, add an include directive in the file `doc/user/20D-app-si-xml.adoc`.
-
-Some guidelines:
-
-[.compact-list]
-* In each file, keep tables and descriptors organized in alphabetical order.
-* Copy the surrounding asciidoc syntax from other existing tables or descriptors.
-* Remove the enclosing `<tsduck>`, `<_tables>`, `<_descriptors>` structures, just keep your structure.
-* In tables, remove the `<_any in="_metadata"/>`. It is meaningless for the user.
-* Add any comment or formatting which makes the result more informative to the user.
-
-At the beginning of the section, add a reference to the defining standard, for instance:
-
-[source,adoc]
-----
-Defined by MPEG in <<ISO-13818-1>>.
-----
-
-The reference between `<<` and `>>` must be a valid one from the bibliography in
-file `doc/user/20F-app-references.adoc`, for instance:
-
-[source,adoc]
-----
-* [[[ISO-13818-1]]] ISO/IEC 13818-1:2018 | ITU-T Recommendation H.222 (2017):
-  "Generic coding of moving pictures and associated audio information: Systems" (also known as "MPEG-2 System Layer").
-----
-
-If the reference does not exist yet in the bibliography, add it.
-Keep the references sorted in alphabetical order.
-
 ===== Programming reference
 
 All public structures and fields in the {cpp} header file must be documented using Doxygen tags.
-See examples in existing structure.
-This is the way your structure will become documented in the programming reference.
+See examples in existing structures.
+This is the way your structure will become documented in the TSDuck Programming Reference (doxygen format).
 
 No public element shall be left undocumented.
 To verify this, generate the documentation and check any error.
@@ -410,6 +384,44 @@ The directive `@see` is important in three ways.
 1. It is included in the Doxygen documentation.
 2. It helps the future maintainers of the code to find the right documentation and directly the section number where to look.
 3. It is also used in the automatic generation of the xref:chap-sigref[xrefstyle=short] of this document.
+
+==== Names file
+
+If necessary, you may provide a `.names` file.
+This is useful when a field of your structure can get distinct values with distinct meanings.
+When displaying a structure, it is more convenient for the user to get a meaningful name
+rather than a value.
+
+A `.names` file is organized in several sections.
+By convention, use section names which start with the XML name of your structure, followed by a dot.
+
+Example of the file `tsISO639LanguageDescriptor.names`, for the _ISO_639_language_descriptor_:
+
+[source,test]
+----
+[ISO_639_language_descriptor.audio_type]
+Bits = 8
+0x00 = undefined
+0x01 = clean effects
+0x02 = hearing impaired
+0x03 = visual impaired commentary
+----
+
+In the {cpp} source file, use the inherited static method `DataName()` to retrieve
+a meaningful name, with optional formatting of the value before or after the name.
+
+Example of the file `tsISO639LanguageDescriptor.cpp`:
+
+[source,c++]
+----
+void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+{
+    ...
+    disp << ", Type: " << DataName(MY_XML_NAME, u"audio_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+----
+
+Your `.names` file will be automatically grabbed by the TSDuck build system and integrated
+into the final configuration files.
 
 ==== Tests
 

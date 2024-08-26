@@ -314,6 +314,61 @@ instead of using such a complex `make` command..
 
 Note the command `gmake`, the GNU Make command. See xref:bsdreq[xrefstyle=short] for more details.
 
+[#bsdreq]
+===== GNU Make requirements
+
+The makefiles in the TSDuck project use a GNU Make syntax.
+TSDuck requires GNU Make version 4 or higher.
+The makefiles are not compatible with the non-GNU versions of the `make` command
+or GNU Make version 3 or lower.
+
+All Linux distros which are less than ten years old have a compatible GNU Make.
+
+[.usage]
+GNU Make on macOS
+
+On macOS, GNU Make is the default `make` command and is installed in `/usr/bin`.
+However, because the GNU Make developers switched their license from GLPv2 to GPLv3,
+recent versions of GNU Make can no longer be distributed with macOS.
+Therefore, the preinstalled GNU Make on macOS is version 3.81,
+which is incompatible with some TSDuck makefiles.
+
+Installing the latest version of GNU Make on macOS is straightforward using HomeBrew.
+The script `install-prerequisites.sh` installs it, as part of all prerequisites.
+However, to avoid interfering with the preinstalled `/usr/bin/make`, the command
+is installed in `/opt/homebrew/bin` as `gmake`.
+
+For convenience, when GNU commands which are installed by HomeBrew interfere with
+standard system commands, HomeBrew provides a `libexec/gnubin` alternative,
+a directory where the command is available under its native name, here `make`.
+
+Therefore, there are two solutions to use the latest GNU Make on macOS:
+
+[.compact-list]
+1. Use command `gmake` instead of `make` all the time.
+2. Add `/opt/homebrew/opt/make/libexec/gnubin` in the `PATH` (example below).
+
+We recommend the second option and add the following line in your `.bashrc` file:
+
+[source,shell]
+----
+export PATH="$(brew --prefix)/opt/make/libexec/gnubin:$PATH"
+----
+
+TIP: The decision to switch from GLPv2 to GPLv3 was a very counter-productive idea.
+It does not prevent using more recent versions of GNU Make on macOS, it just makes it more painful.
+And being a pain is counter-productive, to say the least (and remain polite).
+
+[.usage]
+GNU Make on BSD systems
+
+On FreeBSD, OpenBSD, NetBSD, DragonFlyBSD, the standard BSD `make` command is the old `make` tool,
+before GNU, which uses an old and restricted syntax.
+It is incompatible with GNU Make.
+As part of prerequisites for BSD systems, GNU Make is installed under the name `gmake`.
+
+In all build commands in this document, when `make` is mentioned, use `gmake` on all BSD systems.
+
 [#hwlibunix]
 ===== Hardware device libraries
 
@@ -330,14 +385,6 @@ the VATek API in the standard distros. On Windows and macOS, binary packages are
 and are installed by the `install-prerequisites` scripts. Using VATek devices on BSD systems
 is currently not supported but should work if necessary (accessing VATek devices is performed
 through `libusb` and not a specific kernel driver).
-
-[#bsdreq]
-===== Using make on BSD systems
-
-On FreeBSD, OpenBSD, NetBSD, DragonFlyBSD, the standard BSD `make` command uses an old syntax.
-The makefiles in the TSDuck project use a GNU Make syntax and are not compatible with the BSD `make` command.
-As part of prerequisites for BSD systems, GNU Make is installed under the name `gmake`.
-In all build commands in this page, when `make` is mentioned, use `gmake` on all BSD systems.
 
 [#buildunix]
 ===== Building the TSDuck binaries alone
