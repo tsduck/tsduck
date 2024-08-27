@@ -25,6 +25,7 @@ DOCROOT    = $(ROOTDIR)/doc
 ADOCDIR    = $(DOCROOT)/adoc
 USERDOCDIR = $(DOCROOT)/user
 DEVDOCDIR  = $(DOCROOT)/developer
+USERSIXML  = $(USERDOCDIR)/20D-app-si-xml.adoc
 
 # Output directories.
 
@@ -116,6 +117,10 @@ DESCRIPTORS_ADOC = $(patsubst %,$(USERDOCDIR)/.all.%.descriptors.adoc,$(DESCRIPT
 define DOCRULE =
 $$(USERDOCDIR)/.all.$(1).$(2).adoc: $$(wildcard $$(LIBTSDUCKDIR)/dtv/$(2)/$(1)/*.adoc)
 	$$(call LOG,[GEN] $$@) \
+	if ! $$(GREP) -q '^include::$$(notdir $$@)\[]' $$(USERSIXML); then \
+	    echo >&2 'error: $$(notdir $$@) not included in $$(USERSIXML)'; \
+	    exit 1; \
+	fi; \
 	echo "// Automatically generated file, do not edit" >$$@; \
 	for f in $$$$(grep -H "^====" $$^ | sed -e "s|\(.*\):==== *\(.*\)|\2:\1|" | sort -d -f | sed -e "s|.*:||"); do \
 	    echo; \
