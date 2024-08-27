@@ -1,7 +1,7 @@
 /* CSS based on asciidoctor default stylesheet, heavily customized for TSDuck */
 
-@import url(//cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.0/css/font-awesome.css);
-@import url(//fonts.googleapis.com/css?family=Noto+Sans);
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.0/css/font-awesome.css');
+@import url('https://fonts.googleapis.com/css?family=Noto+Sans');
 
 /* Color palette */
 :root{

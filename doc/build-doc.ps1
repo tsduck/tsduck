@@ -17,6 +17,22 @@
 
   Build the project documentation.
 
+ .PARAMETER User
+
+  Generate the user's guide only. By default, generate all documents.
+
+ .PARAMETER Developer
+
+  Generate the developer's guide only. By default, generate all documents.
+
+ .PARAMETER Html
+
+  Generate the HTML files only. By default, generate all output formats.
+
+ .PARAMETER Pdf
+
+  Generate the PDF files only. By default, generate all output formats.
+
  .PARAMETER NoOpen
 
   Do not open the generated documentation. By default, run the default HTML
@@ -35,9 +51,23 @@
 #>
 param(
     [Parameter(Mandatory=$false)][string]$Version,
+    [switch]$User = $false,
+    [switch]$Developer = $false,
+    [switch]$Html = $false,
+    [switch]$Pdf = $false,
     [switch]$NoOpen = $false,
     [switch]$NoPause = $false
 )
+
+# By default, generate all guides in all formats.
+if (-not $User -and -not $Developer) {
+    $User = $true
+    $Developer = $true
+}
+if (-not $Html -and -not $Pdf) {
+    $Html = $true
+    $Pdf = $true
+}
 
 # Get the project directories.
 $RootDir      = (Split-Path -Parent $PSScriptRoot)
@@ -57,6 +87,9 @@ $Theme     = "tsduck"
 $ThemeFile = "$AdocDir\${Theme}-theme.yml"
 $RougeHtml = "thankful_eyes"
 $RougePdf  = "github"
+
+# Specific doc files.
+$UserSiXml = “$UserGuideDir\20D-app-si-xml.adoc”
 
 # Enforce English names.
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = "en-US"
@@ -102,9 +135,11 @@ function Open-Doc($File)
 [void](New-Item -ItemType Directory -Force $BinDocInfo)
 
 # Generate docinfo files.
-Copy-Item "$AdocDir\docinfo.html" "$BinDocInfo\docinfo.html"
-("<script>`n" + (Get-Content "$AdocDir\tocbot.min.js") + "`n</script>`n" + (Get-Content "$AdocDir\docinfo-footer.in.html")) |
-    Out-File "$BinDocInfo\docinfo-footer.html" -Encoding utf8
+if ($Html) {
+    Copy-Item "$AdocDir\docinfo.html" "$BinDocInfo\docinfo.html"
+    ("<script>`n" + (Get-Content "$AdocDir\tocbot.min.js") + "`n</script>`n" + (Get-Content "$AdocDir\docinfo-footer.in.html")) |
+        Out-File "$BinDocInfo\docinfo-footer.html" -Encoding utf8
+}
 
 # Generate a .adoc file which includes all .adoc in a given subdirectory.
 function Build-IncludeAll($OutFile, $DocDir, $SubDir)
@@ -116,46 +151,66 @@ function Build-IncludeAll($OutFile, $DocDir, $SubDir)
 }
 
 # Generate subdoc files for all commands and all plugins in user's guide.
-Build-IncludeAll "$UserGuideDir\.all.commands.adoc" $UserGuideDir "commands"
-Build-IncludeAll "$UserGuideDir\.all.plugins.adoc" $UserGuideDir "plugins"
+if ($User) {
+    Build-IncludeAll "$UserGuideDir\.all.commands.adoc" $UserGuideDir "commands"
+    Build-IncludeAll "$UserGuideDir\.all.plugins.adoc" $UserGuideDir "plugins"
+}
 
 # Generate adoc files for all standards for which tables or descriptors are defined.
-foreach ($Type in @("tables", "descriptors")) {
-    $Standards = Get-ChildItem "$SrcDir\libtsduck\dtv\$Type\*\*.adoc" | ForEach-Object { Split-Path -Leaf $_.DirectoryName } | Sort-Object -Unique
-    foreach ($Std in $Standards) {
-        $OutFile = "$UserGuideDir\.all.$Std.$Type.adoc"
-        $InFiles = @{}
-        Get-ChildItem "$SrcDir\libtsduck\dtv\$Type\$Std\*.adoc" | Select-String -pattern "^==== " | ForEach-Object {
-           $file = $_ -replace ':[0-9]*:====.*',''
-           $key = $_ -replace '.*:[0-9]*:==== *',''
-           $InFiles[$key] = $file
-        }
-        ''| Out-File $OutFile -Encoding utf8
-        $InFiles.Keys | Sort-Object -Unique -Culture ([CultureInfo]::InvariantCulture) | ForEach-Object {
-            Get-Content $InFiles[$_] | Out-File $OutFile -Encoding utf8 -Append
-            '' | Out-File $OutFile -Encoding utf8 -Append
+if ($User) {
+    foreach ($Type in @("tables", "descriptors")) {
+        $Standards = Get-ChildItem "$SrcDir\libtsduck\dtv\$Type\*\*.adoc" | ForEach-Object { Split-Path -Leaf $_.DirectoryName } | Sort-Object -Unique
+        foreach ($Std in $Standards) {
+            $OutName = ".all.$Std.$Type.adoc"
+            $OutFile = "$UserGuideDir\$OutName"
+            # Check that this file is correctly referenced in the user's guide.
+            # If someone adds a new standard, created a new directory, and forgot to update the main document.
+            if (-not (Select-String -Path $UserSiXml -Pattern “^include::$OutName\[]” -Quiet)) {
+                Write-Error "File $OutName not included in $UserSiXml"
+            }
+            # Generate the file.
+            $InFiles = @{}
+            Get-ChildItem "$SrcDir\libtsduck\dtv\$Type\$Std\*.adoc" | Select-String -pattern "^==== " | ForEach-Object {
+               $file = $_ -replace ':[0-9]*:====.*',''
+               $key = $_ -replace '.*:[0-9]*:==== *',''
+               $InFiles[$key] = $file
+            }
+            ''| Out-File $OutFile -Encoding utf8
+            $InFiles.Keys | Sort-Object -Unique -Culture ([CultureInfo]::InvariantCulture) | ForEach-Object {
+                Get-Content $InFiles[$_] | Out-File $OutFile -Encoding utf8 -Append
+                '' | Out-File $OutFile -Encoding utf8 -Append
+            }
         }
     }
 }
 
 # Generate subdoc files for all tables and all descriptors in developer's guide.
-python "$DevGuideDir\build-sigref.py" tables "$DevGuideDir\.all.tables.adoc"
-python "$DevGuideDir\build-sigref.py" descriptors "$DevGuideDir\.all.descriptors.adoc"
+if ($Developer) {
+    python "$DevGuideDir\build-sigref.py" tables "$DevGuideDir\.all.tables.adoc"
+    python "$DevGuideDir\build-sigref.py" descriptors "$DevGuideDir\.all.descriptors.adoc"
+}
 
-# Generate one document in HTML and PDF formats.
+# Generate one document in HTML and/or PDF formats.
 function Build-Document($Dir, $BaseName)
 {
-    Write-Output "Generating $BaseName.html ..."
-    asciidoctor @ADocFlagsHtml "$Dir\$BaseName.adoc" -D $BinDoc -o "$BaseName.html"
-    Open-Doc "$BinDoc\$BaseName.html"
-
-    Write-Output "Generating $BaseName.pdf ..."
-    asciidoctor-pdf @ADocFlagsPdf "$Dir\$BaseName.adoc" -D $BinDoc -o "$BaseName.pdf"
-    Open-Doc "$BinDoc\$BaseName.pdf"
+    if ($Html) {
+        Write-Output "Generating $BaseName.html ..."
+        asciidoctor @ADocFlagsHtml "$Dir\$BaseName.adoc" -D $BinDoc -o "$BaseName.html"
+        Open-Doc "$BinDoc\$BaseName.html"
+    }
+    if ($Pdf) {
+        Write-Output "Generating $BaseName.pdf ..."
+        asciidoctor-pdf @ADocFlagsPdf "$Dir\$BaseName.adoc" -D $BinDoc -o "$BaseName.pdf"
+        Open-Doc "$BinDoc\$BaseName.pdf"
+    }
 }
 
 # Generate guides
-Build-Document $UserGuideDir "tsduck"
-Build-Document $DevGuideDir "tsduck-dev"
+if ($User) {
+    Build-Document $UserGuideDir "tsduck"
+}
+if ($Developer) {
+    Build-Document $DevGuideDir "tsduck-dev"
+}
 
 Exit-Script

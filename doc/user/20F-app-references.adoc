@@ -21,12 +21,14 @@
 |AES |Advanced Encryption Standard
 |AIT |Application Information Table (DVB)
 |ANSI |American National Standards Institute
+|AOM |Alliance for Open Media
 |ARIB |Association of Radio Industries and Businesses (Japan)
 |ASI |Asynchronous Serial Interface
 |ATIS |Alliance for Telecommunications Industry Solutions
 |ATSC |Advanced Television Systems Committee
 |ATR |Answer To Reset (smartcard)
 |AVC |Advanced Video Coding
+|AVS |Audio Video coding Standard Workgroup of China
 |BAT |Bouquet Association Table (DVB)
 |BDA |Broadcast Device Architecture (Microsoft Windows)
 |BDT |Binary Data Table
@@ -53,6 +55,7 @@
 |DOCSIS |Data Over Cable Service Interface Specification
 |DRM |Digital Rights Management
 |DSM-CC |Digital Storage Media Command and Control (MPEG)
+|DTG |Digital TV Group (UK)
 |DTH |Direct To Home
 |DTS |Decoding Time Stamp
 |DTTV |Digital Terrestrial Television
@@ -66,8 +69,10 @@
 |DVB-S2 |DVB Satellite modulation, 2nd generation
 |DVB-T |DVB Terrestrial modulation
 |DVB-T2 |DVB Terrestrial modulation, 2nd generation
+|EACEM |European Association of Consumer Electronics Manufacturers (now DIGITALEUROPE)
 |ECM |Entitlement Control Message
 |ECMG |ECM Generator
+|EICTA |European Information and Communications Technology Industry Association
 |EIS |Event Information Scheduler
 |EIT |Event Information Table (DVB, ATSC, ISDB)
 |EMM |Entitlement Management Message
@@ -165,6 +170,7 @@
 |URL |Uniform Resource Locator
 |UTC |Coordinated Universal Time
 |UUID |Universal Unique Identifier
+|UWA |UHD World Association
 |VBI |Vertical Blanking Interval
 |VCT |Virtual Channel Table (ATSC)
 |===
