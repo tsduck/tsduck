@@ -315,7 +315,8 @@ namespace ts {
         PDS_AUSTRALIA = 0x00003200, //!< Private data specifier for Free TV Australia.
         PDS_AOM       = 0x414F4D53, //!< Private data specifier for the Alliance for Open Media (AOM) (value is "AOMS" in ASCII).
         PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
-        PDS_AVS       = 0x41565356, //!< Private data specifier for AVS Working Group of China (value is "AVSV" in ASCII).
+        PDS_AVSAudio  = 0x41565341, //!< Private data specifier for AVS Working Group of China (value is "AVSA" in ASCII).
+        PDS_AVSVideo  = 0x41565356, //!< Private data specifier for AVS Working Group of China (value is "AVSV" in ASCII).
         PDS_ISDB      = 0x49534442, //!< Fake private data specifier for ISDB descriptors (value is "ISDB" in ASCII).
         PDS_CUVV      = 0x63757676, //!< Private data specifier for UHD World Association (value is "cuvv" in ASCII).
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
@@ -657,9 +658,14 @@ namespace ts {
         DID_LOGICAL_CHANNEL_SKY = 0xB1, //!< DID for BskyB logical_channel_number_by_region_descriptor
         DID_SERVICE_SKY         = 0xB2, //!< DID for BskyB service_descriptor
 
-        // Valid in DVB context after PDS_AVS private_data_specifier
+        // Valid in DVB context after PDS_AVSVideo private_data_specifier
 
         DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
+
+        // Valid in DVB context after PDS_AVSAudio private_data_specifier
+
+        DID_AVS3_AUDIO          = 0xD2,  //!< DID for AVS3 audio descriptor, as defined in T/AI 109.7
+        DID_AVS2_AUDIO          = 0xD3,  //!< DID for AVS2 audio descriptor, as defined in T/AI 109.7 
 
         // Valid in DVB context after PDS_CUVV private_data_specifier
 

@@ -54,7 +54,8 @@ namespace ts {
         DTSHD,         //!< HD Digital Theater Systems audio, aka DTS++.
         TELETEXT,      //!< Teletext pages or subtitles, ETSI EN 300 706.
         DVB_SUBTITLES, //!< DVB subtitles, ETSI EN 300 743.
-        AVS3,          //!< AVS3 video (AVS is Chinese Audio Video Standards).
+        AVS3_VIDEO,    //!< AVS3 video (AVS is Audio Video Standards workgroup of China).
+        AVS3_AUDIO,    //!< AVS3 audio (AVS is Audio Video Standards workgroup of China).
     };
     TS_POP_WARNING()
 

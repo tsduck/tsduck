@@ -347,8 +347,13 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                 case DID_VBI_TELETEXT:
                     return CodecType::TELETEXT;
                 case DID_AVS3_VIDEO:
-                    if (pds == PDS_AVS) {
-                        return CodecType::AVS3;
+                    if (pds == PDS_AVSVideo) {
+                        return CodecType::AVS3_VIDEO;
+                    }
+                    break;
+                case DID_AVS3_AUDIO:
+                    if (pds == PDS_AVSAudio) {
+                        return CodecType::AVS3_AUDIO;
                     }
                     break;
                 case DID_MPEG_EXTENSION: {

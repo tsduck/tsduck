@@ -1,0 +1,223 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2024, Paul Higgs
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Representation of an ANC data block used by the AVS2_audio_descriptor and
+//!  the AVS3_audio_descriptor
+//!
+//----------------------------------------------------------------------------
+
+#pragma once
+#include <variant>
+#include "tsPlatform.h"
+#include "tsPSIBuffer.h"
+#include "tsTablesDisplay.h"
+#include "tsxmlElement.h"
+#include "tsByteBlock.h"
+
+namespace ts {
+    //!
+    //! Representation of an anc_data_block.
+    //!
+    //! @see Appendix B of T/AI 109.7.
+    //!
+    class TSDUCKDLL anc_data_block_type
+    {
+    public:
+        //!
+        //! object extension carries in an auxiliary data block
+        //! 
+       class TSDUCKDLL object_extension_metadata_block_type
+       {
+        public:
+            uint8_t                maxObjChannelNum = 0;       //!< the maximum number of channel objects
+            std::optional<uint8_t> objChannelLock_maxDist {};  //!< 4 bits. maximum channel locking distance
+            uint8_t                objDiffuse = 0;             //!< 7 bits. diffuse reflection of the object
+            uint8_t                objGain = 0;                //!< loudness informatoin of the object
+            uint8_t                objDivergence = 0;          //!< 4 bits. dispersion degree of an object
+            std::optional<uint8_t> objDivergencePosRange {};   //!< 4 bits. balance betwee the specified position of the object and other two positions.
+
+            //!
+            //! Default constructor
+            //!
+            object_extension_metadata_block_type() = default;
+
+            //!
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer.
+            //!
+            object_extension_metadata_block_type(PSIBuffer& buf) :
+                object_extension_metadata_block_type() { deserialize(buf); }
+
+            //! @cond nodoxygen
+            // Delegated methods.
+            void serialize(PSIBuffer& buf) const;
+            void deserialize(PSIBuffer& buf);
+            bool fromXML(const xml::Element* element);
+            void toXML(xml::Element* root) const;
+            void display(ts::TablesDisplay& display, const ts::UString& margin);
+            //! @endcond
+        };
+
+        //!
+        //! object extension carries in an auxiliary data block
+        //! 
+        class TSDUCKDLL loudness_metadata_block_type
+        {
+        public:
+            //!
+            //! depiction of an AVS audio loudness type and value
+            //! 
+            class TSDUCKDLL avs3_loudness
+            {
+            public:
+                uint8_t loudnessValDef = 0;  //!< 4 bits. The type of loudness value being provided.
+                uint8_t loudnessVal = 0;     //!< 2..8 bits. The loudness value.
+
+                //!
+                //! Default constructor
+                //!
+                avs3_loudness() = default;
+
+                //!
+                //! Read-in constructor.
+                //! @param [in,out] buf Deserialization buffer.
+                //!
+                avs3_loudness(PSIBuffer& buf) : avs3_loudness() { deserialize(buf); }
+
+                //! @cond nodoxygen
+                // Delegated methods.
+                void serialize(PSIBuffer& buf) const;
+                void deserialize(PSIBuffer& buf);
+                bool fromXML(const xml::Element* element);
+                void toXML(xml::Element* root) const;
+                void display(ts::TablesDisplay& display, const ts::UString& margin, const int index);
+                //! @endcond
+
+                //!
+                //! gives the number of bits for the value type
+                //! @param [in] loudnessValueType  the type of loudness value being expressed
+                //! @returns the number of bits to use when storing the loudness value in a binary notation
+                //! 
+                size_t BitsInValue(uint8_t loudnessValueType) const;
+
+                //!
+                //! Given a loudness value for loudnessValDef==6 (EBU R 128), calculate the loudness value
+                //! This is the inversion of the algirithm provided in Table B.8 of T/AI 109.7
+                //! @param [in] loudnessVal a binary (0..255) loudness value
+                //! @returns an EBU R 128 loudness range 
+                //! 
+                double LoudnessValToRange(uint8_t loudnessVal);
+
+                //!
+                //! Convert a loudnessRange to a loudnessVal for serialization. See Table B.8 of T/AI 109.7
+                //! @param [in] loudnessRange an EBU R 128 loudness value
+                //! @return a binary (0..255) loudness value
+                //! 
+                uint8_t LoudnessRangeToVal(double loudnessRange);
+            };
+
+            std::optional<uint16_t>    samplePeakLevel {};   //!< 12 bits. the highest instantaneous level of the digital audio samples
+            uint16_t                   truePeakLevel = 0;    //!< 12 bits. value of the audio signal waveform in the continuous time domain
+            uint8_t                    loudnessMeasure = 0;  //!< 4 bits. Loudness measurement method description
+            std::vector<avs3_loudness> loudnessValues {};    //!< the diffeent loudness values
+
+            //!
+            //! Default constructor
+            //!
+            loudness_metadata_block_type() = default;
+
+            //!
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer.
+            //!
+            loudness_metadata_block_type(PSIBuffer& buf) : loudness_metadata_block_type() { deserialize(buf); }
+
+            //! @cond nodoxygen
+            // Delegated methods.
+            void serialize(PSIBuffer& buf) const;
+            void deserialize(PSIBuffer& buf);
+            bool fromXML(const xml::Element* element);
+            void toXML(xml::Element* root) const;
+            void display(ts::TablesDisplay& display, const ts::UString& margin);
+            //! @endcond
+        };
+
+        //!
+        //! A container for the different types which can be carried in an auxiliary data block
+        //! 
+        class TSDUCKDLL anc_data_types
+        {
+        public:
+            std::variant<std::monostate, object_extension_metadata_block_type, loudness_metadata_block_type> auxiliary_data {};  //!< anc block data
+ 
+            //!
+            //! Default constructor
+            //! 
+            anc_data_types() = default;
+
+            //!
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer.
+            //!
+            anc_data_types(PSIBuffer& buf) : anc_data_types() { deserialize(buf); }
+
+            //! @cond nodoxygen
+            // Delegated methods.
+            void serialize(PSIBuffer& buf) const;
+            void deserialize(PSIBuffer& buf);
+            bool fromXML(const xml::Element* element);
+            void toXML(xml::Element* root) const;
+            void display(ts::TablesDisplay& display, const ts::UString& margin);
+            //! @endcond
+
+            static constexpr uint8_t Invalid_Metadata = 0;          //!< unsupported auxiliary data type
+            static constexpr uint8_t Extended_Object_Metadata = 1;  //!< auxiliary data type is object metadata
+            static constexpr uint8_t Loudness_Metadata = 2;         //!< auxiliary data type is loudness metadata
+        };
+
+        //! auxiliary information blocks containing either object extension metadata or loudness metadata
+        std::vector<anc_data_types> anc_block {};   
+
+        //!
+        //! Default constructor
+        //! 
+        anc_data_block_type() = default;
+
+        //!
+        //! Read-in constructor.
+        //! @param [in,out] buf Deserialization buffer.
+        //!
+        anc_data_block_type(PSIBuffer& buf) :
+            anc_data_block_type() { deserialize(buf); }
+
+        //! @cond nodoxygen
+        // Delegated methods.
+        void serialize(PSIBuffer& buf) const;
+        void deserialize(PSIBuffer& buf);
+        bool fromXML(const xml::ElementVector elements);
+        void toXML(xml::Element* root) const;
+        void display(ts::TablesDisplay& display, const ts::UString& margin);
+        //! @endcond
+
+        //!
+        //! Translate the \p value into the range \p minRange .. \p maxRange
+        //! @param [in] value the value to be mapped into the range, zero based
+        //! @param [in] maxValue the maximum value of \p value - normally based on the number of bits
+        //! @param [in] minRange the lowest value in the range, when \p value = 0
+        //! @param [in] maxRange the highest value in the range, when \p value = \p maxValue
+        //! @returns the value when mapped into a range of values
+        //! 
+        static double ValueRange(double value, double maxValue, double minRange, double maxRange);
+
+        friend class AVS3AudioDescriptor;
+        friend class AVS2AudioDescriptor;
+
+        static const UString ANC_Data_Block_Element_Name;  //!< element name to use in XML
+    };
+}

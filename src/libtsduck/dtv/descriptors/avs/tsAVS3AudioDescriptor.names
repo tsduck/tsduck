@@ -1,0 +1,190 @@
+[AVS3_audio_descriptor.audio_codec_id]
+Bits = 4
+0 = General high-rate
+1 = Lossless
+2 = General full-rate
+3-15 = Reserved
+
+[AVS3_audio_descriptor.resolution]
+Bits = 2
+# T/AI 109.3, annex A.2
+0 = 8 bits/sample
+1 = 16 bits/sample
+2 = 24 bits/sample
+3 = Reserved
+
+[AVS3_audio_descriptor.nn_type]
+Bits = 3
+# T/AI 109.3, annex A.2
+0 = basic
+1 = low-complexity
+2-7 = Reserved
+
+[AVS3_audio_descriptor.sampling_frequency_index]
+Bits = 4
+# T/AI 109.3, table A.9
+0x0 = 192000 Hz
+0x1 = 96000 Hz
+0x2 = 48000 Hz
+0x3 = 44100 Hz
+0x4 = 32000 Hz
+0x5 = 24000 Hz
+0x6 = 22050 Hz
+0x7 = 16000 Hz
+0x8 = 8000 Hz
+0x9-0xF = Reserved
+
+[AVS3_audio_descriptor.coding_profile]
+Bits = 3
+# T/AI 109.3, annex A.2
+0 = basic framework
+1 = object metadata coding framework
+2 = HOA data coding framework
+3-7 = Reserved
+
+[AVS3_audio_descriptor.channel_number_idx]
+Bits = 7
+# T/AI 109.3, table A.8
+0x0 = Mono
+0x1 = Dual-channel stereo
+0x2 = 5.1
+0x3 = 7.1
+0x4 = 10.2
+0x5 = 22.2
+0x6 = 4.0/FOA
+0x7 = 5.1.2
+0x8 = 5.1.4
+0x9 = 7.1.2
+0xa = 7.1.4
+0xb = 3rd order HOA
+0xc = 2nd order HOA
+0xd-0x7f = Reserved
+
+[AVS3_audio_descriptor.channel_bitrate]
+Bits = 16
+# T/AI 109.3,tables A.10 - A.20
+# upper 8 bits = channel_number_index, lower 8 bits - bitrate_index
+# table A.10 - bitrates for Mono coding
+0x0000 = 16
+0x0001 = 32
+0x0002 = 44
+0x0003 = 56
+0x0004 = 64
+0x0005 = 72
+0x0006 = 80
+0x0007 = 96
+0x0008 = 128
+0x0009 = 144
+0x000a = 164
+0x000b = 192
+0x000c-0x000f = Reserved
+0x0010-0x00ff = Disallowed
+# table A.11  - bitrates for Dual-channel stereo coding
+0x0100 = 24
+0x0101 = 32
+0x0102 = 48
+0x0103 = 64
+0x0104 = 80
+0x0105 = 96
+0x0106 = 128
+0x0107 = 144
+0x0108 = 192
+0x0109 = 256
+0x010a = 320
+0x010b-0x010f = Reserved
+0x0110-0x01ff = Disallowed
+# table A.12 - bitrates for 5.1 multichannel coding
+0x0200 = 192
+0x0201 = 256
+0x0202 = 320
+0x0203 = 384
+0x0204 = 448
+0x0205 = 512
+0x0206 = 640
+0x0207 = 720
+0x0208 = 144
+0x0209 = 96
+0x020a = 128
+0x020b = 160
+0x020c-0x020f = Reserved
+0x0210-0x02ff = Disallowed
+# table A.13 - bitrates for 7.1 multichannel coding
+0x0300 = 192
+0x0301 = 480
+0x0302 = 256
+0x0303 = 384
+0x0304 = 576
+0x0305 = 640
+0x0306 = 128
+0x0307 = 160
+0x0308-0x030f = Reserved
+0x0310-0x03ff = Disallowed
+# table A.14 - bitrates for 4.0/FOA coding
+0x0600 = 48
+0x0601 = 96
+0x0602 = 128
+0x0603 = 192
+0x0604 = 256
+0x0605-0x060f = Reserved
+0x0610-0x06ff = Disallowed
+# table A.15 - bitrates for 5.1.2 multi-channel coding
+0x0700 = 152
+0x0701 = 320
+0x0702 = 480
+0x0703 = 576
+0x0704-0x070f = Reserved
+0x0710-0x07ff = Disallowed
+# table A.16 - bitrates for 5.1.4 multi-channel coding
+0x0800 = 176
+0x0801 = 384
+0x0802 = 576
+0x0803 = 704
+0x0804 = 256
+0x0805 = 448
+0x0806-0x080f = Reserved
+0x0810-0x08ff = Disallowed
+# table A.17 - bitrates for 7.1.2 multi-channel coding
+0x0900 = 216
+0x0901 = 480
+0x0902 = 576
+0x0903 = 384
+0x0904 = 768
+0x0907-0x090f = Reserved
+0x0910-0x09ff = Disallowed
+# table A.18 - bitrates for 7.1.4 multi-channel coding
+0x0a00 = 240
+0x0a01 = 608
+0x0a02 = 384
+0x0a03 = 512
+0x0a04 = 832
+0x0a05-0x0a0f = Reserved
+0x0a10-0x0aff = Disallowed
+# table A.19 - bitrates for 2nd order HOA coding
+0x0c00 = 192
+0x0c01 = 256
+0x0c02 = 320
+0x0c03 = 384
+0x0c04 = 480
+0x0c05 = 512
+0x0c06 = 640
+0x0c07-0x0c0f = Reserved
+0x0c10-0x0cff = Disallowed
+# table A.20 - bitrates for 3rd order HOA coding
+0x0b00 = 256
+0x0b01 = 320
+0x0b02 = 384
+0x0b03 = 512
+0x0b04 = 640
+0x0b05 = 896
+0x0b06-0x0b0f = Reserved
+0x0b10-0x0bff = Disallowed
+# no bitrate specification for 10.2 coding
+0x0400-0x04ff = 10.2 Unspecified
+# no bitrate specification for 22.2 coding
+0x0500-0x05ff = 22.2 Unspecified
+
+[AVS3_audio_descriptor.bitstream_type]
+Bits = 1
+# T/AI 109.3, Annex A.2
+0 = uniform
+1 = variable

@@ -1,0 +1,76 @@
+[AVS2_audio_descriptor.sample_rate_index]
+Bits = 4
+# GB/T 33475.3, table C.8: Mapping to Sampling Rate (Hz)
+0 = 8000
+1 = 11025
+2 = 12000
+3 = 16000
+4 = 22050
+5 = 24000
+6 = 32000
+7 = 44100
+8 = 48000
+9 = 88200
+10 = 96000
+11 = 174600
+12 = 192000
+13-15 = Reserved
+
+[AVS2_audio_descriptor.audio_codec_id]
+Bits = 2
+0 = common audio encoding data
+1 = lossless audio encoding data
+2-3 = Reserved
+
+[AVS2_audio_descriptor.coding_profile]
+Bits = 2
+0 = basic framework
+1 = object metadata coding framework
+2-3 = Reserved
+
+[AVS2_audio_descriptor.resolution]
+Inherit = AVS3_audio_descriptor.resolution
+
+[AVS2_audio_descriptor.bitrate_index]
+Bits = 8
+# GB/T 33475.3, tables A.11 - A.13
+# table A.11 - bitrates for Mono coding
+0x00 = 16
+0x01 = 32
+0x02 = 44
+0x03 = 56
+0x04 = 64
+0x05 = 72
+0x06 = 80
+0x07 = 96
+0x08 = 128
+0x09 = 144
+0x0a = 164
+0x0b = 192
+0x0c-0x0f = Reserved
+# table A.12  - bitrates for Dual-channel stereo coding
+0x10 = 24
+0x11 = 32
+0x12 = 48
+0x13 = 64
+0x14 = 80
+0x15 = 96
+0x16 = 128
+0x17 = 144
+0x18 = 192
+0x19 = 256
+0x1a = 320
+0x1b-0x1f = Reserved
+# table A.12 - bitrates for 5.1 multichannel coding
+0x020 = 192
+0x021 = 256
+0x022 = 320
+0x023 = 384
+0x024 = 448
+0x025 = 512
+0x026 = 640
+0x027 = 720
+0x28-0x3f = Reserved
+
+[AVS2_audio_descriptor.bitstream_type]
+Inherit = AVS3_audio_descriptor.bitstream_type

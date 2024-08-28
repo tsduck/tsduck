@@ -33,7 +33,8 @@ const ts::Enumeration ts::CodecTypeEnum({
     {u"DTS-HD",        ts::CodecType::DTSHD},
     {u"Teletext",      ts::CodecType::TELETEXT},
     {u"DVB Subtitles", ts::CodecType::DVB_SUBTITLES},
-    {u"AVS3",          ts::CodecType::AVS3},
+    {u"AVS3 Video",    ts::CodecType::AVS3_VIDEO},
+    {u"AVS3 Audio",    ts::CodecType::AVS3_AUDIO},
 });
 
 const ts::Enumeration ts::CodecTypeArgEnum({
@@ -69,7 +70,8 @@ const ts::Enumeration ts::CodecTypeArgEnum({
     {u"DTSHD",         ts::CodecType::DTSHD},
     {u"Teletext",      ts::CodecType::TELETEXT},
     {u"DVBSubtitles",  ts::CodecType::DVB_SUBTITLES},
-    {u"AVS3",          ts::CodecType::AVS3},
+    {u"AVS3Video",     ts::CodecType::AVS3_VIDEO},
+    {u"AVS3Audio",     ts::CodecType::AVS3_AUDIO},
 });
 
 
@@ -90,6 +92,7 @@ bool ts::CodecTypeIsAudio(CodecType ct)
         case CodecType::HEAAC:
         case CodecType::DTS:
         case CodecType::DTSHD:
+        case CodecType::AVS3_AUDIO:
             return true;
 
         case CodecType::UNDEFINED:
@@ -106,7 +109,7 @@ bool ts::CodecTypeIsAudio(CodecType ct)
         case CodecType::AV1:
         case CodecType::TELETEXT:
         case CodecType::DVB_SUBTITLES:
-        case CodecType::AVS3:
+        case CodecType::AVS3_VIDEO:
         default:
             return false;
     }
@@ -131,7 +134,7 @@ bool ts::CodecTypeIsVideo(CodecType ct)
         case CodecType::LCEVC:
         case CodecType::VP9:
         case CodecType::AV1:
-        case CodecType::AVS3:
+        case CodecType::AVS3_VIDEO:
             return true;
 
         case CodecType::UNDEFINED:
@@ -147,6 +150,7 @@ bool ts::CodecTypeIsVideo(CodecType ct)
         case CodecType::DTSHD:
         case CodecType::TELETEXT:
         case CodecType::DVB_SUBTITLES:
+        case CodecType::AVS3_AUDIO:
         default:
             return false;
     }
@@ -186,7 +190,8 @@ bool ts::CodecTypeIsSubtitles(CodecType ct)
         case CodecType::AV1:
         case CodecType::DTS:
         case CodecType::DTSHD:
-        case CodecType::AVS3:
+        case CodecType::AVS3_VIDEO:
+        case CodecType::AVS3_AUDIO:
         default:
             return false;
     }

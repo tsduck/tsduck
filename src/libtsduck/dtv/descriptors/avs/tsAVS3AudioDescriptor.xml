@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <AVS3_audio_descriptor
+        sampling_frequency_index="uint4, required"
+        resolution="8 bits|16 bits|24 bits, required">
+      
+      <!-- required for audio_codec_id==0 (General High Rate Coding) -->
+      <general_coding
+        coding_profile="basic|object|HOA, required"
+        bitrate_index="uint4, required"
+        bitstream_type="uniform|variable, required"
+        channel_number_index="uint7, required"
+        raw_frame_length="uint16, required">
+      </general_coding>
+
+      <!-- required for audio_codec_id==1 (Lossless Coding) -->
+      <lossless_coding
+        sampling_frequency="uint24, optional"
+        coding_profile="basic|object|HOA, required"
+        channel_number="uint8, required">
+      </lossless_coding>
+
+      <!-- required for audio_codec_id==2 (General Full Rate Coding) -->
+      <fullrate_coding
+        nn_type="uint3, required"
+        channel_num_index="uint7, optional"
+        num_objects="uint7, optional"
+        hoa_order="uint4, optional"
+        total_bitrate="uint16, required"/>
+
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+      
+    </AVS3_audio_descriptor>
+
+  </_descriptors>
+</tsduck>

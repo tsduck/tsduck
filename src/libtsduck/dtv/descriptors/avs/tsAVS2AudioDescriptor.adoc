@@ -1,0 +1,27 @@
+==== AVS2_audio_descriptor
+
+Defined by AVS in <<AVS-TAI-109.7>>.
+
+[source,xml]
+----
+<AVS2_audio_descriptor
+    num_channels="uint8, required"
+    sample_rate_index="uint4, required"
+    language="char3, optional"
+    description="string, optional">
+
+  <version_info
+    audio_codec_id="uint4, required"
+    coding_profile="basic|object, required"
+    bitrate_index="uint4, optional (required if audio_codec_id=0)"
+    bitstream_type="uniform|variable, optional (required if audio_codec_id=0)"
+    raw_frame_length="uint16, optional (required if audio_codec_id=0)"
+    resolution="8 bits|16 bits|24 bits, required">
+  </version_info>
+
+  <additional_info>
+    Hexadecimal content
+  </additional_info>
+  
+</AVS2_audio_descriptor>
+----

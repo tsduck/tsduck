@@ -315,7 +315,8 @@ Bits = 32
 0x414F4D53 = AOM
 0x41545343 = ATSC (fake PDS for ATSC descriptors)
 0x41555300 = Foxtel Management
-0x41565356 = AVS
+0x41565341 = AVS Audio
+0x41565356 = AVS Video
 0x44414E59 = NDS
 0x46524549 = NDS
 0x46534154 = BBC
@@ -716,7 +717,11 @@ Bits = 8
 0x41545343_AB = ATSC Genre
 0x41545343_AD = ATSC Private Information
 0x41545343_CC = ATSC E-AC-3 Audio Stream
-# With PDS for AVS.
+# With PDS for AVS audio.
+# Descriptors are defined by the AVS Working Group of China.
+0x41565341_D2 = AVS3 Audio (T/AI 109.7)
+0x41565341_D3 = AVS2 Audio (T/AI 109.7)
+# With PDS for AVS video.
 # Descriptors are defined by the AVS Working Group of China.
 0x41565356_D1 = AVS3 Video (T/AI 109.6)
 # ISDB descriptors, using the fake PDS for ISDB.

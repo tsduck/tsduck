@@ -1,0 +1,517 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2024, Paul Higgs
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+#include "tsAVSANCDataBlockType.h"
+#include "tsTablesDisplay.h"
+#include "tsPSIBuffer.h"
+#include "tsDuckContext.h"
+#include "tsxmlElement.h"
+#include "tsNamesFile.h"
+#include "tsFloatingPoint.h"
+
+#define MY_XML_NAME u"AVS_ANC_data_block"
+
+
+//----------------------------------------------------------------------------
+// Initializers
+//----------------------------------------------------------------------------
+
+const ts::UString ts::anc_data_block_type::ANC_Data_Block_Element_Name(u"anc_data_block");
+
+
+//----------------------------------------------------------------------------
+// Helpers
+//----------------------------------------------------------------------------
+
+// this is a duplicate of the DataName function from AbstractSignalization so we can interrogate the defined names
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+static ts::UString DataName(const ts::UChar* xml_name, const ts::UChar* section, INT value, ts::NamesFlags flags = ts::NamesFlags::NAME, size_t bits = 0, INT alternate = 0)
+{
+    return ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV)->nameFromSection(ts::UString::Format(u"%s.%s", xml_name, section), ts::NamesFile::Value(value), flags, bits, ts::NamesFile::Value(alternate));
+}
+
+size_t ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::BitsInValue(uint8_t loudnessValueType) const
+{
+    size_t rc = 0;
+    //!< see T/AI 109.7 table B.6
+    switch (loudnessValueType) {
+        case 0:  // unknown loudness type
+        case 1:  // program loudness
+        case 2:  // Anchor loudness
+        case 3:  // Maximum loudness range
+        case 4:  // Maximum instantaneous loudness
+        case 5:  // Maximum short-term loudness
+        case 6:  // Loudness range defined in EBU-R128
+        case 9:  // short-term loudness
+            rc =  8;
+            break;
+        case 7:  // sound pressure level
+            rc = 5;
+            break;
+        case 8:  // create room type
+            rc = 2;
+            break;
+        default:
+            break;
+    }
+    return rc;
+}
+
+
+double ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::LoudnessValToRange(uint8_t _loudnessVal)
+{
+    if (_loudnessVal == 0) {
+        return 0.0;
+    }
+    else if (_loudnessVal <= 128) {
+        return double(_loudnessVal) / 4.0;
+    }
+    else if (_loudnessVal <= 204) {
+        return 32.0 + (double(_loudnessVal - 128) / 2.0);
+    }
+    // else _loudnessVal <= 255
+    return (double(_loudnessVal) - 204.5) + 70.0;
+}
+
+
+uint8_t ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::LoudnessRangeToVal(double loudnessRange)
+{
+    if (loudnessRange < 0.0) {
+        return 0;
+    }
+    else if (loudnessRange <= 32.0) {
+        return (uint8_t(4.0 * loudnessRange + 0.5));
+    }
+    else if (loudnessRange <= 70.0) {
+        return (uint8_t(2.0 * (loudnessRange - 32.0) + 0.5) + 128);
+    }
+    else if (loudnessRange <= 121.0) {
+        return (uint8_t((loudnessRange - 70.0) + 0.5) + 204);
+    }
+    return 255;
+}
+
+
+double ts::anc_data_block_type::ValueRange(double value, double maxValue, double minRange, double maxRange)
+{
+    using Double = ts::FloatingPoint<double>;
+    static const Double zero(0), _value(value);
+
+    if (minRange > maxRange) {
+        std::swap(minRange, maxRange);
+    }
+    if (_value == zero) {
+        return minRange;
+    }
+    else if (_value == Double(maxValue)) {
+        return maxRange;
+    }
+    const double offset = -minRange;
+    const double maxRange_norm = maxRange + offset;
+    return ((value / maxValue) * maxRange_norm) - offset;
+}
+
+
+//----------------------------------------------------------------------------
+// Serialization
+//----------------------------------------------------------------------------
+
+void ts::anc_data_block_type::object_extension_metadata_block_type::serialize(PSIBuffer& buf) const
+{
+    buf.putBit(objChannelLock_maxDist.has_value());
+    if (objChannelLock_maxDist.has_value()) {
+        buf.putBits(objChannelLock_maxDist.value(), 4);
+    }
+    buf.putBits(objDiffuse, 7);
+    buf.putBits(objGain, 8);
+    buf.putBits(objDivergence, 4);
+    if (objDivergence > 0) {
+        buf.putBits(objDivergencePosRange.value_or(0), 4);
+    }
+    buf.writeRealignByte(1);  // byte_alignment
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::serialize(PSIBuffer& buf) const
+{
+    buf.putBits(loudnessValDef, 4);
+    const size_t loudnessVal_bits = BitsInValue(loudnessValDef);
+    if (loudnessVal_bits != 0) {
+        buf.putBits(loudnessVal, loudnessVal_bits);
+    }
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::serialize(PSIBuffer& buf) const
+{
+    buf.putBit(samplePeakLevel.has_value());  // hasSamplePeakLevel
+    buf.putBits(0xFF, 3);
+    if (samplePeakLevel.has_value()) {
+        buf.putBits(samplePeakLevel.value(), 12);
+    }
+    buf.putBits(truePeakLevel, 12);
+    buf.putBits(loudnessMeasure, 4);
+    buf.putBits(loudnessValues.size(), 4);
+    for (const auto& loud : loudnessValues) {
+        loud.serialize(buf);
+    }
+}
+
+void ts::anc_data_block_type::anc_data_types::serialize(PSIBuffer& buf) const
+{
+    if (std::holds_alternative<object_extension_metadata_block_type>(auxiliary_data)) {
+        buf.putBits(Extended_Object_Metadata, 4);
+        std::get<object_extension_metadata_block_type>(auxiliary_data).serialize(buf);
+    }
+    else if (std::holds_alternative<loudness_metadata_block_type>(auxiliary_data)) {
+        buf.putBits(Loudness_Metadata, 4);
+        std::get<loudness_metadata_block_type>(auxiliary_data).serialize(buf);
+    }
+    else {
+        buf.putBits(Invalid_Metadata, 4); 
+    }
+    buf.writeRealignByte(1);
+}
+
+void ts::anc_data_block_type::serialize(PSIBuffer& buf) const 
+{
+    buf.pushWriteSequenceWithLeadingLength(8);  // start write sequence
+    buf.putBits(anc_block.size(), 4);
+    buf.putBits(0xFF, 4);
+    for (const auto& block : anc_block) {
+        block.serialize(buf);
+    }
+    buf.writeRealignByte(1);
+    buf.popState();  // end write sequence
+}
+
+
+//----------------------------------------------------------------------------
+// Deserialization
+//----------------------------------------------------------------------------
+
+void ts::anc_data_block_type::object_extension_metadata_block_type::deserialize(PSIBuffer& buf)
+{
+    // Table 18 of AVS3 Part 7. May be updated by AVS Workgroup of China
+    const bool hasObjChannelLock = buf.getBool();
+    if (hasObjChannelLock) {
+        objChannelLock_maxDist = buf.getBits<uint8_t>(4);
+    }
+    objDiffuse = buf.getBits<uint8_t>(7);
+    objGain = buf.getUInt8();
+    objDivergence = buf.getBits<uint8_t>(4);
+    if (objDivergence > 0) {
+        objDivergencePosRange = buf.getBits<uint8_t>(4);
+    }
+    buf.readRealignByte();
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::deserialize(PSIBuffer& buf)
+{
+    loudnessValDef = buf.getBits<uint8_t>(4);
+    const size_t loudnessVal_bits = BitsInValue(loudnessValDef);
+    if (loudnessVal_bits != 0) {
+        loudnessVal = buf.getBits<uint8_t>(loudnessVal_bits);
+    }
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::deserialize(PSIBuffer& buf)
+{
+    // Table 19 of AVS3 Part 7. May be updated by AVS Workgroup of China
+    const bool hasSamplePeakLevel = buf.getBool();
+    buf.skipBits(3);
+    if (hasSamplePeakLevel) {
+        samplePeakLevel = buf.getBits<uint16_t>(12);
+    }
+    truePeakLevel = buf.getBits<uint16_t>(12);
+    loudnessMeasure = buf.getBits<uint8_t>(4);
+    const uint8_t loudnessValNum = buf.getBits<uint8_t>(4);
+    for (auto i = 0; i < loudnessValNum; i++) {
+        avs3_loudness tmp(buf);
+        loudnessValues.push_back(tmp);
+    }
+}
+
+void ts::anc_data_block_type::anc_data_types::deserialize(PSIBuffer& buf)
+{
+    const uint8_t anc_data_type = buf.getBits<uint8_t>(4);
+    if (anc_data_type == Extended_Object_Metadata) {
+        object_extension_metadata_block_type obj_ext(buf);
+        auxiliary_data = obj_ext;
+    }
+    else if (anc_data_type == Loudness_Metadata) {
+        loudness_metadata_block_type loud(buf);
+        auxiliary_data = loud;
+    }
+    else {
+        auxiliary_data = std::monostate {};
+    }
+    buf.readRealignByte();
+}
+
+void ts::anc_data_block_type::deserialize(PSIBuffer& buf)
+{
+    buf.skipBits(8); // anc_data_length
+    const uint8_t anc_data_number = buf.getBits<uint8_t>(4);
+    buf.skipBits(4);
+    for (auto i = 0; i < anc_data_number; i++) {
+        anc_data_types tmp(buf);
+        anc_block.push_back(tmp);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Static method to display the object.
+//----------------------------------------------------------------------------
+
+void ts::anc_data_block_type::object_extension_metadata_block_type::display(TablesDisplay& disp, const UString& margin)
+{
+    disp << margin << "Maximum Object Channels: " << uint16_t(maxObjChannelNum);
+    if (objChannelLock_maxDist.has_value()) {
+        disp << UString::Format(u", Max Locking Distance: %6.4f", ValueRange(objChannelLock_maxDist.value(), 0x0F, 0, 2*sqrt(3)));
+    }
+    disp << UString::Format(u", Diffuse Reflection: %6.4f", ValueRange(objDiffuse, 0x7F, 0, 1)) << std::endl;
+    disp << margin << UString::Format(u"Gain: %6.4f", ValueRange(objGain, 0xFF, -41, 0))
+         << UString::Format(u", Divergence: %6.4f", ValueRange(objDivergence, 0x0F, 0, 1));
+    if ((objDivergence > 0) && (objDivergencePosRange.has_value())) {
+        disp << UString::Format(u", Divergence Range: %6.4f", ValueRange(objDivergencePosRange.value(), 0x0F, 0, 1));
+    }
+    disp << std::endl;
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::display(TablesDisplay& disp, const UString& margin, const int index)
+{
+    disp << margin << "[" << index << "] "
+         << DataName(MY_XML_NAME, u"loudness_value_type", loudnessValDef, NamesFlags::VALUE);
+    switch (loudnessValDef) {
+        case 0x0:  // Unknown
+            disp << UString::Format(u": 0x%X", loudnessVal);
+            break;
+        case 0x1:  // Program loudness
+        case 0x2:  // Anchor loudness
+            disp << UString::Format(u": %6.4f (%d)", ValueRange(loudnessVal, pow(2, BitsInValue(loudnessValDef)) - 1, -41, 0), loudnessVal);
+            break;
+        case 0x3:  // Maximum loudness range
+        case 0x4:  // Maximum instantaneous loudness
+        case 0x5:  // Maximum short-term loudness
+            disp << ": " << uint16_t(loudnessVal);
+            break;
+        case 0x6:  // Loudness range defined in EBU-R 128
+            disp << UString::Format(u": %5.2f (%d)", LoudnessValToRange(loudnessVal), loudnessVal);
+            break;
+        case 0x7:  // Sound presssure level
+            disp << UString::Format(u": %6.4f (%d)", 80 + loudnessVal, loudnessVal);
+            break;
+        case 0x8:  // Create room type
+            disp << ": " << DataName(MY_XML_NAME, u"room_type", loudnessVal, NamesFlags::VALUE);
+            break;
+        case 0x9:  // Short-term loudness
+            disp << UString::Format(u": %6.4f (%d)", -116 + (loudnessVal * 0.5), loudnessVal);
+            break;
+        default:
+            disp << UString::Format(u" !! ERROR {0x%x} !!", loudnessValDef);
+            break;
+    }
+    disp << std::endl;
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::display(TablesDisplay& disp, const UString& margin)
+{
+    disp << margin << UString::Format(u"True Peak Level: %6.4f (%d)", ValueRange(truePeakLevel, 0xFFF, -107, 20), truePeakLevel);
+    if (samplePeakLevel.has_value()) {
+        disp << UString::Format(u", Sample Peak Level: %6.4f (%d)", ValueRange(samplePeakLevel.value(), 0xFFF, -107, 20), samplePeakLevel.value());
+    }
+    disp << ", Loudness Measure: " << DataName(MY_XML_NAME, u"loudness_measure", loudnessMeasure, NamesFlags::VALUE) << std::endl;
+    int index = 0;
+    for (auto li : loudnessValues) {
+        li.display(disp, margin, index++);
+    }
+}
+
+void ts::anc_data_block_type::anc_data_types::display(TablesDisplay& disp, const UString& margin)
+{
+    if (std::holds_alternative<object_extension_metadata_block_type>(auxiliary_data)) {
+        disp << "Object Extension Metadata" << std::endl;
+        std::get<object_extension_metadata_block_type>(auxiliary_data).display(disp, margin + u"  ");
+    }
+    else if (std::holds_alternative<loudness_metadata_block_type>(auxiliary_data)) {
+        disp << "Loudness Metadata" << std::endl;
+        std::get<loudness_metadata_block_type>(auxiliary_data).display(disp, margin + u"  ");
+     }
+    else {
+        disp << "No Additional Metadata (ERROR)" << std::endl;
+    }
+}
+
+void ts::anc_data_block_type::display(TablesDisplay& disp, const UString& margin)
+{
+    int index = 0;
+    for (auto anc : anc_block) {
+        disp << margin << "ANC[" << index++ << "]: ";
+        anc.display(disp, margin);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization
+//----------------------------------------------------------------------------
+
+void ts::anc_data_block_type::object_extension_metadata_block_type::toXML(xml::Element* root) const
+{
+    root->setIntAttribute(u"maxObjChannelNum", maxObjChannelNum);
+    root->setOptionalIntAttribute(u"objChannelLock_maxDist", objChannelLock_maxDist);
+    root->setIntAttribute(u"objDiffuse", objDiffuse);
+    root->setIntAttribute(u"objGain", objGain);
+    root->setIntAttribute(u"objDivergence", objDivergence);
+    root->setOptionalIntAttribute(u"objDivergencePosRange", objDivergencePosRange);
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::toXML(xml::Element* root) const
+{
+    root->setIntAttribute(u"loudnessValDef", loudnessValDef);
+    root->setIntAttribute(u"loudnessVal", loudnessVal);
+}
+
+void ts::anc_data_block_type::loudness_metadata_block_type::toXML(xml::Element* root) const
+{
+    root->setOptionalIntAttribute(u"samplePeakLevel", samplePeakLevel);
+    root->setIntAttribute(u"truePeakLevel", truePeakLevel);
+    root->setIntAttribute(u"loudnessMeasure", loudnessMeasure);
+    for (auto l : loudnessValues) {
+        l.toXML(root->addElement(u"loudnessValue"));
+    }
+}
+
+void ts::anc_data_block_type::anc_data_types::toXML(xml::Element* root) const
+{
+    if (std::holds_alternative<object_extension_metadata_block_type>(auxiliary_data)) {
+        std::get<object_extension_metadata_block_type>(auxiliary_data).toXML(root->addElement(u"object_extension_metadata_block"));
+    }
+    else if (std::holds_alternative<loudness_metadata_block_type>(auxiliary_data)) {
+        std::get<loudness_metadata_block_type>(auxiliary_data).toXML(root->addElement(u"loudness_metadata_block"));
+    }
+}
+
+void ts::anc_data_block_type::toXML(xml::Element* root) const
+{
+    for (auto anc : anc_block) {
+        anc.toXML(root->addElement(u"anc_data_block"));
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// XML deserialization
+//----------------------------------------------------------------------------
+
+bool ts::anc_data_block_type::object_extension_metadata_block_type::fromXML(const xml::Element* element)
+{
+    bool ok = element->getOptionalIntAttribute(objChannelLock_maxDist, u"objChannelLock_maxDist", 0, 0xF) &&
+              element->getIntAttribute(objDiffuse, u"objDiffuse", true, 0, 0, 127) &&
+              element->getIntAttribute(objGain, u"objGain", true) &&
+              element->getIntAttribute(objDivergence, u"objDivergence", true, 0, 0, 0xF);
+    if (ok && (objDivergence > 0)) {
+        if (element->hasAttribute(u"objDivergencePosRange")) {
+            ok = element->getOptionalIntAttribute(objDivergencePosRange, u"objDivergencePosRange", 0, 0xF);
+        }
+        else {
+            element->report().error(u"objDivergencePosRange is required when objDivergencePosRange > 0 in <%s>, line %d", element->name(), element->lineNumber());
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+bool ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::fromXML(const xml::Element* element)
+{
+    bool ok = element->getIntAttribute(loudnessValDef, u"loudnessValDef", true, 0, 0, 0x0f);
+    if (ok) {
+        if (loudnessValDef > 9) {
+            element->report().error(u"invalid value for loudnessValDef (see Table B.7 of T/AI 109.7) in <%s>, line %d", element->name(), element->lineNumber());
+            ok = false;
+        }
+    }
+    if (ok) {
+        size_t loudnessValBits = BitsInValue(loudnessValDef);
+        ok = element->getIntAttribute(loudnessVal, u"loudnessVal", true, 0, 0, pow(2, loudnessValBits) - 1);
+    }
+    return ok;
+}
+
+bool ts::anc_data_block_type::loudness_metadata_block_type::fromXML(const xml::Element* element)
+{
+    xml::ElementVector loudnessVals;
+    bool ok = element->getOptionalIntAttribute(samplePeakLevel, u"samplePeakLevel", 0, 0x0fff) &&
+              element->getIntAttribute(truePeakLevel, u"truePeakLevel", true, 0, 0, 0x0fff) &&
+              element->getIntAttribute(loudnessMeasure, u"loudnessMeasure", 0, 0xf) &&
+              element->getChildren(loudnessVals, u"loudnessValue", 0, 15);
+
+    if (ok && !loudnessVals.empty()) {
+        for (auto lv : loudnessVals) {
+            avs3_loudness l;
+            if (l.fromXML(lv)) {
+                loudnessValues.push_back(l);
+            }
+            else {
+                ok = false;
+            }
+        }
+    }
+    return ok;
+}
+
+bool ts::anc_data_block_type::anc_data_types::fromXML(const xml::Element* element)
+{
+    bool               ok = true;
+    xml::ElementVector children;
+    if (element->hasChildElement(u"object_extension_metadata_block") && element->hasChildElement(u"loudness_metadata_block")) {
+        element->report().error(u"cannot specify both <object_extension_metadata_block> and <loudness_metadata_block> in <%s>, line %d", element->name(), element->lineNumber());
+        ok = false;
+    }
+    else if (element->hasChildElement(u"object_extension_metadata_block")) {
+        ok = element->getChildren(children, u"object_extension_metadata_block", 1, 1);
+        object_extension_metadata_block_type oem;
+        if (ok && oem.fromXML(children[0])) {
+            auxiliary_data = oem;
+        }
+        else {
+            ok = false;
+        }
+    }
+    else if (element->hasChildElement(u"loudness_metadata_block")) {
+        ok = element->getChildren(children, u"loudness_metadata_block", 1, 1);
+        loudness_metadata_block_type lm;
+        if (ok && lm.fromXML(children[0])) {
+            auxiliary_data = lm;
+        }
+        else {
+            ok = false;
+        }
+    }
+    else {
+        element->report().error(u"neither <object_extension_metadata_block> or <loudness_metadata_block> are specified in <%s>, line %d", element->name(), element->lineNumber());
+        auxiliary_data = std::monostate {};
+        ok = false;
+    }
+    return ok;
+}
+
+bool ts::anc_data_block_type::fromXML(const xml::ElementVector elements)
+{
+    bool ok = true;
+    for (auto anc : elements) {
+        anc_data_types oneANC;
+        if (oneANC.fromXML(anc)) {
+            anc_block.push_back(oneANC);
+        }
+        else {
+            ok = false;
+        }
+    }
+    return ok;
+}

@@ -1,0 +1,34 @@
+The FCD 1.0 version of the T/AI 109.7 signalling specification has removed
+the inclusion of anc_data_block() in both the AVS2 and AVS3 audio descriptors,
+however the source code files are retained here until final determination of 
+its removal and/or availability in another descriptor.
+
+tsAVSANCDataBlockType.arch-cpp --> tsAVSANCDataBlockType.cpp
+tsAVSANCDataBlockType.arch-h --> tsAVSANCDataBlockType.h
+tsAVSANCDataBlockType.arch-names --> tsAVSANCDataBlockType.names
+
+It can be included in relevant XML files by including the following definition
+	<!-- optional 0..15 allowed  -->
+	<anc_data_block>
+	  <!-- one object_extension_meta_block or loudness_metadata_block element per anc_data_block -->
+	  <object_extension_metadata_block
+		maxObjChannelNum="uint8, required"
+		objChannelLock_maxDist="uint4, optional"
+		objDiffuse="uint7, required"
+		objGain="uint8, required"
+		objDivergence="uint4, required"
+		objDivergencePosRange="uint4, optional (required if objDivergence > 0)"/>
+
+	  <loudness_metadata_block
+		samplePeakLevel="uint12, optional"
+		truePeakLevel="uint12, required"
+		loudnessMeasure="uint4, required">
+
+		<!-- up to 15 loudness values -->
+		<loudnessValue
+		  loudnessValDef="uint4, reqiured"
+		  loudnessVal="uint8, required"/>
+	  </loudness_metadata_block>
+	</anc_data_block>
+	
+	

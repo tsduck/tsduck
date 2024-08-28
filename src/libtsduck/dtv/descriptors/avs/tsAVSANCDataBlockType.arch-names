@@ -1,0 +1,34 @@
+[AVS_ANC_data_block.loudness_measure]
+Bits = 4
+# T/AI 109.3,table B.5
+0x0 = Unknown
+0x1 = EBU-R 128
+0x2 = ITU-R BS.1770-4
+0x3 = ITU-R BS.1770-4 with preprocessing
+0x4 = User (personalised)
+0x5 = Expert/Panel (preset)
+0x6 = ITU-R BS.1771-1
+0x7-0xF = Reserved
+
+[AVS_ANC_data_block.loudness_value_type]
+Bits = 4
+# T/AI 109.3,table B.6
+0x0 = Unknown loudness type
+0x1 = Program loudness
+0x2 = Anchor loudness
+0x3 = Maximum loudness range
+0x4 = Maximum instantaneous loudness
+0x5 = Maximum short-term loudness
+0x6 = According to EBU-R 128
+0x7 = Sound pressure level
+0x8 = Create room type
+0x9 = Short-term loudness
+0xA-0xF = Reserved
+
+[AVS_ANC_data_block.room_type]
+Bits = 2
+# T/AI 109.3,table B.7
+0 = Unknown
+1 = Large room, curved screen
+2 = Small room, flat screen
+3 = Reserved
