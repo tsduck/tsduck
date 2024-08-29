@@ -2,6 +2,17 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.39-3840
+
+[IMP] Improvements on existing commands and plugins:
+
+  * In plugin "dvb" with DVB-S2 modulation, the default PLS mode is now GOLD
+    instead of ROOT. The GOLD mode is the one which is defined by ETSI EN 302
+    307-1. The PLS mode COMBO has been removed. This mode does not officially
+    exist.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.38-3794
 
 [IMP] Improvements on existing commands and plugins:

@@ -251,7 +251,7 @@ namespace ts {
         //!
         //! Default value for PLS mode.
         //!
-        static constexpr PLSMode DEFAULT_PLS_MODE = PLS_ROOT;
+        static constexpr PLSMode DEFAULT_PLS_MODE = PLS_GOLD;
         //!
         //! Sound broadcasting.
         //! When specified to true, the reception is an ISDB-Tsb channel instead of an ISDB-T one.

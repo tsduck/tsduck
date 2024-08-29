@@ -573,8 +573,12 @@ The default is to keep the entire stream, without PLP selection.
 Used for DVB-S2 tuners only.
 
 [.optdoc]
-Specifiy the Physical Layer Scrambling (PLS) code value, from 0 to 262143 (0x3FFFF).
+Specify the Physical Layer Scrambling (PLS) code value, from 0 to 262143 (0x3FFFF).
 Used with multi-stream, see also option `--isi`.
+
+[.optdoc]
+With GOLD mode (the default), the default PLS code is zero.
+With ROOT mode, there is no default, the PLS code must be specified.
 
 [.optdoc]
 *Warning*: this option is supported on Linux only.
@@ -589,8 +593,8 @@ Used for DVB-S2 tuners only.
 [.optdoc]
 Specify the Physical Layer Scrambling (PLS) mode.
 Used with multi-stream, see also option `--isi`.
-Must be one of `COMBO`, `GOLD`, `ROOT`.
-The default is `ROOT`.
+Must be one of `GOLD`, `ROOT`.
+The default is `GOLD`.
 
 [.optdoc]
 *Warning*: this option is supported on Linux only.

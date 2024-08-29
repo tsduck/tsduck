@@ -505,13 +505,28 @@ namespace ts {
     //! Physical Layer Scrambling (PLS) modes for DVB-S2.
     //!
     enum PLSMode {
-        PLS_ROOT  = 0,  //!< DVB-S2 PLS "ROOT" mode.
-        PLS_GOLD  = 1,  //!< DVB-S2 PLS "GOLD" mode.
-        PLS_COMBO = 2,  //!< DVB-S2 PLS "COMBO" mode.
+        PLS_ROOT = 0,  //!< DVB-S2 PLS "ROOT" mode.
+        PLS_GOLD = 1,  //!< DVB-S2 PLS "GOLD" mode.
     };
 
     //!
     //! Enumeration description of ts::PLSMode.
     //!
     TSDUCKDLL extern const Enumeration PLSModeEnum;
+
+    //!
+    //! Convert a PLS code from GOLD to ROOT mode.
+    //! @param [in] mode GOLD PLS mode value.
+    //! @return Corresponding ROOT PLS mode value.
+    //! @see ETSI EN 302 307-1, section 5.5.4.
+    //!
+    TSDUCKDLL uint32_t PLSCodeGoldToRoot(uint32_t mode);
+
+    //!
+    //! Convert a PLS code from ROOT to GOLD mode.
+    //! @param [in] mode ROOT PLS mode value.
+    //! @return Corresponding GOLD PLS mode value.
+    //! @see ETSI EN 302 307-1, section 5.5.4.
+    //!
+    TSDUCKDLL uint32_t PLSCodeRootToGold(uint32_t mode);
 }

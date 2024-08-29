@@ -138,9 +138,8 @@ const ts::Enumeration ts::SpectralInversionEnum({
 });
 
 const ts::Enumeration ts::PLSModeEnum({
-    {u"ROOT",  ts::PLS_ROOT},
-    {u"GOLD",  ts::PLS_GOLD},
-    {u"COMBO", ts::PLS_COMBO},
+    {u"ROOT", ts::PLS_ROOT},
+    {u"GOLD", ts::PLS_GOLD},
 });
 
 
@@ -262,4 +261,34 @@ uint32_t ts::GuardIntervalDivider(GuardInterval guard)
         case GUARD_AUTO:   return 0; // unknown
         default:           return 0; // unknown
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Convert PLS code values between GOLD and ROOT modes.
+//----------------------------------------------------------------------------
+
+uint32_t ts::PLSCodeGoldToRoot(uint32_t gold)
+{
+    uint32_t x = 1;
+    uint32_t g = 0;
+    while (g < gold) {
+        x = (((x ^ (x >> 7)) & 1) << 17) | (x >> 1);
+        g++;
+    }
+    return x;
+}
+
+uint32_t ts::PLSCodeRootToGold(uint32_t root)
+{
+    uint32_t x = 1;
+    uint32_t g = 0;
+    while (g < 0x3FFFF)  {
+        if (root == x) {
+            return g;
+        }
+        x = (((x ^ (x >> 7)) & 1) << 17) | (x >> 1);
+        g++;
+    }
+    return 0xFFFFFFFF;
 }

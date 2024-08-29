@@ -1183,9 +1183,27 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
 #if defined(DTV_STREAM_ID)
             if (params.isi.has_value() && params.isi.value() != ISI_DISABLE) {
 #if defined(DTV_SCRAMBLING_SEQUENCE_INDEX)
-                // Recent Linux DVB API provides a designated property to set a PLS (GOLD) code
+                // Recent Linux DVB API provides a designated property to set a PLS (GOLD) code.
+                // If mode is specified as ROOT, then a PLS code must be specified.
+                const PLSMode mode = params.pls_mode.value_or(ModulationArgs::DEFAULT_PLS_MODE);
+                uint32_t gold_code = ModulationArgs::DEFAULT_PLS_CODE;
+                if (mode == PLS_GOLD) {
+                    gold_code = params.pls_code.value_or(ModulationArgs::DEFAULT_PLS_CODE);
+                }
+                else if (params.pls_code.has_value()) {
+                    // With DTV_SCRAMBLING_SEQUENCE_INDEX, we need to convert the ROOT code into a GOLD code.
+                    gold_code = PLSCodeRootToGold(params.pls_code.value());
+                }
+                else {
+                    _duck.report().error(u"--pls-code is required when --pls-mode is not GOLD");
+                    return false;
+                }
+                if (gold_code > PLS_CODE_MAX) {
+                    _duck.report().error(u"invalid --pls-mode value");
+                    return false;
+                }
+                props.add(DTV_SCRAMBLING_SEQUENCE_INDEX, gold_code);
                 props.add(DTV_STREAM_ID, params.isi.value() & 0x000000FF);
-                props.add(DTV_SCRAMBLING_SEQUENCE_INDEX, params.pls_code.value_or(ModulationArgs::DEFAULT_PLS_CODE) & 0x0003FFFF);
 #else
                 // With older Linux DVB API, all multistream selection info are passed in the "stream id".
                 const uint32_t id =

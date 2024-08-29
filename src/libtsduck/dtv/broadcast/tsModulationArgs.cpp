@@ -1547,7 +1547,7 @@ void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
     args.option(u"pls-mode", 0, PLSModeEnum);
     args.help(u"pls-mode", u"mode",
               u"Used for DVB-S2 tuners only. "
-              u"Physical Layer Scrambling (PLS) mode. With multistream only. The default is ROOT. "
+              u"Physical Layer Scrambling (PLS) mode. With multistream only. The default is GOLD. "
               u"Warning: this option is supported on Linux only.");
 
     // ISDB-T specific options.

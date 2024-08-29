@@ -78,7 +78,8 @@ See xref:dvb-plugin[xrefstyle=short] for the list of options.
 In the `dvb` input plugin documentation, the "reception options" specify which tuner to use and basic reception timeouts.
 These options are used by `tsscan` in all types of scanning.
 
-Specific tuning parameters are used with `--nit-scan only`.
+With UHF and VHF scanning, the only allowed modulations are DVB-T (the default) and DVB-T2.
+Other specific tuning parameters are used with `--nit-scan` only.
 They are used to receive the initial reference transport stream from which the NIT is analyzed.
 
 [.usage]

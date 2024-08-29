@@ -40,7 +40,7 @@
             rolloff="0.20|0.25|0.35|auto, default=auto"
             ISI="uint8, optional"
             PLS_code="uint18, optional"
-            PLS_mode="ROOT|GOLD|COMBO, default=ROOT"/>
+            PLS_mode="ROOT|GOLD, default=GOLD"/>
 
       <dvbt frequency="uint64, required"
             modulation="QPSK|16-QAM|64-QAM|256-QAM, default=64-QAM"
