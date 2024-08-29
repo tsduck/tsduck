@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-//#include <variant>
 #include "tsAbstractDescriptor.h"
 #include "tsPSIBuffer.h"
 #include "tsTablesDisplay.h"
@@ -32,7 +31,7 @@ namespace ts {
     public:
         //!
         //! parametrs related to general audio coding - audio_codec_id = 0;
-        //! 
+        //!
         class TSDUCKDLL general_coding_type
         {
         public:
@@ -96,7 +95,7 @@ namespace ts {
 
         //!
         //! parameters related to general full rate audio coding - audio_codec_id = 2;
-        //! 
+        //!
         class TSDUCKDLL fullrate_coding_type
         {
         public:
@@ -129,8 +128,8 @@ namespace ts {
             //! Determine the content type (Mix_Signal, Channel_Signal, Object_Signal, HOA_Signal) according to
             //! the values specified in the decaration
             //! @returns the type of content (channel, object, hybrid or ambisonic) according to the data items specified
-            //! 
-            uint8_t content_type() const;           
+            //!
+            uint8_t content_type() const;
         };
 
     public:
@@ -141,7 +140,7 @@ namespace ts {
         int       resolution = 0;                   //!< 2 bits. Number of quantization bits in the input signal (8, 16, 24)
 
         std::variant<std::monostate, general_coding_type, lossless_coding_type, fullrate_coding_type> coding_data {}; //!< coding type specific data
-                
+
         ByteBlock additional_info {};               //!< additional (non-standard) bytes carried in the descriptor
 
         //!

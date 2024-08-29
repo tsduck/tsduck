@@ -34,6 +34,7 @@ const ts::Enumeration ts::CodecTypeEnum({
     {u"Teletext",      ts::CodecType::TELETEXT},
     {u"DVB Subtitles", ts::CodecType::DVB_SUBTITLES},
     {u"AVS3 Video",    ts::CodecType::AVS3_VIDEO},
+    {u"AVS2 Audio",    ts::CodecType::AVS2_AUDIO},
     {u"AVS3 Audio",    ts::CodecType::AVS3_AUDIO},
 });
 
@@ -71,6 +72,7 @@ const ts::Enumeration ts::CodecTypeArgEnum({
     {u"Teletext",      ts::CodecType::TELETEXT},
     {u"DVBSubtitles",  ts::CodecType::DVB_SUBTITLES},
     {u"AVS3Video",     ts::CodecType::AVS3_VIDEO},
+    {u"AVS2Audio",     ts::CodecType::AVS2_AUDIO},
     {u"AVS3Audio",     ts::CodecType::AVS3_AUDIO},
 });
 
@@ -92,6 +94,7 @@ bool ts::CodecTypeIsAudio(CodecType ct)
         case CodecType::HEAAC:
         case CodecType::DTS:
         case CodecType::DTSHD:
+        case CodecType::AVS2_AUDIO:
         case CodecType::AVS3_AUDIO:
             return true;
 
@@ -150,6 +153,7 @@ bool ts::CodecTypeIsVideo(CodecType ct)
         case CodecType::DTSHD:
         case CodecType::TELETEXT:
         case CodecType::DVB_SUBTITLES:
+        case CodecType::AVS2_AUDIO:
         case CodecType::AVS3_AUDIO:
         default:
             return false;
@@ -191,6 +195,7 @@ bool ts::CodecTypeIsSubtitles(CodecType ct)
         case CodecType::DTS:
         case CodecType::DTSHD:
         case CodecType::AVS3_VIDEO:
+        case CodecType::AVS2_AUDIO:
         case CodecType::AVS3_AUDIO:
         default:
             return false;

@@ -351,6 +351,11 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                         return CodecType::AVS3_VIDEO;
                     }
                     break;
+                case DID_AVS2_AUDIO:
+                    if (pds == PDS_AVSAudio) {
+                        return CodecType::AVS2_AUDIO;
+                    }
+                    break;
                 case DID_AVS3_AUDIO:
                     if (pds == PDS_AVSAudio) {
                         return CodecType::AVS3_AUDIO;

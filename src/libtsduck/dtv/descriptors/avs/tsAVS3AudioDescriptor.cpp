@@ -14,7 +14,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
-
 #define MY_XML_NAME u"AVS3_audio_descriptor"
 #define MY_CLASS ts::AVS3AudioDescriptor
 #define MY_DID ts::DID_AVS3_AUDIO

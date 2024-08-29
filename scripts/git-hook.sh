@@ -87,6 +87,7 @@ case "$HOOK" in
         ;;
     post-merge)
         export TS_GIT_COMMIT=$(($(max $(get-commit-count) $(get-src-commit)) + 1))
+        set-src-commit $TS_GIT_COMMIT
         git commit -m "Updated commit count to $TS_GIT_COMMIT after merge"
         ;;
     *)

@@ -14,9 +14,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-
 #include "tsDVBCharTableUTF16.h"
-
 
 #define MY_XML_NAME u"AVS2_audio_descriptor"
 #define MY_CLASS ts::AVS2AudioDescriptor

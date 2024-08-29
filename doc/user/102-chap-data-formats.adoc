@@ -441,9 +441,13 @@ endif::[]
 |0x00003200
 |Free TV Australia
 
-|AVS
+|AVSA
+|0x41565341
+|AVS Audio Working Group of China
+
+|AVSV
 |0x41565356
-|AVS Working Group of China
+|AVS Video Working Group of China
 
 |BskyB
 |0x00000002
