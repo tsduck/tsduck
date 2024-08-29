@@ -23,7 +23,7 @@ namespace ts {
     //!
     //! Representation of an AVS3_audio_descriptor.
     //!
-    //! @see T/AI 109.7.
+    //! @see AVS T/AI 109.7.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL AVS3AudioDescriptor : public AbstractDescriptor

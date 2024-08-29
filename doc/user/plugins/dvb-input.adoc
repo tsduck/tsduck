@@ -180,7 +180,7 @@ Must be one of the following values:
 
 |ATSC
 |ATSC
-|`--frequency --modulation --spectral-inversion`
+m|--frequency --modulation --spectral-inversion
 
 |ATSC-MH
 |ATSC -M/H (handheld)
@@ -208,7 +208,7 @@ Must be one of the following values:
 
 |DVB-C/A
 |DVB-C ITU-T J.83 Annex A
-|`--fec-inner --frequency --modulation --spectral-inversion --symbol-rate`
+m|--fec-inner --frequency --modulation --spectral-inversion --symbol-rate
 
 |DVB-C/B
 |DVB-C ITU-T J.83 Annex B
@@ -228,7 +228,7 @@ Must be one of the following values:
 
 |DVB-S
 |DVB-S
-|`--fec-inner --frequency --polarity --satellite-number --spectral-inversion --symbol-rate`
+m|--fec-inner --frequency --polarity --satellite-number --spectral-inversion --symbol-rate
 
 |DVB-S-Turbo
 |DVB-S Turbo
@@ -236,18 +236,18 @@ Must be one of the following values:
 
 |DVB-S2
 |DVB-S2
-|`--fec-inner --frequency --isi --modulation --pilots --pls-code --pls-mode --polarity --roll-off
- --satellite-number --spectral-inversion --symbol-rate`
+m|--fec-inner --frequency --isi --modulation --pilots --pls-code --pls-mode --polarity --roll-off
+  --satellite-number --spectral-inversion --symbol-rate
 
 |DVB-T
 |DVB-T
-|`--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
- --low-priority-fec --modulation --spectral-inversion --transmission-mode`
+m|--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
+  --low-priority-fec --modulation --spectral-inversion --transmission-mode
 
 |DVB-T2
 |DVB-T2
-|`--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
- --low-priority-fec --modulation --plp --spectral-inversion --transmission-mode`
+m|--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
+  --low-priority-fec --modulation --plp --spectral-inversion --transmission-mode
 
 |ISDB-C
 |ISDB-C
@@ -255,16 +255,16 @@ Must be one of the following values:
 
 |ISDB-S
 |ISDB-S
-|`--fec-inner --frequency --polarity --satellite-number --spectral-inversion --stream-id --symbol-rate`
+m|--fec-inner --frequency --polarity --satellite-number --spectral-inversion --stream-id --symbol-rate
 
 |ISDB-T
 |ISDB-T
-|`--bandwidth --frequency --guard-interval --isdbt-layer-a-fec --isdbt-layer-a-modulation
- --isdbt-layer-a-segment-count --isdbt-layer-a-time-interleaving --isdbt-layer-b-fec
- --isdbt-layer-b-modulation --isdbt-layer-b-segment-count --isdbt-layer-b-time-interleaving
- --isdbt-layer-c-fec --isdbt-layer-c-modulation --isdbt-layer-c-segment-count
- --isdbt-layer-c-time-interleaving --sb-segment-count --sb-segment-index --sb-subchannel-id
- --sound-broadcasting --spectral-inversion --transmission-mode`
+m|--bandwidth --frequency --guard-interval --isdbt-layer-a-fec --isdbt-layer-a-modulation
+  --isdbt-layer-a-segment-count --isdbt-layer-a-time-interleaving --isdbt-layer-b-fec
+  --isdbt-layer-b-modulation --isdbt-layer-b-segment-count --isdbt-layer-b-time-interleaving
+  --isdbt-layer-c-fec --isdbt-layer-c-modulation --isdbt-layer-c-segment-count
+  --isdbt-layer-c-time-interleaving --sb-segment-count --sb-segment-index --sb-subchannel-id
+  --sound-broadcasting --spectral-inversion --transmission-mode
 
 |undefined
 |Undefined

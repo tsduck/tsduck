@@ -200,6 +200,8 @@
   "ATSC Recommended Practice: Program and System Information Protocol Implementation Guidelines for Broadcasters".
 * [[[AVS-TAI-109.6]]] Audio Video coding Standard Workgroup of China, T/AI 109.6-2022:
   "Information Technology - Intelligent Media Coding (AVS3) Part 6: Intelligent Media Format"
+* [[[AVS-TAI-109.7]]] Audio Video coding Standard Workgroup of China, T/AI 109.7:
+  "Information Technology - Intelligent Media Coding (AVS3) Part 7"
 * [[[Dektec]]] Dektec Digital Video B.V. corporate home page, http://www.dektec.com/
 * [[[Dektec-SDK]]] Dektec drivers and SDK’s downloads, http://www.dektec.com/downloads/SDK/
 * [[[DTG-DBOOK]]] DTG:
