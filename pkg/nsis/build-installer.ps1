@@ -122,7 +122,7 @@ if (-not $NoBuild) {
     if ($Code -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building the product"
     }
-    & "${DocDir}\build-doc.ps1" -NoPause -NoOpen
+    & "${DocDir}\build-doc.ps1" -Html -NoPause -NoOpen
 }
 
 # Get version name.

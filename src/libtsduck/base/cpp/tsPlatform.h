@@ -798,6 +798,7 @@ TS_MSC_NOWARNING(4625)  // copy constructor was implicitly defined as deleted
 TS_MSC_NOWARNING(4626)  // assignment operator was implicitly defined as deleted
 TS_MSC_NOWARNING(4627)  // 'header_file': skipped when looking for precompiled header use
 TS_MSC_NOWARNING(4628)  // digraphs not supported with -Ze. Character sequence '<:' not interpreted as alternate token for '['
+TS_MSC_NOWARNING(4710)  // function not inlined
 TS_MSC_NOWARNING(4820)  // 'n' bytes padding added after data member 'nnnnn'
 TS_MSC_NOWARNING(5026)  // move constructor was implicitly defined as deleted
 TS_MSC_NOWARNING(5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception
@@ -826,6 +827,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <set>
 #include <bitset>
 #include <optional>
+#include <variant>
 #include <memory>
 #include <type_traits>
 #include <algorithm>

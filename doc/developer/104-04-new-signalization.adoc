@@ -55,7 +55,7 @@ In a MPEG/DVB context, the allocation of descriptor ids is the following:
 ===== Extended descriptors
 
 MPEG and DVB separately define the concept of _extended descriptors_.
-Because of the shortage of descriptor ids, each of the two standards have defined an _extension_descriptor_,
+Because of the shortage of descriptor ids, each of the two standards has defined an _extension_descriptor_,
 typically using their last allocated descriptor id.
 This descriptor is a generic envelope for specialized descriptors.
 
@@ -94,13 +94,14 @@ several _private_data_specifier_descriptor_ are allowed to switch from one entit
 In a DVB context, a descriptor with a tag in the range 0x80-0xFE and no preceding
 _private_data_specifier_descriptor_ is illegal.
 
-That being said, in practice, the experience has exhibited two families of bugs:
+That being said, in practice, the experience has exhibited families of bugs:
 
-* Rogue signalization: Some organizations ignore this rule and define their own private descriptors,
-  in the range 0x80-0xFE, without officially allocated PDS value. They use their own arbitrary PDS value,
-  hoping that no one else will use the same PDS value.
+* Rogue signalization: Some organizations define their own private descriptors,
+  with descriptor ids in the range 0x80-0xFE, without officially allocated PDS value.
+  They use their own arbitrarily defined PDS value, hoping that no one else will use the same PDS value.
 * Signalization bugs: Some broadcasters "forget" to insert the right _private_data_specifier_descriptor_
   before a well-defined private descriptor.
+  (This is the reason why the option `--default-pds` exists in several TSDuck commands and plugins).
 * Implementation bugs: Some implementers of receivers (set-top box, TV set) ignore the PDS rule
   or forget to check the previous PDS. They blindly interpret some private descriptor based on some
   expected descriptor id in the range 0x80-0xFE. If the same private descriptor id is used in the
@@ -111,6 +112,7 @@ If you implement a private descriptor, be sure to follow the rules.
 
 You may use the EACEM-defined _eacem_stream_identifier_descriptor_ as code base.
 
+**Logical channel number descriptors:**
 Most of the commonly used private descriptors are some forms of _logical_channel_number_descriptor_.
 The Logical Channel Number (LCN) is the usual concept of TV channel number,
 the oldest and most traditional way of identifying a TV channel.
@@ -149,13 +151,13 @@ The current subdirectories are `atsc`, `dvb`, `isdb`, `mpeg`, `scte`.
 Currently, only renown standard bodies define tables.
 
 Descriptors are implemented in the directory `src/libtsduck/dtv/descriptors`, using one subdirectory per standard.
-The current subdirectories are the same as tables, plus various organizations such as `avs` or `uwa`,
-plus private companies which define private DVB descriptors such as `eacem`, `dtg`, `sky`.
+The current subdirectories are the same as tables, plus various organizations such as `eacem`, `dtg`, `aom`, or `uwa`,
+plus private companies which define private DVB descriptors such as `eutelsat`, or `sky`.
 
 Try to find the right subdirectory for your new structure.
 Create another directory if required.
 
-In that descriptor, you will have to create four or five files (the last is optional).
+In that subdirectory, you will have to create four or five files (the last is optional).
 For instance, the MPEG-defined _ISO_639_language_descriptor_ is implemented as:
 
 [source,text]
@@ -243,9 +245,9 @@ A descriptor shall be defined as one XML element inside the following envelope:
 <?xml version="1.0" encoding="UTF-8"?>
 <tsduck>
   <_descriptors>
-    <my_descriptor ...>
+    <my_descriptor_name ...>
       ...
-    </my_descriptor>
+    </my_descriptor_name>
   </_descriptors>
 </tsduck>
 ----
@@ -260,6 +262,8 @@ For instance, a common pattern for optional fields in binary structures is to de
 and a subsequent optional _foo_ field. The _foo_ field is typically present only when _foo_flag_ is 1.
 Do not define _foo_flag_ in the XML structure.
 Just define a _foo_ attribute and document it as optional.
+It is the work of your serialization and deserialization functions to interpret
+the presence or absence of the XML attribute _foo_ as a _foo_flag_ value.
 
 The template value of XML attributes is a short informal type declaration.
 For integer values, always start the description string with `uint__N__` or `int__N__`,
