@@ -860,7 +860,6 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <cstddef>
 #include <climits>
 #include <cmath>
-#include <variant>
 #include <fcntl.h>
 #if defined(TS_WINDOWS)
     #include <windows.h>
