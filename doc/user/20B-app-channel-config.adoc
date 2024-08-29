@@ -123,7 +123,7 @@ To be used for DVB-S/S2 tuners:
       rolloff="0.20|0.25|0.35|auto, default=auto"
       ISI="uint8, optional"
       PLS_code="uint18, optional"
-      PLS_mode="ROOT|GOLD|COMBO, default=ROOT"/>
+      PLS_mode="ROOT|GOLD, default=GOLD"/>
 ----
 
 ==== DVB-T

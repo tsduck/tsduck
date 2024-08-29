@@ -165,6 +165,41 @@ not up-to-date, your CI job may fail.
 === Integrator workflow
 [#integrator]
 
+The TSDuck maintainer has to review the pull requests and, if they are satisfactory,
+merge them into the master branch of the project.
+Additional review and fix may be necessary before pushing the contribution.
+
+There are two ways to do this. We now recommend the first one, using `gh`, the GitHub command-line tool.
+
+==== Method 1: using the GitHub command-line tool
+
+The GitHub command-line tool is named `gh`.
+It is an encapsulation of the most useful Git operations for specialized tasks on GitHub repositories.
+It is developed by GitHub and available as a standard package on most distros:
+
+[.compact-list]
+* Ubuntu / Debian: `apt install gh`
+* Fedora / Red Hat: `dnf install gh`
+* macOS: `brew install gh`
+* Windows: `winget install github.cli`
+
+To integrate a pull request number _NNN_, fetch it in a local branch named `_NNN_`:
+
+[source,shell]
+----
+$ gh pr checkout NNN -b NNN
+----
+
+To merge the pull request into the `master` branch:
+
+[source,shell]
+----
+$ git checkout master
+$ git merge NNN
+----
+
+==== Method 2: using Git only
+
 On your local development system, configure your TSDuck development git repository to track all pull requests.
 In the file `.git/config`, add the following line in section `[remote "origin"]`:
 
@@ -199,4 +234,21 @@ $ git fetch origin
 $ git merge pull/origin/NNN
 ----
 
-Additional review and fix may be necessary before pushing the contribution.
+However, in the context of the TSDuck repository, this method creates problems and we no longer recommend it.
+
+With this configuration in `.git/config`, the command `git fetch` always fetches _all_ pull requests from the
+beginning. In the general case, this is not a problem. However, the TSDuck repository went through a history
+rewrite in August 2024. The original user's and developer's guides were maintained in Microsoft Word files.
+They are binary files which are badly managed by git. The TSDuck repository accumulated 2 GB of history.
+Each `git clone` command triggered 2 GB of data transfer. Each local repository had 2 GB of disk space in
+the `.git` subdirectory. To solve this, the documentation was migrated to Asciidoc, a text format.
+The history of the repository was rewritten from the beginning without those binary files.
+The entire history was reduced to 40 MB.
+The clone operations were faster, the disk space was optimized.
+
+However, the old pull requests could not be rewritten.
+Using `fetch = +refs/pull/*` in `.git/config`, the command `git fetch` downloads the history
+of all pull requests before the history rewrite.
+This results in retrieving again the old 2 GB of history.
+Since we are only interested in working on recent pull requests, after the history rewrite,
+this method is no longer recommended.
