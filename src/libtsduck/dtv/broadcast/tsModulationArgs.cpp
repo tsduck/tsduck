@@ -935,6 +935,9 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
 {
     const bool verbose = level >= Severity::Verbose;
 
+    if (delivery_system.has_value()) {
+        strm << margin << "Delivery system: " << DeliverySystemEnum.name(delivery_system.value()) << std::endl;
+    }
     if (frequency.has_value() && *frequency != 0) {
         strm << margin << "Carrier frequency: " << UString::Decimal(frequency.value()) << " Hz" << std::endl;
     }

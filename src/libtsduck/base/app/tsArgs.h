@@ -882,25 +882,27 @@ namespace ts {
         //!
         //! Get all occurences of an integer option in a vector of integers.
         //!
+        //! @tparam INT An integer or enumeration type for the result.
         //! @param [out] values A container of integers receiving all values of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
         void getIntValues(std::vector<INT>& values, const UChar* name = nullptr) const;
 
         //!
         //! Get all occurences of an integer option in a set of integers.
         //!
+        //! @tparam INT An integer or enumeration type for the result.
         //! @param [out] values A container of integers receiving all values of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type* = nullptr>
         void getIntValues(std::set<INT>& values, const UChar* name = nullptr) const;
 
         //!
@@ -1538,7 +1540,7 @@ NUMTYPE ts::Args::numValue(const UChar* name, const NUMTYPE& def_value, size_t i
 // Return all occurences of this option in a vector of integers.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
 void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
@@ -1558,7 +1560,7 @@ void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
 // Return all occurences of this option in a set of integers.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
 void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));

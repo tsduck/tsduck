@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3840
+VERSION 3.39-3841
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -10,6 +10,8 @@ VERSION 3.39-3840
     instead of ROOT. The GOLD mode is the one which is defined by ETSI EN 302
     307-1. The PLS mode COMBO has been removed. This mode does not officially
     exist.
+  * In "tsscan", the option --delivery-system can be specified more than once
+    to scan networks with more than one system, e.g. DVB-T and DVB-T2.
 
 -------------------------------------------------------------------------------
 

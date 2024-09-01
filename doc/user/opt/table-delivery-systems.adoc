@@ -1,0 +1,111 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for tuners: table of delivery systems.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.optdoc]
+.Values for option `--delivery-system` (tuner reception)
+[cols="<15m,<25,<60",stripes=none]
+|===
+|Value |Description |Supported options
+
+|ATSC
+|ATSC
+m|--frequency --modulation --spectral-inversion
+
+|ATSC-MH
+|ATSC -M/H (handheld)
+|Unsupported
+
+|CMMB
+|CMMB Terrestrial
+|Unsupported
+
+|DAB
+|DAB (digital audio)
+|Unsupported
+
+|DSS
+|DSS Satellite
+|Unsupported
+
+|DTMB
+|DTMB Terrestrial
+|Unsupported
+
+|DVB-C
+|DVB-C (same as `DVB-C/A`)
+|Same as `DVB-C/A`
+
+|DVB-C/A
+|DVB-C ITU-T J.83 Annex A
+m|--fec-inner --frequency --modulation --spectral-inversion --symbol-rate
+
+|DVB-C/B
+|DVB-C ITU-T J.83 Annex B
+|Unsupported
+
+|DVB-C/C
+|DVB-C ITU-T J.83 Annex C
+|Same as DVB-C/A
+
+|DVB-C2
+|DVB-C2
+|Unsupported
+
+|DVB-H
+|DVB-H (deprecated)
+|Unsupported
+
+|DVB-S
+|DVB-S
+m|--fec-inner --frequency --polarity --satellite-number --spectral-inversion --symbol-rate
+
+|DVB-S-Turbo
+|DVB-S Turbo
+|Unsupported
+
+|DVB-S2
+|DVB-S2
+m|--fec-inner --frequency --isi --modulation --pilots --pls-code --pls-mode --polarity --roll-off
+  --satellite-number --spectral-inversion --symbol-rate
+
+|DVB-T
+|DVB-T
+m|--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
+  --low-priority-fec --modulation --spectral-inversion --transmission-mode
+
+|DVB-T2
+|DVB-T2
+m|--bandwidth --frequency --guard-interval --hierarchy --high-priority-fec
+  --low-priority-fec --modulation --plp --spectral-inversion --transmission-mode
+
+|ISDB-C
+|ISDB-C
+|Unsupported
+
+|ISDB-S
+|ISDB-S
+m|--fec-inner --frequency --polarity --satellite-number --spectral-inversion --stream-id --symbol-rate
+
+|ISDB-T
+|ISDB-T
+m|--bandwidth --frequency --guard-interval --isdbt-layer-a-fec --isdbt-layer-a-modulation
+  --isdbt-layer-a-segment-count --isdbt-layer-a-time-interleaving --isdbt-layer-b-fec
+  --isdbt-layer-b-modulation --isdbt-layer-b-segment-count --isdbt-layer-b-time-interleaving
+  --isdbt-layer-c-fec --isdbt-layer-c-modulation --isdbt-layer-c-segment-count
+  --isdbt-layer-c-time-interleaving --sb-segment-count --sb-segment-index --sb-subchannel-id
+  --sound-broadcasting --spectral-inversion --transmission-mode
+
+|undefined
+|Undefined
+|Unsupported
+
+|===

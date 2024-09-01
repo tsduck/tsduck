@@ -67,20 +67,43 @@ Use option `--use-offsets` to scan all predefined offsets in each channel.
 Perform a complete VHF-band scanning.
 
 [.optdoc]
-See also option --uhf-band.
+See also option `--uhf-band`.
 
 [.usage]
 Tuner device options and tuning parameters
 
 All options from the `dvb` input plugin are also available to `tsscan`.
-See xref:dvb-plugin[xrefstyle=short] for the list of options.
+As an exception, the option `--delivery-system` can be specified several times with `tsscan` (see below).
+See xref:dvb-plugin[xrefstyle=short] for the list of tuning options.
 
 In the `dvb` input plugin documentation, the "reception options" specify which tuner to use and basic reception timeouts.
 These options are used by `tsscan` in all types of scanning.
 
+[.opt]
+*--delivery-system* _value_
+
+[.optdoc]
+Specify which delivery system to use.
+
+[.optdoc]
+With `--nit-scan`, this is the delivery system for the stream which contains the NIT to scan.
+
+[.optdoc]
+With `--uhf-band` and `--vhf-band`, the option can be specified several times.
+In that case, the multiple delivery systems are tested in the specified order on each channel.
+This is typically used to scan terrestrial networks using DVB-T and DVT-T2.
+Be aware that the scan time is multiplied by the number of specified systems on channels without signal.
+
+[.optdoc]
 With UHF and VHF scanning, the only allowed modulations are DVB-T (the default) and DVB-T2.
 Other specific tuning parameters are used with `--nit-scan` only.
 They are used to receive the initial reference transport stream from which the NIT is analyzed.
+
+[.optdoc]
+When the delivery system is not specified, the default system for the tuner is used.
+When it is specified, the delivery system must be one of the following values:
+
+include::{docdir}/opt/table-delivery-systems.adoc[tags=!*]
 
 [.usage]
 Scanning options

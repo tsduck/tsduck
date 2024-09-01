@@ -60,6 +60,7 @@ namespace {
         ts::UString       channel_file {};
         bool              update_channel_file = false;
         bool              default_channel_file = false;
+        std::vector<ts::DeliverySystem> delivery_systems {};
     };
 }
 
@@ -75,6 +76,18 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     setIntro(u"There are three mutually exclusive types of network scanning. "
              u"Exactly one of the following options shall be specified: "
              u"--nit-scan, --uhf-band, --vhf-band.");
+
+    // The following option replaces --delivery-system as defined in ModulationArgs (through TunerArgs).
+    // We want to allow more than one value for it.
+    option(u"delivery-system", 0, ts::DeliverySystemEnum, 0, ts::Args::UNLIMITED_COUNT);
+    help(u"delivery-system",
+         u"Specify which delivery system to use. "
+         u"By default, use the default system for the tuner.\n"
+         u"With --nit-scan, this is the delivery system for the stream which contains the NIT to scan.\n"
+         u"With --uhf-band and --vhf-band, the option can be specified several times. "
+         u"In that case, the multiple delivery systems are tested in the specified order on each channel. "
+         u"This is typically used to scan terrestrial networks using DVB-T and DVT-T2. "
+         u"Be aware that the scan time is multiplied by the number of specified systems on channels without signal.");
 
     option(u"nit-scan", 'n');
     help(u"nit-scan",
@@ -197,6 +210,13 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
         error(u"specify the characteristics of the reference TS with --nit-scan");
     }
 
+    // --delivery-system is fetched twice. Once in tuner_args.loadArgs() where only
+    // one optional value is fetched. And once here, with multiple values.
+    getIntValues(delivery_systems, u"delivery-system");
+    if (nit_scan && delivery_systems.size() > 1) {
+        error(u"specify at most one --delivery-system with --nit-scan");
+    }
+
     // Type of HF band to use.
     hfband = vhf_scan ? duck.vhfBand() : duck.uhfBand();
 
@@ -265,14 +285,17 @@ private:
     int32_t            _best_strength_offset = 0;
     ts::ModulationArgs _best_params {};
 
+    // Scan the whole thing on one delivery system (DS_UNDEFINED means tuner's default).
+    void scanAll(ts::DeliverySystem sys);
+
     // Build tuning parameters for a channel.
-    void buildTuningParameters(ts::ModulationArgs& params, int32_t offset);
+    void buildTuningParameters(ts::ModulationArgs& params, int32_t offset, ts::DeliverySystem sys);
 
     // Tune to specified offset. Return false on error.
-    bool tune(int32_t offset, ts::ModulationArgs& params);
+    bool tune(int32_t offset, ts::ModulationArgs& params, ts::DeliverySystem sys);
 
     // Test the signal at one specific offset. Return true if signal is found.
-    bool tryOffset(int32_t offset);
+    bool tryOffset(int32_t offset, ts::DeliverySystem sys);
 };
 
 
@@ -286,11 +309,35 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
     _tuner(tuner),
     _channel(channel)
 {
-    _opt.verbose(u"scanning channel %'d, %'d Hz", _channel, _opt.hfband->frequency(_channel));
+    if (_opt.delivery_systems.empty()) {
+        // Unspecified delivery system, use default one from the tuner.
+        scanAll(ts::DS_UNDEFINED);
+    }
+    else {
+        for (auto sys : _opt.delivery_systems) {
+            scanAll(sys);
+            if (_signal_found) {
+                break;
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Scan the whole thing on one delivery system (DS_UNDEFINED means tuner's default).
+//----------------------------------------------------------------------------
+
+void OffsetScanner::scanAll(ts::DeliverySystem sys)
+{
+    ts::UString desc;
+    if (sys != ts::DS_UNDEFINED) {
+        desc.format(u" (%s)", ts::DeliverySystemEnum.name(sys));
+    }
+    _opt.verbose(u"scanning channel %'d, %'d Hz%s", _channel, _opt.hfband->frequency(_channel), desc);
 
     if (_opt.no_offset) {
         // Only try the central frequency
-        tryOffset(0);
+        tryOffset(0, sys);
     }
     else {
         // Scan lower offsets in descending order, starting at central frequency
@@ -298,7 +345,7 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
             bool last_ok = false;
             int32_t offset = _opt.last_offset > 0 ? 0 : _opt.last_offset;
             while (offset >= _opt.first_offset - (last_ok ? OFFSET_EXTEND : 0)) {
-                last_ok = tryOffset(offset);
+                last_ok = tryOffset(offset, sys);
                 --offset;
             }
         }
@@ -308,7 +355,7 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
             bool last_ok = false;
             int32_t offset = _opt.first_offset <= 0 ? 1 : _opt.first_offset;
             while (offset <= _opt.last_offset + (last_ok ? OFFSET_EXTEND : 0)) {
-                last_ok = tryOffset(offset);
+                last_ok = tryOffset(offset, sys);
                 ++offset;
             }
         }
@@ -330,7 +377,7 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
         }
 
         // Finally, tune back to best offset
-        _signal_found = tune(_best_offset, _best_params) && _tuner.getCurrentTuning(_best_params, false);
+        _signal_found = tune(_best_offset, _best_params, sys) && _tuner.getCurrentTuning(_best_params, false);
     }
 }
 
@@ -339,12 +386,17 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
 // Build tuning parameters for a channel.
 //----------------------------------------------------------------------------
 
-void OffsetScanner::buildTuningParameters(ts::ModulationArgs& params, int32_t offset)
+void OffsetScanner::buildTuningParameters(ts::ModulationArgs& params, int32_t offset, ts::DeliverySystem sys)
 {
     // Force frequency in tuning parameters.
     // Other tuning parameters from command line (or default values).
     params = _opt.tuner_args;
-    params.resolveDeliverySystem(_tuner.deliverySystems(), _opt);
+    if (sys == ts::DS_UNDEFINED) {
+        params.resolveDeliverySystem(_tuner.deliverySystems(), _opt);
+    }
+    else {
+        params.delivery_system = sys;
+    }
     params.frequency = _opt.hfband->frequency(_channel, offset);
     params.setDefaultValues();
 }
@@ -354,9 +406,9 @@ void OffsetScanner::buildTuningParameters(ts::ModulationArgs& params, int32_t of
 // UHF-band offset scanner: Tune to specified offset. Return false on error.
 //----------------------------------------------------------------------------
 
-bool OffsetScanner::tune(int32_t offset, ts::ModulationArgs& params)
+bool OffsetScanner::tune(int32_t offset, ts::ModulationArgs& params, ts::DeliverySystem sys)
 {
-    buildTuningParameters(params, offset);
+    buildTuningParameters(params, offset, sys);
     return _tuner.tune(params);
 }
 
@@ -365,14 +417,14 @@ bool OffsetScanner::tune(int32_t offset, ts::ModulationArgs& params)
 // UHF-band offset scanner: Test the signal at one specific offset.
 //----------------------------------------------------------------------------
 
-bool OffsetScanner::tryOffset(int32_t offset)
+bool OffsetScanner::tryOffset(int32_t offset, ts::DeliverySystem sys)
 {
     _opt.debug(u"trying offset %d", offset);
 
     // Tune to transponder and start signal acquisition.
     // Signal locking timeout is applied in start().
     ts::ModulationArgs params;
-    if (!tune(offset, params) || !_tuner.start()) {
+    if (!tune(offset, params, sys) || !_tuner.start()) {
         return false;
     }
 
