@@ -148,7 +148,7 @@ size_t ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
 
 ts::UString ts::ContinuityAnalyzer::linePrefix(PID pid) const
 {
-    return UString::Format(u"%spacket index: %'d, PID: 0x%04X", _prefix, _total_packets, pid);
+    return UString::Format(u"%spacket index: %'d, PID: %n", _prefix, _total_packets, pid);
 }
 
 
