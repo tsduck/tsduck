@@ -161,7 +161,14 @@ namespace ts {
         //! @param [in] pid_filter The list of PID's to process.
         //!
         void setPIDFilter(const PIDSet& pid_filter);
-
+        
+        //!
+        //! Specify log PID in decimal format.
+        //! @param [in] PID logged in decimal format When true.
+        //!
+        void setPIDdec(bool pid_dec) { _pid_decimal = pid_dec; }  
+      
+        
         //!
         //! Add one PID to process.
         //! @param [in] pid The new PID to process.
@@ -261,6 +268,7 @@ namespace ts {
         bool          _replicate_dup = true;      // With _fix_errors, replicate duplicate packets.
         bool          _generator = false;         // Use generator mode.
         bool          _json = false;              // Log JSON messages.
+	bool	      _pid_decimal = false;           // Log PID is decimal format
         UString       _prefix {};                 // Message prefix.
         PacketCounter _total_packets = 0;         // Total number of packets.
         PacketCounter _processed_packets = 0;     // Number of processed packets.
