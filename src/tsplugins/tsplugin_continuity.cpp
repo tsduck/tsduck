@@ -35,6 +35,7 @@ namespace ts {
         bool    _fix = false;                 // Fix incorrect continuity counters
         bool    _no_replicate = false;        // Option --no-replicate-duplicated
         bool    _json_line = false;           // Use JSON log style.
+	bool	_pid_dec = false;	      // Log PID in decimal format
         UString _json_prefix {};              // Prefix before JSON line.
         int     _log_level = Severity::Info;  // Log level for discontinuity messages
         PIDSet  _pids {};                     // PID values to check or fix
@@ -57,6 +58,10 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
     option(u"fix", 'f');
     help(u"fix",
          u"Fix incorrect continuity counters. By default, only display discontinuities.");
+    
+    option(u"pid_dec", 'd');
+    help(u"pid_dec",
+         u"Log PID in decimal format");
 
     option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
     help(u"json-line", u"'prefix'",
@@ -97,6 +102,7 @@ bool ts::ContinuityPlugin::getOptions()
     getValue(_json_prefix, u"json-line");
     _json_line = present(u"json-line");
     _fix = present(u"fix");
+    _pid_dec = present(u"pid_dec");
     _no_replicate = present(u"no-replicate-duplicated");
     _tag = value(u"tag");
     if (!_tag.empty()) {
@@ -127,6 +133,7 @@ bool ts::ContinuityPlugin::start()
     _cc_analyzer.setMessagePrefix(_json_line ? _json_prefix : _tag);
     _cc_analyzer.setMessageSeverity(_log_level);
     _cc_analyzer.setFix(_fix);
+    _cc_analyzer.setPIDdec(_pid_dec);
     _cc_analyzer.setReplicateDuplicated(!_no_replicate);
     return true;
 }

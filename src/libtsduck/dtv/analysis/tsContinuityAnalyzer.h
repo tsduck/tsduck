@@ -164,7 +164,7 @@ namespace ts {
         
         //!
         //! Specify log PID in decimal format.
-        //! @param [in] PID logged in decimal format When true.
+        //! @param [in]  pid_dec logged in decimal format When true.
         //!
         void setPIDdec(bool pid_dec) { _pid_decimal = pid_dec; }  
       
