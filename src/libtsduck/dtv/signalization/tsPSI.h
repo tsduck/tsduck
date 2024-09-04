@@ -867,6 +867,8 @@ namespace ts {
         REGID_HEVC = 0x48455643, //!< "HEVC" registration identifier.
         REGID_KLVA = 0x4B4C5641, //!< "KLVA" registration identifier.
         REGID_SCTE = 0x53435445, //!< "SCTE" registration identifier.
+        REGID_AVSA = 0x4A565341, //!< AVS "AVSA" registration identifier.
+        REGID_AVSV = 0x4A565356, //!< AVS "AVSV" registration identifier.
         REGID_NULL = 0xFFFFFFFF, //!< Unassigned registration identifier.
     };
 
@@ -941,7 +943,6 @@ namespace ts {
         ST_EAC3_AUDIO       = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
         ST_A52B_AC3_AUDIO   = 0x91, //!< A52b/AC-3 Audio
         ST_MS_VIDEO         = 0xA0, //!< MSCODEC Video
-        ST_AVS3             = 0xD4, //!< AVS3 video
         ST_VC1              = 0xEA, //!< Private ES (VC-1)
 
         // Valid after a "HDMV" registration descriptor.
@@ -961,6 +962,12 @@ namespace ts {
         ST_SDDS_AUDIO       = 0x94, //!< SDDS Audio
         ST_HDMV_AC3_PLS_SEC = 0xA1, //!< HDMV AC-3+ Secondary Audio
         ST_DTS_HD_SEC       = 0xA2, //!< DTS-HD Secondary Audio
+
+        // Valid after an appropriate AVS registration descriptor.
+
+        ST_AVS2_AUDIO       = 0xD3, //!< AVS2 audio
+        ST_AVS3_VIDEO       = 0xD4, //!< AVS3 video
+        ST_AVS3_AUDIO       = 0xD5, //!< AVS3 audio
     };
 
     //!

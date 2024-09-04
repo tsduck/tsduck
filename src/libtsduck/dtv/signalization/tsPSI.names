@@ -928,7 +928,6 @@ Bits = 8
 # 0xCF = C+ CMPT (CMPS scenario)
 # 0xD0 = C+ Appli loader
 0xA0 = MSCODEC Video
-0xD4 = AVS3 video
 0xEA = Private ES (VC-1)
 # With HDMV registration id.
 0x48444D56_80 = LPCM Audio
@@ -946,6 +945,13 @@ Bits = 8
 0x48444D56_94 = SDDS Audio
 0x48444D56_A1 = HDMV AC-3+ Secondary Audio
 0x48444D56_A2 = DTS-HD Secondary Audio
+# These could be used in the context of an appropriate AVS registration id, but these values are currently unused in the industry
+0xD3 = AVS2 audio
+0x41565341_D3 = AVS2 audio
+0xD4 = AVS3 video
+0x41565356_D4 = AVS3 video
+0xD5 = AVS3 audio
+0x41565341_D5 = AVS5 audio
 
 [RunningStatus]
 Bits = 3

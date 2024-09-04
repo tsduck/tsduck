@@ -77,7 +77,8 @@ bool ts::StreamTypeIsVideo(uint8_t st)
            StreamTypeIsVVC(st)    ||
            st == ST_JPEG_XS_VIDEO ||
            st == ST_EVC_VIDEO     ||
-           st == ST_LCEVC_VIDEO;
+           st == ST_LCEVC_VIDEO   ||
+           st == ST_AVS3_VIDEO;
 }
 
 
@@ -155,7 +156,9 @@ bool ts::StreamTypeIsAudio(uint8_t st, uint32_t regid)
            st == ST_EAC3_AUDIO       ||
            st == ST_MPEG4_AUDIO_RAW  ||
            st == ST_MPH3D_MAIN       ||
-           st == ST_MPH3D_AUX;
+           st == ST_MPH3D_AUX        ||
+           st == ST_AVS2_AUDIO       ||
+           st == ST_AVS3_AUDIO;
 }
 
 
