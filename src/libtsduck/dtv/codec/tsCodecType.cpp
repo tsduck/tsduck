@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCodecType.h"
+#include "tsAlgorithm.h"
 
 const ts::Enumeration ts::CodecTypeEnum({
     {u"undefined",     ts::CodecType::UNDEFINED},
@@ -76,13 +77,7 @@ const ts::Enumeration ts::CodecTypeArgEnum({
     {u"AVS3Audio",     ts::CodecType::AVS3_AUDIO},
 });
 
-
-//----------------------------------------------------------------------------
-// Check if a codec type value indicates an audio stream.
-//----------------------------------------------------------------------------
-
-bool ts::CodecTypeIsAudio(CodecType ct)
-{
+namespace {
     const std::set<ts::CodecType> AudioCodecs {
         ts::CodecType::MPEG1_AUDIO,
         ts::CodecType::MPEG2_AUDIO,
@@ -98,22 +93,6 @@ bool ts::CodecTypeIsAudio(CodecType ct)
         ts::CodecType::AVS3_AUDIO,
     };
 
-    return
-        #ifdef TS_CXX17
-            AudioCodecs.find(ct) != AudioCodecs.end();
-        #else
-            AudioCodecs.contains(ct);
-        #endif
-}
-
-
-//----------------------------------------------------------------------------
-// Check if a codec type value indicates a video stream.
-//----------------------------------------------------------------------------
-
-
-bool ts::CodecTypeIsVideo(CodecType ct)
-{
     const std::set<ts::CodecType> VideoCodecs {
         ts::CodecType::MPEG1_VIDEO,
         ts::CodecType::MPEG2_VIDEO,
@@ -129,32 +108,30 @@ bool ts::CodecTypeIsVideo(CodecType ct)
         ts::CodecType::AVS3_VIDEO,
     };
 
-    return
-        #ifdef TS_CXX17
-            VideoCodecs.find(ct) != VideoCodecs.end();
-        #else
-            VideoCodecs.contains(ct);
-        #endif
-}
-
-
-//----------------------------------------------------------------------------
-// Check if a codec type value indicates a subtitle stream.
-//----------------------------------------------------------------------------
-
-bool ts::CodecTypeIsSubtitles(CodecType ct)
-{
     const std::set<ts::CodecType> SubtitlingTypes {
         ts::CodecType::TELETEXT,
         ts::CodecType::DVB_SUBTITLES,
     };
+}
 
-    return
-        #ifdef TS_CXX17
-            SubtitlingTypes.find(ct) != SubtitlingTypes.end();
-        #else
-            SubtitlingTypes.contains(ct);
-        #endif
+
+//----------------------------------------------------------------------------
+// Check if a codec type value indicates a stream of a given type.
+//----------------------------------------------------------------------------
+
+bool ts::CodecTypeIsAudio(CodecType ct)
+{
+    return Contains(AudioCodecs, ct);
+}
+
+bool ts::CodecTypeIsVideo(CodecType ct)
+{
+    return Contains(VideoCodecs, ct);
+}
+
+bool ts::CodecTypeIsSubtitles(CodecType ct)
+{
+    return Contains(SubtitlingTypes, ct);
 }
 
 
