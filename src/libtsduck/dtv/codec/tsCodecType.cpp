@@ -83,39 +83,27 @@ const ts::Enumeration ts::CodecTypeArgEnum({
 
 bool ts::CodecTypeIsAudio(CodecType ct)
 {
-    switch (ct) {
-        case CodecType::MPEG1_AUDIO:
-        case CodecType::MPEG2_AUDIO:
-        case CodecType::MP3:
-        case CodecType::AAC:
-        case CodecType::AC3:
-        case CodecType::EAC3:
-        case CodecType::AC4:
-        case CodecType::HEAAC:
-        case CodecType::DTS:
-        case CodecType::DTSHD:
-        case CodecType::AVS2_AUDIO:
-        case CodecType::AVS3_AUDIO:
-            return true;
+    const std::set<ts::CodecType> AudioCodecs {
+        ts::CodecType::MPEG1_AUDIO,
+        ts::CodecType::MPEG2_AUDIO,
+        ts::CodecType::MP3,
+        ts::CodecType::AAC,
+        ts::CodecType::AC3,
+        ts::CodecType::EAC3,
+        ts::CodecType::AC4,
+        ts::CodecType::HEAAC,
+        ts::CodecType::DTS,
+        ts::CodecType::DTSHD,
+        ts::CodecType::AVS2_AUDIO,
+        ts::CodecType::AVS3_AUDIO,
+    };
 
-        case CodecType::UNDEFINED:
-        case CodecType::MPEG1_VIDEO:
-        case CodecType::MPEG2_VIDEO:
-        case CodecType::MPEG4_VIDEO:
-        case CodecType::J2K:
-        case CodecType::AVC:
-        case CodecType::HEVC:
-        case CodecType::VVC:
-        case CodecType::EVC:
-        case CodecType::LCEVC:
-        case CodecType::VP9:
-        case CodecType::AV1:
-        case CodecType::TELETEXT:
-        case CodecType::DVB_SUBTITLES:
-        case CodecType::AVS3_VIDEO:
-        default:
-            return false;
-    }
+    return
+        #ifdef TS_CXX17
+            AudioCodecs.find(ct) != AudioCodecs.end();
+        #else
+            AudioCodecs.contains(ct);
+        #endif
 }
 
 
@@ -123,41 +111,30 @@ bool ts::CodecTypeIsAudio(CodecType ct)
 // Check if a codec type value indicates a video stream.
 //----------------------------------------------------------------------------
 
+
 bool ts::CodecTypeIsVideo(CodecType ct)
 {
-    switch (ct) {
-        case CodecType::MPEG1_VIDEO:
-        case CodecType::MPEG2_VIDEO:
-        case CodecType::MPEG4_VIDEO:
-        case CodecType::J2K:
-        case CodecType::AVC:
-        case CodecType::HEVC:
-        case CodecType::VVC:
-        case CodecType::EVC:
-        case CodecType::LCEVC:
-        case CodecType::VP9:
-        case CodecType::AV1:
-        case CodecType::AVS3_VIDEO:
-            return true;
+    const std::set<ts::CodecType> VideoCodecs {
+        ts::CodecType::MPEG1_VIDEO,
+        ts::CodecType::MPEG2_VIDEO,
+        ts::CodecType::MPEG4_VIDEO,
+        ts::CodecType::J2K,
+        ts::CodecType::AVC,
+        ts::CodecType::HEVC,
+        ts::CodecType::VVC,
+        ts::CodecType::EVC,
+        ts::CodecType::LCEVC,
+        ts::CodecType::VP9,
+        ts::CodecType::AV1,
+        ts::CodecType::AVS3_VIDEO,
+    };
 
-        case CodecType::UNDEFINED:
-        case CodecType::MPEG1_AUDIO:
-        case CodecType::MPEG2_AUDIO:
-        case CodecType::MP3:
-        case CodecType::AAC:
-        case CodecType::AC3:
-        case CodecType::EAC3:
-        case CodecType::AC4:
-        case CodecType::HEAAC:
-        case CodecType::DTS:
-        case CodecType::DTSHD:
-        case CodecType::TELETEXT:
-        case CodecType::DVB_SUBTITLES:
-        case CodecType::AVS2_AUDIO:
-        case CodecType::AVS3_AUDIO:
-        default:
-            return false;
-    }
+    return
+        #ifdef TS_CXX17
+            VideoCodecs.find(ct) != VideoCodecs.end();
+        #else
+            VideoCodecs.contains(ct);
+        #endif
 }
 
 
@@ -167,39 +144,17 @@ bool ts::CodecTypeIsVideo(CodecType ct)
 
 bool ts::CodecTypeIsSubtitles(CodecType ct)
 {
-    switch (ct) {
-        case CodecType::TELETEXT:
-        case CodecType::DVB_SUBTITLES:
-            return true;
+    const std::set<ts::CodecType> SubtitlingTypes {
+        ts::CodecType::TELETEXT,
+        ts::CodecType::DVB_SUBTITLES,
+    };
 
-        case CodecType::UNDEFINED:
-        case CodecType::MPEG1_VIDEO:
-        case CodecType::MPEG1_AUDIO:
-        case CodecType::MPEG2_VIDEO:
-        case CodecType::MPEG2_AUDIO:
-        case CodecType::MP3:
-        case CodecType::AAC:
-        case CodecType::AC3:
-        case CodecType::EAC3:
-        case CodecType::AC4:
-        case CodecType::MPEG4_VIDEO:
-        case CodecType::HEAAC:
-        case CodecType::J2K:
-        case CodecType::AVC:
-        case CodecType::HEVC:
-        case CodecType::VVC:
-        case CodecType::EVC:
-        case CodecType::LCEVC:
-        case CodecType::VP9:
-        case CodecType::AV1:
-        case CodecType::DTS:
-        case CodecType::DTSHD:
-        case CodecType::AVS3_VIDEO:
-        case CodecType::AVS2_AUDIO:
-        case CodecType::AVS3_AUDIO:
-        default:
-            return false;
-    }
+    return
+        #ifdef TS_CXX17
+            SubtitlingTypes.find(ct) != SubtitlingTypes.end();
+        #else
+            SubtitlingTypes.contains(ct);
+        #endif
 }
 
 
