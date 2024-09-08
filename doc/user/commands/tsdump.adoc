@@ -86,4 +86,129 @@ Raw dump of file, do not interpret as TS packets.
 With this option, `tsdump` simply acts as a hexa / ASCII file dumper.
 
 include::{docdir}/opt/group-dump.adoc[tags=!*]
+
+[.usage]
+UDP reception options
+
+The command `tsdump` can also be used to dump UDP datagrams.
+This behavior is triggered by the option `--ip-udp`.
+With this option, no input file shall be specified.
+The received UDP datagrams are not expected to contain TS packets and `--raw-file` is implicit.
+
+CAUTION: This option is used to dump raw UDP datagrams.
+It is typically used for debug purpose on UDP networking.
+Do not use this option to dump TS packets from an IP-TV stream.
+Use `tsp` with input plugin `ip` and plugin `dump`.
+
+The options which are described in this section apply only when `--ip-udp` is used.
+
+[.opt]
+*--buffer-size* _value_
+
+[.optdoc]
+Specify the UDP socket receive buffer size in bytes (socket option).
+
+[.opt]
+*--default-interface*
+
+[.optdoc]
+Let the system find the appropriate local interface on which to listen.
+By default, listen on all local interfaces.
+
+[.opt]
+*--disable-multicast-loop*
+
+[.optdoc]
+Disable multicast loopback.
+
+[.optdoc]
+By default, incoming multicast packets are looped back on local interfaces, if an application
+sends packets to the same group from the same system. This option disables this.
+
+[.optdoc]
+*Warning*: On input sockets, this option is effective only on Windows systems.
+On {unix}, this option applies only to output sockets.
+
+[.opt]
+*--first-source*
+
+[.optdoc]
+Filter UDP packets based on the source address.
+Use the sender address of the first received packet as only allowed source.
+
+[.optdoc]
+This option is useful when several sources send packets to the same destination address and port.
+Accepting all packets could result in a corrupted stream and only one sender shall be accepted.
+
+[.optdoc]
+To allow a more precise selection of the sender, use option `--source`.
+Options `--first-source` and `--source` are mutually exclusive.
+
+[.opt]
+*--ip-udp* _[[source@]address:]port_
+
+[.optdoc]
+Specify that `tsdump` shall dump raw UDP datagrams, not TS packets from transport stream files.
+The `_port_` part is mandatory and specifies the UDP port to listen on.
+The `_address part_` is optional.
+It specifies an IP multicast address to listen on.
+It can be also a host name that translates to a multicast address.
+If the address is not specified, the plugin simply listens on the specified local port
+and receives the packets which are sent to one of the local (unicast) IP addresses of the system.
+
+[.optdoc]
+An optional source address can be specified as `_source@address:port_` in the case of source-specific multicast (SSM).
+
+[.opt]
+*--local-address* _address_
+
+[.optdoc]
+Specify the IP address of the local interface on which to listen.
+It can be also a host name that translates to a local address.
+By default, listen on all local interfaces.
+
+[.opt]
+*--no-reuse-port*
+
+[.optdoc]
+Disable the reuse port socket option.
+Do not use unless completely necessary.
+
+[.opt]
+*--receive-timeout* _value_
+
+[.optdoc]
+Specify the UDP reception timeout in milliseconds.
+This timeout applies to each receive operation, individually.
+By default, receive operations wait for data, possibly forever.
+
+[.opt]
+*--reuse-port*
+
+[.optdoc]
+Set the reuse port socket option.
+This is now enabled by default, the option is present for legacy only.
+
+[.opt]
+*--source* _address[:port]_
+
+[.optdoc]
+Filter UDP packets based on the specified source address.
+This option is useful when several sources send packets to the same destination address and port.
+Accepting all packets could result in a corrupted stream and only one sender shall be accepted.
+
+[.optdoc]
+Options `--first-source` and `--source` are mutually exclusive.
+
+[.opt]
+*--ssm*
+
+[.optdoc]
+This option forces the usage of source-specific multicast (SSM)
+using the source address which is specified by the option `--source`.
+Without `--ssm`, standard ("any-source’) multicast is used and the option `--source` is used to filter incoming packets.
+
+[.optdoc]
+The `--ssm` option is implicit when the classical SSM syntax `_source@address:port_` is used.
+
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

@@ -17,6 +17,8 @@
 #include "tsTSDumpArgs.h"
 #include "tsPagerArgs.h"
 #include "tsDuckContext.h"
+#include "tsUDPReceiver.h"
+#include "tsIPProtocols.h"
 #include "tsArgs.h"
 TS_MAIN(MainCode);
 
@@ -32,20 +34,25 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck {this};         // TSDuck context
-        bool               raw_file = false;    // Raw dump of file, not TS packets
-        uint64_t           start_offset = 0;    // Start offset in bytes
-        ts::PacketCounter  max_packets = 0;     // Maximum number of packets to dump per file
-        ts::UStringVector  infiles {};          // Input file names
-        ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;  // Input file format
-        ts::TSDumpArgs     dump {};             // Packet dump options
-        ts::PagerArgs      pager {true, true};  // Output paging options
+        ts::DuckContext     duck {this};         // TSDuck context
+        bool                raw_file = false;    // Raw dump of file, not TS packets
+        bool                udp_dump = false;    // Dump UDP packets, not TS packets
+        uint32_t            raw_flags = 0;       // Raw dump flags
+        size_t              raw_bpl = 0;         // Bytes per line in raw mode.
+        uint64_t            start_offset = 0;    // Start offset in bytes
+        ts::PacketCounter   max_packets = 0;     // Maximum number of packets to dump per file
+        ts::UStringVector   infiles {};          // Input file names
+        ts::TSPacketFormat  format = ts::TSPacketFormat::AUTODETECT;  // Input file format
+        ts::TSDumpArgs      dump {};             // Packet dump options
+        ts::PagerArgs       pager {true, true};  // Output paging options
+        ts::UDPReceiverArgs udp {};              // UDP options
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]")
 {
+    udp.defineArgs(*this, false, false);
     dump.defineArgs(*this);
     pager.defineArgs(*this);
     ts::DefineTSPacketFormatInputOption(*this, 'f');
@@ -74,6 +81,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    udp.loadArgs(duck, *this);
     dump.loadArgs(duck, *this);
     pager.loadArgs(duck, *this);
 
@@ -88,9 +96,22 @@ Options::Options(int argc, char *argv[]) :
         raw_file = true;
     }
 
+    // Receiving from UDP means --raw-file, without files.
+    udp_dump = udp.destination.hasPort();
+    raw_file = raw_file || udp_dump;
+    if (udp_dump && !infiles.empty()) {
+        error(u"don't specify input files with --ip-udp");
+    }
+
     // Filter TS-specific options when used with --raw-file.
-    if (raw_file && (dump.log || present(u"max-packets") || (dump.pids.any() && !dump.pids.all()))) {
-        error(u"--raw-file is incompatible with TS-specific options --pid --log --max-packets");
+    if (raw_file && (dump.log || (dump.pids.any() && !dump.pids.all()))) {
+        error(u"--raw-file and --ip-udp are incompatible with TS-specific options --pid and --log");
+    }
+
+    // Dump flags for raw mode.
+    if (raw_file) {
+        raw_flags = (dump.dump_flags & 0x0000FFFF) | ts::UString::BPL | ts::UString::WIDE_OFFSET;
+        raw_bpl = (raw_flags & ts::UString::BINARY) ? 8 : 16;
     }
 
     exitOnError();
@@ -161,20 +182,56 @@ namespace {
         }
 
         // Raw dump of file
-        const uint32_t flags = (opt.dump.dump_flags & 0x0000FFFF) | ts::UString::BPL | ts::UString::WIDE_OFFSET;
-        const size_t MAX_RAW_BPL = 16;
-        const size_t raw_bpl = (flags & ts::UString::BINARY) ? 8 : 16;  // Bytes per line in raw mode
+        ts::ByteBlock buffer(opt.raw_bpl);
         size_t offset = 0;
+        size_t size = 0;
+        int c = EOF;
         while (*in) {
-            int c;
-            size_t size;
-            uint8_t buffer[MAX_RAW_BPL];
-            for (size = 0; size < raw_bpl && (c = in->get()) != EOF; size++) {
+            for (size = 0; size < buffer.size() && (c = in->get()) != EOF; size++) {
                 buffer[size] = uint8_t(c);
             }
-            out << ts::UString::Dump(buffer, size, flags, 0, raw_bpl, offset);
+            out << ts::UString::Dump(buffer.data(), size, opt.raw_flags, 0, opt.raw_bpl, offset);
             offset += size;
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Perform the raw dump on UDP packets.
+//----------------------------------------------------------------------------
+
+namespace {
+    void DumpRawUDP(Options& opt, std::ostream& out)
+    {
+        // Initialize the UDP reception.
+        ts::UDPReceiver sock(opt);
+        sock.setParameters(opt.udp);
+        if (!sock.open(opt)) {
+            return;
+        }
+
+        // Raw dump of all received datagrams.
+        ts::ByteBlock buffer(ts::IP_MAX_PACKET_SIZE);
+        size_t size = 0;
+        ts::IPv4SocketAddress sender;
+        ts::IPv4SocketAddress destination;
+        const bool headers = opt.dump.dump_flags & ts::TSPacket::DUMP_TS_HEADER;
+
+        for (ts::PacketCounter packet_index = 0;
+             packet_index < opt.max_packets && sock.receive(buffer.data(), buffer.size(), size, sender, destination, nullptr, opt);
+             packet_index++)
+        {
+            if (headers) {
+                out << std::endl
+                    << "* Packet " << ts::UString::Decimal(packet_index)
+                    << ", " << ts::UString::Decimal(size) << " bytes, "
+                    << sender << " -> " << destination
+                    << std::endl;
+            }
+            out << ts::UString::Dump(buffer.data(), size, opt.raw_flags, 0, opt.raw_bpl);
+        }
+        sock.close(opt);
     }
 }
 
@@ -191,7 +248,11 @@ int MainCode(int argc, char *argv[])
     // Setup an output pager if necessary.
     std::ostream& out(opt.pager.output(opt));
 
-    if (opt.infiles.empty()) {
+    if (opt.udp_dump) {
+        // Dump UDP packets.
+        DumpRawUDP(opt, out);
+    }
+    else if (opt.infiles.empty()) {
         // Dump standard input.
         if (opt.raw_file) {
             DumpRawFile(opt, ts::UString(), out);
