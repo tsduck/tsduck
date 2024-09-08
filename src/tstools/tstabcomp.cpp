@@ -121,7 +121,7 @@ Options::Options(int argc, char *argv[]) :
     compile = present(u"compile");
     decompile = present(u"decompile");
     fromJSON = present(u"from-json");
-    toJSON = present(u"json") || ts::UString(outFile.extension()).similar(ts::SectionFile::DEFAULT_JSON_SECTION_FILE_SUFFIX);
+    toJSON = present(u"json") || ts::UString(outFile.extension()).similar(ts::DEFAULT_JSON_FILE_SUFFIX);
     xmlModel = present(u"xml-model");
     withExtensions = present(u"extensions");
     useStdIn = ts::UString(u"-").isContainedSimilarIn(inFiles);
@@ -179,14 +179,12 @@ namespace {
 namespace {
     bool ProcessFile(Options& opt, const ts::UString& infile)
     {
-        using FType = ts::SectionFile::FileType;
-
-        const FType inType = opt.fromJSON ? FType::JSON : ts::SectionFile::GetFileType(infile);
+        const ts::SectionFormat inType = opt.fromJSON ? ts::SectionFormat::JSON : ts::GetSectionFileFormat(infile);
         const bool useStdIn = infile.empty() || infile == u"-";
         const bool useStdOut = opt.useStdOut || (useStdIn && opt.outFile.empty());
-        const bool compile = opt.compile || inType == FType::XML || inType == FType::JSON;
-        const bool decompile = opt.decompile || inType == FType::BINARY;
-        const FType outType = compile ? FType::BINARY : (opt.toJSON ? FType::JSON : FType::XML);
+        const bool compile = opt.compile || inType == ts::SectionFormat::XML || inType == ts::SectionFormat::JSON;
+        const bool decompile = opt.decompile || inType == ts::SectionFormat::BINARY;
+        const ts::SectionFormat outType = compile ? ts::SectionFormat::BINARY : (opt.toJSON ? ts::SectionFormat::JSON : ts::SectionFormat::XML);
 
         // Set standard input or output in binary mode when necessary.
         if (useStdIn && decompile) {
@@ -201,10 +199,10 @@ namespace {
         const fs::path inname(infile);
         if (!useStdOut) {
             if (outname.empty()) {
-                outname = ts::SectionFile::BuildFileName(inname, outType);
+                outname = ts::BuildSectionFileName(inname, outType);
             }
             else if (opt.outIsDir) {
-                outname /= ts::SectionFile::BuildFileName(inname.filename(), outType);
+                outname /= ts::BuildSectionFileName(inname.filename(), outType);
             }
         }
 
@@ -217,18 +215,18 @@ namespace {
             opt.error(u"don't know what to do with file %s, unknown file type, specify --compile or --decompile", infile);
             return false;
         }
-        else if (compile && inType == FType::BINARY) {
+        else if (compile && inType == ts::SectionFormat::BINARY) {
             opt.error(u"cannot compile binary file %s", infile);
             return false;
         }
-        else if (decompile && (inType == FType::XML || inType == FType::JSON)) {
+        else if (decompile && (inType == ts::SectionFormat::XML || inType == ts::SectionFormat::JSON)) {
             opt.error(u"cannot decompile XML or JSON file %s", infile);
             return false;
         }
         else if (compile) {
             // Load XML file and save binary sections.
             opt.verbose(u"Compiling %s to %s", infile, outname);
-            return (inType == FType::JSON ? file.loadJSON(infile) : file.loadXML(infile)) &&
+            return (inType == ts::SectionFormat::JSON ? file.loadJSON(infile) : file.loadXML(infile)) &&
                    opt.sectionOptions.processSectionFile(file, opt) &&
                    file.saveBinary(outname);
         }

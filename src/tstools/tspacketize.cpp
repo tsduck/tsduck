@@ -22,7 +22,6 @@ TS_MAIN(MainCode);
 
 // To avoid long prefixes
 using StuffPolicy = ts::CyclingPacketizer::StuffingPolicy;
-using FType = ts::SectionFile::FileType;
 
 
 //----------------------------------------------------------------------------
@@ -44,7 +43,7 @@ namespace {
         ts::BitRate           bitrate = 0;         // Target PID bitrate
         fs::path              outfile {};          // Output file
         ts::FileNameRateList  infiles {};          // Input file names and repetition rates
-        FType                 inType {FType::UNSPECIFIED};
+        ts::SectionFormat     inType = ts::SectionFormat::UNSPECIFIED;
         ts::SectionFileArgs   sections_opt {};     // Section file options
     };
 }
@@ -121,13 +120,13 @@ Options::Options(int argc, char *argv[]) :
     getPathValue(outfile, u"output");
     infiles.getArgs(*this);
     if (present(u"xml")) {
-        inType = FType::XML;
+        inType = ts::SectionFormat::XML;
     }
     else if (present(u"json")) {
-        inType = FType::JSON;
+        inType = ts::SectionFormat::JSON;
     }
     else if (present(u"binary")) {
-        inType = FType::BINARY;
+        inType = ts::SectionFormat::BINARY;
     }
 
     // If any non-zero repetition rate is specified, make sure that a bitrate is specified.
@@ -157,10 +156,10 @@ int MainCode(int argc, char *argv[])
     // Load sections
     if (opt.infiles.size() == 0) {
         // Read sections from standard input.
-        if (opt.inType != FType::XML && opt.inType != FType::JSON) {
+        if (opt.inType != ts::SectionFormat::XML && opt.inType != ts::SectionFormat::JSON) {
             // Default type for standard input is binary.
             SetBinaryModeStdin(opt);
-            opt.inType = FType::BINARY;
+            opt.inType = ts::SectionFormat::BINARY;
         }
         if (!file.load(std::cin, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
             return EXIT_FAILURE;

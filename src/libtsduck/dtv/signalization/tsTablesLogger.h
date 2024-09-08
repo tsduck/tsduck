@@ -17,6 +17,7 @@
 #include "tsTime.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
+#include "tsSectionFormat.h"
 #include "tsUDPSocket.h"
 #include "tsCASMapper.h"
 #include "tsxmlTweaks.h"
@@ -176,6 +177,7 @@ namespace ts {
         UString                  _log_json_prefix {};        // Prefix before JSON log line.
         UString                  _log_hexa_prefix {};        // Prefix before hexa log line.
         UString                  _udp_local {};              // Name of outgoing local address (empty if unspecified).
+        SectionFormat            _udp_format = SectionFormat::BINARY; // Format of sections in UDP messages.
         int                      _udp_ttl = 0;               // Time-to-live socket option.
         bool                     _udp_raw = false;           // UDP messages contain raw sections, not structured messages.
         bool                     _all_sections = false;      // Collect all sections, as they appear.
@@ -229,6 +231,12 @@ namespace ts {
 
         // Save a section in a binary file
         void saveBinarySection(const Section&);
+
+        // Build an XML document with one table.
+        bool buildXML(xml::Document& doc, const BinaryTable& table);
+
+        // Build a JSON one-liner from an XML document containing one table.
+        UString buildJSON(const xml::Document& doc);
 
         // Log XML and/or JSON one-liners.
         void logXMLJSON(const BinaryTable& table);

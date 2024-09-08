@@ -16,6 +16,7 @@
 #include "tsEMMGClient.h"
 #include "tsUDPSocket.h"
 #include "tsPacketizer.h"
+#include "tsSection.h"
 #include "tsSectionFile.h"
 #include "tsTSPacket.h"
 TS_MAIN(MainCode);

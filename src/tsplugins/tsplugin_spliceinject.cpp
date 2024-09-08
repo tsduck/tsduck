@@ -24,9 +24,6 @@
 #include "tsReportBuffer.h"
 #include "tsErrCodeReport.h"
 
-// To avoid long prefixes
-using FType = ts::SectionFile::FileType;
-
 namespace {
     // Default maximum number of sections in queue.
     const size_t DEFAULT_SECTION_QUEUE_SIZE = 100;
@@ -695,19 +692,19 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     assert(addr != nullptr);
 
     // Try to determine the file type, binary or XML.
-    FType type = FType::UNSPECIFIED;
+    ts::SectionFormat type = ts::SectionFormat::UNSPECIFIED;
     if (size > 0) {
         if (addr[0] == TID_SCTE35_SIT) {
             // First byte is the table id of a splice information table.
-            type = FType::BINARY;
+            type = ts::SectionFormat::BINARY;
         }
         else if (addr[0] == '<') {
             // Typically the start of an XML definition.
-            type = FType::XML;
+            type = ts::SectionFormat::XML;
         }
         else if (addr[0] == '{' || addr[0] == '[') {
             // Typically the start of a JSON definition.
-            type = FType::JSON;
+            type = ts::SectionFormat::JSON;
         }
         else {
             // We need to search a bit more. First, skip UTF-8 BOM if present.
@@ -723,17 +720,17 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
             // Does this look like XML or JSON now ?
             if (size > 0) {
                 if (addr[0] == '<') {
-                    type = FType::XML;
+                    type = ts::SectionFormat::XML;
                 }
                 else if (addr[0] == '{' || addr[0] == '[') {
-                    type = FType::JSON;
+                    type = ts::SectionFormat::JSON;
                 }
             }
         }
     }
 
     // Give up if we cannot find a valid format.
-    if (type == FType::UNSPECIFIED) {
+    if (type == ts::SectionFormat::UNSPECIFIED) {
         error(u"cannot find received data type, %d bytes, %s ...", size, UString::Dump(addr, std::min<size_t>(size, 8), UString::SINGLE_LINE));
         return;
     }

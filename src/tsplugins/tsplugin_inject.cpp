@@ -22,7 +22,6 @@
 
 // To avoid long prefixes
 using StuffPolicy = ts::CyclingPacketizer::StuffingPolicy;
-using FType = ts::SectionFile::FileType;
 
 
 //----------------------------------------------------------------------------
@@ -42,7 +41,7 @@ namespace ts {
     private:
         // Command line options:
         FileNameRateList  _infiles {};                // Input file names and repetition rates
-        FType             _intype = FType::UNSPECIFIED; // Input files type
+        ts::SectionFormat _intype = ts::SectionFormat::UNSPECIFIED; // Input files type
         SectionFileArgs   _sections_opt {};           // Section processing options
         bool              _specific_rates = false;    // Some input files have specific repetition rates
         bool              _undefined_rates = false;   // At least one file has no specific repetition rate.
@@ -204,16 +203,16 @@ bool ts::InjectPlugin::getOptions()
     getIntValue(_eval_interval, u"evaluate-interval", DEF_EVALUATE_INTERVAL);
 
     if (present(u"xml")) {
-        _intype = FType::XML;
+        _intype = ts::SectionFormat::XML;
     }
     else if (present(u"json")) {
-        _intype = FType::JSON;
+        _intype = ts::SectionFormat::JSON;
     }
     else if (present(u"binary")) {
-        _intype = FType::BINARY;
+        _intype = ts::SectionFormat::BINARY;
     }
     else {
-        _intype = FType::UNSPECIFIED;
+        _intype = ts::SectionFormat::UNSPECIFIED;
     }
 
     if (present(u"stuffing")) {

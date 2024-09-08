@@ -107,10 +107,11 @@ void ts::TablesLogger::defineArgs(Args& args)
 
     args.option(u"ip-udp", 'i', Args::STRING);
     args.help(u"ip-udp", u"address:port",
-              u"Send binary tables over UDP/IP to the specified destination. "
-              u"The 'address' specifies an IP address which can be either unicast "
-              u"or multicast. It can be also a host name that translates to an IP "
-              u"address. The 'port' specifies the destination UDP port.");
+              u"Send the tables or individual sections over UDP/IP to the specified destination. "
+              u"The 'address' specifies an IP address which can be either unicast or multicast. "
+              u"It can be also a host name that translates to an IP address. "
+              u"The 'port' specifies the destination UDP port. "
+              u"See also option --udp-format.");
 
     args.option(u"local-udp", 0, Args::STRING);
     args.help(u"local-udp", u"address",
@@ -179,7 +180,8 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.option(u"no-encapsulation");
     args.help(u"no-encapsulation",
               u"With --ip-udp, send the tables as raw binary messages in UDP packets. "
-              u"By default, the tables are formatted into TLV messages.");
+              u"By default, the tables are formatted into TLV messages. "
+              u"Ignored if --udp-format is not binary.");
 
     args.option(u"only-invalid-sections");
     args.help(u"only-invalid-sections",
@@ -244,12 +246,18 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"depending on the destination address. Remember that the default "
               u"Multicast TTL is 1 on most systems.");
 
-    args.option(u"xml-output", 0,  Args::FILENAME);
+    args.option(u"udp-format", 0, SpecifiedSectionFormatEnum);
+    args.help(u"udp-format",
+              u"With --ip-udp, specify the format of sections in the UDP datagrams. "
+              u"The default is binary. "
+              u"With --all-sections or --all-once, the only allowed format is binary.");
+
+    args.option(u"xml-output", 0, Args::FILENAME);
     args.help(u"xml-output",
               u"Save the tables in XML format in the specified file. "
               u"To output the XML text on the standard output, explicitly specify this option with \"-\" as output file name.");
 
-    args.option(u"json-output", 0,  Args::FILENAME);
+    args.option(u"json-output", 0, Args::FILENAME);
     args.help(u"json-output",
               u"Save the tables in JSON format in the specified file. "
               u"The tables are initially formatted as XML and automated XML-to-JSON conversion is applied. "
@@ -298,8 +306,9 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     args.getValue(_log_json_prefix, u"log-json-line");
     args.getValue(_log_hexa_prefix, u"log-hexa-line");
     _flush = args.present(u"flush");
-    _udp_local = args.value(u"local-udp");
+    args.getValue(_udp_local, u"local-udp");
     args.getIntValue(_udp_ttl, u"ttl", 0);
+    args.getIntValue(_udp_format, u"udp-format", SectionFormat::BINARY);
     _pack_all_sections = args.present(u"pack-all-sections");
     _pack_and_flush = args.present(u"pack-and-flush");
     _fill_eit = args.present(u"fill-eit");
@@ -325,7 +334,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
         args.error(u"options --rewrite-binary and --multiple-files are incompatible");
         return false;
     }
-    if ((_use_xml || _use_json || _log_xml_line || _log_json_line) && (_all_sections && !_pack_all_sections)) {
+    if ((_use_xml || _use_json || _log_xml_line || _log_json_line || _udp_format != SectionFormat::BINARY) && (_all_sections && !_pack_all_sections)) {
         args.error(u"filtering sections (--all-sections or --all-once) is incompatible with XML or JSON output");
         return false;
     }
@@ -836,57 +845,80 @@ void ts::TablesLogger::handleInvalidSection(SectionDemux& demux, const DemuxedDa
 
 
 //----------------------------------------------------------------------------
+// Build an XML document with one table.
+// In case of error serializing the table, error message are printed.
+//----------------------------------------------------------------------------
+
+bool ts::TablesLogger::buildXML(xml::Document& doc, const BinaryTable& table)
+{
+    doc.initialize(u"tsduck");
+    return table.toXML(_duck, doc.rootElement(), _xml_options) != nullptr;
+}
+
+
+//----------------------------------------------------------------------------
+// Build a JSON one-liner from an XML document containing one table.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TablesLogger::buildJSON(const xml::Document& doc)
+{
+    // Convert the XML document into JSON.
+    // Force "tsduck" root to appear so that the path to the first table is always the same.
+    const json::ValuePtr root(_x2j_conv.convertToJSON(doc, true));
+
+    // Query the first (and only) converted table and serialize it as one line.
+    return root->query(u"#nodes[0]").oneLiner(_report);
+}
+
+
+//----------------------------------------------------------------------------
 // Log XML or JSON one-liners.
 //----------------------------------------------------------------------------
 
 void ts::TablesLogger::logXMLJSON(const BinaryTable& table)
 {
-    // Build an XML document.
-    xml::Document doc;
-    doc.initialize(u"tsduck");
-    xml::Element* elem = table.toXML(_duck, doc.rootElement(), _xml_options);
-    if (elem == nullptr) {
-        // Error serializing the table, error message already printed.
-        return;
-    }
-
-    // Log the XML line.
-    if (_log_xml_line) {
-        _report.info(_log_xml_prefix + doc.oneLiner());
-    }
-
-    // Log the JSON line.
-    if (_log_json_line) {
-        // Convert the XML document into JSON.
-        // Force "tsduck" root to appear so that the path to the first table is always the same.
-        const json::ValuePtr root(_x2j_conv.convertToJSON(doc, true));
-
-        // Query the first (and only) converted table and log it as one line.
-        _report.info(_log_json_prefix + root->query(u"#nodes[0]").oneLiner(_report));
+    xml::Document doc(_report);
+    if (buildXML(doc, table)) {
+        if (_log_xml_line) {
+            _report.info(_log_xml_prefix + doc.oneLiner());
+        }
+        if (_log_json_line) {
+            _report.info(_log_json_prefix + buildJSON(doc));
+        }
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Send UDP table and section.
+// Send a complete table through UDP.
 //----------------------------------------------------------------------------
 
 void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
 {
-    ByteBlockPtr bin(new ByteBlock);
-
-    // Minimize allocation by reserving over size
-    bin->reserve(table.totalSize() + 32 + 4 * table.sectionCount());
-
-    if (_udp_raw) {
-        // Add raw content of each section the message
-        for (size_t i = 0; i < table.sectionCount(); ++i) {
-            const Section& sect(*table.sectionAt(i));
-            bin->append(sect.content(), sect.size());
+    if (_udp_format == SectionFormat::XML || _udp_format == SectionFormat::JSON) {
+        // Build an XML or JSON one liner. In both cases, it starts with an XML structure.
+        xml::Document doc(_report);
+        if (buildXML(doc, table)) {
+            const UString line(_udp_format == SectionFormat::XML ? doc.oneLiner() : buildJSON(doc));
+            std::string utf8;
+            line.toUTF8(utf8);
+            _sock.send(utf8.data(), utf8.size(), _report);
         }
     }
+    else if (_udp_raw) {
+        // Send a binary table in raw format.
+        ByteBlock bin;
+        bin.reserve(table.totalSize());
+        for (size_t i = 0; i < table.sectionCount(); ++i) {
+            const Section& sect(*table.sectionAt(i));
+            bin.append(sect.content(), sect.size());
+        }
+        _sock.send(bin.data(), bin.size(), _report);
+    }
     else {
-        // Build a TLV message.
+        // Build a TLV message with all sections.
+        ByteBlockPtr bin(new ByteBlock);
+        bin->reserve(table.totalSize() + 32 + 4 * table.sectionCount());
         duck::LogTable msg(_duck_protocol);
         msg.pid = table.sourcePID();
         msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
@@ -895,32 +927,38 @@ void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
         }
         tlv::Serializer serial(bin);
         msg.serialize(serial);
+        _sock.send(bin->data(), bin->size(), _report);
     }
-
-    // Send TLV message over UDP
-    _sock.send(bin->data(), bin->size(), _report);
 }
+
+
+//----------------------------------------------------------------------------
+// Send one individual section through UDP.
+//----------------------------------------------------------------------------
 
 void ts::TablesLogger::sendUDP(const ts::Section& section)
 {
-    if (_udp_raw) {
-        // Send raw content of section as one single UDP message
-        _sock.send(section.content(), section.size(), _report);
-    }
-    else {
-        // Build a TLV message.
-        duck::LogSection msg(_duck_protocol);
-        msg.pid = section.sourcePID();
-        msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
-        msg.section = std::make_shared<Section>(section, ShareMode::SHARE);
+    // Individual sections can only be sent in binary format.
+    if (_udp_format == SectionFormat::BINARY) {
+        if (_udp_raw) {
+            // Send raw content of section as one single UDP message
+            _sock.send(section.content(), section.size(), _report);
+        }
+        else {
+            // Build a TLV message.
+            duck::LogSection msg(_duck_protocol);
+            msg.pid = section.sourcePID();
+            msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
+            msg.section = std::make_shared<Section>(section, ShareMode::SHARE);
 
-        // Serialize the message.
-        ByteBlockPtr bin(new ByteBlock);
-        tlv::Serializer serial(bin);
-        msg.serialize(serial);
+            // Serialize the message.
+            ByteBlockPtr bin(new ByteBlock);
+            tlv::Serializer serial(bin);
+            msg.serialize(serial);
 
-        // Send TLV message over UDP
-        _sock.send(bin->data(), bin->size(), _report);
+            // Send TLV message over UDP
+            _sock.send(bin->data(), bin->size(), _report);
+        }
     }
 }
 

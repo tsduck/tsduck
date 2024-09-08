@@ -424,6 +424,9 @@ The address specifies an IP address which can be either unicast or multicast.
 It can be also a host name that translates to an IP address.
 The port specifies the destination UDP port.
 
+[.optdoc]
+See also option `--udp-format`.
+
 [.opt]
 *--local-udp* _address_
 
@@ -436,7 +439,10 @@ It can be also a host name that translates to a local address.
 
 [.optdoc]
 With `--ip-udp`, send the tables as raw binary messages in UDP packets.
-By default, the tables are formatted into TLV messages.
+By default, the binary tables are formatted into TLV messages.
+
+[.optdoc]
+Ignored if `--udp-format` is not `binary` (the default).
 
 [.opt]
 *--ttl* _value_
@@ -445,5 +451,16 @@ By default, the tables are formatted into TLV messages.
 With `--ip-udp`, specifies the TTL (Time-To-Live) socket option.
 The actual option is either "Unicast TTL" or "Multicast TTL", depending on the destination address.
 Remember that the default Multicast TTL is 1 on most systems.
+
+[.opt]
+*--udp-format* _value_
+
+[.optdoc]
+With `--ip-udp`, specify the format of sections in the UDP datagrams.
+
+[.optdoc]
+The _value_ must be one of `binary`, `JSON`, `XML`.
+The default is `binary`.
+With `--all-sections` or `--all-once`, the only allowed format is `binary`.
 
 include::{docdir}/opt/group-xml-tweaks.adoc[tags=!*]

@@ -15,7 +15,7 @@
 #include "tsxmlJSONConverter.h"
 #include "tsjson.h"
 #include "tsTime.h"
-#include "tsSection.h"
+#include "tsSectionFormat.h"
 #include "tsBinaryTable.h"
 #include "tsCRC32.h"
 #include "tsBinaryTable.h"
@@ -89,16 +89,6 @@ namespace ts {
         SectionFile(DuckContext& duck);
 
         //!
-        //! Section file formats.
-        //!
-        enum class FileType {
-            UNSPECIFIED,  //!< Unspecified, depends on file name extension.
-            BINARY,       //!< Binary section file.
-            XML,          //!< XML section file.
-            JSON,         //!< JSON (translated XML) section file.
-        };
-
-        //!
         //! Clear the list of loaded tables and sections.
         //!
         void clear();
@@ -124,25 +114,6 @@ namespace ts {
         size_t tablesCount() const { return _tables.size(); }
 
         //!
-        //! Get a file type, based on a file name.
-        //! @param [in] file_name File name or inline XML or inline JSON.
-        //! @param [in] type File type.
-        //! @return If @a type is not FileType::UNSPECIFIED, return @a type.
-        //! Otherwise, return the file type based on the file name. If the file
-        //! name has no known extension, return FileType::UNSPECIFIED.
-        //!
-        static FileType GetFileType(const UString& file_name, FileType type = FileType::UNSPECIFIED);
-
-        //!
-        //! Build a file name, based on a file type.
-        //! @param [in] file_name File name.
-        //! @param [in] type File type.
-        //! @return If @a type is not FileType::UNSPECIFIED, remove the
-        //! extension from @a file_name and add the extension corresponding to @a type.
-        //!
-        static fs::path BuildFileName(const fs::path& file_name, FileType type);
-
-        //!
         //! Set new parsing and formatting tweaks for XML files.
         //! @param [in] tweaks XML tweaks.
         //!
@@ -163,7 +134,7 @@ namespace ts {
         //! @param [in] type File type. If UNSPECIFIED, the file type is based on the file name.
         //! @return True on success, false on error.
         //!
-        bool load(const UString& file_name, FileType type = FileType::UNSPECIFIED);
+        bool load(const UString& file_name, SectionFormat type = SectionFormat::UNSPECIFIED);
 
         //!
         //! Load a binary or XML file.
@@ -172,7 +143,7 @@ namespace ts {
         //! @param [in] type File type. If UNSPECIFIED, return an error.
         //! @return True on success, false on error.
         //!
-        bool load(std::istream& strm, FileType type = FileType::UNSPECIFIED);
+        bool load(std::istream& strm, SectionFormat type = SectionFormat::UNSPECIFIED);
 
         //!
         //! Load an XML file.
@@ -454,21 +425,6 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         static bool LoadModel(xml::Document& doc, bool load_extensions = true);
-
-        //!
-        //! Default file name suffix for binary section files.
-        //!
-        static constexpr const UChar* const DEFAULT_BINARY_SECTION_FILE_SUFFIX = u".bin";
-
-        //!
-        //! Default file name suffix for XML section files.
-        //!
-        static constexpr const UChar* const DEFAULT_XML_SECTION_FILE_SUFFIX = u".xml";
-
-        //!
-        //! Default file name suffix for JSON section files.
-        //!
-        static constexpr const UChar* const DEFAULT_JSON_SECTION_FILE_SUFFIX = u".json";
 
         //!
         //! File name of the XML model file for tables.

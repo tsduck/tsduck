@@ -710,92 +710,35 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
 
 
 //----------------------------------------------------------------------------
-// Get a file type, based on a file name.
-//----------------------------------------------------------------------------
-
-ts::SectionFile::FileType ts::SectionFile::GetFileType(const UString& file_name, FileType type)
-{
-    if (type != FileType::UNSPECIFIED) {
-        return type; // already known
-    }
-    if (xml::Document::IsInlineXML(file_name)) {
-        return FileType::XML; // inline XML content
-    }
-    if (json::IsInlineJSON(file_name)) {
-        return FileType::JSON; // inline JSON content
-    }
-    UString ext(fs::path(file_name).extension());
-    ext.convertToLower();
-    if (ext == DEFAULT_XML_SECTION_FILE_SUFFIX) {
-        return FileType::XML;
-    }
-    if (ext == DEFAULT_JSON_SECTION_FILE_SUFFIX) {
-        return FileType::JSON;
-    }
-    else if (ext == DEFAULT_BINARY_SECTION_FILE_SUFFIX) {
-        return FileType::BINARY;
-    }
-    else {
-        return FileType::UNSPECIFIED;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Build a file name, based on a file type.
-//----------------------------------------------------------------------------
-
-fs::path ts::SectionFile::BuildFileName(const fs::path& file_name, FileType type)
-{
-    fs::path res(file_name);
-    switch (type) {
-        case FileType::BINARY:
-            res.replace_extension(DEFAULT_BINARY_SECTION_FILE_SUFFIX);
-            break;
-        case FileType::XML:
-            res.replace_extension(DEFAULT_XML_SECTION_FILE_SUFFIX);
-            break;
-        case FileType::JSON:
-            res.replace_extension(DEFAULT_JSON_SECTION_FILE_SUFFIX);
-            break;
-        case FileType::UNSPECIFIED:
-        default:
-            break;
-    }
-    return res;
-}
-
-
-//----------------------------------------------------------------------------
 // Load a binary or XML file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::load(const UString& file_name, FileType type)
+bool ts::SectionFile::load(const UString& file_name, SectionFormat type)
 {
-    switch (GetFileType(file_name, type)) {
-        case FileType::BINARY:
+    switch (GetSectionFileFormat(file_name, type)) {
+        case SectionFormat::BINARY:
             return loadBinary(file_name);
-        case FileType::XML:
+        case SectionFormat::XML:
             return loadXML(file_name);
-        case FileType::JSON:
+        case SectionFormat::JSON:
             return loadJSON(file_name);
-        case FileType::UNSPECIFIED:
+        case SectionFormat::UNSPECIFIED:
         default:
             _report.error(u"unknown file type for %s", file_name);
             return false;
     }
 }
 
-bool ts::SectionFile::load(std::istream& strm, FileType type)
+bool ts::SectionFile::load(std::istream& strm, SectionFormat type)
 {
     switch (type) {
-        case FileType::BINARY:
+        case SectionFormat::BINARY:
             return loadBinary(strm);
-        case FileType::XML:
+        case SectionFormat::XML:
             return loadXML(strm);
-        case FileType::JSON:
+        case SectionFormat::JSON:
             return loadJSON(strm);
-        case FileType::UNSPECIFIED:
+        case SectionFormat::UNSPECIFIED:
         default:
             _report.error(u"unknown input file type");
             return false;
