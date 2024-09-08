@@ -59,15 +59,15 @@ namespace ts {
     //!
     //! Default file name suffix for binary section files.
     //!
-    TSDUCKDLL constexpr const UChar* const DEFAULT_BINARY_FILE_SUFFIX = u".bin";
+    constexpr const UChar* DEFAULT_BINARY_FILE_SUFFIX = u".bin";
 
     //!
     //! Default file name suffix for XML section files.
     //!
-    TSDUCKDLL constexpr const UChar* const DEFAULT_XML_FILE_SUFFIX = u".xml";
+    constexpr const UChar* DEFAULT_XML_FILE_SUFFIX = u".xml";
 
     //!
     //! Default file name suffix for JSON section files.
     //!
-    TSDUCKDLL constexpr const UChar* const DEFAULT_JSON_FILE_SUFFIX = u".json";
+    constexpr const UChar* DEFAULT_JSON_FILE_SUFFIX = u".json";
 }
