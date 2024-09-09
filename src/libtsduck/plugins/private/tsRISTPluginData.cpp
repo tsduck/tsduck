@@ -21,11 +21,20 @@ bool tsRISTPluginDataIsEmpty = true; // Avoid warning about empty module.
 ts::RISTPluginData::RISTPluginData(Report& report) :
     _report(report)
 {
-    log.log_level = SeverityToRistLog(_report.maxSeverity());
-    log.log_cb = LogCallback;
-    log.log_cb_arg = this;
+    // We need to initialize the log structure in two steps:
+    // 1) set void data, 2) set the real data using rist_logging_set().
+    // If we directly initialize the log fields without calling rist_logging_set(),
+    // the global internal mutex of the RIST logging system is not initialized
+    // and some logging features will crash later, trying to lock an uninitialized mutex.
+
+    log.log_level = RIST_LOG_DISABLE;
+    log.log_cb = nullptr;
+    log.log_cb_arg = nullptr;
     log.log_socket = -1;
     log.log_stream = nullptr;
+
+    ::rist_logging_settings* pset = &log;
+    ::rist_logging_set(&pset, SeverityToRistLog(_report.maxSeverity()), LogCallback, this, nullptr, nullptr);
 }
 
 
