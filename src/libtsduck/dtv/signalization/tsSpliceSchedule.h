@@ -41,7 +41,6 @@ namespace ts {
             uint32_t       event_id = 0;            //!< Splice event id.
             bool           canceled = false;        //!< When true, event is canceled, other fields are ignored.
             bool           splice_out = false;      //!< When true, this is a "splice out" event, "splice in" otherwise.
-            bool           program_splice = false;  //!< When true, all components are spliced.
             bool           use_duration = false;    //!< When true, the duration of the splice out / splice in sequence is given.
             uint32_t       program_utc = 0;         //!< UTC time value of the event (valid if !canceled && program_splice && !immediate).
             UTCByComponent components_utc {};       //!< UTC time value of the event by component (valid if !canceled && !program_splice && !immediate).
@@ -50,6 +49,12 @@ namespace ts {
             uint16_t       program_id = 0;          //!< Unique program id.
             uint8_t        avail_num = 0;           //!< Identification for a specific avail within one program_id.
             uint8_t        avails_expected = 0;     //!< Expected number of individual avails within the current viewing event.
+
+            //!
+            //! Rebuild the value of the documented "program_splice_flag" field.
+            //! @return The "program_splice_flag" value.
+            //!
+            bool programSplice() const { return !canceled && components_utc.empty(); }
         };
 
         //!

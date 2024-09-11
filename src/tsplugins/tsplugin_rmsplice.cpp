@@ -353,7 +353,7 @@ void ts::RMSplicePlugin::PIDState::addEvent(const SpliceInsert& cmd, const TagBy
     uint64_t pts = 0;
 
     if (!cmd.immediate) {
-        if (cmd.program_splice && cmd.program_pts.has_value()) {
+        if (cmd.programSplice() && cmd.program_pts.has_value()) {
             // Same PTS value for all components in the service.
             pts = cmd.program_pts.value();
         }

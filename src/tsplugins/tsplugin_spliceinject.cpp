@@ -809,7 +809,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
         // Compute the splice event PTS value. This will be the last time for
         // the splice command injection since the event is obsolete afterward.
         if (sit.splice_command_type == SPLICE_INSERT) {
-            if (sit.splice_insert.program_splice) {
+            if (sit.splice_insert.programSplice()) {
                 // Common PTS value, program-wide.
                 if (sit.splice_insert.program_pts.has_value()) {
                     last_pts = sit.splice_insert.program_pts.value();
@@ -889,7 +889,7 @@ ts::UString ts::SpliceInjectPlugin::SpliceCommand::toString() const
         }
         if (sit.splice_command_type == SPLICE_INSERT &&
             !sit.splice_insert.canceled &&
-            sit.splice_insert.program_splice &&
+            sit.splice_insert.programSplice() &&
             sit.splice_insert.program_pts.has_value())
         {
             name.append(UString::Format(u" @0x%09X", sit.splice_insert.program_pts.value()));

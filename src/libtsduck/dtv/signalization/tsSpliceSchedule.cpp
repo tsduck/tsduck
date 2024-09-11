@@ -58,15 +58,15 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
         if (!ev.canceled) {
             disp << margin
                  << "  Out of network: " << UString::YesNo(ev.splice_out)
-                 << ", program splice: " << UString::YesNo(ev.program_splice)
+                 << ", program splice: " << UString::YesNo(ev.programSplice())
                  << ", duration set: " << UString::YesNo(ev.use_duration)
                  << std::endl;
 
-            if (ev.program_splice) {
+            if (ev.programSplice()) {
                 // The complete program switches at a given time.
                 disp << margin << "  UTC: " << DumpSpliceTime(disp.duck(), ev.program_utc) << std::endl;
             }
-            if (!ev.program_splice) {
+            if (!ev.programSplice()) {
                 // Program components switch individually.
                 disp << margin << "  Number of components: " << ev.components_utc.size() << std::endl;
                 for (auto& it : ev.components_utc) {
@@ -117,11 +117,11 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
             }
 
             ev.splice_out = (data[0] & 0x80) != 0;
-            ev.program_splice = (data[0] & 0x40) != 0;
+            const bool program_splice = (data[0] & 0x40) != 0;
             ev.use_duration = (data[0] & 0x20) != 0;
             data++; size--;
 
-            if (ev.program_splice) {
+            if (program_splice) {
                 // The complete program switches at a given time.
                 if (size < 4) {
                     invalidate();
@@ -189,10 +189,10 @@ void ts::SpliceSchedule::serialize(ByteBlock& data) const
 
         if (!ev.canceled) {
             data.appendUInt8((ev.splice_out ? 0x80 : 0x00) |
-                             (ev.program_splice ? 0x40 : 0x00) |
+                             (ev.programSplice() ? 0x40 : 0x00) |
                              (ev.use_duration ? 0x20 : 0x00) |
                              0x1F);
-            if (ev.program_splice) {
+            if (ev.programSplice()) {
                 data.appendUInt32(uint32_t(ev.program_utc));
             }
             else {
@@ -234,7 +234,7 @@ void ts::SpliceSchedule::buildXML(DuckContext& duck, xml::Element* root) const
                 e1->setBoolAttribute(u"auto_return", ev.auto_return);
                 e1->setIntAttribute(u"duration", ev.duration_pts);
             }
-            if (ev.program_splice) {
+            if (ev.programSplice()) {
                 e->setDateTimeAttribute(u"utc_splice_time", ToUTCTime(duck, ev.program_utc));
             }
             else {
@@ -293,31 +293,28 @@ bool ts::SpliceSchedule::analyzeXML(DuckContext& duck, const xml::Element* eleme
              xmlEvents[i]->getBoolAttribute(ev.canceled, u"splice_event_cancel", false, false);
 
         if (ok && !ev.canceled) {
-            xml::ElementVector children;
+            xml::ElementVector breakDuration, components;
             ok = xmlEvents[i]->getBoolAttribute(ev.splice_out, u"out_of_network", true) &&
                  xmlEvents[i]->getIntAttribute(ev.program_id, u"unique_program_id", true) &&
                  xmlEvents[i]->getIntAttribute(ev.avail_num, u"avail_num", false, 0) &&
                  xmlEvents[i]->getIntAttribute(ev.avails_expected, u"avails_expected", false, 0) &&
-                 xmlEvents[i]->getChildren(children, u"break_duration", 0, 1);
-            ev.use_duration = !children.empty();
+                 xmlEvents[i]->getChildren(breakDuration, u"break_duration", 0, 1) &&
+                 xmlEvents[i]->getChildren(components, u"component", 0, 255);
+            ev.use_duration = !breakDuration.empty();
             if (ok && ev.use_duration) {
-                assert(children.size() == 1);
-                ok = children[0]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
-                     children[0]->getIntAttribute(ev.duration_pts, u"duration", true);
+                assert(breakDuration.size() == 1);
+                ok = breakDuration[0]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
+                     breakDuration[0]->getIntAttribute(ev.duration_pts, u"duration", true);
             }
-            ev.program_splice = xmlEvents[i]->hasAttribute(u"utc_splice_time");
-            if (ok && ev.program_splice) {
+            if (ok && components.empty()) {
                 ok = GetSpliceTime(duck, xmlEvents[i], u"utc_splice_time", ev.program_utc);
             }
-            if (ok && !ev.program_splice) {
-                ok = xmlEvents[i]->getChildren(children, u"component", 0, 255);
-                for (size_t i1 = 0; ok && i1 < children.size(); ++i1) {
-                    uint8_t tag = 0;
-                    uint32_t utc = 0;
-                    ok = children[i1]->getIntAttribute(tag, u"component_tag", true) &&
-                         GetSpliceTime(duck, children[i1], u"utc_splice_time", utc);
-                    ev.components_utc[tag] = utc;
-                }
+            for (size_t i1 = 0; ok && i1 < components.size(); ++i1) {
+                uint8_t tag = 0;
+                uint32_t utc = 0;
+                ok = components[i1]->getIntAttribute(tag, u"component_tag", true) &&
+                     GetSpliceTime(duck, components[i1], u"utc_splice_time", utc);
+                ev.components_utc[tag] = utc;
             }
         }
         events.push_back(ev);

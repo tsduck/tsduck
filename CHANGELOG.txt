@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3851
+VERSION 3.39-3852
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -22,6 +22,8 @@ VERSION 3.39-3851
   * In "tstabcomp", when an input file name was specified but no output file
     name (e.g. "tstabcomp file.xml"), the output was sent to the standard
     output instead of the default output file name (e.g. "file.bin").
+  * Fixed issue #1519: incorrect value of program_splice_flag in SCTE 35
+    splice information tables.
 
 -------------------------------------------------------------------------------
 

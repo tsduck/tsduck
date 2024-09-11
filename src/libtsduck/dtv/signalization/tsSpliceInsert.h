@@ -42,9 +42,8 @@ namespace ts {
         bool              canceled = true;            //!< When true, event is canceled, other fields are ignored.
         bool              splice_out = false;         //!< When true, this is a "splice out" event, "splice in" otherwise.
         bool              immediate = false;          //!< When true, should splice asap, time fields are ignored.
-        bool              program_splice = false;     //!< When true, all components are spliced.
         bool              use_duration = false;       //!< When true, the duration of the splice out / splice in sequence is given.
-        SpliceTime        program_pts {};             //!< PTS time value of the event (valid if !canceled && program_splice && !immediate).
+        SpliceTime        program_pts {};             //!< PTS time value of the event for the program (valid if !canceled && !immediate && components_pts.empty()).
         SpliceByComponent components_pts {};          //!< PTS time value of the event by component (valid if !canceled && !program_splice && !immediate).
         uint64_t          duration_pts = INVALID_PTS; //!< Duration of the splice out / splice in sequence (valid if !canceled && use_duration).
         bool              auto_return = false;        //!< When true, there won't be an explicit "splice in" event, use duration_pts (valid if !canceled && use_duration).
@@ -74,6 +73,12 @@ namespace ts {
         //! @return The lowest PTS value in the command or INVALID_PTS if none found.
         //!
         uint64_t lowestPTS() const;
+
+        //!
+        //! Rebuild the value of the documented "program_splice_flag" field.
+        //! @return The "program_splice_flag" value.
+        //!
+        bool programSplice() const { return !canceled && components_pts.empty(); }
 
         //!
         //! Display the splice insert command.
