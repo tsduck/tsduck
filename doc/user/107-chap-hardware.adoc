@@ -587,6 +587,16 @@ So, keep in mind that these devices are not tested for every new version of TSDu
 |Tested OK
 
 |TBS
+|TBS 6209se +
+ DVB-T2/T, DVB-C2/C (J.83A/B/C), +
+ ISDB-T/C, ATSC 1.0
+|Multiple
+|8
+|PCIe
+|Tested OK
+|Not tested
+
+|TBS
 |TBS 5922
 |DVB-S/S2
 |1
