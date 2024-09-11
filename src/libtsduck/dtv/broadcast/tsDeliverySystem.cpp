@@ -95,7 +95,7 @@ const ts::Enumeration ts::DeliverySystemEnum({
     {u"DVB-T2",      ts::DS_DVB_T2},
     {u"DVB-C",       ts::DS_DVB_C}, // a synonym for DS_DVB_C_ANNEX_A
     {u"DVB-C/A",     ts::DS_DVB_C_ANNEX_A},
-    {u"DVB-C/B",     ts::DS_DVB_C_ANNEX_A},
+    {u"DVB-C/B",     ts::DS_DVB_C_ANNEX_B},
     {u"DVB-C/C",     ts::DS_DVB_C_ANNEX_C},
     {u"DVB-C2",      ts::DS_DVB_C2},
     {u"DVB-H",       ts::DS_DVB_H},
