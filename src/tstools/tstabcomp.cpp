@@ -34,7 +34,7 @@ namespace {
         fs::path            outFile {};              // Output file path.
         bool                outIsDir = false;        // Output name is a directory.
         bool                useStdIn = false;        // At least one input file is the standard input.
-        bool                useStdOut = false;       // Use standard output.
+        bool                useStdOut = false;       // Use standard output for all input files.
         bool                compile = false;         // Explicit compilation.
         bool                decompile = false;       // Explicit decompilation.
         bool                fromJSON = false;        // All input files are JSON.
@@ -125,7 +125,7 @@ Options::Options(int argc, char *argv[]) :
     xmlModel = present(u"xml-model");
     withExtensions = present(u"extensions");
     useStdIn = ts::UString(u"-").isContainedSimilarIn(inFiles);
-    useStdOut = outFile.empty() || outFile == u"-";
+    useStdOut = present(u"output") && (outFile.empty() || outFile == u"-");
     outIsDir = !useStdOut && fs::is_directory(outFile);
 
     if (useStdOut) {
