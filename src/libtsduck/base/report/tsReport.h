@@ -18,12 +18,38 @@
 
 namespace ts {
     //!
-    //! Base class for event reporting and monitoring.
+    //! Base class for message reporting and monitoring.
     //! @ingroup log
     //!
-    //! Maximum severity: Each report instance has an adjustable "maximum severity". All messages
+    //! Maximum severity: Each Report instance has an adjustable "maximum severity". All messages
     //! with a higher severity are dropped without reporting. The initial default severity is
     //! @c Info, meaning that @c Verbose and @c Debug messages are dropped by default.
+    //!
+    //! Report delegation: A Report can delegate its message reporting to another Report. Each Report
+    //! has at most one delegate and several delagators (other Reports which delegate to this object).
+    //! Therefore, there is a tree of Reports which ultimately ends to one Report which does the actual
+    //! message logging. All Reports in that tree share the same maximum severity. When the maximum
+    //! severity is changed in one Report, it is updated in all Reports in the tree.
+    //!
+    //! Delegation and thread synchronization: We tried to find the right balance between performances
+    //! and synchronization.
+    //! - We assume that messages are extremely frequently emitted and should be logged without locking.
+    //!   Accesses to the current maximum severity and to the delegate are unchecked are done using local
+    //!   capies in this object. Problems occur when we log to the delegate at the same time the delegate
+    //!   is destructed, because there is no lock during the logging functions. We accept the race condition
+    //!   since getting the lock each time we log a message whould be too costly. To avoid this race condition,
+    //!   never delegate to a report which may be destructed before this object.
+    //! - Setting or removing delegation is rare and needs synchronization. Because modifications
+    //!   can be done upward or downward, it is difficult to find a fine-grained hierarchy of locks
+    //!   without risking a deadlock. Similarly, it is difficult to locate one mutex per tree of Reports
+    //!   because trees can be split (when a delegation is removed) or merged (when a delegation is
+    //!   created). Therefore, a global mutex is used for all Reports, when delegations are added or
+    //!   removed. This is why this must be a rare operation.
+    //! - Adjusting the maximum severity is far less frequent than logging a message. However, since
+    //!   we assume that many or most Reports do not have any delegate or delegators, we want to safely
+    //!   update their maximum severity without locking the global mutex. We do this using atomic counters.
+    //!   For Reports which are part of a delegation tree, we lock the global mutex and update the local
+    //!   copy of the maximum severity in each Report in the tree.
     //!
     class TSDUCKDLL Report
     {
@@ -46,23 +72,25 @@ namespace ts {
         //!
         //! Destructor.
         //!
+        //! It is unsafe to delete a Report when it has delegators (i.e. when other Reports
+        //! delegate to this object). Race conditions exist when a delegator logs a message
+        //! at the same time its delegate is destructed.
+        //!
         virtual ~Report();
 
         //!
         //! Set maximum severity level.
         //! Messages with higher severities are not reported.
         //! @param [in] level Set report to that level.
-        //! @param [in] delegated Propagate the severity to delegated reports.
         //!
-        void setMaxSeverity(int level, bool delegated = false);
+        void setMaxSeverity(int level);
 
         //!
         //! Raise maximum severity level.
         //! The severity can only be increased (more verbose, more debug), never decreased.
         //! @param [in] level Set report at least to that level.
-        //! @param [in] delegated Propagate the severity to delegated reports.
         //!
-        void raiseMaxSeverity(int level, bool delegated = false);
+        void raiseMaxSeverity(int level);
 
         //!
         //! Get maximum severity level.
@@ -547,20 +575,37 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg);
 
     private:
-        bool     volatile _got_errors = false;
-        int      volatile _max_severity = Severity::Info;
-        UString           _prefix {};
-        // Delegation and thread synchronization:
-        // - Establishing a delegation: _mutex shall be held in this object first, then in delegate.
-        // - Using the delegate to log a message or set severity: no lock, just read the volatile _delegate
-        //   once and use the copy. If unlinked in the meantime, the message will be logged to the previous
-        //   delegate, which is not incorrect since logging and delegating simultaneously occured.
-        // - Problems occur when we log to the delegate at the same time the delegate is destructed,
-        //   because there is no lock during the logging functions. We accept the race condition since
-        //   getting the lock each time we log a message whould be too costly. To avoid this race condition,
-        //   never delegate to a report which may be destructed before this object.
-        std::mutex        _mutex {};
-        Report*  volatile _delegate = nullptr;
-        std::set<Report*> _delegated {};   // list of other instances which delegate to this
+        bool _got_errors = false;
+        UString _prefix {};
+
+        // Current maximum severity which applies to this object and all Reports in the delegation tree.
+        volatile int _max_severity = Severity::Info;
+
+        // Last maximum severity which was explicitly set in this report. Can be different from
+        // _max_severity because_max_severity can be updated when another Report in the delegation
+        // tree changes its maximum severity. The _last_max_severity is used to restore _max_severity
+        // when this object no longer delegates its reporting.
+        int _last_max_severity = Severity::Info;
+
+        // Number of transactions on this node of the delegation tree. This counter is incremented
+        // when the delegate or one of the delegotors is added or removed.
+        std::atomic_intmax_t _transactions {0};
+
+        // Delegate Report. When not null, all messages are logged through this other report (recursively
+        // if the delegate has a delegate, etc.) Unsynchronized access during message logging, see comment
+        // in the header of the class.
+        Report* volatile _delegate = nullptr;
+
+        // Indicate if _delegators is not empty.
+        // Can be modified only under the global mutex.
+        // Can be read without locking the global mutex.
+        volatile bool _has_delegators = false;
+
+        // Set of other instances which delegate to this object.
+        // Can be modified only under the global mutex.
+        std::set<Report*> _delegators {};
+
+        // Set the severity of all its delegators, recursively, with global mutex held.
+        void setDelegatorsMaxSeverityLocked(int level, Report* skip, int foolproof);
     };
 }

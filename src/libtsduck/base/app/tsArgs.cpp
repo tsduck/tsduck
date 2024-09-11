@@ -1104,12 +1104,12 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
 
     // Process --verbose predefined option
     if ((_flags & NO_VERBOSE) == 0 && present(u"verbose") && (search(u"verbose")->flags & IOPT_PREDEFINED) != 0) {
-        raiseMaxSeverity(Severity::Verbose, true);
+        raiseMaxSeverity(Severity::Verbose);
     }
 
     // Process --debug predefined option
     if ((_flags & NO_DEBUG) == 0 && present(u"debug") && (search(u"debug")->flags & IOPT_PREDEFINED) != 0) {
-        raiseMaxSeverity(intValue(u"debug", Severity::Debug), true);
+        raiseMaxSeverity(intValue(u"debug", Severity::Debug));
     }
 
     // Display the analyzed command line. Do it outside the previous condition (checking for --debug) if the debug

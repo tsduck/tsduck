@@ -337,17 +337,29 @@ TSUNIT_DEFINE_TEST(Delegation)
     TSUNIT_EQUAL(u"", log.messages());
 
     rep.setMaxSeverity(ts::Severity::Verbose);
+    TSUNIT_EQUAL(ts::Severity::Verbose, rep.maxSeverity());
+    TSUNIT_EQUAL(ts::Severity::Verbose, log.maxSeverity());
+
     rep.verbose(u"text 2");
+    TSUNIT_EQUAL(u"text 2", log.messages());
+
+    log.clear();
     TSUNIT_EQUAL(u"", log.messages());
 
-    log.setMaxSeverity(ts::Severity::Verbose);
-    rep.verbose(u"text 3");
-    TSUNIT_EQUAL(u"text 3", log.messages());
+    log.setMaxSeverity(ts::Severity::Debug);
+    TSUNIT_EQUAL(ts::Severity::Debug, rep.maxSeverity());
+    TSUNIT_EQUAL(ts::Severity::Debug, log.maxSeverity());
+
+    rep.debug(u"text 3");
+    TSUNIT_EQUAL(u"Debug: text 3", log.messages());
 
     log.clear();
     TSUNIT_EQUAL(u"", log.messages());
 
     rep.setMaxSeverity(ts::Severity::Info);
+    TSUNIT_EQUAL(ts::Severity::Info, rep.maxSeverity());
+    TSUNIT_EQUAL(ts::Severity::Info, log.maxSeverity());
+
     rep.verbose(u"text 4");
     TSUNIT_EQUAL(u"", log.messages());
 
