@@ -337,7 +337,7 @@ namespace ts {
         PacketCounter               _packet_index = 0;     // Index in file of first packet in buffer.
         PacketCounter               _packet_count = 0;     // Number of packets in _packets_buffer (wrap up at end of buffer).
         PacketCounter               _missing_start = NONE; // If not NONE, we are inside a zone of missing packets (missing in the other file).
-        PacketCounter               _missing_packets = 0;  // Total numner of missing packets.
+        PacketCounter               _missing_packets = 0;  // Total number of missing packets.
         PacketCounter               _missing_chunks = 0;   // Number of holes, missing chunks.
         bool                        _end_of_file = false;  // End of file or error encountered.
 
@@ -390,7 +390,7 @@ void ts::FileToCompare::fillBuffer()
         readContiguousPackets();
         // Wrap up and read more at beginning of buffer if necessary.
         if (!_end_of_file && _packet_count < _packets_buffer.size()) {
-            assert(_packet_index % _packets_buffer.size() == 0);
+            assert((_packet_index + _packet_count) % _packets_buffer.size() == 0);
             readContiguousPackets();
         }
     }
