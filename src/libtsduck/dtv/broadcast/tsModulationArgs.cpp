@@ -588,13 +588,13 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
 // Fill modulation parameters from delivery system descriptors in a descriptor list.
 //----------------------------------------------------------------------------
 
-bool ts::ModulationArgs::fromDeliveryDescriptors(DuckContext& duck, const DescriptorList& dlist, uint16_t ts_id)
+bool ts::ModulationArgs::fromDeliveryDescriptors(DuckContext& duck, const DescriptorList& dlist, uint16_t ts_id, DeliverySystem delsys)
 {
     // We need to explore all descriptors. We cannot stop at the first delivery system descriptor
     // because some of them are incremental (eg. DVB-S2). We accumulate values from all of them.
     bool found = false;
     for (size_t i = 0; i < dlist.count(); ++i) {
-        found = fromDeliveryDescriptor(duck, *dlist[i], ts_id) || found;
+        found = fromDeliveryDescriptor(duck, *dlist[i], ts_id, delsys) || found;
     }
     return found;
 }
@@ -604,7 +604,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptors(DuckContext& duck, const Descri
 // Fill modulation parameters from a delivery system descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id)
+bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id, DeliverySystem delsys)
 {
     switch (desc.tag()) {
         case DID_SAT_DELIVERY: {
@@ -652,7 +652,19 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
         case DID_CABLE_DELIVERY: {
             const CableDeliverySystemDescriptor dd(duck, desc);
             if (dd.isValid()) {
-                delivery_system = dd.deliverySystem(duck); // @@@ TODO: depends on context: annex A, B or C
+                // Scanning a NIT on DVB-C networks has a specific issue.
+                // There are three types of DVB-C: /A, /B, /C. However, the cable_delivery_system_descriptor
+                // does not specify which one is used. If we want to tune to this transport stream, we need
+                // to specify the right flavor of DVB-C. It must be the same as the one from which this
+                // descriptor was extracted, otherwise no set-top box could scan the network using the NIT.
+                if (delsys == DS_DVB_C_ANNEX_A || delsys == DS_DVB_C_ANNEX_B || delsys == DS_DVB_C_ANNEX_C) {
+                    // Use the same flavor of DVB-C as current TS.
+                    delivery_system = delsys;
+                }
+                else {
+                    // Use the default one from the descriptor, tune may fail if not DVB-C/A.
+                    delivery_system = dd.deliverySystem(duck);
+                }
                 frequency = dd.frequency;
                 symbol_rate = dd.symbol_rate;
                 inner_fec = dd.getInnerFEC();

@@ -562,6 +562,7 @@ bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, Tun
         return elem->getVariableIntAttribute(mod.frequency, u"frequency", true) &&
                elem->getVariableIntAttribute(mod.symbol_rate, u"symbolrate", false, 6900000) &&
                elem->getVariableIntEnumAttribute(mod.modulation, ModulationEnum, u"modulation", false, QAM_64) &&
+               elem->getVariableIntEnumAttribute(mod.delivery_system, DeliverySystemEnum, u"system", false, DS_DVB_C) &&
                elem->getOptionalIntEnumAttribute(mod.inner_fec, InnerFECEnum, u"FEC") &&
                elem->getOptionalIntEnumAttribute(mod.inversion, SpectralInversionEnum, u"inversion");
     }
@@ -675,6 +676,9 @@ ts::xml::Element* ts::ChannelFile::toXML(const ModulationArgs& mod, xml::Element
             e->setOptionalIntAttribute(u"frequency", mod.frequency, false);
             e->setOptionalIntAttribute(u"symbolrate", mod.symbol_rate, false);
             e->setOptionalEnumAttribute(ModulationEnum, u"modulation", mod.modulation);
+            if (delsys != DS_DVB_C) {
+                e->setOptionalEnumAttribute(DeliverySystemEnum, u"system", mod.delivery_system);
+            }
             if (mod.inner_fec != FEC_AUTO) {
                 e->setOptionalEnumAttribute(InnerFECEnum, u"FEC", mod.inner_fec);
             }

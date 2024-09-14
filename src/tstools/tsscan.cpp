@@ -650,7 +650,7 @@ void ScanContext::nitScan()
         const ts::TransportStreamId& tsid(it.first);
         const ts::DescriptorList& dlist(it.second.descs);
         ts::ModulationArgs params;
-        if (params.fromDeliveryDescriptors(_opt.duck, dlist, tsid.transport_stream_id)) {
+        if (params.fromDeliveryDescriptors(_opt.duck, dlist, tsid.transport_stream_id, _opt.tuner_args.delivery_system.value_or(ts::DS_UNDEFINED))) {
             // Got delivery descriptors, this is the description of one transponder.
             // Copy the local reception parameters (LNB, etc.) from the command line options
             // (we use the same reception equipment).

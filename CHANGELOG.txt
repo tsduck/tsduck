@@ -15,6 +15,10 @@ VERSION 3.39-3856
   * In a XML file which describes a tuner emulator, the following attributes
     can now be specified per channel: polarization, modulation, symbol_rate,
     and FEC_inner.
+  * In "tsscan" and plugin "nitscan", when scanning a DVB-C network, the DVB-C
+    Annex A, B, or C, which was used to scan the TS carrying the NIT is
+    propagated to scanned TS (issue #1518). With the plugin "nitscan", this
+    is effective only if the input plugin is "dvb".
   * New options in existing commands and plugins:
     - Option --udp-format in "tstables" and plugin "tables" to send tables
       in JSON or XML format through UDP (previously, it was binary only).

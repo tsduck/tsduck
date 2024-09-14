@@ -24,6 +24,7 @@
       <dvbc frequency="uint64, required"
             symbolrate="uint32, default=6,900,000"
             modulation="16-QAM|32-QAM|64-QAM|128-QAM|256-QAM|QAM, default=64-QAM"
+            system="DVB-C|DVB-C/A|DVB-C/B|DVB-C/C|, default=DVB-C"
             FEC="1/2|2/3|3/4|4/5|5/6|6/7|7/8|8/9|9/10|3/5|1/3|1/4|2/5|5/11|auto|none, default=auto"
             inversion="on|off|auto, default=auto"/>
 

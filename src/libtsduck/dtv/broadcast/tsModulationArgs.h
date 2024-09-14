@@ -491,19 +491,23 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
         //! @param [in] ts_id Tranport stream id of the TS which is described by the delivery system descriptor.
+        //! @param [in] delsys Optional delivery system of the TS from which the descriptor was extracted.
+        //! In the case of cable_delivery_system_descriptor, it helps to characterize the target delivery system.
         //! @return True on success, false if the descriptor was not correctly analyzed or is not
         //! a delivery system descriptor.
         //!
-        bool fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id);
+        bool fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id, DeliverySystem delsys = DS_UNDEFINED);
 
         //!
         //! Fill modulation parameters from delivery system descriptors in a descriptor list.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] dlist A descriptor list.
         //! @param [in] ts_id Tranport stream id of the TS which is described by the delivery system descriptor.
+        //! @param [in] delsys Optional delivery system of the TS from which the descriptor list was extracted.
+        //! In the case of cable_delivery_system_descriptor, it helps to characterize the target delivery system.
         //! @return True on success, false if no delivery system descriptor was found.
         //!
-        bool fromDeliveryDescriptors(DuckContext& duck, const DescriptorList& dlist, uint16_t ts_id);
+        bool fromDeliveryDescriptors(DuckContext& duck, const DescriptorList& dlist, uint16_t ts_id, DeliverySystem delsys = DS_UNDEFINED);
 
         //!
         //! Attempt to get a "modulation type" for Dektec modulator cards.

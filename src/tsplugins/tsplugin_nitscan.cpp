@@ -14,7 +14,7 @@
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsBinaryTable.h"
-#include "tsFileUtils.h"
+#include "tsObjectRepository.h"
 #include "tsChannelFile.h"
 #include "tsPAT.h"
 #include "tsNIT.h"
@@ -316,12 +316,17 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
     // Count the number of NIT's
     _nit_count++;
 
+    // Try to get input tuning parameter, and specifically the delivery system.
+    const ObjectPtr input_params(ObjectRepository::Instance().retrieve(u"tsp.dvb.params"));
+    const ModulationArgs* input = dynamic_cast<const ModulationArgs*>(input_params.get());
+    const DeliverySystem delsys = input == nullptr ? DS_UNDEFINED : input->delivery_system.value_or(DS_UNDEFINED);
+
     // Process each TS descriptor list
     for (const auto& it : nit.transports) {
         const TransportStreamId& tsid(it.first);
         const DescriptorList& dlist(it.second.descs);
         ModulationArgs tp;
-        if (tp.fromDeliveryDescriptors(duck, dlist, tsid.transport_stream_id)) {
+        if (tp.fromDeliveryDescriptors(duck, dlist, tsid.transport_stream_id, delsys)) {
             // Output --dvb-options.
             if (_dvb_options) {
                 // Optional comment

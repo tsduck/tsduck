@@ -58,6 +58,9 @@ namespace ts {
 
         // Produce a JSON status report if necessary.
         void jsonReport();
+
+        // Store the tuning parameters in a global repository (may be used by other plugins).
+        void storeTunerArgs();
     };
 }
 
@@ -125,6 +128,16 @@ bool ts::DVBInputPlugin::abortInput()
 
 
 //----------------------------------------------------------------------------
+// Store the tuning parameters in a global repository (may be used by other plugins).
+//----------------------------------------------------------------------------
+
+void ts::DVBInputPlugin::storeTunerArgs()
+{
+    ObjectRepository::Instance().store(u"tsp.dvb.params", std::make_shared<ModulationArgs>(_tuner_args));
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
@@ -155,6 +168,7 @@ bool ts::DVBInputPlugin::start()
         stop();
         return false;
     }
+    storeTunerArgs();
 
     // Compute theoretical TS bitrate from tuning parameters.
     const BitRate bitrate = _tuner_args.theoreticalBitrate();
@@ -216,10 +230,7 @@ ts::BitRate ts::DVBInputPlugin::getBitrate()
 
     // When bitrate changes, the modulation parameters have changed
     if (bitrate != _previous_bitrate) {
-        // Store the new parameters in a global repository (may be used by other plugins)
-        ObjectRepository::Instance().store(u"tsp.dvb.params", std::make_shared<ModulationArgs>(_tuner_args));
-
-        // Display new tuning info
+        storeTunerArgs();
         verbose(u"actual tuning options: %s", _tuner_args.toPluginOptions());
     }
 
