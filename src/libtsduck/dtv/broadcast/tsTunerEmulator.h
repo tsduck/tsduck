@@ -99,6 +99,12 @@ namespace ts {
             UString        file {};                  // TS file name.
             UString        pipe {};                  // Command line to pipe output in terminal emulator.
 
+            // Optional tuning parameters. Must be identical if specified in XML and in tune operation.
+            std::optional<Polarization> polarity {};
+            std::optional<uint32_t>     symbol_rate {};
+            std::optional<InnerFEC>     inner_fec {};
+            std::optional<Modulation>   modulation {};
+
             // Constructor.
             Channel() = default;
 

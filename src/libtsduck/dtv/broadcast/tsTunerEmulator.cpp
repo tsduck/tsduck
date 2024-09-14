@@ -112,7 +112,11 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         Channel chan;
         success = (*it)->getIntAttribute(chan.frequency, u"frequency", true) &&
                   (*it)->getIntAttribute(chan.bandwidth, u"bandwidth", false, def_bandwidth) &&
-                (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
+                  (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
+                  (*it)->getOptionalIntEnumAttribute(chan.polarity, PolarizationEnum, u"polarization") &&
+                  (*it)->getOptionalIntAttribute(chan.symbol_rate, u"symbol_rate") &&
+                  (*it)->getOptionalIntEnumAttribute(chan.inner_fec, InnerFECEnum, u"FEC_inner") &&
+                  (*it)->getOptionalIntEnumAttribute(chan.modulation, ModulationEnum, u"modulation") &&
                   (*it)->getAttribute(chan.file, u"file", false) &&
                   (*it)->getAttribute(chan.pipe, u"pipe", false);
         chan.file.trim();
@@ -248,8 +252,19 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
         _duck.report().error(u"no signal at %'d Hz", freq);
         return false;
     }
-    else if (delsys != DS_UNDEFINED && _channels[index].delivery != DS_UNDEFINED && delsys != _channels[index].delivery) {
-        _duck.report().error(u"delivery system at %'d Hz is %s, %s requested ", freq, DeliverySystemEnum.name(_channels[index].delivery), DeliverySystemEnum.name(delsys));
+    const Channel& chan(_channels[index]);
+
+    // Check modulation parameters.
+    if (delsys != DS_UNDEFINED && chan.delivery != DS_UNDEFINED && delsys != chan.delivery) {
+        _duck.report().error(u"delivery system at %'d Hz is %s, %s requested", freq, DeliverySystemEnum.name(chan.delivery), DeliverySystemEnum.name(delsys));
+        return false;
+    }
+    if ((params.modulation.has_value() && chan.modulation.has_value() && params.modulation != chan.modulation) ||
+        (params.polarity.has_value() && chan.polarity.has_value() && params.polarity != chan.polarity) ||
+        (params.symbol_rate.has_value() && chan.symbol_rate.has_value() && params.symbol_rate != chan.symbol_rate) ||
+        (params.inner_fec.has_value() && chan.inner_fec.has_value() && params.inner_fec != chan.inner_fec))
+    {
+        _duck.report().error(u"invalid modulation parameter at %'d Hz", freq);
         return false;
     }
 
@@ -268,7 +283,7 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
     // Found a valid entry for the frequency.
     _tune_index = index;
     _tune_frequency = freq;
-    _strength = _channels[index].strength(freq);
+    _strength = chan.strength(freq);
     _state = State::TUNED;
     return true;
 }
@@ -362,8 +377,21 @@ bool ts::TunerEmulator::getCurrentTuning(ModulationArgs& params, bool reset_unkn
     }
     else {
         assert(_tune_index < _channels.size());
+        const Channel& chan(_channels[_tune_index]);
         params.frequency = _tune_frequency;
-        params.delivery_system = _channels[_tune_index].delivery;
+        params.delivery_system = chan.delivery;
+        if (chan.modulation.has_value()) {
+            params.modulation = chan.modulation;
+        }
+        if (chan.polarity.has_value()) {
+            params.polarity = chan.polarity;
+        }
+        if (chan.symbol_rate.has_value()) {
+            params.symbol_rate = chan.symbol_rate;
+        }
+        if (chan.inner_fec.has_value()) {
+            params.inner_fec = chan.inner_fec;
+        }
         return true;
     }
 }

@@ -20,6 +20,10 @@
   <channel frequency="uint64, required"
            delivery="string, optional"
            bandwidth="uint64, optional"
+           polarization="horizontal|vertical|left|right, optional"
+           modulation="QPSK|8-PSK|16-QAM|32-QAM|64-QAM|128-QAM|256-QAM|8-VSB|16-VSB|16-APSK|32-APSK|DQPSK, optional"
+           symbol_rate="uint32, optional"
+           FEC_inner="1/2|1/3|1/4|2/3|2/5|3/4|5/6|6/7|7/8|8/9|3/5|4/5|9/10|5/11, optional"
            file="string, optional"
            pipe="string, optional"/>
 
