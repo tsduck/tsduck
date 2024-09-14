@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDescriptor.h"
+#include "tsAbstractDeliverySystemDescriptor.h"
 
 namespace ts {
 
@@ -21,7 +21,7 @@ namespace ts {
     //! @see ARIB STD-B10, Part 2, 6.2.31
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL ISDBTerrestrialDeliverySystemDescriptor : public AbstractDescriptor
+    class TSDUCKDLL ISDBTerrestrialDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
         // ISDBTerrestrialDeliverySystemDescriptor public members:
@@ -42,6 +42,18 @@ namespace ts {
         //!
         ISDBTerrestrialDeliverySystemDescriptor(DuckContext& duck, const Descriptor& bin);
 
+        //!
+        //! Translate the binary value in transmission_mode as a TransmissionMode enumeration value.
+        //! @return The corresponding TransmissionMode enumeration value.
+        //!
+        TransmissionMode getTransmissionMode() const { return translate(transmission_mode, ToTransmissionMode, TM_AUTO); }
+
+        //!
+        //! Translate the binary value in guard_interval as a GuardInterval enumeration value.
+        //! @return The corresponding GuardInterval enumeration value.
+        //!
+        GuardInterval getGuardInterval() const { return translate(guard_interval, ToGuardInterval, GUARD_AUTO); }
+
         // Inherited methods
         DeclareDisplayDescriptor();
 
@@ -54,8 +66,10 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        // The frequency in the descriptor is in units of 1/7 MHz.
-        // Conversion functions:
+        static const std::map<int, TransmissionMode> ToTransmissionMode;
+        static const std::map<int, GuardInterval> ToGuardInterval;
+
+        // The frequency in the descriptor is in units of 1/7 MHz. Conversion functions:
         static uint64_t BinToHz(uint16_t bin) { return (1000000 * uint64_t(bin)) / 7; }
         static uint16_t HzToBin(uint64_t freq) { return uint16_t((7 * freq) / 1000000); }
     };

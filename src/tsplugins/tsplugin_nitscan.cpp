@@ -320,44 +320,38 @@ void ts::NITScanPlugin::processNIT(const NIT& nit)
     for (const auto& it : nit.transports) {
         const TransportStreamId& tsid(it.first);
         const DescriptorList& dlist(it.second.descs);
-
-        // Loop on all descriptors for the current TS
-        for (size_t i = 0; i < dlist.count(); ++i) {
-            // Try to get delivery system information from current descriptor
-            ModulationArgs tp;
-            if (tp.fromDeliveryDescriptor(duck, *dlist[i], tsid.transport_stream_id)) {
-
-                // Output --dvb-options.
-                if (_dvb_options) {
-                    // Optional comment
-                    if (_use_comment) {
-                        *_output << _comment_prefix
-                                 << UString::Format(u"TS id: %n, original network id: %n, from NIT v%d on network id: %n",
-                                                    tsid.transport_stream_id, tsid.original_network_id, nit.version, nit.network_id)
-                                 << std::endl;
-                    }
-                    // Output the tuning information, optionally in a variable definition.
-                    if (_use_variable) {
-                        *_output << _variable_prefix << int(tsid.transport_stream_id) << "=\"";
-                    }
-                    *_output << tp.toPluginOptions(true);
-                    if (_use_variable) {
-                        *_output << "\"";
-                    }
-                    *_output << std::endl;
+        ModulationArgs tp;
+        if (tp.fromDeliveryDescriptors(duck, dlist, tsid.transport_stream_id)) {
+            // Output --dvb-options.
+            if (_dvb_options) {
+                // Optional comment
+                if (_use_comment) {
+                    *_output << _comment_prefix
+                             << UString::Format(u"TS id: %n, original network id: %n, from NIT v%d on network id: %n",
+                                                tsid.transport_stream_id, tsid.original_network_id, nit.version, nit.network_id)
+                             << std::endl;
                 }
-
-                // Fill the channel database.
-                if (_save_channel_file || _update_channel_file) {
-                    // Get or create network description in channel database.
-                    // Use tuner type from delivery descriptor.
-                    ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, TunerTypeOf(tp.delivery_system.value_or(DS_UNDEFINED))));
-                    // Get or create TS description in channel database.
-                    ChannelFile::TransportStreamPtr ts(net->tsGetOrCreate(tsid.transport_stream_id));
-                    // Do not reset services in TS, keep existing if any, just update tuning info.
-                    ts->onid = tsid.original_network_id;
-                    ts->tune = std::move(tp);
+                // Output the tuning information, optionally in a variable definition.
+                if (_use_variable) {
+                    *_output << _variable_prefix << int(tsid.transport_stream_id) << "=\"";
                 }
+                *_output << tp.toPluginOptions(true);
+                if (_use_variable) {
+                    *_output << "\"";
+                }
+                *_output << std::endl;
+            }
+
+            // Fill the channel database.
+            if (_save_channel_file || _update_channel_file) {
+                // Get or create network description in channel database.
+                // Use tuner type from delivery descriptor.
+                ChannelFile::NetworkPtr net(_channels.networkGetOrCreate(nit.network_id, TunerTypeOf(tp.delivery_system.value_or(DS_UNDEFINED))));
+                // Get or create TS description in channel database.
+                ChannelFile::TransportStreamPtr ts(net->tsGetOrCreate(tsid.transport_stream_id));
+                // Do not reset services in TS, keep existing if any, just update tuning info.
+                ts->onid = tsid.original_network_id;
+                ts->tune = std::move(tp);
             }
         }
     }

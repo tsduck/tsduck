@@ -52,6 +52,34 @@ ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor(DuckContext& du
 
 
 //----------------------------------------------------------------------------
+// Translation tables
+//----------------------------------------------------------------------------
+
+const std::map<int, ts::InnerFEC> ts::CableDeliverySystemDescriptor::ToInnerFEC
+{
+    {1,  FEC_1_2},
+    {2,  FEC_2_3},
+    {3,  FEC_3_4},
+    {4,  FEC_5_6},
+    {5,  FEC_7_8},
+    {6,  FEC_8_9},
+    {7,  FEC_3_5},
+    {8,  FEC_4_5},
+    {9,  FEC_9_10},
+    {15, FEC_NONE},
+};
+
+const std::map<int, ts::Modulation> ts::CableDeliverySystemDescriptor::ToModulation
+{
+    {1, QAM_16},
+    {2, QAM_32},
+    {3, QAM_64},
+    {4, QAM_128},
+    {5, QAM_256},
+};
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 

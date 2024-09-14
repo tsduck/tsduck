@@ -28,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::ISDBTerrestrialDeliverySystemDescriptor::ISDBTerrestrialDeliverySystemDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_ISDB_T, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -45,6 +45,26 @@ ts::ISDBTerrestrialDeliverySystemDescriptor::ISDBTerrestrialDeliverySystemDescri
 {
     deserialize(duck, desc);
 }
+
+
+//----------------------------------------------------------------------------
+// Translation tables
+//----------------------------------------------------------------------------
+
+const std::map<int, ts::TransmissionMode> ts::ISDBTerrestrialDeliverySystemDescriptor::ToTransmissionMode
+{
+    {0, TM_2K}, // Mode 1
+    {1, TM_4K}, // Mode 2
+    {2, TM_8K}, // Mode 3
+};
+
+const std::map<int, ts::GuardInterval> ts::ISDBTerrestrialDeliverySystemDescriptor::ToGuardInterval
+{
+    {0, GUARD_1_32},
+    {1, GUARD_1_16},
+    {2, GUARD_1_8},
+    {3, GUARD_1_4},
+};
 
 
 //----------------------------------------------------------------------------

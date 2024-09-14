@@ -78,6 +78,74 @@ void ts::SatelliteDeliverySystemDescriptor::setDeliverySystem(const DuckContext&
 
 
 //----------------------------------------------------------------------------
+// Translation tables
+//----------------------------------------------------------------------------
+
+const std::map<int, ts::Polarization> ts::SatelliteDeliverySystemDescriptor::ToPolarization
+{
+    {0, POL_HORIZONTAL},
+    {1, POL_VERTICAL},
+    {2, POL_LEFT},
+    {3, POL_RIGHT},
+};
+
+const std::map<int, ts::InnerFEC> ts::SatelliteDeliverySystemDescriptor::DVBToInnerFEC
+{
+    {1,  FEC_1_2},
+    {2,  FEC_2_3},
+    {3,  FEC_3_4},
+    {4,  FEC_5_6},
+    {5,  FEC_7_8},
+    {6,  FEC_8_9},
+    {7,  FEC_3_5},
+    {8,  FEC_4_5},
+    {9,  FEC_9_10},
+    {15, FEC_NONE},
+};
+
+const std::map<int, ts::InnerFEC> ts::SatelliteDeliverySystemDescriptor::ISDBToInnerFEC
+{
+    {1, FEC_1_2},
+    {2, FEC_2_3},
+    {3, FEC_3_4},
+    {4, FEC_5_6},
+    {5, FEC_7_8},
+    // 8  = ISDB-S system (refer to TMCC signal)
+    // 9  = 2.6GHz band digital satellite sound broadcasting
+    // 10 = Advanced narrow-band CS digital broadcasting (refer to PLHEADER)
+    // 11 = Advanced wide broad-band satellite digital broadcasting (refer to TMCC signal)
+    // Don't really know how to translate this...
+    {15, FEC_NONE},
+};
+
+const std::map<int, ts::Modulation> ts::SatelliteDeliverySystemDescriptor::DVBToModulation
+{
+    {0, QAM_AUTO},
+    {1, QPSK},
+    {2, PSK_8},
+    {3, QAM_16},
+};
+
+const std::map<int, ts::Modulation> ts::SatelliteDeliverySystemDescriptor::ISDBToModulation
+{
+    {0, QAM_AUTO},
+    {1, QPSK},
+    {8, PSK_8}, // "ISDB-S system (refer to TMCC signal)", TC8PSK?, is this the same as PSK_8?
+    // 9  = 2.6GHz band digital satellite sound broadcasting
+    // 10 = Advanced narrow-band CS digital broadcasting
+    // Don't really know how to translate this...
+};
+
+const std::map<int, ts::RollOff> ts::SatelliteDeliverySystemDescriptor::ToRollOff
+{
+    {0, ROLLOFF_35},
+    {1, ROLLOFF_25},
+    {2, ROLLOFF_20},
+    {3, ROLLOFF_AUTO},
+};
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 

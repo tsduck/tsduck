@@ -647,28 +647,23 @@ void ScanContext::nitScan()
 
     // Process each TS descriptor list in the NIT.
     for (const auto& it : nit->transports) {
-
         const ts::TransportStreamId& tsid(it.first);
         const ts::DescriptorList& dlist(it.second.descs);
-
-        for (size_t i = 0; i < dlist.count(); ++i) {
-            // Try to get delivery system information from current descriptor
-            ts::ModulationArgs params;
-            if (params.fromDeliveryDescriptor(_opt.duck, *dlist[i], tsid.transport_stream_id)) {
-                // Got a delivery descriptor, this is the description of one transponder.
-                // Copy the local reception parameters (LNB, etc.) from the command line options
-                // (we use the same reception equipment).
-                params.copyLocalReceptionParameters(_opt.tuner_args);
-                // Tune to this transponder.
-                _opt.debug(u"* tuning to " + params.toPluginOptions(true));
-                if (_tuner.tune(params)) {
-                    // Report channel characteristics
-                    ts::SignalState state;
-                    _tuner.getSignalState(state);
-                    std::cout << "* Frequency: " << params.shortDescription(_opt.duck) << ", " << state.toString() << std::endl;
-                    // Analyze PSI/SI if required
-                    scanTS(std::cout, u"  ", params);
-                }
+        ts::ModulationArgs params;
+        if (params.fromDeliveryDescriptors(_opt.duck, dlist, tsid.transport_stream_id)) {
+            // Got delivery descriptors, this is the description of one transponder.
+            // Copy the local reception parameters (LNB, etc.) from the command line options
+            // (we use the same reception equipment).
+            params.copyLocalReceptionParameters(_opt.tuner_args);
+            // Tune to this transponder.
+            _opt.debug(u"* tuning to " + params.toPluginOptions(true));
+            if (_tuner.tune(params)) {
+                // Report channel characteristics
+                ts::SignalState state;
+                _tuner.getSignalState(state);
+                std::cout << "* Frequency: " << params.shortDescription(_opt.duck) << ", " << state.toString() << std::endl;
+                // Analyze PSI/SI if required
+                scanTS(std::cout, u"  ", params);
             }
         }
     }

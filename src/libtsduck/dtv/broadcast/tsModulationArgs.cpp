@@ -17,6 +17,11 @@
 #include "tsDektec.h"
 #include "tsAlgorithm.h"
 #include "tsjsonObject.h"
+#include "tsCableDeliverySystemDescriptor.h"
+#include "tsSatelliteDeliverySystemDescriptor.h"
+#include "tsS2SatelliteDeliverySystemDescriptor.h"
+#include "tsTerrestrialDeliverySystemDescriptor.h"
+#include "tsISDBTerrestrialDeliverySystemDescriptor.h"
 
 const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 
@@ -580,251 +585,122 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
 
 
 //----------------------------------------------------------------------------
+// Fill modulation parameters from delivery system descriptors in a descriptor list.
+//----------------------------------------------------------------------------
+
+bool ts::ModulationArgs::fromDeliveryDescriptors(DuckContext& duck, const DescriptorList& dlist, uint16_t ts_id)
+{
+    // We need to explore all descriptors. We cannot stop at the first delivery system descriptor
+    // because some of them are incremental (eg. DVB-S2). We accumulate values from all of them.
+    bool found = false;
+    for (size_t i = 0; i < dlist.count(); ++i) {
+        found = fromDeliveryDescriptor(duck, *dlist[i], ts_id) || found;
+    }
+    return found;
+}
+
+
+//----------------------------------------------------------------------------
 // Fill modulation parameters from a delivery system descriptor.
 //----------------------------------------------------------------------------
 
 bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id)
 {
-    // Filter out invalid descriptors.
-    if (!desc.isValid()) {
-        return false;
-    }
-
-    // Analyze descriptor.
-    const uint8_t* data = desc.payload();
-    size_t size = desc.payloadSize();
-    bool status = true;
-
     switch (desc.tag()) {
         case DID_SAT_DELIVERY: {
             // DVB or ISDB satellite delivery network.
-            // The descriptor can be used in either DVB or ISDB context. It has the same size
-            // in both cases but a slightly different binary layout and semantics of fields.
-            // There is no way to distinguish a DVB and an ISDB version without context.
-            const bool isDVB = !(duck.standards() & Standards::ISDB);
-            // TODO: Check S2_satellite_delivery_system_descriptor to get multistream id and PLS code. What about PLS mode?
-            status = size >= 11;
-            if (status) {
-                frequency = uint64_t(DecodeBCD(data, 8)) * 10000;
-                symbol_rate = DecodeBCD(data + 7, 7) * 100;
-                // Polarity.
-                switch ((data[6] >> 5) & 0x03) {
-                    case 0: polarity = POL_HORIZONTAL; break;
-                    case 1: polarity = POL_VERTICAL; break;
-                    case 2: polarity = POL_LEFT; break;
-                    case 3: polarity = POL_RIGHT; break;
-                    default: assert(false);
-                }
-                if (isDVB) {
-                    // DVB-S/S2 variant.
-                    // Inner FEC.
-                    switch (data[10] & 0x0F) {
-                        case 1:  inner_fec = FEC_1_2; break;
-                        case 2:  inner_fec = FEC_2_3; break;
-                        case 3:  inner_fec = FEC_3_4; break;
-                        case 4:  inner_fec = FEC_5_6; break;
-                        case 5:  inner_fec = FEC_7_8; break;
-                        case 6:  inner_fec = FEC_8_9; break;
-                        case 7:  inner_fec = FEC_3_5; break;
-                        case 8:  inner_fec = FEC_4_5; break;
-                        case 9:  inner_fec = FEC_9_10; break;
-                        case 15: inner_fec = FEC_NONE; break;
-                        default: inner_fec = FEC_AUTO; break;
-                    }
-                    // Modulation type.
-                    switch (data[6] & 0x03) {
-                        case 0: modulation = QAM_AUTO; break;
-                        case 1: modulation = QPSK; break;
-                        case 2: modulation = PSK_8; break;
-                        case 3: modulation = QAM_16; break;
-                        default: assert(false);
-                    }
-                    // Modulation system.
-                    switch ((data[6] >> 2) & 0x01) {
-                        case 0:
-                            delivery_system = DS_DVB_S;
-                            roll_off.reset();
-                            break;
-                        case 1:
-                            delivery_system = DS_DVB_S2;
-                            // Roll off.
-                            switch ((data[6] >> 3) & 0x03) {
-                                case 0: roll_off = ROLLOFF_35; break;
-                                case 1: roll_off = ROLLOFF_25; break;
-                                case 2: roll_off = ROLLOFF_20; break;
-                                case 3: roll_off = ROLLOFF_AUTO; break;
-                                default: assert(false);
-                            }
-                            break;
-                        default:
-                            assert(false);
-                    }
+            // The descriptor can be used in either DVB or ISDB context.
+            // There is no way to distinguish a DVB and an ISDB version without the "duck" context.
+            const SatelliteDeliverySystemDescriptor dd(duck, desc);
+            if (dd.isValid()) {
+                delivery_system = dd.deliverySystem(duck);
+                frequency = dd.frequency;
+                symbol_rate = dd.symbol_rate;
+                polarity = dd.getPolarization();
+                inner_fec = dd.getInnerFEC();
+                modulation = dd.getModulation();
+                if (delivery_system == DS_DVB_S2) {
+                    roll_off = dd.getRollOff();
                 }
                 else {
-                    // ISDB variant.
-                    delivery_system = DS_ISDB_S;
                     roll_off.reset();
+                }
+                if (delivery_system == DS_ISDB_S) {
                     // The TS id is used in ISDB-S multi-stream encapsulation.
                     stream_id = ts_id;
-                    // Inner FEC.
-                    switch (data[10] & 0x0F) {
-                        case 1:  inner_fec = FEC_1_2; break;
-                        case 2:  inner_fec = FEC_2_3; break;
-                        case 3:  inner_fec = FEC_3_4; break;
-                        case 4:  inner_fec = FEC_5_6; break;
-                        case 5:  inner_fec = FEC_7_8; break;
-                        // 8  = ISDB-S system (refer to TMCC signal)
-                        // 9  = 2.6GHz band digital satellite sound broadcasting
-                        // 10 = Advanced narrow-band CS digital broadcasting
-                        // Don't really know how to translate this...
-                        case 15: inner_fec = FEC_NONE; break;
-                        default: inner_fec = FEC_AUTO; break;
-                    }
-                    // Modulation type.
-                    switch (data[6] & 0x03) {
-                        case 0: modulation = QAM_AUTO; break;
-                        case 1: modulation = QPSK; break;
-                        case 8: modulation = PSK_8; break;
-                        // 8  = "ISDB-S system (refer to TMCC signal)", TC8PSK?, is this the same as PSK_8?
-                        // 9  = 2.6GHz band digital satellite sound broadcasting
-                        // 10 = Advanced narrow-band CS digital broadcasting
-                        // Don't really know how to translate this...
-                        default: modulation.reset(); break;
-                    }
                 }
+                return true;
+            }
+            break;
+        }
+        case DID_S2_SAT_DELIVERY: {
+            // Usually comes in addition to a SatelliteDeliverySystemDescriptor.
+            const S2SatelliteDeliverySystemDescriptor dd(duck, desc);
+            if (dd.isValid()) {
+                delivery_system = dd.deliverySystem(duck);
+                if (dd.input_stream_identifier.has_value()) {
+                    isi = dd.input_stream_identifier.value();
+                }
+                if (dd.scrambling_sequence_index.has_value()) {
+                    pls_mode = PLS_GOLD;
+                    pls_code = dd.scrambling_sequence_index.value();
+                }
+                return true;
             }
             break;
         }
         case DID_CABLE_DELIVERY: {
-            // DVB cable delivery network.
-            status = size >= 11;
-            if (status) {
-                delivery_system = DS_DVB_C;
-                frequency = uint64_t(DecodeBCD(data, 8)) * 100;
-                symbol_rate = DecodeBCD(data + 7, 7) * 100;
-                switch (data[10] & 0x0F) {
-                    case 1:  inner_fec = FEC_1_2; break;
-                    case 2:  inner_fec = FEC_2_3; break;
-                    case 3:  inner_fec = FEC_3_4; break;
-                    case 4:  inner_fec = FEC_5_6; break;
-                    case 5:  inner_fec = FEC_7_8; break;
-                    case 6:  inner_fec = FEC_8_9; break;
-                    case 7:  inner_fec = FEC_3_5; break;
-                    case 8:  inner_fec = FEC_4_5; break;
-                    case 9:  inner_fec = FEC_9_10; break;
-                    case 15: inner_fec = FEC_NONE; break;
-                    default: inner_fec = FEC_AUTO; break;
-                }
-                switch (data[6]) {
-                    case 1:  modulation = QAM_16; break;
-                    case 2:  modulation = QAM_32; break;
-                    case 3:  modulation = QAM_64; break;
-                    case 4:  modulation = QAM_128; break;
-                    case 5:  modulation = QAM_256; break;
-                    default: modulation = QAM_AUTO; break;
-                }
+            const CableDeliverySystemDescriptor dd(duck, desc);
+            if (dd.isValid()) {
+                delivery_system = dd.deliverySystem(duck); // @@@ TODO: depends on context: annex A, B or C
+                frequency = dd.frequency;
+                symbol_rate = dd.symbol_rate;
+                inner_fec = dd.getInnerFEC();
+                modulation = dd.getModulation();
+                return true;
             }
             break;
         }
-        case DID_TERREST_DELIVERY:  {
-            // DVB terrestrial delivery network.
-            status = size >= 11;
-            if (status) {
-                uint64_t freq = GetUInt32(data);
-                uint8_t bwidth = data[4] >> 5;
-                uint8_t constel = data[5] >> 6;
-                uint8_t hier = (data[5] >> 3) & 0x07;
-                uint8_t rate_hp = data[5] & 0x07;
-                uint8_t rate_lp = data[6] >> 5;
-                uint8_t guard = (data[6] >> 3) & 0x03;
-                uint8_t transm = (data[6] >> 1) & 0x03;
-                delivery_system = DS_DVB_T;
-                frequency = freq == 0xFFFFFFFF ? 0 : freq * 10;
-                switch (bwidth) {
-                    case 0:  bandwidth = 8000000; break;
-                    case 1:  bandwidth = 7000000; break;
-                    case 2:  bandwidth = 6000000; break;
-                    case 3:  bandwidth = 5000000; break;
-                    default: bandwidth = 0; break;
-                }
-                switch (rate_hp) {
-                    case 0:  fec_hp = FEC_1_2; break;
-                    case 1:  fec_hp = FEC_2_3; break;
-                    case 2:  fec_hp = FEC_3_4; break;
-                    case 3:  fec_hp = FEC_5_6; break;
-                    case 4:  fec_hp = FEC_7_8; break;
-                    default: fec_hp = FEC_AUTO; break;
-                }
-                switch (rate_lp) {
-                    case 0:  fec_lp = FEC_1_2; break;
-                    case 1:  fec_lp = FEC_2_3; break;
-                    case 2:  fec_lp = FEC_3_4; break;
-                    case 3:  fec_lp = FEC_5_6; break;
-                    case 4:  fec_lp = FEC_7_8; break;
-                    default: fec_lp = FEC_AUTO; break;
-                }
-                switch (constel) {
-                    case 0:  modulation = QPSK; break;
-                    case 1:  modulation = QAM_16; break;
-                    case 2:  modulation = QAM_64; break;
-                    default: modulation = QAM_AUTO; break;
-                }
-                switch (transm) {
-                    case 0:  transmission_mode = TM_2K; break;
-                    case 1:  transmission_mode = TM_8K; break;
-                    case 2:  transmission_mode = TM_4K; break;
-                    default: transmission_mode = TM_AUTO; break;
-                }
-                switch (guard) {
-                    case 0:  guard_interval = GUARD_1_32; break;
-                    case 1:  guard_interval = GUARD_1_16; break;
-                    case 2:  guard_interval = GUARD_1_8; break;
-                    case 3:  guard_interval = GUARD_1_4; break;
-                    default: guard_interval = GUARD_AUTO; break;
-                }
-                switch (hier & 0x03) {
-                    case 0:  hierarchy = HIERARCHY_NONE; break;
-                    case 1:  hierarchy = HIERARCHY_1; break;
-                    case 2:  hierarchy = HIERARCHY_2; break;
-                    case 3:  hierarchy = HIERARCHY_4; break;
-                    default: hierarchy = HIERARCHY_AUTO; break;
-                }
+        case DID_TERREST_DELIVERY: {
+            const TerrestrialDeliverySystemDescriptor dd(duck, desc);
+            if (dd.isValid()) {
+                delivery_system = dd.deliverySystem(duck);
+                frequency = dd.centre_frequency;
+                bandwidth = dd.getBandwidth();
+                modulation = dd.getConstellation();
+                fec_lp = dd.getCodeRateLP();
+                fec_hp = dd.getCodeRateHP();
+                transmission_mode = dd.getTransmissionMode();
+                guard_interval = dd.getGuardInterval();
+                hierarchy = dd.getHierarchy();
+                return true;
             }
             break;
         }
         case DID_ISDB_TERRES_DELIV:  {
-            // ISDB terrestrial delivery network.
-            status = size >= 4;
-            if (status) {
-                const uint8_t guard = (data[1] >> 2) & 0x03;
-                const uint8_t transm = data[1] & 0x03;
-                delivery_system = DS_ISDB_T;
-                // The frequency in the descriptor is in units of 1/7 MHz.
-                frequency = (1000000 * uint64_t(GetUInt16(data + 2))) / 7;
-                switch (transm) {
-                    case 0:  transmission_mode = TM_2K; break;
-                    case 1:  transmission_mode = TM_8K; break;
-                    case 2:  transmission_mode = TM_4K; break;
-                    default: transmission_mode = TM_AUTO; break;
+            const ISDBTerrestrialDeliverySystemDescriptor dd(duck, desc);
+            if (dd.isValid()) {
+                delivery_system = dd.deliverySystem(duck);
+                transmission_mode = dd.getTransmissionMode();
+                guard_interval = dd.getGuardInterval();
+                if (dd.frequencies.empty()) {
+                    frequency.reset();
                 }
-                switch (guard) {
-                    case 0:  guard_interval = GUARD_1_32; break;
-                    case 1:  guard_interval = GUARD_1_16; break;
-                    case 2:  guard_interval = GUARD_1_8; break;
-                    case 3:  guard_interval = GUARD_1_4; break;
-                    default: guard_interval = GUARD_AUTO; break;
+                else {
+                    // Use first frequency only.
+                    frequency = dd.frequencies.front();
                 }
+                return true;
             }
             break;
         }
         default: {
             // Not a valid delivery descriptor.
-            status = false;
             break;
         }
     }
 
-    return status;
+    return false;
 }
 
 

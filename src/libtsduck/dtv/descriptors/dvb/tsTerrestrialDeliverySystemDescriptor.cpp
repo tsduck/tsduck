@@ -54,12 +54,66 @@ void ts::TerrestrialDeliverySystemDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
+// Translation tables
+//----------------------------------------------------------------------------
+
+const std::map<int, ts::BandWidth> ts::TerrestrialDeliverySystemDescriptor::ToBandWidth
+{
+    {0, 8000000},
+    {1, 7000000},
+    {2, 6000000},
+    {3, 5000000},
+};
+
+const std::map<int, ts::Modulation> ts::TerrestrialDeliverySystemDescriptor::ToConstellation
+{
+    {0, QPSK},
+    {1, QAM_16},
+    {2, QAM_64},
+};
+
+const std::map<int, ts::InnerFEC> ts::TerrestrialDeliverySystemDescriptor::ToInnerFEC
+{
+    {0, FEC_1_2},
+    {1, FEC_2_3},
+    {2, FEC_3_4},
+    {3, FEC_5_6},
+    {4, FEC_7_8},
+};
+
+const std::map<int, ts::TransmissionMode> ts::TerrestrialDeliverySystemDescriptor::ToTransmissionMode
+{
+    {0, TM_2K},
+    {1, TM_8K},
+    {2, TM_4K},
+};
+
+const std::map<int, ts::GuardInterval> ts::TerrestrialDeliverySystemDescriptor::ToGuardInterval
+{
+    {0, GUARD_1_32},
+    {1, GUARD_1_16},
+    {2, GUARD_1_8},
+    {3, GUARD_1_4},
+};
+
+const std::map<int, ts::Hierarchy> ts::TerrestrialDeliverySystemDescriptor::ToHierarchy
+{
+    {0, HIERARCHY_NONE},
+    {1, HIERARCHY_1},
+    {2, HIERARCHY_2},
+    {3, HIERARCHY_4},
+};
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
 void ts::TerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putUInt32(uint32_t(centre_frequency / 10)); // coded in 10 Hz unit
+    // The frequency is coded in 10 Hz units.
+    // Sometimes, the value 0xFFFFFFFF is used to say "unknown".
+    buf.putUInt32(centre_frequency == 0 ? 0xFFFFFFFF : uint32_t(centre_frequency / 10));
     buf.putBits(bandwidth, 3);
     buf.putBit(high_priority);
     buf.putBit(no_time_slicing);
@@ -82,7 +136,10 @@ void ts::TerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) c
 
 void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    centre_frequency = uint64_t(buf.getUInt32()) * 10; // coded in 10 Hz unit
+    // The frequency is coded in 10 Hz units.
+    // Sometimes, the value 0xFFFFFFFF is used to say "unknown".
+    const uint32_t freq = buf.getUInt32();
+    centre_frequency = freq == 0xFFFFFFFF ? 0 : uint64_t(freq) * 10;
     buf.getBits(bandwidth, 3);
     high_priority = buf.getBool();
     no_time_slicing = buf.getBool();
