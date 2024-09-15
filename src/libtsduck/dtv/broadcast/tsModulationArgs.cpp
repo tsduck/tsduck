@@ -572,6 +572,9 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
             case ROLLOFF_20:   param1 |= DTAPI_MOD_ROLLOFF_20; break;
             case ROLLOFF_25:   param1 |= DTAPI_MOD_ROLLOFF_25; break;
             case ROLLOFF_35:   param1 |= DTAPI_MOD_ROLLOFF_35; break;
+            case ROLLOFF_15:   param1 |= DTAPI_MOD_ROLLOFF_15; break;
+            case ROLLOFF_10:   param1 |= DTAPI_MOD_ROLLOFF_10; break;
+            case ROLLOFF_5:    param1 |= DTAPI_MOD_ROLLOFF_5; break;
             default: break;
         }
         // Physical layer scrambling initialization sequence
