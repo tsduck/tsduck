@@ -38,39 +38,64 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 //----------------------------------------------------------------------------
 
 const ts::Enumeration ts::ModulationEnum({
-    {u"QPSK",     ts::QPSK},
-    {u"8-PSK",    ts::PSK_8},
-    {u"QAM",      ts::QAM_AUTO},
-    {u"16-QAM",   ts::QAM_16},
-    {u"32-QAM",   ts::QAM_32},
-    {u"64-QAM",   ts::QAM_64},
-    {u"128-QAM",  ts::QAM_128},
-    {u"256-QAM",  ts::QAM_256},
-    {u"8-VSB",    ts::VSB_8},
-    {u"16-VSB",   ts::VSB_16},
-    {u"16-APSK",  ts::APSK_16},
-    {u"32-APSK",  ts::APSK_32},
-    {u"DQPSK",    ts::DQPSK},
-    {u"4-QAM-NR", ts::QAM_4_NR},
+    {u"QPSK",      ts::QPSK},
+    {u"8-PSK",     ts::PSK_8},
+    {u"QAM",       ts::QAM_AUTO},
+    {u"16-QAM",    ts::QAM_16},
+    {u"32-QAM",    ts::QAM_32},
+    {u"64-QAM",    ts::QAM_64},
+    {u"128-QAM",   ts::QAM_128},
+    {u"256-QAM",   ts::QAM_256},
+    {u"8-VSB",     ts::VSB_8},
+    {u"16-VSB",    ts::VSB_16},
+    {u"16-APSK",   ts::APSK_16},
+    {u"32-APSK",   ts::APSK_32},
+    {u"DQPSK",     ts::DQPSK},
+    {u"4-QAM-NR",  ts::QAM_4_NR},
+    {u"1024-QAM",  ts::QAM_1024},
+    {u"4096-QAM",  ts::QAM_4096},
+    {u"8-APSK-L",  ts::APSK_8_L},
+    {u"16-APSK-L", ts::APSK_16_L},
+    {u"32-APSK-L", ts::APSK_32_L},
+    {u"64-APSK",   ts::APSK_64},
+    {u"64-APSK-L", ts::APSK_64_L},
 });
 
 const ts::Enumeration ts::InnerFECEnum({
-    {u"none", ts::FEC_NONE},
-    {u"auto", ts::FEC_AUTO},
-    {u"1/2",  ts::FEC_1_2},
-    {u"2/3",  ts::FEC_2_3},
-    {u"3/4",  ts::FEC_3_4},
-    {u"4/5",  ts::FEC_4_5},
-    {u"5/6",  ts::FEC_5_6},
-    {u"6/7",  ts::FEC_6_7},
-    {u"7/8",  ts::FEC_7_8},
-    {u"8/9",  ts::FEC_8_9},
-    {u"9/10", ts::FEC_9_10},
-    {u"3/5",  ts::FEC_3_5},
-    {u"1/3",  ts::FEC_1_3},
-    {u"1/4",  ts::FEC_1_4},
-    {u"2/5",  ts::FEC_2_5},
-    {u"5/11", ts::FEC_5_11},
+    {u"none",  ts::FEC_NONE},
+    {u"auto",  ts::FEC_AUTO},
+    {u"1/2",   ts::FEC_1_2},
+    {u"2/3",   ts::FEC_2_3},
+    {u"3/4",   ts::FEC_3_4},
+    {u"4/5",   ts::FEC_4_5},
+    {u"5/6",   ts::FEC_5_6},
+    {u"6/7",   ts::FEC_6_7},
+    {u"7/8",   ts::FEC_7_8},
+    {u"8/9",   ts::FEC_8_9},
+    {u"9/10",  ts::FEC_9_10},
+    {u"3/5",   ts::FEC_3_5},
+    {u"1/3",   ts::FEC_1_3},
+    {u"1/4",   ts::FEC_1_4},
+    {u"2/5",   ts::FEC_2_5},
+    {u"5/11",  ts::FEC_5_11},
+    {u"5/9",   ts::FEC_5_9},
+    {u"7/9",   ts::FEC_7_9},
+    {u"8/15",  ts::FEC_8_15},
+    {u"11/15", ts::FEC_11_15},
+    {u"13/18", ts::FEC_13_18},
+    {u"9/20",  ts::FEC_9_20},
+    {u"11/20", ts::FEC_11_20},
+    {u"23/36", ts::FEC_23_36},
+    {u"25/36", ts::FEC_25_36},
+    {u"13/45", ts::FEC_13_45},
+    {u"26/45", ts::FEC_26_45},
+    {u"28/45", ts::FEC_28_45},
+    {u"32/45", ts::FEC_32_45},
+    {u"77/90", ts::FEC_77_90},
+    {u"11/45", ts::FEC_11_45},
+    {u"4/15",  ts::FEC_4_15},
+    {u"14/45", ts::FEC_14_45},
+    {u"7/15",  ts::FEC_7_15},
 });
 
 const ts::Enumeration ts::PolarizationEnum({
@@ -93,6 +118,9 @@ const ts::Enumeration ts::RollOffEnum({
     {u"0.35",       ts::ROLLOFF_35},
     {u"0.25",       ts::ROLLOFF_25},
     {u"0.20",       ts::ROLLOFF_20},
+    {u"0.15",       ts::ROLLOFF_15},
+    {u"0.10",       ts::ROLLOFF_10},
+    {u"0.05",       ts::ROLLOFF_5},
 });
 
 const ts::Enumeration ts::TransmissionModeEnum({
@@ -121,6 +149,7 @@ const ts::Enumeration ts::GuardIntervalEnum({
     {u"PN-420",  ts::GUARD_PN420},
     {u"PN-595",  ts::GUARD_PN595},
     {u"PN-945",  ts::GUARD_PN945},
+    {u"1/64",    ts::GUARD_1_64},
 });
 
 const ts::Enumeration ts::HierarchyEnum({
@@ -148,25 +177,36 @@ const ts::Enumeration ts::PLSModeEnum({
 // Return zero if unknown
 //----------------------------------------------------------------------------
 
+namespace {
+    const std::map<ts::Modulation,uint32_t> _BitsPerSymbol {
+        {ts::QPSK,      2},  // Q (in QPSK) = quad = 4 states = 2 bits
+        {ts::PSK_8,     3},  // 8 states = 3 bits
+        {ts::QAM_16,    4},  // 16 states = 4 bits
+        {ts::QAM_32,    5},  // 32 states = 5 bits
+        {ts::QAM_64,    6},  // 64 states = 6 bits
+        {ts::QAM_128,   7},  // 128 states = 7 bits
+        {ts::QAM_256,   8},  // 256 states = 8 bits
+        {ts::QAM_AUTO,  0},  // Unknown
+        {ts::VSB_8,     3},  // 8 states = 3 bits
+        {ts::VSB_16,    4},  // 16 states = 4 bits
+        {ts::APSK_16,   4},  // 16 states = 4 bits
+        {ts::APSK_32,   5},  // 32 states = 5 bits
+        {ts::DQPSK,     2},  // Q = 4 states = 2 bits
+        {ts::QAM_4_NR,  2},  // 4 states = 2 bits
+        {ts::QAM_1024, 10},  // 1024 states = 10 bits
+        {ts::QAM_4096, 12},  // 4096 states = 12 bits
+        {ts::APSK_8_L,  3},  // 8 states = 3 bits
+        {ts::APSK_16_L, 4},  // 16 states = 4 bits
+        {ts::APSK_32_L, 5},  // 32 states = 5 bits
+        {ts::APSK_64,   6},  // 64 states = 6 bits
+        {ts::APSK_64_L, 6},  // 64 states = 6 bits
+    };
+}
+
 uint32_t ts::BitsPerSymbol(Modulation modulation)
 {
-    switch (modulation) {
-        case QPSK:     return 2;  // Q (in QPSK) = quad = 4 states = 2 bits
-        case PSK_8:    return 3;  // 8 states = 3 bits
-        case QAM_16:   return 4;  // 16 states = 4 bits
-        case QAM_32:   return 5;  // 32 states = 5 bits
-        case QAM_64:   return 6;  // 64 states = 6 bits
-        case QAM_128:  return 7;  // 128 states = 7 bits
-        case QAM_256:  return 8;  // 256 states = 8 bits
-        case QAM_AUTO: return 0;  // Unknown
-        case VSB_8:    return 3;  // 8 states = 3 bits
-        case VSB_16:   return 4;  // 16 states = 4 bits
-        case APSK_16:  return 4;  // 16 states = 4 bits
-        case APSK_32:  return 5;  // 32 states = 5 bits
-        case DQPSK:    return 2;  // Q = 4 states = 2 bits
-        case QAM_4_NR: return 2;  // 4 states = 2 bits
-        default:       return 0;  // Unknown
-    }
+    const auto it = _BitsPerSymbol.find(modulation);
+    return it == _BitsPerSymbol.end() ? 0 : it->second;
 }
 
 
@@ -175,50 +215,55 @@ uint32_t ts::BitsPerSymbol(Modulation modulation)
 // Return zero if unknown
 //----------------------------------------------------------------------------
 
+namespace {
+    const std::map<ts::InnerFEC,std::pair<uint32_t,uint32_t>> _FECFraction {
+        {ts::FEC_NONE,  { 1,  1}}, // none means 1/1
+        {ts::FEC_1_2,   { 1,  2}},
+        {ts::FEC_2_3,   { 2,  3}},
+        {ts::FEC_3_4,   { 3,  4}},
+        {ts::FEC_4_5,   { 4,  5}},
+        {ts::FEC_5_6,   { 5,  6}},
+        {ts::FEC_6_7,   { 6,  7}},
+        {ts::FEC_7_8,   { 7,  8}},
+        {ts::FEC_8_9,   { 8,  9}},
+        {ts::FEC_9_10,  { 9, 10}},
+        {ts::FEC_3_5,   { 3,  5}},
+        {ts::FEC_1_3,   { 1,  3}},
+        {ts::FEC_1_4,   { 1,  4}},
+        {ts::FEC_2_5,   { 2,  5}},
+        {ts::FEC_5_11,  { 5, 11}},
+        {ts::FEC_5_9,   { 5,  9}},
+        {ts::FEC_7_9,   { 7,  9}},
+        {ts::FEC_8_15,  { 8, 15}},
+        {ts::FEC_11_15, {11, 15}},
+        {ts::FEC_13_18, {13, 18}},
+        {ts::FEC_9_20,  { 9, 20}},
+        {ts::FEC_11_20, {11, 20}},
+        {ts::FEC_23_36, {23, 36}},
+        {ts::FEC_25_36, {25, 36}},
+        {ts::FEC_13_45, {13, 45}},
+        {ts::FEC_26_45, {26, 45}},
+        {ts::FEC_28_45, {28, 45}},
+        {ts::FEC_32_45, {32, 45}},
+        {ts::FEC_77_90, {77, 90}},
+        {ts::FEC_11_45, {11, 45}},
+        {ts::FEC_4_15,  { 4, 15}},
+        {ts::FEC_14_45, {14, 45}},
+        {ts::FEC_7_15,  { 7, 15}},
+        {ts::FEC_AUTO,  { 0,  1}}  // Unknown
+    };
+}
+
 uint32_t ts::FECMultiplier(InnerFEC fec)
 {
-    switch (fec) {
-        case FEC_NONE: return 1; // none means 1/1
-        case FEC_1_2:  return 1;
-        case FEC_2_3:  return 2;
-        case FEC_3_4:  return 3;
-        case FEC_4_5:  return 4;
-        case FEC_5_6:  return 5;
-        case FEC_6_7:  return 6;
-        case FEC_7_8:  return 7;
-        case FEC_8_9:  return 8;
-        case FEC_9_10: return 9;
-        case FEC_3_5:  return 3;
-        case FEC_1_3:  return 1;
-        case FEC_1_4:  return 1;
-        case FEC_2_5:  return 2;
-        case FEC_5_11: return 5;
-        case FEC_AUTO: return 0; // Unknown
-        default:       return 0; // Unknown
-    }
+    const auto it = _FECFraction.find(fec);
+    return it == _FECFraction.end() ? 0 : it->second.first;
 }
 
 uint32_t ts::FECDivider(InnerFEC fec)
 {
-    switch (fec) {
-        case FEC_NONE: return 1; // none means 1/1
-        case FEC_1_2:  return 2;
-        case FEC_2_3:  return 3;
-        case FEC_3_4:  return 4;
-        case FEC_4_5:  return 5;
-        case FEC_5_6:  return 6;
-        case FEC_6_7:  return 7;
-        case FEC_7_8:  return 8;
-        case FEC_8_9:  return 9;
-        case FEC_9_10: return 10;
-        case FEC_3_5:  return 5;
-        case FEC_1_3:  return 3;
-        case FEC_1_4:  return 4;
-        case FEC_2_5:  return 5;
-        case FEC_5_11: return 11;
-        case FEC_AUTO: return 0; // Unknown
-        default:       return 0; // Unknown
-    }
+    const auto it = _FECFraction.find(fec);
+    return it == _FECFraction.end() ? 1 : it->second.second;
 }
 
 
@@ -226,41 +271,34 @@ uint32_t ts::FECDivider(InnerFEC fec)
 // Compute the multiplier and divider of a guard interval value.
 //----------------------------------------------------------------------------
 
+namespace {
+    const std::map<ts::GuardInterval,std::pair<uint32_t,uint32_t>> _GuardFraction {
+        {ts::GUARD_1_4,    { 1,   4}},
+        {ts::GUARD_1_8,    { 1,   8}},
+        {ts::GUARD_1_16,   { 1,  16}},
+        {ts::GUARD_1_32,   { 1,  32}},
+        {ts::GUARD_1_128,  { 1, 128}},
+        {ts::GUARD_19_128, {19, 128}},
+        {ts::GUARD_19_256, {19, 256}},
+        {ts::GUARD_PN420,  { 0,   1}}, // unknown
+        {ts::GUARD_PN595,  { 0,   1}}, // unknown
+        {ts::GUARD_PN945,  { 0,   1}}, // unknown
+        {ts::GUARD_1_4,    { 1,   4}},
+        {ts::GUARD_AUTO,   { 0,   1}}  // unknown
+    };
+}
+
 uint32_t ts::GuardIntervalMultiplier(GuardInterval guard)
 {
-    switch (guard) {
-        case GUARD_1_4:    return 1;
-        case GUARD_1_8:    return 1;
-        case GUARD_1_16:   return 1;
-        case GUARD_1_32:   return 1;
-        case GUARD_1_128:  return 1;
-        case GUARD_19_128: return 19;
-        case GUARD_19_256: return 19;
-        case GUARD_PN420:  return 0; // unknown
-        case GUARD_PN595:  return 0; // unknown
-        case GUARD_PN945:  return 0; // unknown
-        case GUARD_AUTO:   return 0; // unknown
-        default:           return 0; // unknown
-    }
+    const auto it = _GuardFraction.find(guard);
+    return it == _GuardFraction.end() ? 0 : it->second.first;
 }
 
 
 uint32_t ts::GuardIntervalDivider(GuardInterval guard)
 {
-    switch (guard) {
-        case GUARD_1_4:    return 4;
-        case GUARD_1_8:    return 8;
-        case GUARD_1_16:   return 16;
-        case GUARD_1_32:   return 32;
-        case GUARD_1_128:  return 128;
-        case GUARD_19_128: return 128;
-        case GUARD_19_256: return 256;
-        case GUARD_PN420:  return 0; // unknown
-        case GUARD_PN595:  return 0; // unknown
-        case GUARD_PN945:  return 0; // unknown
-        case GUARD_AUTO:   return 0; // unknown
-        default:           return 0; // unknown
-    }
+    const auto it = _GuardFraction.find(guard);
+    return it == _GuardFraction.end() ? 1 : it->second.second;
 }
 
 

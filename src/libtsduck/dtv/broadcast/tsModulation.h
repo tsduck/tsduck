@@ -83,39 +83,63 @@ namespace ts {
     //!
     enum Modulation {
 #if defined(TS_LINUX) && !defined(DOXYGEN)
-        QPSK     = ::QPSK,
-        PSK_8    = ::PSK_8,
-        QAM_AUTO = ::QAM_AUTO,
-        QAM_16   = ::QAM_16,
-        QAM_32   = ::QAM_32,
-        QAM_64   = ::QAM_64,
-        QAM_128  = ::QAM_128,
-        QAM_256  = ::QAM_256,
-        VSB_8    = ::VSB_8,
-        VSB_16   = ::VSB_16,
-        APSK_16  = ::APSK_16,
-        APSK_32  = ::APSK_32,
-        DQPSK    = ::DQPSK,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
-        QAM_4_NR = -14,
-#else
-        QAM_4_NR = ::QAM_4_NR,
-#endif
+        QPSK      = ::QPSK,
+        PSK_8     = ::PSK_8,
+        QAM_AUTO  = ::QAM_AUTO,
+        QAM_16    = ::QAM_16,
+        QAM_32    = ::QAM_32,
+        QAM_64    = ::QAM_64,
+        QAM_128   = ::QAM_128,
+        QAM_256   = ::QAM_256,
+        VSB_8     = ::VSB_8,
+        VSB_16    = ::VSB_16,
+        APSK_16   = ::APSK_16,
+        APSK_32   = ::APSK_32,
+        DQPSK     = ::DQPSK,
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+        QAM_4_NR  = -14,
+    #else
+        QAM_4_NR  = ::QAM_4_NR,
+    #endif
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6,2,0)
+        QAM_1024  = -15,
+        QAM_4096  = -16,
+        APSK_8_L  = -17,
+        APSK_16_L = -18,
+        APSK_32_L = -19,
+        APSK_64   = -20,
+        APSK_64_L = -21,
+    #else
+        QAM_1024  = ::QAM_1024,
+        QAM_4096  = ::QAM_4096,
+        APSK_8_L  = ::APSK_8_L,
+        APSK_16_L = ::APSK_16_L,
+        APSK_32_L = ::APSK_32_L,
+        APSK_64   = ::APSK_64,
+        APSK_64_L = ::APSK_64_L,
+    #endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        QPSK     = ::BDA_MOD_QPSK,
-        PSK_8    = ::BDA_MOD_8PSK,
-        QAM_AUTO = ::BDA_MOD_NOT_DEFINED,
-        QAM_16   = ::BDA_MOD_16QAM,
-        QAM_32   = ::BDA_MOD_32QAM,
-        QAM_64   = ::BDA_MOD_64QAM,
-        QAM_128  = ::BDA_MOD_128QAM,
-        QAM_256  = ::BDA_MOD_256QAM,
-        VSB_8    = ::BDA_MOD_8VSB,
-        VSB_16   = ::BDA_MOD_16VSB,
-        APSK_16  = ::BDA_MOD_16APSK,
-        APSK_32  = ::BDA_MOD_32APSK,
-        DQPSK    = -10,
-        QAM_4_NR = -11,
+        QPSK      = ::BDA_MOD_QPSK,
+        PSK_8     = ::BDA_MOD_8PSK,
+        QAM_AUTO  = ::BDA_MOD_NOT_DEFINED,
+        QAM_16    = ::BDA_MOD_16QAM,
+        QAM_32    = ::BDA_MOD_32QAM,
+        QAM_64    = ::BDA_MOD_64QAM,
+        QAM_128   = ::BDA_MOD_128QAM,
+        QAM_256   = ::BDA_MOD_256QAM,
+        VSB_8     = ::BDA_MOD_8VSB,
+        VSB_16    = ::BDA_MOD_16VSB,
+        APSK_16   = ::BDA_MOD_16APSK,
+        APSK_32   = ::BDA_MOD_32APSK,
+        DQPSK     = -10,
+        QAM_4_NR  = -11,
+        QAM_1024  = -12,
+        QAM_4096  = -13,
+        APSK_8_L  = -14,
+        APSK_16_L = -15,
+        APSK_32_L = -16,
+        APSK_64   = -17,
+        APSK_64_L = -18,
 #else
         QPSK,       //!< QPSK (4-PSK, DVB-S).
         PSK_8,      //!< 8-PSK (DVB-S2).
@@ -131,6 +155,13 @@ namespace ts {
         APSK_32,    //!< 32-APSK (DVB-S2).
         DQPSK,      //!< DQPSK,
         QAM_4_NR,   //!< 4-QAM-NR,
+        QAM_1024,   //!< 1024-QAM
+        QAM_4096,   //!< 4096-QAM
+        APSK_8_L,   //!< 8-APSK-L
+        APSK_16_L,  //!< 16-APSK-L
+        APSK_32_L,  //!< 32-APSK-L
+        APSK_64,    //!< 64-APSK
+        APSK_64_L,  //!< 64-APSK-L
 #endif
     };
 
@@ -175,43 +206,108 @@ namespace ts {
     //!
     enum InnerFEC {
 #if defined(TS_LINUX) && !defined(DOXYGEN)
-        FEC_NONE = ::FEC_NONE,
-        FEC_AUTO = ::FEC_AUTO,
-        FEC_1_2  = ::FEC_1_2,
-        FEC_2_3  = ::FEC_2_3,
-        FEC_3_4  = ::FEC_3_4,
-        FEC_4_5  = ::FEC_4_5,
-        FEC_5_6  = ::FEC_5_6,
-        FEC_6_7  = ::FEC_6_7,
-        FEC_7_8  = ::FEC_7_8,
-        FEC_8_9  = ::FEC_8_9,
-        FEC_9_10 = ::FEC_9_10,
-        FEC_3_5  = ::FEC_3_5,
-        FEC_1_3  = -12,
-        FEC_1_4  = -13,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
-        FEC_2_5  = -14,
-#else
-        FEC_2_5  = ::FEC_2_5,
-#endif
-        FEC_5_11 = -15,
+        FEC_NONE  = ::FEC_NONE,
+        FEC_AUTO  = ::FEC_AUTO,
+        FEC_1_2   = ::FEC_1_2,
+        FEC_2_3   = ::FEC_2_3,
+        FEC_3_4   = ::FEC_3_4,
+        FEC_4_5   = ::FEC_4_5,
+        FEC_5_6   = ::FEC_5_6,
+        FEC_6_7   = ::FEC_6_7,
+        FEC_7_8   = ::FEC_7_8,
+        FEC_8_9   = ::FEC_8_9,
+        FEC_9_10  = ::FEC_9_10,
+        FEC_3_5   = ::FEC_3_5,
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6,2,0)
+        FEC_1_3   = -12,
+        FEC_1_4   = -13,
+    #else
+        FEC_1_3   = ::FEC_1_3,
+        FEC_1_4   = ::FEC_1_4,
+    #endif
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+        FEC_2_5   = -14,
+    #else
+        FEC_2_5   = ::FEC_2_5,
+    #endif
+        FEC_5_11  = -15,
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6,2,0)
+        FEC_5_9   = -16,
+        FEC_7_9   = -17,
+        FEC_8_15  = -18,
+        FEC_11_15 = -19,
+        FEC_13_18 = -20,
+        FEC_9_20  = -21,
+        FEC_11_20 = -22,
+        FEC_23_36 = -23,
+        FEC_25_36 = -24,
+        FEC_13_45 = -25,
+        FEC_26_45 = -26,
+        FEC_28_45 = -27,
+        FEC_32_45 = -28,
+        FEC_77_90 = -29,
+    #else
+        FEC_5_9   = ::FEC_5_9,
+        FEC_7_9   = ::FEC_7_9,
+        FEC_8_15  = ::FEC_8_15,
+        FEC_11_15 = ::FEC_11_15,
+        FEC_13_18 = ::FEC_13_18,
+        FEC_9_20  = ::FEC_9_20,
+        FEC_11_20 = ::FEC_11_20,
+        FEC_23_36 = ::FEC_23_36,
+        FEC_25_36 = ::FEC_25_36,
+        FEC_13_45 = ::FEC_13_45,
+        FEC_26_45 = ::FEC_26_45,
+        FEC_28_45 = ::FEC_28_45,
+        FEC_32_45 = ::FEC_32_45,
+        FEC_77_90 = ::FEC_77_90,
+    #endif
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6,5,0)
+        FEC_11_45 = -30,
+        FEC_4_15  = -31,
+        FEC_14_45 = -32,
+        FEC_7_15  = -33,
+    #else
+        FEC_11_45 = ::FEC_11_45,
+        FEC_4_15  = ::FEC_4_15,
+        FEC_14_45 = ::FEC_14_45,
+        FEC_7_15  = ::FEC_7_15,
+    #endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
-        FEC_NONE = ::BDA_BCC_RATE_NOT_SET,
-        FEC_AUTO = ::BDA_BCC_RATE_NOT_DEFINED,
-        FEC_1_2  = ::BDA_BCC_RATE_1_2,
-        FEC_2_3  = ::BDA_BCC_RATE_2_3,
-        FEC_3_4  = ::BDA_BCC_RATE_3_4,
-        FEC_4_5  = ::BDA_BCC_RATE_4_5,
-        FEC_5_6  = ::BDA_BCC_RATE_5_6,
-        FEC_6_7  = ::BDA_BCC_RATE_6_7,
-        FEC_7_8  = ::BDA_BCC_RATE_7_8,
-        FEC_8_9  = ::BDA_BCC_RATE_8_9,
-        FEC_9_10 = ::BDA_BCC_RATE_9_10,
-        FEC_3_5  = ::BDA_BCC_RATE_3_5,
-        FEC_1_3  = ::BDA_BCC_RATE_1_3,
-        FEC_1_4  = ::BDA_BCC_RATE_1_4,
-        FEC_2_5  = ::BDA_BCC_RATE_2_5,
-        FEC_5_11 = ::BDA_BCC_RATE_5_11,
+        FEC_NONE  = ::BDA_BCC_RATE_NOT_SET,
+        FEC_AUTO  = ::BDA_BCC_RATE_NOT_DEFINED,
+        FEC_1_2   = ::BDA_BCC_RATE_1_2,
+        FEC_2_3   = ::BDA_BCC_RATE_2_3,
+        FEC_3_4   = ::BDA_BCC_RATE_3_4,
+        FEC_4_5   = ::BDA_BCC_RATE_4_5,
+        FEC_5_6   = ::BDA_BCC_RATE_5_6,
+        FEC_6_7   = ::BDA_BCC_RATE_6_7,
+        FEC_7_8   = ::BDA_BCC_RATE_7_8,
+        FEC_8_9   = ::BDA_BCC_RATE_8_9,
+        FEC_9_10  = ::BDA_BCC_RATE_9_10,
+        FEC_3_5   = ::BDA_BCC_RATE_3_5,
+        FEC_1_3   = ::BDA_BCC_RATE_1_3,
+        FEC_1_4   = ::BDA_BCC_RATE_1_4,
+        FEC_2_5   = ::BDA_BCC_RATE_2_5,
+        FEC_5_11  = ::BDA_BCC_RATE_5_11,
+        FEC_5_9   = -12,
+        FEC_7_9   = -13,
+        FEC_8_15  = -14,
+        FEC_11_15 = -15,
+        FEC_13_18 = -16,
+        FEC_9_20  = -17,
+        FEC_11_20 = -18,
+        FEC_23_36 = -19,
+        FEC_25_36 = -20,
+        FEC_13_45 = -21,
+        FEC_26_45 = -22,
+        FEC_28_45 = -23,
+        FEC_32_45 = -24,
+        FEC_77_90 = -25,
+        FEC_11_45 = -26,
+        FEC_4_15  = -27,
+        FEC_14_45 = -28,
+        FEC_7_15  = -29,
 #else
         FEC_NONE,   //!< No FEC.
         FEC_AUTO,   //!< Automatic FEC, unspecified.
@@ -229,6 +325,24 @@ namespace ts {
         FEC_1_4,    //!< FEC 1/4.
         FEC_2_5,    //!< FEC 2/5.
         FEC_5_11,   //!< FEC 5/11.
+        FEC_5_9     //!< FEC 5/9.
+        FEC_7_9     //!< FEC 7/9.
+        FEC_8_15    //!< FEC 8/15.
+        FEC_11_15   //!< FEC 11/15.
+        FEC_13_18   //!< FEC 13/18.
+        FEC_9_20    //!< FEC 9/20.
+        FEC_11_20   //!< FEC 11/20.
+        FEC_23_36   //!< FEC 23/36.
+        FEC_25_36   //!< FEC 25/36.
+        FEC_13_45   //!< FEC 13/45.
+        FEC_26_45   //!< FEC 26/45.
+        FEC_28_45   //!< FEC 28/45.
+        FEC_32_45   //!< FEC 32/45.
+        FEC_77_90   //!< FEC 77/90.
+        FEC_11_45   //!< FEC 11/45.
+        FEC_4_15    //!< FEC 4/15.
+        FEC_14_45   //!< FEC 14/45.
+        FEC_7_15    //!< FEC 7/15.
 #endif
     };
 
@@ -310,16 +424,31 @@ namespace ts {
         ROLLOFF_35   = ::ROLLOFF_35,
         ROLLOFF_25   = ::ROLLOFF_25,
         ROLLOFF_20   = ::ROLLOFF_20,
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6,2,0)
+        ROLLOFF_15   = -10,
+        ROLLOFF_10   = -11,
+        ROLLOFF_5    = -12,
+    #else
+        ROLLOFF_15   = ::ROLLOFF_15,
+        ROLLOFF_10   = ::ROLLOFF_10,
+        ROLLOFF_5    = ::ROLLOFF_5,
+    #endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         ROLLOFF_AUTO = ::BDA_ROLL_OFF_NOT_DEFINED,
         ROLLOFF_35   = ::BDA_ROLL_OFF_35,
         ROLLOFF_25   = ::BDA_ROLL_OFF_25,
         ROLLOFF_20   = ::BDA_ROLL_OFF_20,
+        ROLLOFF_15   = -10,
+        ROLLOFF_10   = -11,
+        ROLLOFF_5    = -12,
 #else
         ROLLOFF_AUTO,  //!< Automatic rolloff.
-        ROLLOFF_35,    //!< Rolloff 35, implied in DVB-S, default in DVB-S2.
-        ROLLOFF_25,    //!< Rolloff 25.
-        ROLLOFF_20,    //!< Rolloff 20.
+        ROLLOFF_35,    //!< Rolloff 0.35, implied in DVB-S, default in DVB-S2.
+        ROLLOFF_25,    //!< Rolloff 0.25.
+        ROLLOFF_20,    //!< Rolloff 0.20.
+        ROLLOFF_15,    //!< Rolloff 0.15.
+        ROLLOFF_10,    //!< Rolloff 0.10.
+        ROLLOFF_5,     //!< Rolloff 0.05.
 #endif
     };
 
@@ -353,13 +482,13 @@ namespace ts {
         TM_1K    = ::TRANSMISSION_MODE_1K,
         TM_16K   = ::TRANSMISSION_MODE_16K,
         TM_32K   = ::TRANSMISSION_MODE_32K,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
         TM_C1    = -12,
         TM_C3780 = -13,
-#else
+    #else
         TM_C1    = ::TRANSMISSION_MODE_C1,
         TM_C3780 = ::TRANSMISSION_MODE_C3780,
-#endif
+    #endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         TM_AUTO  = ::BDA_XMIT_MODE_NOT_DEFINED,
         TM_2K    = ::BDA_XMIT_MODE_2K,
@@ -405,15 +534,20 @@ namespace ts {
         GUARD_1_128  = ::GUARD_INTERVAL_1_128,
         GUARD_19_128 = ::GUARD_INTERVAL_19_128,
         GUARD_19_256 = ::GUARD_INTERVAL_19_256,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
         GUARD_PN420  = -9,
         GUARD_PN595  = -10,
         GUARD_PN945  = -11,
-#else
+    #else
         GUARD_PN420  = ::GUARD_INTERVAL_PN420,
         GUARD_PN595  = ::GUARD_INTERVAL_PN595,
         GUARD_PN945  = ::GUARD_INTERVAL_PN945,
-#endif
+    #endif
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6,2,0)
+        GUARD_1_64   = -12,
+    #else
+        GUARD_1_64   = ::GUARD_INTERVAL_1_64,
+    #endif
 #elif defined(TS_WINDOWS) && !defined(DOXYGEN)
         GUARD_AUTO   = ::BDA_GUARD_NOT_DEFINED,
         GUARD_1_32   = ::BDA_GUARD_1_32,
@@ -426,6 +560,7 @@ namespace ts {
         GUARD_PN420  = -10,
         GUARD_PN595  = -11,
         GUARD_PN945  = -12,
+        GUARD_1_64   = -13,
 #else
         GUARD_AUTO,    //!< Guard interval automatically set.
         GUARD_1_32,    //!< Guard interval 1/32.
@@ -438,6 +573,7 @@ namespace ts {
         GUARD_PN420,   //!< PN length 420 (1/4).
         GUARD_PN595,   //!< PN length 595 (1/6).
         GUARD_PN945,   //!< PN length 945 (1/9).
+        GUARD_1_64,    //!< Guard interval 1/64.
 #endif
     };
 

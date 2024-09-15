@@ -38,29 +38,33 @@ namespace ts {
         DS_DVB_S_TURBO   = ::SYS_TURBO,
         DS_DVB_T         = ::SYS_DVBT,
         DS_DVB_T2        = ::SYS_DVBT2,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
         DS_DVB_C_ANNEX_A = ::SYS_DVBC_ANNEX_AC,
-#else
+    #else
         DS_DVB_C_ANNEX_A = ::SYS_DVBC_ANNEX_A,
-#endif
+    #endif
         DS_DVB_C_ANNEX_B = ::SYS_DVBC_ANNEX_B,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
         DS_DVB_C_ANNEX_C = -11,
-#else
+    #else
         DS_DVB_C_ANNEX_C = ::SYS_DVBC_ANNEX_C,
-#endif
+    #endif
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(6,2,0)
         DS_DVB_C2        = -10,
+    #else
+        DS_DVB_C2        = ::SYS_DVBC2,
+    #endif
         DS_DVB_H         = ::SYS_DVBH,
         DS_ISDB_S        = ::SYS_ISDBS,
         DS_ISDB_T        = ::SYS_ISDBT,
         DS_ISDB_C        = ::SYS_ISDBC,
         DS_ATSC          = ::SYS_ATSC,
         DS_ATSC_MH       = ::SYS_ATSCMH,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
         DS_DTMB          = ::SYS_DMBTH,
-#else
+    #else
         DS_DTMB          = ::SYS_DTMB,
-#endif
+    #endif
         DS_CMMB          = ::SYS_CMMB,
         DS_DAB           = ::SYS_DAB,
         DS_DSS           = ::SYS_DSS,

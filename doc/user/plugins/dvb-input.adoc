@@ -188,7 +188,10 @@ Used for satellite and cable tuners only.
 
 [.optdoc]
 Specify the Inner Forward Error Correction.
-Must be one of `none`, `auto`, `1/2`, `1/3`, `1/4`, `2/3`, `2/5`, `3/4`, `3/5`, `4/5`, `5/6`, `5/11`, `6/7`, `7/8`, `8/9`, `9/10`.
+Must be one of `none`, `auto`, `1/2`, `1/3`, `1/4`, `2/3`, `2/5`, `3/4`, `3/5`, `4/5`, `4/15`,
+`5/6`, `5/9`, `5/11`, `6/7`, `7/8`, `7/9`, `7/15`, `8/9`, `8/15`, `9/10`, `9/20`, `11/15`, `11/20`,
+`11/45`, `13/18`, `13/45`, `14/45`, `23/36`, `25/36`, `26/45`, `28/45`, `32/45`, `77/90`.
+
 The default is `auto`.
 
 [.opt]
@@ -209,10 +212,8 @@ can be used instead of `--frequency`.
 Used for terrestrial tuners only.
 
 [.optdoc]
-Must be one of `auto`, `1/32`, `1/16`, `1/8`, `1/4`.
-
-[.optdoc]
-For DVB-T2, also accept `1/128`, `19/128`, `19/256`.
+Must be one of `auto`, `1/4`, `1/8`, `1/16`, `1/32`, `1/64`, `1/128`,
+`19/128`, `19/256`, `PN-420`, `PN-595`, `PN-945`.
 
 [.optdoc]
 The default is `1/32`.
@@ -246,7 +247,7 @@ Used for ISDB-T tuners only.
 
 [.optdoc]
 Error correction for layer A.
-Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`, `auto`.
+See option `--fec-inner` for the list of possible values.
 The default is `auto`.
 
 [.opt]
@@ -258,7 +259,7 @@ Used for ISDB-T tuners only.
 [.optdoc]
 Modulation for layer A.
 The default is automatically detected.
-Must be one of `QPSK`, `DQPSK`, `16-QAM`, `64-QAM`, `QAM` (auto).
+See option `--modulation` for the list of possible values.
 
 [.opt]
 *--isdbt-layer-a-segment-count* _value_
@@ -291,7 +292,7 @@ Used for ISDB-T tuners only.
 [.optdoc]
 Error correction for layer B.
 The default is automatically detected.
-Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`, `auto`.
+See option `--fec-inner` for the list of possible values.
 
 [.opt]
 *--isdbt-layer-b-modulation* _value_
@@ -302,7 +303,7 @@ Used for ISDB-T tuners only.
 [.optdoc]
 Modulation for layer B.
 The default is automatically detected.
-Must be one of `QPSK`, `DQPSK`, `16-QAM`, `64-QAM`, `QAM` (auto).
+See option `--modulation` for the list of possible values.
 
 [.opt]
 *--isdbt-layer-b-segment-count* _value_
@@ -335,7 +336,7 @@ Used for ISDB-T tuners only.
 [.optdoc]
 Error correction for layer C.
 The default is automatically detected.
-Must be one of `1/2`, `2/3`, `3/4`, `5/6`, `7/8`, `auto`.
+See option `--fec-inner` for the list of possible values.
 
 [.opt]
 *--isdbt-layer-c-modulation* _value_
@@ -346,7 +347,7 @@ Used for ISDB-T tuners only.
 [.optdoc]
 Modulation for layer C.
 The default is automatically detected.
-Must be one of `QPSK`, `DQPSK`, `16-QAM`, `64-QAM`, `QAM` (auto).
+See option `--modulation` for the list of possible values.
 
 [.opt]
 *--isdbt-layer-c-segment-count* _value_
@@ -427,11 +428,12 @@ The default is `auto`.
 Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners.
 
 [.optdoc]
-Modulation type (aka constellation for DVB-T).
+Modulation type (a.k.a. constellation for DVB-T).
 
 [.optdoc]
-Must be one of `QPSK`, `8-PSK`, `16-APSK`, `32-APSK`, `QAM` (auto-detected QAM),
-`16-QAM`, `32-QAM`, `64-QAM`, `128-QAM`, `256-QAM`, `8-VSB`, `16-VSB`.
+Must be one of `4-QAM-NR`, `8-APSK-L`, `8-PSK`, `8-VSB`, `16-APSK`, `16-APSK-L`,
+`16-QAM`, `16-VSB`, `32-APSK`, `32-APSK-L`, `32-QAM`, `64-APSK`, `64-APSK-L`, `64-QAM`,
+`128-QAM`, `256-QAM`, `1024-QAM`, `4096-QAM`, `DQPSK`, `QAM` (auto-detected QAM), `QPSK`.
 
 [.optdoc]
 The default is 64-QAM for DVB-T and DVB-C, QPSK for DVB-S2, 8-VSB for ATSC.
@@ -520,7 +522,7 @@ Used for DVB-S2 tuners only.
 
 [.optdoc]
 Roll-off factor.
-Must be one of `auto`, `0.35`, `0.25`, `0.20`.
+Must be one of `auto`, `0.05`, `0.10`, `0.15`, `0.20`, `0.25`, `0.35`.
 The default is `0.35` (implicit for DVB-S, default for DVB-S2).
 
 [.opt]
