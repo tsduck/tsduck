@@ -11,7 +11,11 @@
 -->
 <tsduck>
 
-  <!-- Default values for channel entries -->
+  <!-- Supported delivery types in addition to all channels (several entries allowed) -->
+  <!-- With "type" attribute, add all delivery systems for the tuner type -->
+  <tuner type="DVB-S|DVB-T|DVB-C|ISDB-S|ISDB-T|ISDB-C|ATSC, optional" delivery="string, optional"/>
+
+  <!-- Default values for channel entries (max one entry) -->
   <defaults delivery="string, optional"
             bandwidth="uint64, optional"
             directory="string, optional"/>

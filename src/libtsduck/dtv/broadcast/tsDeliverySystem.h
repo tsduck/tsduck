@@ -177,6 +177,12 @@ namespace ts {
         bool contains(DeliverySystem ds) const { return find(ds) != end(); }
 
         //!
+        //! Insert all delivery systems which are supported by a given tuner type.
+        //! @param [in] type Tuner type
+        //!
+        void insertAll(TunerType type);
+
+        //!
         //! Get the "preferred" delivery system in the set.
         //! This can be used as default delivery system for a tuner.
         //! @return The "preferred" delivery system in the set.

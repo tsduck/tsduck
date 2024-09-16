@@ -101,7 +101,26 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         else {
             def_directory = AbsoluteFilePath(def_directory, base_directory);
         }
+        if (def_delivery != DS_UNDEFINED) {
+            _delivery_systems.insert(def_delivery);
+        }
         _duck.report().debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", DeliverySystemEnum.name(def_delivery), def_bandwidth, def_directory);
+    }
+
+    // Get all supported delivery systems (in addition to those in the various channels).
+    xml::ElementVector xtuners;
+    success = success && root->getChildren(xtuners, u"tuner");
+    for (auto it = xtuners.begin(); success && it != xtuners.end(); ++it) {
+        TunerType type = TT_UNDEFINED;
+        DeliverySystem sys = DS_UNDEFINED;
+        success = (*it)->getIntEnumAttribute(type, TunerTypeEnum, u"type", false, TT_UNDEFINED) &&
+                  (*it)->getIntEnumAttribute(sys, DeliverySystemEnum, u"delivery", false, DS_UNDEFINED);
+        if (type != TT_UNDEFINED) {
+            _delivery_systems.insertAll(type);
+        }
+        if (sys != DS_UNDEFINED) {
+            _delivery_systems.insert(sys);
+        }
     }
 
     // Get all channel descriptions.

@@ -195,6 +195,15 @@ ts::Standards ts::DeliverySystemSet::standards() const
     return st;
 }
 
+void ts::DeliverySystemSet::insertAll(TunerType type)
+{
+    for (const auto& it : DelSysDescs) {
+        if (it.second.type == type) {
+            insert(it.first);
+        }
+    }
+}
+
 ts::UString ts::DeliverySystemSet::toString() const
 {
     UString str;
