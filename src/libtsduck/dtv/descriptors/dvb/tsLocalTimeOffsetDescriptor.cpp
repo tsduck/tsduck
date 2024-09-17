@@ -99,7 +99,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         disp << ", polarity: " << (polarity ? "west" : "east") << " of Greenwich" << std::endl;
         disp << margin << UString::Format(u"Local time offset: %s%02d", polarity ? u"-" : u"", buf.getBCD<uint8_t>(2));
         disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
-        disp << margin << "Next change: " << buf.getMJD(5).format(Time::DATETIME) << std::endl;
+        disp << margin << "Next change: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
         disp << margin << UString::Format(u"Next time offset: %s%02d", polarity ? u"-" : u"", buf.getBCD<uint8_t>(2));
         disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
     }

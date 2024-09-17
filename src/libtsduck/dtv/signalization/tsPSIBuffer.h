@@ -20,6 +20,7 @@
 #include "tsTime.h"
 #include "tsCharset.h"
 #include "tsTS.h"
+#include "tsMJD.h"
 
 namespace ts {
     //!
@@ -260,7 +261,7 @@ namespace ts {
         //!
         //! @return The deserialize date and time (Epoch on error).
         //!
-        Time getFullMJD() { return getMJD(5); }
+        Time getFullMJD() { return getMJD(MJD_SIZE); }
 
         //!
         //! Get the date part of a Modified Julian Date (MJD), the time part is ignored, 2 bytes.
@@ -269,7 +270,7 @@ namespace ts {
         //!
         //! @return The deserialize date and time (Epoch on error).
         //!
-        Time getDateMJD() { return getMJD(2); }
+        Time getDateMJD() { return getMJD(MJD_MIN_SIZE); }
 
         //!
         //! Get a Modified Julian Date (MJD), 2 to 5 bytes.

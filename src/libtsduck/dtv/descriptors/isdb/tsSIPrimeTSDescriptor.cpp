@@ -14,6 +14,7 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
+#include "tsMJD.h"
 
 #define MY_XML_NAME u"SI_prime_TS_descriptor"
 #define MY_CLASS ts::SIPrimeTSDescriptor
@@ -74,7 +75,7 @@ void ts::SIPrimeTSDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::SIPrimeTSDescriptor::deserializePayload(PSIBuffer& buf)
 {
     parameter_version = buf.getUInt8();
-    update_time = buf.getMJD(2);  // date only
+    update_time = buf.getMJD(MJD_MIN_SIZE);  // date only
     SI_prime_TS_network_id = buf.getUInt16();
     SI_prime_transport_stream_id = buf.getUInt16();
     while (buf.canRead()) {
@@ -95,7 +96,7 @@ void ts::SIPrimeTSDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 {
     if (buf.canReadBytes(7)) {
         disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;
-        disp << margin << "Update time: " << buf.getMJD(2).format(Time::DATE) << std::endl;
+        disp << margin << "Update time: " << buf.getMJD(MJD_MIN_SIZE).format(Time::DATE) << std::endl;
         disp << margin << UString::Format(u"SI prime TS network id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"SI prime TS id: %n", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(2)) {

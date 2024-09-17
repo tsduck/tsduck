@@ -14,6 +14,7 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
+#include "tsMJD.h"
 
 #define MY_XML_NAME u"SI_parameter_descriptor"
 #define MY_CLASS ts::SIParameterDescriptor
@@ -70,7 +71,7 @@ void ts::SIParameterDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::SIParameterDescriptor::deserializePayload(PSIBuffer& buf)
 {
     parameter_version = buf.getUInt8();
-    update_time = buf.getMJD(2); // 2 bytes: date only
+    update_time = buf.getMJD(MJD_MIN_SIZE); // 2 bytes: date only
     while (buf.canRead()) {
         Entry e;
         e.table_id = buf.getUInt8();
@@ -89,7 +90,7 @@ void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;
-        disp << margin << "Update time: " << buf.getMJD(2).format(Time::DATE) << std::endl;
+        disp << margin << "Update time: " << buf.getMJD(MJD_MIN_SIZE).format(Time::DATE) << std::endl;
         while (buf.canReadBytes(2)) {
             disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
             disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");
