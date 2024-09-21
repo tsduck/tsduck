@@ -71,9 +71,11 @@
 TS_PUSH_WARNING()
 TS_MSC_NOWARNING(4193 4244 4263 4264 4668 4774 5026 5027 5031 5032 5054 5204 5262 5266)
 TS_GCC_NOWARNING(pedantic)
+TS_GCC_NOWARNING(cast-function-type-strict)  // OpenSSL 3.3
 TS_LLVM_NOWARNING(reserved-id-macro)
 TS_LLVM_NOWARNING(zero-length-array)
 TS_LLVM_NOWARNING(old-style-cast)
+TS_LLVM_NOWARNING(cast-function-type-strict) // OpenSSL 3.3
 
 #if !defined(DOXYGEN)
     #define TS_INSIDE_SYSTEM_HEADERS 1
