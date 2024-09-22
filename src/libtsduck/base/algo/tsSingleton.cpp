@@ -21,6 +21,8 @@ namespace {
     {
         TS_NOCOPY(ExitContext);                                       \
     public:
+        ~ExitContext();
+
         // Get the instance of the singleton.
         static ExitContext& Instance();
 
@@ -70,16 +72,24 @@ namespace {
         _handlers.push_back(std::make_pair(func, param));
     }
 
+    // Destructor.
+    ExitContext::~ExitContext()
+    {
+        // Call all handlers at termination.
+        // No need to lock, we are in a std::atexit() handler, during process termination.
+        for (auto it = _instance->_handlers.rbegin(); it != _instance->_handlers.rend(); ++it) {
+            it->first(it->second);
+        }
+        // If we are called before the std::atexit() handler, make sure we won't be called again.
+        _instance = nullptr;
+    }
+
     // Executed at the termination of the program.
     void ExitContext::_cleanup()
     {
         if (_instance != nullptr) {
-            // No need to lock, we are in a std::atexit() handler, during process termination.
-            for (auto it = _instance->_handlers.rbegin(); it != _instance->_handlers.rend(); ++it) {
-                it->first(it->second);
-            }
+            // Let the destructor call all termination handlers.
             delete _instance;
-            _instance = nullptr;
         }
     }
 }

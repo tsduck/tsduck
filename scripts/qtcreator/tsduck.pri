@@ -61,6 +61,9 @@ else: PYTHON = $$first(ALLPYTHON)
 DTAPI_HEADER = $$system($$PROJROOT/scripts/dtapi-config.sh --header)
 equals(DTAPI_HEADER, ''): DEFINES += TS_NO_DTAPI=1
 
+# JNI API
+QMAKE_CXXFLAGS += $$system($$PROJROOT/scripts/java-config.sh --cflags)
+
 # Other configuration.
 LIBS += -ledit
 linux|mac|mingw {

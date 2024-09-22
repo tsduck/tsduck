@@ -26,7 +26,7 @@ namespace ts {
     //! @param [in] func The function to call when the program terminates.
     //! @param [in] param The parameter to pass to @a func.
     //!
-    void atexit(void (*func)(void*), void* param = nullptr);
+    TSDUCKDLL void atexit(void (*func)(void*), void* param = nullptr);
 }
 
 //!

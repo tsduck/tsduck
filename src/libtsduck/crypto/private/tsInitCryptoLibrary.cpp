@@ -66,14 +66,26 @@ ts::InitCryptoLibrary::InitCryptoLibrary()
 // Cleanup OpenSSL.
 ts::InitCryptoLibrary::~InitCryptoLibrary()
 {
-#if OPENSSL_VERSION_MAJOR >= 3
-    for (const auto& prov : _providers) {
-        OSSL_PROVIDER_unload(prov.second);
-    }
-    _providers.clear();
-#endif
-    EVP_cleanup();
-    ERR_free_strings();
+    // OpenSSL is supposed to cleanup all its resources on exit, using atexit() handlers.
+    // Trying to cleanup OpenSSL here is dangerous. When calling a parameterless function
+    // such as ERR_free_strings(), there is usually no problem because OpenSSL knows that
+    // its strings were already freeed. However, when calling a function with a parameter
+    // which is a previously allocated structure, such as OSSL_PROVIDER_unload(), we may
+    // have a problem. If, by chance, we run before the OpenSSL atexit() handler, the
+    // operation succeeds because the structure is still valid. However, if we run after
+    // the OpenSSL atexit() handler, the structure is invalid and the program can crash.
+    //
+    // The following code was used in the past, until we ran into a situation where
+    // OSSL_PROVIDER_unload() crashed, probably because OpenSSL was alread cleanup.
+    //
+    // #if OPENSSL_VERSION_MAJOR >= 3
+    //     for (const auto& prov : _providers) {
+    //         OSSL_PROVIDER_unload(prov.second);
+    //     }
+    //     _providers.clear();
+    // #endif
+    //     EVP_cleanup();
+    //     ERR_free_strings();
 }
 
 // Load an OpenSSL provider if not yet loaded.
