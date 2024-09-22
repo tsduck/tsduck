@@ -53,7 +53,53 @@ ts::FetchBCryptAlgorithm::~FetchBCryptAlgorithm()
 //----------------------------------------------------------------------------
 
 // A singleton which initialize the cryptographic library.
-TS_DEFINE_SINGLETON(ts::InitCryptoLibrary);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+// OpenSSL is supposed to cleanup all its resources on exit, using atexit() handlers.
+// However, providers are not unloaded in this context. This is probably a bug in
+// OpenSSL because the result is inconsistent: Providers are still loaded and use
+// resources but they are unusable because OpenSSL is closed. The only safe way to
+// deallocate providers is to call OSSL_PROVIDER_unload() from a OPENSSL_atexit()
+// handler. This is explained here: https://github.com/lelegard/openssl-prov-leak
+TS_DEFINE_SINGLETON_ATEXIT(ts::InitCryptoLibrary, OPENSSL_atexit);
+
+// Providers management in OpenSSL 3.0 onwards..
+#if defined(TS_OPENSSL_PROVIDERS)
+
+// Load an OpenSSL provider if not yet loaded.
+void ts::InitCryptoLibrary::loadProvider(const char* provider)
+{
+    const std::string name(provider != nullptr ? provider : "");
+    if (!name.empty()) {
+        std::lock_guard<std::mutex> lock(_mutex);
+        if (!Contains(_providers, name)) {
+            OSSL_PROVIDER* prov = OSSL_PROVIDER_load(nullptr, provider);
+            if (prov != nullptr) {
+                _providers[name] = prov;
+            }
+            else {
+                PrintCryptographicLibraryErrors();
+            }
+        }
+    }
+}
+
+// Unload all providers.
+ts::InitCryptoLibrary::~InitCryptoLibrary()
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    for (const auto& prov : _providers) {
+        OSSL_PROVIDER_unload(prov.second);
+    }
+    _providers.clear();
+}
+
+// Get the properies string from an OpenSSL provider.
+std::string ts::InitCryptoLibrary::providerProperties(const char* provider)
+{
+    return provider == nullptr || provider[0] == '\0' ? std::string() : std::string("provider=") + provider;
+}
+
+#endif // TS_OPENSSL_PROVIDERS
 
 // Initialize OpenSSL.
 ts::InitCryptoLibrary::InitCryptoLibrary()
@@ -63,63 +109,17 @@ ts::InitCryptoLibrary::InitCryptoLibrary()
     _debug = !GetEnvironment(u"TS_DEBUG_OPENSSL").empty();
 }
 
-// Cleanup OpenSSL.
-ts::InitCryptoLibrary::~InitCryptoLibrary()
-{
-    // OpenSSL is supposed to cleanup all its resources on exit, using atexit() handlers.
-    // Trying to cleanup OpenSSL here is dangerous. When calling a parameterless function
-    // such as ERR_free_strings(), there is usually no problem because OpenSSL knows that
-    // its strings were already freeed. However, when calling a function with a parameter
-    // which is a previously allocated structure, such as OSSL_PROVIDER_unload(), we may
-    // have a problem. If, by chance, we run before the OpenSSL atexit() handler, the
-    // operation succeeds because the structure is still valid. However, if we run after
-    // the OpenSSL atexit() handler, the structure is invalid and the program can crash.
-    //
-    // The following code was used in the past, until we ran into a situation where
-    // OSSL_PROVIDER_unload() crashed, probably because OpenSSL was alread cleanup.
-    //
-    // #if OPENSSL_VERSION_MAJOR >= 3
-    //     for (const auto& prov : _providers) {
-    //         OSSL_PROVIDER_unload(prov.second);
-    //     }
-    //     _providers.clear();
-    // #endif
-    //     EVP_cleanup();
-    //     ERR_free_strings();
-}
-
-// Load an OpenSSL provider if not yet loaded.
-void ts::InitCryptoLibrary::loadProvider(const char* provider)
-{
-#if OPENSSL_VERSION_MAJOR >= 3
-    const std::string name(provider != nullptr ? provider : "");
-    if (!name.empty() && !Contains(_providers, name)) {
-        OSSL_PROVIDER* prov = OSSL_PROVIDER_load(nullptr, provider);
-        if (prov != nullptr) {
-            _providers[name] = prov;
-        }
-        else {
-            PrintCryptographicLibraryErrors();
-        }
-    }
-#endif
-}
-
-// Get the properies string from an OpenSSL provider.
-std::string ts::InitCryptoLibrary::providerProperties(const char* provider)
-{
-    return provider == nullptr || provider[0] == '\0' ? std::string() : std::string("provider=") + provider;
-}
-
 // A class to create a singleton with a preset hash context for OpenSSL.
 ts::FetchHashAlgorithm::FetchHashAlgorithm(const char* algo, const char* provider)
 {
-#if OPENSSL_VERSION_MAJOR >= 3
+#if defined(TS_OPENSSL_PROVIDERS)
     InitCryptoLibrary::Instance().loadProvider(provider);
     _algo = EVP_MD_fetch(nullptr, algo, InitCryptoLibrary::providerProperties(provider).c_str());
 #else
+    // With OpenSSL v1, this is a predefined context which shall not be freeed.
     _algo = EVP_get_digestbyname(algo);
 #endif
+
     if (_algo != nullptr) {
         _context = EVP_MD_CTX_new();
         if (_context != nullptr && !EVP_DigestInit_ex(_context, _algo, nullptr)) {
@@ -137,8 +137,8 @@ ts::FetchHashAlgorithm::~FetchHashAlgorithm()
         EVP_MD_CTX_free(_context);
         _context = nullptr;
     }
-#if OPENSSL_VERSION_MAJOR >= 3
-    // With OpenSSL v1, this is a predefined context which shall not be freeed.
+
+#if defined(TS_OPENSSL_PROVIDERS)
     if (_algo != nullptr) {
         EVP_MD_free(const_cast<EVP_MD*>(_algo));
         _algo = nullptr;
@@ -149,10 +149,11 @@ ts::FetchHashAlgorithm::~FetchHashAlgorithm()
 // A class to create a singleton with a preset cipher algorithm for OpenSSL.
 ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* provider)
 {
-#if OPENSSL_VERSION_MAJOR >= 3
+#if defined(TS_OPENSSL_PROVIDERS)
     InitCryptoLibrary::Instance().loadProvider(provider);
     _algo = EVP_CIPHER_fetch(nullptr, algo, InitCryptoLibrary::providerProperties(provider).c_str());
 #else
+    // With OpenSSL v1, this is a predefined context which shall not be freeed.
     _algo = EVP_get_cipherbyname(algo);
 #endif
     PrintCryptographicLibraryErrors();
@@ -161,8 +162,7 @@ ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* pro
 // Cleanup cipher algorithm for OpenSSL.
 ts::FetchCipherAlgorithm::~FetchCipherAlgorithm()
 {
-#if OPENSSL_VERSION_MAJOR >= 3
-    // With OpenSSL v1, this is a predefined context which shall not be freeed.
+#if defined(TS_OPENSSL_PROVIDERS)
     if (_algo != nullptr) {
         EVP_CIPHER_free(const_cast<EVP_CIPHER*>(_algo));
         _algo = nullptr;

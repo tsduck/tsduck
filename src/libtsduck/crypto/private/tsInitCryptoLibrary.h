@@ -38,27 +38,40 @@ namespace ts {
 
 #else
 
+    // Starting with OpenSSL 3.0, algorithms are stored in providers.
+    // Providers must be separately managed (see comments in .cpp file).
+    #if OPENSSL_VERSION_MAJOR >= 3
+        #define TS_OPENSSL_PROVIDERS 1
+    #endif
+
     // A singleton which initializes the cryptographic library.
     class InitCryptoLibrary
     {
         TS_DECLARE_SINGLETON(InitCryptoLibrary);
     public:
-        ~InitCryptoLibrary();
-
         // Check if environment variable TS_DEBUG_OPENSSL was defined.
         bool debug() const { return _debug; }
 
+    private:
+        bool _debug = false;
+
+    #if defined(TS_OPENSSL_PROVIDERS)
+
+    public:
         // Load an OpenSSL provider if not yet loaded.
         void loadProvider(const char* provider);
+
+        // Unload all providers.
+        ~InitCryptoLibrary();
 
         // Get the properies string from an OpenSSL provider.
         static std::string providerProperties(const char* provider);
 
     private:
-        bool _debug = false;
-    #if OPENSSL_VERSION_MAJOR >= 3
+        std::mutex _mutex {};
         std::map<std::string,OSSL_PROVIDER*> _providers {};
-    #endif
+
+    #endif // TS_OPENSSL_PROVIDERS
     };
 
     // A class to create a singleton with a preset hash context for OpenSSL.
@@ -95,19 +108,19 @@ namespace ts {
     // Can be called many times, executed only once.
     inline void InitCryptographicLibrary()
     {
-#if !defined(TS_WINDOWS)
+    #if !defined(TS_WINDOWS)
         InitCryptoLibrary::Instance();
-#endif
+    #endif
     }
 
     // Internal function to display errors from the underlying cryptographic library on standard error.
     inline void PrintCryptographicLibraryErrors()
     {
-#if !defined(TS_WINDOWS)
+    #if !defined(TS_WINDOWS)
         if (InitCryptoLibrary::Instance().debug()) {
             ERR_print_errors_fp(stderr);
         }
-#endif
+    #endif
     }
 }
 

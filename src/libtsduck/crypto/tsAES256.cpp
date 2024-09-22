@@ -33,6 +33,7 @@ ts::AES256::AES256(const BlockCipherProperties& props) : BlockCipher(props)
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), FetchECB);
+
 void ts::AES256::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
     FetchECB::Instance().getAlgorithm(algo, length);
@@ -42,7 +43,9 @@ void ts::AES256::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& i
 
 #else
 
-TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("AES-256-ECB"), Algo);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("AES-256-ECB"), Algo, OPENSSL_atexit);
+
 const EVP_CIPHER* ts::AES256::getAlgorithm() const
 {
     return Algo::Instance().algorithm();
@@ -107,6 +110,7 @@ ts::CBC<ts::AES256>::CBC(const BlockCipherProperties& props) : AES256(props)
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC), FetchCBC);
+
 void ts::CBC<ts::AES256>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
     FetchCBC::Instance().getAlgorithm(algo, length);
@@ -115,7 +119,9 @@ void ts::CBC<ts::AES256>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length
 
 #else
 
-TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("AES-256-CBC"), AlgoCBC);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("AES-256-CBC"), AlgoCBC, OPENSSL_atexit);
+
 const EVP_CIPHER* ts::CBC<ts::AES256>::getAlgorithm() const
 {
     return AlgoCBC::Instance().algorithm();

@@ -27,6 +27,7 @@ namespace {
         static ExitContext& Instance();
 
         // Register a termination function.
+        void add(void (*func)());
         void add(void (*func)(void*), void* param);
 
     private:
@@ -34,7 +35,11 @@ namespace {
         ExitContext() = default;
 
         // List of registered functions.
-        using ExitHandler = std::pair<void (*)(void*), void*>;
+        struct ExitHandler {
+            void (*func)();
+            void (*func_with_param)(void*);
+            void* param;
+        };
         std::vector<ExitHandler> _handlers {};
         std::mutex _mutex {};
 
@@ -66,22 +71,33 @@ namespace {
     }
 
     // Register a termination function.
+    void ExitContext::add(void (*func)())
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _handlers.push_back({func, nullptr, nullptr});
+    }
     void ExitContext::add(void (*func)(void*), void* param)
     {
         std::lock_guard<std::mutex> lock(_mutex);
-        _handlers.push_back(std::make_pair(func, param));
+        _handlers.push_back({nullptr, func, param});
     }
 
     // Destructor.
     ExitContext::~ExitContext()
     {
-        // Call all handlers at termination.
-        // No need to lock, we are in a std::atexit() handler, during process termination.
-        for (auto it = _instance->_handlers.rbegin(); it != _instance->_handlers.rend(); ++it) {
-            it->first(it->second);
-        }
         // If we are called before the std::atexit() handler, make sure we won't be called again.
         _instance = nullptr;
+
+        // Call all handlers at termination.
+        // No need to lock, we are in a std::atexit() handler, during process termination.
+        for (auto it = _handlers.rbegin(); it != _handlers.rend(); ++it) {
+            if (it->func != nullptr) {
+                it->func();
+            }
+            if (it->func_with_param != nullptr) {
+                it->func_with_param(it->param);
+            }
+        }
     }
 
     // Executed at the termination of the program.
@@ -98,6 +114,12 @@ namespace {
 //----------------------------------------------------------------------------
 // Register a function to execute when the application exits.
 //----------------------------------------------------------------------------
+
+int ts::atexit(void (*func)())
+{
+    ExitContext::Instance().add(func);
+    return 0;
+}
 
 void ts::atexit(void (*func)(void*), void* param)
 {

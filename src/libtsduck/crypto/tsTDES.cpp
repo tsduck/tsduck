@@ -33,6 +33,7 @@ ts::TDES::TDES(const BlockCipherProperties& props) : BlockCipher(props)
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), FetchECB);
+
 void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
     FetchECB::Instance().getAlgorithm(algo, length);
@@ -42,7 +43,9 @@ void ts::TDES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ign
 
 #else
 
-TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-EDE3-ECB"), Algo);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("DES-EDE3-ECB"), Algo, OPENSSL_atexit);
+
 const EVP_CIPHER* ts::TDES::getAlgorithm() const
 {
     return Algo::Instance().algorithm();
@@ -109,6 +112,7 @@ ts::CBC<ts::TDES>::CBC(const BlockCipherProperties& props) : TDES(props)
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_3DES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC), FetchCBC);
+
 void ts::CBC<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
     FetchCBC::Instance().getAlgorithm(algo, length);
@@ -117,7 +121,9 @@ void ts::CBC<ts::TDES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, 
 
 #else
 
-TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-EDE3-CBC"), AlgoCBC);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("DES-EDE3-CBC"), AlgoCBC, OPENSSL_atexit);
+
 const EVP_CIPHER* ts::CBC<ts::TDES>::getAlgorithm() const
 {
     return AlgoCBC::Instance().algorithm();

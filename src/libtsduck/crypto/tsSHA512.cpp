@@ -21,7 +21,8 @@ void ts::SHA512::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 
 #else
 
-TS_STATIC_INSTANCE(ts::FetchHashAlgorithm, ("SHA512"), Preset);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+TS_STATIC_INSTANCE_ATEXIT(ts::FetchHashAlgorithm, ("SHA512"), Preset, OPENSSL_atexit);
 
 const EVP_MD_CTX* ts::SHA512::referenceContext() const
 {

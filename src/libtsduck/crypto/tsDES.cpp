@@ -33,6 +33,7 @@ ts::DES::DES(const BlockCipherProperties& props) : BlockCipher(props)
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_DES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), FetchECB);
+
 void ts::DES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
     FetchECB::Instance().getAlgorithm(algo, length);
@@ -42,7 +43,9 @@ void ts::DES::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& igno
 
 #else
 
-TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-ECB", "legacy"), Algo);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("DES-ECB", "legacy"), Algo, OPENSSL_atexit);
+
 const EVP_CIPHER* ts::DES::getAlgorithm() const
 {
     return Algo::Instance().algorithm();
@@ -109,6 +112,7 @@ ts::CBC<ts::DES>::CBC(const BlockCipherProperties& props) : DES(props)
 #if defined(TS_WINDOWS)
 
 TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_DES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC), FetchCBC);
+
 void ts::CBC<ts::DES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
     FetchCBC::Instance().getAlgorithm(algo, length);
@@ -117,7 +121,9 @@ void ts::CBC<ts::DES>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, b
 
 #else
 
-TS_STATIC_INSTANCE(ts::FetchCipherAlgorithm, ("DES-CBC", "legacy"), AlgoCBC);
+// The singleton needs to be destroyed no later that OpenSSL cleanup.
+TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("DES-CBC", "legacy"), AlgoCBC, OPENSSL_atexit);
+
 const EVP_CIPHER* ts::CBC<ts::DES>::getAlgorithm() const
 {
     return AlgoCBC::Instance().algorithm();
