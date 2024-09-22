@@ -14,6 +14,21 @@
 #pragma once
 #include "tsPlatform.h"
 
+namespace ts {
+    //!
+    //! Register a function to execute when the application exits.
+    //!
+    //! This is a re-implementation of std::atexit() with:
+    //! - Unlimited number of registered functions (std::atexit() can only guarantee 32 entries)
+    //! - Pass a parameter to the function.
+    //! The functions will be called in reverse order: if A was registered before B,
+    //! then the call to B is made before the call to A.
+    //! @param [in] func The function to call when the program terminates.
+    //! @param [in] param The parameter to pass to @a func.
+    //!
+    void atexit(void (*func)(void*), void* param = nullptr);
+}
+
 //!
 //! Singleton class declaration.
 //!
@@ -51,7 +66,7 @@
         static std::once_flag _once_flag;                           \
         classname(); /* default constructor */                      \
         static void InitInstance();                                 \
-        static void CleanupSingleton()
+        static void CleanupSingleton(void*)
 
 //!
 //! @hideinitializer
@@ -77,10 +92,10 @@
     {                                                            \
         std::call_once(_once_flag, []() {                        \
             _instance = new fullclassname;                       \
-            std::atexit(fullclassname::CleanupSingleton);        \
+            ts::atexit(fullclassname::CleanupSingleton);         \
         });                                                      \
     }                                                            \
-    void fullclassname::CleanupSingleton()                       \
+    void fullclassname::CleanupSingleton(void*)                  \
     {                                                            \
         if (_instance != nullptr) {                              \
             delete _instance;                                    \
@@ -136,19 +151,19 @@
         private:                                                         \
             static ObjectClass* volatile _instance;                      \
             static std::once_flag _once_flag;                            \
-            static void CleanupSingleton();                              \
+            static void CleanupSingleton(void*);                         \
         };                                                               \
         ObjectClass& StaticInstanceClass::Instance()                     \
         {                                                                \
             if (_instance == nullptr) {                                  \
                 std::call_once(_once_flag, []() {                        \
                     _instance = new ObjectClass ObjectArgs;              \
-                    std::atexit(StaticInstanceClass::CleanupSingleton);  \
+                    ts::atexit(StaticInstanceClass::CleanupSingleton);   \
                 });                                                      \
             }                                                            \
             return *_instance;                                           \
         }                                                                \
-        void StaticInstanceClass::CleanupSingleton()                     \
+        void StaticInstanceClass::CleanupSingleton(void*)                \
         {                                                                \
             if (_instance != nullptr) {                                  \
                 delete _instance;                                        \

@@ -16,6 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsCryptoLibrary.h"
 #include "tsBlockCipherProperties.h"
+#include "tsSingleton.h"
 
 namespace ts {
 
@@ -297,7 +298,7 @@ namespace ts {
         private:                                                    \
             static const BlockCipherProperties* volatile _instance; \
             static std::once_flag _once_flag;                       \
-            static void CleanupSingleton();                         \
+            static void CleanupSingleton(void*);                    \
         }                                                           \
         /** @endcond */
 
@@ -308,24 +309,24 @@ namespace ts {
         //! @param Prefix Same prefix as used in TS_BLOCK_CIPHER_DECLARE_PROPERTIES.
         //! @param Args Args for the BlockCipherProperties constructor.
         //!
-#define TS_BLOCK_CIPHER_DEFINE_PROPERTIES(CipherClass, Prefix, Args)        \
+#define TS_BLOCK_CIPHER_DEFINE_PROPERTIES(CipherClass, Prefix, Args)            \
         const ts::BlockCipherProperties& CipherClass::Prefix##_PropertiesSingleton::Instance() \
-        {                                                                   \
-            if (_instance == nullptr) {                                     \
-                std::call_once(_once_flag, []() {                           \
-                    _instance = new BlockCipherProperties Args;             \
-                    std::atexit(CipherClass::Prefix##_PropertiesSingleton::CleanupSingleton); \
-                });                                                         \
-            }                                                               \
-            return *_instance;                                              \
-        }                                                                   \
-        void CipherClass::Prefix##_PropertiesSingleton::CleanupSingleton()  \
-        {                                                                   \
-            if (_instance != nullptr) {                                     \
-                delete _instance;                                           \
-                _instance = nullptr;                                        \
-            }                                                               \
-        }                                                                   \
+        {                                                                       \
+            if (_instance == nullptr) {                                         \
+                std::call_once(_once_flag, []() {                               \
+                    _instance = new BlockCipherProperties Args;                 \
+                    ts::atexit(CipherClass::Prefix##_PropertiesSingleton::CleanupSingleton); \
+                });                                                             \
+            }                                                                   \
+            return *_instance;                                                  \
+        }                                                                       \
+        void CipherClass::Prefix##_PropertiesSingleton::CleanupSingleton(void*) \
+        {                                                                       \
+            if (_instance != nullptr) {                                         \
+                delete _instance;                                               \
+                _instance = nullptr;                                            \
+            }                                                                   \
+        }                                                                       \
         const ts::BlockCipherProperties* volatile CipherClass::Prefix##_PropertiesSingleton::_instance = nullptr; \
         std::once_flag CipherClass::Prefix##_PropertiesSingleton::_once_flag {}
 
@@ -336,26 +337,26 @@ namespace ts {
         //! @param Prefix Same prefix as used in TS_BLOCK_CIPHER_DECLARE_PROPERTIES.
         //! @param Args Args for the BlockCipherProperties constructor.
         //!
-#define TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(CipherClass, Prefix, Args)        \
+#define TS_BLOCK_CIPHER_DEFINE_PROPERTIES_TEMPLATE(CipherClass, Prefix, Args)             \
         template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N> \
         const ts::BlockCipherProperties& CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::Instance() \
-        {                                                                            \
-            if (_instance == nullptr) {                                              \
-                std::call_once(_once_flag, []() {                                    \
-                    _instance = new BlockCipherProperties Args;                      \
-                    std::atexit(CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::CleanupSingleton); \
-                });                                                                  \
-            }                                                                        \
-            return *_instance;                                                       \
-        }                                                                            \
+        {                                                                                 \
+            if (_instance == nullptr) {                                                   \
+                std::call_once(_once_flag, []() {                                         \
+                    _instance = new BlockCipherProperties Args;                           \
+                    ts::atexit(CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::CleanupSingleton); \
+                });                                                                       \
+            }                                                                             \
+            return *_instance;                                                            \
+        }                                                                                 \
         template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N> \
-        void CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::CleanupSingleton() \
-        {                                                                            \
-            if (_instance != nullptr) {                                              \
-                delete _instance;                                                    \
-                _instance = nullptr;                                                 \
-            }                                                                        \
-        }                                                                            \
+        void CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::CleanupSingleton(void*) \
+        {                                                                                 \
+            if (_instance != nullptr) {                                                   \
+                delete _instance;                                                         \
+                _instance = nullptr;                                                      \
+            }                                                                             \
+        }                                                                                 \
         template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>           \
         const ts::BlockCipherProperties* volatile CipherClass<CIPHER,N>::Prefix##_PropertiesSingleton::_instance = nullptr; \
         template<class CIPHER, typename std::enable_if<std::is_base_of<ts::BlockCipher, CIPHER>::value>::type* N>           \
