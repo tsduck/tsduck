@@ -44,18 +44,28 @@ test-static: $(BINDIR)/utest_static
 	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
 	$(BINDIR)/utest_static $(UTESTFLAGS)
 
+# Valgrind is well supported on Linux only. On macOS, use the builtin "leaks" tool.
+ifeq ($(MACOS),)
+    VALGRIND ?= valgrind
+    VGFLAGS += --quiet --leak-check=full --show-leak-kinds=all --suppressions=valgrind.supp
+else
+    # Using MallocStackLogging is very verbose, use only when needed?
+    # VALGRIND ?= MallocStackLogging=1 leaks
+    VALGRIND ?= leaks
+    VGFLAGS += --atExit --
+endif
+
 # Same unitary tests under valgrind control
 .PHONY: valgrind valgrind-shared valgrind-static
 .NOTPARALLEL: valgrind
-VGFLAGS += --quiet --leak-check=full --show-leak-kinds=all --suppressions=valgrind.supp
 valgrind: valgrind-shared $(if $(NOSTATIC),,valgrind-static)
 valgrind-shared: $(BINDIR)/utest
 	$(call LOG,[VALGRIND] $(BINDIR)/utest $(UTESTFLAGS)) \
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
 	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
-	valgrind $(VGFLAGS) $(BINDIR)/utest $(UTESTFLAGS)
+	$(VALGRIND) $(VGFLAGS) $(BINDIR)/utest $(UTESTFLAGS)
 valgrind-static: $(BINDIR)/utest_static
 	$(call LOG,[VALGRIND] $(BINDIR)/utest_static $(UTESTFLAGS)) \
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
 	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
-	valgrind $(VGFLAGS) $(BINDIR)/utest_static $(UTESTFLAGS)
+	$(VALGRIND) $(VGFLAGS) $(BINDIR)/utest_static $(UTESTFLAGS)
