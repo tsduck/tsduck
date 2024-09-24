@@ -482,7 +482,7 @@ class ScanContext
 {
     TS_NOBUILD_NOCOPY(ScanContext);
 public:
-    // Contructor.
+    // Constructor.
     ScanContext(ScanOptions&);
 
     // tsscan main code.
@@ -504,7 +504,7 @@ private:
     void nitScan();
 };
 
-// Contructor.
+// Constructor.
 ScanContext::ScanContext(ScanOptions& opt) :
     _opt(opt),
     _tuner(_opt.duck),

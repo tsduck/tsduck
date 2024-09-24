@@ -30,7 +30,7 @@ namespace ts {
         class TSDUCKDLL Group
         {
         public:
-            Group() = default;                  //!< Contructor.
+            Group() = default;                  //!< Constructor.
             uint8_t mae_group_id = 0;           //!< 7 bits.
             bool    is_in_main_stream = false;  //!< Audio data in this group is present in the main stream.
             bool    is_in_ts = false;           //!< When is_in_main_stream == false.
