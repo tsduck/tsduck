@@ -118,7 +118,7 @@ namespace ts {
         //! Get the file format as a string.
         //! @return The file format as a string.
         //!
-        UString packetFormatString() const { return TSPacketFormatEnum.name(_format); }
+        UString packetFormatString() const { return TSPacketFormatEnum->name(_format); }
 
     protected:
         //!

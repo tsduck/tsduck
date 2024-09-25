@@ -850,7 +850,7 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
     }
 
     // Identify the tag. Report unknown tag but do not invalidate the playlist.
-    if (!TagNames.getValue(tag, line.substr(1, pos - 1), strict)) {
+    if (!TagNames->getValue(tag, line.substr(1, pos - 1), strict)) {
         report.log(strict ? Severity::Error : Severity::Debug, u"unsupported HLS tag: %s", line.substr(1, pos - 1));
         return false;
     }
@@ -1032,7 +1032,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
     // Start building the content.
     UString text;
-    text.format(u"#%s\n#%s:%d\n", TagNames.name(Tag::EXTM3U), TagNames.name(Tag::VERSION), _version);
+    text.format(u"#%s\n#%s:%d\n", TagNames->name(Tag::EXTM3U), TagNames->name(Tag::VERSION), _version);
 
     // Insert application-specific tags before standard tags.
     for (const auto& tag : _extraTags) {
@@ -1043,7 +1043,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
         // Loop on all alternative rendition playlists.
         for (const auto& pl : _altPlaylists) {
             // The initial fields are required.
-            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", TagNames.name(Tag::MEDIA), pl.type, pl.groupId, pl.name);
+            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", TagNames->name(Tag::MEDIA), pl.type, pl.groupId, pl.name);
             if (pl.isDefault) {
                 text.append(u",DEFAULT=YES");
             }
@@ -1083,7 +1083,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
                 // Take care about string parameters: some are documented as quoted-string and
                 // some as enumerated-string. The former shall be quoted, the latter shall not.
-                text.format(u"#%s:BANDWIDTH=%d", TagNames.name(Tag::STREAM_INF), pl.bandwidth.toInt());
+                text.format(u"#%s:BANDWIDTH=%d", TagNames->name(Tag::STREAM_INF), pl.bandwidth.toInt());
                 if (pl.averageBandwidth > 0) {
                     text.format(u",AVERAGE-BANDWIDTH=%d", pl.averageBandwidth.toInt());
                 }
@@ -1130,24 +1130,24 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
     }
     else if (isMedia()) {
         // Global tags.
-        text.format(u"#%s:%d\n", TagNames.name(Tag::TARGETDURATION), _targetDuration.count());
-        text.format(u"#%s:%d\n", TagNames.name(Tag::MEDIA_SEQUENCE), _mediaSequence);
+        text.format(u"#%s:%d\n", TagNames->name(Tag::TARGETDURATION), _targetDuration.count());
+        text.format(u"#%s:%d\n", TagNames->name(Tag::MEDIA_SEQUENCE), _mediaSequence);
         if (_type == PlayListType::VOD) {
-            text.format(u"#%s:VOD\n", TagNames.name(Tag::PLAYLIST_TYPE));
+            text.format(u"#%s:VOD\n", TagNames->name(Tag::PLAYLIST_TYPE));
         }
         else if (_type == PlayListType::EVENT) {
-            text.format(u"#%s:EVENT\n", TagNames.name(Tag::PLAYLIST_TYPE));
+            text.format(u"#%s:EVENT\n", TagNames->name(Tag::PLAYLIST_TYPE));
         }
 
         // Loop on all media segments.
         for (const auto& seg : _segments) {
             if (!seg.relativeURI.empty()) {
-                text.format(u"#%s:%d.%03d,%s\n", TagNames.name(Tag::EXTINF), seg.duration.count() / 1000, seg.duration.count() % 1000, seg.title);
+                text.format(u"#%s:%d.%03d,%s\n", TagNames->name(Tag::EXTINF), seg.duration.count() / 1000, seg.duration.count() % 1000, seg.title);
                 if (seg.bitrate > 1024) {
-                    text.format(u"#%s:%d\n", TagNames.name(Tag::BITRATE), (seg.bitrate / 1024).toInt());
+                    text.format(u"#%s:%d\n", TagNames->name(Tag::BITRATE), (seg.bitrate / 1024).toInt());
                 }
                 if (seg.gap) {
-                    text.format(u"#%s\n", TagNames.name(Tag::GAP));
+                    text.format(u"#%s\n", TagNames->name(Tag::GAP));
                 }
                 text.format(u"%s\n", seg.relativeURI);
             }
@@ -1155,7 +1155,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
         // Mark end of list when necessary.
         if (_endList) {
-            text.format(u"#%s\n", TagNames.name(Tag::ENDLIST));
+            text.format(u"#%s\n", TagNames->name(Tag::ENDLIST));
         }
     }
     else {

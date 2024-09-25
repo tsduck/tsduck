@@ -557,7 +557,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     help(u"plp0-type",
          u"DVB-T2 modulators: indicate the PLP type for PLP #0. The default is COMMON.");
 
-    option(u"power-mode", 0, DektecPowerMode);
+    option(u"power-mode", 0, *DektecPowerMode);
     help(u"power-mode", u"DTU-315 modulators: set the power mode to the specified value.");
 
     option(u"preload-fifo");
@@ -1235,7 +1235,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 input->getDektecCodeRate(fec);
             }
             fec = intValue<int>(u"convolutional-rate", fec);
-            tsp->verbose(u"using DVB-S FEC " + DektecFEC.name(fec));
+            tsp->verbose(u"using DVB-S FEC " + DektecFEC->name(fec));
             // Compute expected bitrate if symbol rate is known
             if (symbol_rate <= 0) {
                 displaySymbolRate(_guts->opt_bitrate, modulation_type, fec, 0, 0);
@@ -1381,11 +1381,11 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             const int s49 = mpe_fec ? DTAPI_MOD_DVBT_S49 : DTAPI_MOD_DVBT_S49_OFF;
             const int cell_id = intValue<int>(u"cell-id", -1);
             tsp->verbose(u"using DVB-T FEC %s, bandwidth %s, constellation %s, guard %s, transmission %s",
-                         DektecFEC.name(fec),
-                         DektecDVBTProperty.name(bw),
-                         DektecDVBTProperty.name(constel),
-                         DektecDVBTProperty.name(guard),
-                         DektecDVBTProperty.name(tr_mode));
+                         DektecFEC->name(fec),
+                         DektecDVBTProperty->name(bw),
+                         DektecDVBTProperty->name(constel),
+                         DektecDVBTProperty->name(guard),
+                         DektecDVBTProperty->name(tr_mode));
             const int param1 = bw | constel | guard | interleave | tr_mode | dvb_h | s48 | s49;
             // Compute exact expected bitrate (no symbol rate on DVB-T)
             if (!computeBitrate(-1, modulation_type, fec, param1, cell_id)) {
@@ -1510,7 +1510,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             }
             constel = intValue<int>(u"vsb", constel);
             const int taps = intValue<int>(u"vsb-taps", 64);
-            tsp->verbose(u"using ATSC %s", DektecVSB.name(constel));
+            tsp->verbose(u"using ATSC %s", DektecVSB->name(constel));
             tsp->debug(u"SetModControl(%d, %d, %d, %d)", modulation_type, constel, taps, 0);
             status = _guts->chan.SetModControl(modulation_type, constel, taps, 0);
             break;

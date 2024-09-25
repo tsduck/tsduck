@@ -13,7 +13,7 @@
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
 
 // A local mutex to avoid multiple activations.
-TS_STATIC_INSTANCE(std::recursive_mutex, (), ActivationMutex);
+TS_STATIC_INSTANCE(, std::recursive_mutex, ActivationMutex, ());
 
 // On UNIX platforms, we use a semaphore (sem_t). On macOS, the address of the
 // semaphore is returned by sem_open. On other UNIX, the semaphore instance is
@@ -175,7 +175,7 @@ ts::UserInterrupt::~UserInterrupt()
 void ts::UserInterrupt::activate()
 {
     // Ensure that there is only one active instance at a time
-    std::lock_guard<std::recursive_mutex> lock(ActivationMutex::Instance());
+    std::lock_guard<std::recursive_mutex> lock(*ActivationMutex);
     if (_active) {
         return;
     }
@@ -246,7 +246,7 @@ void ts::UserInterrupt::activate()
 void ts::UserInterrupt::deactivate()
 {
     // Deactivate only if active.
-    std::lock_guard<std::recursive_mutex> lock(ActivationMutex::Instance());
+    std::lock_guard<std::recursive_mutex> lock(*ActivationMutex);
     if (!_active) {
         return;
     }

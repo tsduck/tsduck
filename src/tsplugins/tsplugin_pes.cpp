@@ -691,11 +691,11 @@ void ts::PESPlugin::handleAccessUnit(PESDemux&, const PESPacket& pes, uint8_t au
         const CodecType codec = pes.getCodec();
 
         // Hexadecimal dump
-        *_out << "* " << prefix(pes) << ", " << CodecTypeEnum.name(codec) << " access unit type " << AccessUnitTypeName(codec, au_type, NamesFlags::FIRST) << std::endl;
+        *_out << "* " << prefix(pes) << ", " << CodecTypeEnum->name(codec) << " access unit type " << AccessUnitTypeName(codec, au_type, NamesFlags::FIRST) << std::endl;
         *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", offset, size) << std::endl;
 
         size_t dsize = size;
-        *_out << "  " << CodecTypeEnum.name(codec) << " access unit";
+        *_out << "  " << CodecTypeEnum->name(codec) << " access unit";
         if (_max_dump_size > 0 && dsize > _max_dump_size) {
             dsize = _max_dump_size;
             *_out << " (truncated)";

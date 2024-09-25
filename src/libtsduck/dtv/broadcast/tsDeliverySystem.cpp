@@ -14,33 +14,34 @@
 //----------------------------------------------------------------------------
 
 // List of delivery systems, from most preferred to least preferred.
-const ts::DeliverySystemList ts::DeliverySystemSet::_preferred_order
-({
+// This list is used to find the default delivery system of a tuner and
+// to build the list of supported delivery systems in order of preference.
+TS_STATIC_INSTANCE(const, ts::DeliverySystemList, PreferredOrder, ({
      // On a tuner, we consider terrestrial capabilities first.
-     DS_DVB_T,
-     DS_DVB_T2,
-     DS_ATSC,
-     DS_ISDB_T,
-     DS_DTMB,
-     DS_CMMB,
+     ts::DS_DVB_T,
+     ts::DS_DVB_T2,
+     ts::DS_ATSC,
+     ts::DS_ISDB_T,
+     ts::DS_DTMB,
+     ts::DS_CMMB,
      // Then satellite capabilities.
-     DS_DVB_S,
-     DS_DVB_S2,
-     DS_DVB_S_TURBO,
-     DS_ISDB_S,
-     DS_DSS,
+     ts::DS_DVB_S,
+     ts::DS_DVB_S2,
+     ts::DS_DVB_S_TURBO,
+     ts::DS_ISDB_S,
+     ts::DS_DSS,
      // Then cable capabilities.
-     DS_DVB_C_ANNEX_A,
-     DS_DVB_C_ANNEX_B,
-     DS_DVB_C_ANNEX_C,
-     DS_DVB_C2,
-     DS_ISDB_C,
+     ts::DS_DVB_C_ANNEX_A,
+     ts::DS_DVB_C_ANNEX_B,
+     ts::DS_DVB_C_ANNEX_C,
+     ts::DS_DVB_C2,
+     ts::DS_ISDB_C,
      // Exotic capabilities come last.
-     DS_DVB_H,
-     DS_ATSC_MH,
-     DS_DAB,
-     DS_UNDEFINED
-});
+     ts::DS_DVB_H,
+     ts::DS_ATSC_MH,
+     ts::DS_DAB,
+     ts::DS_UNDEFINED
+}));
 
 namespace {
 
@@ -57,7 +58,9 @@ namespace {
         ts::Standards standards;
         uint32_t      flags;
     };
-    const std::map<ts::DeliverySystem,DeliverySystemDescription> DelSysDescs = {
+    using DeliverySystemDescriptionMap = std::map<ts::DeliverySystem, DeliverySystemDescription>;
+
+    TS_STATIC_INSTANCE(const, DeliverySystemDescriptionMap, DelSysDescs, ({
         {ts::DS_UNDEFINED,     {ts::TT_UNDEFINED, ts::Standards::NONE, 0}},
         {ts::DS_DVB_S,         {ts::TT_DVB_S,     ts::Standards::DVB,  DSF_SATELLITE}},
         {ts::DS_DVB_S2,        {ts::TT_DVB_S,     ts::Standards::DVB,  DSF_SATELLITE}},
@@ -78,7 +81,7 @@ namespace {
         {ts::DS_CMMB,          {ts::TT_UNDEFINED, ts::Standards::NONE, DSF_TERRESTRIAL}},
         {ts::DS_DAB,           {ts::TT_UNDEFINED, ts::Standards::NONE, 0}},
         {ts::DS_DSS,           {ts::TT_UNDEFINED, ts::Standards::NONE, DSF_SATELLITE}},
-    };
+    }));
 }
 
 
@@ -86,7 +89,7 @@ namespace {
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::DeliverySystemEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DeliverySystemEnum, ({
     {u"undefined",   ts::DS_UNDEFINED},
     {u"DVB-S",       ts::DS_DVB_S},
     {u"DVB-S2",      ts::DS_DVB_S2},
@@ -108,9 +111,9 @@ const ts::Enumeration ts::DeliverySystemEnum({
     {u"CMMB",        ts::DS_CMMB},
     {u"DAB",         ts::DS_DAB},
     {u"DSS",         ts::DS_DSS},
-});
+}));
 
-const ts::Enumeration ts::TunerTypeEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::TunerTypeEnum, ({
     {u"DVB-S",  ts::TT_DVB_S},
     {u"DVB-T",  ts::TT_DVB_T},
     {u"DVB-C",  ts::TT_DVB_C},
@@ -118,7 +121,7 @@ const ts::Enumeration ts::TunerTypeEnum({
     {u"ISDB-T", ts::TT_ISDB_T},
     {u"ISDB-C", ts::TT_ISDB_C},
     {u"ATSC",   ts::TT_ATSC},
-});
+}));
 
 
 //----------------------------------------------------------------------------
@@ -127,14 +130,14 @@ const ts::Enumeration ts::TunerTypeEnum({
 
 bool ts::IsSatelliteDelivery(DeliverySystem sys)
 {
-    const auto it = DelSysDescs.find(sys);
-    return it != DelSysDescs.end() && (it->second.flags & DSF_SATELLITE) != 0;
+    const auto it = DelSysDescs->find(sys);
+    return it != DelSysDescs->end() && (it->second.flags & DSF_SATELLITE) != 0;
 }
 
 bool ts::IsTerrestrialDelivery(DeliverySystem sys)
 {
-    const auto it = DelSysDescs.find(sys);
-    return it != DelSysDescs.end() && (it->second.flags & DSF_TERRESTRIAL) != 0;
+    const auto it = DelSysDescs->find(sys);
+    return it != DelSysDescs->end() && (it->second.flags & DSF_TERRESTRIAL) != 0;
 }
 
 
@@ -144,8 +147,8 @@ bool ts::IsTerrestrialDelivery(DeliverySystem sys)
 
 ts::TunerType ts::TunerTypeOf(ts::DeliverySystem system)
 {
-    const auto it = DelSysDescs.find(system);
-    return it != DelSysDescs.end() ? it->second.type : TT_UNDEFINED;
+    const auto it = DelSysDescs->find(system);
+    return it != DelSysDescs->end() ? it->second.type : TT_UNDEFINED;
 }
 
 
@@ -155,8 +158,8 @@ ts::TunerType ts::TunerTypeOf(ts::DeliverySystem system)
 
 ts::Standards ts::StandardsOf(DeliverySystem system)
 {
-    const auto it = DelSysDescs.find(system);
-    return it != DelSysDescs.end() ? it->second.standards : Standards::NONE;
+    const auto it = DelSysDescs->find(system);
+    return it != DelSysDescs->end() ? it->second.standards : Standards::NONE;
 }
 
 
@@ -167,7 +170,7 @@ ts::Standards ts::StandardsOf(DeliverySystem system)
 ts::DeliverySystem ts::DeliverySystemSet::preferred() const
 {
     // Inspect delivery systems in decreasing order of preference.
-    for (auto it : _preferred_order) {
+    for (auto it : *PreferredOrder) {
         if (contains(it)) {
             return it;
         }
@@ -178,7 +181,7 @@ ts::DeliverySystem ts::DeliverySystemSet::preferred() const
 ts::DeliverySystemList ts::DeliverySystemSet::toList() const
 {
     DeliverySystemList list;
-    for (auto it : _preferred_order) {
+    for (auto it : *PreferredOrder) {
         if (contains(it)) {
             list.push_back(it);
         }
@@ -197,7 +200,7 @@ ts::Standards ts::DeliverySystemSet::standards() const
 
 void ts::DeliverySystemSet::insertAll(TunerType type)
 {
-    for (const auto& it : DelSysDescs) {
+    for (const auto& it : *DelSysDescs) {
         if (it.second.type == type) {
             insert(it.first);
         }
@@ -208,12 +211,12 @@ ts::UString ts::DeliverySystemSet::toString() const
 {
     UString str;
     // Build list of delivery systems in decreasing order of preference.
-    for (auto it : _preferred_order) {
+    for (auto it : *PreferredOrder) {
         if (contains(it)) {
             if (!str.empty()) {
                 str += u", ";
             }
-            str += DeliverySystemEnum.name(int(it));
+            str += DeliverySystemEnum->name(int(it));
         }
     }
     return str.empty() ? u"none" : str;

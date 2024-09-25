@@ -12,21 +12,21 @@
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_SHA256_ALGORITHM), Fetch);
+TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, Fetch, (BCRYPT_SHA256_ALGORITHM));
 
 void ts::SHA256::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 {
-    Fetch::Instance().getAlgorithm(algo, length);
+    Fetch->getAlgorithm(algo, length);
 }
 
 #else
 
 // The singleton needs to be destroyed no later that OpenSSL cleanup.
-TS_STATIC_INSTANCE_ATEXIT(ts::FetchHashAlgorithm, ("SHA256"), Preset, OPENSSL_atexit);
+TS_STATIC_INSTANCE_ATEXIT(const, ts::FetchHashAlgorithm, Preset, ("SHA256"), OPENSSL_atexit);
 
 const EVP_MD_CTX* ts::SHA256::referenceContext() const
 {
-    return Preset::Instance().referenceContext();
+    return Preset->referenceContext();
 }
 
 #endif

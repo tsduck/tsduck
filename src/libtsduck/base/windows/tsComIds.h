@@ -45,7 +45,7 @@
 #if defined(TS_COMIDS_DEFINE)
 #define TS_APP_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     namespace ts {TSDUCKDLL extern const ::GUID name;} \
-    const ::GUID ts::name = {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
+    constexpr ::GUID ts::name {l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
 #else
 #define TS_APP_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     namespace ts {TSDUCKDLL extern const ::GUID name;}

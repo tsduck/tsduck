@@ -14,6 +14,7 @@
 #pragma once
 #include "tsEnumeration.h"
 #include "tsEnumUtils.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -113,7 +114,7 @@ namespace ts {
         //! Enumeration description of ts::hls::Tag.
         //! The names are the actual tag names from a .M3U8 playlist file.
         //!
-        TSDUCKDLL extern const Enumeration TagNames;
+        TS_DECLARE_GLOBAL(const, Enumeration, TagNames);
 
         //!
         //! Get the properties of a Tag.

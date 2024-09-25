@@ -18,7 +18,7 @@
 // This constant is a null (or stuffing) packet.
 //----------------------------------------------------------------------------
 
-const ts::TSPacket ts::NullPacket = {{
+constexpr ts::TSPacket ts::NullPacket {{
     // Header: PID 0x1FFF
     0x47, 0x1F, 0xFF, 0x10,
     // Payload: 184 bytes 0xFF
@@ -47,7 +47,7 @@ const ts::TSPacket ts::NullPacket = {{
 // This constant is an empty packet (no payload)
 //----------------------------------------------------------------------------
 
-const ts::TSPacket ts::EmptyPacket = {{
+constexpr ts::TSPacket ts::EmptyPacket {{
     // Header: PID 0x1FFF, has adaptation field, no payload, CC = 0
     0x47, 0x1F, 0xFF, 0x20,
     // Adaptation field length

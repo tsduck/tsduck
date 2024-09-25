@@ -32,11 +32,11 @@ ts::AES128::AES128(const BlockCipherProperties& props) : BlockCipher(props)
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB), FetchECB);
+TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, FetchECB, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_ECB));
 
 void ts::AES128::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchECB::Instance().getAlgorithm(algo, length);
+    FetchECB->getAlgorithm(algo, length);
     // This is ECB mode, ignore IV which may be used by a upper chaining mode.
     ignore_iv = true;
 }
@@ -44,11 +44,11 @@ void ts::AES128::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& i
 #else
 
 // The singleton needs to be destroyed no later that OpenSSL cleanup.
-TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("AES-128-ECB"), Algo, OPENSSL_atexit);
+TS_STATIC_INSTANCE_ATEXIT(const, ts::FetchCipherAlgorithm, Algo, ("AES-128-ECB"), OPENSSL_atexit);
 
 const EVP_CIPHER* ts::AES128::getAlgorithm() const
 {
-    return Algo::Instance().algorithm();
+    return Algo->algorithm();
 }
 
 #endif
@@ -85,7 +85,7 @@ void ts::ECB<ts::AES128>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length
 
 const EVP_CIPHER* ts::ECB<ts::AES128>::getAlgorithm() const
 {
-    return Algo::Instance().algorithm();
+    return Algo->algorithm();
 }
 
 #endif
@@ -111,22 +111,22 @@ ts::CBC<ts::AES128>::CBC(const BlockCipherProperties& props) : AES128(props)
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC), FetchCBC);
+TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, FetchCBC, (BCRYPT_AES_ALGORITHM, BCRYPT_CHAIN_MODE_CBC));
 
 void ts::CBC<ts::AES128>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchCBC::Instance().getAlgorithm(algo, length);
+    FetchCBC->getAlgorithm(algo, length);
     ignore_iv = false;
 }
 
 #else
 
 // The singleton needs to be destroyed no later that OpenSSL cleanup.
-TS_STATIC_INSTANCE_ATEXIT(ts::FetchCipherAlgorithm, ("AES-128-CBC"), AlgoCBC, OPENSSL_atexit);
+TS_STATIC_INSTANCE_ATEXIT(const, ts::FetchCipherAlgorithm, AlgoCBC, ("AES-128-CBC"), OPENSSL_atexit);
 
 const EVP_CIPHER* ts::CBC<ts::AES128>::getAlgorithm() const
 {
-    return AlgoCBC::Instance().algorithm();
+    return AlgoCBC->algorithm();
 }
 
 #endif

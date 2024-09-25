@@ -46,7 +46,7 @@ namespace ts {
             //!
             //! Default constructor.
             //!
-            Value() = default;
+            constexpr Value() = default;
             //!
             //! Get the JSON value type.
             //! @return The JSON value type.

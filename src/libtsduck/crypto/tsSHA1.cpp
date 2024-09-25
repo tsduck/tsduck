@@ -12,21 +12,21 @@
 
 #if defined(TS_WINDOWS)
 
-TS_STATIC_INSTANCE(ts::FetchBCryptAlgorithm, (BCRYPT_SHA1_ALGORITHM), Fetch);
+TS_STATIC_INSTANCE(, ts::FetchBCryptAlgorithm, Fetch, (BCRYPT_SHA1_ALGORITHM));
 
 void ts::SHA1::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length) const
 {
-    Fetch::Instance().getAlgorithm(algo, length);
+    Fetch->getAlgorithm(algo, length);
 }
 
 #else
 
 // The singleton needs to be destroyed no later that OpenSSL cleanup.
-TS_STATIC_INSTANCE_ATEXIT(ts::FetchHashAlgorithm, ("SHA1"), Preset, OPENSSL_atexit);
+TS_STATIC_INSTANCE_ATEXIT(const, ts::FetchHashAlgorithm, Preset, ("SHA1"), OPENSSL_atexit);
 
 const EVP_MD_CTX* ts::SHA1::referenceContext() const
 {
-    return Preset::Instance().referenceContext();
+    return Preset->referenceContext();
 }
 
 #endif

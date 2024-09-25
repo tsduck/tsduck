@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -29,13 +30,13 @@ namespace ts {
     //!
     //! Enumeration description of ts::SectionFormat.
     //!
-    TSDUCKDLL extern const Enumeration SectionFormatEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, SectionFormatEnum);
 
     //!
     //! Enumeration description of ts::SectionFormat, excluding ts::SectionFormat::UNSPECIFIED.
     //! Useful to declare a parameter value which needs a specific format.
     //!
-    TSDUCKDLL extern const Enumeration SpecifiedSectionFormatEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, SpecifiedSectionFormatEnum);
 
     //!
     //! Get a section file type, based on a file name.

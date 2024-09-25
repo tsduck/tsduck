@@ -11,7 +11,7 @@
 #include "tsSingleton.h"
 
 // Global mutex. Used when delegations are modified. See comment in header file.
-TS_STATIC_INSTANCE(std::recursive_mutex, (), GlobalReportMutex);
+TS_STATIC_INSTANCE(, std::recursive_mutex, GlobalReportMutex, ());
 
 // Default foolproof counter. Used to detect internal error and infinite loops
 // in the trees of delegations. Shouldn't be necessary but I am paranoid.
@@ -38,7 +38,7 @@ ts::Report::~Report()
     if (_has_delegators || _delegate != nullptr) {
 
         // There is something global to do, use the global mutex.
-        std::lock_guard<std::recursive_mutex> lock(GlobalReportMutex::Instance());
+        std::lock_guard<std::recursive_mutex> lock(*GlobalReportMutex);
 
         // Unlink other reports which delegated to this. Possible race condition if delegators exist.
         if (!_delegators.empty()) {
@@ -126,7 +126,7 @@ void ts::Report::setMaxSeverity(int level)
     }
 
     // Acquire the global mutex, we have some global stuff to do.
-    std::lock_guard<std::recursive_mutex> lock(GlobalReportMutex::Instance());
+    std::lock_guard<std::recursive_mutex> lock(*GlobalReportMutex);
 
     _max_severity = level;
 
@@ -163,7 +163,7 @@ ts::Report* ts::Report::delegateReport(Report* report)
     }
 
     // Acquire the global mutex.
-    std::lock_guard<std::recursive_mutex> lock(GlobalReportMutex::Instance());
+    std::lock_guard<std::recursive_mutex> lock(*GlobalReportMutex);
 
     // Detect loops in the tree.
     for (Report* del = report; del != nullptr; del = del->_delegate) {

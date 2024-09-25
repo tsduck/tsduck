@@ -8,7 +8,7 @@
 
 #include "tshls.h"
 
-const ts::Enumeration ts::hls::TagNames({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::hls::TagNames, ({
     {u"EXTM3U",                       ts::hls::Tag::EXTM3U},
     {u"EXT-X-VERSION",                ts::hls::Tag::VERSION},
     {u"EXTINF",                       ts::hls::Tag::EXTINF},
@@ -41,7 +41,7 @@ const ts::Enumeration ts::hls::TagNames({
     {u"EXT-X-INDEPENDENT-SEGMENTS",   ts::hls::Tag::INDEPENDENT_SEGMENTS},
     {u"EXT-X-START",                  ts::hls::Tag::START},
     {u"EXT-X-DEFINE",                 ts::hls::Tag::DEFINE},
-});
+}));
 
 
 //----------------------------------------------------------------------------
