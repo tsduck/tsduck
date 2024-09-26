@@ -136,8 +136,8 @@ namespace ts {
 //! @see TS_DEFINE_GLOBAL()
 //! @hideinitializer
 //!
-#define TS_DECLARE_GLOBAL(constness, objtype, objname)      \
-    TS_DECLARE_GLOBAL_WRAPPER(constness, objtype, objname); \
+#define TS_DECLARE_GLOBAL(constness, objtype, objname)                 \
+    TS_DECLARE_GLOBAL_WRAPPER(TSDUCKDLL, constness, objtype, objname); \
     TSDUCKDLL extern const objname##Wrapper objname
 
 //!
@@ -219,9 +219,9 @@ namespace ts {
 //! @hideinitializer
 //!
 #define TS_STATIC_INSTANCE_ATEXIT(constness, objtype, objname, initializer, atexitfunction) \
-    namespace {                                                  \
-        TS_DECLARE_GLOBAL_WRAPPER(constness, objtype, objname);  \
-    }                                                            \
+    namespace {                                                    \
+        TS_DECLARE_GLOBAL_WRAPPER(, constness, objtype, objname);  \
+    }                                                              \
     TS_DEFINE_GLOBAL_ATEXIT(constness, objtype, objname, initializer, atexitfunction)
 
 
@@ -273,19 +273,19 @@ namespace ts {
 
 #else
 
-#define TS_DECLARE_GLOBAL_WRAPPER(constness, objtype, objname)        \
-    /** @cond nodoxygen */                                            \
-    class objname##Wrapper                                            \
-    {                                                                 \
-        TS_NOCOPY(objname##Wrapper);                                  \
-        TS_DECLARE_SINGLETON_BASE(constness, objtype);                \
-    public:                                                           \
-        objname##Wrapper() = default;                                 \
-        TS_PUSH_WARNING()                                             \
-        TS_LLVM_NOWARNING(unused-member-function)                     \
-        constness objtype* operator->() const { return &Instance(); } \
-        constness objtype& operator*() const { return Instance(); }   \
-        TS_POP_WARNING()                                              \
+#define TS_DECLARE_GLOBAL_WRAPPER(exportness, constness, objtype, objname) \
+    /** @cond nodoxygen */                                                 \
+    class exportness objname##Wrapper                                      \
+    {                                                                      \
+        TS_NOCOPY(objname##Wrapper);                                       \
+        TS_DECLARE_SINGLETON_BASE(constness, objtype);                     \
+    public:                                                                \
+        objname##Wrapper() = default;                                      \
+        TS_PUSH_WARNING()                                                  \
+        TS_LLVM_NOWARNING(unused-member-function)                          \
+        constness objtype* operator->() const { return &Instance(); }      \
+        constness objtype& operator*() const { return Instance(); }        \
+        TS_POP_WARNING()                                                   \
     } /** @cond nodoxygen */
 
 #endif

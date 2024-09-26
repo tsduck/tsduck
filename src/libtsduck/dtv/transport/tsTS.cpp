@@ -11,7 +11,7 @@
 
 // These PID sets respectively contains no PID and all PID's.
 // The default constructor for PIDSet (std::bitset) sets all bits to 0.
-constexpr ts::PIDSet ts::NoPID;
+const ts::PIDSet ts::NoPID;
 const ts::PIDSet ts::AllPIDs(~NoPID);
 
 // Enumeration description of ts::PIDClass.

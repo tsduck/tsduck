@@ -76,7 +76,7 @@ ts::ECB<ts::AES128>::ECB(const BlockCipherProperties& props) : AES128(props)
 
 void ts::ECB<ts::AES128>::getAlgorithm(::BCRYPT_ALG_HANDLE& algo, size_t& length, bool& ignore_iv) const
 {
-    FetchECB::Instance().getAlgorithm(algo, length);
+    FetchECB->getAlgorithm(algo, length);
     // This is ECB mode, ignore IV which may be used by a upper chaining mode.
     ignore_iv = true;
 }
