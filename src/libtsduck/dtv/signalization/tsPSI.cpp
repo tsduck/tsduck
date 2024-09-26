@@ -9,22 +9,13 @@
 #include "tsPSI.h"
 
 
-//----------------------------------------------------------------------------
-// Enumeration description of TableScope values.
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::TableScopeEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::TableScopeEnum, ({
     {u"none",   ts::TableScope::NONE},
     {u"actual", ts::TableScope::ACTUAL},
     {u"all",    ts::TableScope::ALL},
-});
+}));
 
-
-//----------------------------------------------------------------------------
-// Enumeration description of PDS values.
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::PrivateDataSpecifierEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PrivateDataSpecifierEnum, ({
     {u"BskyB",     ts::PDS_BSKYB},
     {u"Nagra",     ts::PDS_NAGRA},
     {u"TPS",       ts::PDS_TPS},
@@ -40,7 +31,7 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
     {u"AVSA",      ts::PDS_AVSAudio},
     {u"AOM",       ts::PDS_AOM},
     {u"cuvv",      ts::PDS_CUVV},
-});
+}));
 
 
 //----------------------------------------------------------------------------

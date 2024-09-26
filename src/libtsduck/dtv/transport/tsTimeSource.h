@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsSingleton.h"
 #include "tsTS.h" // required by GCC, see comment below
 
 namespace ts {
@@ -45,5 +46,5 @@ namespace ts {
     //!
     //! Enumeration description of ts::TimeSource.
     //!
-    TSDUCKDLL extern const Enumeration TimeSourceEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, TimeSourceEnum);
 }

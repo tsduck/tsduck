@@ -14,8 +14,18 @@
 // Enumeration for various Dektec constants, names for values
 //-----------------------------------------------------------------------------
 
-const ts::Enumeration ts::DektecModulationTypes({
-#if !defined(TS_NO_DTAPI)
+#if defined(TS_NO_DTAPI)
+
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecModulationTypes, ());
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecVSB, ());
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecFEC, ());
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecInversion, ());
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecDVBTProperty, ());
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecPowerMode, ());
+
+#else
+
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecModulationTypes, ({
     {u"DVBS-QPSK", DTAPI_MOD_DVBS_QPSK},
     {u"DVBS-BPSK", DTAPI_MOD_DVBS_BPSK},
     {u"4-QAM", DTAPI_MOD_QAM4},
@@ -37,19 +47,15 @@ const ts::Enumeration ts::DektecModulationTypes({
     {u"ADTB-T", DTAPI_MOD_ADTBT},
     {u"CMMB", DTAPI_MOD_CMMB},
     {u"T2MI", DTAPI_MOD_T2MI},
-    {u"DVBC2", DTAPI_MOD_DVBC2},
-#endif
-});
+    {u"DVBC2", DTAPI_MOD_DVBC2}
+}));
 
-const ts::Enumeration ts::DektecVSB({
-#if !defined(TS_NO_DTAPI)
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecVSB, ({
     {u"8-VSB", DTAPI_MOD_ATSC_VSB8},
     {u"16-VSB", DTAPI_MOD_ATSC_VSB16},
-#endif
-});
+}));
 
-const ts::Enumeration ts::DektecFEC({
-#if !defined(TS_NO_DTAPI)
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecFEC, ({
     {u"1/2", DTAPI_MOD_1_2},
     {u"2/3", DTAPI_MOD_2_3},
     {u"3/4", DTAPI_MOD_3_4},
@@ -64,18 +70,14 @@ const ts::Enumeration ts::DektecFEC({
     {u"8/9", DTAPI_MOD_8_9},
     {u"9/10", DTAPI_MOD_9_10},
     {u"unknown-FEC", DTAPI_MOD_CR_UNK},
-#endif
-});
+}));
 
-const ts::Enumeration ts::DektecInversion({
-#if !defined(TS_NO_DTAPI)
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecInversion, ({
     {u"non-inverted", DTAPI_MOD_S_S2_SPECNONINV},
     {u"inverted", DTAPI_MOD_S_S2_SPECINV},
-#endif
-});
+}));
 
-const ts::Enumeration ts::DektecDVBTProperty({
-#if !defined(TS_NO_DTAPI)
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecDVBTProperty, ({
     {u"5-MHz", DTAPI_MOD_DVBT_5MHZ},
     {u"6-MHz", DTAPI_MOD_DVBT_6MHZ},
     {u"7-MHz", DTAPI_MOD_DVBT_7MHZ},
@@ -96,15 +98,14 @@ const ts::Enumeration ts::DektecDVBTProperty({
     {u"4K", DTAPI_MOD_DVBT_4K},
     {u"8K", DTAPI_MOD_DVBT_8K},
     {u"unknown-transmission-mode", DTAPI_MOD_DVBT_MD_UNK},
-#endif
-});
+}));
 
-const ts::Enumeration ts::DektecPowerMode({
-#if !defined(TS_NO_DTAPI)
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::DektecPowerMode, ({
     {u"high-quality", DTAPI_IOCONFIG_MODHQ},
     {u"low-power", DTAPI_IOCONFIG_LOWPWR},
+}));
+
 #endif
-});
 
 
 //-----------------------------------------------------------------------------

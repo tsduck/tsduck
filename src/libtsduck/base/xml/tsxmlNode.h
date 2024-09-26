@@ -369,7 +369,7 @@ namespace ts {
             // Default XML tweaks for orphan nodes.
             static const Tweaks defaultTweaks;
 
-            // No default constuctor or assignment.
+            // No default constructor or assignment.
             Node() = delete;
             Node& operator=(Node&) = delete;
         };

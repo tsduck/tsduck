@@ -78,10 +78,10 @@ void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& disp, 
 
 void ts::PrivateDataSpecifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIntEnumAttribute(PrivateDataSpecifierEnum, u"private_data_specifier", pds);
+    root->setIntEnumAttribute(*PrivateDataSpecifierEnum, u"private_data_specifier", pds);
 }
 
 bool ts::PrivateDataSpecifierDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntEnumAttribute(pds, PrivateDataSpecifierEnum, u"private_data_specifier", true);
+    return element->getIntEnumAttribute(pds, *PrivateDataSpecifierEnum, u"private_data_specifier", true);
 }

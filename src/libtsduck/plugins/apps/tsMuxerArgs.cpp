@@ -64,7 +64,7 @@ void ts::MuxerArgs::defineArgs(Args& args)
     args.help(u"cat-bitrate",
               u"CAT bitrate in output stream. The default is " + UString::Decimal(DEFAULT_PSI_BITRATE) + u" b/s.");
 
-    args.option(u"eit", 0, TableScopeEnum);
+    args.option(u"eit", 0, *TableScopeEnum);
     args.help(u"eit", u"type",
               u"Specify which type of EIT shall be merged in the output stream. The default is \"actual\".");
 
@@ -91,7 +91,7 @@ void ts::MuxerArgs::defineArgs(Args& args)
               u"Specify the maximum number of TS packets to write at a time. "
               u"The default is " + UString::Decimal(DEFAULT_MAX_OUTPUT_PACKETS) + u" packets.");
 
-    args.option(u"nit", 0, TableScopeEnum);
+    args.option(u"nit", 0, *TableScopeEnum);
     args.help(u"nit", u"type",
               u"Specify which type of NIT shall be merged in the output stream. The default is \"actual\".");
 
@@ -114,7 +114,7 @@ void ts::MuxerArgs::defineArgs(Args& args)
               u"In case of initial restart error, wait the specified delay before retrying. "
               u"The default is " + UString::Chrono(DEFAULT_RESTART_DELAY, true) + u".");
 
-    args.option(u"sdt", 0, TableScopeEnum);
+    args.option(u"sdt", 0, *TableScopeEnum);
     args.help(u"sdt", u"type",
               u"Specify which type of SDT shall be merged in the output stream. The default is \"actual\".");
 

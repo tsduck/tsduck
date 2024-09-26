@@ -24,7 +24,7 @@ namespace ts {
         {
         public:
             //! Default constructor.
-            Null() = default;
+            constexpr Null() = default;
 
             // Implementation of ts::json::Value.
             virtual Type type() const override;

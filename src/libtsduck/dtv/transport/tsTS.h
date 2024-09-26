@@ -16,6 +16,7 @@
 #include "tsUString.h"
 #include "tsBitRate.h"
 #include "tsEnumeration.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -389,7 +390,7 @@ namespace ts {
     //!
     //! Enumeration description of ts::PIDClass.
     //!
-    TSDUCKDLL extern const Enumeration PIDClassEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, PIDClassEnum);
 
     //---------------------------------------------------------------------
     // MPEG clock representation:

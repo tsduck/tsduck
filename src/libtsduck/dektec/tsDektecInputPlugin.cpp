@@ -257,7 +257,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"The supported modulation types depend on the device model. "
          u"The default modulation type is DVB-S.\n");
 
-    option(u"polarity", 0, PolarizationEnum);
+    option(u"polarity", 0, *PolarizationEnum);
     help(u"polarity",
          u"DVB-S/S2 receivers: indicate the polarity. The default is \"vertical\".");
 

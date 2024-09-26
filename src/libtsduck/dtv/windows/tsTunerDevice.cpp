@@ -358,7 +358,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
         case TT_UNDEFINED:
         default: {
-            _duck.report().error(u"cannot convert BDA tuning parameters to %s parameters", TunerTypeEnum.name(ttype));
+            _duck.report().error(u"cannot convert BDA tuning parameters to %s parameters", TunerTypeEnum->name(ttype));
             return false;
         }
     }

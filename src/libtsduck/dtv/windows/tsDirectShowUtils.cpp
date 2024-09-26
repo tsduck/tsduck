@@ -305,7 +305,7 @@ bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, co
         case TT_ISDB_C:
         case TT_UNDEFINED:
         default:
-            duck.report().error(u"cannot convert %s parameters to DirectShow tuning parameters", DeliverySystemEnum.name(delsys));
+            duck.report().error(u"cannot convert %s parameters to DirectShow tuning parameters", DeliverySystemEnum->name(delsys));
             return false;
     }
 }
@@ -320,13 +320,13 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     ComPtr<::IDVBTLocator2> loc(CLSID_DVBTLocator2, ::IID_IDVBTLocator2, duck.report());
 
     if (loc.isNull() ||
-        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, duck.report()) ||
-        !CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, duck.report()) ||
-        !CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, duck.report()) ||
-        !CheckModVar(params.modulation, u"constellation", ModulationEnum, duck.report()) ||
-        !CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, duck.report()) ||
-        !CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, duck.report()) ||
-        !CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, duck.report()) ||
+        !CheckModVar(params.inversion, u"spectral inversion", *SpectralInversionEnum, duck.report()) ||
+        !CheckModVar(params.fec_hp, u"FEC", *InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.fec_lp, u"FEC", *InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.modulation, u"constellation", *ModulationEnum, duck.report()) ||
+        !CheckModVar(params.transmission_mode, u"transmission mode", *TransmissionModeEnum, duck.report()) ||
+        !CheckModVar(params.guard_interval, u"guard interval", *GuardIntervalEnum, duck.report()) ||
+        !CheckModVar(params.hierarchy, u"hierarchy", *HierarchyEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation.value())) ||
         !PUT(loc, Bandwidth, long(params.bandwidth.value() / 1000000)) || // bandwidth in MHz
@@ -360,9 +360,9 @@ bool ts::CreateLocatorDVBC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, duck.report());
 
     if (loc.isNull() ||
-        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, duck.report()) ||
-        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, duck.report()) ||
-        !CheckModVar(params.modulation, u"modulation", ModulationEnum, duck.report()) ||
+        !CheckModVar(params.inversion, u"spectral inversion", *SpectralInversionEnum, duck.report()) ||
+        !CheckModVar(params.inner_fec, u"FEC", *InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.modulation, u"modulation", *ModulationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation.value())) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
@@ -441,9 +441,9 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     }
 
     if (loc.isNull() ||
-        !CheckModVar(params.modulation, u"modulation", ModulationEnum, duck.report()) ||
-        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, duck.report()) ||
-        !CheckModVar(params.polarity, u"polarity", PolarizationEnum, duck.report()) ||
+        !CheckModVar(params.modulation, u"modulation", *ModulationEnum, duck.report()) ||
+        !CheckModVar(params.inner_fec, u"FEC", *InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.polarity, u"polarity", *PolarizationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation.value())) ||
         !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity.value())) ||
@@ -461,8 +461,8 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 
     // DVB-S2 specific parameters
     if (params.delivery_system == DS_DVB_S2 &&
-        (!CheckModVar(params.pilots, u"pilot", PilotEnum, duck.report()) ||
-         !CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, duck.report()) ||
+        (!CheckModVar(params.pilots, u"pilot", *PilotEnum, duck.report()) ||
+         !CheckModVar(params.roll_off, u"roll-off factor", *RollOffEnum, duck.report()) ||
          !PUT(loc, SignalPilot, ::Pilot(params.pilots.value())) ||
          !PUT(loc, SignalRollOff, ::RollOff(params.roll_off.value()))))
     {
@@ -507,8 +507,8 @@ bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     duck.report().debug(u"mapped frequency %'d to physical channel %d", freq, physical_channel);
 
     if (loc.isNull() ||
-        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, duck.report()) ||
-        !CheckModVar(params.modulation, u"modulation", ModulationEnum, duck.report()) ||
+        !CheckModVar(params.inversion, u"spectral inversion", *SpectralInversionEnum, duck.report()) ||
+        !CheckModVar(params.modulation, u"modulation", *ModulationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, -1) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
         !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
@@ -536,8 +536,8 @@ bool ts::CreateLocatorISDBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locato
     ComPtr<::IISDBSLocator> loc(CLSID_ISDBSLocator, ::IID_IISDBSLocator, duck.report());
 
     if (loc.isNull() ||
-        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, duck.report()) ||
-        !CheckModVar(params.polarity, u"polarity", PolarizationEnum, duck.report()) ||
+        !CheckModVar(params.inner_fec, u"FEC", *InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.polarity, u"polarity", *PolarizationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity.value())) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||

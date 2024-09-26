@@ -142,7 +142,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"Set the specified port in output mode. This applies to bidirectional "
          u"ports which can be either set in input or output mode.");
 
-    option(u"power-mode", 'p', DektecPowerMode);
+    option(u"power-mode", 'p', *DektecPowerMode);
     help(u"power-mode", u"On DTU-315 USB modulators, set the power mode to the specified value.");
 
     option(u"reset", 'r');

@@ -29,7 +29,7 @@ namespace ts {
         //!
         struct TSDUCKDLL Point
         {
-            Point() = default;                      //!< Contructor.
+            Point() = default;                      //!< Constructor.
             uint8_t   applicable_temporal_id = 0;   //!< 3 bits.
             uint8_t   num_target_output_views = 0;  //!< 8 bits.
             ByteBlock ES_references {};             //!< List of 6-bit ES references.
@@ -45,7 +45,7 @@ namespace ts {
         //!
         struct TSDUCKDLL Level
         {
-            Level() = default;              //!< Contructor.
+            Level() = default;              //!< Constructor.
             uint8_t   level_idc = 0;        //!< MVC level.
             PointList operation_points {};  //!< List of operational points.
         };

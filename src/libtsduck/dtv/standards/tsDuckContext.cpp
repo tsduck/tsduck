@@ -366,7 +366,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     // Options relating to default PDS.
     if (cmdOptionsMask & CMD_PDS) {
 
-        args.option(u"default-pds", 0, PrivateDataSpecifierEnum);
+        args.option(u"default-pds", 0, *PrivateDataSpecifierEnum);
         args.help(u"default-pds",
                   u"Default private data specifier. This option is meaningful only when the "
                   u"signalization is incorrect, when private descriptors appear in tables "

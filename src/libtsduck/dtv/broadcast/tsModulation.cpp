@@ -37,7 +37,7 @@ bool ts::CheckModEnum(int value, const UString& name, const Enumeration& conv, R
 // Enumerations, names for values
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::ModulationEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::ModulationEnum, ({
     {u"QPSK",      ts::QPSK},
     {u"8-PSK",     ts::PSK_8},
     {u"QAM",       ts::QAM_AUTO},
@@ -59,9 +59,9 @@ const ts::Enumeration ts::ModulationEnum({
     {u"32-APSK-L", ts::APSK_32_L},
     {u"64-APSK",   ts::APSK_64},
     {u"64-APSK-L", ts::APSK_64_L},
-});
+}));
 
-const ts::Enumeration ts::InnerFECEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::InnerFECEnum, ({
     {u"none",  ts::FEC_NONE},
     {u"auto",  ts::FEC_AUTO},
     {u"1/2",   ts::FEC_1_2},
@@ -96,24 +96,24 @@ const ts::Enumeration ts::InnerFECEnum({
     {u"4/15",  ts::FEC_4_15},
     {u"14/45", ts::FEC_14_45},
     {u"7/15",  ts::FEC_7_15},
-});
+}));
 
-const ts::Enumeration ts::PolarizationEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PolarizationEnum, ({
     {u"none",       ts::POL_NONE},
     {u"auto",       ts::POL_AUTO},
     {u"horizontal", ts::POL_HORIZONTAL},
     {u"vertical",   ts::POL_VERTICAL},
     {u"left",       ts::POL_LEFT},
     {u"right",      ts::POL_RIGHT},
-});
+}));
 
-const ts::Enumeration ts::PilotEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PilotEnum, ({
     {u"auto",       ts::PILOT_AUTO},
     {u"on",         ts::PILOT_ON},
     {u"off",        ts::PILOT_OFF},
-});
+}));
 
-const ts::Enumeration ts::RollOffEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::RollOffEnum, ({
     {u"auto",       ts::ROLLOFF_AUTO},
     {u"0.35",       ts::ROLLOFF_35},
     {u"0.25",       ts::ROLLOFF_25},
@@ -121,9 +121,9 @@ const ts::Enumeration ts::RollOffEnum({
     {u"0.15",       ts::ROLLOFF_15},
     {u"0.10",       ts::ROLLOFF_10},
     {u"0.05",       ts::ROLLOFF_5},
-});
+}));
 
-const ts::Enumeration ts::TransmissionModeEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::TransmissionModeEnum, ({
     {u"auto",           ts::TM_AUTO},
     {u"2K",             ts::TM_2K},
     {u"4K",             ts::TM_4K},
@@ -135,9 +135,9 @@ const ts::Enumeration ts::TransmissionModeEnum({
     {u"32K",            ts::TM_32K},
     {u"C=1",            ts::TM_C1},
     {u"C=3780",         ts::TM_C3780},
-});
+}));
 
-const ts::Enumeration ts::GuardIntervalEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::GuardIntervalEnum, ({
     {u"auto",    ts::GUARD_AUTO},
     {u"1/32",    ts::GUARD_1_32},
     {u"1/16",    ts::GUARD_1_16},
@@ -150,26 +150,26 @@ const ts::Enumeration ts::GuardIntervalEnum({
     {u"PN-595",  ts::GUARD_PN595},
     {u"PN-945",  ts::GUARD_PN945},
     {u"1/64",    ts::GUARD_1_64},
-});
+}));
 
-const ts::Enumeration ts::HierarchyEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::HierarchyEnum, ({
     {u"auto", ts::HIERARCHY_AUTO},
     {u"none", ts::HIERARCHY_NONE},
     {u"1",    ts::HIERARCHY_1},
     {u"2",    ts::HIERARCHY_2},
     {u"4",    ts::HIERARCHY_4},
-});
+}));
 
-const ts::Enumeration ts::SpectralInversionEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::SpectralInversionEnum, ({
     {u"off",  ts::SPINV_OFF},
     {u"on",   ts::SPINV_ON},
     {u"auto", ts::SPINV_AUTO},
-});
+}));
 
-const ts::Enumeration ts::PLSModeEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PLSModeEnum, ({
     {u"ROOT", ts::PLS_ROOT},
     {u"GOLD", ts::PLS_GOLD},
-});
+}));
 
 
 //----------------------------------------------------------------------------

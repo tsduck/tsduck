@@ -1368,12 +1368,12 @@ namespace {
     };
     using UnitMap = std::map<Ratio,UnitNames>;
 }
-TS_STATIC_INSTANCE(UnitMap, (), ChronoUnitMap);
+TS_STATIC_INSTANCE(, UnitMap, ChronoUnitMap, ());
 
 // The constructor registers a new std::chrono::duration unit name.
 ts::UString::RegisterChronoUnit::RegisterChronoUnit(std::intmax_t num, std::intmax_t den, const UChar* sname, const UChar* lname, const UChar* pname)
 {
-    ChronoUnitMap::Instance().insert(std::make_pair<Ratio, UnitNames>({num, den}, {sname, lname, pname}));
+    ChronoUnitMap->insert(std::make_pair<Ratio, UnitNames>({num, den}, {sname, lname, pname}));
 }
 
 // Standard std::cn::chrono::duration types.
@@ -1392,8 +1392,8 @@ TS_REGISTER_CHRONO_UNIT(cn::years, u"y", u"year");
 // Public interface to get the chrono unit names
 ts::UString ts::UString::ChronoUnit(std::intmax_t num, std::intmax_t den, bool short_format, bool plural)
 {
-    const auto it = ChronoUnitMap::Instance().find({num, den});
-    if (it != ChronoUnitMap::Instance().end()) {
+    const auto it = ChronoUnitMap->find({num, den});
+    if (it != ChronoUnitMap->end()) {
         if (short_format) {
             return UString(it->second.sname);
         }

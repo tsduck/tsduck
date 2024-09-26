@@ -13,8 +13,8 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsEnumeration.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -39,32 +39,32 @@ namespace ts {
     //!
     //! Enumeration (names/values) for Dektec modulation constants (DTAPI_MOD_DVBS_QPSK, etc).
     //!
-    TSDUCKDLL extern const Enumeration DektecModulationTypes;
+    TS_DECLARE_GLOBAL(const, Enumeration, DektecModulationTypes);
 
     //!
     //! Enumeration (names/values) for Dektec VSB constants (DTAPI_MOD_ATSC_VSB8, etc).
     //!
-    TSDUCKDLL extern const Enumeration DektecVSB;
+    TS_DECLARE_GLOBAL(const, Enumeration, DektecVSB);
 
     //!
     //! Enumeration (names/values) for Dektec FEC constants (DTAPI_MOD_1_2, etc).
     //!
-    TSDUCKDLL extern const Enumeration DektecFEC;
+    TS_DECLARE_GLOBAL(const, Enumeration, DektecFEC);
 
     //!
     //! Enumeration (names/values) for Dektec spectral inversion constants (DTAPI_MOD_SPECNONINV, etc).
     //!
-    TSDUCKDLL extern const Enumeration DektecInversion;
+    TS_DECLARE_GLOBAL(const, Enumeration, DektecInversion);
 
     //!
     //! Enumeration (names/values) for Dektec DVB-T properties constants (DTAPI_MOD_DVBT_*, etc).
     //!
-    TSDUCKDLL extern const Enumeration DektecDVBTProperty;
+    TS_DECLARE_GLOBAL(const, Enumeration, DektecDVBTProperty);
 
     //!
     //! Enumeration (names/values) for Dektec DTU-315 modulator power modes.
     //!
-    TSDUCKDLL extern const Enumeration DektecPowerMode;
+    TS_DECLARE_GLOBAL(const, Enumeration, DektecPowerMode);
 
     //!
     //! Check if this version of TSDuck was built with Dektec support.

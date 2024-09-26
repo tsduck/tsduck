@@ -15,6 +15,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //
@@ -288,7 +289,7 @@ namespace ts {
     //! Enumeration description of TableScope values.
     //! Typically used to implement command line options.
     //!
-    TSDUCKDLL extern const Enumeration TableScopeEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, TableScopeEnum);
 
 
     //---------------------------------------------------------------------
@@ -326,7 +327,7 @@ namespace ts {
     //! Enumeration description of PDS values.
     //! Typically used to implement PDS-related command line options.
     //!
-    TSDUCKDLL extern const Enumeration PrivateDataSpecifierEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, PrivateDataSpecifierEnum);
 
 
     //---------------------------------------------------------------------
@@ -665,7 +666,7 @@ namespace ts {
         // Valid in DVB context after PDS_AVSAudio private_data_specifier
 
         DID_AVS3_AUDIO          = 0xD2,  //!< DID for AVS3 audio descriptor, as defined in T/AI 109.7
-        DID_AVS2_AUDIO          = 0xD3,  //!< DID for AVS2 audio descriptor, as defined in T/AI 109.7 
+        DID_AVS2_AUDIO          = 0xD3,  //!< DID for AVS2 audio descriptor, as defined in T/AI 109.7
 
         // Valid in DVB context after PDS_CUVV private_data_specifier
 

@@ -9,7 +9,7 @@
 #include "tsCodecType.h"
 #include "tsAlgorithm.h"
 
-const ts::Enumeration ts::CodecTypeEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::CodecTypeEnum, ({
     {u"undefined",     ts::CodecType::UNDEFINED},
     {u"MPEG-1 Video",  ts::CodecType::MPEG1_VIDEO},
     {u"MPEG-1 Audio",  ts::CodecType::MPEG1_AUDIO},
@@ -37,9 +37,9 @@ const ts::Enumeration ts::CodecTypeEnum({
     {u"AVS3 Video",    ts::CodecType::AVS3_VIDEO},
     {u"AVS2 Audio",    ts::CodecType::AVS2_AUDIO},
     {u"AVS3 Audio",    ts::CodecType::AVS3_AUDIO},
-});
+}));
 
-const ts::Enumeration ts::CodecTypeArgEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::CodecTypeArgEnum, ({
     {u"undefined",     ts::CodecType::UNDEFINED},
     {u"MPEG-1-Video",  ts::CodecType::MPEG1_VIDEO},
     {u"MP1Video",      ts::CodecType::MPEG1_VIDEO},
@@ -75,7 +75,7 @@ const ts::Enumeration ts::CodecTypeArgEnum({
     {u"AVS3Video",     ts::CodecType::AVS3_VIDEO},
     {u"AVS2Audio",     ts::CodecType::AVS2_AUDIO},
     {u"AVS3Audio",     ts::CodecType::AVS3_AUDIO},
-});
+}));
 
 namespace {
     const std::set<ts::CodecType> AudioCodecs {

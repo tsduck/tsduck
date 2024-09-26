@@ -15,6 +15,7 @@
 #pragma once
 #include "tsStandards.h"
 #include "tsEnumeration.h"
+#include "tsSingleton.h"
 #include "tsStringifyInterface.h"
 
 #if defined(TS_LINUX)
@@ -96,7 +97,7 @@ namespace ts {
     //!
     //! Enumeration description of ts::DeliverySystem.
     //!
-    TSDUCKDLL extern const Enumeration DeliverySystemEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, DeliverySystemEnum);
 
     //!
     //! A subset of ts::DeliverySystem describing types of tuners.
@@ -115,7 +116,7 @@ namespace ts {
     //!
     //! Enumeration description for the subset of ts::DeliverySystem describing types of tuners.
     //!
-    TSDUCKDLL extern const Enumeration TunerTypeEnum;
+    TS_DECLARE_GLOBAL(const, Enumeration, TunerTypeEnum);
 
     //!
     //! Get the tuner type of a delivery system.
@@ -210,12 +211,6 @@ namespace ts {
         DeliverySystemSet(std::initializer_list<value_type> init) : SuperClass(init) {}
         template<class InputIt> DeliverySystemSet(InputIt first, InputIt last) : SuperClass(first, last) {}
         //! @endcond
-
-    private:
-        // List of delivery systems, from most preferred to least preferred.
-        // This list is used to find the default delivery system of a tuner and
-        // to build the list of supported delivery systems in order of preference.
-        static const ts::DeliverySystemList _preferred_order;
     };
 
     TS_POP_WARNING()

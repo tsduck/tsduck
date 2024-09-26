@@ -85,7 +85,7 @@ TSUNIT_DEFINE_TEST(RingNode)
     }
 
     // After this point, coverity is lost.
-    // It does not realize that r5 removed itself from the r1-r3 ring in its detructor.
+    // It does not realize that r5 removed itself from the r1-r3 ring in its destructor.
 
     TSUNIT_ASSERT(r1.ringSize() == 3);
     TSUNIT_ASSERT(r1.ringNext<R>() == &r2);

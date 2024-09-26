@@ -219,13 +219,13 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
         disp << margin << "Polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         const bool isdb = bool(disp.duck().standards() & Standards::ISDB);
         if (isdb) {
-            disp << margin << "Delivery system: " << DeliverySystemEnum.name(DS_ISDB_S) << std::endl;
+            disp << margin << "Delivery system: " << DeliverySystemEnum->name(DS_ISDB_S) << std::endl;
             disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"ISDBModulation", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         }
         else {
             const uint8_t roll_off = buf.getBits<uint8_t>(2);
             const bool s2 = buf.getBool();
-            disp << margin << "Delivery system: " << DeliverySystemEnum.name(s2 ? DS_DVB_S2 : DS_DVB_S) << std::endl;
+            disp << margin << "Delivery system: " << DeliverySystemEnum->name(s2 ? DS_DVB_S2 : DS_DVB_S) << std::endl;
             disp << margin << "Modulation: " << DataName(MY_XML_NAME, u"DVBModulation", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);
             if (s2) {
                 disp << ", roll off: " << DataName(MY_XML_NAME, u"DVBS2RollOff", roll_off, NamesFlags::VALUE | NamesFlags::DECIMAL);
@@ -321,7 +321,7 @@ void ts::SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Ele
     if (delsys == DS_DVB_S2) {
         root->setIntEnumAttribute(RollOffNames, u"roll_off", roll_off);
     }
-    root->setEnumAttribute(DeliverySystemEnum, u"modulation_system", delsys);
+    root->setEnumAttribute(*DeliverySystemEnum, u"modulation_system", delsys);
     root->setIntEnumAttribute(isDVB ? ModulationNamesDVB : ModulationNamesISDB, u"modulation_type", modulation);
     root->setIntAttribute(u"symbol_rate", symbol_rate, false);
     root->setIntEnumAttribute(isDVB ? CodeRateNamesDVB : CodeRateNamesISDB, u"FEC_inner", FEC_inner);
@@ -342,7 +342,7 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
         element->getIntEnumAttribute(polarization, PolarizationNames, u"polarization", true) &&
         element->getIntEnumAttribute(roll_off, RollOffNames, u"roll_off", false, 0) &&
         element->getIntAttribute(symbol_rate, u"symbol_rate", true) &&
-        element->getIntEnumAttribute<DeliverySystem>(_system, DeliverySystemEnum, u"modulation_system", true);
+        element->getIntEnumAttribute<DeliverySystem>(_system, *DeliverySystemEnum, u"modulation_system", true);
 
     if (ok) {
         // Enforce a valid delivery system (DVB-S, DVB-S2, ISDB-S).

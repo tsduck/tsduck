@@ -10,13 +10,12 @@
 #include "tsjsonNull.h"
 #include "tsjsonTrue.h"
 #include "tsjsonFalse.h"
-#include "tsjsonValue.h"
 #include "tsjsonNumber.h"
 #include "tsjsonString.h"
 #include "tsjsonObject.h"
 #include "tsjsonArray.h"
 
-const ts::Enumeration ts::json::TypeEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::json::TypeEnum, ({
     {u"Null literal",  ts::json::Type::Null},
     {u"True literal",  ts::json::Type::True},
     {u"False literal", ts::json::Type::False},
@@ -24,7 +23,7 @@ const ts::Enumeration ts::json::TypeEnum({
     {u"number",        ts::json::Type::Number},
     {u"object",        ts::json::Type::Object},
     {u"array",         ts::json::Type::Array},
-});
+}));
 
 
 //----------------------------------------------------------------------------

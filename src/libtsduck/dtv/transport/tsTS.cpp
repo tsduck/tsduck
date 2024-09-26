@@ -15,7 +15,7 @@ const ts::PIDSet ts::NoPID;
 const ts::PIDSet ts::AllPIDs(~NoPID);
 
 // Enumeration description of ts::PIDClass.
-const ts::Enumeration ts::PIDClassEnum({
+TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PIDClassEnum, ({
     {u"undefined", ts::PIDClass::UNDEFINED},
     {u"PSI/SI",    ts::PIDClass::PSI},
     {u"EMM",       ts::PIDClass::EMM},
@@ -25,7 +25,7 @@ const ts::Enumeration ts::PIDClassEnum({
     {u"subtitles", ts::PIDClass::SUBTITLES},
     {u"data",      ts::PIDClass::DATA},
     {u"stuffing",  ts::PIDClass::STUFFING},
-});
+}));
 
 // Our std::cn::chrono::duration types for transport streams.
 TS_REGISTER_CHRONO_UNIT(ts::PCR, u"PCR", u"PCR", u"PCR");

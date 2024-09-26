@@ -246,7 +246,7 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"depending on the destination address. Remember that the default "
               u"Multicast TTL is 1 on most systems.");
 
-    args.option(u"udp-format", 0, SpecifiedSectionFormatEnum);
+    args.option(u"udp-format", 0, *SpecifiedSectionFormatEnum);
     args.help(u"udp-format",
               u"With --ip-udp, specify the format of sections in the UDP datagrams. "
               u"The default is binary. "

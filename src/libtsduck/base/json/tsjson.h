@@ -65,7 +65,7 @@ namespace ts {
         //!
         //! Enumeration description of ts::json::Type.
         //!
-        TSDUCKDLL extern const Enumeration TypeEnum;
+        TS_DECLARE_GLOBAL(const, Enumeration, TypeEnum);
 
         //!
         //! Create a JSON value by type.

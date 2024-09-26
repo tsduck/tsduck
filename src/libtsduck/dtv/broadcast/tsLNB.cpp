@@ -383,7 +383,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
                 it->getIntAttribute<uint64_t>(band.high, u"high", true) &&
                 it->getIntAttribute<uint64_t>(band.oscillator, u"oscillator", true) &&
                 it->getIntAttribute<uint64_t>(band.switch_freq, u"switch", false, 0) &&
-                it->getIntEnumAttribute<Polarization>(band.polarity, PolarizationEnum, u"polarity", false, POL_NONE);
+                it->getIntEnumAttribute<Polarization>(band.polarity, *PolarizationEnum, u"polarity", false, POL_NONE);
             if (band_ok) {
                 lnb->_bands.push_back(band);
             }
