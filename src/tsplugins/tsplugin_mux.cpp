@@ -243,7 +243,7 @@ bool ts::MuxPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // Initialization sequences (executed only once).
+    // Initialization sequences (executed only once). Executed if there is a target bitrate.
     if (_packet_count == 0 && _bitrate != 0) {
         // Compute the inter-packet interval based on the TS bitrate
         BitRate ts_bitrate = tsp->bitrate();
@@ -251,8 +251,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
             error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
             return TSP_END;
         }
-        _inter_pkt = (ts_bitrate / _bitrate).toInt();
-        verbose(u"transport bitrate: %s'd b/s, packet interval: %'d", ts_bitrate, _inter_pkt);
+        verbose(u"transport bitrate: %s'd", ts_bitrate);
     }
 
     // Count TS
@@ -356,9 +355,14 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
         _cc_fixer.feedPacket(pkt);
     }
 
-    // Next insertion point
-    _pid_next_pkt += _inter_pkt;
-
+    // If the target bitrate is specified, compute the next pkt so the bitrate will be closer to the target bitrate.
+    if (_bitrate != 0) {
+        _pid_next_pkt = (_inserted_packet_count * tsp->bitrate() / _bitrate).toInt();
+    }
+    // If not, use the inter_pkt value.
+    else {
+        _pid_next_pkt += _inter_pkt;
+    }
     // Apply labels on muxed packets.
     pkt_data.setLabels(_setLabels);
     pkt_data.clearLabels(_resetLabels);
