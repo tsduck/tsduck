@@ -37,6 +37,7 @@ namespace ts {
     //! This is a re-implementation of std::atexit() with:
     //! - Unlimited number of registered functions (std::atexit() can only guarantee 32 entries)
     //! - Pass a parameter to the function.
+    //!
     //! The functions will be called in reverse order: if A was registered before B,
     //! then the call to B is made before the call to A.
     //!
@@ -230,6 +231,7 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 //! Support macro for TS_DECLARE_SINGLETON, do not use directly.
+//! @hideinitializer
 #define TS_DECLARE_SINGLETON_BASE(constness, objtype)               \
     public:                                                         \
         /** Get the instance of the singleton of this class. */     \
@@ -248,6 +250,7 @@ namespace ts {
         static void CleanupSingleton()
 
 //! Support macro for TS_DEFINE_SINGLETON, do not use directly.
+//! @hideinitializer
 #define TS_DEFINE_SINGLETON_BASE(fullclassname, constness, objtype, initializer, atexitfunction) \
     void fullclassname::InitInstance()                              \
     {                                                               \
@@ -269,6 +272,7 @@ namespace ts {
 #if defined(DOXYGEN)
 
 //! Support macro for TS_DECLARE_GLOBAL, do not use directly.
+//! @hideinitializer
 #define TS_DECLARE_GLOBAL_WRAPPER(constness, objtype, objname)
 
 #else

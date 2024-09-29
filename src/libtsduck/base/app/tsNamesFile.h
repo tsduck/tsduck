@@ -265,7 +265,7 @@ namespace ts {
 
     //!
     //! Get a name from a specified section in the DTV names file.
-    //! @tparam INT An integer name.
+    //! @tparam INT An integer or enum type.
     //! @param [in] sectionName Name of section to search. Not case-sensitive.
     //! @param [in] value Value to get the name for.
     //! @param [in] flags Presentation flags.
@@ -281,7 +281,7 @@ namespace ts {
 
     //!
     //! Get a name from a specified section in the DTV names file, with alternate fallback value.
-    //! @tparam INT An integer name.
+    //! @tparam INT An integer or enum type.
     //! @param [in] sectionName Name of section to search. Not case-sensitive.
     //! @param [in] value1 Value to get the name for.
     //! @param [in] value2 Alternate value if no name is found for @a value1.
@@ -309,6 +309,9 @@ namespace ts {
 //! @hideinitializer
 //! Registration of an extension names file inside the ts::PSIRepository singleton.
 //! This macro is typically used in the .cpp file of a TSDuck extension.
+//! @param filename Name of a @c .names file. If the name does not include a directory,
+//! the file is searched in the default configuration directories of TSDuck.
+//! @see SearchConfigurationFile()
 //!
 #define TS_REGISTER_NAMES_FILE(filename) \
     TS_LIBCHECK(); \
