@@ -33,12 +33,14 @@ namespace ts {
     //! @see https://en.wikipedia.org/wiki/EtherType
     //!
     enum : uint16_t {
-        ETHERTYPE_IPv4   = 0x0800,  //!< Protocol identifier for IPv4.
-        ETHERTYPE_ARP    = 0x0806,  //!< Protocol identifier for ARP.
-        ETHERTYPE_WOL    = 0x0842,  //!< Protocol identifier for Wake-on-LAN.
-        ETHERTYPE_RARP   = 0x8035,  //!< Protocol identifier for RARP.
-        ETHERTYPE_802_1Q = 0x8100,  //!< Protocol identifier for a 2-byte IEEE 802.1Q tag (VLAN) after EtherType, then real EtherType.
-        ETHERTYPE_IPv6   = 0x86DD,  //!< Protocol identifier for IPv6.
+        ETHERTYPE_IPv4    = 0x0800,  //!< Protocol identifier for IPv4.
+        ETHERTYPE_ARP     = 0x0806,  //!< Protocol identifier for ARP.
+        ETHERTYPE_WOL     = 0x0842,  //!< Protocol identifier for Wake-on-LAN.
+        ETHERTYPE_RARP    = 0x8035,  //!< Protocol identifier for RARP.
+        ETHERTYPE_802_1Q  = 0x8100,  //!< Protocol identifier for a 2-byte IEEE 802.1Q tag (VLAN) after EtherType, then real EtherType.
+        ETHERTYPE_IPv6    = 0x86DD,  //!< Protocol identifier for IPv6.
+        ETHERTYPE_802_1AD = 0x88A8,  //!< Protocol identifier for IEEE 802.1ad nested VLAN.
+        ETHERTYPE_MIM     = 0x88E7,  //!< Protocol identifier for MAC in MAC (MIM), backbone VLAN encapsulation.
     };
 
     //------------------------------------------------------------------------

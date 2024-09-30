@@ -440,14 +440,36 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
             cap_start += 4;
             cap_size -= 4;
         }
-        else if ((ifd.link_type == LINKTYPE_ETHERNET || ifd.link_type == LINKTYPE_NULL || ifd.link_type == LINKTYPE_LOOP) &&
-                 cap_size > ETHER_HEADER_SIZE + ifd.fcs_size && GetUInt16BE(buffer.data() + cap_start + ETHER_TYPE_OFFSET) == ETHERTYPE_IPv4)
-        {
+        else if ((ifd.link_type == LINKTYPE_ETHERNET || ifd.link_type == LINKTYPE_NULL || ifd.link_type == LINKTYPE_LOOP) && cap_size > ETHER_HEADER_SIZE + ifd.fcs_size) {
             // Ethernet frame: 14-byte header: destination MAC (6 bytes), source MAC (6 bytes), ether type (2 bytes, 0x0800 for IPv4).
             // This should apply to LINKTYPE_ETHERNET only. However, in some pcap files (not pcap-ng), it has been noticed that
             // LINKTYPE_NULL and LINKTYPE_LOOP can contain a raw Ethernet frame without the initial 4 bytes of encapsulation.
+            // Get the EtherType, skip the Ethernet header, remove the trailing FCS byte.
+            uint16_t ether_type = GetUInt16BE(buffer.data() + cap_start + ETHER_TYPE_OFFSET);
             cap_start += ETHER_HEADER_SIZE;
             cap_size -= ETHER_HEADER_SIZE + ifd.fcs_size;
+            // Loop on all forms of VLAN encapsulation, until we get the inner packet.
+            while (ether_type != ETHERTYPE_IPv4 && cap_size > 0) {
+                if ((ether_type == ETHERTYPE_802_1Q || ether_type == ETHERTYPE_802_1AD) && cap_size >= 4) {
+                    // IEEE 802.1Q or IEEE 802.1ad VLAN encapsulation.
+                    // Followed by 4 bytes: 2-byte flags and VLAN id, 2-byte next EtherType.
+                    ether_type = GetUInt16BE(buffer.data() + cap_start + 2);
+                    cap_start += 4;
+                    cap_size -= 4;
+                }
+                else if (ether_type == ETHERTYPE_MIM && cap_size >= 18) {
+                    // MAC in MAC (MIM), Provider Backbone Bridges VLAN encapsulation, IEEE 802.1ah.
+                    // Followed by 18 bytes: 4-byte flags and VLAN id, 6-byte customer destination MAC,
+                    // 6-byte customer source MAC, 2-byte next EtherType.
+                    ether_type = GetUInt16BE(buffer.data() + cap_start + 16);
+                    cap_start += 18;
+                    cap_size -= 18;
+                }
+                else {
+                    // Unknown EtherType or truncated header => ignore.
+                    cap_size = 0;
+                }
+            }
         }
         else if (ifd.link_type == LINKTYPE_RAW && cap_size >= IPv4_MIN_HEADER_SIZE && (buffer[cap_start] >> 4) == 4) {
             // Raw IPv4 or IPv6 header (version in first byte), no encopsulation.
