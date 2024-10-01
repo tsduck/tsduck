@@ -85,30 +85,6 @@ The two directions of the TCP session are dumped.
 The first TCP session matching the `--source` and `--destination` options is selected.
 
 [.opt]
-*--first-date* _date-time_
-
-[.optdoc]
-Filter packets starting at the specified date.
-Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
-
-[.opt]
-*--first-packet* _value_
-
-[.optdoc]
-Filter packets starting at the specified number.
-
-[.optdoc]
-The packet numbering counts all captured packets from the beginning of the file, starting at 1.
-This is the same value as seen on Wireshark in the leftmost column.
-
-[.opt]
-*--first-timestamp* _micro-seconds_
-
-[.optdoc]
-Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture.
-This is the same value as seen on Wireshark in the "Time" column (in seconds).
-
-[.opt]
 *-i* _micro-seconds_ +
 *--interval* _micro-seconds_
 
@@ -117,30 +93,6 @@ Print a summary of exchanged data by intervals of times in micro-seconds.
 
 [.optdoc]
 By default, print a summary of the file content.
-
-[.opt]
-*--last-date* _date-time_
-
-[.optdoc]
-Filter packets up to the specified date.
-Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
-
-[.opt]
-*--last-packet* _value_
-
-[.optdoc]
-Filter packets up to the specified number.
-
-[.optdoc]
-The packet numbering counts all captured packets from the beginning of the file, starting at 1.
-This is the same value as seen on Wireshark in the leftmost column.
-
-[.opt]
-*--last-timestamp* _micro-seconds_
-
-[.optdoc]
-Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture.
-This is the same value as seen on Wireshark in the "Time" column (in seconds).
 
 [.opt]
 *-l* +
@@ -202,4 +154,5 @@ Filter TCP packets.
 [.optdoc]
 Filter UDP packets.
 
+include::{docdir}/opt/group-pcap-filter.adoc[tags=!*]
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

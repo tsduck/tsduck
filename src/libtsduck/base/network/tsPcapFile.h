@@ -72,11 +72,12 @@ namespace ts {
         //! Skip intermediate metadata and other types of packets.
         //!
         //! @param [out] packet Received IPv4 packet.
+        //! @param [out] vlans Stack of VLAN encapsulation from which the packet is extracted.
         //! @param [out] timestamp Capture timestamp in microseconds since Unix epoch or -1 if none is available.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Report& report);
+        virtual bool readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report);
 
         //!
         //! Get the number of captured packets so far.

@@ -188,6 +188,7 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, cn::microseconds tstam
 bool ts::PcapStream::readStreams(size_t& source, Report& report)
 {
     IPv4Packet pkt;
+    VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds(-1);
     size_t pkt_source = NPOS;
 
@@ -195,7 +196,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
     for (;;) {
 
         // Get one IPv4 packet.
-        if (!readIPv4(pkt, timestamp, report)) {
+        if (!readIPv4(pkt, vlans, timestamp, report)) {
             return false;
         }
 

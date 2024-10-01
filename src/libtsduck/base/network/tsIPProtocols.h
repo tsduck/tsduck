@@ -40,7 +40,8 @@ namespace ts {
         ETHERTYPE_802_1Q  = 0x8100,  //!< Protocol identifier for a 2-byte IEEE 802.1Q tag (VLAN) after EtherType, then real EtherType.
         ETHERTYPE_IPv6    = 0x86DD,  //!< Protocol identifier for IPv6.
         ETHERTYPE_802_1AD = 0x88A8,  //!< Protocol identifier for IEEE 802.1ad nested VLAN.
-        ETHERTYPE_MIM     = 0x88E7,  //!< Protocol identifier for MAC in MAC (MIM), backbone VLAN encapsulation.
+        ETHERTYPE_802_1AH = 0x88E7,  //!< Protocol identifier for IEEE 802.1ah, Provider Backbone Bridges (PBB), aka MAC-in-MAC (MIM).
+        ETHERTYPE_NULL    = 0xFFFF,  //!< Invalid protocol identifier, can be used as placeholder.
     };
 
     //------------------------------------------------------------------------
@@ -132,4 +133,61 @@ namespace ts {
     //! Definition of a number of RTP clock units as a std::chrono::duration type.
     //!
     using rtp_units = cn::duration<std::intmax_t, std::ratio<1, RTP_RATE_MP2T>>;
+
+    //------------------------------------------------------------------------
+    // VLAN encapsulation.
+    //------------------------------------------------------------------------
+
+    constexpr uint32_t VLAN_ID_NULL = 0xFFFFFFFF;  //! Invalid VLAN identifier, can be used as placeholder.
+
+    //!
+    //! A structure which describes a VLAN identification.
+    //!
+    class TSDUCKDLL VLANId
+    {
+    public:
+        //! The VLAN type identifies the encapsulation type of the VLAN.
+        //! This is an Ethertype, typically one of ETHERTYPE_802_1Q, ETHERTYPE_802_1AD, ETHERTYPE_802_1AH.
+        uint16_t type;
+
+        //! The VLAN id identifies the VLAN in an encapsulation layer.
+        //! - With ETHERTYPE_802_1Q, this is a 12-bit basic VLAN id or Customer VLAN identifier (C-VID) when encapsulated.
+        //! - With ETHERTYPE_802_1AD, this is a 12-bit Backbone VLAN identifier (B-VID).
+        //! - With ETHERTYPE_802_1AH, this is a 24-bit MIM Service identifier (I-SID).
+        uint32_t id;
+
+        //! @cond nodoxygen
+        // Comparison, for use in containers.
+        bool operator<(const VLANId& other) const { return ((uint64_t(type) << 32) | id) < ((uint64_t(other.type) << 32) | other.id); }
+        bool operator==(const VLANId& other) const { return type == other.type && id == other.id; }
+        TS_UNEQUAL_OPERATOR(VLANId)
+        //! @endcond
+    };
+
+    //!
+    //! A stack of VLAN identifiers, from outer to inner VLAN.
+    //!
+    class TSDUCKDLL VLANIdStack : public std::vector<VLANId>, public StringifyInterface
+    {
+        TS_DEFAULT_COPY_MOVE(VLANIdStack);
+    public:
+        //! Explicit reference to superclass.
+        using SuperClass = std::vector<VLANId>;
+
+        //! Default constructor.
+        VLANIdStack() = default;
+
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
+
+        //!
+        //! Check if this VLAN id stack matches a template stack.
+        //! @param other The template stack to compare with.
+        //! @return True if this object contains at least as many elements as @a other and
+        //! all elements in this object match their corresponding element en @a other.
+        //! Two elements match if their values are identical or one contains a "null" value.
+        //! Null values are ETHERTYPE_NULL and VLAN_ID_NULL.
+        //!
+        bool match(const VLANIdStack& other) const;
+    };
 }

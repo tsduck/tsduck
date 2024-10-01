@@ -46,6 +46,12 @@ void ts::PcapFilter::defineArgs(Args& args)
     args.option(u"last-date", 0, Args::STRING);
     args.help(u"last-date", u"date-time",
          u"Filter packets up to the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
+
+    args.option(u"vlan-id", 0, Args::UINT32, 0, Args::UNLIMITED_COUNT);
+    args.help(u"vlan-id",
+              u"Filter packets from the specified VLAN id. "
+              u"This option can be specified multiple times. "
+              u"In that case, the values define nested VLAN ids, from the outer to inner VLAN.");
 }
 
 
@@ -86,6 +92,14 @@ bool ts::PcapFilter::loadArgs(DuckContext& duck, Args& args)
     args.getChronoValue(_opt_last_time_offset, u"last-timestamp", cn::microseconds::max());
     _opt_first_time = getDate(args, u"first-date", cn::microseconds::zero());
     _opt_last_time = getDate(args, u"last-date", cn::microseconds::max());
+
+    std::vector<uint32_t> ids;
+    args.getIntValues(ids, u"vlan-id");
+    _opt_vlans.clear();
+    for (uint32_t id : ids) {
+        _opt_vlans.push_back({ETHERTYPE_NULL, id});
+    }
+
     return true;
 }
 
@@ -198,12 +212,12 @@ bool ts::PcapFilter::open(const fs::path& filename, Report& report)
 // Read an IPv4 packet, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFilter::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Report& report)
+bool ts::PcapFilter::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report)
 {
     // Read packets until one which matches all filters.
     for (;;) {
         // Invoke superclass to read next packet.
-        if (!PcapFile::readIPv4(packet, timestamp, report)) {
+        if (!PcapFile::readIPv4(packet, vlans, timestamp, report)) {
             return false;
         }
 
@@ -219,7 +233,8 @@ bool ts::PcapFilter::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, R
         if ((!_protocols.empty() && !Contains(_protocols, packet.protocol())) ||
             packetCount() < _first_packet ||
             timestamp < _first_time ||
-            timeOffset(timestamp) < _first_time_offset)
+            timeOffset(timestamp) < _first_time_offset ||
+            !vlans.match(_opt_vlans))
         {
             // Drop that packet.
             continue;

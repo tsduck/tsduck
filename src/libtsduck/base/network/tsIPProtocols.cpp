@@ -45,3 +45,40 @@ uint32_t ts::TCPSequenceDiff(uint32_t seq1, uint32_t seq2)
     // arithmetics on uint32_t.
     return seq2 - seq1;
 }
+
+
+//----------------------------------------------------------------------------
+// VLAN identification.
+//----------------------------------------------------------------------------
+
+ts::UString ts::VLANIdStack::toString() const
+{
+    UString s;
+    for (const auto& id : *this) {
+        if (!s.empty()) {
+            s.push_back(u'<');
+        }
+        s.format(u"%d", id.id);
+    }
+    return s;
+}
+
+bool ts::VLANIdStack::match(const VLANIdStack& other) const
+{
+    const size_t this_size = size();
+    const size_t other_size = other.size();
+    if (this_size < other_size) {
+        return false;
+    }
+    const size_t size = std::min(this_size, other_size);
+    for (size_t i = 0; i < size; ++i) {
+        const VLANId& a((*this)[i]);
+        const VLANId& b(other[i]);
+        if ((a.type != b.type && a.type != ETHERTYPE_NULL && b.type != ETHERTYPE_NULL) ||
+            (a.id != b.id && a.id != VLAN_ID_NULL && b.id != VLAN_ID_NULL))
+        {
+            return false;
+        }
+    }
+    return true;
+}

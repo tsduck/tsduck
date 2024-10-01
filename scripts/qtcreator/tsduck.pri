@@ -153,7 +153,7 @@ config_files {
                        $$SRCROOT/libtsduck/base \
                        $$SRCROOT/libtsduck/dtv \
                        $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += tsxml --merge --sort _tables --sort _descriptors --uncomment \
+    QMAKE_POST_LINK += ../tsxml/tsxml --merge --sort _tables --sort _descriptors --uncomment \
                        -o tsduck.tables.model.xml \
                        $$SRCROOT/libtsduck/config/tsduck.tables.skeleton.xml \
                        $$SRCROOT/libtsduck/dtv/tables/*/*.xml \

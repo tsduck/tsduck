@@ -263,12 +263,13 @@ bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, s
 bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, cn::microseconds &timestamp)
 {
     IPv4Packet ip;
+    VLANIdStack vlans;
 
     // Loop on IPv4 datagrams from the pcap file until a matching UDP packet is found (or end of file).
     for (;;) {
 
         // Read one IPv4 datagram.
-        if (!_pcap_udp.readIPv4(ip, timestamp, *this)) {
+        if (!_pcap_udp.readIPv4(ip, vlans, timestamp, *this)) {
             return 0; // end of file, invalid pcap file format or other i/o error
         }
 

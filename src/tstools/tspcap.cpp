@@ -215,28 +215,22 @@ namespace {
     class StreamId
     {
     public:
+        ts::VLANIdStack       vlans;
         ts::IPv4SocketAddress source;
         ts::IPv4SocketAddress destination;
         uint8_t               protocol;
-
-        // Constructor.
-        StreamId(const ts::IPv4SocketAddress& src = ts::IPv4SocketAddress(), const ts::IPv4SocketAddress& dst = ts::IPv4SocketAddress(), uint8_t proto = 0xFF);
 
         // Comparison, for use in containers.
         bool operator<(const StreamId& other) const;
     };
 }
 
-StreamId::StreamId(const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, uint8_t proto) :
-    source(src),
-    destination(dst),
-    protocol(proto)
-{
-}
-
 bool StreamId::operator<(const StreamId& other) const
 {
-    if (source != other.source) {
+    if (vlans != other.vlans) {
+        return vlans < other.vlans;
+    }
+    else if (source != other.source) {
         return source < other.source;
     }
     else if (destination != other.destination) {
@@ -364,11 +358,12 @@ bool FileAnalysis::analyze(std::ostream& out)
 
     // Read all IPv4 packets from the file.
     ts::IPv4Packet ip;
+    ts::VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds::zero();
-    while (_file.readIPv4(ip, timestamp, _opt)) {
+    while (_file.readIPv4(ip, vlans, timestamp, _opt)) {
         _global_stats.addPacket(ip, timestamp);
         if (_opt.list_streams) {
-            _streams_stats[StreamId(ip.sourceSocketAddress(), ip.destinationSocketAddress(), ip.protocol())].addPacket(ip, timestamp);
+            _streams_stats[{vlans, ip.sourceSocketAddress(), ip.destinationSocketAddress(), ip.protocol()}].addPacket(ip, timestamp);
         }
         if (_opt.print_intervals) {
             _interval.addPacket(out, _file, ip, timestamp);
@@ -426,12 +421,29 @@ void FileAnalysis::displaySummary(std::ostream& out, const StatBlock& stats)
 // Display list of streams.
 void FileAnalysis::listStreams(std::ostream& out, cn::microseconds duration)
 {
-    out << std::endl
-        << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate")
-        << std::endl;
+    // In case of VLAN, get max width of VLAN field.
+    size_t vlan_width = 0;
+    for (const auto& it : _streams_stats) {
+        vlan_width = std::max(vlan_width, it.first.vlans.toString().width());
+    }
+    if (vlan_width > 0 && vlan_width < 4) {
+        // There are some VLAN, including "VLAN" title width.
+        vlan_width = 4;
+    }
+
+    // Title line.
+    out << std::endl;
+    if (vlan_width > 0) {
+        out << ts::UString::Format(u"%-*s  ", vlan_width, u"VLAN");
+    }
+    out << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate") << std::endl;
+
     for (const auto& it : _streams_stats) {
         const StreamId& id(it.first);
         const StatBlock& sb(it.second);
+        if (vlan_width > 0) {
+            out << ts::UString::Format(u"%-*s  ", vlan_width, id.vlans.toString());
+        }
         out << ts::UString::Format(u"%-22s %-22s %-8s %11'd %15'd %12'd",
                                    id.source,
                                    id.destination,
@@ -565,8 +577,9 @@ bool UDPSimulCryptDump::dump(std::ostream& out)
 
     // Read all UDP packets matching the source and destination.
     ts::IPv4Packet ip;
+    ts::VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds::zero();
-    while (_file.readIPv4(ip, timestamp, _opt)) {
+    while (_file.readIPv4(ip, vlans, timestamp, _opt)) {
         // Dump the content of the UDP datagram as DVB SimulCrypt message.
         dumpMessage(out, ip.protocolData(), ip.protocolDataSize(), ip.sourceAddress(), ip.destinationAddress(), timestamp);
     }

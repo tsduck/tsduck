@@ -218,7 +218,7 @@ namespace ts {
 
         // Inherited methods.
         virtual bool open(const fs::path& filename, Report& report) override;
-        virtual bool readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Report& report) override;
+        virtual bool readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report) override;
 
     private:
         std::set<uint8_t> _protocols {};
@@ -239,6 +239,7 @@ namespace ts {
         cn::microseconds  _opt_last_time_offset = cn::microseconds::max();
         cn::microseconds  _opt_first_time = cn::microseconds::zero();
         cn::microseconds  _opt_last_time = cn::microseconds::max();
+        VLANIdStack       _opt_vlans {};
 
         // Get a date option and return it as micro-seconds since Unix epoch.
         cn::microseconds getDate(Args& args, const ts::UChar* arg_name, cn::microseconds def_value);

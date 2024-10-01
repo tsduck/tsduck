@@ -1,0 +1,73 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for pcap packet filtering options.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Packet filtering options
+
+[.opt]
+*--first-date* _date-time_
+
+[.optdoc]
+Filter packets starting at the specified date.
+Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
+
+[.opt]
+*--first-packet* _value_
+
+[.optdoc]
+Filter packets starting at the specified number.
+
+[.optdoc]
+The packet numbering counts all captured packets from the beginning of the file, starting at 1.
+This is the same value as seen on Wireshark in the leftmost column.
+
+[.opt]
+*--first-timestamp* _micro-seconds_
+
+[.optdoc]
+Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture.
+This is the same value as seen on Wireshark in the "Time" column (in seconds).
+
+[.opt]
+*--last-date* _date-time_
+
+[.optdoc]
+Filter packets up to the specified date.
+Use format `YYYY/MM/DD:hh:mm:ss.mmm`.
+
+[.opt]
+*--last-packet* _value_
+
+[.optdoc]
+Filter packets up to the specified number.
+
+[.optdoc]
+The packet numbering counts all captured packets from the beginning of the file, starting at 1.
+This is the same value as seen on Wireshark in the leftmost column.
+
+[.opt]
+*--last-timestamp* _micro-seconds_
+
+[.optdoc]
+Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture.
+This is the same value as seen on Wireshark in the "Time" column (in seconds).
+
+[.opt]
+*--vlan-id* _value_
+
+[.optdoc]
+Filter packets from the specified VLAN id.
+
+[.optdoc]
+This option can be specified multiple times.
+In that case, the values define the required nested VLAN ids, from the outer to inner VLAN.
+If the stream contains even more inner VLAN's, they are all selected.

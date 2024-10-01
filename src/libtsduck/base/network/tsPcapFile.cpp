@@ -288,10 +288,11 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
 // Read the next IPv4 packet (headers included).
 //----------------------------------------------------------------------------
 
-bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Report& report)
+bool ts::PcapFile::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report)
 {
     // Clear output values.
     packet.clear();
+    vlans.clear();
     timestamp = cn::microseconds(-1);
 
     // Check that the file is open.
@@ -316,6 +317,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
         size_t orig_size = 0;  // original packet size (on network)
         size_t if_index = 0;   // interface index
         timestamp = cn::microseconds(-1);
+        vlans.clear();
 
         // We are at the beginning of a data block.
         if (_ng) {
@@ -454,14 +456,16 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, cn::microseconds& timestamp, Rep
                     // IEEE 802.1Q or IEEE 802.1ad VLAN encapsulation.
                     // Followed by 4 bytes: 2-byte flags and VLAN id, 2-byte next EtherType.
                     ether_type = GetUInt16BE(buffer.data() + cap_start + 2);
+                    vlans.push_back({ether_type, uint32_t(GetUInt16BE(buffer.data() + cap_start) & 0x0FFF)});
                     cap_start += 4;
                     cap_size -= 4;
                 }
-                else if (ether_type == ETHERTYPE_MIM && cap_size >= 18) {
+                else if (ether_type == ETHERTYPE_802_1AH && cap_size >= 18) {
                     // MAC in MAC (MIM), Provider Backbone Bridges VLAN encapsulation, IEEE 802.1ah.
-                    // Followed by 18 bytes: 4-byte flags and VLAN id, 6-byte customer destination MAC,
+                    // Followed by 18 bytes: 4-byte flags and Service id, 6-byte customer destination MAC,
                     // 6-byte customer source MAC, 2-byte next EtherType.
                     ether_type = GetUInt16BE(buffer.data() + cap_start + 16);
+                    vlans.push_back({ether_type, uint32_t(GetUInt24BE(buffer.data() + cap_start + 1) & 0x0FFF)});
                     cap_start += 18;
                     cap_size -= 18;
                 }
