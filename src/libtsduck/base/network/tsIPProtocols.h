@@ -167,6 +167,8 @@ namespace ts {
     //!
     //! A stack of VLAN identifiers, from outer to inner VLAN.
     //!
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(non-virtual-dtor) // The derived class allocates nothing and we only need the base destructor
     class TSDUCKDLL VLANIdStack : public std::vector<VLANId>, public StringifyInterface
     {
         TS_DEFAULT_COPY_MOVE(VLANIdStack);
@@ -190,4 +192,5 @@ namespace ts {
         //!
         bool match(const VLANIdStack& other) const;
     };
+    TS_POP_WARNING()
 }
