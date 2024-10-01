@@ -28,11 +28,21 @@ $(BINDIR)/utest: $(OBJS) $(SHARED_LIBTSDUCK)
 $(BINDIR)/utest_static: $(filter-out $(OBJDIR)/utestPluginRepository.o,$(OBJS)) $(STATIC_LIBTSDUCK)
 	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS) $^ $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 
-# Run tests. We need to serialize them because they use common resources.
+# Run tests.
 # Use make UTESTFLAGS="-d -t ClassTest::testName" for one single test in debug mode.
+# We need to serialize the execution of the tests because they use common resources.
+# Using .NOTPARALLEL has different effects depending on the version of GNU Make.
+# Although this is not clearly documented, using ".NOTPARALLEL: test", which is
+# supposed to serialize the specified target only, works on recent versions of
+# make only (observed with GNU Make 4.4.1 on macOS). With older versions of make,
+# the simple presence of .NOTPARALLEL serializes everything in the makefile
+# (observed with GNU Make 4.3 on Ubuntu). Since we do not want to serialize
+# compilations here, we ban the use of .NOTPARALLEL and we manually serialize
+# the execution of the tests
 .PHONY: test test-shared test-static
-.NOTPARALLEL: test
-test: test-shared $(if $(NOSTATIC),,test-static)
+test:
+	$(MAKE) test-shared
+	$(if $(NOSTATIC),,$(MAKE) test-static)
 test-shared: $(BINDIR)/utest
 	$(call LOG,[UTEST] $(BINDIR)/utest $(UTESTFLAGS)) \
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
@@ -57,8 +67,9 @@ endif
 
 # Same unitary tests under valgrind control
 .PHONY: valgrind valgrind-shared valgrind-static
-.NOTPARALLEL: valgrind
-valgrind: valgrind-shared $(if $(NOSTATIC),,valgrind-static)
+valgrind:
+	$(MAKE) valgrind-shared
+	$(if $(NOSTATIC),,$(MAKE) valgrind-static)
 valgrind-shared: $(BINDIR)/utest
 	$(call LOG,[VALGRIND] $(BINDIR)/utest $(UTESTFLAGS)) \
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
