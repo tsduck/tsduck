@@ -100,9 +100,18 @@ bool ts::TablePatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
 
 void ts::TablePatchXML::applyPatches(xml::Document& doc) const
 {
-    for (size_t i = 0; i < _patches.size(); ++i) {
-        _patches[i]->patch(doc);
+    // If debug >= 2, display the table before and after patches.
+    // Note that xml::Document has a StringifyInterface. This means that, when passing
+    // a xml::Document object to a report, the stringification is done ONLY when
+    // the debug level is satisfied => no need to argue that the serialization would
+    // be costly and useless if not in debug mode (I know some will complain...)
+    doc.report().log(2, u"before patching table:\n%s", doc);
+
+    for (const auto& p : _patches) {
+        p->patch(doc);
     }
+
+    doc.report().log(2, u"after patching table:\n%s", doc);
 }
 
 

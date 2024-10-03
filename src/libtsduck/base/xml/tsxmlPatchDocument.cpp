@@ -9,11 +9,17 @@
 #include "tsxmlPatchDocument.h"
 #include "tsxmlElement.h"
 
-#define X_ATTR          u"x-" // prefix of special attribute names
-#define X_NODE_ATTR     X_ATTR u"node"
-#define X_ADD_PREFIX    X_ATTR u"add-"
-#define X_DELETE_PREFIX X_ATTR u"delete-"
-#define X_UPDATE_PREFIX X_ATTR u"update-"
+#define X_DEBUG          2      // debug level for patching mechanics
+#define X_ATTR           u"x-"  // prefix of special attribute names
+#define X_ADD_PREFIX     X_ATTR u"add-"
+#define X_DELETE_PREFIX  X_ATTR u"delete-"
+#define X_UPDATE_PREFIX  X_ATTR u"update-"
+#define X_DEFINE_ATTR    X_ATTR u"define"
+#define X_UNDEFINE_ATTR  X_ATTR u"undefine"
+#define X_CONDITION_ATTR X_ATTR u"condition"
+#define X_NODE_ATTR      X_ATTR u"node"
+#define X_NODE_DELETE    u"delete"
+#define X_NODE_ADD       u"add"
 
 
 //----------------------------------------------------------------------------
@@ -38,7 +44,8 @@ void ts::xml::PatchDocument::patch(Document& doc) const
 {
     UStringList parents;
     UString parent_to_delete;
-    patchElement(rootElement(), doc.rootElement(), parents, parent_to_delete);
+    SymbolSet symbols;
+    patchElement(rootElement(), doc.rootElement(), parents, parent_to_delete, symbols);
 }
 
 
@@ -46,7 +53,7 @@ void ts::xml::PatchDocument::patch(Document& doc) const
 // Patch an XML tree of elements.
 //----------------------------------------------------------------------------
 
-bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete) const
+bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete, SymbolSet& symbols) const
 {
     // If the node name do not match, no need to go further.
     if (doc == nullptr || !doc->haveSameName(patch)) {
@@ -57,11 +64,17 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
     std::map<UString, UString> attr;
     patch->getAttributes(attr);
 
-    // Check if all attributes in doc element match the specific attributes in the patch element.
+    // Pass 1: check attribute matching and condition on symbols.
+    // If a required match fails, don't patch this doc node (but continue with other nodes).
     for (const auto& it : attr) {
-        // Ignore attributes starting with the special prefix, only consider "real" attributes from input file.
-        if (!it.first.startWith(X_ATTR, CASE_INSENSITIVE)) {
-            // Check if the element matches the specified attribute value.
+        if (it.first.similar(X_CONDITION_ATTR)) {
+            // x-condition attribute: if condition is false, don't patch this node.
+            if (!condition(it.second, symbols, patch)) {
+                return true; // condition not satisfied => don't patch
+            }
+        }
+        else if (!it.first.startWith(X_ATTR, CASE_INSENSITIVE)) {
+            // Standard attribute (not x-), check if the element matches the specified attribute value.
             // If not, this element shall not be patched, return immediately.
             if (it.second.startWith(u"!")) {
                 // Need to match attribute not equal to specified value.
@@ -78,7 +91,10 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
         }
     }
 
-    // Now process all attribute modifications on the node attributes.
+    // For attributes such as x-node="delete(parent)".
+    UString command, function, param;
+
+    // Pass 2: process all x-* attribute in the patch element.
     for (const auto& it : attr) {
         if (it.first.startWith(X_ADD_PREFIX, CASE_INSENSITIVE)) {
             // Add or replace an attribute.
@@ -104,29 +120,40 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
                 doc->setAttribute(name, it.second);
             }
         }
-        else if (it.first.similar(X_NODE_ATTR) && it.second.similar(u"delete")) {
-            // Remove this node from parent.
-            // Deallocating the element call its destructor which removes it from parent.
-            delete doc;
-            return false;
+        else if (it.first.similar(X_DEFINE_ATTR)) {
+            // Define a symbol.
+            const UString sym(it.second.toTrimmed());
+            symbols.insert(sym);
+            report().log(X_DEBUG, u"xml patch: define %s in <%s>", sym, patch->name());
         }
-        else if (it.first.similar(X_NODE_ATTR) && it.second.toRemoved(SPACE).startWith(u"delete(", CASE_INSENSITIVE)) {
-            // Request to delete a parent node.
-            const size_t lpar = it.second.find('(');
-            const size_t rpar = it.second.find(')');
-            if (lpar == NPOS || rpar == NPOS || rpar < lpar) {
-                report().error(u"invalid %s \"%s\" in <%s>, line %d", X_NODE_ATTR, it.second, patch->name(), patch->lineNumber());
-            }
-            else {
-                // Get name of parent to delete.
-                const UString parent(it.second.substr(lpar + 1, rpar - lpar - 1).toTrimmed());
-                if (parent.isContainedSimilarIn(parents)) {
+        else if (it.first.similar(X_UNDEFINE_ATTR)) {
+            // Undefine a symbol.
+            const UString sym(it.second.toTrimmed());
+            symbols.erase(sym);
+            report().log(X_DEBUG, u"xml patch: undefine %s in <%s>", sym, patch->name());
+        }
+        else if (it.first.similar(X_CONDITION_ATTR)) {
+            // Already processed in pass 1, ignored.
+        }
+        else if (it.first.similar(X_NODE_ATTR)) {
+            // x-node attribute: at this stage we only process delete commands.
+            if (xnode(it.second, function, param, patch) && function == X_NODE_DELETE) {
+                if (param.empty()) {
+                    // Remove this node from parent.
+                    // Deallocating the element calls its destructor which removes it from parent.
+                    report().log(X_DEBUG, u"xml patch: deleting <%s> in <%s>", doc->name(), doc->parentName());
+                    delete doc;
+                    return false;
+                }
+                else if (param.isContainedSimilarIn(parents)) {
+                    // Request to delete a parent node.
                     // This is a valid parent, abort recursion now, we will be deleted with the parent.
-                    parent_to_delete = parent;
+                    report().log(X_DEBUG, u"xml patch: will delete <%s> above <%s> in <%s>", param, doc->name(), doc->parentName());
+                    parent_to_delete = param;
                     return false;
                 }
                 else {
-                    report().error(u"no parent named %s in <%s>, line %d", parent, patch->name(), patch->lineNumber());
+                    report().error(u"no parent named %s in <%s>, line %d", param.front(), patch->name(), patch->lineNumber());
                 }
             }
         }
@@ -135,7 +162,7 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
         }
     }
 
-    // Now recurse on all children elements in the document to patch.
+    // Collect existing children in the document element to patch, add new nodes.
     // We need to get the list of elements first and then process them because each processing may add or remove children.
     std::vector<Element*> docChildren;
     for (Element* child = doc->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
@@ -144,26 +171,23 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
 
     // Get the children of the patch node.
     std::vector<const Element*> patchChildren;
-    for (const Element* child = patch->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
-        if (child->hasAttribute(X_NODE_ATTR, u"add")) {
-            // This is a node to add directly. Create a clone.
-            Element* e = new Element(*child);
-            // Remove all "x-" attributes (especially the "x-node" one).
-            cleanupAttributes(e);
-            // Add the new child in the document.
-            e->reparent(doc);
+    std::vector<const Element*> addChildren;
+    for (const Element* patchChild = patch->firstChildElement(); patchChild != nullptr; patchChild = patchChild->nextSiblingElement()) {
+        if (patchChild->getAttribute(command, X_NODE_ATTR) && !command.empty() && xnode(command, function, param, patchChild) && function == X_NODE_ADD) {
+            // This is a patch node with x-node="add", keep it to add it later.
+            addChildren.push_back(patchChild);
         }
         else {
             // This is a patch to apply.
-            patchChildren.push_back(child);
+            patchChildren.push_back(patchChild);
         }
     }
 
-    // Now apply all patches on all doc children.
+    // Pass 4: Apply all patches on all doc children.
     parents.push_back(doc->name());
     for (size_t di = 0; di < docChildren.size() && parent_to_delete.empty(); ++di) {
         for (size_t pi = 0; pi < patchChildren.size() && parent_to_delete.empty(); ++pi) {
-            if (!patchElement(patchChildren[pi], docChildren[di], parents, parent_to_delete)) {
+            if (!patchElement(patchChildren[pi], docChildren[di], parents, parent_to_delete, symbols)) {
                 // Stop processing this doc child (probably deleted or wants to delete a parent).
                 break;
             }
@@ -171,8 +195,22 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
     }
     parents.pop_back();
 
+    // Add new nodes from patch file, all elements with x-node="add".
+    for (auto patchChild : addChildren) {
+        if (condition(symbols, patchChild)) {
+            // No false condition in the patch element, create a clone.
+            Element* e = new Element(*patchChild);
+            // Remove all "x-" attributes (especially the "x-node" one).
+            cleanupAttributes(e);
+            // Add the new child in the document.
+            e->reparent(doc);
+            report().log(X_DEBUG, u"xml patch: adding <%s> in <%s>", e->name(), doc->name());
+        }
+    }
+
     // If one of the children wants to delete this document, delete it now.
     if (parent_to_delete.similar(doc->name())) {
+        report().log(X_DEBUG, u"xml patch: deleting <%s> in <%s>, requested by some child", doc->name(), doc->parentName());
         parent_to_delete.clear();
         delete doc;
         return false;
@@ -203,4 +241,81 @@ void ts::xml::PatchDocument::cleanupAttributes(Element* e) const
     for (Element* child = e->firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
         cleanupAttributes(child);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an attribute x-node="func(param, ...)".
+//----------------------------------------------------------------------------
+
+bool ts::xml::PatchDocument::xnode(const UString& expression, UString& func, UString& param, const Element* element) const
+{
+    func.clear();
+    param.clear();
+
+    // Remove all spaces from expression.
+    UString expr(expression);
+    expr.remove(SPACE);
+
+    // Parse function and parameters.
+    const size_t lpar = expr.find('(');
+    const size_t rpar = expr.find(')');
+    if (lpar == NPOS) {
+        // No parameter, just a function name.
+        func = expr;
+    }
+    else if (lpar == 0 || rpar != expr.size() - 1 || lpar + 1 >= rpar) {
+        attributeError(X_NODE_ATTR, expression, element);
+        return false;
+    }
+    else {
+        func = expr.substr(0, lpar);
+        param = expr.substr(lpar + 1, rpar - lpar - 1);
+    }
+
+    // Check validity of the function name.
+    if (func.similar(X_NODE_DELETE)) {
+        func = X_NODE_DELETE;
+    }
+    else if (func.similar(X_NODE_ADD) && param.empty()) {
+        func = X_NODE_ADD;
+    }
+    else {
+        attributeError(X_NODE_ATTR, expression, element);
+        return false;
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+// Evaluate a condition from a x-condition attribute.
+//----------------------------------------------------------------------------
+
+bool ts::xml::PatchDocument::condition(const SymbolSet& symbols, const Element* element) const
+{
+    UString expression;
+    element->getAttribute(expression, X_CONDITION_ATTR);
+    return expression.empty() || condition(expression, symbols, element);
+}
+
+bool ts::xml::PatchDocument::condition(const UString& expression, const SymbolSet& symbols, const Element* element) const
+{
+    // Currently: only one symbol with optional '!' negation.
+    UString expr(expression);
+    expr.remove(SPACE);
+    const bool neg = expr.startWith(u"!");
+    const bool cond = (!neg && expr.isContainedSimilarIn(symbols)) || (neg && !expr.substr(1).isContainedSimilarIn(symbols));
+    report().log(X_DEBUG, u"xml patch: x-condition=\"%s\" in <%s> is %s", expression, element->name(), cond);
+    return cond;
+}
+
+
+//----------------------------------------------------------------------------
+// Display an error about an attribute value.
+//----------------------------------------------------------------------------
+
+void ts::xml::PatchDocument::attributeError(const UString& attr_name, const UString& attr_value, const Element* element) const
+{
+    report().error(u"invalid attribute %s=\"%s\" in <%s>, line %d", attr_name, attr_value, element->name(), element->lineNumber());
 }

@@ -138,7 +138,7 @@ namespace ts {
     // VLAN encapsulation.
     //------------------------------------------------------------------------
 
-    constexpr uint32_t VLAN_ID_NULL = 0xFFFFFFFF;  //! Invalid VLAN identifier, can be used as placeholder.
+    constexpr uint32_t VLAN_ID_NULL = 0xFFFFFFFF;  //!< Invalid VLAN identifier, can be used as placeholder.
 
     //!
     //! A structure which describes a VLAN identification.

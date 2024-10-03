@@ -68,6 +68,13 @@ namespace ts {
             const UString& name() const { return value(); }
 
             //!
+            //! Get the parent name.
+            //! This is the same as parent()->name() without error when there is not parent.
+            //! @return A constant reference to the parent name or to an empty string if there is no parent.
+            //!
+            const UString& parentName() const { return parent() == nullptr ? UString::EMPTY : parent()->value(); }
+
+            //!
             //! Check if two XML elements have the same name, case-insensitive.
             //! @param [in] other Another XML element.
             //! @return True is this object and @a other have identical names.
@@ -279,7 +286,7 @@ namespace ts {
                 }
             }
 
-			//!
+            //!
             //! Set a bool attribute to a node.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.

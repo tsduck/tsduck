@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3876
+VERSION 3.39-3880
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -21,6 +21,8 @@ VERSION 3.39-3876
     is effective only if the input plugin is "dvb".
   * In "tspcap" and plugin "pcap", explore all nested levels of VLAN to get
     inner IPv4 packets (issue #1529).
+  * Added conditions in XML patch files (see special attributes `x-define`,
+    `x-undefine`, and `x-condition`).
   * New options in existing commands and plugins:
     - Option --udp-format in "tstables" and plugin "tables" to send tables
       in JSON or XML format through UDP (previously, it was binary only).
