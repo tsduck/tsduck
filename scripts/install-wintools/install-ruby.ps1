@@ -29,7 +29,7 @@ else {
     # Ruby is unconventional here. Instead of a constant package name and different
     # versions, the package name contains the version. Each version has a new package
     # name. Get latest version.
-    $RubyPackage = (winget search --id RubyInstallerTeam.Ruby.3 |
+    $RubyPackage = (winget search --id RubyInstallerTeam.Ruby.3 --accept-source-agreements |
                     Select-String RubyInstallerTeam.Ruby |
                     Select-Object -Last 1) -replace '.* (RubyInstallerTeam\.Ruby\.[\.0-9]*) .*','$1'
     if (-not $RubyPackage) {
