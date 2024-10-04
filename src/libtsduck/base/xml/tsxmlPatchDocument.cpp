@@ -9,8 +9,9 @@
 #include "tsxmlPatchDocument.h"
 #include "tsxmlElement.h"
 
-#define X_DEBUG          2      // debug level for patching mechanics
-#define X_ATTR           u"x-"  // prefix of special attribute names
+#define X_DEBUG          2               // debug level for patching mechanics
+#define X_PREFIX         u"xml patch: "  // debug messages prefix
+#define X_ATTR           u"x-"           // prefix of special attribute names
 #define X_ADD_PREFIX     X_ATTR u"add-"
 #define X_DELETE_PREFIX  X_ATTR u"delete-"
 #define X_UPDATE_PREFIX  X_ATTR u"update-"
@@ -44,8 +45,8 @@ void ts::xml::PatchDocument::patch(Document& doc) const
 {
     UStringList parents;
     UString parent_to_delete;
-    SymbolSet symbols;
-    patchElement(rootElement(), doc.rootElement(), parents, parent_to_delete, symbols);
+    Expressions expr(report(), X_DEBUG, X_PREFIX);
+    patchElement(rootElement(), doc.rootElement(), parents, parent_to_delete, expr);
 }
 
 
@@ -53,7 +54,7 @@ void ts::xml::PatchDocument::patch(Document& doc) const
 // Patch an XML tree of elements.
 //----------------------------------------------------------------------------
 
-bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete, SymbolSet& symbols) const
+bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete, Expressions& expr) const
 {
     // If the node name do not match, no need to go further.
     if (doc == nullptr || !doc->haveSameName(patch)) {
@@ -69,7 +70,7 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
     for (const auto& it : attr) {
         if (it.first.similar(X_CONDITION_ATTR)) {
             // x-condition attribute: if condition is false, don't patch this node.
-            if (!condition(it.second, symbols, patch)) {
+            if (!expr.evaluate(it.second, patch->name())) {
                 return true; // condition not satisfied => don't patch
             }
         }
@@ -122,15 +123,11 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
         }
         else if (it.first.similar(X_DEFINE_ATTR)) {
             // Define a symbol.
-            const UString sym(it.second.toTrimmed());
-            symbols.insert(sym);
-            report().log(X_DEBUG, u"xml patch: define %s in <%s>", sym, patch->name());
+            expr.define(it.second.toTrimmed(), patch->name());
         }
         else if (it.first.similar(X_UNDEFINE_ATTR)) {
             // Undefine a symbol.
-            const UString sym(it.second.toTrimmed());
-            symbols.erase(sym);
-            report().log(X_DEBUG, u"xml patch: undefine %s in <%s>", sym, patch->name());
+            expr.undefine(it.second.toTrimmed(), patch->name());
         }
         else if (it.first.similar(X_CONDITION_ATTR)) {
             // Already processed in pass 1, ignored.
@@ -141,14 +138,14 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
                 if (param.empty()) {
                     // Remove this node from parent.
                     // Deallocating the element calls its destructor which removes it from parent.
-                    report().log(X_DEBUG, u"xml patch: deleting <%s> in <%s>", doc->name(), doc->parentName());
+                    report().log(X_DEBUG, X_PREFIX u"deleting <%s> in <%s>", doc->name(), doc->parentName());
                     delete doc;
                     return false;
                 }
                 else if (param.isContainedSimilarIn(parents)) {
                     // Request to delete a parent node.
                     // This is a valid parent, abort recursion now, we will be deleted with the parent.
-                    report().log(X_DEBUG, u"xml patch: will delete <%s> above <%s> in <%s>", param, doc->name(), doc->parentName());
+                    report().log(X_DEBUG, X_PREFIX u"will delete <%s> above <%s> in <%s>", param, doc->name(), doc->parentName());
                     parent_to_delete = param;
                     return false;
                 }
@@ -187,7 +184,7 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
     parents.push_back(doc->name());
     for (size_t di = 0; di < docChildren.size() && parent_to_delete.empty(); ++di) {
         for (size_t pi = 0; pi < patchChildren.size() && parent_to_delete.empty(); ++pi) {
-            if (!patchElement(patchChildren[pi], docChildren[di], parents, parent_to_delete, symbols)) {
+            if (!patchElement(patchChildren[pi], docChildren[di], parents, parent_to_delete, expr)) {
                 // Stop processing this doc child (probably deleted or wants to delete a parent).
                 break;
             }
@@ -197,20 +194,23 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc, US
 
     // Add new nodes from patch file, all elements with x-node="add".
     for (auto patchChild : addChildren) {
-        if (condition(symbols, patchChild)) {
+        // Check if there is a condition on the node.
+        UString expression;
+        patchChild->getAttribute(expression, X_CONDITION_ATTR);
+        if (expression.empty() || expr.evaluate(expression, patchChild->name())) {
             // No false condition in the patch element, create a clone.
             Element* e = new Element(*patchChild);
             // Remove all "x-" attributes (especially the "x-node" one).
             cleanupAttributes(e);
             // Add the new child in the document.
             e->reparent(doc);
-            report().log(X_DEBUG, u"xml patch: adding <%s> in <%s>", e->name(), doc->name());
+            report().log(X_DEBUG, X_PREFIX u"adding <%s> in <%s>", e->name(), doc->name());
         }
     }
 
     // If one of the children wants to delete this document, delete it now.
     if (parent_to_delete.similar(doc->name())) {
-        report().log(X_DEBUG, u"xml patch: deleting <%s> in <%s>, requested by some child", doc->name(), doc->parentName());
+        report().log(X_DEBUG, X_PREFIX u"deleting <%s> in <%s>, requested by some child", doc->name(), doc->parentName());
         parent_to_delete.clear();
         delete doc;
         return false;
@@ -286,28 +286,6 @@ bool ts::xml::PatchDocument::xnode(const UString& expression, UString& func, USt
     }
 
     return true;
-}
-
-//----------------------------------------------------------------------------
-// Evaluate a condition from a x-condition attribute.
-//----------------------------------------------------------------------------
-
-bool ts::xml::PatchDocument::condition(const SymbolSet& symbols, const Element* element) const
-{
-    UString expression;
-    element->getAttribute(expression, X_CONDITION_ATTR);
-    return expression.empty() || condition(expression, symbols, element);
-}
-
-bool ts::xml::PatchDocument::condition(const UString& expression, const SymbolSet& symbols, const Element* element) const
-{
-    // Currently: only one symbol with optional '!' negation.
-    UString expr(expression);
-    expr.remove(SPACE);
-    const bool neg = expr.startWith(u"!");
-    const bool cond = (!neg && expr.isContainedSimilarIn(symbols)) || (neg && !expr.substr(1).isContainedSimilarIn(symbols));
-    report().log(X_DEBUG, u"xml patch: x-condition=\"%s\" in <%s> is %s", expression, element->name(), cond);
-    return cond;
 }
 
 

@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsxmlDocument.h"
+#include "tsExpressions.h"
 
 namespace ts {
     namespace xml {
@@ -46,21 +47,13 @@ namespace ts {
             void patch(Document& doc) const;
 
         private:
-            // A set of defined symbols.
-            using SymbolSet = std::set<UString>;
-
             // Patch an XML tree of elements.
             // Return true when processing of the doc node may continue, false if it has been deleted.
             // Update a table of x-define/x-undefine symbols.
-            bool patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete, SymbolSet& symbols) const;
+            bool patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete, Expressions& expr) const;
 
             // Cleanup a cloned XML tree from all "x-" attributes.
             void cleanupAttributes(Element* e) const;
-
-            // Evaluate a condition from a x-condition attribute.
-            // The element name is for debug or error messages only.
-            bool condition(const SymbolSet& symbols, const Element* element) const;
-            bool condition(const UString& expression, const SymbolSet& symbols, const Element* element) const;
 
             // Analyze a string "func[(param)]" from a x-node attribute. Return true on success, false on error.
             // The element name is for debug or error messages only.

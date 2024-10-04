@@ -105,7 +105,7 @@ namespace ts {
     //!
     TSDUCKDLL inline bool IsAlphaNum(UChar c)
     {
-        return (UCharacteristics(c) & (CCHAR_LETTER & CCHAR_DIGIT)) != 0;
+        return (UCharacteristics(c) & (CCHAR_LETTER | CCHAR_DIGIT)) != 0;
     }
 
     //!
