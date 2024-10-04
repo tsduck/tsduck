@@ -36,7 +36,7 @@ namespace ts {
         //! @param [in] env_disable Optional name of an environment variable. When the corresponding
         //! environment variable is defined to some non-empty value, the file is not loaded.
         //!
-        explicit ConfigFile(const fs::path& filename = fs::path(), Report& report = CERR, const UString env_disable = UString());
+        explicit ConfigFile(const fs::path& filename = fs::path(), Report& report = CERR, const UString& env_disable = UString());
 
         //!
         //! Constructor.
@@ -46,7 +46,7 @@ namespace ts {
         //! @param [in] env_disable Optional name of an environment variable. When the corresponding
         //! environment variable is defined to some non-empty value, the file is not loaded.
         //!
-        ConfigFile(const fs::path& filename1, const fs::path& filename2, Report& report = CERR, const UString env_disable = UString());
+        ConfigFile(const fs::path& filename1, const fs::path& filename2, Report& report = CERR, const UString& env_disable = UString());
 
         //!
         //! Constructor.

@@ -18,12 +18,12 @@ const ts::ConfigSection ts::ConfigFile::_empty;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ConfigFile::ConfigFile(const fs::path& filename, Report& report, const UString env_disable) :
+ts::ConfigFile::ConfigFile(const fs::path& filename, Report& report, const UString& env_disable) :
     ConfigFile(filename, fs::path(), report, env_disable)
 {
 }
 
-ts::ConfigFile::ConfigFile(const fs::path& filename1, const fs::path& filename2, Report& report, const UString env_disable)
+ts::ConfigFile::ConfigFile(const fs::path& filename1, const fs::path& filename2, Report& report, const UString& env_disable)
 {
     // Only if not disabled by environment variable.
     if (env_disable.empty() || GetEnvironment(env_disable).empty()) {

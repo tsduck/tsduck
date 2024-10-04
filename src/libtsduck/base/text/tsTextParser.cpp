@@ -68,7 +68,7 @@ void ts::TextParser::loadDocument(const UStringList& lines)
 
 void ts::TextParser::loadDocument(const UString& text)
 {
-    text.toSubstituted(u"\r", UString()).split(_lines, u'\n', false);
+    text.toRemoved(u'\r').split(_lines, u'\n', false);
     _pos = Position(_lines);
 }
 
@@ -438,7 +438,7 @@ bool ts::TextParser::parseJSONStringLiteral(UString& str)
 // Parse text up to a given token.
 //----------------------------------------------------------------------------
 
-bool ts::TextParser::parseText(UString& result, const UString endToken, bool skipIfMatch, bool translateEntities)
+bool ts::TextParser::parseText(UString& result, const UString& endToken, bool skipIfMatch, bool translateEntities)
 {
     result.clear();
     bool found = false;

@@ -200,13 +200,13 @@ namespace ts {
             //! @param [in] element_name  The name of the new element that contaiuning the attributes associated with this clock reference.
             //! @return  true if the requisite attributes and sub-elements are available and correct
             //!
-            bool fromXML(const xml::Element* parent, const UString element_name);
+            bool fromXML(const xml::Element* parent, const UString& element_name);
             //!
             //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
             //! @param [in,out] parent  The element whose attributes and sub-elements are added to to represent values in this object
             //! @param [in] element_name  The name of the element that will contain the serialized values as attributes..
             //!
-            void toXML(xml::Element* parent, const UString element_name);
+            void toXML(xml::Element* parent, const UString& element_name);
 
             // Inherited methods
             virtual bool fromXML(const xml::Element* element) override;

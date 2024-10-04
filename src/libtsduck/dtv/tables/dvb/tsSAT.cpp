@@ -328,7 +328,7 @@ void ts::SAT::NCR_type::deserialize(PSIBuffer& buf)
     buf.getBits(ext, 9);
 }
 
-void ts::SAT::NCR_type::toXML(xml::Element* parent, const UString element_name)
+void ts::SAT::NCR_type::toXML(xml::Element* parent, const UString& element_name)
 {
     toXML(parent->addElement(element_name));
 }
@@ -340,7 +340,7 @@ void ts::SAT::NCR_type::toXML(xml::Element* root)
 }
 
 
-bool ts::SAT::NCR_type::fromXML(const xml::Element* parent, const UString element_name)
+bool ts::SAT::NCR_type::fromXML(const xml::Element* parent, const UString& element_name)
 {
     xml::ElementVector children;
     bool ok = parent->getChildren(children, element_name, 1, 1);

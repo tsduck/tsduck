@@ -190,7 +190,7 @@ namespace ts {
         //! @param [in] translateEntities If true, translate HTML entities in the text.
         //! @return True on success, false if @a endToken was not found.
         //!
-        virtual bool parseText(UString& result, const UString endToken, bool skipIfMatch, bool translateEntities);
+        virtual bool parseText(UString& result, const UString& endToken, bool skipIfMatch, bool translateEntities);
 
         //!
         //! Check if a character is suitable for starting an XML @e name.

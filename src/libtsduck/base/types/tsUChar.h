@@ -99,6 +99,16 @@ namespace ts {
     }
 
     //!
+    //! Check if a character is alphanumerical.
+    //! @param [in] c A character.
+    //! @return True if @a c is alphanumerical.
+    //!
+    TSDUCKDLL inline bool IsAlphaNum(UChar c)
+    {
+        return (UCharacteristics(c) & (CCHAR_LETTER & CCHAR_DIGIT)) != 0;
+    }
+
+    //!
     //! Check if a character is an hexadecimal digit.
     //! @param [in] c A character.
     //! @return True if @a c is an hexadecimal digit.

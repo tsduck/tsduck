@@ -110,7 +110,7 @@ namespace ts {
             //! Set a directory name where all loaded files or URL are automatically saved.
             //! @param [in] dir A directory name.
             //!
-            void setAutoSaveDirectory(const UString dir) { _autoSaveDir = dir; }
+            void setAutoSaveDirectory(const UString& dir) { _autoSaveDir = dir; }
 
             //!
             //! Check if the playlist has been successfully loaded.

@@ -57,7 +57,7 @@ namespace ts {
         //! Set a directory name where all loaded files are automatically saved.
         //! @param [in] dir A directory name.
         //!
-        void setAutoSaveDirectory(const UString dir) { _autoSaveDir = dir; }
+        void setAutoSaveDirectory(const UString& dir) { _autoSaveDir = dir; }
 
         //!
         //! Delete the cookies file, if there is one.
