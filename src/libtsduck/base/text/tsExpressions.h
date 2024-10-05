@@ -30,7 +30,7 @@ namespace ts {
     //! The unary operator '!' is the negation. The binary operators '&&' and '||'
     //! can be used. Parentheses can be used to group sub-expressions.
     //!
-    class Expressions
+    class TSDUCKDLL Expressions
     {
         TS_NOBUILD_NOCOPY(Expressions);
     public:
