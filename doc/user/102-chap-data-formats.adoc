@@ -991,10 +991,53 @@ Thus, the following patch file matches [1] and [3].
 NOTE: It could have been tempting to use the operator `"!="`, the syntax `program_map_PID!="400"` instead of `="!400"`.
 However, `!="400"` is not a valid XML syntax.
 
+===== Special attributes
+
+In the XML structure, _special attributes_ have a name starting with `"x-"`.
+They have a special interpretation; they are not used for attribute matching.
+
+The following table summarizes the special attributes.
+They are described in details in the subsequent sections.
+
+.Special attributes in XML patch files
+[cols="<25m,<75",stripes=none]
+|===
+|Attribute |Usage
+
+| x-add-NAME="value"
+| Add the attribute `NAME` with the specified value in the matching element.
+
+| x-condition="EXPRESSION"
+| The `EXPRESSION` is evaluated based on symbols.
+  If the expression is true, the enclosing element is selected for patching.
+
+| x-define="NAME"
+| If the enclosing element is selected, the symbol `NAME` is defined in the global repository.
+
+| x-delete-NAME=""
+| Delete the attribute `NAME` in the matching element.
+
+| x-node="add"
+| The node with this attribute is added in the matching parent node.
+
+| x-node="delete"
+| The matching node is completely removed.
+
+| x-node="delete(NAME)"
+| The next parent with name `NAME` above the matching node is completely removed.
+
+| x-undefine="NAME"
+| If the enclosing element is selected, the symbol `NAME` is undefined from the global repository.
+
+| x-update-NAME="value"
+| Update the attribute `NAME` with the specified value in the matching element.
+
+|===
+
 ===== Attribute patching
 
-Once a match is found for a given XML element, it is possible to alter the value of the attributes of this
-matching element using special attributes starting with `"x-"`.
+Once a match is found for a given XML element, it is possible to alter the value of the attributes
+of this matching element using special attributes.
 
 The name of these special attributes has the form `x-command-name`.
 The name part is the name of an attribute to alter in the element.
@@ -1069,15 +1112,23 @@ In [5], any PAT with `transport_stream_id` 200 is deleted.
 
 In [6], an EIT is deleted when it contains an event which contains a `parental_rating_descriptor` with rating equals to `0x07`.
 
-===== Conditions
+===== Symbols and conditions
 
 So far, we can modify, add or delete XML elements based on their name or the value of some of their attributes.
 Symbols and conditions allow to alter elements based on conditions which were found in previous other elements.
 
-The next special attributes define _symbols_ and _conditions_.
-Symbols are just names which can be defined in a global repository.
+Symbols are words starting with a letter and made of alphanumerical characters and underscores.
+Symbol names are case sensitive.
+Symbols are defined in a global repository.
 This global repository it maintained all along the processing of a patch file.
+
 Conditions are boolean expressions which are evaluated based on the definition of symbols.
+A symbol evaluates to `true` when it is defined and `false` when it is not.
+The unary operator `!` is the negation.
+The binary operators `&&` and `||` form logical expressions.
+Parentheses can be used to group sub-expressions.
+
+The following special attributes define _symbols_ and _conditions_.
 
 * `x-define="NAME"` +
   If the enclosing element is selected, the symbol `NAME` is defined in the global repository.
@@ -1090,12 +1141,6 @@ Conditions are boolean expressions which are evaluated based on the definition o
   If the expression is true, the enclosing element is selected for patching.
   This is, in principle, similar to the attribute matching as described above.
   If the expression is false, the enclosing element is ignored.
-
-Currently, an `EXPRESSION` is just a symbol, possibly preceded with a negation operator `!`.
-The expression `NAME` is true if the symbol `NAME` is defined at the point of evaluation.
-Similarly, the expression `!NAME` is true if the symbol `NAME` is _not_ defined.
-
-In future versions, more complex forms of expression may be added.
 
 Consider the following example. The idea is to transform any _splice_insert_
 command in a _splice_information_table_ into a _splice_null_ command

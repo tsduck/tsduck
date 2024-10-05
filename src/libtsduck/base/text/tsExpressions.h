@@ -19,11 +19,16 @@
 namespace ts {
     //!
     //! Expression resolver based on the definition of symbols.
-    //!
-    //! Symbols are words made of alphanumerical characters and underscores.
-    //! Symbols can be defined and undefined from the internal repository.
-    //! Boolean expressions are evaluated based on the definition of symbols.
     //! @ingroup cpp
+    //!
+    //! Symbols are words starting with a letter and made of alphanumerical characters
+    //! and underscores. Symbol names are case sensitive. Symbols can be defined and
+    //! undefined in an internal repository of the Expressions object.
+    //!
+    //! Boolean expressions are evaluated based on the definition of symbols.
+    //! A symbol evaluates to true when it is defined and false when it is not.
+    //! The unary operator '!' is the negation. The binary operators '&&' and '||'
+    //! can be used. Parentheses can be used to group sub-expressions.
     //!
     class Expressions
     {
@@ -50,6 +55,7 @@ namespace ts {
         //! @param [in] symbol The symbol to remove from the internal repository.
         //! @param [in] context Optional context of the symbol, for error message only.
         //! @return True if @a symbol is valid, false if it is not. A message is reported in error.
+        //! Undefining a non-existent symbol is not an error, the function returns true.
         //!
         bool undefine(const UString& symbol, const UString& context = UString());
 
@@ -57,6 +63,12 @@ namespace ts {
         //! Undefine all symbols, clear the symbol database.
         //!
         void undefineAll() { _symbols.clear(); }
+
+        //!
+        //! Get the number of defined symbols.
+        //! @return The number of defined symbols.
+        //!
+        size_t symbolCount() const { return _symbols.size(); }
 
         //!
         //! Check if a symbol is defined in the internal repository.
@@ -113,7 +125,43 @@ namespace ts {
         SymbolSet _symbols {};
 
         // Find the index of the next character in a string (or range of string) which is not a valid character for a symbol.
-        // Return size of string or last if not found.
-        static size_t EndOfSymbol(const UString& str, size_t first = 0, size_t last = NPOS);
+        // Return end of string if not found.
+        static size_t EndOfSymbol(const UString& str, size_t first = 0);
+
+        // A helper class to evaluate expressions.
+        class Evaluator
+        {
+            TS_NOBUILD_NOCOPY(Evaluator);
+        private:
+            Expressions*   _parent;
+            const UString& _expr;
+            const size_t   _end;
+            const UString& _context;
+            size_t         _current = 0;
+            size_t         _error = false;
+        public:
+            // Constructor.
+            Evaluator(Expressions* parent, const UString& expr, const UString& context) :
+                _parent(parent),
+                _expr(expr),
+                _end(_expr.length()),
+                _context(context)
+            {
+            }
+            // Evaluate a sequence of '||' or '&&' operators.
+            // 'ecp' = expect closing parenthesis at end of sequence to evaluate.
+            bool evaluateSequence(bool ecp);
+        private:
+            // Binary logical operator in a sequence. They must be all identical.
+            enum SeqOp {NONE, AND, OR};
+            // Get and skip the next operator, if any is found.
+            SeqOp getOperator();
+            // Evaluate a single element: '!*symbol' or '!*(expression)'.
+            bool evaluateSingle();
+            // Skip all spaces at current point.
+            void skipSpaces();
+            // Report an error.
+            void error(const UString& message);
+        };
     };
 }
