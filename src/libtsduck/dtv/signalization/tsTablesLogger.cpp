@@ -1135,10 +1135,10 @@ void ts::TablesLogger::logSection(const Section& sect)
     if (sect.isLongSection()) {
         header.format(u", TIDext 0x%X, V%d, Sec %d/%d", sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber());
     }
-    else if (bool(_duck.standards() & Standards::DVB) && (tid == TID_TDT || tid == TID_TOT) && sect.payloadSize() >= MJD_SIZE) {
+    else if (bool(_duck.standards() & Standards::DVB) && (tid == TID_TDT || tid == TID_TOT) && sect.payloadSize() >= MJDSize(MJD_FULL)) {
         // Get UTC time from DVB TDT or TOT. The time reference is UTC as defined by DVB, but can be non-standard.
         Time utc;
-        if (DecodeMJD(sect.payload(), MJD_SIZE, utc)) {
+        if (DecodeMJD(sect.payload(), MJD_FULL, utc)) {
             utc -= _duck.timeReferenceOffset();
             header.format(u", %s", utc.format(Time::DATETIME));
         }

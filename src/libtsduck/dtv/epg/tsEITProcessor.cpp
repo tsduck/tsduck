@@ -368,12 +368,12 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
             while (data + 12 <= end) {
                 // Update event start time.
                 Time time;
-                if (!DecodeMJD(data + 2, MJD_SIZE, time)) {
+                if (!DecodeMJD(data + 2, MJD_FULL, time)) {
                     _duck.report().warning(u"error decoding event start time from EIT");
                 }
                 else {
                     time += _start_time_offset;
-                    if (!EncodeMJD(time, data + 2, _date_only ? MJD_MIN_SIZE : MJD_SIZE)) {
+                    if (!EncodeMJD(time, data + 2, _date_only ? MJD_DATE : MJD_FULL)) {
                         _duck.report().warning(u"error encoding event start time into EIT");
                     }
                     else {

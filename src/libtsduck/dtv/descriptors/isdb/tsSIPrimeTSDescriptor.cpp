@@ -57,7 +57,7 @@ ts::SIPrimeTSDescriptor::SIPrimeTSDescriptor(DuckContext& duck, const Descriptor
 void ts::SIPrimeTSDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(parameter_version);
-    buf.putMJD(update_time, 2);  // date only
+    buf.putMJD(update_time, MJD_DATE);  // date only
     buf.putUInt16(SI_prime_TS_network_id);
     buf.putUInt16(SI_prime_transport_stream_id);
     for (const auto& it : entries) {
@@ -75,7 +75,7 @@ void ts::SIPrimeTSDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::SIPrimeTSDescriptor::deserializePayload(PSIBuffer& buf)
 {
     parameter_version = buf.getUInt8();
-    update_time = buf.getMJD(MJD_MIN_SIZE);  // date only
+    update_time = buf.getMJD(MJD_DATE);  // date only
     SI_prime_TS_network_id = buf.getUInt16();
     SI_prime_transport_stream_id = buf.getUInt16();
     while (buf.canRead()) {
@@ -96,7 +96,7 @@ void ts::SIPrimeTSDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 {
     if (buf.canReadBytes(7)) {
         disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;
-        disp << margin << "Update time: " << buf.getMJD(MJD_MIN_SIZE).format(Time::DATE) << std::endl;
+        disp << margin << "Update time: " << buf.getMJD(MJD_DATE).format(Time::DATE) << std::endl;
         disp << margin << UString::Format(u"SI prime TS network id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"SI prime TS id: %n", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(2)) {

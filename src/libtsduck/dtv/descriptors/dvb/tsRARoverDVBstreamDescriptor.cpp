@@ -61,8 +61,8 @@ void ts::RARoverDVBstreamDescriptor::clearContent()
 
 void ts::RARoverDVBstreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putMJD(first_valid_date, MJD_SIZE);
-    buf.putMJD(last_valid_date, MJD_SIZE);
+    buf.putMJD(first_valid_date, MJD_FULL);
+    buf.putMJD(last_valid_date, MJD_FULL);
     buf.putBits(weighting, 6);
     buf.putBit(complete_flag);
     bool scheduled_flag = download_start_time.has_value() && download_period_duration.has_value() && download_cycle_time.has_value();
@@ -72,7 +72,7 @@ void ts::RARoverDVBstreamDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt16(service_id);
     buf.putUInt8(component_tag);
     if (scheduled_flag) {
-        buf.putMJD(download_start_time.value(), MJD_SIZE);
+        buf.putMJD(download_start_time.value(), MJD_FULL);
         buf.putUInt8(download_period_duration.value());
         buf.putUInt8(download_cycle_time.value());
     }
@@ -85,8 +85,8 @@ void ts::RARoverDVBstreamDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::RARoverDVBstreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    first_valid_date = buf.getMJD(MJD_SIZE);
-    last_valid_date = buf.getMJD(MJD_SIZE);
+    first_valid_date = buf.getMJD(MJD_FULL);
+    last_valid_date = buf.getMJD(MJD_FULL);
     weighting = buf.getBits<uint8_t>(6);
     complete_flag = buf.getBool();
     bool scheduled_flag = buf.getBool();
@@ -95,7 +95,7 @@ void ts::RARoverDVBstreamDescriptor::deserializePayload(PSIBuffer& buf)
     service_id = buf.getUInt16();
     component_tag = buf.getUInt8();
     if (scheduled_flag) {
-        download_start_time = buf.getMJD(MJD_SIZE);
+        download_start_time = buf.getMJD(MJD_FULL);
         download_period_duration = buf.getUInt8();
         download_cycle_time = buf.getUInt8();
     }
@@ -109,8 +109,8 @@ void ts::RARoverDVBstreamDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::RARoverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(18)) {
-        disp << margin << "First valid date: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
-        disp << margin << "Last valid date: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
+        disp << margin << "First valid date: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
+        disp << margin << "Last valid date: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
         disp << margin << "Weighting: " << int(buf.getBits<uint8_t>(6));
         disp << ", complete: " << UString::TrueFalse(buf.getBool()) << std::endl;
         bool scheduled_flag = buf.getBool();
@@ -119,7 +119,7 @@ void ts::RARoverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
         if (scheduled_flag) {
-            disp << margin << "Download start time: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
+            disp << margin << "Download start time: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
             disp << margin << "Download period duration: " << int(buf.getUInt8() * 6) << " minutes";
             uint8_t ct = buf.getUInt8();
             disp << ", cycle time: " << int(ct) << " minute" << (ct == 1 ? "" : "s") << std::endl;

@@ -398,7 +398,7 @@ void ts::EITPlugin::handleSection (SectionDemux& demux, const Section& sect)
     if (!pf && _last_utc != Time::Epoch) {
         while (size >= 12) {
             Time start_time;
-            DecodeMJD(data + 2, 5, start_time);
+            DecodeMJD(data + 2, MJD_FULL, start_time);
             serv.max_time = std::max(serv.max_time, start_time - _last_utc);
             size_t loop_length = GetUInt16(data + 10) & 0x0FFF;
             data += 12; size -= 12;

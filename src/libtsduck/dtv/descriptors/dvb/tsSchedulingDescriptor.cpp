@@ -68,8 +68,8 @@ ts::SchedulingDescriptor::SchedulingDescriptor(DuckContext& duck, const Descript
 
 void ts::SchedulingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putMJD(start_date_time, MJD_SIZE);
-    buf.putMJD(end_date_time, MJD_SIZE);
+    buf.putMJD(start_date_time, MJD_FULL);
+    buf.putMJD(end_date_time, MJD_FULL);
     buf.putBit(final_availability);
     buf.putBit(periodicity);
     buf.putBits(period_unit, 2);
@@ -88,8 +88,8 @@ void ts::SchedulingDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::SchedulingDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    start_date_time = buf.getMJD(MJD_SIZE);
-    end_date_time = buf.getMJD(MJD_SIZE);
+    start_date_time = buf.getMJD(MJD_FULL);
+    end_date_time = buf.getMJD(MJD_FULL);
     final_availability = buf.getBool();
     periodicity = buf.getBool();
     buf.getBits(period_unit, 2);
@@ -109,8 +109,8 @@ void ts::SchedulingDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(14)) {
-        disp << margin << "Start time: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
-        disp << margin << "End time:   " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
+        disp << margin << "Start time: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
+        disp << margin << "End time:   " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
         disp << margin << UString::Format(u"Final availability: %s", buf.getBool()) << std::endl;
         disp << margin << UString::Format(u"Periodicity: %s", buf.getBool()) << std::endl;
         const uint8_t period_unit = buf.getBits<uint8_t>(2);

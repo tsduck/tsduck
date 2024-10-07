@@ -56,7 +56,7 @@ void ts::LocalTimeOffsetDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(1);
         buf.putBit(it.time_offset < cn::minutes::zero());
         buf.putMinutesBCD(it.time_offset);
-        buf.putMJD(it.next_change, MJD_SIZE);
+        buf.putMJD(it.next_change, MJD_FULL);
         buf.putMinutesBCD(it.next_time_offset);
     }
 }
@@ -76,7 +76,7 @@ void ts::LocalTimeOffsetDescriptor::deserializePayload(PSIBuffer& buf)
         const int polarity = buf.getBool() ? -1 : 1;
         buf.getMinutesBCD(region.time_offset);
         region.time_offset *= polarity;
-        region.next_change = buf.getMJD(MJD_SIZE);
+        region.next_change = buf.getMJD(MJD_FULL);
         buf.getMinutesBCD(region.next_time_offset);
         region.next_time_offset *= polarity;
         regions.push_back(region);
@@ -99,7 +99,7 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         disp << ", polarity: " << (polarity ? "west" : "east") << " of Greenwich" << std::endl;
         disp << margin << UString::Format(u"Local time offset: %s%02d", polarity ? u"-" : u"", buf.getBCD<uint8_t>(2));
         disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
-        disp << margin << "Next change: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
+        disp << margin << "Next change: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
         disp << margin << UString::Format(u"Next time offset: %s%02d", polarity ? u"-" : u"", buf.getBCD<uint8_t>(2));
         disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;
     }

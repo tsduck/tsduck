@@ -55,7 +55,7 @@ ts::SIParameterDescriptor::SIParameterDescriptor(DuckContext& duck, const Descri
 void ts::SIParameterDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(parameter_version);
-    buf.putMJD(update_time, 2);  // 2 bytes: date only
+    buf.putMJD(update_time, MJD_DATE);  // 2 bytes: date only
     for (const auto& it : entries) {
         buf.putUInt8(it.table_id);
         buf.putUInt8(uint8_t(it.table_description.size()));
@@ -71,7 +71,7 @@ void ts::SIParameterDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::SIParameterDescriptor::deserializePayload(PSIBuffer& buf)
 {
     parameter_version = buf.getUInt8();
-    update_time = buf.getMJD(MJD_MIN_SIZE); // 2 bytes: date only
+    update_time = buf.getMJD(MJD_DATE); // 2 bytes: date only
     while (buf.canRead()) {
         Entry e;
         e.table_id = buf.getUInt8();
@@ -90,7 +90,7 @@ void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;
-        disp << margin << "Update time: " << buf.getMJD(MJD_MIN_SIZE).format(Time::DATE) << std::endl;
+        disp << margin << "Update time: " << buf.getMJD(MJD_DATE).format(Time::DATE) << std::endl;
         while (buf.canReadBytes(2)) {
             disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
             disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");

@@ -89,7 +89,7 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
     if (size >= EIT::EIT_EVENT_FIXED_SIZE) {
         event_size = std::min(size, EIT::EIT_EVENT_FIXED_SIZE + (GetUInt16(data + 10) & 0x0FFF));
         event_id = GetUInt16(data);
-        DecodeMJD(data + 2, 5, start_time);
+        DecodeMJD(data + 2, MJD_FULL, start_time);
         end_time = start_time + cn::hours(DecodeBCD(data[7])) + cn::minutes(DecodeBCD(data[8])) + cn::seconds(DecodeBCD(data[9]));
         event_data.copy(data, event_size);
     }
@@ -1292,10 +1292,10 @@ void ts::EITGenerator::handleSection(SectionDemux& demux, const Section& section
         // Use input EIT's as EPG data when specified in the generation options.
         loadEvents(section);
     }
-    else if ((tid == TID_TDT || tid == TID_TOT) && section.payloadSize() >= MJD_SIZE) {
+    else if ((tid == TID_TDT || tid == TID_TOT) && section.payloadSize() >= MJDSize(MJD_FULL)) {
         // The first 5 bytes of a TDT or TOT payload is the UTC time.
         Time utc;
-        if (DecodeMJD(section.payload(), MJD_SIZE, utc)) {
+        if (DecodeMJD(section.payload(), MJD_FULL, utc)) {
             setCurrentTime(utc);
         }
     }
@@ -1441,7 +1441,7 @@ void ts::EITGenerator::dumpSection(int lev, const UString& margin, const ESectio
     while (size >= EIT::EIT_EVENT_FIXED_SIZE) {
         const size_t ev_size = std::min(size, EIT::EIT_EVENT_FIXED_SIZE + (GetUInt16(data + 10) & 0x0FFF));
         Time start;
-        DecodeMJD(data + 2, 5, start);
+        DecodeMJD(data + 2, MJD_FULL, start);
         Time end(start + cn::hours(DecodeBCD(data[7])) + cn::minutes(DecodeBCD(data[8])) + cn::seconds(DecodeBCD(data[9])));
         rep.log(lev, u"%sevent id: 0x%X, start: %s, end: %s, %d bytes", space, GetUInt16(data), start, end, ev_size);
         data += ev_size;

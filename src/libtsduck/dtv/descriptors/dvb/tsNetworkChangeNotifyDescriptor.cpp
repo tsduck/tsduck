@@ -68,7 +68,7 @@ void ts::NetworkChangeNotifyDescriptor::serializePayload(PSIBuffer& buf) const
             const bool invariant_ts_present = it2.invariant_ts_tsid.has_value() && it2.invariant_ts_onid.has_value();
             buf.putUInt8(it2.network_change_id);
             buf.putUInt8(it2.network_change_version);
-            buf.putMJD(it2.start_time_of_change, MJD_SIZE);
+            buf.putMJD(it2.start_time_of_change, MJD_FULL);
             buf.putSecondsBCD(it2.change_duration);
             buf.putBits(it2.receiver_category, 3);
             buf.putBit(invariant_ts_present);
@@ -98,7 +98,7 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
             Change ch;
             ch.network_change_id = buf.getUInt8();
             ch.network_change_version = buf.getUInt8();
-            ch.start_time_of_change = buf.getMJD(MJD_SIZE);
+            ch.start_time_of_change = buf.getMJD(MJD_FULL);
             buf.getSecondsBCD(ch.change_duration);
             buf.getBits(ch.receiver_category, 3);
             const bool invariant_ts_present = buf.getBool();
@@ -128,7 +128,7 @@ void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, P
         while (buf.canReadBytes(12)) {
             disp << margin << UString::Format(u"  - Network change id: 0x%X", buf.getUInt8());
             disp << UString::Format(u", version: 0x%X", buf.getUInt8()) << std::endl;
-            disp << margin << "    Start: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME);
+            disp << margin << "    Start: " << buf.getMJD(MJD_FULL).format(Time::DATETIME);
             disp << UString::Format(u", duration: %02d", buf.getBCD<uint8_t>(2));
             disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2));
             disp << UString::Format(u":%02d", buf.getBCD<uint8_t>(2)) << std::endl;

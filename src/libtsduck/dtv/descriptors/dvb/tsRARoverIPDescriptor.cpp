@@ -55,8 +55,8 @@ void ts::RARoverIPDescriptor::clearContent()
 
 void ts::RARoverIPDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putMJD(first_valid_date, MJD_SIZE);
-    buf.putMJD(last_valid_date, MJD_SIZE);
+    buf.putMJD(first_valid_date, MJD_FULL);
+    buf.putMJD(last_valid_date, MJD_FULL);
     buf.putBits(weighting, 6);
     buf.putBit(complete_flag);
     buf.putBit(1);
@@ -70,8 +70,8 @@ void ts::RARoverIPDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::RARoverIPDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    first_valid_date = buf.getMJD(MJD_SIZE);
-    last_valid_date = buf.getMJD(MJD_SIZE);
+    first_valid_date = buf.getMJD(MJD_FULL);
+    last_valid_date = buf.getMJD(MJD_FULL);
     weighting = buf.getBits<uint8_t>(6);
     complete_flag = buf.getBool();
     buf.skipBits(1);
@@ -86,8 +86,8 @@ void ts::RARoverIPDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::RARoverIPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(18)) {
-        disp << margin << "First valid date: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
-        disp << margin << "Last valid date: " << buf.getMJD(MJD_SIZE).format(Time::DATETIME) << std::endl;
+        disp << margin << "First valid date: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
+        disp << margin << "Last valid date: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;
         disp << margin << "Weighting: " << int(buf.getBits<uint8_t>(6));
         disp << ", complete: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipReservedBits(1);

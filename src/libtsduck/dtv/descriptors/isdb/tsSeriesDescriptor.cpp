@@ -62,7 +62,7 @@ void ts::SeriesDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(program_pattern, 3);
     buf.putBit(expire_date.has_value());
     if (expire_date.has_value()) {
-        buf.putMJD(expire_date.value(), 2);  // 2 bytes, date only
+        buf.putMJD(expire_date.value(), MJD_DATE);  // 2 bytes, date only
     }
     else {
         buf.putUInt16(0xFFFF);
@@ -83,7 +83,7 @@ void ts::SeriesDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBits(repeat_label, 4);
     buf.getBits(program_pattern, 3);
     if (buf.getBool()) {
-        expire_date = buf.getMJD(MJD_MIN_SIZE);  // 2 bytes, date only
+        expire_date = buf.getMJD(MJD_DATE);  // 2 bytes, date only
     }
     else {
         buf.skipBits(16);
@@ -105,7 +105,7 @@ void ts::SeriesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf
         disp << margin << UString::Format(u"Repeat label: %d", buf.getBits<uint8_t>(4)) << std::endl;
         disp << margin << "Program pattern: " << DataName(MY_XML_NAME, u"ProgramPattern", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
         const bool date_valid = buf.getBool();
-        const Time exp(buf.getMJD(MJD_MIN_SIZE));
+        const Time exp(buf.getMJD(MJD_DATE));
         disp << margin << "Expire date: " << (date_valid ? exp.format(Time::DATE) : u"unspecified") << std::endl;
         disp << margin << UString::Format(u"Episode: %d", buf.getBits<uint16_t>(12));
         disp << UString::Format(u"/%d", buf.getBits<uint16_t>(12)) << std::endl;

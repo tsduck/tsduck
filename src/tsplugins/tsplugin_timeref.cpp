@@ -304,7 +304,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     }
 
     // Check section size.
-    if ((tid == TID_TDT && size < SHORT_SECTION_HEADER_SIZE + MJD_SIZE) || (tid == TID_TOT && size < SHORT_SECTION_HEADER_SIZE + MJD_SIZE + 4)) {
+    if ((tid == TID_TDT && size < SHORT_SECTION_HEADER_SIZE + MJDSize(MJD_FULL)) || (tid == TID_TOT && size < SHORT_SECTION_HEADER_SIZE + MJDSize(MJD_FULL) + 4)) {
         warning(u"invalid TDT/TOD, too short: %d bytes", size);
         return;
     }
@@ -320,7 +320,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     // Decode UTC time in section.
     // TDT and TOT both store a UTC time in first 5 bytes of short section payload.
     Time time;
-    if (!DecodeMJD(section + SHORT_SECTION_HEADER_SIZE, MJD_SIZE, time)) {
+    if (!DecodeMJD(section + SHORT_SECTION_HEADER_SIZE, MJD_FULL, time)) {
         warning(u"error decoding UTC time from TDT/TOT");
         return;
     }
@@ -362,7 +362,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     if ((tid == TID_TDT && _update_tdt) || (tid == TID_TOT && _update_tot)) {
 
         // Update UTC time in section
-        if (!EncodeMJD(time, section + SHORT_SECTION_HEADER_SIZE, MJD_SIZE)) {
+        if (!EncodeMJD(time, section + SHORT_SECTION_HEADER_SIZE, MJD_FULL)) {
             warning(u"error encoding UTC time into TDT/TOT");
             return;
         }
@@ -370,7 +370,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
         // More modification in TOT
         if (tid == TID_TOT) {
             // Get start and end of descriptor loop.
-            uint8_t* desc = section + SHORT_SECTION_HEADER_SIZE + MJD_SIZE + 2;
+            uint8_t* desc = section + SHORT_SECTION_HEADER_SIZE + MJDSize(MJD_FULL) + 2;
             uint8_t* desc_end = desc + (desc > section_end ? 0 : (GetUInt16(desc - 2) & 0x0FFF));
 
             // Loop on all descriptors, updating local_time_offset_descriptor.
@@ -418,7 +418,7 @@ void ts::TimeRefPlugin::processLocalTime(uint8_t* data, size_t size)
                 data[12] = EncodeBCD(std::abs(_next_offset) % 60);
             }
             if (_next_change != Time::Epoch) {
-                EncodeMJD(_next_change, data + 6, MJD_SIZE);
+                EncodeMJD(_next_change, data + 6, MJD_FULL);
             }
         }
         data += 13; size -= 13;

@@ -16,13 +16,13 @@
 // This routine converts a modified Julian date (MJD) into a base::Time.
 //----------------------------------------------------------------------------
 
-bool ts::DecodeMJD(const uint8_t* mjd, size_t mjd_size, Time& time)
+bool ts::DecodeMJD(const uint8_t* mjd, MJDFormat mjd_fmt, Time& time)
 {
     // Default invalid value. We use a portable constant value, not the system Epoch.
     time = Time::UnixEpoch;
 
-    // Check buffer size
-    if (mjd_size < MJD_MIN_SIZE || mjd_size > MJD_SIZE) {
+    // Check MJD format.
+    if (mjd_fmt != MJD_DATE && mjd_fmt != MJD_FULL) {
         return false;
     }
 
@@ -32,17 +32,9 @@ bool ts::DecodeMJD(const uint8_t* mjd, size_t mjd_size, Time& time)
 
     // Compute milliseconds since MJD epoch
     cn::milliseconds mjd_ms = cn::duration_cast<cn::milliseconds>(cn::days(day));
-    if (mjd_size >= 3 && valid) {
-        valid = IsValidBCD(mjd[2]);
-        mjd_ms += cn::hours(DecodeBCD(mjd[2]));
-    }
-    if (mjd_size >= 4 && valid) {
-        valid = IsValidBCD(mjd[3]);
-        mjd_ms += cn::minutes(DecodeBCD(mjd[3]));
-    }
-    if (mjd_size >= 5 && valid) {
-        valid = IsValidBCD(mjd[4]);
-        mjd_ms += cn::seconds(DecodeBCD(mjd[4]));
+    if (valid && mjd_fmt == MJD_FULL) {
+        valid = IsValidBCD(mjd[2]) && IsValidBCD(mjd[3]) && IsValidBCD(mjd[4]);
+        mjd_ms += cn::hours(DecodeBCD(mjd[2])) + cn::minutes(DecodeBCD(mjd[3])) + cn::seconds(DecodeBCD(mjd[4]));
     }
     if (!valid) {
         return false;
@@ -61,14 +53,15 @@ bool ts::DecodeMJD(const uint8_t* mjd, size_t mjd_size, Time& time)
     return true;
 }
 
+
 //----------------------------------------------------------------------------
 // This routine converts a base::Time into a modified Julian Date (MJD).
 //----------------------------------------------------------------------------
 
-bool ts::EncodeMJD(const Time& time, uint8_t* mjd, size_t mjd_size)
+bool ts::EncodeMJD(const Time& time, uint8_t* mjd, MJDFormat mjd_fmt)
 {
-    // Check buffer size
-    if (mjd_size < 2 || mjd_size > 5) {
+    // Check MJD format.
+    if (mjd_fmt != MJD_DATE && mjd_fmt != MJD_FULL) {
         return false;
     }
 
@@ -77,21 +70,17 @@ bool ts::EncodeMJD(const Time& time, uint8_t* mjd, size_t mjd_size)
 
     // Cannot represent dates earlier than MJD epoch
     if (time_sec < Time::JulianEpochOffset) {
-        MemZero(mjd, mjd_size);
+        MemZero(mjd, MJDSize(mjd_fmt));
         return false;
     }
 
-    // Conput seconds since MJD epoch
+    // Compute seconds since MJD epoch
     const cn::seconds::rep d = cn::duration_cast<cn::seconds>(time_sec - Time::JulianEpochOffset).count();
-    PutUInt16(mjd, uint16_t(d / (24 * 3600))); // days
-    if (mjd_size >= 3) {
+    PutUInt16(mjd, uint16_t(d / (24 * 3600)));    // days
+    if (mjd_fmt == MJD_FULL) {
         mjd[2] = EncodeBCD(int((d / 3600) % 24)); // hours
-    }
-    if (mjd_size >= 4) {
-        mjd[3] = EncodeBCD(int((d / 60) % 60)); // minutes
-    }
-    if (mjd_size >= 5) {
-        mjd[4] = EncodeBCD(int(d % 60)); // seconds
+        mjd[3] = EncodeBCD(int((d / 60) % 60));   // minutes
+        mjd[4] = EncodeBCD(int(d % 60));          // seconds
     }
     return true;
 }

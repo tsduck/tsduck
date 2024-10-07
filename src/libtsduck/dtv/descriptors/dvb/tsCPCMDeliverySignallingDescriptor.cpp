@@ -108,8 +108,8 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
     buf.putBit(disable_analogue_hd_consumption);
     buf.putBit(image_constraint);
     if (view_window_start.has_value() || view_window_end.has_value()) {
-        buf.putMJD(view_window_start.value(), 5);
-        buf.putMJD(view_window_end.value(), 5);
+        buf.putMJD(view_window_start.value(), MJD_FULL);
+        buf.putMJD(view_window_end.value(), MJD_FULL);
     }
     if (view_period_from_first_playback.has_value()) {
         buf.putUInt16(view_period_from_first_playback.value());
@@ -121,7 +121,7 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
         buf.putUInt16(remote_access_delay.value());
     }
     if (remote_access_date.has_value()) {
-        buf.putMJD(remote_access_date.value(), 5);
+        buf.putMJD(remote_access_date.value(), MJD_FULL);
     }
     if (!cps_vector.empty()) {
         buf.putBits(cps_vector.size(), 8);
@@ -173,8 +173,8 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::deserializePayload(
     disable_analogue_hd_consumption = buf.getBool();
     image_constraint = buf.getBool();
     if (view_window_activated) {
-        view_window_start = buf.getMJD(MJD_SIZE);
-        view_window_end = buf.getMJD(MJD_SIZE);
+        view_window_start = buf.getMJD(MJD_FULL);
+        view_window_end = buf.getMJD(MJD_FULL);
     }
     if (view_period_activated) {
         view_period_from_first_playback = buf.getUInt16();
@@ -186,7 +186,7 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::deserializePayload(
         remote_access_delay = buf.getUInt16();
     }
     if (remote_access_date_flag) {
-        remote_access_date = buf.getMJD(MJD_SIZE);
+        remote_access_date = buf.getMJD(MJD_FULL);
     }
     if (export_controlled_cps) {
         uint8_t cps_vector_count = buf.getUInt8();
@@ -261,8 +261,8 @@ void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp
             disp << margin << "Disable Analogue SD  export: " << UString::TrueFalse(sd_export) << ", consumption: " << UString::TrueFalse(sd_consume) << std::endl;
             disp << margin << "Disable Analogue HD  export: " << UString::TrueFalse(hd_export) << ", consumption: " << UString::TrueFalse(hd_consume) << std::endl;
             if (view_window_activated) {
-                disp << margin << "View window start: " << buf.getMJD(MJD_SIZE).format(ts::Time::FieldMask::DATETIME);
-                disp << ", end: " << buf.getMJD(MJD_SIZE).format(ts::Time::FieldMask::DATETIME) << std::endl;
+                disp << margin << "View window start: " << buf.getMJD(MJD_FULL).format(ts::Time::FieldMask::DATETIME);
+                disp << ", end: " << buf.getMJD(MJD_FULL).format(ts::Time::FieldMask::DATETIME) << std::endl;
             }
             if (view_period_activated) {
                 disp << margin << "View period: " << buf.getUInt16() << " (15 minute periods)" << std::endl;
@@ -274,7 +274,7 @@ void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp
                 disp << margin << "Remote access delay: " << buf.getUInt16() << " (15 minute periods)" << std::endl;
             }
             if (remote_access_date_flag) {
-                disp << margin << "Remote access date: " << buf.getMJD(MJD_SIZE).format(ts::Time::FieldMask::DATETIME) << std::endl;
+                disp << margin << "Remote access date: " << buf.getMJD(MJD_FULL).format(ts::Time::FieldMask::DATETIME) << std::endl;
             }
             if (export_controlled_cps) {
                 uint8_t cps_vector_count = buf.getUInt8();

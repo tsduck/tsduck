@@ -577,7 +577,7 @@ ts::EIT::BinaryEvent::BinaryEvent(TID tid, const uint8_t*& data, size_t& size) :
     if (data != nullptr && size >= EIT_EVENT_FIXED_SIZE) {
         const size_t event_size = EIT_EVENT_FIXED_SIZE + (GetUInt16(data + EIT_EVENT_FIXED_SIZE - 2) & 0x0FFF);
         if (size >= event_size) {
-            DecodeMJD(data + 2, 5, start_time);
+            DecodeMJD(data + 2, MJD_FULL, start_time);
             event_data.copy(data, event_size);
             data += event_size;
             size -= event_size;

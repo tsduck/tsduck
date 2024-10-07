@@ -231,33 +231,35 @@ bool ts::PSIBuffer::getStringWithByteLength(ts::UString& str, const Charset* cha
 // Serialize and deserialize dates and times.
 //----------------------------------------------------------------------------
 
-bool ts::PSIBuffer::putMJD(const Time& time, size_t mjd_size)
+bool ts::PSIBuffer::putMJD(const Time& time, MJDFormat mjd_fmt)
 {
-    if (readOnly() || writeError() || !writeIsByteAligned() || remainingWriteBytes() < mjd_size || !EncodeMJD(time, currentWriteAddress(), mjd_size)) {
+    const size_t size = MJDSize(mjd_fmt);
+    if (readOnly() || writeError() || !writeIsByteAligned() || remainingWriteBytes() < size || !EncodeMJD(time, currentWriteAddress(), mjd_fmt)) {
         // Write is not byte-aligned or there is not enough room or encoding error.
         setWriteError();
         return false;
     }
     else {
         // Successfully serialized, move write pointer.
-        writeSeek(currentWriteByteOffset() + mjd_size);
+        writeSeek(currentWriteByteOffset() + size);
         return true;
     }
 }
 
-ts::Time ts::PSIBuffer::getMJD(size_t mjd_size)
+ts::Time ts::PSIBuffer::getMJD(MJDFormat mjd_fmt)
 {
-    // Invalid MJD decoding: We filter invalid mjd_size as an error.
+    // Invalid MJD decoding: We filter invalid mjd_fmt as an error.
     // But we accept invalid MJD values (returns Unix Epoch) because
     // too many EIT's have invalid dates in the field.
     Time result;
-    if (readError() || !readIsByteAligned() || remainingReadBytes() < mjd_size || mjd_size < MJD_MIN_SIZE || mjd_size > MJD_SIZE) {
+    const size_t size = MJDSize(mjd_fmt);
+    if (readError() || !readIsByteAligned() || (mjd_fmt != MJD_DATE && mjd_fmt != MJD_FULL) || remainingReadBytes() < size) {
         setReadError();
         return Time::Epoch;
     }
     else {
-        DecodeMJD(currentReadAddress(), mjd_size, result);
-        skipBytes(mjd_size);
+        DecodeMJD(currentReadAddress(), mjd_fmt, result);
+        skipBytes(size);
         return result;
     }
 }
