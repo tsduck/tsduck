@@ -29,7 +29,7 @@ namespace ts {
     {
     public:
         // MPEG4AudioExtensionDescriptor public members:
-        ByteBlock audioProfileLevelIndication;      //!< Up to 15 audio profile level 8-bit values.
+        ByteBlock audioProfileLevelIndication {};   //!< Up to 15 audio profile level 8-bit values.
         ByteBlock audioSpecificConfig {};           //!< Binary structure as defined in 1.6.2.1 in ISO/IEC 14496-3.
 
         static constexpr size_t MAX_PROFILES = 15;  //!< Maximum number of audio profile level 8-bit values.
