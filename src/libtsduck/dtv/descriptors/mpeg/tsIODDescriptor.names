@@ -1,0 +1,4 @@
+[IOD_descriptor.scope]
+Bits = 8
+0x10 = unique within program / service
+0x11 = unique within transport stream

@@ -758,6 +758,20 @@ namespace ts {
         bool putBits(INT value, size_t bits);
 
         //!
+        //! Put the next n bits from an integer value and advance the write pointer.
+        //! @tparam INT An integer type.
+        //! @param [in] value Integer value to write as a std::optional instance.
+        //! If @a value is unset, nothing is written.
+        //! @param [in] bits Number of bits to write.
+        //! @return True on success, false on error (read only or no more space to write).
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        bool putBits(const std::optional<INT>& value, size_t bits)
+        {
+            return !value.has_value() || putBits(value.value(), bits);
+        }
+
+        //!
         //! Put the next n bits from a std::chrono::duration value and advance the write pointer.
         //! @param [in] value Integer value to write.
         //! @param [in] bits Number of bits to write.

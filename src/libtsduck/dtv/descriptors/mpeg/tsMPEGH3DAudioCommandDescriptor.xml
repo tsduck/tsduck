@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEGH_3D_audio_command_descriptor>
+
+      <!-- MHAS packet of the type PACTYP_USERINTERACTION as defined in ISO/IEC 23008-3 -->
+      <MHAS>
+        Hexadecimal content
+      </MHAS>
+
+    </MPEGH_3D_audio_command_descriptor>
+
+  </_descriptors>
+</tsduck>

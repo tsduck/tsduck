@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEGH_3D_audio_drc_loudness_descriptor>
+
+      <!-- Any number of drcInstructionsUniDrc -->
+      <drcInstructionsUniDrc
+          drcInstructionsType="uint2, required"
+          mae_groupID="uint7, required when drcInstructionsType == 2"
+          mae_groupPresetID="uint5, required when drcInstructionsType == 3"
+          drcSetId="uint6, required"
+          downmixId="uint7, required"
+          drcSetEffect="uint16, required"
+          bsLimiterPeakTarget="uint8, optional"
+          bsDrcSetTargetLoudnessValueUpper="uint6, optional (required when bsDrcSetTargetLoudnessValueLower is set)"
+          bsDrcSetTargetLoudnessValueLower="uint6, optional"
+          dependsOnDrcSet="uint6, required"
+          noIndependentUse="bool, required when dependsOnDrcSet == 0">
+
+        <!-- Any number of additionalDownmixId -->
+        <additionalDownmixId value="uint7, required"/>
+
+      </drcInstructionsUniDrc>
+
+      <!-- Any number of loudnessInfo -->
+      <loudnessInfo
+          loudnessInfoType="uint2, required"
+          mae_groupID="uint7, required when loudnessInfoType == 1 || loudnessInfoType == 2"
+          mae_groupPresetID="uint5, required when loudnessInfoType == 3">
+
+        <!-- loudnessInfo() structure as defined in ISO/IEC 23003-4 -->
+        <loudnessInfo>
+          Hexadecimal content
+        </loudnessInfo>
+
+      </loudnessInfo>
+
+      <!-- Any number of downmixId -->
+      <downmixId
+          downmixId="uint7, required"
+          downmixType="uint2, required"
+          CICPspeakerLayoutIdx="uint6, required"/>
+
+      <!-- At most one -->
+      <reserved>
+        Hexadecimal content
+      </reserved>
+
+    </MPEGH_3D_audio_drc_loudness_descriptor>>
+
+  </_descriptors>
+</tsduck>

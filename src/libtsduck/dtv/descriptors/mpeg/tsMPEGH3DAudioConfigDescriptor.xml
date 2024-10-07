@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEGH_3D_audio_config_descriptor>
+
+      <!-- Binary structure as defined in 5.2.2.1 in ISO/IEC 23008-3 -->
+      <mpegh3daConfig>
+        Hexadecimal content
+      </mpegh3daConfig>
+
+    </MPEGH_3D_audio_config_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -683,6 +683,26 @@ namespace ts {
             }
 
             //!
+            //! Get an integer attribute of an XML element, based on a condition.
+            //! @tparam INT An integer type.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] condition If true, the attribute must be present. If false, the attribute must nbot be present.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename INT,
+                      typename INT1 = INT,
+                      typename INT2 = INT,
+                      typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+            bool getConditionalIntAttribute(std::optional<INT>& value,
+                                            const UString& name,
+                                            bool condition,
+                                            INT1 minValue = std::numeric_limits<INT>::min(),
+                                            INT2 maxValue = std::numeric_limits<INT>::max()) const;
+
+            //!
             //! Get an enumeration attribute of an XML element.
             //! Integer literals and integer values are accepted in the attribute.
             //! @param [out] value Returned value of the attribute.
@@ -953,6 +973,12 @@ namespace ts {
             void getAttributesNamesInModificationOrder(UStringList& names) const;
 
             //!
+            //! Get the number of attributes in the element.
+            //! @return The number of attributes in the element.
+            //!
+            size_t getAttributesCount() const { return _attributes.size(); }
+
+            //!
             //! Recursively merge another element into this one.
             //! @param [in,out] other Another element to merge. The @a other object is destroyed,
             //! some of its nodes are reparented into the main object.
@@ -1060,6 +1086,33 @@ bool ts::xml::Element::getOptionalIntAttribute(std::optional<INT>& value, const 
     else {
         // Attribute present, incorrect value.
         value.reset();
+        return false;
+    }
+}
+
+// Get an integer attribute of an XML element, based on a condition.
+template <typename INT, typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT>::value>::type*>
+bool ts::xml::Element::getConditionalIntAttribute(std::optional<INT>& value, const UString& name, bool condition, INT1 minValue, INT2 maxValue) const
+{
+    value.reset();
+    INT v = INT(0);
+    const bool present = hasAttribute(name);
+    if (!present && !condition) {
+        // Attribute not present, ok.
+        return true;
+    }
+    else if (present && !condition) {
+        // Attribute present, but should not be.
+        report().error(u"<%s>, line %d, attribute '%s' is forbidden in this context", this->name(), lineNumber(), name);
+        return false;
+    }
+    else if (getIntAttribute<INT>(v, name, true, INT(0), minValue, maxValue)) {
+        // Attribute present, correct value.
+        value = v;
+        return true;
+    }
+    else {
+        // Attribute present with incorrect value, or absent when it should be present.
         return false;
     }
 }

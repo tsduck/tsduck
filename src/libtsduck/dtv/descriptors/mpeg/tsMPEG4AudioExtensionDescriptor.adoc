@@ -1,0 +1,22 @@
+==== MPEG4_audio_extension_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+The _audioSpecificConfig_ structure is defined in <<ISO-14496-3>>.
+Currently, it can only be represented as a binary blob in hexadecimal characters.
+Some future version may be able to describe the internal structure of this data block.
+
+[source,xml]
+----
+<MPEG4_audio_extension_descriptor>
+
+  <!-- Up to 15 audioProfileLevelIndication values -->
+  <audioProfileLevelIndication value="uint8, required"/>
+
+  <!-- Binary structure as defined in 1.6.2.1 in ISO/IEC 14496-3 -->
+  <audioSpecificConfig>
+    Hexadecimal content
+  </audioSpecificConfig>
+
+</MPEG4_audio_extension_descriptor>
+----

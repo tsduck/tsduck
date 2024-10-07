@@ -1,0 +1,16 @@
+==== MPEGH_3D_audio_command_descriptor
+
+Defined by MPEG in <<ISO-13818-1>>.
+
+The _MHAS_ structure is a MHAS packet of the type `PACTYP_USERINTERACTION` as defined in <<ISO-23008-3>>.
+Currently, it can only be represented as a binary blob in hexadecimal characters.
+Some future version may be able to describe the internal structure of this data block.
+
+[source,xml]
+----
+<MPEGH_3D_audio_command_descriptor>
+  <MHAS>
+    Hexadecimal content
+  </MHAS>
+</MPEGH_3D_audio_command_descriptor>
+----
