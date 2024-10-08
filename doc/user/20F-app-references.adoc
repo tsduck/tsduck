@@ -186,6 +186,8 @@
   "Service Information for digital broadcasting system" (English version).
 * [[[ARIB-B10J]]] ARIB STD-B10, V5.7, December 2015:
   "Service Information for digital broadcasting system" (Japanese version).
+* [[[ARIB-B16]]] ARIB STD-B16, V1.1, February 1999:
+  "Digital receiver commonly used for digital satellite; Broadcasting services using communication satellites" (Japanese version).
 * [[[ARIB-B21]]] ARIB STD-B21, V5.11, December 2019:
   "Receiver for digital broadcasting" (English version).
 * [[[ARIB-B24]]] ARIB STD-B24, V6.4, July 2017:

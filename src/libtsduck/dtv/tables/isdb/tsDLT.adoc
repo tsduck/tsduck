@@ -1,0 +1,30 @@
+==== DownLoad Table (DLT)
+
+Defined by ARIB in <<ARIB-B16>>.
+
+This is an unversioned single-section short section.
+The section number and count are extended to 16 bits by ARIB.
+A CRC-32 is automatically inserted in the section (just like a TOT for instance).
+
+[source,xml]
+----
+<DLT maker_id="uint8, required"
+     model_id="uint8, required"
+     version_id="uint8, required"
+     Lsection_number="uint16, required"
+     last_Lsection_number="uint16, required">
+
+  <model_info>
+    Hexadecimal content.
+    Final block contains exactly 145 bytes.
+    Padded with FF is less bytes are provided.
+  </model_info>
+
+  <code_data>
+    Hexadecimal content.
+    Final block contains exactly 2048 bytes.
+    Padded with FF is less bytes are provided.
+  </code_data>
+
+</DLT>
+----

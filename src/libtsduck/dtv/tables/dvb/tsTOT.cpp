@@ -31,9 +31,7 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 ts::TOT::TOT(const Time& utc_time_) :
     AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
     utc_time(utc_time_),
-    regions(),
-    descs(this),
-    _time_reference_offset(0)
+    descs(this)
 {
 }
 
