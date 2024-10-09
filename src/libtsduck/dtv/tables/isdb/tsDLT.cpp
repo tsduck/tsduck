@@ -124,12 +124,13 @@ void ts::DLT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     if (buf.canReadBytes(7)) {
         disp << margin << UString::Format(u"Maker id: %n", buf.getUInt8());
-        disp << margin << UString::Format(u", model: %n", buf.getUInt8());
-        disp << margin << UString::Format(u", version: %n", buf.getUInt8()) << std::endl;
+        disp << UString::Format(u", model: %n", buf.getUInt8());
+        disp << UString::Format(u", version: %n", buf.getUInt8()) << std::endl;
         disp << margin << UString::Format(u"Lsection: %d", buf.getUInt16());
-        disp << margin << UString::Format(u", last: %d", buf.getUInt16()) << std::endl;
+        disp << UString::Format(u", last: %d", buf.getUInt16()) << std::endl;
         disp.displayPrivateData(u"Model info", buf, MODEL_INFO_SIZE, margin);
         disp.displayPrivateData(u"Code data", buf, CODE_DATA_SIZE, margin);
+        disp.displayCRC32(section, buf, margin);
     }
 }
 

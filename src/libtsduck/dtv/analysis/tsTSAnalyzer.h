@@ -27,6 +27,7 @@
 #include "tsMGT.h"
 #include "tsVCT.h"
 #include "tsSTT.h"
+#include "tsDCT.h"
 #include "tsTime.h"
 #include "tsUString.h"
 
@@ -373,6 +374,20 @@ namespace ts {
             void addService(uint16_t service_id);
 
             //!
+            //! Add an attribute string for the PID.
+            //! @param [in] desc Attribute string.
+            //!
+            void addAttribute(const UString& desc);
+
+            //!
+            //! Set the description or add an attribute string for the PID.
+            //! If there is no description yet, use it as description.
+            //! Otherwise, add as an attribute.
+            //! @param [in] desc Attribute string.
+            //!
+            void addDescriptionOrAttribute(const UString& desc);
+
+            //!
             //! Return a full description, with comment and optionally attributes.
             //! @param [in] include_attributes Include the PID attributes in the description.
             //! @return The PID description.
@@ -494,6 +509,7 @@ namespace ts {
         void analyzeMGT(const MGT&);
         void analyzeVCT(const VCT&);
         void analyzeSTT(const STT&);
+        void analyzeDCT(const DCT&);
 
         // Analyse a list of descriptors.
         // If svp is not 0, we are in the PMT of the specified service.
@@ -540,5 +556,6 @@ namespace ts {
         PESDemux     _pes_demux {_duck, this};       // Audio/video analysis
         T2MIDemux    _t2mi_demux {_duck, this};      // T2-MI analysis
         LogicalChannelNumbers _lcn {_duck};          // Accumulate LCN and visible flags
+        DCT          _dct {};                        // Last ISDB CDT waiting to be analyzed, waiting for TS id
     };
 }

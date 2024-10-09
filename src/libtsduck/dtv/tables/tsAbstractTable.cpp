@@ -279,7 +279,9 @@ bool ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
     }
 
     // Add the standards of the deserialized table into the context.
-    duck.addStandards(definingStandards());
+    if (isValid()) {
+        duck.addStandards(definingStandards());
+    }
     return isValid();
 }
 

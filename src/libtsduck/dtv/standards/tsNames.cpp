@@ -131,8 +131,15 @@ ts::UString ts::names::PrivateDataSpecifier(uint32_t pds, NamesFlags flags)
 
 ts::UString ts::names::CASId(const DuckContext& duck, uint16_t id, NamesFlags flags)
 {
-    const UChar* section = bool(duck.standards() & Standards::ISDB) ? u"ARIBCASystemId" : u"CASystemId";
-    return NameFromDTV(section, NamesFile::Value(id), flags, 16);
+    // In the case of ISDB, look into another table (but only known names).
+    if (bool(duck.standards() & Standards::ISDB)) {
+        const UString name(NameFromDTV(u"ARIBCASystemId", NamesFile::Value(id), flags | NamesFlags::NO_UNKNOWN, 16));
+        if (!name.empty()) {
+            return name;
+        }
+    }
+    // Not ISDB or not found in ISDB, use standard CAS names.
+    return NameFromDTV(u"CASystemId", NamesFile::Value(id), flags, 16);
 }
 
 ts::UString ts::names::BouquetId(uint16_t id, NamesFlags flags)

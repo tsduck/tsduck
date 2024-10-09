@@ -35,6 +35,7 @@ namespace ts {
         BOTH_FIRST    = FIRST | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
         ALTERNATE     = 0x0010,                  //!< Display an alternate integer value.
         NAME_OR_VALUE = 0x0020,                  //!< Display name if defined or value only if not defined.
+        NO_UNKNOWN    = 0x0040,                  //!< Ignore unknown values, return an empty string.
     };
 }
 TS_ENABLE_BITMASK_OPERATORS(ts::NamesFlags);

@@ -146,13 +146,13 @@ void ts::DCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     while (buf.canReadBytes(8)) {
         disp << margin << UString::Format(u"- Transport stream id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"  Download PID: %n", buf.getPID());
-        disp << margin << UString::Format(u", ECM PID: %n", buf.getPID()) << std::endl;
+        disp << UString::Format(u", ECM PID: %n", buf.getPID()) << std::endl;
         buf.skipReservedBits(4);
         buf.pushReadSizeFromLength(12);
         while (buf.canReadBytes(4)) {
             disp << margin << UString::Format(u"  - Maker id: %n", buf.getUInt8());
-            disp << margin << UString::Format(u", model: %n", buf.getUInt8());
-            disp << margin << UString::Format(u", version: %n", buf.getUInt8()) << std::endl;
+            disp << UString::Format(u", model: %n", buf.getUInt8());
+            disp << UString::Format(u", version: %n", buf.getUInt8()) << std::endl;
             disp << margin << UString::Format(u"    DLT size: %d sections", buf.getUInt8()) << std::endl;
         }
         buf.popState();
@@ -207,8 +207,8 @@ bool ts::DCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = xstr[i]->getIntAttribute(str.transport_stream_id, u"id", true) &&
              xstr[i]->getIntAttribute(str.DL_PID, u"DL_PID", true, PID_NULL, 0x0000, 0x1FFF) &&
              xstr[i]->getIntAttribute(str.ECM_PID, u"ECM_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
-             xstr[i]->getChildren(xmod, u"model");;
-        for (size_t j = 0; ok && j < xmod.size(); ++i) {
+             xstr[i]->getChildren(xmod, u"model");
+        for (size_t j = 0; ok && j < xmod.size(); ++j) {
             str.models.push_back(ModelInfo());
             ModelInfo& mod(str.models.back());
             ok = xmod[j]->getIntAttribute(mod.maker_id, u"maker_id", true) &&

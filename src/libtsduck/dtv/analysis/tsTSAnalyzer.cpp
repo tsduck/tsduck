@@ -99,6 +99,7 @@ void ts::TSAnalyzer::reset()
     _pes_demux.reset();
     _t2mi_demux.reset();
     _lcn.clear();
+    _dct.invalidate();
 
     resetSectionDemux();
 }
@@ -301,8 +302,7 @@ ts::TSAnalyzer::ServiceContextPtr ts::TSAnalyzer::getService(uint16_t service_id
 
 
 //----------------------------------------------------------------------------
-//  Register a service into a PID description. The PID may belong to several
-//  services, we add the service into this list, if not already in.
+//  Register a PID attribute
 //----------------------------------------------------------------------------
 
 void ts::TSAnalyzer::PIDContext::addService(uint16_t service_id)
@@ -314,6 +314,23 @@ void ts::TSAnalyzer::PIDContext::addService(uint16_t service_id)
     if (!Contains(services, service_id)) {
         // Service id not found, add it
         services.insert(service_id);
+    }
+}
+
+void ts::TSAnalyzer::PIDContext::addAttribute(const UString& desc)
+{
+    if (!desc.similar(description)) {
+        AppendUnique(attributes, desc);
+    }
+}
+
+void ts::TSAnalyzer::PIDContext::addDescriptionOrAttribute(const UString& desc)
+{
+    if (description.empty() || description == UNREFERENCED) {
+        description = desc;
+    }
+    else {
+        AppendUnique(attributes, desc);
     }
 }
 
@@ -453,23 +470,42 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
         case TID_MGT: {
-            const MGT mgt(_duck, table);
-            if (mgt.isValid()) {
-                analyzeMGT(mgt);
+            if (pid == PID_PSIP) {
+                // Filter by PID to avoid clash with tables with same TID but other standard.
+                const MGT mgt(_duck, table);
+                if (mgt.isValid()) {
+                    analyzeMGT(mgt);
+                }
             }
             break;
         }
         case TID_TVCT: {
-            const TVCT tvct(_duck, table);
-            if (tvct.isValid()) {
-                analyzeVCT(tvct);
+            if (pid == PID_PSIP) {
+                // Filter by PID to avoid clash with tables with same TID but other standard.
+                const TVCT tvct(_duck, table);
+                if (tvct.isValid()) {
+                    analyzeVCT(tvct);
+                }
             }
             break;
         }
         case TID_CVCT: {
-            const CVCT cvct(_duck, table);
-            if (cvct.isValid()) {
-                analyzeVCT(cvct);
+            if (pid == PID_PSIP) {
+                // Filter by PID to avoid clash with tables with same TID but other standard.
+                const CVCT cvct(_duck, table);
+                if (cvct.isValid()) {
+                    analyzeVCT(cvct);
+                }
+            }
+            break;
+        }
+        case TID_DCT: {
+            if (pid == PID_DCT) {
+                // Filter by PID to avoid clash with tables with same TID but other standard.
+                const DCT dct(_duck, table);
+                if (dct.isValid()) {
+                    analyzeDCT(dct);
+                }
             }
             break;
         }
@@ -504,6 +540,12 @@ void ts::TSAnalyzer::analyzePAT(const PAT& pat)
         // Describe the service
         ServiceContextPtr svp(getService(service_id));
         svp->pmt_pid = pmt_pid;
+    }
+
+    // If a DCT was waiting for the TS id to be analyzed, do it now.
+    if (_dct.isValid()) {
+        analyzeDCT(_dct);
+        _dct.invalidate();
     }
 }
 
@@ -576,7 +618,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
         // AAC audio streams have the same outer syntax as MPEG-2 Audio.
         if (ps->audio2.isValid() && (ps->stream_type == ST_MPEG1_AUDIO || ps->stream_type == ST_MPEG2_AUDIO)) {
             // We are sure that the stream is MPEG 1/2 Audio.
-            AppendUnique(ps->attributes, ps->audio2.toString());
+            ps->addAttribute(ps->audio2.toString());
         }
 
         ps->description = names::StreamType(stream.stream_type, NamesFlags::NAME, regid);
@@ -603,7 +645,7 @@ void ts::TSAnalyzer::analyzeNIT(PID pid, const NIT& nit)
     nit.descs.search(_duck, DID_NETWORK_NAME, desc);
 
     // Format network description as attribute of PID.
-    AppendUnique(ps->attributes, UString::Format(u"Network: %n %s", nit.network_id, desc.name).toTrimmed());
+    ps->addAttribute(UString::Format(u"Network: %n %s", nit.network_id, desc.name).toTrimmed());
 
     // Collect information from LCN descriptors of different flavors.
     _lcn.addFromNIT(nit, _ts_id.value_or(0xFFFF));
@@ -676,7 +718,7 @@ void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
 
         // An ATSC PID may carry more than one table type.
         if (ps->description != name) {
-            AppendUnique(ps->attributes, name);
+            ps->addAttribute(name);
         }
 
         // Some additional PSIP PID's shall be analyzed.
@@ -731,6 +773,41 @@ void ts::TSAnalyzer::analyzeSTT(const STT& stt)
     _last_stt = stt.utcTime();
     if (_first_stt == Time::Epoch) {
         _first_stt = _last_stt;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze an ISDB DCT.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeDCT(const DCT& dct)
+{
+    if (!_ts_id.has_value()) {
+        // TS id is currently unknown, don't know where to look in DCT. Store it for later analysis.
+        _dct = dct;
+    }
+    else {
+        // Only look for current TS id.
+        for (const auto& str : dct.streams) {
+            if (str.transport_stream_id == _ts_id) {
+                if (str.DL_PID != PID_NULL) {
+                    const PIDContextPtr ps(getPID(str.DL_PID));
+                    ps->addDescriptionOrAttribute(UString::Format(u"ISDB download (DLT)"));
+                    ps->referenced = true;
+                    ps->carry_section = true;
+                    _demux.addPID(str.DL_PID);
+                }
+                if (str.ECM_PID != PID_NULL) {
+                    const PIDContextPtr ps(getPID(str.ECM_PID));
+                    ps->addDescriptionOrAttribute(UString::Format(u"ECM for ISDB download (DLT scrambling)"));
+                    ps->referenced = true;
+                    ps->carry_section = true;
+                    _demux.addPID(str.ECM_PID);
+                }
+                break;
+            }
+        }
     }
 }
 
@@ -860,7 +937,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     const SubtitlingDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
-                        AppendUnique(ps->attributes, e.subtitlingTypeName());
+                        ps->addAttribute(e.subtitlingTypeName());
                     }
                 }
                 break;
@@ -871,7 +948,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     const TeletextDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
-                        AppendUnique(ps->attributes, NameFromDTV(u"teletext_descriptor.teletext_type", e.teletext_type));
+                        ps->addAttribute(NameFromDTV(u"teletext_descriptor.teletext_type", e.teletext_type));
                     }
                 }
                 break;
@@ -1194,16 +1271,16 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 
 void ts::TSAnalyzer::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pkt, const MPEG2AudioAttributes& attr)
 {
-    PIDContextPtr pc(getPID(pkt.sourcePID()));
+    PIDContextPtr ps(getPID(pkt.sourcePID()));
 
     // AAC audio streams have the same outer syntax and are sometimes incorrectly reported as MPEG-2 audio.
-    if (pc->stream_type == ST_MPEG1_AUDIO || pc->stream_type == ST_MPEG2_AUDIO) {
+    if (ps->stream_type == ST_MPEG1_AUDIO || ps->stream_type == ST_MPEG2_AUDIO) {
         // We are sure that the stream is MPEG 1/2 Audio.
-        AppendUnique(pc->attributes, attr.toString());
+        ps->addAttribute(attr.toString());
     }
-    else if (pc->stream_type == ST_NULL) {
+    else if (ps->stream_type == ST_NULL) {
         // We do not know the stream type yet, the first PES packet came before the PMT.
-        pc->audio2 = attr;
+        ps->audio2 = attr;
     }
 }
 
@@ -1226,7 +1303,7 @@ void ts::TSAnalyzer::handleInvalidPESPacket(PESDemux&, const DemuxedData& data)
 
 void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& attr)
 {
-    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
+    getPID(pkt.sourcePID())->addAttribute(attr.toString());
 }
 
 
@@ -1237,7 +1314,7 @@ void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, con
 
 void ts::TSAnalyzer::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pkt, const MPEG2VideoAttributes& attr)
 {
-    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
+    getPID(pkt.sourcePID())->addAttribute(attr.toString());
 }
 
 
@@ -1248,7 +1325,7 @@ void ts::TSAnalyzer::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& p
 
 void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& attr)
 {
-    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
+    getPID(pkt.sourcePID())->addAttribute(attr.toString());
 }
 
 
@@ -1259,7 +1336,7 @@ void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, con
 
 void ts::TSAnalyzer::handleNewHEVCAttributes(PESDemux&, const PESPacket& pkt, const HEVCAttributes& attr)
 {
-    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
+    getPID(pkt.sourcePID())->addAttribute(attr.toString());
 }
 
 
@@ -1306,7 +1383,7 @@ void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         pc->t2mi_plp_ts[pkt.plp()];
 
         // Add the PLP as attributes of this PID.
-        AppendUnique(pc->attributes, UString::Format(u"PLP: %n", pkt.plp()));
+        pc->addAttribute(UString::Format(u"PLP: %n", pkt.plp()));
     }
 }
 

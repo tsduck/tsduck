@@ -15,10 +15,12 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"MGT"
+#define MY_CLASS ts::MGT
 #define MY_TID ts::TID_MGT
+#define MY_PID ts::PID_PSIP
 #define MY_STD ts::Standards::ATSC
 
-TS_REGISTER_TABLE(ts::MGT, {MY_TID}, MY_STD, MY_XML_NAME, ts::MGT::DisplaySection, nullptr, {ts::PID_PSIP});
+TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
 
 
 //----------------------------------------------------------------------------

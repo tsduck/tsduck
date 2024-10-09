@@ -500,7 +500,11 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
     const UString* displayName = &name;
     if (name.empty()) {
         // Name not found.
-        if (!(flags & NamesFlags::NAME_OR_VALUE)) {
+        if (bool(flags & NamesFlags::NO_UNKNOWN)) {
+            // Do not format unknown values.
+            return UString();
+        }
+        else if (!(flags & NamesFlags::NAME_OR_VALUE)) {
             // Force value display with a default name.
             flags |= NamesFlags::VALUE;
             defaultName = u"unknown";

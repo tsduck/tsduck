@@ -312,6 +312,9 @@ ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid) const
             // We are in a standard PID for this table id, return the corresponding standards only.
             return it->second.standards;
         }
+        else if (it->second.hasPID() && pid != PID_NULL) {
+            // This is a table with dedicated PID's but we are not in one of them => ignore.
+        }
         else if (standards == Standards::NONE) {
             // No standard found yet, use all standards from first definition.
             standards = it->second.standards;

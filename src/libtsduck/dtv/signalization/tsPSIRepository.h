@@ -327,7 +327,8 @@ namespace ts {
             // Add PIDs in the list.
             void addPIDs(std::initializer_list<PID> morePIDs);
 
-            // Check if a PID is present.
+            // Check if the table has dedicated PID's and if a PID is present.
+            bool hasPID() const { return pids[0] != PID_NULL; }
             bool hasPID(PID pid) const;
         };
 

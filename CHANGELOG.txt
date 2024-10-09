@@ -2,10 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3880
+VERSION 3.39-3890
 
 [IMP] Improvements on existing commands and plugins:
 
+  * All known and documented tables and descriptors from MPEG, DVB, ATSC, SCTE,
+    and ISDB, are implemented in TSDuck. Up to the previous version, there were
+    still some unimplemented rare MPEG descriptors and ISDB tables.
   * In plugin "dvb" with DVB-S2 modulation, the default PLS mode is now GOLD
     instead of ROOT. The GOLD mode is the one which is defined by ETSI EN 302
     307-1. The PLS mode COMBO has been removed. This mode does not officially
