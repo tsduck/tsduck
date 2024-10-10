@@ -273,7 +273,7 @@ namespace ts {
 
 //! Support macro for TS_DECLARE_GLOBAL, do not use directly.
 //! @hideinitializer
-#define TS_DECLARE_GLOBAL_WRAPPER(constness, objtype, objname)
+#define TS_DECLARE_GLOBAL_WRAPPER(exportness, constness, objtype, objname)
 
 #else
 

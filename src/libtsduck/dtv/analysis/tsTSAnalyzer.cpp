@@ -114,8 +114,8 @@ void ts::TSAnalyzer::resetSectionDemux()
     _demux.reset();
 
     // Specify the PID filters to collect PSI tables.
-    // Start with all MPEG/DVB reserved PID's.
-    for (PID pid = 0; pid <= PID_DVB_LAST; ++pid) {
+    // Start with all reserved PID's (ISDB has the highest max reserved PID in MPEG, DVB, ISDB).
+    for (PID pid = 0; pid <= PID_ISDB_LAST; ++pid) {
         _demux.addPID(pid);
     }
 
@@ -128,39 +128,39 @@ void ts::TSAnalyzer::resetSectionDemux()
 // Description of a few known PID's
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::PIDContext::KnownPIDMap::value_type ts::TSAnalyzer::PIDContext::KPID(PID pid, const UChar* name, bool optional, bool sections)
-{
-    return std::pair<PID,KnownPID>(pid, {name, optional, sections});
-}
+TS_DEFINE_SINGLETON(ts::TSAnalyzer::PIDContext::KnownPIDMap);
 
-const ts::TSAnalyzer::PIDContext::KnownPIDMap ts::TSAnalyzer::PIDContext::KNOWN_PIDS({
-    KPID(PID_NULL, u"Stuffing", true, false),
-    KPID(PID_PAT, u"PAT", false),
-    KPID(PID_CAT, u"CAT"),
-    KPID(PID_TSDT, u"TSDT"),
-    KPID(PID_NIT, u"NIT"),
-    KPID(PID_SDT, u"SDT/BAT"),
-    KPID(PID_EIT, u"EIT"),
-    KPID(PID_ISDB_EIT_2, u"ISDB EIT"),
-    KPID(PID_ISDB_EIT_3, u"ISDB EIT"),
-    KPID(PID_RST, u"RST"),
-    KPID(PID_TDT, u"TDT/TOT"),
-    KPID(PID_NETSYNC, u"Network Synchronization", true, false),
-    KPID(PID_RNT, u"RNT (TV-Anytime)", true, false),
-    KPID(PID_INBSIGN, u"Inband Signalling", true, false),
-    KPID(PID_MEASURE, u"Measurement", true, false),
-    KPID(PID_DIT, u"DIT"),
-    KPID(PID_SIT, u"SIT"),
-    KPID(PID_PSIP, u"ATSC PSIP"),
-    KPID(PID_DCT, u"ISDB DCT"),
-    KPID(PID_PCAT, u"ISDB PCAT"),
-    KPID(PID_SDTT, u"ISDB SDTT"),
-    KPID(PID_SDTT_TER, u"ISDB SDTT"),
-    KPID(PID_BIT, u"ISDB BIT"),
-    KPID(PID_NBIT, u"ISDB NBIT/LDT"),
-    KPID(PID_CDT, u"ISDB CDT"),
-    KPID(PID_AMT, u"ISDB AMT"),
-});
+ts::TSAnalyzer::PIDContext::KnownPIDMap::KnownPIDMap()
+{
+    //  PID             Description                 Optional  Carry sections
+    //  --------------  --------------------------  --------  --------------
+    add(PID_NULL,       u"Stuffing",                true,     false);
+    add(PID_PAT,        u"PAT",                     false,    true);
+    add(PID_CAT,        u"CAT",                     true,     true);
+    add(PID_TSDT,       u"TSDT",                    true,     true);
+    add(PID_NIT,        u"NIT",                     true,     true);
+    add(PID_SDT,        u"SDT/BAT",                 true,     true);
+    add(PID_EIT,        u"EIT",                     true,     true);
+    add(PID_ISDB_EIT_2, u"ISDB EIT",                true,     true);
+    add(PID_ISDB_EIT_3, u"ISDB EIT",                true,     true);
+    add(PID_RST,        u"RST",                     true,     true);
+    add(PID_TDT,        u"TDT/TOT",                 true,     true);
+    add(PID_NETSYNC,    u"Network Synchronization", true,     false);
+    add(PID_RNT,        u"RNT (TV-Anytime)",        true,     false);
+    add(PID_INBSIGN,    u"Inband Signalling",       true,     false);
+    add(PID_MEASURE,    u"Measurement",             true,     false);
+    add(PID_DIT,        u"DIT",                     true,     true);
+    add(PID_SIT,        u"SIT",                     true,     true);
+    add(PID_PSIP,       u"ATSC PSIP",               true,     true);
+    add(PID_DCT,        u"ISDB DCT",                true,     true);
+    add(PID_PCAT,       u"ISDB PCAT",               true,     true);
+    add(PID_SDTT,       u"ISDB SDTT",               true,     true);
+    add(PID_SDTT_TER,   u"ISDB SDTT",               true,     true);
+    add(PID_BIT,        u"ISDB BIT",                true,     true);
+    add(PID_NBIT,       u"ISDB NBIT/LDT",           true,     true);
+    add(PID_CDT,        u"ISDB CDT",                true,     true);
+    add(PID_AMT,        u"ISDB AMT",                true,     true);
+}
 
 
 //----------------------------------------------------------------------------
@@ -176,8 +176,9 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     // should never be considered as orphan PID's. Optional PID's are known
     // PID's which should not appear in the report if no packet are found.
 
-    const auto it = KNOWN_PIDS.find(pid);
-    if (it != KNOWN_PIDS.end()) {
+    const KnownPIDMap& kpids(KnownPIDMap::Instance());
+    const auto it = kpids.find(pid);
+    if (it != kpids.end()) {
         description = it->second.name;
         referenced = true;
         optional = it->second.optional;

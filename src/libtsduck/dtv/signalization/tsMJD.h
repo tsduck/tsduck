@@ -32,8 +32,8 @@ namespace ts {
     //! formats introduce variable sizes, then reimplement the function MJDSize();
     //!
     enum MJDFormat {
-        MJD_FULL = 5,  //! Original DVB format, date and time.
-        MJD_DATE = 2,  //! Original DVB format, date only.
+        MJD_FULL = 5,  //!< Original DVB format, date and time.
+        MJD_DATE = 2,  //!< Original DVB format, date only.
     };
 
     //!
