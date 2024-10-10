@@ -230,7 +230,8 @@ function Get-URL-In-HTML([string]$Url, [string]$Pattern, [string]$FallbackURL = 
 }
 
 # Get the JSON description of the 20 latest releases of a repo in GitHub.
-function Get-Releases-In-GitHub([string]$Repo)
+# With -Latest, only check the release which is labelled "latest".
+function Get-Releases-In-GitHub([string]$Repo, [switch]$Latest = $false)
 {
     # If the environment variable GITHUB_TOKEN is not empty, use it to authenticate.
     if (-not $env:GITHUB_TOKEN) {
@@ -241,7 +242,8 @@ function Get-Releases-In-GitHub([string]$Repo)
         $Headers = @{Authorization="Basic $Cred"}
     }
 
-    $Response = (Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Headers $Headers -Uri "https://api.github.com/repos/$Repo/releases?per_page=20")
+    $Request = if ($Latest) { "releases/latest" } else { "releases?per_page=20" }
+    $Response = (Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Headers $Headers -Uri "https://api.github.com/repos/$Repo/$Request")
     $Remain = (To-Int $Response.Headers['X-RateLimit-Remaining'] 99999)
     if ($Remain -lt 10) {
         Write-Output "Warning: GitHub API rate limit remaining is $Remain"
@@ -251,9 +253,9 @@ function Get-Releases-In-GitHub([string]$Repo)
 }
 
 # Get an URL matching a pattern in a GitHub project release.
-function Get-URL-In-GitHub([string]$Repo, $Patterns)
+function Get-URL-In-GitHub([string]$Repo, $Patterns, [switch]$Latest = $false)
 {
-    $Url = (Get-Releases-In-GitHub $Repo |
+    $Url = (Get-Releases-In-GitHub $Repo -Latest:$Latest |
             ForEach-Object { $_.assets } |
             ForEach-Object { $_.browser_download_url } |
             Select-String $Patterns |
@@ -309,9 +311,10 @@ function Install-Standard-Exe([string]$ReleasePage, [string]$Pattern, [string]$F
 }
 
 # Standard installation procedure for an executable installer from GitHub release assets.
-function Install-GitHub-Exe([string]$Repo, [string]$Pattern, [string[]]$InstallerParams = @())
+# With -Latest, only check the release which is labelled "latest".
+function Install-GitHub-Exe([string]$Repo, [string]$Pattern, [string[]]$InstallerParams = @(), [switch]$Latest = $false)
 {
-    $Url = Get-URL-In-GitHub $Repo $Pattern
+    $Url = Get-URL-In-GitHub $Repo $Pattern -Latest:$Latest
     $InstallerName = Get-URL-Local $Url
     $InstallerPath = "$Destination\$InstallerName"
     Download-Package $Url $InstallerPath
