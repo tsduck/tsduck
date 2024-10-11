@@ -437,14 +437,14 @@ bool ts::VatekOutputPlugin::Guts::start()
     else {
         nres = configParam();
         if (is_vatek_success(nres)) {
-            nres = vatek_device_list_enum(DEVICE_BUS_USB, service_transform, &m_hdevices);
+            nres = vatek_device_list_enum_multiple(DEVICE_BUS_USB, service_transform, &m_hdevices, m_index);
             if (is_vatek_success(nres)) {
                 if (nres == vatek_success) {
                     nres = vatek_nodevice;
                     plugin->error(u"no VATek device found");
                 }
                 else if (nres > vatek_success) {
-                    nres = vatek_device_open(m_hdevices, m_index, &m_hchip);
+                    nres = vatek_device_open(m_hdevices, 0, &m_hchip);
                     if (is_vatek_success(nres)) {
                         nres = vatek_usbstream_open(m_hchip, &m_husbstream);
                     }
@@ -618,7 +618,7 @@ vatek_result ts::VatekOutputPlugin::Guts::configParam()
     if (is_vatek_success(nres)) {
         // Command line parameter is in Hz, Vatek parameter is in kHz.
         m_param.r2param.freqkhz = uint32_t(plugin->intValue<uint64_t>(u"frequency", uint64_t(m_param.r2param.freqkhz) * 1000) / 1000);
-        plugin->getIntValue(m_index, u"device", 0);
+        plugin->getIntValue(m_index, u"device", m_index);
         plugin->getIntValue(m_param.remux, u"remux", m_param.remux);
         plugin->getIntValue(m_param.pcradjust, u"pcradjust", m_param.pcradjust);
         debugParams();

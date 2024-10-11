@@ -35,7 +35,7 @@ ts::VatekControl::VatekControl(int argc, char *argv[]) :
     analyze(argc, argv);
 
     const bool all = present(u"all");
-    getIntValue(_dev_index, u"", all ? -1 : 0);
+    getIntValue(_dev_index, u"", all ? -100 : 0);
     if (all && _dev_index >= 0) {
         error(u"specifying a device index and --all are mutually exclusive");
     }
@@ -62,33 +62,35 @@ int ts::VatekControl::execute()
 #else
 
     hvatek_devices hdevices = nullptr;
-    vatek_result status = vatek_device_list_enum(DEVICE_BUS_USB, service_transform, &hdevices);
+    vatek_result status = vatek_device_list_enum_multiple(DEVICE_BUS_USB, service_transform, &hdevices, _dev_index);
     const int32_t device_count = int32_t(status);
 
-    if (!is_vatek_success(status)) {
-        error(u"enumeration VATek device fail, status: %d", status);
-        return EXIT_FAILURE;
-    }
-    else if (device_count < 1) {
-        info(u"No VATek device found");
-        return EXIT_SUCCESS;
-    }
-    else if (_dev_index >= device_count) {
-        error(u"invalid device index %d, only %d devices in the system", _dev_index, device_count);
-        return EXIT_FAILURE;
+    if (_dev_index != -100){
+        if (!is_vatek_success(status)) {
+            error(u"enumeration VATek device fail, status: %d", status);
+            return EXIT_FAILURE;
+        }
+        else if (device_count < 1) {
+            info(u"No VATek device found");
+            return EXIT_SUCCESS;
+        }
+        else if (_dev_index >= device_count) {
+            error(u"invalid device index %d, only %d devices in the system", _dev_index, device_count);
+            return EXIT_FAILURE;
+        }
     }
 
     if (_dev_index < 0) {
         // List all devices.
         std::cout << "Found " << device_count << " VATek devices" << std::endl;
-        for (int32_t i = 0; i < device_count; i++) {
-            std::cout << " - Device " << i << ": " << vatek_device_list_get_name(hdevices, i) << std::endl;
-        }
+        //for (int32_t i = 0; i < device_count; i++) {
+        //    std::cout << " - Device " << i << ": " << vatek_device_list_get_name(hdevices, i) << std::endl;
+        //}
     }
     else {
         // Display information on one device.
         hvatek_chip hchip = nullptr;
-        status = vatek_device_open(hdevices, _dev_index, &hchip);
+        status = vatek_device_open(hdevices, 0, &hchip);
         if (!is_vatek_success(status)) {
             error(u"open VATek device fail, status: %d", status);
             return EXIT_FAILURE;
@@ -102,7 +104,7 @@ int ts::VatekControl::execute()
         TS_POP_WARNING()
     }
 
-    vatek_device_list_free(hdevices);
+    //vatek_device_list_free(hdevices);
     return EXIT_SUCCESS;
 
 #endif // TS_NO_VATEK
