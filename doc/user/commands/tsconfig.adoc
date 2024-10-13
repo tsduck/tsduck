@@ -173,9 +173,11 @@ The following commands are used to build an application using the TSDuck library
 
 [source,shell]
 ----
-$ gcc $(tsconfig --cflags) app.cpp -o app.o
-$ gcc app.o $(tsconfig --libs) -o app
+$ g++ $(tsconfig --cflags) -c app.cpp
+$ g++ app.o $(tsconfig --libs) -o app
 ----
+
+Replace `g{pp}` with  `clang{pp}` if you use Clang/LLVM instead of GCC.
 
 In a GNU makefile, the developer should use:
 
