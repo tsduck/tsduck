@@ -133,6 +133,34 @@ SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
 GET_VERSION = $(PYTHON) $(SCRIPTSDIR)/get-version-from-sources.py
 
 #-----------------------------------------------------------------------------
+# Preload configuration variables: exclude some dependencies.
+# These variables are either specified on the command line or computed from
+# the environement (e.g. unsupported feature on that platform). However, there
+# may be temporary situations where they are preset in tsPreConfiguration.h.
+#-----------------------------------------------------------------------------
+
+PRECONFIG_HEADER = $(LIBTSDUCKDIR)/base/cpp/tsPreConfiguration.h
+
+ifeq ($(PRECONFIG_DONE),)
+    ifeq ($(NODTAPI),)
+        export NODTAPI := $(shell $(GREP) -w TS_NO_DTAPI $(PRECONFIG_HEADER) | head -1 | sed -e 's/^.*$$/true/')
+    endif
+    ifeq ($(NOHIDES),)
+        export NOHIDES := $(shell $(GREP) -w TS_NO_HIDES $(PRECONFIG_HEADER) | head -1 | sed -e 's/^.*$$/true/')
+    endif
+    ifeq ($(NOVATEK),)
+        export NOVATEK := $(shell $(GREP) -w TS_NO_VATEK $(PRECONFIG_HEADER) | head -1 | sed -e 's/^.*$$/true/')
+    endif
+    ifeq ($(NOSRT),)
+        export NOSRT := $(shell $(GREP) -w TS_NO_SRT $(PRECONFIG_HEADER) | head -1 | sed -e 's/^.*$$/true/')
+    endif
+    ifeq ($(NORIST),)
+        export NORIST := $(shell $(GREP) -w TS_NO_RIST $(PRECONFIG_HEADER) | head -1 | sed -e 's/^.*$$/true/')
+    endif
+    export PRECONFIG_DONE := true
+endif
+
+#-----------------------------------------------------------------------------
 # Identify the system environment.
 # - ALTDEVROOT : alternative root for development tools and library; can be
 #   the Homebrew root or "/usr" if no other value is suitable

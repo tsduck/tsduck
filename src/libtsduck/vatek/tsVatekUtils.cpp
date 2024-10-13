@@ -36,7 +36,7 @@ bool ts::HasVatekSupport()
 ts::UString ts::GetVatekVersion()
 {
 #if defined(TS_NO_VATEK)
-    return u"This version of TSDuck was compiled without VATec support";
+    return u"This version of TSDuck was compiled without VATek support";
 #elif !defined(VATEK_VERSION)
     return u"3.06 or lower";
 #else
