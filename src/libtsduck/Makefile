@@ -8,44 +8,8 @@
 #
 #-----------------------------------------------------------------------------
 
-# Detect the presence of the Dektec DTAPI.
-# Define NODTAPI to compile without Dektec support.
-# NODTAPI is automatically defined if no DTAPI is found.
-
-ifeq ($(NODTAPI)$(NODEKTEC),)
-    ifeq ($(filter-out default headers libs,$(MAKECMDGOALS)),)
-        DTAPI_OBJECT := $(shell ../../scripts/dtapi-config.sh --object --download $(if $(M32),--m32,))
-        DTAPI_HEADER := $(shell ../../scripts/dtapi-config.sh --header)
-    endif
-    ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
-        NODTAPI = true
-    else
-        LIBTSDUCK_CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
-    endif
-endif
-
-# Detect the presence of the Vatek library.
-# Define NOVATEK to compile without Vatek support.
-# NOVATEK is automatically defined if no Vatek library is found.
-
-ifeq ($(NOVATEK),)
-    ifeq ($(filter-out default headers libs listvars install%,$(MAKECMDGOALS)),)
-        VATEK_CFLAGS := $(shell ../../scripts/vatek-config.sh --cflags --download)
-        VATEK_LIBS := $(shell ../../scripts/vatek-config.sh --ldlibs)
-    endif
-    ifeq ($(VATEK_CFLAGS)$(VATEK_LIBS),)
-        NOVATEK = true
-    else
-        LIBTSDUCK_CXXFLAGS_INCLUDES += $(VATEK_CFLAGS)
-	LIBTSDUCK_LDLIBS += $(VATEK_LIBS)
-    endif
-endif
-
-# Don't generate .dep for these:
-
+# Don't generate .dep for tsduck.cpp. It depends on tsduck.h, which will be generated later.
 NODEPS_SRC = tsduck.cpp
-
-# Now, we can include the common makefile.
 
 include ../../Makefile.inc
 
@@ -73,7 +37,7 @@ OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SOURCES))))
 # Building the TSDuck library.
 
 default: headers libs
-	+@$(call F_RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
+	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
 # The tsduck.h header is automatically generated from all headers.
 
@@ -88,19 +52,12 @@ $(TSDUCK_H): $(wildcard *.h */*.h */*/*.h */*/*/*.h)
 $(OBJDIR)/tsduck.o: $(TSDUCK_H)
 $(OBJDIR)/tsduck.o: CXXFLAGS_INCLUDES += -I$(dir $(TSDUCK_H))
 
-# Some libraries are used internally to libtsduck only.
+# The private headers are used internally to libtsduck.
 
-CXXFLAGS_JAVA := $(if $(NOJAVA),,$(shell $(SCRIPTSDIR)/java-config.sh --cflags))
-CXXFLAGS_INCLUDES += $(CXXFLAGS_JAVA) $(LIBTSDUCK_CXXFLAGS_INCLUDES)
+CXXFLAGS_INCLUDES += $(LIBTSDUCK_CXXFLAGS_INCLUDES)
 
 # Specific (per-module) compilation options:
 
-$(OBJDIR)/tsAES.o:     CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
-$(OBJDIR)/tsDES.o:     CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
-$(OBJDIR)/tsTDES.o:    CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
-$(OBJDIR)/tsSHA1.o:    CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
-$(OBJDIR)/tsSHA256.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
-$(OBJDIR)/tsSHA512.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 $(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 
 ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
@@ -108,16 +65,12 @@ ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
     # The code will explicitly check at run time if they are supported before using them.
     # We must limit this to specialized modules which are never called when these
     # instructions are not supported.
-    $(OBJDIR)/tsCRC32.accel.o:  CXXFLAGS_TARGET = -march=armv8-a+crc
-    $(OBJDIR)/tsAES.accel.o:    CXXFLAGS_TARGET = -march=armv8-a+crypto
-    $(OBJDIR)/tsSHA1.accel.o:   CXXFLAGS_TARGET = -march=armv8-a+crypto
-    $(OBJDIR)/tsSHA256.accel.o: CXXFLAGS_TARGET = -march=armv8-a+crypto+sha2
-    $(OBJDIR)/tsSHA512.accel.o: CXXFLAGS_TARGET = -march=armv8.2-a+crypto+sha2+sha3
+    $(OBJDIR)/tsCRC32.accel.o: CXXFLAGS_TARGET = -march=armv8-a+crc
 endif
 
 # Add libtsduck internal headers when compiling libtsduck.
 
-CXXFLAGS_INCLUDES += $(addprefix -I,$(PRIVATE_INCLUDES))
+CXXFLAGS_INCLUDES += $(CXXFLAGS_PRIVATE_INCLUDES)
 
 # By default, both static and dynamic libraries are created but only use
 # the dynamic one when building tools and plugins. In case of static build,
@@ -191,7 +144,7 @@ install-tools: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so,)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	+@$(call F_RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
+	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
 
 PRECONFIG = $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsPreConfiguration.h
 
@@ -209,4 +162,4 @@ install-devel: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(TSDUCK_H)
 	$(if $(NOCURL), echo '#define TS_NO_CURL 1' >>$(PRECONFIG))
 	$(if $(NOSRT), echo '#define TS_NO_SRT 1' >>$(PRECONFIG))
 	$(if $(NORIST), echo '#define TS_NO_RIST 1' >>$(PRECONFIG))
-	+@$(call F_RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))
+	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))

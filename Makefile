@@ -6,33 +6,7 @@
 #
 #  Root makefile for the TSDuck project.
 #
-#  Additional options which can be defined:
-#
-#  - NOTEST      : Do not build unitary tests.
-#  - NOSTATIC    : Do not build the static library and the static tests.
-#  - NODEKTEC    : No Dektec device support, remove dependency to DTAPI.
-#  - NOHIDES     : No HiDes device support.
-#  - NOVATEK     : No Vatek-based device support.
-#  - NOCURL      : No HTTP support, remove dependency to libcurl.
-#  - NOPCSC      : No smartcard support, remove dependency to pcsc-lite.
-#  - NOSRT       : No SRT support, remove dependency to libsrt.
-#  - NORIST      : No RIST support, remove dependency to librist.
-#  - NOJAVA      : No Java bindings.
-#  - NOPYTHON    : No Python bindings.
-#  - NOEDITLINE  : No interactive line editing, remove dependency to libedit.
-#  - NOGITHUB    : No version check, no download, no upgrade from GitHub.
-#  - NOHWACCEL   : Disable hardware acceleration such as crypto instructions.
-#  - NOPCSTD     : Remove the std=c++17 flag from libtsduck's pkg-config file.
-#  - NODEPRECATE : Do not flag legacy methods as deprecated.
-#  - VERBOSE     : Display full commands. Can be abbreviated as V.
-#
-#  Options to define the representation of bitrates:
-#
-#  - BITRATE_INTEGER    : Bitrates are 64-bit integer.
-#  - BITRATE_FRACTION   : Bitrates are fractions of two 64-bit integers.
-#  - BITRATE_FLOAT      : Bitrates are 64-bit floating-point.
-#  - BITRATE_FIXED      : Bitrates are 64-bit fixed-point.
-#  - BITRATE_DECIMALS=n : Number of decimal with fixed-point (default: 1).
+#  Additional options which can be defined: see scripts/make-config.sh
 #
 #-----------------------------------------------------------------------------
 

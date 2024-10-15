@@ -10,8 +10,8 @@
 
 include ../../Makefile.inc
 
-VERSION  = $(shell $(GET_VERSION))
-DISTRO   = $(shell $(GET_VERSION) --distro)
+VERSION  = $(shell $(GET_TSDUCK_VERSION))
+DISTRO   = $(shell $(GET_TSDUCK_VERSION) --distro)
 TMPROOT  = $(INSTALLERDIR)/tmp
 DEB_ARCH = $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 

@@ -455,6 +455,9 @@ Building the Python bindings does not require any specific environement.
 And if the Java Development Kit (JDK) is not installed on the build system,
 the Java bindings are not built anyway, even without explicit `NOJAVA`.
 
+For a complete list of the variables which are used by `make`, see the file `CONFIG.txt`
+at the root of the TSDuck source tree.
+
 [#builddebug]
 ===== Building with specific debug capabilities
 

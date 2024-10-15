@@ -34,7 +34,7 @@ $(JARFILE): $(JCLASSES) $(MANIFEST)
 	$(call LOG,[JAR] $@) $(JAR) cfm $@ $(MANIFEST) $(patsubst $(CLASSDIR)/%,-C $(CLASSDIR) %,$(JCLASSES))
 
 $(MANIFEST): Manifest.txt ../tsVersion.h
-	$(call LOG,[GEN] $@) mkdir -p $(dir $@); $(SED) -e 's|{{VERSION}}|$(shell $(GET_VERSION))|' Manifest.txt >$@
+	$(call LOG,[GEN] $@) mkdir -p $(dir $@); $(SED) -e 's|{{VERSION}}|$(shell $(GET_TSDUCK_VERSION))|' Manifest.txt >$@
 
 install-tools: $(JARFILE)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
