@@ -519,8 +519,10 @@ CXXFLAGS_PTHREAD="-pthread"
 [[ -z $MACOS ]] && LDFLAGS_PTHREAD="-pthread"
 
 # External libraries
-[[ -n $MACOS$OPENBSD ]] && lrt= || lrt="-lrt"
-LDLIBS="$LDLIBS -lpthread $lrt -lm"
+LDLIBS="$LDLIBS -lpthread"
+[[ -n $NETBSD ]] && LDLIBS="$LDLIBS -lstdc++fs"
+[[ -z $MACOS$OPENBSD ]] && LDLIBS="$LDLIBS -lrt"
+LDLIBS="$LDLIBS -lm"
 
 # Add a module with ar.
 ARFLAGS_ADD="rc"
