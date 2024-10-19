@@ -138,13 +138,13 @@ if [[ -z $HOSTNAME ]]; then
      HOSTNAME=${HOSTNAME/.*/}
 fi
 
-[[ $LOCAL_OS == linux ]] && LINUX=1
-[[ $LOCAL_OS == darwin ]] && MACOS=1
-[[ $LOCAL_OS == freebsd ]] && FREEBSD=1
-[[ $LOCAL_OS == netbsd ]] && NETBSD=1
-[[ $LOCAL_OS == openbsd ]] && OPENBSD=1
-[[ $LOCAL_OS == dragonfly ]] && DRAGONFLYBSD=1
-[[ -n $FREEBSD$NETBSD$OPENBSD$DRAGONFLYBSD ]] && BSD=1
+[[ $LOCAL_OS == linux ]] && LINUX=1 || LINUX=
+[[ $LOCAL_OS == darwin ]] && MACOS=1 || MACOS=
+[[ $LOCAL_OS == freebsd ]] && FREEBSD=1 || FREEBSD=
+[[ $LOCAL_OS == netbsd ]] && NETBSD=1 || NETBSD=
+[[ $LOCAL_OS == openbsd ]] && OPENBSD=1 || OPENBSD=
+[[ $LOCAL_OS == dragonfly ]] && DRAGONFLYBSD=1 || DRAGONFLYBSD=
+[[ -n $FREEBSD$NETBSD$OPENBSD$DRAGONFLYBSD ]] && BSD=1 || BSD=
 
 # Generic commands which may need alternatives.
 [[ -z $TAR ]] && TAR=$(getcmd gtar tar)

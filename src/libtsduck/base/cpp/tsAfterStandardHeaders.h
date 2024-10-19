@@ -76,6 +76,11 @@ TS_POP_WARNING()
     #undef MAX_TRAILER_SIZE
 #endif
 
+// Similar common-words macros in some BSD flavors.
+#if defined(BSD)
+    #undef BSD
+#endif
+
 // For platforms not supporting large files:
 #if !defined(TS_WINDOWS) && !defined(O_LARGEFILE) && !defined(DOXYGEN)
     #define O_LARGEFILE 0
