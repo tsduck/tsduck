@@ -53,10 +53,13 @@ _SHELL_LINES = $(subst -=EOL=-,$(NL),$(shell ($(1)) | sed 's/$$/-=EOL=-/'))
 
 # Build most make variables from a script. This used to be done here in the makefile
 # but it became too complicated and was moved to a script. All input variables are
-# passed on the command line (special variables filtered out). In the generated output,
-# all variables are exported and transmitted to sub-makes.
+# passed on the command line. In the generated output, all variables are exported and
+# transmitted to sub-makes. To avoid "argument too long" on the input command line,
+# we remove known long variables which are either useless or rebuilt from scratch
+# in the script.
 
-$(eval $(call _SHELL_LINES,$(ROOTDIR)/scripts/make-config.sh $(foreach v,$(sort $(filter-out ^% @% *% \%% <% >% +% -% _% ?% .%,$(.VARIABLES))),$(v)='$($(v))')))
+_EXCLUDE = ^% @% *% \%% <% >% +% -% _% ?% .% ALL_% ANDROID_% COMPILE.% LINK.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
+$(eval $(call _SHELL_LINES,$(ROOTDIR)/scripts/make-config.sh $(foreach v,$(filter-out $(_EXCLUDE),$(.VARIABLES)),$(v)='$($(v))')))
 
 # Compilation rules
 
