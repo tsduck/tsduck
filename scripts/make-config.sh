@@ -11,14 +11,38 @@
 #  easier to build them in a shell script.
 #
 #  The parameters of this script are "name=value" for all existing make
-#  variables (see invocation in Makefile).
+#  variables (see invocation in Makefile.inc).
 #
 #  General note: To speed up make recursion, all make variables are exported.
 #  Thus, in a sub-make, all variables are already defined. Depending on the
 #  variable, the script shall decide to keep the previous value or rebuild it.
-#  Typically, if the value is not supposed to change, 
+#  Typically, if the value is not supposed to change, do not rebuild it if
+#  not empty. This saves time if rebuilding the variable forks a command.
 #
 #-----------------------------------------------------------------------------
+
+# If $MAKECONFIG_DEBUG is not empty, display debug messages on stderr.
+if [[ -n $MAKECONFIG_DEBUG ]]; then
+    debug() { echo >&2 "Debug: $*"; }
+else
+    debug() { true; }
+fi
+
+# If $MAKECONFIG_TIME is not empty, display execution time of this script on stderr.
+if [[ -n $MAKECONFIG_TIME ]]; then
+    if [[ -n $DATE ]]; then
+        mudate=$DATE
+    elif [[ -n $(which gdate 2>/dev/null) ]]; then
+        mudate=gdate
+    else
+        mudate=date
+    fi
+    musec() { $mudate '+%s%6N'; }
+    debug-time() { local m=$(musec); printf >&2 '==== make-config: %4d ms %s\n' $((($m - $START_MUSEC) / 1000)) ${1:-"in $(pwd)"}; }
+    START_MUSEC=$(musec)
+else
+    debug-time() { true; }
+fi
 
 # Generate an error in the make commands.
 error()
@@ -27,9 +51,12 @@ error()
     exit
 }
 
-# Debug message on stderr when $MAKECONFIG_DEBUG is not empty.
-debug() {
-    [[ -n $MAKECONFIG_DEBUG ]] && echo >&2 "Debug: $*"
+# A faster version of basename, without creating a process.
+fbasename() {
+    local base=${1/%\//}
+    base=${base/*\//}
+    [[ -n $2 ]] && base=${base/%$2/}
+    echo $base
 }
 
 # Get the first defined command in a list. Default is last one.
@@ -70,7 +97,7 @@ debug "==== make-config in $(pwd)"
 
 # Read list of variables from config file at project root.
 root=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
-VARNAMES=' '$(sed -e 's/ *#.*//' -e 's/^ *//' -e '/^$/d' "$root/CONFIG.txt")' '
+VARNAMES=' '$(sed -e 's/ *#.*//' -e '/^ *$/d' "$root/CONFIG.txt")' '
 VARNAMES=${VARNAMES//$'\n'/ }
 
 # Variables are first initialized with empty values, then with values from the command line.
@@ -282,13 +309,18 @@ fi
 # Output directories for final binaries and objects.
 [[ -n $HOSTNAME ]] && hpart="-$HOSTNAME" || hpart=""
 if [[ -n $BINDIR ]]; then
-    # BINDIR is specified in input, transform it into an absolute path for recursion.
-    INBINDIR="$BINDIR"
-    BINDIR=$($REALPATH -m "$BINDIR")
-    MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|BINDIR=$INBINDIR|BINDIR=$BINDIR|")
+    # BINDIR is specified in input
+    if [[ $BINDIR != /* ]]; then
+        # BINDIR is a relative directory. Transform it into an absolute path for recursion.
+        INBINDIR="$BINDIR"
+        BINDIR=$($REALPATH -m "$BINDIR")
+        MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|BINDIR=$INBINDIR|BINDIR=$BINDIR|")
+    fi
 elif [[ -n $DEBUG ]]; then
+    # Default BINDIR for release mode.
     BINDIR="$BINROOT/debug-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
 else
+    # Default BINDIR for debug mode.
     BINDIR="$BINROOT/release-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
 fi
 
@@ -302,20 +334,25 @@ OBJDIR="$BINDIR/objs-\$(notdir \$(CURDIR))"
 # may be temporary situations where they are preset in tsPreConfiguration.h.
 #-----------------------------------------------------------------------------
 
-# List of defined macros in tsPreConfiguration.h
-PRECONFIG=/$($SED "$LIBTSDUCKDIR/base/cpp/tsPreConfiguration.h" -e '/^ *#define/!d' -e 's/^ *#define *//' -e 's/[( ].*//')/
-PRECONFIG=${PRECONFIG//$'\n'/\/}
+if [[ -z $PRECONFIG_DONE ]]; then
+    # Avoid re-parsing when make recurses.
+    PRECONFIG_DONE=1
 
-# See possible predefinitions in tsPreConfiguration.h in src/libtsduck/Makefile.
-[[ $PRECONFIG == */TS_NO_PCSC/* ]] && NOPCSC=1
-[[ $PRECONFIG == */TS_NO_GITHUB/* ]] && NOGITHUB=1
-[[ $PRECONFIG == */TS_NO_DTAPI/* ]] && NODTAPI=1
-[[ $PRECONFIG == */TS_NO_HIDES/* ]] && NOHIDES=1
-[[ $PRECONFIG == */TS_NO_VATEK/* ]] && NOVATEK=1
-[[ $PRECONFIG == */TS_NO_EDITLINE/* ]] && NOEDITLINE=1
-[[ $PRECONFIG == */TS_NO_CURL/* ]] && NOCURL=1
-[[ $PRECONFIG == */TS_NO_SRT/* ]] && NOSRT=1
-[[ $PRECONFIG == */TS_NO_RIST/* ]] && NORIST=1
+    # List of defined macros in tsPreConfiguration.h
+    PRECONFIG=/$($SED "$LIBTSDUCKDIR/base/cpp/tsPreConfiguration.h" -e '/^ *#define/!d' -e 's/^ *#define *//' -e 's/[( ].*//')/
+    PRECONFIG=${PRECONFIG//$'\n'/\/}
+
+    # See possible predefinitions in tsPreConfiguration.h in src/libtsduck/Makefile.
+    [[ $PRECONFIG == */TS_NO_PCSC/* ]] && NOPCSC=1
+    [[ $PRECONFIG == */TS_NO_GITHUB/* ]] && NOGITHUB=1
+    [[ $PRECONFIG == */TS_NO_DTAPI/* ]] && NODTAPI=1
+    [[ $PRECONFIG == */TS_NO_HIDES/* ]] && NOHIDES=1
+    [[ $PRECONFIG == */TS_NO_VATEK/* ]] && NOVATEK=1
+    [[ $PRECONFIG == */TS_NO_EDITLINE/* ]] && NOEDITLINE=1
+    [[ $PRECONFIG == */TS_NO_CURL/* ]] && NOCURL=1
+    [[ $PRECONFIG == */TS_NO_SRT/* ]] && NOSRT=1
+    [[ $PRECONFIG == */TS_NO_RIST/* ]] && NORIST=1
+fi
 
 #-----------------------------------------------------------------------------
 # Compilation flags and other build commands.
@@ -557,8 +594,8 @@ LDFLAGS='$(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_ASAN) $(LDFLAGS_UBSAN) $(LDFL
 ARFLAGS='$(ARFLAGS_ADD) $(ARFLAGS_EXTRA)'
 
 # Java compiler.
-if [[ -z $NOJAVA$DONE_JAVA ]]; then
-    DONE_JAVA=1
+if [[ -z $NOJAVA$JAVA_DONE ]]; then
+    JAVA_DONE=1
     JAVAC=$($SCRIPTSDIR/java-config.sh --javac)
     if [[ -z $JAVAC ]]; then
         NOJAVA=1
@@ -604,13 +641,15 @@ if [[ -n $CROSS$CROSS_TARGET ]]; then
     NORIST=1
     NOEDITLINE=1
 fi
-if [[ -z $NOSRT ]]; then
+if [[ -z $NOSRT$SRT_DONE ]]; then
     # SRT not disabled, check if libsrt is available.
     [[ -z $(exist-wildcard /usr/include/srt/*.h $ALTDEVROOT/include/srt/*.h) ]] && NOSRT=1
+    SRT_DONE=1
 fi
-if [[ -z $NORIST ]]; then
+if [[ -z $NORIST$RIST_DONE ]]; then
     # RIST not disabled, check if librist is available.
     [[ -z $(exist-wildcard /usr/include/librist/*.h $ALTDEVROOT/include/librist/*.h) ]] && NORIST=1
+    RIST_DONE=1
 fi
 if [[ -z $NOCURL ]]; then
     # curl not disabled, check if available.
@@ -625,17 +664,19 @@ if [[ -n $MACOS$BSD ]]; then
     NODTAPI=1
     NOHIDES=1
 fi
-if [[ -z $NODTAPI ]]; then
+if [[ -z $NODTAPI$DTAPI_DONE ]]; then
     # DTAPI not disabled, check if available.
     [[ -z $($SCRIPTSDIR/dtapi-config.sh --support) ]] && NODTAPI=1
+    DTAPI_DONE=1
 fi
 if [[ -n $BSD ]]; then
     # Vatek library has not yet been validated on BSD systems (only depends on libusb).
     NOVATEK=1
 fi
-if [[ -z $NOPCSC$MACOS ]]; then
+if [[ -z $NOPCSC$MACOS$PCSC_DONE ]]; then
     # PCSC not disabled and not on macOS, check if available. On macOS, it is always available.
     [[ -z $(exist-wildcard /usr/include/PCSC/*.h $ALTDEVROOT/include/PCSC/*.h) ]] && NOPCSC=1
+    PCSC_DONE=1
 fi
 
 # Download Dektec library (DTAPI) if required.
@@ -719,8 +760,8 @@ fi
 if [[ -n $NOCURL ]]; then
     LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_CURL=1"
 else
-    if [[ -z $DONE_CURL ]]; then
-        DONE_CURL=1
+    if [[ -z $CURL_DONE ]]; then
+        CURL_DONE=1
         CXXFLAGS_CURL="$(curl-config --cflags)"
         # Remove useless explicit references to /usr/lib which break usage of alternative compilers
         LDLIBS_CURL=$(curl-config --libs | $SED -e 's|-L/usr/lib||' -e 's|-Wl,-R/usr/lib||')
@@ -738,7 +779,6 @@ if [[ -n $NORIST ]]; then
 else
     LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lrist"
 fi
-
        
 #-----------------------------------------------------------------------------
 # List of source directories, tools, plugins, etc
@@ -757,28 +797,21 @@ OTHER_OS=${OTHER_OS/% /}
 
 # List of libtsduck directories containing private and public headers.
 if [[ -z $ALL_INCLUDES ]]; then
-    ALL_INCLUDES=$(
-        for dir in $(find $LIBTSDUCKDIR -type d); do
-            [[ ' '$OTHER_OS' ' != *' '$(basename $dir)' '* && -n $(exist-wildcard $dir/*.h) ]] && echo $dir
-        done | sort)
-    ALL_INCLUDES=${ALL_INCLUDES//$'\n'/ }
+    for dir in $(find $LIBTSDUCKDIR -type d); do
+        [[ " $OTHER_OS " != *" $(fbasename $dir) "* && -n $(exist-wildcard $dir/*.h) ]] && ALL_INCLUDES="$ALL_INCLUDES $dir"
+    done
 fi
-[[ -z $PRIVATE_INCLUDES ]] && PRIVATE_INCLUDES=$(
+if [[ -z $PRIVATE_INCLUDES || -z $PUBLIC_INCLUDES || -z $CXXFLAGS_PRIVATE_INCLUDES || -z $CXXFLAGS_PUBLIC_INCLUDES ]]; then
     for dir in $ALL_INCLUDES; do
-        [[ $(basename $dir) == private ]] && echo -n "$dir "
-    done)
-[[ -z $PUBLIC_INCLUDES ]] && PUBLIC_INCLUDES=$(
-    for dir in $ALL_INCLUDES; do
-        [[ $(basename $dir) != private ]] && echo -n "$dir "
-    done)
-[[ -z $CXXFLAGS_PRIVATE_INCLUDES ]] && CXXFLAGS_PRIVATE_INCLUDES=$(
-    for dir in $PRIVATE_INCLUDES; do
-        echo -n "-I$dir "
-    done)
-[[ -z $CXXFLAGS_PUBLIC_INCLUDES ]] && CXXFLAGS_PUBLIC_INCLUDES=$(
-    for dir in $PUBLIC_INCLUDES; do
-        echo -n "-I$dir "
-    done)
+        if [[ $(fbasename $dir) == private ]]; then
+            PRIVATE_INCLUDES="$PRIVATE_INCLUDES $dir"
+            CXXFLAGS_PRIVATE_INCLUDES="$CXXFLAGS_PRIVATE_INCLUDES -I$dir"
+        else
+            PUBLIC_INCLUDES="$PUBLIC_INCLUDES $dir"
+            CXXFLAGS_PUBLIC_INCLUDES="$CXXFLAGS_PUBLIC_INCLUDES -I$dir"
+        fi
+    done
+fi
 CXXFLAGS_INCLUDES="$CXXFLAGS_INCLUDES $CXXFLAGS_PUBLIC_INCLUDES"
 
 # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
@@ -794,16 +827,18 @@ NO_TSTOOLS=
 [[ -n $NOPCSC ]] && NO_TSTOOLS="$NO_TSTOOLS tssmartcard"
 
 # List of plugins and tools to build.
-[[ -z $TSPLUGINS ]] && TSPLUGINS=$(
+if [[ -z $TSPLUGINS ]]; then
     for file in $TSPLUGINSDIR/tsplugin_*.cpp; do
-        name=$(basename $file .cpp)
-        [[ ' '$NO_TSPLUGINS' ' != *' '$name' '* ]] && echo $name
-    done | sort | tr '\n' ' ')
-[[ -z $TSTOOLS ]] && TSTOOLS=$(
+        name=$(fbasename $file .cpp)
+        [[ " $NO_TSPLUGINS " != *" $name "* ]] && TSPLUGINS="$TSPLUGINS $name"
+    done
+fi
+if [[ -z $TSTOOLS ]]; then
     for file in $TSTOOLSDIR/ts*.cpp; do
-        name=$(basename $file .cpp)
-        [[ ' '$NO_TSTOOLS' ' != *' '$name' '* ]] && echo $name
-    done | sort | tr '\n' ' ')
+        name=$(fbasename $file .cpp)
+        [[ " $NO_TSTOOLS " != *" $name "* ]] && TSTOOLS="$TSTOOLS $name"
+    done
+fi
 
 #-----------------------------------------------------------------------------
 # Final output generation.
@@ -813,3 +848,5 @@ for name in $VARNAMES; do
     echo "export $name = ${!name}"
     debug "output: $name='${!name}'"
 done
+
+debug-time

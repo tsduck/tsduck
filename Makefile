@@ -6,7 +6,7 @@
 #
 #  Root makefile for the TSDuck project.
 #
-#  Additional options which can be defined: see scripts/make-config.sh
+#  Additional options which can be defined: see CONFIG.txt
 #
 #-----------------------------------------------------------------------------
 
@@ -99,6 +99,12 @@ DOC_TARGETS = doxygen docs docs-html docs-pdf \
 $(DOC_TARGETS):
 	@$(MAKE) -C doc $@
 
+# Install Git hooks.
+
+.PHONY: git-hooks
+git-hooks:
+	@$(PYTHON) $(SCRIPTSDIR)/git-hook-update.py
+
 # Cleanup utilities
 
 .PHONY: clean distclean
@@ -129,12 +135,6 @@ install install-tools install-devel:
 .PHONY: installer install-installer
 installer install-installer:
 	@$(MAKE) -C pkg $@
-
-# Install Git hooks.
-
-.PHONY: git-hooks
-git-hooks:
-	@$(PYTHON) $(SCRIPTSDIR)/git-hook-update.py
 
 # Count lines of code: Run cloc on the source code tree starting at current directory.
 
@@ -190,9 +190,3 @@ SCANBUILD_FLAGS    = -o $(BINDIR)
 .PHONY: scan-build
 scan-build:
 	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)
-
-# Utilities: display predefined macros for C++
-
-.PHONY: cxxmacros
-cxxmacros:
-	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort

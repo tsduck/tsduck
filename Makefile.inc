@@ -58,8 +58,9 @@ _SHELL_LINES = $(subst -=EOL=-,$(NL),$(shell ($(1)) | sed 's/$$/-=EOL=-/'))
 # we remove known long variables which are either useless or rebuilt from scratch
 # in the script.
 
-_EXCLUDE = ^% @% *% \%% <% >% +% -% _% ?% .% ALL_% ANDROID_% COMPILE.% LINK.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
-$(eval $(call _SHELL_LINES,$(ROOTDIR)/scripts/make-config.sh $(foreach v,$(filter-out $(_EXCLUDE),$(.VARIABLES)),$(v)='$($(v))')))
+_EXCLUDES = ^% @% *% \%% <% >% +% -% _% ?% .% ALL_% ANDROID_% PREPROCESS.% COMPILE.% LINK.% LINT.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
+_VARIABLES = $(filter-out $(_EXCLUDES),$(.VARIABLES)) ALL_INCLUDES
+$(eval $(call _SHELL_LINES,$(ROOTDIR)/scripts/make-config.sh $(foreach v,$(_VARIABLES),$(v)='$($(v))')))
 
 # Compilation rules
 
@@ -77,9 +78,11 @@ static:
 	+@$(MAKE) STATIC=true
 
 #-----------------------------------------------------------------------------
-# Dependency (.dep) files: For each xxx.cpp source file, there is one
-# xxx.dep file in the same directory as xxx.o. The file xxx.dep lists
-# all .h dependencies for xxx.cpp.
+# Dependency (.dep) files
+#-----------------------------------------------------------------------------
+
+# For each xxx.cpp source file, there is one xxx.dep file in the same
+# directory as xxx.o. The file xxx.dep lists all .h dependencies for xxx.cpp.
 #
 # When make is invoked, the .dep files are automatically updated. This is
 # required for most targets, those which build files. Some targets are
@@ -104,7 +107,6 @@ static:
 # $(NODEPS_SRC) lists local source files for which we should not generate
 # a .dep, probably because they are not used on that platform and trying
 # to parse them for .dep would return an error.
-#-----------------------------------------------------------------------------
 
 $(OBJDIR)/%.dep: %.cpp
 	$(call LOG,[DEP] $<) mkdir -p $(OBJDIR); \
@@ -124,10 +126,12 @@ ifeq ($(DONT_BUILD_DEPS),)
 endif
 
 #-----------------------------------------------------------------------------
+# Generic utilities, available as all levels of directory.
+#-----------------------------------------------------------------------------
+
 # Cleanup Windows oddities in source files.
 # Many IDE's indent with tabs, and tabs are 4 chars wide.
 # Tabs shall not be expanded in Makefiles.
-#-----------------------------------------------------------------------------
 
 .PHONY: unixify
 unixify:
@@ -141,9 +145,7 @@ unixify:
 	  $(SED) -i -e 's/  *$$//' $$f; \
 	done
 
-#-----------------------------------------------------------------------------
 # Display make variables for debug purposes.
-#-----------------------------------------------------------------------------
 
 .PHONY: listvars
 listvars:
@@ -151,3 +153,9 @@ listvars:
 	$(foreach v, \
 	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG% F_%,$(.VARIABLES))), \
 	  $(info $(v) = "$($(v))"))
+
+# Display predefined macros for C++
+
+.PHONY: cxxmacros
+cxxmacros:
+	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort

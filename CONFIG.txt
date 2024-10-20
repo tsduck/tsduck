@@ -14,19 +14,19 @@
 
 # Configuration of optional components in the project
 # ---------------------------------------------------
-NODEKTEC     # No Dektec device support, remove dependency to DTAPI.
-NOHIDES      # No HiDes device support.
-NOVATEK      # No Vatek-based device support.
-NOCURL       # No HTTP support, remove dependency to libcurl.
-NOPCSC       # No smartcard support, remove dependency to pcsc-lite.
-NOSRT        # No SRT support, remove dependency to libsrt.
-NORIST       # No RIST support, remove dependency to librist.
-NOJAVA       # No Java bindings.
-NOPYTHON     # No Python bindings.
-NOEDITLINE   # No interactive line editing, remove dependency to libedit.
-NOGITHUB     # No version check, no download, no upgrade from GitHub (for distro packaging).
-NOHWACCEL    # Disable hardware acceleration such as crypto instructions.
-NOPCSTD      # Remove the std=c++17 flag from libtsduck's pkg-config file.
+NODEKTEC          # No Dektec device support, remove dependency to DTAPI.
+NOHIDES           # No HiDes device support.
+NOVATEK           # No Vatek-based device support.
+NOCURL            # No HTTP support, remove dependency to libcurl.
+NOPCSC            # No smartcard support, remove dependency to pcsc-lite.
+NOSRT             # No SRT support, remove dependency to libsrt.
+NORIST            # No RIST support, remove dependency to librist.
+NOJAVA            # No Java bindings.
+NOPYTHON          # No Python bindings.
+NOEDITLINE        # No interactive line editing, remove dependency to libedit.
+NOGITHUB          # No version check, no download, no upgrade from GitHub (for distro packaging).
+NOHWACCEL         # Disable hardware acceleration such as crypto instructions.
+NOPCSTD           # Remove the std=c++17 flag from libtsduck's pkg-config file.
 
 # Options to define the representation of bitrates
 # ------------------------------------------------
@@ -38,113 +38,113 @@ BITRATE_DECIMALS  # Number of decimal with BITRATE_FIXED. Use BITRATE_DECIMALS=1
 
 # Build control
 # -------------
-CXXFLAGS_EXTRA  # Additional user-specified C++ compilation flags.
-CPPFLAGS_EXTRA  # Additional user-specified preprocessor flags.
-LDFLAGS_EXTRA   # Additional user-specified linker flags.
-ARFLAGS_EXTRA   # Additional user-specified archiver flags.
-LDLIBS_EXTRA    # Additional user-specified libraries.
-DEBUG           # Compile with debug information and no optimization.
-GPROF           # Compile with code profiling using gprof.
-GCOV            # Compile with code coverage using gcov.
-ASAN            # Compile with code sanitizing using AddressSanitizer with default optimization.
-UBSAN           # Compile with code sanitizing using UndefinedBehaviorSanitizer with default optimization.
-LLVM            # Force the usage is Clang/LLVM when the default compiler is GCC.
-NOTEST          # Do not build unitary tests.
-NOSTATIC        # Do not build the static library and the static tests.
-NODEPRECATE     # Do not flag legacy methods as deprecated.
-STATIC          # Build a fully static project. No possible everywhere. Limited final features.
-VERBOSE         # Display full compilation commands (use "make VERBOSE=1").
-V               # Same as VERBOSE (use "make V=1").
-SHELL_VERBOSE   # Debug: display all shell commands, including $(shell ...).
-SYSROOT         # Installation root: Use in "make install" to build a temporary system root where TSDuck is installed.
-SYSPREFIX       # Installation prefix: if not set on input, it is defined as /usr on Linux and as HomeBrew root on macOS.
-LINUXBREW       # To be set on input in a Homebrew environment on Linux (aka "Linuxbrew").
+CXXFLAGS_EXTRA    # Additional user-specified C++ compilation flags.
+CPPFLAGS_EXTRA    # Additional user-specified preprocessor flags.
+LDFLAGS_EXTRA     # Additional user-specified linker flags.
+ARFLAGS_EXTRA     # Additional user-specified archiver flags.
+LDLIBS_EXTRA      # Additional user-specified libraries.
+DEBUG             # Compile with debug information and no optimization.
+GPROF             # Compile with code profiling using gprof.
+GCOV              # Compile with code coverage using gcov.
+ASAN              # Compile with code sanitizing using AddressSanitizer with default optimization.
+UBSAN             # Compile with code sanitizing using UndefinedBehaviorSanitizer with default optimization.
+LLVM              # Force the usage is Clang/LLVM when the default compiler is GCC.
+NOTEST            # Do not build unitary tests.
+NOSTATIC          # Do not build the static library and the static tests.
+NODEPRECATE       # Do not flag legacy methods as deprecated.
+STATIC            # Build a fully static project. No possible everywhere. Limited final features.
+VERBOSE           # Display full compilation commands (use "make VERBOSE=1").
+V                 # Same as VERBOSE (use "make V=1").
+SHELL_VERBOSE     # Debug: display all shell commands, including $(shell ...).
+SYSROOT           # Installation root: Use in "make install" to build a temporary system root where TSDuck is installed.
+SYSPREFIX         # Installation prefix: if not set on input, it is defined as /usr on Linux and as HomeBrew root on macOS.
+LINUXBREW         # To be set on input in a Homebrew environment on Linux (aka "Linuxbrew").
 
 # Cross compilation (limited support)
 # -----------------------------------
-CROSS          # If non-empty, perform a cross-compilation build.
-CROSS_PREFIX   # Installation prefix all all cross-compilation environments. Default: /usr/local.
-CROSS_TARGET   # Target name of the cross-compilation (e.g. arm-unknown-linux-gnueabi).
-               # If CROSS_TARGET is undefined, locate the first GCC executable as $(CROSS_PREFIX)/TARGET/bin/TARGET-gcc.
-NATIVEBINDIR   # Directory of the TSDuck native build (native build required before cross-compilation).
+CROSS             # If non-empty, perform a cross-compilation build.
+CROSS_PREFIX      # Installation prefix all all cross-compilation environments. Default: /usr/local.
+CROSS_TARGET      # Target name of the cross-compilation (e.g. arm-unknown-linux-gnueabi).
+                  # If CROSS_TARGET is undefined, locate the first GCC executable as $(CROSS_PREFIX)/TARGET/bin/TARGET-gcc.
+NATIVEBINDIR      # Directory of the TSDuck native build (native build required before cross-compilation).
 
 #-----------------------------------------------------------------------------
 # The following variables are generated inside make, but can be overridden on
 # the command line if really necessary.
 #-----------------------------------------------------------------------------
 
-# Make control
-# ------------
-LOG                # Command prefix, e.g. "$(call LOG,[CXX] $<) $(OBJDIR); $(CXX) ...".
-MAKEFLAGS          # Make options, as generated by make, do not override on command line.
-MAKEOVERRIDES      # List of overridden make variables.
-MAKEFLAGS_SMP      # Explicit make parallel options, e.g. "-j8" for 8 processors.
-
 # Compilation flags and other build commands
 # ------------------------------------------
-CXX                # C++ compiler command.
-GCC                # GCC executable, even when CXX is not gcc.
-LD                 # Linker command.
-AR                 # Library archive command.
-CPPFLAGS           # Complete preprocessor flags.
-CXXFLAGS           # Complete C++ compilation flags.
-LDFLAGS            # Complete C++ compilation flags.
-SOFLAGS            # Complete options when creating shared object libraries.
-ARFLAGS            # Complete library archive command flags.
-GCC_VERSION        # Full GCC version.
-GCC_MAJOR          # GCC major version.
-LLVM_VERSION       # Full clang version.
-LLVM_MAJOR         # Clang major version.
-USE_GCC            # Non-empty when the C++ compiler is gcc.
-USE_LLVM           # Non-empty when the C++ compiler is clang (LLVM).
+CC                           # C compiler command.
+CXX                          # C++ compiler command.
+GCC                          # GCC command, even when CXX is not gcc.
+CPP                          # C/C++ preprocessor command.
+LD                           # Linker command.
+AR                           # Library archive command.
+CPPFLAGS                     # Complete preprocessor flags.
+CXXFLAGS                     # Complete C++ compilation flags.
+LDFLAGS                      # Complete C++ compilation flags.
+SOFLAGS                      # Complete options when creating shared object libraries.
+ARFLAGS                      # Complete library archive command flags.
+GCC_VERSION                  # Full GCC version.
+GCC_MAJOR                    # GCC major version.
+LLVM_VERSION                 # Full clang version.
+LLVM_MAJOR                   # Clang major version.
+USE_GCC                      # Non-empty when the C++ compiler is gcc.
+USE_LLVM                     # Non-empty when the C++ compiler is clang (LLVM).
+
 # Java environment:
-DONE_JAVA          # Do not modify JAVA options.
-JAVAC              # Java compiler command.
-JAVAC_FLAGS        # Java compilation flags.
-CXXFLAGS_JAVA      # C++ compilation options for JNI.
+JAVAC                        # Java compiler command.
+JAVAC_FLAGS                  # Java compilation flags.
+CXXFLAGS_JAVA                # C++ compilation options for JNI.
+
 # Partial C++ compilation flags (included in CXXFLAGS):
-CXXFLAGS_CROSS     # For cross-compilation.
-CXXFLAGS_DEBUG     # For debug mode.
-CXXFLAGS_FPIC      # For position-independent code.
-CXXFLAGS_FULLSPEED # For full speed code optimization.
-CXXFLAGS_GCOV      # For code coverage using gcov.
-CXXFLAGS_GPROF     # For code profiling using gprof.
-CXXFLAGS_INCLUDES  # Preprocessing options (includes and macros).
-CXXFLAGS_M32       # For 32-bit cross-compilation.
-CXXFLAGS_OPTIMIZE  # For standard code optimization.
-CXXFLAGS_OPTSIZE   # For code size optimization.
-CXXFLAGS_PTHREAD   # Pthread options.
-CXXFLAGS_SECURITY  # Security-oriented options.
-CXXFLAGS_STANDARD  # Specifies the standard level of C++ language.
-CXXFLAGS_TARGET    # Specify target CPU.
-CXXFLAGS_WARNINGS  # Specify warnings.
-CXXFLAGS_NO_WARNINGS       # Excluded warnings.
-CXXFLAGS_PUBLIC_INCLUDES   # Include source directories in libtsduck with public headers.
-CXXFLAGS_PRIVATE_INCLUDES  # Include source directories in libtsduck with private headers.
+CXXFLAGS_CROSS               # For cross-compilation.
+CXXFLAGS_DEBUG               # For debug mode.
+CXXFLAGS_FPIC                # For position-independent code.
+CXXFLAGS_FULLSPEED           # For full speed code optimization.
+CXXFLAGS_GCOV                # For code coverage using gcov.
+CXXFLAGS_GPROF               # For code profiling using gprof.
+CXXFLAGS_INCLUDES            # Preprocessing options (includes and macros).
+CXXFLAGS_M32                 # For 32-bit cross-compilation.
+CXXFLAGS_OPTIMIZE            # For standard code optimization.
+CXXFLAGS_OPTSIZE             # For code size optimization.
+CXXFLAGS_PTHREAD             # Pthread options.
+CXXFLAGS_SECURITY            # Security-oriented options.
+CXXFLAGS_STANDARD            # Specifies the standard level of C++ language.
+CXXFLAGS_TARGET              # Specify target CPU.
+CXXFLAGS_WARNINGS            # Specify warnings.
+CXXFLAGS_NO_WARNINGS         # Excluded warnings.
+CXXFLAGS_PUBLIC_INCLUDES     # Include source directories in libtsduck with public headers.
+CXXFLAGS_PRIVATE_INCLUDES    # Include source directories in libtsduck with private headers.
+
 # Partial linker flags (included in LDFLAGS):
-LDFLAGS_CROSS      # For cross-compilation.
-LDFLAGS_DEBUG      # For debug mode.
-LDFLAGS_GCOV       # For code coverage using gcov.
-LDFLAGS_GPROF      # For code profiling using gprof.
-LDFLAGS_M32        # For 32-bit cross-compilation.
-LDFLAGS_PTHREAD    # Pthread options.
-LDFLAGS_LINKER     # System linker specific options.
-LDLIBS             # Specify external libraries.
-LDLIBS_PCSC        # Libraries for PCSC
+LDFLAGS_CROSS                # For cross-compilation.
+LDFLAGS_DEBUG                # For debug mode.
+LDFLAGS_GCOV                 # For code coverage using gcov.
+LDFLAGS_GPROF                # For code profiling using gprof.
+LDFLAGS_M32                  # For 32-bit cross-compilation.
+LDFLAGS_PTHREAD              # Pthread options.
+LDFLAGS_LINKER               # System linker specific options.
+LDLIBS                       # Specify external libraries.
+LDLIBS_PCSC                  # Libraries for PCSC.
+
 # Partial archiver flags (included in LDFLAGS):
-ARFLAGS_ADD        # Add a module in the archive.
+ARFLAGS_ADD                  # ar flags to add a module in the archive.
+
 # Additional flags when building libtsduck (or using the static library):
 LIBTSDUCK_CXXFLAGS_INCLUDES  # C++ compilation flags for libtsduck.
 LIBTSDUCK_LDLIBS             # Additional libraries for libtsduck.
+
 # Partial flags (included in LIBTSDUCK_*):
-CXXFLAGS_CURL      # Compilation options for libcurl.
-LDLIBS_CURL        # Libraries for libcurl.
-DONE_CURL          # Do not modify CXXFLAGS_CURL and LDLIBS_CURL.
+CXXFLAGS_CURL                # Compilation options for libcurl.
+LDLIBS_CURL                  # Libraries for libcurl.
+
 # Third-party libraries (if not installed at system level):
-DTAPI_OBJECT       # Dektec API object file (precompiled by Dektec).
-DTAPI_HEADER       # Dektec API header file.
-VATEK_CFLAGS       # C++ compilation flags for VATek library.
-VATEK_LDLIBS       # Linker flags for VATek library.
+DTAPI_OBJECT                 # Dektec API object file (precompiled by Dektec).
+DTAPI_HEADER                 # Dektec API header file.
+VATEK_CFLAGS                 # C++ compilation flags for VATek library.
+VATEK_LDLIBS                 # Linker flags for VATek library.
 
 # Operating system description
 # ----------------------------
@@ -175,42 +175,56 @@ USRLIBDIR      # Library directory; $(SYSPREFIX)/lib or $(SYSPREFIX)/lib64.
 
 # Common shell commands which may need alternatives
 # -------------------------------------------------
-SED             # sed (or GNU sed if different).
-GREP            # grep (or GNU grep if different).
-FGREP           # fgrep (or GNU fgrep if different).
-CHMOD           # chmod (or GNU chmod if different).
-DATE            # date (or GNU date if different).
-REALPATH        # realpath (or GNU realpath if different).
-TAR             # tar (or GNU tar if different).
-SUDO            # sudo or empty if already running as root.
-PYTHON          # Python command, at least Python 3.
-PYTHON_VERSION  # Full Python version.
-PYTHON_MAJOR    # Python major version.
+SED                 # sed (or GNU sed if different).
+GREP                # grep (or GNU grep if different).
+FGREP               # fgrep (or GNU fgrep if different).
+CHMOD               # chmod (or GNU chmod if different).
+DATE                # date (or GNU date if different).
+REALPATH            # realpath (or GNU realpath if different).
+TAR                 # tar (or GNU tar if different).
+SUDO                # sudo or empty if already running as root.
+PYTHON              # Python command, at least Python 3.
+PYTHON_VERSION      # Full Python version.
+PYTHON_MAJOR        # Python major version.
 
 # Structure of the TSDuck project directory tree
 # ----------------------------------------------
-ROOTDIR            # Root directory of the project.
-SCRIPTSDIR         # Directory containing build scripts.
-SRCROOT            # Root of all source files.
-LIBTSDUCKDIR       # Source directory for the TSDuck library.
-TSTOOLSDIR         # Source directory for all command line tools.
-TSPLUGINSDIR       # Source directory for all external plugins.
-LOCAL_OSDIR        # Name of subdirectory which contains system specific code in source tree.
-OTHER_OS           # List of subdirectory for other operating systems (don't use here).
-BINROOT            # Root of all generated files.
-BINDIR             # Directory for all binary files; include architecture and host name.
-BINDIR_SUFFIX      # Fixed suffix to add to BINDIR; ignored if BINDIR is defined as input variable.
-OBJDIR             # Subdirectory of BINDIR where object files are stored;
-                   # named objs-$(CURDIR) for each source directory where make is executed.
-STATIC_LIBTSDUCK   # Generated static library for TSDuck library.
-SHARED_LIBTSDUCK   # Generated shared library for TSDuck library.
-INSTALLERDIR       # Output directory for binary packages and installers.
-GET_TSDUCK_VERSION # Shell command to get TSDuck version (see get-version-from-sources.py).
-ALL_INCLUDES       # List of source directories in libtsduck with headers.
-PUBLIC_INCLUDES    # List of source directories in libtsduck with public headers.
-PRIVATE_INCLUDES   # List of source directories in libtsduck with private headers.
-TSPLUGINS          # List of plugins to compile.
-TSTOOLS            # List of command line tools to compile.
-NO_TSPLUGINS       # List of obsolete plugins to remove.
-NO_TSTOOLS         # List of obsolete command line tools to remove.
-TSXML              # Command to run generated tsxml (to generate final XML files).
+ROOTDIR             # Root directory of the project.
+SCRIPTSDIR          # Directory containing build scripts.
+SRCROOT             # Root of all source files.
+LIBTSDUCKDIR        # Source directory for the TSDuck library.
+TSTOOLSDIR          # Source directory for all command line tools.
+TSPLUGINSDIR        # Source directory for all external plugins.
+LOCAL_OSDIR         # Name of subdirectory which contains system specific code in source tree.
+OTHER_OS            # List of subdirectory for other operating systems (don't use here).
+BINROOT             # Root of all generated files.
+BINDIR              # Directory for all binary files; include architecture and host name.
+BINDIR_SUFFIX       # Fixed suffix to add to BINDIR; ignored if BINDIR is defined as input variable.
+OBJDIR              # Subdirectory of BINDIR where object files are stored;
+                    # named objs-$(CURDIR) for each source directory where make is executed.
+STATIC_LIBTSDUCK    # Generated static library for TSDuck library.
+SHARED_LIBTSDUCK    # Generated shared library for TSDuck library.
+INSTALLERDIR        # Output directory for binary packages and installers.
+GET_TSDUCK_VERSION  # Shell command to get TSDuck version (see get-version-from-sources.py).
+ALL_INCLUDES        # List of source directories in libtsduck with headers.
+PUBLIC_INCLUDES     # List of source directories in libtsduck with public headers.
+PRIVATE_INCLUDES    # List of source directories in libtsduck with private headers.
+TSPLUGINS           # List of plugins to compile.
+TSTOOLS             # List of command line tools to compile.
+NO_TSPLUGINS        # List of obsolete plugins to remove.
+NO_TSTOOLS          # List of obsolete command line tools to remove.
+TSXML               # Command to run generated tsxml (to generate final XML files).
+
+# Make control
+# ------------
+LOG                 # Command prefix, e.g. "$(call LOG,[CXX] $<) $(CXX) ...".
+MAKEFLAGS           # Make options, as generated by make, do not override on command line.
+MAKEOVERRIDES       # List of overridden make variables.
+MAKEFLAGS_SMP       # Explicit make parallel options, e.g. "-j8" for 8 processors.
+JAVA_DONE           # Java options already set, don't do it again.
+PRECONFIG_DONE      # Parsing of tsPreConfiguration.h already done, don't do it again.
+CURL_DONE           # Libcurl options already set, don't do it again.
+SRT_DONE            # SRT options already set, don't do it again.
+RIST_DONE           # RIST options already set, don't do it again.
+DTAPI_DONE          # Dektec DTAPI options already set, don't do it again.
+PCSC_DONE           # PCSC options already set, don't do it again.
