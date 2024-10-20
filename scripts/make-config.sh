@@ -10,8 +10,8 @@
 #  inside Makefile.inc. However, it became over-complicated and it is now
 #  easier to build them in a shell script.
 #
-#  The parameters of this script are "name=value" for all existing make
-#  variables (see invocation in Makefile.inc).
+#  The parameters of this script are "name=value" to overridde initial values
+#  for make variables. By default, they are grabbed from the environment.
 #
 #  General note: To speed up make recursion, all make variables are exported.
 #  Thus, in a sub-make, all variables are already defined. Depending on the
@@ -100,10 +100,7 @@ root=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
 VARNAMES=' '$(sed -e 's/ *#.*//' -e '/^ *$/d' "$root/CONFIG.txt")' '
 VARNAMES=${VARNAMES//$'\n'/ }
 
-# Variables are first initialized with empty values, then with values from the command line.
-for name in $VARNAMES; do
-    eval $name=""
-done
+# Variables are inherited from the environment (export from previous call), then set with values from the command line.
 for opt in "$@"; do
     if [[ $opt != =* && $opt == *=* ]]; then
         name=${opt/=*}
@@ -784,23 +781,29 @@ fi
 # List of source directories, tools, plugins, etc
 #-----------------------------------------------------------------------------
 
-# Subdirectories with system-specific source code.
+# Subdirectories with system-specific source code for local OS.
 if [[ -z $LOCAL_OSDIR ]]; then
     LOCAL_OSDIR=${LOCAL_OS/darwin/mac}
     LOCAL_OSDIR=${LOCAL_OSDIR/dragonfly/dragonflybsd}
 fi
-OTHER_OS=" linux mac freebsd netbsd openbsd dragonflybsd windows "
-[[ -z $BSD ]] && OTHER_OS="${OTHER_OS}bsd"
-OTHER_OS=${OTHER_OS/ $LOCAL_OSDIR / }
-OTHER_OS=${OTHER_OS/# /}
-OTHER_OS=${OTHER_OS/% /}
 
-# List of libtsduck directories containing private and public headers.
+# Subdirectories with system-specific source code for other OS (to be excluded from the build).
+if [[ -z $OTHER_OS ]]; then
+    OTHER_OS=" linux mac freebsd netbsd openbsd dragonflybsd windows "
+    [[ -z $BSD ]] && OTHER_OS="${OTHER_OS}bsd"
+    OTHER_OS=${OTHER_OS/ $LOCAL_OSDIR / }
+    OTHER_OS=${OTHER_OS/# /}
+    OTHER_OS=${OTHER_OS/% /}
+fi
+
+# List of libtsduck directories containing header files.
 if [[ -z $ALL_INCLUDES ]]; then
     for dir in $(find $LIBTSDUCKDIR -type d); do
         [[ " $OTHER_OS " != *" $(fbasename $dir) "* && -n $(exist-wildcard $dir/*.h) ]] && ALL_INCLUDES="$ALL_INCLUDES $dir"
     done
 fi
+
+# List of libtsduck directories containing private and public headers.
 if [[ -z $PRIVATE_INCLUDES || -z $PUBLIC_INCLUDES || -z $CXXFLAGS_PRIVATE_INCLUDES || -z $CXXFLAGS_PUBLIC_INCLUDES ]]; then
     for dir in $ALL_INCLUDES; do
         if [[ $(fbasename $dir) == private ]]; then
