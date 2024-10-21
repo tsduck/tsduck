@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3890
+VERSION 3.39-3903
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -40,6 +40,7 @@ VERSION 3.39-3890
   * Fixed issue #1519: incorrect value of program_splice_flag in SCTE 35
     splice information tables.
   * Fixed issue #1520: assertion failure in "tscmp" in rare cases.
+  * Fixed issue #1537: options --usa failed to translate to ATSC and HF band.
 
 -------------------------------------------------------------------------------
 

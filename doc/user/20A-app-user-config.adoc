@@ -344,7 +344,7 @@ See the file `tsduck.hfbands.xml` for a complete reference.
 |===
 
 NOTE: The names `BS` and `CS` designate satellite frequency bands which are used in Japan only.
-In other regions, the frequency allocation inside satellite bands is not regulated and planned using channel numbers.
+In other regions, the frequency allocation inside satellite bands is not regulated and does not use channel numbers.
 
 === Sample configuration files
 
