@@ -238,6 +238,12 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
         getIntValue(last_offset, u"last-offset", hfband->lastOffset(first_channel));
     }
 
+    // Generate error messages when channels are incorrect.
+    // This is only an initial check. The channel number is rechecked during the scan
+    // of each channel because a band can contain "holes" (unallocated channel numbers).
+    hfband->isValidChannel(first_channel, *this);
+    hfband->isValidChannel(last_channel, *this);
+
     const bool save_channel_file = present(u"save-channels");
     update_channel_file = present(u"update-channels");
     channel_file = update_channel_file ? value(u"update-channels") : value(u"save-channels");
@@ -332,6 +338,9 @@ void OffsetScanner::scanAll(ts::DeliverySystem sys)
     ts::UString desc;
     if (sys != ts::DS_UNDEFINED) {
         desc.format(u" (%s)", ts::DeliverySystemEnum->name(sys));
+    }
+    if (!_opt.hfband->isValidChannel(_channel, _opt)) {
+        return;
     }
     _opt.verbose(u"scanning channel %'d, %'d Hz%s", _channel, _opt.hfband->frequency(_channel), desc);
 

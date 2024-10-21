@@ -1254,10 +1254,14 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
         args.getOptionalIntValue(frequency, u"frequency");
     }
     else if (args.present(u"uhf-channel")) {
-        frequency = duck.uhfBand()->frequency(args.intValue<uint32_t>(u"uhf-channel"), args.intValue<int32_t>(u"offset-count", 0));
+        const uint32_t channel = args.intValue<uint32_t>(u"uhf-channel");
+        status = duck.uhfBand()->isValidChannel(channel, args) && status;
+        frequency = duck.uhfBand()->frequency(channel, args.intValue<int32_t>(u"offset-count"));
     }
     else if (args.present(u"vhf-channel")) {
-        frequency = duck.vhfBand()->frequency(args.intValue<uint32_t>(u"vhf-channel"), args.intValue<int32_t>(u"offset-count", 0));
+        const uint32_t channel = args.intValue<uint32_t>(u"vhf-channel");
+        status = duck.vhfBand()->isValidChannel(channel, args) && status;
+        frequency = duck.vhfBand()->frequency(channel, args.intValue<int32_t>(u"offset-count"));
     }
 
     // Other individual tuning options

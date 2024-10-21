@@ -187,27 +187,25 @@ int MainCode(int argc, char *argv[])
 
     // Convert UHF channel to frequency
     if (opt.uhf_channel > 0) {
-        if (!uhf->isValidChannel(opt.uhf_channel)) {
-            std::cerr << ts::UString::Format(u"%d is not a valid UHF channel, valid range is %s", opt.uhf_channel, uhf->channelList()) << std::endl;
-        }
-        else if (opt.simple) {
-            std::cout << uhf->frequency(opt.uhf_channel, opt.hf_offset) << std::endl;
-        }
-        else {
-            std::cout << ts::UString::Format(u"Carrier Frequency: %'d Hz", uhf->frequency(opt.uhf_channel, opt.hf_offset)) << std::endl;
+        if (uhf->isValidChannel(opt.uhf_channel, opt)) {
+            if (opt.simple) {
+                std::cout << uhf->frequency(opt.uhf_channel, opt.hf_offset) << std::endl;
+            }
+            else {
+                std::cout << ts::UString::Format(u"Carrier Frequency: %'d Hz", uhf->frequency(opt.uhf_channel, opt.hf_offset)) << std::endl;
+            }
         }
     }
 
     // Convert VHF channel to frequency
     if (opt.vhf_channel > 0) {
-        if (!vhf->isValidChannel(opt.vhf_channel)) {
-            std::cerr << ts::UString::Format(u"%d is not a valid VHF channel, valid range is %s", opt.vhf_channel, vhf->channelList()) << std::endl;
-        }
-        else if (opt.simple) {
-            std::cout << vhf->frequency(opt.vhf_channel, opt.hf_offset) << std::endl;
-        }
-        else {
-            std::cout << ts::UString::Format(u"Carrier Frequency: %'d Hz", vhf->frequency(opt.vhf_channel, opt.hf_offset)) << std::endl;
+        if (vhf->isValidChannel(opt.vhf_channel, opt)) {
+            if (opt.simple) {
+                std::cout << vhf->frequency(opt.vhf_channel, opt.hf_offset) << std::endl;
+            }
+            else {
+                std::cout << ts::UString::Format(u"Carrier Frequency: %'d Hz", vhf->frequency(opt.vhf_channel, opt.hf_offset)) << std::endl;
+            }
         }
     }
 

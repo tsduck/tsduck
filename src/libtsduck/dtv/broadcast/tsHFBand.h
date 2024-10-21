@@ -89,6 +89,13 @@ namespace ts {
         UString bandName() const { return _band_name; }
 
         //!
+        //! Get the region name as a string.
+        //! param [in] include_aliases Also add the list of aliases.
+        //! @return The region name as a string.
+        //!
+        UString regionName(bool include_aliases = false) const;
+
+        //!
         //! Check if there is no channel in the HF band.
         //! @return True if there is no channel in the HF band (typically an invalid band).
         //!
@@ -126,6 +133,14 @@ namespace ts {
         //! @return True if @a channel is valid, false otherwise.
         //!
         bool isValidChannel(uint32_t channel) const;
+
+        //!
+        //! Check if a channel is valid in the HF band and report an error if invalid.
+        //! @param [in] channel Channel number.
+        //! @param [in,out] report Where to report errors.
+        //! @return True if @a channel is valid, false otherwise.
+        //!
+        bool isValidChannel(uint32_t channel, Report& report) const;
 
         //!
         //! Get the next channel in the HF band.
@@ -286,7 +301,7 @@ namespace ts {
         class HFBandIndex: public StringifyInterface
         {
         public:
-            UString band {};   // Lower case, no space.
+            UString band {};   // Upper case, no space.
             UString region {}; // Lower case, no space.
 
             // Constructor.
