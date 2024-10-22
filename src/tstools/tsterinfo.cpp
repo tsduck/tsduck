@@ -24,7 +24,7 @@ TS_MAIN(MainCode);
 //----------------------------------------------------------------------------
 
 namespace {
-    // No need to use TS_STATIC_INSTANCE, this is main program.
+    // No need to use TS_STATIC_INSTANCE, this is used in a main program.
     const ts::Enumeration DVBTModulationEnum({
         {u"QPSK",   ts::QPSK},
         {u"16-QAM", ts::QAM_16},
@@ -70,6 +70,7 @@ namespace {
         ts::BandWidth     bandwidth = 0;
         bool              simple = false;          // Simple output
         bool              default_region = false;  // Display the default region for UHF/VHF band frequency layout
+        bool              region_names = false;    // List HF region names.
     };
 }
 
@@ -114,10 +115,12 @@ Options::Options(int argc, char *argv[]) :
          u"Specify the number of offsets from the UHF or VHF channel. The default "
          u"is zero. See options --uhf-channel and --vhf-channel.");
 
+    option(u"region-names", 'n');
+    help(u"region-names", u"List all known regions with UHF/VHF band frequency layout.");
+
     option(u"simple", 's');
     help(u"simple",
-         u"Produce simple output: only numbers, no comment, typically useful "
-         u"to write scripts.");
+         u"Produce simple output: only numbers, no comment, typically useful to write scripts.");
 
     option(u"uhf-channel", 'u', POSITIVE);
     help(u"uhf-channel",
@@ -143,6 +146,7 @@ Options::Options(int argc, char *argv[]) :
     getIntValue(guard_interval, u"guard-interval", ts::GUARD_AUTO);
     simple = present(u"simple");
     default_region = present(u"default-region");
+    region_names = present(u"region-names");
     LoadLegacyBandWidthArg(bandwidth, *this, u"bandwidth", 8000000);
 
     if ((fec_hp == ts::FEC_AUTO && guard_interval != ts::GUARD_AUTO) || (fec_hp != ts::FEC_AUTO && guard_interval == ts::GUARD_AUTO)) {
@@ -177,7 +181,17 @@ int MainCode(int argc, char *argv[])
     const ts::HFBand* uhf = opt.duck.uhfBand();
     const ts::HFBand* vhf = opt.duck.vhfBand();
 
-    // Display the default region for UHF/VHF band frequency layout
+    // Display the list of all regions with UHF/VHF band frequency layout.
+    if (opt.region_names) {
+        if (opt.simple) {
+            std::cout << ts::UString::Join(ts::HFBand::GetAllRegions(), ts::UString::EOL);
+        }
+        else {
+            std::cout << "Regions with UHF/VHF: " << ts::UString::Join(ts::HFBand::GetAllRegions(), u", ") << std::endl;
+        }
+    }
+
+    // Display the default region for UHF/VHF band frequency layout.
     if (opt.default_region) {
         if (!opt.simple) {
             std::cout << "Default region for UHF/VHF: ";

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3903
+VERSION 3.39-3905
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -31,6 +31,7 @@ VERSION 3.39-3903
       in JSON or XML format through UDP (previously, it was binary only).
     - Option --ip-udp in "tsdump", with all usual UDP reception options.
     - Option --vlan-id in "tspcap" and input plugin "pcap".
+    - Option --region-names in "tsterinfo".
 
 [BUG] Bug fixes:
 

@@ -137,6 +137,13 @@ The default is zero.
 See options `--uhf-channel` and `--vhf-channel`.
 
 [.opt]
+*-n* +
+*--region-names*
+
+[.optdoc]
+List all known regions with UHF/VHF band frequency layout.
+
+[.opt]
 *-s* +
 *--simple*
 
