@@ -31,7 +31,7 @@ namespace ts {
     public:
         //!
         //! object extension carries in an auxiliary data block
-        //! 
+        //!
        class TSDUCKDLL object_extension_metadata_block_type
        {
         public:
@@ -66,13 +66,13 @@ namespace ts {
 
         //!
         //! object extension carries in an auxiliary data block
-        //! 
+        //!
         class TSDUCKDLL loudness_metadata_block_type
         {
         public:
             //!
             //! depiction of an AVS audio loudness type and value
-            //! 
+            //!
             class TSDUCKDLL avs3_loudness
             {
             public:
@@ -103,22 +103,22 @@ namespace ts {
                 //! gives the number of bits for the value type
                 //! @param [in] loudnessValueType  the type of loudness value being expressed
                 //! @returns the number of bits to use when storing the loudness value in a binary notation
-                //! 
+                //!
                 size_t BitsInValue(uint8_t loudnessValueType) const;
 
                 //!
                 //! Given a loudness value for loudnessValDef==6 (EBU R 128), calculate the loudness value
                 //! This is the inversion of the algirithm provided in Table B.8 of T/AI 109.7
                 //! @param [in] loudnessVal a binary (0..255) loudness value
-                //! @returns an EBU R 128 loudness range 
-                //! 
+                //! @returns an EBU R 128 loudness range
+                //!
                 double LoudnessValToRange(uint8_t loudnessVal);
 
                 //!
                 //! Convert a loudnessRange to a loudnessVal for serialization. See Table B.8 of T/AI 109.7
                 //! @param [in] loudnessRange an EBU R 128 loudness value
                 //! @return a binary (0..255) loudness value
-                //! 
+                //!
                 uint8_t LoudnessRangeToVal(double loudnessRange);
             };
 
@@ -150,15 +150,15 @@ namespace ts {
 
         //!
         //! A container for the different types which can be carried in an auxiliary data block
-        //! 
+        //!
         class TSDUCKDLL anc_data_types
         {
         public:
             std::variant<std::monostate, object_extension_metadata_block_type, loudness_metadata_block_type> auxiliary_data {};  //!< anc block data
- 
+
             //!
             //! Default constructor
-            //! 
+            //!
             anc_data_types() = default;
 
             //!
@@ -182,11 +182,11 @@ namespace ts {
         };
 
         //! auxiliary information blocks containing either object extension metadata or loudness metadata
-        std::vector<anc_data_types> anc_block {};   
+        std::vector<anc_data_types> anc_block {};
 
         //!
         //! Default constructor
-        //! 
+        //!
         anc_data_block_type() = default;
 
         //!
@@ -212,7 +212,7 @@ namespace ts {
         //! @param [in] minRange the lowest value in the range, when \p value = 0
         //! @param [in] maxRange the highest value in the range, when \p value = \p maxValue
         //! @returns the value when mapped into a range of values
-        //! 
+        //!
         static double ValueRange(double value, double maxValue, double minRange, double maxRange);
 
         friend class AVS3AudioDescriptor;

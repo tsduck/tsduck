@@ -5,7 +5,7 @@
     <IOD_descriptor
         Scope_of_IOD_label="uint8, required"
         IOD_label="uint8, required">
-      
+
       <!-- Binary structure as defined in 8.6.3.1 of ISO/IEC 14496-1 -->
       <InitialObjectDescriptor>
         Hexadecimal content

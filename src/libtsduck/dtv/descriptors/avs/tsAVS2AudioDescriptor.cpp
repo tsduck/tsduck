@@ -135,7 +135,7 @@ void ts::AVS2AudioDescriptor::avs_version_info::display(TablesDisplay& disp, PSI
     uint8_t _audio_codec_id = buf.getBits<uint8_t>(4);
     disp << margin << "Codec id: " << DataName(MY_XML_NAME, u"audio_codec_id", _audio_codec_id, NamesFlags::VALUE | NamesFlags::DECIMAL);
     buf.skipBits(1);   // anc_data_index
-    disp << ", Coding profile: " << DataName(MY_XML_NAME, u"coding_profile", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL); 
+    disp << ", Coding profile: " << DataName(MY_XML_NAME, u"coding_profile", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL);
     uint8_t _bitrate_index = 0, _bitstream_type = 0;
     uint16_t _raw_frame_length = 0;
     if (_audio_codec_id == AVS3AudioDescriptor::General_Coding) {

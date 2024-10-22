@@ -31,7 +31,7 @@ namespace ts {
         //!
         //! information specific to version 1 of AVS2 audio
         //! used when avs_info_flag == 1
-        //! 
+        //!
         class TSDUCKDLL avs_version_info
         {
         public:
@@ -64,8 +64,8 @@ namespace ts {
 
         // Public members:
         uint8_t num_channels = 0;       //!< The number of channels in the AVS2 audio strema
-        uint8_t sample_rate_index = 0;  //!< 4 bits.  index to sample rate table (C.3) in GB/T33475.3 
-       
+        uint8_t sample_rate_index = 0;  //!< 4 bits.  index to sample rate table (C.3) in GB/T33475.3
+
         std::optional<UString> description {};          //!< description of the AVS2 audio stream
         std::optional<UString> language {};             //!< 3-byte language of the audio stream
         std::optional<avs_version_info> avs_version {}; //!< version specific information
@@ -89,7 +89,7 @@ namespace ts {
         DeclareDisplayDescriptor();
 
         // Enumerations for XML.
-        static const Enumeration CodingProfiles;    //!< premitted ciding profiles - see 
+        static const Enumeration CodingProfiles;    //!< premitted ciding profiles - see
 
         // Inherited methods
         virtual void clearContent() override;

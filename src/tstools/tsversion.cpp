@@ -20,6 +20,7 @@
 #include "tsErrCodeReport.h"
 #include "tsNullReport.h"
 #include "tsForkPipe.h"
+#include "tsHFBand.h"
 #include "tsDuckExtensionRepository.h"
 #if defined(TS_WINDOWS)
 #include "tsWinUtils.h"
@@ -41,9 +42,9 @@ namespace {
         // The following options apply to the current instance of TSDuck.
         // They are always available.
 
-        bool        current = false;    // Display current version of TSDuck, this executable.
-        bool        integer = false;    // Display current version of TSDuck as integer value.
-        bool        extensions = false; // List extensions.
+        bool current = false;     // Display current version of TSDuck, this executable.
+        bool integer = false;     // Display current version of TSDuck as integer value.
+        bool extensions = false;  // List extensions.
 
         // The following options are used to detect, download and upgrade new versions of TSDuck.
         // They are disabled when TS_NO_GITHUB is defined. With this macro, TSDuck is unlinked
@@ -78,9 +79,10 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"integer", 'i');
     help(u"integer",
-         u"Display the current version of TSDuck in integer format, suitable for "
-         u"comparison in a script. Example: " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) +
-         u" for " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
+         u"Display the current version of TSDuck in integer format, "
+         u"suitable for comparison in a script. Example: " +
+         ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) + u" for " +
+         ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
 
     // Enumeration of support options. The values are 0 or 1, indicating support.
     // Add a negative value meaning list all.
@@ -158,7 +160,7 @@ Options::Options(int argc, char *argv[]) :
     extensions = present(u"extensions");
     integer = present(u"integer");
 
-    // Option --support is full handled inside the constructor.
+    // Option --support is fully handled inside the constructor.
     // It exits the application with a specific status.
     if (present(u"support")) {
         const int feature = intValue<int>(u"support");

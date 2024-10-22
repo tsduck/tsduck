@@ -22,6 +22,6 @@ Defined by AVS in <<AVS-TAI-109.7>>.
   <additional_info>
     Hexadecimal content
   </additional_info>
-  
+
 </AVS2_audio_descriptor>
 ----
