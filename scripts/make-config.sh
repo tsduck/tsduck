@@ -38,7 +38,7 @@ if [[ -n $MAKECONFIG_TIME ]]; then
         mudate=date
     fi
     musec() { $mudate '+%s%6N'; }
-    debug-time() { local m=$(musec); printf >&2 '==== make-config: %4d ms %s\n' $((($m - $START_MUSEC) / 1000)) ${1:-"in $(pwd)"}; }
+    debug-time() { local m=$(musec); printf >&2 '==== make-config: %4d ms %s\n' $((($m - $START_MUSEC) / 1000)) "${1:-in $(pwd)}"; }
     START_MUSEC=$(musec)
 else
     debug-time() { true; }
@@ -161,6 +161,9 @@ if [[ -z $HOSTNAME ]]; then
      HOSTNAME=$(hostname 2>/dev/null)
      HOSTNAME=${HOSTNAME/.*/}
 fi
+
+# Possibly used in scripts we will call.
+export LOCAL_OS LOCAL_ARCH
 
 [[ $LOCAL_OS == linux ]] && LINUX=1 || LINUX=
 [[ $LOCAL_OS == darwin ]] && MACOS=1 || MACOS=
@@ -443,6 +446,9 @@ fi
 [[ -z $GCC_MAJOR ]] && GCC_MAJOR=${GCC_VERSION/.*/}
 [[ -z $LLVM_VERSION ]] && LLVM_VERSION=$(extract-version clang)
 [[ -z $LLVM_MAJOR ]] && LLVM_MAJOR=${LLVM_VERSION/.*/}
+
+# Possibly used in scripts we will call.
+export GCC_VERSION GCC_MAJOR LLVM_VERSION LLVM_MAJOR
 
 # Forced usage of LLVM (clang). FreeBSD and OpenBSD have switched to clang by default.
 if [[ -n $LLVM$FREEBSD$OPENBSD ]]; then
@@ -776,7 +782,7 @@ if [[ -n $NORIST ]]; then
 else
     LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lrist"
 fi
-       
+
 #-----------------------------------------------------------------------------
 # List of source directories, tools, plugins, etc
 #-----------------------------------------------------------------------------

@@ -17,33 +17,13 @@ CACERT_URL=https://curl.se/ca/cacert.pem
 SCRIPT=$(basename $BASH_SOURCE)
 ROOTDIR=$(cd $(dirname $BASH_SOURCE)/..; pwd)
 BINDIR="$ROOTDIR/bin"
-SYSTEM=$(uname -s | tr A-Z a-z)
+
+# Get local operating system, speed up if already defined in make.
+[[ -z $LOCAL_OS ]] && SYSTEM=$(uname -s | tr A-Z a-z) || SYSTEM="$LOCAL_OS"
+[[ -z $LOCAL_ARCH ]] && ARCH=$(uname -m) || ARCH="$LOCAL_ARCH"
 
 info() { echo >&2 "$SCRIPT: $*"; }
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
-
-# Get the root directory of the DTAPI.
-get-dtapi()
-{
-    local prefix=
-    case "$SYSTEM" in
-        linux)
-            header=$(find 2>/dev/null "$BINDIR/LinuxSDK/DTAPI" -path "*/DTAPI/Include/DTAPI.h" | head -1)
-            ;;
-        cygwin*)
-            header=$(find 2>/dev/null /cygdrive/c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
-            ;;
-        mingw*|msys*)
-            header=$(find 2>/dev/null /c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
-            ;;
-        *)
-            header=
-    esac
-    if [[ -n "$header" ]]; then
-        d=$(dirname "$header")
-        dirname "$d"
-    fi
-}
 
 # Check if DTAPI is supported on the current system.
 dtapi-support()
@@ -59,9 +39,8 @@ dtapi-support()
             return -1
     esac
 
-    # DTAPI is supported on Intel CPU only.
-    arch=$(uname -m)
-    [[ $arch == x86_64 || $arch == i?86 ]] || return -1
+    # DTAPI is supported on Intel CPU only. Speed up if already defined in make.
+    [[ $ARCH == x86_64 || $ARCH == i?86 ]] || return -1
 
     # DTAPI is compiled with the GNU libc and is not supported on systems not using it.
     # Alpine Linux uses musl libc => not supported (undefined reference to __isnan).
@@ -71,87 +50,114 @@ dtapi-support()
     return 0
 }
 
-# Compute an integer version from a x.y.z version string.
-int-version()
-{
-    local -i v=0
-    for f in $(cut -f 1-3 -d . <<<"$1.0.0.0" | tr . ' '); do
-        v=$((($v * 100) + $f))
-    done
-    echo $v
-}
-
 # Get DTAPI header file.
 get-header()
 {
-    # Get DTAPI support on this system.
     dtapi-support || return 0
-
-    local HEADER="$(get-dtapi)/Include/DTAPI.h"
-    [[ -e "$HEADER" ]] && echo "$HEADER"
+    # Start with fast alternative on Linux.
+    local header="$BINDIR/LinuxSDK/DTAPI/Include/DTAPI.h"
+    if [[ -e "$header" ]]; then
+        echo "$header"
+    else
+        case "$SYSTEM" in
+            linux)
+                header=$(find 2>/dev/null "$BINDIR/LinuxSDK/DTAPI" -path "*/DTAPI/Include/DTAPI.h" | head -1)
+                ;;
+            cygwin*)
+                header=$(find 2>/dev/null /cygdrive/c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
+                ;;
+            mingw*|msys*)
+                header=$(find 2>/dev/null /c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
+                ;;
+            *)
+                header=
+        esac
+        [[ -e "$header" ]] && echo "$header"
+    fi
 }
 
 # Get DTAPI include directory.
 get-include()
 {
-    # Get DTAPI support on this system.
-    dtapi-support || return 0
+    local header="$(get-header)"
+    [[ -n "$header" ]] && dirname "$header"
+}
 
-    local INCLUDE="$(get-dtapi)/Include"
-    [[ -e "$INCLUDE" ]] && echo "$INCLUDE"
+# Get the root directory of the DTAPI.
+get-dtapi()
+{
+    local include="$(get-include)"
+    [[ -n "$include" ]] && dirname "$include"
+}
+
+# Compute an integer version from a x.y.z version string.
+int-version()
+{
+    local fields=(${1//./ } 0 0 0)
+    local v=0
+    for ((i=0;$i<3;i++)); do
+        v=$((($v * 100) + ${fields[$i]}))
+    done
+    echo $v
 }
 
 # Get DTAPI object file.
 get-object()
 {
-    # Get DTAPI support on this system.
-    dtapi-support || return 0
-
-    # Check that DTAPI binaries are present.
-    [[ -d "$(get-dtapi)/Lib" ]] || return 0
-
-    # Get gcc executable from external $GCC or default.
-    GCC=${GCC:-${CXX:-${CC:-$(which gcc 2>/dev/null)}}}
-    [[ -z "$GCC" ]] && return 0
-
-    # Get gcc version from external $GCC_VERSION or $GCCVERSION.
-    GCCVERSION=${GCCVERSION:-$GCC_VERSION}
-    GCCVERSION=${GCCVERSION:-$("$GCC" -dumpversion 2>/dev/null)}
-
-    # Get GCC version as an integer.
-    local GCCVERS=$(int-version $GCCVERSION)
-    local DIRVERS=
+    local dtapidir=$(get-dtapi)
+    [[ -z "$dtapidir" ]] && return 0
 
     # Get object file from platform name.
+    local objname=
     if ${OPT_M32:-false}; then
-        OBJNAME=DTAPI.o
-    elif [[ $(uname -m) == x86_64 ]]; then
-        OBJNAME=DTAPI64.o
+        objname=DTAPI.o
+    elif [[ $ARCH == x86_64 ]]; then
+        objname=DTAPI64.o
     else
-        OBJNAME=DTAPI.o
+        objname=DTAPI.o
     fi
 
-    # Find the DTAPI object with highest version, lower than or equal to GCC version.
-    local OBJFILE=
-    local OBJVERS=0
-    local DTAPIDIR=$(get-dtapi)
-    local DIRNAME=
-    if [[ -n "$DTAPIDIR" ]]; then
-        for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
-            DIRNAME=$(basename $(dirname "$obj"))
-            DIRVERS=${DIRNAME#GCC}
-            DIRVERS=${DIRVERS%%_*}
-            DIRVERS=$(int-version $DIRVERS)
-            if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
-                OBJFILE="$obj"
-                OBJVERS=$DIRVERS
-                # If directory ends in _ABI0 and the same file exists with _ABI1, use _ABI1.
-                # This implements the default C++11 ABI after GCC 5.1.
-                [[ $DIRNAME == *_ABI0 && -f "${obj/_ABI0/_ABI1}" ]] && OBJFILE="${obj/_ABI0/_ABI1}"
+    # In some older versions, there were several subdirectories under Lib, for distinct GCC versions.
+    # If only one object file is present, use this one without checking GCC version.
+    local count=0
+    local objfile=
+    for obj in "$dtapidir"/Lib/*/$objname; do
+        if [[ -e "$obj" ]]; then
+            objfile="$obj"
+            count=$(($count+1))
+        fi
+    done
+
+    if [[ $count -gt 1 ]]; then
+        # More than one object file exist, restart search.
+        objfile=
+
+        # Get gcc executable from external $GCC or default.
+        GCC=${GCC:-${CXX:-${CC:-$(which gcc 2>/dev/null)}}}
+        [[ -z "$GCC" ]] && return 0
+
+        # Get gcc version from external $GCC_VERSION or $GCCVERSION.
+        local gccversion=${GCCVERSION:-$GCC_VERSION}
+        gccversion=${gccversion:-$("$GCC" -dumpversion 2>/dev/null)}
+        gccversion=$(int-version $gccversion)
+
+        # Find the DTAPI object with highest version, lower than or equal to GCC version.
+        local objversion=0
+        local dirversion=
+        local dirname=
+        for obj in "$dtapidir"/Lib/*/$objname; do
+            dirname=$(basename $(dirname "$obj"))
+            dirversion=${dirname#GCC}
+            dirversion=${dirversion%%_*}
+            dirversion=$(int-version $dirversion)
+            if [[ ($dirversion -le $gccversion) && ($dirversion -gt $objversion) ]]; then
+                objfile="$obj"
+                objversion=$dirversion
             fi
         done
     fi
-    [[ -n "$OBJFILE" ]] && echo "$OBJFILE"
+
+    [[ -n "$objfile" ]] && echo "$objfile"
 }
 
 # Merge an URL with its base.
