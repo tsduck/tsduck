@@ -127,7 +127,7 @@ jobs:
   linux:
     name: Linux build
     if: github.repository == 'tsduck/tsduck'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -223,7 +223,7 @@ jobs:
   doc:
     name: Documentation build
     if: github.repository == 'tsduck/tsduck'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:

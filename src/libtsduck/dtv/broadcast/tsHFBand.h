@@ -90,7 +90,7 @@ namespace ts {
 
         //!
         //! Get the region name as a string.
-        //! param [in] include_aliases Also add the list of aliases.
+        //! @param [in] include_aliases Also add the list of aliases.
         //! @return The region name as a string.
         //!
         UString regionName(bool include_aliases = false) const;
