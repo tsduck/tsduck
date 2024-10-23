@@ -199,6 +199,29 @@ namespace ts {
         void setProfile(const EITRepetitionProfile& profile) { _profile = profile; }
 
         //!
+        //! Define a time offset to apply on all events which are loaded from the application.
+        //! @param [in] offset Offset to apply to all events, in any duration type.
+        //! @see setInputEventOffset()
+        //!
+        template <class Rep, class Period>
+        void setApplicationEventOffset(cn::duration<Rep,Period> offset)
+        {
+            _data_offset = cn::duration_cast<cn::seconds>(offset);
+        }
+
+        //!
+        //! Define a time offset to apply on all events which are received from the input EIT PID.
+        //! Ignored if option EITOptions::LOAD_INPUT is not set.
+        //! @param [in] offset Offset to apply to all events, in any duration type.
+        //! @see setApplicationEventOffset()
+        //!
+        template <class Rep, class Period>
+        void setInputEventOffset(cn::duration<Rep,Period> offset)
+        {
+            _input_offset = cn::duration_cast<cn::seconds>(offset);
+        }
+
+        //!
         //! Define the "actual" transport stream id for generated EIT's.
         //! When this method is called, all events for the specified TS are stored in
         //! "EIT actual". All other events are stored in "EIT other".
@@ -279,7 +302,10 @@ namespace ts {
         //! @see ETSI EN 300 468
         //! @see setCurrentTime()
         //!
-        bool loadEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size);
+        bool loadEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size)
+        {
+            return loadEventsImpl(service, data, size, Origin::DATA);
+        }
 
         //!
         //! Load EPG data from an EIT section.
@@ -288,7 +314,10 @@ namespace ts {
         //! and the section is an EIT actual, set the actual TS.
         //! @return True in case of success, false on error.
         //!
-        bool loadEvents(const Section& section, bool get_actual_ts = false);
+        bool loadEvents(const Section& section, bool get_actual_ts = false)
+        {
+            return loadEventsImpl(section, get_actual_ts, Origin::DATA);
+        }
 
         //!
         //! Load EPG data from a vector of EIT sections.
@@ -308,7 +337,10 @@ namespace ts {
         //! @return True in case of success, false on error.
         //! @see loadEvents(const Section&)
         //!
-        bool loadEvents(const SectionFile& sections, bool get_actual_ts = false) { return loadEvents(sections.sections(), get_actual_ts); }
+        bool loadEvents(const SectionFile& sections, bool get_actual_ts = false)
+        {
+            return loadEvents(sections.sections(), get_actual_ts);
+        }
 
         //!
         //! Save all current EIT sections.
@@ -336,6 +368,13 @@ namespace ts {
 
     private:
 
+        // Events can be loaded from the application (file, data) or from the input EIT stream.
+        enum class Origin {DATA, INPUT_EIT};
+
+        // Internal methods always track the origin of events.
+        bool loadEventsImpl(const Section& section, bool get_actual_ts, Origin origin);
+        bool loadEventsImpl(const ServiceIdTriplet& service, const uint8_t* data, size_t size, Origin origin);
+
         // -----------------------
         // Description of an event
         // -----------------------
@@ -351,7 +390,7 @@ namespace ts {
 
             // Constructor based on EIT section payload: extract the next event.
             // The data and size are updated after building the event.
-            Event(const uint8_t*& data, size_t& size);
+            Event(const uint8_t*& data, size_t& size, cn::seconds offset);
         };
 
         using EventPtr = std::shared_ptr<Event>;
@@ -463,6 +502,8 @@ namespace ts {
         PacketCounter        _last_eit_pkt = 0;          // Packet index at last EIT insertion.
         EITOptions           _options = EITOptions::GEN_ALL; // EIT generation options flags.
         EITRepetitionProfile _profile {};                // EIT repetition profile.
+        cn::seconds          _data_offset {};            // Offset to apply to all events from application data.
+        cn::seconds          _input_offset {};           // Offset to apply to all events from input EIT PID.
         SectionDemux         _demux;                     // Section demux for input stream, get PAT, TDT, TOT, EIT.
         Packetizer           _packetizer;                // Packetizer for generated EIT's.
         EServiceMap          _services {};               // Map of services -> segments -> events and sections.

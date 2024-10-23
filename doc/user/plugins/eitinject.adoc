@@ -220,8 +220,21 @@ By default, the files are left unmodified after being loaded.
 When a loaded file is modified later, it is reloaded and re-injected.
 
 [.opt]
-*-f* _'file-wildcard '_ +
-*--files* _'file-wildcard '_
+*--event-offset* _seconds_
+
+[.optdoc]
+Specifies an offset in seconds to add to the start time of all loaded events.
+The value can be positive or negative.
+
+[.optdoc]
+By default, no offset is applied.
+
+[.optdoc]
+See also option `--input-event-offset`.
+
+[.opt]
+*-f* _'file-wildcard'_ +
+*--files* _'file-wildcard'_
 
 [.optdoc]
 A file specification with optional wildcards indicating which event files should be polled.
@@ -251,6 +264,16 @@ By default, events are loaded from EIT files only.
 [.optdoc]
 Since events must be loaded from somewhere, either `--incoming-eits` or `--files` must be specified.
 If both are specified, events are merged from the two sources.
+
+[.opt]
+*--input-event-offset* _seconds_
+
+[.optdoc]
+With `--incoming-eits`, specifies an offset in seconds to add to the start time
+of all events from the input EIT PID. The value can be positive or negative.
+
+[.optdoc]
+By default, the same offset is applied as specified with `--event-offset`.
 
 [.opt]
 *--lazy-schedule-update*

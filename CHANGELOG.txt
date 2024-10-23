@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3905
+VERSION 3.39-3908
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -32,6 +32,7 @@ VERSION 3.39-3905
     - Option --ip-udp in "tsdump", with all usual UDP reception options.
     - Option --vlan-id in "tspcap" and input plugin "pcap".
     - Option --region-names in "tsterinfo".
+    - Options --event-offset and --input-event-offset in plugin "eitinject".
 
 [BUG] Bug fixes:
 

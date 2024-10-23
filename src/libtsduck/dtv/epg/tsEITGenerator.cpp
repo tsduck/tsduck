@@ -82,7 +82,7 @@ void ts::EITGenerator::reset(PID pid)
 // Event: Constructor of the structure containing binary events.
 //----------------------------------------------------------------------------
 
-ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
+ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size, cn::seconds offset)
 {
     size_t event_size = size;
 
@@ -92,6 +92,12 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
         DecodeMJD(data + 2, MJD_FULL, start_time);
         end_time = start_time + cn::hours(DecodeBCD(data[7])) + cn::minutes(DecodeBCD(data[8])) + cn::seconds(DecodeBCD(data[9]));
         event_data.copy(data, event_size);
+        if (offset != cn::seconds::zero()) {
+            start_time += offset;
+            end_time += offset;
+            // Rewrite new start time in event data, after event_id.
+            EncodeMJD(start_time, event_data.data() + 2, MJD_FULL);
+        }
     }
 
     data += event_size;
@@ -210,7 +216,7 @@ uint8_t ts::EITGenerator::nextVersion(const ServiceIdTriplet& service_id, TID ta
 // Load EPG data from binary events descriptions.
 //----------------------------------------------------------------------------
 
-bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint8_t* data, size_t size)
+bool ts::EITGenerator::loadEventsImpl(const ServiceIdTriplet& service_id, const uint8_t* data, size_t size, Origin origin)
 {
     bool success = true;
 
@@ -228,7 +234,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
     while (size >= EIT::EIT_EVENT_FIXED_SIZE) {
 
         // Get the next binary event.
-        const EventPtr ev(new Event(data, size));
+        const EventPtr ev(new Event(data, size, origin == Origin::DATA ? _data_offset : _input_offset));
         if (ev->event_data.empty()) {
             _duck.report().error(u"error loading EPG event, truncated data");
             success = false;
@@ -327,7 +333,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
 // Load EPG data from an EIT section.
 //----------------------------------------------------------------------------
 
-bool ts::EITGenerator::loadEvents(const Section& section, bool get_actual_ts)
+bool ts::EITGenerator::loadEventsImpl(const Section& section, bool get_actual_ts, Origin origin)
 {
     const uint8_t* const pl_data = section.payload();
     const size_t pl_size = section.payloadSize();
@@ -339,7 +345,7 @@ bool ts::EITGenerator::loadEvents(const Section& section, bool get_actual_ts)
             // Use the EIT actual TS id as current TS id.
             setTransportStreamId(GetUInt16(pl_data));
         }
-        success = loadEvents(EIT::GetService(section), pl_data + EIT::EIT_PAYLOAD_FIXED_SIZE, pl_size - EIT::EIT_PAYLOAD_FIXED_SIZE);
+        success = loadEventsImpl(EIT::GetService(section), pl_data + EIT::EIT_PAYLOAD_FIXED_SIZE, pl_size - EIT::EIT_PAYLOAD_FIXED_SIZE, origin);
     }
     return success;
 }
@@ -354,7 +360,8 @@ bool ts::EITGenerator::loadEvents(const SectionPtrVector& sections, bool get_act
     bool success = true;
     for (size_t i = 0; i < sections.size(); ++i) {
         if (sections[i] != nullptr) {
-            success = loadEvents(*sections[i], get_actual_ts) && success;
+            // Section files are always external data, not input EIT PID.
+            success = loadEventsImpl(*sections[i], get_actual_ts, Origin::DATA) && success;
         }
     }
     return success;
@@ -1290,7 +1297,7 @@ void ts::EITGenerator::handleSection(SectionDemux& demux, const Section& section
     }
     else if (EIT::IsEIT(tid) && bool(_options & EITOptions::LOAD_INPUT)) {
         // Use input EIT's as EPG data when specified in the generation options.
-        loadEvents(section);
+        loadEventsImpl(section, false, Origin::INPUT_EIT);
     }
     else if ((tid == TID_TDT || tid == TID_TOT) && section.payloadSize() >= MJDSize(MJD_FULL)) {
         // The first 5 bytes of a TDT or TOT payload is the UTC time.
