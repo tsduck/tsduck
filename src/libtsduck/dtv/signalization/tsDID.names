@@ -163,7 +163,7 @@ Extended = true
 # MPEG private descriptor with "AV01" registration id.
 # Descriptors are defined by the Alliance for Open Media.
 # Also used as DVB private descriptors with PDS for AOM ("AOMS").
-# 
+#
 0x0001_01_41563031_80 = AV1 Video
 #
 # MPEG pivate descriptor with "AVSA" registration is.
@@ -281,6 +281,24 @@ Extended = true
 # Valid in a PMT (0x02):
 #
 0x0002_03_FFFFFF_02_A7 = RCS content (ETSI EN 301 790)
+#
+# DVB table-specific descriptors.
+# Valid in a DSM-CC UNM (0x3B, DSM-CC User-to-Network Message, ETSI EN 301 192)
+#
+0x0002_03_FFFFFF_3B_01 = DSM-CC U-N Message Type
+0x0002_03_FFFFFF_3B_02 = DSM-CC U-N Message Name
+0x0002_03_FFFFFF_3B_03 = DSM-CC U-N Message Info
+0x0002_03_FFFFFF_3B_04 = DSM-CC U-M Message Module Link
+0x0002_03_FFFFFF_3B_05 = DSM-CC U-N Message CRC32
+0x0002_03_FFFFFF_3B_06 = DSM-CC U-N Message Location
+0x0002_03_FFFFFF_3B_07 = DSM-CC U-N Message Estimated Download Time
+0x0002_03_FFFFFF_3B_08 = DSM-CC U-N Message Group Link
+0x0002_03_FFFFFF_3B_09 = DSM-CC U-N Message Compressed Module
+0x0002_03_FFFFFF_3B_0A = DSM-CC U-N Message SSU Module Type
+0x0002_03_FFFFFF_3B_0B = DSM-CC U-N Message Subgroup Association
+0x0002_03_FFFFFF_3B_70 = DSM-CC U-N Message Label
+0x0002_03_FFFFFF_3B_71 = DSM-CC U-N Message Caching Priority
+0x0002_03_FFFFFF_3B_72 = DSM-CC U-N Message Content Type
 #
 # DVB table-specific descriptors.
 # Valid in a UNT (0x4B, Update Notification Table, ETSI TS 102 006):
@@ -529,7 +547,7 @@ Extended = true
 # DVB private descriptors with PDS for AOM ("AOMS").
 # Descriptors are defined by the Alliance for Open Media.
 # Also used as MPEG private descriptor with "AV01" registration id.
-# 
+#
 0x0002_01_414F4D53_80 = AV1 Video
 #
 # Dual private descriptors with REGID/PDS for AVS audio.
