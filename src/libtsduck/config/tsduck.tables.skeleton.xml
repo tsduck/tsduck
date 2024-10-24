@@ -20,7 +20,8 @@
     <metadata PID="uint13, optional"
               time="YYYY-MM-DD hh:mm:ss, optional"
               first_ts_packet="uint64, optional"
-              last_ts_packet="uint64, optional">
+              last_ts_packet="uint64, optional"
+              attribute="string, optional">
       <section>
         Hexadecimal content.
       </section>

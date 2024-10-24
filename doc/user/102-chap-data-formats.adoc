@@ -863,7 +863,7 @@ the corresponding data or configuration file.
 XML model files use the extension `.model.xml`.
 
 This XML model mechanism can be considered as a minimalist equivalent of XML-Schema,
-with less features but much more light-weight.
+with less features but much more lightweight.
 
 In a model file, all allowed nodes and attributes are present as template.
 The contents of attributes in this template are comments describing the expected content
@@ -905,9 +905,11 @@ An XML patch file is a template for transformations to apply on XML files.
 It is typically used to apply on-the-fly transformations on various PSI/SI tables by plugins such as
 `pat`, `pmt`, `bat`, `cat`, `sdt`, `nit` when the requested transformations cannot be handled by other options.
 
-This XML patching mechanism can be considered as a minimalist equivalent of XSLT, with less features but much more light weight.
+This XML patching mechanism can be considered as a minimalist equivalent of XSLT,
+with less features but much more lightweight.
 
 The command `tsxml` can be used to test XML patch files on any arbitrary XML file.
+This is the recommended way to test a patch file on existing XML tables before using it on real transport streams.
 
 ===== Structure matching
 
@@ -974,7 +976,7 @@ The next patch file matches only [2] because of the combination of a `<PAT>` wit
 ----
 
 The next example illustrates how to match an attribute having any value except the specified one.
-In a patch file, when an attribute value starts with a `"!"`, the structure matches any node where the
+In a patch file, when an attribute value starts with a `!`, the structure matches any node where the
 specified attribute has a different value (or the attribute is not present).
 
 Thus, the following patch file matches [1] and [3].
@@ -988,7 +990,7 @@ Thus, the following patch file matches [1] and [3].
 </tsduck>
 ----
 
-NOTE: It could have been tempting to use the operator `"!="`, the syntax `program_map_PID!="400"` instead of `="!400"`.
+NOTE: It could have been tempting to use the operator `!=`, the syntax `program_map_PID!="400"` instead of `="!400"`.
 However, `!="400"` is not a valid XML syntax.
 
 ===== Special attributes

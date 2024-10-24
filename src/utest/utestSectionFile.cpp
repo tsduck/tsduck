@@ -46,6 +46,7 @@ class SectionFileTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(MultiSectionsCAT);
     TSUNIT_DECLARE_TEST(MultiSectionsAtProgramLevelPMT);
     TSUNIT_DECLARE_TEST(MultiSectionsAtStreamLevelPMT);
+    TSUNIT_DECLARE_TEST(Attribute);
 
 public:
     virtual void beforeTest() override;
@@ -724,4 +725,23 @@ TSUNIT_DEFINE_TEST(Memory)
     TSUNIT_EQUAL(87, sf1.saveBuffer(out2, sizeof(out2)));
     TSUNIT_EQUAL(0, ts::MemCompare(out2, psi_pat1_sections, sizeof(psi_pat1_sections)));
     TSUNIT_EQUAL(0, ts::MemCompare(out2 + 32, psi_pmt_scte35_sections, sizeof(psi_pmt_scte35_sections)));
+}
+
+TSUNIT_DEFINE_TEST(Attribute)
+{
+    const ts::UChar* xmlref =
+        u"<PAT version=\"0\" current=\"true\" transport_stream_id=\"0x0001\" network_PID=\"0x0010\">\n"
+        u"  <metadata attribute=\"foo\"/>\n"
+        u"  <service service_id=\"0x0100\" program_map_PID=\"0x0200\"/>\n"
+        u"</PAT>\n";
+
+    ts::DuckContext duck;
+    ts::xml::Document doc(report());
+
+    TSUNIT_ASSERT(doc.parse(xmlref));
+    const ts::xml::Element* root = doc.rootElement();
+    TSUNIT_ASSERT(root != nullptr);
+    TSUNIT_EQUAL(u"PAT", root->name());
+
+
 }

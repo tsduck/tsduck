@@ -10,6 +10,7 @@
 #include "tsBinaryTable.h"
 #include "tsSection.h"
 #include "tsDuckContext.h"
+#include "tsxmlElement.h"
 #include "tsPSIBuffer.h"
 #include "tsCRC32.h"
 
@@ -26,6 +27,20 @@ ts::AbstractTable::AbstractTable(TID tid, const UChar* xml_name, Standards stand
 
 ts::AbstractTable::~AbstractTable()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// This method clears the content of the table.
+//----------------------------------------------------------------------------
+
+void ts::AbstractTable::clear()
+{
+    // Clear using superclass, including call to clearContent().
+    AbstractSignalization::clear();
+
+    // Clear fields of this class.
+    _attribute.clear();
 }
 
 
@@ -73,6 +88,51 @@ bool ts::AbstractTable::useTrailingCRC32() const
 {
     // By default, short sections do not use a CRC32.
     return false;
+}
+
+
+//----------------------------------------------------------------------------
+// XML serialization and deserialization.
+//----------------------------------------------------------------------------
+
+ts::xml::Element* ts::AbstractTable::toXML(DuckContext& duck, xml::Element* parent) const
+{
+    // Call superclass to do the serialization.
+    xml::Element* element = AbstractSignalization::toXML(duck, parent);
+
+    // Add the attribute element.
+    if (element != nullptr && !_attribute.empty()) {
+        GetOrCreateMetadata(element)->setAttribute(u"attribute", _attribute);
+    }
+
+    return element;
+}
+
+void ts::AbstractTable::fromXML(DuckContext& duck, const xml::Element* element)
+{
+    // Call superclass to do the deserialization.
+    AbstractSignalization::fromXML(duck, element);
+
+    // Add the attribute element.
+    if (isValid()) {
+        const xml::Element* meta = element->findFirstChild(u"metadata", true);
+        if (meta != nullptr) {
+            meta->getAttribute(_attribute, u"attribute");
+        }
+    }
+}
+
+ts::xml::Element* ts::AbstractTable::GetOrCreateMetadata(xml::Element* element)
+{
+    xml::Element* meta = nullptr;
+    if (element != nullptr) {
+        meta = element->findFirstChild(u"metadata", true);
+        if (meta == nullptr) {
+            // Make sure that the <metadata> is always in first position in the XML structure.
+            meta = new xml::Element(element, u"metadata", CASE_INSENSITIVE, false);
+        }
+    }
+    return meta;
 }
 
 
@@ -135,6 +195,9 @@ bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
 
     // Add the standards of the serialized table into the context.
     duck.addStandards(definingStandards());
+
+    // Transfer generic attributes.
+    table.setAttribute(_attribute);
 
     // Build a buffer of the appropriate size.
     PSIBuffer payload(duck, maxPayloadSize());
@@ -241,6 +304,9 @@ bool ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
     // Table is already checked to be compatible but can be different from current one.
     // So, we need to update this object.
     _table_id = table.tableId();
+
+    // Transfer generic attributes.
+    _attribute = table.attribute();
 
     // Loop on all sections in the table.
     for (size_t si = 0; si < table.sectionCount(); ++si) {

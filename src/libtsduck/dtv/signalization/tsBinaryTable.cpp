@@ -269,6 +269,7 @@ void ts::BinaryTable::clear()
     _source_pid = PID_NULL;
     _missing_count = 0;
     _sections.clear();
+    _attribute.clear();
 }
 
 
@@ -505,7 +506,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
     if ((opt.setPID && _source_pid != PID_NULL) || opt.setLocalTime || opt.setPackets || opt.setSections) {
         // Add <metadata> element as first child of the table.
         // This element is not part of the table but describes how the table was collected.
-        xml::Element* meta = new xml::Element(node, u"metadata", CASE_INSENSITIVE, false); // first position
+        xml::Element* meta = AbstractTable::GetOrCreateMetadata(node);
         if (opt.setPID && _source_pid != PID_NULL) {
             meta->setIntAttribute(u"PID", _source_pid);
         }
@@ -532,7 +533,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
 
 
 //----------------------------------------------------------------------------
-// This method converts an XML node as a binary descriptor.
+// This method converts an XML node as a binary table.
 //----------------------------------------------------------------------------
 
 bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)

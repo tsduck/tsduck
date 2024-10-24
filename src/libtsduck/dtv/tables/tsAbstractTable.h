@@ -79,6 +79,35 @@ namespace ts {
         bool deserialize(DuckContext& duck, const BinaryTable& bin);
 
         //!
+        //! Set a generic user-defined string as "attribute" of the table.
+        //! The semantics of this attribute string is not defined. It is used by the application.
+        //! The attribute string can be found in the `<metadata>` structure of the XML representation of the table.
+        //! @param [in] attr Generic string to set as attribute.
+        //!
+        void setAttribute(const UString& attr) { _attribute = attr; }
+
+        //!
+        //! Get the generic user-defined "attribute" string of the table.
+        //! @return A constant reference to the attribute string in the object.
+        //! @see setAttribute()
+        //!
+        const UString& attribute() const { return _attribute; }
+
+        // Inherited methods
+        virtual void clear() override;
+        virtual xml::Element* toXML(DuckContext& duck, xml::Element* parent) const override final;
+        virtual void fromXML(DuckContext& duck, const xml::Element* element) override final;
+
+        //!
+        //! Get the @a <metadata> structure inside a XML element representing a table.
+        //! If the @a <metadata> structure does not exist, it is created.
+        //! @param [in,out] element The XML element representing a table.
+        //! @return The @a <metadata> structure inside @a element.
+        //! Never null, unless @a element is null.
+        //!
+        static xml::Element* GetOrCreateMetadata(xml::Element* element);
+
+        //!
         //! Base inner class for table entries with one or more descriptor lists.
         //!
         class TSDUCKDLL EntryBase
@@ -414,6 +443,8 @@ namespace ts {
         virtual void deserializePayloadWrapper(PSIBuffer& buf, const Section& section);
 
     private:
+        UString _attribute {};
+
         // Unreachable constructors and operators.
         AbstractTable() = delete;
     };
