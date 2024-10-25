@@ -157,10 +157,8 @@ elif [[ -z $MAIN_ARCH ]]; then
     MAIN_ARCH=${LOCAL_ARCH/i*86/i386}
     MAIN_ARCH=${MAIN_ARCH/arm*/arm}
 fi
-if [[ -z $HOSTNAME ]]; then
-     HOSTNAME=$(hostname 2>/dev/null)
-     HOSTNAME=${HOSTNAME/.*/}
-fi
+[[ -z $HOSTNAME ]] && HOSTNAME=$(hostname 2>/dev/null)
+HOSTNAME=${HOSTNAME/.*/}
 
 # Possibly used in scripts we will call.
 export LOCAL_OS LOCAL_ARCH
@@ -272,7 +270,7 @@ else
 fi
 
 # Recursive invocations of make should be silent.
-[[ $MAKEFLAGS != *no-print-directory* ]] && MAKEFLAGS="$MAKEFLAGS --no-print-directory"
+[[ $MAKEFLAGS != *no-print-directory* ]] && MAKEFLAGS="--no-print-directory $MAKEFLAGS"
 
 # Best multiprocessor make option if unspecified otherwise.
 [[ -z $MAKEFLAGS_SMP && $MAKEFLAGS != *-j* && $CPU_COUNT -gt 1 ]] && MAKEFLAGS_SMP="-j$CPU_COUNT"

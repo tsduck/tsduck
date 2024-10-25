@@ -19,6 +19,7 @@
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsxmlElement.h"
+#include "tsxmlDeclaration.h"
 #include "tsDuckContext.h"
 #include "tsCerrReport.h"
 #include "tsunit.h"
@@ -730,18 +731,59 @@ TSUNIT_DEFINE_TEST(Memory)
 TSUNIT_DEFINE_TEST(Attribute)
 {
     const ts::UChar* xmlref =
-        u"<PAT version=\"0\" current=\"true\" transport_stream_id=\"0x0001\" network_PID=\"0x0010\">\n"
-        u"  <metadata attribute=\"foo\"/>\n"
-        u"  <service service_id=\"0x0100\" program_map_PID=\"0x0200\"/>\n"
-        u"</PAT>\n";
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<tsduck>\n"
+        u"  <PAT version=\"0\" current=\"true\" transport_stream_id=\"0x0001\" network_PID=\"0x0010\">\n"
+        u"    <metadata attribute=\"foo\"/>\n"
+        u"    <service service_id=\"0x0100\" program_map_PID=\"0x0200\"/>\n"
+        u"  </PAT>\n"
+        u"</tsduck>\n";
 
     ts::DuckContext duck;
-    ts::xml::Document doc(report());
+    ts::xml::Document doc1(report());
 
-    TSUNIT_ASSERT(doc.parse(xmlref));
-    const ts::xml::Element* root = doc.rootElement();
-    TSUNIT_ASSERT(root != nullptr);
-    TSUNIT_EQUAL(u"PAT", root->name());
+    TSUNIT_ASSERT(doc1.parse(xmlref));
+    const ts::xml::Element* root1 = doc1.rootElement();
+    TSUNIT_ASSERT(root1 != nullptr);
+    TSUNIT_EQUAL(u"tsduck", root1->name());
+    root1 = root1->firstChildElement();
+    TSUNIT_ASSERT(root1 != nullptr);
+    TSUNIT_EQUAL(u"PAT", root1->name());
 
+    ts::BinaryTable table1;
+    TSUNIT_ASSERT(table1.fromXML(duck, root1));
+    TSUNIT_ASSERT(table1.isValid());
+    TSUNIT_ASSERT(!table1.isShortSection());
+    TSUNIT_EQUAL(ts::TID_PAT, table1.tableId());
+    TSUNIT_EQUAL(u"foo", table1.attribute());
 
+    ts::PAT pat(duck, table1);
+    TSUNIT_ASSERT(pat.isValid());
+    TSUNIT_EQUAL(ts::TID_PAT, pat.tableId());
+    TSUNIT_EQUAL(1, pat.ts_id);
+    TSUNIT_EQUAL(ts::PID_NIT, pat.nit_pid);
+    TSUNIT_EQUAL(1, pat.pmts.size());
+    TSUNIT_EQUAL(0x100, pat.pmts.begin()->first);
+    TSUNIT_EQUAL(0x200, pat.pmts.begin()->second);
+    TSUNIT_EQUAL(u"foo", pat.attribute());
+
+    ts::BinaryTable table2;
+    TSUNIT_ASSERT(pat.serialize(duck, table2));
+    TSUNIT_ASSERT(table2.isValid());
+    TSUNIT_ASSERT(table2.fromXML(duck, root1));
+    TSUNIT_ASSERT(!table2.isShortSection());
+    TSUNIT_EQUAL(ts::TID_PAT, table2.tableId());
+    TSUNIT_EQUAL(u"foo", table2.attribute());
+
+    ts::xml::Document doc2(report());
+    ts::xml::Element* root2 = doc2.initialize(u"tsduck", ts::xml::Declaration::DEFAULT_XML_DECLARATION);
+    TSUNIT_ASSERT(root2 != nullptr);
+    pat.toXML(duck, root2);
+    TSUNIT_EQUAL(xmlref, doc2.toString());
+
+    ts::xml::Document doc3(report());
+    ts::xml::Element* root3 = doc3.initialize(u"tsduck", ts::xml::Declaration::DEFAULT_XML_DECLARATION);
+    TSUNIT_ASSERT(root3 != nullptr);
+    table2.toXML(duck, root3);
+    TSUNIT_EQUAL(xmlref, doc3.toString());
 }

@@ -46,12 +46,14 @@ namespace ts {
         bool             _onStop = false;      // Trigger action on stop.
         bool             _allPackets = false;  // Trigger on all packets in the stream.
         bool             _allLabels = false;   // Need all labels to be set.
-        TSPacketLabelSet _labels {};           // Trigger on packets with these labels.
+        bool             _once = false;        // Trigger the actions only once per label.
+        TSPacketLabelSet _labels {};           // Trigger on packets with these labels, from options.
 
         // Working data:
-        PacketCounter _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
-        Time          _lastTime {};            // UTC time of last action.
-        UDPSocket     _sock {false, *this};    // Output socket.
+        PacketCounter    _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
+        Time             _lastTime {};         // UTC time of last action.
+        UDPSocket        _sock {false, *this}; // Output socket.
+        TSPacketLabelSet _currentLabels {};    // Trigger on packets with these labels, during processing.
 
         // Trigger the actions (exec, UDP).
         void trigger();
@@ -118,6 +120,11 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
          u"the IP address of the outgoing local interface. It can be also a host "
          u"name that translates to a local address.");
 
+    option(u"once");
+    help(u"once",
+         u"Trigger the actions only once per label. "
+         u"When a packet with one or more labels from option --label has triggered the actions, these labels are disabled.");
+
     option(u"start");
     help(u"start", u"Trigger the actions on tsp start.");
 
@@ -148,6 +155,7 @@ bool ts::TriggerPlugin::getOptions()
     getIntValues(_labels, u"label");
     _onStart = present(u"start");
     _onStop = present(u"stop");
+    _once = present(u"once");
     _allLabels = present(u"all-labels");
     _allPackets = !_onStart && !_onStop && _labels.none();
 
@@ -168,6 +176,7 @@ bool ts::TriggerPlugin::start()
 {
     _lastPacket = INVALID_PACKET_COUNTER;
     _lastTime = Time::Epoch;
+    _currentLabels = _labels;
 
     // Initialize UDP output.
     if (!_udpDestination.empty()) {
@@ -218,7 +227,7 @@ ts::ProcessorPlugin::Status ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPa
     // Check if the packet shall be selected.
     Time now(Time::Epoch);
     const bool select =
-        (_allPackets || (_allLabels && pkt_data.hasAllLabels(_labels)) || (!_allLabels && pkt_data.hasAnyLabel(_labels))) &&
+        (_allPackets || (_allLabels && pkt_data.hasAllLabels(_currentLabels)) || (!_allLabels && pkt_data.hasAnyLabel(_currentLabels))) &&
         (_minInterPacket == 0 || _lastPacket == INVALID_PACKET_COUNTER || tsp->pluginPackets() >= _lastPacket + _minInterPacket) &&
         (_minInterTime == cn::milliseconds::zero() || _lastTime == Time::Epoch || (now = Time::CurrentUTC()) >= _lastTime + _minInterTime);
 
@@ -228,6 +237,11 @@ ts::ProcessorPlugin::Status ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPa
         _lastTime = now == Time::Epoch ? Time::CurrentUTC() : now;
         _lastPacket = tsp->pluginPackets();
         trigger();
+
+        // Reset the labels after first trigger.
+        if (_once) {
+            _currentLabels &= ~pkt_data.labels();
+        }
     }
 
     return TSP_OK;

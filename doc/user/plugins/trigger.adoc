@@ -91,6 +91,14 @@ Specify the minimum time, in milliseconds, between two triggered actions.
 Actions which should be triggered in the meantime are ignored.
 
 [.opt]
+*--once*
+
+[.optdoc]
+Trigger the actions only once per label.
+When a packet with one or more labels from option `--label` has triggered the actions once,
+these labels are disabled.
+
+[.opt]
 *--start*
 
 [.optdoc]
