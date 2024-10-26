@@ -35,19 +35,20 @@ namespace ts {
 
     private:
         // Command line options:
-        PacketCounter    _minInterPacket = 0;  // Minimum interval in packets between two actions.
-        cn::milliseconds _minInterTime {};     // Minimum interval in milliseconds between two actions.
-        UString          _execute {};          // Command to execute on trigger.
-        UString          _udpDestination {};   // UDP/IP destination address:port.
-        UString          _udpLocal {};         // Name of outgoing local address (empty if unspecified).
-        ByteBlock        _udpMessage {};       // What to send as UDP message.
-        int              _udpTTL = 0;          // Time-to-live socket option.
-        bool             _onStart = false;     // Trigger action on start.
-        bool             _onStop = false;      // Trigger action on stop.
-        bool             _allPackets = false;  // Trigger on all packets in the stream.
-        bool             _allLabels = false;   // Need all labels to be set.
-        bool             _once = false;        // Trigger the actions only once per label.
-        TSPacketLabelSet _labels {};           // Trigger on packets with these labels, from options.
+        PacketCounter      _minInterPacket = 0;  // Minimum interval in packets between two actions.
+        cn::milliseconds   _minInterTime {};     // Minimum interval in milliseconds between two actions.
+        UString            _execute {};          // Command to execute on trigger.
+        UString            _udpDestination {};   // UDP/IP destination address:port.
+        UString            _udpLocal {};         // Name of outgoing local address (empty if unspecified).
+        ByteBlock          _udpMessage {};       // What to send as UDP message.
+        int                _udpTTL = 0;          // Time-to-live socket option.
+        bool               _onStart = false;     // Trigger action on start.
+        bool               _onStop = false;      // Trigger action on stop.
+        bool               _allPackets = false;  // Trigger on all packets in the stream.
+        bool               _allLabels = false;   // Need all labels to be set.
+        bool               _once = false;        // Trigger the actions only once per label.
+        TSPacketLabelSet   _labels {};           // Trigger on packets with these labels, from options.
+        ForkPipe::WaitMode _wait_mode = ForkPipe::ASYNCHRONOUS;  // How to run executed commands.
 
         // Working data:
         PacketCounter    _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
@@ -77,7 +78,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
 
     option(u"execute", 'e', STRING);
     help(u"execute", u"'command'",
-         u"Run the specified command when the current packet triggers the actions.");
+         u"Run the specified command when the current packet triggers the actions.\n"
+         u"See also option --synchronous.");
 
     option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"label", u"label1[-label2]",
@@ -131,6 +133,11 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
     option(u"stop");
     help(u"stop", u"Trigger the actions on tsp stop.");
 
+    option(u"synchronous", 's');
+    help(u"synchronous",
+         u"With --execute, wait for the command to complete before processing the next packet. "
+         u"By default, the command runs asynchronously.");
+
     option(u"ttl", 0, POSITIVE);
     help(u"ttl",
          u"With --udp, specifies the TTL (Time-To-Live) socket option. "
@@ -158,6 +165,7 @@ bool ts::TriggerPlugin::getOptions()
     _once = present(u"once");
     _allLabels = present(u"all-labels");
     _allPackets = !_onStart && !_onStop && _labels.none();
+    _wait_mode = present(u"synchronous") ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS;
 
     if (present(u"udp-message") && !value(u"udp-message").hexaDecode(_udpMessage)) {
         error(u"invalid hexadecimal UDP message");
@@ -256,7 +264,7 @@ void ts::TriggerPlugin::trigger()
 {
     // Execute external command.
     if (!_execute.empty()) {
-        ForkPipe::Launch(_execute, *this, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+        ForkPipe::Launch(_execute, *this, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE, _wait_mode);
     }
 
     // Send message over a socket.

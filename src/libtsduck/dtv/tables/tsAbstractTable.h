@@ -99,10 +99,10 @@ namespace ts {
         virtual void fromXML(DuckContext& duck, const xml::Element* element) override final;
 
         //!
-        //! Get the @a <metadata> structure inside a XML element representing a table.
-        //! If the @a <metadata> structure does not exist, it is created.
+        //! Get the @a \<metadata> structure inside a XML element representing a table.
+        //! If the @a \<metadata> structure does not exist, it is created.
         //! @param [in,out] element The XML element representing a table.
-        //! @return The @a <metadata> structure inside @a element.
+        //! @return The @a \<metadata> structure inside @a element.
         //! Never null, unless @a element is null.
         //!
         static xml::Element* GetOrCreateMetadata(xml::Element* element);

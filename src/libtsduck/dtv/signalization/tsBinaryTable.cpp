@@ -269,7 +269,6 @@ void ts::BinaryTable::clear()
     _source_pid = PID_NULL;
     _missing_count = 0;
     _sections.clear();
-    _attribute.clear();
 }
 
 
@@ -296,6 +295,32 @@ size_t ts::BinaryTable::totalSize() const
 ts::PacketCounter ts::BinaryTable::packetCount(bool pack) const
 {
     return Section::PacketCount(_sections, pack);
+}
+
+
+//----------------------------------------------------------------------------
+// Get/set the generic user-defined string as "attribute" of the object.
+//----------------------------------------------------------------------------
+
+void ts::BinaryTable::setAttribute(const UString& attr)
+{
+    // Set attribute on all sections.
+    for (const auto& it : _sections) {
+        if (it != nullptr) {
+            it->setAttribute(attr);
+        }
+    }
+}
+
+ts::UString ts::BinaryTable::attribute() const
+{
+    // Return first non-empty section attribute.
+    for (const auto& it : _sections) {
+        if (it != nullptr && !it->attribute().empty()) {
+            return it->attribute();
+        }
+    }
+    return UString();
 }
 
 

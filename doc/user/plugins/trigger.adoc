@@ -47,6 +47,9 @@ By default, a packet is selected if any label is set (logical _or_).
 [.optdoc]
 Run the specified command when the current packet triggers the actions.
 
+[.optdoc]
+See also option `--synchronous`.
+
 [.opt]
 *-l* _label1[-label2]_ +
 *--label* _label1[-label2]_
@@ -109,6 +112,16 @@ Trigger the actions on `tsp` start.
 
 [.optdoc]
 Trigger the actions on `tsp` stop.
+
+[.opt]
+*-s* +
+*--synchronous*
+
+[.optdoc]
+With `--execute`, wait for the command to complete before processing the next packet.
+
+[.optdoc]
+By default, the command runs asynchronously.
 
 [.opt]
 *--ttl* _value_

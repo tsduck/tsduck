@@ -21,7 +21,8 @@ ts::DemuxedData::DemuxedData(PID source_pid) :
 ts::DemuxedData::DemuxedData(const DemuxedData& pp, ShareMode mode) :
     _source_pid(pp._source_pid),
     _first_pkt(pp._first_pkt),
-    _last_pkt(pp._last_pkt)
+    _last_pkt(pp._last_pkt),
+    _attribute(pp._attribute)
 {
     switch (mode) {
         case ShareMode::SHARE:
@@ -40,7 +41,8 @@ ts::DemuxedData::DemuxedData(DemuxedData&& pp) noexcept :
     _source_pid(pp._source_pid),
     _first_pkt(pp._first_pkt),
     _last_pkt(pp._last_pkt),
-    _data(std::move(pp._data))
+    _data(std::move(pp._data)),
+    _attribute(std::move(pp._attribute))
 {
 }
 
@@ -76,6 +78,7 @@ void ts::DemuxedData::clear()
     _first_pkt = 0;
     _last_pkt = 0;
     _data.reset();
+    _attribute.clear();
 }
 
 
@@ -116,6 +119,7 @@ ts::DemuxedData& ts::DemuxedData::operator=(const DemuxedData& pp)
         _first_pkt = pp._first_pkt;
         _last_pkt = pp._last_pkt;
         _data = pp._data;
+        _attribute = pp._attribute;
     }
     return *this;
 }
@@ -127,6 +131,7 @@ ts::DemuxedData& ts::DemuxedData::operator=(DemuxedData&& pp) noexcept
         _first_pkt = pp._first_pkt;
         _last_pkt = pp._last_pkt;
         _data = std::move(pp._data);
+        _attribute = std::move(pp._attribute);
     }
     return *this;
 }
@@ -139,9 +144,13 @@ ts::DemuxedData& ts::DemuxedData::operator=(DemuxedData&& pp) noexcept
 
 ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& pp)
 {
-    _first_pkt = pp._first_pkt;
-    _last_pkt = pp._last_pkt;
-    _data = pp._data == nullptr ? nullptr : std::make_shared<ByteBlock>(*pp._data);
+    if (&pp != this) {
+        _source_pid = pp._source_pid;
+        _first_pkt = pp._first_pkt;
+        _last_pkt = pp._last_pkt;
+        _attribute = pp._attribute;
+        _data = pp._data == nullptr ? nullptr : std::make_shared<ByteBlock>(*pp._data);
+    }
     return *this;
 }
 
@@ -152,6 +161,7 @@ ts::DemuxedData& ts::DemuxedData::copy(const DemuxedData& pp)
 
 bool ts::DemuxedData::operator==(const DemuxedData& pp) const
 {
+    // Don't inclue attribute in the comparison, it is not "part" of the demuxed object.
     return _data != nullptr && pp._data != nullptr && (_data == pp._data || *_data == *pp._data);
 }
 

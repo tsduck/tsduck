@@ -185,6 +185,8 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
 
 bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
 {
+    bool ok = true;
+
     // Reinitialize table object.
     table.clear();
 
@@ -196,9 +198,6 @@ bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
     // Add the standards of the serialized table into the context.
     duck.addStandards(definingStandards());
 
-    // Transfer generic attributes.
-    table.setAttribute(_attribute);
-
     // Build a buffer of the appropriate size.
     PSIBuffer payload(duck, maxPayloadSize());
 
@@ -209,12 +208,11 @@ bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
     if (payload.error()) {
         // There were serialization errors, invalidate the binary table.
         table.clear();
-        return false;
+        ok = false;
     }
     else if (table.sectionCount() == 0) {
         // No section were added, add this one, even if empty.
         addOneSection(table, payload);
-        return true;
     }
     else {
         // Some sections were already added. Check if we need to add a last one.
@@ -233,8 +231,13 @@ bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
         if (add) {
             addOneSection(table, payload);
         }
-        return !payload.error();
+        ok = !payload.error();
     }
+
+
+    // Transfer generic attributes.
+    table.setAttribute(_attribute);
+    return ok;
 }
 
 

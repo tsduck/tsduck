@@ -285,6 +285,27 @@ namespace ts {
         bool isShortSection() const;
 
         //!
+        //! Set a generic user-defined string as "attribute" of the object.
+        //! The semantics of this attribute string is not defined. It is used by the application.
+        //! The attribute string can be found in the `<metadata>` structure of the XML representation of a table.
+        //!
+        //! Here, the attribute is set on all sections in the table.
+        //! If the table contains no section, the attibute is ignored.
+        //! If additional sections are added later, their attribute will not be changed.
+        //!
+        //! @param [in] attr Generic string to set as attribute.
+        //!
+        void setAttribute(const UString& attr);
+
+        //!
+        //! Get the generic user-defined "attribute" string of the object.
+        //! This is the first non-empty attribute in the sections in the table.
+        //! @return The attribute string in the object.
+        //! @see setAttribute()
+        //!
+        UString attribute() const;
+
+        //!
         //! Options to convert a binary table into XML.
         //!
         class TSDUCKDLL XMLOptions
@@ -319,21 +340,6 @@ namespace ts {
         //!
         bool fromXML(DuckContext& duck, const xml::Element* node);
 
-        //!
-        //! Set a generic user-defined string as "attribute" of the table.
-        //! The semantics of this attribute string is not defined. It is used by the application.
-        //! The attribute string can be found in the `<metadata>` structure of the XML representation of the table.
-        //! @param [in] attr Generic string to set as attribute.
-        //!
-        void setAttribute(const UString& attr) { _attribute = attr; }
-
-        //!
-        //! Get the generic user-defined "attribute" string of the table.
-        //! @return A constant reference to the attribute string in the object.
-        //! @see setAttribute()
-        //!
-        const UString& attribute() const { return _attribute; }
-
         // Implementation of AbstractDefinedByStandards
         virtual Standards definingStandards() const override;
 
@@ -348,6 +354,5 @@ namespace ts {
         PID              _source_pid = PID_NULL;
         int              _missing_count = 0;
         SectionPtrVector _sections {};
-        UString          _attribute {};
     };
 }

@@ -757,28 +757,43 @@ TSUNIT_DEFINE_TEST(Attribute)
     TSUNIT_EQUAL(ts::TID_PAT, table1.tableId());
     TSUNIT_EQUAL(u"foo", table1.attribute());
 
-    ts::PAT pat(duck, table1);
-    TSUNIT_ASSERT(pat.isValid());
-    TSUNIT_EQUAL(ts::TID_PAT, pat.tableId());
-    TSUNIT_EQUAL(1, pat.ts_id);
-    TSUNIT_EQUAL(ts::PID_NIT, pat.nit_pid);
-    TSUNIT_EQUAL(1, pat.pmts.size());
-    TSUNIT_EQUAL(0x100, pat.pmts.begin()->first);
-    TSUNIT_EQUAL(0x200, pat.pmts.begin()->second);
-    TSUNIT_EQUAL(u"foo", pat.attribute());
+    TSUNIT_EQUAL(1, table1.sectionCount());
+    TSUNIT_ASSERT(table1.sectionAt(0) != nullptr);
+    TSUNIT_ASSERT(table1.sectionAt(0)->isValid());
+    TSUNIT_EQUAL(u"foo", table1.sectionAt(0)->attribute());
+
+    ts::PAT pat1(duck, table1);
+    TSUNIT_ASSERT(pat1.isValid());
+    TSUNIT_EQUAL(ts::TID_PAT, pat1.tableId());
+    TSUNIT_EQUAL(1, pat1.ts_id);
+    TSUNIT_EQUAL(ts::PID_NIT, pat1.nit_pid);
+    TSUNIT_EQUAL(1, pat1.pmts.size());
+    TSUNIT_EQUAL(0x100, pat1.pmts.begin()->first);
+    TSUNIT_EQUAL(0x200, pat1.pmts.begin()->second);
+    TSUNIT_EQUAL(u"foo", pat1.attribute());
 
     ts::BinaryTable table2;
-    TSUNIT_ASSERT(pat.serialize(duck, table2));
+    TSUNIT_ASSERT(pat1.serialize(duck, table2));
     TSUNIT_ASSERT(table2.isValid());
     TSUNIT_ASSERT(table2.fromXML(duck, root1));
     TSUNIT_ASSERT(!table2.isShortSection());
     TSUNIT_EQUAL(ts::TID_PAT, table2.tableId());
     TSUNIT_EQUAL(u"foo", table2.attribute());
 
+    ts::PAT pat2;
+    pat2 = pat1;
+    TSUNIT_EQUAL(u"foo", pat1.attribute());
+    TSUNIT_EQUAL(u"foo", pat2.attribute());
+
+    ts::BinaryTable table3;
+    table3 = table1;
+    TSUNIT_EQUAL(u"foo", table1.attribute());
+    TSUNIT_EQUAL(u"foo", table3.attribute());
+
     ts::xml::Document doc2(report());
     ts::xml::Element* root2 = doc2.initialize(u"tsduck", ts::xml::Declaration::DEFAULT_XML_DECLARATION);
     TSUNIT_ASSERT(root2 != nullptr);
-    pat.toXML(duck, root2);
+    pat1.toXML(duck, root2);
     TSUNIT_EQUAL(xmlref, doc2.toString());
 
     ts::xml::Document doc3(report());
