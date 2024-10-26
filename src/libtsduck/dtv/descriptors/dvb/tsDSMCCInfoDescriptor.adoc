@@ -1,0 +1,10 @@
+==== dsmcc_info_descriptor
+
+Defined by DVB in <<ETSI-301-192>>.
+
+[source,xml]
+----
+<dsmcc_info_descriptor
+    language_code="char3, required"
+    info="string, required"/>
+----

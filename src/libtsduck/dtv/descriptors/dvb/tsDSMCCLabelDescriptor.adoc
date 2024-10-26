@@ -1,0 +1,8 @@
+==== dsmcc_label_descriptor
+
+Defined by DVB in <<ETSI-102-727>>.
+
+[source,xml]
+----
+<dsmcc_label_descriptor label="string, required"/>
+----

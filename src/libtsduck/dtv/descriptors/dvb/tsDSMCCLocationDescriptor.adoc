@@ -1,0 +1,9 @@
+==== dsmcc_location_descriptor
+
+Defined by DVB in <<ETSI-301-192>>.
+
+[source,xml]
+----
+<dsmcc_location_descriptor
+    location_tag="uint8, required"/>
+----

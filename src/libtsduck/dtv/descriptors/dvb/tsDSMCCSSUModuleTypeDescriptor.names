@@ -1,0 +1,6 @@
+[dsmcc_ssu_module_type_descriptor.SSU_module_type]
+Bits = 8
+0x00 = Executable module type
+0x01 = Memory mapped code module type
+0x02 = Data module type
+0x03-0xFF = Reserved for future use

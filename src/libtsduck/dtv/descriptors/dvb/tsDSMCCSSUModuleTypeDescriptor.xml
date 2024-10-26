@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dsmcc_ssu_module_type_descriptor
+      SSU_module_type ="uint8, required">
+    </dsmcc_ssu_module_type_descriptor>
+
+  </_descriptors>
+</tsduck>

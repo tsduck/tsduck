@@ -1,0 +1,9 @@
+==== dsmcc_subgroup_association_descriptor
+
+Defined by DVB in <<ETSI-102-006>>.
+Must be in a DSI (table id 0x3B).
+
+[source,xml]
+----
+<dsmcc_subgroup_association_descriptor subgroup_tag="uint40, required"/>
+----

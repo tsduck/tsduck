@@ -1,0 +1,5 @@
+[dsmcc_group_link_descriptor.position]
+Bits = 8
+0x00 = First group description of the list
+0x01 = Intermediate group description in the list
+0x02 = Last group description of the list

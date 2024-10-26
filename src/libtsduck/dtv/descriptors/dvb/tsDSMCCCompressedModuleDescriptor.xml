@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dsmcc_compressed_module_descriptor
+      compression_method="uint8, required"
+      original_size="uint32, required">
+    </dsmcc_compressed_module_descriptor>
+
+  </_descriptors>
+</tsduck>

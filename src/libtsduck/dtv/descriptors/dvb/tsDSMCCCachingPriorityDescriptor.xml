@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dsmcc_caching_priority_descriptor
+      priority_value="uint8, required"
+      transparency_level="uint8, required">
+    </dsmcc_caching_priority_descriptor>
+
+  </_descriptors>
+</tsduck>

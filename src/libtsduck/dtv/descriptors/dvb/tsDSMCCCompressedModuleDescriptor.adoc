@@ -1,0 +1,10 @@
+==== dsmcc_compressed_module_descriptor
+
+Defined by DVB in <<ETSI-301-192>>.
+
+[source,xml]
+----
+<dsmcc_compressed_module_descriptor
+    compression_method="uint8, required"
+    original_size="uint32, required"/>
+----

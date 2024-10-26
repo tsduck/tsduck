@@ -1,0 +1,10 @@
+==== dsmcc_caching_proiority_descriptor
+
+Defined by DVB in <<ETSI-102-727>>.
+
+[source,xml]
+----
+<dsmcc_caching_priority_descriptor
+    priority_value="uint8, required"
+    transparency_level="uint8, required"/>
+----

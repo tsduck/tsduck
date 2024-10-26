@@ -1,0 +1,5 @@
+[dsmcc_module_link_descriptor.position]
+Bits = 8
+0x00 = First module of the list
+0x01 = Intermediate module in the list
+0x02 = Last module of the list

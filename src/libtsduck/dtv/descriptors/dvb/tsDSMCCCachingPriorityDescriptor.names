@@ -1,0 +1,7 @@
+[dsmcc_caching_priority_descriptor.transparency_level]
+Bits = 8
+0 = Reserved
+1 = Transparent caching
+2 = Semi-transparent caching
+3 = Static caching
+4-255 = Reserved for future use

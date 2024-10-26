@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dsmcc_info_descriptor
+      language_code="char3, required"
+      info="string, required">
+    </dsmcc_info_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dsmcc_CRC32_descriptor
+      CRC_32="uint32, required">
+    </dsmcc_CRC32_descriptor>
+
+  </_descriptors>
+</tsduck>
+

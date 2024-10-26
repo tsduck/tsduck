@@ -1,0 +1,10 @@
+==== dsmcc_module_link_descriptor
+
+Defined by DVB in <<ETSI-301-192>>.
+
+[source,xml]
+----
+<dsmcc_module_link_descriptor
+    position="uint8, required"
+    module_id="uint16, required"/>
+----

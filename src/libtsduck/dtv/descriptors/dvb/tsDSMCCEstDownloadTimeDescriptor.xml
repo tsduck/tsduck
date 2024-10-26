@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dsmcc_est_download_time_descriptor
+      est_download_time="uint32, required">
+    </dsmcc_est_download_time_descriptor>
+
+  </_descriptors>
+</tsduck>
+
