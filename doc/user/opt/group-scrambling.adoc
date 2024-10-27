@@ -143,5 +143,5 @@ Each line of the file will contain a control word with 16 or 32 hexadecimal digi
 Each time a new control word is used to descramble packets, it is logged in the file.
 
 [.optdoc]
-This option is specifically useful when the control words are dynamically extracted from ECM’s.
+This option is specifically useful when the control words are dynamically extracted from ECM's.
 The created file can be used later using `--cw-file` to perform a direct descrambling test.

@@ -10,13 +10,13 @@
 === tseit
 
 [.cmd-header]
-Manipulate EIT’s using commands and scripts
+Manipulate EIT's using commands and scripts
 
 This utility manipulates DVB Event Information Tables (EIT) using commands.
 Scripts can be used to reproduce specific test cases.
 
 This utility is typically reserved to offline testing.
-To generate and inject EIT’s in actual transport streams, use the `tsp` plugin `eitinject`.
+To generate and inject EIT's in actual transport streams, use the `tsp` plugin `eitinject`.
 
 [.usage]
 Usage
@@ -63,8 +63,8 @@ If the file name is a dash (`-`), the standard input is used.
 
 [.optdoc]
 As usual in scripts, each text line is a command.
-Lines starting with ‘#’ are considered as comments and ignored.
-Lines ending with a backslash (‘\’) continue on the next line.
+Lines starting with `#` are considered as comments and ignored.
+Lines ending with a backslash (`\`) continue on the next line.
 
 [.optdoc]
 Several `--file` options can be specified.
@@ -117,7 +117,7 @@ m|*dump*
 m|*exit*
 
 |*generate*
-2+|Generate TS packets, injecting EIT’s from the event database according to the injection profile.
+2+|Generate TS packets, injecting EIT's from the event database according to the injection profile.
    Non-EIT packets are null packets.
    The TS id, TS bitrate and initial date/time must have been specified first (see command `set`).
 
@@ -173,7 +173,7 @@ m|_filename_
 
 |*process*
 2+|Process a transport stream file with EIT generation.
-   The input file is read, EIT’s are injected using the event database.
+   The input file is read, EIT's are injected using the event database.
    The TS bitrate must have been specified first (see command `set`).
 
 |
@@ -182,7 +182,7 @@ m|*process* [_options_] _infile outfile_
 
 |
 m|_infile_
-|Name of the input TS file. Input EIT’s are used to populate the event database.
+|Name of the input TS file. Input EIT's are used to populate the event database.
 
 |
 m|_outfile_

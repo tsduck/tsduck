@@ -183,14 +183,14 @@ Several `--pid` options may be specified.
 By default, without `--pid` option, all PID's are used.
 
 [.optdoc]
-PID’s containing PES data are automatically ignored.
+PID's containing PES data are automatically ignored.
 
 [.opt]
 *--psi-si*
 
 [.optdoc]
 Add all PID's containing PSI/SI tables, ie. PAT, CAT, PMT, NIT, SDT and BAT.
-The PMT PID’s are dynamically collected each time a new PAT is encountered.
+The PMT PID's are dynamically collected each time a new PAT is encountered.
 
 [.optdoc]
 Note that EIT, TDT and TOT are not included.

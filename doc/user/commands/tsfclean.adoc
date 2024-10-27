@@ -19,7 +19,7 @@ However, when a media player manipulates stored contents,
 it expects the files to start with the actual beginning of an audio/video content.
 When the file format is an MPEG transport stream,
 the player expects some characteristics such as
-immediate identification of the services and PID’s, initial intra video frame, etc.
+immediate identification of the services and PID's, initial intra video frame, etc.
 Not matching these characteristics does not prevent the content from being rendered by the player
 but glitches are usually present at startup.
 
@@ -27,18 +27,18 @@ The `tsfclean` command cleans up a TS file to make it more consistent for media 
 The following transformations are applied:
 
 * The output file starts with the PAT, the CAT (if present on input), the SDT (if present on input)
-  and the PMT’s of all services. Thus, the player is aware of the exact structure of the TS before
+  and the PMT's of all services. Thus, the player is aware of the exact structure of the TS before
   processing the first audio / video data.
-* EIT present/following for actual existing services are kept. All other EIT’s are removed.
+* EIT present/following for actual existing services are kept. All other EIT's are removed.
 * All other PSI/SI (including NIT, BAT, TDT and other broadcast-related tables), all null packets
-  and all orphan PID’s are deleted.
+  and all orphan PID's are deleted.
 * In each video PID, all packets preceding the first intra-frame are deleted. If no intra-frame can
   be found (unknown video codec or scrambled contents), all packets preceding the first
   complete PES packet are deleted.
 * In each audio, subtitles or data component of the services, all packets preceding the first
   complete PES packet or section are deleted.
 
-If the input file contains several versions of a table (PAT, CAT, SDT or PMT’s),
+If the input file contains several versions of a table (PAT, CAT, SDT or PMT's),
 all successive versions are merged into one single version of the table.
 Some players are known to read the first table of each kind only
 and are not able to handle table updates as a TV receiver would do.

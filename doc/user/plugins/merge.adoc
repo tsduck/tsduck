@@ -23,7 +23,7 @@ Otherwise, it wouldn't fit in the main transport steam.
 
 Typically (although not required), the created process is another `tsp` command which prepares the merged transport stream.
 Preparing the transport stream may include reducing the bitrate by removing stuffing and services,
-remapping PID’s or renaming services which could conflict with existing PID’s or services in the other transport stream.
+remapping PID's or renaming services which could conflict with existing PID's or services in the other transport stream.
 
 By default, the following operations are performed while merging transport streams.
 These defaults can be changed using appropriate options.
@@ -31,8 +31,8 @@ These defaults can be changed using appropriate options.
 * The PAT and SDT from the merged transport stream are merged into the corresponding tables in the main transport stream.
   The merged services are consequently correctly referenced in the main transport stream. +
   More precisely, the PAT and SDT tables in the main transport stream are modified to include all services from the merged stream.
-  The original PAT and SDT PID’s from the merged stream are nullified.
-* Similarly, the CAT is also merged so that EMM PID’s from the merged transport stream
+  The original PAT and SDT PID's from the merged stream are nullified.
+* Similarly, the CAT is also merged so that EMM PID's from the merged transport stream
   are correctly referenced in the main transport stream. +
   Warning: The CAT is an optional table, and the `merge` plugin will not create one if there is none.
   If you want to make sure that a merged CAT will be present, use an instance of the `cat` plugin before merge.
@@ -40,8 +40,8 @@ These defaults can be changed using appropriate options.
   Unlike PAT, SDT and CAT, the EIT sections are left unmodified.
   The EIT sections from the two streams are interspersed into one larger EIT PID.
 * The PID's 0x00 to 0x1F are dropped from the merged transport stream.
-  These PID’s contain the base PSI/SI which are normally present in all transport streams.
-  Merging these PID’s would create conflicts.
+  These PID's contain the base PSI/SI which are normally present in all transport streams.
+  Merging these PID's would create conflicts.
   Instead, the most important PSI/SI tables are correctly merged as previously described
   (unless -`-no-psi-merge` is used). +
   All other PID's are passed.
@@ -49,7 +49,7 @@ These defaults can be changed using appropriate options.
 * PID conflicts are detected.
   If packets from the same PID are found in the two transport streams, the PID is dropped from the merged stream.
 * In packets coming from the merged transport stream,
-  the PCR’s are restamped according to their new placement in the main transport stream.
+  the PCR's are restamped according to their new placement in the main transport stream.
 
 [.usage]
 Usage
@@ -176,7 +176,7 @@ restamping the PCR's can break the video playout since they become decorrelated 
 
 [.optdoc]
 Do not merge PSI/SI from the merged TS into the main TS.
-By default, the PAT, CAT, SDT and EIT’s are merged so that
+By default, the PAT, CAT, SDT and EIT's are merged so that
 the services from the merged stream are properly referenced and PID's 0x00 to 0x1F are dropped from the merged stream.
 
 [.opt]

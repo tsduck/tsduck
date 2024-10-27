@@ -12,7 +12,7 @@
 [.cmd-header]
 Duplicate PID's, reusing null packets
 
-This plugin duplicates the content of several PID’s into new PID’s.
+This plugin duplicates the content of several PID's into new PID's.
 The duplicated packets are created by replacing existing null packets.
 The input stream shall consequently contain at least as many null packets as packets to duplicate.
 

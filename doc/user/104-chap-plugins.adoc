@@ -39,7 +39,7 @@ endif::[]
 
 |bitrate_monitor
 |packet
-|Monitor the bitrate of the TS or a given set of PID’s
+|Monitor the bitrate of the TS or a given set of PID's
 
 |boostpid
 |packet
@@ -271,7 +271,7 @@ endif::[]
 
 |rmorphan
 |packet
-|Remove unreferenced ("orphan") PID’s
+|Remove unreferenced ("orphan") PID's
 
 |rmsplice
 |packet
@@ -291,7 +291,7 @@ endif::[]
 
 |sifilter
 |packet
-|Extract PSI/SI PID’s
+|Extract PSI/SI PID's
 
 |skip
 |packet

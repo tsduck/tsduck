@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3914
+VERSION 3.39-3915
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -24,11 +24,14 @@ VERSION 3.39-3914
     is effective only if the input plugin is "dvb".
   * In "tspcap" and plugin "pcap", explore all nested levels of VLAN to get
     inner IPv4 packets (issue #1529).
-  * Added conditions in XML patch files (see special attributes `x-define`,
-    `x-undefine`, and `x-condition`).
+  * Added conditions in XML patch files (see special attributes "x-define",
+    "x-undefine", and "x-condition").
   * In XML files containing tables, it is possible to specify one "attribute"
     string per table. This generic string is passed to applications which
     may want to use it.
+  * In plugin "eitinject", it is now possible to delete events from the EPG
+    and remove them from EIT's before they occur. Use attribute="delete" in
+    XML files to delete events instead of adding them.
   * New options in existing commands and plugins:
     - Option --except-label in all packet processing plugins.
     - Option --udp-format in "tstables" and plugin "tables" to send tables
@@ -41,9 +44,10 @@ VERSION 3.39-3914
 
 [BUG] Bug fixes:
 
-  * In "tstabcomp", when an input file name was specified but no output file
-    name (e.g. "tstabcomp file.xml"), the output was sent to the standard
-    output instead of the default output file name (e.g. "file.bin").
+  * Fixed a regression in "tstabcomp", when an input file name was specified
+    but no output file name (e.g. "tstabcomp file.xml"), the output was sent
+    to the standard output instead of the default output file name
+    (e.g. "file.bin").
   * Fixed issue #1519: incorrect value of program_splice_flag in SCTE 35
     splice information tables.
   * Fixed issue #1520: assertion failure in "tscmp" in rare cases.
@@ -109,7 +113,7 @@ VERSION 3.37-3656
   * Fixed issue #1401: A corrupted PES packet crashed plugin "pes".
   * Fixed issues #1405 and #1407: A corrupted HEVC sequence caused memory
     allocation failures in various tools and plugins ("analyze", "pes", etc.)
-  * Fixed issue #1416: Using plugin `pcrcopy` without `--reference-label`,
+  * Fixed issue #1416: Using plugin "pcrcopy" without --reference-label,
     when label 0 was set by prevous plugins, the reference PID could be
     incorrectly switched.
 

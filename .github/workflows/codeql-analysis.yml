@@ -62,11 +62,11 @@ jobs:
       name: Custom build (C++)
       run: make -j5 NOTEST=1
 
-    - if: matrix.language == 'java' 
+    - if: matrix.language == 'java'
       name: Custom build (Java)
       run: make -C src/libtsduck/java
 
-    - if: matrix.language == 'python' 
+    - if: matrix.language == 'python'
       name: Autobuild (Python)
       uses: github/codeql-action/autobuild@v3
 

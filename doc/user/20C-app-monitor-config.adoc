@@ -45,7 +45,7 @@ the monitoring strategy is divided into several periods.
 Each period can have a distinct monitoring strategy.
 
 When anomalies are detected, it is possible to trigger external alarm commands,
-in addition to log messages (although the default configuration doesn’t).
+in addition to log messages (although the default configuration doesn't).
 
 [#monconfig-format]
 === Resource monitoring configuration file format

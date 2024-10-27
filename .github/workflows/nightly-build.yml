@@ -211,7 +211,7 @@ jobs:
         name: ubuntu-package
         path: pkg/installers/tsduck_${{ env.FULLVERSION }}_amd64.deb
         retention-days: 5
-        
+
     - name: Upload Ubuntu dev package
       if: env.REBUILD == 'true'
       uses: actions/upload-artifact@v4
@@ -219,7 +219,7 @@ jobs:
         name: ubuntu-dev-package
         path: pkg/installers/tsduck-dev_${{ env.FULLVERSION }}_amd64.deb
         retention-days: 5
-        
+
   doc:
     name: Documentation build
     if: github.repository == 'tsduck/tsduck'

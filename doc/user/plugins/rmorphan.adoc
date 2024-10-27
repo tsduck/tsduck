@@ -10,11 +10,11 @@
 === rmorphan
 
 [.cmd-header]
-Remove unreferenced PID’s
+Remove unreferenced PID's
 
-This plugin removes unreferenced (aka orphan) PID’s from the transport stream. The plugin analyzes
+This plugin removes unreferenced (aka orphan) PID's from the transport stream. The plugin analyzes
 the complete TS structure, starting from the PAT and the CAT. Any packet which neither belongs to a
-predefined PID’s nor to a referenced PID in the TS structure is removed.
+predefined PID's nor to a referenced PID in the TS structure is removed.
 
 [.usage]
 Usage

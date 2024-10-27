@@ -11,9 +11,9 @@
 === bitrate_monitor
 
 [.cmd-header]
-Monitor the bitrate of the transport stream or a given set of PID’s
+Monitor the bitrate of the transport stream or a given set of PID's
 
-This plugin is used to monitor the bitrate of the complete transport stream or a given set of PID’s.
+This plugin is used to monitor the bitrate of the complete transport stream or a given set of PID's.
 Note that the bitrate is the instantaneous bitrate, meaning that it is computed from the packets received during the last _n_ seconds
 (_n_ is a plugin parameter, the default value is 5 seconds).
 
@@ -48,7 +48,7 @@ The command receives the following additional parameters:
 1. A human-readable alarm message.
 2. Either `ts` or the decimal integer value of the first PID to monitor.
 3. Bitrate alarm state string, one of `lower`, `greater`, `normal`.
-4. Current bitrate in b/s (decimal integer) of TS or set of PID’s.
+4. Current bitrate in b/s (decimal integer) of TS or set of PID's.
 5. Minimum bitrate in b/s (decimal integer).
 6. Maximum bitrate in b/s (decimal integer).
 7. Net bitrate, without null packets, in b/s (decimal integer).
@@ -111,7 +111,7 @@ With this option, the alarm command is run on state change and at periodic inter
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Specifies the PID or set of PID’s to monitor.
+Specifies the PID or set of PID's to monitor.
 
 [.optdoc]
 By default, when no `--pid` is specified, monitor the bitrate of the full TS.

@@ -12,7 +12,7 @@
 [.cmd-header]
 Report various statistics on PID's and labels
 
-This plugin analyzes the selected PID’s or labels and reports statistics.
+This plugin analyzes the selected PID's or labels and reports statistics.
 It currently focuses on inter-packet distances, the number of packets in the TS between two packets of the same PID or label.
 
 [.usage]

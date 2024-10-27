@@ -124,7 +124,7 @@ By default, use the first PLP which is found.
 This option is ignored if `--extract` is not used.
 
 [.optdoc]
-To determine which PID’s carry T2-MI streams and what are the PLP’s inside each stream,
+To determine which PID's carry T2-MI streams and what are the PLP's inside each stream,
 use the command `tsanalyze` or the plugin `analyze`.
 
 [.opt]

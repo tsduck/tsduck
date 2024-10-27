@@ -13,7 +13,7 @@
 Report a history of major events on the transport stream
 
 This plugin reports a history of the major events on the transport stream:
-new PID’s, new tables, clear {d-arrow} scrambled transitions, suspended and restarted PID’s, etc.
+new PID's, new tables, clear {d-arrow} scrambled transitions, suspended and restarted PID's, etc.
 
 [.usage]
 Event reporting format

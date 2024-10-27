@@ -12,13 +12,13 @@
 [.cmd-header]
 DVB-SimulCrypt EMM and private data injector
 
-This plugin receives EMM’s and/or private data using the DVB SimulCrypt EMMG/PDG{d-arrow}MUX protocol
+This plugin receives EMM's and/or private data using the DVB SimulCrypt EMMG/PDG{d-arrow}MUX protocol
 and injects them into the transport stream in a specific PID.
 
 This plugin is a TCP server (MUX side of the protocol).
 It accepts only one EMMG/PDG connection at a time.
 
-If the injected data are EMM’s, make sure to update the CAT accordingly (see the plugin `cat`).
+If the injected data are EMM's, make sure to update the CAT accordingly (see the plugin `cat`).
 
 [.usage]
 Usage
@@ -127,7 +127,7 @@ Insert data packets immediately.
 Do not regulate the insertion of data packets, do not limit the data bitrate.
 
 [.optdoc]
-This is useful to test invalid EMMG’s which do not comply with the allocated bitrate policy.
+This is useful to test invalid EMMG's which do not comply with the allocated bitrate policy.
 
 include::{docdir}/opt/group-dvbsim-log.adoc[tags=!*;emmg]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

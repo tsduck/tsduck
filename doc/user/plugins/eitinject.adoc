@@ -12,12 +12,12 @@
 [.cmd-header]
 Generate and inject EIT's in a transport stream
 
-This plugin generates EIT’s from a database of events and injects those EIT’s on time in the transport stream.
+This plugin generates EIT's from a database of events and injects those EIT's on time in the transport stream.
 The plugin can selectively generate "EIT actual" and/or "EIT other" and "EIT present/following" (or "p/f") and/or "EIT schedule".
 
-EIT’s are "injected" in the transport stream by replacing null packets or pre-existing EIT packets.
-All EIT’s are injected by default in the DVB-defined PID for EIT’s, the PID number 18 (see also option `--pid`).
-There must be enough null or EIT packets to replace, otherwise EIT’s won’t be correctly injected or not injected at all.
+EIT's are "injected" in the transport stream by replacing null packets or pre-existing EIT packets.
+All EIT's are injected by default in the DVB-defined PID for EIT's, the PID number 18 (see also option `--pid`).
+There must be enough null or EIT packets to replace, otherwise EIT's won't be correctly injected or not injected at all.
 
 The events can be loaded at any time but the actual EIT injection can start only
 when the actual transport stream id and the current time reference are known.
@@ -30,7 +30,7 @@ The current time is permanently resynchronized on TDT and TOT.
 See also options `--ts-id` and `--time`.
 
 Note that the concept of "current time" is always relative to the transport stream.
-It is possible to inject EIT’s in a transport stream file at the speed of file read/write.
+It is possible to inject EIT's in a transport stream file at the speed of file read/write.
 The "current time" of a packet (for EIT generation and insertion) is based on the last reference
 (typically from a TDT or TOT), the transport stream bitrate and the number of packets since the last reference.
 
@@ -38,31 +38,127 @@ The "current time" of a packet (for EIT generation and insertion) is based on th
 Electronic Program Guide (EPG) database
 
 The events are loaded in an EPG database in memory.
-There are several sources for events: files and incoming EIT’s (from the TS upstream).
+There are several sources for events: files and incoming EIT's (from the TS upstream).
 
 Event files shall contain EIT tables or sections in binary, XML or JSON format.
-The organization of events in the EIT’s and the type of EIT’s are ignored.
+The organization of events in the EIT's and the type of EIT's are ignored.
 Only the events descriptions and the DVB triplets (service id, transport stream id and original network id) are important,
 all the rest is ignored.
 
-When event files are loaded or when incoming EIT’s are received,
+When event files are loaded or when incoming EIT's are received,
 all events are individually extracted and stored in the EPG database in memory.
 The EIT encapsulation is just a convenient pre-existing format to store events, nothing more.
 
+Events are reorganized by the plugin `eitinject` and new EIT's are recreated when necessary
+with the stored events.
+
 The event input files can be specified using wildcards
 (be sure to use quotes in order to avoid the interpretation of the wildcards by the shell).
-The `eitinject` plugin polls the corresponding files at regular intervals.
+The plugin `eitinject` polls the corresponding files at regular intervals.
 Whenever a file matching the wildcards is created or updated, the file is loaded.
-Existing events are ignored.
+Existing events with unmodified content are ignored.
+
+Let's take an example. Consider the following command:
+
+[source,shell]
+----
+$ tsp ... -P eitinject --file '/home/epg/input/*.xml' --delete-files ...
+----
+
+Each time XML files are copied into the directory `/home/epg/input`, they are loaded and all events
+from all EIT's in those files are processed.
+Most of the time, "processed" means loaded and added in the EPG database
+(see an exception in the next section on event deletion).
+
+Each XML files is then deleted after being loaded (option `--delete-files`).
+
+Note the quotes in `'/home/epg/input/{asterisk}.xml'`.
+Without them, the shell would expand the wildcard with all existing XML files in directory `/home/epg/input`.
+The plugin `eitinject` would then only consider these files, those which existed at the time the command was started.
+With the quotes, the shell does not expand the wildcard and the raw string with `{asterisk}.xml` is passed to the plugin
+and all present and future XML files in that directory will be loaded.
+
+Consider the following XML file:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <EIT service_id="1" transport_stream_id="4" original_network_id="1">
+
+    <event event_id="1000" start_time="2020-07-01 00:10:00" duration="00:20:00">
+      <short_event_descriptor language_code="foo">
+        <event_name>Event 1000</event_name>
+      </short_event_descriptor>
+    </event>
+
+    <event event_id="1001" start_time="2020-07-01 00:30:00" duration="00:30:00">
+      <short_event_descriptor language_code="foo">
+        <event_name>Event 1001</event_name>
+      </short_event_descriptor>
+    </event>
+
+    <event event_id="1002" start_time="2020-07-01 01:00:00" duration="00:30:00">
+      <short_event_descriptor language_code="foo">
+        <event_name>Event 1002</event_name>
+      </short_event_descriptor>
+    </event>
+
+  </EIT>
+</tsduck>
+----
+
+When we copy this file into the directory `/home/epg/input`, three consecutive events are loaded into the EPG database.
+They are included in further EIT schedule for the service id 1 in transport stream with id 4.
+If some of these events become present or following in the service, they are immediately included in EIT p/f.
+
+If the transport stream id of the TS is 4, the events are included in an EIT Actual.
+Otherwise, they are included in an EIT Other.
+
+[.usage]
+Deleting events from the EPG database
 
 Events are automatically removed from the EPG database when they become obsolete
 (the current transport stream time goes beyong the end time of the event).
-There is currently no way to delete an event from the database before its completion.
+
+Deleting an event in advance is possible using the same type of files as used to load events.
+When an EIT is read from a XML or JSON file, if the metadata of that EIT contains `attribute="delete"`,
+all events from that EIT are deleted from the EPG database (if they exist).
+These events are removed from the next EIT schedule or present/following for the corresponding period.
+
+In EIT's with metadata `attribute="delete"`, only the event id is used in each event.
+Date, times and all descriptors are ignored. The events with the corresponding ids are
+searched in the EPG database and deleted. Nothing more.
+
+See xref:table-metadata[xrefstyle=short] for more details on metadata in XML or JSON tables.
+
+NOTE: Because metadata are not part of the table content, it is not possible to delete events
+using EIT binary files. Only XML and JSON representations can contain metadata for tables.
+
+Using the example above, let's assume that "Event 1001" needs to be cancelled before or during being broadcasted.
+To remove it from the EPG, simply copy the following XML file into the directory `/home/epg/input`:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <EIT service_id="1" transport_stream_id="4" original_network_id="1">
+    <metadata attribute="delete"/>
+    <event event_id="1001" start_time="2020-07-01 00:30:00" duration="00:30:00"/>
+  </EIT>
+</tsduck>
+----
+
+Because of the `<metadata attribute="delete"/>`, all events are deleted.
+Here, the event with id 1001 is deleted.
+
+Note that the start time and duration attributes are here only because they are required by the syntax of the EIT.
+They are ignored and their values do not need to match the actual schedule for the event.
 
 [.usage]
 Injection profiles
 
-The EIT’s are injected and cycled according to ETSI TS 101 211 section 4.4 (see <<ETSI-101-211>>).
+The EIT's are injected and cycled according to ETSI TS 101 211 section 4.4 (see <<ETSI-101-211>>).
 Several cycle profiles can be used.
 A profile defines the repetition cycle of each type of EIT.
 
@@ -138,14 +234,14 @@ Same as `--actual-pf --actual-schedule`.
 
 [.optdoc]
 Generate EIT p/f actual.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *--actual-schedule*
 
 [.optdoc]
 Generate EIT schedule actual.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *-b* _value_ +
@@ -313,14 +409,14 @@ Same as `--other-pf --other-schedule`.
 
 [.optdoc]
 Generate EIT p/f other.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *--other-schedule*
 
 [.optdoc]
 Generate EIT schedule actual.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *--pf*
@@ -337,7 +433,7 @@ Same as `--actual-pf --other-pf`.
 Specify the PID for EIT injection.
 
 [.optdoc]
-The default is 18, the standard PID for EIT’s.
+The default is 18, the standard PID for EIT's.
 
 [.opt]
 *--poll-interval* _milliseconds_
@@ -457,7 +553,7 @@ With this option, we have the guarantee that the event files are loaded before t
 [.optdoc]
 On the other hand, this option should not be used on live transport streams.
 In that case, the transport stream processing must be allowed to start without event to inject.
-The EIT’s may be sent much later.
+The EIT's may be sent much later.
 
 include::{docdir}/opt/group-duck-context.adoc[tags=!*;charset]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

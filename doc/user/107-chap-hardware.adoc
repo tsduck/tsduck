@@ -85,7 +85,7 @@ the PCI slots, the way the USB devices are plugged and unplugged.
 It is possible to assign a specific adapter number to each device using the `adapter_nr` parameter
 in the relevant drivers (kernel modules) configuration.
 
-For instance, let’s take the example of a system with a Hauppauge WinTV Nova-T-500 (dual DVB-T tuner)
+For instance, let's take the example of a system with a Hauppauge WinTV Nova-T-500 (dual DVB-T tuner)
 and a Hauppauge WinTV Nova-HD-S2 (DVB-S/S2 tuner).
 The two tuners in the DVB-T PCI board are actually USB devices with an embedded USB hub
 and the numbering of the tuners is not deterministic.
@@ -134,13 +134,13 @@ On Linux, the command `tslsdvb -v` displays the actual parameters, as reported b
 Moreover, the `dvb` plugin can compute the exact theoretical bitrate of the transport stream based on the actual transmission parameters.
 On Windows, it is not possible to query the tuner device for the actual parameters.
 It is not possible to display the actual transmission parameters.
-The `dvb` plugin must use the analysis of PCR’s to evaluate the bitrate.
+The `dvb` plugin must use the analysis of PCR's to evaluate the bitrate.
 
 ===== macOS platforms
 
 There is no uniform or standard software framework to support tuners on macOS.
 Some tuners are officially supported on macOS but they are shipped with proprietary drivers and proprietary TV-watching applications.
-The driver API’s are not documented.
+The driver API's are not documented.
 
 Therefore, TSDuck provides no support for hardware tuner devices on macOS.
 
@@ -376,7 +376,7 @@ At least one device (one from TechniSat) has exhibited different software archit
 The following table summarizes the DVB receiver devices which have been tested with TSDuck.
 
 Please note that this table is informational only.
-It was built from various users’ feedback at some point in time.
+It was built from various users' feedback at some point in time.
 There is no exhaustive test suite using all these devices.
 Probably no one, neither the author of TSDuck nor any of its users, have all these devices.
 So, keep in mind that these devices are not tested for every new version of TSDuck.
@@ -1010,7 +1010,7 @@ So, when we have several identical HiDes devices on the same machine,
 it is probably easier to reference them by adapter index (0, 1, 2, etc.) using option `--adapter`.
 
 Note that the verbose display (option `-v`) is different between Windows and Linux.
-This is due to the distinct API’s of the HiDes drivers on distinct operating system.
+This is due to the distinct API's of the HiDes drivers on distinct operating system.
 The command `tshides` displays what is available for the platform it is running on.
 
 ==== macOS platforms

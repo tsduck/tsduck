@@ -129,7 +129,7 @@ By default, if none of `--pcr`, `--opcr`, `--pts`, `--dts` is specified, report 
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Specifies PID’s to analyze. By default, all PID's are analyzed.
+Specifies PID's to analyze. By default, all PID's are analyzed.
 
 [.optdoc]
 Several `--pid` options may be specified.
@@ -154,7 +154,7 @@ This option forces `--log` and `--pts`.
 If no `--pid` option is specified, detect all PID's carrying SCTE 35 splice information.
 
 [.optdoc]
-If some `--pid` options are specified, they designate PID’s carrying PCR or PTS.
+If some `--pid` options are specified, they designate PID's carrying PCR or PTS.
 In that case, SCTE 35 commands are analyzed only from PID's
 which are referenced by the same services as the specified `--pid` options.
 

@@ -261,7 +261,7 @@ Several `--pid` options may be specified.
 
 [.optdoc]
 Select packets from any PSI/SI PID.
-This includes global signalization PID’s for DVB, ATSC and ISDB standards as well as the PMT of each service.
+This includes global signalization PID's for DVB, ATSC and ISDB standards as well as the PMT of each service.
 
 [.opt]
 *--reset-label* _label1[-label2]_
@@ -357,7 +357,7 @@ Select packets with the specified _splice_countdown_ value in adaptation field.
 Select PES PID's with any of the specified stream ids.
 
 [.optdoc]
-The PID’s are dynamically selected.
+The PID's are dynamically selected.
 A PID starts to be selected when a specified stream id is detected in a PES header.
 Such a PID becomes no longer selected when a non-specified stream id is found in this PID.
 

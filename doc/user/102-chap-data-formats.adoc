@@ -344,7 +344,7 @@ TSDuck command line options or default configuration.
   This is the case for the `satellite_delivery_system_descriptor` for instance.
 
 Therefore, an ISDB stream is sometimes hard to characterize.
-A transport stream first appears as MPEG-defined when we get the PAT and PMT’s.
+A transport stream first appears as MPEG-defined when we get the PAT and PMT's.
 Then, it looks like DVB when tables such as SDT or TDT are encountered.
 But later it can appear as ISDB when ISDB-specific tables such as a BIT or CDT are found.
 The problem is that, as this time, all information such as dates and time in TDT which were
@@ -360,7 +360,7 @@ are incorrectly interpreted in the initial phase, before a new standard becomes 
 This is especially critical in the case of ISDB where a transport stream is often initially interpreted as a DVB one.
 
 TSDuck defines a few command-line options which can be used to specify the right standards from the beginning (see xref:opt-default-std[xrefstyle=short]).
-Some default options are also available in the user’s TSDuck configuration file (see xref:chap-userconfig[xrefstyle=short]).
+Some default options are also available in the user's TSDuck configuration file (see xref:chap-userconfig[xrefstyle=short]).
 
 Also note that the xref:chap-sixmlref[xrefstyle=short] lists the XML format of all tables and descriptors, structured by original
 standards.
@@ -507,7 +507,7 @@ time (as measured by atomic clocks) and imprecise observed solar time (known as 
 which varies due to irregularities and long-term slowdown in the Earth's rotation)."_
 
 [.optdoc]
-Most computer systems (Linux, macOS, Windows) don’t include leap seconds in their
+Most computer systems (Linux, macOS, Windows) don't include leap seconds in their
 evaluation of UTC time, making their reported UTC times formally incorrect.
 
 [.optdoc]
@@ -522,7 +522,7 @@ some non-conformant external equipment which ignore leap seconds.
 Currently, this option applies to SCTE 35 `splice_schedule()` commands only.
 
 [.optdoc]
-This option can also be set from the TSDuck user’s configuration file using option `leap.seconds`
+This option can also be set from the TSDuck user's configuration file using option `leap.seconds`
 (see xref:conf-file-format[xrefstyle=short]).
 
 [.opt]
@@ -826,7 +826,7 @@ The format of channel files is documented in xref:chap-chanconfig[xrefstyle=shor
 Finally, XML files are used as configuration files (read-only).
 They describe the characteristics of UHF and VHF frequency bands by region
 (`tsduck.hfbands.xml`, see xref:chap-userconfig[xrefstyle=short], xref:hfband-config[xrefstyle=short]),
-the technical specifications of various models of LNB’s for satellite dishes
+the technical specifications of various models of LNB's for satellite dishes
 (`tsduck.lnbs.xml`, see xref:chap-userconfig[xrefstyle=short], xref:lnb-config[xrefstyle=short])
 or resource monitoring configurations (`tsduck.monitor.xml`, see xref:chap-monconfig[xrefstyle=short]).
 These configuration files are augmented when new information is available.

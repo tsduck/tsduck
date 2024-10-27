@@ -12,12 +12,12 @@
 [.cmd-header]
 Remove, keep or merge sections from various PID's
 
-This plugin extracts sections from one or more PID’s and merges them inside an output PID.
+This plugin extracts sections from one or more PID's and merges them inside an output PID.
 
 Various filtering options can be used to selectively keep or remove sections.
 By default, the selected sections are removed.
 Using the option `--keep`, the selected sections are kept and all others are removed.
-Without selection option, the sections are simply merged from the various input PID’s into the output PID.
+Without selection option, the sections are simply merged from the various input PID's into the output PID.
 
 [.usage]
 Usage
@@ -109,7 +109,7 @@ an error is generated.
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Specify input PID’s.
+Specify input PID's.
 More than one input PID can be specified.
 All sections from all input PID's are merged into the output PID.
 At least one input PID must be specified.

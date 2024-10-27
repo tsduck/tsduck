@@ -49,6 +49,7 @@ When a table or structure is not supported by TSDuck, it is still possible to re
 the generic structures `<generic_short_table>`, `<generic_long_table>` and `<generic_descriptor>`
 (see xref:xml-generic[xrefstyle=short]).
 
+[#table-metadata]
 ==== Table metadata
 
 Although not documented in the following reference sections and not actually part of the binary table,

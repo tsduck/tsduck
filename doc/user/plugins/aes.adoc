@@ -155,7 +155,7 @@ This is a mandatory parameter.
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Specifies PID’s to scramble.
+Specifies PID's to scramble.
 Can be used instead of specifying a service.
 
 [.optdoc]

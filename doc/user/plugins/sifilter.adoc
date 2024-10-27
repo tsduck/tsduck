@@ -10,15 +10,15 @@
 === sifilter
 
 [.cmd-header]
-Extract PSI/SI PID’s
+Extract PSI/SI PID's
 
 This plugin filters PID's containing the specified PSI/SI. Other PID's are removed.
 
-Extracting PSI/SI on predefined PID’s (such as PAT or SDT) can also be performed using the plugin `filter --pid`.
+Extracting PSI/SI on predefined PID's (such as PAT or SDT) can also be performed using the plugin `filter --pid`.
 For these types of PSI/SI, the plugin `sifilter` is simply more user-friendly
 (`sifilter --sdt` instead of `filter --pid 0x0011`).
 
-But the plugin `sifilter` can also detect PSI/SI on non-predefined PID’s (such as PMT, ECM or EMM).
+But the plugin `sifilter` can also detect PSI/SI on non-predefined PID's (such as PMT, ECM or EMM).
 It can also filter CA-related SI according to the CA System Id or CA Operator (a vendor-dependent concept).
 
 If you want to extract the PMT or ECM for one particular service, use the plugin `zap` before `sifilter` in the plugin chain.

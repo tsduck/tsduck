@@ -13,7 +13,7 @@
 Perform various transformations on a NIT
 
 This plugin performs various transformations on a NIT, either the NIT-Actual or some specific NIT-Other.
-The other NIT’s, if present, are left unchanged.
+The other NIT's, if present, are left unchanged.
 
 [.usage]
 Usage

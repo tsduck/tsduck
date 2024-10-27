@@ -537,7 +537,7 @@ It is available on all platforms, including macOS and Cygwin or Msys on Windows,
 The `tsxml` utility is mainly used to test the effect of XML patch files,
 as used with option `--patch-xml` in various plugins.
 
-In this example, we want to patch PAT’s, the simplest form of table.
+In this example, we want to patch PAT's, the simplest form of table.
 
 Consider the following patch file:
 
@@ -546,7 +546,7 @@ Consider the following patch file:
 <?xml version="1.0" encoding="UTF-8"?>
 <tsduck>
 
-  <!-- The following transformations are applied on all PAT’s -->
+  <!-- The following transformations are applied on all PAT's -->
   <PAT>
     <!-- Add this service in all PAT's -->
     <service service_id="123" program_map_PID="7777" x-node="add"/>
@@ -556,7 +556,7 @@ Consider the following patch file:
     <service service_id="202" x-node="delete"/>
   </PAT>
 
-  <!-- The following transformations are applied only on PAT’s with TS id 2 -->
+  <!-- The following transformations are applied only on PAT's with TS id 2 -->
   <PAT transport_stream_id="2">
     <!-- Add this service in all PAT's with TS id 2 -->
     <service service_id="456" program_map_PID="8888" x-node="add"/>
@@ -586,7 +586,7 @@ Consider the following input file:
 </tsduck>
 ----
 
-Let’s apply the XML patch on it:
+Let's apply the XML patch on it:
 
 [source,shell]
 ----
@@ -813,7 +813,7 @@ $ tsscan -d test/tuner.xml -u -l --last-channel 28 --default-pds eacem
 
 The `tspcap` utility analyzes `.pcapng` files, as saved by Wireshark.
 While Wireshark remains the easiest and most useful tool to investigate network problems and analyze `.pcapng` files,
-let’s see how `tspcap` can help in the analysis of a real-world problem.
+let's see how `tspcap` can help in the analysis of a real-world problem.
 
 A problem has been identified in the communication between an EMMG and a MUX.
 A network capture has been saved.
@@ -821,9 +821,9 @@ When analyzing the capture using Wireshark, we can see that the EMMG/PDG{d-arrow
 by the end of the capture, the MUX reports a stream error with an exceed bandwidth message.
 Is there really an increase of EMM bandwidth and by how much?
 Using Wireshark, it is not easy to precisely answer that question.
-So, let’s use `tspcap`.
+So, let's use `tspcap`.
 
-First, let’s get a global summary of the file content:
+First, let's get a global summary of the file content:
 
 [source,shell]
 ----
@@ -847,7 +847,7 @@ Filtered packets summary:
   Data bitrate:          2,001,717 bits/second
 ----
 
-Now, let’s identify which streams are present in the file:
+Now, let's identify which streams are present in the file:
 
 [source,shell]
 ----
@@ -859,7 +859,7 @@ Source                 Destination            Protocol  Packets   Data bytes    
 ----
 
 The MUX accepts connections on the TCP port 5000.
-Let’s list the statistics of the connection to that destination by intervals of 200 milliseconds (200,000 micro-seconds):
+Let's list the statistics of the connection to that destination by intervals of 200 milliseconds (200,000 micro-seconds):
 
 [source,shell]
 ----
@@ -1043,17 +1043,17 @@ $ tsp -I file /data1/mpeg/test/frtv_tnt.mpg \
 Note that the filter `plugin` selects packets matching any of the specified conditions (an "or" selection).
 Here, to select packets matching two conditions (an "and" selection), we chain two `filter` plugins.
 
-==== Monitoring selected MPEG tables (here, EMM’s)
+==== Monitoring selected MPEG tables (here, EMM's)
 
-The following example demonstrates how to monitor the EMM’s for a given operator.
+The following example demonstrates how to monitor the EMM's for a given operator.
 
 The first command determines on which PID the EMM's are sent.
 This command analyzes the satellite transponder which carries the channel Canal+ during 2 seconds.
 Instead of the full human-readable analysis report, we ask for a _normalized_ output format
 and we filter the conditions we need:
 a line starting with `pid:` for description of a PID,
-`:emm:` for a PID carrying EMM’s,
-`:cas=256:` to filter EMM’s for CA System Id 256 (0x100, ie. MediaGuard).
+`:emm:` for a PID carrying EMM's,
+`:cas=256:` to filter EMM's for CA System Id 256 (0x100, ie. MediaGuard).
 
 [source,shell]
 ----
@@ -1072,18 +1072,18 @@ pid:pid=193:emm:cas=256:access=clear: […]
 pid:pid=196:emm:cas=256:operator=129:access=clear: […]
 ----
 
-We now know that PID 193 carries the MediaGuard individual EMM’s
-and PID 196 carries the MediaGuard group EMM’s for operator 129 (OPI of Canal+).
+We now know that PID 193 carries the MediaGuard individual EMM's
+and PID 196 carries the MediaGuard group EMM's for operator 129 (OPI of Canal+).
 
-The second command, below, filters the contents of those two PID’s
-and formats the contents of the MPEG tables that are carried in those PID’s.
+The second command, below, filters the contents of those two PID's
+and formats the contents of the MPEG tables that are carried in those PID's.
 
 [source,shell]
 ----
 $ tsp -I dvb -c canal+ -P filter -p 193 -p 196 -P tables -O drop
 ----
 
-Of course, since EMM’s are ciphered, their contents are obscure to the user and the display looks like:
+Of course, since EMM's are ciphered, their contents are obscure to the user and the display looks like:
 
 [source,text]
 ----
@@ -1121,7 +1121,7 @@ This list is sorted and duplicate lines are removed (`sort -u`).
 
 Then, each transponder is analyzed during 3 seconds (`-P until -s 3`)
 and the result of the analysis in _normalized_ format is saved in a temporary file.
-From this analysis file, we extract the PID’s carrying ECM’s
+From this analysis file, we extract the PID's carrying ECM's
 with CA system id 256 (MediaGuard) and MediaGuard OPI 128 (CanalSat).
 For each ECM PID, we extract the list of services this PID belongs to.
 
@@ -1133,7 +1133,7 @@ For this kind of complex examples, we now use shell-scripts instead of interacti
 
 [source,shell]
 ----
-inittune=’-f 11856000000’  # Initial transponder to scan the NIT
+inittune='-f 11856000000'  # Initial transponder to scan the NIT
 cas=256                    # MediaGuard CA system id
 opi=128                    # MediaGuard OPI for CanalSat
 
@@ -1183,7 +1183,7 @@ We capture one transport stream (the "R4" from the French DTTV network, on UHF c
 We remove the BAT of the 'Tv Numéric' operator and we replace it with a new one, the table we wish to test.
 The new table is stored in binary section format into a file named `BAT_TvNumeric_V3.si`.
 
-First, we capture all tables from the PID 0x0011 (the one which carries the SDT’s and the BAT’s).
+First, we capture all tables from the PID 0x0011 (the one which carries the SDT's and the BAT's).
 
 [source,shell]
 ----
@@ -1191,7 +1191,7 @@ $ tsp -I dvb --uhf 24 -P until -s 10 -P filter -p 0x011 | tstables -m -b r4.si
 $ rm -f r4_p0011_t4A_e0086_*.si # remove current Tv Numeric BAT
 ----
 
-These commands capture and save all tables (SDT’s and BAT’s) in binary files named `r4_p0011_*.si` during 10 seconds.
+These commands capture and save all tables (SDT's and BAT's) in binary files named `r4_p0011_*.si` during 10 seconds.
 Each section is stored in a separate file (option `-m` in tstables).
 The current "TV Numeric" BAT is removed.
 Note the file name `r4_p0011_t4A_e0086_*.si` which means all sections from PID 0x0011
@@ -1324,7 +1324,7 @@ The report file is quite large:
 |=============================================================================|
 |  PID: 16 (0x0010)                                                  DVB-NIT  |
 
-… more PID’s skipped …
+… more PID's skipped …
 
 |=============================================================================|
 |  PID: 8191 (0x1FFF)                                               Stuffing  |
@@ -1427,7 +1427,7 @@ ANALYSIS_TIME=20
 SAMPLE_INTERVAL=300
 
 # Excel separator character for "csv" files (depends on Excel locale)
-EXCEL_SEPARATOR=’;’
+EXCEL_SEPARATOR=';'
 
 # Main loop
 while true; do
@@ -1649,8 +1649,8 @@ The test scenario is the following:
 * A DVB-T transport stream is received on UHF channel 24.
 * This transport stream has at least 56 kb/s of stuffing packets (much more actually).
   Our `tsp` command steals 56 kb/s of stuffing and replaces them with a new service
-  (16 kb/s for the new service’s PMT and 40 kb/s for the SSU data PID).
-* The STB software provider delivers three types of SSU tables: a DSI, a DII and a lot of DDB’s.
+  (16 kb/s for the new service's PMT and 40 kb/s for the SSU data PID).
+* The STB software provider delivers three types of SSU tables: a DSI, a DII and a lot of DDB's.
   The tables are provided as binary files containing the sections.
   There is one file `dsi.bin` containing the DSI section,
   one file `dii.bin` containing the DII section,
@@ -1862,7 +1862,7 @@ In the middle, the service named BFM TV is scrambled.
 * An external ECMG is used (host name `ecmg1`, on TCP port 10000).
 * The crypto-periods are scheduled using the default duration of 10 seconds.
 * A new control word is generated for each crypto-period.
-* The corresponding ECM’s are generated using the specified ECMG
+* The corresponding ECM's are generated using the specified ECMG
   (Super_CAS_Id and access criteria specified by options `-s` and `-a`) and inserted in the TS.
 * The PMT of the service is modified to include a _CA_descriptor_.
   The private part of this descriptor is specified using option `-p`.
@@ -1944,15 +1944,15 @@ This example is a variant of the previous one.
 Instead of using a real ECMG from a real Conditional Access System, we use the command `tsecmg`.
 
 The utility `tsecmg` implements the DVB SimulCrypt ECMG{d-arrow}SCS protocol and behaves like a real ECMG.
-All ECM generation requests are accepted but, instead of generating robust ciphered proprietary ECM’s,
-`tsecmg` returns pseudo ECM’s which contain the control words and the access criteria in the clear.
+All ECM generation requests are accepted but, instead of generating robust ciphered proprietary ECM's,
+`tsecmg` returns pseudo ECM's which contain the control words and the access criteria in the clear.
 
 The utility `tsecmg` can be used anywhere a DVB SimulCrypt ECMG can be used.
 Consequently, it can be used from any real MUX or from the `tsp` plugin `scrambler`.
 Used from a real MUX, `tsecmg` becomes a useful debugging tool.
 All ECMG{d-arrow}SCS messages are displayed (using option `--verbose`).
-The returned ECM’s are inserted in the stream like any real ECM.
-Since these ECM’s contain the access criteria in the clear, this is also a useful debug tool for the EIS or ACG or both.
+The returned ECM's are inserted in the stream like any real ECM.
+Since these ECM's contain the access criteria in the clear, this is also a useful debug tool for the EIS or ACG or both.
 
 *Important:* Note that the control words are also inserted in the clear.
 It is consequently obvious that `tsecmg` shall never be used on a production system,
@@ -1961,7 +1961,7 @@ This is a debug tool, nothing more.
 
 The `tsp` plugin `descrambler` is normally a static descrambler using fixed control words.
 But, to facilitate the prototyping of end-to-end systems,
-the plugin `descrambler` can also recognize the clear ECM’s which are generated by `tsecmg`
+the plugin `descrambler` can also recognize the clear ECM's which are generated by `tsecmg`
 and use their control words to descramble the stream.
 
 Thus, it is easy to build a complete end-to-end Conditional Access System using TSDuck components only.
@@ -1975,14 +1975,14 @@ Then, replace the TSDuck components one by one with the real components which sh
 Sample configurations:
 
 * Testing a MUX: Replace the plugin `scrambler` with the real MUX.
-  Use `tsecmg` to generate ECM’s.
+  Use `tsecmg` to generate ECM's.
   Use the plugin `analyze` to analyze the output of the MUX.
-  Use the plugin `descrambler` to verify the insertion and synchronization of ECM’s.
+  Use the plugin `descrambler` to verify the insertion and synchronization of ECM's.
 * Testing a CAS: Replace `tsecmg` with the real ECMG.
   Replace the plugin `descrambler` with a real set-top box.
   Use plugin `scrambler` to make the link between to two end-points of the CAS (ECMG and STB).
 
-Let’s have a look at a real demo.
+Let's have a look at a real demo.
 
 First, run the utility `tsecmg`.
 Without option, it simply creates a TCP server on port 2222.
@@ -2028,7 +2028,7 @@ The bitrate of the ECM stream is reported as 30 kb/s, the default ECM bitrate fo
 The next plugin is a descrambler.
 Only the service name is required.
 The plugin automatically locates the ECM stream in the PMT (there is only one here),
-collects the ECM’s and uses the clear control words from these fake ECM’s to descramble the stream.
+collects the ECM's and uses the clear control words from these fake ECM's to descramble the stream.
 
 The next plugin performs the same periodic analysis as the previous one.
 This time, the report demonstrates that the service "CNEWS" is back in the clear.
@@ -2135,7 +2135,7 @@ a "head-end part" which can be replaced by a real MUX and a "set-top box part" w
 The communication between the two parts can be done using a modulator-tuner pair, an ASI link or UDP/IP.
 All these interconnections are supported by TSDuck and can be driven directly from `tsp`.
 
-Let’s have a look at the head-end emulation command, using an UDP/IP output link:
+Let's have a look at the head-end emulation command, using an UDP/IP output link:
 
 [source,shell]
 ----
@@ -2202,11 +2202,11 @@ The receiving computer is connected to a second network.
 Another instance of `tsp` extracts the datagrams from the MPE stream
 and multicasts them on its network using the modified destination address.
 
-Let’s review the various steps and commands in detail.
+Let's review the various steps and commands in detail.
 
 The existing transport stream is here a live satellite TS which is received on a Linux or Windows computer using a DVB tuner.
 The insertion of the MPE stream adds two new services.
-We carefully select service ids and PID’s which are not used in the existing transport stream.
+We carefully select service ids and PID's which are not used in the existing transport stream.
 
 [.compact-list]
 * A service carrying the IP/MAC Notification Table (INT).
@@ -2220,7 +2220,7 @@ We carefully select service ids and PID’s which are not used in the existing t
 ** PMT PID: 5002
 ** PID of the component carrying the MPE stream: 5003
 
-We need to create three tables from scratch, the PMT’s of the two new services and the INT.
+We need to create three tables from scratch, the PMT's of the two new services and the INT.
 We create them using XML files.
 
 PMT of the service carrying the INT (file `pmt-int.xml`):
@@ -2391,7 +2391,7 @@ Remember that inserting packets means replacing null packets.
 The TS will contain the same two services which were created in the previous example.
 We already have XML files for their PMT.
 To create a minimal TS, we also need a PAT and an SDT.
-For the sake of consistency, we reuse the same PID’s as the previous example.
+For the sake of consistency, we reuse the same PID's as the previous example.
 
 PAT of the new TS (file `pat.xml`):
 
@@ -2470,7 +2470,7 @@ However, some MUX or monitoring equipment may generate errors in the absence of 
 Additionally, on the receiving side, TSDuck will not be able to determine the bitrate of this MPTS
 (not important in practice, but annoying for us).
 
-Let’s see how to modify the previous `tsp` command to generate a valid PCR stream.
+Let's see how to modify the previous `tsp` command to generate a valid PCR stream.
 
 We will create a dedicated PCR PID and attach it to the service carrying the MPE stream.
 We need to modify the XML file for its PMT to reference the new PCR PID.
@@ -2517,7 +2517,7 @@ tsp --verbose --bitrate $BITRATE --max-flushed-packets 70 \
 ----
 
 Note the initial shell variables.
-We decide that the number of PCR’s per second shall be 5 (`PCR_PER_SEC`).
+We decide that the number of PCR's per second shall be 5 (`PCR_PER_SEC`).
 From the bitrate (30 Mb/s, now in variable `BITRATE`), we compute the interval between two PCR packets (`PCR_DISTANCE`).
 This is the number of TS packets between two packets containing a PCR.
 
@@ -2535,7 +2535,7 @@ To generate a PCR PID in the TS, the following chain of plugins was added:
 * The plugin `pcradjust` fixes the PCR values based on the bitrate.
 
 We now have a valid PCR PID in the MPE service.
-Let’s see how `tsanalyze` evaluates the generated SPTS:
+Let's see how `tsanalyze` evaluates the generated SPTS:
 
 [source,text]
 ----
@@ -2647,7 +2647,7 @@ Excerpt from `tsanalyze` for the service containing the T2-MI stream:
 ----
 
 The option `--identify` of the plugin `t2mi` lists the same information.
-With this option, the plugin does not modify the stream, it only identify T2-MI PID’s and PLP’s.
+With this option, the plugin does not modify the stream, it only identify T2-MI PID's and PLP's.
 
 [source,shell]
 ----
@@ -2702,7 +2702,7 @@ $ tsp -I dvb ... -P t2mi --pid 0x1000 --identify -O drop
 $
 ----
 
-If we want to redistribute on a local DVB network one of these PLP’s, the command is the following:
+If we want to redistribute on a local DVB network one of these PLP's, the command is the following:
 
 [source,shell]
 ----
@@ -2719,7 +2719,7 @@ end-to-end processing of one single TS.
 Even if one plugin produces a radical transformation such as completely replacing the TS with another one
 (here, the extracted PLP), there is only one TS at all points in the chain.
 
-If we want to process all PLP’s at the same time, we must re-route the original TS in parallel instances of `tsp` using the plugin fork.
+If we want to process all PLP's at the same time, we must re-route the original TS in parallel instances of `tsp` using the plugin fork.
 Each instance of `tsp` extracts one PLP.
 
 This is illustrated by the following command:
@@ -2735,7 +2735,7 @@ $ tsp -I dvb ... \
       -O drop
 ----
 
-This command analyzes the enclosing stream and the three different PLP’s in parallel during 30 seconds.
+This command analyzes the enclosing stream and the three different PLP's in parallel during 30 seconds.
 Each plugin `fork` creates a process and passes the complete TS to this process.
 Each created process runs another instance of `tsp` which extracts one PLP.
 Note that the default input plugin of `tsp` is the plugin `file` which, by default, reads the standard input.
@@ -2745,7 +2745,7 @@ Note that the default input plugin of `tsp` is the plugin `file` which, by defau
 The plugin `merge` can be used to merge a transport stream into another one.
 The service references are correctly merged into the final transport stream.
 
-Let’s illustrate this using two live transport streams from satellite Astra 19.2 E.
+Let's illustrate this using two live transport streams from satellite Astra 19.2 E.
 We use one transport stream as base.
 We remove one service from this stream and we replace it with another live service coming from another transport stream.
 
@@ -2822,7 +2822,7 @@ To make sure that the transport stream has enough free space, we remove the serv
 
 NOTE: In practice, on the day of this experiment,
 the TS 1028 had more than enough stuffing to insert one or two services without removing any other.
-However, in the general case, we need to make some room first. So, let’s do it anyway.
+However, in the general case, we need to make some room first. So, let's do it anyway.
 
 The merging command is the following:
 
@@ -2866,7 +2866,7 @@ We can see that the service "Al Jazeera English" has been replaced with "TV5MOND
 Luckily, there was no PID or service id conflict between the two transport streams.
 If the same service id or PID had existed in the two streams,
 the plugin `merge` would have reported an error and the component from the merged stream would have been dropped.
-In case of conflict, we use the plugin `remap` to modify PID’s or the plugin `svrename` to rename a service
+In case of conflict, we use the plugin `remap` to modify PID's or the plugin `svrename` to rename a service
 (including modifying its service id).
 
 ==== Injecting SCTE 35 cue information
@@ -3006,7 +3006,7 @@ $ tsp --add-input-stuffing 1/10 \
       -O file spts-out.ts
 ----
 
-==== Encapsulating PID’s into a private tunnel
+==== Encapsulating PID's into a private tunnel
 
 In this example, we start from a transport stream containing two services, "CANAL+ DECALE" (id 0x2262) and "CNEWS" (id 0x226A).
 We want to process the first service through some external equipment (transcoder, transrater, etc.)
@@ -3051,7 +3051,7 @@ $ tsp -I ... \
 ----
 
 The plugin `encap` creates a tunnel PID 0x1000.
-This tunnel contains the 4 PID’s of the service "CNEWS", PMT, video, audio and subtitles.
+This tunnel contains the 4 PID's of the service "CNEWS", PMT, video, audio and subtitles.
 The plugins `pat` and `sdt` remove the service from the PAT and SDT, respectively.
 At this point, the service "CNEWS" has disappeared but the new PID 0x1000 is orphan.
 
@@ -3074,7 +3074,7 @@ $ tsp -I ... \
 ----
 
 The plugin `decap` decapsulates the content of the tunnel PID 0x1000.
-It is replaced by all original PID’s of the service "CNEWS".
+It is replaced by all original PID's of the service "CNEWS".
 Then, we need to restore the reference to the service in the PAT and SDT using the plugins `pat` and `sdt`.
 Finally, since the private component 0x1000 no longer exists, we remove it from the PMT of the service "CANAL+ DECALE" using the plugin `pmt`.
 
@@ -3086,8 +3086,8 @@ The command is only a bit longer.
 ==== Interleaving input files and merging their PSI
 
 This example command reads two input files `file1.ts` and `file2.ts`.
-We assume here that the two files have no conflicting allocation of service ids and no conflicting PID’s into services.
-Only the PSI/SI PID’s are common.
+We assume here that the two files have no conflicting allocation of service ids and no conflicting PID's into services.
+Only the PSI/SI PID's are common.
 
 Using the option `--interleave` in the file input plugin, we read one packet of `file1.ts`,
 then one packet of `file2.ts`, then one packet of `file1.ts` again, and so on.
@@ -3104,7 +3104,7 @@ $ tsp -I file --interleave file1.ts file2.ts --label-base 1 \
 
 The plugin `psimerge` uses all packets with label 1 as a main stream and all packets with label 2 as a merge stream.
 It merges the PSI/SI from the two streams, creating a PAT and SDT-Actual containing all services from the two streams,
-creating a CAT containing all EMM PID’s from the two streams.
+creating a CAT containing all EMM PID's from the two streams.
 All EIT sections are multiplexed into the EIT PID.
 
 ==== Using Secure Reliable Transport (SRT) transmission
@@ -3187,21 +3187,21 @@ $ tsp -v \
       -O drop
 ----
 
-==== Preserving EIT’s through ffmpeg processing
+==== Preserving EIT's through ffmpeg processing
 
 TSDuck is often used in combination with `ffmpeg`.
 The former processes the system layer and the latter processes the video and audio.
 
-However, `ffmpeg` removes the TS signalization, system or data PID’s.
+However, `ffmpeg` removes the TS signalization, system or data PID's.
 So, while `ffmpeg` is extremely useful to transcode video and audio, it is inconvenient to process a complete TS.
-In this example, we demonstrate how to process an SPTS through `ffmpeg` while preserving EIT’s.
+In this example, we demonstrate how to process an SPTS through `ffmpeg` while preserving EIT's.
 It can be easily adapted to preserve any other data PID.
 
 The plugin `encap` encapsulates one or more PID's into one tunnel PID.
 There are several encapsulation modes, include a _PES mode_ which builds a PES stream
 containing the encapsulated data (see the xref:encap-ref[`encap` reference documentation]).
 
-We use this trick to preserve EIT’s through `ffmpeg`.
+We use this trick to preserve EIT's through `ffmpeg`.
 
 [source,shell]
 ----
@@ -3237,7 +3237,7 @@ Analysis of this command:
    In this specific example, this is useless because a broadcast TS always contain some stuffing.
    But it would be required if you read an IP stream without stuffing, for instance.
 ** Receive a DVB-T transport stream from a tuner on UHF channel 30.
-** Extract the service named "Arte", using the French audio track, no subtitles and keep all EIT’s for this service.
+** Extract the service named "Arte", using the French audio track, no subtitles and keep all EIT's for this service.
 ** Encapsulate the PID 0x12 (EIT's) in PES mode, creating a tunnel PID 0x900.
    Make sure that this PID number is not already used in your stream.
 ** Reference this PID in the PMT of the service with stream type 0x06 (PES private data)
@@ -3293,7 +3293,7 @@ France 5
 6ter
 ----
 
-Now, let’s write a shell script to display all services and a description of each of their PID’s.
+Now, let's write a shell script to display all services and a description of each of their PID's.
 This illustrates the power of `jq`, including field selection and array lookup based on the value of a property.
 
 [source,shell]

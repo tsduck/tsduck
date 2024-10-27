@@ -17,7 +17,7 @@ CAS selection options
 *--cas* _value_
 
 [.optdoc]
-With options `--ecm` or `--emm`, select only ECM’s or EMM’s for the specified CA system id value.
+With options `--ecm` or `--emm`, select only ECM's or EMM's for the specified CA system id value.
 Equivalent to `--min-cas _value_ --max-cas _value_`.
 
 [.opt]
@@ -49,7 +49,7 @@ Equivalent to `--min-cas 0x0600 --max-cas 0x06FF`.
 
 [.optdoc]
 With options `--ecm` or `--emm`,
-select only ECM’s or EMM’s for the CA system id values in the range `--min-cas` to `--max-cas`.
+select only ECM's or EMM's for the CA system id values in the range `--min-cas` to `--max-cas`.
 
 [.opt]
 *--mediaguard*
@@ -62,7 +62,7 @@ Equivalent to `--min-cas 0x0100 --max-cas 0x01FF`.
 
 [.optdoc]
 With options `--ecm` or `--emm`,
-select only ECM’s or EMM’s for the CA system id values in the range `--min-cas` to `--max-cas`.
+select only ECM's or EMM's for the CA system id values in the range `--min-cas` to `--max-cas`.
 
 [.opt]
 *--nagravision*
@@ -80,7 +80,7 @@ Equivalent to `--min-cas 0x0900 --max-cas 0x09FF`.
 *--operator* _value_
 
 [.optdoc]
-When a CAS is specified, select only ECM’s or EMM’s for the specified CAS operator.
+When a CAS is specified, select only ECM's or EMM's for the specified CAS operator.
 The _CAS operator_ is a non-standard vendor-dependent concept and is recognized for some CAS only.
 
 [.opt]

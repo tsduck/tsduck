@@ -13,7 +13,7 @@
 Perform various transformations on a BAT
 
 This plugin performs various transformations on the BAT,
-either all BAT’s of the transport stream or one specific BAT for one specific bouquet.
+either all BAT's of the transport stream or one specific BAT for one specific bouquet.
 
 [.usage]
 Usage
