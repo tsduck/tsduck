@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3912
+VERSION 3.39-3913
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -36,7 +36,7 @@ VERSION 3.39-3912
     - Option --vlan-id in "tspcap" and input plugin "pcap".
     - Option --region-names in "tsterinfo".
     - Options --event-offset and --input-event-offset in plugin "eitinject".
-    - Options --once and --synchronous in plugin "trigger".
+    - Options --once, --synchronous, --copy, --destination in plugin "trigger".
 
 [BUG] Bug fixes:
 

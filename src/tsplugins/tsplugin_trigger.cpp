@@ -16,6 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsUDPSocket.h"
 #include "tsTime.h"
+#include "tsErrCodeReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -38,6 +39,8 @@ namespace ts {
         PacketCounter      _minInterPacket = 0;  // Minimum interval in packets between two actions.
         cn::milliseconds   _minInterTime {};     // Minimum interval in milliseconds between two actions.
         UString            _execute {};          // Command to execute on trigger.
+        fs::path           _copy_source {};      // Copy that file ...
+        fs::path           _copy_dest {};        // ... into this destination.
         UString            _udpDestination {};   // UDP/IP destination address:port.
         UString            _udpLocal {};         // Name of outgoing local address (empty if unspecified).
         ByteBlock          _udpMessage {};       // What to send as UDP message.
@@ -76,6 +79,16 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
          u"All labels from options --label shall be set on a packet to be selected (logical 'and'). "
          u"By default, a packet is selected if any label is set (logical 'or').");
 
+    option(u"copy", 'c', FILENAME);
+    help(u"copy",
+         u"Copy the specified file when the current packet triggers the actions.\n"
+         u"See also option --destination.");
+
+    option(u"destination", 'd', FILENAME);
+    help(u"destination",
+         u"With --copy, the file is copied to that specified destination. "
+         u"If the specified path is an existing directory, the file is copied in that directory, with the same name as input.");
+
     option(u"execute", 'e', STRING);
     help(u"execute", u"'command'",
          u"Run the specified command when the current packet triggers the actions.\n"
@@ -111,8 +124,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
          u"It can be also a host name that translates to an IP address. "
          u"The 'port' specifies the destination UDP port.");
 
-    option(u"udp-message", 0, STRING);
-    help(u"udp-message", u"hexa-string",
+    option(u"udp-message", 0, HEXADATA);
+    help(u"udp-message",
          u"With --udp, specifies the binary message to send as UDP datagram. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes.");
 
@@ -156,10 +169,13 @@ bool ts::TriggerPlugin::getOptions()
     getChronoValue(_minInterTime, u"min-inter-time");
     getIntValue(_minInterPacket, u"min-inter-packet");
     getValue(_execute, u"execute");
+    getPathValue(_copy_source, u"copy");
+    getPathValue(_copy_dest, u"destination");
     getValue(_udpDestination, u"udp");
     getValue(_udpLocal, u"local-address");
     getIntValue(_udpTTL, u"ttl");
     getIntValues(_labels, u"label");
+    getHexaValue(_udpMessage, u"udp-message");
     _onStart = present(u"start");
     _onStop = present(u"stop");
     _once = present(u"once");
@@ -167,11 +183,10 @@ bool ts::TriggerPlugin::getOptions()
     _allPackets = !_onStart && !_onStop && _labels.none();
     _wait_mode = present(u"synchronous") ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS;
 
-    if (present(u"udp-message") && !value(u"udp-message").hexaDecode(_udpMessage)) {
-        error(u"invalid hexadecimal UDP message");
+    if (!_copy_source.empty() && _copy_dest.empty()) {
+        error(u"--destination is required with --copy");
         return false;
     }
-
     return true;
 }
 
@@ -262,6 +277,11 @@ ts::ProcessorPlugin::Status ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPa
 
 void ts::TriggerPlugin::trigger()
 {
+    // Copy user-specified file.
+    if (!_copy_source.empty()) {
+        fs::copy(_copy_source, _copy_dest, fs::copy_options::overwrite_existing, &ErrCodeReport(*this, u"error copying", _copy_source));
+    }
+
     // Execute external command.
     if (!_execute.empty()) {
         ForkPipe::Launch(_execute, *this, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE, _wait_mode);

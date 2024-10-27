@@ -12,7 +12,7 @@
 [.cmd-header]
 Trigger actions on selected TS packets
 
-This plugin triggers an action (running an external command, sending an UDP packet)
+This plugin triggers an action (running an external command, copying a file, sending an UDP packet)
 each time a TS packet is marked with a given label.
 Labels are typically set on packets by a previous plugin in the chain, such as the `filter` plugin.
 
@@ -39,6 +39,24 @@ All labels from options `--label` shall be set on a packet to be selected (logic
 
 [.optdoc]
 By default, a packet is selected if any label is set (logical _or_).
+
+[.opt]
+*-c* _file-name_ +
+*--copy* _file-name_
+
+[.optdoc]
+Copy the specified file when the current packet triggers the actions.
+
+[.optdoc]
+See also option --destination.
+
+[.opt]
+*-d* _file-name_ +
+*--destination* _file-name_
+
+[.optdoc]
+With `--copy`, the file is copied to that specified destination.
+If the specified path is an existing directory, the file is copied in that directory, with the same name as input.
 
 [.opt]
 *-e* _'command'_ +
@@ -142,7 +160,7 @@ It can be also a host name that translates to an IP address.
 The _port_ specifies the destination UDP port.
 
 [.opt]
-*--udp-message* _hexa-string_
+*--udp-message* _hexa-data_
 
 [.optdoc]
 With `--udp`, specifies the binary message to send as UDP datagram.
