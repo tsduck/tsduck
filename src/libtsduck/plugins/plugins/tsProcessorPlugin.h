@@ -136,11 +136,12 @@ namespace ts {
         virtual size_t processPacketWindow(TSPacketWindow& win);
 
         //!
-        //! Get the content of the --only-label options.
-        //! The value of the option is fetched each time this method is called.
-        //! @return A set of label from --only-label options.
+        //! Get the content of the --only-label and --except-label options.
+        //! The values of these options are fetched each time this method is called.
+        //! @param [out] only Set of labels from --only-label.
+        //! @param [out] except Set of labels from --except-label.
         //!
-        TSPacketLabelSet getOnlyLabelOption() const;
+        void getOnlyExceptLabelOption(TSPacketLabelSet& only, TSPacketLabelSet& except) const;
 
         // Implementation of inherited interface.
         virtual PluginType type() const override;

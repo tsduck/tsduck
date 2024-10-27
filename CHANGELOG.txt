@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3913
+VERSION 3.39-3914
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -30,6 +30,7 @@ VERSION 3.39-3913
     string per table. This generic string is passed to applications which
     may want to use it.
   * New options in existing commands and plugins:
+    - Option --except-label in all packet processing plugins.
     - Option --udp-format in "tstables" and plugin "tables" to send tables
       in JSON or XML format through UDP (previously, it was binary only).
     - Option --ip-udp in "tsdump", with all usual UDP reception options.

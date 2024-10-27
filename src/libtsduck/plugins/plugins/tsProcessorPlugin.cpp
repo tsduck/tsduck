@@ -23,25 +23,33 @@ const ts::Enumeration ts::ProcessorPlugin::StatusNames({
 ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     Plugin(tsp_, description, syntax)
 {
-    // The option --label is defined in all packet processing plugins.
+    // These options are defined in all packet processing plugins.
+    option(u"except-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
+    help(u"except-label", u"label1[-label2]",
+         u"Invoke this plugin only for packets without any of the specified labels. "
+         u"Other packets are transparently passed to the next plugin, without going through this one. "
+         u"Several --except-label options may be specified. "
+         u"See also option --only-label. "
+         u"This is a generic option which is defined in all packet processing plugins.");
+
     option(u"only-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"only-label", u"label1[-label2]",
          u"Invoke this plugin only for packets with any of the specified labels. "
          u"Other packets are transparently passed to the next plugin, without going through this one. "
          u"Several --only-label options may be specified. "
+         u"See also option --except-label. "
          u"This is a generic option which is defined in all packet processing plugins.");
 }
 
 
 //----------------------------------------------------------------------------
-// Get the content of the --only-label options (packet processing plugins).
+// Get the content of the --only/except-label options (packet plugins only).
 //----------------------------------------------------------------------------
 
-ts::TSPacketLabelSet ts::ProcessorPlugin::getOnlyLabelOption() const
+void ts::ProcessorPlugin::getOnlyExceptLabelOption(TSPacketLabelSet& only, TSPacketLabelSet& except) const
 {
-    TSPacketLabelSet labels;
-    getIntValues(labels, u"only-label");
-    return labels;
+    getIntValues(only, u"only-label");
+    getIntValues(except, u"except-label");
 }
 
 

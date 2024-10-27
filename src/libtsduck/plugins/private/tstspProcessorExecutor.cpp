@@ -89,7 +89,7 @@ void ts::tsp::ProcessorExecutor::main()
 
 void ts::tsp::ProcessorExecutor::processIndividualPackets()
 {
-    TSPacketLabelSet only_labels(_processor->getOnlyLabelOption());
+    TSPacketLabelSet only_labels, except_labels;
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
@@ -98,6 +98,9 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
     bool bitrate_never_modified = true;
     bool input_end = false;
     bool aborted = false;
+
+    // Get generic label options --only-label and --except-label.
+    _processor->getOnlyExceptLabelOption(only_labels, except_labels);
 
     do {
         // Wait for packets to process
@@ -151,8 +154,8 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
                 break;
             }
             else if (restarted) {
-                // Plugin was restarted, need to recheck --only-label
-                only_labels = _processor->getOnlyLabelOption();
+                // Plugin was restarted, need to recheck --only-label and --except-label.
+                _processor->getOnlyExceptLabelOption(only_labels, except_labels);
             }
 
             pkt_done++;
@@ -168,8 +171,8 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
                 pkt_data->setFlush(false);
                 pkt_data->setBitrateChanged(false);
                 ProcessorPlugin::Status status = ProcessorPlugin::TSP_OK;
-                if (!_suspended && (only_labels.none() || pkt_data->hasAnyLabel(only_labels))) {
-                    // Either no --only-label option or the packet has a specified label => process it.
+                if (!_suspended && (only_labels.none() || pkt_data->hasAnyLabel(only_labels)) && !pkt_data->hasAnyLabel(except_labels)) {
+                    // Packet not excluded by --only-label or --except-label => process it.
                     status = _processor->processPacket(*pkt, *pkt_data);
                     addPluginPackets(1);
                 }
@@ -250,7 +253,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
 {
     debug(u"packet processing window size: %'d packets", window_size);
 
-    TSPacketLabelSet only_labels(_processor->getOnlyLabelOption());
+    TSPacketLabelSet only_labels, except_labels;
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
@@ -261,6 +264,9 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
     bool aborted = false;
     bool timeout = false;
     bool restarted = false;
+
+    // Get generic label options --only-label and --except-label.
+    _processor->getOnlyExceptLabelOption(only_labels, except_labels);
 
     // Loop on packet processing.
     do {
@@ -301,9 +307,9 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
                 timeout = true; // restart error
             }
             else if (restarted) {
-                // Plugin was restarted, need to recheck --only-label and window size.
+                // Plugin was restarted, need to recheck --only-label, --except-label and window size.
                 // Don't let window size be zero, we are in packet window mode.
-                only_labels = _processor->getOnlyLabelOption();
+                _processor->getOnlyExceptLabelOption(only_labels, except_labels);
                 window_size = std::max<size_t>(1, _processor->getPacketWindowSize());
             }
 
@@ -324,8 +330,8 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
                 TSPacket* const pkt = _buffer->base() + buf_index;
                 TSPacketMetadata* const pkt_data = _metadata->base() + buf_index;
 
-                // Packet was not dropped and its label is in --only-label (if used), add it in window.
-                if (pkt->b[0] != 0 && (only_labels.none() || pkt_data->hasAnyLabel(only_labels))) {
+                // Packet was not dropped and its label is in --only-label or --except-label, add it in window.
+                if (pkt->b[0] != 0 && (only_labels.none() || pkt_data->hasAnyLabel(only_labels)) && !pkt_data->hasAnyLabel(except_labels)) {
                     win.addPacketsReference(pkt, pkt_data, 1);
                 }
 
