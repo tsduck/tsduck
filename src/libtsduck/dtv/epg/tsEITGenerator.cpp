@@ -213,6 +213,75 @@ uint8_t ts::EITGenerator::nextVersion(const ServiceIdTriplet& service_id, TID ta
 
 
 //----------------------------------------------------------------------------
+// Delete an event, remove it from EIT generation.
+//----------------------------------------------------------------------------
+
+bool ts::EITGenerator::deleteEvent(const ServiceIdTriplet& service, uint16_t event_id)
+{
+    bool success = false;  // becomes true when the event is successfully located and removed.
+
+    // Locate the service.
+    const auto isrv = _services.find(service);
+    if (isrv != _services.end() && Contains(isrv->second.event_ids, event_id)) {
+        // The event is known in the service.
+        auto& srv(isrv->second);
+
+        // Look for the event in this service.
+        for (auto iseg = srv.segments.begin(); !success && iseg != srv.segments.end(); ++iseg) {
+            auto& events((*iseg)->events);
+            for (auto iev = events.begin(); !success && iev != events.end(); ++iev) {
+                if ((*iev)->event_id == event_id) {
+                    // Found the event with same id.
+                    success = true;
+                    _duck.report().log(2, u"delete event id %n, %s, starting %s", event_id, service, (*iev)->start_time);
+
+                    // Remove event from segment and service.
+                    events.erase(iev);
+                    srv.event_ids.erase(event_id);
+
+                    // Mark all EIT schedule in this segment as to be regenerated.
+                    _regenerate = srv.regenerate = (*iseg)->regenerate = true;
+
+                    // Check if that event is in the EIT p/f for the sevice.
+                    for (const auto& sec : srv.pf) {
+                        if (sec != nullptr &&
+                            sec->section != nullptr &&
+                            sec->section->size() >= LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE + EIT::EIT_EVENT_FIXED_SIZE + SECTION_CRC32_SIZE &&
+                            GetUInt16(sec->section->content() + LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE) == event_id)
+                        {
+                            // The event is in an EIT p/f. Regenerate them.
+                            regeneratePresentFollowing(service, srv, getCurrentTime());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Delete events from binary events descriptions.
+//----------------------------------------------------------------------------
+
+bool ts::EITGenerator::deleteEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size)
+{
+    bool success = true;
+    while (size >= EIT::EIT_EVENT_FIXED_SIZE) {
+        const size_t event_size = std::min(size, EIT::EIT_EVENT_FIXED_SIZE + (GetUInt16(data + 10) & 0x0FFF));
+        const uint16_t event_id = GetUInt16(data);
+        success = deleteEvent(service, event_id) && success;
+        data += event_size;
+        size -= event_size;
+
+    }
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
 // Load EPG data from binary events descriptions.
 //----------------------------------------------------------------------------
 
@@ -345,7 +414,18 @@ bool ts::EITGenerator::loadEventsImpl(const Section& section, bool get_actual_ts
             // Use the EIT actual TS id as current TS id.
             setTransportStreamId(GetUInt16(pl_data));
         }
-        success = loadEventsImpl(EIT::GetService(section), pl_data + EIT::EIT_PAYLOAD_FIXED_SIZE, pl_size - EIT::EIT_PAYLOAD_FIXED_SIZE, origin);
+        // Address and size of the area containing events.
+        const ServiceIdTriplet service(EIT::GetService(section));
+        const uint8_t* const events_addr = pl_data + EIT::EIT_PAYLOAD_FIXED_SIZE;
+        const size_t events_size = pl_size - EIT::EIT_PAYLOAD_FIXED_SIZE;
+
+        // Create or delete events, depending on the section attribute.
+        if (section.attribute().similar(u"delete")) {
+            success = deleteEvents(service, events_addr, events_size);
+        }
+        else {
+            success = loadEventsImpl(service, events_addr, events_size, origin);
+        }
     }
     return success;
 }

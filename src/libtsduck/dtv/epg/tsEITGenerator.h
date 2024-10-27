@@ -309,6 +309,7 @@ namespace ts {
 
         //!
         //! Load EPG data from an EIT section.
+        //! If the section attribute is "delete", the events are deleted instead of added.
         //! @param [in] section A section object. Non-EIT sections are ignored.
         //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
         //! and the section is an EIT actual, set the actual TS.
@@ -321,6 +322,7 @@ namespace ts {
 
         //!
         //! Load EPG data from a vector of EIT sections.
+        //! If a section attribute is "delete", the events from this section are deleted instead of added.
         //! @param [in] sections A vector of sections. Non-EIT sections are ignored.
         //! @return True in case of success, false on error.
         //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
@@ -331,6 +333,7 @@ namespace ts {
 
         //!
         //! Load EPG data from all EIT sections in a section file.
+        //! If a section attribute is "delete", the events from this section are deleted instead of added.
         //! @param [in] sections A section file object. Non-EIT sections are ignored.
         //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
         //! use the first EIT actual section to set the actual TS.
@@ -341,6 +344,27 @@ namespace ts {
         {
             return loadEvents(sections.sections(), get_actual_ts);
         }
+
+        //!
+        //! Delete an event, remove it from EIT generation.
+        //! @param [in] service Service id triplet for the event to delete.
+        //! @param [in] event_id Id of the event to delete.
+        //! @return True in case of success, false on error.
+        //! @see ETSI EN 300 468
+        //! @see setCurrentTime()
+        //!
+        bool deleteEvent(const ServiceIdTriplet& service, uint16_t event_id);
+
+        //!
+        //! Delete events from binary events descriptions.
+        //! @param [in] service Service id triplet for all events in the binary data.
+        //! @param [in] data Address of binary events data. Each event is described using
+        //! the same format as in an EIT section, from the @a event_id field to the end of the
+        //! descriptor list. Several events can be concatenated. All events are individually deleted..
+        //! @param [in] size Size in bytes of the event binary data.
+        //! @return True in case of success, false on error.
+        //!
+        bool deleteEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size);
 
         //!
         //! Save all current EIT sections.
