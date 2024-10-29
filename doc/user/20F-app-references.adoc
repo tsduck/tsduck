@@ -44,7 +44,7 @@
 |COFDM |Coded Orthogonal Frequency Division Multiplexing
 |CP |Crypto-Period
 |CRC |Cyclic Redundancy Check
-|CSA |_Conseil Supérieur de l’Audiovisuel_ (French national regulator for TV)
+|CSA |_Conseil Supérieur de l'Audiovisuel_ (French national regulator for TV)
 |CVCT |Cable Virtual Channel Table (ATSC)
 |CW |Control Word
 |DCCT |Directed Channel Change Table (ATSC)
@@ -205,7 +205,7 @@
 * [[[AVS-TAI-109.7]]] Audio Video coding Standard Workgroup of China, T/AI 109.7:
   "Information Technology - Intelligent Media Coding (AVS3) Part 7"
 * [[[Dektec]]] Dektec Digital Video B.V. corporate home page, http://www.dektec.com/
-* [[[Dektec-SDK]]] Dektec drivers and SDK’s downloads, http://www.dektec.com/downloads/SDK/
+* [[[Dektec-SDK]]] Dektec drivers and SDK's downloads, http://www.dektec.com/downloads/SDK/
 * [[[DTG-DBOOK]]] DTG:
   "Digital Terrestrial Television; Requirements for Interoperability; The D-Book 7 Part A", V1, March 2011.
 * [[[EACEM-030]]] EACEM TR 030, V1.0, February 2000:
@@ -296,7 +296,7 @@
 * [[[Suntech]]] Suntechtv U3 USB modulator (VATek-based),
   https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673
 * [[[TSDuck]]] TSDuck Web site, https://tsduck.io/
-* [[[TSDuck-Prog]]] TSDuck programmer’s guide, https://tsduck.io/doxy/
+* [[[TSDuck-Prog]]] TSDuck programmer's guide, https://tsduck.io/doxy/
 * [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, https://github.com/tsduck/tsduck/issues
 * [[[TSDuck-Streams]]] Repository of sample real-life transport streams, https://tsduck.io/streams
 * [[[UWA]]] UHD World Association, T/UWA 005.2-1-2022

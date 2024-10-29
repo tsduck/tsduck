@@ -613,11 +613,14 @@ bool ts::DuckContext::loadArgs(Args& args)
         else if (args.present(u"philippines")) {
             _hfDefaultRegion = u"philippines";
         }
+        else if (args.present(u"usa")) {
+            _hfDefaultRegion = u"usa";
+        }
     }
 
     // Options relating to default standards.
     if (_definedCmdOptions & CMD_STANDARDS) {
-        if (args.present(u"atsc")) {
+        if (args.present(u"atsc") || args.present(u"usa")) {
             _cmdStandards |= Standards::ATSC;
         }
         if (args.present(u"isdb") || args.present(u"japan")) {

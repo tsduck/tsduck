@@ -62,7 +62,7 @@ endif::[]
 |DVB SimulCrypt-compliant ECMG stub for system integration and debug.
 
 |tseit
-|Manipulate EIT’s using commands and scripts.
+|Manipulate EIT's using commands and scripts.
 
 |tsemmg
 |DVB SimulCrypt-compliant EMMG stub for system integration and debug.

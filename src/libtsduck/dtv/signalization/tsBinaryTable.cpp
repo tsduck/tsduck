@@ -299,6 +299,32 @@ ts::PacketCounter ts::BinaryTable::packetCount(bool pack) const
 
 
 //----------------------------------------------------------------------------
+// Get/set the generic user-defined string as "attribute" of the object.
+//----------------------------------------------------------------------------
+
+void ts::BinaryTable::setAttribute(const UString& attr)
+{
+    // Set attribute on all sections.
+    for (const auto& it : _sections) {
+        if (it != nullptr) {
+            it->setAttribute(attr);
+        }
+    }
+}
+
+ts::UString ts::BinaryTable::attribute() const
+{
+    // Return first non-empty section attribute.
+    for (const auto& it : _sections) {
+        if (it != nullptr && !it->attribute().empty()) {
+            return it->attribute();
+        }
+    }
+    return UString();
+}
+
+
+//----------------------------------------------------------------------------
 // Add several sections to a table
 //----------------------------------------------------------------------------
 
@@ -505,7 +531,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
     if ((opt.setPID && _source_pid != PID_NULL) || opt.setLocalTime || opt.setPackets || opt.setSections) {
         // Add <metadata> element as first child of the table.
         // This element is not part of the table but describes how the table was collected.
-        xml::Element* meta = new xml::Element(node, u"metadata", CASE_INSENSITIVE, false); // first position
+        xml::Element* meta = AbstractTable::GetOrCreateMetadata(node);
         if (opt.setPID && _source_pid != PID_NULL) {
             meta->setIntAttribute(u"PID", _source_pid);
         }
@@ -532,7 +558,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
 
 
 //----------------------------------------------------------------------------
-// This method converts an XML node as a binary descriptor.
+// This method converts an XML node as a binary table.
 //----------------------------------------------------------------------------
 
 bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)

@@ -8,21 +8,21 @@
 
 [#chap-userconfig]
 [appendix]
-== User’s Configuration File
+== User's Configuration File
 
-The TSDuck user’s configuration file is used to specify default command line options or
+The TSDuck user's configuration file is used to specify default command line options or
 alternate options for all or selected TSDuck commands.
 This configuration file is specific per user.
 
 If the environment variable `TSDUCK_NO_USER_CONFIG` is defined to some non-empty value,
 the configuration file is ignored.
 This can be useful to bypass the defaults from this file or
-to troubleshoot problems and test if they come from the user’s configuration file.
+to troubleshoot problems and test if they come from the user's configuration file.
 
 [#conf-file-loc]
 === Configuration file location
 
-The location of the user’s TSDuck configuration file depends on the operating system.
+The location of the user's TSDuck configuration file depends on the operating system.
 
 [.compact-table]
 [cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
@@ -344,7 +344,7 @@ See the file `tsduck.hfbands.xml` for a complete reference.
 |===
 
 NOTE: The names `BS` and `CS` designate satellite frequency bands which are used in Japan only.
-In other regions, the frequency allocation inside satellite bands is not regulated and planned using channel numbers.
+In other regions, the frequency allocation inside satellite bands is not regulated and does not use channel numbers.
 
 === Sample configuration files
 

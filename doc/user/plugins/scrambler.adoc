@@ -13,14 +13,14 @@
 DVB scrambler
 
 This plugin is a DVB scrambler, either using a static control word or using an external ECMG.
-In the latter case, the plugin generates the control words, schedules crypto-periods and inserts ECM’s.
+In the latter case, the plugin generates the control words, schedules crypto-periods and inserts ECM's.
 
 The control words are generated using
 the default pseudo-random number generator of the operating system with additional security improvements.
 Although these values are reasonably random, there is no security commitment
 and this scrambler should be used for test purpose only, not for production.
 
-When inserting ECM’s, the plugin uses the _delay_start_ parameter, as returned by the ECMG,
+When inserting ECM's, the plugin uses the _delay_start_ parameter, as returned by the ECMG,
 to synchronize the start of the crypto-period with the first insertion of an ECM.
 Both positive and negative _delay_start_ values are supported.
 
@@ -164,7 +164,7 @@ Specify to synchronously generate the ECM's.
 
 [.optdoc]
 In real-time mode, the processing of packets continues in parallel while ECM's are generated in the ECMG.
-Use this option to force the stream processing to wait for ECM’s.
+Use this option to force the stream processing to wait for ECM's.
 
 [.optdoc]
 In offline mode, this option is always on.

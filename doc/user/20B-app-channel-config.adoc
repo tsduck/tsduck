@@ -26,7 +26,7 @@ If the same service appears in networks of different types (for instance a DVB-S
 the TSDuck command will use the one in the same type of network as the hardware tuner in use.
 
 There is one default file per user but any other file can be specified using the option `--tuning-file`.
-The location of the user’s default file depends on the operating system.
+The location of the user's default file depends on the operating system.
 
 [.compact-table]
 [cols="<1,<1m",frame=none,grid=none,stripes=none,options="autowidth,noheader"]

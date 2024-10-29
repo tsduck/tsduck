@@ -10,7 +10,7 @@
 === regulate
 
 [.cmd-header]
-Regulate packets flow according to a bitrate or PCR’s
+Regulate packets flow according to a bitrate or PCR's
 
 This plugin regulates the TS packets flow according to a specified bitrate
 or based on the Program Clock Reference from the transport stream.

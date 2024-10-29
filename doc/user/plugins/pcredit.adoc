@@ -12,7 +12,7 @@
 [.cmd-header]
 Edit PCR, PTS and DTS values in various ways
 
-This plugin edits PCR, PTS and DTS values in selected PID’s, shifting the corresponding timestamps.
+This plugin edits PCR, PTS and DTS values in selected PID's, shifting the corresponding timestamps.
 
 [.usage]
 Usage

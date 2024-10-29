@@ -707,7 +707,7 @@ bool ts::ForkPipe::readStreamPartial(void *addr, size_t max_size, size_t& ret_si
 // without waiting for the completion of the command process.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::Launch(const ts::UString& command, ts::Report& report, ts::ForkPipe::OutputMode out_mode, ts::ForkPipe::InputMode in_mode)
+bool ts::ForkPipe::Launch(const ts::UString& command, ts::Report& report, ts::ForkPipe::OutputMode out_mode, ts::ForkPipe::InputMode in_mode, WaitMode wait_mode)
 {
     // Reject input and output mode involving pipes.
     if (in_mode == STDIN_PIPE) {
@@ -721,8 +721,9 @@ bool ts::ForkPipe::Launch(const ts::UString& command, ts::Report& report, ts::Fo
 
     // Run the command asynchronously.
     ForkPipe exe;
-    if (exe.open(command, ASYNCHRONOUS, 0, report, out_mode, in_mode)) {
-        // Process was created asynchronously, close ForkPipe object now.
+    if (exe.open(command, wait_mode, 0, report, out_mode, in_mode)) {
+        // Process was created, close ForkPipe object now.
+        // If wait_mode is SYNCHRONOUS, close() waits for the process termination.
         return exe.close(report);
     }
     else {

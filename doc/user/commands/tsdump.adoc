@@ -206,7 +206,7 @@ Options `--first-source` and `--source` are mutually exclusive.
 [.optdoc]
 This option forces the usage of source-specific multicast (SSM)
 using the source address which is specified by the option `--source`.
-Without `--ssm`, standard ("any-source’) multicast is used and the option `--source` is used to filter incoming packets.
+Without `--ssm`, standard ("any-source") multicast is used and the option `--source` is used to filter incoming packets.
 
 [.optdoc]
 The `--ssm` option is implicit when the classical SSM syntax `_source@address:port_` is used.

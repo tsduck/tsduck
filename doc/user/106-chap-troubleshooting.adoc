@@ -91,7 +91,7 @@ endif::[]
  See GitHub documentation for details.
 
 |TSDUCK_NO_USER_CONFIG
-|When defined to any non-empty value, do not load the TSDuck user’s configuration file.
+|When defined to any non-empty value, do not load the TSDuck user's configuration file.
  See xref:chap-chanconfig[xrefstyle=short].
 
 |TSDUCK_NO_VERSION_CHECK
@@ -117,8 +117,8 @@ endif::[]
 ==== Search paths
 
 The directory search paths such as the system-defined `PATH` and the TSDuck-defined `TSPLUGINS_PATH` use a system-specific syntax.
-On {unix}, the directory names are separated with colons ‘:’.
-On Windows systems, they are separated with semi-colons ‘;’.
+On {unix}, the directory names are separated with colons `:`.
+On Windows systems, they are separated with semi-colons `;`.
 
 [#web-retry]
 ==== Web requests retry policy
@@ -139,7 +139,7 @@ The value must be a comma-separated list of directives:
 [.compact-list]
 * `RETRY=__value__` : number of retries for following hosts.
 * `INTERVAL=__value__` : milliseconds between retries for following hosts.
-* `HOST=__name__` : host name, as used in Web URL’s.
+* `HOST=__name__` : host name, as used in Web URL's.
 
 *Example*
 
@@ -164,7 +164,7 @@ This is quite useful to pipe transport streams between commands.
 However, if the binary transport stream is sent to the console, the screen is garbled.
 
 [.optdoc]
-*Solution*: If you don’t need the output transport stream, use `-O drop` as output plugin.
+*Solution*: If you don't need the output transport stream, use `-O drop` as output plugin.
 
 *A plugin which is supposed to insert some data in the stream does not insert anything*
 

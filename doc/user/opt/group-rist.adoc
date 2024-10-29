@@ -31,7 +31,7 @@ This is the reason why the `rist` plugin has so few options.
 Most options are in the URL.
 
 [.optdoc]
-See <<RIST-URL>> for more details on the syntax of `rist://` URL’s.
+See <<RIST-URL>> for more details on the syntax of `rist://` URL's.
 
 [.usage]
 Options

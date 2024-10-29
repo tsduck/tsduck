@@ -12,10 +12,10 @@
 [.cmd-header]
 Shift one or more PID's forward in the transport stream
 
-This plugin considers a set of selected PID’s and moves all their packets forward in the transport stream.
-Packets from all other (non-selected) PID’s are not moved.
+This plugin considers a set of selected PID's and moves all their packets forward in the transport stream.
+Packets from all other (non-selected) PID's are not moved.
 
-If all selected PID’s globally have a constant bitrate (even if they individually have variable bitrates),
+If all selected PID's globally have a constant bitrate (even if they individually have variable bitrates),
 shifting the packets keeps a consistent multiplexing: their offsets from non-selected non-moved packets remains constant.
 
 Since a `tsp` plugin cannot go back in the past, the move can be forward only,
@@ -23,12 +23,12 @@ buffering selected packets by a fixed amount of packets.
 The initial selected packets are replaced by null packets, until the shift buffer is full.
 The trailing buffered packets, at the end of the input stream, are lost.
 
-To move a list of selected PID’s "backward", the plugin moves all other PID’s forward instead
+To move a list of selected PID's "backward", the plugin moves all other PID's forward instead
 (see the option `--backward`).
-Again, the multiplexing remains consistent only if all other PID’s globally have a constant bitrate.
+Again, the multiplexing remains consistent only if all other PID's globally have a constant bitrate.
 
 This plugin is typically used to slightly move back and forth an audio PID.
-Since most audio PID’s have a constant bitrate, it works well for forward moves.
+Since most audio PID's have a constant bitrate, it works well for forward moves.
 Backward moves work well if the entire transport stream also has a constant bitrate, which is the case for broadcast streams.
 
 [.usage]
@@ -157,10 +157,10 @@ By default, the size of the memory cache is 128 packets.
 Specify the size of the shift buffer in packets.
 
 [.optdoc]
-The shift buffer contains packets from the selected PID’s which are removed from the transport stream and reinserted later,
-replacing packets from the same set of selected PID’s.
+The shift buffer contains packets from the selected PID's which are removed from the transport stream and reinserted later,
+replacing packets from the same set of selected PID's.
 Here, "removing" packets means replacing them with null packets in the initial phase.
-When the shift buffer is full, the "removed" packets are replaced from previous packets from the shifted PID’s.
+When the shift buffer is full, the "removed" packets are replaced from previous packets from the shifted PID's.
 
 [.optdoc]
 Using `--packets` is less intuitive than `--time` but allows starting the shift from the beginning of the transport stream,

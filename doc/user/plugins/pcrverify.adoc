@@ -12,7 +12,7 @@
 [.cmd-header]
 Verify the PCR's values
 
-This plugin verifies the values of all PCR’s and report invalid values.
+This plugin verifies the values of all PCR's and report invalid values.
 
 By default, each PCR is compared to its expected theoretical value
 as computed from the previous PCR value and the transport bitrate.

@@ -8,7 +8,7 @@
 #
 #-----------------------------------------------------------------------------
 
-# Don't generate .dep for these:
+# Don't generate .dep for setpath.cpp. It is a Windows tool.
 NODEPS_SRC = setpath.cpp
 
 include ../../Makefile.inc

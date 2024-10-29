@@ -103,7 +103,11 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
                 // The option --offset-count is defined in superclass ModulationArgs.
                 const uint64_t freq = band->frequency(channel_number, args.intValue<int32_t>(u"offset-count", 0));
                 // If the returned frequency is zero, the channel is outside the band.
-                if (freq != 0) {
+                if (freq == 0) {
+                    // Display error message.
+                    band->isValidChannel(channel_number, duck.report());
+                }
+                else {
                     channel_found = true;
                     frequency = freq;
                     // Some satellite bands define polarization in addition to frequency.

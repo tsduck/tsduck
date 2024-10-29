@@ -171,12 +171,12 @@ void ts::anc_data_block_type::anc_data_types::serialize(PSIBuffer& buf) const
         std::get<loudness_metadata_block_type>(auxiliary_data).serialize(buf);
     }
     else {
-        buf.putBits(Invalid_Metadata, 4); 
+        buf.putBits(Invalid_Metadata, 4);
     }
     buf.writeRealignByte(1);
 }
 
-void ts::anc_data_block_type::serialize(PSIBuffer& buf) const 
+void ts::anc_data_block_type::serialize(PSIBuffer& buf) const
 {
     buf.pushWriteSequenceWithLeadingLength(8);  // start write sequence
     buf.putBits(anc_block.size(), 4);

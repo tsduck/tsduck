@@ -12,7 +12,7 @@
 [.cmd-header]
 Extract MPE (Multi-Protocol Encapsulation) datagrams
 
-This plugin extracts MPE (Multi-Protocol Encapsulation) datagrams from one or more PID’s.
+This plugin extracts MPE (Multi-Protocol Encapsulation) datagrams from one or more PID's.
 The extracted datagrams can be either forwarded on the local network, saved in a binary file or simply logged for monitoring.
 See <<ETSI-301-192>> for more details on MPE.
 
@@ -49,7 +49,7 @@ By default, all datagrams are extracted.
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Extract MPE datagrams from these PID’s.
+Extract MPE datagrams from these PID's.
 Several `--pid` options may be specified.
 When no PID is specified, use all PID's carrying MPE which are properly declared in the signalization.
 

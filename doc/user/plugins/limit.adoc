@@ -60,7 +60,7 @@ See xref:bitrates[xrefstyle=short] for more details on the representation of bit
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Specify PID’s the content of which can be dropped when the maximum bitrate is exceeded.
+Specify PID's the content of which can be dropped when the maximum bitrate is exceeded.
 
 [.optdoc]
 Several `--pid` options can be specified.

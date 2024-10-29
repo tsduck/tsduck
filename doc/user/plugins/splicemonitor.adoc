@@ -161,7 +161,7 @@ Several `--select-commands` can be specified.
 Specify one single PID carrying SCTE-35 sections to monitor.
 
 [.optdoc]
-By default, all SCTE-35 PID's are monitored, based in their signalization in the PMT’s.
+By default, all SCTE-35 PID's are monitored, based in their signalization in the PMT's.
 
 [.opt]
 *-t* _value_ +

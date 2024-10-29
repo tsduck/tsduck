@@ -82,7 +82,7 @@ ts::SysInfo::SysInfo() :
     _osFamily(BSD),
     _osFlavor(FREEBSD),
     _systemName(u"FreeBSD"),
-^#elif defined(TS_NETBSD)
+#elif defined(TS_NETBSD)
     _osFamily(BSD),
     _osFlavor(NETBSD),
     _systemName(u"NetBSD"),

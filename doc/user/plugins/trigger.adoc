@@ -12,7 +12,7 @@
 [.cmd-header]
 Trigger actions on selected TS packets
 
-This plugin triggers an action (running an external command, sending an UDP packet)
+This plugin triggers an action (running an external command, copying a file, sending an UDP packet)
 each time a TS packet is marked with a given label.
 Labels are typically set on packets by a previous plugin in the chain, such as the `filter` plugin.
 
@@ -41,11 +41,32 @@ All labels from options `--label` shall be set on a packet to be selected (logic
 By default, a packet is selected if any label is set (logical _or_).
 
 [.opt]
+*-c* _file-name_ +
+*--copy* _file-name_
+
+[.optdoc]
+Copy the specified file when the current packet triggers the actions.
+
+[.optdoc]
+See also option --destination.
+
+[.opt]
+*-d* _file-name_ +
+*--destination* _file-name_
+
+[.optdoc]
+With `--copy`, the file is copied to that specified destination.
+If the specified path is an existing directory, the file is copied in that directory, with the same name as input.
+
+[.opt]
 *-e* _'command'_ +
 *--execute* _'command'_
 
 [.optdoc]
 Run the specified command when the current packet triggers the actions.
+
+[.optdoc]
+See also option `--synchronous`.
 
 [.opt]
 *-l* _label1[-label2]_ +
@@ -91,6 +112,14 @@ Specify the minimum time, in milliseconds, between two triggered actions.
 Actions which should be triggered in the meantime are ignored.
 
 [.opt]
+*--once*
+
+[.optdoc]
+Trigger the actions only once per label.
+When a packet with one or more labels from option `--label` has triggered the actions once,
+these labels are disabled.
+
+[.opt]
 *--start*
 
 [.optdoc]
@@ -101,6 +130,16 @@ Trigger the actions on `tsp` start.
 
 [.optdoc]
 Trigger the actions on `tsp` stop.
+
+[.opt]
+*-s* +
+*--synchronous*
+
+[.optdoc]
+With `--execute`, wait for the command to complete before processing the next packet.
+
+[.optdoc]
+By default, the command runs asynchronously.
 
 [.opt]
 *--ttl* _value_
@@ -121,7 +160,7 @@ It can be also a host name that translates to an IP address.
 The _port_ specifies the destination UDP port.
 
 [.opt]
-*--udp-message* _hexa-string_
+*--udp-message* _hexa-data_
 
 [.optdoc]
 With `--udp`, specifies the binary message to send as UDP datagram.

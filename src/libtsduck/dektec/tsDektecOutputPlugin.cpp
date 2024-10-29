@@ -1195,13 +1195,19 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         return startError(u"options --frequency, --satellite-frequency, --uhf-channel, --vhf-channel are mutually exclusive", DTAPI_OK);
     }
     if (present(u"uhf-channel")) {
-        frequency = uhf->frequency(intValue<int>(u"uhf-channel", 0), intValue<int>(u"offset-count", 0));
+        // Display error on invalid channel and return 0 as frequency.
+        const uint32_t channel = intValue<uint32_t>(u"uhf-channel");
+        uhf->isValidChannel(channel, *this);
+        frequency = uhf->frequency(channel, intValue<int32_t>(u"offset-count"));
     }
     else if (present(u"vhf-channel")) {
-        frequency = vhf->frequency(intValue<int>(u"vhf-channel", 0), intValue<int>(u"offset-count", 0));
+        // Display error on invalid channel and return 0 as frequency.
+        const uint32_t channel = intValue<uint32_t>(u"vhf-channel");
+        vhf->isValidChannel(channel, *this);
+        frequency = vhf->frequency(channel, intValue<int32_t>(u"offset-count"));
     }
     else if (present(u"satellite-frequency")) {
-        uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
+        const uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency");
         if (sat_frequency > 0) {
             // Get LNB description.
             const LNB lnb(value(u"lnb"), *tsp);

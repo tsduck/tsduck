@@ -29,7 +29,7 @@ uninteresting sequences of ads and simply removes the program content, audio, vi
 The content of the program is not replaced, as originally intended by the SCTE 35 standard, it is simply removed.
 Consequently, using this plugin makes sense on SPTS only (see the plugin `zap` for instance).
 
-The removal is based on Presentation Time Stamps (PTS) in the various content PID’s of the program.
+The removal is based on Presentation Time Stamps (PTS) in the various content PID's of the program.
 The PTS of the starting (_splice out_) and ending (_splice in_) points are defined
 by the SCTE 35 commands in the dedicated stream.
 Currently, `rmsplice` removes entire PES packets and does not dig into the video encoding.
@@ -94,7 +94,7 @@ Use with `--verbose`.
 *--event-id* _pid1[-pid2]_
 
 [.optdoc]
-Only remove splices associated with the specified event ID’s.
+Only remove splices associated with the specified event ID's.
 
 [.optdoc]
 Several `--event-id` options may be specified.

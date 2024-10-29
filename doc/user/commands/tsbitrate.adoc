@@ -12,7 +12,7 @@
 [.cmd-header]
 Bitrate evaluation from PCR
 
-This utility evaluates the original bitrate of a transport stream based on an analysis of the PCR’s
+This utility evaluates the original bitrate of a transport stream based on an analysis of the PCR's
 (Program Clock Reference timestamps) and the interval between them.
 This is especially useful for captured files where the transmission bitrate information is lost.
 
@@ -74,14 +74,14 @@ When errors are ignored, the bitrate of the received stream is evaluated, missin
 *--min-pcr* _value_
 
 [.optdoc]
-Stop analysis when that number of PCR’s are read from the required minimum number of PID’s
-(default: stop after 64 PCR’s on 1 PID).
+Stop analysis when that number of PCR's are read from the required minimum number of PID's
+(default: stop after 64 PCR's on 1 PID).
 
 [.opt]
 *--min-pid* _value_
 
 [.optdoc]
-Minimum number of PID to get PCR’s from (default: stop after 64 PCR’s on 1 PID).
+Minimum number of PID to get PCR's from (default: stop after 64 PCR's on 1 PID).
 
 [.opt]
 *-v* +

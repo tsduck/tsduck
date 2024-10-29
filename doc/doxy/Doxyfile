@@ -20,7 +20,7 @@ PROJECT_LOGO   = ../../images/tsduck-48.png
 
 INPUT            = . ../../src/libtsduck
 FILE_PATTERNS    = *.h *.dox *.md *.java *.py
-EXCLUDE_PATTERNS = */private/* README.md
+EXCLUDE_PATTERNS = */private/* README.md tsPreConfiguration.h
 RECURSIVE        = YES
 IMAGE_PATH       = ../../images
 OUTPUT_DIRECTORY = ../../bin/doxy

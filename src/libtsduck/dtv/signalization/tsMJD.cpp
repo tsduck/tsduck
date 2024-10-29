@@ -75,12 +75,21 @@ bool ts::EncodeMJD(const Time& time, uint8_t* mjd, MJDFormat mjd_fmt)
     }
 
     // Compute seconds since MJD epoch
-    const cn::seconds::rep d = cn::duration_cast<cn::seconds>(time_sec - Time::JulianEpochOffset).count();
-    PutUInt16(mjd, uint16_t(d / (24 * 3600)));    // days
+    const cn::seconds::rep secs = cn::duration_cast<cn::seconds>(time_sec - Time::JulianEpochOffset).count();
+    const cn::seconds::rep days = secs / (24 * 3600);
+
+    // Cannot represent dates later than MJD max (day count on 16 bits).
+    if (days > 0xFFFF) {
+        MemZero(mjd, MJDSize(mjd_fmt));
+        return false;
+    }
+
+    // Now we can encode.
+    PutUInt16(mjd, uint16_t(days));
     if (mjd_fmt == MJD_FULL) {
-        mjd[2] = EncodeBCD(int((d / 3600) % 24)); // hours
-        mjd[3] = EncodeBCD(int((d / 60) % 60));   // minutes
-        mjd[4] = EncodeBCD(int(d % 60));          // seconds
+        mjd[2] = EncodeBCD(int((secs / 3600) % 24)); // hours
+        mjd[3] = EncodeBCD(int((secs / 60) % 60));   // minutes
+        mjd[4] = EncodeBCD(int(secs % 60));          // seconds
     }
     return true;
 }

@@ -48,7 +48,7 @@ ASCIIDOCTOR_PDF ?= asciidoctor-pdf
 # Documentation generation flags.
 
 ADOCFLAGS      = -v -a imagesdir="$(IMAGESDIR)" -a includedir="$(ADOCDIR)" \
-                 -a revnumber="$(shell $(GET_VERSION))" -a revdate="$(shell $(DATE) '+%B %Y')"
+                 -a revnumber="$(shell $(GET_TSDUCK_VERSION))" -a revdate="$(shell $(DATE) '+%B %Y')"
 ADOCFLAGS_HTML = $(ADOCFLAGS) -a stylesheet="$(CSSFILE)" -a rouge-style="$(ROUGE_HTML)" \
                  -a data-uri -a docinfo=shared -a docinfodir="$(BINDOCINFO)"
 ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(ADOCDIR)" -a pdf-theme="$(THEME)" -a rouge-style="$(ROUGE_PDF)"

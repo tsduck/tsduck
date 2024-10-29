@@ -82,7 +82,7 @@ void ts::EITGenerator::reset(PID pid)
 // Event: Constructor of the structure containing binary events.
 //----------------------------------------------------------------------------
 
-ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
+ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size, cn::seconds offset)
 {
     size_t event_size = size;
 
@@ -92,6 +92,12 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
         DecodeMJD(data + 2, MJD_FULL, start_time);
         end_time = start_time + cn::hours(DecodeBCD(data[7])) + cn::minutes(DecodeBCD(data[8])) + cn::seconds(DecodeBCD(data[9]));
         event_data.copy(data, event_size);
+        if (offset != cn::seconds::zero()) {
+            start_time += offset;
+            end_time += offset;
+            // Rewrite new start time in event data, after event_id.
+            EncodeMJD(start_time, event_data.data() + 2, MJD_FULL);
+        }
     }
 
     data += event_size;
@@ -207,10 +213,79 @@ uint8_t ts::EITGenerator::nextVersion(const ServiceIdTriplet& service_id, TID ta
 
 
 //----------------------------------------------------------------------------
+// Delete an event, remove it from EIT generation.
+//----------------------------------------------------------------------------
+
+bool ts::EITGenerator::deleteEvent(const ServiceIdTriplet& service, uint16_t event_id)
+{
+    bool success = false;  // becomes true when the event is successfully located and removed.
+
+    // Locate the service.
+    const auto isrv = _services.find(service);
+    if (isrv != _services.end() && Contains(isrv->second.event_ids, event_id)) {
+        // The event is known in the service.
+        auto& srv(isrv->second);
+
+        // Look for the event in this service.
+        for (auto iseg = srv.segments.begin(); !success && iseg != srv.segments.end(); ++iseg) {
+            auto& events((*iseg)->events);
+            for (auto iev = events.begin(); !success && iev != events.end(); ++iev) {
+                if ((*iev)->event_id == event_id) {
+                    // Found the event with same id.
+                    success = true;
+                    _duck.report().log(2, u"delete event id %n, %s, starting %s", event_id, service, (*iev)->start_time);
+
+                    // Remove event from segment and service.
+                    events.erase(iev);
+                    srv.event_ids.erase(event_id);
+
+                    // Mark all EIT schedule in this segment as to be regenerated.
+                    _regenerate = srv.regenerate = (*iseg)->regenerate = true;
+
+                    // Check if that event is in the EIT p/f for the sevice.
+                    for (const auto& sec : srv.pf) {
+                        if (sec != nullptr &&
+                            sec->section != nullptr &&
+                            sec->section->size() >= LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE + EIT::EIT_EVENT_FIXED_SIZE + SECTION_CRC32_SIZE &&
+                            GetUInt16(sec->section->content() + LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE) == event_id)
+                        {
+                            // The event is in an EIT p/f. Regenerate them.
+                            regeneratePresentFollowing(service, srv, getCurrentTime());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Delete events from binary events descriptions.
+//----------------------------------------------------------------------------
+
+bool ts::EITGenerator::deleteEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size)
+{
+    bool success = true;
+    while (size >= EIT::EIT_EVENT_FIXED_SIZE) {
+        const size_t event_size = std::min(size, EIT::EIT_EVENT_FIXED_SIZE + (GetUInt16(data + 10) & 0x0FFF));
+        const uint16_t event_id = GetUInt16(data);
+        success = deleteEvent(service, event_id) && success;
+        data += event_size;
+        size -= event_size;
+
+    }
+    return success;
+}
+
+
+//----------------------------------------------------------------------------
 // Load EPG data from binary events descriptions.
 //----------------------------------------------------------------------------
 
-bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint8_t* data, size_t size)
+bool ts::EITGenerator::loadEventsImpl(const ServiceIdTriplet& service_id, const uint8_t* data, size_t size, Origin origin)
 {
     bool success = true;
 
@@ -228,7 +303,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
     while (size >= EIT::EIT_EVENT_FIXED_SIZE) {
 
         // Get the next binary event.
-        const EventPtr ev(new Event(data, size));
+        const EventPtr ev(new Event(data, size, origin == Origin::DATA ? _data_offset : _input_offset));
         if (ev->event_data.empty()) {
             _duck.report().error(u"error loading EPG event, truncated data");
             success = false;
@@ -327,7 +402,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
 // Load EPG data from an EIT section.
 //----------------------------------------------------------------------------
 
-bool ts::EITGenerator::loadEvents(const Section& section, bool get_actual_ts)
+bool ts::EITGenerator::loadEventsImpl(const Section& section, bool get_actual_ts, Origin origin)
 {
     const uint8_t* const pl_data = section.payload();
     const size_t pl_size = section.payloadSize();
@@ -339,7 +414,18 @@ bool ts::EITGenerator::loadEvents(const Section& section, bool get_actual_ts)
             // Use the EIT actual TS id as current TS id.
             setTransportStreamId(GetUInt16(pl_data));
         }
-        success = loadEvents(EIT::GetService(section), pl_data + EIT::EIT_PAYLOAD_FIXED_SIZE, pl_size - EIT::EIT_PAYLOAD_FIXED_SIZE);
+        // Address and size of the area containing events.
+        const ServiceIdTriplet service(EIT::GetService(section));
+        const uint8_t* const events_addr = pl_data + EIT::EIT_PAYLOAD_FIXED_SIZE;
+        const size_t events_size = pl_size - EIT::EIT_PAYLOAD_FIXED_SIZE;
+
+        // Create or delete events, depending on the section attribute.
+        if (section.attribute().similar(u"delete")) {
+            success = deleteEvents(service, events_addr, events_size);
+        }
+        else {
+            success = loadEventsImpl(service, events_addr, events_size, origin);
+        }
     }
     return success;
 }
@@ -354,7 +440,8 @@ bool ts::EITGenerator::loadEvents(const SectionPtrVector& sections, bool get_act
     bool success = true;
     for (size_t i = 0; i < sections.size(); ++i) {
         if (sections[i] != nullptr) {
-            success = loadEvents(*sections[i], get_actual_ts) && success;
+            // Section files are always external data, not input EIT PID.
+            success = loadEventsImpl(*sections[i], get_actual_ts, Origin::DATA) && success;
         }
     }
     return success;
@@ -1290,7 +1377,7 @@ void ts::EITGenerator::handleSection(SectionDemux& demux, const Section& section
     }
     else if (EIT::IsEIT(tid) && bool(_options & EITOptions::LOAD_INPUT)) {
         // Use input EIT's as EPG data when specified in the generation options.
-        loadEvents(section);
+        loadEventsImpl(section, false, Origin::INPUT_EIT);
     }
     else if ((tid == TID_TDT || tid == TID_TOT) && section.payloadSize() >= MJDSize(MJD_FULL)) {
         // The first 5 bytes of a TDT or TOT payload is the UTC time.

@@ -12,7 +12,7 @@
 [.cmd-header]
 Copy and synchronize PCR's from one PID to another
 
-This plugin uses a PID with exiting PCR’s as time reference and copies or recomputes PCR’s in another PID.
+This plugin uses a PID with exiting PCR's as time reference and copies or recomputes PCR's in another PID.
 
 [.usage]
 Usage
@@ -42,7 +42,7 @@ By default, insert a PCR in packets with a payload unit start only.
 When a PCR is inserted in a TS packet which did not have one, the TS adaptation field must be created or extended.
 Consequently, the TS payload must be shrunk.
 The end of the payload must then be shifted to the next TS packet in the PID.
-When several PCR’s are included in the PID, shifted bytes accumulate.
+When several PCR's are included in the PID, shifted bytes accumulate.
 When enough shifted bytes have been accumulated to fill a TS packet,
 the next null packet is replaced by a new packet for the target PID.
 
@@ -91,7 +91,7 @@ Exactly one of `--reference-pid` and `--reference-label` shall be specified.
 *--target-label* _value_
 
 [.optdoc]
-Packet label indicating the PID containing the target PID into which PCR’s shall be created and copied.
+Packet label indicating the PID containing the target PID into which PCR's shall be created and copied.
 Each time a packet with that label is encountered, the target PID switches to the PID of this packet,
 if different from the previous target PID.
 
@@ -103,7 +103,7 @@ Exactly one of `--target-pid` and `--target-label` shall be specified.
 *--target-pid* _value_
 
 [.optdoc]
-PID into which PCR’s shall be created and copied.
+PID into which PCR's shall be created and copied.
 
 [.optdoc]
 Exactly one of `--target-pid` and `--target-label` shall be specified.

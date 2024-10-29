@@ -79,6 +79,8 @@ namespace ts {
         int                  _ts_id = -1;
         cn::milliseconds     _poll_interval {};
         cn::milliseconds     _min_stable_delay {};
+        cn::seconds          _data_offset {};
+        cn::seconds          _input_offset {};
         EITRepetitionProfile _eit_profile {};
 
         // Working data.
@@ -173,6 +175,17 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"Specifies that the event input files should be deleted after being loaded. "
          u"By default, the files are left unmodified after being loaded. "
          u"When a loaded file is modified later, it is reloaded and re-injected.");
+
+    option<cn::seconds>(u"event-offset");
+    help(u"event-offset",
+         u"Specifies an offset in seconds to apply to the start time of all loaded events. "
+         u"Can be negative. By default, no offset is applied.\n"
+         u"See also option --input-event-offset.");
+
+    option<cn::seconds>(u"input-event-offset");
+    help(u"input-event-offset",
+         u"With --incoming-eits, specifies an offset in seconds to apply to the start time of all events from the input EIT PID. "
+         u"By default, the same offset is applied as specified with --event-offset");
 
     option(u"files", 'f', FILENAME);
     help(u"files", u"'file-wildcard'",
@@ -295,6 +308,8 @@ bool ts::EITInjectPlugin::getOptions()
     getChronoValue(_min_stable_delay, u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
     getIntValue(_ts_id, u"ts-id", -1);
     getIntValue(_eit_pid, u"pid", PID_EIT);
+    getChronoValue(_data_offset, u"event-offset", cn::seconds(0));
+    getChronoValue(_input_offset, u"input-event-offset", _data_offset);
     _delete_files = present(u"delete-files");
     _wait_first_batch = present(u"wait-first-batch");
 
@@ -384,6 +399,8 @@ bool ts::EITInjectPlugin::start()
     _eit_gen.setOptions(_eit_options);
     _eit_gen.setProfile(_eit_profile);
     _eit_gen.setMaxBitRate(_eit_bitrate);
+    _eit_gen.setApplicationEventOffset(_data_offset);
+    _eit_gen.setInputEventOffset(_input_offset);
     if (_ts_id >= 0) {
         _eit_gen.setTransportStreamId(uint16_t(_ts_id));
     }

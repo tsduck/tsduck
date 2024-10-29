@@ -172,6 +172,21 @@ namespace ts {
         void setLastTSPacketIndex(PacketCounter i) { _last_pkt = i; }
 
         //!
+        //! Set a generic user-defined string as "attribute" of the object.
+        //! The semantics of this attribute string is not defined. It is used by the application.
+        //! The attribute string can be found in the `<metadata>` structure of the XML representation of a table.
+        //! @param [in] attr Generic string to set as attribute.
+        //!
+        void setAttribute(const UString& attr) { _attribute = attr; }
+
+        //!
+        //! Get the generic user-defined "attribute" string of the object.
+        //! @return A constant reference to the attribute string in the object.
+        //! @see setAttribute()
+        //!
+        const UString& attribute() const { return _attribute; }
+
+        //!
         //! Access to the full binary content of the data.
         //! Do not modify content.
         //! @return Address of the full binary content of the data.
@@ -226,6 +241,7 @@ namespace ts {
         PacketCounter _first_pkt = 0;          // Index of first packet in stream
         PacketCounter _last_pkt = 0;           // Index of last packet in stream
         ByteBlockPtr  _data {};                // Full binary content of the packet
+        UString       _attribute {};           // Application-specific attribute
 
         // Inaccessible operations
         DemuxedData(const DemuxedData&) = delete;

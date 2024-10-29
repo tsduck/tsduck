@@ -199,6 +199,29 @@ namespace ts {
         void setProfile(const EITRepetitionProfile& profile) { _profile = profile; }
 
         //!
+        //! Define a time offset to apply on all events which are loaded from the application.
+        //! @param [in] offset Offset to apply to all events, in any duration type.
+        //! @see setInputEventOffset()
+        //!
+        template <class Rep, class Period>
+        void setApplicationEventOffset(cn::duration<Rep,Period> offset)
+        {
+            _data_offset = cn::duration_cast<cn::seconds>(offset);
+        }
+
+        //!
+        //! Define a time offset to apply on all events which are received from the input EIT PID.
+        //! Ignored if option EITOptions::LOAD_INPUT is not set.
+        //! @param [in] offset Offset to apply to all events, in any duration type.
+        //! @see setApplicationEventOffset()
+        //!
+        template <class Rep, class Period>
+        void setInputEventOffset(cn::duration<Rep,Period> offset)
+        {
+            _input_offset = cn::duration_cast<cn::seconds>(offset);
+        }
+
+        //!
         //! Define the "actual" transport stream id for generated EIT's.
         //! When this method is called, all events for the specified TS are stored in
         //! "EIT actual". All other events are stored in "EIT other".
@@ -279,19 +302,27 @@ namespace ts {
         //! @see ETSI EN 300 468
         //! @see setCurrentTime()
         //!
-        bool loadEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size);
+        bool loadEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size)
+        {
+            return loadEventsImpl(service, data, size, Origin::DATA);
+        }
 
         //!
         //! Load EPG data from an EIT section.
+        //! If the section attribute is "delete", the events are deleted instead of added.
         //! @param [in] section A section object. Non-EIT sections are ignored.
         //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
         //! and the section is an EIT actual, set the actual TS.
         //! @return True in case of success, false on error.
         //!
-        bool loadEvents(const Section& section, bool get_actual_ts = false);
+        bool loadEvents(const Section& section, bool get_actual_ts = false)
+        {
+            return loadEventsImpl(section, get_actual_ts, Origin::DATA);
+        }
 
         //!
         //! Load EPG data from a vector of EIT sections.
+        //! If a section attribute is "delete", the events from this section are deleted instead of added.
         //! @param [in] sections A vector of sections. Non-EIT sections are ignored.
         //! @return True in case of success, false on error.
         //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
@@ -302,13 +333,38 @@ namespace ts {
 
         //!
         //! Load EPG data from all EIT sections in a section file.
+        //! If a section attribute is "delete", the events from this section are deleted instead of added.
         //! @param [in] sections A section file object. Non-EIT sections are ignored.
         //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
         //! use the first EIT actual section to set the actual TS.
         //! @return True in case of success, false on error.
         //! @see loadEvents(const Section&)
         //!
-        bool loadEvents(const SectionFile& sections, bool get_actual_ts = false) { return loadEvents(sections.sections(), get_actual_ts); }
+        bool loadEvents(const SectionFile& sections, bool get_actual_ts = false)
+        {
+            return loadEvents(sections.sections(), get_actual_ts);
+        }
+
+        //!
+        //! Delete an event, remove it from EIT generation.
+        //! @param [in] service Service id triplet for the event to delete.
+        //! @param [in] event_id Id of the event to delete.
+        //! @return True in case of success, false on error.
+        //! @see ETSI EN 300 468
+        //! @see setCurrentTime()
+        //!
+        bool deleteEvent(const ServiceIdTriplet& service, uint16_t event_id);
+
+        //!
+        //! Delete events from binary events descriptions.
+        //! @param [in] service Service id triplet for all events in the binary data.
+        //! @param [in] data Address of binary events data. Each event is described using
+        //! the same format as in an EIT section, from the @a event_id field to the end of the
+        //! descriptor list. Several events can be concatenated. All events are individually deleted..
+        //! @param [in] size Size in bytes of the event binary data.
+        //! @return True in case of success, false on error.
+        //!
+        bool deleteEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size);
 
         //!
         //! Save all current EIT sections.
@@ -336,6 +392,13 @@ namespace ts {
 
     private:
 
+        // Events can be loaded from the application (file, data) or from the input EIT stream.
+        enum class Origin {DATA, INPUT_EIT};
+
+        // Internal methods always track the origin of events.
+        bool loadEventsImpl(const Section& section, bool get_actual_ts, Origin origin);
+        bool loadEventsImpl(const ServiceIdTriplet& service, const uint8_t* data, size_t size, Origin origin);
+
         // -----------------------
         // Description of an event
         // -----------------------
@@ -351,7 +414,7 @@ namespace ts {
 
             // Constructor based on EIT section payload: extract the next event.
             // The data and size are updated after building the event.
-            Event(const uint8_t*& data, size_t& size);
+            Event(const uint8_t*& data, size_t& size, cn::seconds offset);
         };
 
         using EventPtr = std::shared_ptr<Event>;
@@ -463,6 +526,8 @@ namespace ts {
         PacketCounter        _last_eit_pkt = 0;          // Packet index at last EIT insertion.
         EITOptions           _options = EITOptions::GEN_ALL; // EIT generation options flags.
         EITRepetitionProfile _profile {};                // EIT repetition profile.
+        cn::seconds          _data_offset {};            // Offset to apply to all events from application data.
+        cn::seconds          _input_offset {};           // Offset to apply to all events from input EIT PID.
         SectionDemux         _demux;                     // Section demux for input stream, get PAT, TDT, TOT, EIT.
         Packetizer           _packetizer;                // Packetizer for generated EIT's.
         EServiceMap          _services {};               // Map of services -> segments -> events and sections.

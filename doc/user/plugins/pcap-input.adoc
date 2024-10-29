@@ -28,8 +28,8 @@ TCP, UDP, multicast, unicast but only a few streams, maybe only one, contain tra
 
 In addition to extracting a transport stream from UDP/IP multicast,
 this plugin can also extract TS packets from a captured EMMG/PDG{d-arrow}MUX DVB SimulCrypt connection.
-In that kind of connection, an EMM or private data generator feeds a MUX with one or more data PID’s (usually EMM PID’s).
-With `--tcp-emmg-mux` or `--udp-emmg-mux`, the plugin extract the corresponding data or EMM PID’s.
+In that kind of connection, an EMM or private data generator feeds a MUX with one or more data PID's (usually EMM PID's).
+With `--tcp-emmg-mux` or `--udp-emmg-mux`, the plugin extract the corresponding data or EMM PID's.
 
 [.usage]
 Input timestamps

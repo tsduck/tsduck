@@ -5,7 +5,7 @@
     <AVS3_audio_descriptor
         sampling_frequency_index="uint4, required"
         resolution="8 bits|16 bits|24 bits, required">
-      
+
       <!-- required for audio_codec_id==0 (General High Rate Coding) -->
       <general_coding
         coding_profile="basic|object|HOA, required"
@@ -33,7 +33,7 @@
       <additional_info>
         Hexadecimal content
       </additional_info>
-      
+
     </AVS3_audio_descriptor>
 
   </_descriptors>

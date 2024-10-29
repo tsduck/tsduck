@@ -66,11 +66,14 @@ namespace ts {
         //! When this object is valid, this method creates a root node with the default XML
         //! name and then invokes buildXML() in the subclass to populate the XML node.
         //!
+        //! Important: Implementers of signalization classes shall not override this class.
+        //! Implement the protected method buildXML() instead.
+        //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the new XML tree.
         //! @return The new XML element.
         //!
-        xml::Element* toXML(DuckContext& duck, xml::Element* parent) const;
+        virtual xml::Element* toXML(DuckContext& duck, xml::Element* parent) const;
 
         //!
         //! This method converts an XML structure to a table or descriptor in this object.
@@ -81,10 +84,13 @@ namespace ts {
         //! This method checks the name of the XML node and then invokes analyzeXML() in the subclass.
         //! Depending on the returned values of analyzeXML(), this object is either validated or invalidated.
         //!
+        //! Important: Implementers of signalization classes shall not override this class.
+        //! Implement the protected method analyzeXML() instead.
+        //!
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] element XML element to convert.
         //!
-        void fromXML(DuckContext& duck, const xml::Element* element);
+        virtual void fromXML(DuckContext& duck, const xml::Element* element);
 
         // Implementation of AbstractDefinedByStandards
         virtual Standards definingStandards() const override;

@@ -15,7 +15,7 @@ TSDuck runs on Linux, Windows, macOS and BSD systems.
 Here is a brief summary of pros and cons of using TSDuck on the various operating systems.
 
 * Linux pros:
-** Availability of a powerful shell environment. TSDuck is a light-weight toolkit with elementary
+** Availability of a powerful shell environment. TSDuck is a lightweight toolkit with elementary
    tools and plugins which can be combined in an infinite number of ways.
    The user can obtain even more flexibility when combining them with the bash shell and all standard
    UNIX utilities (`grep`, `sed`, `awk`, etc.) See some complex examples in section 5.2.

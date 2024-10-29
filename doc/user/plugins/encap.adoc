@@ -13,12 +13,12 @@
 [.cmd-header]
 Encapsulate packets from several PID's into one single PID
 
-This plugin encapsulates all packets from several PID’s into one single PID.
-This unique output PID replaces all input PID’s in the transport stream.
-The output PID is called the _tunnel_ or _outer_ PID through which all original or _inner_ PID’s are conveyed.
+This plugin encapsulates all packets from several PID's into one single PID.
+This unique output PID replaces all input PID's in the transport stream.
+The output PID is called the _tunnel_ or _outer_ PID through which all original or _inner_ PID's are conveyed.
 
 The reverse operation, the decapsulation, is performed by the `decap` plugin.
-It replaces the tunnel PID by all original PID’s.
+It replaces the tunnel PID by all original PID's.
 
 The default encapsulation format is proprietary and defined below.
 Since this is not a standard format, it is not interoperable with external systems.
@@ -27,9 +27,9 @@ the transport stream into a private PID to cross some equipment which does not s
 the structure of the original stream or could damage its original structure.
 
 Because of the encapsulation overhead, the total volume of encapsulated packets is slightly greater
-(by approximately 2%) than the original PID’s.
+(by approximately 2%) than the original PID's.
 The encapsulation operation consequently needs some null packets in the original transport stream in addition to the original packets.
-The output tunnel PID replaces all original packets from the encapsulated PID’s plus some null packets.
+The output tunnel PID replaces all original packets from the encapsulated PID's plus some null packets.
 If the original input stream has no stuffing at all,
 then the `tsp` option `--add-input-stuffing 1/50` is sufficient to reserve the additional overhead.
 
@@ -135,7 +135,7 @@ It requires to use the PCR option `--pcr-pid`.
 *--pid* _pid1[-pid2]_
 
 [.optdoc]
-Specify an input PID or range of PID’s to encapsulate.
+Specify an input PID or range of PID's to encapsulate.
 
 [.optdoc]
 Several `--pid` options can be specified.
@@ -210,7 +210,7 @@ The PES envelope has an overhead of 26, 27, 36 or 37 bytes based on:
 * 16 bytes for the UL key.
 * 1 or 2 bytes for the payload size (BER short or long format).
 
-To enable the use of the Synchronous encapsulation, it is required to use PCR’s and provide an offset.
+To enable the use of the Synchronous encapsulation, it is required to use PCR's and provide an offset.
 This value (positive or negative) will be added to the PCR to compute the PTS.
 Recommended values are between -90000 and +90000 (-1 and +1 second, respectively).
 If you use negative values, then you can restore in advance the encapsulated stream after remuxing.
@@ -234,7 +234,7 @@ This PID component shall be described as follow in the PMT of the service:
 [.usage]
 Example
 
-We encapsulate several PID’s in outer PID 7777.
+We encapsulate several PID's in outer PID 7777.
 We attach this outer PID to service id 100.
 We add a _registration_descriptor_ in the description of the outer PID in the PMT.
 

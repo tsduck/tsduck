@@ -138,7 +138,7 @@ void ts::AVS3AudioDescriptor::serializePayload(PSIBuffer& buf) const
         case Fullrate_Coding:
             if (std::holds_alternative<fullrate_coding_type>(coding_data)) {
                 std::get<fullrate_coding_type>(coding_data).serialize(buf);
-            } 
+            }
             break;
         default:
             break;
@@ -300,7 +300,7 @@ void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
                     disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::VALUE) << std::endl;
                     general_coding_type gc(buf);
                     gc.display(disp, margin);
-                }   
+                }
                 break;
             case Lossless_Coding: {
                     lossless_coding_type lc(buf, _sampling_frequency_index);
@@ -310,7 +310,7 @@ void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
             case Fullrate_Coding: {
                     disp << ", Sampling Frequency (index): " << DataName(MY_XML_NAME, u"sampling_frequency_index", _sampling_frequency_index, NamesFlags::VALUE) << std::endl;
                     fullrate_coding_type fc(buf);
-                    fc.display(disp, margin);           
+                    fc.display(disp, margin);
                 }
                 break;
             default:

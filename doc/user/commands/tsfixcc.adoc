@@ -14,7 +14,7 @@ Fix continuity counters
 
 This utility fixes errors in the continuity counters (CC) in a transport stream file.
 If packets are missing (non continuous CC),
-the CC in all subsequent packets in the affected PID’s are modified to remove the discontinuity.
+the CC in all subsequent packets in the affected PID's are modified to remove the discontinuity.
 
 If the file needs to be repeatedly played, `tsfixcc` can also add empty packets at the end of the file to
 fill the discontinuities between the end and the beginning of the file when the playback wraps to the beginning.

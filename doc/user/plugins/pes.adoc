@@ -12,7 +12,7 @@
 [.cmd-header]
 Analyze PES packets
 
-This plugin detects and analyzes PES packets in all selected PID’s (all PID’s by default).
+This plugin detects and analyzes PES packets in all selected PID's (all PID's by default).
 Note that, without any option, this plugin does not report anything, you need to specify what you want to  analyze.
 
 [.usage]

@@ -1,6 +1,6 @@
 The FCD 1.0 version of the T/AI 109.7 signalling specification has removed
 the inclusion of anc_data_block() in both the AVS2 and AVS3 audio descriptors,
-however the source code files are retained here until final determination of 
+however the source code files are retained here until final determination of
 its removal and/or availability in another descriptor.
 
 tsAVSANCDataBlockType.arch-cpp --> tsAVSANCDataBlockType.cpp

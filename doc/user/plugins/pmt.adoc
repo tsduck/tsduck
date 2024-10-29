@@ -170,7 +170,7 @@ See also option `--pds`.
 *--remove-pid* _pid1[-pid2]_
 
 [.optdoc]
-Remove the component with the specified PID’s from the PMT.
+Remove the component with the specified PID's from the PMT.
 
 [.optdoc]
 Several `--remove-pid` options may be specified to remove several components.

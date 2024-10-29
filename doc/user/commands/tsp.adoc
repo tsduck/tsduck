@@ -116,7 +116,7 @@ Some plugins explicitly manipulate the rendering or transmission speed.
 The plugin `pcrbitrate`, for instance, is designed to evaluate the rendering speed based on embedded time stamps in the stream.
 The plugin `regulate`, on the other hand, is designed to alter the transmission speed.
 
-Let’s review some examples of where these plugins should be used.
+Let's review some examples of where these plugins should be used.
 
 Consider that you have recorded a 6 Mb/s single program transport stream,
 and you want to send it through UDP/IP to a remote media player.
@@ -144,7 +144,7 @@ unlike pipes and TCP/IP.
 Bitrate propagation
 
 At any point in the chain, all plugins have some knowledge of the transport stream bitrate or rendering speed.
-Some plugins use that bitrate information, some others don’t.
+Some plugins use that bitrate information, some others don't.
 The plugin `regulate` is a typical example.
 It uses the rendering speed as information to lower the transmission speed.
 As a general rule, `tsp` collects the input bitrate,
@@ -224,7 +224,7 @@ It depends on the requirements on the stream.
 
 If the stream is targeted for broadcast, with a given target bitrate which cannot be changed,
 there is no other solution than removing existing data to make room for the new data.
-Some plugins such as `filter` or `svremove` delete individual PID’s or complete services.
+Some plugins such as `filter` or `svremove` delete individual PID's or complete services.
 By default, the deleted packets are simply removed from the stream.
 But these plugins also have a `--stuffing` option which replaces deleted packets by stuffing instead of removing them.
 Thus, you can increase the stuffing bitrate without altering the global transport stream bitrate.
@@ -352,17 +352,17 @@ after the last packet coming from the input plugin.
 
 [.optdoc]
 Specify the transport stream input bitrate, in bits/seconds.
-By default, the input bitrate is provided by the input plugin or by analysis of the PCR’s at the beginning of the input stream.
-If no or not enough PCR are found, the DTS from video PID’s are used.
+By default, the input bitrate is provided by the input plugin or by analysis of the PCR's at the beginning of the input stream.
+If no or not enough PCR are found, the DTS from video PID's are used.
 
 [.optdoc]
 See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
 
 [.optdoc]
-Use option `--bitrate` when you know precisely the input bitrate and you do not trust the input device, the PCR’s or the DTS.
+Use option `--bitrate` when you know precisely the input bitrate and you do not trust the input device, the PCR's or the DTS.
 
 [.optdoc]
-See also the plugin `pcrbitrate` for permanent recomputation of the bitrate based on PCR’s or DTS.
+See also the plugin `pcrbitrate` for permanent recomputation of the bitrate based on PCR's or DTS.
 
 [.opt]
 *--bitrate-adjust-interval* _value_

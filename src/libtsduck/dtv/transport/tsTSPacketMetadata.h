@@ -140,6 +140,12 @@ namespace ts {
         bool hasAllLabels(const TSPacketLabelSet& mask) const { return (_labels & mask) == mask; }
 
         //!
+        //! Get all labels from the TS packet.
+        //! @return The set of all labels from the TS packet.
+        //!
+        TSPacketLabelSet labels() const { return _labels; }
+
+        //!
         //! Set a specific label for the TS packet.
         //! @param [in] label The label to set.
         //!

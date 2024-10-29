@@ -14,7 +14,7 @@ Resynchronize the clock of a service based on another service
 
 This plugin resynchronizes time stamps (PCR, PTS, DTS) of a target service based on the reference clock of another service.
 The two services then share the same time reference and it is possible, for instance,
-to migrate a component from one service to the other using subsequent manipulations of the two PMT’s.
+to migrate a component from one service to the other using subsequent manipulations of the two PMT's.
 
 Resynchronization principles:
 
@@ -24,7 +24,7 @@ Resynchronization principles:
   to all subsequent PTS and DTS, until the next target PCR where a slightly different time offset
   may be computed if the stream does not have a constant bitrate.
 
-WARNING: This plugin won’t work well if the target service is scrambled.
+WARNING: This plugin won't work well if the target service is scrambled.
 The PCR will be replaced but not the PTS and DTS since they are in the scrambled part of the TS packet.
 
 [.usage]

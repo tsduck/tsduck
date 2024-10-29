@@ -19,3 +19,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+// VATek support is currently disabled.
+// See https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2/issues/9
+#define TS_NO_VATEK 1

@@ -123,9 +123,9 @@ TSUNIT_DEFINE_TEST(USA)
     TSUNIT_ASSERT(hf != nullptr);
     TSUNIT_ASSERT(!hf->empty());
     TSUNIT_EQUAL(u"UHF", hf->bandName());
-    TSUNIT_EQUAL(56, hf->channelCount());
+    TSUNIT_EQUAL(23, hf->channelCount());
     TSUNIT_EQUAL(14, hf->firstChannel());
-    TSUNIT_EQUAL(69, hf->lastChannel());
+    TSUNIT_EQUAL(36, hf->lastChannel());
 
     TSUNIT_EQUAL(25, hf->nextChannel(24));
     TSUNIT_EQUAL(23, hf->previousChannel(24));
@@ -142,8 +142,8 @@ TSUNIT_DEFINE_TEST(USA)
     TSUNIT_EQUAL(15, hf->nextChannel(14));
     TSUNIT_EQUAL(0, hf->previousChannel(14));
 
-    TSUNIT_EQUAL(0, hf->nextChannel(69));
-    TSUNIT_EQUAL(68, hf->previousChannel(69));
+    TSUNIT_EQUAL(0, hf->nextChannel(36));
+    TSUNIT_EQUAL(35, hf->previousChannel(36));
 }
 
 TSUNIT_DEFINE_TEST(VHF)

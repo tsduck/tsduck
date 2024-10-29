@@ -151,16 +151,24 @@ namespace ts {
         void abortPipeReadWrite();
 
         //!
-        //! This static method asynchronously launches a command, without pipe, without waiting for the completion of the command process.
+        //! This static method launches a command, without pipe, optionally without waiting for the completion of the command process.
         //! @param [in] command The command to execute.
         //! @param [in,out] report Where to report errors.
-        //! @param [in] out_mode How to handle stdout and stderr. Keep both by default.
+        //! @param [in] out_mode How to handle stdout and stderr.
+        //! Must be KEEP_BOTH (default), STDOUT_ONLY or STDERR_ONLY.
         //! Output modes using pipes are forbidden.
-        //! @param [in] in_mode How to handle stdin. Keep the parent input by default.
+        //! @param [in] in_mode How to handle stdin.
+        //! Must be STDIN_PARENT (default) or STDIN_NONE.
         //! Input modes using pipes are forbidden.
+        //! @param [in] wait_mode How to wait for the command process.
+        //! Must be ASYNCHRONOUS (default) or SYNCHRONOUS.
         //! @return True on success, false on error.
         //!
-        static bool Launch(const UString& command, Report& report, OutputMode out_mode = KEEP_BOTH, InputMode in_mode = STDIN_PARENT);
+        static bool Launch(const UString& command,
+                           Report& report,
+                           OutputMode out_mode = KEEP_BOTH,
+                           InputMode in_mode = STDIN_PARENT,
+                           WaitMode wait_mode = ASYNCHRONOUS);
 
         // Implementation of AbstractReadStreamInterface
         virtual bool endOfStream() override;

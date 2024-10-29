@@ -28,14 +28,14 @@ Same as `--eit-actual-pf --eit-actual-schedule`.
 
 [.optdoc]
 With `--eit-normalization`, generate EIT p/f Actual.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *--eit-actual-schedule*
 
 [.optdoc]
 With `--eit-normalization`, generate EIT Schedule Actual.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *--eit-base-date* _date_
@@ -81,14 +81,14 @@ Same as `--eit-other-pf --eit-other-schedule`.
 
 [.optdoc]
 With `--eit-normalization`, generate EIT p/f Other.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *--eit-other-schedule*
 
 [.optdoc]
 With `--eit-normalization`, generate EIT Schedule Other.
-If no EIT selection option is specified, all EIT’s are generated.
+If no EIT selection option is specified, all EIT's are generated.
 
 [.opt]
 *--eit-pf*

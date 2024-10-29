@@ -13,7 +13,7 @@
 Perform various transformations on an SDT
 
 This plugin performs various transformations on an SDT, either the SDT-Actual or some specific SDT-Other.
-The other SDT’s, if present, are left unchanged.
+The other SDT's, if present, are left unchanged.
 
 [.usage]
 Usage

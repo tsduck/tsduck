@@ -21,10 +21,10 @@ This fake ECMG can be used with the `tsp` plugin named `scrambler` to build an e
 This fake ECMG accepts all Super_CAS_Id values.
 All ECM requests are instantaneously responded.
 The returned ECM is a fake one.
-The fake ECM’s are TLV messages containing the access criteria and the control words as sent by the SCS in clear format.
+The fake ECM's are TLV messages containing the access criteria and the control words as sent by the SCS in clear format.
 
 *Warning*: It is obvious that this ECMG shall never be used on a production system since
-it returns ECM’s with clear control words.
+it returns ECM's with clear control words.
 
 [.usage]
 Usage

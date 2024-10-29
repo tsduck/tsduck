@@ -30,3 +30,18 @@ Other packets are transparently passed to the next plugin, without going through
 
 [.optdoc]
 Several `--only-label` options may be specified.
+
+[.opt]
+*--except-label* _label1[-label2]_
+
+[.optdoc]
+Invoke this plugin only for packets _without_ any of the specified labels.
+Other packets are transparently passed to the next plugin, without going through this one.
+
+[.optdoc]
+Several `--except-label` options may be specified.
+
+[.optdoc]
+The options `--only-label` and `--except-label` are complementary.
+When the two are specified, the plugin is invoked for all transport stream packets
+with any label from `--only-label` and no label from `--except-label`.

@@ -67,17 +67,51 @@ ts::HFBand::ChannelsRangeList::const_iterator ts::HFBand::getRange(uint32_t chan
 
 
 //----------------------------------------------------------------------------
+// Get the region name as a string.
+//----------------------------------------------------------------------------
+
+ts::UString ts::HFBand::regionName(bool include_aliases) const
+{
+    UString name;
+    size_t count = 0;
+    for (const auto& it : _regions) {
+        if (count == 1) {
+            name.append(u" (aka. ");
+        }
+        else if (count > 1) {
+            name.append(u", ");
+        }
+        name.append(it);
+        if (++count == _regions.size() && count > 1) {
+            name.append(u")");
+        }
+    }
+    return name;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the list of channels in the HF band as a string.
 //----------------------------------------------------------------------------
 
 ts::UString ts::HFBand::channelList() const
 {
     UString list;
+    constexpr uint32_t INVALID = std::numeric_limits<uint32_t>::max();
+    uint32_t last = INVALID;
     for (const auto& it : _channels) {
-        if (!list.empty()) {
-            list.append(u", ");
+        if (last == INVALID) {
+            // First range.
+            list.format(u"%d-", it.first_channel);
         }
-        list.format(u"%d-%d", it.first_channel, it.last_channel);
+        else if (it.first_channel != last + 1) {
+            // Not contiguous with previous channel range, need to separate them.
+            list.format(u"%d, %d-", last, it.first_channel);
+        }
+        last = it.last_channel;
+    }
+    if (last != INVALID) {
+        list.format(u"%d", last);
     }
     return list;
 }
@@ -90,6 +124,15 @@ ts::UString ts::HFBand::channelList() const
 bool ts::HFBand::isValidChannel(uint32_t channel) const
 {
     return getRange(channel) != _channels.end();
+}
+
+bool ts::HFBand::isValidChannel(uint32_t channel, Report& report) const
+{
+    const bool ok = isValidChannel(channel);
+    if (!ok) {
+        report.error(u"invalid %s channel %d for region %s, must be in range %s", bandName(), channel, regionName(true), channelList());
+    }
+    return ok;
 }
 
 
@@ -378,7 +421,7 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
 //----------------------------------------------------------------------------
 
 ts::HFBand::HFBandIndex::HFBandIndex(const UString& typ, const UString& reg) :
-    band(typ.toLower().toRemoved(SPACE)),
+    band(typ.toUpper().toRemoved(SPACE)),
     region(reg.toLower().toRemoved(SPACE))
 {
 }

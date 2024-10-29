@@ -28,11 +28,12 @@
   </hfband>
 
   <!-- North America and other ATSC countries -->
+  <!-- With FCC Channel Repack (2020), UHF band now ends at channel 36 (issue #1537) -->
   <hfband type="UHF">
     <region name="north-america"/>
     <region name="usa"/>
     <region name="us"/>
-    <channels first_channel="14" last_channel="69" base_frequency="473,000,000" channel_width="6,000,000"/>
+    <channels first_channel="14" last_channel="36" base_frequency="473,000,000" channel_width="6,000,000"/>
   </hfband>
 
   <hfband type="VHF">

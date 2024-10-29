@@ -34,7 +34,7 @@ in that case, the input transport stream is passed unmodified.
 The encapsulation PID is automatically detected as the first PID with stream type 0x90
 in the PMT of a service which has service type 0x80.
 Options exist to override these values.
-If there are several encapsulation PID’s in the outer TS or if the encapsulation PID is not correctly identified in the PMT,
+If there are several encapsulation PID's in the outer TS or if the encapsulation PID is not correctly identified in the PMT,
 use the option `--pid` to specify the target encapsulation PID.
 
 [.usage]

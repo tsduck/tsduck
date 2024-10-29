@@ -17,7 +17,7 @@ If only one service is specified, this plugin produces a Single Program Transpor
 
 The PAT and SDT are modified in order to contain only the specified services.
 Unless specified otherwise (see the relevant options), the PMT and all elementary streams of the services are passed transparently.
-All other PID’s in the transport streams are removed.
+All other PID's in the transport streams are removed.
 If some elementary streams (audio, subtitles) must be removed from the service, the PMT is modified accordingly.
 
 For ATSC transport streams, the service is extracted as with any MPEG-compliant transport stream but

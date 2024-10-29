@@ -71,7 +71,7 @@ Report analysis about detected errors.
 
 [.optdoc]
 Report the list of all global PID's,
-that is to say PID's which are not referenced by a specific service but are standard DVB PSI/SI PID’s or are referenced by them.
+that is to say PID's which are not referenced by a specific service but are standard DVB PSI/SI PID's or are referenced by them.
 This include, for instance, PID's of the PAT, EMM's, EIT's, stuffing, etc.
 
 [.opt]
