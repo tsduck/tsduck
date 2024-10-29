@@ -1,0 +1,6 @@
+[DSMCC_user_to_network_message.dsmcc_type]
+Inherit = DSMCC_download_data_message.dsmcc_type
+[DSMCC_user_to_network_message.message_id]
+# Valid only for dsmcc_type = 0x03 (Download message)
+Inherit = DSMCC_download_data_message.message_id
+
