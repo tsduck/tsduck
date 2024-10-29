@@ -1,0 +1,18 @@
+[DSMCC_download_data_message.dsmcc_type]
+Bits=8
+0x01 = User-to-Network configuration message
+0x02 = User-to-Network session message
+0x03 = Download message
+0x04 = SDB Channel Change Protocol message
+0x05 = User-to-Network pass-thru message
+0x80-0xFF = User Defined message type
+
+[DSMCC_download_data_message.message_id]
+# Valid only for dsmcc_type = 0x03 (Download message)
+Bits=16
+0x1001 = DownloadInfoRequest
+0x1002 = DownloadInfoIndication
+0x1003 = DownloadDataBlock
+0x1004 = DownloadDataRequest
+0x1005 = DownloadCancel
+0x1006 = DownloadServerInitiate
