@@ -694,7 +694,13 @@ fi
 
 # Download VATek library if required.
 if [[ -z $NOVATEK$NOEXTLIBS ]]; then
-    [[ -z $VATEK_CFLAGS ]] && VATEK_CFLAGS=$($SCRIPTSDIR/vatek-config.sh --cflags --download)
+    if [[ -z $VATEK_CFLAGS ]]; then
+        # Eliminate all our variables from the environment. Compilation options
+        # would interfere with VATek build if we need to recompile the library.
+        undef=${VARNAMES/% /}
+        undef=${undef// / -u }
+        VATEK_CFLAGS=$(env $undef $SCRIPTSDIR/vatek-config.sh --cflags --download)
+    fi
     [[ -z $VATEK_LDLIBS ]] && VATEK_LDLIBS=$($SCRIPTSDIR/vatek-config.sh --ldlibs)
     if [[ -z $VATEK_LDLIBS ]]; then
         NOVATEK=1
