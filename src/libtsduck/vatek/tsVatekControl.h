@@ -45,6 +45,6 @@ namespace ts {
 
     private:
         DuckContext _duck {this};
-        int32_t     _dev_index = -1;  // Vatek device index, -1 for all devices
+        int32_t     _dev_index = -100;  // Vatek device index, -100 for all devices
     };
 }
