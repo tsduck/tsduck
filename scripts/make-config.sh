@@ -293,10 +293,6 @@ TSTOOLSDIR="$SRCROOT/tstools"
 TSPLUGINSDIR="$SRCROOT/tsplugins"
 BINROOT="$ROOTDIR/bin"
 
-# Output library files depend on $(BINDIR) in makefile.
-[[ -z $STATIC_LIBTSDUCK ]] && STATIC_LIBTSDUCK='$(BINDIR)'/libtsduck.a
-[[ -z $SHARED_LIBTSDUCK ]] && SHARED_LIBTSDUCK='$(BINDIR)'/libtsduck$SO_SUFFIX
-
 # Shell command to get TSDuck version.
 [[ -z $GET_TSDUCK_VERSION ]] && GET_TSDUCK_VERSION='$(PYTHON) $(SCRIPTSDIR)/get-version-from-sources.py'
 
@@ -340,6 +336,10 @@ fi
 
 # Subdirectory of $BINDIR where object files are stored; named from make's CURDIR.
 OBJDIR="$BINDIR/objs-\$(notdir \$(CURDIR))"
+
+# Output library files depend on $(BINDIR) in makefile.
+STATIC_LIBTSDUCK="$BINDIR/libtsduck.a"
+SHARED_LIBTSDUCK="$BINDIR/libtsduck$SO_SUFFIX"
 
 #-----------------------------------------------------------------------------
 # Preload configuration variables: exclude some dependencies.
