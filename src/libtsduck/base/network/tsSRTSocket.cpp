@@ -917,16 +917,16 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
         return false;
     }
 
+    // Install a listen callback which will reject all subsequent connections after the first one.
+    if (::srt_listen_callback(sock, listenCallback, this) < 0) {
+        report.error(u"error during srt_listen_callback(): %s", ::srt_getlasterror_str());
+        return false;
+    }
+
     // Second parameter is the number of simultaneous connection accepted. For now we only accept one.
     report.debug(u"calling srt_listen()");
     if (::srt_listen(sock, backlog) < 0) {
         report.error(u"error during srt_listen(): %s", ::srt_getlasterror_str());
-        return false;
-    }
-
-    // Install a listen callback which will reject all subsequent connections after the first one.
-    if (::srt_listen_callback(sock, listenCallback, this) < 0) {
-        report.error(u"error during srt_listen_callback(): %s", ::srt_getlasterror_str());
         return false;
     }
 
