@@ -56,7 +56,8 @@
 #  - NORIST     : No RIST support, remove dependency to librist.
 #  - NOEDITLINE : No interactive line editing, remove dependency to libedit.
 #  - NOJAVA     : No support for Java applications.
-#  - NODOXYGEN  : No production of doxygen docs, do not install doxygen.
+#  - NODOXYGEN  : No programming docs, do not install doxygen.
+#  - NODOC      : No user docs, do not install asciidoctor.
 #
 #-----------------------------------------------------------------------------
 
@@ -102,12 +103,13 @@ VERSION=$(($MAJOR * 100 + $MINOR))
 
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
-    PKGLIST+=(git bash gnu-sed grep make dos2unix coreutils python3 openssl ruby asciidoctor qpdf)
+    PKGLIST+=(git bash gnu-sed grep make dos2unix coreutils python3 openssl)
     [[ -z $NORIST    ]] && PKGLIST+=(librist)
     [[ -z $NOSRT     ]] && PKGLIST+=(srt)
     [[ -z $NOVATEK   ]] && PKGLIST+=(libvatek)
     [[ -z $NOJAVA    ]] && PKGLIST+=(openjdk)
     [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC     ]] && PKGLIST+=(ruby asciidoctor qpdf)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -142,13 +144,14 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
 
 elif [[ "$SYSTEM" == "FreeBSD" ]]; then
 
-    PKGLIST+=(git curl zip bash gsed gnugrep gmake gtar unix2dos coreutils python rubygem-asciidoctor rubygem-asciidoctor-pdf rubygem-rouge qpdf)
+    PKGLIST+=(git curl zip bash gsed gnugrep gmake gtar unix2dos coreutils python)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NORIST     ]] && PKGLIST+=(librist)
     [[ -z $NOSRT      ]] && PKGLIST+=(srt)
     [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk11)
     [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC      ]] && PKGLIST+=(rubygem-asciidoctor rubygem-asciidoctor-pdf rubygem-rouge qpdf)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -162,13 +165,14 @@ elif [[ "$SYSTEM" == "FreeBSD" ]]; then
 
 elif [[ "$SYSTEM" == "DragonFly" ]]; then
 
-    PKGLIST+=(git curl zip bash gsed gnugrep gmake gtar unix2dos coreutils python openssl ruby rubygem-asciidoctor rubygem-asciidoctor-pdf rubygem-rouge qpdf)
+    PKGLIST+=(git curl zip bash gsed gnugrep gmake gtar unix2dos coreutils python openssl)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NORIST     ]] && PKGLIST+=(librist)
     [[ -z $NOSRT      ]] && PKGLIST+=(srt)
     [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk11)
     [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC      ]] && PKGLIST+=(ruby rubygem-asciidoctor rubygem-asciidoctor-pdf rubygem-rouge qpdf)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -184,18 +188,19 @@ elif [[ "$SYSTEM" == "OpenBSD" ]]; then
 
     disamb_pkg() { pkg_info -Q $1 | grep "^$1-[0-9]" | grep -v -e -static | sort | tail -1 | sed -e 's/ .*//'; }
 
-    PKGLIST+=(git curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils $(disamb_pkg python) ruby ruby-shims asciidoctor qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(git curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils $(disamb_pkg python))
     [[ -z $NOPCSC    ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NOJAVA    ]] && PKGLIST+=($(disamb_pkg jdk))
     [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC     ]] && PKGLIST+=(ruby ruby-shims asciidoctor qpdf)
+    [[ -z $NODOC     ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
 
     sudo pkg_add -I "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo ln -sf python3 /usr/local/bin/python
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == NetBSD ==
@@ -205,12 +210,13 @@ elif [[ "$SYSTEM" == "OpenBSD" ]]; then
 
 elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
-    PKGLIST+=(git curl mozilla-rootcerts zip bash gsed grep gmake gtar dos2unix coreutils python310 py310-expat openssl ruby qpdf)
-    GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
+    PKGLIST+=(git curl mozilla-rootcerts zip bash gsed grep gmake gtar dos2unix coreutils python310 py310-expat openssl)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(editline)
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
     [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk17)
     [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC      ]] && PKGLIST+=(ruby qpdf)
+    [[ -z $NODOC      ]] && GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -218,7 +224,7 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
     sudo pkgin -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo /usr/pkg/sbin/mozilla-rootcerts install
     (cd /usr/pkg/bin; sudo ln -sf $(ls python* | grep '^python[0-9\.]*$' | gsort --version-sort | tail -1) python)
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Ubuntu ==
@@ -228,8 +234,7 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
     [[ -z $NOEDITLINE                                      ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                          ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 17                         ]] && PKGLIST+=(libcurl3 libcurl3-dev)
@@ -240,6 +245,8 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     [[ -z $NOVATEK                                         ]] && PKGLIST+=(libusb-1.0-0-dev)
     [[ -z $NOJAVA                                          ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN                                       ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC                                           ]] && PKGLIST+=(asciidoctor qpd)
+    [[ -z $NODOC                                           ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     # On Ubuntu 22.04, the default clang is clang-14. There is a bug which prevents C++20
     # compilation (incompatible with gcc header files). Install clang-15, in case we need clang.
@@ -251,7 +258,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt update
     sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Linux Mint ==
@@ -261,8 +268,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
     [[ -z $NOEDITLINE                              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOSRT && $MAJOR -ge 20 && $MAJOR -lt 21 ]] && PKGLIST+=(libsrt-dev)
@@ -271,6 +277,8 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
     [[ -z $NOVATEK                                 ]] && PKGLIST+=(libusb-1.0-0-dev)
     [[ -z $NOJAVA                                  ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN                               ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC                                   ]] && PKGLIST+=(asciidoctor qpdf)
+    [[ -z $NODOC                                   ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -278,7 +286,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
     sudo apt update
     sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Debian, Raspbian (Raspberry Pi) ==
@@ -288,8 +296,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
-    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev asciidoctor qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(git g++ cmake flex bison dos2unix curl tar zip linux-libc-dev dpkg-dev python3 libssl-dev)
     [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
     [[ -z $NOCURL && $MAJOR -le 9  ]] && PKGLIST+=(libcurl3 libcurl3-dev)
@@ -299,6 +306,8 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     [[ -z $NOVATEK                 ]] && PKGLIST+=(libusb-1.0-0-dev)
     [[ -z $NOJAVA                  ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN               ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC                   ]] && PKGLIST+=(asciidoctor qpdf)
+    [[ -z $NODOC                   ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -306,7 +315,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     sudo apt update
     sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Fedora ==
@@ -318,8 +327,7 @@ elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel rubygem-asciidoctor qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel)
     [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
     [[ -z $NORIST && $FC -ge 36 ]] && PKGLIST+=(librist-devel)
@@ -329,13 +337,15 @@ elif [[ -f /etc/fedora-release ]]; then
     [[ -z $NOJAVA               ]] && PKGLIST+=(java-latest-openjdk-devel)
     [[ -z $NODOXYGEN            ]] && PKGLIST+=(doxygen graphviz)
     [[ -n $STATIC               ]] && PKGLIST+=(glibc-static libstdc++-static)
+    [[ -z $NODOC                ]] && PKGLIST+=(rubygem-asciidoctor qpdf)
+    [[ -z $NODOC                ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
 
     sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo alternatives --set python /usr/bin/python3
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Red Hat, CentOS, Alma Linux, Rocky Linux ==
@@ -348,8 +358,7 @@ elif [[ -f /etc/redhat-release ]]; then
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
 
-    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel ruby-devel qpdf)
-    GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
+    PKGLIST+=(git gcc-c++ cmake flex bison dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3 openssl-devel)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
     [[ -z $NORIST && $EL -ge 902 ]] && PKGLIST+=(librist-devel)
@@ -360,6 +369,8 @@ elif [[ -f /etc/redhat-release ]]; then
     [[ -z $NOJAVA && $EL -ge 900 ]] && PKGLIST+=(java-17-openjdk-devel)
     [[ -z $NODOXYGEN             ]] && PKGLIST+=(doxygen graphviz)
     [[ -n $STATIC                ]] && PKGLIST+=(glibc-static libstdc++-static)
+    [[ -z $NODOC                 ]] && PKGLIST+=(ruby-devel qpdf)
+    [[ -z $NODOC                 ]] && GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -382,7 +393,7 @@ elif [[ -f /etc/redhat-release ]]; then
         sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     fi
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == openSUSE ==
@@ -399,8 +410,7 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
     grep -q -i '^ID.*-leap' /etc/os-release && LEAP=1
     grep -q -i '^ID.*-tumbleweed' /etc/os-release && TUMBLEWEED=1
 
-    PKGLIST+=(git make gcc-c++ cmake flex bison dos2unix curl tar zip linux-glibc-devel rpmdevtools python3 libopenssl-3-devel ruby-devel qpdf)
-    GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
+    PKGLIST+=(git make gcc-c++ cmake flex bison dos2unix curl tar zip linux-glibc-devel rpmdevtools python3 libopenssl-3-devel)
     [[ -z $NOEDITLINE                           ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC                               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
     [[ -z $NORIST && ( -z $OS || $OS -ge 1505 ) ]] && PKGLIST+=(librist-devel)
@@ -409,13 +419,15 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
     [[ -z $NOVATEK                              ]] && PKGLIST+=(libusb-1_0-devel)
     [[ -z $NOJAVA                               ]] && PKGLIST+=(java-11-openjdk-devel)
     [[ -z $NODOXYGEN                            ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC                                ]] && PKGLIST+=(ruby-devel qpdf)
+    [[ -z $NODOC                                ]] && GEMLIST+=(asciidoctor asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
 
     sudo zypper install -y -l "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Arch Linux ==
@@ -426,14 +438,15 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
 elif [[ -f /etc/arch-release ]]; then
 
-    PKGLIST+=(git make gcc cmake flex bison dos2unix core/which inetutils net-tools curl tar zip linux-api-headers python openssl asciidoctor qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(git make gcc cmake flex bison dos2unix core/which inetutils net-tools curl tar zip linux-api-headers python openssl)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
     [[ -z $NOPCSC     ]] && PKGLIST+=(pcsclite)
     [[ -z $NOSRT      ]] && PKGLIST+=(srt)
     [[ -z $NOVATEK    ]] && PKGLIST+=(libusb)
     [[ -z $NOJAVA     ]] && PKGLIST+=(jdk-openjdk)
     [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC      ]] && PKGLIST+=(asciidoctor qpdf)
+    [[ -z $NODOC      ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -454,8 +467,7 @@ elif [[ -f /etc/alpine-release ]]; then
     AL=$(sed /etc/alpine-release -e '/^[0-9][0-9]*\.[0-9]/!d' -e 's/^\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
     AL=$(( ${AL/.*/} * 100 + ${AL/*./} ))
 
-    PKGLIST+=(bash coreutils diffutils procps util-linux linux-headers git make cmake flex bison g++ dos2unix curl tar zip dpkg python3 openssl-dev asciidoctor qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(bash coreutils diffutils procps util-linux linux-headers git make cmake flex bison g++ dos2unix curl tar zip dpkg python3 openssl-dev)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-dev)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite-dev)
     [[ -z $NORIST && $AL -ge 316 ]] && PKGLIST+=(librist-dev)
@@ -464,6 +476,8 @@ elif [[ -f /etc/alpine-release ]]; then
     [[ -z $NOVATEK               ]] && PKGLIST+=(libusb-dev)
     [[ -z $NOJAVA                ]] && PKGLIST+=(openjdk11)
     [[ -z $NODOXYGEN             ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC                 ]] && PKGLIST+=(asciidoctor qpdf)
+    [[ -z $NODOC                 ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -471,7 +485,7 @@ elif [[ -f /etc/alpine-release ]]; then
     sudo sed -i '/http.*\/alpine\/v/s/^#//' /etc/apk/repositories
     sudo apk add "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Gentoo Linux ==
@@ -483,19 +497,20 @@ elif [[ -f /etc/alpine-release ]]; then
 
 elif [[ -f /etc/gentoo-release ]]; then
 
-    PKGLIST+=(sys-devel/gcc dev-vcs/git dev-build/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python dev-libs/openssl dev-ruby/asciidoctor app-text/qpdf)
-    GEMLIST+=(asciidoctor-pdf rouge)
+    PKGLIST+=(sys-devel/gcc dev-vcs/git dev-build/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python dev-libs/openssl)
     [[ -z $NOEDITLINE ]] && PKGLIST+=(dev-libs/libedit)
     [[ -z $NOPCSC     ]] && PKGLIST+=(sys-apps/pcsc-lite)
     [[ -z $NOSRT      ]] && PKGLIST+=(net-libs/srt)
     [[ -z $NOVATEK    ]] && PKGLIST+=(dev-libs/libusb)
     [[ -z $NOJAVA     ]] && PKGLIST+=(dev-java/openjdk)
     [[ -z $NODOXYGEN  ]] && PKGLIST+=(app-text/doxygen media-gfx/graphviz)
+    [[ -z $NODOC      ]] && PKGLIST+=(dev-ruby/asciidoctor app-text/qpdf)
+    [[ -z $NODOC      ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
 
     sudo emerge -n "${PKGOPTS[@]}" "${PKGLIST[@]}"
-    sudo gem install "${GEMLIST[@]}"
+    [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
 fi

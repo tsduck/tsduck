@@ -22,7 +22,7 @@ installer: deb-tools deb-dev
 deb-tools:
 	rm -rf $(TMPROOT)
 	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true
-	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true install-tools SYSROOT=$(TMPROOT)
+	$(MAKE) -C $(ROOTDIR) NOTEST=true install-tools SYSROOT=$(TMPROOT)
 	$(MAKE) NOTEST=true deb-tools-control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
@@ -30,7 +30,7 @@ deb-tools:
 deb-dev: deb-tools
 	rm -rf $(TMPROOT)
 	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true
-	$(MAKE) -C $(ROOTDIR) $(MAKEFLAGS_SMP) NOTEST=true install-devel SYSROOT=$(TMPROOT)
+	$(MAKE) -C $(ROOTDIR) NOTEST=true install-devel SYSROOT=$(TMPROOT)
 	$(MAKE) NOTEST=true deb-dev-control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)

@@ -97,7 +97,7 @@ DOC_TARGETS = doxygen docs docs-html docs-pdf \
 
 .PHONY: $(DOC_TARGETS)
 $(DOC_TARGETS):
-	@$(MAKE) -C doc $@
+	$(if $(NODOC),@true,@$(MAKE) -C doc $@)
 
 # Install Git hooks.
 

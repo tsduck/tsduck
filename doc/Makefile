@@ -203,14 +203,16 @@ $(BINDOC)/tsduck-dev.bigpdf: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
 # Installation steps
 #-----------------------------------------------------------------------------
 
+INSTALLDOC = $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
+
 .PHONY: install install-tools install-devel
 install: install-tools install-devel
 
-install-tools: $(BINDOC)/tsduck.html
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
-	install -m 644 $^ $(ROOTDIR)/CHANGELOG.txt $(ROOTDIR)/LICENSE.txt $(ROOTDIR)/OTHERS.txt \
-	    $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
+install-tools: $(if $(NODOC),,$(BINDOC)/tsduck.html)
+	install -d -m 755 $(INSTALLDOC)
+	install -m 644 $(ROOTDIR)/CHANGELOG.txt $(ROOTDIR)/LICENSE.txt $(ROOTDIR)/OTHERS.txt $(INSTALLDOC)
+	$(if $(NODOC),,install -m 644 $(BINDOC)/tsduck.html $(INSTALLDOC))
 
-install-devel: $(BINDOC)/tsduck-dev.html
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
-	install -m 644 $^ $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
+install-devel: $(if $(NODOC),,$(BINDOC)/tsduck-dev.html)
+	install -d -m 755 $(INSTALLDOC)
+	$(if $(NODOC),,install -m 644 $(BINDOC)/tsduck-dev.html $(INSTALLDOC))
