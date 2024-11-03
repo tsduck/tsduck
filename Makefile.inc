@@ -15,10 +15,6 @@
 first: default
 	@true
 
-# The directory which contains the currently included Makefile is the project root.
-
-ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
-
 # Representation of characters which cannot be literally used in makefile expressions but
 # can be substituted from a variable. $(NL) contains a new-line and shall be defined like
 # this, with two lines between "define" and "endef", to get one new-line.
@@ -51,16 +47,18 @@ SHELL = /usr/bin/env bash --noprofile --norc $(if $(SHELL_VERBOSE),-x)
 
 _SHELL_LINES = $(subst -=EOL=-,$(NL),$(shell ($(1)) | sed 's/$$/-=EOL=-/'))
 
-# Build most make variables from a script. This used to be done here in the makefile
-# but it became too complicated and was moved to a script. All input variables are
-# passed on the command line. In the generated output, all variables are exported and
-# transmitted to sub-makes. To avoid "argument too long" on the input command line,
-# we remove known long variables which are either useless or rebuilt from scratch
-# in the script.
+# Build most make variables from a script. This used to be done here in the makefile but
+# it became too complicated and was moved to a script. All input variables are passed on
+# the command line. In the generated output, all variables are exported and transmitted
+# to sub-makes. To avoid "argument too long" on the input command line, we remove known
+# long variables which are either useless or rebuilt from scratch in the script.
+# Note about _ROOTDIR: The directory which contains the currently included Makefile is
+# the project root.
 
+_ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 _EXCLUDES = ^% @% *% \%% <% >% +% -% _% ?% .% ALL_% ANDROID_% PREPROCESS.% COMPILE.% LINK.% LINT.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
 _VARIABLES = $(filter-out $(_EXCLUDES),$(.VARIABLES)) ALL_INCLUDES
-$(eval $(call _SHELL_LINES,$(ROOTDIR)/scripts/make-config.sh $(foreach v,$(_VARIABLES),$(v)='$($(v))')))
+$(eval $(call _SHELL_LINES,$(_ROOTDIR)/scripts/make-config.sh $(foreach v,$(_VARIABLES),$(v)='$($(v))')))
 
 # Compilation rules
 

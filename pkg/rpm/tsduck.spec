@@ -72,11 +72,14 @@ Requires:       librist-devel
 The %{name}-devel package contains the static library and header files for
 developing applications that use %{name}.
 
+# No changelog provided in rpm.
+%global source_date_epoch_from_changelog 0
+
 # Disable debuginfo package.
 %global debug_package %{nil}
 
 # Propagate component exclusions.
-%define makeflags NOTEST=1 %{?nocurl:NOCURL=1} %{?nopcsc:NOPCSC=1} %{?nosrt:NOSRT=1} %{?mflags}
+%define makeflags NOTEST=1 %{?nosrt:NOSRT=1} %{?norist:NORIST=1} %{?nopcsc:NOPCSC=1} %{?nocurl:NOCURL=1} %{?noeditline:NOEDITLINE=1} %{?nodektec:NODEKTEC=1} %{?novatek:NOVATEK=1} %{?nodoc:NODOC=1} %{?mflags}
 
 %prep
 %setup -q -n %{name}-%{version}-%{commit}
@@ -107,11 +110,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_docdir}/tsduck/CHANGELOG.txt
 %{_docdir}/tsduck/LICENSE.txt
 %{_docdir}/tsduck/OTHERS.txt
+%if 0%{!?nodoc:1}
 %{_docdir}/tsduck/tsduck.html
+%endif
 
 %files devel
 %defattr(-,root,root,-)
 %{_libdir}/libtsduck.a
 %{_includedir}/tsduck
 %{_datadir}/pkgconfig/tsduck.pc
+%if 0%{!?nodoc:1}
 %{_docdir}/tsduck/tsduck-dev.html
+%endif

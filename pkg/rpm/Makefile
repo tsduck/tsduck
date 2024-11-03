@@ -56,7 +56,9 @@ installer: tarball $(RPMBUILDROOT)
 	      $(if $(NOPCSC),-D 'nopcsc 1') \
 	      $(if $(NOCURL),-D 'nocurl 1') \
 	      $(if $(NOEDITLINE),-D 'noeditline 1') \
+	      $(if $(NODEKTEC),-D 'nodektec 1') \
 	      $(if $(NOVATEK),-D 'novatek 1') \
+	      $(if $(NODOC),-D 'nodoc 1') \
 	      tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)

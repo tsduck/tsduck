@@ -280,14 +280,18 @@ fi
 #-----------------------------------------------------------------------------
 
 # Project specific directories.
-[[ -z $ROOTDIR      ]] && ROOTDIR="$root"
-[[ -z $INSTALLERDIR ]] && INSTALLERDIR="$ROOTDIR/pkg/installers"
-[[ -z $SCRIPTSDIR   ]] && SCRIPTSDIR="$ROOTDIR/scripts"
-[[ -z $SRCROOT      ]] && SRCROOT="$ROOTDIR/src"
-[[ -z $LIBTSDUCKDIR ]] && LIBTSDUCKDIR="$SRCROOT/libtsduck"
-[[ -z $TSTOOLSDIR   ]] && TSTOOLSDIR="$SRCROOT/tstools"
-[[ -z $TSPLUGINSDIR ]] && TSPLUGINSDIR="$SRCROOT/tsplugins"
-[[ -z $BINROOT      ]] && BINROOT="$ROOTDIR/bin"
+if [[ $ROOTDIR != $root ]]; then
+    # Switched project root, as in rpm build.
+    ROOTDIR="$root"
+    BINDIR=
+fi
+INSTALLERDIR="$ROOTDIR/pkg/installers"
+SCRIPTSDIR="$ROOTDIR/scripts"
+SRCROOT="$ROOTDIR/src"
+LIBTSDUCKDIR="$SRCROOT/libtsduck"
+TSTOOLSDIR="$SRCROOT/tstools"
+TSPLUGINSDIR="$SRCROOT/tsplugins"
+BINROOT="$ROOTDIR/bin"
 
 # Output library files depend on $(BINDIR) in makefile.
 [[ -z $STATIC_LIBTSDUCK ]] && STATIC_LIBTSDUCK='$(BINDIR)'/libtsduck.a
@@ -297,29 +301,41 @@ fi
 [[ -z $GET_TSDUCK_VERSION ]] && GET_TSDUCK_VERSION='$(PYTHON) $(SCRIPTSDIR)/get-version-from-sources.py'
 
 # Fixed suffix to add to generated BINDIR directory name for some specialized builds.
-[[ -n $GCOV ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gcov"
-[[ -n $GPROF ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gprof"
-[[ -n $ASAN ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-asan"
-[[ -n $UBSAN ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-ubsan"
-[[ -n $LLVM ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-clang"
-[[ -n $STATIC ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-static"
+[[ -n $GCOV && $BINDIR_SUFFIX != *-gcov* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gcov"
+[[ -n $GPROF && $BINDIR_SUFFIX != *-gprof* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gprof"
+[[ -n $ASAN && $BINDIR_SUFFIX != *-asan*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-asan"
+[[ -n $UBSAN && $BINDIR_SUFFIX != *-ubsan*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-ubsan"
+[[ -n $LLVM && $BINDIR_SUFFIX != *-clang*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-clang"
+[[ -n $STATIC && $BINDIR_SUFFIX != *-static*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-static"
 
 # Output directories for final binaries and objects.
 [[ -n $HOSTNAME ]] && hpart="-$HOSTNAME" || hpart=""
+inbindir="$BINDIR"
 if [[ -n $BINDIR ]]; then
-    # BINDIR is specified in input
-    if [[ $BINDIR != /* ]]; then
-        # BINDIR is a relative directory. Transform it into an absolute path for recursion.
-        INBINDIR="$BINDIR"
-        BINDIR=$($REALPATH -m "$BINDIR")
-        MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|BINDIR=$INBINDIR|BINDIR=$BINDIR|")
+    if [[ -z $DEBUG && $BINDIR == *debug-* ]]; then
+        # Switched from a debug build to a release build.
+        BINDIR="${BINDIR//debug-/release-}"
+    elif [[ -n $DEBUG && $BINDIR == *release-* ]]; then
+        # Switched from a release build to a debug build.
+        BINDIR="${BINDIR//release-/debug-}"
     fi
-elif [[ -n $DEBUG ]]; then
-    # Default BINDIR for release mode.
-    BINDIR="$BINROOT/debug-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
+    if [[ $BINDIR != /* ]]; then 
+        # BINDIR is externally specified and is a relative directory.
+        # Transform it into an absolute path for recursion.
+        BINDIR=$($REALPATH -m "$BINDIR")
+    fi
+    if [[ $MAKEOVERRIDES == *BINDIR=* && $BINDIR != $inbindir ]]; then
+        # Redefine BINDIR is specified in MAKEOVERRIDES.
+        MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|BINDIR=$inbindir|BINDIR=$BINDIR|")
+    fi
 else
-    # Default BINDIR for debug mode.
-    BINDIR="$BINROOT/release-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
+    if [[ -n $DEBUG ]]; then
+        # Default BINDIR for debug mode.
+        BINDIR="$BINROOT/debug-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
+    else
+        # Default BINDIR for release mode.
+        BINDIR="$BINROOT/release-${MAIN_ARCH}${hpart}${BINDIR_SUFFIX}"
+    fi
 fi
 
 # Subdirectory of $BINDIR where object files are stored; named from make's CURDIR.
