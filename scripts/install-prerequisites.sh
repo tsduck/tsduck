@@ -245,7 +245,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     [[ -z $NOVATEK                                         ]] && PKGLIST+=(libusb-1.0-0-dev)
     [[ -z $NOJAVA                                          ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN                                       ]] && PKGLIST+=(doxygen graphviz)
-    [[ -z $NODOC                                           ]] && PKGLIST+=(asciidoctor qpd)
+    [[ -z $NODOC                                           ]] && PKGLIST+=(asciidoctor qpdf)
     [[ -z $NODOC                                           ]] && GEMLIST+=(asciidoctor-pdf rouge)
 
     # On Ubuntu 22.04, the default clang is clang-14. There is a bug which prevents C++20
