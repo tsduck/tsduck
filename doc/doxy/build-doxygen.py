@@ -97,10 +97,12 @@ file_count = 0
 for root, dirs, files in os.walk(DOXYDIR, topdown=False):
     fcount = len(files)
     if len(dirs) == 0 and fcount == 0:
+        # Empty directory, remove it.
         os.rmdir(root)
     else:
         dir_count += 1
         file_count += fcount
+        # Collect group files.
         for f in files:
             if f.startswith('group_') and f.endswith('.html'):
                 groups.append(os.path.join(root, f))
@@ -115,11 +117,24 @@ for f in groups:
 
 # Create permanent links in a 'class' subdirectory for all top-level classes in namespace 'ts'.
 os.makedirs(CLASSDIR, exist_ok=True)
+file_pattern = re.compile(r'href="([^"]*/classts_1_1[^"/]*\.html)"')
+title_pattern = re.compile(r'>ts::([A-Za-z0-9_]+) +[Cc]lass +[Re]eference')
 with open(os.path.join(HTMLDIR, 'classes.html')) as input:
     for line in input:
-        for href in re.findall(r'href="([^"]*/classts_1_1[^"/]*\.html)"', line):
-            if href.count('_1_1') == 1:
-                redirect_html(CLASSDIR, os.path.basename(href).removeprefix('classts_1_1'), os.path.join(HTMLDIR, href))
+        # Grab all href to "classts_1_1*.html" files.
+        for href in file_pattern.findall(line):
+            # Read the HTML file and find the class name.
+            hfile = os.path.join(HTMLDIR, href)
+            classname = None
+            with open(hfile) as hinput:
+                for hline in hinput:
+                    if 'class="headertitle"' in hline:
+                        match = title_pattern.search(hline)
+                        if match is not None:
+                            classname = match.group(1)
+                        break
+            if classname is not None:
+                redirect_html(CLASSDIR, classname + '.html', hfile)
                 file_count += 1
 
 print('Generated %d files in %d directories' % (file_count, dir_count))
