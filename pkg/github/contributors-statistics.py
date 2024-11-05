@@ -28,9 +28,9 @@ class user_context:
     def add(self, date):
         self.commits += 1
         date = tsgithub.to_datetime(date)
-        if self.first == None or self.first > date:
+        if self.first is None or self.first > date:
             self.first = date
-        if self.last == None or self.last < date:
+        if self.last is None or self.last < date:
             self.last = date
 
     def __lt__(self, other):

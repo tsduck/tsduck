@@ -250,7 +250,7 @@ jobs:
     - name: Build documentation
       if: env.REBUILD == 'true'
       run: |
-        make docs doxygen DOXYFLAGS=--update-doxygen
+        make docs doxygen
         rm -f bin/doc/*.bigpdf
         cp doc/presentations/*.pdf bin/doc || true
         echo "${{ env.VERSION }}" >bin/doxy/docversion.txt

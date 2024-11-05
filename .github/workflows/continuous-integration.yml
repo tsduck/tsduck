@@ -226,4 +226,4 @@ jobs:
         make docs
     - name: Build Doxygen reference
       run: |
-        make doxygen DOXYFLAGS=--update-doxygen
+        make doxygen

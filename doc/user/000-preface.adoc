@@ -78,9 +78,7 @@ The TSDuck documentation set is made of:
 
 [.compact-list]
 1. xref:tsduck.html[TSDuck User's Guide]
-   (also from https://tsduck.io/download/docs/tsduck.html[tsduck.io]
-   and in https://tsduck.io/download/docs/tsduck.pdf[PDF] format)
+   (also from {home}download/docs/tsduck.html[tsduck.io] and in {home}download/docs/tsduck.pdf[PDF] format)
 2. xref:tsduck-dev.html[TSDuck Developer's Guide]
-   (also from https://tsduck.io/download/docs/tsduck-dev.html[tsduck.io]
-   and in https://tsduck.io/download/docs/tsduck-dev.pdf[PDF] format)
-3. https://tsduck.io/doxy/[TSDuck Programming Reference]
+   (also from {home}download/docs/tsduck-dev.html[tsduck.io] and in {home}download/docs/tsduck-dev.pdf[PDF] format)
+3. {home}doxy/[TSDuck Programming Reference]

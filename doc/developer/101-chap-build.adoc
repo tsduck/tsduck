@@ -813,7 +813,7 @@ On large libraries, Doxygen is extremely verbose.
 The TSDuck Programming Reference is made of a large number of HTML files, more than 14,000 files and directories.
 It also takes some time to generate.
 Therefore, the Programming Reference is neither built by default nor installed with the rest of TSDuck.
-Every night, a fresh copy is generated and published online at https://tsduck.io/doxy[].
+Every night, a fresh copy is generated and published online at {home}doxy[].
 
 ==== Building on {unix}
 
@@ -909,7 +909,7 @@ PS C:\> winget install tsduck
 [#windownload]
 ===== Download an installer
 
-https://tsduck.io/download/tsduck[Executable binary installers for the latest TSDuck version]
+{home}download/tsduck[Executable binary installers for the latest TSDuck version]
 are available for 64-bit Windows on Intel systems.
 
 All tools, plugins and development environments are in the same installer.
@@ -922,9 +922,9 @@ Running the installer provides several options:
 * Java Bindings (optional)
 * {cpp} Development (optional)
 
-https://github.com/tsduck/tsduck/releases[Older versions of TSDuck] remain available on GitHub.
+{repo}releases[Older versions of TSDuck] remain available on GitHub.
 
-https://tsduck.io/download/prerelease[Nightly builds and pre-releases] can be found on the TSDuck Web site.
+{home}download/prerelease[Nightly builds and pre-releases] can be found on the TSDuck Web site.
 
 To automate the installation, the executable binary installer can be run from the command line or a script.
 
@@ -992,7 +992,7 @@ $ brew install --HEAD tsduck
 [#linuxinstall]
 ==== Installing on Linux
 
-https://tsduck.io/download/tsduck[Pre-build packages for the latest TSDuck version]
+{home}download/tsduck[Pre-build packages for the latest TSDuck version]
 are available for the following configurations:
 
 [.compact-list]
@@ -1009,8 +1009,8 @@ For each distro, two packages exist:
 the `tsduck` package installs the TSDuck commands, plugins, Java and Python bindings,
 the `tsduck-devel` or `tsduck-dev` package installs the development environment for {cpp} programmers.
 
-https://github.com/tsduck/tsduck/releases[Older versions of TSDuck] remain available on GitHub.
-https://tsduck.io/download/prerelease[Nightly builds and pre-releases] for Ubuntu can be found on the TSDuck Web site.
+{repo}releases[Older versions of TSDuck] remain available on GitHub.
+{home}download/prerelease[Nightly builds and pre-releases] for Ubuntu can be found on the TSDuck Web site.
 
 To use older versions of the above distros, rebuilding the packages is easy:
 
@@ -1028,6 +1028,37 @@ $ sudo make install
 ----
 
 More details on how to build TSDuck are available in xref:building[xrefstyle=short].
+
+If you exclude some dependencies, the exact same set of `make` options must be used during build and installation.
+For instance, to remove the dependencies on SRT and RIST, use:
+
+[source,shell]
+----
+$ make -j10 default docs-html NOSRT=1 NORIST=1
+$ sudo make install NOSRT=1 NORIST=1
+----
+
+When building an installer package (`.rpm`, `.deb`) or when directly installing TSDuck,
+the HTML version of the user's guide and developer's guide are included.
+
+If the documentation was not built yet, the command `make install` rebuilds the HTML files first.
+To avoid running Asciidoc under the superuser account, the examples above use `make default docs-html` first.
+The target `default` builds the binaries and the target `docs-html` builds the HTML documentation.
+Then, `sudo make install` only copies files into the filesystem, nothing else.
+
+If you prefer not to install Asciidoctor (which pulls the Ruby environment as a dependency),
+you can install or build an installer package without documentation using the `make` variable `NODOC`.
+
+[source,shell]
+----
+$ make installer NODOC=1
+----
+
+[source,shell]
+----
+$ make -j10 NODOC=1
+$ sudo make install NODOC=1
+----
 
 [#bsdinstall]
 ==== Installing on BSD systems

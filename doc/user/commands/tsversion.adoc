@@ -15,7 +15,7 @@ Check version, download and upgrade TSDuck
 By default, this utility simply displays the TSDuck version.
 
 Additionally, in prebuilt binary packages of TSDuck as available from
-https://tsduck.io/download/tsduck[tsduck.io] or https://github.com/tsduck/tsduck/releases[github.com],
+{home}download/tsduck[tsduck.io] or {repo}releases[github.com],
 the `tsversion` command can also connect to GitHub to list all available releases of TSDuck,
 check for a new version, download it or upgrade TSDuck to the latest version.
 
@@ -89,7 +89,7 @@ With any other option, `tsversion` simply exits with a success or failure status
 Upgrade options
 
 The following options are available in prebuilt binary packages of TSDuck from
-https://tsduck.io/download/tsduck[tsduck.io] or https://github.com/tsduck/tsduck/releases[github.com].
+{home}download/tsduck[tsduck.io] or {repo}releases[github.com].
 They may be disabled in TSDuck packages which are available through a package manager on Linux or through Homebrew on macOS.
 
 [.opt]

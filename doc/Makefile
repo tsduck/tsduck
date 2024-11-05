@@ -16,7 +16,7 @@ docs: userguide devguide
 docs-html: userguide-html devguide-html
 docs-pdf: userguide-pdf devguide-pdf
 doxygen:
-	doxy/build-doxygen.sh $(DOXYFLAGS)
+	$(PYTHON) doxy/build-doxygen.py
 
 # Input directories.
 
@@ -47,7 +47,7 @@ ASCIIDOCTOR_PDF ?= asciidoctor-pdf
 
 # Documentation generation flags.
 
-ADOCFLAGS      = -v -a imagesdir="$(IMAGESDIR)" -a includedir="$(ADOCDIR)" \
+ADOCFLAGS      = -v -r "$(ADOCDIR)/macros.rb" -a imagesdir="$(IMAGESDIR)" -a includedir="$(ADOCDIR)" \
                  -a revnumber="$(shell $(GET_TSDUCK_VERSION))" -a revdate="$(shell $(DATE) '+%B %Y')"
 ADOCFLAGS_HTML = $(ADOCFLAGS) -a stylesheet="$(CSSFILE)" -a rouge-style="$(ROUGE_HTML)" \
                  -a data-uri -a docinfo=shared -a docinfodir="$(BINDOCINFO)"
@@ -57,7 +57,7 @@ ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(ADOCDIR)" -a pdf-theme="$(THEM
 # Not really all .png images are used, but the exact list may vary while the documents are edited.
 # So, better rebuild if an image was added or updated.
 
-COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(wildcard $(IMAGESDIR)/*.png) $(LIBTSDUCKDIR)/tsVersion.h
+COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(ADOCDIR)/macros.rb $(wildcard $(IMAGESDIR)/*.png) $(LIBTSDUCKDIR)/tsVersion.h
 COMMON_INPUTS_HTML = $(COMMON_INPUTS) $(CSSFILE) $(BINDOCINFO)/docinfo.html $(BINDOCINFO)/docinfo-footer.html
 COMMON_INPUTS_PDF  = $(COMMON_INPUTS) $(THEMEFILE)
 

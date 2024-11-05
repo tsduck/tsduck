@@ -43,7 +43,7 @@ Structure of this guide:
   of the project.
 
 In addition to this developer's guide, a comprehensive
-https://tsduck.io/doxy/[reference programming documentation] is available online.
+{home}doxy/[reference programming documentation] is available online.
 It documents all TSDuck public {cpp} classes, as well as the Python and Java API's.
 This is a reference documentation which is automatically generated from the source files
 using https://doxygen.nl/[doxygen].
@@ -76,9 +76,7 @@ The TSDuck documentation set is made of:
 
 [.compact-list]
 1. xref:tsduck.html[TSDuck User's Guide]
-   (also from https://tsduck.io/download/docs/tsduck.html[tsduck.io]
-   and in https://tsduck.io/download/docs/tsduck.pdf[PDF] format)
+   (also from {home}download/docs/tsduck.html[tsduck.io] and in {home}download/docs/tsduck.pdf[PDF] format)
 2. xref:tsduck-dev.html[TSDuck Developer's Guide]
-   (also from https://tsduck.io/download/docs/tsduck-dev.html[tsduck.io]
-   and in https://tsduck.io/download/docs/tsduck-dev.pdf[PDF] format)
-3. https://tsduck.io/doxy/[TSDuck Programming Reference]
+   (also from {home}download/docs/tsduck-dev.html[tsduck.io] and in {home}download/docs/tsduck-dev.pdf[PDF] format)
+3. {home}doxy/[TSDuck Programming Reference]

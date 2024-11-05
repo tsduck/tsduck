@@ -112,7 +112,7 @@ The TSDuck library contains general-purpose {cpp} classes and utilities to handl
 MPEG transport streams.
 
 For programming details, see the
-https://tsduck.io/doxy/[reference documentation online] (doxygen-generated).
+{home}doxy/[programming reference documentation online] (doxygen-generated).
 
 Roughly, the TSDuck library provides two categories of features:
 
@@ -146,14 +146,14 @@ The usage of `std::string` with the TSDuck library is discouraged in favor of _U
 [#unicodestring]
 ===== Unicode strings
 
-The class `ts::UString` implements Java-like Unicode strings.
+The class `{home}doxy/class/UString.html[ts::UString]` implements Java-like Unicode strings.
 Each character uses 16 bits of storage.
-Formally, `ts::UString` uses UTF-16 representation.
+Formally, classref:UString[] uses UTF-16 representation.
 This means that all characters from all modern languages can be represented as one single character.
 Characters from archaic languages may need two UTF-16 values, called a "surrogate pair".
 
-Technically, `ts::UString` is a subclass of `std::u16string`.
-So any operation on standard {cpp} strings is also available to `ts::UString`.
+Technically, classref:UString[] is a subclass of `std::u16string`.
+So any operation on standard {cpp} strings is also available to classref:UString[].
 But many more operations have been added to manipulate Unicode strings.
 
 For consistency, the type `ts::UChar` is an alias for `char16_t`.
@@ -161,7 +161,7 @@ The header file `tsUChar.h` defines some utility functions on `ts::UChar`.
 It also defines constants for most Unicode characters like `ts::COLON` or more complex ones such as
 `ts::LATIN_CAPITAL_LETTER_A_WITH_ACUTE`, among hundredths of others.
 
-Some interesting features in class `ts::UString` are:
+Some interesting features in class classref:UString[] are:
 
 [.compact-list]
 * Explicit and implicit conversions between UTF-8 and UTF-16.
@@ -178,7 +178,7 @@ Some interesting features in class `ts::UString` are:
 * Data scanning using `scan()`.
 
 Unicode strings can be converted to and from DVB or ARIB (Japan) strings.
-Most DVB-defined character sets are implemented (see the classes `ts::Charset` and `ts::DVBCharset`)
+Most DVB-defined character sets are implemented (see the classes classref:Charset[] and classref:DVBCharset[])
 and recognized when a string is read from a descriptor.
 When a string is serialized into a binary descriptor, the most appropriate DVB character set is used.
 In practice, a few known DVB character sets are used and, when the string cannot be encoded in any of them,
@@ -187,7 +187,7 @@ UTF-8 is used (UTF-8 is always a valid DVB character set).
 [#bindata]
 ===== Binary data
 
-The class `ts::ByteBlock` represents a raw block of bytes.
+The class classref:ByteBlock[] represents a raw block of bytes.
 It is a subclass of `std::vector<uint8_t>` and consequently benefits from all standard vector operations.
 It also adds useful methods for data serialization or deserialization in any byte order.
 
@@ -195,14 +195,14 @@ For data serialization or deserialization over arbitrary memory areas,
 the header file `tsMemory.h` provides low-level functions to access integer values
 of 8, 16, 24, 32, 40, 48 and 64 bits in any byte order.
 
-The class `ts::Buffer` provides a higher-level abstraction layer over a memory area to parse or generate bitstreams.
+The class classref:Buffer[] provides a higher-level abstraction layer over a memory area to parse or generate bitstreams.
 It gives access to data of any bit-size at any bit position, any endianness,
 either as a continuous stream or seeking at random bit positions.
 
-The principles of the {cpp} class `ts::Buffer` were freely inspired by the Java class `java.nio.ByteBuffer`.
+The principles of the {cpp} class classref:Buffer[] were freely inspired by the Java class `java.nio.ByteBuffer`.
 There are differences between the two but the main principles are similar.
 
-Its subclass `ts::PSIBuffer` provides primitives to serialize and deserialize MPEG and DVB structures
+Its subclass classref:PSIBuffer[] provides primitives to serialize and deserialize MPEG and DVB structures
 such as list of descriptors, DVB, ARIB and ATSC strings or "Modified Julian Dates".
 
 [#singletons]
@@ -220,30 +220,30 @@ This is a variant of the singleton pattern, privately used inside a compilation 
 [#errreport]
 ===== Error reporting
 
-All TSDuck classes use a consistent error reporting mechanism through the `ts::Report` abstract class.
+All TSDuck classes use a consistent error reporting mechanism through the classref:Report[] abstract class.
 
 This interface defines several levels of severity in the type `ts::Severity`,
 ranging from `ts::Severity::Debug` to `ts::Severity::Fatal`.
-Each instance of `ts::Report` defines which levels of message are reported to the user.
+Each instance of classref:Report[] defines which levels of message are reported to the user.
 This is usually triggered by command-line options such as `--verbose` or `--debug`.
 
-Most classes or methods from the TSDuck library use a reference to an instance of `ts::Report` to report messages and errors.
+Most classes or methods from the TSDuck library use a reference to an instance of classref:Report[] to report messages and errors.
 The actual reporting object is often built at application level and then propagated to all layers of code.
 
-Some interesting subclasses of `ts::Report` are:
+Some interesting subclasses of classref:Report[] are:
 
 [.compact-list]
-* `ts::CerrReport`, a singleton which reports errors to `std::cerr`.
+* classref:CerrReport[], a singleton which reports errors to `std::cerr`.
   The macro `CERR` can be used as a shortcut to the instance of the singleton.
-* `ts::NullReport`, a singleton which drops all messages.
+* classref:NullReport[], a singleton which drops all messages.
   The macro `NULLREP` can be used as a shortcut to the instance of the singleton.
-* `ts::ReportFile` which logs messages in a file.
+* classref:ReportFile[] which logs messages in a file.
   It can be made thread-safe using a `ts::ThreadSafety` value as template argument.
-* `ts::ReportBuffer` which logs messages in a memory buffer.
+* classref:ReportBuffer[] which logs messages in a memory buffer.
   It can be made thread-safe using a `ts::ThreadSafety` value as template argument.
-* `ts::Args` (see xref:cmdargs[xrefstyle=short]) which defines the syntax and handling of command line arguments.
-  This is the typical instance of `ts::Report` which is used at application-level.
-* `ts::Plugin`, the superclass of all `tsp` plugins.
+* classref:Args[] (see xref:cmdargs[xrefstyle=short]) which defines the syntax and handling of command line arguments.
+  This is the typical instance of classref:Report[] which is used at application-level.
+* classref:Plugin[], the superclass of all `tsp` plugins.
   A plugin reports its messages directly in its own instance.
   Each `tsp` plugin executes in a separate thread and asynchronously logs messages without slowing down the plugin's thread.
 
@@ -253,39 +253,39 @@ Some interesting subclasses of `ts::Report` are:
 As a general rule, TSDuck prefers the usage of error reporting interface and error status over exceptions.
 However, for a limited number of unrecoverable conditions which should never occur in practice, exceptions are used.
 
-All TSDuck exceptions inherit from the superclass `ts::Exception`.
+All TSDuck exceptions inherit from the superclass classref:Exception[].
 An instance of this exception is able to embed an error message and an optional system error code.
 
-Each specific exception should be a subclass of `ts::Exception`.
+Each specific exception should be a subclass of classref:Exception[].
 Instead of rewriting the subclass code, applications should use the macro `TS_DECLARE_EXCEPTION()`.
 
 [#enums]
 ===== Pseudo-enumeration data
 
-An instance of the class `ts::Enumeration` associates a list of integer or `enum` values with strings.
+An instance of the class classref:Enumeration[] associates a list of integer or `enum` values with strings.
 It can be used to display meaningful strings instead of integer values.
 
 It is even more useful to decode command line arguments.
 When an option accepts a predefined list of values, the input string can be either an integer value or a name.
-When it is a name, it can even be abbreviated as long as it is not ambiguous in the corresponding `ts::Enumeration`.
+When it is a name, it can even be abbreviated as long as it is not ambiguous in the corresponding classref:Enumeration[].
 This is transparent for the application which receives the corresponding integer value.
 
 [#cmdargs]
 ===== Command-line arguments
 
-The class `ts::Args` implements a generic handling of command line arguments.
+The class classref:Args[] implements a generic handling of command line arguments.
 
-Each application typically defines its own subclass of `ts::Args`.
-A plugin is always a subclass of `ts::Args`, through the intermediate class `ts::Plugin`.
+Each application typically defines its own subclass of classref:Args[].
+A plugin is always a subclass of classref:Args[], through the intermediate class classref:Plugin[].
 
-A subclass of `ts::Args` defines the command line syntax and the corresponding help text.
-The superclass `ts::Args` automatically parses the command line, reports errors and
+A subclass of classref:Args[] defines the command line syntax and the corresponding help text.
+The superclass classref:Args[] automatically parses the command line, reports errors and
 handle common options such as `--help` or `--version`.
 
 The value of command line options can be free strings, integer values or enumeration values.
 Integer values are recognized in decimal or hexadecimal form (prefix `0x`) and
 thousands separators ('`,`') which are present for clarity are ignored.
-Enumeration values are handled through `ts::Enumeration`.
+Enumeration values are handled through classref:Enumeration[].
 
 [#xml]
 ===== XML data
@@ -314,36 +314,36 @@ Standard cryptographic primitives are implemented using the standard system libr
 _OpenSSL_ on {unix}, _BCrypt_ on Windows.
 Less standard primitives are directly implemented in TSDuck.
 
-The abstract class `ts::BlockCipher` is the root of a hierarchy of symmetric cryptography classes,
+The abstract class classref:BlockCipher[] is the root of a hierarchy of symmetric cryptography classes,
 including chaining modes.
-The main block cipher classes are `ts::AES128`, `ts::AES256`, `ts::TDES` and `ts::DES`.
+The main block cipher classes are classref:AES128[], classref:AES256[], classref:TDES[] and classref:DES[].
 
 CAUTION: DES is an obsolete and insecure algorithm. TDES (a.k.a. 3-DES or Triple DES) is also deprecated.
 However, the two are still used in some ATSC Digital TV systems.
 
-Chaining modes are template classes which inherit from the abstract class `ts::CipherChaining`.
+Chaining modes are template classes which inherit from the abstract class classref:CipherChaining[].
 The template parameter is a block cipher class.
-The main chaining modes are `ts::ECB`, `ts::CBC`, various flavors of `ts::CTSx`
-or more exotic modes from the DTV world such as `ts::DVS042`.
+The main chaining modes are classref:ECB[], classref:CBC[], various flavors of classref:CTSx[]
+or more exotic modes from the DTV world such as classref:DVS042[].
 
-Additionally, `ts::CipherChaining` is also a subclass of `ts::BlockCipher` because it remains a symmetric cipher.
-So, ciphers like `ts::AES` or `ts::CBC<ts::AES>` can be used through the same `ts::BlockCipher` interface.
+Additionally, classref:CipherChaining[] is also a subclass of classref:BlockCipher[] because it remains a symmetric cipher.
+So, ciphers like classref:AES[] or `ts::CBC<ts::AES>` can be used through the same classref:BlockCipher[] interface.
 
-The class `ts::Scrambling` implements DVB-CSA-2, the Digital Video Broadcasting Common Scrambling Algorithm.
+The class classref:Scrambling[] implements DVB-CSA-2, the Digital Video Broadcasting Common Scrambling Algorithm.
 This implementation is older than the open-source https://www.videolan.org/developers/libdvbcsa.html[libdvbcsa library]
 and is probably less efficient.
 
-The abstract class `ts::Hash` is the root of a hierarchy of hash functions classes.
-The main hash functions are `ts::SHA1`, `ts::SHA256` or `ts::SHA512`.
+The abstract class classref:Hash[] is the root of a hierarchy of hash functions classes.
+The main hash functions are classref:SHA1[], classref:SHA256[] or classref:SHA512[].
 
-The abstract class `ts::RandomGenerator` is the root of pseudo-random generators.
+The abstract class classref:RandomGenerator[] is the root of pseudo-random generators.
 
-The subclass `ts::SystemRandomGenerator` is a portable interface to the system-provided PRNG.
+The subclass classref:SystemRandomGenerator[] is a portable interface to the system-provided PRNG.
 Usually, this is not the best PRNG on earth, but it is fine for most usages in TSDuck applications.
-For more critical usages (such as encryption key generation), use `ts::BetterSystemRandomGenerator`.
-This PRNG class uses `ts::SystemRandomGenerator` with an additional security layer.
+For more critical usages (such as encryption key generation), use classref:BetterSystemRandomGenerator[].
+This PRNG class uses classref:SystemRandomGenerator[] with an additional security layer.
 
-The class `ts::Xoshiro256ss` implements the Xoshiro256** PRNG.
+The class classref:Xoshiro256ss[] implements the Xoshiro256** PRNG.
 It is a fast and deterministic PRNG, with a low level of security.
 The same seed will always produce the same pseudo-random sequence.
 It can be used in cases where many random numbers are required, without strong security criteria.
@@ -372,7 +372,7 @@ However, a number of additional features manipulate:
 [#time]
 ===== Time
 
-The class `ts::Time` is a portable implementation of time (both local and UTC time).
+The class classref:Time[] is a portable implementation of time (both local and UTC time).
 
 Many operations are provided, such as:
 
@@ -386,11 +386,11 @@ Many operations are provided, such as:
 ===== Multithreading
 
 TSDuck is heavily multi-threaded.
-The abstract class `ts::Thread` manages a thread.
+The abstract class classref:Thread[] manages a thread.
 To define an actual thread, derive this class and implement the virtual method `main()`.
 
-The class `ts::ThreadAttributes` contains all mandatory or optional attributes of a thead.
-An application typically builds a `ts::ThreadAttributes` object and then creates threads using these attributes.
+The class classref:ThreadAttributes[] contains all mandatory or optional attributes of a thead.
+An application typically builds a classref:ThreadAttributes[] object and then creates threads using these attributes.
 
 In earlier versions of TSDuck, synchronization primitives used to be implemented
 through specific classes (`ts::Mutex`, `ts::Condition`).
@@ -399,7 +399,7 @@ They are now removed and new {cpp}11 classes such as `std::mutex` and `std::cond
 Note that the {cpp}11 class `std::thread` is not used.
 Its API is too limited to be useable in complex environments:
 it does not allow to customize the priority or the stack size _before_ the creation of the thread.
-Therefore, TSDuck exclusively uses `ts::Thread` and `ts::ThreadAttributes` instead.
+Therefore, TSDuck exclusively uses classref:Thread[] and classref:ThreadAttributes[] instead.
 
 TSDuck relies on {cpp} mechanisms to track the usage of resources.
 Standard classes such as `std::lock_guard` or `std::unique_lock` are used
@@ -408,7 +408,7 @@ to ensure that no dangling lock is lost through the _guard design pattern_.
 [#virtmem]
 ===== Virtual memory
 
-The class `ts::ResidentBuffer` implements a buffer which is locked in physical memory,
+The class classref:ResidentBuffer[] implements a buffer which is locked in physical memory,
 preventing paging or swapping on this buffer.
 This is useful for large data buffers with high performance constraints.
 
@@ -427,10 +427,10 @@ Note however that most operating systems require that the application has privil
 ===== Processes
 
 To track potential memory leaks and the impact of the application on the system,
-the class `ts::SystemMonitor` creates a background thread which
+the class classref:SystemMonitor[] creates a background thread which
 reports the process metrics of the application at regular intervals.
 
-The class `ts::ForkPipe` is a portable and convenient way to create a process running a specific command
+The class classref:ForkPipe[] is a portable and convenient way to create a process running a specific command
 and creates an outgoing pipe from the calling application to the standard input of the created process.
 The pipe is open in binary mode (when it makes sense for the operating system)
 and can be used to pass an entire transport stream when necessary.
@@ -438,30 +438,30 @@ and can be used to pass an entire transport stream when necessary.
 [#networking]
 ===== Networking
 
-The classes `ts::IPv4Address` and `ts::IPv4SocketAddress` define an IPv4 address and
+The classes classref:IPv4Address[] and classref:IPv4SocketAddress[] define an IPv4 address and
 a corresponding socket address (an IPv4 address and a port number).
 Host name resolution and multicast are supported.
 
 Equivalent classes exist for IPv6 and MAC (Ethernet addresses).
 
-The classes `ts::TCPSocket` and `ts::UDPSocket` implement TCP/IP and UDP/IP endpoints.
+The classes classref:TCPSocket[] and classref:UDPSocket[] implement TCP/IP and UDP/IP endpoints.
 
-The class `ts::UDPSocket` can be used directly to send and receive datagrams.
+The class classref:UDPSocket[] can be used directly to send and receive datagrams.
 Multicast is supported.
 
-The class `ts::TCPSocket` can be used only through two subclasses.
-The subclass `ts::TCPConnection` is a TCP/IP communication endpoint, either on client or server side.
+The class classref:TCPSocket[] can be used only through two subclasses.
+The subclass classref:TCPConnection[] is a TCP/IP communication endpoint, either on client or server side.
 It is used to send or receive data streams.
-The subclass `ts::TCPServer` is used to implement a TCP server.
-It accepts incoming client connections and initiates a `ts::TCPConnection` for each new connection.
-On the client side, the class `ts::TCPConnection` is directly used to connect to the server.
+The subclass classref:TCPServer[] is used to implement a TCP server.
+It accepts incoming client connections and initiates a classref:TCPConnection[] for each new connection.
+On the client side, the class classref:TCPConnection[] is directly used to connect to the server.
 
-Subclasses of `ts::TCPConnection` are used to implement specific protocols on top of TCP/IP.
-Currently, the available subclasses are `ts::TelnetConnection` and `ts::tlv::Connection`.
+Subclasses of classref:TCPConnection[] are used to implement specific protocols on top of TCP/IP.
+Currently, the available subclasses are classref:TelnetConnection[] and `ts::tlv::Connection`.
 The latter is used to handle communications using the "DVB SimulCrypt head-end protocols".
 See xref:dvbprotocols[xrefstyle=short] for more details.
 
-The class `ts::WebRequest` performs simple Web requests using HTTP, HTTPS or FTP.
+The class classref:WebRequest[] performs simple Web requests using HTTP, HTTPS or FTP.
 Using a URL, the result can be downloaded in memory or in a file.
 Multiple redirections and SSL/TLS are automatically handled.
 This class is built on top of native system libraries, _libcurl_ on {unix}, _WinInet_ on Windows.
@@ -474,9 +474,9 @@ The TSDuck library contains classes to load shared libraries
 and lookup symbols inside them in a portable way.
 These classes are typically used to load `tsp` plugins but can be used in any application.
 
-The class `ts::SharedLibrary` manipulates any type of shared library.
+The class classref:SharedLibrary[] manipulates any type of shared library.
 
-The subclass `ts::ApplicationSharedLibrary` searches a shared library using TSDuck rules:
+The subclass classref:ApplicationSharedLibrary[] searches a shared library using TSDuck rules:
 if the file is not found "as it is", an optional prefix and a list of directories are used.
 This is how, on Windows for instance, searching the shared library named `zap` will end up loading the file `tsplugin_zap.dll`
 in the same directory as the application executable file.
@@ -492,21 +492,21 @@ The TSDuck library does not embed or hide PC/SC but it provides a few utilities
 like transmitting an APDU and read the response in one single function or
 searching a smart-card with some characteristics in the ATR from all connected smart-cards.
 
-All these utilities are grouped in the namespace `ts::pcsc`.
+All these utilities are grouped in the namespace classref:pcsc[].
 
 [#wincom]
 ===== Windows specificities
 
-The class `ts::COM` provides a portable and reliable way to make sure that the Common Object Model (COM)
+The class classref:COM[] provides a portable and reliable way to make sure that the Common Object Model (COM)
 is properly initialized and terminated on Windows systems.
 This class is defined on all platforms but does nothing on non-Windows systems.
 It is consequently safe to use it everywhere without tedious conditional compilation directives.
 
 Other classes manipulate Windows-specific objects and are not available on non-Windows systems.
 
-The template class `ts::ComPtr` is the equivalent of a smart pointer for COM objects.
+The template class classref:ComPtr[] is the equivalent of a smart pointer for COM objects.
 The reference count of a COM object is properly incremented and decremented when
-the COM object is manipulated through a `ts::ComPtr`.
+the COM object is manipulated through a classref:ComPtr[].
 The COM object is automatically released when no more reference exists.
 
 There is little advantage to develop an intrinsicly non-portable COM object class.
@@ -520,36 +520,36 @@ These internal classes needed some COM support functions which are available to 
 [#tsclasses]
 ===== Transport streams
 
-The class `ts::TSPacket` defines a transport stream packet.
+The class classref:TSPacket[] defines a transport stream packet.
 It is in fact a flat structure which occupies exactly 188 bytes in memory.
-It is safe to use arrays or vectors of `ts::TSPacket`.
+It is safe to use arrays or vectors of classref:TSPacket[].
 The packets are guaranteed to be contiguous in memory.
 
-The class `ts::TSPacket` also adds many operations on the TS packet
+The class classref:TSPacket[] also adds many operations on the TS packet
 to read or modify properties like the PID (type `ts::PID`),
 the continuity counters or deeper structures like PCR, DTS or PTS.
 
-The class `ts::TransportStreamId` contains the identification of an MPEG/DVB transport stream.
+The class classref:TransportStreamId[] contains the identification of an MPEG/DVB transport stream.
 
-The class `ts::Service` contains all possible properties of a DVB service.
+The class classref:Service[] contains all possible properties of a DVB service.
 Not all properties need to be set at the same time.
 Each property can be individually set, cleared or queried.
 
-Transport stream files are implemented by classes `ts::TSFileInput` and `ts::TSFileOutput`.
+Transport stream files are implemented by classes classref:TSFileInput[] and classref:TSFileOutput[].
 They respectively read and write transport stream files
 with specific features such as repeating the reading of a part of the file.
 
-The subclass `ts::TSFileInputBuffered` provides additional, but limited,
+The subclass classref:TSFileInputBuffered[] provides additional, but limited,
 capabilities to seek forward and backward on non-seekable files such as pipes.
 
-The subclass `ts::TSFileOutputResync` adds resynchronization capabilities on continuity counters and PID's.
+The subclass classref:TSFileOutputResync[] adds resynchronization capabilities on continuity counters and PID's.
 
-The class `ts::TSAnalyzer` consumes all TS packets from a transport stream
+The class classref:TSAnalyzer[] consumes all TS packets from a transport stream
 and analyzes virtually everything from the stream.
 This is the class which is used by the command `tsanalyze` and the plugin `analyze`
 to collect the vast amount of information it reports.
 
-The class `ts::PCRAnalyzer` is a useful tool to evaluate the bitrate of a transport stream.
+The class classref:PCRAnalyzer[] is a useful tool to evaluate the bitrate of a transport stream.
 It performs the analysis of the Program Clock Reference (PCR) which
 are present in the transport stream in order to evaluate the bitrate of the stream.
 If PCR are not found, the class can also use Decoding Time Stamps (DTS) to evaluate the bitrate.
@@ -563,17 +563,17 @@ These features are limited to the analysis of a transport stream.
 There is no video or audio decoding features.
 Specialized libraries exist for this and are out of scope for TSDuck.
 
-The class `ts::PESPacket` implements a PES packet and can manipulate its attributes, header and payload.
+The class classref:PESPacket[] implements a PES packet and can manipulate its attributes, header and payload.
 
-The class `ts::PESDemux` extracts PES packets from a transport stream.
+The class classref:PESDemux[] extracts PES packets from a transport stream.
 It can also notify the application of the changes in audio or video attributes.
 
-The abstract class `ts::AbstractAudioVideoAttributes` is the root of a hierarchy of classes
+The abstract class classref:AbstractAudioVideoAttributes[] is the root of a hierarchy of classes
 which contains attributes for audio or video streams.
 Currently, specialized classes exist for MPEG-2 video, AVC/H.264, HEVC/H.265, VVC/H.266 video,
 MPEG-2 audio and AC-3 audio.
 
-The class `ts::AVCParser` performs the parsing of an AVC, HEVC, or VVC bitstream.
+The class classref:AVCParser[] performs the parsing of an AVC, HEVC, or VVC bitstream.
 
 [#siclasses]
 ==== Signalization
@@ -589,32 +589,32 @@ binary objects, specialized classes and XML.
 
 Tables in JSON format are also supported through automatic XML-to-JSON translation.
 
-The classes `ts::Section`, `ts::BinaryTable` and `ts::Descriptor`
+The classes classref:Section[], classref:BinaryTable[] and classref:Descriptor[]
 implement binary forms of the signalization objects.
 
 A binary table are made of a collection of sections.
 A binary table is valid when all binary sections are present.
 Each section contains its section number in the table and the total expected number of sections inside the table.
 
-All sections and descriptors can be represented by the classes `ts::Section` and `ts::Descriptor`.
+All sections and descriptors can be represented by the classes classref:Section[] and classref:Descriptor[].
 They simply contain the complete binary content of the object and can manipulate the various components.
-An instance of `ts::Section` stores the _table_id_ and manipulates the various components of the section header.
+An instance of classref:Section[] stores the _table_id_ and manipulates the various components of the section header.
 For long sections, the final CRC32 can be checked for consistency or recomputed after modification of the section content.
 
 Tables can be stored in binary files.
 The format of these files is quite simple.
 They just contain raw binary sections, without any encapsulation.
 Tables can also be stored in XML or JSON files.
-The class `ts::SectionFile` reads and writes tables or section from files,
+The class classref:SectionFile[] reads and writes tables or section from files,
 independently of the format, either a binary section file or an XML file.
 
-Tables and descriptors can also be manipulated using specialized classes such as `ts::PAT` or `ts::PMT`
-for tables and `ts::ContentDescriptor` or `ts::ShortEventDescriptor` for descriptors.
+Tables and descriptors can also be manipulated using specialized classes such as classref:PAT[] or classref:PMT[]
+for tables and classref:ContentDescriptor[] or classref:ShortEventDescriptor[] for descriptors.
 
-All specialized classes inherit from a common abstract root named `ts::AbstractSignalization`.
-All descriptors inherit from the intemediate class `ts::AbstractDescriptor`.
-All tables inherit from the intemediate class `ts::AbstractTable`.
-Tables with long sections inherit from `ts::AbstractLongTable`.
+All specialized classes inherit from a common abstract root named classref:AbstractSignalization[].
+All descriptors inherit from the intemediate class classref:AbstractDescriptor[].
+All tables inherit from the intemediate class classref:AbstractTable[].
+Tables with long sections inherit from classref:AbstractLongTable[].
 
 Most tables and descriptors are implemented, from MPEG, DVB, ATSC, ISDB and a few private descriptors.
 Unimplemented descriptors shall be manipulated in binary form (or be implemented...)
@@ -669,38 +669,38 @@ ts::BinaryTable table;
 pmt.serialize(duck, table);
 ----
 
-Note that an instance of the class `ts::DuckContext` can store various information
+Note that an instance of the class classref:DuckContext[] can store various information
 about the way to interpret incorrect signalization or preferences.
 Its default value is appropriate for a standard PSI/SI processing.
 
-Each time the instance of `ts::DuckContext` is used, it accumulates information.
+Each time the instance of classref:DuckContext[] is used, it accumulates information.
 For instance, if it is used to deserialize an ATSC MGT table,
 the information that the TS is an ATSC one is retained.
-Later, if the same instance of `ts::DuckContext` is used to deserialize a descriptor
+Later, if the same instance of classref:DuckContext[] is used to deserialize a descriptor
 for which there is an ambiguity (the tag is used in two standards for instance),
 the ATSC version of the descriptor will be used.
 
 It is also possible to automatically define and load command line options to preset
-the state of the instance of `ts::DuckContext`.
+the state of the instance of classref:DuckContext[].
 See xref:duckcontext[xrefstyle=short] for more details.
 
 Finally, specialized classes for tables and descriptors can be converted
 to and from XML using the methods `toXML()` and `fromXML()`.
 
-These methods are typically used by the class `ts::SectionFile` which represents
+These methods are typically used by the class classref:SectionFile[] which represents
 a file containing sections and tables in binary or XML format.
 The class can be used to load a set of tables in XML format or to store table objects in XML format.
 
-The class `ts::SectionFile` is the core of the `tstabcomp` utility, the tables compiler (or decompiler).
+The class classref:SectionFile[] is the core of the `tstabcomp` utility, the tables compiler (or decompiler).
 
 [#demux]
 ===== Demux and packetization
 
-Signalization objects can be extracted from transport streams using the class `ts::SectionDemux`
-and inserted back into transport streams using the class `ts::Packetizer`.
+Signalization objects can be extracted from transport streams using the class classref:SectionDemux[]
+and inserted back into transport streams using the class classref:Packetizer[].
 These two classes also have specialized subclasses.
 
-An instance of `ts::SectionDemux` can extract sections or complete tables in binary form.
+An instance of classref:SectionDemux[] can extract sections or complete tables in binary form.
 
 Tables with long sections are usually cycled.
 A given table with a given version number and a given _table id extension_ is reported only once,
@@ -709,12 +709,12 @@ The same table will be reported again only when its version number changes.
 
 On the contrary, short tables are all reported since they do not implement versioning.
 
-It is also possible to use a `ts::SectionDemux` to be notified of all individual sections.
+It is also possible to use a classref:SectionDemux[] to be notified of all individual sections.
 
 [#duckcontext]
 ===== Application preferences contexts
 
-The class `ts::DuckContext` carries various preferences about the standards or localizations.
+The class classref:DuckContext[] carries various preferences about the standards or localizations.
 Typically, each application has a given context.
 Using `tsp`, each plugin has it own context.
 
@@ -723,7 +723,7 @@ The preferences which are carried by a context include the default standard
 data specifier (for DVB private descriptors), the HF region (for terrestrial
 or satellite frequency mapping)
 
-The `ts::DuckContext` class can automatically define command-line arguments
+The classref:DuckContext[] class can automatically define command-line arguments
 to explicitly specify preferences (options `--atsc` or `--default-charset` for instance).
 Thus, the preferences are setup from the beginning.
 
@@ -759,36 +759,36 @@ Currently, the TSDuck library implements the following protocols:
 [#cassupport]
 ==== Conditional access systems
 
-The class `ts::CASMapper` analyzes the signalization of a transport stream,
+The class classref:CASMapper[] analyzes the signalization of a transport stream,
 locates ECM and EMM stream and associates each of them with a _CA_System_Id_.
 
-An instance of `ts::CASMapper` can then be queried for ECM, EMM streams or CAS vendors.
+An instance of classref:CASMapper[] can then be queried for ECM, EMM streams or CAS vendors.
 
 [#otherdemux]
 ==== Other forms of demux
 
-We have already mentioned the classes `ts::SectionDemux` and `ts::PESDemux`.
+We have already mentioned the classes classref:SectionDemux[] and classref:PESDemux[].
 Other specialized forms of demux can be implemented.
 
-The class `ts::T2MIDemux` demuxes T2-MI (DVB-T2 Modulator Interface) packets
+The class classref:T2MIDemux[] demuxes T2-MI (DVB-T2 Modulator Interface) packets
 and extracts encapsulated transport streams.
-Similarly, the class `ts::TeletextDemux` extracts Teletext subtitles from TS packets.
+Similarly, the class classref:TeletextDemux[] extracts Teletext subtitles from TS packets.
 
 Since all forms of demux share a number of properties, they all inherit from
-a root abstract class named `ts::AbstractDemux`.
+a root abstract class named classref:AbstractDemux[].
 
 [#dvbtuners]
 ==== Digital TV tuners
 
-The class `ts::Tuner` interfaces DVB/ATSC/ISDB tuner devices in a portable way.
+The class classref:Tuner[] interfaces DVB/ATSC/ISDB tuner devices in a portable way.
 This is quite a challenge since Linux and Windows use very different tuner frameworks.
 Some very-specific features are available either only on Linux or Windows.
 
-The abstract class `ts::TunerParameters` is the root of a hierarchy of classes containing tuning parameters.
+The abstract class classref:TunerParameters[] is the root of a hierarchy of classes containing tuning parameters.
 Subclasses exist for DVB-S, DVB-T, DVB-C and ATSC.
 ISDB-S and ISDB-T are currently unsupported.
 
-The class `ts::TSScanner` reads a TS from a `ts::Tuner` until all scanning information is found,
+The class classref:TSScanner[] reads a TS from a classref:Tuner[] until all scanning information is found,
 typically until the PAT, NIT and SDT are received.
 This is the basis for scanning a DTV network.
 
@@ -816,7 +816,7 @@ So, when the DTAPI is included in `tsduck.dll`, the DTAPI can be called from
 inside `tsduck.dll` but is not accessible from the application.
 
 This is why accessing the DTAPI from the application must be done through some TSDuck proxy class.
-The classes `ts::DektecControl`, `ts::DektecInputPlugin` and `ts::DektecOutputPlugin`
+The classes classref:DektecControl[], classref:DektecInputPlugin[] and classref:DektecOutputPlugin[]
 provide the features which are required by the utility `tsdektec` and the plugin `dektec`.
 They can be used by third-party applications.
 
@@ -837,12 +837,11 @@ Although subject to enhancements, these bindings will never aim at supporting
 the full TSDuck feature set since this would be too large.
 Only a small subset of TSDuck high-level features are targeted.
 
-The Java classes are documented in the https://tsduck.io/doxy/group__java.html[Java bindings reference section].
+The Java classes are documented in the groupref:java[Java bindings reference section].
 
-The Python classes are documented in the https://tsduck.io/doxy/group__python.html[Python bindings reference section].
+The Python classes are documented in the groupref:python[Python bindings reference section].
 
-Sample https://github.com/tsduck/tsduck/tree/master/sample/sample-java[Java]
-and https://github.com/tsduck/tsduck/tree/master/sample/sample-python[Python]
+Sample {source}sample/sample-java[Java] and {source}sample/sample-python[Python]
 applications are available in the TSDuck source tree.
 
 Currently, the TSDuck Java and Python bindings provide access to the features in the following table.
@@ -851,8 +850,14 @@ Equivalences are provided between {cpp}, Java, Python and command line tools.
 The first three classes implement high-level features which have direct counterparts as command line tools.
 The others are support classes which are only required to use the high-level classes.
 
+// PDF backend does not correctly process "autowidth" tables.
 .Equivalence between commands, {cpp}, Java, Python classes
+ifndef::backend-pdf[]
 [cols="<1,<1m,<1m,<1m",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<15m,<25m,<30m,<30m",stripes=none]
+endif::[]
 |===
 |Command |{cpp} class |Java class |Python class
 
@@ -914,14 +919,14 @@ In the TSDuck {cpp} programming guide, it is referred to as _TSDuck execution co
 Most of the time, using the default state of a new instance is sufficient.
 
 The application _sample Japanese tables_, available in
-https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleJapaneseTables.java[Java]
-and https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-japanese-tables.py[Python],
+{source}sample/sample-java/SampleJapaneseTables.java[Java]
+and {source}sample/sample-python/sample-japanese-tables.py[Python],
 demonstrates how it can be necessary to override the defaults in specific cases.
 
 [#jpreporting]
 ===== Reporting classes
 
-The reporting classes (`ts::Report` {cpp} class hierarchy) are used to report logs, errors and debug.
+The reporting classes (classref:Report[] {cpp} class hierarchy) are used to report logs, errors and debug.
 They are consistently used all over TSDuck and are required to use the high level features.
 There is a large hierarchy of classes in the three languages which can be classified according to two sets of criteria:
 
@@ -987,24 +992,24 @@ An instance of a thread-safe `Report` class is used to report monitoring message
 
 The `SystemMonitor` class is very simple to use.
 Examples are available in
-https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleMonitoring.java[Java] and
-https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-monitoring.py[Python].
+{source}sample/sample-java/SampleMonitoring.java[Java] and
+{source}sample/sample-python/sample-monitoring.py[Python].
 
 [#jpevents]
 ===== Plugin events
 
 For developers, TSDuck plugins can _signal events_ which can be handled by the application.
 Each event is signalled with a user-defined 32-bit _event code_.
-An application can register _event handlers_ in the `ts::TSProcessor` instance
-(see the class `ts::PluginEventHandlerRegistry`, knowing that `ts::TSProcessor`
-is a subclass of `ts::PluginEventHandlerRegistry`).
+An application can register _event handlers_ in the classref:TSProcessor[] instance
+(see the class classref:PluginEventHandlerRegistry[], knowing that classref:TSProcessor[]
+is a subclass of classref:PluginEventHandlerRegistry[]).
 The event handler registration can include various _selection criteria_ such as
 event code value or originating plugin
 (see the inner class `ts::PluginEventHandlerRegistry::Criteria`).
 
 {cpp} developers who create their own plugins can signal any kind of event that they later handle in their application.
 This is illustrated in a
-https://github.com/tsduck/tsduck/blob/master/sample/sample-app-custom/myexec.cpp[{cpp} sample custom application].
+{source}sample/sample-app-custom/myexec.cpp[{cpp} sample custom application].
 In this sample code, everything is customized in the application:
 the plugin, the event it signals, the associated event data, the application handling of the event.
 
@@ -1023,7 +1028,7 @@ This plugin, when used in a `TSProcessor` instance, performs direct transport st
 from and to the application using memory buffers.
 The memory buffers are signalled using plugin events.
 The `memory` input plugin is an example of an application-defined event handler returning data to the plugin.
-See this https://github.com/tsduck/tsduck/blob/master/sample/sample-memory-plugins/[sample code]
+See this {source}sample/sample-memory-plugins/[sample code]
 in the TSDuck source code tree.
 
 [#jpplugincomm]
@@ -1091,28 +1096,28 @@ The following sample applications can be used as a starting point:
 |Communication type |Java |Python
 
 |Logging (XML)
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleAnalyzeSDT.java[SampleAnalyzeSDT]
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-analyze-sdt.py[sample-analyze-sdt.py]
+|{source}sample/sample-java/SampleAnalyzeSDT.java[SampleAnalyzeSDT]
+|{source}sample/sample-python/sample-analyze-sdt.py[sample-analyze-sdt.py]
 
 |Logging (JSON)
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleAnalyzeTS.java[SampleAnalyzeTS]
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-analyze-ts.py[sample-analyze-ts.py]
+|{source}sample/sample-java/SampleAnalyzeTS.java[SampleAnalyzeTS]
+|{source}sample/sample-python/sample-analyze-ts.py[sample-analyze-ts.py]
 
 |Logging (bin/hexa)
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleFilterTablesLog.java[SampleFilterTablesLog]
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-filter-tables-log.py[sample-filter-tables-log.py]
+|{source}sample/sample-java/SampleFilterTablesLog.java[SampleFilterTablesLog]
+|{source}sample/sample-python/sample-filter-tables-log.py[sample-filter-tables-log.py]
 
 |Plugin events (sections)
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleFilterTablesEvent.java[SampleFilterTablesEvent]
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-filter-tables-event.py[sample-filter-tables-event.py]
+|{source}sample/sample-java/SampleFilterTablesEvent.java[SampleFilterTablesEvent]
+|{source}sample/sample-python/sample-filter-tables-event.py[sample-filter-tables-event.py]
 
 |Plugin events (MPE datagrams)
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-java/SampleMPE.java[SampleMPE]
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-python/sample-mpe.py[sample-mpe.py]
+|{source}sample/sample-java/SampleMPE.java[SampleMPE]
+|{source}sample/sample-python/sample-mpe.py[sample-mpe.py]
 
 |Plugin events (input/output)
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-memory-plugins/SampleMemoryPlugins.java[SampleMemoryPlugins]
-|https://github.com/tsduck/tsduck/blob/master/sample/sample-memory-plugins/sample-memory-plugins.py[sample-memory-plugins.py]
+|{source}sample/sample-memory-plugins/SampleMemoryPlugins.java[SampleMemoryPlugins]
+|{source}sample/sample-memory-plugins/sample-memory-plugins.py[sample-memory-plugins.py]
 
 |===
 
@@ -1122,7 +1127,7 @@ The following sample applications can be used as a starting point:
 All TSDuck Java classes are defined in a package named `io.tsduck`.
 
 A few examples are provided in the directory
-https://github.com/tsduck/tsduck/tree/master/sample/sample-java[`sample/sample-java`]
+{source}sample/sample-java[`sample/sample-java`]
 in the TSDuck source code package.
 
 [#javalinux]
@@ -1171,7 +1176,7 @@ import tsduck
 ----
 
 A few examples are provided in the directory
-https://github.com/tsduck/tsduck/tree/master/sample/sample-python[`sample/sample-python`]
+{source}sample/sample-python[`sample/sample-python`]
 in the TSDuck source code package.
 
 [#pylinux]
@@ -1267,7 +1272,7 @@ You do not even need to get the full source code of TSDuck.
 It is sufficient to install the TSDuck development environment (see xref:usinglibrary[xrefstyle=short]).
 
 An example of a third party plugin project is provided in the directory
-https://github.com/tsduck/tsduck/tree/master/sample/sample-plugin[sample/sample-plugin].
+{source}sample/sample-plugin[sample/sample-plugin].
 
 [#pdevinternal]
 ===== Developing plugins for the TSDuck project
@@ -1305,22 +1310,21 @@ that is to say the ability to combine elementary processing independently and in
 ===== Class hierarchy
 
 In the source file of the plugin, create a {cpp} class, derived from either
-`ts::InputPlugin`, `ts::OutputPlugin` or `ts::ProcessorPlugin`.
+classref:InputPlugin[], classref:OutputPlugin[] or classref:ProcessorPlugin[].
 If your plugin implements two capabilities (both input and output for instance),
 implement the corresponding two classes in the same source file.
 
-See the class diagram of `ts::Plugin` in the https://tsduck.io/doxy/[reference programming documentation]
-for a global view of the plugin classes.
+See the class diagram of classref:Plugin[] for a global view of the plugin classes.
 
-Specialized plugins which manipulate exiting tables derive from `ts::AbstractTablePlugin`.
+Specialized plugins which manipulate exiting tables derive from classref:AbstractTablePlugin[].
 Examples of such plugins are `pmt`, `pat`, `nit`, etc.
 The actual plugin subclasses focus on the modification of the target table
 while the superclass automatically handles demuxing, remuxing and creation of non-existing tables.
 
-Specialized descrambling plugins derive from `ts::AbstractDescrambler`.
+Specialized descrambling plugins derive from classref:AbstractDescrambler[].
 This abstract class performs the generic functions of a descrambler:
 service location, ECM collection, descrambling of elementary streams.
-The concrete classes which derive from `ts::AbstractDescrambler` must perform CAS-specific operations:
+The concrete classes which derive from classref:AbstractDescrambler[] must perform CAS-specific operations:
 ECM streams filtering, ECM deciphering, control words extraction.
 Most of the time, these concrete classes must interact with a smartcard reader
 containing a smartcard for the specific CAS.
@@ -1328,20 +1332,20 @@ containing a smartcard for the specific CAS.
 [#pdevtsp]
 ===== Invoking tsp from a plugin, the ts::TSP callbacks
 
-In its constructor, each plugin receives an associated `ts::TSP` object to communicate
+In its constructor, each plugin receives an associated classref:TSP[] object to communicate
 with the `tsp` main executable.
-This instance of `ts::TSP` is a protected field named `tsp`
+This instance of classref:TSP[] is a protected field named `tsp`
 which can be freely accessed by the code of the plugin.
 
 A plugin shared library must exclusively use that `tsp` object for text display
 and must never use `std::cout`, `printf` or the like.
-The class `ts::TSP` is a subclass of `ts::Report` and supports all reporting methods
+The class classref:TSP[] is a subclass of classref:Report[] and supports all reporting methods
 such as `info()`, `verbose()`, `error()`, `debug()`, etc.
 
 When called in a multi-threaded context, the supplied `tsp` object is thread-safe and asynchronous
 (the methods return to the caller without waiting for the message to be printed).
 
-Note that the plugin instance is also a subclass of `ts::Report` and automatically redirects
+Note that the plugin instance is also a subclass of classref:Report[] and automatically redirects
 all messages to its `tsp` field. Therefore, the code of the plugin can transparently use
 its own methods `info()`, `error()`, etc. This is equivalent to calling its `tsp`.
 
@@ -1390,7 +1394,7 @@ The possible features of a TSDuck extension are:
 * Additional plugins for `tsp`.
 * Additional command-line utilities.
 
-A https://github.com/tsduck/tsduck/tree/master/sample/sample-extension[complete example]
+A {source}sample/sample-extension[complete example]
 of a TSDuck extension is provided in the TSDuck source tree.
 This example also provides scripts to build standard installers (`.exe` on Windows, `.rpm` and `.deb` on Linux).
 The generated packages install the extension on top of a matching version of TSDuck.
@@ -1610,7 +1614,7 @@ To extract specific tables or sections, the command provides filtering options s
 
 For specific sections, it is possible to define additional filtering options to the `tstables` command.
 
-The extension library shall provide a {cpp} class implementing `ts::TablesLoggerFilterInterface`.
+The extension library shall provide a {cpp} class implementing classref:TablesLoggerFilterInterface[].
 The sample `foo` extension provide an option `--foo-id`
 which selects instances of `FooTable` containing specific values for some `foo_id` field.
 
@@ -1619,7 +1623,7 @@ which selects instances of `FooTable` containing specific values for some `foo_i
 class FooFilter: public ts::TablesLoggerFilterInterface { ... };
 ----
 
-See the documentation of `ts::TablesLoggerFilterInterface` for more details.
+See the documentation of classref:TablesLoggerFilterInterface[] for more details.
 
 In the implementation of the class, we register it as a section filter for `tstables`:
 
@@ -1667,7 +1671,8 @@ ts::UString LogFooCASEMM(const ts::Section& section, size_t max_bytes);
 void DisplayFooCASCADescriptor(ts::TablesDisplay& display, const uint8_t* data, size_t size, int indent, ts::TID tid);
 ----
 
-See the documentation for `ts::DisplaySectionFunction`, `ts::LogSectionFunction` and `ts::DisplayCADescriptorFunction`.
+See the documentation for classref:DisplaySectionFunction[], classref:LogSectionFunction[]
+and classref:DisplayCADescriptorFunction[].
 
 To register the display handlers in TSDuck:
 
@@ -1695,7 +1700,7 @@ TS_REGISTER_CA_DESCRIPTOR(DisplayFooCASCADescriptor, CASID_FOO_MIN, CASID_FOO_MA
 [#extinstaller]
 ==== Building cross-platform binary installers for an extension
 
-See the https://github.com/tsduck/tsduck/tree/master/sample/sample-extension[sample `foo` extension]
+See the {source}sample/sample-extension[sample `foo` extension]
 in the TSDuck source tree.
 
 Scripts are provided to build `.exe` installers on Windows, `.rpm` and `.deb` packages on Linux.

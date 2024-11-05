@@ -295,10 +295,12 @@
 * [[[SRT]]] SRT, libsrt site, https://github.com/Haivision/srt/
 * [[[Suntech]]] Suntechtv U3 USB modulator (VATek-based),
   https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673
-* [[[TSDuck]]] TSDuck Web site, https://tsduck.io/
-* [[[TSDuck-Prog]]] TSDuck programmer's guide, https://tsduck.io/doxy/
-* [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, https://github.com/tsduck/tsduck/issues
-* [[[TSDuck-Streams]]] Repository of sample real-life transport streams, https://tsduck.io/streams
+* [[[TSDuck]]] TSDuck Web site, {home}
+* [[[TSDuck-Dev]]] TSDuck Developer's Guide, {home}download/docs/tsduck-dev.html
+* [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, {repo}issues
+* [[[TSDuck-Prog]]] TSDuck Programming Reference, {home}doxy/
+* [[[TSDuck-Streams]]] Repository of sample real-life transport streams, {home}streams
+* [[[TSDuck-User]]] TSDuck User's Guide, {home}download/docs/tsduck.html
 * [[[UWA]]] UHD World Association, T/UWA 005.2-1-2022
   "HDR Video Technology Part 2-1 Application Guide to System Integration".
 * [[[VATek]]] Vision Advance Technology Inc (VATek) corporate home page: https://www.vatek.com.tw/

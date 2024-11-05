@@ -124,7 +124,7 @@ def get_guid(name):
 def build_ms_files(names, srcdir, props):
     for name in names:
         guid = get_guid(name)
-        if guid == None:
+        if guid is None:
             guid = random_guid()
         all_props = [props]
         if 'tsduckdll' in ms_deps[name]['deps']:

@@ -10,11 +10,11 @@
 == Contributing to TSDuck Development
 
 TSDuck development is managed using Git.
-The https://github.com/tsduck/tsduck[reference repository] is on GitHub.
+The {repo}[reference repository] is on GitHub.
 
 Code contributions from external developers are welcome and will be reviewed
 (without guaranteed response time however).
-Contributions shall be submitted using https://github.com/tsduck/tsduck/pulls[pull requests on GitHub] exclusively.
+Contributions shall be submitted using {repo}pulls[pull requests on GitHub] exclusively.
 
 This chapter summarizes the main actions to help developers and integrators to work with pull requests.
 This is the minimal set of actions.
@@ -52,7 +52,7 @@ We hope that all contributors understand this position.
 The first requirement is to create a GitHub account, if you do not already have one.
 
 Initially, create your own fork of the TSDuck repository.
-Go to the TSDuck https://github.com/tsduck/tsduck[reference repository]
+Go to the TSDuck {repo}[reference repository]
 and click on the "Fork" button.
 
 Clone your GitHub forked repository on your development system.
@@ -124,10 +124,8 @@ it is recommended to update the TSDuck test suite.
 
 See the xref:testing[xrefstyle=short] for more details.
 
-To update the TSDuck test suite according to your new code, fork the
-https://github.com/tsduck/tsduck-test[tsduck-test] repository, update it,
-and create pull requests on this repo using the same method as the main
-https://github.com/tsduck/tsduck[tsduck] repository.
+To update the TSDuck test suite according to your new code, fork the {repotest}[tsduck-test] repository, update it,
+and create pull requests on this repo using the same method as the main {repo}[tsduck] repository.
 
 Pay attention to the interactions between the `tsduck` and `tsduck-test` repositories.
 

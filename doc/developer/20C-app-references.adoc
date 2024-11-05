@@ -62,6 +62,6 @@
 * [[[MEYERS-STL]]] "Effective STL, 50 Specific Ways to Improve Your Use of the Standard Template Library",
   Scott Meyers, Addison-Wesley, 2001.
 * [[[STROUSTRUP]]] "The C++ Programming Language, Special Edition", Bjarne Stroustrup, Addison-Wesley, 2000.
-* [[[TSDuck]]] TSDuck Web site, https://tsduck.io/
-* [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, https://github.com/tsduck/tsduck/issues
-* [[[TSDuck-Source]]] TSDuck source code repository, https://github.com/tsduck/tsduck
+* [[[TSDuck]]] TSDuck Web site, {home}
+* [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, {repo}issues
+* [[[TSDuck-Source]]] TSDuck source code repository, {repo}

@@ -26,3 +26,7 @@
 :appendix-refsig: appendix
 :d-arrow: pass:q[[.big]#&#x21D4;#]
 :unix: UNIX systems (Linux, macOS, BSD)
+:home: https://tsduck.io/
+:repo: https://github.com/tsduck/tsduck/
+:repotest: https://github.com/tsduck/tsduck-test/
+:source: {repo}tree/master/

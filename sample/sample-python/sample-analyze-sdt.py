@@ -27,7 +27,7 @@ def process_xml(root):
         for srv in sdt.findall('./service'):
             id = int(srv.attrib['service_id'], base=0)
             sdesc = srv.find('./service_descriptor')
-            if sdesc == None:
+            if sdesc is None:
                 name = '(unknown)'
                 provider = '(unknown)'
             else:
