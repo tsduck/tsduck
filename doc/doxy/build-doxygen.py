@@ -87,7 +87,7 @@ else:
 
 # Run doxygen in same directory as this script (where Doxyfile is).
 print('Running doxygen version: %s ...' % doxy_version)
-#@@@ subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
+subprocess.run([doxygen], env=env, cwd=SCRIPTDIR)
 
 # Collect all 'group_*.html' files. Count files and directories.
 # Delete empty subdirectories (older versions of doxygen created many for nothing in case of hierachical output).
@@ -119,7 +119,7 @@ with open(os.path.join(HTMLDIR, 'classes.html')) as input:
     for line in input:
         for href in re.findall(r'href="([^"]*/classts_1_1[^"/]*\.html)"', line):
             if href.count('_1_1') == 1:
-                redirect_html(CLASSDIR, os.path.basename(href).removeprefix('classts_1_1'), href)
+                redirect_html(CLASSDIR, os.path.basename(href).removeprefix('classts_1_1'), os.path.join(HTMLDIR, href))
                 file_count += 1
 
 print('Generated %d files in %d directories' % (file_count, dir_count))
