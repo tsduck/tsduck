@@ -55,7 +55,7 @@ void ts::DSMCCModuleLinkDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         const uint8_t  position = buf.getUInt8();
         const uint16_t module_id = buf.getUInt16();
         disp << margin << "Position: " << DataName(MY_XML_NAME, u"position", position, NamesFlags::HEXA_FIRST) << std::endl;
-        disp << margin << "Module Id: " << module_id << std::endl;
+        disp << margin << UString::Format(u"Module Id: %n", module_id) << std::endl;
     }
 }
 

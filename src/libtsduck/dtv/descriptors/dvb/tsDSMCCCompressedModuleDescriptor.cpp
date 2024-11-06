@@ -53,9 +53,9 @@ void ts::DSMCCCompressedModuleDescriptor::DisplayDescriptor(TablesDisplay& disp,
 {
     if (buf.canReadBytes(5)) {
         const uint8_t  compression_method = buf.getUInt8();
-        const uint32_t original_size = buf.getUInt16();
-        disp << margin << "Compression Method: " << compression_method << std::endl;
-        disp << margin << "Original Size: " << original_size << std::endl;
+        const uint32_t original_size = buf.getUInt32();
+        disp << margin << UString::Format(u"Compression Method: %n", compression_method) << std::endl;
+        disp << margin << UString::Format(u"Original Size: %n", original_size) << std::endl;
     }
 }
 

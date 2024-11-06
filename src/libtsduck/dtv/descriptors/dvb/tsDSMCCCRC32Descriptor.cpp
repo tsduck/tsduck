@@ -52,7 +52,7 @@ void ts::DSMCCCRC32Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 {
     if (buf.canReadBytes(4)) {
         const uint32_t crc32 = buf.getUInt32();
-        disp << margin << "CRC32: " << crc32 << std::endl;
+        disp << margin << UString::Format(u"CRC32: %n", crc32) << std::endl;
     }
 }
 

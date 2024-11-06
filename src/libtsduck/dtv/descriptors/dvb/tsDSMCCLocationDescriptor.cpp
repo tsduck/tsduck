@@ -52,7 +52,7 @@ void ts::DSMCCLocationDescriptor::clearContent()
 void ts::DSMCCLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Location Tag: " << buf.getUInt8() << std::endl;
+        disp << margin << UString::Format(u"Location Tag: %n", buf.getUInt8()) << std::endl;
     }
 }
 

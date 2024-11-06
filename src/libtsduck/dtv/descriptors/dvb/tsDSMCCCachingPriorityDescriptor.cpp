@@ -54,7 +54,7 @@ void ts::DSMCCCachingPriorityDescriptor::DisplayDescriptor(TablesDisplay& disp, 
     if (buf.canReadBytes(2)) {
         const uint8_t priority_value = buf.getUInt8();
         const uint8_t transparency_level = buf.getUInt8();
-        disp << margin << "Priority Value: " << priority_value << std::endl;
+        disp << margin << UString::Format(u"Priority Value: %n", priority_value) << std::endl;
         disp << margin << "Transparency Level: " << DataName(MY_XML_NAME, u"transparency_level", transparency_level, NamesFlags::HEXA_FIRST) << std::endl;
     }
 }

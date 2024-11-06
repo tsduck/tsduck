@@ -69,8 +69,8 @@ void ts::DSMCCInfoDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DSMCCInfoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
-        disp << margin << "Module or Group info: " << buf.getString() << std::endl;
+        disp << margin << "Language: \"" << buf.getLanguageCode() << "\"" << std::endl;
+        disp << margin << "Module or Group info: \"" << buf.getString() << "\"" << std::endl;
     }
 }
 
