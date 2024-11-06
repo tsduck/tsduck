@@ -233,6 +233,62 @@ namespace ts {
         UString inputTimeStampString(const UString& none = u"none") const;
 
         //!
+        //! Maximum size in bytes of auxiliary data.
+        //! @see setAuxData()
+        //!
+        static constexpr size_t AUX_DATA_MAX_SIZE = 16;
+
+        //!
+        //! Copy bytes into the auxiliary data.
+        //! The auxiliary data are made of up to 16 bytes and are attached to the packet metadata.
+        //! There is no predefined usage for auxiliary data. In practice, they are read from the
+        //! 16-byte trailer which can be found in some modulation systems, after the TS packet.
+        //! @param data [in] Address of data to copy into the auxiliary data.
+        //! @param size [in] Size in bytes of the data to copy. Up to 16 bytes are used, the rest is ignored.
+        //!
+        void setAuxData(const void* data, size_t size);
+
+        //!
+        //! Copy bytes from the auxiliary data.
+        //! @param data [out] Address of user buffer to receive the auxiliary data.
+        //! @param max_size [in] Maximum size in bytes of the user buffer.
+        //! @return Number of copied bytes. Usually 0 or 16. Never more than 16.
+        //! @see setAuxData()
+        //!
+        size_t getAuxData(void* data, size_t max_size) const;
+
+        //!
+        //! Copy bytes from the auxiliary data and pad user buffer if necessary.
+        //! @param data [out] Address of user buffer to receive the auxiliary data.
+        //! @param max_size [in] Maximum size in bytes of the user buffer.
+        //! @param pad [in] Pad value to copy in all additional bytes in the user's buffer
+        //! if the auxiliary data are shorter than @a max_size.
+        //! @see setAuxData()
+        //!
+        void getAuxData(void* data, size_t max_size, uint8_t pad) const;
+
+        //!
+        //! Size in bytes of the auxiliary data.
+        //! @return The size in bytes of the auxiliary data.
+        //! @see setAuxData()
+        //!
+        size_t auxDataSize() const { return _aux_data_size; }
+
+        //!
+        //! Direct access to the auxiliary data.
+        //! @return Address of the auxiliary data inside this object.
+        //! @see setAuxData()
+        //!
+        const uint8_t* auxData() const { return _aux_data; }
+
+        //!
+        //! Direct access to the auxiliary data.
+        //! @return Address of the auxiliary data inside this object.
+        //! @see setAuxData()
+        //!
+        uint8_t* auxData() { return _aux_data; }
+
+        //!
         //! Copy contiguous TS packet metadata.
         //! @param [out] dest Address of the first contiguous TS packet metadata to write.
         //! @param [in] source Address of the first contiguous TS packet metadata to read.
@@ -261,6 +317,7 @@ namespace ts {
         //!
         //! Serialize the content of this instance into a byteblock.
         //! The serialized data is a fixed size block of @link SERIALIZATION_SIZE @endlink bytes.
+        //! The auxiliary data are not included in the serialized buffer.
         //! @param [out] bin Returned binary data.
         //!
         void serialize(ByteBlock& bin) const;
@@ -268,6 +325,7 @@ namespace ts {
         //!
         //! Serialize the content of this instance into a memory area.
         //! The serialized data is a fixed size block of @link SERIALIZATION_SIZE @endlink bytes.
+        //! The auxiliary data are not included in the serialized buffer.
         //! @param [out] data Address of the memory area.
         //! @param [in] size Size in bytes of the memory area.
         //! @return Size in bytes of the data, zero on error (buffer too short).
@@ -309,8 +367,10 @@ namespace ts {
         TS_PUSH_WARNING()
         TS_LLVM_NOWARNING(unused-private-field)
         unsigned int     _pad1 : 4;             // Padding to next byte.
-        unsigned int     _pad2 : 16;            // Padding to next multiple of 4 bytes.
+        unsigned int     _pad2 : 8;             // Padding to next multiple of 4 bytes -1.
         TS_POP_WARNING()
+        uint8_t          _aux_data_size;        // Number of used bytes in _aux_data.
+        uint8_t          _aux_data[AUX_DATA_MAX_SIZE]; // Auxiliary data (16 bytes).
     };
 
     //!

@@ -74,19 +74,36 @@ endif::[]
 |Name |Description
 
 |autodetect
-|Auto-detection of the file format. This is the default for input files and is usually appropriate. This will always work with TS files but may fail in rare cases with M2TS files. This value is not applicable to output files.
+|Auto-detection of the file format. This is the default for input files and is usually appropriate.
+ This will always work with TS files but may fail in rare cases with M2TS files.
+ This value is not applicable to output files.
 
 |TS
-|Standard transport stream file containing contiguous 188-byte TS packets without any encapsulation. This is the default for output files.
+|Standard transport stream file containing contiguous 188-byte TS packets without any encapsulation.
+ This is the default for output files.
 
 |RS204
-|Raw transport stream capture with Reed-Solomon outer FEC. Each standard 188-byte TS packet is followed by a 16-byte Reed-Solomon FEC. On input, these 16 bytes are ignored. On output, they are set to zero (placeholder for real FEC).
+|Raw transport stream capture with Reed-Solomon outer FEC.
+ Each standard 188-byte TS packet is followed by a 16-byte Reed-Solomon FEC (DVB modulation)
+ or 16-byte meta-information (ISDB-T modulation).
+ On input, these 16 bytes are kept in the packet metadata.
+ On output, they are rewritten if present or set to 0xFF if they were neither read from input nor set by a `tsp` plugin.
 
 |M2TS
-|Blu-ray compatible format. Also found in recording files from some DVR devices. This is the same as TS format, except that each 188-byte TS packet is preceded by a 4-byte time stamp. The 2 most significant bits are copy control indicators and are ignored. The 30 least significant bits represent a time stamp in 27 MHz unit (same unit as PCR values). Note that those time stamps wrap up every 39 seconds approximately since they use only 30 bits while full PCR values use 42 bits.
+|Blu-ray compatible format. Also found in recording files from some DVR devices.
+ This is the same as TS format, except that each 188-byte TS packet is preceded by a 4-byte time stamp.
+ The 2 most significant bits are copy control indicators and are ignored.
+ The 30 least significant bits represent a time stamp in 27 MHz unit (same unit as PCR values).
+ Note that those time stamps wrap up every 39 seconds approximately since they use only 30 bits
+ while full PCR values use 42 bits.
 
 |duck
-|This is a TSDuck proprietary format. It is similar to M2TS except that the header before each TS packet uses 14 bytes and contains all packet metada. Since this is a TSDuck proprietary format, it can be used only in pipes between instances of tsp. The only advantage of this format is to transport complete original time stamps, packet labels and other metadata between instances of tsp.
+|This is a TSDuck proprietary format.
+ It is similar to M2TS except that the header before each TS packet uses 14 bytes and contains all packet metada.
+ Since this is a TSDuck proprietary format, it can be used only in pipes between instances of tsp.
+ The only advantage of this format is to transport complete original time stamps,
+ packet labels and other metadata between instances of `tsp`.
+ Note that 16-byte trailers from `RS204` input files are lost.
 
 |===
 

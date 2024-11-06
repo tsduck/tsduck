@@ -728,6 +728,7 @@ void ts::TSFile::readStuffing(TSPacket*& buffer, TSPacketMetadata*& metadata, si
     while (count-- > 0) {
         *buffer++ = NullPacket;
         if (metadata != nullptr) {
+            metadata->reset();
             (metadata++)->setInputStuffing(true);
         }
     }

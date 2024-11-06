@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3915
+VERSION 3.39-3930
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -32,6 +32,11 @@ VERSION 3.39-3915
   * In plugin "eitinject", it is now possible to delete events from the EPG
     and remove them from EIT's before they occur. Use attribute="delete" in
     XML files to delete events instead of adding them.
+  * When reading RS204 files (TS packets with 16-byte trailers), the trailer
+    is no longer discarded. It is kept all along the plugin chain, it can be
+    manipulated by plugins and is written back if the output format is set
+    as RS204. Use "tsdump --rs204" to dump the trailer. This can be useful
+    with ISDB-T streams where the trailer contains modulation information.
   * New options in existing commands and plugins:
     - Option --except-label in all packet processing plugins.
     - Option --udp-format in "tstables" and plugin "tables" to send tables
@@ -41,6 +46,8 @@ VERSION 3.39-3915
     - Option --region-names in "tsterinfo".
     - Options --event-offset and --input-event-offset in plugin "eitinject".
     - Options --once, --synchronous, --copy, --destination in plugin "trigger".
+    - Options --abnt, --atsc, --brazil, --ignore-leap-seconds, --isdb, --japan,
+      --philippines, --rs204, --usa in "tsdump" and plugin "dump".
 
 [BUG] Bug fixes:
 

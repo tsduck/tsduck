@@ -1,0 +1,17 @@
+[ISDB.TMCC_identifier]
+Bits = 2
+0 = BS digital
+1 = reserved
+2 = Digital terrestrial TV
+3 = Digital terrestrial audio
+
+[ISDB.layer_indicator]
+Bits = 4
+   0 = NULL-TSP which is not transmitted by any layer
+   1 = TSP transmitted by hierarchical layer A
+   2 = TSP transmitted by hierarchical layer B
+   3 = TSP transmitted by hierarchical layer C
+   4 = TSP which transmits AC data but not transmitted by any layer
+ 5-7 = TSP that service providers multiplex originally organized data
+   8 = TSP which transmits the IIP but not transmitted by any layer
+9-15 = TSP that service providers multiplex originally organized data

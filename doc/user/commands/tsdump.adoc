@@ -211,4 +211,5 @@ Without `--ssm`, standard ("any-source") multicast is used and the option `--sou
 [.optdoc]
 The `--ssm` option is implicit when the classical SSM syntax `_source@address:port_` is used.
 
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;std]
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

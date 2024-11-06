@@ -306,6 +306,7 @@ namespace ts {
             bool          carry_audio = false;     //!< This PID carries audio data.
             bool          carry_video = false;     //!< This PID carries video data.
             bool          carry_t2mi = false;      //!< Carry T2-MI encasulated data.
+            bool          carry_iip = false;       //!< Carry ISDB-T Information Packets.
             bool          scrambled = false;       //!< Contains some scrambled packets.
             bool          same_stream_id = false;  //!< All PES packets have same stream_id.
             uint8_t       pes_stream_id = 0;       //!< Stream_id in PES packets on this PID.

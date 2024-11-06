@@ -51,6 +51,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"dump", ts::DumpPlugin);
 ts::DumpPlugin::DumpPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Dump transport stream packets", u"[options]")
 {
+    duck.defineArgsForStandards(*this);
     _dump.defineArgs(*this);
 
     option(u"output-file", 'o', FILENAME);
@@ -64,7 +65,7 @@ ts::DumpPlugin::DumpPlugin(TSP* tsp_) :
 
 bool ts::DumpPlugin::getOptions()
 {
-    bool ok = _dump.loadArgs(duck, *this);
+    bool ok = _dump.loadArgs(duck, *this) && duck.loadArgs(*this);
     getPathValue(_outname, u"output-file");
 
     if (_dump.log && !_outname.empty()) {
@@ -122,7 +123,7 @@ ts::ProcessorPlugin::Status ts::DumpPlugin::processPacket(TSPacket& pkt, TSPacke
     if (_dump.pids.test(pkt.getPID())) {
         if (_dump.log) {
             std::ostringstream strm;
-            pkt.display(strm, _dump.dump_flags, 0, _dump.log_size);
+            _dump.dump(duck, strm, pkt, &pkt_data);
             UString str;
             str.assignFromUTF8(strm.str());
             str.trim();
@@ -130,7 +131,7 @@ ts::ProcessorPlugin::Status ts::DumpPlugin::processPacket(TSPacket& pkt, TSPacke
         }
         else {
             (*_out) << std::endl << "* Packet " << ts::UString::Decimal(tsp->pluginPackets()) << std::endl;
-            pkt.display(*_out, _dump.dump_flags, 2, _dump.log_size);
+            _dump.dump(duck, *_out, pkt, &pkt_data);
             _add_endline = true;
         }
     }

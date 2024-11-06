@@ -23,7 +23,8 @@ ts::TSPacketMetadata::TSPacketMetadata() :
     _input_stuffing(false),
     _nullified(false),
     _pad1(0),
-    _pad2(0)
+    _pad2(0),
+    _aux_data_size(0)
 {
 }
 
@@ -35,11 +36,13 @@ ts::TSPacketMetadata::TSPacketMetadata() :
 void ts::TSPacketMetadata::reset()
 {
     _input_time = INVALID_PCR;
+    _time_source = TimeSource::UNDEFINED;
     _labels.reset();
     _flush = false;
     _bitrate_changed = false;
     _input_stuffing = false;
     _nullified = false;
+    _aux_data_size = 0;
 }
 
 
@@ -80,6 +83,31 @@ void ts::TSPacketMetadata::clearInputTimeStamp()
 ts::UString ts::TSPacketMetadata::inputTimeStampString(const UString& none) const
 {
     return _input_time == INVALID_PCR ? none : UString::Decimal(_input_time);
+}
+
+
+//----------------------------------------------------------------------------
+// Auxiliary data operations.
+//----------------------------------------------------------------------------
+
+void ts::TSPacketMetadata::setAuxData(const void* data, size_t size)
+{
+    _aux_data_size = data == nullptr ? 0 : uint8_t(std::min<size_t>(size, AUX_DATA_MAX_SIZE));
+    MemCopy(_aux_data, data, _aux_data_size);
+}
+
+size_t ts::TSPacketMetadata::getAuxData(void* data, size_t max_size) const
+{
+    const size_t size = data == nullptr ? 0 : std::min<size_t>(max_size, _aux_data_size);
+    MemCopy(data, _aux_data, size);
+    return size;
+}
+
+void ts::TSPacketMetadata::getAuxData(void* data, size_t max_size, uint8_t pad) const
+{
+    const size_t size = data == nullptr ? 0 : std::min<size_t>(max_size, _aux_data_size);
+    MemCopy(data, _aux_data, size);
+    MemSet(reinterpret_cast<uint8_t*>(data) + size, pad, max_size - size);
 }
 
 
@@ -171,5 +199,7 @@ void ts::TSPacketMetadata::DisplayLayout(std::ostream& out, const char* prefix)
         << prefix << "sizeof(var): " << sizeof(var) << " bytes" << std::endl
         << prefix << "_time_source: offset: " << offsetof(TSPacketMetadata, _time_source) << " bytes, size: " << sizeof(var._time_source) << " bytes" << std::endl
         << prefix << "_labels: offset: " << offsetof(TSPacketMetadata, _labels) << " bytes, size: " << sizeof(var._labels) << " bytes" << std::endl
-        << prefix << "_input_time: offset: " << offsetof(TSPacketMetadata, _input_time) << " bytes, size: " << sizeof(var._input_time) << " bytes" << std::endl;
+        << prefix << "_input_time: offset: " << offsetof(TSPacketMetadata, _input_time) << " bytes, size: " << sizeof(var._input_time) << " bytes" << std::endl
+        << prefix << "_aux_data_size: offset: " << offsetof(TSPacketMetadata, _aux_data_size) << " bytes, size: " << sizeof(var._aux_data_size) << " bytes" << std::endl
+        << prefix << "_aux_data: offset: " << offsetof(TSPacketMetadata, _aux_data) << " bytes, size: " << sizeof(var._aux_data) << " bytes" << std::endl;
 }

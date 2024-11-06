@@ -52,6 +52,7 @@ namespace {
 Options::Options(int argc, char *argv[]) :
     Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]")
 {
+    duck.defineArgsForStandards(*this);
     udp.defineArgs(*this, false, false);
     dump.defineArgs(*this);
     pager.defineArgs(*this);
@@ -81,6 +82,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    duck.loadArgs(*this);
     udp.loadArgs(duck, *this);
     dump.loadArgs(duck, *this);
     pager.loadArgs(duck, *this);
@@ -136,13 +138,15 @@ namespace {
         }
 
         // Read all packets in the file.
+        // Stop on output error (typically 'quit' in the pager).
         ts::TSPacket pkt;
-        for (ts::PacketCounter packet_index = 0; packet_index < opt.max_packets && file.readPackets(&pkt, nullptr, 1, opt) > 0; packet_index++) {
+        ts::TSPacketMetadata mdata;
+        for (ts::PacketCounter packet_index = 0; out && packet_index < opt.max_packets && file.readPackets(&pkt, &mdata, 1, opt) > 0; packet_index++) {
             if (opt.dump.pids.test(pkt.getPID())) {
                 if (!opt.dump.log) {
                     out << std::endl << "* Packet " << ts::UString::Decimal(packet_index) << std::endl;
                 }
-                pkt.display(out, opt.dump.dump_flags, opt.dump.log ? 0 : 2, opt.dump.log_size);
+                opt.dump.dump(opt.duck, out, pkt, &mdata);
             }
         }
         file.close(opt);
@@ -182,11 +186,12 @@ namespace {
         }
 
         // Raw dump of file
+        // Stop on output error (typically 'quit' in the pager).
         ts::ByteBlock buffer(opt.raw_bpl);
         size_t offset = 0;
         size_t size = 0;
         int c = EOF;
-        while (*in) {
+        while (*in && out) {
             for (size = 0; size < buffer.size() && (c = in->get()) != EOF; size++) {
                 buffer[size] = uint8_t(c);
             }
@@ -212,6 +217,7 @@ namespace {
         }
 
         // Raw dump of all received datagrams.
+        // Stop on output error (typically 'quit' in the pager).
         ts::ByteBlock buffer(ts::IP_MAX_PACKET_SIZE);
         size_t size = 0;
         ts::IPv4SocketAddress sender;
@@ -219,7 +225,7 @@ namespace {
         const bool headers = opt.dump.dump_flags & ts::TSPacket::DUMP_TS_HEADER;
 
         for (ts::PacketCounter packet_index = 0;
-             packet_index < opt.max_packets && sock.receive(buffer.data(), buffer.size(), size, sender, destination, nullptr, opt);
+             out && packet_index < opt.max_packets && sock.receive(buffer.data(), buffer.size(), size, sender, destination, nullptr, opt);
              packet_index++)
         {
             if (headers) {

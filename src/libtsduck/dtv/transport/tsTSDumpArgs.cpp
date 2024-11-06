@@ -8,6 +8,9 @@
 
 #include "tsTSDumpArgs.h"
 #include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
+#include "tsDuckContext.h"
+#include "tsISDB.h"
 #include "tsArgs.h"
 
 
@@ -54,6 +57,9 @@ void ts::TSDumpArgs::defineArgs(Args& args)
               u"Dump only packets with these PID values. "
               u"Several --pid options may be specified. "
               u"By default, all packets are displayed.");
+
+    args.option(u"rs204");
+    args.help(u"rs204", u"Dump the 16-byte trailer as found in RS204 files.");
 }
 
 
@@ -64,6 +70,7 @@ void ts::TSDumpArgs::defineArgs(Args& args)
 
 bool ts::TSDumpArgs::loadArgs(DuckContext& duck, Args& args)
 {
+    rs204 = args.present(u"rs204");
     log = args.present(u"log");
     args.getIntValue(log_size, u"log-size", PKT_SIZE);
     args.getIntValues(pids, u"pid", true);
@@ -103,4 +110,24 @@ bool ts::TSDumpArgs::loadArgs(DuckContext& duck, Args& args)
         dump_flags |= TSPacket::DUMP_PAYLOAD;
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// This method displays the content of a transport packet.
+//----------------------------------------------------------------------------
+
+void ts::TSDumpArgs::dump(DuckContext& duck, std::ostream& strm, const TSPacket& pkt, const TSPacketMetadata* mdata) const
+{
+    const size_t indent = log ? 0 : 2;
+    pkt.display(strm, dump_flags, indent, log_size);
+    if (!log && rs204 && mdata != nullptr && mdata->auxDataSize() > 0) {
+        // With --rs204, dump the packet trailer when there is one.
+        if (bool(duck.standards() & Standards::ISDB)) {
+            strm << UString::Format(u"%*s---- ISDB-T information ----", indent, u"", mdata->auxDataSize()) << std::endl;
+            ISDBDisplayTSPDummyByte(duck, strm, mdata->auxData(), mdata->auxDataSize(), UString(indent, ' '));
+        }
+        strm << UString::Format(u"%*s---- Packet trailer (%d bytes) ----", indent, u"", mdata->auxDataSize()) << std::endl
+             << UString::Dump(mdata->auxData(), mdata->auxDataSize(), dump_flags & 0x0000FFFF, indent);
+    }
 }

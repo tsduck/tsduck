@@ -637,7 +637,7 @@ void ts::TSAnalyzer::analyzeNIT(PID pid, const NIT& nit)
     PIDContextPtr ps(getPID(pid));
 
     // Document unreferenced NIT PID's.
-    if (ps->description.empty()) {
+    if (ps->description.empty() || ps->description == UNREFERENCED) {
         ps->description = u"NIT";
     }
 
@@ -1501,6 +1501,15 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
         }
         ps->cur_ts_sc = pkt.getScrambling();
         ps->cur_ts_sc_pkt = packet_index;
+    }
+
+    // PID_IIP (0x1FF0) is a global PID with ISDB.
+    if (ps->pid == PID_IIP && !ps->carry_iip && bool(_duck.standards() & Standards::ISDB) && ps->services.empty()) {
+        // First time we can consider this PID as IIP. Can be first packet in the PID and we knwow that we use ISDB
+        // or not first packet in the PID but we didn(t know yet the TS was ISDB.
+        ps->carry_iip = true;
+        ps->referenced = true;
+        ps->description = u"ISDB IIP";
     }
 
     // Process discontinuities.

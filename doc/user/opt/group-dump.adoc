@@ -92,3 +92,15 @@ Several `--pid` options may be specified.
 
 [.optdoc]
 By default, all packets are displayed.
+
+[.opt]
+*--rs204*
+
+[.optdoc]
+Dump the 16-byte trailer as found in RS204 files.
+
+[.optdoc]
+In the case of an ISDB-T stream with 204-byte packets, if you want to analyze the
+ISDB Information in the packet trailer, specify option `--isdb`.
+Without this option, the stream is considered as standard and the trailer is just
+a 16-byte Reed-Solomon FEC.

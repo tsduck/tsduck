@@ -132,14 +132,6 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             }
         }
 
-        // Now we have read the first packet.
-        read_packets++;
-        buffer++;
-        max_packets--;
-        if (metadata != nullptr) {
-            *metadata++ = mdata;
-        }
-
         // Check the presence of a 16-byte trailer when the detected format is TS.
         if (_format == TSPacketFormat::TS) {
             // Read enough data in a trailer buffer. If there is no trailer, it will be used as start of next packet.
@@ -149,10 +141,20 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
             if (_trail_size == RS_SIZE + 1 && _trail[0] != SYNC_BYTE && _trail[RS_SIZE] == SYNC_BYTE) {
                 // Found a Reed-Solomon trailer.
                 _format = TSPacketFormat::RS204;
+                // Copy it as auxiliary data in the packet metadata.
+                mdata.setAuxData(_trail, _trail_size);
                 // Remove trailer, keep start of second packet.
                 _trail[0] = SYNC_BYTE;
                 _trail_size = 1;
             }
+        }
+
+        // Now we have read the first packet.
+        read_packets++;
+        buffer++;
+        max_packets--;
+        if (metadata != nullptr) {
+            *metadata++ = mdata;
         }
 
         report.debug(u"detected TS file format %s", packetFormatString());
@@ -197,15 +199,17 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
                 read_size += _trail_size;
                 _trail_size = 0;
                 if (success && read_size == PKT_SIZE) {
+                    // Read trailer.
+                    success = _reader->readStreamComplete(_trail, RS_SIZE, read_size, report) && read_size == RS_SIZE;
+                    // Move to next packet.
                     read_packets++;
                     buffer++;
                     max_packets--;
                     if (metadata != nullptr) {
                         metadata->reset();
+                        metadata->setAuxData(_trail, read_size);
                         metadata++;
                     }
-                    // Read trailer in unused buffer.
-                    success = _reader->readStreamComplete(_trail, RS_SIZE, read_size, report) && read_size == RS_SIZE;
                 }
                 break;
             }
@@ -251,7 +255,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket *buffer, TSPacketMetadata *metad
 // Write TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::TSPacketStream::writePackets(const TSPacket *buffer, const TSPacketMetadata *metadata, size_t packet_count, Report &report)
+bool ts::TSPacketStream::writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count, Report& report)
 {
     if (_writer == nullptr) {
         report.error(u"internal error, cannot write TS packets to this stream");
@@ -273,11 +277,20 @@ bool ts::TSPacketStream::writePackets(const TSPacket *buffer, const TSPacketMeta
         }
         case TSPacketFormat::RS204: {
             // Write packet + trailer, packet by packet.
-            static const uint8_t trailer[RS_SIZE] = {0x00, };
+            uint8_t trailer[RS_SIZE];
+            bool trailer_ff = false;
             size_t written_size = 0;
             for (size_t i = 0; success && i < packet_count; ++i) {
+                if (metadata != nullptr) {
+                    metadata[i].getAuxData(trailer, sizeof(trailer), 0xFF);
+                    trailer_ff = false;
+                }
+                else if (!trailer_ff) {
+                    MemSet(trailer, 0xFF, sizeof(trailer));
+                    trailer_ff = true;
+                }
                 success = _writer->writeStream(&buffer[i], PKT_SIZE, written_size, report) &&
-                          _writer->writeStream(trailer, RS_SIZE, written_size, report);
+                          _writer->writeStream(trailer, sizeof(trailer), written_size, report);
                 if (success) {
                     _total_write++;
                 }

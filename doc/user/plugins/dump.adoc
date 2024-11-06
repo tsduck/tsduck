@@ -37,4 +37,5 @@ By default, use the standard output.
 The options `--log` and `--output-file` are mutually exclusive.
 
 include::{docdir}/opt/group-dump.adoc[tags=!*]
+include::{docdir}/opt/group-duck-context.adoc[tags=!*;std]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
