@@ -203,18 +203,119 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
     }
 
     if (message_id == 0x1006) {  //DSI
-        disp << margin << UString::Format(u"DownloadServerInitiate (DSI):") << std::endl;
         disp.displayPrivateData(u"Server id", buf, SERVER_ID_SIZE, margin);
 
         // CompatibilityDescriptor
         buf.skipBytes(2);
 
-        uint16_t private_data_length = buf.getUInt16();
+        /*uint16_t private_data_length = buf.getUInt16();*/
+        buf.skipBytes(2);
+        uint32_t  type_id_length = buf.getUInt32();
+        ByteBlock type_id {};
 
-        disp.displayPrivateData(u"Private data", buf, private_data_length, margin);
+        for (size_t i = 0; i < type_id_length; i++) {
+            type_id.appendUInt8(buf.getUInt8());
+        }
+
+        disp.displayVector(u"Type id: ", type_id, margin);
+
+        uint32_t tagged_profiles_count = buf.getUInt32();
+
+        for (size_t i = 0; i < tagged_profiles_count; i++) {
+
+            uint32_t profile_id_tag = buf.getUInt32();
+            uint32_t profile_data_length = buf.getUInt32();
+            uint8_t  profile_data_byte_order = buf.getUInt8();
+
+            disp << margin << "ProfileId Tag: " << DataName(MY_XML_NAME, u"tag", profile_id_tag, NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << UString::Format(u"Profile Data Byte Orded: %n", profile_data_byte_order) << std::endl;
+
+            if (profile_id_tag == 0x49534F06) {  // TAG_BIOP (BIOP Profile Body)
+                uint8_t lite_component_count = buf.getUInt8();
+                disp << margin << UString::Format(u"Lite Component Count: %n", lite_component_count) << std::endl;
+
+                for (size_t j = 0; j < lite_component_count; j++) {
+
+                    uint32_t componentid_tag = buf.getUInt32();
+                    uint8_t  component_data_length = buf.getUInt8();
+
+                    disp << margin << "ComponentId Tag: " << DataName(MY_XML_NAME, u"tag", componentid_tag, NamesFlags::HEXA_FIRST) << std::endl;
+
+                    switch (componentid_tag) {
+                        case 0x49534F50: {  // TAG_ObjectLocation
+
+                            uint32_t  carousel_id = buf.getUInt32();
+                            uint16_t  module_id = buf.getUInt16();
+                            uint8_t   version_major = buf.getUInt8();
+                            uint8_t   version_minor = buf.getUInt8();
+                            uint8_t   object_key_length = buf.getUInt8();
+                            ByteBlock object_key_data {};
+
+                            for (size_t k = 0; k < object_key_length; k++) {
+                                object_key_data.appendUInt8(buf.getUInt8());
+                            }
+
+                            disp << margin << UString::Format(u"Carousel Id: %n", carousel_id) << std::endl;
+                            disp << margin << UString::Format(u"Module Id: %n", module_id) << std::endl;
+                            disp << margin << UString::Format(u"Version Major: %n", version_major) << std::endl;
+                            disp << margin << UString::Format(u"Version Minor: %n", version_minor) << std::endl;
+
+                            disp.displayVector(u"Object Key Data: ", object_key_data, margin);
+
+                            break;
+                        }
+
+                        case 0x49534F40: {  // TAG_ConnBinder
+
+                            uint8_t taps_count = buf.getUInt8();
+
+                            for (size_t k = 0; k < taps_count; k++) {
+
+                                uint16_t id = buf.getUInt16();
+                                uint16_t use = buf.getUInt16();
+                                uint16_t association_tag = buf.getUInt16();
+
+                                // selector_length
+                                buf.skipBytes(1);
+
+                                uint16_t selector_type = buf.getUInt16();
+                                uint32_t transaction_id = buf.getUInt32();
+                                uint32_t timeout = buf.getUInt32();
+
+                                disp << margin << UString::Format(u"Tap id: %n", id) << std::endl;
+                                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEXA_FIRST) << std::endl;
+                                disp << margin << UString::Format(u"Tap association tag: %n", association_tag) << std::endl;
+                                disp << margin << UString::Format(u"Tap selector type: %n", selector_type) << std::endl;
+                                disp << margin << UString::Format(u"Tap transaction id: %n", transaction_id) << std::endl;
+                                disp << margin << UString::Format(u"Tap timeout: %n", timeout) << std::endl;
+                            }
+                            break;
+                        }
+
+                        default: {
+                            disp.displayPrivateData(u"Lite Component Data", buf, component_data_length, margin);
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (profile_id_tag == 0x49534F05) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
+                disp.displayPrivateData(u"Lite Options Profile Body Data", buf, profile_data_length - 1, margin);
+            }
+            else {
+                disp.displayPrivateData(u"Unknown Profile Data", buf, profile_data_length - 1, margin);
+            }
+        }
+
+        uint8_t  download_taps_count = buf.getUInt8();
+        uint8_t  service_context_list_count = buf.getUInt8();
+        uint16_t user_info_length = buf.getUInt16();
+
+        disp << margin << UString::Format(u"Download taps count: %n", download_taps_count) << std::endl;
+        disp << margin << UString::Format(u"Service context list count: %n", service_context_list_count) << std::endl;
+        disp << margin << UString::Format(u"User info length: %n", user_info_length) << std::endl;
     }
     else if (message_id == 0x1002) {  //DII
-        disp << margin << UString::Format(u"DownloadInfoIndication (DII):") << std::endl;
         disp << margin << UString::Format(u"Download id: %n", buf.getUInt32()) << std::endl;
         disp << margin << UString::Format(u"Block size: %n", buf.getUInt16()) << std::endl;
 
@@ -227,12 +328,51 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
         uint16_t number_of_modules = buf.getUInt16();
 
         for (size_t i = 0; i < number_of_modules; i++) {
-            disp << margin << UString::Format(u"Module id: %n", buf.getUInt16()) << std::endl;
-            disp << margin << UString::Format(u"Module size: %n", buf.getUInt32()) << std::endl;
-            disp << margin << UString::Format(u"Module version: %n", buf.getUInt8()) << std::endl;
 
-            uint8_t module_info_length = buf.getUInt8();
-            disp.displayPrivateData(u"Module info", buf, module_info_length, margin);
+            uint16_t module_id = buf.getUInt16();
+            uint32_t module_size = buf.getUInt32();
+            uint8_t  module_version = buf.getUInt8();
+
+            disp << margin << UString::Format(u"Module id: %n", module_id) << std::endl;
+            disp << margin << UString::Format(u"Module size: %n", module_size) << std::endl;
+            disp << margin << UString::Format(u"Module version: %n", module_version) << std::endl;
+
+            /*uint8_t module_info_length = buf.getUInt8();*/
+            buf.skipBytes(1);
+
+            uint32_t module_timeout = buf.getUInt32();
+            uint32_t block_timeout = buf.getUInt32();
+            uint32_t min_block_time = buf.getUInt32();
+            uint8_t  taps_count = buf.getUInt8();
+
+            disp << margin << UString::Format(u"Module timeout: %n", module_timeout) << std::endl;
+            disp << margin << UString::Format(u"Block timeout: %n", block_timeout) << std::endl;
+            disp << margin << UString::Format(u"Min block time: %n", min_block_time) << std::endl;
+            disp << margin << UString::Format(u"Taps count: %n", taps_count) << std::endl;
+
+            for (size_t k = 0; k < taps_count; k++) {
+
+                uint16_t  id = buf.getUInt16();
+                uint16_t  use = buf.getUInt16();
+                uint16_t  association_tag = buf.getUInt16();
+                uint8_t   selector_length = buf.getUInt8();
+                ByteBlock selector_type {};
+
+                for (size_t l = 0; l < selector_length; l++) {
+                    selector_type.appendUInt8(buf.getUInt8());
+                }
+
+                disp << margin << UString::Format(u"Tap id: %n", id) << std::endl;
+                disp << margin << "Tap use: " << DataName(MY_XML_NAME, u"tap_use", use, NamesFlags::HEXA_FIRST) << std::endl;
+                disp << margin << UString::Format(u"Tap association tag: %n", association_tag) << std::endl;
+                if (selector_length > 0) {
+                    disp.displayVector(u"Selector type: ", selector_type, margin);
+                }
+            }
+
+            uint8_t user_info_length = buf.getUInt8();
+
+            disp.displayDescriptorList(section, buf, margin, u"Descriptor List:", u"None", user_info_length);
         }
 
         uint16_t private_data_length = buf.getUInt16();
