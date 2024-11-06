@@ -17,6 +17,7 @@
 [cols="<1,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
 |===
 |ABNT |_Associação Brasileira de Normas Técnicas_ (Brazilian standardization committee)
+|AC |Auxiliary Channel (ISDB)
 |AC-3 |Audio Compression Standard 3 (Dolby)
 |AES |Advanced Encryption Standard
 |AIT |Application Information Table (DVB)
@@ -35,6 +36,7 @@
 |BER |Bit Error Ratio
 |BIT |Broadcaster Information Table (ISDB)
 |BPSK |Binary Phase Shift Keying
+|BTS |Broadcast Transport Stream (ISDB)
 |CA |Conditional Access
 |CAM |Conditional Access Module
 |CAS |Conditional Access System
@@ -97,6 +99,7 @@
 |IEEE |Institute of Electrical and Electronics Engineers
 |IETF |Internet Engineering Task Force
 |IIF |IP-TV Interoperability Forum
+|IIP |ISDB-T Information Packet
 |INT |IP/MAC Notification Table (DVB)
 |IP |Internet Protocol
 |IPTV |Internet Protocol Television
@@ -158,11 +161,13 @@
 |T2-MI |DVB-T2 Modulator Interface
 |TDT |Time and Date Table (DVB)
 |TID |Table Identifier
+|TMCC |Transmission and Multiplexing Configuration Control (ISDB)
 |TNT |_Télévision Numérique Terrestre_ (French DTTV network)
 |TOT |Time Offset Table (DVB)
 |TPS |Transmission Parameter Signalling
 |TS |Transport Stream
 |TSDT |Transport Stream Description Table (MPEG)
+|TSP |Transport Stream Packet (ISDB)
 |TVCT |Terrestrial Virtual Channel Table (ATSC)
 |UDP |User Datagram Protocol
 |UNT |Update Notification Table (DVB)
@@ -194,6 +199,8 @@
   "Data Coding and Transmission Specification for Digital Broadcasting".
 * [[[ARIB-B25]]] ARIB STD-B25, V5.0, March 2007:
   "Conditional Access System Specifications for Digital Broadcasting".
+* [[[ARIB-B31]]] ARIB STD-B31, V2.2, March 2014:
+  "Transmission System for Digital Terrestrial Television Broadcasting".
 * [[[ATSC-A52]]] ATSC A52, January 2018,
   "Digital Audio Compression (AC-3, E-AC-3)".
 * [[[ATSC-A65]]] ATSC A65/2013, August 2013:

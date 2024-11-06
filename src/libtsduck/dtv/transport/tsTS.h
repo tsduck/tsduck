@@ -357,6 +357,7 @@ namespace ts {
         PID_CDT        = 0x0029, //!< PID for ISDB Common Data Table
         PID_AMT        = 0x002E, //!< PID for ISDB Address Map Table
         PID_ISDB_LAST  = 0x002F, //!< Last reserved PID for ISDB
+        PID_IIP        = 0x1FF0, //!< PID for ISDB-T Information Packet (IIP)
 
         // Valid in ATSC context:
 
