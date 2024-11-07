@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3933
+VERSION 3.39-3934
+
+[NEW] New commands and plugins:
+
+  * Added plugin "trace": Trace packets with a custom message.
 
 [IMP] Improvements on existing commands and plugins:
 
