@@ -403,9 +403,9 @@ namespace ts {
             PacketCounter      pusi_count = 0;                        // Number of packets with PUSI.
             PacketCounter      first_pusi = INVALID_PACKET_COUNTER;   // Number of packets before first PUSI.
             PacketCounter      last_pusi = INVALID_PACKET_COUNTER;    // Number of packets before last PUSI.
-            PacketCounter      intra_count = 0;                       // Number of packets with PUSI.
-            PacketCounter      first_intra = INVALID_PACKET_COUNTER;  // Number of packets before first PUSI.
-            PacketCounter      last_intra = INVALID_PACKET_COUNTER;   // Number of packets before last PUSI.
+            PacketCounter      intra_count = 0;                       // Number of packets with start of intra-frame.
+            PacketCounter      first_intra = INVALID_PACKET_COUNTER;  // Number of packets before first start of intra-frame.
+            PacketCounter      last_intra = INVALID_PACKET_COUNTER;   // Number of packets before last start of intra-frame.
             std::set<uint16_t> services {};                           // List of services owning this PID.
 
             // Constructor.

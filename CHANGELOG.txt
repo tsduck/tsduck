@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3931
+VERSION 3.39-3933
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -49,6 +49,7 @@ VERSION 3.39-3931
     - Options --abnt, --atsc, --brazil, --ignore-leap-seconds, --isdb, --japan,
       --philippines, --rs204, --usa in "tsdump" and plugin "dump".
     - Option --isdb_layer in plugin "filter".
+    - Option --intra-frame in plugin "history".
 
 [BUG] Bug fixes:
 

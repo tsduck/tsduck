@@ -100,7 +100,6 @@ namespace ts {
 
         // Plugin private data
         emmgmux::Protocol  _protocol {};                    // EMMG/PDG <=> MUX protocol instance
-        PacketCounter      _pkt_current = 0;                // Current TS packet index
         PacketCounter      _pkt_next_data = 0;              // Next data insertion point
         PID                _data_pid = PID_NULL;            // PID for data (constant after start)
         ContinuityAnalyzer _cc_fixer {AllPIDs, this};       // To fix continuity counters in injected PID
@@ -286,7 +285,6 @@ bool ts::DataInjectPlugin::start()
     // TS processing state
     _cc_fixer.reset();
     _cc_fixer.setGenerator(true);
-    _pkt_current = 0;
     _pkt_next_data = 0;
 
     // Start the internal threads.
@@ -341,9 +339,6 @@ bool ts::DataInjectPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // Count packets
-    _pkt_current++;
-
     // Abort if data PID is already present in TS
     const PID pid = pkt.getPID();
     if (pid == _data_pid) {
@@ -357,12 +352,12 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
         // Update data PID bitrate
         if (_req_bitrate_changed) {
             // Reinitialize insertion point when bitrate changes
-            _pkt_next_data = _pkt_current;
+            _pkt_next_data = tsp->pluginPackets();
             _req_bitrate_changed = false;
         }
 
         // Try to insert data
-        if (_unregulated || _pkt_next_data <= _pkt_current) {
+        if (_unregulated || _pkt_next_data <= tsp->pluginPackets()) {
             // Time to insert data packet, if any is available immediately.
             std::lock_guard<std::mutex> lock(_mutex);
 
