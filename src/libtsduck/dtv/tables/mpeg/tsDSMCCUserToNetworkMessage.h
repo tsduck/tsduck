@@ -34,22 +34,51 @@ namespace ts {
         ByteBlock               server_id {};         //!< Conveys the data of the block.
         ByteBlock               private_data {};      //!< Private data.
 
-        // DownloadInfoIndication
-        class TSDUCKDLL Module {
+        //  ******************************
+        //  *** DownloadInfoIndication ***
+        //  ******************************
+        class TSDUCKDLL Tap {
         public:
-            Module() = default;  //!< Default constructor.
-            uint16_t  module_id = 0;
-            uint32_t  module_size = 0;
-            uint8_t   module_version = 0;
-            ByteBlock module_info {};
+            Tap() = default;       //!< Default constructor.
+            uint16_t id = 0x0000;  //!< Tap Id
+            uint16_t use = 0x0016;
+            uint16_t association_tag = 0x0000;
+            uint16_t selector_type = 0x0001;
+            uint32_t transaction_id = 0;
+            uint32_t timeout = 0;
         };
 
-        uint32_t download_id = 0;
-        uint16_t block_size = 0;
+        /*class TSDUCKDLL BIOPModuleInfo: public EntryWithDescriptors {*/
+        /**/
+        /*public:*/
+        /*    //!*/
+        /*    //! Basic constructor.*/
+        /*    //! @param [in] table Parent table. A descriptor list is always attached to a table.*/
+        /*    //!*/
+        /*    explicit BIOPModuleInfo(const AbstractTable* table);*/
+        /*};*/
 
-        std::list<Module> modules {};  //!< Description of all transport streams.
+        class TSDUCKDLL Module: public EntryWithDescriptors {
+            TS_NO_DEFAULT_CONSTRUCTORS(Module);
+            TS_DEFAULT_ASSIGMENTS(Module);
 
-        ByteBlock dii_private_data {};  //!< Private data.
+        public:
+            uint16_t       module_id = 0;
+            uint32_t       module_size = 0;
+            uint8_t        module_version = 0;
+            uint32_t       module_timeout = 0;
+            uint32_t       block_timeout = 0;
+            uint32_t       min_block_time = 0;
+            std::list<Tap> taps {};
+
+            explicit Module(const AbstractTable* table);
+        };
+
+        using ModuleList = EntryWithDescriptorsList<Module>;
+
+        uint32_t   download_id = 0;
+        uint16_t   block_size = 0;
+        ModuleList modules;
 
         //!
         //! Default constructor.

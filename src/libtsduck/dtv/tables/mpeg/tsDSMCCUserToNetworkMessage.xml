@@ -27,14 +27,18 @@
         <module
           module_id="uint16, required"
           module_size="uint32, required"
-          module_version="uint8, required">
-          <module_info>
-            Hexadecimal content
-          </module_info>
+          module_version="uint8, required"
+          module_timeout="uint32, required"
+          block_timeout="uint32, required"
+          min_block_time="uint32, required">
+          <!-- One per tap -->
+          <tap
+            id="uint16, required"
+            use="uint16, required"
+            association_tag="uint16, required"
+            selector_type="uint16, required"/>
+          <_any in="_descriptors"/>
         </module>
-        <dii_private_data>
-          Hexadecimal content
-        </dii_private_data>
       </DII>
     </DSMCC_user_to_network_message>
 

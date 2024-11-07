@@ -27,7 +27,8 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 //----------------------------------------------------------------------------
 
 ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(uint8_t vers, bool cur) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur)
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur),
+    modules(this)
 {
 }
 
@@ -36,6 +37,12 @@ ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(DuckContext& duck, cons
 {
     deserialize(duck, table);
 }
+
+ts::DSMCCUserToNetworkMessage::Module::Module(const AbstractTable* table) :
+    EntryWithDescriptors(table)
+{
+}
+
 
 //----------------------------------------------------------------------------
 // Deserialization
@@ -56,7 +63,6 @@ void ts::DSMCCUserToNetworkMessage::clearContent()
     download_id = 0;
     block_size = 0;
     modules.clear();
-    dii_private_data.clear();
 }
 
 uint16_t ts::DSMCCUserToNetworkMessage::tableIdExtension() const
@@ -112,20 +118,43 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         const uint16_t number_of_modules = buf.getUInt16();
 
         for (size_t i = 0; i < number_of_modules; i++) {
-            Module module;
+            Module& module(modules.newEntry());
+
             module.module_id = buf.getUInt16();
             module.module_size = buf.getUInt32();
             module.module_version = buf.getUInt8();
 
-            const uint8_t module_info_length = buf.getUInt8();
+            // moduleInfoLength
+            buf.skipBytes(1);
 
-            buf.getBytes(module.module_info, module_info_length);
-            modules.push_back(module);
+            module.module_timeout = buf.getUInt32();
+            module.block_timeout = buf.getUInt32();
+            module.min_block_time = buf.getUInt32();
+
+            const uint8_t taps_count = buf.getUInt8();
+
+            /*buf.skipBytes(taps_count * 7);  // reserved*/
+
+            for (size_t j = 0; j < taps_count; j++) {
+                Tap tap;
+
+                tap.id = buf.getUInt16();
+                tap.use = buf.getUInt16();
+                tap.association_tag = buf.getUInt16();
+
+                buf.skipBytes(1);  // selector_length
+
+                module.taps.push_back(tap);
+            }
+
+            uint8_t user_info_length = buf.getUInt8();
+            /*buf.skipBytes(user_info_length);  // user_info*/
+            buf.getDescriptorList(module.descs, user_info_length);
         }
 
-        const uint16_t private_data_length = buf.getUInt16();
-
-        buf.getBytes(private_data, private_data_length);
+        /*buf.skipBytes(2);  // private_data_length*/
+        uint16_t private_data_length = buf.getUInt16();
+        buf.skipBytes(private_data_length);
     }
     else {
         buf.setUserError();
@@ -155,14 +184,25 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
         buf.putUInt16(block_size);
         buf.putUInt16(modules.size());
 
-        for (const auto& module : modules) {
+        for (auto it_module = modules.begin(); !buf.error() && it_module != modules.end();) {
+            const Module& module(it_module->second);
+
             buf.putUInt16(module.module_id);
             buf.putUInt32(module.module_size);
             buf.putUInt8(module.module_version);
-            buf.putBytes(module.module_info);
-        }
 
-        buf.putBytes(dii_private_data);
+            buf.putUInt32(module.module_timeout);
+            buf.putUInt32(module.block_timeout);
+            buf.putUInt32(module.min_block_time);
+
+            for (const auto& tap : module.taps) {
+                buf.putUInt16(tap.id);
+                buf.putUInt16(tap.use);
+                buf.putUInt16(tap.association_tag);
+                buf.putUInt8(0);  // selector_length
+            }
+            buf.putDescriptorList(module.descs);
+        }
     }
 }
 
@@ -401,20 +441,30 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
         dsi->addHexaTextChild(u"private_data", private_data, true);
     }
     else if (message_id == 0x1002) {
+
         xml::Element* dii = root->addElement(u"DII");
         dii->setIntAttribute(u"download_id", download_id, true);
         dii->setIntAttribute(u"block_size", block_size, true);
-        dii->setIntAttribute(u"number_of_modules", modules.size(), true);
+        dii->setIntAttribute(u"number_of_modules", modules.size(), false);
 
-        for (const auto& module : modules) {
+        for (const auto& it : modules) {
             xml::Element* mod = dii->addElement(u"module");
-            mod->setIntAttribute(u"module_id", module.module_id, true);
-            mod->setIntAttribute(u"module_size", module.module_size, true);
-            mod->setIntAttribute(u"module_version", module.module_version, true);
-            mod->addHexaTextChild(u"module_info", module.module_info, true);
-        }
+            mod->setIntAttribute(u"module_id", it.second.module_id, true);
+            mod->setIntAttribute(u"module_size", it.second.module_size, true);
+            mod->setIntAttribute(u"module_version", it.second.module_version, true);
+            mod->setIntAttribute(u"module_timeout", it.second.module_timeout, true);
+            mod->setIntAttribute(u"block_timeout", it.second.block_timeout, true);
+            mod->setIntAttribute(u"min_block_time", it.second.min_block_time, true);
 
-        dii->addHexaTextChild(u"dii_private_data", private_data, true);
+            for (const auto& tap : it.second.taps) {
+                xml::Element* t = mod->addElement(u"tap");
+                t->setIntAttribute(u"id", tap.id, true);
+                t->setIntAttribute(u"use", tap.use, true);
+                t->setIntAttribute(u"association_tag", tap.association_tag, true);
+                t->setIntAttribute(u"selector_type", tap.selector_type, true);
+            }
+            it.second.descs.toXML(duck, mod);
+        }
     }
 }
 
@@ -435,23 +485,38 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
              element->getHexaTextChild(private_data, u"private_data");
     }
     else if (message_id == 0x1002) {
-        ok = element->getIntAttribute(download_id, u"download_id", true) &&
-             element->getIntAttribute(block_size, u"block_size", true);
-
         xml::ElementVector children;
-        ok = element->getChildren(children, u"module");
 
-        for (size_t index = 0; ok && index < children.size(); ++index) {
-            Module module;
-            ok = children[index]->getIntAttribute(module.module_id, u"module_id", true) &&
-                 children[index]->getIntAttribute(module.module_size, u"module_size", true) &&
-                 children[index]->getIntAttribute(module.module_version, u"module_version", true) &&
-                 children[index]->getHexaTextChild(module.module_info, u"module_info");
-            if (ok) {
-                modules.push_back(module);
+        ok = element->getIntAttribute(download_id, u"download_id", true) &&
+             element->getIntAttribute(block_size, u"block_size", true) &&
+             element->getChildren(children, u"module");
+
+        for (size_t it = 0; ok && it < children.size(); ++it) {
+            Module& module(modules.newEntry());
+
+            xml::ElementVector children2;
+
+            ok = children[it]->getIntAttribute(module.module_id, u"module_id", true) &&
+                 children[it]->getIntAttribute(module.module_size, u"module_size", true) &&
+                 children[it]->getIntAttribute(module.module_version, u"module_version", true) &&
+                 children[it]->getIntAttribute(module.module_timeout, u"module_timeout", true) &&
+                 children[it]->getIntAttribute(module.block_timeout, u"block_timeout", true) &&
+                 children[it]->getIntAttribute(module.min_block_time, u"min_block_time", true) &&
+                 children[it]->getChildren(children2, u"tap");
+
+
+            for (size_t it2 = 0; ok && it2 < children2.size(); ++it2) {
+                Tap tap;
+
+                ok = children2[it2]->getIntAttribute(tap.id, u"id", true) &&
+                     children2[it2]->getIntAttribute(tap.use, u"use", true) &&
+                     children2[it2]->getIntAttribute(tap.association_tag, u"association_tag", true) &&
+                     children2[it2]->getIntAttribute(tap.selector_type, u"selector_type", true);
+
+                module.taps.push_back(tap);
             }
+            ok = module.descs.fromXML(duck, children[it]);
         }
-        ok = element->getHexaTextChild(private_data, u"dii_private_data");
     }
 
     return ok;
