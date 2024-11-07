@@ -29,14 +29,6 @@ namespace ts {
         uint16_t message_id = 0;                 //!< Indicates type of message which is being passed.
         uint32_t transaction_id = 0;             //!< Used for session integrity and error processing.
 
-        // DownloadServerInitiate
-        static constexpr size_t SERVER_ID_SIZE = 20;  //!< Fixed size in bytes of server_id.
-        ByteBlock               server_id {};         //!< Conveys the data of the block.
-        ByteBlock               private_data {};      //!< Private data.
-
-        //  ******************************
-        //  *** DownloadInfoIndication ***
-        //  ******************************
         class TSDUCKDLL Tap {
         public:
             Tap() = default;       //!< Default constructor.
@@ -48,16 +40,56 @@ namespace ts {
             uint32_t timeout = 0;
         };
 
-        /*class TSDUCKDLL BIOPModuleInfo: public EntryWithDescriptors {*/
-        /**/
-        /*public:*/
-        /*    //!*/
-        /*    //! Basic constructor.*/
-        /*    //! @param [in] table Parent table. A descriptor list is always attached to a table.*/
-        /*    //!*/
-        /*    explicit BIOPModuleInfo(const AbstractTable* table);*/
-        /*};*/
+        //  ******************************
+        //  *** DownloadServerInitiate ***
+        //  ******************************
+        class TSDUCKDLL LiteComponent {
+        public:
+            LiteComponent() = default;  //!< Default constructor.
+            uint32_t component_id_tag = 0;
 
+            // BIOPObjectLocation
+            uint32_t  carousel_id = 0;
+            uint16_t  module_id = 0;
+            uint8_t   version_major = 0x01;
+            uint8_t   version_minor = 0x00;
+            ByteBlock object_key_data {};
+
+            // DSMConnBinder
+            Tap tap {};
+
+            // UnknownComponent
+            ByteBlock component_data {};
+        };
+
+        class TSDUCKDLL TaggedProfile {
+        public:
+            TaggedProfile() = default;  //!< Default constructor.
+            uint32_t profile_id_tag = 0;
+            uint8_t  profile_data_byte_order = 0;
+
+            // BIOP Profile Body
+            std::list<LiteComponent> liteComponents {};
+
+            // Any other profile for now
+            ByteBlock profile_data {};
+        };
+
+        class TSDUCKDLL IOR {
+        public:
+            IOR() = default;  //!< Default constructor.
+            ByteBlock                type_id {};
+            std::list<TaggedProfile> tagged_profiles {};
+        };
+
+        static constexpr size_t SERVER_ID_SIZE = 20;  //!< Fixed size in bytes of server_id.
+
+        ByteBlock server_id {};  //!< Conveys the data of the block.
+        IOR       ior {};
+
+        //  ******************************
+        //  *** DownloadInfoIndication ***
+        //  ******************************
         class TSDUCKDLL Module: public EntryWithDescriptors {
             TS_NO_DEFAULT_CONSTRUCTORS(Module);
             TS_DEFAULT_ASSIGMENTS(Module);

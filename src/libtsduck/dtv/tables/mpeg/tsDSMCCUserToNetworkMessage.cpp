@@ -57,7 +57,6 @@ void ts::DSMCCUserToNetworkMessage::clearContent()
 
     //DSI
     server_id.clear();
-    private_data.clear();
 
     //DII
     download_id = 0;
@@ -101,9 +100,113 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         // CompatibilityDescriptor
         buf.skipBytes(2);
 
-        const uint16_t private_data_length = buf.getUInt16();
+        // private_data_length
+        buf.skipBytes(2);
 
-        buf.getBytes(private_data, private_data_length);
+        uint32_t type_id_length = buf.getUInt32();
+
+        for (size_t i = 0; i < type_id_length; i++) {
+            ior.type_id.appendUInt8(buf.getUInt8());
+        }
+
+        // CDR alligment rule
+        if (type_id_length % 4 != 0) {
+            buf.skipBytes(4 - (type_id_length % 4));
+        }
+
+        const uint32_t tagged_profiles_count = buf.getUInt32();
+
+        for (size_t i = 0; i < tagged_profiles_count; i++) {
+            TaggedProfile tagged_profile;
+
+            tagged_profile.profile_id_tag = buf.getUInt32();
+
+            const uint32_t profile_data_length = buf.getUInt32();
+
+            tagged_profile.profile_data_byte_order = buf.getUInt8();
+
+            if (tagged_profile.profile_id_tag == 0x49534F06) {  // TAG_BIOP (BIOP Profile Body)
+                const uint8_t lite_component_count = buf.getUInt8();
+
+                for (size_t j = 0; j < lite_component_count; j++) {
+
+                    const uint32_t component_id_tag = buf.getUInt32();
+                    const uint8_t  component_data_length = buf.getUInt8();
+
+                    switch (component_id_tag) {
+                        case 0x49534F50: {  // TAG_ObjectLocation
+
+                            LiteComponent biopObjectLocation;
+
+                            biopObjectLocation.component_id_tag = component_id_tag;
+                            biopObjectLocation.carousel_id = buf.getUInt32();
+                            biopObjectLocation.module_id = buf.getUInt16();
+                            biopObjectLocation.version_major = buf.getUInt8();
+                            biopObjectLocation.version_minor = buf.getUInt8();
+                            const uint8_t object_key_length = buf.getUInt8();
+
+                            for (size_t k = 0; k < object_key_length; k++) {
+                                biopObjectLocation.object_key_data.appendUInt8(buf.getUInt8());
+                            }
+
+                            tagged_profile.liteComponents.push_back(biopObjectLocation);
+
+                            break;
+                        }
+
+                        case 0x49534F40: {  // TAG_ConnBinder
+
+                            LiteComponent dsmConnBinder;
+
+                            dsmConnBinder.component_id_tag = component_id_tag;
+
+                            buf.skipBytes(1);  // taps_count
+
+                            dsmConnBinder.tap.id = buf.getUInt16();
+                            dsmConnBinder.tap.use = buf.getUInt16();
+                            dsmConnBinder.tap.association_tag = buf.getUInt16();
+
+                            buf.skipBytes(1);  // selector_length
+
+                            dsmConnBinder.tap.selector_type = buf.getUInt16();
+                            dsmConnBinder.tap.transaction_id = buf.getUInt32();
+                            dsmConnBinder.tap.timeout = buf.getUInt32();
+
+                            for (int n = 0; n < component_data_length - 18; n++) {
+                                buf.skipBytes(1);  // selector_data
+                            }
+
+                            tagged_profile.liteComponents.push_back(dsmConnBinder);
+
+                            break;
+                        }
+
+                        default: {
+                            LiteComponent unknownComponent;
+
+                            unknownComponent.component_id_tag = component_id_tag;
+
+                            buf.getBytes(unknownComponent.component_data, component_data_length);
+
+                            tagged_profile.liteComponents.push_back(unknownComponent);
+
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (tagged_profile.profile_id_tag == 0x49534F05) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
+                buf.getBytes(tagged_profile.profile_data, profile_data_length - 1);
+            }
+            else {
+                buf.getBytes(tagged_profile.profile_data, profile_data_length - 1);
+            }
+
+            ior.tagged_profiles.push_back(tagged_profile);
+        }
+
+        // download_taps_count + service_context_list_count + user_info_length
+        buf.skipBytes(4);
     }
     else if (message_id == 0x1002) {
         download_id = buf.getUInt32();
@@ -157,6 +260,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
         buf.skipBytes(private_data_length);
     }
     else {
+
         buf.setUserError();
         buf.skipBytes(buf.remainingReadBytes());
     }
@@ -174,10 +278,56 @@ void ts::DSMCCUserToNetworkMessage::serializePayload(BinaryTable& table, PSIBuff
 
     if (message_id == 0x1006) {
         buf.putBytes(server_id);
+        buf.putBytes(ior.type_id);
 
-        // According to ETSI TR 101 202 V1.2.1 (2003-01), 4.6.5, Table 4.1a
-        // DSI and DII messages have only one section.
-        buf.putBytes(private_data);
+        for (auto it = ior.tagged_profiles.begin(); it != ior.tagged_profiles.end();) {
+            const TaggedProfile& tagged_profile(*it);
+
+            buf.putUInt32(tagged_profile.profile_id_tag);
+            buf.putUInt8(tagged_profile.profile_data_byte_order);
+
+            if (tagged_profile.profile_id_tag == 0x49534F06) {
+                for (const auto& liteComponent : tagged_profile.liteComponents) {
+                    buf.putUInt32(liteComponent.component_id_tag);
+
+                    switch (liteComponent.component_id_tag) {
+                        case 0x49534F50: {  // TAG_ObjectLocation
+                            buf.putUInt32(liteComponent.component_id_tag);
+                            buf.putUInt32(liteComponent.carousel_id);
+                            buf.putUInt16(liteComponent.module_id);
+                            buf.putUInt8(liteComponent.version_major);
+                            buf.putUInt8(liteComponent.version_minor);
+                            buf.putUInt8(liteComponent.object_key_data.size());
+                            buf.putBytes(liteComponent.object_key_data);
+                            /*}*/
+                            break;
+                        }
+
+                        case 0x49534F40: {  // TAG_ConnBinder
+                            buf.putUInt32(liteComponent.component_id_tag);
+                            buf.putUInt16(liteComponent.tap.id);
+                            buf.putUInt16(liteComponent.tap.use);
+                            buf.putUInt16(liteComponent.tap.association_tag);
+                            buf.putUInt16(liteComponent.tap.selector_type);
+                            buf.putUInt32(liteComponent.tap.transaction_id);
+                            buf.putUInt32(liteComponent.tap.timeout);
+                            break;
+                        }
+
+                        default: {  //UnknownComponent
+                            buf.putUInt32(liteComponent.component_id_tag);
+                            buf.putBytes(liteComponent.component_data);
+                        }
+                    }
+                }
+            }
+            else if (tagged_profile.profile_id_tag == 0x49534F05) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
+                buf.putBytes(tagged_profile.profile_data);
+            }
+            else {
+                buf.putBytes(tagged_profile.profile_data);
+            }
+        }
     }
     else if (message_id == 0x1002) {
         buf.putUInt32(download_id);
@@ -438,7 +588,63 @@ void ts::DSMCCUserToNetworkMessage::buildXML(DuckContext& duck, xml::Element* ro
     if (message_id == 0x1006) {
         xml::Element* dsi = root->addElement(u"DSI");
         dsi->addHexaTextChild(u"server_id", server_id, true);
-        dsi->addHexaTextChild(u"private_data", private_data, true);
+
+        xml::Element* ior_entry = dsi->addElement(u"IOR");
+        ior_entry->addHexaTextChild(u"type_id", ior.type_id, true);
+
+        for (const auto& profile : ior.tagged_profiles) {
+            xml::Element* profile_entry = ior_entry->addElement(u"tagged_profile");
+            profile_entry->setIntAttribute(u"profile_id_tag", profile.profile_id_tag, true);
+            profile_entry->setIntAttribute(u"profile_data_byte_order", profile.profile_data_byte_order, true);
+
+            if (profile.profile_id_tag == 0x49534F06) {
+
+                xml::Element* biop_profile_body_entry = profile_entry->addElement(u"BIOP_Profile_Body");
+                biop_profile_body_entry->setIntAttribute(u"lite_component_count", profile.liteComponents.size(), false);
+
+                for (const auto& liteComponent : profile.liteComponents) {
+
+                    switch (liteComponent.component_id_tag) {
+                        case 0x49534F50: {  // TAG_ObjectLocation
+                            xml::Element* biop_object_location_entry = biop_profile_body_entry->addElement(u"BIOP_object_location");
+                            biop_object_location_entry->setIntAttribute(u"component_id_tag", liteComponent.component_id_tag, true);
+                            biop_object_location_entry->setIntAttribute(u"carousel_id", liteComponent.carousel_id, true);
+                            biop_object_location_entry->setIntAttribute(u"module_id", liteComponent.module_id, true);
+                            biop_object_location_entry->setIntAttribute(u"version_major", liteComponent.version_major, true);
+                            biop_object_location_entry->setIntAttribute(u"version_minor", liteComponent.version_minor, true);
+                            biop_object_location_entry->addHexaTextChild(u"object_key_data", liteComponent.object_key_data, true);
+                            break;
+                        }
+
+                        case 0x49534F40: {  // TAG_ConnBinder
+                            xml::Element* dsm_conn_binder_entry = profile_entry->addElement(u"DSM_conn_binder");
+                            dsm_conn_binder_entry->setIntAttribute(u"component_id_tag", liteComponent.component_id_tag, true);
+
+                            xml::Element* tap_entry = dsm_conn_binder_entry->addElement(u"BIOP_tap");
+                            tap_entry->setIntAttribute(u"id", liteComponent.tap.id, true);
+                            tap_entry->setIntAttribute(u"use", liteComponent.tap.use, true);
+                            tap_entry->setIntAttribute(u"association_tag", liteComponent.tap.association_tag, true);
+                            tap_entry->setIntAttribute(u"selector_type", liteComponent.tap.selector_type, true);
+                            tap_entry->setIntAttribute(u"transaction_id", liteComponent.tap.transaction_id, true);
+                            tap_entry->setIntAttribute(u"timeout", liteComponent.tap.timeout, true);
+                            break;
+                        }
+
+                        default: {
+                            xml::Element* unknown_component_entry = profile_entry->addElement(u"Unknown_component");
+                            unknown_component_entry->setIntAttribute(u"component_id_tag", liteComponent.component_id_tag, true);
+                            unknown_component_entry->addHexaTextChild(u"component_data", liteComponent.component_data, true);
+                        }
+                    }
+                }
+            }
+            else if (profile.profile_id_tag == 0x49534F05) {  // TAG_LITE_OPTIONS (Lite Options Profile Body)
+                profile_entry->addHexaTextChild(u"profile_data", profile.profile_data, true);
+            }
+            else {
+                profile_entry->addHexaTextChild(u"profile_data", profile.profile_data, true);
+            }
+        }
     }
     else if (message_id == 0x1002) {
 
@@ -481,8 +687,27 @@ bool ts::DSMCCUserToNetworkMessage::analyzeXML(DuckContext& duck, const xml::Ele
         element->getIntAttribute(transaction_id, u"transaction_id", true);
 
     if (message_id == 0x1006) {
-        ok = element->getHexaTextChild(server_id, u"server_id") &&
-             element->getHexaTextChild(private_data, u"private_data");
+
+        ok = element->getHexaTextChild(server_id, u"server_id");
+
+        const xml::Element* ior_element = element->findFirstChild(u"IOR", true);
+        xml::ElementVector  children;
+
+        ok = ior_element->getHexaTextChild(ior.type_id, u"type_id") &&
+             ior_element->getChildren(children, u"tagged_profile");
+
+        for (auto it = children.begin(); ok && it != children.end(); ++it) {
+            TaggedProfile tagged_profile;
+
+            ok = (*it)->getIntAttribute(tagged_profile.profile_id_tag, u"profile_id_tag", true) &&
+                 (*it)->getIntAttribute(tagged_profile.profile_data_byte_order, u"profile_data_byte_order", true);
+
+            //TODO LiteComponents
+
+            if (ok) {
+                ior.tagged_profiles.push_back(tagged_profile);
+            }
+        }
     }
     else if (message_id == 0x1002) {
         xml::ElementVector children;
