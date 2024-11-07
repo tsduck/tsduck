@@ -1006,6 +1006,9 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
                 stm << ":";
             }
         }
+        if (pc.carry_iip) {
+            stm << "iip:";
+        }
         stm << "bitrate=" << pc.bitrate.toInt() << ":"
             << "bitrate204=" << ToBitrate204(pc.bitrate).toInt() << ":"
             << "packets=" << pc.ts_pkt_cnt << ":"
@@ -1260,6 +1263,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
             jv.query(u"ssu-oui", true, json::Type::Array).set(it1);
         }
         jv.add(u"t2mi", json::Bool(pc.carry_t2mi));
+        jv.add(u"iip", json::Bool(pc.carry_iip));
         for (const auto& it1 : pc.t2mi_plp_ts) {
             jv.query(u"plp", true, json::Type::Array).set(it1.first);
         }

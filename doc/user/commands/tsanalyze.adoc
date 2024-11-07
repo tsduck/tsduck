@@ -234,6 +234,7 @@ The characteristics in `pid:` lines are:
 |:ssuoui=int,int,...: |Optional. List of manufacturers OUI for System Software Update data PID's.
 |:t2mi: |Optional. Indicate that the PID carries a T2-MI stream.
 |:plp=int,int,...: |Optional. List of T2-MI PLP (Physical Layer Pipe) id.
+|:iip: |Optional. Indicate that the PID carries ISDB Information Packets (IIP).
 |:bitrate=int: |Bitrate for this PID in b/s.
 |:bitrate204=int: |Same as previous, based on 204-byte packets.
 |:packets=int: |Total number of TS packets in this PID.
