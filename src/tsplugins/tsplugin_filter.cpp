@@ -75,6 +75,7 @@ namespace ts {
         size_t             _search_offset = 0;          // Offset where to search.
         PacketRangeList    _ranges {};                  // Ranges of packets to filter.
         std::set<uint8_t>  _stream_ids {};              // PES stream ids to filter
+        std::set<uint8_t>  _isdb_layers {};             // ISDB layers to filter
         std::set<uint16_t> _service_ids {};             // Service ids to filter
         UStringVector      _service_names {};           // Service names to filter.
         TSPacketLabelSet   _labels {};                  // Select packets with any of these labels
@@ -160,6 +161,13 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select packets which contain the start of a video intra-frame. "
          u"The accurate detection of intra-frame depends on the codec. "
          u"There is also a minimal risk of false positive on non-video PID's.");
+
+    option(u"isdb-layer", 0, INTEGER, 0, UNLIMITED_COUNT, 0, 15);
+    help(u"isdb-layer", u"layer1[-layer2]",
+         u"Select packets with any of the specified layer indicator values in the ISDB-T Information structure. "
+         u"This structure is located in the 16-byte trailer, after the 188-byte TS packet. "
+         u"Therefore, using that filter is only possible if the input transport stream is made of 204-byte packets. "
+         u"Several options --isdb-layer can be specified.");
 
     option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"label", u"label1[-label2]",
@@ -350,6 +358,7 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(_codec, u"codec", CodecType::UNDEFINED);
     getIntValues(_explicit_pid, u"pid");
     getIntValues(_stream_ids, u"stream-id");
+    getIntValues(_isdb_layers, u"isdb-layer");
     getIntValues(_labels, u"label");
     getIntValues(_set_labels, u"set-label");
     getIntValues(_reset_labels, u"reset-label");
@@ -512,7 +521,8 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (_min_af >= 0 && int(pkt.getAFSize()) >= _min_af) ||
         (int(pkt.getAFSize()) <= _max_af) ||
         (_every_packets > 0 && (tsp->pluginPackets() - _after_packets) % _every_packets == 0) ||
-        (_with_pes && pkt.startPES());
+        (_with_pes && pkt.startPES()) ||
+        (!_isdb_layers.empty() && pkt_data.auxDataSize() >= 2 && Contains(_isdb_layers, uint8_t((pkt_data.auxData()[1] >> 4) & 0x0F)));
 
     // Search binary patterns in packets.
     if (!ok && !_pattern.empty()) {

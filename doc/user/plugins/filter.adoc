@@ -138,6 +138,17 @@ The accurate detection of intra-frame depends on the codec.
 There is also a minimal risk of false positive on non-video PID's.
 
 [.opt]
+*--isdb-layer* _layer1[-layer2]_
+
+[.optdoc]
+Select packets with any of the specified layer indicator values in the ISDB-T Information structure.
+This structure is located in the 16-byte trailer, after the 188-byte TS packet.
+Therefore, using that filter is only possible if the input transport stream is made of 204-byte packets.
+
+[.optdoc]
+Several options `--isdb-layer` can be specified.
+
+[.opt]
 *-l* _label1[-label2]_ +
 *--label* _label1[-label2]_
 
