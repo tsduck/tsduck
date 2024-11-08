@@ -49,5 +49,5 @@ bool ts::IPOutputPlugin::stop()
 
 bool ts::IPOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    return _datagram.send(packets, packet_count, tsp->bitrate(), *this);
+    return _datagram.send(packets, metadata, packet_count, tsp->bitrate(), *this);
 }

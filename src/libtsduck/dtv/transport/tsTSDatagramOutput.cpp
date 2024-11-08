@@ -116,7 +116,9 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
         args.option(u"rs204");
         args.help(u"rs204",
                   u"Use 204-byte format for TS packets in UDP datagrams. "
-                  u"Each TS packet is followed by a zeroed placeholder for a 16-byte Reed-Solomon trailer.");
+                  u"Each TS packet is followed by a 16-byte trailer. "
+                  u"If the input packet contained a trailer, it is copied. "
+                  u"Otherwise, the trailer is set to all 0xFF.");
 
         args.option(u"tos", 's', Args::INTEGER, 0, 1, 1, 255);
         args.help(u"tos",
@@ -182,6 +184,7 @@ bool ts::TSDatagramOutput::open(Report& report)
     // The output buffer is empty.
     if (_enforce_burst) {
         _out_buffer.resize(_pkt_burst);
+        _out_buffer_rs.resize(int(_rs204_format) * _pkt_burst);
         _out_count = 0;
     }
 
@@ -248,7 +251,7 @@ bool ts::TSDatagramOutput::close(const BitRate& bitrate, Report& report)
     if (_is_open) {
         // Flush incomplete datagram, if any.
         if (_out_count > 0) {
-            success = sendPackets(_out_buffer.data(), _out_count, bitrate, report);
+            success = sendPackets(_out_buffer.data(), _out_buffer_rs.data(), _out_count, bitrate, report);
             _out_count = 0;
         }
         if (_raw_udp) {
@@ -261,10 +264,56 @@ bool ts::TSDatagramOutput::close(const BitRate& bitrate, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Copy packets in the internal buffer.
+//----------------------------------------------------------------------------
+
+void ts::TSDatagramOutput::bufferPackets(const TSPacket* packet, const TSPacketMetadata* metadata, size_t count)
+{
+    assert(_enforce_burst);
+    assert(_out_count + count <= _pkt_burst);
+
+    TSPacket::Copy(&_out_buffer[_out_count], packet, count);
+    if (_rs204_format) {
+        if (metadata != nullptr) {
+            TSPacketMetadata::Copy(&_out_buffer_rs[_out_count], metadata, count);
+        }
+        else {
+            TSPacketMetadata::Reset(&_out_buffer_rs[_out_count], count);
+        }
+    }
+    _out_count += count;
+}
+
+
+//----------------------------------------------------------------------------
+// Serialize a set of packets and RS trailers in a buffer.
+//----------------------------------------------------------------------------
+
+void ts::TSDatagramOutput::serialize(uint8_t* buffer, size_t buffer_size, const TSPacket* packet, const TSPacketMetadata* metadata, size_t count)
+{
+    assert(buffer_size >= count * PKT_RS_SIZE);
+
+    for (size_t i = 0; i < count && buffer_size >= PKT_RS_SIZE; ++i) {
+        MemCopy(buffer, packet->b, PKT_SIZE);
+        packet++;
+        if (metadata == nullptr) {
+            MemSet(buffer + PKT_SIZE, 0xFF, RS_SIZE);
+        }
+        else {
+            metadata->getAuxData(buffer + PKT_SIZE, RS_SIZE, 0xFF);
+            metadata++;
+        }
+        buffer += PKT_RS_SIZE;
+        buffer_size -= PKT_RS_SIZE;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Send TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::send(const TSPacket* pkt, size_t packet_count, const BitRate& bitrate, Report& report)
+bool ts::TSDatagramOutput::send(const TSPacket* pkt, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate, Report& report)
 {
     if (!_is_open) {
         report.error(u"TSDatagramOutput is not open");
@@ -276,21 +325,20 @@ bool ts::TSDatagramOutput::send(const TSPacket* pkt, size_t packet_count, const 
     assert(_pkt_burst > 0);
     const size_t min_burst = _enforce_burst ? _pkt_burst : 1;
 
-    // First, with --enforce-burst, fill partial output buffer.
+     // First, with --enforce-burst, continue to fill the output buffer if not empty.
     if (_out_count > 0) {
-        assert(_enforce_burst);
-        assert(_out_count < _pkt_burst);
-
         // Copy as many packets as possible in output buffer.
         const size_t count = std::min(packet_count, _pkt_burst - _out_count);
-        TSPacket::Copy(&_out_buffer[_out_count], pkt, count);
+        bufferPackets(pkt, metadata, count);
         pkt += count;
+        if (metadata != nullptr) {
+            metadata += count;
+        }
         packet_count -= count;
-        _out_count += count;
 
         // Send the output buffer when full.
         if (_out_count == _pkt_burst) {
-            if (!sendPackets(_out_buffer.data(), _out_count, bitrate, report)) {
+            if (!sendPackets(_out_buffer.data(), _out_buffer_rs.data(), _out_count, bitrate, report)) {
                 return false;
             }
             _out_count = 0;
@@ -300,8 +348,11 @@ bool ts::TSDatagramOutput::send(const TSPacket* pkt, size_t packet_count, const 
     // Send subsequent packets from the global buffer.
     while (packet_count >= min_burst) {
         size_t count = std::min(packet_count, _pkt_burst);
-        if (!sendPackets(pkt, count, bitrate, report)) {
+        if (!sendPackets(pkt, metadata, count, bitrate, report)) {
             return false;
+        }
+        if (metadata != nullptr) {
+            metadata += count;
         }
         pkt += count;
         packet_count -= count;
@@ -309,11 +360,7 @@ bool ts::TSDatagramOutput::send(const TSPacket* pkt, size_t packet_count, const 
 
     // If remaining packets are present, save them in output buffer.
     if (packet_count > 0) {
-        assert(_enforce_burst);
-        assert(_out_count == 0);
-        assert(packet_count < _pkt_burst);
-        TSPacket::Copy(_out_buffer.data(), pkt, packet_count);
-        _out_count = packet_count;
+        bufferPackets(pkt, metadata, packet_count);
     }
     return true;
 }
@@ -323,7 +370,7 @@ bool ts::TSDatagramOutput::send(const TSPacket* pkt, size_t packet_count, const 
 // Send contiguous packets in one single datagram.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count, const BitRate& bitrate, Report& report)
+bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate, Report& report)
 {
     bool status = true;
 
@@ -413,12 +460,8 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
         // Copy the TS packets after the RTP header and send the packets.
         uint8_t* buf = buffer.data() + RTP_HEADER_SIZE;
         if (_rs204_format) {
-            // Copy TS packets one by one with RS204 zero trailer. Since the default initial value
-            // of the buffer vector is zero, there is no need to explicitly set the trailers.
-            for (size_t i = 0; i < packet_count; ++i) {
-                MemCopy(buf, pkt++, PKT_SIZE);
-                buf += PKT_SIZE + RS_SIZE;
-            }
+            // Copy TS packets one by one with RS204 trailer.
+            serialize(buf, buffer.dataEnd() - buf, pkt, metadata, packet_count);
         }
         else {
             // Directly copy the TS packets and shrink the buffer (no RS204 trailers).
@@ -428,18 +471,13 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
         status = _output->sendDatagram(buffer.data(), buffer.size(), report);
     }
     else if (_rs204_format) {
-        // No RTP header, add TS trailer after each packet. Since the default initial value
-        // of the buffer vector is zero, there is no need to explicitly set the trailers.
+        // No RTP header, add TS trailer after each packet.
         ByteBlock buffer(packet_count * PKT_RS_SIZE);
-        uint8_t* buf = buffer.data();
-        for (size_t i = 0; i < packet_count; ++i) {
-            MemCopy(buf, pkt++, PKT_SIZE);
-            buf += PKT_SIZE + RS_SIZE;
-        }
+        serialize(buffer.data(), buffer.size(), pkt, metadata, packet_count);
         status = _output->sendDatagram(buffer.data(), buffer.size(), report);
     }
     else {
-        // No RTP, send TS packets directly as datagram.
+        // No RTP, no trailer, send TS packets directly as datagram.
         status = _output->sendDatagram(pkt, packet_count * PKT_SIZE, report);
     }
 

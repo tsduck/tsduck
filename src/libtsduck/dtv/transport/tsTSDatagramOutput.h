@@ -14,6 +14,7 @@
 #pragma once
 #include "tsTSDatagramOutputHandlerInterface.h"
 #include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
 #include "tsUDPSocket.h"
 #include "tsIPProtocols.h"
 #include "tsEnumUtils.h"
@@ -100,12 +101,13 @@ namespace ts {
         //! Send TS packets.
         //! Some of them can be buffered and sent later.
         //! @param [in] packets Address of first packet.
+        //! @param [in] metadata Address of first packet metadata (can be null).
         //! @param [in] packet_count Number of packets to send.
         //! @param [in] bitrate Current bitrate to compute timestamps. Ignored if zero.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool send(const TSPacket* packets, size_t packet_count, const BitRate& bitrate, Report& report);
+        bool send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate, Report& report);
 
     private:
         // Configuration and command line options.
@@ -147,13 +149,20 @@ namespace ts {
         PacketCounter     _pkt_count = 0;              // Total packet counter for output packets
         size_t            _out_count = 0;              // Number of packets in _out_buffer
         TSPacketVector    _out_buffer {};              // Buffered packets for output with --enforce-burst
+        TSPacketMetadataVector _out_buffer_rs {};      // Buffered RS trailers with --enforce-burst --rs204
         UDPSocket         _sock {};                    // Outgoing socket for raw UDP
 
         // Implementation of TSDatagramOutputHandlerInterface.
         // The object is its own handler in case of raw UDP output.
         virtual bool sendDatagram(const void* address, size_t size, Report& report) override;
 
+        // Copy packets in the internal buffer.
+        void bufferPackets(const TSPacket* packet, const TSPacketMetadata* metadata, size_t count);
+
+        // Serialize a set of packets and RS trailers in a buffer.
+        void serialize(uint8_t* buffer, size_t buffer_size, const TSPacket* packet, const TSPacketMetadata* metadata, size_t count);
+
         // Send contiguous packets in one single datagram.
-        bool sendPackets(const TSPacket* packet, size_t count, const BitRate& bitrate, Report& report);
+        bool sendPackets(const TSPacket* packet, const TSPacketMetadata* metadata, size_t count, const BitRate& bitrate, Report& report);
     };
 }

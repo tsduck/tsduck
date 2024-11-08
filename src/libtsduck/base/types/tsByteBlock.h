@@ -80,6 +80,18 @@ namespace ts {
         TSDUCKDLL ByteBlock(std::initializer_list<uint8_t> init);
 
         //!
+        //! Get a pointer after the last byte in the block.
+        //! @return A pointer after the last byte in the block.
+        //!
+        const uint8_t* dataEnd() const { return data() + size(); }
+
+        //!
+        //! Get a pointer after the last byte in the block.
+        //! @return A pointer after the last byte in the block.
+        //!
+        uint8_t* dataEnd() { return data() + size(); }
+
+        //!
         //! Find the first occurence of a byte value in a byte block.
         //! @param [in] value The byte value to search.
         //! @param [in] start Index where to start (at the beginning by default).

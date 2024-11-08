@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3934
+VERSION 3.39-3935
 
 [NEW] New commands and plugins:
 
@@ -41,6 +41,9 @@ VERSION 3.39-3934
     manipulated by plugins and is written back if the output format is set
     as RS204. Use "tsdump --rs204" to dump the trailer. This can be useful
     with ISDB-T streams where the trailer contains modulation information.
+  * Similarly, the output plugin "ip" with option --rs204 copies the input
+    16-byte trailers, when present. Previously, a dummy zeroed trailer was
+    created.
   * New options in existing commands and plugins:
     - Option --except-label in all packet processing plugins.
     - Option --udp-format in "tstables" and plugin "tables" to send tables
