@@ -44,6 +44,52 @@ This may seem unfair but this is the way it is perceived by the industry.
 So, to maintain the trust in TSDuck, let's keep anonymity away from it.
 We hope that all contributors understand this position.
 
+[#licensecopyright]
+=== License and copyright
+
+The TSDuck project is free and open-source. It must and will remain so.
+TSDuck is released under the terms of the license which is commonly referred to as "BSD 2-Clause License" or
+"Simplified BSD License" or "FreeBSD License".
+See the file {repo}blob/master/LICENSE.txt[`LICENSE.txt`] at the root of the TSDuck source tree
+or http://opensource.org/licenses/BSD-2-Clause for more details.
+
+All contributions shall be released under the terms of the same license.
+Any code which does not comply with the BSD 2-Clause License will be rejected.
+
+The author of a piece of source code retains copyright on the code he/she wrote.
+
+All source files shall contain the following header template:
+
+[source,c++]
+----
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) YEAR, FIRST-NAME LAST-NAME
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+----
+
+Open-source developers deserve credits for their work.
+The full real name of the author of a source file shall be mentioned in the copyright line of the header.
+
+* Each source file which is created, entirely or mostly written by a developer shall have
+  the full name of that developer alone in the copyright line.
+* If an existing source file is significantly modified, refactored, improved, by a different developer,
+  add the name of that developer in the copyright line, after other developers names.
+* For small bug fixes or local improvements in a source file, don't alter the copyright line.
+
+Additionally, regardless of the size of their contribution, with or without reference in the
+copyright of a source file, all contributors shall have their full real name in the file
+{repo}blob/master/CONTRIBUTORS.txt[`CONTRIBUTORS.txt`] at the root of the TSDuck source tree.
+Please keep the file sorted by last name.
+
+CAUTION: Most software developers, including the author of TSDuck, are not lawyers and
+sometimes use legal terms such as "license" and "copyright" in an improper way.
+If this is the case in the above paragraphs, please propose a more appropriate
+form in the TSDuck support area (see <<TSDuck-Issues>>).
+
 [#contributor]
 === Contributor workflow
 
