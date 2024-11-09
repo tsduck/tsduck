@@ -951,7 +951,7 @@ Bits = 8
 0xD4 = AVS3 video
 0x41565356_D4 = AVS3 video
 0xD5 = AVS3 audio
-0x41565341_D5 = AVS5 audio
+0x41565341_D5 = AVS3 audio
 
 [RunningStatus]
 Bits = 3
