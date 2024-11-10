@@ -23,7 +23,7 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
                                 u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [[address:]port]",
                                 u"srt", u"SRT source time stamp",
-                                true) // real-time network reception
+                                TSDatagramInputOptions::REAL_TIME)
 {
     _sock.defineArgs(*this);
 

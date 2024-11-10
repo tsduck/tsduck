@@ -74,7 +74,7 @@ namespace ts {
         PacketCounter _hold_count = 0;     // Number of times we didn't try to merge to perform smoothing insertion.
         PacketCounter _empty_count = 0;    // Number of times we could merge but there was no packet to merge.
         TSForkPipePtr _pipe {};            // Executed command.
-        TSPacketQueue _queue {};           // TS packet queur from merge to main.
+        TSPacketQueue _queue {};           // TS packet queue from merge to main.
         PIDSet        _main_pids {};       // Set of detected PID's in main stream.
         PIDSet        _merge_pids {};      // Set of detected PID's in merged stream that we pass in main stream.
         PCRMerger     _pcr_merger {duck};  // Adjust PCR's in merged stream.
@@ -438,28 +438,30 @@ void ts::MergePlugin::main()
     while (success && !_queue.stopped()) {
 
         TSPacket* buffer = nullptr;
-        size_t buffer_size = 0;  // In TS packets.
-        size_t read_size = 0;    // In bytes.
+        TSPacketMetadata* mdata = nullptr;
+        size_t max_pkt_count = 0;
+        size_t pkt_count = 0;
 
         // Wait for free space in the internal packet queue.
         // We don't want to read too many small data sizes, so we wait for at least 16 packets.
-        if (!_queue.lockWriteBuffer(buffer, buffer_size, 16)) {
+        if (!_queue.lockWriteBuffer(buffer, mdata, max_pkt_count, 16)) {
             // The plugin thread has signalled a stop condition.
             break;
         }
 
         assert(buffer != nullptr);
-        assert(buffer_size > 0);
+        assert(mdata != nullptr);
+        assert(max_pkt_count > 0);
 
         // Read TS packets from the pipe, up to buffer size (but maybe less).
         // Loop on error / restart.
-        while (success && read_size == 0) {
+        while (success && pkt_count == 0) {
             // Perform one read. Multi-threading warning: a close operation can occur
             // in the meantime (when the plugin stops) but no one will restart it.
             // So, the object which is pointed to by _pipe does not change.
 
-            // We request to read only multiples of 188 bytes (the packet size).
-            success = _pipe->readStreamChunks(buffer, PKT_SIZE * buffer_size, PKT_SIZE, read_size, *this);
+            pkt_count = _pipe->readPackets(buffer, mdata, max_pkt_count, *this);
+            success = pkt_count > 0;
 
             if (!success) {
                 // Read error or end of file.
@@ -472,11 +474,9 @@ void ts::MergePlugin::main()
                 }
             }
         }
-        assert(read_size % PKT_SIZE == 0);
 
         // Pass the read packets to the inter-thread queue.
-        // The read size was returned in bytes, we must give a number of packets.
-        _queue.releaseWriteBuffer(read_size / PKT_SIZE);
+        _queue.releaseWriteBuffer(pkt_count);
     }
 
     debug(u"receiver thread completed");
@@ -533,7 +533,7 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
 
     // Replace current null packet in main stream with next packet from merged stream.
     BitRate merged_bitrate = 0;
-    if (!_queue.getPacket(pkt, merged_bitrate)) {
+    if (!_queue.getPacket(pkt, &pkt_data, merged_bitrate)) {
         // No packet available, keep original null packet.
         _empty_count++;
         if (!_got_eof && _queue.eof()) {

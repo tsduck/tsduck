@@ -143,6 +143,7 @@
 |RIST |Reliable Internet Stream Transport (network protocol)
 |RNT |Resolution provider Notification Table (DVB)
 |RRT |Rating Region Table (ATSC)
+|RS |Reed-Solomon FEC code
 |RST |Running Status Table (DVB)
 |RTP |Real-Time Protocol
 |RTT |Rating Text Tavle (ATSC)

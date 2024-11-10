@@ -122,6 +122,14 @@ select the first multicast address which is found in a UDP datagram containing T
 By default, use the destination address of the first UDP datagram containing TS packets, unicast or multicast.
 
 [.opt]
+*--rs204*
+
+[.optdoc]
+Specify that all packets are in 204-byte format.
+By default, the input packet size, 188 or 204 bytes, is automatically detected.
+Use this option only when necessary.
+
+[.opt]
 *-s* _[address][:port]_ +
 *--source* _[address][:port]_
 

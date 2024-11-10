@@ -38,8 +38,9 @@ namespace ts {
         PacketCounter _maxCount = 0;        // Number of packets to generate
 
         // Working data:
-        PacketCounter _limit = 0;           // Current max number of packets
-        TSPacket      _packet {NullPacket}; // Template of packet to generate
+        PacketCounter    _limit = 0;            // Current max number of packets
+        TSPacket         _packet {NullPacket};  // Template of packet to generate
+        TSPacketMetadata _mdata {};             // Metadata of packet to generate
     };
 }
 
@@ -97,6 +98,8 @@ namespace ts {
         bool      _setSpliceCountdown = false;
         bool      _clearSpliceCountdown = false;
         uint8_t   _newSpliceCountdown = 0;
+        bool      _deleteRS204 = false;
+        ByteBlock _rs204 {};
 
         // Perform --pack-pes-header on a packet.
         void packPESHeader(TSPacket&);
@@ -192,6 +195,12 @@ ts::CraftInput::CraftInput(TSP* tsp_) :
     option(u"random-access");
     help(u"random-access", u"Set the random_access_indicator in the packets. An adaptation field is created.");
 
+    option(u"rs204", 0, HEXADATA);
+    help(u"rs204",
+         u"Generate a 204-byte packet and specify the binary content to store in the 16-byte trailer. "
+         u"The value must be a string of hexadecimal digits specifying up to 16 bytes. "
+         u"If the data are shorter than 16 bytes, they are padded with 0xFF.");
+
     option(u"scrambling", 0, INTEGER, 0, 1, 0, 3);
     help(u"scrambling", u"Specify the value of the transport_scrambling_control field (0 by default).");
 
@@ -238,6 +247,7 @@ bool ts::CraftInput::getOptions()
     // The binary patterns.
     const ByteBlock payloadPattern(hexaValue(u"payload-pattern", ByteBlock(1, 0xFF)));
     const ByteBlock privateData(hexaValue(u"private-data"));
+    ByteBlock rs204(hexaValue(u"rs204"));
 
     // Check if we need to set some data in adaptation field.
     const bool needAF =
@@ -347,6 +357,12 @@ bool ts::CraftInput::getOptions()
         }
     }
 
+    // Build metadata.
+    _mdata.reset();
+    if (!rs204.empty()) {
+        rs204.resize(RS_SIZE, 0xFF);
+        _mdata.setAuxData(rs204.data(), rs204.size());
+    }
     return true;
 }
 
@@ -399,6 +415,7 @@ size_t ts::CraftInput::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, siz
     size_t n;
     for (n = 0; n < maxPackets && previousCount + n < _limit; n++) {
         buffer[n] = _packet;
+        pkt_data[n] = _mdata;
         // Increment the continuity counter for the next packet when necessary.
         if (!_constantCC && _packet.hasPayload()) {
             _packet.setCC((_packet.getCC() + 1) & CC_MASK);
@@ -556,6 +573,16 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
          u"When a TS packet contains the start of a PES packet and the header of this PES packet "
          u"contains stuffing, shift the TS payload to remove all possible stuffing from the PES "
          u"header. Create TS stuffing in the adaptation field to compensate.");
+
+    option(u"rs204", 0, HEXADATA);
+    help(u"rs204",
+         u"Specify the binary content to store in the 16-byte trailer of a 204-byte packet. "
+         u"If the packets have no trailer, one is created. "
+         u"The value must be a string of hexadecimal digits specifying up to 16 bytes. "
+         u"If the data are shorter than 16 bytes, they are padded with 0xFF.");
+
+    option(u"delete-rs204");
+    help(u"delete-rs204", u"Delete the 16-byte trailer of a 204-byte packet, if there is one.");
 }
 
 
@@ -603,9 +630,18 @@ bool ts::CraftPlugin::getOptions()
     getHexaValue(_payloadOr, u"payload-or");
     getHexaValue(_payloadXor, u"payload-xor");
     getHexaValue(_privateData, u"private-data");
+    _deleteRS204 = present(u"delete-rs204");
+    getHexaValue(_rs204, u"rs204");
+    if (!_rs204.empty()) {
+        _rs204.resize(RS_SIZE, 0xFF);
+    }
 
     if (_payloadSize > 0 && _noPayload) {
         error(u"options --no-payload and --payload-size are mutually exclusive");
+        return false;
+    }
+    if (!_rs204.empty() && _deleteRS204) {
+        error(u"options --rs204 and --delete-rs204 are mutually exclusive");
         return false;
     }
     return true;
@@ -734,6 +770,14 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
             // Was resized with --payload-size 0, set payload existence (even if empty).
             pkt.b[3] |= 0x10;
         }
+    }
+
+    // Process metadata.
+    if (_deleteRS204) {
+        pkt_data.setAuxData(nullptr, 0);
+    }
+    else if (!_rs204.empty()) {
+        pkt_data.setAuxData(_rs204.data(), _rs204.size());
     }
 
     return TSP_OK;

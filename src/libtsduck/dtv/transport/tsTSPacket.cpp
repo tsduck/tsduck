@@ -121,19 +121,43 @@ void ts::TSPacket::Copy(TSPacket* dest, const TSPacket* source, size_t count)
 }
 
 // Static method to copy contiguous TS packets from raw memory.
-void ts::TSPacket::Copy(TSPacket* dest, const uint8_t* source, size_t count)
+void ts::TSPacket::Copy(TSPacket* dest, const uint8_t* source, size_t count, size_t packet_size)
 {
     assert(dest != nullptr);
     assert(source != nullptr);
-    MemCopy(dest->b, source, count * PKT_SIZE);
+    assert(packet_size >= PKT_SIZE);
+    if (packet_size == PKT_SIZE || count < 2) {
+        MemCopy(dest->b, source, count * PKT_SIZE);
+    }
+    else {
+        // Copy packets one by one, leaving empty space between them.
+        // Note: initial value of count is 2 or more -> no initial unsigned wrap-up.
+        while (count-- > 0) {
+            MemCopy(dest->b, source, PKT_SIZE);
+            dest++;
+            source += packet_size;
+        }
+    }
 }
 
 // Static method to copy contiguous TS packets into raw memory.
-void ts::TSPacket::Copy(uint8_t* dest, const TSPacket* source, size_t count)
+void ts::TSPacket::Copy(uint8_t* dest, const TSPacket* source, size_t count, size_t packet_size)
 {
     assert(dest != nullptr);
     assert(source != nullptr);
-    MemCopy(dest, source->b, count * PKT_SIZE);
+    assert(packet_size >= PKT_SIZE);
+    if (packet_size == PKT_SIZE || count < 2) {
+        MemCopy(dest, source->b, count * PKT_SIZE);
+    }
+    else {
+        // Copy packets one by one, leaving empty space between them.
+        // Note: initial value of count is 2 or more -> no initial unsigned wrap-up.
+        while (count-- > 0) {
+            MemCopy(dest, source->b, PKT_SIZE);
+            dest += packet_size;
+            source++;
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -891,7 +915,7 @@ bool ts::TSPacket::isDuplicate(const TSPacket& other) const
 // Locate contiguous TS packets into a buffer.
 //----------------------------------------------------------------------------
 
-bool ts::TSPacket::Locate(const uint8_t* buffer, size_t buffer_size, size_t& start_index, size_t& packet_count)
+bool ts::TSPacket::Locate(const uint8_t* buffer, size_t buffer_size, size_t& start_index, size_t& packet_count, size_t& packet_size)
 {
     // Nothing found by default.
     start_index = 0;
@@ -902,41 +926,105 @@ bool ts::TSPacket::Locate(const uint8_t* buffer, size_t buffer_size, size_t& sta
         return false;
     }
 
-    // Look backward from the end of the message, looking for a 0x47 sync byte every 188 bytes, going backward.
-    const uint8_t* buffer_end = buffer + buffer_size;
-    const uint8_t* p;
-    for (p = buffer_end; p >= buffer + PKT_SIZE && *(p - PKT_SIZE) == SYNC_BYTE; p -= PKT_SIZE) {}
+    // Look backward from the end of the message, looking for a 0x47 sync byte every 188 or 204 bytes, going backward.
+    // We start by searching from the end because a typical message will have an optional header (RTP header for instance),
+    // followed by packet. Whatever the size of the header is (including zero), the message ends at a packet boundary.
+    // If rs204 is True or False, only look for one type of packets. Otherwise, look for both sizes and keep the size
+    // which finds the most packets.
+    const uint8_t* const buffer_end = buffer + buffer_size;
+    const uint8_t* ptr188 = buffer_end;
+    const uint8_t* ptr204 = buffer_end;
+    size_t count188 = 0;
+    size_t count204 = 0;
 
-    if (p < buffer_end) {
-        // Some packets were found
-        start_index = p - buffer;
-        packet_count = (buffer_end - p) / PKT_SIZE;
+    if (packet_size != PKT_RS_SIZE) {
+        // Maybe 188-byte packets.
+        while (ptr188 >= buffer + PKT_SIZE && *(ptr188 - PKT_SIZE) == SYNC_BYTE) {
+            ptr188 -= PKT_SIZE;
+        }
+        count188 = (buffer_end - ptr188) / PKT_SIZE;
+    }
+    if (packet_size != PKT_SIZE && buffer_size >= PKT_RS_SIZE) {
+        // Maybe 204-byte packets.
+        while (ptr204 >= buffer + PKT_RS_SIZE && *(ptr204 - PKT_RS_SIZE) == SYNC_BYTE) {
+            ptr204 -= PKT_RS_SIZE;
+        }
+        count204 = (buffer_end - ptr204) / PKT_RS_SIZE;
+    }
+    if (count188 >= count204 && count188 > 0) {
+        // Some 188-byte packets were found, and more than 204-byte packets (if checked).
+        // It also covers the weird case of the same non-zero number of packets were found in the two formats.
+        // Although very unlikely, it is possible in theory. By default, we choose 188-byte packets.
+        start_index = ptr188 - buffer;
+        packet_count = count188;
+        packet_size = PKT_SIZE;
+        return true;
+    }
+    else if (count204 > count188) {
+        // Some 204-byte packets were found, and more than 188-byte packets (if checked).
+        start_index = ptr204 - buffer;
+        packet_count = count204;
+        packet_size = PKT_RS_SIZE;
         return true;
     }
 
-    // No TS packet found using the first method. Restart from the beginning of the message.
-    const uint8_t* const max = buffer_end - PKT_SIZE; // max address for a TS packet
-    for (p = buffer; p <= max; p++) {
-        if (*p == SYNC_BYTE) {
-            // Found something that could be the start of a TS packet.
-            // Verify that we get a 0x47 sync byte every 188 bytes up
-            // to the end of message (not leaving more than one truncated
-            // TS packet at the end of the message).
-            const uint8_t* end;
-            for (end = p; end <= max && *end == SYNC_BYTE; end += PKT_SIZE) {}
-            if (end > max) {
-                // End is after the start of the last possible packet.
-                // So, there are less than 188 bytes left in buffer after last packet.
-                // Consider that we have found a valid suite of packets.
-                start_index = p - buffer;
-                packet_count = (end - p) / PKT_SIZE;
-                return true;
+    // No TS packet found using the first method.
+    assert(count188 == 0);
+    assert(count204 == 0);
+
+    // Restart from the beginning of the message. This covers the less usual cases where the message has
+    // a trailer after the set of packets and the first packet may start anywhere inside the message.
+    const uint8_t* end = nullptr;
+    if (packet_size != PKT_RS_SIZE) {
+        // Maybe 188-byte packets.
+        const uint8_t* const max188 = buffer_end - PKT_SIZE; // max address for a TS packet
+        for (ptr188 = buffer; ptr188 <= max188; ptr188++) {
+            if (*ptr188 == SYNC_BYTE) {
+                // Found something that could be the start of a TS packet. Verify that we get
+                // a 0x47 sync byte every 188 bytes up to the end of message (not leaving more
+                // than one truncated TS packet at the end of the message).
+                for (end = ptr188; end <= max188 && *end == SYNC_BYTE; end += PKT_SIZE) {}
+                if (end > max188) {
+                    // End is after the start of the last possible packet.
+                    // So, there are less than 188 bytes left in buffer after last packet.
+                    // Consider that we have found a valid suite of packets.
+                    count188 = (end - ptr188) / PKT_SIZE;
+                    break;
+                }
+            }
+        }
+    }
+    if (packet_size != PKT_SIZE && buffer_size >= PKT_RS_SIZE) {
+        // Maybe 204-byte packets. Use same method.
+        const uint8_t* const max204 = buffer_end - PKT_RS_SIZE;
+        for (ptr204 = buffer; ptr204 <= max204; ptr204++) {
+            if (*ptr204 == SYNC_BYTE) {
+                for (end = ptr204; end <= max204 && *end == SYNC_BYTE; end += PKT_RS_SIZE) {}
+                if (end > max204) {
+                    count204 = (end - ptr204) / PKT_RS_SIZE;
+                    break;
+                }
             }
         }
     }
 
-    // Could not find a valid suite of TS packets.
-    return false;
+    // Same principle as first method to determine which size of packet is used.
+    if (count188 >= count204 && count188 > 0) {
+        start_index = ptr188 - buffer;
+        packet_count = count188;
+        packet_size = PKT_SIZE;
+        return true;
+    }
+    else if (count204 > count188) {
+        start_index = ptr204 - buffer;
+        packet_count = count204;
+        packet_size = PKT_RS_SIZE;
+        return true;
+    }
+    else {
+        // Could not find a valid suite of TS packets.
+        return false;
+    }
 }
 
 

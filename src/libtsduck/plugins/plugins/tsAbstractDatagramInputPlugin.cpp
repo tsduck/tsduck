@@ -20,13 +20,13 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
                                                              const UString& syntax,
                                                              const UString& system_time_name,
                                                              const UString& system_time_description,
-                                                             bool real_time) :
+                                                             TSDatagramInputOptions options) :
     InputPlugin(tsp_, description, syntax),
-    _real_time(real_time),
-    _inbuf(std::max(buffer_size, 7 * PKT_SIZE)),
-    _mdata(_inbuf.size() / PKT_SIZE)
+    _options(options),
+    _inbuf(std::max(buffer_size, 7 * PKT_RS_SIZE)),
+    _mdata(_inbuf.size() / PKT_RS_SIZE)
 {
-    if (_real_time) {
+    if (bool(_options & TSDatagramInputOptions::REAL_TIME)) {
         option<cn::seconds>(u"display-interval", 'd');
         help(u"display-interval",
              u"Specify the interval in seconds between two displays of the evaluated "
@@ -39,6 +39,14 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
              u"basis. The value specifies the number of seconds between two evaluations. "
              u"By default, the real-time input bitrate is never evaluated and the input "
              u"bitrate is evaluated from the PCR in the input packets.");
+    }
+
+    if (bool(_options & TSDatagramInputOptions::ALLOW_RS204)) {
+        option(u"rs204");
+        help(u"rs204",
+             u"Specify that all packets are in 204-byte format. "
+             u"By default, the input packet size, 188 or 204 bytes, is automatically detected. "
+             u"Use this option only when necessary.");
     }
 
     // Order of priority for input timestamps.
@@ -72,7 +80,7 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
 
 bool ts::AbstractDatagramInputPlugin::isRealTime()
 {
-    return _real_time;
+    return bool(_options & TSDatagramInputOptions::REAL_TIME);
 }
 
 
@@ -82,10 +90,11 @@ bool ts::AbstractDatagramInputPlugin::isRealTime()
 
 bool ts::AbstractDatagramInputPlugin::getOptions()
 {
-    if (_real_time) {
+    if (bool(_options & TSDatagramInputOptions::REAL_TIME)) {
         getChronoValue(_eval_time, u"evaluation-interval");
         getChronoValue(_display_time, u"display-interval");
     }
+    _rs204_format = bool(_options & TSDatagramInputOptions::ALLOW_RS204) && present(u"rs204");
     getIntValue(_time_priority, u"timestamp-priority", _default_time_priority);
     return true;
 }
@@ -101,6 +110,17 @@ bool ts::AbstractDatagramInputPlugin::start()
     _inbuf_count = _inbuf_next = _mdata_next = 0;
     _start = _start_0 = _start_1 = _next_display = Time::Epoch;
     _packets = _packets_0 = _packets_1 = 0;
+
+    // Expected packet size. Zero means any.
+    if (_rs204_format) {
+        _packet_size = PKT_RS_SIZE;
+    }
+    else if (!(_options & TSDatagramInputOptions::ALLOW_RS204)) {
+        _packet_size = PKT_SIZE;
+    }
+    else {
+        _packet_size = 0;
+    }
     return true;
 }
 
@@ -111,7 +131,7 @@ bool ts::AbstractDatagramInputPlugin::start()
 
 ts::BitRate ts::AbstractDatagramInputPlugin::getBitrate()
 {
-    if (!_real_time || _eval_time <= cn::milliseconds::zero() || _start_0 == _start_1) {
+    if (!(_options & TSDatagramInputOptions::REAL_TIME) || _eval_time <= cn::milliseconds::zero() || _start_0 == _start_1) {
         // Input bitrate not evaluated at all or first evaluation period not yet complete
         return 0;
     }
@@ -152,9 +172,10 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
         }
 
         // Look for TS packets in the UDP message.
-        new_packets = TSPacket::Locate(_inbuf.data(), insize, _inbuf_next, _inbuf_count);
+        new_packets = TSPacket::Locate(_inbuf.data(), insize, _inbuf_next, _inbuf_count, _packet_size);
 
         if (new_packets) {
+            assert(_packet_size == PKT_SIZE || _packet_size == PKT_RS_SIZE);
 
             // Look for an RTP header before the first packet. There is no clear proof of the presence of the RTP header.
             // We check if the header size is large enough for an RTP header and if the "RTP payload type" is MPEG-2 TS.
@@ -191,14 +212,17 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
             // Build time stamps in packet metadata.
             _mdata_next = 0;
             for (size_t i = 0; i < _inbuf_count; ++i) {
+                TSPacketMetadata& md(_mdata[i]);
+                md.reset();
                 if (use_rtp) {
-                    _mdata[i].setInputTimeStamp(rtp_timestamp, TimeSource::RTP);
+                    md.setInputTimeStamp(rtp_timestamp, TimeSource::RTP);
                 }
                 else if (use_kernel) {
-                    _mdata[i].setInputTimeStamp(timestamp, timesource);
+                    md.setInputTimeStamp(timestamp, timesource);
                 }
-                else {
-                    _mdata[i].clearInputTimeStamp();
+                // Copy 204-byte trailer in metadata.
+                if (_packet_size == PKT_RS_SIZE) {
+                    md.setAuxData(_inbuf.data() + _inbuf_next + i * PKT_RS_SIZE + PKT_SIZE, RS_SIZE);
                 }
             }
 
@@ -210,7 +234,7 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
     }
 
     // If new packets were received, we may need to re-evaluate the real-time input bitrate.
-    if (new_packets && _real_time && _eval_time > cn::milliseconds::zero()) {
+    if (new_packets && bool(_options & TSDatagramInputOptions::REAL_TIME) && _eval_time > cn::milliseconds::zero()) {
 
         const Time now(Time::CurrentUTC());
 
@@ -251,10 +275,10 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
 
     // Return packets from the input buffer
     size_t pkt_cnt = std::min(_inbuf_count, max_packets);
-    TSPacket::Copy(buffer, _inbuf.data() + _inbuf_next, pkt_cnt);
+    TSPacket::Copy(buffer, _inbuf.data() + _inbuf_next, pkt_cnt, _packet_size);
     TSPacketMetadata::Copy(pkt_data, &_mdata[_mdata_next], pkt_cnt);
     _inbuf_count -= pkt_cnt;
-    _inbuf_next += pkt_cnt * PKT_SIZE;
+    _inbuf_next += pkt_cnt * _packet_size;
     _mdata_next += pkt_cnt;
 
     return pkt_cnt;

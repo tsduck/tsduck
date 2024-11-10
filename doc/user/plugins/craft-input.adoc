@@ -162,6 +162,14 @@ Set the _random_access_indicator_ in the packets.
 An adaptation field is created.
 
 [.opt]
+*--rs204* _hexa-digits_
+
+[.optdoc]
+Generate a 204-byte packet and specify the binary content to store in the 16-byte trailer.
+The value must be a string of hexadecimal digits specifying up to 16 bytes.
+If the data are shorter than 16 bytes, they are padded with 0xFF.
+
+[.opt]
 *--scrambling* _value_
 
 [.optdoc]

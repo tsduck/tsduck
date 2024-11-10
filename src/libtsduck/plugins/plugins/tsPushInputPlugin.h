@@ -88,10 +88,11 @@ namespace ts {
         //! Push packet to the @c tsp chain.
         //! This method must be called from the processInput() method in the superclass.
         //! @param [in] buffer Address of the buffer containing incoming packets.
+        //! @param [in] mdata Address of the buffer containing incoming packets metadata.
         //! @param [in] count Size of @a buffer in number of packets.
         //! @return True on success, false on error or requested termination.
         //!
-        virtual bool pushPackets(const TSPacket* buffer, size_t count);
+        virtual bool pushPackets(const TSPacket* buffer, const TSPacketMetadata* mdata, size_t count);
 
         //!
         //! Constructor.

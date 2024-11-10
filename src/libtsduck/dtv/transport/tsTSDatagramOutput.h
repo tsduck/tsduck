@@ -125,7 +125,7 @@ namespace ts {
         bool              _rtp_fixed_ssrc = false;     // RTP SSRC id has a fixed value
         uint32_t          _rtp_user_ssrc = 0;          // RTP user-specified SSRC id
         PID               _pcr_user_pid = PID_NULL;    // User-specified PCR PID.
-        bool              _rs204_format = false;       // Use 204-byte format with Reed Solomon placeholder.
+        bool              _rs204_format = false;       // Generate packets in 204-byte format.
 
         // Command line options for raw UDP.
         IPv4SocketAddress _destination {};             // Destination address/port.
