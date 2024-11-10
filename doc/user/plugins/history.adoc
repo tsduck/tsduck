@@ -121,7 +121,7 @@ This option suppresses these annoying messages.
 [.optdoc]
 Report the start of all intra-frames in video PID's.
 Detecting intra-frames depends on the video codec and not all of them are correctly detected.
-By default, intra-frames are not reported.
+By default, in each PID, only the first and last intra-frames are reported.
 
 [.opt]
 *-m* +

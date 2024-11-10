@@ -52,8 +52,9 @@ namespace ts {
             PacketCounter pkt_count = 0;          // Number of packets on this PID
             PacketCounter first_pkt = 0;          // First packet in TS
             PacketCounter last_pkt = 0;           // Last packet in TS
+            PacketCounter last_iframe_pkt = 0;    // Last packet containing an intra-frame
             uint16_t      service_id = 0;         // One service the PID belongs to
-            uint8_t       stream_type = ST_NULL;  // Stream type as found in the PMT.
+            uint8_t       stream_type = ST_NULL;  // Stream type as found in the PMT
             uint8_t       scrambling = 0;         // Last scrambling control value
             TID           last_tid = TID_NULL;    // Last table on this PID
             CodecType     codec = CodecType::UNDEFINED; // Audio/video codec
@@ -134,7 +135,7 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
     help(u"intra-frame",
          u"Report the start of all intra-frames in video PID's. "
          u"Detecting intra-frames depends on the video codec and not all of them are correctly detected. "
-         u"By default, intra-frames are not reported.");
+         u"By default, in each PID, only the first and last intra-frames are reported.");
 
     option(u"milli-seconds", 'm');
     help(u"milli-seconds",
@@ -233,6 +234,9 @@ bool ts::HistoryPlugin::stop()
 {
     // Report last packet of each PID
     for (const auto& it : _cpids) {
+        if (!_report_iframe && it.second.last_iframe_pkt != 0) {
+            report(it.second.last_iframe_pkt, u"PID %n, last intra-frame, %s, service %n", it.first, CodecTypeEnum->name(it.second.codec), it.second.service_id);
+        }
         if (it.second.pkt_count > 0) {
             report(it.second.last_pkt, u"PID %n last packet, %s", it.first, it.second.scrambling ? u"scrambled" : u"clear");
         }
@@ -532,8 +536,15 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
             report(u"PID %n, PES stream_id modified from 0x%X to %s", pid, cpid.pes_strid.value(), NameFromDTV(u"pes.stream_id", pes_stream_id, NamesFlags::FIRST));
         }
         cpid.pes_strid = pes_stream_id;
-        if (_report_iframe && PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), cpid.stream_type, cpid.codec) != NPOS) {
-            report(u"PID %n, new intra-frame, %s, service %n", pid, CodecTypeEnum->name(cpid.codec), cpid.service_id);
+        if (PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), cpid.stream_type, cpid.codec) != NPOS) {
+            // The PES packet contains the start of a video intra-frame.
+            if (_report_iframe) {
+                report(u"PID %n, new intra-frame, %s, service %n", pid, CodecTypeEnum->name(cpid.codec), cpid.service_id);
+            }
+            else if (cpid.last_iframe_pkt == 0) {
+                report(u"PID %n, first intra-frame, %s, service %n", pid, CodecTypeEnum->name(cpid.codec), cpid.service_id);
+            }
+            cpid.last_iframe_pkt = tsp->pluginPackets();
         }
     }
 

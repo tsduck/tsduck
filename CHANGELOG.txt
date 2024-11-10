@@ -38,12 +38,13 @@ VERSION 3.39-3938
     XML files to delete events instead of adding them.
   * When reading RS204 files (TS packets with 16-byte trailers), the trailer
     is no longer discarded. It is kept all along the plugin chain, it can be
-    manipulated by plugins and is written back if the output format is set
-    as RS204. Use "tsdump --rs204" to dump the trailer. This can be useful
-    with ISDB-T streams where the trailer contains modulation information.
-  * Similarly, the output plugin "ip" with option --rs204 copies the input
-    16-byte trailers, when present. Previously, a dummy zeroed trailer was
-    created.
+    manipulated by plugins and is written back if the output format is set as
+    RS204. The following plugins provide support for 204-bytes packets:
+    "craft", "dump", "file", "fork", "ip", "merge", "pcap". With "tsdump" and
+    plugin "dump", the option --rs204 dumps the trailer. With option --isdb,
+    the ISDB-T information is formatted.
+  * The plugin "history" now reports the first and last intra-frame in all
+    video PID's. With option --intra-frame, all intra-frames are reported.
   * New options in existing commands and plugins:
     - Option --except-label in all packet processing plugins.
     - Option --udp-format in "tstables" and plugin "tables" to send tables
