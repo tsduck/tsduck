@@ -156,9 +156,9 @@ void ts::AVS3AudioDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::AVS3AudioDescriptor::general_coding_type::deserialize(PSIBuffer& buf)
 {
     buf.skipBits(1);  // anc_data_index
-    buf.getBits(coding_profile, 3);
+    coding_profile = buf.getBits<uint8_t>(3);
     buf.getBits(bitrate_index, 4);
-    buf.getBits(bitstream_type, 1);
+    bitstream_type = buf.getBits<uint8_t>(1);
     buf.getBits(channel_number_index, 7);
     raw_frame_length = buf.getUInt16();
 }
@@ -169,7 +169,7 @@ void ts::AVS3AudioDescriptor::lossless_coding_type::deserialize(PSIBuffer& buf, 
         sampling_frequency = buf.getUInt24();
     }
     buf.skipBits(1);  // anc_data_index
-    buf.getBits(coding_profile, 3);
+    coding_profile = buf.getBits<uint8_t>(3);
     buf.skipBits(4);
     channel_number = buf.getUInt8();
 }
@@ -224,7 +224,7 @@ void ts::AVS3AudioDescriptor::deserializePayload(PSIBuffer& buf)
     else {
         coding_data = std::monostate {};
     }
-    buf.getBits(resolution, 2);
+    resolution = buf.getBits<uint8_t>(2);
     buf.skipBits(6);
     buf.getBytes(additional_info);
 }
@@ -238,7 +238,8 @@ void ts::AVS3AudioDescriptor::general_coding_type::display(TablesDisplay& disp, 
 {
     disp << margin << "General High-rate Coding. Coding Profile: " << DataName(MY_XML_NAME, u"coding_profile", coding_profile, NamesFlags::VALUE);
     disp << ", Bitstream Type: " << GeneralBitstreamTypes.name(bitstream_type, true) << std::endl;
-    disp << margin << "Bitrate: " << DataName(MY_XML_NAME, u"channel_bitrate", (channel_number_index << 8) | bitrate_index, NamesFlags::VALUE)
+    disp << margin << "  "
+         << "Bitrate: " << DataName(MY_XML_NAME, u"channel_bitrate", (channel_number_index << 8) | bitrate_index, NamesFlags::VALUE)
          << ", Raw Frame Length: " << raw_frame_length << std::endl;
 }
 
@@ -258,23 +259,24 @@ void ts::AVS3AudioDescriptor::fullrate_coding_type::display(TablesDisplay& disp,
 {
     const UString err_msg = u"**ERROR**";
     bool ok = true;
-    disp << margin << "General Full-rate Coding. NN Type: " << DataName(MY_XML_NAME, u"nn_type", nn_type, NamesFlags::VALUE);
+    disp << margin << "General Full-rate Coding. NN Type: " << DataName(MY_XML_NAME, u"nn_type", nn_type, NamesFlags::VALUE) << std::endl;
+    disp << margin << "  ";
     switch (content_type()) {
         case Channel_signal:
-            disp << ", Channel Signal - "
+            disp << "Channel Signal - "
                  << (channel_num_index.has_value() ? DataName(MY_XML_NAME, u"channel_number_idx", channel_num_index.value(), NamesFlags::VALUE) : err_msg);
             break;
         case Object_signal:
-            disp << ", Object Signal - "
+            disp << "Object Signal - "
                  << (num_objects.has_value() ? UString::Format(u"number of objects: %d", num_objects.value()) : err_msg);
             break;
         case Mix_signal:
-            disp << ", Mix Signal - "
+            disp << "Mix Signal - "
                  << (channel_num_index.has_value() ? DataName(MY_XML_NAME, u"channel_number_idx", channel_num_index.value(), NamesFlags::VALUE) : err_msg)
-                 << (num_objects.has_value() ? UString::Format(u", number of objects: %d", num_objects.value()) : err_msg);
+                 << (num_objects.has_value() ? UString::Format(u", number of objects: %d", num_objects.value() + 1) : err_msg);
             break;
         case HOA_signal:
-            disp << ", HOA Signal - "
+            disp << "HOA Signal - "
                  << (hoa_order.has_value() ? UString::Format(u"order: %d", hoa_order.value() + 1) : err_msg);
             break;
         default:
