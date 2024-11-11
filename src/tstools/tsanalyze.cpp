@@ -96,8 +96,9 @@ int MainCode(int argc, char *argv[])
 
     // Analyze all packets in the file.
     ts::TSPacket pkt;
-    while (file.readPackets(&pkt, nullptr, 1, opt) > 0) {
-        analyzer.feedPacket(pkt);
+    ts::TSPacketMetadata mdata;
+    while (file.readPackets(&pkt, &mdata, 1, opt) > 0) {
+        analyzer.feedPacket(pkt, mdata);
     }
     file.close(opt);
 

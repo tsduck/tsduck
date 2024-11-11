@@ -56,6 +56,7 @@ void ts::TSAnalyzer::reset()
     _invalid_sync = 0;
     _transport_errors = 0;
     _suspect_ignored = 0;
+    _ts_isdb_layers.clear();
     _pid_cnt = 0;
     _scrambled_pid_cnt = 0;
     _pcr_pid_cnt = 0;
@@ -63,6 +64,7 @@ void ts::TSAnalyzer::reset()
     _global_scr_pids = 0;
     _global_pkt_cnt = 0;
     _global_bitrate = 0;
+    _global_isdb_layers.clear();
     _psisi_pid_cnt = 0;
     _psisi_scr_pids = 0;
     _psisi_pkt_cnt = 0;
@@ -71,6 +73,7 @@ void ts::TSAnalyzer::reset()
     _unref_scr_pids = 0;
     _unref_pkt_cnt = 0;
     _unref_bitrate = 0;
+    _unref_isdb_layers.clear();
     _ts_pcr_bitrate_188 = 0;
     _ts_pcr_bitrate_204 = 0;
     _ts_user_bitrate = 0;
@@ -102,6 +105,18 @@ void ts::TSAnalyzer::reset()
     _dct.invalidate();
 
     resetSectionDemux();
+}
+
+
+//----------------------------------------------------------------------------
+// Accumulate packet counters by PID.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::Accumulate(CounterMap& acc, const CounterMap& data)
+{
+    for (const auto& it : data) {
+        acc[it.first] += it.second;
+    }
 }
 
 
@@ -1407,7 +1422,7 @@ void ts::TSAnalyzer::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
 // The following method feeds the analyzer with a TS packet.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
+void ts::TSAnalyzer::feedPacket(const TSPacket& pkt, const TSPacketMetadata& mdata)
 {
     bool broken_rate(false);
 
@@ -1609,23 +1624,18 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
         ps->last_dts = dts;
     }
 
-    // Check PES start code: PES packet headers start with the constant
-    // sequence 00 00 01. Check this on all clear packets. This test is
-    // actually meaningful only on TS packets carrying PES packets.
-    // Note that "carrying PES" is an information that is not
-    // available from the packet itself but from the environment
-    // (for instance if the PID is referenced as a video PID in a PMT).
-    // So, before getting the PMT referencing a PID, we do not know if
-    // this PID carries PES or not.
-
-    size_t header_size(pkt.getHeaderSize());
-
+    // Check PES start code: PES packet headers start with the constant sequence 00 00 01.
+    // Check this on all clear packets. This test is actually meaningful only on TS packets carrying PES packets.
+    // Note that "carrying PES" is an information that is not available from the packet itself but from the environment
+    // (for instance if the PID is referenced as a video PID in a PMT). So, before getting the PMT referencing a PID,
+    // we do not know if this PID carries PES or not.
+    size_t header_size = pkt.getHeaderSize();
     if (pkt.getPUSI() && pkt.getScrambling() == SC_CLEAR && header_size <= PKT_SIZE - 3) {
 
         // Got a "unit start indicator" in a clear packet.
         // This may be the start of a section or a PES packet.
 
-        if (pkt.b [header_size] != 0x00 || pkt.b [header_size + 1] != 0x00 || pkt.b [header_size + 2] != 0x01) {
+        if (pkt.b[header_size] != 0x00 || pkt.b[header_size + 1] != 0x00 || pkt.b[header_size + 2] != 0x01) {
             // Got an invalid PES start code. This is not an error if the
             // PID carries sections (we may not yet know this, so count
             // all these errors now and ignore them later if we know
@@ -1643,7 +1653,7 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
             // (the PES stream_id is next byte after PES start code).
             if (ps->pes_stream_id == 0) {
                 // First PES stream_id found on this PID
-                ps->pes_stream_id = pkt.b [header_size + 3];
+                ps->pes_stream_id = pkt.b[header_size + 3];
                 ps->same_stream_id = true;
             }
             else if (ps->pes_stream_id != pkt.b[header_size + 3]) {
@@ -1651,6 +1661,17 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
                 ps->same_stream_id = false;
             }
         }
+    }
+
+    // Check "ISDB-T information" in extended 16-byte trailer. The 16-byte trailer is only available when
+    // analyzing transport streams with 204-byte packets. In that case, the trailer is in the packet
+    // metadata. At this point, we don't always know if the stream is an ISDB one or not. We collect
+    // the information as if the TS was ISDB. At reporting time, we will use it only if the stream is
+    // confirmed as ISDB.
+    if (mdata.mayHaveISDBT()) {
+        // Count packets in the ISDB-T layers. Some PID's have all their packets in the same layers.
+        // Some other PID's have been seen on multiple layers.
+        ps->isdb_layers[mdata.isdbtLayerIndicator()]++;
     }
 }
 
@@ -1698,7 +1719,11 @@ void ts::TSAnalyzer::recomputeStatistics()
         srv.second->pid_cnt = 0;
         srv.second->ts_pkt_cnt = 0;
         srv.second->scrambled_pid_cnt = 0;
+        srv.second->isdb_layers.clear();
     }
+
+    // Shall we use ISDB information?
+    const bool isdb = bool(_duck.standards() & Standards::ISDB);
 
     // Complete all PID information
     _pid_cnt = 0;
@@ -1711,9 +1736,17 @@ void ts::TSAnalyzer::recomputeStatistics()
     _unref_pid_cnt = 0;
     _unref_pkt_cnt = 0;
     _unref_scr_pids = 0;
+    _ts_isdb_layers.clear();
+    _global_isdb_layers.clear();
+    _unref_isdb_layers.clear();
 
     for (auto& pci : _pids) {
         PIDContext& pc(*pci.second);
+
+        // Count total packets.
+        if (isdb) {
+            Accumulate(_ts_isdb_layers, pc.isdb_layers);
+        }
 
         // Compute TS bitrate from the PCR's of this PID
         if (pc.ts_bitrate_cnt != 0) {
@@ -1739,6 +1772,9 @@ void ts::TSAnalyzer::recomputeStatistics()
             if (pc.scrambled) {
                 scp->scrambled_pid_cnt++;
             }
+            if (isdb) {
+                Accumulate(scp->isdb_layers, pc.isdb_layers);
+            }
         }
 
         // Enforce PES when carrying audio or video
@@ -1756,6 +1792,9 @@ void ts::TSAnalyzer::recomputeStatistics()
             if (pc.scrambled) {
                 _unref_scr_pids++;
             }
+            if (isdb) {
+                Accumulate(_unref_isdb_layers, pc.isdb_layers);
+            }
         }
 
         // Count global PID's
@@ -1764,6 +1803,9 @@ void ts::TSAnalyzer::recomputeStatistics()
             _global_pkt_cnt += pc.ts_pkt_cnt;
             if (pc.scrambled) {
                 _global_scr_pids++;
+            }
+            if (isdb) {
+                Accumulate(_global_isdb_layers, pc.isdb_layers);
             }
         }
 

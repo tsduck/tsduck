@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3938
+VERSION 3.39-3940
 
 [NEW] New commands and plugins:
 
@@ -41,8 +41,9 @@ VERSION 3.39-3938
     manipulated by plugins and is written back if the output format is set as
     RS204. The following plugins provide support for 204-bytes packets:
     "craft", "dump", "file", "fork", "ip", "merge", "pcap". With "tsdump" and
-    plugin "dump", the option --rs204 dumps the trailer. With option --isdb,
-    the ISDB-T information is formatted.
+    plugin "dump", the option --rs204 dumps the trailer and, with option
+    --isdb, the ISDB-T information is formatted. In "tsanalyze" and plugin
+    "analyze", the ISDB-T layer information is displayed by service and PID.
   * The plugin "history" now reports the first and last intra-frame in all
     video PID's. With option --intra-frame, all intra-frames are reported.
   * New options in existing commands and plugins:

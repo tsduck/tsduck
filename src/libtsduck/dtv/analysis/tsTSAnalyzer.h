@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
 #include "tsSectionDemux.h"
 #include "tsPESDemux.h"
 #include "tsT2MIDemux.h"
@@ -65,8 +66,9 @@ namespace ts {
         //! The following method feeds the analyzer with a TS packet.
         //! The stream is analyzed by repeatedly calling feedPacket().
         //! @param [in] packet One TS packet from the stream.
+        //! @param [in] mdata Associated metadata.
         //!
-        void feedPacket(const TSPacket& packet);
+        void feedPacket(const TSPacket& packet, const TSPacketMetadata& mdata);
 
         //!
         //! Reset the analysis context.
@@ -145,6 +147,11 @@ namespace ts {
 
     protected:
 
+        //!
+        //! A generic map of packet counters, indexed by size_t.
+        //!
+        using CounterMap = std::map<size_t,uint64_t>;
+
         // -------------------
         // Service description
         // -------------------
@@ -160,18 +167,19 @@ namespace ts {
             const uint16_t          service_id;       //!< Service id.
             std::optional<uint16_t> orig_netw_id {};  //!< Original network id.
             std::optional<uint16_t> lcn {};           //!< Logical channel number.
-            uint8_t  service_type = 0;                //!< Service type.
-            UString  name {};                         //!< Service name.
-            UString  provider {};                     //!< Service provider name.
-            PID      pmt_pid = 0;                     //!< PID of PMT.
-            PID      pcr_pid = 0;                     //!< PID of PCR's (if any).
-            size_t   pid_cnt = 0;                     //!< Number of PID's.
-            size_t   scrambled_pid_cnt = 0;           //!< Number of scrambled PID's.
-            uint64_t ts_pkt_cnt = 0;                  //!< Number of TS packets.
-            BitRate  bitrate = 0;                     //!< Average service bitrate in b/s.
-            bool     hidden = false;                  //!< Service is hidden from end-user.
-            bool     carry_ssu = false;               //!< Carry System Software Update.
-            bool     carry_t2mi = false;              //!< Carry T2-MI encasulated data.
+            uint8_t    service_type = 0;                //!< Service type.
+            UString    name {};                         //!< Service name.
+            UString    provider {};                     //!< Service provider name.
+            PID        pmt_pid = 0;                     //!< PID of PMT.
+            PID        pcr_pid = 0;                     //!< PID of PCR's (if any).
+            size_t     pid_cnt = 0;                     //!< Number of PID's.
+            size_t     scrambled_pid_cnt = 0;           //!< Number of scrambled PID's.
+            uint64_t   ts_pkt_cnt = 0;                  //!< Number of TS packets.
+            BitRate    bitrate = 0;                     //!< Average service bitrate in b/s.
+            bool       hidden = false;                  //!< Service is hidden from end-user.
+            bool       carry_ssu = false;               //!< Carry System Software Update.
+            bool       carry_t2mi = false;              //!< Carry T2-MI encasulated data.
+            CounterMap isdb_layers {};                  //!< For ISDB-T streams with 204-byte packets, map key = layer indicator (0-1) to value = number of TS packets.
 
             //!
             //! Constructor.
@@ -341,10 +349,11 @@ namespace ts {
             BitRate       ts_pcr_bitrate = 0;      //!< Average TS bitrate in b/s (eval from PCR).
             BitRate       bitrate = 0;             //!< Average PID bitrate in b/s.
             uint16_t      cas_id = 0;              //!< For EMM and ECM streams.
-            std::set<uint32_t>         cas_operators {}; //!< Operators for EMM and ECM streams, when applicable.
-            ETIDContextMap             sections {};      //!< List of sections in this PID.
-            std::set<uint32_t>         ssu_oui {};       //!< Set of applicable OUI's for SSU.
-            std::map<uint8_t,uint64_t> t2mi_plp_ts {};   //!< For T2-MI streams, map key = PLP (Physical Layer Pipe) to value = number of embedded TS packets.
+            std::set<uint32_t> cas_operators {};   //!< Operators for EMM and ECM streams, when applicable.
+            ETIDContextMap     sections {};        //!< List of sections in this PID.
+            std::set<uint32_t> ssu_oui {};         //!< Set of applicable OUI's for SSU.
+            CounterMap         t2mi_plp_ts {};     //!< For T2-MI streams, map key = PLP (Physical Layer Pipe) to value = number of embedded TS packets.
+            CounterMap         isdb_layers {};     //!< For ISDB-T streams with 204-byte packets, map key = layer indicator (0-1) to value = number of TS packets.
 
             // Public members - Analysis data:
             uint8_t       cur_continuity = 0;   //!< Current continuity count.
@@ -464,6 +473,7 @@ namespace ts {
         uint64_t             _invalid_sync = 0;       //!< Number of packets with invalid sync byte (not 0x47).
         uint64_t             _transport_errors = 0;   //!< Number of packets with transport error.
         uint64_t             _suspect_ignored = 0;    //!< Number of suspect packets, ignored.
+        CounterMap           _ts_isdb_layers {};      //!< For ISDB-T streams with 204-byte packets, map key = layer indicator (0-1) to value = number of TS packets.
         size_t               _pid_cnt = 0;            //!< Number of PID's (with actual packets).
         size_t               _scrambled_pid_cnt = 0;  //!< Number of scrambled PID's.
         size_t               _pcr_pid_cnt = 0;        //!< Number of PID's with PCR's.
@@ -471,6 +481,7 @@ namespace ts {
         size_t               _global_scr_pids = 0;    //!< Number of scrambled global PID's.
         uint64_t             _global_pkt_cnt = 0;     //!< Number of packets in global PID's.
         BitRate              _global_bitrate = 0;     //!< Bitrate for global PID's.
+        CounterMap           _global_isdb_layers {};  //!< Same as _isdb_layers for global PID's.
         size_t               _psisi_pid_cnt = 0;      //!< Number of global PSI/SI PID's (0x00 to 0x1F).
         size_t               _psisi_scr_pids = 0;     //!< Number of scrambled global PSI/SI PID's (normally zero).
         uint64_t             _psisi_pkt_cnt = 0;      //!< Number of packets in global PSI/SI PID's.
@@ -479,6 +490,7 @@ namespace ts {
         size_t               _unref_scr_pids = 0;     //!< Number of scrambled unreferenced PID's.
         uint64_t             _unref_pkt_cnt = 0;      //!< Number of packets in unreferenced PID's.
         BitRate              _unref_bitrate = 0;      //!< Bitrate for unreferenced PID's.
+        CounterMap           _unref_isdb_layers {};   //!< Same as _isdb_layers for unreferenced PID's.
         BitRate              _ts_pcr_bitrate_188 = 0; //!< Average TS bitrate in b/s (eval from PCR).
         BitRate              _ts_pcr_bitrate_204 = 0; //!< Average TS bitrate in b/s (eval from PCR).
         BitRate              _ts_user_bitrate = 0;    //!< User-specified TS bitrate (if any).
@@ -553,6 +565,9 @@ namespace ts {
         virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;
         virtual void handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt) override;
         virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
+
+        // Accumulate packet counters.
+        static void Accumulate(CounterMap& acc, const CounterMap& data);
 
         // TSAnalyzer private members (state data, used during analysis):
         bool         _modified = false;              // Internal data modified, need recomputeStatistics

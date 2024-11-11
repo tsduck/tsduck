@@ -15,3 +15,14 @@ Bits = 4
  5-7 = TSP that service providers multiplex originally organized data
    8 = TSP which transmits the IIP but not transmitted by any layer
 9-15 = TSP that service providers multiplex originally organized data
+
+[ISDB.short_layer_indicator]
+Bits = 4
+   0 = NULL
+   1 = A
+   2 = B
+   3 = C
+   4 = AC-data
+ 5-7 = Data
+   8 = IIP
+9-15 = Data
