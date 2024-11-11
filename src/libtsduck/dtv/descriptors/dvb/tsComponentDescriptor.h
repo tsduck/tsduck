@@ -60,7 +60,7 @@ namespace ts {
 
         //!
         //! Display the feature flags of the NGA Component Descriptor value. See table 27 of ETSI EN 300 468
-        //! @param [in,out] display Display engine.
+        //! @param [in,out] disp Display engine.
         //! @param [in] margin Left margin content.
         //! @param [in] component_type The component_type value for the component descriptor
         //! 
