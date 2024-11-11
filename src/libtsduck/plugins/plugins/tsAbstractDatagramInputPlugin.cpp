@@ -23,8 +23,10 @@ ts::AbstractDatagramInputPlugin::AbstractDatagramInputPlugin(TSP* tsp_,
                                                              TSDatagramInputOptions options) :
     InputPlugin(tsp_, description, syntax),
     _options(options),
+    // Ensure at least 7 204-byte packets.
     _inbuf(std::max(buffer_size, 7 * PKT_RS_SIZE)),
-    _mdata(_inbuf.size() / PKT_RS_SIZE)
+    // Resize metadata based on 188-byte packets (max number of packets for that buffer).
+    _mdata(_inbuf.size() / PKT_SIZE)
 {
     if (bool(_options & TSDatagramInputOptions::REAL_TIME)) {
         option<cn::seconds>(u"display-interval", 'd');
