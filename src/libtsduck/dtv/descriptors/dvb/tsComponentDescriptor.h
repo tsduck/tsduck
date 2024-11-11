@@ -58,6 +58,14 @@ namespace ts {
         //!
         static UString ComponentTypeName(const DuckContext& duck, uint8_t stream_content, uint8_t stream_content_ext, uint8_t component_type, NamesFlags flags = NamesFlags::NAME, size_t bits = 16);
 
+        //!
+        //! Display the feature flags of the NGA Component Descriptor value. See table 27 of ETSI EN 300 468
+        //! @param [in,out] display Display engine.
+        //! @param [in] margin Left margin content.
+        //! @param [in] component_type The component_type value for the component descriptor
+        //! 
+        static void DisplayNGAComponentFeatures(TablesDisplay& disp, const UString& margin, uint8_t component_type);
+
     protected:
         // Inherited methods
         virtual void clearContent() override;

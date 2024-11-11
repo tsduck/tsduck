@@ -91,11 +91,72 @@ void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         const uint8_t component_type = buf.getUInt8();
         disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::FIRST) << std::endl;
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
+        if (stream_content_ext == 0xE && stream_content == 0xB) {
+            DisplayNGAComponentFeatures(disp, margin + u"  ", component_type);
+        }
         disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
         if (buf.canRead()) {
             disp << margin << "Description: \"" << buf.getString() << "\"" << std::endl;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Display the feature flags of the NGA Component Descriptor value.
+//----------------------------------------------------------------------------
+
+void ts::ComponentDescriptor::DisplayNGAComponentFeatures(TablesDisplay& disp, const UString& margin, uint8_t component_type)
+{
+    if (component_type & 0b01000000) {
+        disp << margin << "content is pre-rendered for consumption with headphones" << std::endl;
+    }
+    std::vector<std::string> enables = {};
+    if (component_type & 0b00100000) {
+        enables.push_back("interactivity");
+    }
+    if (component_type & 0b00010000) {
+        enables.push_back("dialogue enhancement");
+    }
+    if (!enables.empty()) {
+        disp << margin << "content enables ";
+        for (size_t i = 0; i < enables.size(); i++) {
+            disp << ((i != 0 && i == enables.size() - 1) ? " and " : (i > 0 ? ", " : "")) << enables[i];
+        }
+        disp << std::endl;
+    }
+    std::vector<std::string> contains = {};
+    if (component_type & 0b00001000) {
+        contains.push_back("spoken subtitles");
+    }
+    if (component_type & 0b00000100) {
+        contains.push_back("audio description");
+    }
+    if (!contains.empty()) {
+        disp << margin << "content contains ";
+        for (size_t i = 0; i < contains.size(); i++) {
+            disp << ((i != 0 && i == contains.size() - 1) ? " and " : (i > 0 ? ", " : "")) << contains[i];
+        }
+        disp << std::endl;
+    }
+    disp << margin;
+    switch (component_type & 0b00000011) {
+        case 0:
+            disp << "no preferred reproduction";
+            break;
+        case 1:
+            disp << "stereo";
+            break;
+        case 2:
+            disp << "two-dimensional";
+            break;
+        case 3:
+            disp << "three dimensional";
+            break;
+        default:
+            break;
+    }
+    disp << " channel layout" << std::endl;
 }
 
 
