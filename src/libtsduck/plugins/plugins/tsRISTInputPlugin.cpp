@@ -60,6 +60,13 @@ public:
     int              last_qsize = 0;       // last queue size in data blocks.
     bool             qsize_warned = false; // a warning was reporting on heavy queue size.
 
+    // Identified librist bug detection and automatic correction.
+    // See https://code.videolan.org/rist/librist/-/issues/184
+    uint64_t lrbug_msg_count = 0;            // Number of received messages.
+    uint64_t lrbug_short_msg_count = 0;      // Number of received "short" messages (less than 7 packets).
+    uint64_t lrbug_inv_msg_count = 0;        // Number of invalid messages (with corrupted or missing first packet).
+    uint64_t lrbug_inv_short_msg_count = 0;  // Number of invalid short messages.
+
     // Constructor.
     Guts(Report& report) : rist(report) {}
 };
@@ -131,6 +138,9 @@ bool ts::RISTInputPlugin::start()
     _guts->last_qsize = 0;
     _guts->qsize_warned = false;
 
+    // Librist bug detection and automatic correction.
+    _guts->lrbug_msg_count = _guts->lrbug_short_msg_count = _guts->lrbug_inv_msg_count = _guts->lrbug_inv_short_msg_count = 0;
+
     // Initialize the RIST context.
     debug(u"calling rist_receiver_create, profile: %d", _guts->rist.profile);
     if (::rist_receiver_create(&_guts->rist.ctx, _guts->rist.profile, &_guts->rist.log) != 0) {
@@ -162,6 +172,9 @@ bool ts::RISTInputPlugin::start()
 bool ts::RISTInputPlugin::stop()
 {
     _guts->rist.cleanup();
+    debug(u"invalid messages: %d/%d, invalid short messages: %d/%d",
+          _guts->lrbug_inv_msg_count, _guts->lrbug_msg_count,
+          _guts->lrbug_inv_short_msg_count, _guts->lrbug_short_msg_count);
     return true;
 }
 
@@ -228,13 +241,41 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
                 _guts->last_qsize = queue_size;
 
                 // Assume that we receive an integral number of TS packets.
-                const size_t total_pkt_count = dblock->payload_len / PKT_SIZE;
-                const uint8_t* const data_addr = reinterpret_cast<const uint8_t*>(dblock->payload);
-                const size_t data_size = total_pkt_count * PKT_SIZE;
+                size_t total_pkt_count = dblock->payload_len / PKT_SIZE;
+                const uint8_t* data_addr = reinterpret_cast<const uint8_t*>(dblock->payload);
+                size_t data_size = total_pkt_count * PKT_SIZE;
                 if (data_size < dblock->payload_len) {
                     warning(u"received %'d bytes, not a integral number of TS packets, %d trailing bytes, first received byte: 0x%X, first trailing byte: 0x%X",
                             dblock->payload_len, dblock->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]);
                 }
+
+                // --- BEGIN LIBRIST-BUG
+                // Detection, correction and reporting of a bug in librist. In short messages (less than 7 TS packets),
+                // the first packet is sometimes missing (the content in memory contains various strings and data).
+                // We skip it and log it.
+                _guts->lrbug_msg_count++;
+                if (total_pkt_count < 7) {
+                    _guts->lrbug_short_msg_count++;
+                }
+                if (data_addr[0] != SYNC_BYTE) {
+                    // First packet in message is invalid.
+                    _guts->lrbug_inv_msg_count++;
+                    if (total_pkt_count < 7) {
+                        _guts->lrbug_inv_short_msg_count++;
+                    }
+                    debug(u"*** librist bug: invalid packet (1/%d), invalid messages: %d/%d, invalid short messages: %d/%d", total_pkt_count,
+                          _guts->lrbug_inv_msg_count, _guts->lrbug_msg_count, _guts->lrbug_inv_short_msg_count, _guts->lrbug_short_msg_count);
+                    // Simply ignore the invalid packet.
+                    data_addr += PKT_SIZE;
+                    data_size -= PKT_SIZE;
+                    total_pkt_count--;
+                    // If no more packet to use, loop back.
+                    if (total_pkt_count == 0) {
+                        ::rist_receiver_data_block_free2(&dblock);
+                        continue;
+                    }
+                }
+                // --- END LIBRIST-BUG
 
                 // Get the input RIST timestamp. This value is in NTP units (Network Time Protocol).
                 // NTP represents 64-bit times as a uniform 64-bit integer value, a number of "units",
