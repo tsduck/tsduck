@@ -522,7 +522,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (int(pkt.getAFSize()) <= _max_af) ||
         (_every_packets > 0 && (tsp->pluginPackets() - _after_packets) % _every_packets == 0) ||
         (_with_pes && pkt.startPES()) ||
-        (!_isdb_layers.empty() && pkt_data.auxDataSize() >= 2 && Contains(_isdb_layers, uint8_t((pkt_data.auxData()[1] >> 4) & 0x0F)));
+        (!_isdb_layers.empty() && pkt_data.mayHaveISDBT() && Contains(_isdb_layers, pkt_data.isdbtLayerIndicator()));
 
     // Search binary patterns in packets.
     if (!ok && !_pattern.empty()) {

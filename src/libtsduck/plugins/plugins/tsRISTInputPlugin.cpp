@@ -233,7 +233,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
                 const size_t data_size = total_pkt_count * PKT_SIZE;
                 if (data_size < dblock->payload_len) {
                     warning(u"received %'d bytes, not a integral number of TS packets, %d trailing bytes, first received byte: 0x%X, first trailing byte: 0x%X",
-                                 dblock->payload_len, dblock->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]);
+                            dblock->payload_len, dblock->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]);
                 }
 
                 // Get the input RIST timestamp. This value is in NTP units (Network Time Protocol).

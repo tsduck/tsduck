@@ -41,7 +41,6 @@ namespace ts {
         BitRate       _bitrate = 0;                   // Target bitrate for inserted packets
         PacketCounter _inter_pkt = 0;                 // # TS packets between 2 new PID packets
         PacketCounter _pid_next_pkt = 0;              // Next time to insert a packet
-        PacketCounter _packet_count = 0;              // TS packet counter
         uint64_t      _inter_time = 0;                // Milliseconds between 2 new packets, internally calculated to PTS (multiplicated by 90)
         uint64_t      _min_pts = 0;                   // Start only inserting packets when this PTS has been passed
         PID           _pts_pid = PID_NULL;            // defines the PID of min-pts setting
@@ -185,7 +184,6 @@ bool ts::MuxPlugin::start()
     getIntValue(_max_pts, u"max-pts", 0);
     getIntValue(_pts_pid, u"pts-pid", PID_NULL);
     getIntValue(_max_insert_count, u"max-insert-count", 0);
-    _packet_count = 0;
     _pid_next_pkt = 0;
     _ts_pids.reset();
     _youngest_pts = 0;
@@ -244,7 +242,7 @@ bool ts::MuxPlugin::stop()
 ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Initialization sequences (executed only once). Executed if there is a target bitrate.
-    if (_packet_count == 0 && _bitrate != 0) {
+    if (tsp->pluginPackets() == 0 && _bitrate != 0) {
         // Compute the inter-packet interval based on the TS bitrate
         BitRate ts_bitrate = tsp->bitrate();
         if (ts_bitrate < _bitrate) {
@@ -254,8 +252,6 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
         verbose(u"transport bitrate: %s'd", ts_bitrate);
     }
 
-    // Count TS
-    _packet_count++;
     PID pid = pkt.getPID();
     uint64_t currentpts = 0;
 
@@ -309,7 +305,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
     }
 
     // If not yet time to insert a packet, transmit stuffing
-    if (_packet_count < _pid_next_pkt) {
+    if (tsp->pluginPackets() < _pid_next_pkt) {
         return TSP_OK;
     }
 
@@ -336,7 +332,8 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
 
     _inserted_packet_count++;
     _pts_last_inserted = _youngest_pts;   // store pts of last insertion
-    debug(u"[%d:%d] Inserting Packet at PTS: %'d (pos: %'d), file: %s (pos: %'d)", _inter_pkt, _pid_next_pkt, _pts_last_inserted,_packet_count, _file.getFileName(), _inserted_packet_count);
+    debug(u"[%d:%d] Inserting Packet at PTS: %'d (pos: %'d), file: %s (pos: %'d)",
+          _inter_pkt, _pid_next_pkt, _pts_last_inserted, tsp->pluginPackets(), _file.getFileName(), _inserted_packet_count);
 
     if (_inter_time != 0) {
         _pts_range_ok = false; // reset _pts_range_ok signal if inter_time is specified

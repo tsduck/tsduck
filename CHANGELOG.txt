@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.39-3931
+VERSION 3.39-3940
+
+[NEW] New commands and plugins:
+
+  * Added plugin "trace": Trace packets with a custom message.
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -34,9 +38,14 @@ VERSION 3.39-3931
     XML files to delete events instead of adding them.
   * When reading RS204 files (TS packets with 16-byte trailers), the trailer
     is no longer discarded. It is kept all along the plugin chain, it can be
-    manipulated by plugins and is written back if the output format is set
-    as RS204. Use "tsdump --rs204" to dump the trailer. This can be useful
-    with ISDB-T streams where the trailer contains modulation information.
+    manipulated by plugins and is written back if the output format is set as
+    RS204. The following plugins provide support for 204-bytes packets:
+    "craft", "dump", "file", "fork", "ip", "merge", "pcap". With "tsdump" and
+    plugin "dump", the option --rs204 dumps the trailer and, with option
+    --isdb, the ISDB-T information is formatted. In "tsanalyze" and plugin
+    "analyze", the ISDB-T layer information is displayed by service and PID.
+  * The plugin "history" now reports the first and last intra-frame in all
+    video PID's. With option --intra-frame, all intra-frames are reported.
   * New options in existing commands and plugins:
     - Option --except-label in all packet processing plugins.
     - Option --udp-format in "tstables" and plugin "tables" to send tables
@@ -49,6 +58,9 @@ VERSION 3.39-3931
     - Options --abnt, --atsc, --brazil, --ignore-leap-seconds, --isdb, --japan,
       --philippines, --rs204, --usa in "tsdump" and plugin "dump".
     - Option --isdb_layer in plugin "filter".
+    - Option --intra-frame in plugin "history".
+    - Options --rs204 and --delete-rs204 in packet processing plugin "craft".
+    - Option --rs204 in input plugins "craft", "ip", "pcap".
 
 [BUG] Bug fixes:
 
@@ -60,6 +72,10 @@ VERSION 3.39-3931
     splice information tables.
   * Fixed issue #1520: assertion failure in "tscmp" in rare cases.
   * Fixed issue #1537: options --usa failed to translate to ATSC and HF band.
+  * The plugin "merge" failed to receive TS packets not in 188-byte format.
+  * In "tspcap" and plugin "pcap", IPv4 packets with header checksum set to
+    zero were rejected. Some IP implementations do not compute the checksum
+    and leave it to zero, meaning don't check.
 
 -------------------------------------------------------------------------------
 

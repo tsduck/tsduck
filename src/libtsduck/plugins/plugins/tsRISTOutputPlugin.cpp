@@ -172,7 +172,7 @@ bool ts::RISTOutputPlugin::stop()
 
 bool ts::RISTOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    return _guts->datagram.send(packets, packet_count, tsp->bitrate(), *this);
+    return _guts->datagram.send(packets, metadata, packet_count, tsp->bitrate(), *this);
 }
 
 

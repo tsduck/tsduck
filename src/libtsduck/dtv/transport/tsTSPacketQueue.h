@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
 #include "tsPCRAnalyzer.h"
 
 namespace ts {
@@ -75,7 +76,8 @@ namespace ts {
         //! Called by the writer thread to get a write buffer.
         //! The writer thread is suspended until enough free space is made in the buffer
         //! or the reader thread triggers a stop condition.
-        //! @param [out] buffer Address of the write buffer.
+        //! @param [out] buffer Address of the packet write buffer.
+        //! @param [out] mdata Address of the packet metadata write buffer.
         //! @param [out] buffer_size Size in packets of the write buffer.
         //! @param [in] min_size Minimum number of free packets to get. This is just a
         //! hint. The returned size can be smaller, for instance when the write window
@@ -83,7 +85,7 @@ namespace ts {
         //! @return True when the write buffer is correctly available.
         //! False when the reader thread has signalled a stop condition.
         //!
-        bool lockWriteBuffer(TSPacket*& buffer, size_t& buffer_size, size_t min_size = 1);
+        bool lockWriteBuffer(TSPacket*& buffer, TSPacketMetadata*& mdata, size_t& buffer_size, size_t min_size = 1);
 
         //!
         //! Called by the writer thread to release the write buffer.
@@ -116,22 +118,24 @@ namespace ts {
         //! Called by the reader thread to get the next packet without waiting.
         //! The reader thread is never suspended. If no packet is available, return false.
         //! @param [out] packet The returned packet. Unmodified when no packet is available.
+        //! @param [out] mdata The returned packet metadata, if not null. Unmodified when no packet is available.
         //! @param [out] bitrate Input bitrate or zero if unknown.
         //! @return True if a packet was returned in @a packet. False if none was available
         //! or an end of file occured.
         //!
-        bool getPacket(TSPacket& packet, BitRate& bitrate);
+        bool getPacket(TSPacket& packet, TSPacketMetadata* mdata, BitRate& bitrate);
 
         //!
         //! Called by the reader thread to wait for packets.
         //! The reader thread is suspended until at least one packet is available.
         //! @param [out] buffer Address of packet buffer.
+        //! @param [out] mdata Address of the packet metadata buffer. Can be null.
         //! @param [in] buffer_count Size of @a buffer in number of packets.
         //! @param [out] actual_count Number of returned packets in @a buffer.
         //! @param [out] bitrate Input bitrate or zero if unknown.
         //! @return True if a packets were returned in @a buffer. False on error or end of file.
         //!
-        bool waitPackets(TSPacket* buffer, size_t buffer_count, size_t& actual_count, BitRate& bitrate);
+        bool waitPackets(TSPacket* buffer, TSPacketMetadata* mdata, size_t buffer_count, size_t& actual_count, BitRate& bitrate);
 
         //!
         //! Check if the writer thread has reported an end of file condition.
@@ -145,17 +149,18 @@ namespace ts {
         void stop();
 
     private:
-        volatile bool     _eof = false;      // The writer thread has reported an end of file.
-        volatile bool     _stopped = false;  // The read thread has reported a stop condition.
-        mutable std::mutex              _mutex {};     // Protect access to shared data.
-        mutable std::condition_variable _enqueued {};  // Signaled when packets are inserted.
-        mutable std::condition_variable _dequeued {};  // Signaled when packets were freed.
-        TSPacketVector    _buffer {};        // The packet buffer.
-        PCRAnalyzer       _pcr {1, 12};      // PCR analyzer to get the bitrate.
-        size_t            _inCount = 0;      // Number of packets currently inside the buffer.
-        size_t            _readIndex = 0;    // Index of next packet to read.
-        size_t            _writeIndex = 0;   // Index of next packet to write.
-        BitRate           _bitrate = 0;      // Bitrate as set by the writer thread.
+        volatile bool                   _eof = false;      // The writer thread has reported an end of file.
+        volatile bool                   _stopped = false;  // The read thread has reported a stop condition.
+        mutable std::mutex              _mutex {};         // Protect access to shared data.
+        mutable std::condition_variable _enqueued {};      // Signaled when packets are inserted.
+        mutable std::condition_variable _dequeued {};      // Signaled when packets were freed.
+        TSPacketVector         _pkt_buffer {};   // The packet buffer.
+        TSPacketMetadataVector _md_buffer {};    // The packet metadata buffer.
+        PCRAnalyzer            _pcr {1, 12};     // PCR analyzer to get the bitrate.
+        size_t                 _inCount = 0;     // Number of packets currently inside the buffer.
+        size_t                 _readIndex = 0;   // Index of next packet to read.
+        size_t                 _writeIndex = 0;  // Index of next packet to write.
+        BitRate                _bitrate = 0;     // Bitrate as set by the writer thread.
 
         // Get bitrate, must be called with mutex held.
         BitRate getBitrate() const;

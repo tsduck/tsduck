@@ -127,7 +127,7 @@ size_t ts::PushInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data
     BitRate bitrate = 0;
 
     // Wait for some packets from the receiver thread.
-    if (!_queue.waitPackets(buffer, max_packets, count, bitrate)) {
+    if (!_queue.waitPackets(buffer, pkt_data, max_packets, count, bitrate)) {
         // End of input.
         count = 0;
     }
@@ -141,13 +141,14 @@ size_t ts::PushInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data
 // Push packet to the tsp chain.
 //----------------------------------------------------------------------------
 
-bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
+bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, const TSPacketMetadata* mdata, size_t count)
 {
     // We are executing in the context of the receiver thread.
     // Send packets by chunks, loop until everything is pushed.
     while (count > 0) {
 
         TSPacket* out_buffer = nullptr;
+        TSPacketMetadata* out_mdata = nullptr;
         size_t out_count = 0;
 
         // Abort now if the application is terminating.
@@ -157,11 +158,12 @@ bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
         }
 
         // Wait for space in the queue buffer.
-        if (!_queue.lockWriteBuffer(out_buffer, out_count, count)) {
+        if (!_queue.lockWriteBuffer(out_buffer, out_mdata, out_count, count)) {
             return false;
         }
 
         assert(out_buffer != nullptr);
+        assert(out_mdata != nullptr);
         assert(out_count > 0);
 
         // Move packets into the queue.
@@ -169,6 +171,7 @@ bool ts::PushInputPlugin::pushPackets(const TSPacket* buffer, size_t count)
             out_count = count;
         }
         TSPacket::Copy(out_buffer, buffer, out_count);
+        TSPacketMetadata::Copy(out_mdata, mdata, out_count);
         buffer += out_count;
         count -= out_count;
 

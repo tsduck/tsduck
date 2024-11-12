@@ -39,10 +39,16 @@ bool ts::IPv4Packet::reset(const void* data, size_t size)
     // Clear previous content.
     clear();
 
-    // Check that this looks like an IPv4 packet.
+    // Check that this looks like an IPv4 packet. Get header size.
     const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
-    if ((_ip_header_size = IPHeaderSize(ip, size)) == 0 || GetUInt16BE(ip + IPv4_CHECKSUM_OFFSET) != IPHeaderChecksum(ip, _ip_header_size)) {
-        return false; // not a valid IP packet.
+    if ((_ip_header_size = IPHeaderSize(ip, size)) == 0) {
+        return false;
+    }
+
+    // Verify the IPv4 header checksum. Some IPv4 implementation leaves it to zero, meaning not computed, don't check.
+    const uint16_t checksum = GetUInt16BE(ip + IPv4_CHECKSUM_OFFSET);
+    if (checksum != 0 && checksum != IPHeaderChecksum(ip, _ip_header_size)) {
+        return false;
     }
 
     // Packet size in header.

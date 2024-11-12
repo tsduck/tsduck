@@ -20,6 +20,19 @@
 
 namespace ts {
     //!
+    //! Options which alter the behavior of the input datagrams.
+    //! Can be used as bitmasks.
+    //!
+    enum class TSDatagramInputOptions {
+        NONE        = 0x0000,  //!< No option.
+        REAL_TIME   = 0x0001,  //!< Reception occurs in real-time, typically from the network..
+        ALLOW_RS204 = 0x0002,  //!< Allow RS204 204-byte packets, autodetected, enforced with --rs204.
+    };
+}
+TS_ENABLE_BITMASK_OPERATORS(ts::TSDatagramInputOptions);
+
+namespace ts {
+    //!
     //! Abstract base class for input plugins receiving real-time datagrams.
     //! The input bitrate is computed from the received bytes and wall-clock time.
     //! TS packets are located in each received datagram, skipping potential headers.
@@ -48,8 +61,7 @@ namespace ts {
         //! @param [in] system_time_name When the subclass provides timestamps, this is a lowercase name
         //! which is used in option -\-timestamp-priority. When empty, there is no timestamps from the subclass.
         //! @param [in] system_time_description Description of @a system_time_name for help text.
-        //! @param [in] real_time If true, the reception occurs in real-time, typically from
-        //! the network. When false, the "reception" can be reading a capture file.
+        //! @param [in] options Bitmak of input options.
         //!
         AbstractDatagramInputPlugin(TSP* tsp,
                                     size_t buffer_size,
@@ -57,7 +69,7 @@ namespace ts {
                                     const UString& syntax,
                                     const UString& system_time_name,
                                     const UString& system_time_description,
-                                    bool real_time);
+                                    TSDatagramInputOptions options);
 
         //!
         //! Receive a datagram message.
@@ -76,12 +88,13 @@ namespace ts {
         enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
 
         // Configuration and command line options.
-        bool             _real_time = false;               // Real-time reception.
+        TSDatagramInputOptions _options = TSDatagramInputOptions::NONE;
         cn::milliseconds _eval_time {};                    // Bitrate evaluation interval in milli-seconds
         cn::milliseconds _display_time {};                 // Bitrate display interval in milli-seconds
         Enumeration      _time_priority_enum {};           // Enumeration values for _time_priority
         TimePriority     _time_priority = RTP_TSP;         // Priority of time stamps sources.
         TimePriority     _default_time_priority = RTP_TSP; // Priority of time stamps sources.
+        bool             _rs204_format = false;            // Input packets are always 204-byte format.
 
         // Working data.
         Time          _next_display {};     // Next bitrate display time
@@ -94,6 +107,7 @@ namespace ts {
         size_t        _inbuf_count = 0;     // Number of remaining TS packets in inbuf
         size_t        _inbuf_next = 0;      // Byte index in _inbuf of next TS packet to return
         size_t        _mdata_next = 0;      // Index in _mdata of next TS packet metadata to return
+        size_t        _packet_size = 0;     // Packet size (188 or 204).
         ByteBlock     _inbuf {};            // Input buffer
         TSPacketMetadataVector _mdata {};   // Metadata for packets in _inbuf
     };

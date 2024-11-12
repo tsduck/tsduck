@@ -49,7 +49,6 @@ namespace ts {
         bool              _use_time = false;    // Use milliseconds in SliceEvent::value
         bool              _ignore_pcr = false;  // Do not use PCR's, rely on previous plugins' bitrate
         Status            _status = TSP_OK;     // Current packet status to return
-        PacketCounter     _packet_cnt = 0;      // Packet counter
         uint64_t          _time_factor = 0;     // Factor to apply to get milli-seconds
         PCRAnalyzer       _pcr_analyzer {};     // PCR analyzer for time stamping
         SliceEventVector  _events {};           // Sorted list of time events to apply
@@ -119,7 +118,6 @@ bool ts::SlicePlugin::start()
 {
     // Get command line options
     _status = TSP_OK;
-    _packet_cnt = 0;
     _use_time = present(u"milli-seconds") || present(u"seconds");
     _time_factor = present(u"seconds") ? 1000 : 1;
     _ignore_pcr = present(u"ignore-pcr");
@@ -181,7 +179,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
     uint64_t current_value;
     if (!_use_time) {
         // By default, use packet count
-        current_value = _packet_cnt;
+        current_value = tsp->pluginPackets();
     }
     else {
         // Get current bitrate
@@ -198,7 +196,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
             return TSP_END;
         }
         // Compute time in milli-seconds since beginning
-        current_value = PacketInterval(bitrate, _packet_cnt).count();
+        current_value = PacketInterval(bitrate, tsp->pluginPackets()).count();
     }
 
     // Is it time to change the action?
@@ -206,10 +204,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
         // Yes, we just passed a schedule
         _status = _events[_next_index].status;
         _next_index++;
-        verbose(u"new packet processing: %s after %'d packets", StatusNames.name(_status), _packet_cnt);
+        verbose(u"new packet processing: %s after %'d packets", StatusNames.name(_status), tsp->pluginPackets());
     }
-
-    // Count packets
-    _packet_cnt++;
     return _status;
 }

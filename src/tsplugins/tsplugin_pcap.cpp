@@ -89,7 +89,7 @@ ts::PcapInputPlugin::PcapInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
                                 u"Read TS packets from a pcap or pcap-ng file", u"[options] [file-name]",
                                 u"pcap", u"pcap capture time stamp",
-                                false) // not real-time network reception
+                                TSDatagramInputOptions::ALLOW_RS204)
 {
     _pcap_udp.defineArgs(*this);
 
@@ -319,9 +319,11 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
                 // The actual destination is not fully known yet.
                 // We are still waiting for the first UDP datagram containing TS packets.
                 // Is there any TS packet in this one?
+                // This is just a check for presence, we don't use the returned packet position, count or size.
                 size_t start_index = 0;
                 size_t packet_count = 0;
-                if (!TSPacket::Locate(ip.protocolData(), ip.protocolDataSize(), start_index, packet_count)) {
+                size_t packet_size = 0;
+                if (!TSPacket::Locate(ip.protocolData(), ip.protocolDataSize(), start_index, packet_count, packet_size)) {
                     continue; // no TS packet in this UDP datagram.
                 }
                 // We just found the first UDP datagram with TS packets, now use this destination address all the time.

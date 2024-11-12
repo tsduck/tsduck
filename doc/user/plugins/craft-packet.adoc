@@ -74,6 +74,12 @@ Clear the _random_access_indicator_ in the packets.
 Specify the value of the _continuity_counter_ field.
 
 [.opt]
+*--delete-rs204*
+
+[.optdoc]
+Delete the 16-byte trailer of a 204-byte packet, if there is one.
+
+[.opt]
 *--discontinuity*
 
 [.optdoc]
@@ -278,6 +284,15 @@ Set the _payload_unit_start_indicator_ in the packets.
 [.optdoc]
 Set the _random_access_indicator_ in the packets.
 Space is required in the adaptation field.
+
+[.opt]
+*--rs204* _hexa-digits_
+
+[.optdoc]
+Specify the binary content to store in the 16-byte trailer of a 204-byte packet.
+If the packets have no trailer, one is created.
+The value must be a string of hexadecimal digits specifying up to 16 bytes.
+If the data are shorter than 16 bytes, they are padded with 0xFF.
 
 [.opt]
 *--scrambling* _value_

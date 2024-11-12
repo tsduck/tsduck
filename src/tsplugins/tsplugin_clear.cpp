@@ -43,7 +43,6 @@ namespace ts {
         bool          _audio_only = false;    // Check audio PIDs only
         TOT           _last_tot {};           // Last received TOT
         PacketCounter _drop_after = 0;        // Number of packets after last clear
-        PacketCounter _current_pkt = 0;       // Current TS packet number
         PacketCounter _last_clear_pkt = 0;    // Last clear packet number
         PIDSet        _clear_pids {};         // List of PIDs to check for clear packets
         SectionDemux  _demux {duck, this};    // Section demux
@@ -130,7 +129,6 @@ bool ts::ClearPlugin::start()
     _abort = false;
     _pass_packets = false; // initially drop packets
     _last_tot.invalidate();
-    _current_pkt = 0;
     _last_clear_pkt = 0;
     _clear_pids.reset();
 
@@ -291,16 +289,13 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPack
         return TSP_END;
     }
 
-    // If this is a clear packet from an audio/video PID of the
-    // reference service, let the packets pass.
-
+    // If this is a clear packet from an audio/video PID of the reference service, let the packets pass.
     if (_clear_pids[pid] && pkt.isClear()) {
         _pass_packets = true;
-        _last_clear_pkt = _current_pkt;
+        _last_clear_pkt = tsp->pluginPackets();
     }
 
     // Make sure we know how long to wait after the last clear packet
-
     if (_drop_after == 0) {
         // Number of packets in 1 second at current bitrate
         _drop_after = (tsp->bitrate() / PKT_SIZE_BITS).toInt();
@@ -312,26 +307,19 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPack
     }
 
     // If packets are passing but no clear packet recently found, drop packets
-
-    if (_pass_packets && (_current_pkt - _last_clear_pkt) > _drop_after) {
+    if (_pass_packets && (tsp->pluginPackets() - _last_clear_pkt) > _drop_after) {
         _pass_packets = false;
     }
 
     // Report state change in verbose mode
-
     if (_pass_packets != previous_pass && verbose()) {
         // State has changed
         const UString curtime(_last_tot.isValid() && !_last_tot.regions.empty() ?
                               _last_tot.localTime(_last_tot.regions[0]).format(Time::DATETIME) :
                               u"unknown");
-        verbose(u"now %s all packets, last TOT local time: %s, current packet: %'d", _pass_packets ? u"passing" : u"dropping", curtime, _current_pkt);
+        verbose(u"now %s all packets, last TOT local time: %s, current packet: %'d", _pass_packets ? u"passing" : u"dropping", curtime, tsp->pluginPackets());
     }
 
-    // Count TS packets
-
-    _current_pkt++;
-
     // Pass or drop the packets
-
     return _pass_packets ? TSP_OK : _drop_status;
 }

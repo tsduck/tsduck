@@ -217,7 +217,7 @@ bool ts::AnalyzePlugin::stop()
 ts::ProcessorPlugin::Status ts::AnalyzePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed the analyzer with one packet
-    _analyzer.feedPacket(pkt);
+    _analyzer.feedPacket(pkt, pkt_data);
 
     // With --interval, check if it is time to produce a report
     if (_output_interval > cn::nanoseconds::zero() && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {

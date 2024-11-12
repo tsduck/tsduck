@@ -95,10 +95,15 @@ ifdef::opt-raw[]
 
 [.optdoc]
 Use a 204-byte format for TS packets in UDP datagrams.
-Each TS packet is followed by a zeroed placeholder for a 16-byte Reed-Solomon FEC.
+Each TS packet is followed by a 16-byte trailer.
+If the input packet contained a trailer, it is copied.
+Otherwise, the trailer is set to all 0xFF.
 
 [.optdoc]
-This format is meaningful for modulators only, but some tools also require or allow it in UDP datagrams.
+In DVB networks, the 16-byte trailer, when present, contains a Reed-Solomon outer FEC
+which is rarely transmitted on IP networks.
+In ISDB-T networks, on the other hand, the 16-byte trailer contains modulation information
+which is commonly retransmitted on IP networks.
 
 endif::[]
 

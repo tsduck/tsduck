@@ -357,6 +357,10 @@ endif::[]
 |packet
 |Delay transmission by a fixed amount of packets
 
+|trace
+|packet
+|Trace packets with a custom message
+
 |trigger
 |packet
 |Trigger actions on selected labeled TS packets

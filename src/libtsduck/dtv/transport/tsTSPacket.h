@@ -809,16 +809,18 @@ namespace ts {
         //! @param [out] dest Address of the first contiguous TS packet to write.
         //! @param [in] source Address of the memory area to read.
         //! @param [in] count Number of TS packets to copy.
+        //! @param [in] packet_size Individual packet size in the source memory area.
         //!
-        static void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1);
+        static void Copy(TSPacket* dest, const uint8_t* source, size_t count = 1, size_t packet_size = PKT_SIZE);
 
         //!
         //! Copy contiguous TS packets into raw memory.
         //! @param [out] dest Address of the memory area to write.
         //! @param [in] source Address of the first contiguous TS packet to read.
         //! @param [in] count Number of TS packets to copy.
+        //! @param [in] packet_size Individual packet size in the destination memory area.
         //!
-        static void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1);
+        static void Copy(uint8_t* dest, const TSPacket* source, size_t count = 1, size_t packet_size = PKT_SIZE);
 
         //!
         //! Locate contiguous TS packets into a buffer.
@@ -831,20 +833,23 @@ namespace ts {
         //! - Presence of a truncated packet at the end of message.
         //!
         //! To face the first situation, we look backward from the end of the message,
-        //! looking for a 0x47 sync byte every 188 bytes, going backward.
+        //! looking for a 0x47 sync byte every 188 or 204 bytes, going backward.
         //!
         //! If no TS packet is found using the first method, we restart from
         //! the beginning of the message, looking for a 0x47 sync byte every
-        //! 188 bytes, going forward. If we find this pattern, followed by
-        //! less than 188 bytes, then we have found a sequence of TS packets.
+        //! 188 or 204 bytes, going forward. If we find this pattern, followed by
+        //! less than 188 or 204 bytes, then we have found a sequence of TS packets.
         //!
         //! @param [in] buffer Address of a message buffer containing TS packets.
         //! @param [in] buffer_size Size in bytes of the buffer.
         //! @param [out] start_index Start index in bytes of the first TS packet in the buffer.
         //! @param [out] packet_count Number of TS packets in the buffer.
+        //! @param [in,out] packet_size On input, indicate the previous packet size from the same source.
+        //! If different from PKT_SIZE (188) and PKT_RS_SIZE (204), assume an unknown packet size.
+        //! On output, if packets were found, it is set to the packet size.
         //! @return True if at least one packet was found, false if there is no packet in the buffer.
         //!
-        static bool Locate(const uint8_t* buffer, size_t buffer_size, size_t& start_index, size_t& packet_count);
+        static bool Locate(const uint8_t* buffer, size_t buffer_size, size_t& start_index, size_t& packet_count, size_t& packet_size);
 
         //!
         //! Sanity check routine.

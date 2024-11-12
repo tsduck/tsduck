@@ -121,8 +121,8 @@ namespace ts {
         // Display header of a service PID list.
         void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, const BitRate& bitrate, const BitRate& ts_bitrate, bool wide) const;
 
-         // Display one line of a subtotal.
-         void reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, const BitRate& bitrate, const BitRate& ts_bitrate, bool wide) const;
+        // Display one line of a subtotal.
+        void reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, const BitRate& bitrate, const BitRate& ts_bitrate, bool wide) const;
 
         // Display one line of a service PID list.
         void reportServicePID(Grid& grid, const PIDContext&) const;
@@ -133,10 +133,19 @@ namespace ts {
         // Report a time stamp.
         void reportTimeStamp(Grid& grid, const UString& name, const Time& value) const;
 
-        // Display one normalized line of a time value.
-        static void reportNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
+        // Display a normalized time if valid (not Epoch).
+        static void AddNormalizedTime(std::ostream&, const Time&, const char* type, const UString& country = UString());
 
-        // Build a JSON time.
-        static void jsonTime(json::Value& root, const UString& path, const Time&, const UString& country = UString());
+        // Display a normalized list of map keys, if map is not empty.
+        static void AddNormalizedMapKeys(std::ostream&, const char* type, const CounterMap& data);
+
+        // Add a time as a JSON string if valid (not Epoch).
+        static void AddTime(json::Value& parent, const UString& path, const Time&, const UString& country = UString());
+
+        // Add a list of map keys as a JSON array, if map is not empty.
+        static void AddMapKeysArray(json::Value& parent, const UString& path, const CounterMap& data);
+
+        // Format a string for a list of ISDB-T layers. If total is not zero, add percentages.
+        static UString LayerToString(const CounterMap& data, uint64_t total = 0);
     };
 }

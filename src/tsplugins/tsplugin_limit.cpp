@@ -53,7 +53,6 @@ namespace ts {
         PacketCounter  _threshold4 = 0;
         PacketCounter  _thresholdAV = 0;     // Threshold for audio/video packets.
         BitRate        _curBitrate = 0;      // Instant bitrate (between to consecutive PCR).
-        PacketCounter  _currentPacket = 0;   // Total number of packets so far in the TS.
         PacketCounter  _excessPoint = 0;     // Last packet from which we computed excess packets.
         PacketCounter  _excessPackets = 0;   // Number of packets in excess (to drop).
         PacketCounter  _excessBits = 0;      // Number of bits in excess, in addition to packets.
@@ -190,7 +189,6 @@ bool ts::LimitPlugin::start()
     debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, threshold 4: %'d, audio/video threshold: %'d", _threshold1, _threshold2, _threshold3, _threshold4, _thresholdAV);
 
     // Reset plugin state.
-    _currentPacket = 0;
     _bitsSecond = 0;
     _excessPoint = 0;
     _excessPackets = 0;
@@ -298,7 +296,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
     const PID pid = pkt.getPID();
 
     // Get system clock at first packet.
-    if (_currentPacket == 0) {
+    if (tsp->pluginPackets() == 0) {
         _clock = monotonic_time::clock::now();
     }
 
@@ -344,7 +342,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
         if (pc->pcrValue != INVALID_PCR && pc->pcrValue < pcr) {
             // We compute TS instant bitrate using only two consecutive PCR's
             // in one single PID. This can be not always precise. To be improved maybe.
-            const BitRate newBitrate = BitRate((_currentPacket - pc->pcrPacket) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / BitRate(pcr - pc->pcrValue);
+            const BitRate newBitrate = BitRate((tsp->pluginPackets() - pc->pcrPacket) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / BitRate(pcr - pc->pcrValue);
 
             // Report state change.
             if (_curBitrate > _maxBitrate && newBitrate <= _maxBitrate) {
@@ -368,20 +366,20 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
             }
             else {
                 // The instant bitrate is too high.
-                assert(_currentPacket > _excessPoint);
+                assert(tsp->pluginPackets() > _excessPoint);
                 assert(_curBitrate > 0);
                 // Number of actual bits since the last "excess point":
-                const uint64_t bits = (_currentPacket - _excessPoint) * PKT_SIZE_BITS;
+                const uint64_t bits = (tsp->pluginPackets() - _excessPoint) * PKT_SIZE_BITS;
                 // Number of bits in excess, based on maximum bandwidth:
                 addExcessBits(((bits * (_curBitrate - _maxBitrate)) / _curBitrate).toInt());
                 // Last time we computed the excess packets is remembered.
-                _excessPoint = _currentPacket;
+                _excessPoint = tsp->pluginPackets();
             }
         }
 
         // Remember last PCR.
         pc->pcrValue = pcr;
-        pc->pcrPacket = _currentPacket;
+        pc->pcrPacket = tsp->pluginPackets();
     }
 
     // Decide to drop packet if needed.
@@ -412,9 +410,5 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
             status = TSP_DROP;
         }
     }
-
-    // Count packets in input stream.
-    _currentPacket++;
-
     return status;
 }

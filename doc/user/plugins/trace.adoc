@@ -1,0 +1,105 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== trace
+
+[.cmd-header]
+Trace packets with a custom message
+
+The trace message to log can be customized using `%` fields, like a `printf` function.
+By default, when no option `--label` or `--pid` is specified, all packets are traced.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P trace [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-f* _'string'_ +
+*--format* _'string'_
+
+[.optdoc]
+Specify the format of trace lines.
+
+[.optdoc]
+The fields with a `%` sign are replaced by the corresponding value in the packet.
+When the letter after `%` is lowercase, the value is displayed in decimal.
+When it is uppercase, the value is displayed in hexadecimal.
+
+[.optdoc]
+[.compact-table]
+.Format substitutions for the plugin `trace`
+[cols="<1m,<1m,<1",stripes=none,options="autowidth"]
+|===
+|Dec. |Hex. |Data substitution
+
+|%p
+|%P
+|PID value of the packet.
+
+|%i
+|%I
+|Index of the packet as seen by the plugin.
+
+|%a
+|%A
+|Index of the packet in the input transport stream,
+ including previously removed packets or when the plugin was suspended.
+
+|%%
+|
+|Literal '%' sign.
+|===
+
+[.optdoc]
+The default format is `Packet: %i, PID: %P (%p)`.
+
+[.opt]
+*-l* _label1[-label2]_ +
+*--label* _label1[-label2]_
+
+[.optdoc]
+Trace packets with any of the specified labels.
+Labels should have typically been set by a previous plugin in the chain.
+
+[.optdoc]
+Several `--label` options may be specified.
+
+[.optdoc]
+Note that the option `--label` is different from the generic option `--only-label`.
+The generic option `--only-label` acts at `tsp` level and controls which packets are passed to the plugin.
+All other packets are directly passed to the next plugin without going through this plugin.
+The option `--label`, on the other hand, is specific to the `trace` plugin and
+traces packets with specific labels among the packets which are passed to this plugin.
+
+[.opt]
+*-o* _filename_ +
+*--output-file* _filename_
+
+[.optdoc]
+Specify the output file for trace lines.
+By default, report trace lines on standard error using the `tsp` logging mechanism.
+
+[.opt]
+*-p* _pid1[-pid2]_ +
+*--pid* _pid1[-pid2]_
+
+[.optdoc]
+Trace packets with these PID values.
+
+[.optdoc]
+Several `--pid` options may be specified.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
