@@ -13,7 +13,8 @@
 TSDuck is a free and open-source MPEG Transport Stream Toolkit.
 It contains a set of simple but flexible command-line utilities that run on Linux, Windows, macOS and BSD systems.
 
-Through `tsp`, the "transport stream processor", many types of analysis and transformation can be applied on live or recorded transport streams.
+Through `tsp`, the "transport stream processor", many types of analysis and
+transformation can be applied on live or recorded transport streams.
 This utility can be extended through "plugins".
 Existing plugins can be enhanced, and new plugins can be developed using a library of {cpp} classes.
 
@@ -47,7 +48,7 @@ License
 TSDuck is released under the terms of the license which is commonly referred to as
 "BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
 This is a liberal license which allows TSDuck to be used in a large number of environments.
-See the xref:chap-license[xrefstyle=short] for more details.
+See the xref:chap-license[xrefstyle=short] or <<BSD-2C>> for more details.
 
 [.usage]
 Documentation format

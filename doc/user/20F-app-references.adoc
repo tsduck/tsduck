@@ -19,10 +19,12 @@
 |ABNT |_Associação Brasileira de Normas Técnicas_ (Brazilian standardization committee)
 |AC |Auxiliary Channel (ISDB)
 |AC-3 |Audio Compression Standard 3 (Dolby)
-|AES |Advanced Encryption Standard
+|ACG |Access Criteria Generator (DVB SimulCrypt)
+|AES |Advanced Encryption Standard (cryptography)
 |AIT |Application Information Table (DVB)
 |ANSI |American National Standards Institute
 |AOM |Alliance for Open Media
+|ARCOM |_Autorité de régulation de la communication audiovisuelle et numérique_ (French national regulator for TV)
 |ARIB |Association of Radio Industries and Businesses (Japan)
 |ASI |Asynchronous Serial Interface
 |ATIS |Alliance for Telecommunications Industry Solutions
@@ -35,7 +37,7 @@
 |BDT |Binary Data Table
 |BER |Bit Error Ratio
 |BIT |Broadcaster Information Table (ISDB)
-|BPSK |Binary Phase Shift Keying
+|BPSK |Binary Phase Shift Keying (modulation)
 |BTS |Broadcast Transport Stream (ISDB)
 |CA |Conditional Access
 |CAM |Conditional Access Module
@@ -43,12 +45,13 @@
 |CAT |Conditional Access Table (MPEG)
 |CIT |Content Identifier Table (DVB)
 |CMT |CA Message Table
-|COFDM |Coded Orthogonal Frequency Division Multiplexing
+|COFDM |Coded Orthogonal Frequency-Division Multiplexing (modulation)
 |CP |Crypto-Period
 |CRC |Cyclic Redundancy Check
-|CSA |_Conseil Supérieur de l'Audiovisuel_ (French national regulator for TV)
+|CSA |_Conseil Supérieur de l'Audiovisuel_ (French national regulator for TV, now ARCOM)
 |CVCT |Cable Virtual Channel Table (ATSC)
-|CW |Control Word
+|CW |Control Word (cryptography)
+|CWG |Control Word Generator (DVB SimulCrypt)
 |DCCT |Directed Channel Change Table (ATSC)
 |DCCSCT |Directed Channel Change Selection Code Table (ATSC)
 |DID |Descriptor Identifier (or descriptor _tag_)
@@ -73,12 +76,12 @@
 |DVB-T2 |DVB Terrestrial modulation, 2nd generation
 |EACEM |European Association of Consumer Electronics Manufacturers (now DIGITALEUROPE)
 |ECM |Entitlement Control Message
-|ECMG |ECM Generator
-|EICTA |European Information and Communications Technology Industry Association
-|EIS |Event Information Scheduler
+|ECMG |ECM Generator (DVB SimulCrypt)
+|EICTA |European Information and Communications Technology Industry Association (now DIGITALEUROPE)
+|EIS |Event Information Scheduler (DVB SimulCrypt)
 |EIT |Event Information Table (DVB, ATSC, ISDB)
 |EMM |Entitlement Management Message
-|EMMG |EMM Generator
+|EMMG |EMM Generator (DVB SimulCrypt)
 |EPG |Electronic Program Guide
 |ERT |Event Relation Table (ISDB)
 |ES |Elementary Stream
@@ -91,18 +94,19 @@
 |GOP |Group Of Pictures
 |HbbTV |Hybrid broadcast/broadband Television
 |HE-AAC |High Efficiency Advanced Audio Coding
-|HLS |HTTP Live Streaming
-|HTTP |Hyper-Text Transfer Protocol
-|HTTPS |Hyper-Text Transfer Protocol - Secure
-|IDSA |IIF Default Scrambling Algorithm
+|HLS |HTTP Live Streaming (networking)
+|HTTP |Hyper-Text Transfer Protocol (networking)
+|HTTPS |Hyper-Text Transfer Protocol - Secure (networking)
+|IDSA |IIF Default Scrambling Algorithm (cryptography)
 |IEC |International Electrotechnical Commission
 |IEEE |Institute of Electrical and Electronics Engineers
 |IETF |Internet Engineering Task Force
 |IIF |IP-TV Interoperability Forum
 |IIP |ISDB-T Information Packet
 |INT |IP/MAC Notification Table (DVB)
-|IP |Internet Protocol
-|IPTV |Internet Protocol Television
+|IP |Internet Protocol (networking)
+|IPTV |Internet Protocol Television (UDP multicast in operators network)
+|IPTV |Internet Protocol Television (piracy services)
 |ISDB |Integrated Services Digital Broadcasting
 |ISDB-S |ISDB Satellite modulation (ARIB)
 |ISDB-T |ISDB Terrestrial modulation (ARIB)
@@ -125,7 +129,9 @@
 |NIST |National Institute of Standards and Technology
 |NIT |Network Information Table (DVB)
 |NTSC |National Television Systems Committee
-|OQPSK |Offset Quadrature Phase Shift Keying
+|OFCOM |Office of Communications (UK national regulator for TV)
+|OFDM |Orthogonal Frequency-Division Multiplexing (modulation)
+|OQPSK |Offset Quadrature Phase Shift Keying (modulation)
 |OUI |Organizationally Unique Identifier (IEEE assigned)
 |PAT |Program Association Table (MPEG)
 |PCAT |Partial Content Announcement Table (ISDB)
@@ -135,22 +141,25 @@
 |PID |Packet Identifier
 |PLP |Physical Layer Pipe
 |PMT |Program Map Table (MPEG)
+|PRNG |Pseudo-Random Number Generator (cryptography)
 |PSI |Program Specific Information (MPEG)
-|PSK |Phase Shift Keying
+|PSK |Phase Shift Keying (modulation)
 |PTS |Presentation Time Stamp
-|QPSK |Quadrature Phase Shift Keying
-|QAM |Quadrature Amplitude Modulation
+|QPSK |Quadrature Phase Shift Keying (modulation)
+|QAM |Quadrature Amplitude Modulation (modulation)
 |RIST |Reliable Internet Stream Transport (network protocol)
+|RNG |Random Number Generator (cryptography)
 |RNT |Resolution provider Notification Table (DVB)
 |RRT |Rating Region Table (ATSC)
 |RS |Reed-Solomon FEC code
 |RST |Running Status Table (DVB)
-|RTP |Real-Time Protocol
+|RTP |Real-Time Protocol (networking)
 |RTT |Rating Text Tavle (ATSC)
-|SCS |SimulCrypt Synchronizer
+|SCS |SimulCrypt Synchronizer (DVB SimulCrypt)
 |SCTE |Society of Cable Telecommunications Engineers
 |SDT |Service Description Table (DVB)
 |SFN |Single Frequency Network
+|SHA |Secure Hash Algorithm, SHA-1, SHA-256, SHA-512, SHA-3 (cryptography)
 |SI |Service Information (DVB)
 |SIT |Selection Information Table (DVB)
 |SMPTE |Society of Motion Picture and Television Engineers
@@ -165,18 +174,19 @@
 |TMCC |Transmission and Multiplexing Configuration Control (ISDB)
 |TNT |_Télévision Numérique Terrestre_ (French DTTV network)
 |TOT |Time Offset Table (DVB)
-|TPS |Transmission Parameter Signalling
+|TPS |Transmission Parameter Signalling (modulation)
+|TRNG |True Random Number Generator (cryptography)
 |TS |Transport Stream
 |TSDT |Transport Stream Description Table (MPEG)
 |TSP |Transport Stream Packet (ISDB)
 |TVCT |Terrestrial Virtual Channel Table (ATSC)
-|UDP |User Datagram Protocol
+|UDP |User Datagram Protocol (networking)
 |UNT |Update Notification Table (DVB)
 |URI |Uniform Resource Identifier
 |URL |Uniform Resource Locator
 |UTC |Coordinated Universal Time
 |UUID |Universal Unique Identifier
-|UWA |UHD World Association
+|UWA |UHD World Association (China)
 |VBI |Vertical Blanking Interval
 |VCT |Virtual Channel Table (ATSC)
 |===
@@ -212,6 +222,7 @@
   "Information Technology - Intelligent Media Coding (AVS3) Part 6: Intelligent Media Format"
 * [[[AVS-TAI-109.7]]] Audio Video coding Standard Workgroup of China, T/AI 109.7:
   "Information Technology - Intelligent Media Coding (AVS3) Part 7"
+* [[[BSD-2C]]] BSD 2-Clause License, http://opensource.org/licenses/BSD-2-Clause
 * [[[Dektec]]] Dektec Digital Video B.V. corporate home page, http://www.dektec.com/
 * [[[Dektec-SDK]]] Dektec drivers and SDK's downloads, http://www.dektec.com/downloads/SDK/
 * [[[DTG-DBOOK]]] DTG:

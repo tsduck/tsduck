@@ -43,6 +43,7 @@
 [bibliography]
 === Bibliography
 
+* [[[BSD-2C]]] BSD 2-Clause License, http://opensource.org/licenses/BSD-2-Clause
 * [[[CERT-C]]] "SEI CERT C Coding Standard, Rules for Developing Safe, Reliable and Secure Systems",
   Software Engineering Institute, Carnegie Mellon University, 2016 Edition.
 * [[[CERT-CPP]]] "SEI CERT C++ Coding Standard, Rules for Developing Safe, Reliable and Secure Systems in C++",
