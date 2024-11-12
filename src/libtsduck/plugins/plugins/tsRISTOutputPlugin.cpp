@@ -59,7 +59,7 @@ public:
 
      // Constructor.
      Guts(RISTOutputPlugin* plugin) :
-         datagram(TSDatagramOutputOptions::NONE, plugin),
+         datagram(TSDatagramOutputOptions::ALLOW_RS204, plugin),
          rist(*plugin)
      {
      }

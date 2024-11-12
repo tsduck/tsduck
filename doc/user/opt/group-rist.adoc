@@ -6,35 +6,12 @@
 //
 // Documentation for options in class ts::RISTPluginData.
 //
-// tags: input, output
+// tags: output
 //
 //----------------------------------------------------------------------------
 
 [.usage]
-Parameters
-
-[.opt]
-_url_
-
-[.optdoc]
-Specify RIST URL's as parameters to specify the location of the sending peer.
-More than one URL can be specified to receive from multiple paths at the same time.
-
-[.optdoc]
-A RIST URL starts with `rist://`.
-It usually starts with `rist://__remote-ip__:__port__` (to connect to a peer) or
-`rist://@__local-ip__:__port__` (to listen for incoming connections from a peer).
-
-[.optdoc]
-A `rist://` URL may also include tuning parameters in addition to the address and port.
-This is the reason why the `rist` plugin has so few options.
-Most options are in the URL.
-
-[.optdoc]
-See <<RIST-URL>> for more details on the syntax of `rist://` URL's.
-
-[.usage]
-Options
+RIST options
 
 [.opt]
 *-a* _ip-address[:port]_ +
@@ -77,17 +54,6 @@ Must be one of `AES-128` or `AES-256`.
 
 [.optdoc]
 This value is used when the `aes-type=` parameter is not present in the URL.
-
-// tag::input[]
-[.opt]
-*--ignore-rist-timestamps*
-
-[.optdoc]
-Ignore source timestamps, use reception time as packet timestamps.
-
-[.optdoc]
-By default, use the source timestamps from the sender as packet timestamp.
-// end::input[]
 
 // tag::output[]
 [.opt]

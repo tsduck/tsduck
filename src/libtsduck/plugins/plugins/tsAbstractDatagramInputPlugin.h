@@ -69,7 +69,7 @@ namespace ts {
                                     const UString& syntax,
                                     const UString& system_time_name,
                                     const UString& system_time_description,
-                                    TSDatagramInputOptions options);
+                                    TSDatagramInputOptions options = TSDatagramInputOptions::NONE);
 
         //!
         //! Receive a datagram message.

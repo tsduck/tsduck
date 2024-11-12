@@ -27,6 +27,7 @@ Usage
 $ tsp -O rist [options] url [url...]
 ----
 
+include::{docdir}/opt/group-rist-param.adoc[tags=!*]
 include::{docdir}/opt/group-rist.adoc[tags=!*;output]
-include::{docdir}/opt/group-datagram-output.adoc[tags=!*]
+include::{docdir}/opt/group-datagram-output.adoc[tags=!*;rs204]
 include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

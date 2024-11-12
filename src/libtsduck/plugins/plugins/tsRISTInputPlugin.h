@@ -12,14 +12,14 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsInputPlugin.h"
+#include "tsAbstractDatagramInputPlugin.h"
 
 namespace ts {
     //!
     //! Reliable Internet Stream Transport (RIST) input plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL RISTInputPlugin: public InputPlugin
+    class TSDUCKDLL RISTInputPlugin: public AbstractDatagramInputPlugin
     {
         TS_PLUGIN_CONSTRUCTORS(RISTInputPlugin);
     public:
@@ -32,7 +32,10 @@ namespace ts {
         virtual bool setReceiveTimeout(cn::milliseconds timeout) override;
         virtual bool start() override;
         virtual bool stop() override;
-        virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
+
+    protected:
+        // Implementation of AbstractDatagramInputPlugin.
+        virtual bool receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, cn::microseconds& timestamp, TimeSource& timesource) override;
 
     private:
         // The actual implementation is private to the body of the class.

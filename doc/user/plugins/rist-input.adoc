@@ -27,5 +27,59 @@ Usage
 $ tsp -I rist [options] url [url...]
 ----
 
-include::{docdir}/opt/group-rist.adoc[tags=!*;input]
+include::{docdir}/opt/group-rist-param.adoc[tags=!*]
+
+[.usage]
+General options
+
+[.opt]
+*--display-interval* _value_
+
+[.optdoc]
+Specify the interval in seconds between two displays of the evaluated real-time input bitrate.
+The default is to never display the bitrate.
+This option is ignored if `--evaluation-interval` is not specified.
+
+[.opt]
+*--evaluation-interval* _value_
+
+[.optdoc]
+Specify that the real-time input bitrate shall be evaluated on a regular basis.
+The value specifies the number of seconds between two evaluations.
+By default, the real-time input bitrate is never evaluated and
+the input bitrate is evaluated from the PCR in the input packets.
+
+[.opt]
+*--rs204*
+
+[.optdoc]
+Specify that all packets are in 204-byte format.
+By default, the input packet size, 188 or 204 bytes, is automatically detected.
+Use this option only when necessary.
+
+[.opt]
+*--timestamp-priority* _name_
+
+[.optdoc]
+Specify how the input timestamp of each packet is computed.
+
+[.optdoc]
+The name specifies an ordered list of timestamp sources.
+The first available timestamp value is used as input timestamp.
+The name must be one of `rtp-rist-tsp`, `rist-rtp-tsp`, `rist-tsp`, `rtp-tsp`, `tsp`.
+
+[.optdoc]
+The possible timestamp sources are:
+
+[.optdoc]
+[.compact-list]
+* `rtp` : The RTP time stamp, when the UDP packet is an RTP packet.
+* `rist` : RIST source time stamp.
+* `tsp` : A software timestamp, provided by `tsp` when the input plugin returns a chunk of packets.
+  The `tsp`-provided timestamp is always available, always comes last and is less precise.
+
+[.optdoc]
+The default is `rtp-rist-tsp`.
+
+include::{docdir}/opt/group-rist.adoc[tags=!*]
 include::{docdir}/opt/group-common-inputs.adoc[tags=!*]
