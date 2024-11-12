@@ -28,6 +28,7 @@ namespace ts {
         NONE         = 0x0000,  //!< No option.
         ALLOW_RTP    = 0x0001,  //!< Allow RTP options to build an RTP datagram.
         ALWAYS_BURST = 0x0002,  //!< Do not define option --enforce-burst, always enforce burst.
+        ALLOW_RS204  = 0x0004,  //!< Allow option --rs204 to send 204-byte packets.
     };
 }
 TS_ENABLE_BITMASK_OPERATORS(ts::TSDatagramOutputOptions);
@@ -108,6 +109,12 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count, const BitRate& bitrate, Report& report);
+
+        //!
+        //! Get the maximum datagram payload size, according to options --packet-burst and --rs204.
+        //! @return The maximum datagram payload size.
+        //!
+        size_t maxPayloadSize() const { return _pkt_burst * (_rs204_format ? PKT_RS_SIZE : PKT_SIZE); }
 
     private:
         // Configuration and command line options.

@@ -219,6 +219,16 @@ Read the reference documentation section of each plugin for more details.
 |Automatically detected and extracted.
 |Option `--rs204`.
 
+|srt
+|input
+|Automatically detected and extracted.
+|Option `--rs204`.
+
+|srt
+|output
+|Dropped.
+|Option `--rs204`.
+
 |===
 
 [#bitrates]

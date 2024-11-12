@@ -53,5 +53,5 @@ When the receiver peer disconnects, wait for another one and continue.
 With `--multiple`, wait the specified number of milliseconds before restarting.
 
 include::{docdir}/opt/group-srt.adoc[tags=!*]
-include::{docdir}/opt/group-datagram-output.adoc[tags=!*]
+include::{docdir}/opt/group-datagram-output.adoc[tags=!*;rs204]
 include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

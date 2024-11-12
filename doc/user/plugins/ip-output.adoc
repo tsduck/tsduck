@@ -28,5 +28,5 @@ Usage
 $ tsp -O ip [options] address:port
 ----
 
-include::{docdir}/opt/group-datagram-output.adoc[tags=!*;raw;rtp]
+include::{docdir}/opt/group-datagram-output.adoc[tags=!*;raw;rtp;rs204]
 include::{docdir}/opt/group-common-outputs.adoc[tags=!*]

@@ -71,7 +71,7 @@ bool ts::SRTOutputPlugin::start()
 {
     bool success = _datagram.open(*this);
     if (success) {
-        success = _sock.open(*this);
+        success = _sock.open(_datagram.maxPayloadSize(), *this);
         if (!success) {
             _datagram.close(0, *this);
         }

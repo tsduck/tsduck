@@ -33,5 +33,5 @@ Usage
 $ tsp -O ip [options] address:port
 ----
 
-include::{docdir}/opt/group-datagram-output.adoc[tags=!*;raw;rtp;burst]
+include::{docdir}/opt/group-datagram-output.adoc[tags=!*;raw;rtp;rs204;burst]
 include::{docdir}/opt/group-common-plugins.adoc[tags=!*]
