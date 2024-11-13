@@ -56,7 +56,7 @@ The provided services include low-level features such as manipulating TS packets
 features such as demuxing and packetizing tables and high-level features such as running TS
 processing pipelines inside your application (which means something like including `tsp` in your application).
 
-See <<TSDuck-Prog>> for more details on the TSDuck library.
+See <<TSDuck-Dev>> and <<TSDuck-Prog>> for more details on the TSDuck library.
 This is a set of doxygen-generated pages with tutorials and reference documentation for all {cpp} classes in the library.
 
 Some high-level features of the TSDuck library can also be used from Python or Java, typically running
@@ -103,7 +103,7 @@ It is probably a good idea to add this `bin` directory in the `Path` environment
 
 *Note*: Starting with version 3.34, pre-built 32-bit installers for Windows are no longer provided.
 However, it is still possible to build them yourself if needed.
-See the "building and installing TSDuck" section in <<TSDuck-Prog>>.
+See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"] section in <<TSDuck-Dev>>.
 
 ==== Linux
 
@@ -117,7 +117,7 @@ There is a separate package for the TSDuck development environment.
 
 On Linux distributions with other packaging systems, there is no pre-built binary package for TSDuck.
 It must be compiled and installed using the `make` command.
-See the "building and installing TSDuck" section in <<TSDuck-Prog>>.
+See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"] section in <<TSDuck-Dev>>.
 
 ==== macOS
 
@@ -134,7 +134,7 @@ The development environment is always installed with TSDuck using Homebrew.
 
 There is no binary package for TSDuck on BSD systems.
 It must be compiled and installed using the make command.
-See the "building and installing TSDuck" section in <<TSDuck-Prog>>.
+See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"] section in <<TSDuck-Dev>>.
 
 After installation, all tools are in `/usr/local/bin` for FreeBSD, OpenBSD and DragonFly BSD.
 They are in `/usr/pkg/bin` for NetBSD.
