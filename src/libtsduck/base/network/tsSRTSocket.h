@@ -74,12 +74,13 @@ namespace ts {
 
         //!
         //! Open the socket using parameters from the command line.
+        //! @param [in] max_payload Maximum payload size in bytes. Unset if NPOS.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(Report& report = CERR)
+        bool open(size_t max_payload = NPOS, Report& report = CERR)
         {
-            return open(SRTSocketMode::DEFAULT, IPv4SocketAddress(), IPv4SocketAddress(), report);
+            return open(SRTSocketMode::DEFAULT, IPv4SocketAddress(), IPv4SocketAddress(), max_payload, report);
         }
 
         //!
@@ -87,10 +88,11 @@ namespace ts {
         //! @param [in] mode SRT socket mode. If set to DEFAULT, the mode must have been specified in the command line options.
         //! @param [in] local_address Local socket address. Ignored in DEFAULT mode. Optional local IP address used in CALLER mode.
         //! @param [in] remote_address Remote socket address. Ignored in DEFAULT and LISTENER modes.
+        //! @param [in] max_payload Maximum payload size in bytes. Unset if NPOS.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(SRTSocketMode mode, const IPv4SocketAddress& local_address, const IPv4SocketAddress& remote_address, Report& report = CERR);
+        bool open(SRTSocketMode mode, const IPv4SocketAddress& local_address, const IPv4SocketAddress& remote_address, size_t max_payload = NPOS, Report& report = CERR);
 
         //!
         //! Close the socket.

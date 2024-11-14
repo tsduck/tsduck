@@ -51,7 +51,7 @@ The TSDuck project is free and open-source. It must and will remain so.
 TSDuck is released under the terms of the license which is commonly referred to as "BSD 2-Clause License" or
 "Simplified BSD License" or "FreeBSD License".
 See the file {repo}blob/master/LICENSE.txt[`LICENSE.txt`] at the root of the TSDuck source tree
-or http://opensource.org/licenses/BSD-2-Clause for more details.
+or <<BSD-2C>> for more details.
 
 All contributions shall be released under the terms of the same license.
 Any code which does not comply with the BSD 2-Clause License will be rejected.

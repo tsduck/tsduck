@@ -6,7 +6,7 @@
 //
 // Documentation for options in class ts::TSDatagramOutput.
 //
-// tags: raw, rtp, burst
+// tags: raw, rtp, burst, rs204
 //
 //----------------------------------------------------------------------------
 
@@ -27,6 +27,10 @@
 // tag::burst[]
 :opt-burst: true
 // end::burst[]
+
+// tag::rs204[]
+:opt-rs204: true
+// end::rs204[]
 
 //---- end of tag tricks ----
 
@@ -88,7 +92,7 @@ Specifies the maximum number of TS packets to be grouped into each UDP datagram.
 [.optdoc]
 The default is 7, the maximum is 128.
 
-ifdef::opt-raw[]
+ifdef::opt-rs204[]
 
 [.opt]
 *--rs204*

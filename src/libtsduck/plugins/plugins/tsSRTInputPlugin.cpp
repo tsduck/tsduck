@@ -23,7 +23,7 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
                                 u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [[address:]port]",
                                 u"srt", u"SRT source time stamp",
-                                TSDatagramInputOptions::REAL_TIME)
+                                TSDatagramInputOptions::REAL_TIME | TSDatagramInputOptions::ALLOW_RS204)
 {
     _sock.defineArgs(*this);
 
@@ -56,7 +56,7 @@ bool ts::SRTInputPlugin::getOptions()
 bool ts::SRTInputPlugin::start()
 {
     // Initialize superclass and UDP socket.
-    return AbstractDatagramInputPlugin::start() && _sock.open(*this);
+    return AbstractDatagramInputPlugin::start() && _sock.open(NPOS, *this);
 }
 
 

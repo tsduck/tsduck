@@ -276,7 +276,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
 
 ts::SRTSocket::SRTSocket() : _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
-bool ts::SRTSocket::open(SRTSocketMode, const IPv4SocketAddress&, const IPv4SocketAddress&, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::open(SRTSocketMode, const IPv4SocketAddress&, const IPv4SocketAddress&, size_t, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::close(Report& report) NOSRT_ERROR
 bool ts::SRTSocket::peerDisconnected() const { return false; }
 bool ts::SRTSocket::loadArgs(DuckContext&, Args&) { return true; }
@@ -387,11 +387,37 @@ namespace {
 
 ts::UString ts::SRTSocket::GetLibraryVersion()
 {
+    UString version;
+
+    // Initialize SRT.
+    SRTInit::Instance();
+
+    // Get the version from the dynamic library we have now.
+    int32_t iversion = 0;
+    ::SRTSOCKET sock = ::srt_create_socket();
+    if (sock != SRT_INVALID_SOCK) {
+        int len = sizeof(iversion);
+        if (::srt_getsockflag(sock, SRTO_VERSION, &iversion, &len) < 0) {
+            iversion = 0;
+        }
+        ::srt_close(sock);
+    }
+
+    if (iversion != 0) {
+        // Version of current library successfully retrieved.
+        version.format(u"libsrt version %d.%d.%d", iversion >> 16, (iversion >> 8) & 0xFF, iversion & 0xFF);
+    }
+    else {
+        // Failed to get version, just get the compiled version.
+        version = u"error getting libsrt version, compiled with version ";
 #if defined(SRT_VERSION_STRING)
-    return UString::Format(u"libsrt version %s", SRT_VERSION_STRING);
+        version.format(u"%s", SRT_VERSION_STRING);
 #else
-    return UString::Format(u"libsrt version %d.%d.%d", SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH);
+        version.format(u"%d.%d.%d", SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH);
 #endif
+    }
+
+    return version;
 }
 
 
@@ -422,7 +448,7 @@ public:
      IPv4SocketAddress    remote_address {};
      SRTSocketMode        mode = SRTSocketMode::DEFAULT;
      volatile ::SRTSOCKET sock = SRT_INVALID_SOCK;       // SRT socket for data transmission
-     volatile ::SRTSOCKET listener  = SRT_INVALID_SOCK;   // Listener SRT socket when srt_listen() is used.
+     volatile ::SRTSOCKET listener  = SRT_INVALID_SOCK;  // Listener SRT socket when srt_listen() is used.
      size_t               total_sent_bytes = 0;
      size_t               total_received_bytes = 0;
      Time                 next_stats {};
@@ -521,6 +547,7 @@ bool ts::SRTSocket::getMessageApi() const
 bool ts::SRTSocket::open(SRTSocketMode mode,
                          const IPv4SocketAddress& local_address,
                          const IPv4SocketAddress& remote_address,
+                         size_t max_payload,
                          Report& report)
 {
     // Filter already open condition.
@@ -555,7 +582,10 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     }
 
     // Set initial socket options.
-    bool success = _guts->setSockOptPre(report);
+    int32_t payloadsize = int32_t(max_payload);
+    bool success =
+        _guts->setSockOptPre(report) &&
+        (max_payload == NPOS || _guts->setSockOpt(SRTO_PAYLOADSIZE, "SRTO_PAYLOADSIZE", &payloadsize, sizeof(payloadsize), report));
 
     // Connect / setup the SRT socket.
     switch (_guts->mode) {
@@ -806,8 +836,8 @@ bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const 
     if (report.debug()) {
         report.debug(u"calling srt_setsockflag(%s, %s, %d)", optNameStr, UString::Dump(optval, optlen, UString::SINGLE_LINE), optlen);
     }
-    if (srt_setsockflag(sock, SRT_SOCKOPT(optName), optval, int(optlen)) < 0) {
-        report.error(u"error during srt_setsockflag(%s): %s", optNameStr, srt_getlasterror_str());
+    if (::srt_setsockflag(sock, SRT_SOCKOPT(optName), optval, int(optlen)) < 0) {
+        report.error(u"error during srt_setsockflag(%s): %s", optNameStr, ::srt_getlasterror_str());
         return false;
     }
     return true;
@@ -816,8 +846,8 @@ bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const 
 bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, Report& report) const
 {
     report.debug(u"calling srt_getsockflag(%s, ..., %d)", optNameStr, optlen);
-    if (srt_getsockflag(_guts->sock, SRT_SOCKOPT(optName), optval, &optlen) < 0) {
-        report.error(u"error during srt_getsockflag(%s): %s", optNameStr, srt_getlasterror_str());
+    if (::srt_getsockflag(_guts->sock, SRT_SOCKOPT(optName), optval, &optlen) < 0) {
+        report.error(u"error during srt_getsockflag(%s): %s", optNameStr, ::srt_getlasterror_str());
         return false;
     }
     return true;
@@ -1084,13 +1114,13 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, cn::m
     const int ret = ::srt_recvmsg2(_guts->sock, reinterpret_cast<char*>(data), int(max_size), &ctrl);
     if (ret < 0) {
         // Differentiate peer disconnection (aka "end of file") and actual errors.
-        const int err = srt_getlasterror(nullptr);
+        const int err = ::srt_getlasterror(nullptr);
         if (err == SRT_ECONNLOST || err == SRT_EINVSOCK) {
             _guts->disconnected = true;
         }
         else if (_guts->sock != SRT_INVALID_SOCK) {
             // Display error only if the socket was not closed in the meantime.
-            report.error(u"error during srt_recv(): %s", srt_getlasterror_str());
+            report.error(u"error during srt_recv(): %s", ::srt_getlasterror_str());
         }
         return false;
     }

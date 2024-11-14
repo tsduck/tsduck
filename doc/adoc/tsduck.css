@@ -18,6 +18,7 @@
   --text-color: #333333;
   --table-text-color: #6d6e71;
   --hor-border-color: #808080;
+  --code-background-color: #f7f7f7;
 }
 
 /*---- global settings ----*/
@@ -33,6 +34,7 @@ body {
     margin: 0;
     font-family: "Noto Sans", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
     line-height: 1;
+    text-align: justify;
     position: relative;
     cursor: auto;
     -moz-tab-size: 4;
@@ -543,7 +545,7 @@ h1 strong, h2 strong, h3 strong, #toctitle strong, .sidebarblock>.content>.title
     letter-spacing: 0;
     padding: .1em .5ex;
     word-spacing: -.15em;
-    background: #f0f0f0;
+    background: var(--code-background-color);
     border-radius: 4px;
     line-height: 1.45;
     text-rendering: optimizeSpeed;
@@ -1230,6 +1232,9 @@ p.tableblock:first-child {
 }
 p.tableblock:last-child {
     margin-bottom: 0;
+}
+.tableblock {
+    text-align: justify;
 }
 td.tableblock>.content {
     margin-bottom: 1.25em;

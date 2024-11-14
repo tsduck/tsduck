@@ -46,7 +46,7 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
     }
 
     // The following options are defined only when RTP is allowed.
-    if ((_flags & TSDatagramOutputOptions::ALLOW_RTP) != TSDatagramOutputOptions::NONE) {
+    if (bool(_flags & TSDatagramOutputOptions::ALLOW_RTP)) {
         args.option(u"rtp", 'r');
         args.help(u"rtp",
                   u"Use the Real-time Transport Protocol (RTP) in output UDP datagrams. "
@@ -71,6 +71,16 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
         args.help(u"ssrc-identifier",
                   u"With --rtp, specify the SSRC identifier. "
                   u"By default, use a random value. Do not modify unless there is a good reason to do so.");
+    }
+
+    // The following options are defined only when 204-byte packets are allowed.
+    if (bool(_flags & TSDatagramOutputOptions::ALLOW_RS204)) {
+        args.option(u"rs204");
+        args.help(u"rs204",
+                  u"Use 204-byte format for TS packets in UDP datagrams. "
+                  u"Each TS packet is followed by a 16-byte trailer. "
+                  u"If the input packet contained a trailer, it is copied. "
+                  u"Otherwise, the trailer is set to all 0xFF.");
     }
 
     // The following options are defined only when raw UDP is allowed.
@@ -113,13 +123,6 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
                   u"Specify the local UDP source port for outgoing packets. "
                   u"By default, a random source port is used.");
 
-        args.option(u"rs204");
-        args.help(u"rs204",
-                  u"Use 204-byte format for TS packets in UDP datagrams. "
-                  u"Each TS packet is followed by a 16-byte trailer. "
-                  u"If the input packet contained a trailer, it is copied. "
-                  u"Otherwise, the trailer is set to all 0xFF.");
-
         args.option(u"tos", 's', Args::INTEGER, 0, 1, 1, 255);
         args.help(u"tos",
                   u"Specifies the TOS (Type-Of-Service) socket option. Setting this value "
@@ -142,7 +145,7 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
 bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
 {
     args.getIntValue(_pkt_burst, u"packet-burst", DEFAULT_PACKET_BURST);
-    _enforce_burst = (_flags & TSDatagramOutputOptions::ALWAYS_BURST) != TSDatagramOutputOptions::NONE || args.present(u"enforce-burst");
+    _enforce_burst = bool(_flags & TSDatagramOutputOptions::ALWAYS_BURST) || args.present(u"enforce-burst");
 
     if ((_flags & TSDatagramOutputOptions::ALLOW_RTP) != TSDatagramOutputOptions::NONE) {
         _use_rtp = args.present(u"rtp");
@@ -163,6 +166,9 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
         args.getIntValue(_send_bufsize, u"buffer-size", 0);
         _mc_loopback = !args.present(u"disable-multicast-loop");
         _force_mc_local = args.present(u"force-local-multicast-outgoing");
+    }
+
+    if (bool(_flags & TSDatagramOutputOptions::ALLOW_RS204)) {
         _rs204_format = args.present(u"rs204");
     }
 

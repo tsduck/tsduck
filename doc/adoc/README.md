@@ -7,6 +7,8 @@
 
 - `tsduck-theme.yml`: PDF theme for PDF output.
 
+- `macros.rb`: A few basic Asciidoctor macros, written in Ruby.
+
 ### Docinfo
 
 The docinfo files for asciidoctor are built in the binary area.

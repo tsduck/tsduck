@@ -93,7 +93,7 @@ The _port_ specifies the destination TCP port.
 [.optdoc]
 By default, a new TCP connection is established each time a JSON message is produced (see also option `--json-tcp-keep`).
 Be aware that a complete TCP connection cycle may introduce some latency in the processing.
-If latency is an issue, consider using '--json-udp'.
+If latency is an issue, consider using `--json-udp`.
 
 [.opt]
 *--json-tcp-keep*

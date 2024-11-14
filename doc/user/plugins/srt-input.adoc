@@ -63,7 +63,16 @@ This option is ignored if `--evaluation-interval` is not specified.
 [.optdoc]
 Specify that the real-time input bitrate shall be evaluated on a regular basis.
 The value specifies the number of seconds between two evaluations.
-By default, the real-time input bitrate is never evaluated and the input bitrate is evaluated from the PCR in the input packets.
+By default, the real-time input bitrate is never evaluated and
+the input bitrate is evaluated from the PCR in the input packets.
+
+[.opt]
+*--rs204*
+
+[.optdoc]
+Specify that all packets are in 204-byte format.
+By default, the input packet size, 188 or 204 bytes, is automatically detected.
+Use this option only when necessary.
 
 [.opt]
 *--timestamp-priority* _name_
