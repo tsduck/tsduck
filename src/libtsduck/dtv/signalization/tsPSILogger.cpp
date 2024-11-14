@@ -55,7 +55,7 @@ void ts::PSILogger::defineArgs(Args& args)
     args.option(u"cat-only");
     args.help(u"cat-only", u"Display only the CAT, ignore other PSI tables.");
 
-    args.option(u"clear", 'c');
+    args.option(u"clear");
     args.help(u"clear",
               u"Indicate that this is a clear transport stream, without "
               u"conditional access information. Useful to avoid reading the "

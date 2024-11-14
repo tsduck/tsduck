@@ -162,5 +162,5 @@ This option sets the DVB SimulCrypt option transition_delay_stop, in millisecond
 Default: 0 ms.
 
 include::{docdir}/opt/group-dvbsim-log.adoc[tags=!*;ecmg]
-include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*]
+include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*;short-t]
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

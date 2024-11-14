@@ -10,9 +10,13 @@
 #include "tsAlgorithm.h"
 #include "tsIntegerUtils.h"
 #include "tsFileUtils.h"
+#include "tsEnvironment.h"
 #include "tsVersionInfo.h"
 #include "tsOutputPager.h"
 #include "tsDuckConfigFile.h"
+
+// Define this environment variable to debug options redefinition issues.
+#define TS_DEBUG_ENV u"TS_DEBUG_ARGS"
 
 // List of characters which are allowed thousands separators and decimal points in integer values
 const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u", ";
@@ -410,6 +414,7 @@ ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     Report(),
     _description(description),
     _syntax(syntax),
+    _debug_args(!GetEnvironment(TS_DEBUG_ENV).empty()),
     _flags(flags)
 {
     adjustPredefinedOptions();
@@ -574,12 +579,18 @@ ts::UString ts::Args::formatHelpOptions(size_t line_width) const
 void ts::Args::addOption(const IOption& opt)
 {
     // Erase previous version, if any.
+    if (_debug_args && Contains(_iopts, opt.name)) {
+        info(u"redefining option --%s", opt.name);
+    }
     _iopts.erase(opt.name);
 
     // If the new option has a short name, erase previous options with same short name.
     if (opt.short_name != 0) {
         for (auto& it : _iopts) {
             if (it.second.short_name == opt.short_name) {
+                if (_debug_args) {
+                    info(u"redefining short option -%c from --%s to --%s", opt.short_name, it.second.name, opt.name);
+                }
                 it.second.short_name = 0;
                 break; // there was at most one
             }

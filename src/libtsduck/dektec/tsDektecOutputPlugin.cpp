@@ -605,7 +605,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"QAM modulators: with --j83 B, indicate the QAM-B interleaver mode. "
          u"The default is I128-J1D.");
 
-    option(u"roll-off", 't', Enumeration({
+    option(u"roll-off", 0, Enumeration({
         {u"auto", DTAPI_MOD_ROLLOFF_AUTO},
         {u"none", DTAPI_MOD_ROLLOFF_NONE},
         {u"0.03", DTAPI_MOD_ROLLOFF_3},

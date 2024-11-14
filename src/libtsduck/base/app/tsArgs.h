@@ -1344,6 +1344,7 @@ namespace ts {
         UString       _app_name {};
         UStringVector _args {};
         bool          _is_valid = false;
+        bool          _debug_args = false;
         int           _flags = 0;
 
         // List of characters which are allowed thousands separators and decimal points in integer values

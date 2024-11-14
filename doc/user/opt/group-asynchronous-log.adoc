@@ -6,7 +6,7 @@
 //
 // Documentation for options in class ts::AsyncReportArgs.
 //
-// tags: <none>
+// tags: short-t
 //
 //----------------------------------------------------------------------------
 
@@ -29,6 +29,7 @@ If it cannot display on time, the buffered messages and extra messages are dropp
 Increase this value if you think that too many messages are dropped.
 
 [.opt]
+*-s* +
 *--synchronous-log*
 
 [.optdoc]
@@ -36,7 +37,9 @@ With this option, each logged message is guaranteed to be displayed, synchronous
 The downside is that an application thread may be blocked for a short while when too many messages are logged.
 
 [.opt]
+// tag::short-t[]
 *-t* +
+// end::short-t[]
 *--timed-log*
 
 [.optdoc]

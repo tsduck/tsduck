@@ -28,7 +28,6 @@ By default, display only the first version of each PSI table and stop when all e
 Display only the CAT, ignore other PSI tables.
 
 [.opt]
-*-c* +
 *--clear*
 
 [.optdoc]

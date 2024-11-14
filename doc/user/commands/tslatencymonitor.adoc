@@ -56,5 +56,5 @@ Output file name for CSV reporting (standard error by default).
 Specify the time interval between each output in seconds.
 The default is 1 second.
 
-include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*]
+include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*;short-t]
 include::{docdir}/opt/group-common-commands.adoc[tags=!*]

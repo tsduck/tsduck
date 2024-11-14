@@ -562,7 +562,7 @@ With `--control-port`, specify the reception timeout in milliseconds for control
 The default timeout is 5000 ms.
 
 include::{docdir}/opt/group-monitor.adoc[tags=!*]
-include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*]
+include::{docdir}/opt/group-asynchronous-log.adoc[tags=!*;short-t]
 
 [.usage]
 Default values for plugins options

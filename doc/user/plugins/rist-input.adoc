@@ -41,6 +41,7 @@ The default is to never display the bitrate.
 This option is ignored if `--evaluation-interval` is not specified.
 
 [.opt]
+*-e* _value_ +
 *--evaluation-interval* _value_
 
 [.optdoc]
