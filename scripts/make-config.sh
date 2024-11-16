@@ -317,7 +317,7 @@ if [[ -n $BINDIR ]]; then
         # Switched from a release build to a debug build.
         BINDIR="${BINDIR//release-/debug-}"
     fi
-    if [[ $BINDIR != /* ]]; then 
+    if [[ $BINDIR != /* ]]; then
         # BINDIR is externally specified and is a relative directory.
         # Transform it into an absolute path for recursion.
         BINDIR=$($REALPATH -m "$BINDIR")
@@ -403,7 +403,7 @@ if [[ -n $NATIVEBINDIR ]]; then
     NATIVEBINDIR=$($REALPATH -m "$NATIVEBINDIR")
     MAKEOVERRIDES=$($SED <<<$MAKEOVERRIDES -e "s|NATIVEBINDIR=$INNATIVEBINDIR|NATIVEBINDIR=$NATIVEBINDIR|")
 fi
-if [[ -z$CROSS$CROSS_TARGET ]]; then
+if [[ -z $CROSS$CROSS_TARGET ]]; then
     # No cross-compilation.
     CXXFLAGS_CROSS=
     LDFLAGS_CROSS=
