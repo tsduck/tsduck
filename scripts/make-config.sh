@@ -284,6 +284,8 @@ if [[ $ROOTDIR != $root ]]; then
     # Switched project root, as in rpm build.
     ROOTDIR="$root"
     BINDIR=
+    NATIVEBINDIR=
+    TSXML=
 fi
 INSTALLERDIR="$ROOTDIR/pkg/installers"
 SCRIPTSDIR="$ROOTDIR/scripts"
