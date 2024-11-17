@@ -20,7 +20,7 @@ namespace ts {
     // Name of section of ISDB-T layer short names.
     // Must be a string object, cannot be a literal, to be used at NTTP (C++ limitation).
     //! @cond nodoxygen
-    extern const UString ISDBTLayerCounterNamesSection;
+    TSDUCKDLL extern const UString ISDBTLayerCounterNamesSection;
     //! @endcond
 
     //!
