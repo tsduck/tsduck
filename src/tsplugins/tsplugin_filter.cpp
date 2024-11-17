@@ -13,6 +13,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsSignalizationDemux.h"
+#include "tsISDBTInformation.h"
 #include "tsAlgorithm.h"
 #include "tsMemory.h"
 
@@ -521,8 +522,14 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (_min_af >= 0 && int(pkt.getAFSize()) >= _min_af) ||
         (int(pkt.getAFSize()) <= _max_af) ||
         (_every_packets > 0 && (tsp->pluginPackets() - _after_packets) % _every_packets == 0) ||
-        (_with_pes && pkt.startPES()) ||
-        (!_isdb_layers.empty() && pkt_data.mayHaveISDBT() && Contains(_isdb_layers, pkt_data.isdbtLayerIndicator()));
+        (_with_pes && pkt.startPES());
+
+    // Get ISDB layer if required.
+    if (!ok && !_isdb_layers.empty()) {
+        // Do not check if ISDB is part of the standards, assume it if option --isdb-layer is present.
+        const ISDBTInformation info(duck, pkt_data, false);
+        ok = info.is_valid && Contains(_isdb_layers, info.layer_indicator);
+    }
 
     // Search binary patterns in packets.
     if (!ok && !_pattern.empty()) {

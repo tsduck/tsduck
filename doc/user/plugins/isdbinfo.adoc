@@ -1,0 +1,68 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2024, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+<<<
+=== isdbinfo
+
+[.cmd-header]
+Extract ISDB-T information from the stream
+
+The structure of ISDB-T and ISDB-Tb streams contains meta-information about the modulation in "hidden" places.
+This plugin extracts this information.
+
+* The 16-byte trailer after each standard 188-byte TS packet contains modulation information.
+  The <<ARIB-B31>> standard names this trailer the _dummy byte_.
+  The input plugin must have loaded 204-byte packets to access this information.
+  See xref:support204[xrefstyle=short] for additional details.
+
+* The PID 0x1FF0 carries "ISDB-T Information Packets" (IIP).
+  This PID is otherwise unreferenced in the signalization.
+
+[.usage]
+Usage
+
+[source,shell]
+----
+$ tsp -P isdbinfo [options]
+----
+
+[.usage]
+Options
+
+[.opt]
+*-c* +
+*--continuity*
+
+[.optdoc]
+Check presence and continuity of the _dummy byte_ trailers and packet counters.
+
+[.opt]
+*-o* _file-name_
+*--output-file* _file-name_
+
+[.optdoc]
+Specify the output text file.
+
+[.optdoc]
+By default, use `tsp` log messages for `--continuity` warnings and the standard output for other reports.
+
+[.opt]
+*-s* +
+*--statistics*
+
+[.optdoc]
+Display final statistics of ISDB-T information.
+
+[.opt]
+*-t* +
+*--trailers*
+
+[.optdoc]
+Dump the ISDB-T information in all _dummy byte_ trailers.
+
+include::{docdir}/opt/group-common-plugins.adoc[tags=!*]

@@ -10,6 +10,7 @@
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
 #include "tsDuckContext.h"
+#include "tsISDBTInformation.h"
 #include "tsArgs.h"
 
 
@@ -122,9 +123,10 @@ void ts::TSDumpArgs::dump(DuckContext& duck, std::ostream& strm, const TSPacket&
     pkt.display(strm, dump_flags, indent, log_size);
     if (!log && rs204 && mdata != nullptr && mdata->auxDataSize() > 0) {
         // With --rs204, dump the packet trailer when there is one.
-        if (mdata->hasISDBT(duck)) {
+        ISDBTInformation info(duck, mdata, true);
+        if (info.is_valid) {
             strm << UString::Format(u"%*s---- ISDB-T information ----", indent, u"", mdata->auxDataSize()) << std::endl;
-            mdata->displayISDBT(duck, strm, UString(indent, ' '));
+            info.display(duck, strm, UString(indent, ' '));
         }
         strm << UString::Format(u"%*s---- Packet trailer (%d bytes) ----", indent, u"", mdata->auxDataSize()) << std::endl
              << UString::Dump(mdata->auxData(), mdata->auxDataSize(), dump_flags & 0x0000FFFF, indent);

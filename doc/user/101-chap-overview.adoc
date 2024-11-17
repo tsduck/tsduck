@@ -28,14 +28,15 @@ Here is a brief summary of pros and cons of using TSDuck on the various operatin
 ** Available on all "average user" laptop PC. Useful for transport stream capture and analysis in the field.
 * Windows cons:
 ** No or limited shell environment.
-** Some limitations in the support of DVB receiver devices (see xref:tuners-windows[xrefstyle=short], for more details).
-   For instance, it is impossible to retrieve the actual tuning parameters of a transport stream as
-   detected by the tuner device.
+** Some limitations in the support of hardware DVB/ATSC/ISDB tuner devices
+   (see xref:tuners-windows[xrefstyle=short], for more details).
+   The development of the DirectShow framework which supports these tuners seems stopped.
+   Recent modulation schemes are not supported.
 * macOS pros:
 ** Availability of a powerful shell environment, just another UNIX system, just like Linux.
    Powerful user-friendly system.
 * macOS cons:
-** Currently no support for hardware DVB tuners and Dektec devices.
+** Currently no support for hardware tuners and Dektec devices.
    So, macOS is recommended only when dealing with transport stream files, IP networking or VATek-based modulators.
 * BSD systems: For aficionados only.
 

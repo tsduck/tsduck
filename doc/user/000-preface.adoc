@@ -40,7 +40,7 @@ Each time it is necessary to refer to a standard document, a link similar to thi
 Just follow the link to have the complete description of the document in the bibliography.
 
 Like any technical field, Digital Television uses a lot of acronyms.
-A like of them is provided in xref:acronyms[xrefstyle=short].
+A list of them is provided in xref:acronyms[xrefstyle=short].
 
 [.usage]
 License

@@ -1233,7 +1233,7 @@ p.tableblock:first-child {
 p.tableblock:last-child {
     margin-bottom: 0;
 }
-.tableblock {
+.tableblock.halign-left {
     text-align: justify;
 }
 td.tableblock>.content {
@@ -1286,7 +1286,7 @@ th.halign-right, td.halign-right {
     text-align: right;
 }
 th.halign-center, td.halign-center {
-    text-align: center;
+    text-align: center !important;
 }
 th.valign-top, td.valign-top {
     vertical-align: top;

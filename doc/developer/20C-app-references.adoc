@@ -28,6 +28,7 @@
 |MSC |Microsoft C/C++ Compiler
 |MSVC |Microsoft Visual C/C++
 |NIH |Not Invented Here (a bad practice)
+|NTTP |Non-Type Template Parameter (C++)
 |OOD |Object-Oriented Design
 |OOP |Object-Oriented Programming
 |RTFM |The Most Important Acronym For Developers (yes, it is)

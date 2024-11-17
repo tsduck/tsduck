@@ -157,6 +157,10 @@ endif::[]
 |input, output, packet
 |Send / receive UDP/IP datagrams, including multicast IP and RTP
 
+|isdbinfo
+|packet
+|Extract ISDB-T information from the stream
+
 |limit
 |packet
 |Limit the global bitrate by dropping packets

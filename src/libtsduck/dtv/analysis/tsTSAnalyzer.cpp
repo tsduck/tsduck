@@ -16,6 +16,7 @@
 #include "tsISO639LanguageDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
 #include "tsTeletextDescriptor.h"
+#include "tsISDBTInformation.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
 #include "tsCASFamily.h"
@@ -105,18 +106,6 @@ void ts::TSAnalyzer::reset()
     _dct.invalidate();
 
     resetSectionDemux();
-}
-
-
-//----------------------------------------------------------------------------
-// Accumulate packet counters by PID.
-//----------------------------------------------------------------------------
-
-void ts::TSAnalyzer::Accumulate(CounterMap& acc, const CounterMap& data)
-{
-    for (const auto& it : data) {
-        acc[it.first] += it.second;
-    }
 }
 
 
@@ -1668,10 +1657,11 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt, const TSPacketMetadata& mda
     // metadata. At this point, we don't always know if the stream is an ISDB one or not. We collect
     // the information as if the TS was ISDB. At reporting time, we will use it only if the stream is
     // confirmed as ISDB.
-    if (mdata.mayHaveISDBT()) {
+    ISDBTInformation info(_duck, mdata, false);
+    if (info.is_valid) {
         // Count packets in the ISDB-T layers. Some PID's have all their packets in the same layers.
         // Some other PID's have been seen on multiple layers.
-        ps->isdb_layers[mdata.isdbtLayerIndicator()]++;
+        ps->isdb_layers[info.layer_indicator]++;
     }
 }
 
@@ -1745,7 +1735,7 @@ void ts::TSAnalyzer::recomputeStatistics()
 
         // Count total packets.
         if (isdb) {
-            Accumulate(_ts_isdb_layers, pc.isdb_layers);
+            _ts_isdb_layers.accumulate(pc.isdb_layers);
         }
 
         // Compute TS bitrate from the PCR's of this PID
@@ -1773,7 +1763,7 @@ void ts::TSAnalyzer::recomputeStatistics()
                 scp->scrambled_pid_cnt++;
             }
             if (isdb) {
-                Accumulate(scp->isdb_layers, pc.isdb_layers);
+                scp->isdb_layers.accumulate(pc.isdb_layers);
             }
         }
 
@@ -1793,7 +1783,7 @@ void ts::TSAnalyzer::recomputeStatistics()
                 _unref_scr_pids++;
             }
             if (isdb) {
-                Accumulate(_unref_isdb_layers, pc.isdb_layers);
+                _unref_isdb_layers.accumulate(pc.isdb_layers);
             }
         }
 
@@ -1805,7 +1795,7 @@ void ts::TSAnalyzer::recomputeStatistics()
                 _global_scr_pids++;
             }
             if (isdb) {
-                Accumulate(_global_isdb_layers, pc.isdb_layers);
+                _global_isdb_layers.accumulate(pc.isdb_layers);
             }
         }
 

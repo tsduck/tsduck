@@ -248,7 +248,7 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
 
     // Add ISDB-T layer info if present.
     if (!_ts_isdb_layers.empty()) {
-        grid.putMultiLine(LayerToString(_ts_isdb_layers, _ts_pkt_cnt));
+        grid.putMultiLine(u"ISDB-T layers: " + _ts_isdb_layers.toStringKeys(_ts_pkt_cnt));
         grid.subSection();
     }
 
@@ -353,7 +353,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     grid.putLine(u"Global PID's");
     grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", _global_pkt_cnt, _global_pid_cnt, _global_pid_cnt - _global_scr_pids, _global_scr_pids));
     if (!_global_isdb_layers.empty()) {
-        grid.putMultiLine(LayerToString(_global_isdb_layers, _global_pkt_cnt));
+        grid.putMultiLine(u"ISDB-T layers: " + _global_isdb_layers.toStringKeys(_global_pkt_cnt));
     }
     reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate, wide);
     reportServiceSubtotal(grid, wide ? u"Subtotal" : u"Subt.", u"Global PSI/SI PID's (0x00-0x1F)", _psisi_scr_pids > 0, _psisi_bitrate, _ts_bitrate, wide);
@@ -371,7 +371,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.putLine(u"Unreferenced PID's");
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", _unref_pkt_cnt, _unref_pid_cnt, _unref_pid_cnt - _unref_scr_pids, _unref_scr_pids));
         if (!_unref_isdb_layers.empty()) {
-            grid.putMultiLine(LayerToString(_unref_isdb_layers, _unref_pkt_cnt));
+            grid.putMultiLine(u"ISDB-T layers: " + _unref_isdb_layers.toStringKeys(_unref_pkt_cnt));
         }
         reportServiceHeader(grid, u"Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate, wide);
 
@@ -397,7 +397,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.putLine(u"Service type: " + names::ServiceType(sv.service_type, NamesFlags::FIRST));
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", sv.ts_pkt_cnt, sv.pid_cnt, sv.pid_cnt - sv.scrambled_pid_cnt, sv.scrambled_pid_cnt));
         if (!sv.isdb_layers.empty()) {
-            grid.putMultiLine(LayerToString(sv.isdb_layers, sv.ts_pkt_cnt));
+            grid.putMultiLine(u"ISDB-T layers: " + sv.isdb_layers.toStringKeys(sv.ts_pkt_cnt));
         }
         grid.putLine(u"PMT PID: " +
                      (sv.pmt_pid == 0 || sv.pmt_pid == PID_NULL ? u"Unknown in PAT" : UString::Format(u"%n", sv.pmt_pid)) +
@@ -514,7 +514,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // ISDB-T layers.
         if (isdb && !pc.isdb_layers.empty()) {
-            grid.putMultiLine(LayerToString(pc.isdb_layers, pc.ts_pkt_cnt));
+            grid.putMultiLine(u"ISDB-T layers: " + pc.isdb_layers.toStringKeys(pc.ts_pkt_cnt));
         }
         grid.subSection();
 
@@ -837,7 +837,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
     if (!_country_code.empty()) {
         stm << "country=" << _country_code << ":";
     }
-    AddNormalizedMapKeys(stm, "isdbtlayers", _ts_isdb_layers);
+    _ts_isdb_layers.addNormalizedKeys(stm, u"isdbtlayers", true);
     stm << std::endl;
 
     // Print lines for first and last UTC and local time
@@ -871,7 +871,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         }
     }
     stm << ":";
-    AddNormalizedMapKeys(stm, "isdbtlayers", _global_isdb_layers);
+    _global_isdb_layers.addNormalizedKeys(stm, u"isdbtlayers", true);
     stm << std::endl;
 
     // Print one line for unreferenced PIDs
@@ -893,7 +893,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         }
     }
     stm << ":";
-    AddNormalizedMapKeys(stm, "isdbtlayers", _unref_isdb_layers);
+    _unref_isdb_layers.addNormalizedKeys(stm, u"isdbtlayers", true);
     stm << std::endl;
 
     // Print one line per service
@@ -942,7 +942,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
             }
         }
         stm << ":";
-        AddNormalizedMapKeys(stm, "isdbtlayers", sv.isdb_layers);
+        sv.isdb_layers.addNormalizedKeys(stm, u"isdbtlayers", true);
         stm << "provider=" << sv.getProvider() << ":name=" << sv.getName() << std::endl;
     }
 
@@ -1012,12 +1012,12 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         if (pc.carry_t2mi) {
             stm << "t2mi:";
         }
-        AddNormalizedMapKeys(stm, "plp", pc.t2mi_plp_ts);
+        pc.t2mi_plp_ts.addNormalizedKeys(stm, u"plp", true);
         if (pc.carry_iip) {
             stm << "iip:";
         }
         if (isdb) {
-            AddNormalizedMapKeys(stm, "isdbtlayers", pc.isdb_layers);
+            pc.isdb_layers.addNormalizedKeys(stm, u"isdbtlayers", true);
         }
         stm << "bitrate=" << pc.bitrate.toInt() << ":"
             << "bitrate204=" << ToBitrate204(pc.bitrate).toInt() << ":"
@@ -1127,7 +1127,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     ts.add(u"pcr-bitrate", _ts_pcr_bitrate_188.toInt());
     ts.add(u"pcr-bitrate-204", _ts_pcr_bitrate_204.toInt());
     ts.add(u"duration", cn::duration_cast<cn::seconds>(_duration).count());
-    AddMapKeysArray(ts, u"isdbt-layers", _ts_isdb_layers);
+    _ts_isdb_layers.addKeys(ts, u"isdbt-layers", true);
     if (!_country_code.empty()) {
         ts.add(u"country", _country_code);
     }
@@ -1160,7 +1160,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     globals.add(u"bitrate", _global_bitrate.toInt());
     globals.add(u"bitrate-204", ToBitrate204(_global_bitrate).toInt());
     globals.add(u"is-scrambled", json::Bool(_global_scr_pids > 0));
-    AddMapKeysArray(globals, u"isdbt-layers", _global_isdb_layers);
+    _global_isdb_layers.addKeys(globals, u"isdbt-layers", true);
     for (const auto& it : _pids) {
         const PIDContext& pc(*it.second);
         if (pc.referenced && pc.services.size() == 0 && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
@@ -1177,7 +1177,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     unrefs.add(u"bitrate", _unref_bitrate.toInt());
     unrefs.add(u"bitrate-204", ToBitrate204(_unref_bitrate).toInt());
     unrefs.add(u"is-scrambled", json::Bool(_unref_scr_pids > 0));
-    AddMapKeysArray(unrefs, u"isdbt-layers", _unref_isdb_layers);
+    _unref_isdb_layers.addKeys(unrefs, u"isdbt-layers", true);
     for (const auto& it : _pids) {
         const PIDContext& pc (*it.second);
         if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
@@ -1239,7 +1239,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
                 jv.query(u"pids", true, json::Type::Array).set(it_pid.first);
             }
         }
-        AddMapKeysArray(jv, u"isdbt-layers", sv.isdb_layers);
+        sv.isdb_layers.addKeys(jv, u"isdbt-layers", true);
     }
 
     // One node per PID
@@ -1289,9 +1289,9 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.add(u"t2mi", json::Bool(pc.carry_t2mi));
         jv.add(u"iip", json::Bool(pc.carry_iip));
         if (isdb) {
-            AddMapKeysArray(jv, u"isdbt-layers", pc.isdb_layers);
+            pc.isdb_layers.addKeys(jv, u"isdbt-layers", true);
         }
-        AddMapKeysArray(jv, u"plp", pc.t2mi_plp_ts);
+        pc.t2mi_plp_ts.addKeys(jv, u"plp", true);
         jv.add(u"bitrate", pc.bitrate.toInt());
         jv.add(u"bitrate-204", ToBitrate204(pc.bitrate).toInt());
         jv.query(u"packets", true).add(u"total", pc.ts_pkt_cnt);
@@ -1387,24 +1387,6 @@ void ts::TSAnalyzerReport::AddNormalizedTime(std::ostream& stm, const Time& time
 
 
 //----------------------------------------------------------------------------
-// Display a normalized list of map keys, if map is not empty.
-//----------------------------------------------------------------------------
-
-void ts::TSAnalyzerReport::AddNormalizedMapKeys(std::ostream& stm, const char* type, const CounterMap& data)
-{
-    if (!data.empty()) {
-        stm << type;
-        char sep = '=';
-        for (const auto& it : data) {
-            stm << sep << it.first;
-            sep = ',';
-        }
-        stm << ':';
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Add a time as a JSON string if valid (not Epoch).
 //----------------------------------------------------------------------------
 
@@ -1419,45 +1401,4 @@ void ts::TSAnalyzerReport::AddTime(json::Value& parent, const UString& path, con
             tm.add(u"country", country);
         }
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Add a list of map keys as a JSON array, if map is not empty.
-//----------------------------------------------------------------------------
-
-void ts::TSAnalyzerReport::AddMapKeysArray(json::Value& parent, const UString& path, const CounterMap& data)
-{
-    if (!data.empty()) {
-        json::Value& arr(parent.query(path, true, json::Type::Array));
-        for (const auto& it : data) {
-            arr.set(it.first);
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Format a string for a list of ISDB-T layers.
-//----------------------------------------------------------------------------
-
-ts::UString ts::TSAnalyzerReport::LayerToString(const CounterMap& data, uint64_t total)
-{
-    // Display percentage if more than one data or not all data in single entry.
-    const bool percent = total > 0 && (data.size() > 1 || (data.size() == 1 && data.begin()->second != total));
-
-    UString str;
-    for (const auto& it : data) {
-        if (str.empty()) {
-            str.append(u"ISDB-T layers: ");
-        }
-        str.format(u"%d (%s", it.first, NameFromDTV(u"ISDB.short_layer_indicator", it.first));
-        if (percent) {
-            str.format(u" %.1f%%", (100.0 * double(it.second)) / double(total));
-        }
-        str.append(u"), ");
-    }
-    // Remove final ", " if not empty.
-    str.removeSuffix(u", ");
-    return str;
 }

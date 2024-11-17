@@ -353,38 +353,6 @@ namespace ts {
         bool deserialize(const void* data, size_t size);
 
         //!
-        //! Check if the auxiliary data contains "ISDB-T Information".
-        //! @param [in] duck TSDuck execution context.
-        //! @return True if ISDB is part of the standards in @a duck and there are enough data in the auxiliary data to contain ISDB-T information.
-        //!
-        bool hasISDBT(DuckContext& duck) const;
-
-        //!
-        //! Check if the auxiliary data may contain "ISDB-T Information" in an ISDB context.
-        //! @return True if there are enough data in the auxiliary data to contain ISDB-T information.
-        //!
-        bool mayHaveISDBT() const { return _aux_data_size >= 8; }
-
-        //!
-        //! Return the ISDB-T layer indicator from the auxiliary data (if it may contain "ISDB-T Information").
-        //! @return The ISDB-T layer indicator (in the range 0-15) or INVALID_ISDBT_LAYER if there is none.
-        //!
-        uint8_t isdbtLayerIndicator() const { return _aux_data_size < 2 ? INVALID_ISDBT_LAYER : ((_aux_data[1] >> 4) & 0x0F); }
-
-        static constexpr uint8_t MAX_ISDBT_LAYER = 0x0F;      //!< Maximum value for an ISDB-T layer indicator.
-        static constexpr uint8_t INVALID_ISDBT_LAYER = 0xFF;  //!< Invalid ISDB-T layer indicator value.
-
-        //!
-        //! Interpret the auxiliary data as "ISDB-T Information" and display it.
-        //! @param [in,out] duck TSDuck execution context.
-        //! @param [in,out] strm A standard stream in output mode (text mode).
-        //! @param [in] margin Left margin content.
-        //! @param [in] check_standards If true, do nothing if ISDB is not part of @a duck standards.
-        //! @see ARIB STD-B31, section 5.5
-        //!
-        void displayISDBT(DuckContext& duck, std::ostream& strm, const UString& margin, bool check_standards = false) const;
-
-        //!
         //! Display the structure layout of the data structure (for debug only).
         //! @param [in,out] out Output stream, where to display.
         //! @param [in] prefix Optional prefix on each line.

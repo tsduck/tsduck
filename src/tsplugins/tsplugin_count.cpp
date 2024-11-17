@@ -70,7 +70,6 @@ namespace ts {
                 info(fmt, std::forward<ArgMixIn>(args)...);
             }
         }
-
     };
 }
 

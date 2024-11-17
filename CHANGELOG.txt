@@ -2,6 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.40-3959 (Nov 2024)
+
+[NEW] New commands and plugins:
+
+  * Added plugin "isdbinfo": Extract ISDB-T information from the stream.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.39-3956 (Nov 2024)
 
 [NEW] New commands and plugins:
