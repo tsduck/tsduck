@@ -95,7 +95,7 @@ namespace ts {
 
         // Detect and report a sequence of missing 'dummy byte' trailers before current packet.
         // Return number of missing trailers.
-        PacketCounter missingTrailers();
+        size_t missingTrailers();
 
         // Start a new section of output.
         void startOutputSection()
@@ -282,10 +282,10 @@ ts::ISDBInfoPlugin::ServiceContext& ts::ISDBInfoPlugin::getService(uint16_t id)
 // Detect and report a sequence of missing 'dummy byte' trailers before current packet.
 //----------------------------------------------------------------------------
 
-ts::PacketCounter ts::ISDBInfoPlugin::missingTrailers()
+size_t ts::ISDBInfoPlugin::missingTrailers()
 {
     const PacketCounter miss_start = _last_dummy == INVALID_PACKET_COUNTER ? 0 : _last_dummy + 1;
-    const PacketCounter miss_count = tsp->pluginPackets() - miss_start;
+    const size_t miss_count = size_t(tsp->pluginPackets() - miss_start);
     if (_check_continuity && miss_count > 0) {
         reportWarning(u"packet %'d: missing %'d 'dummy byte' trailers", miss_start, miss_count);
     }
@@ -311,12 +311,12 @@ ts::ProcessorPlugin::Status ts::ISDBInfoPlugin::processPacket(TSPacket& pkt, TSP
     if (info.is_valid) {
 
         // Number of packets with missing trailer, just before this one.
-        const PacketCounter miss_count = missingTrailers();
+        const size_t miss_count = missingTrailers();
 
         // Detect TSP_counter discontinuities.
         if (_last_dummy != INVALID_PACKET_COUNTER) {
             // Expected TSP counter:
-            PacketCounter tsp_next = _last_tsp_counter + miss_count + 1;
+            size_t tsp_next = _last_tsp_counter + miss_count + 1;
             // Detect new frame.
             if (info.frame_indicator != _last_frame_indicator) {
                 _frames_by_size[tsp_next]++;  // Record the size of the previous frame.
