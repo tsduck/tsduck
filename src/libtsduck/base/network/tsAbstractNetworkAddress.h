@@ -50,6 +50,13 @@ namespace ts {
         virtual size_t binarySize() const = 0;
 
         //!
+        //! Get a human-readable family name for an address of that class.
+        //! This is typically something like "IPv4" or "IPv6".
+        //! @return A human-readable family name for an address of that class.
+        //!
+        virtual const UChar* familyName() const = 0;
+
+        //!
         //! Clear the object, address and port if there is any.
         //!
         virtual void clear();

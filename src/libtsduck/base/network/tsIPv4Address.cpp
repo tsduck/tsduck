@@ -77,6 +77,11 @@ size_t ts::IPv4Address::binarySize() const
     return BYTES;
 }
 
+const ts::UChar* ts::IPv4Address::familyName() const
+{
+    return u"IPv4";
+}
+
 void ts::IPv4Address::clearAddress()
 {
     _addr = AnyAddress;

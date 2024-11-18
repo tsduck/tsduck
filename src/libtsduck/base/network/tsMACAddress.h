@@ -82,6 +82,7 @@ namespace ts {
 
         // Inherited methods.
         virtual size_t binarySize() const override;
+        virtual const UChar* familyName() const override;
         virtual bool hasAddress() const override;
         virtual size_t getAddress(void* addr, size_t size) const override;
         virtual bool setAddress(const void* addr, size_t size) override;

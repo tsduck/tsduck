@@ -30,6 +30,11 @@ size_t ts::MACAddress::binarySize() const
     return BYTES;
 }
 
+const ts::UChar* ts::MACAddress::familyName() const
+{
+    return u"MAC";
+}
+
 bool ts::MACAddress::hasAddress() const
 {
     return _addr != 0;

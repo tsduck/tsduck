@@ -33,6 +33,11 @@ size_t ts::IPv6Address::binarySize() const
     return BYTES;
 }
 
+const ts::UChar* ts::IPv6Address::familyName() const
+{
+    return u"IPv6";
+}
+
 void ts::IPv6Address::clearAddress()
 {
     TS_ZERO(_bytes);

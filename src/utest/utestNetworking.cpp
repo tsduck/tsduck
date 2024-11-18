@@ -135,6 +135,7 @@ TSUNIT_DEFINE_TEST(IPv4Address)
     ts::IPv4Address a2 (1, 2, 3, 4);
     ts::IPv4Address a3 (2, 3, 4, 5);
 
+    TSUNIT_EQUAL(u"IPv4", a1.familyName());
     TSUNIT_ASSERT(a1 == a2);
     TSUNIT_ASSERT(a1 != a3);
 
@@ -191,6 +192,7 @@ TSUNIT_DEFINE_TEST(IPv4Address)
 TSUNIT_DEFINE_TEST(IPv6Address)
 {
     ts::IPv6Address a1;
+    TSUNIT_EQUAL(u"IPv6", a1.familyName());
     TSUNIT_ASSERT(!a1.hasAddress());
     TSUNIT_ASSERT(!a1.isMulticast());
 
@@ -238,6 +240,7 @@ TSUNIT_DEFINE_TEST(IPv6Address)
 TSUNIT_DEFINE_TEST(MACAddress)
 {
     ts::MACAddress a1;
+    TSUNIT_EQUAL(u"MAC", a1.familyName());
     TSUNIT_ASSERT(!a1.hasAddress());
     TSUNIT_ASSERT(!a1.isMulticast());
 

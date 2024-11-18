@@ -106,6 +106,7 @@ namespace ts {
 
         // Inherited methods.
         virtual size_t binarySize() const override;
+        virtual const UChar* familyName() const override;
         virtual bool hasAddress() const override;
         virtual size_t getAddress(void* addr, size_t size) const override;
         virtual bool setAddress(const void* addr, size_t size) override;
@@ -203,11 +204,4 @@ namespace ts {
     //! Set of IP addresses.
     //!
     using IPv4AddressSet = std::set<IPv4Address>;
-
-    //! @cond nodoxygen
-    // Legacy definitions.
-    using IPAddress = IPv4Address;
-    using IPAddressVector = IPv4AddressVector;
-    using IPAddressSet = IPv4AddressSet;
-    //! @endcond
 }

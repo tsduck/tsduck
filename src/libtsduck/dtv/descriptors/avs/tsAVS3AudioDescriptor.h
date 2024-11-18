@@ -35,11 +35,11 @@ namespace ts {
         class TSDUCKDLL general_coding_type
         {
         public:
-            int                                coding_profile = 0;        //!< 3 bits. The coding type used in the bitstream.
-            uint8_t                            bitrate_index = 0;         //!< 4 bits. Index to bitrates in tables A.10 to A.20 of T/AI 109.3
-            int                                bitstream_type = 0;        //!< 1 bit. Indicates whether the bitstream coding is uniform or non-uniform.
-            uint8_t                            channel_number_index = 0;  //!< 7 bits. Index to the channel configuration table (A.*) in T/AI 109.3
-            uint16_t                           raw_frame_length = 0;      //!< Total length of the current frame in the bitstream.
+            int      coding_profile = 0;        //!< 3 bits. The coding type used in the bitstream.
+            uint8_t  bitrate_index = 0;         //!< 4 bits. Index to bitrates in tables A.10 to A.20 of T/AI 109.3
+            int      bitstream_type = 0;        //!< 1 bit. Indicates whether the bitstream coding is uniform or non-uniform.
+            uint8_t  channel_number_index = 0;  //!< 7 bits. Index to the channel configuration table (A.*) in T/AI 109.3
+            uint16_t raw_frame_length = 0;      //!< Total length of the current frame in the bitstream.
 
             //!
             //! Default constructor.
@@ -67,9 +67,9 @@ namespace ts {
         class TSDUCKDLL lossless_coding_type
         {
         public:
-            uint32_t                           sampling_frequency = 0;  //!< 24 bits. Ths sampling frequency (in Hz) when lookup table cannot be used
-            int                                coding_profile = 0;      //!< 3 bits. The coding type used in the bitstream.
-            uint8_t                            channel_number = 0;      //!< indicates the number of channels
+            uint32_t sampling_frequency = 0;  //!< 24 bits. Ths sampling frequency (in Hz) when lookup table cannot be used
+            int      coding_profile = 0;      //!< 3 bits. The coding type used in the bitstream.
+            uint8_t  channel_number = 0;      //!< indicates the number of channels
 
             //!
             //! Default constructor.
@@ -99,11 +99,11 @@ namespace ts {
         class TSDUCKDLL fullrate_coding_type
         {
         public:
-            uint8_t                 nn_type = 0;            //!< 3 bits. Indicates the configuration of the neural network (basic or low complexity).
-            std::optional<uint8_t>  channel_num_index {};   //!< 7 bits. Index to the channel configuration table (A.*) in T/AI 109.3
-            std::optional<uint8_t>  num_objects {};         //!< 7 bits. The number of audio objects used in the audio sequence
-            std::optional<uint8_t>  hoa_order {};           //!< 4 bits. The HOA signal order (value + 1)
-            uint16_t                total_bitrate = 0;      //!< The total bit rate, in kbit/s, according to the value of content_type
+            uint8_t                nn_type = 0;            //!< 3 bits. Indicates the configuration of the neural network (basic or low complexity).
+            std::optional<uint8_t> channel_num_index {};   //!< 7 bits. Index to the channel configuration table (A.*) in T/AI 109.3
+            std::optional<uint8_t> num_objects {};         //!< 7 bits. The number of audio objects used in the audio sequence
+            std::optional<uint8_t> hoa_order {};           //!< 4 bits. The HOA signal order (value + 1)
+            uint16_t               total_bitrate = 0;      //!< The total bit rate, in kbit/s, according to the value of content_type
 
             //!
             //! Default constructor.
@@ -134,14 +134,14 @@ namespace ts {
 
     public:
         // Public members:
-        uint8_t   audio_codec_id = 0;               //!< 4 bits. the coding type in use
-        uint8_t   sampling_frequency_index = 0;     //!< 4 bits. Index to the sampling frequency table (A.9) of T/AI 109.3
-        uint32_t  sampling_frequency = 0;           //!< 24 bits, only of sampling_frequency_index = 0xf, Raw sampling frequency.
-        int       resolution = 0;                   //!< 2 bits. Number of quantization bits in the input signal (8, 16, 24)
+        uint8_t  audio_codec_id = 0;            //!< 4 bits. the coding type in use
+        uint8_t  sampling_frequency_index = 0;  //!< 4 bits. Index to the sampling frequency table (A.9) of T/AI 109.3
+        uint32_t sampling_frequency = 0;        //!< 24 bits, only of sampling_frequency_index = 0xf, Raw sampling frequency.
+        int      resolution = 0;                //!< 2 bits. Number of quantization bits in the input signal (8, 16, 24)
 
         std::variant<std::monostate, general_coding_type, lossless_coding_type, fullrate_coding_type> coding_data {}; //!< coding type specific data
 
-        ByteBlock additional_info {};               //!< additional (non-standard) bytes carried in the descriptor
+        ByteBlock additional_info {};           //!< additional (non-standard) bytes carried in the descriptor
 
         //!
         //! Default constructor.
