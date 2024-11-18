@@ -76,15 +76,15 @@ bool ts::ISDBTInformation::deserialize(DuckContext& duck, const void* data, size
 void ts::ISDBTInformation::display(DuckContext& duck, std::ostream& strm, const UString& margin) const
 {
     if (is_valid) {
-        strm << margin << "TMCC identifier: " << NameFromDTV(u"ISDB.TMCC_identifier", TMCC_identifier, NamesFlags::FIRST) << std::endl;
-        strm << margin << "buffer_reset_control_flag: " << int(buffer_reset_control_flag) << std::endl;
-        strm << margin << "switch-on_control_flag_for_emergency_broadcasting: " << int(switch_on_control_flag_for_emergency_broadcasting) << std::endl;
-        strm << margin << "initialization_timing_head_packet_flag: " << int(initialization_timing_head_packet_flag) << std::endl;
-        strm << margin << "frame_head_packet_flag: " << int(frame_head_packet_flag) << std::endl;
-        strm << margin << "frame_indicator: " << int(frame_indicator) << " (" << (frame_indicator ? "odd" : "even") << ")" << std::endl;
-        strm << margin << "layer_indicator: " << NameFromDTV(u"ISDB.layer_indicator", layer_indicator, NamesFlags::FIRST) << std::endl;
-        strm << margin << "count_down_index: " << int(count_down_index) << std::endl;
-        strm << margin << "AC_data_invalid_flag: " << int(AC_data_invalid_flag) << std::endl;
+        strm << margin << "TMCC identifier: " << NameFromDTV(u"ISDB.TMCC_identifier", TMCC_identifier, NamesFlags::FIRST) << std::endl
+             << margin << "buffer_reset_control_flag: " << int(buffer_reset_control_flag) << std::endl
+             << margin << "switch-on_control_flag_for_emergency_broadcasting: " << int(switch_on_control_flag_for_emergency_broadcasting) << std::endl
+             << margin << "initialization_timing_head_packet_flag: " << int(initialization_timing_head_packet_flag) << std::endl
+             << margin << "frame_head_packet_flag: " << int(frame_head_packet_flag) << std::endl
+             << margin << "frame_indicator: " << int(frame_indicator) << " (" << (frame_indicator ? "odd" : "even") << ")" << std::endl
+             << margin << "layer_indicator: " << NameFromDTV(u"ISDB.layer_indicator", layer_indicator, NamesFlags::FIRST) << std::endl
+             << margin << "count_down_index: " << int(count_down_index) << std::endl
+             << margin << "AC_data_invalid_flag: " << int(AC_data_invalid_flag) << std::endl;
         if (!AC_data_invalid_flag) {
             strm << margin << "AC_data_effective_bytes: " << int(AC_data_effective_bytes + 1) << std::endl;
         }

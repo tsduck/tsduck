@@ -14,6 +14,7 @@
 #include "tsPluginRepository.h"
 #include "tsSignalizationDemux.h"
 #include "tsISDBTInformation.h"
+#include "tsISDBTInformationPacket.h"
 #include "tsISDB.h"
 #include "tsIntegerMap.h"
 
@@ -47,12 +48,15 @@ namespace ts {
         bool     _check_continuity = false;
         bool     _statistics = false;
         bool     _dump_trailers = false;
+        bool     _dump_iip = false;
+        PID      _pid_iip = PID_IIP;
         fs::path _output_name {};
 
         // Working data:
         std::ofstream             _output_stream {};
         std::ostream*             _output = nullptr;
         bool                      _has_output = false;   // Some output has been produced.
+        PacketCounter             _iip_count = 0;        // Number of IIP packets.
         PacketCounter             _last_dummy = 0;       // Last packet counter with a 'dummy byte' trailer.
         uint16_t                  _last_tsp_counter = 0; // Last value of TSP_counter field in 'dummy byte' trailer.
         bool                      _last_frame_indicator = false; // Last value of frame_indicator field in 'dummy byte' trailer.
@@ -134,10 +138,18 @@ ts::ISDBInfoPlugin::ISDBInfoPlugin(TSP* tsp_) :
     option(u"continuity", 'c');
     help(u"continuity", u"Check presence and continuity of the 'dummy byte' trailers and packet counters.");
 
+    option(u"iip", 'i');
+    help(u"iip", u"Dump all ISDB-T Information Packets (IIP).");
+
     option(u"output-file", 'o', FILENAME);
     help(u"output-file",
          u"Specify the output text file. "
          u"By default, use tsp log messages for --continuity warnings and the standard output for other reports.");
+
+    option(u"pid-iip", 'p', PIDVAL);
+    help(u"pid-iip",
+         u"Specify the PID carrying ISDB-T Information Packets (IIP). "
+         u"The default IIP PID is " + UString::Format(u"%n.", PID_IIP));
 
     option(u"statistics", 's');
     help(u"statistics", u"Display final statistics of ISDB-T information.");
@@ -156,6 +168,8 @@ bool ts::ISDBInfoPlugin::getOptions()
     _check_continuity = present(u"continuity");
     _statistics = present(u"statistics");
     _dump_trailers = present(u"trailers");
+    _dump_iip = present(u"iip");
+    getIntValue(_pid_iip, u"pid-iip", PID_IIP);
     getPathValue(_output_name, u"output-file");
     return true;
 }
@@ -171,6 +185,7 @@ bool ts::ISDBInfoPlugin::start()
     _has_output = false;
     _last_dummy = INVALID_PACKET_COUNTER;
     _last_tsp_counter = 0;
+    _iip_count = 0;
     _frames_by_size.clear();
     _pids.clear();
     _services.clear();
@@ -208,11 +223,13 @@ bool ts::ISDBInfoPlugin::stop()
     // Produce final statistics.
     if (_statistics) {
 
-        // Frame size.
+        startOutputSection();
+        *_output << UString::Format(u"PID for ISDB-T Information Packets (IIP): %n", _pid_iip) << std::endl;
+        *_output << UString::Format(u"IIP packets: %'d / %'d", _iip_count, tsp->pluginPackets()) << std::endl;
         if (!_frames_by_size.empty()) {
-            startOutputSection();
-            *_output << "ISDB-T frames sizes (packets): " << _frames_by_size.toStringKeys() << std::endl << std::endl;
+            *_output << "Frames sizes (packets): " << _frames_by_size.toStringKeys() << std::endl;
         }
+        *_output << std::endl;
 
         // Compute packets per layer in the TS and per service.
         ISDBTLayerCounter ts_layers;
@@ -342,6 +359,23 @@ ts::ProcessorPlugin::Status ts::ISDBInfoPlugin::processPacket(TSPacket& pkt, TSP
             info.display(duck, *_output, u"  ");
             *_output << std::endl;
         }
+    }
+
+    // Process IIP packets.
+    if (pc.pid == _pid_iip) {
+        if (_dump_iip) {
+            ISDBTInformationPacket iip(duck, pkt, false);
+            if (iip.is_valid) {
+                startOutputSection();
+                *_output << UString::Format(u"Packet %'d, IIP %'d:", tsp->pluginPackets(), _iip_count) << std::endl;
+                iip.display(duck, *_output, u"  ");
+                *_output << std::endl;
+            }
+            else {
+                reportWarning(u"Packet %'d: invalid IIP packet", tsp->pluginPackets());
+            }
+        }
+        _iip_count++;
     }
 
     return TSP_OK;

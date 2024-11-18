@@ -1,3 +1,4 @@
+# ARIB STD-B31, section 5.5.1, table 5-5
 [ISDB.TMCC_identifier]
 Bits = 2
 0 = BS digital
@@ -5,6 +6,7 @@ Bits = 2
 2 = Digital terrestrial TV
 3 = Digital terrestrial audio
 
+# ARIB STD-B31, section 5.5.2, table 5-7
 [ISDB.layer_indicator]
 Bits = 4
    0 = NULL-TSP which is not transmitted by any layer
@@ -16,6 +18,7 @@ Bits = 4
    8 = TSP which transmits the IIP but not transmitted by any layer
 9-15 = TSP that service providers multiplex originally organized data
 
+# ARIB STD-B31, section 5.5.2, table 5-7
 [ISDB.short_layer_indicator]
 Bits = 4
    0 = NULL
@@ -26,3 +29,46 @@ Bits = 4
  5-7 = Data
    8 = IIP
 9-15 = Data
+
+# ARIB STD-B31, section 5.5.3, table 5-11
+[ISDB.mode]
+Bits = 2
+0 = reserved
+1 = Mode 1
+2 = Mode 2
+3 = Mode 3
+
+# ARIB STD-B31, section 5.5.3, table 5-11
+[ISDB.guard_interval]
+Bits = 2
+0 = 1/32
+1 = 1/16
+2 = 1/8
+3 = 1/4
+
+# ARIB STD-B31, section 3.15.6.1, table 3-24
+[ISDB.system_identification]
+Bits = 2
+0 = Digital terrestrial television broadcasting system
+1 = Digital terrestrial sound broadcasting system
+2-3 = reserved
+
+# ARIB STD-B31, section 3.15.6.5, table 3-28
+[ISDB.modulation]
+Bits = 3
+0 = DQPSK
+1 = QPSK
+2 = 16-QAM
+3 = 64-QAM
+4-7 = reserved
+
+# ARIB STD-B31, section 3.15.6.6, table 3-29
+[ISDB.coding_rate]
+Bits = 3
+0 = 1/2
+1 = 2/3
+2 = 3/4
+3 = 5/6
+4 = 7/8
+5-6 = reserved
+7 = unused

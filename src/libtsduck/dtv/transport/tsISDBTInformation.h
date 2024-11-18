@@ -21,13 +21,13 @@ namespace ts {
     //!
     //! ISDB-T Information block in a TS packet trailer (204-byte packet).
     //! @ingroup mpeg
-    //! @see ARIB STD-B31, section 5.5
+    //! @see ARIB STD-B31, section 5.5.2
     //!
     class TSDUCKDLL ISDBTInformation
     {
     public:
-        // Public information, see ARIB STD-B31, section 5.5.
-        bool     is_valid = true;                    //!< Reset by contructor from an invalid data area.
+        // Public information, see ARIB STD-B31, section 5.5.2.
+        bool     is_valid = true;                    //!< Reset by constructor from an invalid data area.
         uint8_t  TMCC_identifier = 0;                //!< 2 bits
         bool     buffer_reset_control_flag = false;  //!< 1 bit
         bool     switch_on_control_flag_for_emergency_broadcasting = false;  //!< 1 bit
@@ -74,7 +74,6 @@ namespace ts {
         //! @param [in] data Address of the binary area to deserialize.
         //! @param [in] size Size in bytes of the binary area to deserialize.
         //! @param [in] check_standards If true, do nothing if ISDB is not part of @a duck standards.
-        //! When false, we assume ISDB and ISDB is added to @a duck.
         //! @return True on success, false on error, same value as @a is_valid.
         //!
         bool deserialize(DuckContext& duck, const void* data, size_t size, bool check_standards);

@@ -42,7 +42,14 @@ Options
 Check presence and continuity of the _dummy byte_ trailers and packet counters.
 
 [.opt]
-*-o* _file-name_
+*-i* +
+*--iip*
+
+[.optdoc]
+Dump all ISDB-T Information Packets (IIP).
+
+[.opt]
+*-o* _file-name_ +
 *--output-file* _file-name_
 
 [.optdoc]
@@ -50,6 +57,16 @@ Specify the output text file.
 
 [.optdoc]
 By default, use `tsp` log messages for `--continuity` warnings and the standard output for other reports.
+
+[.opt]
+*-p* _value_ +
+*--pid-iip* _value_
+
+[.optdoc]
+Specify the PID carrying ISDB-T Information Packets (IIP).
+
+[.optdoc]
+The default IIP PID is 0x1FF0 (8176).
 
 [.opt]
 *-s* +
