@@ -15,7 +15,7 @@
 #include "tsTime.h"
 #include "tsDuckContext.h"
 #include "tsECMGSCS.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tstlvLogger.h"
 #include "tstlvConnection.h"
 #include "tsAsyncReport.h"
@@ -37,7 +37,7 @@ namespace {
 
         ts::DuckContext       duck {this};
         ts::AsyncReportArgs   log_args {};
-        ts::IPv4SocketAddress ecmg_address {};
+        ts::IPSocketAddress   ecmg_address {};
         ts::ecmgscs::Protocol ecmgscs {};
         uint32_t              super_cas_id = 0;
         ts::ByteBlock         access_criteria {};

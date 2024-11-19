@@ -207,7 +207,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     const size_t allow_count = args.count(u"allow");
     allowedRemote.clear();
     for (size_t i = 0; i < allow_count; ++i) {
-        allowedRemote.insert(args.ipValue(u"allow", IPv4Address(), i));
+        allowedRemote.insert(args.ipValue(u"allow", IPAddress(), i));
     }
 
     // Load all plugin descriptions. Default output is the standard output file.

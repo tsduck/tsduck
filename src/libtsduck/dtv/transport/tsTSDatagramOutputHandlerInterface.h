@@ -31,8 +31,8 @@ namespace ts {
         //!
         //! Send a datagram message.
         //! Must be implemented by classes which are in charge of sending datagrams.
-        //! @param [in] address Address of datagram.
-        //! @param [in] size Size in bytes of datagram.
+        //! @param [in] address Address of datagram content.
+        //! @param [in] size Size in bytes of datagram content.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!

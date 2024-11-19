@@ -52,9 +52,9 @@ ts::TargetIPAddressDescriptor::TargetIPAddressDescriptor(DuckContext& duck, cons
 
 void ts::TargetIPAddressDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putUInt32(IPv4_addr_mask.address());
+    buf.putUInt32(IPv4_addr_mask.address4());
     for (const auto& it : IPv4_addr) {
-        buf.putUInt32(it.address());
+        buf.putUInt32(it.address4());
     }
 }
 

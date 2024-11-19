@@ -41,7 +41,7 @@ bool ts::PcapStream::open(const fs::path& filename, Report& report)
         // Force TCP filtering on one single stream (any stream, initially).
         PcapFilter::setProtocolFilterTCP();
         PcapFilter::setWildcardFilter(false);
-        setBidirectionalFilter(IPv4SocketAddress(), IPv4SocketAddress());
+        setBidirectionalFilter(IPSocketAddress(), IPSocketAddress());
 
         // Statistics on the stream.
         _max_queue_size = 0;
@@ -54,7 +54,7 @@ bool ts::PcapStream::open(const fs::path& filename, Report& report)
 // Set a TCP/IP filter to select one bidirectional stream.
 //----------------------------------------------------------------------------
 
-void ts::PcapStream::setBidirectionalFilter(const IPv4SocketAddress& addr1, const IPv4SocketAddress& addr2)
+void ts::PcapStream::setBidirectionalFilter(const IPSocketAddress& addr1, const IPSocketAddress& addr2)
 {
     // Invoke superclass.
     PcapFilter::setBidirectionalFilter(addr1, addr2);
@@ -212,8 +212,8 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
         }
 
         // Check the direction of the IP packet in the filtered session.
-        const IPv4SocketAddress src(pkt.sourceSocketAddress());
-        const IPv4SocketAddress dst(pkt.destinationSocketAddress());
+        const IPSocketAddress src(pkt.sourceSocketAddress());
+        const IPSocketAddress dst(pkt.destinationSocketAddress());
         if (src.match(sourceFilter()) && dst.match(destinationFilter())) {
             pkt_source = ISRC;
         }
@@ -257,7 +257,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
 // Read data from the TCP session, any direction.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report)
+bool ts::PcapStream::readTCP(IPSocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report)
 {
     size_t remain = size;
     size = 0;
@@ -376,7 +376,7 @@ bool ts::PcapStream::nextSession(Report& report)
 // Get index for source address. Return false if incorrect.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::indexOf(const IPv4SocketAddress& source, bool allow_unspecified, size_t& index, Report& report) const
+bool ts::PcapStream::indexOf(const IPSocketAddress& source, bool allow_unspecified, size_t& index, Report& report) const
 {
     const bool unspecified = !source.hasAddress() && !source.hasPort();
     if (allow_unspecified && unspecified) {
@@ -422,7 +422,7 @@ bool ts::PcapStream::startOfStream(Report& report)
     }
 }
 
-bool ts::PcapStream::startOfStream(const IPv4SocketAddress& source, Report& report)
+bool ts::PcapStream::startOfStream(const IPSocketAddress& source, Report& report)
 {
     size_t index = NPOS;
     return indexOf(source, false, index, report) &&
@@ -430,15 +430,17 @@ bool ts::PcapStream::startOfStream(const IPv4SocketAddress& source, Report& repo
            _streams[index].packets.front()->start;
 }
 
-bool ts::PcapStream::endOfStream(const IPv4SocketAddress& source, Report& report)
+bool ts::PcapStream::endOfStream(const IPSocketAddress& source, Report& report)
 {
+    // error = end of stream
     size_t index = NPOS;
-    if (!indexOf(source, false, index, report) || (_streams[index].packets.empty() && !readStreams(index, report))) {
-        return true; // error = end of stream
-    }
-    else {
-        return _streams[index].packets.front()->end;
-    }
+    return !indexOf(source, false, index, report) || endOfStreamByIndex(index, report);
+}
+
+bool ts::PcapStream::endOfStreamByIndex(size_t index, Report& report)
+{
+    // error = end of stream
+    return (_streams[index].packets.empty() && !readStreams(index, report)) || _streams[index].packets.front()->end;
 }
 
 
@@ -466,12 +468,12 @@ void ts::PcapStream::clearProtocolFilter()
     PcapFilter::setProtocolFilterTCP(); // enforce TCP
 }
 
-void ts::PcapStream::setSourceFilter(const IPv4SocketAddress& addr)
+void ts::PcapStream::setSourceFilter(const IPSocketAddress& addr)
 {
     // Ignore "source" filter, must be bidirectional.
 }
 
-void ts::PcapStream::setDestinationFilter(const IPv4SocketAddress& addr)
+void ts::PcapStream::setDestinationFilter(const IPSocketAddress& addr)
 {
     // Ignore "destination" filter, must be bidirectional.
 }

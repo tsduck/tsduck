@@ -576,7 +576,6 @@ CXXFLAGS_PTHREAD="-pthread"
 
 # External libraries
 LDLIBS="$LDLIBS -lpthread"
-[[ -n $NETBSD ]] && LDLIBS="$LDLIBS -lstdc++fs"
 [[ -z $MACOS$OPENBSD ]] && LDLIBS="$LDLIBS -lrt"
 LDLIBS="$LDLIBS -lm"
 

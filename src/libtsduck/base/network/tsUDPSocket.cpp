@@ -97,13 +97,13 @@ bool ts::UDPSocket::close(Report& report)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::bind(const IPv4SocketAddress& addr, Report& report)
+bool ts::UDPSocket::bind(const IPSocketAddress& addr, Report& report)
 {
-    ::sockaddr sock_addr;
-    addr.copy(sock_addr);
+    ::sockaddr_storage sock_addr;
+    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
 
     report.debug(u"binding socket to %s", addr);
-    if (::bind(getSocket(), &sock_addr, sizeof(sock_addr)) != 0) {
+    if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
         report.error(u"error binding socket to local address: %s", SysErrorCodeMessage());
         return false;
     }
@@ -120,14 +120,14 @@ bool ts::UDPSocket::bind(const IPv4SocketAddress& addr, Report& report)
 
 bool ts::UDPSocket::setOutgoingMulticast(const UString& name, Report& report)
 {
-    IPv4Address addr;
+    IPAddress addr;
     return addr.resolve(name, report) && setOutgoingMulticast(addr, report);
 }
 
-bool ts::UDPSocket::setOutgoingMulticast(const IPv4Address& addr, Report& report)
+bool ts::UDPSocket::setOutgoingMulticast(const IPAddress& addr, Report& report)
 {
     ::in_addr iaddr;
-    addr.copy(iaddr);
+    addr.getAddress4(iaddr);
 
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) != 0) {
         report.error(u"error setting outgoing local address: %s", SysErrorCodeMessage());
@@ -145,11 +145,11 @@ bool ts::UDPSocket::setOutgoingMulticast(const IPv4Address& addr, Report& report
 
 bool ts::UDPSocket::setDefaultDestination(const UString& name, Report& report)
 {
-    IPv4SocketAddress addr;
+    IPSocketAddress addr;
     return addr.resolve(name, report) && setDefaultDestination(addr, report);
 }
 
-bool ts::UDPSocket::setDefaultDestination(const IPv4SocketAddress& addr, Report& report)
+bool ts::UDPSocket::setDefaultDestination(const IPSocketAddress& addr, Report& report)
 {
     if (!addr.hasAddress()) {
         report.error(u"missing IP address in UDP destination");
@@ -260,11 +260,11 @@ bool ts::UDPSocket::setBroadcast(bool on, Report& report)
 // Enable or disable the broadcast option, based on an IP address.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::setBroadcastIfRequired(const IPv4Address destination, Report& report)
+bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& report)
 {
     // Get all local interfaces.
-    IPv4AddressMaskVector locals;
-    if (!GetLocalIPAddresses(locals, report)) {
+    IPAddressMaskVector locals;
+    if (!GetLocalIPAddresses(locals, false, destination.generation(), report)) {
         return false;
     }
 
@@ -284,7 +284,7 @@ bool ts::UDPSocket::setBroadcastIfRequired(const IPv4Address destination, Report
 // Join one multicast group on one local interface.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership(const IPv4Address& multicast, const IPv4Address& local, const IPv4Address& source, Report& report)
+bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source, Report& report)
 {
     // Verbose message about joining the group.
     UString groupString;
@@ -336,9 +336,9 @@ bool ts::UDPSocket::addMembership(const IPv4Address& multicast, const IPv4Addres
 // Join one multicast group, let the system select the local interface.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembershipDefault(const IPv4Address& multicast, const IPv4Address& source, Report& report)
+bool ts::UDPSocket::addMembershipDefault(const IPAddress& multicast, const IPAddress& source, Report& report)
 {
-    return addMembership(multicast, IPv4Address(), source, report);
+    return addMembership(multicast, IPAddress(), source, report);
 }
 
 
@@ -346,7 +346,7 @@ bool ts::UDPSocket::addMembershipDefault(const IPv4Address& multicast, const IPv
 // Join one multicast group on all local interfaces.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembershipAll(const IPv4Address& multicast, const IPv4Address& source, Report& report)
+bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress& source, Report& report)
 {
     // There is no implicit way to listen on all interfaces.
     // If no local address is specified, we must get the list
@@ -354,8 +354,8 @@ bool ts::UDPSocket::addMembershipAll(const IPv4Address& multicast, const IPv4Add
     // request on each of them.
 
     // Get all local interfaces.
-    IPv4AddressVector loc_if;
-    if (!GetLocalIPAddresses(loc_if, report)) {
+    IPAddressVector loc_if;
+    if (!GetLocalIPAddresses(loc_if, false, multicast.generation(), report)) {
         return false;
     }
 
@@ -380,7 +380,7 @@ bool ts::UDPSocket::dropMembership(Report& report)
 
     // Drop all standard multicast groups.
     for (const auto& it : _mcast) {
-        report.verbose(u"leaving multicast group %s from local address %s", IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface));
+        report.verbose(u"leaving multicast group %s from local address %s", IPAddress(it.data.imr_multiaddr), IPAddress(it.data.imr_interface));
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
             report.error(u"error dropping multicast membership: %s", SysErrorCodeMessage());
             ok = false;
@@ -392,7 +392,7 @@ bool ts::UDPSocket::dropMembership(Report& report)
 #if !defined(TS_NO_SSM)
     for (const auto& it : _ssmcast) {
         report.verbose(u"leaving multicast group %s@%s from local address %s",
-                       IPv4Address(it.data.imr_sourceaddr), IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface));
+                       IPAddress(it.data.imr_sourceaddr), IPAddress(it.data.imr_multiaddr), IPAddress(it.data.imr_interface));
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
             report.error(u"error dropping multicast membership: %s", SysErrorCodeMessage());
             ok = false;
@@ -414,12 +414,12 @@ bool ts::UDPSocket::send(const void* data, size_t size, Report& report)
     return send(data, size, _default_destination, report);
 }
 
-bool ts::UDPSocket::send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report)
+bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& dest, Report& report)
 {
-    ::sockaddr addr;
-    dest.copy(addr);
+    ::sockaddr_storage addr;
+    const size_t addr_size = dest.get(&addr, sizeof(addr));
 
-    if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, &addr, sizeof(addr)) < 0) {
+    if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, reinterpret_cast<::sockaddr*>(&addr), socklen_t(addr_size)) < 0) {
         report.error(u"error sending UDP message: %s", SysErrorCodeMessage());
         return false;
     }
@@ -434,8 +434,8 @@ bool ts::UDPSocket::send(const void* data, size_t size, const IPv4SocketAddress&
 bool ts::UDPSocket::receive(void* data,
                             size_t max_size,
                             size_t& ret_size,
-                            IPv4SocketAddress& sender,
-                            IPv4SocketAddress& destination,
+                            IPSocketAddress& sender,
+                            IPSocketAddress& destination,
                             const AbortInterface* abort,
                             Report& report,
                             cn::microseconds* timestamp)
@@ -490,8 +490,8 @@ bool ts::UDPSocket::receive(void* data,
 int ts::UDPSocket::receiveOne(void* data,
                               size_t max_size,
                               size_t& ret_size,
-                              IPv4SocketAddress& sender,
-                              IPv4SocketAddress& destination,
+                              IPSocketAddress& sender,
+                              IPSocketAddress& destination,
                               Report& report,
                               cn::microseconds* timestamp)
 {
@@ -501,7 +501,7 @@ int ts::UDPSocket::receiveOne(void* data,
     destination.clear();
 
     // Reserve a socket address to receive the sender address.
-    ::sockaddr sender_sock;
+    ::sockaddr_storage sender_sock;
     TS_ZERO(sender_sock);
 
     // Normally, this operation should be done quite easily using recvmsg.
@@ -547,7 +547,7 @@ int ts::UDPSocket::receiveOne(void* data,
     // Build a WSAMSG for WSARecvMsg.
     ::WSAMSG msg;
     TS_ZERO(msg);
-    msg.name = &sender_sock;
+    msg.name = reinterpret_cast<::sockaddr*>(&sender_sock);
     msg.namelen = sizeof(sender_sock);
     msg.lpBuffers = &vec;
     msg.dwBufferCount = 1; // number of WSAMSG
@@ -564,7 +564,7 @@ int ts::UDPSocket::receiveOne(void* data,
     for (::WSACMSGHDR* cmsg = WSA_CMSG_FIRSTHDR(&msg); cmsg != 0; cmsg = WSA_CMSG_NXTHDR(&msg, cmsg)) {
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
             const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
-            destination = IPv4SocketAddress(info->ipi_addr, _local_address.port());
+            destination = IPSocketAddress(info->ipi_addr, _local_address.port());
         }
     }
 
@@ -612,12 +612,12 @@ int ts::UDPSocket::receiveOne(void* data,
 #if defined(IP_PKTINFO)
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
             const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
-            destination = IPv4SocketAddress(info->ipi_addr, _local_address.port());
+            destination = IPSocketAddress(info->ipi_addr, _local_address.port());
         }
 #elif defined(IP_RECVDSTADDR)
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_RECVDSTADDR && cmsg->cmsg_len >= sizeof(::in_addr)) {
             const ::in_addr* info = reinterpret_cast<const ::in_addr*>(CMSG_DATA(cmsg));
-            destination = IPv4SocketAddress(*info, _local_address.port());
+            destination = IPSocketAddress(*info, _local_address.port());
         }
 #endif
 
@@ -641,7 +641,7 @@ int ts::UDPSocket::receiveOne(void* data,
 
     // Successfully received a message
     ret_size = size_t(insize);
-    sender = IPv4SocketAddress(sender_sock);
+    sender = IPSocketAddress(sender_sock);
 
     return 0; // success
 }

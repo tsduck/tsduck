@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsPluginOptions.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 
 namespace ts {
 
@@ -39,13 +39,13 @@ namespace ts {
         size_t              maxInputPackets = 0;   //!< Maximum input packets to read at a time.
         size_t              maxOutputPackets = 0;  //!< Maximum output packets to send at a time.
         UString             eventCommand {};       //!< External shell command to run on an event.
-        IPv4SocketAddress   eventUDP {};           //!< Remote UDP socket address for event description.
-        IPv4Address         eventLocalAddress {};  //!< Outgoing local interface for UDP event description.
+        IPSocketAddress     eventUDP {};           //!< Remote UDP socket address for event description.
+        IPAddress           eventLocalAddress {};  //!< Outgoing local interface for UDP event description.
         int                 eventTTL = 0;          //!< Time-to-live socket option for event UDP.
         UString             eventUserData {};      //!< User-defined data string in event messages.
         size_t              sockBuffer = 0;        //!< Socket buffer size.
-        IPv4SocketAddress   remoteServer {};       //!< UDP server address for remote control.
-        IPv4AddressSet      allowedRemote {};      //!< Set of allowed remotes.
+        IPSocketAddress     remoteServer {};       //!< UDP server address for remote control.
+        IPAddressSet        allowedRemote {};      //!< Set of allowed remotes.
         cn::milliseconds    receiveTimeout {};     //!< Receive timeout before switch (0=none).
         PluginOptionsVector inputs {};             //!< Input plugins descriptions.
         PluginOptions       output {};             //!< Output plugin description.

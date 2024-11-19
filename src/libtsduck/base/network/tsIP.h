@@ -32,8 +32,18 @@
     #include <netinet/in.h>
     #include <netinet/tcp.h>
     #include <netdb.h>
-    #if defined(TS_MAC) || defined(TS_BSD)
-        #include <ifaddrs.h>
-    #endif
+    #include <ifaddrs.h>
     #include "tsAfterStandardHeaders.h"
 #endif
+
+namespace ts {
+    //!
+    //! Generation of IP networks as an enum class.
+    //! @ingroup net
+    //!
+    enum class IP : uint8_t {
+        Any = 0,  //!< Any generation of IP networks.
+        v4  = 4,  //!< IPv4.
+        v6  = 6,  //!< IPv6.
+    };
+}

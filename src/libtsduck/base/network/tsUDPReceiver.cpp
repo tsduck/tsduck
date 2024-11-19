@@ -47,13 +47,13 @@ bool ts::UDPReceiver::open(ts::Report& report)
     // Except on Linux, macOS and probably most UNIX, when listening to a multicast group.
     // In that case, we bind to the multicast group, not the local interface.
     // Note that if _args.destination has an address, it must be a multicast one.
-    IPv4SocketAddress local_addr(
+    IPSocketAddress local_addr;
 #if defined(TS_UNIX)
-        _args.destination.hasAddress() ? _args.destination.address() : _args.local_address,
+    local_addr.setAddress(_args.destination.hasAddress() ? IPAddress(_args.destination) : _args.local_address);
 #else
-        _args.local_address,
+    local_addr.setAddress(_args.local_address);
 #endif
-        _args.destination.port());
+    local_addr.setPort(_args.destination.port());
 
     // Create UDP socket from the superclass.
     // Note: On Windows, bind must be done *before* joining multicast groups.
@@ -67,7 +67,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
         bind(local_addr, report);
 
     // Optional SSM source address.
-    IPv4Address ssm_source;
+    IPAddress ssm_source;
     if (_args.use_ssm) {
         ssm_source = _args.source;
     }
@@ -100,8 +100,8 @@ bool ts::UDPReceiver::open(ts::Report& report)
 bool ts::UDPReceiver::receive(void* data,
                               size_t max_size,
                               size_t& ret_size,
-                              ts::IPv4SocketAddress& sender,
-                              ts::IPv4SocketAddress& destination,
+                              ts::IPSocketAddress& sender,
+                              ts::IPSocketAddress& destination,
                               const ts::AbortInterface* abort,
                               ts::Report& report,
                               cn::microseconds* timestamp)

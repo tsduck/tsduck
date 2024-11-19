@@ -160,7 +160,7 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
     if (_raw_udp) {
         args.getSocketValue(_destination, u"");
         args.getIPValue(_local_addr, u"local-address");
-        args.getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
+        args.getIntValue(_local_port, u"local-port", IPAddress::AnyPort);
         args.getIntValue(_ttl, u"ttl", 0);
         args.getIntValue(_tos, u"tos", -1);
         args.getIntValue(_send_bufsize, u"buffer-size", 0);
@@ -219,8 +219,8 @@ bool ts::TSDatagramOutput::open(Report& report)
         if (!_sock.open(report)) {
             return false;
         }
-        const IPv4SocketAddress local(_local_addr, _local_port);
-        if ((_local_port != IPv4SocketAddress::AnyPort && !_sock.reusePort(true, report)) ||
+        const IPSocketAddress local(_local_addr, _local_port);
+        if ((_local_port != IPAddress::AnyPort && !_sock.reusePort(true, report)) ||
             !_sock.bind(local, report) ||
             !_sock.setDefaultDestination(_destination, report) ||
             !_sock.setMulticastLoop(_mc_loopback, report) ||

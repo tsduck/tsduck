@@ -33,11 +33,11 @@ namespace ts {
 
     private:
         // Command line options:
-        IPv4SocketAddress _server_address {};
-        bool              _reuse_port = false;
-        bool              _multiple_clients = false;
-        bool              _ignore_bad_request = false;
-        size_t            _tcp_buffer_size = 0;
+        IPSocketAddress _server_address {};
+        bool            _reuse_port = false;
+        bool            _multiple_clients = false;
+        bool            _ignore_bad_request = false;
+        size_t          _tcp_buffer_size = 0;
 
         // Working data:
         TCPServer     _server {};

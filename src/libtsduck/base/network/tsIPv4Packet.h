@@ -12,8 +12,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIPv4Address.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tsIPProtocols.h"
 #include "tsByteBlock.h"
 
@@ -137,13 +137,13 @@ namespace ts {
         //! Get the source IPv4 address.
         //! @return The source IPv4 address.
         //!
-        IPv4Address sourceAddress() const;
+        IPAddress sourceAddress() const;
 
         //!
         //! Get the destination IPv4 address.
         //! @return The destination IPv4 address.
         //!
-        IPv4Address destinationAddress() const;
+        IPAddress destinationAddress() const;
 
         //!
         //! Get the TCP or UDP source port.
@@ -161,13 +161,13 @@ namespace ts {
         //! Get the source IPv4 socket address.
         //! @return The source IPv4 socket address.
         //!
-        IPv4SocketAddress sourceSocketAddress() const;
+        IPSocketAddress sourceSocketAddress() const;
 
         //!
         //! Get the destination IPv4 socket address.
         //! @return The destination IPv4 socket address.
         //!
-        IPv4SocketAddress destinationSocketAddress() const;
+        IPSocketAddress destinationSocketAddress() const;
 
         //!
         //! Get the TCP sequence number in the packet.

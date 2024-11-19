@@ -898,46 +898,48 @@ ts::ByteBlock ts::Args::hexaValue(const UChar* name, const ByteBlock& def_value,
 
 
 //----------------------------------------------------------------------------
-// Get the value of an option as an IPv4 address or socket address.
+// Get the value of an option as an IP address or socket address.
 //----------------------------------------------------------------------------
 
-void ts::Args::getIPValue(IPv4Address& value, const UChar* name, const IPv4Address& def_value, size_t index) const
+void ts::Args::getIPValue(IPAddress& value, const UChar* name, const IPAddress& def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
     if (opt.type != IPADDR && opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
-        fatalArgError(opt.name, u"is not declared as IPv4 address");
+        fatalArgError(opt.name, u"is not declared as IP address");
     }
-    value = index >= opt.values.size() ? def_value : opt.values[index].address;
-    if (!value.hasAddress() && def_value.hasAddress()) {
-        value.setAddress(def_value.address());
+    if (index >= opt.values.size() || !opt.values[index].address.hasAddress()) {
+        value.setAddress(def_value);
+    }
+    else {
+        value.setAddress(opt.values[index].address);
     }
 }
 
-ts::IPv4Address ts::Args::ipValue(const UChar* name, const IPv4Address& def_value, size_t index) const
+ts::IPAddress ts::Args::ipValue(const UChar* name, const IPAddress& def_value, size_t index) const
 {
-    IPv4Address value;
+    IPAddress value;
     getIPValue(value, name, def_value, index);
     return value;
 }
 
-void ts::Args::getSocketValue(IPv4SocketAddress& value, const UChar* name, const IPv4SocketAddress& def_value, size_t index) const
+void ts::Args::getSocketValue(IPSocketAddress& value, const UChar* name, const IPSocketAddress& def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
     if (opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
-        fatalArgError(opt.name, u"is not declared as IPv4 socket address");
+        fatalArgError(opt.name, u"is not declared as IP socket address");
     }
     value = index >= opt.values.size() ? def_value : opt.values[index].address;
     if (!value.hasAddress() && def_value.hasAddress()) {
-        value.setAddress(def_value.address());
+        value.setAddress(def_value);
     }
     if (!value.hasPort() && def_value.hasPort()) {
         value.setPort(def_value.port());
     }
 }
 
-ts::IPv4SocketAddress ts::Args::socketValue(const UChar* name, const IPv4SocketAddress& def_value, size_t index) const
+ts::IPSocketAddress ts::Args::socketValue(const UChar* name, const IPSocketAddress& def_value, size_t index) const
 {
-    IPv4SocketAddress value;
+    IPSocketAddress value;
     getSocketValue(value, name, def_value, index);
     return value;
 }
@@ -1245,7 +1247,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         }
     }
     else if (opt.type == IPADDR) {
-        IPv4Address addr;
+        IPAddress addr;
         if (!addr.resolve(val.value(), *this)) {
             return false;
         }

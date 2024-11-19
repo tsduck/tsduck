@@ -51,9 +51,9 @@ ts::TargetIPv6SourceSlashDescriptor::TargetIPv6SourceSlashDescriptor(DuckContext
 void ts::TargetIPv6SourceSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (const auto& it : addresses) {
-        buf.putBytes(it.IPv6_source_addr.toBytes());
+        buf.putBytes(it.IPv6_source_addr.address6());
         buf.putUInt8(it.IPv6_source_slash_mask);
-        buf.putBytes(it.IPv6_dest_addr.toBytes());
+        buf.putBytes(it.IPv6_dest_addr.address6());
         buf.putUInt8(it.IPv6_dest_slash_mask);
     }
 }

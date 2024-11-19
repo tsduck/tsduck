@@ -122,7 +122,7 @@ bool ts::HTTPOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
         // Establish one client connection, if none is connected.
         while (!_client.isConnected()) {
             // Wait for a new incoming client.
-            IPv4SocketAddress client_address;
+            IPSocketAddress client_address;
             debug(u"waiting for incoming client connection");
             if (!_server.accept(_client, client_address, *this)) {
                 // Error while accepting a client is fatal.

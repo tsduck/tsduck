@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 
 namespace ts {
 
@@ -39,14 +39,14 @@ namespace ts {
         bool             receive_timestamps = true;  //!< Get receive timestamps, currently hardcoded, is there a reason to disable it?
         size_t           receive_bufsize = 0;        //!< Socket receive buffer size in bytes (-\-buffer-size).
         cn::milliseconds receive_timeout = cn::milliseconds(-1);  //!< Receive timeout (-\-receive-timeout).
-        IPv4Address      local_address {};           //!< Optional local addresses on which to listen (-\-local-address).
+        IPAddress        local_address {};           //!< Optional local addresses on which to listen (-\-local-address).
 
         //!
         //! Destination of packets to read ([address:]port).
         //! The UDP port is mandatory. The IP address is optional. When present, it must be a multicast address.
         //! When the IP address is not present, receive unicast packets on the specified UDP port.
         //!
-        IPv4SocketAddress destination {};
+        IPSocketAddress destination {};
 
         //!
         //! Optional source (-\-source address[:port]).
@@ -54,7 +54,7 @@ namespace ts {
         //! If the source IP address or source UDP port is unspecified, any address or port is accepted.
         //! If @a use_ssm is true, the source is used in source-specific multicast.
         //!
-        IPv4SocketAddress source {};
+        IPSocketAddress source {};
 
         //!
         //! Set application-specified parameters to receive unicast traffic.
@@ -63,7 +63,7 @@ namespace ts {
         //! @param [in] reuse_port Optional reuse-port option.
         //! @param [in] buffer_size Optional socket receive buffer size.
         //!
-        void setUnicast(const IPv4SocketAddress& local_address, bool reuse_port = true, size_t buffer_size = 0);
+        void setUnicast(const IPSocketAddress& local_address, bool reuse_port = true, size_t buffer_size = 0);
 
         //!
         //! Add command line option definitions in an Args.
@@ -88,7 +88,7 @@ namespace ts {
         //!
         bool loadArgs(DuckContext& duck, Args& args, cn::milliseconds default_receive_timeout = cn::milliseconds(-1))
         {
-            return loadArgs(duck, args, _dest_is_parameter, 0, default_receive_timeout, IPv4Address(), IPv4SocketAddress());
+            return loadArgs(duck, args, _dest_is_parameter, 0, default_receive_timeout, IPAddress(), IPSocketAddress());
         }
 
     private:
@@ -105,7 +105,7 @@ namespace ts {
                       bool destination_is_parameter,
                       size_t dest_index,
                       cn::milliseconds default_receive_timeout,
-                      const IPv4Address& default_local_address,
-                      const IPv4SocketAddress& default_source);
+                      const IPAddress& default_local_address,
+                      const IPSocketAddress& default_source);
     };
 }

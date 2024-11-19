@@ -51,9 +51,9 @@ void ts::TargetIPSourceSlashDescriptor::clearContent()
 void ts::TargetIPSourceSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (const auto& it : addresses) {
-        buf.putUInt32(it.IPv4_source_addr.address());
+        buf.putUInt32(it.IPv4_source_addr.address4());
         buf.putUInt8(it.IPv4_source_slash_mask);
-        buf.putUInt32(it.IPv4_dest_addr.address());
+        buf.putUInt32(it.IPv4_dest_addr.address4());
         buf.putUInt8(it.IPv4_dest_slash_mask);
     }
 }

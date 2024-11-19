@@ -113,47 +113,47 @@ bool ts::IPv4Packet::fragmented() const
 // Get the source and destination IPv4 addresses and ports.
 //----------------------------------------------------------------------------
 
-ts::IPv4Address ts::IPv4Packet::sourceAddress() const
+ts::IPAddress ts::IPv4Packet::sourceAddress() const
 {
     if (_valid) {
         assert(_data.size() >= IPv4_SRC_ADDR_OFFSET + 4);
-        return IPv4Address(GetUInt32BE(&_data[IPv4_SRC_ADDR_OFFSET]));
+        return IPAddress(GetUInt32BE(&_data[IPv4_SRC_ADDR_OFFSET]));
     }
     else {
-        return IPv4Address(); // invalid address
+        return IPAddress(); // invalid address
     }
 }
 
-ts::IPv4Address ts::IPv4Packet::destinationAddress() const
+ts::IPAddress ts::IPv4Packet::destinationAddress() const
 {
     if (_valid) {
         assert(_data.size() >= IPv4_DEST_ADDR_OFFSET + 4);
-        return IPv4Address(GetUInt32BE(&_data[IPv4_DEST_ADDR_OFFSET]));
+        return IPAddress(GetUInt32BE(&_data[IPv4_DEST_ADDR_OFFSET]));
     }
     else {
-        return IPv4Address(); // invalid address
+        return IPAddress(); // invalid address
     }
 }
 
-ts::IPv4SocketAddress ts::IPv4Packet::sourceSocketAddress() const
+ts::IPSocketAddress ts::IPv4Packet::sourceSocketAddress() const
 {
     if (_valid) {
         assert(_data.size() >= IPv4_SRC_ADDR_OFFSET + 4);
-        return IPv4SocketAddress(GetUInt32BE(&_data[IPv4_SRC_ADDR_OFFSET]), _source_port);
+        return IPSocketAddress(GetUInt32BE(&_data[IPv4_SRC_ADDR_OFFSET]), _source_port);
     }
     else {
-        return IPv4SocketAddress(); // invalid address
+        return IPSocketAddress(); // invalid address
     }
 }
 
-ts::IPv4SocketAddress ts::IPv4Packet::destinationSocketAddress() const
+ts::IPSocketAddress ts::IPv4Packet::destinationSocketAddress() const
 {
     if (_valid) {
         assert(_data.size() >= IPv4_DEST_ADDR_OFFSET + 4);
-        return IPv4SocketAddress(GetUInt32BE(&_data[IPv4_DEST_ADDR_OFFSET]), _destination_port);
+        return IPSocketAddress(GetUInt32BE(&_data[IPv4_DEST_ADDR_OFFSET]), _destination_port);
     }
     else {
-        return IPv4SocketAddress(); // invalid address
+        return IPSocketAddress(); // invalid address
     }
 }
 

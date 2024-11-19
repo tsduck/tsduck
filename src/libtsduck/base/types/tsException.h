@@ -62,6 +62,8 @@ namespace ts {
     class name: public ts::Exception                          \
     {                                                         \
     public:                                                   \
+        /** Default constructor.                           */ \
+        name() : ts::Exception(u ## #name) {}                 \
         /** Constructor.                                   */ \
         /** @param [in] w Error message for the exception. */ \
         explicit name(const ts::UString& w) :                 \
@@ -96,21 +98,6 @@ namespace ts {
 // Some "standard" exceptions
 //
 namespace ts {
-    //!
-    //! Exception for generic invalid value error.
-    //! @ingroup cpp
-    //!
-    TS_DECLARE_EXCEPTION(InvalidValue);
-    //!
-    //! Uninitialized variable error.
-    //! @ingroup cpp
-    //!
-    TS_DECLARE_EXCEPTION(UninitializedVariable);
-    //!
-    //! Unimplemented method error.
-    //! @ingroup cpp
-    //!
-    TS_DECLARE_EXCEPTION(UnimplementedMethod);
     //!
     //! Implementation error.
     //! @ingroup cpp

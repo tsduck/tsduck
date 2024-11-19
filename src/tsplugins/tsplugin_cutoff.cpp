@@ -44,7 +44,7 @@ namespace ts {
         // Plugin private fields.
         volatile bool    _terminate = false;
         size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
-        IPv4AddressSet   _allowedRemote {};
+        IPAddressSet     _allowedRemote {};
         UDPReceiverArgs  _sock_args {};
         UDPReceiver      _sock {*this};
         CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};
@@ -98,7 +98,7 @@ bool ts::CutoffPlugin::getOptions()
     getValues(remotes, u"allow");
     _allowedRemote.clear();
     for (const auto& it : remotes) {
-        const IPv4Address addr(it, *this);
+        const IPAddress addr(it, *this);
         if (addr.hasAddress()) {
             _allowedRemote.insert(addr);
         }
@@ -208,8 +208,8 @@ void ts::CutoffPlugin::main()
 
     char inbuf[1024];
     size_t insize = 0;
-    IPv4SocketAddress sender;
-    IPv4SocketAddress destination;
+    IPSocketAddress sender;
+    IPSocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<ts::ThreadSafety::None> error(tsp->maxSeverity());

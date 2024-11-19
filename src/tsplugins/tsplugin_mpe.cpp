@@ -60,8 +60,8 @@ namespace ts {
         IPv4SocketAddress _ip_source {};        // IP source filter.
         IPv4SocketAddress _ip_dest {};          // IP destination filter.
         IPv4SocketAddress _ip_forward {};       // Forwarded socket address.
-        IPv4Address       _local_address {};    // Local IP address for UDP forwarding.
-        uint16_t          _local_port = IPv4SocketAddress::AnyPort; // Local UDP source port for UDP forwarding.
+        IPAddress         _local_address {};    // Local IP address for UDP forwarding.
+        uint16_t          _local_port = IPAddress::AnyPort; // Local UDP source port for UDP forwarding.
 
         // Plugin private fields.
         bool          _abort = false;           // Error, abort asap.
@@ -242,7 +242,7 @@ bool ts::MPEPlugin::getOptions()
     getSocketValue(_ip_dest, u"destination");
     getSocketValue(_ip_forward, u"redirect");
     getIPValue(_local_address, u"local-address");
-    getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
+    getIntValue(_local_port, u"local-port", IPAddress::AnyPort);
     getIntValue(_min_net_size, u"min-net-size");
     getIntValue(_max_net_size, u"max-net-size", NPOS);
     getIntValue(_min_udp_size, u"min-udp-size");
@@ -304,9 +304,9 @@ bool ts::MPEPlugin::start()
         if (!_sock.open(*this)) {
             return false;
         }
-        // If local port is specified, bint to socket.
-        const IPv4SocketAddress local(IPv4Address::AnyAddress, _local_port);
-        if (_local_port != IPv4SocketAddress::AnyPort && (!_sock.reusePort(true, *this) || !_sock.bind(local, *this))) {
+        // If local port is specified, bind to socket.
+        const IPSocketAddress local(IPAddress::AnyAddress4, _local_port);
+        if (_local_port != IPAddress::AnyPort && (!_sock.reusePort(true, *this) || !_sock.bind(local, *this))) {
             return false;
         }
         // If specified, set TTL option, for unicast and multicast.
@@ -456,7 +456,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         // Then override with user-specified values.
         IPv4SocketAddress dest(mpe.destinationSocket());
         if (_ip_forward.hasAddress()) {
-            dest.setAddress(_ip_forward.address());
+            dest.setAddress(_ip_forward);
         }
         if (_ip_forward.hasPort()) {
             dest.setPort(_ip_forward.port());

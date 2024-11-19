@@ -38,30 +38,30 @@ namespace ts {
 
     private:
         // Command line options:
-        fs::path          _file_name {};            // Pcap file name.
-        IPv4SocketAddress _destination {};          // Selected destination UDP socket address.
-        IPv4SocketAddress _source {};               // Selected source UDP socket address.
-        bool              _multicast = false;       // Use multicast destinations only.
-        bool              _http = false;            // Extract packets from an HTTP session.
-        bool              _udp_emmg_mux = false;    // Extract packets from EMMG/PDG <=> MUX data provisions in UDP mode.
-        bool              _tcp_emmg_mux = false;    // Extract packets from EMMG/PDG <=> MUX data provisions in TCP mode.
-        bool              _has_client_id = false;   // _emmg_client_id is used.
-        bool              _has_data_id = false;     // _emmg_data_id is used.
-        uint32_t          _emmg_client_id = 0;      // EMMG<=>MUX client id to filter.
-        uint16_t          _emmg_data_id = 0;        // EMMG<=>MUX data id to filter.
-        size_t            _http_chunk_size = 65535; // Size to load from the TCP session each time we reload the buffer.
+        fs::path        _file_name {};            // Pcap file name.
+        IPSocketAddress _destination {};          // Selected destination UDP socket address.
+        IPSocketAddress _source {};               // Selected source UDP socket address.
+        bool            _multicast = false;       // Use multicast destinations only.
+        bool            _http = false;            // Extract packets from an HTTP session.
+        bool            _udp_emmg_mux = false;    // Extract packets from EMMG/PDG <=> MUX data provisions in UDP mode.
+        bool            _tcp_emmg_mux = false;    // Extract packets from EMMG/PDG <=> MUX data provisions in TCP mode.
+        bool            _has_client_id = false;   // _emmg_client_id is used.
+        bool            _has_data_id = false;     // _emmg_data_id is used.
+        uint32_t        _emmg_client_id = 0;      // EMMG<=>MUX client id to filter.
+        uint16_t        _emmg_data_id = 0;        // EMMG<=>MUX data id to filter.
+        size_t          _http_chunk_size = 65535; // Size to load from the TCP session each time we reload the buffer.
 
         // Working data:
-        PcapFilter           _pcap_udp {};          // Pcap file, in UDP mode.
-        PcapStream           _pcap_tcp {};          // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
-        cn::microseconds     _first_tstamp {};      // Time stamp of first datagram.
-        IPv4SocketAddress    _actual_dest {};       // Actual destination UDP socket address.
-        IPv4SocketAddress    _actual_source {};     // Actual source TCP socket address for HTTP mode.
-        IPv4SocketAddressSet _all_sources {};       // All source addresses.
-        emmgmux::Protocol    _emmgmux {};           // EMMG/PDG <=> MUX protocol instance to decode TCP stream.
-        ByteBlock            _data {};              // Session data buffer, for HTTP mode.
-        size_t               _data_next = 0;        // Next index in _data.
-        bool                 _data_error = false;   // Content of _data is invalid.
+        PcapFilter         _pcap_udp {};          // Pcap file, in UDP mode.
+        PcapStream         _pcap_tcp {};          // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
+        cn::microseconds   _first_tstamp {};      // Time stamp of first datagram.
+        IPSocketAddress    _actual_dest {};       // Actual destination UDP socket address.
+        IPSocketAddress    _actual_source {};     // Actual source TCP socket address for HTTP mode.
+        IPSocketAddressSet _all_sources {};       // All source addresses.
+        emmgmux::Protocol  _emmgmux {};           // EMMG/PDG <=> MUX protocol instance to decode TCP stream.
+        ByteBlock          _data {};              // Session data buffer, for HTTP mode.
+        size_t             _data_next = 0;        // Next index in _data.
+        bool               _data_error = false;   // Content of _data is invalid.
         bool (PcapInputPlugin::*_receive)(uint8_t*, size_t, size_t&, cn::microseconds&) = nullptr; // Receive handler.
 
         // Internal receive methods.
@@ -274,8 +274,8 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
         }
 
         // Get IP addresses and UDP ports.
-        const IPv4SocketAddress src(ip.sourceSocketAddress());
-        const IPv4SocketAddress dst(ip.destinationSocketAddress());
+        const IPSocketAddress src(ip.sourceSocketAddress());
+        const IPSocketAddress dst(ip.destinationSocketAddress());
 
         // Filter source or destination socket address if one was specified.
         if (!src.match(_source) || !dst.match(_actual_dest)) {
@@ -371,7 +371,7 @@ bool ts::PcapInputPlugin::receiveEMMG(uint8_t *buffer, size_t buffer_size, size_
     // Read all TCP sessions matching the source and destination until eof or read TS packets.
     ret_size = 0;
     do {
-        IPv4SocketAddress source;
+        IPSocketAddress source;
         ByteBlock data;
 
         // Read a message header from any source: version(1), type(2), length(2).
@@ -482,7 +482,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
         else {
             // The pcap file probably started in the middle of a TCP session.
             // Initially, the source may be unknown (if only the destination was specified).
-            IPv4SocketAddress src(_source);
+            IPSocketAddress src(_source);
             size_t size = _http_chunk_size;
             if (_pcap_tcp.readTCP(src, _data, size, timestamp, *this)) {
                 // The source is now known

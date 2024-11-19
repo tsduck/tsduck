@@ -44,8 +44,8 @@ namespace ts {
         AbstractNetworkAddress() = default;
 
         //!
-        //! Get the maximum binary size for an address of that class.
-        //! @return The maximum binary size for an address of that class.
+        //! Get the maximum binary size in bytes for an address of that class.
+        //! @return The maximum binary size in bytes for an address of that class.
         //!
         virtual size_t binarySize() const = 0;
 

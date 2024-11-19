@@ -30,7 +30,7 @@ namespace {
 
         ts::TSPControlCommand cmdline {*this};
         ts::UString           command {};
-        ts::IPv4SocketAddress tsp_address {};
+        ts::IPSocketAddress   tsp_address {};
 
         // Inherited methods.
         virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
@@ -57,7 +57,7 @@ Options::Options(int argc, char *argv[]) :
     // Build command line.
     ts::UStringVector args;
     getValues(args, u"");
-    getSocketValue(tsp_address, u"tsp", ts::IPv4SocketAddress(ts::IPv4Address::LocalHost));
+    getSocketValue(tsp_address, u"tsp", ts::IPSocketAddress(ts::IPAddress::LocalHost4, ts::IPAddress::AnyPort));
     command.quotedLine(args);
 
     // Validate the control command. It will be validated inside tsp anyway
@@ -96,7 +96,7 @@ int MainCode(int argc, char *argv[])
 
     // Open a text connection to the tsp server.
     ts::TelnetConnection conn;
-    ts::IPv4SocketAddress addr;
+    ts::IPSocketAddress addr;
     ts::UString resp;
 
     if (conn.open(opt) &&

@@ -14,7 +14,7 @@
 // Set application-specified parameters to receive unicast traffic.
 //----------------------------------------------------------------------------
 
-void ts::UDPReceiverArgs::setUnicast(const IPv4SocketAddress& local, bool reuse, size_t buffer_size)
+void ts::UDPReceiverArgs::setUnicast(const IPSocketAddress& local, bool reuse, size_t buffer_size)
 {
     reuse_port = reuse;
     default_interface = false;
@@ -22,7 +22,7 @@ void ts::UDPReceiverArgs::setUnicast(const IPv4SocketAddress& local, bool reuse,
     mc_loopback = false;
     use_ssm = false;
     receive_bufsize = buffer_size;
-    local_address = local.address();
+    local_address = IPAddress(local);
     destination.clear();
     destination.setPort(local.port());
     source.clear();
@@ -140,8 +140,8 @@ bool ts::UDPReceiverArgs::loadArgs(DuckContext& duck,
                                    bool destination_is_parameter,
                                    size_t dest_index,
                                    cn::milliseconds default_receive_timeout,
-                                   const IPv4Address& default_local_address,
-                                   const IPv4SocketAddress& default_source)
+                                   const IPAddress& default_local_address,
+                                   const IPSocketAddress& default_source)
 {
     bool ok = true;
 

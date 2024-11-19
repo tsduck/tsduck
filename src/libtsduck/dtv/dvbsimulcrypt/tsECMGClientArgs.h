@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsByteBlock.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tstlv.h"
 
 namespace ts {
@@ -34,16 +34,16 @@ namespace ts {
         ECMGClientArgs() = default;
 
         // Public fields, by options.
-        IPv4SocketAddress ecmg_address {};      //!< -\-ecmg, ECMG socket address (required or optional)
-        uint32_t          super_cas_id = 0;     //!< -\-super-cas-id, CA system & subsystem id
-        ByteBlock         access_criteria {};   //!< -\-access-criteria
-        ts::deciseconds   cp_duration {0};      //!< -\-cp-duration, crypto-period duration, converted to 100 ms units
-        tlv::VERSION      dvbsim_version = 0;   //!< -\-ecmg-scs-version
-        uint16_t          ecm_channel_id = 0;   //!< -\-channel-id
-        uint16_t          ecm_stream_id = 0;    //!< -\-stream-id
-        uint16_t          ecm_id = 0;           //!< -\-ecm-id
-        int               log_protocol = 0;     //!< -\-log-protocol
-        int               log_data = 0;         //!< -\-log-data
+        IPSocketAddress ecmg_address {};      //!< -\-ecmg, ECMG socket address (required or optional)
+        uint32_t        super_cas_id = 0;     //!< -\-super-cas-id, CA system & subsystem id
+        ByteBlock       access_criteria {};   //!< -\-access-criteria
+        ts::deciseconds cp_duration {0};      //!< -\-cp-duration, crypto-period duration, converted to 100 ms units
+        tlv::VERSION    dvbsim_version = 0;   //!< -\-ecmg-scs-version
+        uint16_t        ecm_channel_id = 0;   //!< -\-channel-id
+        uint16_t        ecm_stream_id = 0;    //!< -\-stream-id
+        uint16_t        ecm_id = 0;           //!< -\-ecm-id
+        int             log_protocol = 0;     //!< -\-log-protocol
+        int             log_data = 0;         //!< -\-log-data
 
         //!
         //! Add command line option definitions in an Args.

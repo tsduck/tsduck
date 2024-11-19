@@ -52,9 +52,9 @@ ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor(DuckContext& duck, 
 
 void ts::TargetIPv6AddressDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBytes(IPv6_addr_mask.toBytes());
+    buf.putBytes(IPv6_addr_mask.address6());
     for (const auto& it : IPv6_addr) {
-        buf.putBytes(it.toBytes());
+        buf.putBytes(it.address6());
     }
 }
 

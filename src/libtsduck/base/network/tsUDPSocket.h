@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsSocket.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tsIPUtils.h"
 #include "tsAbortInterface.h"
 #include "tsReport.h"
@@ -51,7 +51,7 @@ namespace ts {
         //! Bind to a local address and port.
         //!
         //! The IP address part of the socket address must one of:
-        //! - IPv4Address::AnyAddress. Any local interface may be used
+        //! - IPAddress::AnyAddress4. Any local interface may be used
         //!   to send or receive UDP datagrams. For each outgoing packet, the actual
         //!   interface is selected by the kernel based on the routing rules. Incoming
         //!   UDP packets for the selected port will be accepted from any local interface.
@@ -61,11 +61,11 @@ namespace ts {
         //!   interface.
         //!
         //! Special note for receiving multicast on most Unix systems (at least Linux
-        //! and macOS): The IP address shall be either AnyAddress or the <b>multicast
+        //! and macOS): The IP address shall be either AnyAddress4 or the <b>multicast
         //! group address</b>. Do not specify a local address to receive multicast on Unix.
         //!
         //! The port number part of the socket address must be one of:
-        //! - IPv4SocketAddress::AnyPort. The socket is bound to an
+        //! - IPSocketAddress::AnyPort. The socket is bound to an
         //!   arbitrary unused local UDP port.
         //! - A specific port number. If this UDP port is already bound by another
         //!   local UDP socket, the bind operation fails, unless the "reuse port"
@@ -75,7 +75,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool bind(const IPv4SocketAddress& addr, Report& report = CERR);
+        bool bind(const IPSocketAddress& addr, Report& report = CERR);
 
         //!
         //! Set a default destination address and port for outgoing messages.
@@ -87,11 +87,11 @@ namespace ts {
         //!
         //! @param [in] addr Socket address of the destination.
         //! Both address and port are mandatory in the socket address, they cannot
-        //! be set to IPv4Address::AnyAddress or IPv4SocketAddress::AnyPort.
+        //! be set to IPAddress::AnyAddress4 or IPSocketAddress::AnyPort.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setDefaultDestination(const IPv4SocketAddress& addr, Report& report = CERR);
+        bool setDefaultDestination(const IPSocketAddress& addr, Report& report = CERR);
 
         //!
         //! Set a default destination address and port for outgoing messages.
@@ -102,7 +102,7 @@ namespace ts {
         //! destination</i>.
         //!
         //! @param [in] name A string describing the socket address of the destination.
-        //! See IPv4SocketAddress::resolve() for a description of the expected string format.
+        //! See IPSocketAddress::resolve() for a description of the expected string format.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
@@ -112,7 +112,7 @@ namespace ts {
         //! Get the default destination address and port for outgoing messages.
         //! @return The default destination address and port for outgoing messages.
         //!
-        IPv4SocketAddress getDefaultDestination() const {return _default_destination;}
+        IPSocketAddress getDefaultDestination() const {return _default_destination;}
 
         //!
         //! Set the outgoing local interface for multicast messages.
@@ -121,13 +121,13 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setOutgoingMulticast(const IPv4Address& addr, Report& report = CERR);
+        bool setOutgoingMulticast(const IPAddress& addr, Report& report = CERR);
 
         //!
         //! Set the outgoing local interface for multicast messages.
         //!
         //! @param [in] name A string describing the IP address of a local interface.
-        //! See IPv4Address::resolve() for a description of the expected string format.
+        //! See IPAddress::resolve() for a description of the expected string format.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
@@ -219,7 +219,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setBroadcastIfRequired(const IPv4Address destination, Report& report = CERR);
+        bool setBroadcastIfRequired(const IPAddress destination, Report& report = CERR);
 
         //!
         //! Join a multicast group.
@@ -230,13 +230,13 @@ namespace ts {
         //!
         //! @param [in] multicast Multicast IP address to listen to.
         //! @param [in] local IP address of a local interface on which to listen.
-        //! If set to IPv4Address::AnyAddress, the application lets the system selects
+        //! If set to IPAddress::AnyAddress4, the application lets the system selects
         //! the appropriate local interface.
         //! @param [in] source Source address for SSM.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembership(const IPv4Address& multicast, const IPv4Address& local, const IPv4Address& source = IPv4Address(), Report& report = CERR);
+        bool addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source = IPAddress(), Report& report = CERR);
 
         //!
         //! Join a multicast group.
@@ -252,7 +252,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembershipAll(const IPv4Address& multicast, const IPv4Address& source = IPv4Address(), Report& report = CERR);
+        bool addMembershipAll(const IPAddress& multicast, const IPAddress& source = IPAddress(), Report& report = CERR);
 
         //!
         //! Join a multicast group.
@@ -269,7 +269,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembershipDefault(const IPv4Address& multicast, const IPv4Address& source = IPv4Address(), Report& report = CERR);
+        bool addMembershipDefault(const IPAddress& multicast, const IPAddress& source = IPAddress(), Report& report = CERR);
 
         //!
         //! Drop all multicast membership requests, including source-specific multicast.
@@ -285,11 +285,11 @@ namespace ts {
         //! @param [in] size Size in bytes of the message to send.
         //! @param [in] destination Socket address of the destination.
         //! Both address and port are mandatory in the socket address, they cannot
-        //! be set to IPv4Address::AnyAddress or IPv4SocketAddress::AnyPort.
+        //! be set to IPAddress::AnyAddress4 or IPSocketAddress::AnyPort.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool send(const void* data, size_t size, const IPv4SocketAddress& destination, Report& report = CERR);
+        virtual bool send(const void* data, size_t size, const IPSocketAddress& destination, Report& report = CERR);
 
         //!
         //! Send a message to the default destination address and port.
@@ -322,8 +322,8 @@ namespace ts {
         virtual bool receive(void* data,
                              size_t max_size,
                              size_t& ret_size,
-                             IPv4SocketAddress& sender,
-                             IPv4SocketAddress& destination,
+                             IPSocketAddress& sender,
+                             IPSocketAddress& destination,
                              const AbortInterface* abort = nullptr,
                              Report& report = CERR,
                              cn::microseconds* timestamp = nullptr);
@@ -358,10 +358,10 @@ namespace ts {
         {
             using SuperClass = POCS<::ip_mreq>;
             MReq() = default;
-            MReq(const IPv4Address& multicast_, const IPv4Address& interface_) : SuperClass()
+            MReq(const IPAddress& multicast_, const IPAddress& interface_) : SuperClass()
             {
-                multicast_.copy(data.imr_multiaddr);
-                interface_.copy(data.imr_interface);
+                multicast_.getAddress4(data.imr_multiaddr);
+                interface_.getAddress4(data.imr_interface);
             }
         };
         using MReqSet = std::set<MReq>;
@@ -372,26 +372,26 @@ namespace ts {
         {
             using SuperClass = POCS<::ip_mreq_source>;
             SSMReq() = default;
-            SSMReq(const IPv4Address& multicast_, const IPv4Address& interface_, const IPv4Address& source_) : SuperClass()
+            SSMReq(const IPAddress& multicast_, const IPAddress& interface_, const IPAddress& source_) : SuperClass()
             {
-                multicast_.copy(data.imr_multiaddr);
-                interface_.copy(data.imr_interface);
-                source_.copy(data.imr_sourceaddr);
+                multicast_.getAddress4(data.imr_multiaddr);
+                interface_.getAddress4(data.imr_interface);
+                source_.getAddress4(data.imr_sourceaddr);
             }
         };
         using SSMReqSet = std::set<SSMReq>;
 #endif
 
         // Private members
-        IPv4SocketAddress _local_address {};
-        IPv4SocketAddress _default_destination {};
+        IPSocketAddress _local_address {};
+        IPSocketAddress _default_destination {};
 #if !defined(TS_NO_SSM)
         SSMReqSet         _ssmcast {};  // Current set of source-specific multicast memberships
 #endif
         MReqSet           _mcast {};    // Current set of multicast memberships
 
         // Perform one receive operation. Hide the system mud. Return a system socket error code.
-        int receiveOne(void* data, size_t max_size, size_t& ret_size, IPv4SocketAddress& sender, IPv4SocketAddress& destination, Report& report, cn::microseconds* timestamp);
+        int receiveOne(void* data, size_t max_size, size_t& ret_size, IPSocketAddress& sender, IPSocketAddress& destination, Report& report, cn::microseconds* timestamp);
 
         // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)

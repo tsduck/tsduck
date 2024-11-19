@@ -269,19 +269,19 @@ NetBSD example
 
 As of this writing, the most recent version of NetBSD is 9.3, which comes with GCC 7.5.
 
-More recent GCC packages are available. To install GCC 13:
+More recent GCC packages are available. To install GCC 14:
 
 [source,shell]
 ----
-$ sudo pkgin install gcc13
+$ sudo pkgin install gcc14 gcc14-libs
 ----
 
-The compilation environment is installed in `/usr/pkg/gcc13`.
-Using GCC 13 is simply enabled by adding `/usr/pkg/gcc13/bin` at the beginning of the `PATH`:
+The compilation environment is installed in `/usr/pkg/gcc14`.
+Using GCC 14 is simply enabled by adding `/usr/pkg/gcc14/bin` at the beginning of the `PATH`:
 
 [source,shell]
 ----
-$ export PATH="/usr/pkg/gcc13/bin:$PATH"
+$ export PATH="/usr/pkg/gcc14/bin:$PATH"
 ----
 
 [.usage]

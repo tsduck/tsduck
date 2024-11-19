@@ -169,16 +169,16 @@ bool ts::Socket::reusePort(bool active, Report& report)
 // Get local socket address
 //----------------------------------------------------------------------------
 
-bool ts::Socket::getLocalAddress(IPv4SocketAddress& addr, Report& report)
+bool ts::Socket::getLocalAddress(IPSocketAddress& addr, Report& report)
 {
-    ::sockaddr sock_addr;
+    ::sockaddr_storage sock_addr;
     SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
-    if (::getsockname(_sock, &sock_addr, &len) != 0) {
+    if (::getsockname(_sock, reinterpret_cast<::sockaddr*>(&sock_addr), &len) != 0) {
         report.error(u"error getting socket name: %s", SysErrorCodeMessage());
         addr.clear();
         return false;
     }
-    addr = IPv4SocketAddress(sock_addr);
+    addr.set(sock_addr);
     return true;
 }

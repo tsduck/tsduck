@@ -341,13 +341,13 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
 
         // Rebuild source and destination addresses if required.
         if (_new_source.hasAddress()) {
-            sender.setAddress(_new_source.address());
+            sender.setAddress(_new_source);
         }
         if (_new_source.hasPort()) {
             sender.setPort(_new_source.port());
         }
         if (_new_dest.hasAddress()) {
-            destination.setAddress(_new_dest.address());
+            destination.setAddress(_new_dest);
         }
         if (_new_dest.hasPort()) {
             destination.setPort(_new_dest.port());

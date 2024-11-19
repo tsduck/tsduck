@@ -118,8 +118,8 @@ namespace {
 
         bool ok = true;
         size_t invalid_msg = 0;
-        ts::IPv4SocketAddress sender;
-        ts::IPv4SocketAddress destination;
+        ts::IPSocketAddress sender;
+        ts::IPSocketAddress destination;
         ts::ByteBlock packet(ts::IP_MAX_PACKET_SIZE);
         ts::Time timestamp;
         ts::SectionPtrVector sections;

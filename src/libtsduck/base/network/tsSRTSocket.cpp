@@ -939,10 +939,10 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
         return false;
     }
 
-    ::sockaddr sock_addr;
-    addr.copy(sock_addr);
+    ::sockaddr_storage sock_addr;
+    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
     report.debug(u"calling srt_bind(%s)", addr);
-    if (::srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
+    if (::srt_bind(sock, reinterpret_cast<const ::sockaddr*>(&sock_addr), int(sock_size)) < 0) {
         report.error(u"error during srt_bind(): %s", ::srt_getlasterror_str());
         return false;
     }
@@ -1003,11 +1003,11 @@ int ts::SRTSocket::Guts::listenCallback(void* param, SRTSOCKET sock, int hsversi
 
 bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& report)
 {
-    ::sockaddr sock_addr;
-    addr.copy(sock_addr);
+    ::sockaddr_storage sock_addr;
+    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
 
     report.debug(u"calling srt_connect(%s)", addr);
-    if (::srt_connect(sock, &sock_addr, sizeof(sock_addr)) < 0) {
+    if (::srt_connect(sock, reinterpret_cast<const ::sockaddr*>(&sock_addr), int(sock_size)) < 0) {
         const int err = ::srt_getlasterror(&errno);
         std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
@@ -1038,11 +1038,11 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
 
 bool ts::SRTSocket::Guts::srtBind(const IPv4SocketAddress& addr, Report& report)
 {
-    ::sockaddr sock_addr;
-    addr.copy(sock_addr);
+    ::sockaddr_storage sock_addr;
+    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
 
     report.debug(u"calling srt_bind(%s)", addr);
-    if (::srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
+    if (::srt_bind(sock, reinterpret_cast<const ::sockaddr*>(&sock_addr), int(sock_size)) < 0) {
         report.error(u"error during srt_bind: %s", ::srt_getlasterror_str());
         return false;
     }

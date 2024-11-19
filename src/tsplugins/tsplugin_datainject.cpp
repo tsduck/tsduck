@@ -105,8 +105,8 @@ namespace ts {
         ContinuityAnalyzer _cc_fixer {AllPIDs, this};       // To fix continuity counters in injected PID
         BitRate            _max_bitrate = 0;                // Max data PID's bitrate (constant after start)
         bool               _unregulated = false;            // Insert data packet as soon as received.
-        IPv4SocketAddress  _tcp_address {};                 // TCP port and optional local address.
-        IPv4SocketAddress  _udp_address {};                 // UDP port and optional local address.
+        IPSocketAddress    _tcp_address {};                 // TCP port and optional local address.
+        IPSocketAddress    _udp_address {};                 // UDP port and optional local address.
         bool               _reuse_port = false;             // Reuse port option.
         size_t             _sock_buf_size = 0;              // Socket receive buffer size.
         TCPServer          _server {};                      // EMMG/PDG <=> MUX TCP server
@@ -257,7 +257,7 @@ bool ts::DataInjectPlugin::start()
 
     // UDP server address is same as TCP by default.
     if (!_udp_address.hasAddress()) {
-        _udp_address.setAddress(_tcp_address.address());
+        _udp_address.setAddress(_tcp_address);
     }
     if (!_udp_address.hasPort()) {
         _udp_address.setPort(_tcp_address.port());
@@ -568,7 +568,7 @@ void ts::DataInjectPlugin::TCPListener::main()
 {
     _plugin->debug(u"TCP server thread started");
 
-    IPv4SocketAddress client_address;
+    IPSocketAddress client_address;
     emmgmux::ChannelStatus channel_status(_plugin->_protocol);
     emmgmux::StreamStatus stream_status(_plugin->_protocol);
 
@@ -792,8 +792,8 @@ void ts::DataInjectPlugin::UDPListener::main()
 
     uint8_t inbuf[65536];
     size_t insize = 0;
-    IPv4SocketAddress sender;
-    IPv4SocketAddress destination;
+    IPSocketAddress sender;
+    IPSocketAddress destination;
 
     // Loop on incoming messages.
     while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _plugin->tsp, _report)) {

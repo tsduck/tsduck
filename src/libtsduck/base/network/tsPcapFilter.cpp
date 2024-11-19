@@ -135,19 +135,19 @@ void ts::PcapFilter::clearProtocolFilter()
 // Address filters.
 //----------------------------------------------------------------------------
 
-void ts::PcapFilter::setSourceFilter(const IPv4SocketAddress& addr)
+void ts::PcapFilter::setSourceFilter(const IPSocketAddress& addr)
 {
     _source = addr;
     _bidirectional_filter = false;
 }
 
-void ts::PcapFilter::setDestinationFilter(const IPv4SocketAddress& addr)
+void ts::PcapFilter::setDestinationFilter(const IPSocketAddress& addr)
 {
     _destination = addr;
     _bidirectional_filter = false;
 }
 
-void ts::PcapFilter::setBidirectionalFilter(const IPv4SocketAddress& addr1, const IPv4SocketAddress& addr2)
+void ts::PcapFilter::setBidirectionalFilter(const IPSocketAddress& addr1, const IPSocketAddress& addr2)
 {
     _source = addr1;
     _destination = addr2;
@@ -168,7 +168,7 @@ bool ts::PcapFilter::addressFilterIsSet() const
            (!use_port || _destination.hasPort());
 }
 
-const ts::IPv4SocketAddress& ts::PcapFilter::otherFilter(const IPv4SocketAddress& addr) const
+const ts::IPSocketAddress& ts::PcapFilter::otherFilter(const IPSocketAddress& addr) const
 {
     if (addr.match(_source)) {
         return _destination;
@@ -177,7 +177,7 @@ const ts::IPv4SocketAddress& ts::PcapFilter::otherFilter(const IPv4SocketAddress
         return _source;
     }
     else {
-        return IPv4SocketAddress::AnySocketAddress;
+        return IPSocketAddress::AnySocketAddress4;
     }
 }
 
@@ -241,8 +241,8 @@ bool ts::PcapFilter::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::micros
         }
 
         // Is there any unspecified field in current stream addresses (act as wildcard)?
-        const IPv4SocketAddress src(packet.sourceSocketAddress());
-        const IPv4SocketAddress dst(packet.destinationSocketAddress());
+        const IPSocketAddress src(packet.sourceSocketAddress());
+        const IPSocketAddress dst(packet.destinationSocketAddress());
         const bool unspecified = !_wildcard_filter && !addressFilterIsSet();
         bool display_filter = false;
 

@@ -80,22 +80,22 @@ void ts::TCPConnection::handleClosed(Report& report)
 // Get connected peer.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::getPeer(IPv4SocketAddress& peer, Report& report) const
+bool ts::TCPConnection::getPeer(IPSocketAddress& peer, Report& report) const
 {
-    ::sockaddr sock_addr;
+    ::sockaddr_storage sock_addr;
     SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
-    if (::getpeername(getSocket(), &sock_addr, &len) != 0) {
+    if (::getpeername(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), &len) != 0) {
         report.error(u"error getting socket peer: %s", SysErrorCodeMessage());
         return false;
     }
-    peer = IPv4SocketAddress(sock_addr);
+    peer = IPSocketAddress(sock_addr);
     return true;
 }
 
 ts::UString ts::TCPConnection::peerName() const
 {
-    IPv4SocketAddress peer;
+    IPSocketAddress peer;
     return getPeer(peer, NULLREP) ? peer.toString() : u"";
 }
 
@@ -211,14 +211,14 @@ bool ts::TCPConnection::receive(void* buffer, size_t size, const AbortInterface*
 // to TCPServer::accept() which establishes the connection.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::connect(const IPv4SocketAddress& addr, Report& report)
+bool ts::TCPConnection::connect(const IPSocketAddress& addr, Report& report)
 {
     // Loop on unsollicited interrupts
     for (;;) {
-        ::sockaddr sock_addr;
-        addr.copy(sock_addr);
+        ::sockaddr_storage sock_addr;
+        const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
         report.debug(u"connecting to %s", addr);
-        if (::connect(getSocket(), &sock_addr, sizeof(sock_addr)) == 0) {
+        if (::connect(getSocket(), reinterpret_cast<const ::sockaddr*>(&sock_addr), socklen_t(sock_size)) == 0) {
             declareConnected(report);
             return true;
         }

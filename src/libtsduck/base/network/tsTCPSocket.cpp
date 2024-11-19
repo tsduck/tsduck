@@ -155,13 +155,13 @@ bool ts::TCPSocket::setNoDelay(bool active, Report& report)
 // Bind to a local address and port.
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::bind(const IPv4SocketAddress& addr, Report& report)
+bool ts::TCPSocket::bind(const IPSocketAddress& addr, Report& report)
 {
-    ::sockaddr sock_addr;
-    addr.copy(sock_addr);
+    ::sockaddr_storage sock_addr;
+    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
 
     report.debug(u"binding socket to %s", addr);
-    if (::bind(getSocket(), &sock_addr, sizeof(sock_addr)) != 0) {
+    if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
         report.error(u"error binding socket to local address: %s", SysErrorCodeMessage());
         return false;
     }

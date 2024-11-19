@@ -220,8 +220,8 @@ namespace {
         // Stop on output error (typically 'quit' in the pager).
         ts::ByteBlock buffer(ts::IP_MAX_PACKET_SIZE);
         size_t size = 0;
-        ts::IPv4SocketAddress sender;
-        ts::IPv4SocketAddress destination;
+        ts::IPSocketAddress sender;
+        ts::IPSocketAddress destination;
         const bool headers = opt.dump.dump_flags & ts::TSPacket::DUMP_TS_HEADER;
 
         for (ts::PacketCounter packet_index = 0;
