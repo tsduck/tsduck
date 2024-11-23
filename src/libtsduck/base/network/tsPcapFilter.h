@@ -107,14 +107,14 @@ namespace ts {
         //! @param [in] addr Source address to filter. The port is meaningful only with TCP and UDP.
         //! @see setWildcardFilter()
         //!
-        virtual void setSourceFilter(const IPv4SocketAddress& addr);
+        virtual void setSourceFilter(const IPSocketAddress& addr);
 
         //!
         //! Set a destination address filter.
         //! @param [in] addr Destination address to filter. The port is meaningful only with TCP and UDP.
         //! @see setWildcardFilter()
         //!
-        virtual void setDestinationFilter(const IPv4SocketAddress& addr);
+        virtual void setDestinationFilter(const IPSocketAddress& addr);
 
         //!
         //! Set a bidirectional address filter.
@@ -126,7 +126,7 @@ namespace ts {
         //! The port is meaningful only with TCP and UDP.
         //! @see setWildcardFilter()
         //!
-        virtual void setBidirectionalFilter(const IPv4SocketAddress& addr1, const IPv4SocketAddress& addr2);
+        virtual void setBidirectionalFilter(const IPSocketAddress& addr1, const IPSocketAddress& addr2);
 
         //!
         //! Get the current source filter.
@@ -140,7 +140,7 @@ namespace ts {
         //! @return A constant reference to the current source filter.
         //! @see setWildcardFilter()
         //!
-        const IPv4SocketAddress& sourceFilter() const { return _source; }
+        const IPSocketAddress& sourceFilter() const { return _source; }
 
         //!
         //! Get the current destination filter.
@@ -154,7 +154,7 @@ namespace ts {
         //! @return A constant reference to the current source filter.
         //! @see setWildcardFilter()
         //!
-        const IPv4SocketAddress& destinationFilter() const { return _destination; }
+        const IPSocketAddress& destinationFilter() const { return _destination; }
 
         //!
         //! Set the source and destination address filter in wildcard mode.
@@ -187,7 +187,7 @@ namespace ts {
         //! @return A constant reference to the other filter. If @a addr matches neither the source
         //! nor the destination filter, return an empty socket address.
         //!
-        const IPv4SocketAddress& otherFilter(const IPv4SocketAddress& addr) const;
+        const IPSocketAddress& otherFilter(const IPSocketAddress& addr) const;
 
         //!
         //! Specify the severity to report the filtered addresses once (in non-wildcard mode).
@@ -222,8 +222,8 @@ namespace ts {
 
     private:
         std::set<uint8_t> _protocols {};
-        IPv4SocketAddress _source {};
-        IPv4SocketAddress _destination {};
+        IPSocketAddress   _source {};
+        IPSocketAddress   _destination {};
         bool              _bidirectional_filter = false;
         bool              _wildcard_filter = true;
         int               _display_addresses_severity = Severity::Debug;

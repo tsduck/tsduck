@@ -51,7 +51,7 @@ ts::TargetIPv6SlashDescriptor::TargetIPv6SlashDescriptor(DuckContext& duck, cons
 void ts::TargetIPv6SlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (const auto& it : addresses) {
-        buf.putBytes(it.IPv6_addr.toBytes());
+        buf.putBytes(it.IPv6_addr.address6());
         buf.putUInt8(it.IPv6_slash_mask);
     }
 }

@@ -42,11 +42,6 @@ namespace ts {
         uint8_t b[PKT_SIZE];
 
         //!
-        //! Internal error: access a non-existent adaptation field.
-        //!
-        TS_DECLARE_EXCEPTION(AdaptationFieldError);
-
-        //!
         //! Equality operator.
         //! @param [in] p Other packet to compare.
         //! @return True if this object is equal to @a p.

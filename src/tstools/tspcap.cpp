@@ -47,8 +47,8 @@ namespace {
         bool                  extract_tcp = false;
         bool                  save_tcp = false;
         std::set<uint8_t>     protocols {};
-        ts::IPv4SocketAddress source_filter {};
-        ts::IPv4SocketAddress dest_filter {};
+        ts::IPSocketAddress   source_filter {};
+        ts::IPSocketAddress   dest_filter {};
         cn::microseconds      interval = cn::microseconds(-1);
         ts::emmgmux::Protocol emmgmux {};
         ts::ecmgscs::Protocol ecmgscs {};
@@ -215,10 +215,10 @@ namespace {
     class StreamId
     {
     public:
-        ts::VLANIdStack       vlans;
-        ts::IPv4SocketAddress source;
-        ts::IPv4SocketAddress destination;
-        uint8_t               protocol;
+        ts::VLANIdStack     vlans;
+        ts::IPSocketAddress source;
+        ts::IPSocketAddress destination;
+        uint8_t             protocol;
 
         // Comparison, for use in containers.
         bool operator<(const StreamId& other) const;
@@ -470,7 +470,7 @@ namespace {
         SimulCryptDump(Options& opt) : _opt(opt) {}
 
         // Dump a message.
-        void dumpMessage(std::ostream&, const uint8_t*, size_t, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, cn::microseconds timestamp);
+        void dumpMessage(std::ostream&, const uint8_t*, size_t, const ts::IPSocketAddress& src, const ts::IPSocketAddress& dst, cn::microseconds timestamp);
 
         // Protected fields
         Options& _opt;
@@ -478,7 +478,7 @@ namespace {
 }
 
 // Dump a message.
-void SimulCryptDump::dumpMessage(std::ostream& out, const uint8_t* data, size_t size, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, cn::microseconds timestamp)
+void SimulCryptDump::dumpMessage(std::ostream& out, const uint8_t* data, size_t size, const ts::IPSocketAddress& src, const ts::IPSocketAddress& dst, cn::microseconds timestamp)
 {
     // Build a message description.
     if (timestamp > cn::microseconds::zero()) {
@@ -581,7 +581,7 @@ bool UDPSimulCryptDump::dump(std::ostream& out)
     cn::microseconds timestamp = cn::microseconds::zero();
     while (_file.readIPv4(ip, vlans, timestamp, _opt)) {
         // Dump the content of the UDP datagram as DVB SimulCrypt message.
-        dumpMessage(out, ip.protocolData(), ip.protocolDataSize(), ip.sourceAddress(), ip.destinationAddress(), timestamp);
+        dumpMessage(out, ip.protocolData(), ip.protocolDataSize(), ip.sourceSocketAddress(), ip.destinationSocketAddress(), timestamp);
     }
     _file.close();
     return true;
@@ -622,7 +622,7 @@ bool TCPSimulCryptDump::dump(std::ostream& out)
     // Read all TCP sessions matching the source and destination.
     for (;;) {
         cn::microseconds timestamp = cn::microseconds::zero();
-        ts::IPv4SocketAddress source;
+        ts::IPSocketAddress source;
         ts::ByteBlock data;
 
         // Read a message header from any source.
@@ -677,12 +677,12 @@ namespace {
         ts::PcapStream _file {};
 
         // Dump a message.
-        void dumpMessage(std::ostream&, const ts::ByteBlock&, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, cn::microseconds timestamp);
+        void dumpMessage(std::ostream&, const ts::ByteBlock&, const ts::IPSocketAddress& src, const ts::IPSocketAddress& dst, cn::microseconds timestamp);
     };
 }
 
 // Dump a message.
-void TCPSessionDump::dumpMessage(std::ostream& out, const ts::ByteBlock& data, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, cn::microseconds timestamp)
+void TCPSessionDump::dumpMessage(std::ostream& out, const ts::ByteBlock& data, const ts::IPSocketAddress& src, const ts::IPSocketAddress& dst, cn::microseconds timestamp)
 {
     if (!data.empty()) {
         if (timestamp > cn::microseconds::zero()) {
@@ -707,10 +707,10 @@ bool TCPSessionDump::dump(std::ostream& out)
 
     ts::ByteBlock data;
     cn::microseconds data_timestamp = cn::microseconds::zero();
-    ts::IPv4SocketAddress data_source;
-    ts::IPv4SocketAddress data_dest;
+    ts::IPSocketAddress data_source;
+    ts::IPSocketAddress data_dest;
     ts::ByteBlock buf;
-    ts::IPv4SocketAddress buf_source;
+    ts::IPSocketAddress buf_source;
 
     // Read all TCP sessions matching the source and destination.
     for (;;) {
@@ -775,7 +775,7 @@ bool TCPSessionDump::save()
     constexpr size_t buffer_size = 0xFFFF;
     ts::ByteBlock data;
     cn::microseconds timestamp = cn::microseconds::zero();
-    ts::IPv4SocketAddress source(_opt.source_filter);
+    ts::IPSocketAddress source(_opt.source_filter);
 
     // Read all TCP sessions matching the source and destination.
     while (ok) {

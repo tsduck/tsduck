@@ -31,7 +31,7 @@ bool ts::TCPServer::listen(int backlog, Report& report)
 // Wait for a client
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::accept (TCPConnection& client, IPv4SocketAddress& client_address, Report& report)
+bool ts::TCPServer::accept (TCPConnection& client, IPSocketAddress& client_address, Report& report)
 {
     if (client.isConnected()) {
         report.error(u"invalid client in accept(): already connected");
@@ -44,10 +44,10 @@ bool ts::TCPServer::accept (TCPConnection& client, IPv4SocketAddress& client_add
     }
 
     report.debug(u"server accepting clients");
-    ::sockaddr sock_addr;
+    ::sockaddr_storage sock_addr;
     SysSocketLengthType len = sizeof(sock_addr);
     TS_ZERO(sock_addr);
-    SysSocketType client_sock = ::accept(getSocket(), &sock_addr, &len);
+    SysSocketType client_sock = ::accept(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), &len);
 
     if (client_sock == SYS_SOCKET_INVALID) {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -57,7 +57,7 @@ bool ts::TCPServer::accept (TCPConnection& client, IPv4SocketAddress& client_add
         return false;
     }
 
-    client_address = IPv4SocketAddress(sock_addr);
+    client_address = IPSocketAddress(sock_addr);
     report.debug(u"received connection from %s", client_address);
 
     client.declareOpened(client_sock, report);

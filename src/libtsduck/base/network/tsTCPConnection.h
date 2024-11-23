@@ -83,7 +83,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool connect(const IPv4SocketAddress& addr, Report& report = CERR);
+        bool connect(const IPSocketAddress& addr, Report& report = CERR);
 
         //!
         //! Check if the socket is connected.
@@ -97,7 +97,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getPeer(IPv4SocketAddress& addr, Report& report = CERR) const;
+        bool getPeer(IPSocketAddress& addr, Report& report = CERR) const;
 
         //!
         //! Get the connected remote peer as a string.

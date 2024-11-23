@@ -113,9 +113,9 @@ namespace ts {
             bool              _json_tcp_keep = false; // Option --json-tcp-keep
             bool              _json_udp = false;      // Option --json-udp
             UString           _line_prefix {};        // Option --json-line="prefix"
-            IPv4SocketAddress _tcp_destination {};    // TCP destination.
-            IPv4SocketAddress _udp_destination {};    // UDP destination.
-            IPv4Address       _udp_local {};          // Name of outgoing local address.
+            IPSocketAddress   _tcp_destination {};    // TCP destination.
+            IPSocketAddress   _udp_destination {};    // UDP destination.
+            IPAddress         _udp_local {};          // Name of outgoing local address.
             int               _udp_ttl = 0;           // Time-to-live socket option.
             size_t            _sock_buffer_size = 0;  // Socket buffer size (TCP and UDP).
             UDPSocket         _udp_sock {};           // Output UDP socket.

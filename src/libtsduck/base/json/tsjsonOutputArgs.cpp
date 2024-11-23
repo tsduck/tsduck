@@ -171,7 +171,7 @@ bool ts::json::OutputArgs::tcpConnect(Report& rep)
         return false;
     }
     else if ((_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
-             _tcp_sock.bind(IPv4SocketAddress::AnySocketAddress, rep) &&
+             _tcp_sock.bind(IPSocketAddress::AnySocketAddress4, rep) &&
              _tcp_sock.connect(_tcp_destination, rep))
     {
         return true;

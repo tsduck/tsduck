@@ -71,8 +71,8 @@ namespace ts {
         //! @param [in] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
-        bool connect(const IPv4SocketAddress& mux,
-                     const IPv4SocketAddress& udp,
+        bool connect(const IPSocketAddress& mux,
+                     const IPSocketAddress& udp,
                      uint32_t client_id,
                      uint16_t data_channel_id,
                      uint16_t data_stream_id,
@@ -184,7 +184,7 @@ namespace ts {
         const DuckContext&           _duck;
         const emmgmux::Protocol&     _protocol;
         volatile State               _state = INITIAL;
-        IPv4SocketAddress            _udp_address {};
+        IPSocketAddress              _udp_address {};
         uint64_t                     _total_bytes = 0;
         const AbortInterface*        _abort = nullptr;
         tlv::Logger                  _logger {};

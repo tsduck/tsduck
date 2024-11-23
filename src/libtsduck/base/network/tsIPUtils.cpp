@@ -7,9 +7,16 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPUtils.h"
-#include "tsSysUtils.h"
-#include "tsIPv4Address.h"
+#include "tsIPAddress.h"
 #include "tsSingleton.h"
+#include "tsSysUtils.h"
+#include "tsNullReport.h"
+
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include "iphlpapi.h"
+    #include "tsAfterStandardHeaders.h"
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -71,24 +78,31 @@ const std::error_category& ts::getaddrinfo_category()
 // Check if a local system interface has a specified IP address.
 //----------------------------------------------------------------------------
 
-bool ts::IsLocalIPAddress(const IPv4Address& address)
+bool ts::IsLocalIPAddress(const IPAddress& address)
 {
-    IPv4AddressVector locals;
-    return address == IPv4Address::LocalHost || (GetLocalIPAddresses(locals) && std::find(locals.begin(), locals.end(), address) != locals.end());
+    IPAddressMaskVector addr_masks;
+    if (!GetLocalIPAddresses(addr_masks, true, address.generation(), NULLREP)) {
+        return false;
+    }
+
+    for (const auto& am : addr_masks) {
+        if (address == IPAddress(am)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
 //----------------------------------------------------------------------------
-// This method returns the list of all local IPv4 addresses in the system
-// with their network mask.
+// This method returns the addresses of all local IP addresses/mask.
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPAddressMaskVector& addresses, bool loopback, IP gen, Report& report)
 {
-    bool status = true;
-    list.clear();
+    addresses.clear();
 
-#if defined(TS_MAC) || defined(TS_BSD)
+#if defined(TS_LINUX) || defined(TS_MAC) || defined(TS_BSD)
 
     // Get the list of local addresses. The memory is allocated by getifaddrs().
     ::ifaddrs* start = nullptr;
@@ -97,117 +111,120 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
         return false;
     }
 
+    // Address family to filter.
+    const sa_family_t fam = gen == IP::Any ? AF_UNSPEC : (gen == IP::v6 ? AF_INET6 : AF_INET);
+
     // Browse the list of interfaces.errcode
     for (::ifaddrs* ifa = start; ifa != nullptr; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr != nullptr) {
-            IPv4Address addr(*ifa->ifa_addr);
-            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
-                list.push_back(IPv4AddressMask(addr, IPv4Address(*ifa->ifa_netmask)));
+        if (ifa->ifa_addr != nullptr &&
+            (loopback || (ifa->ifa_flags & IFF_LOOPBACK) == 0) &&
+            (fam == AF_UNSPEC || fam == ifa->ifa_addr->sa_family))
+        {
+            const IPAddress addr(*ifa->ifa_addr);
+            if (addr.hasAddress()) {
+                if (ifa->ifa_netmask == nullptr) {
+                    addresses.push_back(IPAddressMask(addr));
+                }
+                else {
+                    addresses.push_back(IPAddressMask(addr, IPAddress(*ifa->ifa_netmask)));
+                }
             }
         }
     }
 
     // Free the system-allocated memory.
     ::freeifaddrs(start);
+    return true;
 
-#elif defined(TS_WINDOWS) || defined(TS_UNIX)
+#elif defined(TS_WINDOWS)
 
-    // Create a socket to query the system on
-    SysSocketType sock = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sock == SYS_SOCKET_INVALID) {
-        report.error(u"error creating socket: %s", SysErrorCodeMessage());
-        return false;
-    }
+    // Address family to filter.
+    const ::ULONG family = gen == IP::Any ? AF_UNSPEC : (gen == IP::v6 ? AF_INET6 : AF_INET);
 
-#if defined(TS_WINDOWS)
+    // Allocate a raw buffer into which GetAdaptersAddresses() will build a linked list.
+    // The Microsoft online doc recommends 15 kB buffer.
+    ByteBlock buffer(16 * 1024);
+    ::IP_ADAPTER_ADDRESSES* adap = reinterpret_cast<::IP_ADAPTER_ADDRESSES*>(buffer.data());
 
-    // Windows implementation
+    // Search flags. Exclude useless stuff which may take time to collect.
+    const ::ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME;
 
-    ::INTERFACE_INFO info[32];  // max 32 local interface (arbitrary)
-    ::DWORD retsize;
-    if (::WSAIoctl(sock, SIO_GET_INTERFACE_LIST, 0, 0, info, ::DWORD(sizeof(info)), &retsize, 0, 0) != 0) {
-        report.error(u"error getting local addresses: %s", SysErrorCodeMessage());
-        status = false;
-    }
-    else {
-        retsize = std::max<::DWORD>(0, std::min(retsize, ::DWORD(sizeof(info))));
-        size_t count = retsize / sizeof(::INTERFACE_INFO);
-        for (size_t i = 0; i < count; ++i) {
-            IPv4Address addr(info[i].iiAddress.Address);
-            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
-                list.push_back(IPv4AddressMask(addr, IPv4Address(info[i].iiNetmask.Address)));
-            }
+    // Call GetAdaptersAddresses(). In case of "buffer overflow", retry with a larger buffer.
+    for (size_t counter = 0; ; counter++) {
+        ::ULONG size = ::ULONG(buffer.size());
+        ::ULONG status = ::GetAdaptersAddresses(family, flags, nullptr, adap, &size);
+        if (status == ERROR_SUCCESS) {
+            break;
+        }
+        else if (status == ERROR_BUFFER_OVERFLOW && counter == 0) {
+            // The buffer is too small, reallocated a larger one.
+            buffer.resize(2 * size);
+            adap = reinterpret_cast<::IP_ADAPTER_ADDRESSES*>(buffer.data());
+        }
+        else {
+            report.error(u"error getting local addresses: %s", SysErrorCodeMessage(status));
+            return false;
         }
     }
 
-#else
-
-    // UNIX implementation (may not work on all UNIX, works on Linux)
-
-    ::ifconf ifc;
-    ::ifreq info[32];  // max 32 local interface (arbitrary)
-
-    ifc.ifc_req = info;
-    ifc.ifc_len = sizeof(info);
-
-    if (::ioctl(sock, SIOCGIFCONF, &ifc) != 0) {
-        report.error(u"error getting local addresses: %s", SysErrorCodeMessage());
-        status = false;
-    }
-    else {
-        ifc.ifc_len = std::max(0, std::min(ifc.ifc_len, int(sizeof(info))));
-        size_t count = ifc.ifc_len / sizeof(::ifreq);
-        for (size_t i = 0; i < count; ++i) {
-            IPv4Address addr(info[i].ifr_addr);
-            IPv4Address mask;
-            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
-                // Get network mask for this interface.
-                ::ifreq req;
-                req = info[i];
-                if (::ioctl(sock, SIOCGIFNETMASK, &req) != 0) {
-                    report.error(u"error getting network mask for %s: %s", addr, SysErrorCodeMessage());
+    // Explore the list of returned interfaces.
+    while (adap != nullptr) {
+        // Select non-loopback interfaces only, if required.
+        if (loopback || adap->IfType != IF_TYPE_SOFTWARE_LOOPBACK) {
+            // Explore the list of IP addresses for than interface.
+            ::IP_ADAPTER_UNICAST_ADDRESS_LH* addr = adap->FirstUnicastAddress;
+            while (addr != nullptr) {
+                // We expect to have limited the research of interfaces to the corresponding IP family.
+                // However, let's check each address, just in case.
+                if (addr->Address.lpSockaddr != nullptr && (family == AF_UNSPEC || family == addr->Address.lpSockaddr->sa_family)) {
+                    // Extract IP address and mask.
+                    const IPAddressMask am(*addr->Address.lpSockaddr, size_t(addr->OnLinkPrefixLength));
+                    // The Microsoft documentation says that the same address can be returned several time.
+                    // Detect and avoid duplicates.
+                    bool found = false;
+                    for (const auto& a : addresses) {
+                        found = am == a;
+                        if (found) {
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        addresses.push_back(am);
+                    }
                 }
-                else {
-                    mask = IPv4Address(req.ifr_netmask);
-                }
-                list.push_back(IPv4AddressMask(addr, mask));
+                // Loop on next address for that interface.
+                addr = addr->Next;
             }
         }
+        // Loop on next network interface.
+        adap = adap->Next;
     }
-
-#endif
-
-    // Close socket
-    SysCloseSocket(sock);
+    return true;
 
 #else
 
     report.error(u"getting local addresses is not implemented");
-    status = false;
+    return false;
 
 #endif
-
-    return status;
 }
 
 
 //----------------------------------------------------------------------------
-// This method returns the list of all local IPv4 addresses in the system
+// This method returns the list of all local IP addresses in the system.
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses(IPv4AddressVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPAddressVector& addresses, bool loopback, IP gen, Report& report)
 {
-    IPv4AddressMaskVector full_list;
-    list.clear();
+    IPAddressMaskVector addr_masks;
+    const bool ok = GetLocalIPAddresses(addr_masks, loopback, gen, report);
 
-    if (GetLocalIPAddresses(full_list, report)) {
-        list.resize(full_list.size());
-        for (size_t i = 0; i < full_list.size(); ++i) {
-            list[i] = full_list[i].address;
+    addresses.clear();
+    if (ok) {
+        addresses.resize(addr_masks.size());
+        for (size_t i = 0; i < addr_masks.size(); ++i) {
+            addresses[i] = IPAddress(addr_masks[i]);
         }
-        return true;
     }
-    else {
-        return false;
-    }
+    return ok;
 }

@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsPluginOptions.h"
-#include "tsIPv4Address.h"
+#include "tsIPAddress.h"
 
 namespace ts {
 
@@ -46,9 +46,9 @@ namespace ts {
         cn::milliseconds  receive_timeout {}; //!< Timeout on input operations.
         cn::milliseconds  final_wait = cn::milliseconds(-1); //!< Time to wait after last input packet. Zero means infinite, negative means none.
         uint16_t          control_port = 0;         //!< TCP server port for control commands.
-        IPv4Address       control_local {};         //!< Local interface on which to listen for control commands.
+        IPAddress         control_local {};         //!< Local interface on which to listen for control commands.
         bool              control_reuse = false;    //!< Set the 'reuse port' socket option on the control TCP server port.
-        IPv4AddressVector control_sources {};       //!< Remote IP addresses which are allowed to send control commands.
+        IPAddressVector   control_sources {};       //!< Remote IP addresses which are allowed to send control commands.
         cn::milliseconds  control_timeout = DEFAULT_CONTROL_TIMEOUT; //!< Reception timeout in milliseconds for control commands.
         DuckContext::SavedArgs duck_args {};        //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
         PluginOptions          input {};            //!< Input plugin description.

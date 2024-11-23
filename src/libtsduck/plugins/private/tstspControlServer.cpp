@@ -75,7 +75,7 @@ bool ts::tsp::ControlServer::open()
     }
     else {
         // Open the TCP server.
-        const IPv4SocketAddress addr(_options.control_local, _options.control_port);
+        const IPSocketAddress addr(_options.control_local, _options.control_port);
         if (!_server.open(_log) ||
             !_server.reusePort(_options.control_reuse, _log) ||
             !_server.bind(addr, _log) ||
@@ -118,7 +118,7 @@ void ts::tsp::ControlServer::main()
     ReportBuffer<ThreadSafety::None> error(_log.maxSeverity());
 
     // Client address and connection.
-    IPv4SocketAddress source;
+    IPSocketAddress source;
     TelnetConnection conn;
     UString line;
 
@@ -128,7 +128,7 @@ void ts::tsp::ControlServer::main()
 
         // Filter allowed sources.
         // Set receive timeout on the connection and read one line.
-        if (std::find(_options.control_sources.begin(), _options.control_sources.end(), source.address()) == _options.control_sources.end()) {
+        if (std::find(_options.control_sources.begin(), _options.control_sources.end(), IPAddress(source)) == _options.control_sources.end()) {
             _log.warning(u"connection attempt from unauthorized source %s (ignored)", source);
             conn.sendLine("error: client address is not authorized", _log);
         }

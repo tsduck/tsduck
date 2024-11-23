@@ -57,7 +57,7 @@ namespace ts {
         //! connection is already established, the SYN/ACK sequence is not present and we do
         //! not know which peer is the client.
         //!
-        const IPv4SocketAddress& clientPeer() const { return _client; }
+        const IPSocketAddress& clientPeer() const { return _client; }
 
         //!
         //! Get the address of the server peer.
@@ -66,7 +66,7 @@ namespace ts {
         //! connection is already established, the SYN/ACK sequence is not present and we do
         //! not know which peer is the client.
         //!
-        const IPv4SocketAddress& serverPeer() const { return _server; }
+        const IPSocketAddress& serverPeer() const { return _server; }
 
         //!
         //! Read data from the TCP session either in one specific direction or any direction.
@@ -87,7 +87,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error or end of file.
         //!
-        bool readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report);
+        bool readTCP(IPSocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report);
 
         //!
         //! Check if the next data to read is at start of TCP session.
@@ -102,7 +102,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success and if the next data to read is at start of TCP session, false otherwise.
         //!
-        bool startOfStream(const IPv4SocketAddress& source, Report& report);
+        bool startOfStream(const IPSocketAddress& source, Report& report);
 
         //!
         //! Check if the next data to read is at end of TCP session.
@@ -110,14 +110,14 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True if the next data to read is at end of TCP session or on error, false otherwise.
         //!
-        bool endOfStream(const IPv4SocketAddress& source, Report& report);
+        bool endOfStream(const IPSocketAddress& source, Report& report);
 
         //!
         //! Check if the TCP session is fully terminated on both sides.
         //! @param [in,out] report Where to report errors.
         //! @return True if the TCP session is fully terminated on both sides or on error, false otherwise.
         //!
-        bool endOfSession(Report& report) { return endOfStream(0, report) && endOfStream(1, report); }
+        bool endOfSession(Report& report) { return endOfStreamByIndex(0, report) && endOfStreamByIndex(1, report); }
 
         //!
         //! Skip the end of the current TCP session and prepare for next session.
@@ -135,7 +135,7 @@ namespace ts {
 
         // Inherited methods.
         virtual bool open(const fs::path& filename, Report& report) override;
-        virtual void setBidirectionalFilter(const IPv4SocketAddress& addr1, const IPv4SocketAddress& addr2) override;
+        virtual void setBidirectionalFilter(const IPSocketAddress& addr1, const IPSocketAddress& addr2) override;
 
     private:
         // Description of one data block from an IP packet.
@@ -181,8 +181,8 @@ namespace ts {
         static constexpr size_t IDST = 1;
 
         // PcapStream private fields.
-        IPv4SocketAddress     _client {};
-        IPv4SocketAddress     _server {};
+        IPSocketAddress       _client {};
+        IPSocketAddress       _server {};
         std::array<Stream, 2> _streams {};
         size_t                _max_queue_size = 0; // Maximum observed size of TCP reassembly queues.
 
@@ -191,15 +191,18 @@ namespace ts {
         bool readStreams(size_t& index, Report& report);
 
         // Get index for source address. Report an error and return false if incorrect.
-        bool indexOf(const IPv4SocketAddress& source, bool allow_unspecified, size_t& index, Report& report) const;
+        bool indexOf(const IPSocketAddress& source, bool allow_unspecified, size_t& index, Report& report) const;
+
+        // Check if the next data to read is at end of TCP session (by index).
+        bool endOfStreamByIndex(size_t index, Report& report);
 
         // These methods are disabled, the corresponding filtering is imposed in this subclass.
         virtual void setProtocolFilterTCP() override;
         virtual void setProtocolFilterUDP() override;
         virtual void setProtocolFilter(const std::set<uint8_t>& protocols) override;
         virtual void clearProtocolFilter() override;
-        virtual void setSourceFilter(const IPv4SocketAddress& addr) override;
-        virtual void setDestinationFilter(const IPv4SocketAddress& addr) override;
+        virtual void setSourceFilter(const IPSocketAddress& addr) override;
+        virtual void setDestinationFilter(const IPSocketAddress& addr) override;
         virtual void setWildcardFilter(bool on) override;
     };
 }

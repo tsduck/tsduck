@@ -59,8 +59,8 @@ namespace {
         ts::UStringVector     inputFiles {};             // Input file names.
         ts::SectionPtrVector  sections{};                // Loaded sections from input files.
         size_t                maxCycles = 0;             // Maximum number of cycles of section files.
-        ts::IPv4SocketAddress tcpMuxAddress {};          // TCP server address for MUX.
-        ts::IPv4SocketAddress udpMuxAddress {};          // UDP server address for MUX.
+        ts::IPSocketAddress   tcpMuxAddress {};          // TCP server address for MUX.
+        ts::IPSocketAddress   udpMuxAddress {};          // UDP server address for MUX.
         bool                  useUDP {false};            // Use UDP to send data provisions.
         uint32_t              clientId = 0;              // Client id, see EMMG/PDG <=> MUX protocol.
         uint16_t              channelId = 0;             // Data_channel_id, see EMMG/PDG <=> MUX protocol.
@@ -253,7 +253,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     // If UDP is used for data provision, use same address as TCP by default.
     if (useUDP && !udpMuxAddress.hasAddress()) {
-        udpMuxAddress.setAddress(tcpMuxAddress.address());
+        udpMuxAddress.setAddress(tcpMuxAddress);
     }
 
     // Specify which EMMG/PDG <=> MUX version to use.

@@ -80,12 +80,12 @@ void ts::NetworkDownloadContentDescriptor::serializePayload(PSIBuffer& buf) cons
     }
     else if (ipv4.has_value()) {
         buf.putUInt8(0x00); // address_type = IPv4
-        buf.putUInt32(ipv4.value().address());
+        buf.putUInt32(ipv4.value().address4());
         buf.putUInt16(ipv4.value().port());
     }
     else if (ipv6.has_value()) {
         buf.putUInt8(0x01); // address_type = IPv6
-        buf.putBytes(ipv6.value().toBytes());
+        buf.putBytes(ipv6.value().address6());
         buf.putUInt16(ipv6.value().port());
     }
     else if (url.has_value()) {
@@ -122,7 +122,7 @@ void ts::NetworkDownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
             ipv4.value().setPort(buf.getUInt16());
             break;
         case 0x01: // address_type = IPv6
-            ipv6.emplace(buf.getBytes(IPv6Address::BYTES));
+            ipv6.emplace(buf.getBytes(IPAddress::BYTES6));
             ipv6.value().setPort(buf.getUInt16());
             break;
         case 0x02: // address_type = URL
@@ -178,7 +178,7 @@ void ts::NetworkDownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp
             case 0x01: { // address_type = IPv6
                 ok = buf.canReadBytes(18);
                 if (ok) {
-                    IPv6SocketAddress ipv6(buf.getBytes(IPv6Address::BYTES));
+                    IPv6SocketAddress ipv6(buf.getBytes(IPAddress::BYTES6));
                     ipv6.setPort(buf.getUInt16());
                     disp << margin << "IPv6: " << ipv6 << std::endl;
                 }

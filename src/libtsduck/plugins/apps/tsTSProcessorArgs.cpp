@@ -193,11 +193,12 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     control_sources.clear();
     if (!args.present(u"control-source")) {
         // By default, the local host is the only allowed address.
-        control_sources.push_back(IPv4Address::LocalHost);
+        control_sources.push_back(IPAddress::LocalHost4);
+        control_sources.push_back(IPAddress::LocalHost6);
     }
     else {
         for (size_t i = 0; i < args.count(u"control-source"); ++i) {
-            control_sources.push_back(args.ipValue(u"control-source", IPv4Address(), i));
+            control_sources.push_back(args.ipValue(u"control-source", IPAddress(), i));
         }
     }
 

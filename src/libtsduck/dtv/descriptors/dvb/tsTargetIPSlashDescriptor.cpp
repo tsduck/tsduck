@@ -51,7 +51,7 @@ ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor(DuckContext& duck, const De
 void ts::TargetIPSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (const auto& it : addresses) {
-        buf.putUInt32(it.IPv4_addr.address());
+        buf.putUInt32(it.IPv4_addr.address4());
         buf.putUInt8(it.IPv4_slash_mask);
     }
 }

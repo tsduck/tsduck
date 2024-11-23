@@ -98,8 +98,8 @@ ts::tlv::TAG ts::EMMGClient::waitResponse()
 // Connect to a remote EMMG. Perform all initial channel and stream negotiation.
 //----------------------------------------------------------------------------
 
-bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
-                             const IPv4SocketAddress& udp,
+bool ts::EMMGClient::connect(const IPSocketAddress& mux,
+                             const IPSocketAddress& udp,
                              uint32_t client_id,
                              uint16_t data_channel_id,
                              uint16_t data_stream_id,
@@ -140,7 +140,7 @@ bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
     // Build full UDP address if required.
     _udp_address = udp;
     if (_udp_address.hasPort() && !_udp_address.hasAddress()) {
-        _udp_address.setAddress(mux.address());
+        _udp_address.setAddress(mux);
     }
 
     // Create UDP socket if we need UDP.

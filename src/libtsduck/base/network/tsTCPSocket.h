@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsSocket.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tsCerrReport.h"
 
 namespace ts {
@@ -93,7 +93,7 @@ namespace ts {
         //! Bind to a local address and port.
         //!
         //! The IP address part of the socket address must one of:
-        //! - IPv4Address::AnyAddress. Any local interface may be used to connect to a server
+        //! - IPAddress::AnyAddress4. Any local interface may be used to connect to a server
         //!   (client side) or to receive incoming client connections (server side).
         //! - The IP address of an interface of the local system. Outgoing connections
         //!   (client side) will be only allowed through this interface. Incoming client
@@ -101,7 +101,7 @@ namespace ts {
         //!   the selected interface.
         //!
         //! The port number part of the socket address must be one of:
-        //! - IPv4SocketAddress::AnyPort. The socket is bound to an arbitrary unused
+        //! - IPSocketAddress::AnyPort. The socket is bound to an arbitrary unused
         //!   local TCP port. This is the usual configuration for a TCP client.
         //! - A specific port number. This is the usual configuration for a TCP server.
         //!   If this TCP port is already bound by another local TCP socket, the bind
@@ -111,7 +111,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool bind(const IPv4SocketAddress& addr, Report& report = CERR);
+        bool bind(const IPSocketAddress& addr, Report& report = CERR);
 
         // Implementation of Socket interface.
         virtual bool open(Report& report = CERR) override;

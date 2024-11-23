@@ -14,8 +14,8 @@
 
 #pragma once
 #include "tsCerrReport.h"
-#include "tsIPv4Address.h"
-#include "tsIPv4AddressMask.h"
+#include "tsIPAddress.h"
+#include "tsIPAddressMask.h"
 
 namespace ts {
     //!
@@ -355,29 +355,29 @@ namespace ts {
     //------------------------------------------------------------------------
 
     //!
-    //! Get the list of all local IPv4 addresses in the system with their network masks.
-    //! @param [out] addresses A vector of IPv4AddressMask which receives the list
-    //! of all local IPv4 addresses in the system, except IPv4Address::LocalHost.
+    //! Get the list of all local IP addresses in the system with their network masks.
+    //! @param [out] addresses A vector of IPAddressMask which receives the list of all local IP addresses.
+    //! @param [in] loopback If false, the loopback addresses are skipped.
+    //! @param [in] gen Report addresses for the specified generations only.
     //! @param [in] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPv4AddressMaskVector& addresses, Report& report = CERR);
+    TSDUCKDLL bool GetLocalIPAddresses(IPAddressMaskVector& addresses, bool loopback = true, IP gen = IP::Any, Report& report = CERR);
 
     //!
-    //! Get the list of all local IPv4 addresses in the system.
-    //!
-    //! @param [out] addresses A vector of IPv4Address which receives the list
-    //! of all local IPv4 addresses in the system, except ts::IPv4Address::LocalHost.
+    //! Get the list of all local IP addresses in the system.
+    //! @param [out] addresses A vector of IPAddress which receives the list of all local IP addresses.
+    //! @param [in] loopback If false, the loopback addresses are skipped.
+    //! @param [in] gen Report addresses for the specified generations only.
     //! @param [in] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPv4AddressVector& addresses, Report& report = CERR);
+    TSDUCKDLL bool GetLocalIPAddresses(IPAddressVector& addresses, bool loopback = true, IP gen = IP::Any, Report& report = CERR);
 
     //!
     //! Check if a local system interface has a specified IP address.
-    //!
     //! @param [in] address The IP address to check.
     //! @return True is @a address is the address of a local system interface, false otherwise.
     //!
-    TSDUCKDLL bool IsLocalIPAddress(const IPv4Address& address);
+    TSDUCKDLL bool IsLocalIPAddress(const IPAddress& address);
 }

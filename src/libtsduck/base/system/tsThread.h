@@ -40,11 +40,6 @@ namespace ts {
         TS_NOCOPY(Thread);
     public:
         //!
-        //! Fatal low-level threading error.
-        //!
-        TS_DECLARE_EXCEPTION(ThreadError);
-
-        //!
         //! Default constructor (all attributes have their default values).
         //!
         //! @see ThreadAttributes

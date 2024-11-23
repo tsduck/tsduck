@@ -139,7 +139,7 @@ bool ts::MACAddress::isMulticast() const
 bool ts::MACAddress::toMulticast(const IPv4Address& ip)
 {
     if (ip.isMulticast()) {
-        _addr = MULTICAST_PREFIX | (ip.address() & ~MULTICAST_MASK);
+        _addr = MULTICAST_PREFIX | (ip.address4() & ~MULTICAST_MASK);
         return true;
     }
     else {

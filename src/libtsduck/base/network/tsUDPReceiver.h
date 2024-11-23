@@ -54,15 +54,15 @@ namespace ts {
         virtual bool receive(void* data,
                              size_t max_size,
                              size_t& ret_size,
-                             IPv4SocketAddress& sender,
-                             IPv4SocketAddress& destination,
+                             IPSocketAddress& sender,
+                             IPSocketAddress& destination,
                              const AbortInterface* abort = nullptr,
                              Report& report = CERR,
                              cn::microseconds* timestamp = nullptr) override;
 
     private:
-        UDPReceiverArgs      _args {};          // Reception parameters (typically from the command line).
-        IPv4SocketAddress    _first_source {};  // Socket address of first received packet.
-        IPv4SocketAddressSet _sources {};       // Set of all detected packet sources.
+        UDPReceiverArgs    _args {};          // Reception parameters (typically from the command line).
+        IPSocketAddress    _first_source {};  // Socket address of first received packet.
+        IPSocketAddressSet _sources {};       // Set of all detected packet sources.
     };
 }

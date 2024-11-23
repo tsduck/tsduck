@@ -17,7 +17,7 @@
 #include "tsByteBlock.h"
 #include "tsAbstractNumber.h"
 #include "tsCompactBitSet.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 
 namespace ts {
     //!
@@ -311,11 +311,11 @@ namespace ts {
             ANUMBER,        //!< A subclass of AbstractNumber.
             CHRONO,         //!< Any instantiation of std::chrono::duration.
             TRISTATE,       //!< Tristate value, ts::Maybe if absent.
-            IPADDR,         //!< IPv4 address or host name translating to an address.
-            IPSOCKADDR,     //!< IPv4 socket address (or host name) and port, both are mandatory.
-            IPSOCKADDR_OA,  //!< IPv4 socket address (or host name) and port, address is optional.
-            IPSOCKADDR_OP,  //!< IPv4 socket address (or host name) and port, port is optional.
-            IPSOCKADDR_OAP, //!< IPv4 socket address (or host name) and port, address and port are optional.
+            IPADDR,         //!< IP address or host name translating to an address.
+            IPSOCKADDR,     //!< IP socket address (or host name) and port, both are mandatory.
+            IPSOCKADDR_OA,  //!< IP socket address (or host name) and port, address is optional.
+            IPSOCKADDR_OP,  //!< IP socket address (or host name) and port, port is optional.
+            IPSOCKADDR_OAP, //!< IP socket address (or host name) and port, address and port are optional.
         };
 
         //!
@@ -1082,68 +1082,68 @@ namespace ts {
         ByteBlock hexaValue(const UChar* name = nullptr, const ByteBlock& def_value = ByteBlock(), size_t index = 0) const;
 
         //!
-        //! Get the value of an option as an IPv4 address in the last analyzed command line.
+        //! Get the value of an option as an IP address in the last analyzed command line.
         //!
-        //! @param [out] value A variable receiving the resolved IPv4 address value of the option or parameter.
+        //! @param [out] value A variable receiving the resolved IP address value of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] def_value The IPv4 address to return if the option or parameter
+        //! @param [in] def_value The IP address to return if the option or parameter
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        void getIPValue(IPv4Address& value, const UChar* name = nullptr, const IPv4Address& def_value = IPv4Address(), size_t index = 0) const;
+        void getIPValue(IPAddress& value, const UChar* name = nullptr, const IPAddress& def_value = IPAddress(), size_t index = 0) const;
 
         //!
-        //! Get the value of an option as an IPv4 address in the last analyzed command line.
+        //! Get the value of an option as an IP address in the last analyzed command line.
         //!
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] def_value The IPv4 address to return if the option or parameter
+        //! @param [in] def_value The IP address to return if the option or parameter
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
-        //! @return The resolved IPv4 address value of the option or parameter.
+        //! @return The resolved IP address value of the option or parameter.
         //!
-        IPv4Address ipValue(const UChar* name = nullptr, const IPv4Address& def_value = IPv4Address(), size_t index = 0) const;
+        IPAddress ipValue(const UChar* name = nullptr, const IPAddress& def_value = IPAddress(), size_t index = 0) const;
 
         //!
-        //! Get the value of an option as an IPv4 socket address in the last analyzed command line.
+        //! Get the value of an option as an IP socket address in the last analyzed command line.
         //!
-        //! @param [out] value A variable receiving the resolved IPv4 socket address value of the option or parameter.
+        //! @param [out] value A variable receiving the resolved IP socket address value of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] def_value The IPv4 address socket to return if the option or parameter
+        //! @param [in] def_value The IP address socket to return if the option or parameter
         //! is not present in the command line or with fewer occurences than @a index.
         //! If the parameter is present but either address or port is missing, the missing part
         //! is copied from @a def_value.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        void getSocketValue(IPv4SocketAddress& value, const UChar* name = nullptr, const IPv4SocketAddress& def_value = IPv4SocketAddress(), size_t index = 0) const;
+        void getSocketValue(IPSocketAddress& value, const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0) const;
 
         //!
-        //! Get the value of an option as an IPv4 socket address in the last analyzed command line.
+        //! Get the value of an option as an IP socket address in the last analyzed command line.
         //!
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] def_value The IPv4 socket address to return if the option or parameter
+        //! @param [in] def_value The IP socket address to return if the option or parameter
         //! If the parameter is present but either address or port is missing, the missing part
         //! is copied from @a def_value.
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
-        //! @return The resolved IPv4 socket address value of the option or parameter.
+        //! @return The resolved IP socket address value of the option or parameter.
         //!
-        IPv4SocketAddress socketValue(const UChar* name = nullptr, const IPv4SocketAddress& def_value = IPv4SocketAddress(), size_t index = 0) const;
+        IPSocketAddress socketValue(const UChar* name = nullptr, const IPSocketAddress& def_value = IPSocketAddress(), size_t index = 0) const;
 
         //!
         //! Get the value of an AbstractNumber option in the last analyzed command line.
@@ -1245,7 +1245,7 @@ namespace ts {
             std::optional<UString> string {};      // Orginal string value from command line (unset if option is present without value).
             int64_t                int_base = 0;   // First (or only) integer value.
             size_t                 int_count = 0;  // Number of consecutive integer values.
-            IPv4SocketAddress      address {};     // IPv4 address or socket address value.
+            IPSocketAddress        address {};     // IP address or socket address value.
         };
 
         // List of values

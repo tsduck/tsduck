@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
 
@@ -95,7 +95,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getLocalAddress(IPv4SocketAddress& addr, Report& report = CERR);
+        bool getLocalAddress(IPSocketAddress& addr, Report& report = CERR);
 
         //!
         //! Get the underlying socket device handle (use with care).
@@ -128,6 +128,6 @@ namespace ts {
         virtual void declareOpened(SysSocketType sock, Report& report);
 
     private:
-        volatile SysSocketType _sock {SYS_SOCKET_INVALID};
+        volatile SysSocketType _sock = SYS_SOCKET_INVALID;
     };
 }

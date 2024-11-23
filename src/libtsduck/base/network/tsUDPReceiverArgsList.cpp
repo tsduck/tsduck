@@ -22,8 +22,8 @@ bool ts::UDPReceiverArgsList::loadArgs(DuckContext& duck, Args& args, cn::millis
     clear();
     resize(args.count(UDPReceiverArgs::DestName(_dest_is_parameter)));
 
-    IPv4Address previous_local_address;
-    IPv4SocketAddress previous_source;
+    IPAddress previous_local_address;
+    IPSocketAddress previous_source;
 
     // Get all addresses.
     for (size_t index = 0; index < size(); ++index) {

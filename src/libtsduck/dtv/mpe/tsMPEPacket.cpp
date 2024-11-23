@@ -334,7 +334,7 @@ void ts::MPEPacket::setSourceIPAddress(const IPv4Address& ip)
     assert(_datagram->size() >= IPv4_MIN_HEADER_SIZE);
 
     // Replace address.
-    PutUInt32(_datagram->data() + IPv4_SRC_ADDR_OFFSET, ip.address());
+    PutUInt32(_datagram->data() + IPv4_SRC_ADDR_OFFSET, ip.address4());
 
     // Recompute IP header checksum.
     IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
@@ -364,7 +364,7 @@ void ts::MPEPacket::setDestinationIPAddress(const IPv4Address& ip)
     assert(_datagram->size() >= IPv4_MIN_HEADER_SIZE);
 
     // Replace address.
-    PutUInt32(_datagram->data() + IPv4_DEST_ADDR_OFFSET, ip.address());
+    PutUInt32(_datagram->data() + IPv4_DEST_ADDR_OFFSET, ip.address4());
 
     // Recompute IP header checksum.
     IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
