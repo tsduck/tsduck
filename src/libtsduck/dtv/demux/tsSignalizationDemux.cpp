@@ -195,7 +195,7 @@ uint16_t ts::SignalizationDemux::serviceId(PID pid) const
 ts::PID ts::SignalizationDemux::referencePMTPID(PID pid) const
 {
     auto ctx = _services.find(serviceId(pid));
-    return ctx != _services.end() ? ctx->second->service.getPMTPID() : PID_NULL;
+    return ctx != _services.end() ? ctx->second->service.getPMTPID() : PID(PID_NULL);
 }
 
 void ts::SignalizationDemux::getServiceIds(PID pid, std::set<uint16_t> services) const
