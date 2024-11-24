@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSRTSocket.h"
+#include "tsLibSRT.h"
 #include "tsSingleton.h"
 #include "tsArgs.h"
 #include "tsjsonObject.h"
@@ -23,16 +24,16 @@
 
 void ts::SRTSocket::defineArgs(ts::Args& args)
 {
-    args.option(u"caller", 'c', Args::STRING);
-    args.help(u"caller", u"address:port",
+    args.option(u"caller", 'c', Args::IPSOCKADDR);
+    args.help(u"caller",
               u"Use SRT in caller (or rendezvous) mode. "
-              u"The parameter specifies the IPv4 remote address (or host name) and UDP port. "
+              u"The parameter specifies the IP remote address (or host name) and UDP port. "
               u"If --listener is also specified, the SRT socket works in rendezvous mode.");
 
-    args.option(u"listener", 'l', Args::STRING);
-    args.help(u"listener", u"[address:]port",
+    args.option(u"listener", 'l', Args::IPSOCKADDR_OA);
+    args.help(u"listener",
               u"Use SRT in listener (or rendezvous) mode. "
-              u"The parameter specifies the IPv4 local address and UDP port on which the SRT socket listens. "
+              u"The parameter specifies the IP local address and UDP port on which the SRT socket listens. "
               u"The address is optional, the port is mandatory. "
               u"If --caller is also specified, the SRT socket works in rendezvous mode.");
 
@@ -46,8 +47,8 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"With --listener, disable the reuse port socket option. "
               u"Do not use unless completely necessary.");
 
-    args.option(u"local-interface", 0, Args::STRING);
-    args.help(u"local-interface", u"address",
+    args.option(u"local-interface", 0, Args::IPADDR);
+    args.help(u"local-interface",
               u"In caller mode, use the specified local IP interface for outgoing connections. "
               u"This option is incompatible with --listener.");
 
@@ -276,7 +277,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
 
 ts::SRTSocket::SRTSocket() : _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
-bool ts::SRTSocket::open(SRTSocketMode, const IPv4SocketAddress&, const IPv4SocketAddress&, size_t, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::open(SRTSocketMode, const IPSocketAddress&, const IPSocketAddress&, size_t, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::close(Report& report) NOSRT_ERROR
 bool ts::SRTSocket::peerDisconnected() const { return false; }
 bool ts::SRTSocket::loadArgs(DuckContext&, Args&) { return true; }
@@ -297,65 +298,12 @@ size_t ts::SRTSocket::totalReceivedBytes() const { return 0; }
 
 //----------------------------------------------------------------------------
 // Actual libsrt implementation.
-//----------------------------------------------------------------------------
-
-#define DEFAULT_POLLING_TIME 100
-
-// The srtlib headers contain errors.
-TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(documentation)
-TS_LLVM_NOWARNING(old-style-cast)
-TS_LLVM_NOWARNING(undef)
-TS_GCC_NOWARNING(undef)
-TS_GCC_NOWARNING(effc++)
-TS_MSC_NOWARNING(4005)  // 'xxx' : macro redefinition
-TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-
-// Bug in GCC: "#if __APPLE__" triggers -Werror=undef despite TS_GCC_NOWARNING(undef)
-// This is a known GCC bug since 2012, never fixed: #if is too early in lex analysis and #pragma are not yet parsed.
-// See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
-#if defined(TS_GCC_ONLY) && !defined(__APPLE__)
-    #define __APPLE__ 0
-    #define ZERO__APPLE__ 1
-#endif
-
-#include <srt/version.h>
-
-// On earlier versions, the header srt.h uses a [[deprecated]] attribute on a typedef, which is incorrect.
-// Disable using [[deprecated]].
-#if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
-    #define SRT_NO_DEPRECATED 1
-#endif
-
-#include <srt/srt.h>
-
-// The header access_control.h was introduced in version 1.4.2.
-// On Windows, access_control.h was missing in the binary installer before 1.5.3.
-#if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
-    using RejectReason = SRT_REJECT_REASON;
-#else
-    #define HAS_SRT_ACCESS_CONTROL 1
-    using RejectReason = int;
-    #if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
-        #define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
-    #else
-        #include <srt/access_control.h>
-    #endif
-#endif
-
-#if defined(ZERO__APPLE__)
-    #undef __APPLE__
-    #undef ZERO__APPLE__
-#endif
-
-TS_POP_WARNING()
-
-
-//----------------------------------------------------------------------------
 // A global singleton which initializes SRT.
 // The SRT library is initialized when the first SRT socket is opened
 // and terminated when the last socket is closed.
 //----------------------------------------------------------------------------
+
+#define DEFAULT_POLLING_TIME 100
 
 namespace {
     class SRTInit
@@ -434,18 +382,18 @@ public:
      // Default constructor.
      Guts(SRTSocket* parent) : _parent(parent) {}
 
-     bool send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report);
+     bool send(const void* data, size_t size, const IPSocketAddress& dest, Report& report);
      bool setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report);
      bool setSockOptPre(Report& report);
      bool setSockOptPost(Report& report);
-     bool srtListen(const IPv4SocketAddress& addr, Report& report);
-     bool srtConnect(const IPv4SocketAddress& addr, Report& report);
-     bool srtBind(const IPv4SocketAddress& addr, Report& report);
+     bool srtListen(const IPSocketAddress& addr, Report& report);
+     bool srtConnect(const IPSocketAddress& addr, Report& report);
+     bool srtBind(const IPSocketAddress& addr, Report& report);
      bool reportStats(Report& report);
 
      // Socket working data.
-     IPv4SocketAddress    local_address {};
-     IPv4SocketAddress    remote_address {};
+     IPSocketAddress      local_address {};
+     IPSocketAddress      remote_address {};
      SRTSocketMode        mode = SRTSocketMode::DEFAULT;
      volatile ::SRTSOCKET sock = SRT_INVALID_SOCK;       // SRT socket for data transmission
      volatile ::SRTSOCKET listener  = SRT_INVALID_SOCK;  // Listener SRT socket when srt_listen() is used.
@@ -545,8 +493,8 @@ bool ts::SRTSocket::getMessageApi() const
 //----------------------------------------------------------------------------
 
 bool ts::SRTSocket::open(SRTSocketMode mode,
-                         const IPv4SocketAddress& local_address,
-                         const IPv4SocketAddress& remote_address,
+                         const IPSocketAddress& local,
+                         const IPSocketAddress& remote,
                          size_t max_payload,
                          Report& report)
 {
@@ -559,8 +507,8 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     // Initialize socket modes.
     if (mode != SRTSocketMode::DEFAULT) {
         _guts->mode = mode;
-        _guts->local_address = local_address;
-        _guts->remote_address = remote_address;
+        _guts->local_address = local;
+        _guts->remote_address = remote;
     }
     _guts->disconnected = false;
 
@@ -697,7 +645,7 @@ bool ts::SRTSocket::peerDisconnected() const
 // Preset local and remote socket addresses in string form.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const UString& caller_addr, const UString& local_addr, bool reset, Report& report)
+bool ts::SRTSocket::setAddressesInternal(const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local, bool reset, Report& report)
 {
     // Reset the addresses if needed.
     if (reset) {
@@ -707,15 +655,15 @@ bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const USt
     }
 
     // Nothing more than reset when neither listener nor caller are specified.
-    if (caller_addr.empty() && listener_addr.empty()) {
+    if (!caller.hasPort() && !listener.hasPort()) {
         return true;
     }
 
     // Resolve communication mode.
-    if (caller_addr.empty()) {
+    if (!caller.hasAddress() || !caller.hasPort()) {
         _guts->mode = SRTSocketMode::LISTENER;
     }
-    else if (listener_addr.empty()) {
+    else if (!listener.hasPort()) {
         _guts->mode = SRTSocketMode::CALLER;
     }
     else {
@@ -723,39 +671,23 @@ bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const USt
     }
 
     // Local interface in caller mode.
-    if (!local_addr.empty()) {
-        if (!listener_addr.empty()) {
+    if (local.hasAddress()) {
+        if (listener.hasPort()) {
             report.error(u"specify either a listener address or a local outgoing interface for caller mode but not both");
             return false;
         }
-        IPv4Address local_ip;
-        if (!local_ip.resolve(local_addr, report)) {
-            return false;
-        }
-        _guts->local_address.setAddress(local_ip);
+        _guts->local_address.setAddress(local);
         _guts->local_address.clearPort();
     }
 
-    // Listener address, also used in rendezvous mode.
-    if (!listener_addr.empty()) {
-        if (!_guts->local_address.resolve(listener_addr, report)) {
-            return false;
-        }
-        else if (!_guts->local_address.hasPort()) {
-            report.error(u"missing port number in local listener address '%s'", listener_addr);
-            return false;
-        }
+    // Listener address is also used in rendezvous mode.
+    if (listener.hasPort()) {
+        _guts->local_address = listener;
     }
 
     // Caller address, also used in rendezvous mode.
-    if (!caller_addr.empty()) {
-        if (!_guts->remote_address.resolve(caller_addr, report)) {
-            return false;
-        }
-        else if (!_guts->remote_address.hasAddress() || !_guts->remote_address.hasPort()) {
-            report.error(u"missing address or port in remote caller address '%s'", caller_addr);
-            return false;
-        }
+    if (caller.hasAddress()) {
+        _guts->remote_address = caller;
     }
 
     return true;
@@ -769,7 +701,14 @@ bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const USt
 bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
 {
     // Resolve caller/listener/rendezvous addresses.
-    if (!setAddressesInternal(args.value(u"listener"), args.value(u"caller"), args.value(u"local-interface"), false, args)) {
+    IPSocketAddress listener;
+    IPSocketAddress caller;
+    IPAddress local;
+    args.getSocketValue(listener, u"listener");
+    args.getSocketValue(caller, u"caller");
+    args.getIPValue(local, u"local-interface");
+
+    if (!setAddressesInternal(listener, caller, local, false, args)) {
         return false;
     }
 
@@ -923,7 +862,7 @@ bool ts::SRTSocket::Guts::setSockOptPost(Report& report)
 // Connection operation.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& report)
+bool ts::SRTSocket::Guts::srtListen(const IPSocketAddress& addr, Report& report)
 {
     // The SRT socket will become the listener socket. As long as an error is possible, keep the
     // listener socket in "sock" field. On return false, this "sock" will ba closed by the caller.
@@ -975,7 +914,7 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     sock = data_sock;
 
     // In listener mode, keep the address of the remote peer.
-    const IPv4SocketAddress p_addr(peer_addr);
+    const IPSocketAddress p_addr(peer_addr);
     report.debug(u"connected to %s", p_addr);
     if (mode == SRTSocketMode::LISTENER) {
         remote_address = p_addr;
@@ -1001,7 +940,7 @@ int ts::SRTSocket::Guts::listenCallback(void* param, SRTSOCKET sock, int hsversi
     }
 }
 
-bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& report)
+bool ts::SRTSocket::Guts::srtConnect(const IPSocketAddress& addr, Report& report)
 {
     ::sockaddr_storage sock_addr;
     const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
@@ -1011,7 +950,7 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
         const int err = ::srt_getlasterror(&errno);
         std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
-            const RejectReason reason = ::srt_getrejectreason(sock);
+            const SRT_RejectReason reason = ::srt_getrejectreason(sock);
             report.debug(u"srt_connect rejected, reason: %d", reason);
 #if defined(HAS_SRT_ACCESS_CONTROL)
             if (reason == SRT_REJX_OVERLOAD) {
@@ -1036,7 +975,7 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
     }
 }
 
-bool ts::SRTSocket::Guts::srtBind(const IPv4SocketAddress& addr, Report& report)
+bool ts::SRTSocket::Guts::srtBind(const IPSocketAddress& addr, Report& report)
 {
     ::sockaddr_storage sock_addr;
     const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
@@ -1061,7 +1000,7 @@ bool ts::SRTSocket::send(const void* data, size_t size, Report& report)
     return _guts->send(data, size, _guts->remote_address, report);
 }
 
-bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report)
+bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPSocketAddress& dest, Report& report)
 {
     // If socket was disconnected or aborted, silently fail.
     if (disconnected || sock == SRT_INVALID_SOCK) {

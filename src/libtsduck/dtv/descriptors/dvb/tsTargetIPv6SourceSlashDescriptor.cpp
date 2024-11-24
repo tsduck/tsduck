@@ -50,11 +50,16 @@ ts::TargetIPv6SourceSlashDescriptor::TargetIPv6SourceSlashDescriptor(DuckContext
 
 void ts::TargetIPv6SourceSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (const auto& it : addresses) {
-        buf.putBytes(it.IPv6_source_addr.address6());
-        buf.putUInt8(it.IPv6_source_slash_mask);
-        buf.putBytes(it.IPv6_dest_addr.address6());
-        buf.putUInt8(it.IPv6_dest_slash_mask);
+    for (const auto& addr : addresses) {
+        if (addr.IPv6_source_addr.generation() == IP::v6 && addr.IPv6_dest_addr.generation() == IP::v6) {
+            buf.putBytes(addr.IPv6_source_addr.address6());
+            buf.putUInt8(addr.IPv6_source_slash_mask);
+            buf.putBytes(addr.IPv6_dest_addr.address6());
+            buf.putUInt8(addr.IPv6_dest_slash_mask);
+        }
+        else {
+            buf.setUserError();
+        }
     }
 }
 
@@ -67,9 +72,9 @@ void ts::TargetIPv6SourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
         Address addr;
-        addr.IPv6_source_addr = IPv6Address(buf.getBytes(16));
+        addr.IPv6_source_addr = IPAddress(buf.getBytes(IPAddress::BYTES6));
         addr.IPv6_source_slash_mask = buf.getUInt8();
-        addr.IPv6_dest_addr = IPv6Address(buf.getBytes(16));
+        addr.IPv6_dest_addr = IPAddress(buf.getBytes(IPAddress::BYTES6));
         addr.IPv6_dest_slash_mask = buf.getUInt8();
         addresses.push_back(addr);
     }
@@ -83,9 +88,9 @@ void ts::TargetIPv6SourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetIPv6SourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(34)) {
-        disp << margin << "- Source:      " << IPv6Address(buf.getBytes(16));
+        disp << margin << "- Source:      " << IPAddress(buf.getBytes(IPAddress::BYTES6));
         disp << "/" << int(buf.getUInt8()) << std::endl;
-        disp << margin << "  Destination: " << IPv6Address(buf.getBytes(16));
+        disp << margin << "  Destination: " << IPAddress(buf.getBytes(IPAddress::BYTES6));
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
 }
@@ -99,9 +104,9 @@ void ts::TargetIPv6SourceSlashDescriptor::buildXML(DuckContext& duck, xml::Eleme
 {
     for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPv6Attribute(u"IPv6_source_addr", it.IPv6_source_addr);
+        e->setIPAttribute(u"IPv6_source_addr", it.IPv6_source_addr);
         e->setIntAttribute(u"IPv6_source_slash_mask", it.IPv6_source_slash_mask);
-        e->setIPv6Attribute(u"IPv6_dest_addr", it.IPv6_dest_addr);
+        e->setIPAttribute(u"IPv6_dest_addr", it.IPv6_dest_addr);
         e->setIntAttribute(u"IPv6_dest_slash_mask", it.IPv6_dest_slash_mask);
     }
 }
@@ -118,9 +123,9 @@ bool ts::TargetIPv6SourceSlashDescriptor::analyzeXML(DuckContext& duck, const xm
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        ok = children[i]->getIPv6Attribute(addr.IPv6_source_addr, u"IPv6_source_addr", true) &&
+        ok = children[i]->getIPAttribute(addr.IPv6_source_addr, u"IPv6_source_addr", true) &&
              children[i]->getIntAttribute(addr.IPv6_source_slash_mask, u"IPv6_source_slash_mask", true) &&
-             children[i]->getIPv6Attribute(addr.IPv6_dest_addr, u"IPv6_dest_addr", true) &&
+             children[i]->getIPAttribute(addr.IPv6_dest_addr, u"IPv6_dest_addr", true) &&
              children[i]->getIntAttribute(addr.IPv6_dest_slash_mask, u"IPv6_dest_slash_mask", true);
         addresses.push_back(addr);
     }

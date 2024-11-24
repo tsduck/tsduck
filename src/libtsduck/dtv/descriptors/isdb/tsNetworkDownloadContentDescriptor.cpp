@@ -41,8 +41,7 @@ void ts::NetworkDownloadContentDescriptor::clearContent()
     session_id = 0;
     retry = 0;
     connect_timer = 0;
-    ipv4.reset();
-    ipv6.reset();
+    ip.reset();
     url.reset();
     compatibility_descriptor.clear();
     private_data.clear();
@@ -74,19 +73,20 @@ void ts::NetworkDownloadContentDescriptor::serializePayload(PSIBuffer& buf) cons
     buf.putUInt24(connect_timer);
 
     // Exactly one of ipv4, ipv6, url must be set.
-    if (ipv4.has_value() + ipv6.has_value() + url.has_value() != 1) {
+    if (ip.has_value() + url.has_value() != 1) {
         buf.setUserError();
         return;
     }
-    else if (ipv4.has_value()) {
-        buf.putUInt8(0x00); // address_type = IPv4
-        buf.putUInt32(ipv4.value().address4());
-        buf.putUInt16(ipv4.value().port());
-    }
-    else if (ipv6.has_value()) {
-        buf.putUInt8(0x01); // address_type = IPv6
-        buf.putBytes(ipv6.value().address6());
-        buf.putUInt16(ipv6.value().port());
+    else if (ip.has_value()) {
+        if (ip->generation() == IP::v4) {
+            buf.putUInt8(0x00); // address_type = IPv4
+            buf.putUInt32(ip.value().address4());
+        }
+        else {
+            buf.putUInt8(0x01); // address_type = IPv6
+            buf.putBytes(ip.value().address6());
+        }
+        buf.putUInt16(ip.value().port());
     }
     else if (url.has_value()) {
         buf.putUInt8(0x02); // address_type = URL
@@ -117,14 +117,18 @@ void ts::NetworkDownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
     connect_timer = buf.getUInt24();
 
     switch (buf.getUInt8()) {
-        case 0x00: // address_type = IPv4
-            ipv4.emplace(buf.getUInt32());
-            ipv4.value().setPort(buf.getUInt16());
+        case 0x00: { // address_type = IPv4
+            const uint32_t addr = buf.getUInt32();
+            const uint16_t port = buf.getUInt16();
+            ip.emplace(addr, port);
             break;
-        case 0x01: // address_type = IPv6
-            ipv6.emplace(buf.getBytes(IPAddress::BYTES6));
-            ipv6.value().setPort(buf.getUInt16());
+        }
+        case 0x01: { // address_type = IPv6
+            const ByteBlock addr = buf.getBytes(IPAddress::BYTES6);
+            const uint16_t port = buf.getUInt16();
+            ip.emplace(addr, port);
             break;
+        }
         case 0x02: // address_type = URL
             url = buf.getUTF8WithLength();
             break;
@@ -169,18 +173,18 @@ void ts::NetworkDownloadContentDescriptor::DisplayDescriptor(TablesDisplay& disp
             case 0x00: { // address_type = IPv4
                 ok = buf.canReadBytes(6);
                 if (ok) {
-                    IPv4SocketAddress ipv4(buf.getUInt32());
-                    ipv4.setPort(buf.getUInt16());
-                    disp << margin << "IPv4: " << ipv4 << std::endl;
+                    const uint32_t addr = buf.getUInt32();
+                    const uint16_t port = buf.getUInt16();
+                    disp << margin << "IPv4: " << IPSocketAddress(addr, port) << std::endl;
                 }
                 break;
             }
             case 0x01: { // address_type = IPv6
                 ok = buf.canReadBytes(18);
                 if (ok) {
-                    IPv6SocketAddress ipv6(buf.getBytes(IPAddress::BYTES6));
-                    ipv6.setPort(buf.getUInt16());
-                    disp << margin << "IPv6: " << ipv6 << std::endl;
+                    const ByteBlock addr = buf.getBytes(IPAddress::BYTES6);
+                    const uint16_t port = buf.getUInt16();
+                    disp << margin << "IPv6: " << IPSocketAddress(addr, port) << std::endl;
                 }
                 break;
             }
@@ -225,15 +229,10 @@ void ts::NetworkDownloadContentDescriptor::buildXML(DuckContext& duck, xml::Elem
     root->setIntAttribute(u"retry", retry);
     root->setIntAttribute(u"connect_timer", connect_timer);
 
-    if (ipv4.has_value()) {
-        xml::Element* e = root->addElement(u"ipv4");
-        e->setIPv4Attribute(u"address", IPv4Address(ipv4.value()));
-        e->setIntAttribute(u"port", ipv4.value().port());
-    }
-    else if (ipv6.has_value()) {
-        xml::Element* e = root->addElement(u"ipv6");
-        e->setIPv6Attribute(u"address", IPv6Address(ipv6.value()));
-        e->setIntAttribute(u"port", ipv6.value().port());
+    if (ip.has_value()) {
+        xml::Element* e = root->addElement(UString::Format(u"ipv%d", int(ip.value().generation())));
+        e->setIPAttribute(u"address", IPAddress(ip.value()));
+        e->setIntAttribute(u"port", ip.value().port());
     }
     else if (url.has_value()) {
         root->addElement(u"url")->setAttribute(u"url", url.value());
@@ -271,16 +270,16 @@ bool ts::NetworkDownloadContentDescriptor::analyzeXML(DuckContext& duck, const x
         element->report().error(u"exactly one of <ipv4>, <ipv6>, <url> required in <%s>, line %d", element->name(), element->lineNumber());
     }
     if (ok && !xipv4.empty()) {
-        IPv4Address address;
+        IPAddress address;
         uint16_t port = 0;
-        ok = xipv4[0]->getIPv4Attribute(address, u"address", true) && xipv4[0]->getIntAttribute(port, u"port", true);
-        ipv4.emplace(address, port);
+        ok = xipv4[0]->getIPAttribute(address, u"address", true) && xipv4[0]->getIntAttribute(port, u"port", true);
+        ip.emplace(address, port);
     }
     else if (ok && !xipv6.empty()) {
-        IPv6Address address;
+        IPAddress address;
         uint16_t port = 0;
-        ok = xipv6[0]->getIPv6Attribute(address, u"address", true) && xipv6[0]->getIntAttribute(port, u"port", true);
-        ipv6.emplace(address, port);
+        ok = xipv6[0]->getIPAttribute(address, u"address", true) && xipv6[0]->getIntAttribute(port, u"port", true);
+        ip.emplace(address, port);
     }
     else if (ok && !xurl.empty()) {
         UString str;

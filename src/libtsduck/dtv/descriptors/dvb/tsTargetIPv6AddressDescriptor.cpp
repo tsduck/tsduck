@@ -52,9 +52,19 @@ ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor(DuckContext& duck, 
 
 void ts::TargetIPv6AddressDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBytes(IPv6_addr_mask.address6());
-    for (const auto& it : IPv6_addr) {
-        buf.putBytes(it.address6());
+    if (IPv6_addr_mask.generation() == IP::v6) {
+        buf.putBytes(IPv6_addr_mask.address6());
+    }
+    else {
+        buf.setUserError();
+    }
+    for (const auto& addr : IPv6_addr) {
+        if (addr.generation() == IP::v6) {
+            buf.putBytes(addr.address6());
+        }
+        else {
+            buf.setUserError();
+        }
     }
 }
 
@@ -65,9 +75,9 @@ void ts::TargetIPv6AddressDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::TargetIPv6AddressDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    IPv6_addr_mask.setAddress(buf.getBytes(16));
+    IPv6_addr_mask.setAddress(buf.getBytes(IPAddress::BYTES6));
     while (buf.canRead()) {
-        IPv6_addr.push_back(IPv6Address(buf.getBytes(16)));
+        IPv6_addr.push_back(IPAddress(buf.getBytes(IPAddress::BYTES6)));
     }
 }
 
@@ -80,7 +90,7 @@ void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 {
     const char* header = "Address mask: ";
     while (buf.canReadBytes(16)) {
-        disp << margin << header << IPv6Address(buf.getBytes(16)) << std::endl;
+        disp << margin << header << IPAddress(buf.getBytes(IPAddress::BYTES6)) << std::endl;
         header = "Address: ";
     }
 }
@@ -92,9 +102,9 @@ void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 
 void ts::TargetIPv6AddressDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    root->setIPv6Attribute(u"IPv6_addr_mask", IPv6_addr_mask);
+    root->setIPAttribute(u"IPv6_addr_mask", IPv6_addr_mask);
     for (const auto& it : IPv6_addr) {
-        root->addElement(u"address")->setIPv6Attribute(u"IPv6_addr", it);
+        root->addElement(u"address")->setIPAttribute(u"IPv6_addr", it);
     }
 }
 
@@ -107,12 +117,12 @@ bool ts::TargetIPv6AddressDescriptor::analyzeXML(DuckContext& duck, const xml::E
 {
     xml::ElementVector children;
     bool ok =
-        element->getIPv6Attribute(IPv6_addr_mask, u"IPv6_addr_mask", true) &&
+        element->getIPAttribute(IPv6_addr_mask, u"IPv6_addr_mask", true) &&
         element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
-        IPv6Address addr;
-        ok = children[i]->getIPv6Attribute(addr, u"IPv6_addr", true);
+        IPAddress addr;
+        ok = children[i]->getIPAttribute(addr, u"IPv6_addr", true);
         IPv6_addr.push_back(addr);
     }
     return ok;

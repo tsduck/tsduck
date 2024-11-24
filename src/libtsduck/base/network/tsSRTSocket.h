@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tsUString.h"
 #include "tsReport.h"
 #include "tsEnumUtils.h"
@@ -80,19 +80,19 @@ namespace ts {
         //!
         bool open(size_t max_payload = NPOS, Report& report = CERR)
         {
-            return open(SRTSocketMode::DEFAULT, IPv4SocketAddress(), IPv4SocketAddress(), max_payload, report);
+            return open(SRTSocketMode::DEFAULT, IPSocketAddress(), IPSocketAddress(), max_payload, report);
         }
 
         //!
         //! Open the socket.
         //! @param [in] mode SRT socket mode. If set to DEFAULT, the mode must have been specified in the command line options.
-        //! @param [in] local_address Local socket address. Ignored in DEFAULT mode. Optional local IP address used in CALLER mode.
-        //! @param [in] remote_address Remote socket address. Ignored in DEFAULT and LISTENER modes.
+        //! @param [in] local Local socket address. Ignored in DEFAULT mode. Optional local IP address used in CALLER mode.
+        //! @param [in] remote Remote socket address. Ignored in DEFAULT and LISTENER modes.
         //! @param [in] max_payload Maximum payload size in bytes. Unset if NPOS.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(SRTSocketMode mode, const IPv4SocketAddress& local_address, const IPv4SocketAddress& remote_address, size_t max_payload = NPOS, Report& report = CERR);
+        bool open(SRTSocketMode mode, const IPSocketAddress& local, const IPSocketAddress& remote, size_t max_payload = NPOS, Report& report = CERR);
 
         //!
         //! Close the socket.
@@ -118,20 +118,20 @@ namespace ts {
 
         //!
         //! Preset local and remote socket addresses in string form.
-        //! - If only @a listener_address is not empty, the socket is set in listener mode.
-        //! - If only @a caller_address is not empty, the socket is set in caller mode.
-        //! - If both strings are not empty, the socket is set in rendezvous mode.
-        //! - If both strings are empty, the current mode of the socket is reset and local and/or
+        //! - If only @a listener is not empty, the socket is set in listener mode.
+        //! - If only @a caller is not empty, the socket is set in caller mode.
+        //! - If both addresses are not empty, the socket is set in rendezvous mode.
+        //! - If both addresses are empty, the current mode of the socket is reset and local and/or
         //!   remote addresses must be specified by command line arguments or through open().
-        //! @param [in] listener_address Local "[address:]port".
-        //! @param [in] caller_address Remote "address:port".
-        //! @param [in] local_interface Optional, can be empty. In caller mode, specify the local outgoing IP address.
+        //! @param [in] listener Local "[address:]port".
+        //! @param [in] caller Remote "address:port".
+        //! @param [in] local Optional, can be empty. In caller mode, specify the local outgoing IP address.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setAddresses(const UString& listener_address, const UString& caller_address, const UString& local_interface = UString(), Report& report = CERR)
+        bool setAddresses(const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local = IPAddress(), Report& report = CERR)
         {
-            return setAddressesInternal(listener_address, caller_address, local_interface, true, report);
+            return setAddressesInternal(listener, caller, local, true, report);
         }
 
         //!
@@ -229,6 +229,6 @@ namespace ts {
         Guts* _guts;
 
         // Internal verson of setAddresses().
-        bool setAddressesInternal(const UString& listener_address, const UString& caller_address, const UString& local_interface, bool reset, Report& report);
+        bool setAddressesInternal(const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local, bool reset, Report& report);
     };
 }

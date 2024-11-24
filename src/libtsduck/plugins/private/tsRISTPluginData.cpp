@@ -193,7 +193,7 @@ void ts::RISTPluginData::cleanup()
 // Analyze a list of options containing socket addresses.
 //----------------------------------------------------------------------------
 
-bool ts::RISTPluginData::getSocketValues(Args& args, IPv4SocketAddressVector& list, const UChar* option)
+bool ts::RISTPluginData::getSocketValues(Args& args, IPSocketAddressVector& list, const UChar* option)
 {
     const size_t count = args.count(option);
     list.resize(count);
@@ -273,7 +273,7 @@ int ts::RISTPluginData::ConnectCallback(void* arg, const char* peer_ip, uint16_t
     if (!data->_allowed.empty() || !data->_denied.empty()) {
 
         // Analyze remote peer socket address.
-        IPv4SocketAddress addr;
+        IPSocketAddress addr;
         if (!addr.resolve(UString::FromUTF8(peer_ip), data->_report)) {
             data->_report.error(u"invalid peer address: %s", peer_ip);
             return -1; // connection rejected

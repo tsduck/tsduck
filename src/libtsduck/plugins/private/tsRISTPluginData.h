@@ -14,8 +14,9 @@
 #pragma once
 #include "tsRIST.h"
 #include "tsLibRIST.h"
-#include "tsPlugin.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsArgs.h"
+#include "tsDuckContext.h"
+#include "tsIPSocketAddress.h"
 
 #if !defined(TS_NO_RIST)
 
@@ -78,13 +79,13 @@ namespace ts {
         UString  _secret {};
         int      _stats_interval = 0;
         UString  _stats_prefix {};
-        IPv4SocketAddressVector          _allowed {};
-        IPv4SocketAddressVector          _denied {};
+        IPSocketAddressVector            _allowed {};
+        IPSocketAddressVector            _denied {};
         UStringVector                    _peer_urls {};
         std::vector<::rist_peer_config*> _peer_configs {};
 
         // Analyze a list of options containing socket addresses.
-        bool getSocketValues(Args& args, IPv4SocketAddressVector& list, const UChar* option);
+        bool getSocketValues(Args& args, IPSocketAddressVector& list, const UChar* option);
 
         // Convert between RIST log level and TSDuck severity.
         static int RistLogToSeverity(::rist_log_level level);

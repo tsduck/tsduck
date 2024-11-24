@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractNetworkAddress.h"
-#include "tsIPv4Address.h"
+#include "tsIPAddress.h"
 
 namespace ts {
     //!
@@ -128,9 +128,9 @@ namespace ts {
         //!
         //! Get the multicast MAC address for a given IPv4 address.
         //! @param [in] ip IPv4 multicast address.
-        //! @return True if the @a ip is a multicast address, false otherwise.
+        //! @return True if the @a ip is an IPv4 multicast address, false otherwise.
         //!
-        bool toMulticast(const IPv4Address& ip);
+        bool toMulticast(const IPAddress& ip);
 
         //!
         //! Comparison "less than" operator.

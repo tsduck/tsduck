@@ -43,7 +43,8 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
         return false;
     }
 
-    // Set the IPV6_V6ONLY option on IPv6 sockets.
+    // Set the IPV6_V6ONLY option on IPv6 sockets. When gen is IPv6, force V6ONLY.
+    // When gen is Any, the socket is IPv6 but V6ONLY is zero, meaning accepting IPv4 clients.
     if (_gen != IP::v4) {
 #if defined(TS_WINDOWS)
         ::DWORD
@@ -52,7 +53,7 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
 #endif
         param = gen == IP::Any ? 0 : 1;
         if (::setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SysSockOptPointer(&param), sizeof(param)) != 0) {
-            // don't fail, just report a warning, will still work op IPv6
+            // don't fail, just report a warning, will still work on IPv6.
             report.warning(u"cannot set socket in %s mode: %s", _gen == IP::Any ? u"IPv4/IPv6" : u"IPv6-only", SysErrorCodeMessage());
         }
     }

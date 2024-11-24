@@ -13,8 +13,7 @@
 
 #pragma once
 #include "tsAbstractDownloadContentDescriptor.h"
-#include "tsIPv4SocketAddress.h"
-#include "tsIPv6SocketAddress.h"
+#include "tsIPSocketAddress.h"
 
 namespace ts {
     //!
@@ -26,19 +25,18 @@ namespace ts {
     {
     public:
         // NetworkDownloadContentDescriptor public members:
-        bool                             reboot = false;              //!< See ARIB STD-B21, 12.2.1.1.
-        bool                             add_on = false;              //!< See ARIB STD-B21, 12.2.1.1.
-        uint32_t                         component_size = 0;          //!< See ARIB STD-B21, 12.2.1.1.
-        uint8_t                          session_protocol_number = 0; //!< See ARIB STD-B21, 12.2.1.1.
-        uint32_t                         session_id = 0;              //!< See ARIB STD-B21, 12.2.1.1.
-        uint8_t                          retry = 0;                   //!< See ARIB STD-B21, 12.2.1.1.
-        uint32_t                         connect_timer = 0;           //!< 24 bits. See ARIB STD-B21, 12.2.1.1.
-        std::optional<IPv4SocketAddress> ipv4 {};                     //!< Exactly one of ipv4, ipv6, url must be set.
-        std::optional<IPv6SocketAddress> ipv6 {};                     //!< Exactly one of ipv4, ipv6, url must be set.
-        std::optional<UString>           url {};                      //!< Exactly one of ipv4, ipv6, url must be set.
-        CompatibilityDescriptor          compatibility_descriptor {}; //!< Compatibility descriptor.
-        ByteBlock                        private_data {};             //!< Private data.
-        std::optional<TextInfo>          text_info {};                //!< Optional text info.
+        bool                           reboot = false;              //!< See ARIB STD-B21, 12.2.1.1.
+        bool                           add_on = false;              //!< See ARIB STD-B21, 12.2.1.1.
+        uint32_t                       component_size = 0;          //!< See ARIB STD-B21, 12.2.1.1.
+        uint8_t                        session_protocol_number = 0; //!< See ARIB STD-B21, 12.2.1.1.
+        uint32_t                       session_id = 0;              //!< See ARIB STD-B21, 12.2.1.1.
+        uint8_t                        retry = 0;                   //!< See ARIB STD-B21, 12.2.1.1.
+        uint32_t                       connect_timer = 0;           //!< 24 bits. See ARIB STD-B21, 12.2.1.1.
+        std::optional<IPSocketAddress> ip {};                       //!< Exactly one of ip or url must be set.
+        std::optional<UString>         url {};                      //!< Exactly one of ip or url must be set.
+        CompatibilityDescriptor        compatibility_descriptor {}; //!< Compatibility descriptor.
+        ByteBlock                      private_data {};             //!< Private data.
+        std::optional<TextInfo>        text_info {};                //!< Optional text info.
 
         //!
         //! Default constructor.

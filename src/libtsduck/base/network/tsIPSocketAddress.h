@@ -41,6 +41,13 @@ namespace ts {
         static const IPSocketAddress AnySocketAddress6;  //!< Wildcard socket address, unspecified IPv6 address and port.
 
         //!
+        //! Get the "any socket address" template for a given generation of IP protocols.
+        //! @param [in] gen Generation of IP protocols.
+        //! @return A constant reference to the corresponding "any socket address".
+        //!
+        static const IPSocketAddress& AnySocketAddress(IP gen) { return gen == IP::v6 ? AnySocketAddress6 : AnySocketAddress4; }
+
+        //!
         //! Default constructor
         //! The default initial value is AnySocketAddress4.
         //!

@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsSection.h"
-#include "tsIPv4SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tsMACAddress.h"
 
 namespace ts {
@@ -21,7 +21,7 @@ namespace ts {
     //! Representation of a packet for MPE (Multi-Protocol Encapsulation).
     //!
     //! This implementation has the following restrictions:
-    //! - The encapsulated datagrams can be UDP/IP only.
+    //! - The encapsulated datagrams can be UDP/IPv4 only.
     //! - LLC/SNAP encapsulation is not supported.
     //! - The datagran and address scrambling is not supported.
     //! - Each datagram shall fit into one section.
@@ -146,25 +146,25 @@ namespace ts {
         //! Get the source IP address.
         //! @return The source IP address.
         //!
-        IPv4Address sourceIPAddress() const;
+        IPAddress sourceIPAddress() const;
 
         //!
         //! Set the source IP address.
         //! @param [in] ip The source IP address.
         //!
-        void setSourceIPAddress(const IPv4Address& ip);
+        void setSourceIPAddress(const IPAddress& ip);
 
         //!
         //! Get the destination IP address.
         //! @return The destination IP address.
         //!
-        IPv4Address destinationIPAddress() const;
+        IPAddress destinationIPAddress() const;
 
         //!
         //! Set the destination IP address.
         //! @param [in] ip The destination IP address.
         //!
-        void setDestinationIPAddress(const IPv4Address& ip);
+        void setDestinationIPAddress(const IPAddress& ip);
 
         //!
         //! Get the source UDP port.
@@ -194,25 +194,25 @@ namespace ts {
         //! Get the source socket address.
         //! @return The source socket address.
         //!
-        IPv4SocketAddress sourceSocket() const;
+        IPSocketAddress sourceSocket() const;
 
         //!
         //! Set the source socket address.
         //! @param [in] sock The source socket address.
         //!
-        void setSourceSocket(const IPv4SocketAddress& sock);
+        void setSourceSocket(const IPSocketAddress& sock);
 
         //!
         //! Get the destination socket address.
         //! @return The destination socket address.
         //!
-        IPv4SocketAddress destinationSocket() const;
+        IPSocketAddress destinationSocket() const;
 
         //!
         //! Set the destination socket address.
         //! @param [in] sock The destination socket address.
         //!
-        void setDestinationSocket(const IPv4SocketAddress& sock);
+        void setDestinationSocket(const IPSocketAddress& sock);
 
         //!
         //! Access to the binary content of the UDP message.

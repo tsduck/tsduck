@@ -15,8 +15,7 @@
 #include "tsxmlNode.h"
 #include "tsxmlAttribute.h"
 #include "tsByteBlock.h"
-#include "tsIPv4Address.h"
-#include "tsIPv6Address.h"
+#include "tsIPAddress.h"
 #include "tsMACAddress.h"
 #include "tsIntegerUtils.h"
 
@@ -488,21 +487,11 @@ namespace ts {
             }
 
             //!
-            //! Set an IPv4 address attribute of an XML element in "x.x.x.x" format.
+            //! Set an IPv4 or IPv6 address attribute of an XML element.
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
             //!
-            void setIPv4Attribute(const UString& name, const IPv4Address& value)
-            {
-                setAttribute(name, value.toString());
-            }
-
-            //!
-            //! Set an IPv6 address attribute of an XML element.
-            //! @param [in] name Attribute name.
-            //! @param [in] value Attribute value.
-            //!
-            void setIPv6Attribute(const UString& name, const IPv6Address& value)
+            void setIPAttribute(const UString& name, const IPAddress& value)
             {
                 setAttribute(name, value.toString());
             }
@@ -924,24 +913,14 @@ namespace ts {
             bool getOptionalTimeAttribute(std::optional<cn::duration<Rep,Period>>& value, const UString& name) const;
 
             //!
-            //! Get an IPv4 address attribute of an XML element in "x.x.x.x" format or host name.
+            //! Get an IPv4 or IPv6 address attribute of an XML element in numerical format or host name.
             //! @param [out] value Returned value of the attribute.
             //! @param [in] name Name of the attribute.
             //! @param [in] required If true, generate an error if the attribute is not found.
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            bool getIPv4Attribute(IPv4Address& value, const UString& name, bool required = false, const IPv4Address& defValue = IPv4Address()) const;
-
-            //!
-            //! Get an IPv6 address attribute of an XML element.
-            //! @param [out] value Returned value of the attribute.
-            //! @param [in] name Name of the attribute.
-            //! @param [in] required If true, generate an error if the attribute is not found.
-            //! @param [in] defValue Default value to return if the attribute is not present.
-            //! @return True on success, false on error.
-            //!
-            bool getIPv6Attribute(IPv6Address& value, const UString& name, bool required = false, const IPv6Address& defValue = IPv6Address()) const;
+            bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& defValue = IPAddress()) const;
 
             //!
             //! Get a MAC address attribute of an XML element in "x:x:x:x:x:x" format.

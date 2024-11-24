@@ -86,11 +86,11 @@ namespace ts {
             virtual void main() override;
 
         private:
-            MPEInjectPlugin* const _plugin;    // Parent plugin.
-            IPv4SocketAddress _new_source {};  // Masquerade source socket in MPE section.
-            IPv4SocketAddress _new_dest {};    // Masquerade destination socket in MPE section.
-            UDPReceiver       _sock;           // Incoming socket with associated command line options.
-            size_t            _index;          // Receiver index.
+            MPEInjectPlugin* const _plugin;  // Parent plugin.
+            IPSocketAddress _new_source {};  // Masquerade source socket in MPE section.
+            IPSocketAddress _new_dest {};    // Masquerade destination socket in MPE section.
+            UDPReceiver     _sock;           // Incoming socket with associated command line options.
+            size_t          _index;          // Receiver index.
         };
     };
 }
@@ -212,10 +212,10 @@ ts::MPEInjectPlugin::ReceiverThread::ReceiverThread(MPEInjectPlugin* plugin, con
         _plugin->error(u"too many --new-source options");
     }
     if (dst_count > 0) {
-        _plugin->getSocketValue(_new_dest, u"new-destination", IPv4SocketAddress(), std::min(_index, dst_count - 1));
+        _plugin->getSocketValue(_new_dest, u"new-destination", IPSocketAddress(), std::min(_index, dst_count - 1));
     }
     if (src_count > 0) {
-        _plugin->getSocketValue(_new_source, u"new-source", IPv4SocketAddress(), std::min(_index, src_count - 1));
+        _plugin->getSocketValue(_new_source, u"new-source", IPSocketAddress(), std::min(_index, src_count - 1));
     }
 }
 
@@ -332,8 +332,8 @@ void ts::MPEInjectPlugin::ReceiverThread::main()
     size_t overflow_count = 0;
 
     size_t insize;
-    IPv4SocketAddress sender;
-    IPv4SocketAddress destination;
+    IPSocketAddress sender;
+    IPSocketAddress destination;
     ByteBlock buffer(MAX_IP_SIZE);
 
     // Loop on message reception until a receive error (probably an end of execution).

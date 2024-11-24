@@ -306,6 +306,24 @@ void ts::IPAddress::setAddress(const IPAddress& other)
     }
 }
 
+// Set the IP address from an address in binary format.
+void ts::IPAddress::setAddress(const uint8_t *addr, size_t size)
+{
+    checkCompatibility(size == BYTES6 ? IP::v6 : IP::v4);
+    if (addr != nullptr && size == BYTES6) {
+        _gen = IP::v6;
+        Copy6(_bytes6, addr);
+    }
+    else if (addr != nullptr && size == BYTES4) {
+        _gen = IP::v4;
+        _addr4 = GetUInt32BE(addr);
+    }
+    else {
+        _gen = IP::v4;
+        _addr4 = 0;
+    }
+}
+
 // Set IPv4 address.
 void ts::IPAddress::setAddress4(uint32_t addr)
 {
@@ -568,6 +586,7 @@ bool ts::IPAddress::match(const IPAddress& other) const
 bool ts::IPAddress::isIPv4Mapped() const
 {
     // The address must be "::ffff::a.b.c.d" or "0000:0000:0000:0000:0000:ffff:XXXX:XXXX".
+    // Note that we use operations which are endian-neutral.
     return _gen == IP::v6 &&
            *reinterpret_cast<const uint64_t*>(_bytes6) == 0 &&
            *reinterpret_cast<const uint16_t*>(_bytes6 + 8) == 0 &&
@@ -597,6 +616,8 @@ bool ts::IPAddress::convert(IP gen)
         }
         else {
             _gen = IP::v6;
+            // Prefix of IPv4-mapped IPv6 addresses.
+            // Note that we use operations which are endian-neutral.
             *reinterpret_cast<uint64_t*>(_bytes6) = 0;
             *reinterpret_cast<uint16_t*>(_bytes6 + 8) = 0;
             *reinterpret_cast<uint16_t*>(_bytes6 + 10) = 0xFFFF;
@@ -630,23 +651,31 @@ bool ts::IPAddress::convert(IP gen)
 
 ts::UString ts::IPAddress::toFullString() const
 {
-    if (_gen == IP::v6) {
-        // All bytes without compression.
+    if (_gen == IP::v4) {
+        // One single format in IPv4.
+        return IPAddress::toString();
+    }
+    else {
+        // IPv6: all bytes without compression or reinterpretation.
         return UString::Format(u"%04x:%04x:%04x:%04x:%04x:%04x:%04x:%04x",
                                GetUInt16(_bytes6), GetUInt16(_bytes6 + 2),
                                GetUInt16(_bytes6 + 4), GetUInt16(_bytes6 + 6),
                                GetUInt16(_bytes6 + 8), GetUInt16(_bytes6 + 10),
                                GetUInt16(_bytes6 + 12), GetUInt16(_bytes6 + 14));
     }
-    else {
-        // One single format in IPv4.
-        return IPAddress::toString();
-    }
 }
 
 ts::UString ts::IPAddress::toString() const
 {
-    if (_gen == IP::v6) {
+    UString result;
+    if (_gen == IP::v4) {
+        result.format(u"%d.%d.%d.%d", (_addr4 >> 24) & 0xFF, (_addr4 >> 16) & 0xFF, (_addr4 >> 8) & 0xFF, _addr4 & 0xFF);
+    }
+    else if (isIPv4Mapped()) {
+        const uint32_t addr4 = GetUInt32BE(_bytes6 + 12);
+        result.format(u"::ffff:%d.%d.%d.%d", (addr4 >> 24) & 0xFF, (addr4 >> 16) & 0xFF, (addr4 >> 8) & 0xFF, addr4 & 0xFF);
+    }
+    else {
         // Find the longest suite of zero hexlets.
         size_t zCountMax = 0; // in bytes
         size_t zIndexMax = 0; // in bytes from beginning
@@ -666,7 +695,6 @@ ts::UString ts::IPAddress::toString() const
         }
 
         // Build the string. Loop on hexlets, skipping the suite of zeroes.
-        UString result;
         for (size_t i = 0; i < BYTES6; ) {
             if (i == zIndexMax && zCountMax > 2) {
                 // At the longest suite of zeroes, longer than 2 zeroes (1 hexlet).
@@ -682,11 +710,8 @@ ts::UString ts::IPAddress::toString() const
                 i += 2;
             }
         }
-        return result;
     }
-    else {
-        return UString::Format(u"%d.%d.%d.%d", (_addr4 >> 24) & 0xFF, (_addr4 >> 16) & 0xFF, (_addr4 >> 8) & 0xFF, _addr4 & 0xFF);
-    }
+    return result;
 }
 
 
@@ -716,13 +741,35 @@ bool ts::IPAddress::decode6(const UString& name)
     // Split into fields. It there is a "::", there will be an empty field.
     UStringVector fields;
     name.split(fields, u':', true, false);
-
-    // We did not remove empty fields, the vector cannot be empty.
-    assert(!fields.empty());
+    const size_t fcount = fields.size();
 
     // There must be at least 3 fields, max 8.
-    // Min: there must be 8 fields without ".." and "::" creates 3 fields.
-    bool ok = fields.size() >= 3 && fields.size() <= 8;
+    // Min: there must be 8 fields when "::" is used, and "::" alone creates 3 fields.
+    bool ok = fcount >= 3 && fcount <= 8;
+
+    // Try to interpret IPv4-mapped addresses.
+    // The last field must be an IPv4 address. The previous one must be "ffff". All others must be zero or empty.
+    bool v4map = ok;
+    uint32_t hexlet = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0;
+    for (size_t i = 0; v4map && i < fcount - 2; ++i) {
+        v4map = fields[i].empty() || (fields[i].scan(u"%x", &hexlet) && hexlet == 0);
+    }
+    if (v4map &&
+        (fields[fcount - 2].scan(u"%x", &hexlet) && hexlet == 0xFFFF) &&
+        (fields[fcount - 1].scan(u"%d.%d.%d.%d", &b1, &b2, &b3, &b4) && b1 < 256 && b2 < 256 && b3 < 256 && b4 < 256))
+    {
+        // This is an IPv4 mapped address.
+        _gen = IP::v6;
+        Zero6(_bytes6);
+        _bytes6[10] = _bytes6[11] = 0xFF;
+        _bytes6[12] = uint8_t(b1);
+        _bytes6[13] = uint8_t(b2);
+        _bytes6[14] = uint8_t(b3);
+        _bytes6[15] = uint8_t(b4);
+        return true;
+    }
+
+    // Full IPv6 address: Analyze all fields one by one.
     size_t first = 0;
     size_t last = fields.size() - 1;
 
@@ -759,10 +806,10 @@ bool ts::IPAddress::decode6(const UString& name)
         }
         else {
             // Found a standard hexlet.
-            uint16_t hl = 0; // hexlet
-            ok = fields[i].size() <= 4 && fields[i].scan(u"%x", &hl);
+            hexlet = 0;
+            ok = fields[i].size() <= 4 && fields[i].scan(u"%x", &hexlet);
             if (ok) {
-                PutUInt16(_bytes6 + bytesIndex, hl);
+                PutUInt16(_bytes6 + bytesIndex, hexlet);
                 bytesIndex += 2;
             }
         }

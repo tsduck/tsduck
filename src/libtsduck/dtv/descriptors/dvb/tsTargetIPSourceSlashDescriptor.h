@@ -13,8 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPv4Address.h"
-#include "tsIPUtils.h"
+#include "tsIPAddress.h"
 
 namespace ts {
     //!
@@ -36,10 +35,10 @@ namespace ts {
         {
         public:
             Address() = default;                      //!< Constructor
-            IPv4Address IPv4_source_addr {};          //!< IPv4 source address.
-            uint8_t     IPv4_source_slash_mask = 0;   //!< Number of bits in source network mask.
-            IPv4Address IPv4_dest_addr {};            //!< IPv4 destination address.
-            uint8_t     IPv4_dest_slash_mask = 0;     //!< Number of bits in destination network mask.
+            IPAddress IPv4_source_addr {};          //!< IPv4 source address.
+            uint8_t   IPv4_source_slash_mask = 0;   //!< Number of bits in source network mask.
+            IPAddress IPv4_dest_addr {};            //!< IPv4 destination address.
+            uint8_t   IPv4_dest_slash_mask = 0;     //!< Number of bits in destination network mask.
         };
 
         // TargetIPSourceSlashDescriptor public members:

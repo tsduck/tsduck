@@ -234,7 +234,7 @@ void ts::MPEPacket::createSection(Section& section) const
     // Clear previous content of section object.
     section.clear();
 
-    // Leaave an empty section if this packet is invalid.
+    // Leave an empty section if this packet is invalid.
     if (!_is_valid) {
         return;
     }
@@ -315,29 +315,32 @@ void ts::MPEPacket::configureUDP(bool force, size_t udpSize)
 // Get/set the source IP address.
 //----------------------------------------------------------------------------
 
-ts::IPv4Address ts::MPEPacket::sourceIPAddress() const
+ts::IPAddress ts::MPEPacket::sourceIPAddress() const
 {
-    IPv4Address addr;
+    IPAddress addr;
     if (_is_valid) {
         assert(_datagram != nullptr);
         assert(_datagram->size() >= IPv4_MIN_HEADER_SIZE);
-        addr.setAddress(GetUInt32(_datagram->data() +  IPv4_SRC_ADDR_OFFSET));
+        addr.setAddress4(GetUInt32(_datagram->data() + IPv4_SRC_ADDR_OFFSET));
     }
     return addr;
 }
 
-void ts::MPEPacket::setSourceIPAddress(const IPv4Address& ip)
+void ts::MPEPacket::setSourceIPAddress(const IPAddress& ip)
 {
     // Make sure we have a valid datagram.
     configureUDP(false, 0);
     assert(_datagram != nullptr);
     assert(_datagram->size() >= IPv4_MIN_HEADER_SIZE);
 
-    // Replace address.
-    PutUInt32(_datagram->data() + IPv4_SRC_ADDR_OFFSET, ip.address4());
+    // Support IPv4 only for now.
+    if (ip.generation() == IP::v4) {
+        // Replace address.
+        PutUInt32(_datagram->data() + IPv4_SRC_ADDR_OFFSET, ip.address4());
 
-    // Recompute IP header checksum.
-    IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
+        // Recompute IP header checksum.
+        IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
+    }
 }
 
 
@@ -345,29 +348,32 @@ void ts::MPEPacket::setSourceIPAddress(const IPv4Address& ip)
 // Get/set the destination IP address.
 //----------------------------------------------------------------------------
 
-ts::IPv4Address ts::MPEPacket::destinationIPAddress() const
+ts::IPAddress ts::MPEPacket::destinationIPAddress() const
 {
-    IPv4Address addr;
+    IPAddress addr;
     if (_is_valid) {
         assert(_datagram != nullptr);
         assert(_datagram->size() >= IPv4_MIN_HEADER_SIZE);
-        addr.setAddress(GetUInt32(_datagram->data() +  IPv4_DEST_ADDR_OFFSET));
+        addr.setAddress4(GetUInt32(_datagram->data() + IPv4_DEST_ADDR_OFFSET));
     }
     return addr;
 }
 
-void ts::MPEPacket::setDestinationIPAddress(const IPv4Address& ip)
+void ts::MPEPacket::setDestinationIPAddress(const IPAddress& ip)
 {
     // Make sure we have a valid datagram.
     configureUDP(false, 0);
     assert(_datagram != nullptr);
     assert(_datagram->size() >= IPv4_MIN_HEADER_SIZE);
 
-    // Replace address.
-    PutUInt32(_datagram->data() + IPv4_DEST_ADDR_OFFSET, ip.address4());
+    // Support IPv4 only for now.
+    if (ip.generation() == IP::v4) {
+        // Replace address.
+        PutUInt32(_datagram->data() + IPv4_DEST_ADDR_OFFSET, ip.address4());
 
-    // Recompute IP header checksum.
-    IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
+        // Recompute IP header checksum.
+        IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
+    }
 }
 
 
@@ -416,12 +422,12 @@ void ts::MPEPacket::setDestinationUDPPort(uint16_t port)
 // Get/set the source/destination socket address.
 //----------------------------------------------------------------------------
 
-ts::IPv4SocketAddress ts::MPEPacket::sourceSocket() const
+ts::IPSocketAddress ts::MPEPacket::sourceSocket() const
 {
-    return IPv4SocketAddress(sourceIPAddress(), sourceUDPPort());
+    return IPSocketAddress(sourceIPAddress(), sourceUDPPort());
 }
 
-void ts::MPEPacket::setSourceSocket(const IPv4SocketAddress& sock)
+void ts::MPEPacket::setSourceSocket(const IPSocketAddress& sock)
 {
     if (sock.hasAddress()) {
         setSourceIPAddress(sock);
@@ -431,12 +437,12 @@ void ts::MPEPacket::setSourceSocket(const IPv4SocketAddress& sock)
     }
 }
 
-ts::IPv4SocketAddress ts::MPEPacket::destinationSocket() const
+ts::IPSocketAddress ts::MPEPacket::destinationSocket() const
 {
-    return IPv4SocketAddress(destinationIPAddress(), destinationUDPPort());
+    return IPSocketAddress(destinationIPAddress(), destinationUDPPort());
 }
 
-void ts::MPEPacket::setDestinationSocket(const IPv4SocketAddress& sock)
+void ts::MPEPacket::setDestinationSocket(const IPSocketAddress& sock)
 {
     if (sock.hasAddress()) {
         setDestinationIPAddress(sock);

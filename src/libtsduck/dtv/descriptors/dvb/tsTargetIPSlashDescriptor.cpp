@@ -50,9 +50,14 @@ ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor(DuckContext& duck, const De
 
 void ts::TargetIPSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (const auto& it : addresses) {
-        buf.putUInt32(it.IPv4_addr.address4());
-        buf.putUInt8(it.IPv4_slash_mask);
+    for (const auto& addr : addresses) {
+        if (addr.IPv4_addr.generation() == IP::v4) {
+            buf.putUInt32(addr.IPv4_addr.address4());
+            buf.putUInt8(addr.IPv4_slash_mask);
+        }
+        else {
+            buf.setUserError();
+        }
     }
 }
 
@@ -65,7 +70,7 @@ void ts::TargetIPSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
         Address addr;
-        addr.IPv4_addr = IPv4Address(buf.getUInt32());
+        addr.IPv4_addr = IPAddress(buf.getUInt32());
         addr.IPv4_slash_mask = buf.getUInt8();
         addresses.push_back(addr);
     }
@@ -79,7 +84,7 @@ void ts::TargetIPSlashDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(5)) {
-        disp << margin << "Address/mask: " << IPv4Address(buf.getUInt32());
+        disp << margin << "Address/mask: " << IPAddress(buf.getUInt32());
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
 }
@@ -93,7 +98,7 @@ void ts::TargetIPSlashDescriptor::buildXML(DuckContext& duck, xml::Element* root
 {
     for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPv4Attribute(u"IPv4_addr", it.IPv4_addr);
+        e->setIPAttribute(u"IPv4_addr", it.IPv4_addr);
         e->setIntAttribute(u"IPv4_slash_mask", it.IPv4_slash_mask);
     }
 }
@@ -110,7 +115,7 @@ bool ts::TargetIPSlashDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        ok = children[i]->getIPv4Attribute(addr.IPv4_addr, u"IPv4_addr", true) &&
+        ok = children[i]->getIPAttribute(addr.IPv4_addr, u"IPv4_addr", true) &&
              children[i]->getIntAttribute(addr.IPv4_slash_mask, u"IPv4_slash_mask", true);
         addresses.push_back(addr);
     }

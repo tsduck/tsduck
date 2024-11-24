@@ -28,10 +28,10 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
     _sock.defineArgs(*this);
 
     // These options are legacy, now use --listener and/or --caller.
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, IPSOCKADDR, 0, 1);
     help(u"", u"Remote address:port. This is a legacy parameter, now use --caller.");
 
-    option(u"rendezvous", 0, STRING);
+    option(u"rendezvous", 0, IPSOCKADDR_OA);
     help(u"rendezvous", u"[address:]port", u"Local address and port. This is a legacy option, now use --listener.");
 }
 
@@ -42,9 +42,15 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 
 bool ts::SRTInputPlugin::getOptions()
 {
+    // Legacy options.
+    IPSocketAddress remote;
+    IPSocketAddress rendezvous;
+    getSocketValue(remote, u"");
+    getSocketValue(rendezvous, u"rendezvous");
+
     // Get command line arguments for superclass and socket.
     return AbstractDatagramInputPlugin::getOptions() &&
-           _sock.setAddresses(value(u"rendezvous"), value(u""), UString(), *this) &&
+           _sock.setAddresses(rendezvous, remote, IPAddress(), *this) &&
            _sock.loadArgs(duck, *this);
 }
 

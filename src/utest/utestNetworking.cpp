@@ -10,15 +10,14 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsIPv4Packet.h"
-#include "tsIPv4Address.h"
-#include "tsIPv6Address.h"
-#include "tsMACAddress.h"
-#include "tsIPv4SocketAddress.h"
-#include "tsIPv6SocketAddress.h"
+#include "tsIPAddress.h"
+#include "tsIPAddressMask.h"
+#include "tsIPSocketAddress.h"
 #include "tsTCPConnection.h"
 #include "tsTCPServer.h"
 #include "tsUDPSocket.h"
+#include "tsMACAddress.h"
+#include "tsIPv4Packet.h"
 #include "tsNullReport.h"
 #include "tsIPUtils.h"
 #include "tsCerrReport.h"
@@ -36,6 +35,7 @@ class NetworkingTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(IPv4AddressConstructors);
     TSUNIT_DECLARE_TEST(IPv4Address);
     TSUNIT_DECLARE_TEST(IPv6Address);
+    TSUNIT_DECLARE_TEST(IPAddressMask);
     TSUNIT_DECLARE_TEST(MACAddress);
     TSUNIT_DECLARE_TEST(LocalHost);
     TSUNIT_DECLARE_TEST(GetLocalIPAddresses);
@@ -193,8 +193,9 @@ TSUNIT_DEFINE_TEST(IPv4Address)
 
 TSUNIT_DEFINE_TEST(IPv6Address)
 {
-    ts::IPv6Address a1;
+    ts::IPAddress a1(ts::IP::v6);
     TSUNIT_EQUAL(u"IPv6", a1.familyName());
+    TSUNIT_EQUAL(ts::IP::v6, a1.generation());
     TSUNIT_ASSERT(!a1.hasAddress());
     TSUNIT_ASSERT(!a1.isMulticast());
 
@@ -219,6 +220,7 @@ TSUNIT_DEFINE_TEST(IPv6Address)
 
     a1.setAddress6(0, 1, 2, 3, 4, 5, 6, 7);
     TSUNIT_ASSERT(a1.hasAddress());
+    TSUNIT_ASSERT(!a1.isIPv4Mapped());
     TSUNIT_EQUAL(0x0000000100020003, a1.networkPrefix6());
     TSUNIT_EQUAL(0x0004000500060007, a1.interfaceIdentifier6());
     TSUNIT_EQUAL(u"0:1:2:3:4:5:6:7", a1.toString());
@@ -226,6 +228,7 @@ TSUNIT_DEFINE_TEST(IPv6Address)
 
     a1.setAddress6(0x12, 0x345, 0x6789, 0xFFFF, 0, 0, 0, 0xBEEF);
     TSUNIT_ASSERT(a1.hasAddress());
+    TSUNIT_ASSERT(!a1.isIPv4Mapped());
     TSUNIT_EQUAL(0x001203456789FFFF, a1.networkPrefix6());
     TSUNIT_EQUAL(0x000000000000BEEF, a1.interfaceIdentifier6());
     TSUNIT_EQUAL(u"12:345:6789:ffff::beef", a1.toString());
@@ -233,10 +236,79 @@ TSUNIT_DEFINE_TEST(IPv6Address)
 
     TSUNIT_ASSERT(a1.resolve(u"fe80::93a3:dea0:2108:b81e", CERR));
     TSUNIT_ASSERT(a1.hasAddress());
+    TSUNIT_ASSERT(!a1.isIPv4Mapped());
     TSUNIT_EQUAL(0xFE80000000000000, a1.networkPrefix6());
     TSUNIT_EQUAL(0x93A3DEA02108B81E, a1.interfaceIdentifier6());
     TSUNIT_EQUAL(u"fe80::93a3:dea0:2108:b81e", a1.toString());
     TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", a1.toFullString());
+
+    TSUNIT_ASSERT(a1.convert(ts::IP::Any));
+    TSUNIT_ASSERT(a1.convert(ts::IP::v6));
+    TSUNIT_ASSERT(!a1.convert(ts::IP::v4));
+    TSUNIT_EQUAL(u"IPv6", a1.familyName());
+    TSUNIT_EQUAL(ts::IP::v6, a1.generation());
+
+    ts::IPAddress a2;
+    TSUNIT_ASSERT(a2.resolve(u"0:0::ffff:12.13.14.15", CERR));
+    TSUNIT_ASSERT(a2.hasAddress());
+    TSUNIT_EQUAL(u"IPv6", a2.familyName());
+    TSUNIT_EQUAL(ts::IP::v6, a2.generation());
+    TSUNIT_ASSERT(a2.isIPv4Mapped());
+    TSUNIT_EQUAL(0x0000000000000000, a2.networkPrefix6());
+    TSUNIT_EQUAL(0x0000FFFF0C0D0E0F, a2.interfaceIdentifier6());
+    TSUNIT_EQUAL(u"::ffff:12.13.14.15", a2.toString());
+    TSUNIT_EQUAL(u"0000:0000:0000:0000:0000:ffff:0c0d:0e0f", a2.toFullString());
+
+    TSUNIT_ASSERT(a2.convert(ts::IP::Any));
+    TSUNIT_ASSERT(a2.convert(ts::IP::v6));
+    TSUNIT_ASSERT(a2.convert(ts::IP::v4));
+
+    TSUNIT_ASSERT(a2.hasAddress());
+    TSUNIT_EQUAL(u"IPv4", a2.familyName());
+    TSUNIT_EQUAL(ts::IP::v4, a2.generation());
+    TSUNIT_EQUAL(u"12.13.14.15", a2.toString());
+    TSUNIT_EQUAL(u"12.13.14.15", a2.toFullString());
+    TSUNIT_EQUAL(0x0C0D0E0F, a2.address4());
+
+    ts::IPAddress a3(0x12345678);
+    TSUNIT_EQUAL(u"IPv4", a3.familyName());
+    TSUNIT_EQUAL(ts::IP::v4, a3.generation());
+    TSUNIT_EQUAL(u"18.52.86.120", a3.toString());
+    TSUNIT_EQUAL(u"18.52.86.120", a3.toFullString());
+    TSUNIT_EQUAL(0x12345678, a3.address4());
+
+    TSUNIT_ASSERT(a3.convert(ts::IP::Any));
+    TSUNIT_ASSERT(a3.convert(ts::IP::v4));
+    TSUNIT_ASSERT(a3.convert(ts::IP::v6));
+
+    TSUNIT_EQUAL(u"IPv6", a3.familyName());
+    TSUNIT_EQUAL(ts::IP::v6, a3.generation());
+    TSUNIT_ASSERT(a3.isIPv4Mapped());
+    TSUNIT_EQUAL(0x0000000000000000, a3.networkPrefix6());
+    TSUNIT_EQUAL(0x0000FFFF12345678, a3.interfaceIdentifier6());
+    TSUNIT_EQUAL(u"::ffff:18.52.86.120", a3.toString());
+    TSUNIT_EQUAL(u"0000:0000:0000:0000:0000:ffff:1234:5678", a3.toFullString());
+}
+
+TSUNIT_DEFINE_TEST(IPAddressMask)
+{
+    ts::IPAddressMask a1(ts::IPAddress(u"1.2.4.5", CERR), 23);
+    TSUNIT_ASSERT(a1.hasAddress());
+    TSUNIT_EQUAL(u"IPv4", a1.familyName());
+    TSUNIT_EQUAL(ts::IP::v4, a1.generation());
+    TSUNIT_EQUAL(0x01020405, a1.address4());
+    TSUNIT_EQUAL(23, a1.prefixSize());
+    TSUNIT_EQUAL(u"255.255.254.0", a1.mask().toString());
+    TSUNIT_EQUAL(u"1.2.5.255", a1.broadcastAddress().toString());
+    TSUNIT_EQUAL(u"1.2.4.5/23", a1.toString());
+    TSUNIT_EQUAL(u"1.2.4.5/23", a1.toFullString());
+
+    a1.setMask(ts::IPAddress(255, 128, 0, 0));
+    TSUNIT_EQUAL(9, a1.prefixSize());
+    TSUNIT_EQUAL(u"255.128.0.0", a1.mask().toString());
+    TSUNIT_EQUAL(u"1.127.255.255", a1.broadcastAddress().toString());
+    TSUNIT_EQUAL(u"1.2.4.5/9", a1.toString());
+    TSUNIT_EQUAL(u"1.2.4.5/9", a1.toFullString());
 }
 
 TSUNIT_DEFINE_TEST(MACAddress)
@@ -506,9 +578,10 @@ TSUNIT_DEFINE_TEST(IPv6SocketAddress)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
-    ts::IPv6SocketAddress sa1;
+    ts::IPSocketAddress sa1(ts::IP::v6);
     TSUNIT_ASSERT(!sa1.hasAddress());
     TSUNIT_ASSERT(!sa1.hasPort());
+    TSUNIT_EQUAL(ts::IP::v6, sa1.generation());
 
     sa1.setAddress6(0, 1, 2, 3, 4, 5, 6, 7);
     sa1.setPort(1234);
@@ -520,9 +593,10 @@ TSUNIT_DEFINE_TEST(IPv6SocketAddress)
     TSUNIT_EQUAL(u"[0000:0001:0002:0003:0004:0005:0006:0007]:1234", sa1.toFullString());
     TSUNIT_EQUAL(1234, sa1.port());
 
-    ts::IPv6SocketAddress sa2(0, 1, 2, 3, 4, 5, 6, 7, 1235);
+    ts::IPSocketAddress sa2(0, 1, 2, 3, 4, 5, 6, 7, 1235, true);
     TSUNIT_ASSERT(sa2.hasAddress());
     TSUNIT_ASSERT(sa2.hasPort());
+    TSUNIT_EQUAL(ts::IP::v6, sa2.generation());
     TSUNIT_EQUAL(1235, sa2.port());
     TSUNIT_ASSERT(sa1 != sa2);
     TSUNIT_ASSERT(!(sa1 == sa2));

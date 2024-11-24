@@ -13,8 +13,7 @@ bool tsDektecArgsUtilsIsEmpty = true; // Avoid warning about empty module.
 #else
 
 #include "tsDektecArgsUtils.h"
-#include "tsIPv4SocketAddress.h"
-#include "tsIPv6SocketAddress.h"
+#include "tsIPSocketAddress.h"
 #include "tsMemory.h"
 
 
@@ -348,10 +347,10 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
     }
 
     // Get IP addresses and ports. Valid for receive and transmit.
-    IPv4Address ip4;
-    IPv4SocketAddress sock4;
-    IPv6Address ip6;
-    IPv6SocketAddress sock6;
+    IPAddress ip4(IP::v4);
+    IPSocketAddress sock4(IP::v4);
+    IPAddress ip6(IP::v6);
+    IPSocketAddress sock6(IP::v6);
     if ((ipv4 && !DecodeAddress(args, u"ip4", 0, sock4, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||
         (ipv4 && !DecodeAddress(args, u"ip4", 1, sock4, dtpars.m_Ip2, sizeof(dtpars.m_Ip2), &dtpars.m_Port2, !receive, true)) ||
         (ipv6 && !DecodeAddress(args, u"ip6", 0, sock6, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||

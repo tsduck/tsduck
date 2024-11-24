@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPv4Address.h"
+#include "tsIPAddress.h"
 
 namespace ts {
     //!
@@ -30,8 +30,8 @@ namespace ts {
     {
     public:
         // TargetIPAddressDescriptor public members:
-        IPv4Address       IPv4_addr_mask {};  //!< IPv4 address mask
-        IPv4AddressVector IPv4_addr {};       //!< IPv4 addresses
+        IPAddress       IPv4_addr_mask {};  //!< IPv4 address mask
+        IPAddressVector IPv4_addr {};       //!< IPv4 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

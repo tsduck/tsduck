@@ -389,6 +389,23 @@ namespace ts {
         void setAddress(const IPAddress& other);
 
         //!
+        //! Set the IP address from an address in binary format.
+        //! Useful for subclasses to assign the address part only.
+        //! @param [in] addr Address of the memory area containing the address in binary format.
+        //! @param [in] size Size of the memory area. If the size is 4, this is an IPv4 address.
+        //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
+        //!
+        void setAddress(const uint8_t *addr, size_t size);
+
+        //!
+        //! Set the IP address from an address in binary format.
+        //! Useful for subclasses to assign the address part only.
+        //! @param [in] bb Byte block containing the address in binary format. If the size is 4, this is an IPv4 address.
+        //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
+        //!
+        void setAddress(const ByteBlock& bb) { setAddress(bb.data(), bb.size()); }
+
+        //!
         //! Set the IP address from an IPv4 address as a 32-bit integer value in host byte order.
         //! @param [in] addr The IP v4 address as an integer in host byte order.
         //!

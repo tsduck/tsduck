@@ -57,11 +57,11 @@ namespace ts {
         uint32_t      _event_code = 0;          // Event code to signal.
         int           _ttl = 0;                 // Time to live option.
         PIDSet        _pids {};                 // Explicitly specified PID's to extract.
-        IPv4SocketAddress _ip_source {};        // IP source filter.
-        IPv4SocketAddress _ip_dest {};          // IP destination filter.
-        IPv4SocketAddress _ip_forward {};       // Forwarded socket address.
-        IPAddress         _local_address {};    // Local IP address for UDP forwarding.
-        uint16_t          _local_port = IPAddress::AnyPort; // Local UDP source port for UDP forwarding.
+        IPSocketAddress _ip_source {};          // IP source filter.
+        IPSocketAddress _ip_dest {};            // IP destination filter.
+        IPSocketAddress _ip_forward {};         // Forwarded socket address.
+        IPAddress       _local_address {};      // Local IP address for UDP forwarding.
+        uint16_t        _local_port = IPAddress::AnyPort; // Local UDP source port for UDP forwarding.
 
         // Plugin private fields.
         bool          _abort = false;           // Error, abort asap.
@@ -415,7 +415,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     }
     else if (_log) {
         // Get destination IP and MAC address.
-        const IPv4Address destIP(mpe.destinationIPAddress());
+        const IPAddress destIP(mpe.destinationIPAddress());
         const MACAddress destMAC(mpe.destinationMACAddress());
 
         // If the destination IP address is a multicast one, check that the
@@ -454,7 +454,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         // Determine the destination address.
         // Start with original address for MPE section.
         // Then override with user-specified values.
-        IPv4SocketAddress dest(mpe.destinationSocket());
+        IPSocketAddress dest(mpe.destinationSocket());
         if (_ip_forward.hasAddress()) {
             dest.setAddress(_ip_forward);
         }

@@ -31,10 +31,10 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     help(u"restart-delay", u"With --multiple, wait the specified delay before restarting.");
 
     // These options are legacy, now use --listener and/or --caller.
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, IPSOCKADDR_OA, 0, 1);
     help(u"" , u"Local [address:]port. This is a legacy parameter, now use --listener.");
 
-    option(u"rendezvous", 0, STRING);
+    option(u"rendezvous", 0, IPSOCKADDR);
     help(u"rendezvous", u"address:port", u"Remote address and port. This is a legacy option, now use --caller.");
 }
 
@@ -55,9 +55,14 @@ bool ts::SRTOutputPlugin::isRealTime()
 
 bool ts::SRTOutputPlugin::getOptions()
 {
+    IPSocketAddress listener;
+    IPSocketAddress rendezvous;
+    getSocketValue(listener, u"");
+    getSocketValue(rendezvous, u"rendezvous");
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
-    return _sock.setAddresses(value(u""), value(u"rendezvous"), UString(), *this) &&
+
+    return _sock.setAddresses(listener, rendezvous, IPAddress(), *this) &&
            _sock.loadArgs(duck, *this) &&
            _datagram.loadArgs(duck, *this);
 }

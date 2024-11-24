@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPv6Address.h"
+#include "tsIPAddress.h"
 
 namespace ts {
     //!
@@ -34,11 +34,11 @@ namespace ts {
         class Address
         {
         public:
-            Address() = default;                    //!< Constructor
-            IPv6Address IPv6_source_addr {};        //!< IPv6 source address.
-            uint8_t     IPv6_source_slash_mask {};  //!< Number of bits in source network mask.
-            IPv6Address IPv6_dest_addr {};          //!< IPv6 destination address.
-            uint8_t     IPv6_dest_slash_mask {};    //!< Number of bits in destination network mask.
+            Address() = default;                  //!< Constructor
+            IPAddress IPv6_source_addr {};        //!< IPv6 source address.
+            uint8_t   IPv6_source_slash_mask {};  //!< Number of bits in source network mask.
+            IPAddress IPv6_dest_addr {};          //!< IPv6 destination address.
+            uint8_t   IPv6_dest_slash_mask {};    //!< Number of bits in destination network mask.
         };
 
         // TargetIPv6SourceSlashDescriptor public members:

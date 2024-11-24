@@ -50,9 +50,14 @@ ts::TargetIPv6SlashDescriptor::TargetIPv6SlashDescriptor(DuckContext& duck, cons
 
 void ts::TargetIPv6SlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (const auto& it : addresses) {
-        buf.putBytes(it.IPv6_addr.address6());
-        buf.putUInt8(it.IPv6_slash_mask);
+    for (const auto& addr : addresses) {
+        if (addr.IPv6_addr.generation() == IP::v6) {
+            buf.putBytes(addr.IPv6_addr.address6());
+            buf.putUInt8(addr.IPv6_slash_mask);
+        }
+        else {
+            buf.setUserError();
+        }
     }
 }
 
@@ -65,7 +70,7 @@ void ts::TargetIPv6SlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
         Address addr;
-        addr.IPv6_addr = IPv6Address(buf.getBytes(16));
+        addr.IPv6_addr.setAddress(buf.getBytes(IPAddress::BYTES6));
         addr.IPv6_slash_mask = buf.getUInt8();
         addresses.push_back(addr);
     }
@@ -79,7 +84,7 @@ void ts::TargetIPv6SlashDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetIPv6SlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(17)) {
-        disp << margin << "Address/mask: " << IPv6Address(buf.getBytes(16));
+        disp << margin << "Address/mask: " << IPAddress(buf.getBytes(IPAddress::BYTES6));
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
 }
@@ -93,7 +98,7 @@ void ts::TargetIPv6SlashDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 {
     for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPv6Attribute(u"IPv6_addr", it.IPv6_addr);
+        e->setIPAttribute(u"IPv6_addr", it.IPv6_addr);
         e->setIntAttribute(u"IPv6_slash_mask", it.IPv6_slash_mask);
     }
 }
@@ -110,7 +115,7 @@ bool ts::TargetIPv6SlashDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
         Address addr;
-        ok = children[i]->getIPv6Attribute(addr.IPv6_addr, u"IPv6_addr", true) &&
+        ok = children[i]->getIPAttribute(addr.IPv6_addr, u"IPv6_addr", true) &&
              children[i]->getIntAttribute(addr.IPv6_slash_mask, u"IPv6_slash_mask", true);
         addresses.push_back(addr);
     }
