@@ -95,6 +95,29 @@ bool ts::IsLocalIPAddress(const IPAddress& address)
 
 
 //----------------------------------------------------------------------------
+// Add a
+//----------------------------------------------------------------------------
+
+namespace {
+    void AddUnique(ts::IPAddressMaskVector& addresses, const ts::IPAddressMask& addr)
+    {
+        if (addr.hasAddress()) {
+            bool found = false;
+            for (const auto& a : addresses) {
+                found = addr == a;
+                if (found) {
+                    break;
+                }
+            }
+            if (!found) {
+                addresses.push_back(addr);
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // This method returns the addresses of all local IP addresses/mask.
 //----------------------------------------------------------------------------
 
@@ -120,15 +143,11 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& addresses, bool loopback, IP g
             (loopback || (ifa->ifa_flags & IFF_LOOPBACK) == 0) &&
             (fam == AF_UNSPEC || fam == ifa->ifa_addr->sa_family))
         {
-            const IPAddress addr(*ifa->ifa_addr);
-            if (addr.hasAddress()) {
-                if (ifa->ifa_netmask == nullptr) {
-                    addresses.push_back(IPAddressMask(addr));
-                }
-                else {
-                    addresses.push_back(IPAddressMask(addr, IPAddress(*ifa->ifa_netmask)));
-                }
+            IPAddressMask addr(IPAddress(*ifa->ifa_addr));
+            if (ifa->ifa_netmask != nullptr) {
+                addr.setMask(IPAddress(*ifa->ifa_netmask));
             }
+            AddUnique(addresses, addr);
         }
     }
 
@@ -177,20 +196,7 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& addresses, bool loopback, IP g
                 // We expect to have limited the research of interfaces to the corresponding IP family.
                 // However, let's check each address, just in case.
                 if (addr->Address.lpSockaddr != nullptr && (family == AF_UNSPEC || family == addr->Address.lpSockaddr->sa_family)) {
-                    // Extract IP address and mask.
-                    const IPAddressMask am(*addr->Address.lpSockaddr, size_t(addr->OnLinkPrefixLength));
-                    // The Microsoft documentation says that the same address can be returned several time.
-                    // Detect and avoid duplicates.
-                    bool found = false;
-                    for (const auto& a : addresses) {
-                        found = am == a;
-                        if (found) {
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        addresses.push_back(am);
-                    }
+                    AddUnique(addresses, IPAddressMask(*addr->Address.lpSockaddr, size_t(addr->OnLinkPrefixLength)));
                 }
                 // Loop on next address for that interface.
                 addr = addr->Next;

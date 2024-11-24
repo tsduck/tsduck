@@ -65,7 +65,7 @@ namespace ts {
 
         // Plugin private fields.
         bool          _abort = false;           // Error, abort asap.
-        UDPSocket     _sock {false, *this};     // Outgoing UDP socket (forwarded datagrams).
+        UDPSocket     _sock {false, IP::Any, *this};  // Outgoing UDP socket (forwarded datagrams).
         int           _previous_uc_ttl = 0;     // Previous unicast TTL which was set.
         int           _previous_mc_ttl = 0;     // Previous multicast TTL which was set.
         PacketCounter _datagram_count = 0;      // Number of extracted datagrams.
@@ -301,11 +301,11 @@ bool ts::MPEPlugin::start()
 
     // Initialize the forwarding UDP socket.
     if (_send_udp) {
-        if (!_sock.open(*this)) {
+        const IPSocketAddress local(IPAddress::AnyAddress4, _local_port);
+        if (!_sock.open(local.generation(), *this)) {
             return false;
         }
         // If local port is specified, bind to socket.
-        const IPSocketAddress local(IPAddress::AnyAddress4, _local_port);
         if (_local_port != IPAddress::AnyPort && (!_sock.reusePort(true, *this) || !_sock.bind(local, *this))) {
             return false;
         }

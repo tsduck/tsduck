@@ -94,7 +94,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
 
     // Perform TCP connection to ECMG server
     // Flawfinder: ignore: this is our open(), not ::open().
-    if (!_connection.open(_logger.report())) {
+    if (!_connection.open(args.ecmg_address.generation(), _logger.report())) {
         return false;
     }
     if (!_connection.connect(args.ecmg_address, _logger.report())) {

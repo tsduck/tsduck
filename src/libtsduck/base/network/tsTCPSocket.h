@@ -114,7 +114,7 @@ namespace ts {
         bool bind(const IPSocketAddress& addr, Report& report = CERR);
 
         // Implementation of Socket interface.
-        virtual bool open(Report& report = CERR) override;
+        virtual bool open(IP gen, Report& report = CERR) override;
         virtual bool close(Report& report = CERR) override;
 
     protected:

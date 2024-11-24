@@ -31,7 +31,7 @@ bool ts::TCPServer::listen(int backlog, Report& report)
 // Wait for a client
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::accept (TCPConnection& client, IPSocketAddress& client_address, Report& report)
+bool ts::TCPServer::accept(TCPConnection& client, IPSocketAddress& client_address, Report& report)
 {
     if (client.isConnected()) {
         report.error(u"invalid client in accept(): already connected");

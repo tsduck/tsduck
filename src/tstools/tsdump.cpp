@@ -209,7 +209,7 @@ namespace {
 namespace {
     void DumpRawUDP(Options& opt, std::ostream& out)
     {
-        // Initialize the UDP reception.
+        // Initializ◊e the UDP reception.
         ts::UDPReceiver sock(opt);
         sock.setParameters(opt.udp);
         if (!sock.open(opt)) {

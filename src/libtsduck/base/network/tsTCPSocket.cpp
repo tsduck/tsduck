@@ -39,11 +39,11 @@ void ts::TCPSocket::handleClosed(Report& report)
 // Open the socket
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::open(Report& report)
+bool ts::TCPSocket::open(IP gen, Report& report)
 {
     {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
-        if (!createSocket(PF_INET, SOCK_STREAM, IPPROTO_TCP, report)) {
+        if (!createSocket(gen, SOCK_STREAM, IPPROTO_TCP, report)) {
             return false;
         }
     }
@@ -157,8 +157,13 @@ bool ts::TCPSocket::setNoDelay(bool active, Report& report)
 
 bool ts::TCPSocket::bind(const IPSocketAddress& addr, Report& report)
 {
+    IPSocketAddress addr2(addr);
+    if (!convert(addr2, report)) {
+        return false;
+    }
+
     ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
+    const size_t sock_size = addr2.get(&sock_addr, sizeof(sock_addr));
 
     report.debug(u"binding socket to %s", addr);
     if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {

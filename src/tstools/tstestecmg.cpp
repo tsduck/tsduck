@@ -498,7 +498,7 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, _opt.log_data);
 
     // Perform TCP connection to ECMG server
-    if (!_conn.open(_logger.report())) {
+    if (!_conn.open(_opt.ecmg_address.generation(), _logger.report())) {
         return;
     }
     if (!_conn.connect(_opt.ecmg_address, _logger.report())) {

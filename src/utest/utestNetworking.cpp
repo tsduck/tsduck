@@ -579,7 +579,7 @@ namespace {
             ts::TCPConnection session;
             TSUNIT_ASSERT(!session.isOpen());
             TSUNIT_ASSERT(!session.isConnected());
-            TSUNIT_ASSERT(session.open(CERR));
+            TSUNIT_ASSERT(session.open(ts::IP::v4, CERR));
             TSUNIT_ASSERT(session.setSendBufferSize(1024, CERR));
             TSUNIT_ASSERT(session.setReceiveBufferSize(1024, CERR));
             TSUNIT_ASSERT(session.bind(clientAddress, CERR));
@@ -634,7 +634,7 @@ TSUNIT_DEFINE_TEST(TCPSocket)
     const ts::IPSocketAddress serverAddress(ts::IPAddress::LocalHost4, portNumber);
     ts::TCPServer server;
     TSUNIT_ASSERT(!server.isOpen());
-    TSUNIT_ASSERT(server.open(CERR));
+    TSUNIT_ASSERT(server.open(ts::IP::v4, CERR));
     TSUNIT_ASSERT(server.isOpen());
     TSUNIT_ASSERT(server.reusePort(true, CERR));
     TSUNIT_ASSERT(server.setSendBufferSize(1024, CERR));
@@ -699,7 +699,7 @@ namespace {
         {
             CERR.debug(u"UDPSocketTest: client thread started");
             // Create the client socket
-            ts::UDPSocket sock(true);
+            ts::UDPSocket sock(true, ts::IP::v4);
             TSUNIT_ASSERT(sock.isOpen());
             TSUNIT_ASSERT(sock.setSendBufferSize(1024, CERR));
             TSUNIT_ASSERT(sock.setReceiveBufferSize(1024, CERR));
@@ -741,7 +741,7 @@ TSUNIT_DEFINE_TEST(UDPSocket)
     // Create server socket
     ts::UDPSocket sock;
     TSUNIT_ASSERT(!sock.isOpen());
-    TSUNIT_ASSERT(sock.open(CERR));
+    TSUNIT_ASSERT(sock.open(ts::IP::v4, CERR));
     TSUNIT_ASSERT(sock.isOpen());
     TSUNIT_ASSERT(sock.setSendBufferSize(1024, CERR));
     TSUNIT_ASSERT(sock.setReceiveBufferSize(1024, CERR));

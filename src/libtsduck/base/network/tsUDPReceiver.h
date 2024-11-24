@@ -28,7 +28,7 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] report Where to report error.
         //!
-        explicit UDPReceiver(Report& report = CERR) : UDPSocket(false, report) {}
+        explicit UDPReceiver(Report& report = CERR) : UDPSocket(false, IP::Any, report) {}
 
         //!
         //! Set UDP reception parameters.
@@ -49,8 +49,15 @@ namespace ts {
         //!
         void setReceiveTimeoutArg(cn::milliseconds timeout);
 
+        //!
+        //! Open the UDP receiver.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool open(Report& report = CERR);
+
         // Override UDPSocket methods
-        virtual bool open(Report& report = CERR) override;
+        virtual bool open(IP gen, Report& report = CERR) override;
         virtual bool receive(void* data,
                              size_t max_size,
                              size_t& ret_size,

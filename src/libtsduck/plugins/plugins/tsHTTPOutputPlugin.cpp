@@ -79,7 +79,7 @@ bool ts::HTTPOutputPlugin::getOptions()
 
 bool ts::HTTPOutputPlugin::start()
 {
-    if (!_server.open(*this)) {
+    if (!_server.open(IP::Any, *this)) {
         return false;
     }
     if (!_server.reusePort(_reuse_port, *this) ||

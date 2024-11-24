@@ -41,8 +41,8 @@ namespace ts {
         UString            _execute {};          // Command to execute on trigger.
         fs::path           _copy_source {};      // Copy that file ...
         fs::path           _copy_dest {};        // ... into this destination.
-        UString            _udpDestination {};   // UDP/IP destination address:port.
-        UString            _udpLocal {};         // Name of outgoing local address (empty if unspecified).
+        IPSocketAddress    _udpDestination {};   // UDP/IP destination address:port.
+        IPAddress          _udpLocal {};         // Name of outgoing local address (empty if unspecified).
         ByteBlock          _udpMessage {};       // What to send as UDP message.
         int                _udpTTL = 0;          // Time-to-live socket option.
         bool               _onStart = false;     // Trigger action on start.
@@ -56,7 +56,7 @@ namespace ts {
         // Working data:
         PacketCounter    _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
         Time             _lastTime {};         // UTC time of last action.
-        UDPSocket        _sock {false, *this}; // Output socket.
+        UDPSocket        _sock {false, IP::Any, *this}; // Output socket.
         TSPacketLabelSet _currentLabels {};    // Trigger on packets with these labels, during processing.
 
         // Trigger the actions (exec, UDP).
@@ -117,8 +117,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
          u"Specify the minimum time, in milliseconds, between two triggered actions. "
          u"Actions which should be triggered in the meantime are ignored.");
 
-    option(u"udp", 'u', STRING);
-    help(u"udp", u"address:port",
+    option(u"udp", 'u', IPSOCKADDR);
+    help(u"udp",
          u"Send a UDP/IP message to the specified destination when the current packet triggers the actions. "
          u"The 'address' specifies an IP address which can be either unicast or multicast. "
          u"It can be also a host name that translates to an IP address. "
@@ -129,8 +129,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
          u"With --udp, specifies the binary message to send as UDP datagram. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes.");
 
-    option(u"local-address", 0, STRING);
-    help(u"local-address", u"address",
+    option(u"local-address", 0, IPADDR);
+    help(u"local-address",
          u"With --udp, when the destination is a multicast address, specify "
          u"the IP address of the outgoing local interface. It can be also a host "
          u"name that translates to a local address.");
@@ -171,8 +171,8 @@ bool ts::TriggerPlugin::getOptions()
     getValue(_execute, u"execute");
     getPathValue(_copy_source, u"copy");
     getPathValue(_copy_dest, u"destination");
-    getValue(_udpDestination, u"udp");
-    getValue(_udpLocal, u"local-address");
+    getSocketValue(_udpDestination, u"udp");
+    getIPValue(_udpLocal, u"local-address");
     getIntValue(_udpTTL, u"ttl");
     getIntValues(_labels, u"label");
     getHexaValue(_udpMessage, u"udp-message");
@@ -202,12 +202,12 @@ bool ts::TriggerPlugin::start()
     _currentLabels = _labels;
 
     // Initialize UDP output.
-    if (!_udpDestination.empty()) {
-        if (!_sock.open(*this)) {
+    if (_udpDestination.hasAddress()) {
+        if (!_sock.open(_udpDestination.generation(), *this)) {
             return false;
         }
         if (!_sock.setDefaultDestination(_udpDestination, *this) ||
-            (!_udpLocal.empty() && !_sock.setOutgoingMulticast(_udpLocal, *this)) ||
+            (!_udpLocal.hasAddress() && !_sock.setOutgoingMulticast(_udpLocal, *this)) ||
             (_udpTTL > 0 && !_sock.setTTL(_udpTTL, *this)))
         {
             _sock.close(*this);

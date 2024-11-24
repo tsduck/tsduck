@@ -218,7 +218,7 @@ namespace ts {
         xml::JSONConverter       _x2j_conv {_report};        // XML-to-JSON converter.
         json::RunningDocument    _json_doc {_report};        // JSON document, built on-the-fly.
         std::ofstream            _bin_file {};               // Binary output file.
-        UDPSocket                _sock {false, _report};     // Output socket.
+        UDPSocket                _sock {false, IP::Any, _report}; // Output socket.
         std::map<PID,ByteBlock>  _short_sections {};         // Tracking duplicate short sections by PID with a section hash.
         std::map<PID,ByteBlock>  _last_sections {};          // Tracking duplicate sections by PID with a section hash (with --all-sections).
         std::map<PID,std::set<ByteBlock>> _deep_hashes {};   // Tracking of deep duplicate sections.

@@ -264,7 +264,7 @@ bool ts::DataInjectPlugin::start()
     }
 
     // Initialize the TCP server.
-    if (!_server.open(*this)) {
+    if (!_server.open(_tcp_address.generation(), *this)) {
         return false;
     }
     if (!_server.reusePort(_reuse_port, *this) || !_server.bind(_tcp_address, *this) || !_server.listen(SERVER_BACKLOG, *this)) {

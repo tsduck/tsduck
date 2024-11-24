@@ -99,7 +99,7 @@ int MainCode(int argc, char *argv[])
     ts::IPSocketAddress addr;
     ts::UString resp;
 
-    if (conn.open(opt) &&
+    if (conn.open(opt.tsp_address.generation(), opt) &&
         conn.bind(addr, opt) &&
         conn.connect(opt.tsp_address, opt) &&
         conn.sendLine(opt.command, opt) &&

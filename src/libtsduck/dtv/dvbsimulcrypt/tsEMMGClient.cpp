@@ -129,7 +129,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
     }
 
     // Perform TCP connection to EMMG server
-    if (!_connection.open(_logger.report())) {
+    if (!_connection.open(mux.generation(), _logger.report())) {
         return false;
     }
     if (!_connection.connect(mux, _logger.report())) {
@@ -145,7 +145,7 @@ bool ts::EMMGClient::connect(const IPSocketAddress& mux,
 
     // Create UDP socket if we need UDP.
     // If the UDP destination address is a broadast address, force it.
-    if (_udp_address.hasPort() && (!_udp_socket.open(_logger.report()) || !_udp_socket.setBroadcastIfRequired(_udp_address, _logger.report()))) {
+    if (_udp_address.hasPort() && (!_udp_socket.open(_udp_address.generation(), _logger.report()) || !_udp_socket.setBroadcastIfRequired(_udp_address, _logger.report()))) {
         return abortConnection();
     }
 
@@ -399,7 +399,7 @@ bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
         return _udp_socket.send(bbp->data(), bbp->size(), _udp_address, _logger.report());
     }
     else {
-        // Send data_provision messages using UDP.
+        // Send data_provision messages using TCP.
         // The data_provision message is automatically serialized by the tlv::Connection object.
         return _connection.send(request, _logger);
     }

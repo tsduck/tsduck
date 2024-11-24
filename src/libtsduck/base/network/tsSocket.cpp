@@ -26,21 +26,35 @@ ts::Socket::~Socket()
 
 //----------------------------------------------------------------------------
 // Create the socket
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::Socket::createSocket(int domain, int type, int protocol, Report& report)
+bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
 {
     if (_sock != SYS_SOCKET_INVALID) {
         report.error(u"socket already open");
         return false;
     }
 
-    // Create a datagram socket.
-    _sock = ::socket(domain, type, protocol);
+    // Create the socket on IPv6, unless explicitly IPv4.
+    _gen = gen;
+    _sock = ::socket(gen == IP::v4 ? PF_INET : PF_INET6, type, protocol);
     if (_sock == SYS_SOCKET_INVALID) {
         report.error(u"error creating socket: %s", SysErrorCodeMessage());
         return false;
+    }
+
+    // Set the IPV6_V6ONLY option on IPv6 sockets.
+    if (_gen != IP::v4) {
+#if defined(TS_WINDOWS)
+        ::DWORD
+#else
+        int
+#endif
+        param = gen == IP::Any ? 0 : 1;
+        if (::setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SysSockOptPointer(&param), sizeof(param)) != 0) {
+            // don't fail, just report a warning, will still work op IPv6
+            report.warning(u"cannot set socket in %s mode: %s", _gen == IP::Any ? u"IPv4/IPv6" : u"IPv6-only", SysErrorCodeMessage());
+        }
     }
 
     return true;
@@ -82,6 +96,21 @@ bool ts::Socket::close(Report& report)
         SysCloseSocket(previous);
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert an IP address to make it compatible with the socket IP generation.
+//----------------------------------------------------------------------------
+
+bool ts::Socket::convert(IPAddress& addr, Report& report) const
+{
+    const IP target_gen = _gen == IP::v4 ? IP::v4 : IP::v6; // don't convert to IP::Any
+    const bool ok = addr.convert(target_gen);
+    if (!ok) {
+        report.error(u"cannot use an IPv%d address on an IPv%d socket", int(addr.generation()), int(target_gen));
+    }
+    return ok;
 }
 
 

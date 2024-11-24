@@ -560,6 +560,70 @@ bool ts::IPAddress::match(const IPAddress& other) const
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Check if the address is an IPv6 address which is mapped to an IPv4 one.
+//----------------------------------------------------------------------------
+
+bool ts::IPAddress::isIPv4Mapped() const
+{
+    // The address must be "::ffff::a.b.c.d" or "0000:0000:0000:0000:0000:ffff:XXXX:XXXX".
+    return _gen == IP::v6 &&
+           *reinterpret_cast<const uint64_t*>(_bytes6) == 0 &&
+           *reinterpret_cast<const uint16_t*>(_bytes6 + 8) == 0 &&
+           *reinterpret_cast<const uint16_t*>(_bytes6 + 10) == 0xFFFF;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert an IP address to another generation, when possible.
+//----------------------------------------------------------------------------
+
+bool ts::IPAddress::convert(IP gen)
+{
+    if (gen == IP::Any || _gen == gen) {
+        return true;  // already in target format
+    }
+    else if (_bound != IP::Any && _bound != gen) {
+        return false;  // incompatible
+    }
+    else if (_gen == IP::v4) {
+        // IPv4 to IPv6 conversion.
+        if (operator==(AnyAddress4)) {
+            *this = AnyAddress6;
+        }
+        else if (operator==(LocalHost4)) {
+            *this = LocalHost6;
+        }
+        else {
+            _gen = IP::v6;
+            *reinterpret_cast<uint64_t*>(_bytes6) = 0;
+            *reinterpret_cast<uint16_t*>(_bytes6 + 8) = 0;
+            *reinterpret_cast<uint16_t*>(_bytes6 + 10) = 0xFFFF;
+            PutUInt32BE(_bytes6 + 12, _addr4);
+        }
+        return true; // always successful
+    }
+    else {
+        // IPv6 to IPv4 conversion.
+        if (operator==(AnyAddress6)) {
+            *this = AnyAddress4;
+        }
+        else if (operator==(LocalHost6)) {
+            *this = LocalHost4;
+        }
+        else if (isIPv4Mapped()) {
+            _gen = IP::v4;
+            _addr4 = GetUInt32BE(_bytes6 + 12);
+        }
+        else {
+            return false; // not IPv4-mapped
+        }
+        return true;
+    }
+}
+
+
 //----------------------------------------------------------------------------
 // Convert to a string object
 //----------------------------------------------------------------------------

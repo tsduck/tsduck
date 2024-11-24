@@ -76,7 +76,7 @@ bool ts::tsp::ControlServer::open()
     else {
         // Open the TCP server.
         const IPSocketAddress addr(_options.control_local, _options.control_port);
-        if (!_server.open(_log) ||
+        if (!_server.open(_options.control_local.generation(), _log) ||
             !_server.reusePort(_options.control_reuse, _log) ||
             !_server.bind(addr, _log) ||
             !_server.listen(5, _log))

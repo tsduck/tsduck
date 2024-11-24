@@ -316,6 +316,22 @@ namespace ts {
         //!
         void checkCompatibility(const IPAddress& other) { checkCompatibility(other._gen); }
 
+        //!
+        //! Check if the address is an IPv6 address which is mapped to an IPv4 one.
+        //! @return true if the address is an IPv6 address which is mapped to an IPv4 one.
+        //!
+        bool isIPv4Mapped() const;
+
+        //!
+        //! Convert an IP address to another generation, when possible.
+        //! @param [in] gen New IP generation to apply. If @a gen is incompatible with the object (bound to another generation),
+        //! return false. If @a gen is IP::Any or the same as the current generation, return true. A conversion from IPv4 to IPv6
+        //! always works (IPv4-mapped address). The conversion of an IPv6 address is only possible if it is an IPv4-mapped address.
+        //! For convenience, the IPv4 and IPv6 loopback addressses are converted to each other.
+        //! @return True if the conversion was successful, false if the conversion was no possible.
+        //!
+        bool convert(IP gen);
+
         // AbstractNetworkAddress interface.
         virtual size_t binarySize() const override;
         virtual const UChar* familyName() const override;

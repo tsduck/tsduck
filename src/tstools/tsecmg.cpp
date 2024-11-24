@@ -670,7 +670,7 @@ int MainCode(int argc, char *argv[])
 
     // Initialize a TCP server.
     ts::TCPServer server;
-    if (!server.open(shared.report()) ||
+    if (!server.open(opt.serverAddress.generation(), shared.report()) ||
         !server.reusePort(opt.reusePort, shared.report()) ||
         !server.bind(opt.serverAddress, shared.report()) ||
         !server.listen(5, shared.report()))

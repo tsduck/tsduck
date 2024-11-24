@@ -136,7 +136,7 @@ bool ts::json::OutputArgs::udpOpen(Report& rep)
     if (_udp_sock.isOpen()) {
         return true;
     }
-    else if (!_udp_sock.open(rep)) {
+    else if (!_udp_sock.open(_udp_destination.generation(), rep)) {
         return false;
     }
     else if (_udp_sock.setDefaultDestination(_udp_destination, rep) &&
@@ -167,7 +167,7 @@ bool ts::json::OutputArgs::tcpConnect(Report& rep)
     if (_tcp_sock.isOpen()) {
         return true;
     }
-    else if (!_tcp_sock.open(rep)) {
+    else if (!_tcp_sock.open(_tcp_destination.generation(), rep)) {
         return false;
     }
     else if ((_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&

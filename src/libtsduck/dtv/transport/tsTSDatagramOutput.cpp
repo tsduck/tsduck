@@ -216,10 +216,10 @@ bool ts::TSDatagramOutput::open(Report& report)
 
     // Initialize raw UDP socket
     if (_raw_udp) {
-        if (!_sock.open(report)) {
+        const IPSocketAddress local(_local_addr, _local_port);
+        if (!_sock.open(local.generation(), report)) {
             return false;
         }
-        const IPSocketAddress local(_local_addr, _local_port);
         if ((_local_port != IPAddress::AnyPort && !_sock.reusePort(true, report)) ||
             !_sock.bind(local, report) ||
             !_sock.setDefaultDestination(_destination, report) ||

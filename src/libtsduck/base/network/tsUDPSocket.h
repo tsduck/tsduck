@@ -38,9 +38,12 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] auto_open If true, call open() immediately.
+        //! @param [in] gen IP generation, IPv4 or IPv6.
+        //! If set to IP::Any, this socket can receive IPv4 and IPv6 datagrams.
+        //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
         //! @param [in,out] report Where to report error.
         //!
-        UDPSocket(bool auto_open = false, Report& report = CERR);
+        UDPSocket(bool auto_open = false, IP gen = IP::Any, Report& report = CERR);
 
         //!
         //! Destructor.
@@ -329,7 +332,7 @@ namespace ts {
                              cn::microseconds* timestamp = nullptr);
 
         // Implementation of Socket interface.
-        virtual bool open(Report& report = CERR) override;
+        virtual bool open(IP gen, Report& report = CERR) override;
         virtual bool close(Report& report = CERR) override;
 
     private:

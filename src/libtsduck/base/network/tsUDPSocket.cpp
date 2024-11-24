@@ -25,10 +25,10 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::UDPSocket::UDPSocket(bool auto_open, Report& report)
+ts::UDPSocket::UDPSocket(bool auto_open, IP gen, Report& report)
 {
     if (auto_open) {
-        UDPSocket::open(report);
+        UDPSocket::open(gen, report);
     }
 }
 
@@ -48,10 +48,10 @@ ts::UDPSocket::~UDPSocket()
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::open(Report& report)
+bool ts::UDPSocket::open(IP gen, Report& report)
 {
     // Create a datagram socket.
-    if (!createSocket(PF_INET, SOCK_DGRAM, IPPROTO_UDP, report)) {
+    if (!createSocket(gen, SOCK_DGRAM, IPPROTO_UDP, report)) {
         return false;
     }
 
@@ -99,8 +99,13 @@ bool ts::UDPSocket::close(Report& report)
 
 bool ts::UDPSocket::bind(const IPSocketAddress& addr, Report& report)
 {
+    IPSocketAddress addr2(addr);
+    if (!convert(addr2, report)) {
+        return false;
+    }
+
     ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
+    const size_t sock_size = addr2.get(&sock_addr, sizeof(sock_addr));
 
     report.debug(u"binding socket to %s", addr);
     if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
@@ -196,6 +201,7 @@ bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
 
 bool ts::UDPSocket::setTOS(int tos, Report& report)
 {
+    // TODO: make it IPv6 compatible.
     SysSocketTOSType utos = SysSocketTOSType(tos);
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_TOS, SysSockOptPointer(&utos), sizeof(utos)) != 0) {
         report.error(u"socket option TOS: %s", SysErrorCodeMessage());
@@ -286,6 +292,7 @@ bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& 
 
 bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source, Report& report)
 {
+    // TODO: make it IPv6 compatible.
     // Verbose message about joining the group.
     UString groupString;
     if (source.hasAddress()) {
@@ -416,8 +423,13 @@ bool ts::UDPSocket::send(const void* data, size_t size, Report& report)
 
 bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& dest, Report& report)
 {
+    IPSocketAddress dest2(dest);
+    if (!convert(dest2, report)) {
+        return false;
+    }
+
     ::sockaddr_storage addr;
-    const size_t addr_size = dest.get(&addr, sizeof(addr));
+    const size_t addr_size = dest2.get(&addr, sizeof(addr));
 
     if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, reinterpret_cast<::sockaddr*>(&addr), socklen_t(addr_size)) < 0) {
         report.error(u"error sending UDP message: %s", SysErrorCodeMessage());

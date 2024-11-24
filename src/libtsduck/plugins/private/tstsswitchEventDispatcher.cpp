@@ -55,7 +55,7 @@ bool ts::tsswitch::EventDispatcher::sendUDP(const UString& eventName, json::Obje
 {
     // Open socket the first time.
     if (!_socket.isOpen()) {
-        if (!_socket.open(_log) ||
+        if (!_socket.open(_opt.eventUDP.generation(), _log) ||
             !_socket.setDefaultDestination(_opt.eventUDP, _log) ||
             (_opt.sockBuffer > 0 && !_socket.setSendBufferSize(_opt.sockBuffer, _log)) ||
             (_opt.eventLocalAddress.hasAddress() && !_socket.setOutgoingMulticast(_opt.eventLocalAddress, _log)) ||

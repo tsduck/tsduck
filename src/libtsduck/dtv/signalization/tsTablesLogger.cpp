@@ -454,10 +454,12 @@ bool ts::TablesLogger::open()
 
     // Initialize UDP output.
     if (_use_udp) {
+        IPSocketAddress dest;
         // Create UDP socket.
         _abort =
-            !_sock.open(_report) ||
-            !_sock.setDefaultDestination(_udp_destination, _report) ||
+            !dest.resolve(_udp_destination, _report) ||
+            !_sock.open(dest.generation(), _report) ||
+            !_sock.setDefaultDestination(dest, _report) ||
             (!_udp_local.empty() && !_sock.setOutgoingMulticast(_udp_local, _report)) ||
             (_udp_ttl > 0 && !_sock.setTTL(_udp_ttl, _report));
         if (_abort) {

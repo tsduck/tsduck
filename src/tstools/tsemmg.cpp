@@ -412,12 +412,6 @@ int MainCode(int argc, char *argv[])
     ts::emmgmux::ChannelStatus channelStatus(opt.emmgmux);
     ts::emmgmux::StreamStatus streamStatus(opt.emmgmux);
 
-    // UDP socket for the data_provision messages.
-    ts::UDPSocket udpSocket;
-    if (opt.useUDP && !udpSocket.open(opt)) {
-        return EXIT_FAILURE;
-    }
-
     // Connect to the MUX.
     opt.verbose(u"Connecting to MUX at %s", opt.tcpMuxAddress);
     if (!client.connect(opt.tcpMuxAddress,

@@ -37,10 +37,14 @@ namespace ts {
 
         //!
         //! Open the socket.
+        //! @param [in] gen IP generation, IPv4 or IPv6.
+        //! If set to IP::Any, open an IPv6 socket with option IPV6_V6ONLY cleared.
+        //! As a server, this socket can accept IPv4 and IPv6 connections.
+        //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool open(Report& report = CERR) = 0;
+        virtual bool open(IP gen, Report& report = CERR) = 0;
 
         //!
         //! Close the socket.
@@ -54,6 +58,12 @@ namespace ts {
         //! @return True if socket is open.
         //!
         bool isOpen() const { return _sock != SYS_SOCKET_INVALID; }
+
+        //!
+        //! Get the IP generation with which the socket was open.
+        //! @return IP generation. Return IP::Any if the socket can access IPv4 and IPv6 addresses.
+        //!
+        IP generation() const { return _gen; }
 
         //!
         //! Set the send buffer size.
@@ -111,13 +121,14 @@ namespace ts {
     protected:
         //!
         //! Create the socket.
-        //! @param [in] domain Socket domain: PF_INET
+        //! @param [in] gen IP generation.
         //! @param [in] type Socket type: SOCK_STREAM, SOCK_DGRAM
         //! @param [in] protocol Socket protocol: IPPROTO_TCP, IPPROTO_UDP
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
+        //! @see open(ge, Report&)
         //!
-        bool createSocket(int domain, int type, int protocol, Report& report);
+        bool createSocket(IP gen, int type, int protocol, Report& report);
 
         //!
         //! Set an open socket descriptor from a subclass.
@@ -127,7 +138,16 @@ namespace ts {
         //!
         virtual void declareOpened(SysSocketType sock, Report& report);
 
+        //!
+        //! Convert an IP address to make it compatible with the socket IP generation.
+        //! @param addr [in,out] The address to convert.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool convert(IPAddress& addr, Report& report) const;
+
     private:
         volatile SysSocketType _sock = SYS_SOCKET_INVALID;
+        IP _gen = IP::Any;
     };
 }
