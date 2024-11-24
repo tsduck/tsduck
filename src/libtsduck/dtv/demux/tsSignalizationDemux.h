@@ -212,19 +212,19 @@ namespace ts {
 
         //!
         //! Get the transport stream id.
-        //! @return The transport stream id or 0xFFFF if unknown.
+        //! @return The transport stream id or INVALID_TS_ID if unknown.
         //!
         uint16_t transportStreamId() const { return _ts_id; }
 
         //!
         //! Get the original network id (from the SDT).
-        //! @return The original network id or 0xFFFF if unknown.
+        //! @return The original network id or INVALID_NETWORK_ID if unknown.
         //!
         uint16_t originalNetworkId() const { return _orig_network_id; }
 
         //!
         //! Get the actual network id (from the NIT).
-        //! @return The original network id or 0xFFFF if unknown.
+        //! @return The original network id or INVALID_NETWORK_ID if unknown.
         //!
         uint16_t networkId() const { return _network_id; }
 
@@ -295,21 +295,30 @@ namespace ts {
         //! @param [in] pid The PID to check.
         //! @return True if at least one scrambled packets has been found in the PID.
         //!
-        bool isScrambled(PID pid) const;
+        bool isScrambled(PID pid) const
+        {
+            return getPIDContextField<bool>(pid, false, &PIDContext::scrambled);
+        }
 
         //!
         //! Get the number of TS packets in a PID.
         //! @param [in] pid The PID to check.
         //! @return The number of packets in that PID.
         //!
-        PacketCounter packetCount(PID pid) const;
+        PacketCounter packetCount(PID pid) const
+        {
+            return getPIDContextField<PacketCounter>(pid, 0, &PIDContext::packets);
+        }
 
         //!
         //! Get the number of TS packets with payload unit start indicator (PUSI) in a PID.
         //! @param [in] pid The PID to check.
         //! @return The number of PUSI in that PID.
         //!
-        PacketCounter pusiCount(PID pid) const;
+        PacketCounter pusiCount(PID pid) const
+        {
+            return getPIDContextField<PacketCounter>(pid, 0, &PIDContext::pusi_count);
+        }
 
         //!
         //! Get the number of TS packets in a PID before its first payload unit start indicator (PUSI).
@@ -317,7 +326,40 @@ namespace ts {
         //! @return The number of TS packets in the PID before its first payload unit start indicator (PUSI)
         //! or INVALID_PACKET_COUNTER if there is no PUSI in the PID.
         //!
-        PacketCounter pusiFirstIndex(PID pid) const;
+        PacketCounter pusiFirstIndex(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PACKET_COUNTER, &PIDContext::first_pusi, &PIDPoint::pkt_index);
+        }
+
+        //!
+        //! Get the PCR in a PID at its first payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The PCR in the PID at its first PUSI or INVALID_PCR if there is none.
+        //!
+        uint64_t pusiFirstPCR(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PCR, &PIDContext::first_pusi, &PIDPoint::pcr);
+        }
+
+        //!
+        //! Get the PTS in a PID at its first payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The PTS in the PID at its first PUSI or INVALID_PTS if there is none.
+        //!
+        uint64_t pusiFirstPTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PTS, &PIDContext::first_pusi, &PIDPoint::pts);
+        }
+
+        //!
+        //! Get the DTS in a PID at its first payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The DTS in the PID at its first PUSI or INVALID_DTS if there is none.
+        //!
+        uint64_t pusiFirstDTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_DTS, &PIDContext::first_pusi, &PIDPoint::dts);
+        }
 
         //!
         //! Get the number of TS packets in a PID before its last payload unit start indicator (PUSI).
@@ -325,14 +367,50 @@ namespace ts {
         //! @return The number of TS packets in the PID before its last payload unit start indicator (PUSI)
         //! or INVALID_PACKET_COUNTER if there is no PUSI in the PID.
         //!
-        PacketCounter pusiLastIndex(PID pid) const;
+        PacketCounter pusiLastIndex(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PACKET_COUNTER, &PIDContext::last_pusi, &PIDPoint::pkt_index);
+        }
+
+        //!
+        //! Get the PCR in a PID at its last payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The PCR in the PID at its last PUSI or INVALID_PCR if there is none.
+        //!
+        uint64_t pusiLastPCR(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PCR, &PIDContext::last_pusi, &PIDPoint::pcr);
+        }
+
+        //!
+        //! Get the PTS in a PID at its last payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The PTS in the PID at its last PUSI or INVALID_PTS if there is none.
+        //!
+        uint64_t pusiLastPTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PTS, &PIDContext::last_pusi, &PIDPoint::pts);
+        }
+
+        //!
+        //! Get the DTS in a PID at its last payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The DTS in the PID at its last PUSI or INVALID_DTS if there is none.
+        //!
+        uint64_t pusiLastDTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_DTS, &PIDContext::last_pusi, &PIDPoint::dts);
+        }
 
         //!
         //! Get the number of video intra-frames in a PID.
         //! @param [in] pid The PID to check.
         //! @return The number of video intra-frames in that PID.
         //!
-        PacketCounter intraFrameCount(PID pid) const;
+        PacketCounter intraFrameCount(PID pid) const
+        {
+            return getPIDContextField<PacketCounter>(pid, 0, &PIDContext::intra_count);
+        }
 
         //!
         //! Get the number of TS packets in a PID before its first video intra-frame.
@@ -340,7 +418,40 @@ namespace ts {
         //! @return The number of TS packets in the PID before its first video intra-frame
         //! or INVALID_PACKET_COUNTER if there is no video intra-frame in the PID.
         //!
-        PacketCounter intraFrameFirstIndex(PID pid) const;
+        PacketCounter intraFrameFirstIndex(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PACKET_COUNTER, &PIDContext::first_intra, &PIDPoint::pkt_index);
+        }
+
+        //!
+        //! Get the PCR in a PID at its first video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The PCR in the PID at its first video intra-frame or INVALID_PCR if there is none.
+        //!
+        uint64_t intraFrameFirstPCR(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PCR, &PIDContext::first_intra, &PIDPoint::pcr);
+        }
+
+        //!
+        //! Get the PTS in a PID at its first video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The PTS in the PID at its first video intra-frame or INVALID_PTS if there is none.
+        //!
+        uint64_t intraFrameFirstPTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PTS, &PIDContext::first_intra, &PIDPoint::pts);
+        }
+
+        //!
+        //! Get the DTS in a PID at its first video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The DTS in the PID at its first video intra-frame or INVALID_DTS if there is none.
+        //!
+        uint64_t intraFrameFirstDTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_DTS, &PIDContext::first_intra, &PIDPoint::dts);
+        }
 
         //!
         //! Get the number of TS packets in a PID before its last video intra-frame.
@@ -348,7 +459,40 @@ namespace ts {
         //! @return The number of TS packets in the PID before its last video intra-frame
         //! or INVALID_PACKET_COUNTER if there is no video intra-frame in the PID.
         //!
-        PacketCounter intraFrameLastIndex(PID pid) const;
+        PacketCounter intraFrameLastIndex(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PACKET_COUNTER, &PIDContext::last_intra, &PIDPoint::pkt_index);
+        }
+
+        //!
+        //! Get the PCR in a PID at its last video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The PCR in the PID at its last video intra-frame or INVALID_PCR if there is none.
+        //!
+        uint64_t intraFrameLastPCR(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PCR, &PIDContext::last_intra, &PIDPoint::pcr);
+        }
+
+        //!
+        //! Get the PTS in a PID at its last video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The PTS in the PID at its last video intra-frame or INVALID_PTS if there is none.
+        //!
+        uint64_t intraFrameLastPTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_PTS, &PIDContext::last_intra, &PIDPoint::pts);
+        }
+
+        //!
+        //! Get the DTS in a PID at its last video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The DTS in the PID at its last video intra-frame or INVALID_DTS if there is none.
+        //!
+        uint64_t intraFrameLastDTS(PID pid) const
+        {
+            return getPIDPointField<PacketCounter>(pid, INVALID_DTS, &PIDContext::last_intra, &PIDPoint::dts);
+        }
 
         //!
         //! Check if the past packet of a PID contained the start of a video intra-frame.
@@ -376,9 +520,16 @@ namespace ts {
         //!
         //! Get the service of a PID.
         //! @param [in] pid The PID to check.
-        //! @return The first service in which @a pid was found or 0xFFFF if there was none.
+        //! @return The first service in which @a pid was found or INVALID_SERVICE_ID if there was none.
         //!
         uint16_t serviceId(PID pid) const;
+
+        //!
+        //! Get the PMT PID where a PID is referenced.
+        //! @param [in] pid The PID to check.
+        //! @return The PID of the PMT of the first service in which @a pid was found or PID_NULL if there was none.
+        //!
+        PID referencePMTPID(PID pid) const;
 
         //!
         //! Get the services of a PID.
@@ -388,25 +539,36 @@ namespace ts {
         void getServiceIds(PID pid, std::set<uint16_t> services) const;
 
     private:
+        // Description of a synchronization point in a PID.
+        class PIDPoint
+        {
+        public:
+            PIDPoint() = default;
+            PacketCounter pkt_index = INVALID_PACKET_COUNTER;  // Number of packets before this one in the PID.
+            uint64_t      pcr = INVALID_PCR;                   // PCR value in this packet.
+            uint64_t      pts = INVALID_PTS;                   // PTS value in this packet.
+            uint64_t      dts = INVALID_DTS;                   // DTS value in this packet.
+        };
+
         // Description of a PID.
         class PIDContext
         {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
-            const PID          pid;                                   // PID value (cannot change).
-            bool               scrambled = false;                     // Contains encrypted packets.
-            PIDClass           pid_class = PIDClass::UNDEFINED;       // Class of PID.
-            CodecType          codec = CodecType::UNDEFINED;          // Codec type (if any).
-            uint8_t            stream_type = ST_NULL;                 // Stream type from PMT or ST_NULL.
-            uint16_t           cas_id = CASID_NULL;                   // CAS id for ECM or EMM PID's.
-            PacketCounter      packets = 0;                           // Number of packets in this PID.
-            PacketCounter      pusi_count = 0;                        // Number of packets with PUSI.
-            PacketCounter      first_pusi = INVALID_PACKET_COUNTER;   // Number of packets before first PUSI.
-            PacketCounter      last_pusi = INVALID_PACKET_COUNTER;    // Number of packets before last PUSI.
-            PacketCounter      intra_count = 0;                       // Number of packets with start of intra-frame.
-            PacketCounter      first_intra = INVALID_PACKET_COUNTER;  // Number of packets before first start of intra-frame.
-            PacketCounter      last_intra = INVALID_PACKET_COUNTER;   // Number of packets before last start of intra-frame.
-            std::set<uint16_t> services {};                           // List of services owning this PID.
+            const PID     pid;                              // PID value (cannot change).
+            bool          scrambled = false;                // Contains encrypted packets.
+            PIDClass      pid_class = PIDClass::UNDEFINED;  // Class of PID.
+            CodecType     codec = CodecType::UNDEFINED;     // Codec type (if any).
+            uint8_t       stream_type = ST_NULL;            // Stream type from PMT or ST_NULL.
+            uint16_t      cas_id = CASID_NULL;              // CAS id for ECM or EMM PID's.
+            PacketCounter packets = 0;                      // Number of packets in this PID.
+            PacketCounter pusi_count = 0;                   // Number of packets with PUSI.
+            PIDPoint      first_pusi {};                    // Packet with first PUSI.
+            PIDPoint      last_pusi {};                     // Packet with last PUSI.
+            PacketCounter intra_count = 0;                  // Number of packets with start of intra-frame.
+            PIDPoint      first_intra {};                   // Packet with first start of intra-frame.
+            PIDPoint      last_intra {};                    // Packet with last start of intra-frame.
+            std::set<uint16_t> services {};                 // List of services owning this PID.
 
             // Constructor.
             PIDContext(PID);
@@ -476,15 +638,15 @@ namespace ts {
         bool                           _last_pat_handled = false;  // Last received PAT was handled by application.
         NIT                            _last_nit {};               // Last received NIT.
         bool                           _last_nit_handled = false;  // Last received NIT was handled by application.
-        uint16_t                       _ts_id = 0xFFFF;            // Transport stream id.
-        uint16_t                       _orig_network_id = 0xFFFF;  // Original network id.
-        uint16_t                       _network_id = 0xFFFF;       // Actual network id.
+        uint16_t                       _ts_id = INVALID_TS_ID;     // Transport stream id.
+        uint16_t                       _orig_network_id = INVALID_NETWORK_ID;  // Original network id.
+        uint16_t                       _network_id = INVALID_NETWORK_ID;       // Actual network id.
         Time                           _last_utc {};               // Last received UTC time.
         PIDContextMap                  _pids {};                   // Descriptions of PID's.
         ServiceContextMap              _services {};               // Descriptions of services.
 
         // Get the context for a PID. Create if not existent.
-        PIDContextPtr getPIDContext(PID pid);
+        PIDContext& getPIDContext(PID pid);
 
         // When to create a service description.
         enum class CreateService {ALWAYS, IF_MAY_EXIST, NEVER};
@@ -511,5 +673,32 @@ namespace ts {
 
         // Process a descriptor list, looking for useful information.
         void handleDescriptors(const DescriptorList&, PID);
+
+        // Extract a field of a PIDContext.
+        template<typename T>
+        T getPIDContextField(PID pid, const T& no_value, T PIDContext::* field) const;
+
+        // Extract a field of a PIDPoint in a PIDContext.
+        template<typename T>
+        T getPIDPointField(PID pid, const T& no_value, PIDPoint PIDContext::* pp, T PIDPoint::* field) const;
     };
+}
+
+
+//----------------------------------------------------------------------------
+// Template definitions
+//----------------------------------------------------------------------------
+
+template<typename T>
+T ts::SignalizationDemux::getPIDContextField(PID pid, const T& no_value, T PIDContext::* field) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? no_value : (*ctx->second).*field;
+}
+
+template<typename T>
+T ts::SignalizationDemux::getPIDPointField(PID pid, const T& no_value, PIDPoint PIDContext::* pp, T PIDPoint::* field) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? no_value : (*ctx->second).*pp.*field;
 }

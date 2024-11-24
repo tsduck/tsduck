@@ -92,37 +92,52 @@ namespace ts {
         bool success() const { return _success; }
 
     private:
-        // Context of a PMT PID.
-        class PMTContext
+        // Context of a service. Built during first pass.
+        class ServiceContext
         {
-            TS_NOBUILD_NOCOPY(PMTContext);
+            TS_NOBUILD_NOCOPY(ServiceContext);
         public:
             // Constructor:
-            PMTContext(const DuckContext& duck, PID pmt_pid);
+            ServiceContext(const DuckContext& duck, PID pmt_pid);
 
             // Public fields:
-            const PID         pmt_pid;
-            PMT               pmt;
+            PMT pmt {};
             CyclingPacketizer pzer;
         };
 
-        // A map of PMT contexts, indexed by PMT PID.
-        using PMTContextPtr = std::shared_ptr<PMTContext>;
-        using PMTContextMap = std::map<PID,PMTContextPtr>;
-        PMTContextPtr getPMTContext(PID pmt_pid, bool create);
+        // A map of service contexts, indexed by PMT PID.
+        using ServiceContextPtr = std::shared_ptr<ServiceContext>;
+        using ServiceMap = std::map<PID,ServiceContextPtr>;
+        ServiceContext& getServiceContext(PID pmt_pid);
+
+        // Context of a PID. Built at end of first pass, used in second pass.
+        class PIDContext
+        {
+        public:
+            PIDContext() = default;                 // Constructor.
+            PacketCounter packets = 0;              // Input packet count in that PID.
+            PacketCounter start_packet = INVALID_PACKET_COUNTER;  // Start writing packets after this one.
+            uint64_t      start_pts = INVALID_PTS;  // Start writing packets after that PTS.
+            PID           pmt_pid = PID_NULL;       // PID of service's PMT.
+            PID           video_pid = PID_NULL;     // Associated video PID.
+            bool          hold = true;              // Don't write packets of that PID yet.
+        };
+
+        // A map of PID contexts. No need to use an intermediate pointer, there is no non-default constructor.
+        using PIDMap = std::map<PID,PIDContext>;
 
         // File cleaner private fields:
-        bool               _success = true;
-        FileCleanOptions&  _opt;
-        TSFile             _in_file {};
-        TSFile             _out_file {};
-        PAT                _pat {};
-        CyclingPacketizer  _pat_pzer {_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
-        CAT                _cat {};
-        CyclingPacketizer  _cat_pzer {_opt.duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
-        SDT                _sdt {};
-        CyclingPacketizer  _sdt_pzer {_opt.duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
-        PMTContextMap      _pmts {};
+        bool              _success = true;
+        FileCleanOptions& _opt;
+        TSFile            _in_file {};
+        TSFile            _out_file {};
+        PAT               _pat {};
+        CyclingPacketizer _pat_pzer {_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CAT               _cat {};
+        CyclingPacketizer _cat_pzer {_opt.duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        SDT               _sdt {};
+        CyclingPacketizer _sdt_pzer {_opt.duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        ServiceMap        _pmts {};
 
         // Implementation of SignalizationHandlerInterface:
         virtual void handlePAT(const PAT& pat, PID pid) override;
@@ -135,6 +150,9 @@ namespace ts {
 
         // Initialize a packetizer with one table and output the first cycle.
         void initCycle(AbstractLongTable& table, CyclingPacketizer& pzer);
+
+        // Write one packet.
+        void writePacket(const TSPacket& pkt);
 
         // Write one packet from a packetizer.
         void writeFromPacketizer(Packetizer& pzer);
@@ -181,6 +199,39 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
         sig.feedPacket(pkt);
     }
 
+    // Build PID contexts for all component PID's of all services.
+    PIDMap pids;
+    for (const auto& svc : _pmts) {
+        // Get first intra-frame and PTS.
+        const PID vpid = svc.second->pmt.firstVideoPID(_opt.duck);
+        if (vpid != PID_NULL) {
+
+            // Build context for video PID.
+            auto& vctx(pids[vpid]);
+            vctx.pmt_pid = svc.first;
+            vctx.video_pid = vpid;
+
+            // Start passing video PID at first intra-frame.
+            vctx.start_packet = sig.intraFrameFirstIndex(vpid);
+            vctx.start_pts = sig.intraFrameFirstPTS(vpid);
+            if (vctx.start_packet == INVALID_PACKET_COUNTER) {
+                // No intra-frame detected (maybe an unknown codec), use first PUSI.
+                vctx.start_packet = sig.pusiFirstIndex(vpid);
+                vctx.start_pts = sig.pusiFirstPTS(vpid);
+            }
+
+            // Build context for all other component PID's.
+            for (const auto& st : svc.second->pmt.streams) {
+                if (st.first != vpid) {
+                    auto& ctx(pids[st.first]);
+                    ctx.pmt_pid = svc.first;
+                    ctx.video_pid = vpid;
+                    ctx.start_pts = vctx.start_pts;
+                }
+            }
+        }
+    }
+
     // Rewind input file to prepare for second pass.
     _success = _success && _in_file.rewind(_opt);
 
@@ -206,20 +257,18 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
         initCycle(it.second->pmt, it.second->pzer);
     }
 
-    // In second pass, count input packets per PID.
-    std::map<PID,PacketCounter> pkt_count;
-
     // Second pass: read input file again, write output file.
     while (_success && _in_file.readPackets(&pkt, nullptr, 1, _opt) == 1) {
 
         // Count input packets per PID.
-        const PacketCounter pkt_index = pkt_count[pkt.getPID()]++;
+        const PacketCounter pkt_index = pids[pkt.getPID()].packets++;
 
         // Process EIT's. The packet may be nullified (some EIT's are removed).
         eit_proc.processPacket(pkt);
 
         const PID pid = pkt.getPID();
         const PIDClass pid_class = sig.pidClass(pid);
+        auto& pctx(pids[pid]);
 
         if (pid == PID_PAT) {
             writeFromPacketizer(_pat_pzer);
@@ -232,26 +281,41 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
         }
         else if (pid == PID_EIT || pid_class == PIDClass::ECM || pid_class == PIDClass::EMM) {
             // Write these packets transparently.
-            _success = _success && _out_file.writePackets(&pkt, nullptr, 1, _opt);
+            writePacket(pkt);
         }
         else if (pid_class == PIDClass::PSI && Contains(_pmts, pid)) {
             writeFromPacketizer(_pmts[pid]->pzer);
         }
-        else if (pid_class == PIDClass::AUDIO || pid_class == PIDClass::SUBTITLES || pid_class == PIDClass::DATA) {
-            // Write these packets transparently after the first payload unit start.
-            const PacketCounter first_index = sig.pusiFirstIndex(pid);
-            if (first_index == INVALID_PACKET_COUNTER || pkt_index >= first_index) {
-                _success = _success && _out_file.writePackets(&pkt, nullptr, 1, _opt);
+        else if (pid_class == PIDClass::VIDEO) {
+            // Write these packets transparently after the first intra-frame (or after first PUSI if none detected).
+            if (pctx.hold && pkt.getPUSI() && (pctx.start_packet == INVALID_PACKET_COUNTER || pkt_index >= pctx.start_packet)) {
+                pctx.hold = false;
+                _opt.debug(u"releasing video PID %n, PTS %'d (%s)", pid, pctx.start_pts, pctx.start_pts == INVALID_PTS ? u"invalid" : u"valid");
+            }
+            if (!pctx.hold) {
+                writePacket(pkt);
             }
         }
-        else if (pid_class == PIDClass::VIDEO) {
-            // Write these packets transparently after the first intra-frame (or payload unit start if no IF was found).
-            PacketCounter first_index = sig.intraFrameFirstIndex(pid);
-            if (first_index == INVALID_PACKET_COUNTER) {
-                first_index = sig.pusiFirstIndex(pid);
+        else if (pid_class == PIDClass::AUDIO || pid_class == PIDClass::SUBTITLES || pid_class == PIDClass::DATA) {
+            // Write these packets transparently after the start PTS for that PID.
+            if (pctx.hold && pkt.getPUSI()) {
+                // We are in the initial hold period and we got a PUSI packet. Check its PTS.
+                const uint64_t pts = pkt.getPTS();
+                if (pts == INVALID_PTS || pctx.start_pts == INVALID_PTS) {
+                    // No PTS detected in this PID. Start passing it after video.
+                    pctx.hold = pids[pctx.video_pid].hold;
+                    if (!pctx.hold) {
+                        _opt.debug(u"releasing %s PID %n, associated video PID %d, no PTS found", PIDClassEnum->name(pid_class), pid, pctx.video_pid);
+                    }
+                }
+                else if (SequencedPTS(pctx.start_pts, pts)) {
+                    // Passed the video start PTS -> start passing audio or
+                    pctx.hold = false;
+                    _opt.debug(u"releasing %s PID %n, associated video PID %d, PTS %'d (%s)", PIDClassEnum->name(pid_class), pid, pctx.video_pid, pts, pts == INVALID_PTS ? u"invalid" : u"valid");
+                }
             }
-            if (first_index == INVALID_PACKET_COUNTER || pkt_index >= first_index) {
-                _success = _success && _out_file.writePackets(&pkt, nullptr, 1, _opt);
+            if (!pctx.hold) {
+                writePacket(pkt);
             }
         }
     }
@@ -369,22 +433,22 @@ void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
 {
     _opt.debug(u"got PMT version %d, PID %n, service id %n", pmt.version, pid, pmt.service_id);
 
-    // Get or create context for this PMT.
-    auto ctx = getPMTContext(pid, true);
+    // Get or create service context for this PMT.
+    auto& ctx(getServiceContext(pid));
 
-    if (!ctx->pmt.isValid()) {
+    if (!ctx.pmt.isValid()) {
         // First PMT on this PID.
-        ctx->pmt = pmt;
+        ctx.pmt = pmt;
     }
     else {
         // Updated PMT, add new components, merge others.
         _opt.verbose(u"got PMT update version %d, PID %n, service id %n", pmt.version, pid, pmt.service_id);
         for (const auto& it : pmt.streams) {
-            const auto cur = ctx->pmt.streams.find(it.first);
-            if (cur == ctx->pmt.streams.end()) {
+            const auto cur = ctx.pmt.streams.find(it.first);
+            if (cur == ctx.pmt.streams.end()) {
                 // Add new component in PMT update.
                 _opt.verbose(u"added component PID %n from PMT update", it.first);
-                ctx->pmt.streams[it.first] = it.second;
+                ctx.pmt.streams[it.first] = it.second;
             }
             else {
                 // Existing component, merge descriptors.
@@ -399,25 +463,20 @@ void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
 // Context of a PMT PID.
 //----------------------------------------------------------------------------
 
-ts::FileCleaner::PMTContext::PMTContext(const DuckContext& duck, PID pid) :
-    pmt_pid(pid),
-    pmt(),
+ts::FileCleaner::ServiceContext::ServiceContext(const DuckContext& duck, PID pmt_pid) :
     pzer(duck, pmt_pid, CyclingPacketizer::StuffingPolicy::ALWAYS)
 {
     pmt.invalidate();
 }
 
-ts::FileCleaner::PMTContextPtr ts::FileCleaner::getPMTContext(PID pmt_pid, bool create)
+ts::FileCleaner::ServiceContext& ts::FileCleaner::getServiceContext(PID pmt_pid)
 {
     auto it = _pmts.find(pmt_pid);
     if (it != _pmts.end()) {
-        return it->second;
-    }
-    else if (create) {
-        return _pmts[pmt_pid] = std::make_shared<PMTContext>(_opt.duck, pmt_pid);
+        return *it->second;
     }
     else {
-        return PMTContextPtr();
+        return *(_pmts[pmt_pid] = std::make_shared<ServiceContext>(_opt.duck, pmt_pid));
     }
 }
 
@@ -440,14 +499,21 @@ void ts::FileCleaner::initCycle(AbstractLongTable& table, CyclingPacketizer& pze
 
 
 //----------------------------------------------------------------------------
-// Write one packet from a packetizer.
+// Write one packet.
 //----------------------------------------------------------------------------
+
+void ts::FileCleaner::writePacket(const TSPacket& pkt)
+{
+    if (_success) {
+        _success = _out_file.writePackets(&pkt, nullptr, 1, _opt);
+    }
+}
 
 void ts::FileCleaner::writeFromPacketizer(Packetizer& pzer)
 {
     TSPacket pkt;
-    if (_success && pzer.getNextPacket(pkt) && !_out_file.writePackets(&pkt, nullptr, 1, _opt)) {
-        _success = false;
+    if (_success && pzer.getNextPacket(pkt)) {
+        _success = _out_file.writePackets(&pkt, nullptr, 1, _opt);
     }
 }
 

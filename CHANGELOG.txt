@@ -2,11 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.40-3959 (Nov 2024)
+VERSION 3.40-3969 (Nov 2024)
 
 [NEW] New commands and plugins:
 
   * Added plugin "isdbinfo": Extract ISDB-T information from the stream.
+
+[IMP] Improvements on existing commands and plugins:
+
+  * In "tsfclean",  the audio of each service now starts at or after the PTS of
+    the first intra-frame of the video of that service.
 
 -------------------------------------------------------------------------------
 

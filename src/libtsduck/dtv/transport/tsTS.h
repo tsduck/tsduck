@@ -540,7 +540,7 @@ namespace ts {
     //! Check if PTS2 follows PTS1 after wrap up.
     //! @param [in] pts1 First PTS.
     //! @param [in] pts2 Second PTS.
-    //! @return True is @a pts2 is probably following @a pts1 after wrapping up at 2^33.
+    //! @return True if @a pts2 is probably following @a pts1 after wrapping up at 2^33.
     //!
     TSDUCKDLL inline bool WrapUpPTS(uint64_t pts1, uint64_t pts2)
     {
@@ -556,7 +556,7 @@ namespace ts {
     //! the previous sequenced PTS (with possible wrap up).
     //! @param [in] pts1 First PTS.
     //! @param [in] pts2 Second PTS.
-    //! @return True is @a pts2 is after @a pts1, possibly after wrapping up at 2**33.
+    //! @return True if @a pts2 is after @a pts1, possibly after wrapping up at 2**33.
     //!
     TSDUCKDLL inline bool SequencedPTS(uint64_t pts1, uint64_t pts2)
     {

@@ -67,7 +67,8 @@ void ts::SignalizationDemux::reset()
     _last_pat_handled = false;
     _last_nit.invalidate();
     _last_nit_handled = false;
-    _ts_id = _orig_network_id = _network_id = 0xFFFF;
+    _ts_id = INVALID_TS_ID;
+    _orig_network_id = _network_id = INVALID_NETWORK_ID;
     _last_utc.clear();
     _pids.clear();
     _services.clear();
@@ -86,26 +87,32 @@ void ts::SignalizationDemux::reset()
 void ts::SignalizationDemux::feedPacket(const TSPacket& pkt)
 {
     // Keep statistics on the PID.
-    auto ctx(getPIDContext(pkt.getPID()));
+    auto& ctx(getPIDContext(pkt.getPID()));
     if (pkt.getPUSI()) {
         // The packet contains a payload unit start.
-        if (ctx->first_pusi == INVALID_PACKET_COUNTER) {
-            ctx->first_pusi = ctx->packets;
+        ctx.pusi_count++;
+        ctx.last_pusi.pkt_index = ctx.packets;
+        ctx.last_pusi.pcr = pkt.getPCR();
+        ctx.last_pusi.pts = pkt.getPTS();
+        ctx.last_pusi.dts = pkt.getDTS();
+        if (ctx.first_pusi.pkt_index == INVALID_PACKET_COUNTER) {
+            ctx.first_pusi = ctx.last_pusi;
         }
-        ctx->last_pusi = ctx->packets;
-        ctx->pusi_count++;
-        if (pkt.hasPayload() && PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), ctx->stream_type, ctx->codec) != NPOS) {
+
+        // Track starts of intra-frames.
+        if (pkt.hasPayload() && PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), ctx.stream_type, ctx.codec) != NPOS) {
             // The payload contains the start of an intra image.
-            if (ctx->first_intra == INVALID_PACKET_COUNTER) {
-                ctx->first_intra = ctx->packets;
+            // The packet contains a payload unit start.
+            ctx.intra_count++;
+            ctx.last_intra = ctx.last_pusi;
+            if (ctx.first_intra.pkt_index == INVALID_PACKET_COUNTER) {
+                ctx.first_intra = ctx.last_pusi;
             }
-            ctx->last_intra = ctx->packets;
-            ctx->intra_count++;
         }
     }
-    ctx->packets++;
+    ctx.packets++;
     if (pkt.getScrambling() != SC_CLEAR) {
-        ctx->scrambled = true;
+        ctx.scrambled = true;
     }
 
     // Feed to table demux to collect signalization.
@@ -154,58 +161,10 @@ uint8_t ts::SignalizationDemux::streamType(PID pid, uint8_t deftype) const
     return type == ST_NULL ? deftype : type;
 }
 
-bool ts::SignalizationDemux::isScrambled(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx != _pids.end() && ctx->second->scrambled;
-}
-
-ts::PacketCounter ts::SignalizationDemux::packetCount(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx == _pids.end() ? 0 : ctx->second->packets;
-}
-
-ts::PacketCounter ts::SignalizationDemux::pusiCount(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx == _pids.end() ? 0 : ctx->second->pusi_count;
-}
-
-ts::PacketCounter ts::SignalizationDemux::pusiFirstIndex(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->first_pusi;
-}
-
-ts::PacketCounter ts::SignalizationDemux::pusiLastIndex(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->last_pusi;
-}
-
-ts::PacketCounter ts::SignalizationDemux::intraFrameCount(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx == _pids.end() ? 0 : ctx->second->intra_count;
-}
-
-ts::PacketCounter ts::SignalizationDemux::intraFrameFirstIndex(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->first_intra;
-}
-
-ts::PacketCounter ts::SignalizationDemux::intraFrameLastIndex(PID pid) const
-{
-    auto ctx = _pids.find(pid);
-    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->last_intra;
-}
-
 bool ts::SignalizationDemux::atIntraFrame(PID pid) const
 {
     auto ctx = _pids.find(pid);
-    return ctx != _pids.end() && ctx->second->intra_count > 0 && ctx->second->packets - 1 == ctx->second->last_intra;
+    return ctx != _pids.end() && ctx->second->intra_count > 0 && ctx->second->packets - 1 == ctx->second->last_intra.pkt_index;
 }
 
 bool ts::SignalizationDemux::inService(PID pid, uint16_t service_id) const
@@ -230,7 +189,13 @@ bool ts::SignalizationDemux::inAnyService(PID pid, std::set<uint16_t> service_id
 uint16_t ts::SignalizationDemux::serviceId(PID pid) const
 {
     auto ctx = _pids.find(pid);
-    return ctx != _pids.end() && !ctx->second->services.empty() ? *ctx->second->services.begin() : 0xFFFF;
+    return ctx != _pids.end() && !ctx->second->services.empty() ? *ctx->second->services.begin() : INVALID_SERVICE_ID;
+}
+
+ts::PID ts::SignalizationDemux::referencePMTPID(PID pid) const
+{
+    auto ctx = _services.find(serviceId(pid));
+    return ctx != _services.end() ? ctx->second->service.getPMTPID() : PID_NULL;
 }
 
 void ts::SignalizationDemux::getServiceIds(PID pid, std::set<uint16_t> services) const
@@ -915,9 +880,9 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
     }
 
     // Register the PMT PID as PSI.
-    auto ctx(getPIDContext(pid));
-    ctx->pid_class = PIDClass::PSI;
-    ctx->services.insert(pmt.service_id);
+    auto& ctx(getPIDContext(pid));
+    ctx.pid_class = PIDClass::PSI;
+    ctx.services.insert(pmt.service_id);
 
     // Notify the PMT to the application.
     if (_handler != nullptr && (isFilteredTableId(TID_PMT) || isFilteredServiceId(pmt.service_id))) {
@@ -931,11 +896,11 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
     for (const auto& it : pmt.streams) {
 
         // Register the characteritics of the component PID.
-        ctx = getPIDContext(it.first);
-        ctx->pid_class = it.second.getClass(_duck);
-        ctx->stream_type = it.second.stream_type;
-        ctx->codec = it.second.getCodec(_duck);
-        ctx->services.insert(pmt.service_id);
+        auto& ctx1(getPIDContext(it.first));
+        ctx1.pid_class = it.second.getClass(_duck);
+        ctx1.stream_type = it.second.stream_type;
+        ctx1.codec = it.second.getCodec(_duck);
+        ctx1.services.insert(pmt.service_id);
 
         // Look for ECM PID's at component level.
         handleDescriptors(pmt.descs, pid);
@@ -1049,7 +1014,7 @@ void ts::SignalizationDemux::handleMGT(const MGT& mgt, PID pid)
 
     // Locate all additional ATSC signalization PID's.
     for (const auto& it : mgt.tables) {
-        getPIDContext(it.second.table_type_PID)->pid_class = PIDClass::PSI;
+        getPIDContext(it.second.table_type_PID).pid_class = PIDClass::PSI;
     }
 }
 
@@ -1113,13 +1078,13 @@ void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID 
             if (did == DID_CA) {
                 const CADescriptor desc(_duck, *ptr);
                 if (desc.isValid()) {
-                    getPIDContext(desc.ca_pid)->setCAS(dlist.table(), desc.cas_id);
+                    getPIDContext(desc.ca_pid).setCAS(dlist.table(), desc.cas_id);
                 }
             }
             else if (bool(_duck.standards() & Standards::ISDB) && did == DID_ISDB_CA) {
                 const ISDBAccessControlDescriptor desc(_duck, *ptr);
                 if (desc.isValid()) {
-                    getPIDContext(desc.pid)->setCAS(dlist.table(), desc.CA_system_id);
+                    getPIDContext(desc.pid).setCAS(dlist.table(), desc.CA_system_id);
                 }
             }
         }
@@ -1132,10 +1097,15 @@ void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID 
 //----------------------------------------------------------------------------
 
 // Get the context for a PID. Create if not existent.
-ts::SignalizationDemux::PIDContextPtr ts::SignalizationDemux::getPIDContext(PID pid)
+ts::SignalizationDemux::PIDContext& ts::SignalizationDemux::getPIDContext(PID pid)
 {
     auto it = _pids.find(pid);
-    return it != _pids.end() ? it->second : (_pids[pid] = std::make_shared<PIDContext>(pid));
+    if (it != _pids.end()) {
+        return *it->second;
+    }
+    else {
+        return *(_pids[pid] = std::make_shared<PIDContext>(pid));
+    }
 }
 
 // Constructor.
@@ -1202,7 +1172,7 @@ ts::SignalizationDemux::ServiceContext::ServiceContext(uint16_t service_id)
 // Add a service only if it comes from the same TS.
 void ts::SignalizationDemux::ServiceContextMapView::push_back(const Service& srv)
 {
-    if (_tsid != 0xFFFF && (!srv.hasTSId() || srv.hasTSId(_tsid)) && (_onid == 0xFFFF || !srv.hasONId() || srv.hasONId(_onid))) {
+    if (_tsid != INVALID_TS_ID && (!srv.hasTSId() || srv.hasTSId(_tsid)) && (_onid == INVALID_NETWORK_ID || !srv.hasONId() || srv.hasONId(_onid))) {
         if (_svmap[srv.getId()] == nullptr) {
             _svmap[srv.getId()] = std::make_shared<ServiceContext>(srv.getId());
         }

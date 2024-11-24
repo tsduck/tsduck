@@ -108,6 +108,23 @@ namespace ts {
     //!
     constexpr uint32_t MJD_EPOCH = 40587;
 
+    //!
+    //! A placeholder for "invalid network id" value.
+    //! In theory, all 16-bit values can be valid network id. However, this one is "usually" not used.
+    //!
+    constexpr uint16_t INVALID_NETWORK_ID = 0xFFFF;
+
+    //!
+    //! A placeholder for "invalid transport stream id" value.
+    //! In theory, all 16-bit values can be valid TS id. However, this one is "usually" not used.
+    //!
+    constexpr uint16_t INVALID_TS_ID = 0xFFFF;
+
+    //!
+    //! A placeholder for "invalid service id" value.
+    //! In theory, all 16-bit values can be valid service id. However, this one is "usually" not used.
+    //!
+    constexpr uint16_t INVALID_SERVICE_ID = 0xFFFF;
 
     //---------------------------------------------------------------------
     //! Table identification (TID) values
