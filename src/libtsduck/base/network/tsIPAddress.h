@@ -32,7 +32,8 @@ namespace ts {
     //!
     //! An instance can optionally be bound by construction to a given generation.
     //! If it is bound to a given generation, trying to assign an address of a
-    //! different generation will throw an exception.
+    //! different generation will throw an exception. Binding to an IP generation
+    //! is a property of the object, the variable, not the value.
     //!
     //! An instance always have a generation IPv4 or IPv6. The default initial value
     //! is the IPv4 generic address for "any address".
@@ -56,7 +57,7 @@ namespace ts {
     class TSDUCKDLL IPAddress: public AbstractNetworkAddress
     {
     private:
-        IP       _bound = IP::Any;  // Fixed (bound) generation of the IP address.
+        const IP _bound = IP::Any;  // Fixed (bound) generation of the IP address.
         IP       _gen = IP::v4;     // Current generation of the IP address. Never IP::Any.
         uint32_t _addr4 = 0;        // An IPv4 address is a 32-bit word in host byte order
         uint8_t  _bytes6[16] {};    // Raw content of the IPv6 address.
@@ -119,9 +120,17 @@ namespace ts {
         //!
         //! Copy constructor.
         //! @param [in] other Another instance to copy.
-        //! If @a other is bound to an IP generation, this object is bound to the same generation.
+        //! If @a other is bound to an IP generation, this object is not bound to a generation
+        //! (binding is a property of an object, not of a value).
         //!
         IPAddress(const IPAddress& other);
+
+        //!
+        //! Copy constructor with optional binding.
+        //! @param [in] other Another instance to copy.
+        //! @param [in] bound If true, this instance is bound to its generation. Otherwise, it can receive any address.
+        //!
+        IPAddress(const IPAddress& other, bool bound);
 
         //!
         //! Destructor.
@@ -133,7 +142,7 @@ namespace ts {
         //! @param [in] addr Address of the memory area containing the address in binary format.
         //! @param [in] size Size of the memory area. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
-        //! @param [in] bound If true, this instance is bound to it generation. Otherwise, it can receive any address.
+        //! @param [in] bound If true, this instance is bound to its generation. Otherwise, it can receive any address.
         //!
         IPAddress(const uint8_t *addr, size_t size, bool bound = false);
 
@@ -141,7 +150,7 @@ namespace ts {
         //! Generic constructor from an address in binary format.
         //! @param [in] bb Byte block containing the address in binary format. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
-        //! @param [in] bound If true, this instance is bound to it generation. Otherwise, it can receive any address.
+        //! @param [in] bound If true, this instance is bound to its generation. Otherwise, it can receive any address.
         //!
         IPAddress(const ByteBlock& bb, bool bound = false) : IPAddress(bb.data(), bb.size(), bound) {}
 

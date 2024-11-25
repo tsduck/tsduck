@@ -55,20 +55,30 @@ bool ts::UDPSocket::open(IP gen, Report& report)
         return false;
     }
 
-    // Set the IP_PKTINFO option. This option is used to get the destination address of all
-    // UDP packets arriving on this socket. Actual socket option is an int.
-    // On FreeBSD, this option is replaced by IP_RECVDSTADDR.
+    // Set option to get the destination address of all UDP packets arriving on this socket.
+    // On IPv4 socket, use IP_PKTINFO (IP_RECVDSTADDR on FreeBSD).
+    // On IPv6 socket, use IPV6_RECVPKTINFO.
 #if defined(IP_PKTINFO)
-    int opt = 1;
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
+    int opt_pktinfo = 1;
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, SysSockOptPointer(&opt_pktinfo), sizeof(opt_pktinfo)) != 0) {
         report.error(u"error setting socket IP_PKTINFO option: %s", SysErrorCodeMessage());
         return false;
     }
 #elif defined(IP_RECVDSTADDR)
-    int opt = 1;
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_RECVDSTADDR, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
+    int opt_recvdstaddr = 1;
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_RECVDSTADDR, SysSockOptPointer(&opt_recvdstaddr), sizeof(opt_recvdstaddr)) != 0) {
         report.error(u"error setting socket IP_RECVDSTADDR option: %s", SysErrorCodeMessage());
         return false;
+    }
+#endif
+
+#if defined(IPV6_RECVPKTINFO)
+    if (generation() == IP::v6) {
+        int opt = 1;
+        if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_RECVPKTINFO, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
+            report.error(u"error setting socket IPV6_RECVPKTINFO option: %s", SysErrorCodeMessage());
+            return false;
+        }
     }
 #endif
 
@@ -626,7 +636,14 @@ int ts::UDPSocket::receiveOne(void* data,
             const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
             destination = IPSocketAddress(info->ipi_addr, _local_address.port());
         }
-#elif defined(IP_RECVDSTADDR)
+#endif
+#if defined(IPV6_PKTINFO)
+        if (cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO && cmsg->cmsg_len >= sizeof(::in6_pktinfo)) {
+            const ::in6_pktinfo* info = reinterpret_cast<const ::in6_pktinfo*>(CMSG_DATA(cmsg));
+            destination = IPSocketAddress(info->ipi6_addr, _local_address.port());
+        }
+#endif
+#if defined(IP_RECVDSTADDR)
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_RECVDSTADDR && cmsg->cmsg_len >= sizeof(::in_addr)) {
             const ::in_addr* info = reinterpret_cast<const ::in_addr*>(CMSG_DATA(cmsg));
             destination = IPSocketAddress(*info, _local_address.port());

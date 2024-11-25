@@ -37,11 +37,7 @@ namespace ts {
 
         //!
         //! Open the socket.
-        //! @param [in] gen IP generation, IPv4 or IPv6.
-        //! If set to IP::Any, open an IPv6 socket with option IPV6_V6ONLY cleared.
-        //! As a server, this socket can accept IPv4 and IPv6 connections.
-        //! If @a gen is IP::v6, the socket is created with option IPV6_V6ONLY set.
-        //! @param [in,out] report Where to report error.
+        //! @param [in] gen IP generation, IPv4 or IPv6. If set to IP::Any, open an IPv6 socket (IPv4 connections allowed).
         //! @return True on success, false on error.
         //!
         virtual bool open(IP gen, Report& report = CERR) = 0;
@@ -61,7 +57,7 @@ namespace ts {
 
         //!
         //! Get the IP generation with which the socket was open.
-        //! @return IP generation. Return IP::Any if the socket can access IPv4 and IPv6 addresses.
+        //! @return The IP generation used to open the socket. Never IP::Any.
         //!
         IP generation() const { return _gen; }
 
@@ -148,6 +144,6 @@ namespace ts {
 
     private:
         volatile SysSocketType _sock = SYS_SOCKET_INVALID;
-        IP _gen = IP::Any;
+        IP _gen = IP::v4;   // Current generation of the IP address. Never IP::Any.
     };
 }

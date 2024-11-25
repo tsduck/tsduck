@@ -36,27 +36,23 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
     }
 
     // Create the socket on IPv6, unless explicitly IPv4.
-    _gen = gen;
+    _gen = gen == IP::v4 ? IP::v4 : IP::v6;
     _sock = ::socket(gen == IP::v4 ? PF_INET : PF_INET6, type, protocol);
     if (_sock == SYS_SOCKET_INVALID) {
         report.error(u"error creating socket: %s", SysErrorCodeMessage());
         return false;
     }
 
-    // Set the IPV6_V6ONLY option on IPv6 sockets. When gen is IPv6, force V6ONLY.
-    // When gen is Any, the socket is IPv6 but V6ONLY is zero, meaning accepting IPv4 clients.
-    if (_gen != IP::v4) {
-#if defined(TS_WINDOWS)
-        ::DWORD
-#else
-        int
-#endif
-        param = gen == IP::Any ? 0 : 1;
-        if (::setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SysSockOptPointer(&param), sizeof(param)) != 0) {
+    // Set the IPV6_V6ONLY option to zero on IPv6 sockets (can be used in IPv4 or IPv6 communications).
+#if defined(IPV6_V6ONLY)
+    if (_gen == IP::v6) {
+        int opt = 0;
+        if (::setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
             // don't fail, just report a warning, will still work on IPv6.
             report.warning(u"cannot set socket in %s mode: %s", _gen == IP::Any ? u"IPv4/IPv6" : u"IPv6-only", SysErrorCodeMessage());
         }
     }
+#endif
 
     return true;
 }

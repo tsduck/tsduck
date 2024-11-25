@@ -61,7 +61,6 @@ ts::IPAddress::IPAddress(IP bound) :
 
 // Copy constructor.
 ts::IPAddress::IPAddress(const IPAddress& other) :
-    _bound(other._bound),
     _gen(other._gen),
     _addr4(other._addr4)
 {
@@ -70,13 +69,26 @@ ts::IPAddress::IPAddress(const IPAddress& other) :
     }
 }
 
+// Copy constructor with optional binding.
+ts::IPAddress::IPAddress(const IPAddress& other, bool bound) :
+    _bound(bound ? other._gen : IP::Any),
+    _gen(other._gen),
+    _addr4(other._addr4)
+{
+    if (_gen == IP::v6) {
+        Copy6(_bytes6, other._bytes6);
+    }
+}
+
+
 // Destructor.
 ts::IPAddress::~IPAddress()
 {
 }
 
 // Generic constructor from an address in binary format.
-ts::IPAddress::IPAddress(const uint8_t *addr, size_t size, bool bound)
+ts::IPAddress::IPAddress(const uint8_t *addr, size_t size, bool bound) :
+    _bound(bound ? (addr != nullptr && size == BYTES6 ? IP::v6 : IP::v4) : IP::Any)
 {
     if (addr != nullptr && size == BYTES6) {
         _gen = IP::v6;
@@ -87,9 +99,6 @@ ts::IPAddress::IPAddress(const uint8_t *addr, size_t size, bool bound)
     }
     else {
         _addr4 = 0;
-    }
-    if (bound) {
-        _bound = _gen;
     }
 }
 
