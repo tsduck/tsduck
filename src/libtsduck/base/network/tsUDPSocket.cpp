@@ -57,7 +57,6 @@ bool ts::UDPSocket::open(IP gen, Report& report)
 
     // Set option to get the destination address of all UDP packets arriving on this socket.
     // On IPv4 socket, use IP_PKTINFO (IP_RECVDSTADDR on FreeBSD).
-    // On IPv6 socket, use IPV6_RECVPKTINFO.
 #if defined(IP_PKTINFO)
     int opt_pktinfo = 1;
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, SysSockOptPointer(&opt_pktinfo), sizeof(opt_pktinfo)) != 0) {
@@ -72,15 +71,22 @@ bool ts::UDPSocket::open(IP gen, Report& report)
     }
 #endif
 
-#if defined(IPV6_RECVPKTINFO)
+    // On IPv6 socket, use IPV6_RECVPKTINFO on Unix and IPV6_PKTINFO on Windows.
     if (generation() == IP::v6) {
+#if defined(IPV6_RECVPKTINFO)
         int opt = 1;
         if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_RECVPKTINFO, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
             report.error(u"error setting socket IPV6_RECVPKTINFO option: %s", SysErrorCodeMessage());
             return false;
         }
-    }
+#elif defined(TS_WINDOWS)
+        int opt = 1;
+        if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_PKTINFO, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
+            report.error(u"error setting socket IPV6_PKTINFO option: %s", SysErrorCodeMessage());
+            return false;
+        }
 #endif
+    }
 
     return true;
 }
@@ -587,6 +593,10 @@ int ts::UDPSocket::receiveOne(void* data,
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
             const ::IN_PKTINFO* info = reinterpret_cast<const ::IN_PKTINFO*>(WSA_CMSG_DATA(cmsg));
             destination = IPSocketAddress(info->ipi_addr, _local_address.port());
+        }
+        else if (cmsg->cmsg_level == IPPROTO_IPV6 && cmsg->cmsg_type == IPV6_PKTINFO) {
+            const ::IN6_PKTINFO* info = reinterpret_cast<const ::IN6_PKTINFO*>(WSA_CMSG_DATA(cmsg));
+            destination = IPSocketAddress(info->ipi6_addr, _local_address.port());
         }
     }
 
