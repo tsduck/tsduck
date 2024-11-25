@@ -807,9 +807,9 @@ bool ts::IPAddress::decode6(const UString& name)
         else {
             // Found a standard hexlet.
             hexlet = 0;
-            ok = fields[i].size() <= 4 && fields[i].scan(u"%x", &hexlet);
+            ok = fields[i].size() <= 4 && fields[i].scan(u"%x", &hexlet) && hexlet < 0x10000;
             if (ok) {
-                PutUInt16(_bytes6 + bytesIndex, hexlet);
+                PutUInt16(_bytes6 + bytesIndex, uint16_t(hexlet));
                 bytesIndex += 2;
             }
         }
