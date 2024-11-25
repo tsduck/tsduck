@@ -289,7 +289,7 @@ bool ts::SRTSocket::getSockOpt(int, const char*, void*, int&, Report& report) co
 int  ts::SRTSocket::getSocket() const { return -1; }
 bool ts::SRTSocket::getMessageApi() const { return false; }
 ts::UString ts::SRTSocket::GetLibraryVersion() { return NOSRT_ERROR_MSG; }
-bool ts::SRTSocket::setAddressesInternal(const UString&, const UString&, const UString&, bool, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::setAddressesInternal(const IPSocketAddress&, const IPSocketAddress&, const IPAddress&, bool, Report& report) NOSRT_ERROR
 size_t ts::SRTSocket::totalSentBytes() const { return 0; }
 size_t ts::SRTSocket::totalReceivedBytes() const { return 0; }
 
