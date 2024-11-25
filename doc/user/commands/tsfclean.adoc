@@ -33,10 +33,15 @@ The following transformations are applied:
 * All other PSI/SI (including NIT, BAT, TDT and other broadcast-related tables), all null packets
   and all orphan PID's are deleted.
 * In each video PID, all packets preceding the first intra-frame are deleted. If no intra-frame can
-  be found (unknown video codec or scrambled contents), all packets preceding the first
-  complete PES packet are deleted.
+  be found (unknown video codec), all packets preceding the first complete PES packet are deleted.
+  Additionally, to allow early clock synchronization, all TS packets containing a PCR before the
+  first intra-frame are passed but their payload is deleted.
 * In each audio, subtitles or data component of the services, all packets preceding the first
-  complete PES packet or section are deleted.
+  complete PES packet or section are deleted. When PTS are present (audio for instance),
+  the PES packets preceding (in PTS time) the first video intra-frame are deleted.
+  When PTS are not present, all PES packets preceding (in the stream) the first video intra-frame are deleted.
+* In case of scrambled content, the PTS are not accessible. In that case, all audio and video packets
+  preceding the first complete PES packet are deleted. However, no timing synchronization is possible.
 
 If the input file contains several versions of a table (PAT, CAT, SDT or PMT's),
 all successive versions are merged into one single version of the table.

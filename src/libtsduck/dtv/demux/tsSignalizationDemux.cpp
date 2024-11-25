@@ -884,9 +884,13 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
     ctx.pid_class = PIDClass::PSI;
     ctx.services.insert(pmt.service_id);
 
-    // Notify the PMT to the application.
-    if (_handler != nullptr && (isFilteredTableId(TID_PMT) || isFilteredServiceId(pmt.service_id))) {
-        _handler->handlePMT(pmt, pid);
+    // The PCR PID is defined as PCR_ONLY if not otherwise referenced.
+    // The PID class may be overriden later as VIDEO for instance.
+    if (pmt.pcr_pid != PID_NULL) {
+        auto& ctx1(getPIDContext(pmt.pcr_pid));
+        if (ctx1.pid_class == PIDClass::UNDEFINED) {
+            ctx1.pid_class = PIDClass::PCR_ONLY;
+        }
     }
 
     // Look for ECM PID's at service level.
@@ -904,6 +908,11 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
 
         // Look for ECM PID's at component level.
         handleDescriptors(pmt.descs, pid);
+    }
+
+    // Notify the PMT to the application.
+    if (_handler != nullptr && (isFilteredTableId(TID_PMT) || isFilteredServiceId(pmt.service_id))) {
+        _handler->handlePMT(pmt, pid);
     }
 
     // A PMT change always means that something has changed in the service.

@@ -385,6 +385,7 @@ namespace ts {
         AUDIO,      //!< Audio component of a service.
         SUBTITLES,  //!< Subtitles component of a service.
         DATA,       //!< Data component of a service.
+        PCR_ONLY,   //!< PCR of a service, not otherwise used as video or audio.
         STUFFING,   //!< Null packets.
     };
 

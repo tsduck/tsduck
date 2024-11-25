@@ -24,6 +24,7 @@ TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PIDClassEnum, ({
     {u"audio",     ts::PIDClass::AUDIO},
     {u"subtitles", ts::PIDClass::SUBTITLES},
     {u"data",      ts::PIDClass::DATA},
+    {u"PCR",       ts::PIDClass::PCR_ONLY},
     {u"stuffing",  ts::PIDClass::STUFFING},
 }));
 

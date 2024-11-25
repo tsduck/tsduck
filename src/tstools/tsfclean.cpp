@@ -271,19 +271,24 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
         auto& pctx(pids[pid]);
 
         if (pid == PID_PAT) {
+            pctx.hold = false;
             writeFromPacketizer(_pat_pzer);
         }
         else if (pid == PID_CAT) {
+            pctx.hold = false;
             writeFromPacketizer(_cat_pzer);
         }
         else if (pid == PID_SDT) {
+            pctx.hold = false;
             writeFromPacketizer(_sdt_pzer);
         }
-        else if (pid == PID_EIT || pid_class == PIDClass::ECM || pid_class == PIDClass::EMM) {
+        else if (pid == PID_EIT || pid_class == PIDClass::ECM || pid_class == PIDClass::EMM || pid_class == PIDClass::PCR_ONLY) {
             // Write these packets transparently.
+            pctx.hold = false;
             writePacket(pkt);
         }
         else if (pid_class == PIDClass::PSI && Contains(_pmts, pid)) {
+            pctx.hold = false;
             writeFromPacketizer(_pmts[pid]->pzer);
         }
         else if (pid_class == PIDClass::VIDEO) {
@@ -317,6 +322,16 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
             if (!pctx.hold) {
                 writePacket(pkt);
             }
+        }
+
+        // If the PID is identified in a service but still on hold and contains a PCR, write the PCR.
+        if (pctx.hold && pkt.hasPCR() && (pid_class == PIDClass::VIDEO || pid_class == PIDClass::AUDIO)) {
+            // Erase the payload, only keep the PCR in adaptation fields.
+            MemSet(pkt.getPayload(), 0xFF, pkt.getPayloadSize());  // overwrite payload content
+            pkt.b[3] &= ~0x10; // clear payload existence
+            pkt.b[4] = 183; // extend adaptation field to end of packet
+            writePacket(pkt);
+            _opt.debug(u"passing PCR-only packet on %s PID %n, associated video PID %d", PIDClassEnum->name(pid_class), pid, pctx.video_pid);
         }
     }
 
