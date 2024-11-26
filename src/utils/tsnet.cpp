@@ -16,6 +16,8 @@
 #include "tsIPUtils.h"
 #include "tsIPAddress.h"
 #include "tsUDPSocket.h"
+#include "tsTCPServer.h"
+#include "tsTelnetConnection.h"
 TS_MAIN(MainCode);
 
 
@@ -39,6 +41,8 @@ namespace ts {
         UStringVector   resolve_all {};
         IPSocketAddress udp_send {};
         IPSocketAddress udp_receive {};
+        IPSocketAddress tcp_send {};
+        IPSocketAddress tcp_receive {};
     };
 }
 
@@ -57,6 +61,12 @@ ts::NetOptions::NetOptions(int argc, char *argv[]) :
 
     option(u"udp-send", 's', IPSOCKADDR);
     help(u"udp-send", u"Send the 'message-string' to the specified socket and wait for a response.");
+
+    option(u"tcp-receive", 't', IPSOCKADDR_OA);
+    help(u"tcp-receive", u"Create a TCP server, wait for a message and send a response.");
+
+    option(u"tcp-send", 'c', IPSOCKADDR);
+    help(u"tcp-send", u"Connect to the specified TCP server, send the 'message-string' and wait for a response.");
 
     option(u"ipv4", '4');
     help(u"ipv4", u"Use only IPv4 addresses.");
@@ -94,6 +104,8 @@ ts::NetOptions::NetOptions(int argc, char *argv[]) :
     getValue(send_message, u"");
     getSocketValue(udp_send, u"udp-send");
     getSocketValue(udp_receive, u"udp-receive");
+    getSocketValue(tcp_send, u"tcp-send");
+    getSocketValue(tcp_receive, u"tcp-receive");
     getValues(resolve_one, u"resolve");
     getValues(resolve_all, u"all-addresses");
 
@@ -163,11 +175,10 @@ int MainCode(int argc, char *argv[])
             std::string msg(8192, '\0');
             size_t ret_size = 0;
             ts::IPSocketAddress source, destination;
-            bool ok =
-                sock.reusePort(true, opt) &&
+            if (sock.reusePort(true, opt) &&
                 sock.bind(opt.udp_receive, opt) &&
-                sock.receive(msg.data(), msg.size(), ret_size, source, destination, nullptr, opt);
-            if (ok) {
+                sock.receive(msg.data(), msg.size(), ret_size, source, destination, nullptr, opt))
+            {
                 msg.resize(ret_size);
                 opt.info(u"Received %d bytes: \"%s\"", ret_size, msg);
                 opt.info(u"Source: %s, destination: %s", source, destination);
@@ -185,10 +196,9 @@ int MainCode(int argc, char *argv[])
         if (sock.open(opt.gen, opt)) {
             opt.info(u"Sending to UDP socket %s ...", opt.udp_send);
             std::string msg(opt.send_message.toUTF8());
-            bool ok =
-                sock.bind(ts::IPSocketAddress::AnySocketAddress(opt.gen), opt) &&
-                sock.send(msg.data(), msg.size(), opt.udp_send, opt);
-            if (ok) {
+            if (sock.bind(ts::IPSocketAddress::AnySocketAddress(opt.gen), opt) &&
+                sock.send(msg.data(), msg.size(), opt.udp_send, opt))
+            {
                 size_t ret_size = 0;
                 ts::IPSocketAddress source, destination;
                 msg.resize(8192);
@@ -199,6 +209,53 @@ int MainCode(int argc, char *argv[])
                 }
             }
             sock.close(opt);
+        }
+    }
+
+    // TCP server, wait for a client, wait for a message, send a response.
+    if (opt.tcp_receive.hasPort()) {
+        ts::TCPServer server;
+        if (server.open(opt.gen, opt)) {
+            if (server.reusePort(true, opt) &&
+                server.bind(opt.tcp_receive, opt) &&
+                server.listen(1, opt))
+            {
+                opt.info(u"Waiting on TCP server %s ...", opt.tcp_receive);
+                ts::TelnetConnection client;
+                ts::IPSocketAddress addr;
+                if (server.accept(client, addr, opt)) {
+                    opt.info(u"Client connected from %s ...", addr);
+                    std::string msg;
+                    if (client.receiveLine(msg, nullptr, opt)) {
+                        opt.info(u"Received line: \"%s\"", msg);
+                        msg.insert(0, "-> \"");
+                        msg.append("\"");
+                        client.sendLine(msg, opt);
+                    }
+                    client.close();
+                }
+            }
+            server.close(opt);
+        }
+    }
+
+    // Send a TCP message, wait for the response.
+    if (opt.tcp_send.hasAddress()) {
+        ts::TelnetConnection client;
+        if (client.open(opt.gen, opt)) {
+            opt.info(u"Sending to TCP server %s ...", opt.tcp_send);
+            std::string msg(opt.send_message.toUTF8());
+            ts::IPSocketAddress addr;
+            if (client.bind(ts::IPSocketAddress::AnySocketAddress(opt.gen), opt) &&
+                client.connect(opt.tcp_send, opt) &&
+                client.getLocalAddress(addr, opt) &&
+                client.sendLine(msg, opt) &&
+                client.receiveLine(msg, nullptr, opt))
+            {
+                opt.info(u"Client address: %s", addr);
+                opt.info(u"Received line: \"%s\"", msg);
+            }
+            client.close(opt);
         }
     }
 

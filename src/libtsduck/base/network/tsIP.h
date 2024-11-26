@@ -26,6 +26,9 @@
     #endif
 #else
     #include "tsBeforeStandardHeaders.h"
+    #if defined(TS_MAC) && !defined(__APPLE_USE_RFC_3542)
+        #define __APPLE_USE_RFC_3542 1 // for IPv6 compliance
+    #endif
     #include <sys/types.h>
     #include <sys/socket.h>
     #include <net/if.h>

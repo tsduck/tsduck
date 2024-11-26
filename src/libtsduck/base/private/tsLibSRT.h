@@ -32,6 +32,12 @@
         #define ZERO__APPLE__ 1
     #endif
 
+    // On macOS, srt/platform_sys.h unconditionally defines __APPLE_USE_RFC_3542.
+    // Since we also define it, avoid "macro redefined" errors.
+    #if defined(__APPLE_USE_RFC_3542)
+        #undef __APPLE_USE_RFC_3542
+    #endif
+
     #include <srt/version.h>
 
     // On earlier versions, the header srt.h uses a [[deprecated]] attribute on a typedef, which is incorrect.
@@ -59,6 +65,10 @@
     #if defined(ZERO__APPLE__)
         #undef __APPLE__
         #undef ZERO__APPLE__
+    #endif
+
+    #if defined(TS_MAC) && !defined(__APPLE_USE_RFC_3542)
+        #define __APPLE_USE_RFC_3542 1
     #endif
 
     TS_POP_WARNING()

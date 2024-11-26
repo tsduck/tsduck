@@ -56,23 +56,24 @@ bool ts::UDPSocket::open(IP gen, Report& report)
     }
 
     // Set option to get the destination address of all UDP packets arriving on this socket.
-    // On IPv4 socket, use IP_PKTINFO (IP_RECVDSTADDR on FreeBSD).
+    if (generation() == IP::v4) {
+        // On IPv4 socket, use IP_PKTINFO (IP_RECVDSTADDR on FreeBSD).
 #if defined(IP_PKTINFO)
-    int opt_pktinfo = 1;
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, SysSockOptPointer(&opt_pktinfo), sizeof(opt_pktinfo)) != 0) {
-        report.error(u"error setting socket IP_PKTINFO option: %s", SysErrorCodeMessage());
-        return false;
-    }
+        int opt_pktinfo = 1;
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, SysSockOptPointer(&opt_pktinfo), sizeof(opt_pktinfo)) != 0) {
+            report.error(u"error setting socket IP_PKTINFO option: %s", SysErrorCodeMessage());
+            return false;
+        }
 #elif defined(IP_RECVDSTADDR)
-    int opt_recvdstaddr = 1;
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_RECVDSTADDR, SysSockOptPointer(&opt_recvdstaddr), sizeof(opt_recvdstaddr)) != 0) {
-        report.error(u"error setting socket IP_RECVDSTADDR option: %s", SysErrorCodeMessage());
-        return false;
-    }
+        int opt_recvdstaddr = 1;
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_RECVDSTADDR, SysSockOptPointer(&opt_recvdstaddr), sizeof(opt_recvdstaddr)) != 0) {
+            report.error(u"error setting socket IP_RECVDSTADDR option: %s", SysErrorCodeMessage());
+            return false;
+        }
 #endif
-
-    // On IPv6 socket, use IPV6_RECVPKTINFO on Unix and IPV6_PKTINFO on Windows.
-    if (generation() == IP::v6) {
+    }
+    else {
+        // On IPv6 socket, use IPV6_RECVPKTINFO on Unix and IPV6_PKTINFO on Windows.
 #if defined(IPV6_RECVPKTINFO)
         int opt = 1;
         if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_RECVPKTINFO, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
