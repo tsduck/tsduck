@@ -347,10 +347,8 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
     }
 
     // Get IP addresses and ports. Valid for receive and transmit.
-    IPAddress ip4(IP::v4);
-    IPSocketAddress sock4(IP::v4);
-    IPAddress ip6(IP::v6);
-    IPSocketAddress sock6(IP::v6);
+    IPAddress ip4, ip6;
+    IPSocketAddress sock4, sock6;
     if ((ipv4 && !DecodeAddress(args, u"ip4", 0, sock4, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||
         (ipv4 && !DecodeAddress(args, u"ip4", 1, sock4, dtpars.m_Ip2, sizeof(dtpars.m_Ip2), &dtpars.m_Port2, !receive, true)) ||
         (ipv6 && !DecodeAddress(args, u"ip6", 0, sock6, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||

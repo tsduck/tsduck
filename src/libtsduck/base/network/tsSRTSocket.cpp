@@ -879,7 +879,7 @@ bool ts::SRTSocket::Guts::srtListen(const IPSocketAddress& addr, Report& report)
     }
 
     ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
+    const size_t sock_size = addr.get(sock_addr);
     report.debug(u"calling srt_bind(%s)", addr);
     if (::srt_bind(sock, reinterpret_cast<const ::sockaddr*>(&sock_addr), int(sock_size)) < 0) {
         report.error(u"error during srt_bind(): %s", ::srt_getlasterror_str());
@@ -943,7 +943,7 @@ int ts::SRTSocket::Guts::listenCallback(void* param, SRTSOCKET sock, int hsversi
 bool ts::SRTSocket::Guts::srtConnect(const IPSocketAddress& addr, Report& report)
 {
     ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
+    const size_t sock_size = addr.get(sock_addr);
 
     report.debug(u"calling srt_connect(%s)", addr);
     if (::srt_connect(sock, reinterpret_cast<const ::sockaddr*>(&sock_addr), int(sock_size)) < 0) {
@@ -978,7 +978,7 @@ bool ts::SRTSocket::Guts::srtConnect(const IPSocketAddress& addr, Report& report
 bool ts::SRTSocket::Guts::srtBind(const IPSocketAddress& addr, Report& report)
 {
     ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr.get(&sock_addr, sizeof(sock_addr));
+    const size_t sock_size = addr.get(sock_addr);
 
     report.debug(u"calling srt_bind(%s)", addr);
     if (::srt_bind(sock, reinterpret_cast<const ::sockaddr*>(&sock_addr), int(sock_size)) < 0) {

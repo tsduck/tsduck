@@ -122,7 +122,7 @@ bool ts::UDPSocket::bind(const IPSocketAddress& addr, Report& report)
     }
 
     ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr2.get(&sock_addr, sizeof(sock_addr));
+    const size_t sock_size = addr2.get(sock_addr);
 
     report.debug(u"binding socket to %s", addr);
     if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
@@ -446,7 +446,7 @@ bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& d
     }
 
     ::sockaddr_storage addr;
-    const size_t addr_size = dest2.get(&addr, sizeof(addr));
+    const size_t addr_size = dest2.get(addr);
 
     if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, reinterpret_cast<::sockaddr*>(&addr), socklen_t(addr_size)) < 0) {
         report.error(u"error sending UDP message: %s", SysErrorCodeMessage());

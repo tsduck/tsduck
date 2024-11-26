@@ -10,13 +10,18 @@
 #include "tsUString.h"
 
 // Wildcard socket address, unspecified address and port.
-const ts::IPSocketAddress ts::IPSocketAddress::AnySocketAddress4(IP::v4);
-const ts::IPSocketAddress ts::IPSocketAddress::AnySocketAddress6(IP::v6);
+const ts::IPSocketAddress ts::IPSocketAddress::AnySocketAddress4;
+const ts::IPSocketAddress ts::IPSocketAddress::AnySocketAddress6(0, 0, 0, 0, 0, 0, 0, 0, AnyPort);
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
+
+// Destructor.
+ts::IPSocketAddress::~IPSocketAddress()
+{
+}
 
 // Generic constructor from a system "struct sockaddr" structure (IPv4 or IPv6).
 ts::IPSocketAddress::IPSocketAddress(const ::sockaddr& s) :
@@ -30,24 +35,6 @@ ts::IPSocketAddress::IPSocketAddress(const ::sockaddr& s) :
         const ::sockaddr_in6* sp = reinterpret_cast<const ::sockaddr_in6*>(&s);
         _port = ntohs(sp->sin6_port);
     }
-}
-
-// IPv4 constructor from a system "struct sockaddr_in" structure.
-ts::IPSocketAddress::IPSocketAddress(const ::sockaddr_in& s, bool bound) :
-    IPAddress(s, bound),
-    _port(s.sin_family == AF_INET ? ntohs(s.sin_port) : AnyPort)
-{
-}
-
-// IPv6 constructor from a system "struct sockaddr_in6" structure.
-ts::IPSocketAddress::IPSocketAddress(const ::sockaddr_in6& s, bool bound) :
-    IPAddress(s, bound),
-    _port(s.sin6_family == AF_INET6 ? ntohs(s.sin6_port) : AnyPort)
-{
-}
-
-ts::IPSocketAddress::~IPSocketAddress()
-{
 }
 
 
@@ -70,10 +57,13 @@ void ts::IPSocketAddress::setPort(Port port)
 // Set/get address (IP specific)
 //----------------------------------------------------------------------------
 
-void ts::IPSocketAddress::set(const ::sockaddr& s)
+bool ts::IPSocketAddress::set(const ::sockaddr& s)
 {
-    setAddress(s);
-    if (s.sa_family == AF_INET) {
+    const bool ok = setAddress(s);
+    if (!ok) {
+        _port = 0;
+    }
+    else if (s.sa_family == AF_INET) {
         const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*>(&s);
         _port = ntohs(sp->sin_port);
     }
@@ -81,6 +71,7 @@ void ts::IPSocketAddress::set(const ::sockaddr& s)
         const ::sockaddr_in6* sp = reinterpret_cast<const ::sockaddr_in6*>(&s);
         _port = ntohs(sp->sin6_port);
     }
+    return ok;
 }
 
 
@@ -89,6 +80,11 @@ void ts::IPSocketAddress::set(const ::sockaddr& s)
 //----------------------------------------------------------------------------
 
 bool ts::IPSocketAddress::resolve(const UString& name, Report& report)
+{
+    return resolve(name, report, IP::Any);
+}
+
+bool ts::IPSocketAddress::resolve(const UString& name, Report& report, IP preferred)
 {
     // Clear address & port
     clear();
@@ -105,7 +101,7 @@ bool ts::IPSocketAddress::resolve(const UString& name, Report& report)
         // This is typical IPv6 socket address. There must be a port or nothing.
         ok = br2 == name.size() - 1 || (colon == br2 + 1 && (colon == name.length() - 1 || name.substr(colon + 1).toInteger(_port)));
         if (ok) {
-            return IPAddress::resolve(name.substr(br1 + 1, br2 - br1 - 1), report);
+            return IPAddress::resolve(name.substr(br1 + 1, br2 - br1 - 1), report, preferred);
         }
     }
     else {
@@ -126,7 +122,7 @@ bool ts::IPSocketAddress::resolve(const UString& name, Report& report)
         else {
             // Not a valid integer, this is an address alone
             _port = AnyPort;
-            return IPAddress::resolve(name, report);
+            return IPAddress::resolve(name, report, preferred);
         }
     }
 
@@ -138,7 +134,7 @@ bool ts::IPSocketAddress::resolve(const UString& name, Report& report)
 
     // If there is something before the colon, this must be an address.
     // Try to decode name as IP address or resolve it as DNS host name.
-    return colon == 0 || IPAddress::resolve(name.substr(0, colon), report);
+    return colon == 0 || IPAddress::resolve(name.substr(0, colon), report, preferred);
 }
 
 

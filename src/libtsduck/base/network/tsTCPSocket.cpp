@@ -163,7 +163,7 @@ bool ts::TCPSocket::bind(const IPSocketAddress& addr, Report& report)
     }
 
     ::sockaddr_storage sock_addr;
-    const size_t sock_size = addr2.get(&sock_addr, sizeof(sock_addr));
+    const size_t sock_size = addr2.get(sock_addr);
 
     report.debug(u"binding socket to %s", addr);
     if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {

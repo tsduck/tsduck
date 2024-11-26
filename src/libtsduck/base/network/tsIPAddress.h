@@ -14,7 +14,6 @@
 #pragma once
 #include "tsAbstractNetworkAddress.h"
 #include "tsByteBlock.h"
-#include "tsException.h"
 #include "tsIP.h"
 
 namespace ts {
@@ -29,12 +28,6 @@ namespace ts {
     //! @see https://en.wikipedia.org/wiki/IPv6_address
     //!
     //! An instance of this class can hold an IPv4 or an IPv6 address.
-    //!
-    //! An instance can optionally be bound by construction to a given generation.
-    //! If it is bound to a given generation, trying to assign an address of a
-    //! different generation will throw an exception. Binding to an IP generation
-    //! is a property of the object, the variable, not the value.
-    //!
     //! An instance always have a generation IPv4 or IPv6. The default initial value
     //! is the IPv4 generic address for "any address".
     //!
@@ -56,8 +49,8 @@ namespace ts {
     //!
     class TSDUCKDLL IPAddress: public AbstractNetworkAddress
     {
+        TS_RULE_OF_FIVE(IPAddress, override);
     private:
-        const IP _bound = IP::Any;  // Fixed (bound) generation of the IP address.
         IP       _gen = IP::v4;     // Current generation of the IP address. Never IP::Any.
         uint32_t _addr4 = 0;        // An IPv4 address is a 32-bit word in host byte order
         uint8_t  _bytes6[16] {};    // Raw content of the IPv6 address.
@@ -95,71 +88,31 @@ namespace ts {
         static size_t AddressBits(IP gen) { return gen == IP::v6 ? BITS6 : BITS4; }
 
         //!
-        //! This exception is thrown when assigning incompatible IP addresses.
-        //!
-        TS_DECLARE_EXCEPTION(IncompatibleIPAddress);
-
-        //!
         //! Default constructor with no initial value.
         //! The default initial value is AnyAddress4.
         //!
         IPAddress() = default;
 
         //!
-        //! Constructor with no initial value but optionally bound to a generation.
-        //! The default initial value is AnyAddress4, unless @a bound is IP::v6 in which
-        //! case the default initial value is AnyAddress6.
-        //! @param [in] bound Bound generation of the IP address.
-        //! When set to IP::Any, this instance can receive any generation of IP address.
-        //! Otherwise, this instance can only receive addresses of the specified generation.
-        //! In that case, trying to assign an address from a different generation thows the
-        //! exception IncompatibleIPAddress.
-        //!
-        IPAddress(IP bound);
-
-        //!
-        //! Copy constructor.
-        //! @param [in] other Another instance to copy.
-        //! If @a other is bound to an IP generation, this object is not bound to a generation
-        //! (binding is a property of an object, not of a value).
-        //!
-        IPAddress(const IPAddress& other);
-
-        //!
-        //! Copy constructor with optional binding.
-        //! @param [in] other Another instance to copy.
-        //! @param [in] bound If true, this instance is bound to its generation. Otherwise, it can receive any address.
-        //!
-        IPAddress(const IPAddress& other, bool bound);
-
-        //!
-        //! Destructor.
-        //!
-        virtual ~IPAddress() override;
-
-        //!
         //! Generic constructor from an address in binary format.
         //! @param [in] addr Address of the memory area containing the address in binary format.
         //! @param [in] size Size of the memory area. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
-        //! @param [in] bound If true, this instance is bound to its generation. Otherwise, it can receive any address.
         //!
-        IPAddress(const uint8_t *addr, size_t size, bool bound = false);
+        IPAddress(const void* addr, size_t size) { setAddress(addr, size); }
 
         //!
         //! Generic constructor from an address in binary format.
         //! @param [in] bb Byte block containing the address in binary format. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
-        //! @param [in] bound If true, this instance is bound to its generation. Otherwise, it can receive any address.
         //!
-        IPAddress(const ByteBlock& bb, bool bound = false) : IPAddress(bb.data(), bb.size(), bound) {}
+        IPAddress(const ByteBlock& bb) { setAddress(bb.data(), bb.size()); }
 
         //!
         //! IPv4 constructor from an integer IPv4 address.
         //! @param [in] addr The IP v4 address as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPAddress(uint32_t addr, bool bound = false);
+        IPAddress(uint32_t addr) : _addr4(addr) {}
 
         //!
         //! IPv4 constructor from 4 bytes (classical IPv4 notation).
@@ -167,9 +120,8 @@ namespace ts {
         //! @param [in] b2 Second address byte.
         //! @param [in] b3 Third address byte.
         //! @param [in] b4 Fourth address byte.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, bool bound = false);
+        IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
 
         //!
         //! IPv6 constructor of an IPv6 address from 8 hexlets.
@@ -181,17 +133,15 @@ namespace ts {
         //! @param [in] h6 6th address hexlet.
         //! @param [in] h7 7th address hexlet.
         //! @param [in] h8 8th address hexlet.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPAddress(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8, bool bound = false);
+        IPAddress(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8);
 
         //!
         //! IPv6 constructor of an IPv6 address from network prefix and interface identifier.
         //! @param [in] net Network prefix.
         //! @param [in] ifid Interface identifier.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPAddress(uint64_t net, uint64_t ifid, bool bound = false);
+        IPAddress(uint64_t net, uint64_t ifid);
 
         //!
         //! Generic constructor from a system "struct sockaddr" structure (IPv4 or IPv6).
@@ -210,49 +160,35 @@ namespace ts {
         //!
         //! IPv4 constructor from a system "struct in_addr" structure (IPv4 socket API).
         //! @param [in] a A system "struct in_addr" structure.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPAddress(const ::in_addr& a, bool bound = false);
+        IPAddress(const ::in_addr& a);
 
         //!
         //! IPv4 constructor from a system "struct sockaddr_in" structure (IPv4 socket API).
         //! @param [in] a A system "struct sockaddr_in" structure.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPAddress(const ::sockaddr_in& a, bool bound = false);
+        IPAddress(const ::sockaddr_in& a) : IPAddress(*reinterpret_cast<const ::sockaddr*>(&a)) {}
 
         //!
         //! IPv6 constructor from a system "struct in6_addr" structure (IPv6 socket API).
         //! @param [in] a A system "struct in6_addr" structure.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPAddress(const ::in6_addr& a, bool bound = false);
+        IPAddress(const ::in6_addr& a);
 
         //!
         //! IPv6 constructor from a system "struct sockaddr_in6" structure (IPv6 socket API).
         //! @param [in] a A system "struct sockaddr_in6" structure.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPAddress(const ::sockaddr_in6& a, bool bound = false);
+        IPAddress(const ::sockaddr_in6& a) : IPAddress(*reinterpret_cast<const ::sockaddr*>(&a)) {}
 
         //!
         //! Constructor from a string, host name or integer format.
         //! If @a name cannot be resolved, the address is set to AnyAddress4.
         //! @param [in] name A string containing either a host name or a numerical representation of the address.
         //! @param [in] report Where to report errors.
-        //! @param [in] bound Bound generation of the IP address. If not set to IP::Any (the default),
-        //! this instance becomes bound to that IP generation and the name resolution can only produce
-        //! an address of that generation.
+        //! @param [in] preferred Preferred IP generation of the returned address. Return the first availabale address by default.
         //!
-        IPAddress(const UString& name, Report& report, IP bound = IP::Any) : IPAddress(bound) { IPAddress::resolve(name, report); }
-
-        //!
-        //! Assignment operator.
-        //! The binding of this object to an IP generation is not changed.
-        //! @param [in] other Another instance to copy.
-        //! @return Reference to this object.
-        //!
-        IPAddress& operator=(const IPAddress& other);
+        IPAddress(const UString& name, Report& report, IP preferred = IP::Any) { IPAddress::resolve(name, report, preferred); }
 
         //!
         //! Equality operator.
@@ -285,47 +221,6 @@ namespace ts {
         IP generation() const { return _gen; }
 
         //!
-        //! Check if the address is bound to a specific generation of IP addresses.
-        //! @return True if the address is bound to a specific generation of IP addresses.
-        //!
-        bool isBound() const { return _bound != IP::Any; }
-
-        //!
-        //! Get the generation of IP addresses this instance is bound to.
-        //! @return The generation of IP addresses this instance is bound to.
-        //! Return IP::Any if this instance is not bound to a generation.
-        //!
-        IP boundGeneration() const { return _bound; }
-
-        //!
-        //! Check if this object can hold a value of a specific IP generation.
-        //! @param [in] gen The IP generation to check.
-        //! @return True if this object is not bound to another IP generation.
-        //!
-        bool isCompatible(IP gen) { return _bound == IP::Any || _bound == gen; }
-
-        //!
-        //! Check if this object can hold a value of a specific IP generation.
-        //! @param [in] other Another IP to check.
-        //! @return True if this object is not bound to an IP generation other than the current generation of @a other.
-        //!
-        bool isCompatible(const IPAddress& other) { return isCompatible(other._gen); }
-
-        //!
-        //! Check if this object can hold a value of a specific IP generation and throw an exception if not.
-        //! @param [in] gen The IP generation to check.
-        //! @throw IncompatibleIPAddress when this object is bound to another IP generation.
-        //!
-        void checkCompatibility(IP gen);
-
-        //!
-        //! Check if this object can hold a value of a specific IP generation and throw an exception if not.
-        //! @param [in] other Another IP to check.
-        //! @throw IncompatibleIPAddress when this object is bound to an IP generation other than the current generation of @a other.
-        //!
-        void checkCompatibility(const IPAddress& other) { checkCompatibility(other._gen); }
-
-        //!
         //! Check if the address is an IPv6 address which is mapped to an IPv4 one.
         //! @return true if the address is an IPv6 address which is mapped to an IPv4 one.
         //!
@@ -333,10 +228,10 @@ namespace ts {
 
         //!
         //! Convert an IP address to another generation, when possible.
-        //! @param [in] gen New IP generation to apply. If @a gen is incompatible with the object (bound to another generation),
-        //! return false. If @a gen is IP::Any or the same as the current generation, return true. A conversion from IPv4 to IPv6
-        //! always works (IPv4-mapped address). The conversion of an IPv6 address is only possible if it is an IPv4-mapped address.
-        //! For convenience, the IPv4 and IPv6 loopback addressses are converted to each other.
+        //! @param [in] gen New IP generation to apply. If @a gen is IP::Any or the same as the current
+        //! generation, return true. A conversion from IPv4 to IPv6 always works (IPv4-mapped address).
+        //! The conversion of an IPv6 address into IPv4 is only possible if it is an IPv4-mapped address.
+        //! For convenience, the IPv4 and IPv6 ampty and loopback addressses are converted to each other.
         //! @return True if the conversion was successful, false if the conversion was no possible.
         //!
         bool convert(IP gen);
@@ -400,19 +295,11 @@ namespace ts {
         //!
         //! Set the IP address from an address in binary format.
         //! Useful for subclasses to assign the address part only.
-        //! @param [in] addr Address of the memory area containing the address in binary format.
-        //! @param [in] size Size of the memory area. If the size is 4, this is an IPv4 address.
-        //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
-        //!
-        void setAddress(const uint8_t *addr, size_t size);
-
-        //!
-        //! Set the IP address from an address in binary format.
-        //! Useful for subclasses to assign the address part only.
         //! @param [in] bb Byte block containing the address in binary format. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
+        //! @return True on success, false on error (incorrect data size).
         //!
-        void setAddress(const ByteBlock& bb) { setAddress(bb.data(), bb.size()); }
+        bool setAddress(const ByteBlock& bb) { return setAddress(bb.data(), bb.size()); }
 
         //!
         //! Set the IP address from an IPv4 address as a 32-bit integer value in host byte order.
@@ -454,14 +341,30 @@ namespace ts {
         //! @param [in] a A system "struct sockaddr" structure.
         //! Note: the structure "sockaddr" is deprecated because it cannot hold an IPv6 socket address.
         //! The structure "sockaddr_storage" should be used instead.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void setAddress(const ::sockaddr& a);
+        bool setAddress(const ::sockaddr& a);
 
         //!
         //! Set the IP address from a system "struct sockaddr_storage" structure (IPv4 or IPv6).
         //! @param [in] a A system "struct sockaddr_storage" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void setAddress(const ::sockaddr_storage& a) { setAddress(*reinterpret_cast<const ::sockaddr*>(&a)); }
+        bool setAddress(const ::sockaddr_storage& a) { return setAddress(*reinterpret_cast<const ::sockaddr*>(&a)); }
+
+        //!
+        //! Set the IPv4 address from a system "struct sockaddr_in" structure.
+        //! @param [in] a A system "struct sockaddr_in" structure.
+        //! @return True on success, false on error (incorrect family type).
+        //!
+        bool setAddress(const ::sockaddr_in& a) { return setAddress(*reinterpret_cast<const ::sockaddr*>(&a)); }
+
+        //!
+        //! Set the IPv6 address from a system "struct sockaddr_in6" structure.
+        //! @param [in] a A system "struct sockaddr_in6" structure.
+        //! @return True on success, false on error (incorrect family type).
+        //!
+        bool setAddress(const ::sockaddr_in6& a) { return setAddress(*reinterpret_cast<const ::sockaddr*>(&a)); }
 
         //!
         //! Set the IPv4 address from a system "struct in_addr" structure.
@@ -470,60 +373,62 @@ namespace ts {
         void setAddress4(const ::in_addr& a);
 
         //!
-        //! Set the IPv4 address from a system "struct sockaddr_in" structure.
-        //! @param [in] a A system "struct sockaddr_in" structure.
-        //!
-        void setAddress4(const ::sockaddr_in& a);
-
-        //!
         //! Set the IPv6 address from a system "struct in6_addr" structure.
         //! @param [in] a A system "struct in6_addr" structure.
         //!
         void setAddress6(const ::in6_addr& a);
 
         //!
-        //! Set the IPv6 address from a system "struct sockaddr_in6" structure.
-        //! @param [in] a A system "struct sockaddr_in6" structure.
-        //!
-        void setAddress6(const ::sockaddr_in6& a);
-
-        //!
         //! Copy the address into a system "struct sockaddr_storage" structure (socket API).
         //! Note: the structure "sockaddr" is deprecated because it cannot hold an IPv6 socket address.
         //! The structure "sockaddr_storage" should be used instead.
-        //! @param [out] a Address of a system socket address structure.
-        //! @param [in] size Size in bytes of the system socket address structure.
+        //! @param [out] a A system "struct sockaddr_storage" structure. This type of structure is large
+        //! enough to hold a structure sockaddr_in or sockaddr_in6.
         //! @param [in] port Port number for the socket address.
-        //! @return Actual number of bytes used in the structure "sockaddr_storage",
-        //! zero on error (system socket address structure is too small).
+        //! @return Actual number of bytes used in the structure "sockaddr_storage".
         //!
-        size_t getAddress(::sockaddr_storage* a, size_t size, Port port) const;
+        size_t getAddress(::sockaddr_storage& a, Port port) const;
 
         //!
         //! Copy the IPv4 address into a system "struct sockaddr_in" structure (socket API).
         //! @param [out] a A system "struct sockaddr_in" structure.
         //! @param [in] port Port number for the socket address.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void getAddress4(::sockaddr_in& a, Port port) const;
+        bool getAddress4(::sockaddr_in& a, Port port) const;
 
         //!
         //! Copy the IPv4 address into a system "struct in_addr" structure (socket API).
         //! @param [out] a A system "struct in_addr" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void getAddress4(::in_addr& a) const;
+        bool getAddress4(::in_addr& a) const;
 
         //!
         //! Copy the IPv6 address into a system "struct sockaddr_in6" structure (socket API).
         //! @param [out] a A system "struct sockaddr_in6" structure.
         //! @param [in] port Port number for the socket address.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void getAddress6(::sockaddr_in6& a, Port port) const;
+        bool getAddress6(::sockaddr_in6& a, Port port) const;
 
         //!
         //! Copy the IPv6 address into a system "struct in6_addr" structure (socket API).
         //! @param [out] a A system "struct in6_addr" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void getAddress6(::in6_addr& a) const;
+        bool getAddress6(::in6_addr& a) const;
+
+        //!
+        //! Decode a string containing a network address in family-specific format.
+        //! @param [in] name A string containing either a host name or a numerical representation of the address.
+        //! @param [in] report Where to report errors.
+        //! @param [in] preferred Preferred IP generation of the returned address. Return the first availabale address by default.
+        //! If no address of that generation is available, return one from the other generation if available.
+        //! @return True if @a name was successfully resolved, false otherwise.
+        //! In the later case, the address is invalidated.
+        //!
+        virtual bool resolve(const UString& name, Report& report, IP preferred);
 
         //!
         //! Decode a host name and get all possible addresses for that host.

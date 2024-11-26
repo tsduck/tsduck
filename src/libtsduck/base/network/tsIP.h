@@ -42,6 +42,7 @@
 namespace ts {
     //!
     //! Generation of IP networks as an enum class.
+    //! Converting to an integer returns the actual generation number (4 or 6).
     //! @ingroup net
     //!
     enum class IP : uint8_t {

@@ -221,7 +221,7 @@ bool ts::TCPConnection::connect(const IPSocketAddress& addr, Report& report)
     // Loop on unsollicited interrupts
     for (;;) {
         ::sockaddr_storage sock_addr;
-        const size_t sock_size = addr2.get(&sock_addr, sizeof(sock_addr));
+        const size_t sock_size = addr2.get(sock_addr);
         report.debug(u"connecting to %s", addr);
         if (::connect(getSocket(), reinterpret_cast<const ::sockaddr*>(&sock_addr), socklen_t(sock_size)) == 0) {
             declareConnected(report);

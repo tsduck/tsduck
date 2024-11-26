@@ -138,8 +138,8 @@ int MainCode(int argc, char *argv[])
 
     // Resolve one host name.
     for (const auto& name : opt.resolve_one) {
-        ts::IPAddress addr(opt.gen);
-        if (addr.resolve(name, opt)) {
+        ts::IPAddress addr;
+        if (addr.resolve(name, opt, opt.gen)) {
             std::cout << "Resolve \"" << name << "\":" << std::endl;
             std::cout << "  " << Format(addr) << std::endl;
         }

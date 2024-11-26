@@ -169,7 +169,7 @@ TSUNIT_DEFINE_TEST(IPv4Address)
     TSUNIT_EQUAL(htonl(0x01020304), ia.s_addr);
 
     ::sockaddr_storage sa;
-    TSUNIT_EQUAL(sizeof(::sockaddr_in), a1.getAddress(&sa, sizeof(sa), 80));
+    TSUNIT_EQUAL(sizeof(::sockaddr_in), a1.getAddress(sa, 80));
     const ::sockaddr_in* saip = reinterpret_cast<const ::sockaddr_in*>(&sa);
     TSUNIT_EQUAL(AF_INET, saip->sin_family);
     TSUNIT_EQUAL(htonl(0x01020304), saip->sin_addr.s_addr);
@@ -194,7 +194,7 @@ TSUNIT_DEFINE_TEST(IPv4Address)
 
 TSUNIT_DEFINE_TEST(IPv6Address)
 {
-    ts::IPAddress a1(ts::IP::v6);
+    ts::IPAddress a1(ts::IPAddress::AnyAddress6);
     TSUNIT_EQUAL(u"IPv6", a1.familyName());
     TSUNIT_EQUAL(ts::IP::v6, a1.generation());
     TSUNIT_ASSERT(!a1.hasAddress());
@@ -378,8 +378,8 @@ TSUNIT_DEFINE_TEST(MACAddress)
 TSUNIT_DEFINE_TEST(LocalHost)
 {
     // Force resolution in IPv4.
-    ts::IPAddress a1(ts::IP::v4);
-    TSUNIT_ASSERT(a1.resolve(u"localhost", CERR));
+    ts::IPAddress a1;
+    TSUNIT_ASSERT(a1.resolve(u"localhost", CERR, ts::IP::v4));
     TSUNIT_EQUAL(0x7F000001, a1.address4()); // 127.0.0.1
     TSUNIT_ASSERT(a1 == ts::IPAddress::LocalHost4);
 
@@ -570,7 +570,7 @@ TSUNIT_DEFINE_TEST(IPv4SocketAddress)
     TSUNIT_EQUAL(htonl(0x01020304), ia.s_addr);
 
     ::sockaddr_storage sa;
-    TSUNIT_EQUAL(sizeof(::sockaddr_in), a1.get(&sa, sizeof(sa)));
+    TSUNIT_EQUAL(sizeof(::sockaddr_in), a1.get(sa));
     const ::sockaddr_in* saip = reinterpret_cast<const ::sockaddr_in*>(&sa);
     TSUNIT_EQUAL(AF_INET, saip->sin_family);
     TSUNIT_EQUAL(htonl(0x01020304), saip->sin_addr.s_addr);
@@ -612,7 +612,7 @@ TSUNIT_DEFINE_TEST(IPv6SocketAddress)
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
-    ts::IPSocketAddress sa1(ts::IP::v6);
+    ts::IPSocketAddress sa1(ts::IPSocketAddress::AnySocketAddress6);
     TSUNIT_ASSERT(!sa1.hasAddress());
     TSUNIT_ASSERT(!sa1.hasPort());
     TSUNIT_EQUAL(ts::IP::v6, sa1.generation());
@@ -627,7 +627,7 @@ TSUNIT_DEFINE_TEST(IPv6SocketAddress)
     TSUNIT_EQUAL(u"[0000:0001:0002:0003:0004:0005:0006:0007]:1234", sa1.toFullString());
     TSUNIT_EQUAL(1234, sa1.port());
 
-    ts::IPSocketAddress sa2(0, 1, 2, 3, 4, 5, 6, 7, 1235, true);
+    ts::IPSocketAddress sa2(0, 1, 2, 3, 4, 5, 6, 7, 1235);
     TSUNIT_ASSERT(sa2.hasAddress());
     TSUNIT_ASSERT(sa2.hasPort());
     TSUNIT_EQUAL(ts::IP::v6, sa2.generation());

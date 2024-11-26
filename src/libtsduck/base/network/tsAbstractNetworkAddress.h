@@ -79,7 +79,7 @@ namespace ts {
         //! Set the network address from binary data.
         //! @param [in] addr Address of binary data.
         //! @param [in] size Size in bytes of binary data.
-        //! @return True on success, false on error (data too short).
+        //! @return True on success, false on error (incorrect data size).
         //!
         virtual bool setAddress(const void* addr, size_t size) = 0;
 

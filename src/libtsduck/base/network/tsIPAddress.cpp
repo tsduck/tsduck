@@ -12,10 +12,10 @@
 #include "tsSysUtils.h"
 #include "tsIPUtils.h" // Windows
 
-const ts::IPAddress ts::IPAddress::AnyAddress4(IP::v4);
-const ts::IPAddress ts::IPAddress::LocalHost4(127, 0, 0, 1, true);
-const ts::IPAddress ts::IPAddress::AnyAddress6(IP::v6);
-const ts::IPAddress ts::IPAddress::LocalHost6(0, 0, 0, 0, 0, 0, 0, 1, true);
+const ts::IPAddress ts::IPAddress::AnyAddress4;
+const ts::IPAddress ts::IPAddress::LocalHost4(127, 0, 0, 1);
+const ts::IPAddress ts::IPAddress::AnyAddress6(0, 0, 0, 0, 0, 0, 0, 0);
+const ts::IPAddress ts::IPAddress::LocalHost6(0, 0, 0, 0, 0, 0, 0, 1);
 
 
 //----------------------------------------------------------------------------
@@ -49,87 +49,25 @@ namespace {
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-// General constructor.
-ts::IPAddress::IPAddress(IP bound) :
-    _bound(bound)
-{
-    if (bound == IP::v6) {
-        _gen = IP::v6;
-        Zero6(_bytes6);
-    }
-}
-
-// Copy constructor.
-ts::IPAddress::IPAddress(const IPAddress& other) :
-    _gen(other._gen),
-    _addr4(other._addr4)
-{
-    if (_gen == IP::v6) {
-        Copy6(_bytes6, other._bytes6);
-    }
-}
-
-// Copy constructor with optional binding.
-ts::IPAddress::IPAddress(const IPAddress& other, bool bound) :
-    _bound(bound ? other._gen : IP::Any),
-    _gen(other._gen),
-    _addr4(other._addr4)
-{
-    if (_gen == IP::v6) {
-        Copy6(_bytes6, other._bytes6);
-    }
-}
-
-
 // Destructor.
 ts::IPAddress::~IPAddress()
 {
 }
 
-// Generic constructor from an address in binary format.
-ts::IPAddress::IPAddress(const uint8_t *addr, size_t size, bool bound) :
-    _bound(bound ? (addr != nullptr && size == BYTES6 ? IP::v6 : IP::v4) : IP::Any)
-{
-    if (addr != nullptr && size == BYTES6) {
-        _gen = IP::v6;
-        Copy6(_bytes6, addr);
-    }
-    else if (addr != nullptr && size == BYTES4) {
-        _addr4 = GetUInt32BE(addr);
-    }
-    else {
-        _addr4 = 0;
-    }
-}
-
 // IPv4 constructor.
-ts::IPAddress::IPAddress(uint32_t addr, bool bound) :
-    _bound(bound ? IP::v4 : IP::Any),
-    _gen(IP::v4),
-    _addr4(addr)
-{
-}
-
-// IPv4 constructor.
-ts::IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, bool bound) :
-    _bound(bound ? IP::v4 : IP::Any),
-    _gen(IP::v4),
+ts::IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) :
     _addr4((uint32_t(b1) << 24) | (uint32_t(b2) << 16) | (uint32_t(b3) << 8) | uint32_t(b4))
 {
 }
 
 // IPv6 constructor.
-ts::IPAddress::IPAddress(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8, bool bound) :
-    _bound(bound ? IP::v6 : IP::Any),
-    _gen(IP::v6)
+ts::IPAddress::IPAddress(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8)
 {
     setAddress6(h1, h2, h3, h4, h5, h6, h7, h8);
 }
 
 // IPv6 constructor.
-ts::IPAddress::IPAddress(uint64_t net, uint64_t ifid, bool bound) :
-    _bound(bound ? IP::v6 : IP::Any),
-    _gen(IP::v6)
+ts::IPAddress::IPAddress(uint64_t net, uint64_t ifid)
 {
     setAddress6(net, ifid);
 }
@@ -150,54 +88,16 @@ ts::IPAddress::IPAddress(const ::sockaddr& s)
 }
 
 // IPv4 constructor.
-ts::IPAddress::IPAddress(const ::in_addr& a, bool bound) :
-    _bound(bound ? IP::v4 : IP::Any),
-    _gen(IP::v4),
+ts::IPAddress::IPAddress(const ::in_addr& a) :
     _addr4(ntohl(a.s_addr))
 {
 }
 
-// IPv4 constructor.
-ts::IPAddress::IPAddress(const ::sockaddr_in& s, bool bound) :
-    _bound(bound ? IP::v4 : IP::Any),
-    _gen(IP::v4)
-{
-    if (s.sin_family == AF_INET) {
-        _addr4 = ntohl(s.sin_addr.s_addr);
-    }
-}
-
 // IPv6 constructor.
-ts::IPAddress::IPAddress(const ::in6_addr& a, bool bound) :
-    _bound(bound ? IP::v6 : IP::Any),
+ts::IPAddress::IPAddress(const ::in6_addr& a) :
     _gen(IP::v6)
 {
     Copy6(_bytes6, a.s6_addr);
-}
-
-// IPv4 constructor.
-ts::IPAddress::IPAddress(const ::sockaddr_in6& s, bool bound) :
-    _bound(bound ? IP::v6 : IP::Any),
-    _gen(IP::v6)
-{
-    if (s.sin6_family == AF_INET6) {
-        Copy6(_bytes6, s.sin6_addr.s6_addr);
-    }
-    else {
-        Zero6(_bytes6);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Check if this object can hold a value of a specific IP generation.
-//----------------------------------------------------------------------------
-
-void ts::IPAddress::checkCompatibility(IP gen)
-{
-    if (_bound != IP::Any && _bound != gen) {
-        throw IncompatibleIPAddress(UString::Format(u"incompatible IP address generations, bound to IPv%d, cannot use IPv%d address", int(_bound), int(gen)));
-    }
 }
 
 
@@ -241,12 +141,12 @@ bool ts::IPAddress::setAddress(const void* addr, size_t size)
         return false;
     }
     else if (size == BYTES6) {
-        checkCompatibility(IP::v6);
+        _gen = IP::v6;
         Copy6(_bytes6, addr);
         return true;
     }
     else if (size == BYTES4) {
-        checkCompatibility(IP::v4);
+        _gen = IP::v4;
         _addr4 = GetUInt32BE(addr);
         return true;
     }
@@ -305,7 +205,6 @@ uint16_t ts::IPAddress::hexlet6(size_t i) const
 // Generic copy address.
 void ts::IPAddress::setAddress(const IPAddress& other)
 {
-    checkCompatibility(other);
     _gen = other._gen;
     if (_gen == IP::v6) {
         Copy6(_bytes6, other._bytes6);
@@ -315,28 +214,9 @@ void ts::IPAddress::setAddress(const IPAddress& other)
     }
 }
 
-// Set the IP address from an address in binary format.
-void ts::IPAddress::setAddress(const uint8_t *addr, size_t size)
-{
-    checkCompatibility(size == BYTES6 ? IP::v6 : IP::v4);
-    if (addr != nullptr && size == BYTES6) {
-        _gen = IP::v6;
-        Copy6(_bytes6, addr);
-    }
-    else if (addr != nullptr && size == BYTES4) {
-        _gen = IP::v4;
-        _addr4 = GetUInt32BE(addr);
-    }
-    else {
-        _gen = IP::v4;
-        _addr4 = 0;
-    }
-}
-
 // Set IPv4 address.
 void ts::IPAddress::setAddress4(uint32_t addr)
 {
-    checkCompatibility(IP::v4);
     _gen = IP::v4;
     _addr4 = addr;
 }
@@ -344,7 +224,6 @@ void ts::IPAddress::setAddress4(uint32_t addr)
 // Set IPv4 address.
 void ts::IPAddress::setAddress4(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
 {
-    checkCompatibility(IP::v4);
     _gen = IP::v4;
     _addr4 = (uint32_t(b1) << 24) | (uint32_t(b2) << 16) | (uint32_t(b3) << 8) | uint32_t(b4);
 }
@@ -353,7 +232,6 @@ void ts::IPAddress::setAddress4(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
 // Set IPv6 address.
 void ts::IPAddress::setAddress6(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8)
 {
-    checkCompatibility(IP::v6);
     _gen = IP::v6;
     PutUInt16(_bytes6,      h1);
     PutUInt16(_bytes6 +  2, h2);
@@ -368,84 +246,58 @@ void ts::IPAddress::setAddress6(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t 
 // Set IPv6 address.
 void ts::IPAddress::setAddress6(uint64_t net, uint64_t ifid)
 {
-    checkCompatibility(IP::v6);
     _gen = IP::v6;
     PutUInt64(_bytes6, net);
     PutUInt64(_bytes6 + 8, ifid);
 }
 
 // Set the IP address from a system "struct sockaddr" structure (IPv4 or IPv6).
-void ts::IPAddress::setAddress(const ::sockaddr& s)
+bool ts::IPAddress::setAddress(const ::sockaddr& s)
 {
     if (s.sa_family == AF_INET) {
-        checkCompatibility(IP::v4);
         const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*>(&s);
         _gen = IP::v4;
         _addr4 = ntohl(sp->sin_addr.s_addr);
+        return true;
     }
     else if (s.sa_family == AF_INET6) {
-        checkCompatibility(IP::v6);
         const ::sockaddr_in6* sp = reinterpret_cast<const ::sockaddr_in6*>(&s);
         _gen = IP::v6;
         Copy6(_bytes6, sp->sin6_addr.s6_addr);
+        return true;
     }
     else {
         clearAddress();
+        return false;
     }
 }
 
 // Set the IPv4 address from a system "struct in_addr" structure.
 void ts::IPAddress::setAddress4(const ::in_addr& a)
 {
-    checkCompatibility(IP::v4);
     _gen = IP::v4;
     _addr4 = ntohl(a.s_addr);
-}
-
-// Set the IPv4 address from a system "struct sockaddr_in" structure.
-void ts::IPAddress::setAddress4(const ::sockaddr_in& s)
-{
-    checkCompatibility(IP::v4);
-    if (s.sin_family == AF_INET) {
-        _gen = IP::v4;
-        _addr4 = ntohl(s.sin_addr.s_addr);
-    }
 }
 
 // Set the IPv6 address from a system "struct in6_addr" structure.
 void ts::IPAddress::setAddress6(const ::in6_addr& a)
 {
-    checkCompatibility(IP::v6);
     _gen = IP::v6;
     Copy6(_bytes6, a.s6_addr);
 }
 
-// Set the IPv6 address from a system "struct sockaddr_in6" structure.
-void ts::IPAddress::setAddress6(const ::sockaddr_in6& s)
-{
-    checkCompatibility(IP::v6);
-    if (s.sin6_family == AF_INET6) {
-        _gen = IP::v6;
-        Copy6(_bytes6, s.sin6_addr.s6_addr);
-    }
-}
-
 // Copy the address into a system "struct sockaddr_storage" structure (socket API).
-size_t ts::IPAddress::getAddress(::sockaddr_storage* a, size_t size, Port port) const
+size_t ts::IPAddress::getAddress(::sockaddr_storage& a, Port port) const
 {
-    if (a == nullptr) {
-        return 0;
-    }
-    MemZero(a, size);
-    if (_gen == IP::v4 && size >= sizeof(::sockaddr_in)) {
-        ::sockaddr_in* sp = reinterpret_cast<::sockaddr_in*>(a);
+    if (_gen == IP::v4) {
+        ::sockaddr_in* sp = reinterpret_cast<::sockaddr_in*>(&a);
         sp->sin_family = AF_INET;
         sp->sin_addr.s_addr = htonl(_addr4);
         sp->sin_port = htons(port);
         return sizeof(::sockaddr_in);
     }
-    else if (_gen == IP::v6 && size >= sizeof(::sockaddr_in6)) {
-        ::sockaddr_in6* sp = reinterpret_cast<::sockaddr_in6*>(a);
+    else if (_gen == IP::v6) {
+        ::sockaddr_in6* sp = reinterpret_cast<::sockaddr_in6*>(&a);
         sp->sin6_family = AF_INET6;
         Copy6(sp->sin6_addr.s6_addr, _bytes6);
         sp->sin6_port = htons(port);
@@ -457,41 +309,58 @@ size_t ts::IPAddress::getAddress(::sockaddr_storage* a, size_t size, Port port) 
 }
 
 // Get IPv4 address.
-void ts::IPAddress::getAddress4(::sockaddr_in& s, Port port) const
+bool ts::IPAddress::getAddress4(::sockaddr_in& s, Port port) const
 {
     TS_ZERO(s);
     if (_gen == IP::v4) {
         s.sin_family = AF_INET;
         s.sin_addr.s_addr = htonl(_addr4);
         s.sin_port = htons(port);
+        return true;
+    }
+    else {
+        return false;
     }
 }
 
 // Get IPv4 address.
-void ts::IPAddress::getAddress4(::in_addr& a) const
+bool ts::IPAddress::getAddress4(::in_addr& a) const
 {
-    a.s_addr = _gen == IP::v4 ? htonl(_addr4) : 0;
+    if (_gen == IP::v4) {
+        a.s_addr = htonl(_addr4);
+        return true;
+    }
+    else {
+        a.s_addr = 0;
+        return false;
+    }
 }
 
 // Get IPv6 address.
-void ts::IPAddress::getAddress6(::sockaddr_in6& s, Port port) const
+bool ts::IPAddress::getAddress6(::sockaddr_in6& s, Port port) const
 {
     TS_ZERO(s);
     if (_gen == IP::v6) {
         s.sin6_family = AF_INET6;
         Copy6(s.sin6_addr.s6_addr, _bytes6);
         s.sin6_port = htons(port);
+        return true;
+    }
+    else {
+        return false;
     }
 }
 
 // Get IPv6 address.
-void ts::IPAddress::getAddress6(::in6_addr& a) const
+bool ts::IPAddress::getAddress6(::in6_addr& a) const
 {
     if (_gen == IP::v6) {
         Copy6(a.s6_addr, _bytes6);
+        return true;
     }
     else {
-        TS_ZERO(a);
+        Zero6(a.s6_addr);
+        return false;
     }
 }
 
@@ -499,21 +368,6 @@ void ts::IPAddress::getAddress6(::in6_addr& a) const
 //----------------------------------------------------------------------------
 // Operators
 //----------------------------------------------------------------------------
-
-ts::IPAddress& ts::IPAddress::operator=(const IPAddress& other)
-{
-    if (&other != this) {
-        checkCompatibility(other);
-        _gen = other._gen;
-        if (_gen == IP::v6) {
-            Copy6(_bytes6, other._bytes6);
-        }
-        else {
-            _addr4 = other._addr4;
-        }
-    }
-    return *this;
-}
 
 bool ts::IPAddress::operator==(const IPAddress& other) const
 {
@@ -611,9 +465,6 @@ bool ts::IPAddress::convert(IP gen)
 {
     if (gen == IP::Any || _gen == gen) {
         return true;  // already in target format
-    }
-    else if (_bound != IP::Any && _bound != gen) {
-        return false;  // incompatible
     }
     else if (_gen == IP::v4) {
         // IPv4 to IPv6 conversion.
@@ -731,7 +582,7 @@ ts::UString ts::IPAddress::toString() const
 bool ts::IPAddress::decode4(const UString& name)
 {
     uint32_t b1 = 0, b2 = 0, b3 = 0, b4 = 0;
-    if (isCompatible(IP::v4) && name.scan(u"%d.%d.%d.%d", &b1, &b2, &b3, &b4) && b1 < 256 && b2 < 256 && b3 < 256 && b4 < 256) {
+    if (name.scan(u"%d.%d.%d.%d", &b1, &b2, &b3, &b4) && b1 < 256 && b2 < 256 && b3 < 256 && b4 < 256) {
         _gen = IP::v4;
         _addr4 = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
         return true;
@@ -743,10 +594,6 @@ bool ts::IPAddress::decode4(const UString& name)
 
 bool ts::IPAddress::decode6(const UString& name)
 {
-    if (!isCompatible(IP::v6)) {
-        return false;
-    }
-
     // Split into fields. It there is a "::", there will be an empty field.
     UStringVector fields;
     name.split(fields, u':', true, false);
@@ -844,35 +691,56 @@ bool ts::IPAddress::decode6(const UString& name)
 
 bool ts::IPAddress::resolve(const UString& name, Report& report)
 {
+    return resolve(name, report, IP::Any);
+}
+
+bool ts::IPAddress::resolve(const UString& name, Report& report, IP preferred)
+{
     // Try the trivial cases of numeric representation.
     if (decode4(name) || decode6(name)) {
         return true;
     }
 
-    // Use the system resolver.
-    ::addrinfo* ailist = GetAddressInfo(_bound, name, report);
+    // Erase current address on error.
+    clearAddress();
+
+    // Use the system resolver. Translate all addresses, get preference later.
+    ::addrinfo* ailist = GetAddressInfo(IP::Any, name, report);
 
     // Look for an address matching the restriction in this address.
     ::addrinfo* ai = ailist;
     while (ai != nullptr) {
-        if (_bound != IP::v6 && ai->ai_family == AF_INET && ai->ai_addr != nullptr && ai->ai_addrlen >= sizeof(::sockaddr_in) && ai->ai_addr->sa_family == AF_INET) {
+        if ((preferred != IP::v6 || !hasAddress()) &&
+            ai->ai_family == AF_INET &&
+            ai->ai_addr != nullptr &&
+            ai->ai_addrlen >= sizeof(::sockaddr_in) &&
+            ai->ai_addr->sa_family == AF_INET)
+        {
             // Found an acceptable IPv4 address.
             const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*>(ai->ai_addr);
             _addr4 = ntohl(sp->sin_addr.s_addr);
             _gen = IP::v4;
-            break;
+            if (preferred != IP::v6) {
+                break;
+            }
         }
-        else if (_bound != IP::v4 && ai->ai_family == AF_INET6 && ai->ai_addr != nullptr && ai->ai_addrlen >= sizeof(::sockaddr_in6) && ai->ai_addr->sa_family == AF_INET6) {
+        else if ((preferred != IP::v4 || !hasAddress()) &&
+                 ai->ai_family == AF_INET6 &&
+                 ai->ai_addr != nullptr &&
+                 ai->ai_addrlen >= sizeof(::sockaddr_in6) &&
+                 ai->ai_addr->sa_family == AF_INET6)
+        {
             // Found an acceptable IPv6 address.
             const ::sockaddr_in6* sp = reinterpret_cast<const ::sockaddr_in6*>(ai->ai_addr);
             Copy6(_bytes6, sp->sin6_addr.s6_addr);
             _gen = IP::v6;
-            break;
+            if (preferred != IP::v4) {
+                break;
+            }
         }
         ai = ai->ai_next;
     }
     if (ai == nullptr) {
-        clearAddress();
         report.error(u"no IP address found for " + name);
     }
     if (ailist != nullptr) {
@@ -891,10 +759,13 @@ bool ts::IPAddress::ResolveAllAddresses(IPAddressVector& addresses, const UStrin
     addresses.clear();
 
     // Try the trivial cases of numeric representation.
-    IPAddress num(gen);
+    IPAddress num;
     if (num.decode4(name) || num.decode6(name)) {
-        addresses.push_back(num);
-        return true;
+        const bool ok = num.convert(gen); // does nothing if gen == IP::Any
+        if (ok) {
+            addresses.push_back(num);
+        }
+        return ok;
     }
 
     // Use the system resolver.
@@ -906,11 +777,11 @@ bool ts::IPAddress::ResolveAllAddresses(IPAddressVector& addresses, const UStrin
         // Extract the returned address.
         if (gen != IP::v6 && ai->ai_family == AF_INET && ai->ai_addr != nullptr && ai->ai_addrlen >= sizeof(::sockaddr_in) && ai->ai_addr->sa_family == AF_INET) {
             // Found an acceptable IPv4 address.
-            addresses.push_back(IPAddress(*reinterpret_cast<const ::sockaddr_in*>(ai->ai_addr), gen != IP::Any));
+            addresses.push_back(IPAddress(*reinterpret_cast<const ::sockaddr_in*>(ai->ai_addr)));
         }
         else if (gen != IP::v4 && ai->ai_family == AF_INET6 && ai->ai_addr != nullptr && ai->ai_addrlen >= sizeof(::sockaddr_in6) && ai->ai_addr->sa_family == AF_INET6) {
             // Found an acceptable IPv6 address.
-            addresses.push_back(IPAddress(*reinterpret_cast<const ::sockaddr_in6*>(ai->ai_addr), gen != IP::Any));
+            addresses.push_back(IPAddress(*reinterpret_cast<const ::sockaddr_in6*>(ai->ai_addr)));
         }
         ai = ai->ai_next;
         // Remove duplicate addresses: getaddrinfo() returns one entry per family/socket-type/protocol.

@@ -49,7 +49,7 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
         int opt = 0;
         if (::setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
             // don't fail, just report a warning, will still work on IPv6.
-            report.warning(u"cannot set socket in %s mode: %s", _gen == IP::Any ? u"IPv4/IPv6" : u"IPv6-only", SysErrorCodeMessage());
+            report.warning(u"error setting option IPV6_V6ONLY: %s", SysErrorCodeMessage());
         }
     }
 #endif
@@ -83,11 +83,10 @@ bool ts::Socket::close(Report& report)
         // these threads can immediately check if this is a real error or the result of a close.
         const SysSocketType previous = _sock;
         _sock = SYS_SOCKET_INVALID;
-        // Shutdown should not be necessary here. However, on Linux, no using
-        // shutdown makes a blocking receive hangs forever when close() is
-        // invoked by another thread. By using shutdown() before close(),
-        // the blocking call is released. This is especially true on UDP sockets
-        // where shutdown() is normally meaningless.
+        // Shutdown should not be necessary here. However, on Linux, not using shutdown makes
+        // a blocking receive hangs forever when close() is invoked by another thread. By using
+        // shutdown() before close(), the blocking call is released. This is especially true on
+        // UDP sockets where shutdown() is normally meaningless.
         ::shutdown(previous, SYS_SOCKET_SHUT_RDWR);
         // Actually close the socket.
         SysCloseSocket(previous);
@@ -102,10 +101,10 @@ bool ts::Socket::close(Report& report)
 
 bool ts::Socket::convert(IPAddress& addr, Report& report) const
 {
-    const IP target_gen = _gen == IP::v4 ? IP::v4 : IP::v6; // don't convert to IP::Any
-    const bool ok = addr.convert(target_gen);
+    assert(_gen != IP::Any);
+    const bool ok = addr.convert(_gen);
     if (!ok) {
-        report.error(u"cannot use an IPv%d address on an IPv%d socket", int(addr.generation()), int(target_gen));
+        report.error(u"cannot use an IPv%d address on an IPv%d socket", int(addr.generation()), int(_gen));
     }
     return ok;
 }

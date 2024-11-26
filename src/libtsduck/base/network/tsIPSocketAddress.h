@@ -54,20 +54,6 @@ namespace ts {
         IPSocketAddress() = default;
 
         //!
-        //! Constructor with no initial value but optionally bound to a generation.
-        //! The default initial value is AnySocketAddress4, unless @a bound is IP::v6 in which
-        //! case the default initial value is AnySocketAddress6.
-        //! @param [in] bound Bound generation of the IP address.
-        //! When set to IP::Any, this instance can receive any generation of IP address.
-        //! Otherwise, this instance can only receive addresses of the specified generation.
-        //! In that case, trying to assign an address from a different generation thows the
-        //! exception IncompatibleIPAddress.
-        //!
-        IPSocketAddress(IP bound) :
-            IPAddress(bound)
-        {}
-
-        //!
         //! Generic constructor from an address and port.
         //! @param [in] addr Address.
         //! @param [in] port Port number as an integer in host byte order.
@@ -83,10 +69,9 @@ namespace ts {
         //! @param [in] size Size of the memory area. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to it generation. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(const uint8_t *addr, size_t size, Port port, bool bound = false) :
-            IPAddress(addr, size, bound),
+        IPSocketAddress(const void* addr, size_t size, Port port) :
+            IPAddress(addr, size),
             _port(port)
         {}
 
@@ -95,10 +80,9 @@ namespace ts {
         //! @param [in] bb Byte block containing the address in binary format. If the size is 4, this is an IPv4 address.
         //! If the size is 16, this is an IPv6 address. For all other sizes, the address is AnyAddress4.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to it generation. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(const ByteBlock& bb, Port port, bool bound = false) :
-            IPAddress(bb.data(), bb.size(), bound),
+        IPSocketAddress(const ByteBlock& bb, Port port) :
+            IPAddress(bb.data(), bb.size()),
             _port(port)
         {}
 
@@ -106,10 +90,9 @@ namespace ts {
         //! IPv4 constructor from an integer IPv4 address.
         //! @param [in] addr The IP v4 address as an integer in host byte order.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(uint32_t addr, Port port, bool bound = false) :
-            IPAddress(addr, bound),
+        IPSocketAddress(uint32_t addr, Port port) :
+            IPAddress(addr),
             _port(port)
         {}
 
@@ -120,10 +103,9 @@ namespace ts {
         //! @param [in] b3 Third address byte.
         //! @param [in] b4 Fourth address byte.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, Port port, bool bound = false) :
-            IPAddress(b1, b2, b3, b4, bound),
+        IPSocketAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, Port port) :
+            IPAddress(b1, b2, b3, b4),
             _port(port)
         {}
 
@@ -138,10 +120,9 @@ namespace ts {
         //! @param [in] h7 7th address hexlet.
         //! @param [in] h8 8th address hexlet.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8, Port port, bool bound = false) :
-            IPAddress(h1, h2, h3, h4, h5, h6, h7, h8, bound),
+        IPSocketAddress(uint16_t h1, uint16_t h2, uint16_t h3, uint16_t h4, uint16_t h5, uint16_t h6, uint16_t h7, uint16_t h8, Port port) :
+            IPAddress(h1, h2, h3, h4, h5, h6, h7, h8),
             _port(port)
         {}
 
@@ -150,10 +131,9 @@ namespace ts {
         //! @param [in] net Network prefix.
         //! @param [in] ifid Interface identifier.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(uint64_t net, uint64_t ifid, Port port, bool bound = false) :
-            IPAddress(net, ifid, bound),
+        IPSocketAddress(uint64_t net, uint64_t ifid, Port port) :
+            IPAddress(net, ifid),
             _port(port)
         {}
 
@@ -175,48 +155,42 @@ namespace ts {
         //! IPv4 constructor from a system "struct in_addr" structure (IPv4 socket API).
         //! @param [in] a A system "struct in_addr" structure.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(const ::in_addr& a, Port port, bool bound = false) :
-            IPAddress(a, bound),
+        IPSocketAddress(const ::in_addr& a, Port port) :
+            IPAddress(a),
             _port(port)
         {}
 
         //!
         //! IPv4 constructor from a system "struct sockaddr_in" structure (IPv4 socket API).
         //! @param [in] a A system "struct sockaddr_in" structure.
-        //! @param [in] bound If true, this instance is bound to IPv4. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(const ::sockaddr_in& a, bool bound = false);
+        IPSocketAddress(const ::sockaddr_in& a) : IPSocketAddress(*reinterpret_cast<const ::sockaddr*>(&a)) {}
 
         //!
         //! IPv6 constructor from a system "struct in6_addr" structure (IPv6 socket API).
         //! @param [in] a A system "struct in6_addr" structure.
         //! @param [in] port Optional port number as an integer in host byte order.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(const ::in6_addr& a, Port port, bool bound = false) :
-            IPAddress(a, bound),
+        IPSocketAddress(const ::in6_addr& a, Port port) :
+            IPAddress(a),
             _port(port)
         {}
 
         //!
         //! IPv6 constructor from a system "struct sockaddr_in6" structure (IPv6 socket API).
         //! @param [in] a A system "struct sockaddr_in6" structure.
-        //! @param [in] bound If true, this instance is bound to IPv6. Otherwise, it can receive any address.
         //!
-        IPSocketAddress(const ::sockaddr_in6& a, bool bound = false);
+        IPSocketAddress(const ::sockaddr_in6& a) : IPSocketAddress(*reinterpret_cast<const ::sockaddr*>(&a)) {}
 
         //!
         //! Constructor from a string, host name or integer format.
         //! If @a name cannot be resolved, the address is set to AnyAddress4.
         //! @param [in] name A string containing either a host name or a numerical representation of the address.
         //! @param [in] report Where to report errors.
-        //! @param [in] bound Bound generation of the IP address. If not set to IP::Any (the default),
-        //! this instance becomes bound to that IP generation and the name resolution can only produce
-        //! an address of that generation.
+        //! @param [in] preferred Preferred IP generation of the returned address. Return the first availabale address by default.
         //!
-        IPSocketAddress(const UString& name, Report& report, IP bound = IP::Any) : ts::IPSocketAddress(bound) { IPSocketAddress::resolve(name, report); }
+        IPSocketAddress(const UString& name, Report& report, IP preferred = IP::Any) { IPSocketAddress::resolve(name, report, preferred); }
 
         // Inherited methods.
         virtual Port port() const override;
@@ -230,66 +204,56 @@ namespace ts {
         //! @param [in] a A system "struct sockaddr" structure.
         //! Note: the structure "sockaddr" is deprecated because it cannot hold an IPv6 socket address.
         //! The structure "sockaddr_storage" should be used instead.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void set(const ::sockaddr& a);
+        bool set(const ::sockaddr& a);
 
         //!
         //! Set the IP address and port from a system "struct sockaddr_storage" structure (IPv4 or IPv6).
         //! @param [in] a A system "struct sockaddr_storage" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void set(const ::sockaddr_storage& a) { set(*reinterpret_cast<const ::sockaddr*>(&a)); }
+        bool set(const ::sockaddr_storage& a) { return set(*reinterpret_cast<const ::sockaddr*>(&a)); }
 
         //!
         //! Set the IPv4 address and port from a system "struct sockaddr_in" structure.
         //! @param [in] a A system "struct sockaddr_in" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void set4(const ::sockaddr_in& a)
-        {
-            setAddress4(a);
-            _port = ntohs(a.sin_port);
-        }
+        bool set(const ::sockaddr_in& a) { return set(*reinterpret_cast<const ::sockaddr*>(&a)); }
 
         //!
         //! Set the IPv6 address and port from a system "struct sockaddr_in6" structure.
         //! @param [in] a A system "struct sockaddr_in6" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void set6(const ::sockaddr_in6& a)
-        {
-            setAddress6(a);
-            _port = ntohs(a.sin6_port);
-        }
+        bool set(const ::sockaddr_in6& a) { return set(*reinterpret_cast<const ::sockaddr*>(&a)); }
 
         //!
         //! Get the address and port into a system "struct sockaddr_storage" structure.
         //! Note: the structure "sockaddr" is deprecated because it cannot hold an IPv6 socket address.
         //! The structure "sockaddr_storage" should be used instead.
-        //! @param [out] a Address of a system socket address structure.
+        //! @param [out] a A system "struct sockaddr_storage" structure. This type of structure is large
+        //! enough to hold a structure sockaddr_in or sockaddr_in6.
         //! @param [in] size Size in bytes of the system socket address structure.
         //! @return Actual number of bytes used in the structure "sockaddr_storage",
         //! zero on error (system socket address structure is too small).
         //!
-        size_t get(::sockaddr_storage* a, size_t size) const
-        {
-            return IPAddress::getAddress(a, size, _port);
-        }
+        size_t get(::sockaddr_storage& a) const { return IPAddress::getAddress(a, _port); }
 
         //!
         //! Get the IPv4 address and port into a system "struct sockaddr_in" structure.
         //! @param [out] a A system "struct sockaddr_in" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void get4(::sockaddr_in& a) const
-        {
-            IPAddress::getAddress4(a, _port);
-        }
+        bool get4(::sockaddr_in& a) const { return IPAddress::getAddress4(a, _port); }
 
         //!
         //! Get the IPv6 address and port into a system "struct sockaddr_in6" structure.
         //! @param [out] a A system "struct sockaddr_in6" structure.
+        //! @return True on success, false on error (incorrect family type).
         //!
-        void get6(::sockaddr_in6& a) const
-        {
-            IPAddress::getAddress6(a, _port);
-        }
+        bool get6(::sockaddr_in6& a) const { return IPAddress::getAddress6(a, _port); }
 
         //!
         //! Check if this socket address "matches" another one.
@@ -298,6 +262,17 @@ namespace ts {
         //! are different or if the two ports are specified and different. True otherwise.
         //!
         bool match(const IPSocketAddress& other) const;
+
+        //!
+        //! Decode a string containing a socket address in family-specific format.
+        //! @param [in] name A string containing either a host name or a numerical representation of the address and a port.
+        //! @param [in] report Where to report errors.
+        //! @param [in] preferred Preferred IP generation of the returned address. Return the first availabale address by default.
+        //! If no address of that generation is available, return one from the other generation if available.
+        //! @return True if @a name was successfully resolved, false otherwise.
+        //! In the later case, the address is invalidated.
+        //!
+        virtual bool resolve(const UString& name, Report& report, IP preferred) override;
 
         //!
         //! Equality operator.
