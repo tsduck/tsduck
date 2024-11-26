@@ -235,7 +235,6 @@ namespace ts {
         //! The structure "sockaddr_storage" should be used instead.
         //! @param [out] a A system "struct sockaddr_storage" structure. This type of structure is large
         //! enough to hold a structure sockaddr_in or sockaddr_in6.
-        //! @param [in] size Size in bytes of the system socket address structure.
         //! @return Actual number of bytes used in the structure "sockaddr_storage",
         //! zero on error (system socket address structure is too small).
         //!

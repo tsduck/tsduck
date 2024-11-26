@@ -38,6 +38,7 @@ namespace ts {
         //!
         //! Open the socket.
         //! @param [in] gen IP generation, IPv4 or IPv6. If set to IP::Any, open an IPv6 socket (IPv4 connections allowed).
+        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
         virtual bool open(IP gen, Report& report = CERR) = 0;
