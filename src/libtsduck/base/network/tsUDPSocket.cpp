@@ -111,7 +111,6 @@ bool ts::UDPSocket::close(Report& report)
 
 //----------------------------------------------------------------------------
 // Bind to a local address and port.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::UDPSocket::bind(const IPSocketAddress& addr, Report& report)
@@ -137,48 +136,59 @@ bool ts::UDPSocket::bind(const IPSocketAddress& addr, Report& report)
 
 //----------------------------------------------------------------------------
 // Set outgoing local address for multicast messages.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::UDPSocket::setOutgoingMulticast(const UString& name, Report& report)
 {
     IPAddress addr;
-    return addr.resolve(name, report) && setOutgoingMulticast(addr, report);
+    return addr.resolve(name, report, generation()) && setOutgoingMulticast(addr, report);
 }
 
 bool ts::UDPSocket::setOutgoingMulticast(const IPAddress& addr, Report& report)
 {
-    ::in_addr iaddr;
-    addr.getAddress4(iaddr);
-
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) != 0) {
-        report.error(u"error setting outgoing local address: %s", SysErrorCodeMessage());
+    IPAddress local(addr);
+    if (!local.convert(generation())) {
+        report.error(u"cannot use IPv%d address %s in IPv%d socket", int(addr.generation()), addr, int(generation()));
         return false;
     }
-    return true;
+
+    bool ok = true;
+    if (local.generation() == IP::v4) {
+        ::in_addr iaddr;
+        local.getAddress4(iaddr);
+        ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) == 0;
+    }
+    else {
+        ::in6_addr iaddr;
+        local.getAddress6(iaddr);
+        // @@@@ => interface index not address
+        ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) == 0;
+    }
+    if (!ok) {
+        report.error(u"error setting outgoing local address %s: %s", local, SysErrorCodeMessage());
+    }
+    return ok;
 }
 
 
 //----------------------------------------------------------------------------
 // Set a default destination address and port for outgoing messages.
-// Both address and port are mandatory in socket address.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::UDPSocket::setDefaultDestination(const UString& name, Report& report)
 {
     IPSocketAddress addr;
-    return addr.resolve(name, report) && setDefaultDestination(addr, report);
+    return addr.resolve(name, report, generation()) && setDefaultDestination(addr, report);
 }
 
 bool ts::UDPSocket::setDefaultDestination(const IPSocketAddress& addr, Report& report)
 {
     if (!addr.hasAddress()) {
-        report.error(u"missing IP address in UDP destination");
+        report.error(u"missing IP address in UDP destination %s", addr);
         return false;
     }
     else if (!addr.hasPort()) {
-        report.error(u"missing port number in UDP destination");
+        report.error(u"missing port number in UDP destination %s", addr);
         return false;
     }
     else {
@@ -194,21 +204,31 @@ bool ts::UDPSocket::setDefaultDestination(const IPSocketAddress& addr, Report& r
 
 bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
 {
-    if (multicast) {
-        SysSocketMulticastTTLType mttl = SysSocketMulticastTTLType(ttl);
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, SysSockOptPointer(&mttl), sizeof(mttl)) != 0) {
-            report.error(u"socket option multicast TTL: %s", SysErrorCodeMessage());
-            return false;
+    bool ok = true;
+    if (generation() == IP::v4) {
+        if (multicast) {
+            SysSocketMulticastTTLType mttl = SysSocketMulticastTTLType(ttl);
+            ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, SysSockOptPointer(&mttl), sizeof(mttl)) == 0;
+        }
+        else {
+            SysSocketTTLType uttl = SysSocketTTLType(ttl);
+            ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, SysSockOptPointer(&uttl), sizeof(uttl)) == 0;
         }
     }
     else {
-        SysSocketTTLType uttl = SysSocketTTLType(ttl);
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, SysSockOptPointer(&uttl), sizeof(uttl)) != 0) {
-            report.error(u"socket option unicast TTL: %s", SysErrorCodeMessage());
-            return false;
+        if (multicast) {
+            SysSocketMulticastTTLType mttl = SysSocketMulticastTTLType(ttl);
+            ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_HOPS, SysSockOptPointer(&mttl), sizeof(mttl)) == 0;
+        }
+        else {
+            SysSocketTTLType uttl = SysSocketTTLType(ttl);
+            ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_UNICAST_HOPS, SysSockOptPointer(&uttl), sizeof(uttl)) == 0;
         }
     }
-    return true;
+    if (!ok) {
+        report.error(u"socket option %s TTL: %s", multicast ? u"multicast" : u"unicast", SysErrorCodeMessage());
+    }
+    return ok;
 }
 
 
@@ -218,11 +238,13 @@ bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
 
 bool ts::UDPSocket::setTOS(int tos, Report& report)
 {
-    // TODO: make it IPv6 compatible.
-    SysSocketTOSType utos = SysSocketTOSType(tos);
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_TOS, SysSockOptPointer(&utos), sizeof(utos)) != 0) {
-        report.error(u"socket option TOS: %s", SysErrorCodeMessage());
-        return false;
+    // No IPv6 equivalent (?)
+    if (generation() == IP::v4) {
+        SysSocketTOSType utos = SysSocketTOSType(tos);
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_TOS, SysSockOptPointer(&utos), sizeof(utos)) != 0) {
+            report.error(u"socket option TOS: %s", SysErrorCodeMessage());
+            return false;
+        }
     }
     return true;
 }
@@ -234,13 +256,19 @@ bool ts::UDPSocket::setTOS(int tos, Report& report)
 
 bool ts::UDPSocket::setMulticastLoop(bool on, Report& report)
 {
+    bool ok = true;
     SysSocketMulticastLoopType mloop = SysSocketMulticastLoopType(on);
     report.debug(u"setting socket IP_MULTICAST_LOOP to %d", mloop);
-    if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) != 0) {
-        report.error(u"socket option multicast loop: %s", SysErrorCodeMessage());
-        return false;
+    if (generation() == IP::v4) {
+        ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) == 0;
     }
-    return true;
+    else {
+        ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) == 0;
+    }
+    if (!ok) {
+        report.error(u"socket option multicast loop: %s", SysErrorCodeMessage());
+    }
+    return ok;
 }
 
 
@@ -259,7 +287,6 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
         return false;
     }
 #endif
-
     return true;
 }
 
@@ -309,48 +336,68 @@ bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& 
 
 bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source, Report& report)
 {
-    // TODO: make it IPv6 compatible.
     // Verbose message about joining the group.
-    UString groupString;
+    UString group_string;
     if (source.hasAddress()) {
-        groupString = source.toString() + u"@";
+        group_string = source.toString() + u"@";
     }
-    groupString += multicast.toString();
+    group_string += multicast.toString();
     if (local.hasAddress()) {
-        report.verbose(u"joining multicast group %s from local address %s", groupString, local);
+        report.verbose(u"joining multicast group %s from local address %s", group_string, local);
     }
     else {
-        report.verbose(u"joining multicast group %s from default interface", groupString);
+        report.verbose(u"joining multicast group %s from default interface", group_string);
     }
 
     // Now join the group.
-    if (source.hasAddress()) {
-        // Source-specific multicast (SSM).
+    if (generation() == IP::v4) {
+        if (source.hasAddress()) {
+            // Source-specific multicast (SSM).
 #if defined(TS_NO_SSM)
-        report.error(u"source-specific multicast (SSM) is not supported on this operating system");
-        return false;
-#else
-        SSMReq req(multicast, local, source);
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
-            report.error(u"error adding SSM membership to %s from local address %s: %s", groupString, local, SysErrorCodeMessage());
+            report.error(u"source-specific multicast (SSM) is not supported on this operating system");
             return false;
+#else
+            SSMReq req(multicast, local, source);
+            if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
+                report.error(u"error adding SSM membership to %s from local address %s: %s", group_string, local, SysErrorCodeMessage());
+                return false;
+            }
+            else {
+                _ssmcast.insert(req);
+                return true;
+            }
+#endif
         }
         else {
-            _ssmcast.insert(req);
-            return true;
+            // Standard multicast.
+            MReq req(multicast, local);
+            if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
+                report.error(u"error adding multicast membership to %s from local address %s: %s", group_string, local, SysErrorCodeMessage());
+                return false;
+            }
+            else {
+                _mcast.insert(req);
+                return true;
+            }
         }
-#endif
     }
     else {
-        // Standard multicast.
-        MReq req(multicast, local);
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
-            report.error(u"error adding multicast membership to %s from local address %s: %s", groupString, local, SysErrorCodeMessage());
+        // IPv6: SSM does not exist.
+        if (source.hasAddress()) {
+            report.error(u"SSM is not available on IPv6 socket");
             return false;
         }
         else {
-            _mcast.insert(req);
-            return true;
+            // Standard multicast.
+            MReq6 req(multicast, 0); // @@@@ need inteface index
+            if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
+                report.error(u"error adding multicast membership to %s from local address %s: %s", group_string, local, SysErrorCodeMessage());
+                return false;
+            }
+            else {
+                _mcast6.insert(req);
+                return true;
+            }
         }
     }
 }

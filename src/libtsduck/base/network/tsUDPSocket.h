@@ -168,7 +168,8 @@ namespace ts {
         //! Set the Type Of Service (TOS) option.
         //!
         //! Note that correct support for this option depends on the operating
-        //! system. Typically, it never worked correctly on Windows.
+        //! system. Typically, it never worked correctly on Windows. Additionally,
+        //! the TOS is only implemented on IPv4. It is ignored in IPv6.
         //!
         //! @param [in] tos The TOS value.
         //! @param [in,out] report Where to report error.
@@ -230,12 +231,13 @@ namespace ts {
         //! This method indicates that the application wishes to receive multicast
         //! packets which are sent to a specific multicast address. Specifying a
         //! non-default @a source address, source-specific multicast (SSM) is used.
+        //! Note that source-specific multicast exists on IPv4 only.
         //!
         //! @param [in] multicast Multicast IP address to listen to.
         //! @param [in] local IP address of a local interface on which to listen.
         //! If set to IPAddress::AnyAddress4, the application lets the system selects
         //! the appropriate local interface.
-        //! @param [in] source Source address for SSM.
+        //! @param [in] source Source address for SSM. Ignored on IPv6 socket.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
@@ -361,13 +363,26 @@ namespace ts {
         {
             using SuperClass = POCS<::ip_mreq>;
             MReq() = default;
-            MReq(const IPAddress& multicast_, const IPAddress& interface_) : SuperClass()
+            MReq(const IPAddress& multicast, const IPAddress& interface) : SuperClass()
             {
-                multicast_.getAddress4(data.imr_multiaddr);
-                interface_.getAddress4(data.imr_interface);
+                multicast.getAddress4(data.imr_multiaddr);
+                interface.getAddress4(data.imr_interface);
             }
         };
         using MReqSet = std::set<MReq>;
+
+        // Encapsulate an ipv6_mreq
+        struct MReq6 : public POCS<::ipv6_mreq>
+        {
+            using SuperClass = POCS<::ipv6_mreq>;
+            MReq6() = default;
+            MReq6(const IPAddress& multicast, unsigned int interface_index) : SuperClass()
+            {
+                multicast.getAddress6(data.ipv6mr_multiaddr);
+                data.ipv6mr_interface = interface_index;
+            }
+        };
+        using MReq6Set = std::set<MReq6>;
 
         // Encapsulate an ip_mreq_source
 #if !defined(TS_NO_SSM)
@@ -388,10 +403,11 @@ namespace ts {
         // Private members
         IPSocketAddress _local_address {};
         IPSocketAddress _default_destination {};
+        MReqSet         _mcast {};    // Current set of IPv4 multicast memberships
+        MReq6Set        _mcast6 {};   // Current set of IPv6 multicast memberships
 #if !defined(TS_NO_SSM)
-        SSMReqSet         _ssmcast {};  // Current set of source-specific multicast memberships
+        SSMReqSet       _ssmcast {};  // Current set of source-specific multicast memberships
 #endif
-        MReqSet           _mcast {};    // Current set of multicast memberships
 
         // Perform one receive operation. Hide the system mud. Return a system socket error code.
         int receiveOne(void* data, size_t max_size, size_t& ret_size, IPSocketAddress& sender, IPSocketAddress& destination, Report& report, cn::microseconds* timestamp);
