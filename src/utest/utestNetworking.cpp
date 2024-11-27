@@ -17,6 +17,7 @@
 #include "tsTCPServer.h"
 #include "tsUDPSocket.h"
 #include "tsMACAddress.h"
+#include "tsNetworkInterface.h"
 #include "tsIPv4Packet.h"
 #include "tsNullReport.h"
 #include "tsIPUtils.h"
@@ -411,28 +412,28 @@ TSUNIT_DEFINE_TEST(GetLocalIPAddresses)
     // We cannot assume that the local system has any local address.
     // We only requires that the call does not fail.
     ts::IPAddressVector addr;
-    TSUNIT_ASSERT(ts::GetLocalIPAddresses(addr, true, ts::IP::Any));
+    TSUNIT_ASSERT(ts::NetworkInterface::GetAll(addr));
 
-    ts::IPAddressMaskVector addrMask;
-    TSUNIT_ASSERT(ts::GetLocalIPAddresses(addrMask, true, ts::IP::Any));
+    ts::NetworkInterfaceVector netif;
+    TSUNIT_ASSERT(ts::NetworkInterface::GetAll(netif));
 
     // The two calls must return the same number of addresses.
-    TSUNIT_ASSERT(addr.size() == addrMask.size());
+    TSUNIT_ASSERT(addr.size() == netif.size());
 
-    debug() << "NetworkingTest: GetLocalIPAddresses: " << addrMask.size() << " local addresses" << std::endl;
-    for (size_t i = 0; i < addrMask.size(); ++i) {
+    debug() << "NetworkingTest: GetLocalIPAddresses: " << netif.size() << " local addresses" << std::endl;
+    for (size_t i = 0; i < netif.size(); ++i) {
         debug() << "NetworkingTest: local address " << i
-                << ": " << addrMask[i]
-                << ", mask: " << addrMask[i].mask()
-                << ", broadcast: " << addrMask[i].broadcastAddress() << std::endl;
+                << ": " << netif[i]
+                << ", mask: " << netif[i].address.mask()
+                << ", broadcast: " << netif[i].address.broadcastAddress() << std::endl;
     }
 
     for (size_t i = 0; i < addr.size(); ++i) {
-        TSUNIT_ASSERT(ts::IsLocalIPAddress(addr[i]));
+        TSUNIT_ASSERT(ts::NetworkInterface::IsLocal(addr[i]));
     }
 
-    for (size_t i = 0; i < addrMask.size(); ++i) {
-        TSUNIT_ASSERT(ts::IsLocalIPAddress(addrMask[i]));
+    for (size_t i = 0; i < netif.size(); ++i) {
+        TSUNIT_ASSERT(ts::NetworkInterface::IsLocal(netif[i].address));
     }
 }
 

@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsUDPSocket.h"
+#include "tsNetworkInterface.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 
@@ -313,14 +314,14 @@ bool ts::UDPSocket::setBroadcast(bool on, Report& report)
 bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& report)
 {
     // Get all local interfaces.
-    IPAddressMaskVector locals;
-    if (!GetLocalIPAddresses(locals, false, destination.generation(), report)) {
+    NetworkInterfaceVector locals;
+    if (!NetworkInterface::GetAll(locals, false, destination.generation(), false, report)) {
         return false;
     }
 
     // Loop on all local addresses and set broadcast when we match a local broadcast address.
     for (const auto& it : locals) {
-        if (destination == it.broadcastAddress()) {
+        if (destination == it.address.broadcastAddress()) {
             return setBroadcast(true, report);
         }
     }
@@ -390,7 +391,7 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& l
         else {
             // Standard multicast.
             MReq6 req(multicast, 0); // @@@@ need inteface index
-            if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
+            if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
                 report.error(u"error adding multicast membership to %s from local address %s: %s", group_string, local, SysErrorCodeMessage());
                 return false;
             }
@@ -426,7 +427,7 @@ bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress
 
     // Get all local interfaces.
     IPAddressVector loc_if;
-    if (!GetLocalIPAddresses(loc_if, false, multicast.generation(), report)) {
+    if (!NetworkInterface::GetAll(loc_if, false, multicast.generation(), false, report)) {
         return false;
     }
 

@@ -35,6 +35,9 @@ ts::UString ts::NetworkInterface::toString() const
     if (!name.empty()) {
         str.format(u", \"%s\"", name);
     }
+    if (loopback) {
+        str.append(u", loopback");
+    }
     if (index >= 0) {
         str.format(u", index %d", index);
     }

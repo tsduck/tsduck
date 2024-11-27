@@ -13,7 +13,7 @@
 #include "tsMain.h"
 #include "tsArgs.h"
 #include "tsCerrReport.h"
-#include "tsIPUtils.h"
+#include "tsNetworkInterface.h"
 #include "tsIPAddress.h"
 #include "tsUDPSocket.h"
 #include "tsTCPServer.h"
@@ -158,11 +158,11 @@ int MainCode(int argc, char *argv[])
 
     // Get local interfaces.
     if (opt.local) {
-        ts::IPAddressMaskVector addr;
-        if (ts::GetLocalIPAddresses(addr, !opt.no_loopback, opt.gen, opt)) {
-            std::cout << "Local interfaces: " << addr.size() << std::endl;
-            for (const auto& a : addr) {
-                std::cout << "  " << Format(a) << std::endl;
+        ts::NetworkInterfaceVector net;
+        if (ts::NetworkInterface::GetAll(net, !opt.no_loopback, opt.gen, false, opt)) {
+            std::cout << "Local interfaces: " << net.size() << std::endl;
+            for (const auto& n : net) {
+                std::cout << "  " << n << std::endl;
             }
         }
     }

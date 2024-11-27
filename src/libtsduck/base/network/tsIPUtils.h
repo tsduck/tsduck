@@ -349,35 +349,4 @@ namespace ts {
     //! @return A constant reference to a std::error_category instance.
     //!
     TSDUCKDLL const std::error_category& getaddrinfo_category();
-
-    //------------------------------------------------------------------------
-    // Local network interfaces.
-    //------------------------------------------------------------------------
-
-    //!
-    //! Get the list of all local IP addresses in the system with their network masks.
-    //! @param [out] addresses A vector of IPAddressMask which receives the list of all local IP addresses.
-    //! @param [in] loopback If false, the loopback addresses are skipped.
-    //! @param [in] gen Report addresses for the specified generations only.
-    //! @param [in] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPAddressMaskVector& addresses, bool loopback = true, IP gen = IP::Any, Report& report = CERR);
-
-    //!
-    //! Get the list of all local IP addresses in the system.
-    //! @param [out] addresses A vector of IPAddress which receives the list of all local IP addresses.
-    //! @param [in] loopback If false, the loopback addresses are skipped.
-    //! @param [in] gen Report addresses for the specified generations only.
-    //! @param [in] report Where to report errors.
-    //! @return True on success, false on error.
-    //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPAddressVector& addresses, bool loopback = true, IP gen = IP::Any, Report& report = CERR);
-
-    //!
-    //! Check if a local system interface has a specified IP address.
-    //! @param [in] address The IP address to check.
-    //! @return True is @a address is the address of a local system interface, false otherwise.
-    //!
-    TSDUCKDLL bool IsLocalIPAddress(const IPAddress& address);
 }
