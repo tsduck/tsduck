@@ -165,7 +165,7 @@ bool ts::TCPSocket::bind(const IPSocketAddress& addr, Report& report)
     ::sockaddr_storage sock_addr;
     const size_t sock_size = addr2.get(sock_addr);
 
-    report.debug(u"binding socket to %s", addr);
+    report.debug(u"binding socket to %s", addr2);
     if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
         report.error(u"error binding socket to local address: %s", SysErrorCodeMessage());
         return false;

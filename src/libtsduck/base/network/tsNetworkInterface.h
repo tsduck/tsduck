@@ -35,11 +35,13 @@ namespace ts {
     {
         TS_RULE_OF_FIVE(NetworkInterface, override);
     public:
-        NetworkInterface() = default;    //!< Default constructor.
-        IPAddressMask address {};        //!< IP address and mask/prefix.
-        UString       name {};           //!< Interface name, system specific.
-        bool          loopback = false;  //!< This is a software loopback interface.
-        long          index = -1;        //!< Interface index, system specific, negative if meaningless.
+        NetworkInterface() = default;       //!< Default constructor.
+        IPAddressMask address {};           //!< IP address and mask/prefix.
+        UString       name {};              //!< Interface name, system specific.
+        bool          loopback = false;     //!< This is a software loopback interface.
+        int           index = -1;           //!< Interface index, system specific, negative if meaningless.
+
+        static constexpr int AnyIndex = 0;  //!< Interface index value meaning "any interface" in IPv6 system API.
 
         // Inherited methods.
         virtual UString toString() const override;
@@ -80,6 +82,17 @@ namespace ts {
         //! @return True is @a address is the address of a local system interface, false otherwise.
         //!
         static bool IsLocal(const IPAddress& address, bool force_reload = false, Report& report = CERR);
+
+        //!
+        //! Find the interface index for a local system interface identified by IP address.
+        //! @param [in] address The IP address to check.
+        //! @param [in] force_reload If true, force a reload of the list of interfaces.
+        //! By default, the list is loaded once and kept in cache. If no network interface
+        //! is dynamically added, there is no need to rebuild the list each time.
+        //! @param [in] report Where to report errors.
+        //! @return Interface index for @a address, -1 if @a address if not a local interface.
+        //!
+        static int ToIndex(const IPAddress& address, bool force_reload = false, Report& report = CERR);
 
     private:
         // The shared repository of local network interfaces.

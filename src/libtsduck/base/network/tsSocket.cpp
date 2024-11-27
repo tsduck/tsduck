@@ -37,6 +37,8 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
 
     // Create the socket on IPv6, unless explicitly IPv4.
     _gen = gen == IP::v4 ? IP::v4 : IP::v6;
+    report.debug(u"create IPv%d socket, type %d, protocol %d", int(_gen), type, protocol);
+
     _sock = ::socket(gen == IP::v4 ? PF_INET : PF_INET6, type, protocol);
     if (_sock == SYS_SOCKET_INVALID) {
         report.error(u"error creating socket: %s", SysErrorCodeMessage());
@@ -104,7 +106,7 @@ bool ts::Socket::convert(IPAddress& addr, Report& report) const
     assert(_gen != IP::Any);
     const bool ok = addr.convert(_gen);
     if (!ok) {
-        report.error(u"cannot use an IPv%d address on an IPv%d socket", int(addr.generation()), int(_gen));
+        report.error(u"cannot use IPv%d address %s on an IPv%d socket", int(addr.generation()), addr, int(_gen));
     }
     return ok;
 }

@@ -287,17 +287,18 @@ void ts::IPAddress::setAddress6(const ::in6_addr& a)
 }
 
 // Copy the address into a system "struct sockaddr_storage" structure (socket API).
-size_t ts::IPAddress::getAddress(::sockaddr_storage& a, Port port) const
+size_t ts::IPAddress::getAddress(::sockaddr_storage& s, Port port) const
 {
+    TS_ZERO(s);
     if (_gen == IP::v4) {
-        ::sockaddr_in* sp = reinterpret_cast<::sockaddr_in*>(&a);
+        ::sockaddr_in* sp = reinterpret_cast<::sockaddr_in*>(&s);
         sp->sin_family = AF_INET;
         sp->sin_addr.s_addr = htonl(_addr4);
         sp->sin_port = htons(port);
         return sizeof(::sockaddr_in);
     }
     else if (_gen == IP::v6) {
-        ::sockaddr_in6* sp = reinterpret_cast<::sockaddr_in6*>(&a);
+        ::sockaddr_in6* sp = reinterpret_cast<::sockaddr_in6*>(&s);
         sp->sin6_family = AF_INET6;
         Copy6(sp->sin6_addr.s6_addr, _bytes6);
         sp->sin6_port = htons(port);
@@ -469,10 +470,10 @@ bool ts::IPAddress::convert(IP gen)
     else if (_gen == IP::v4) {
         // IPv4 to IPv6 conversion.
         if (operator==(AnyAddress4)) {
-            *this = AnyAddress6;
+            setAddress(AnyAddress6);
         }
         else if (operator==(LocalHost4)) {
-            *this = LocalHost6;
+            setAddress(LocalHost6);
         }
         else {
             _gen = IP::v6;
@@ -488,10 +489,10 @@ bool ts::IPAddress::convert(IP gen)
     else {
         // IPv6 to IPv4 conversion.
         if (operator==(AnyAddress6)) {
-            *this = AnyAddress4;
+            setAddress(AnyAddress4);
         }
         else if (operator==(LocalHost6)) {
-            *this = LocalHost4;
+            setAddress(LocalHost4);
         }
         else if (isIPv4Mapped()) {
             _gen = IP::v4;

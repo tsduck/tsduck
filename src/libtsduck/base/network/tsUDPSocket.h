@@ -376,10 +376,10 @@ namespace ts {
         {
             using SuperClass = POCS<::ipv6_mreq>;
             MReq6() = default;
-            MReq6(const IPAddress& multicast, unsigned int interface_index) : SuperClass()
+            MReq6(const IPAddress& multicast, int interface_index) : SuperClass()
             {
                 multicast.getAddress6(data.ipv6mr_multiaddr);
-                data.ipv6mr_interface = interface_index;
+                data.ipv6mr_interface = static_cast<unsigned int>(interface_index);
             }
         };
         using MReq6Set = std::set<MReq6>;

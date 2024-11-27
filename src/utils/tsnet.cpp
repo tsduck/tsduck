@@ -182,8 +182,8 @@ int MainCode(int argc, char *argv[])
                 msg.resize(ret_size);
                 opt.info(u"Received %d bytes: \"%s\"", ret_size, msg);
                 opt.info(u"Source: %s, destination: %s", source, destination);
-                msg.insert(0, "-> \"");
-                msg.append("\"");
+                msg.insert(0, "-> [");
+                msg.append("]");
                 sock.send(msg.data(), msg.size(), source, opt);
             }
             sock.close(opt);
@@ -228,8 +228,8 @@ int MainCode(int argc, char *argv[])
                     std::string msg;
                     if (client.receiveLine(msg, nullptr, opt)) {
                         opt.info(u"Received line: \"%s\"", msg);
-                        msg.insert(0, "-> \"");
-                        msg.append("\"");
+                        msg.insert(0, "-> [");
+                        msg.append("]");
                         client.sendLine(msg, opt);
                     }
                     client.close();

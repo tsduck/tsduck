@@ -104,7 +104,7 @@ bool ts::NetworkInterface::InterfaceRepository::reload(bool force_reload, Report
             net.loopback = (ifa->ifa_flags & IFF_LOOPBACK) != 0;
             if (ifa->ifa_name != nullptr) {
                 net.name.assignFromUTF8(ifa->ifa_name);
-                const long i = long(if_nametoindex(ifa->ifa_name));
+                const int i = int(if_nametoindex(ifa->ifa_name));
                 if (i != 0) {
                     net.index = i;
                 }
@@ -158,7 +158,7 @@ bool ts::NetworkInterface::InterfaceRepository::reload(bool force_reload, Report
                 net.address = IPAddressMask(*addr->Address.lpSockaddr, size_t(addr->OnLinkPrefixLength));
                 net.loopback = adap->IfType == IF_TYPE_SOFTWARE_LOOPBACK;
                 net.name.assignFromWChar(adap->FriendlyName);
-                net.index = long(adap->Ipv6IfIndex);
+                net.index = int(adap->Ipv6IfIndex);
                 add(net);
             }
             // Loop on next address for that interface.
@@ -245,4 +245,28 @@ bool ts::NetworkInterface::IsLocal(const IPAddress& address, bool force_reload, 
         }
     }
     return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Find the interface index for a local interface identified by IP address.
+//----------------------------------------------------------------------------
+
+int ts::NetworkInterface::ToIndex(const IPAddress& address, bool force_reload, Report& report)
+{
+    // Lock the repo and make sure it is loaded.
+    auto& repo(InterfaceRepository::Instance());
+    std::lock_guard<std::mutex> lock(repo.mutex);
+    if (!repo.reload(force_reload, report)) {
+        return false;
+    }
+
+    // Search the address.
+    for (const auto& it : repo.addresses) {
+        if (address == IPAddress(it.address)) {
+            return it.index;
+        }
+    }
+    report.error(u"%s is not a local interface", address);
+    return -1;
 }

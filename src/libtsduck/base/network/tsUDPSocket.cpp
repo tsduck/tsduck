@@ -124,7 +124,7 @@ bool ts::UDPSocket::bind(const IPSocketAddress& addr, Report& report)
     ::sockaddr_storage sock_addr;
     const size_t sock_size = addr2.get(sock_addr);
 
-    report.debug(u"binding socket to %s", addr);
+    report.debug(u"binding socket to %s", addr2);
     if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
         report.error(u"error binding socket to local address: %s", SysErrorCodeMessage());
         return false;
@@ -155,15 +155,15 @@ bool ts::UDPSocket::setOutgoingMulticast(const IPAddress& addr, Report& report)
 
     bool ok = true;
     if (local.generation() == IP::v4) {
+        // With IPv4, the local interface is identified by its IPv4 address.
         ::in_addr iaddr;
         local.getAddress4(iaddr);
         ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) == 0;
     }
     else {
-        ::in6_addr iaddr;
-        local.getAddress6(iaddr);
-        // @@@@ => interface index not address
-        ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) == 0;
+        // With IPv6, the local interface is identified by its system-defined interface index.
+        int index = NetworkInterface::ToIndex(local, false, report);
+        ok = index >= 0 && ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_IF, SysSockOptPointer(&index), sizeof(index)) == 0;
     }
     if (!ok) {
         report.error(u"error setting outgoing local address %s: %s", local, SysErrorCodeMessage());
@@ -335,8 +335,17 @@ bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& 
 // Join one multicast group on one local interface.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source, Report& report)
+bool ts::UDPSocket::addMembership(const IPAddress& multicast_in, const IPAddress& local_in, const IPAddress& source_in, Report& report)
 {
+    // Make sure the addresses have the same generation as the socket.
+    // The multicast address cannot be converted and conversion will fail if not at the right generation.
+    IPAddress multicast(multicast_in);
+    IPAddress local(local_in);
+    IPAddress source(source_in);
+    if (!convert(multicast, report) || !convert(local, report) || !convert(source, report)) {
+        return false;
+    }
+
     // Verbose message about joining the group.
     UString group_string;
     if (source.hasAddress()) {
@@ -370,7 +379,7 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& l
 #endif
         }
         else {
-            // Standard multicast.
+            // Standard IPv4 multicast.
             MReq req(multicast, local);
             if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
                 report.error(u"error adding multicast membership to %s from local address %s: %s", group_string, local, SysErrorCodeMessage());
@@ -389,8 +398,12 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast, const IPAddress& l
             return false;
         }
         else {
-            // Standard multicast.
-            MReq6 req(multicast, 0); // @@@@ need inteface index
+            // Standard IPv6 multicast.
+            const int index = NetworkInterface::ToIndex(local, false, report);
+            if (index < 0) {
+                return false;
+            }
+            MReq6 req(multicast, index);
             if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
                 report.error(u"error adding multicast membership to %s from local address %s: %s", group_string, local, SysErrorCodeMessage());
                 return false;
@@ -420,10 +433,8 @@ bool ts::UDPSocket::addMembershipDefault(const IPAddress& multicast, const IPAdd
 
 bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress& source, Report& report)
 {
-    // There is no implicit way to listen on all interfaces.
-    // If no local address is specified, we must get the list
-    // of all local interfaces and send a multicast membership
-    // request on each of them.
+    // There is no implicit way to listen on all interfaces. If no local address is specified,
+    // we must get the list of all local interfaces and send a multicast membership request on each of them.
 
     // Get all local interfaces.
     IPAddressVector loc_if;
@@ -450,7 +461,7 @@ bool ts::UDPSocket::dropMembership(Report& report)
 {
     bool ok = true;
 
-    // Drop all standard multicast groups.
+    // Drop all standard IPv4 multicast groups (none on IPv6 sockets).
     for (const auto& it : _mcast) {
         report.verbose(u"leaving multicast group %s from local address %s", IPAddress(it.data.imr_multiaddr), IPAddress(it.data.imr_interface));
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
@@ -459,6 +470,16 @@ bool ts::UDPSocket::dropMembership(Report& report)
         }
     }
     _mcast.clear();
+
+    // Drop all standard IPv6 multicast groups (none on IPv4 sockets).
+    for (const auto& it : _mcast6) {
+        report.verbose(u"leaving multicast group %s from local interface %d", IPAddress(it.data.ipv6mr_multiaddr), IPAddress(it.data.ipv6mr_interface));
+        if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
+            report.error(u"error dropping multicast membership: %s", SysErrorCodeMessage());
+            ok = false;
+        }
+    }
+    _mcast6.clear();
 
     // Drop all source-specific multicast groups.
 #if !defined(TS_NO_SSM)
@@ -486,15 +507,15 @@ bool ts::UDPSocket::send(const void* data, size_t size, Report& report)
     return send(data, size, _default_destination, report);
 }
 
-bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& dest, Report& report)
+bool ts::UDPSocket::send(const void* data, size_t size, const IPSocketAddress& dest_in, Report& report)
 {
-    IPSocketAddress dest2(dest);
-    if (!convert(dest2, report)) {
+    IPSocketAddress dest(dest_in);
+    if (!convert(dest, report)) {
         return false;
     }
 
     ::sockaddr_storage addr;
-    const size_t addr_size = dest2.get(addr);
+    const size_t addr_size = dest.get(addr);
 
     if (::sendto(getSocket(), SysSendBufferPointer(data), SysSendSizeType(size), 0, reinterpret_cast<::sockaddr*>(&addr), socklen_t(addr_size)) < 0) {
         report.error(u"error sending UDP message: %s", SysErrorCodeMessage());
