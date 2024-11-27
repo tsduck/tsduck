@@ -104,7 +104,7 @@ bool ts::NetworkInterface::InterfaceRepository::reload(bool force_reload, Report
             net.loopback = (ifa->ifa_flags & IFF_LOOPBACK) != 0;
             if (ifa->ifa_name != nullptr) {
                 net.name.assignFromUTF8(ifa->ifa_name);
-                const int i = int(if_nametoindex(ifa->ifa_name));
+                const long i = long(if_nametoindex(ifa->ifa_name));
                 if (i != 0) {
                     net.index = i;
                 }
@@ -133,7 +133,7 @@ bool ts::NetworkInterface::InterfaceRepository::reload(bool force_reload, Report
     // Call GetAdaptersAddresses(). In case of "buffer overflow", retry with a larger buffer.
     for (size_t counter = 0; ; counter++) {
         ::ULONG size = ::ULONG(buffer.size());
-        ::ULONG status = ::GetAdaptersAddresses(family, flags, nullptr, adap, &size);
+        ::ULONG status = ::GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, adap, &size);
         if (status == ERROR_SUCCESS) {
             break;
         }
@@ -150,19 +150,19 @@ bool ts::NetworkInterface::InterfaceRepository::reload(bool force_reload, Report
 
     // Explore the list of returned interfaces.
     while (adap != nullptr) {
-        // Select non-loopback interfaces only, if required.
-        if (loopback || adap->IfType != IF_TYPE_SOFTWARE_LOOPBACK) {
-            // Explore the list of IP addresses for than interface.
-            ::IP_ADAPTER_UNICAST_ADDRESS_LH* addr = adap->FirstUnicastAddress;
-            while (addr != nullptr) {
-                // We expect to have limited the research of interfaces to the corresponding IP family.
-                // However, let's check each address, just in case.
-                if (addr->Address.lpSockaddr != nullptr && (family == AF_UNSPEC || family == addr->Address.lpSockaddr->sa_family)) {
-                    AddUnique(addresses, IPAddressMask(*addr->Address.lpSockaddr, size_t(addr->OnLinkPrefixLength)));
-                }
-                // Loop on next address for that interface.
-                addr = addr->Next;
+        // Explore the list of IP addresses for than interface.
+        ::IP_ADAPTER_UNICAST_ADDRESS_LH* addr = adap->FirstUnicastAddress;
+        while (addr != nullptr) {
+            if (addr->Address.lpSockaddr != nullptr) {
+                NetworkInterface net;
+                net.address = IPAddressMask(*addr->Address.lpSockaddr, size_t(addr->OnLinkPrefixLength));
+                net.loopback = adap->IfType == IF_TYPE_SOFTWARE_LOOPBACK;
+                net.name.assignFromWChar(adap->FriendlyName);
+                net.index = long(adap->Ipv6IfIndex);
+                add(net);
             }
+            // Loop on next address for that interface.
+            addr = addr->Next;
         }
         // Loop on next network interface.
         adap = adap->Next;

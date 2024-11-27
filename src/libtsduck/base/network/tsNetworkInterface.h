@@ -39,7 +39,7 @@ namespace ts {
         IPAddressMask address {};        //!< IP address and mask/prefix.
         UString       name {};           //!< Interface name, system specific.
         bool          loopback = false;  //!< This is a software loopback interface.
-        int           index = -1;        //!< Interface index, system specific, negative if meaningless.
+        long          index = -1;        //!< Interface index, system specific, negative if meaningless.
 
         // Inherited methods.
         virtual UString toString() const override;
