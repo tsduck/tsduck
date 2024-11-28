@@ -169,6 +169,21 @@ namespace ts {
     };
 
     //!
+    //! Protocol types for LINKTYPE_NULL and LINKTYPE_LOOP (BSD loopback encapsulation).
+    //! @see https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html
+    //! @see https://www.tcpdump.org/linktypes/LINKTYPE_LOOP.html
+    //!
+    enum PcapBsdProtocols : uint32_t {
+        PCAPNG_BSD_IPv4    =  2,     //!< Payload is an IPv4 packet.
+        PCAPNG_BSD_IPv6_24 = 24,     //!< Payload is an IPv6 packet.
+        PCAPNG_BSD_IPv6_28 = 28,     //!< Payload is an IPv6 packet.
+        PCAPNG_BSD_IPv6_30 = 30,     //!< Payload is an IPv6 packet.
+        PCAPNG_BSD_OSI     =  7,     //!< Payload is an OSI packet.
+        PCAPNG_BSD_IPX     = 23,     //!< Payload is an IPX packet.
+        PCAPNG_BSD_UNKNOWN = 0xFFFF  //!< Placeholder for unknown payload type.
+    };
+
+    //!
     //! List of pcap-ng option codes.
     //!
     enum PcapNgOptionCode : uint32_t {

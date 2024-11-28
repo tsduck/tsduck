@@ -52,7 +52,7 @@ Options
 *--destination* _[address][:port]_
 
 [.optdoc]
-Filter IPv4 packets based on the specified destination socket address.
+Filter IP packets based on the specified destination socket address.
 The optional port number is used for TCP and UDP packets only.
 If the address part is omitted, all TCP or UDP packets with any destination address but
 with that destination port number are used.
@@ -134,7 +134,7 @@ If the file name is "-", the standard output is used.
 *--source* _[address][:port]_
 
 [.optdoc]
-Filter IPv4 packets based on the specified source socket address.
+Filter IP packets based on the specified source socket address.
 
 [.optdoc]
 The optional port number is used for TCP and UDP packets only.

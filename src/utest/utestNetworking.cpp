@@ -18,7 +18,7 @@
 #include "tsUDPSocket.h"
 #include "tsMACAddress.h"
 #include "tsNetworkInterface.h"
-#include "tsIPv4Packet.h"
+#include "tsIPPacket.h"
 #include "tsNullReport.h"
 #include "tsIPUtils.h"
 #include "tsCerrReport.h"
@@ -882,28 +882,28 @@ TSUNIT_DEFINE_TEST(IPHeader)
         0x32, 0x8B, 0xD8, 0x3A, 0xCC, 0x8E, 0xAC, 0x14, 0x04, 0x63,
     };
 
-    TSUNIT_EQUAL(sizeof(reference_header), ts::IPv4Packet::IPHeaderSize(reference_header, sizeof(reference_header)));
-    TSUNIT_EQUAL(0x328B, ts::IPv4Packet::IPHeaderChecksum(reference_header, sizeof(reference_header)));
-    TSUNIT_ASSERT(ts::IPv4Packet::VerifyIPHeaderChecksum(reference_header, sizeof(reference_header)));
+    TSUNIT_EQUAL(sizeof(reference_header), ts::IPPacket::IPHeaderSize(reference_header, sizeof(reference_header)));
+    TSUNIT_EQUAL(0x328B, ts::IPPacket::IPHeaderChecksum(reference_header, sizeof(reference_header)));
+    TSUNIT_ASSERT(ts::IPPacket::VerifyIPHeaderChecksum(reference_header, sizeof(reference_header)));
 
     uint8_t header[sizeof(reference_header)];
     ts::MemCopy(header, reference_header, sizeof(header));
 
-    TSUNIT_ASSERT(ts::IPv4Packet::VerifyIPHeaderChecksum(header, sizeof(header)));
-    header[ts::IPv4_CHECKSUM_OFFSET] = 0x00;
-    header[ts::IPv4_CHECKSUM_OFFSET + 1] = 0x00;
-    TSUNIT_ASSERT(!ts::IPv4Packet::VerifyIPHeaderChecksum(header, sizeof(header)));
-    TSUNIT_EQUAL(0x328B, ts::IPv4Packet::IPHeaderChecksum(header, sizeof(header)));
+    TSUNIT_ASSERT(ts::IPPacket::VerifyIPHeaderChecksum(header, sizeof(header)));
+    header[ts::IPv4_CHECKSUM_OFFSET] = 0xFF;
+    header[ts::IPv4_CHECKSUM_OFFSET + 1] = 0xFF;
+    TSUNIT_ASSERT(!ts::IPPacket::VerifyIPHeaderChecksum(header, sizeof(header)));
+    TSUNIT_EQUAL(0x328B, ts::IPPacket::IPHeaderChecksum(header, sizeof(header)));
 
-    TSUNIT_ASSERT(ts::IPv4Packet::UpdateIPHeaderChecksum(header, sizeof(header)));
-    TSUNIT_ASSERT(ts::IPv4Packet::VerifyIPHeaderChecksum(header, sizeof(header)));
-    TSUNIT_EQUAL(0x328B, ts::IPv4Packet::IPHeaderChecksum(header, sizeof(header)));
+    TSUNIT_ASSERT(ts::IPPacket::UpdateIPHeaderChecksum(header, sizeof(header)));
+    TSUNIT_ASSERT(ts::IPPacket::VerifyIPHeaderChecksum(header, sizeof(header)));
+    TSUNIT_EQUAL(0x328B, ts::IPPacket::IPHeaderChecksum(header, sizeof(header)));
 }
 
 TSUNIT_DEFINE_TEST(IPProtocol)
 {
-    TSUNIT_EQUAL(u"TCP", ts::IPProtocolName(ts::IPv4_PROTO_TCP));
-    TSUNIT_EQUAL(u"UDP", ts::IPProtocolName(ts::IPv4_PROTO_UDP));
+    TSUNIT_EQUAL(u"TCP", ts::IPProtocolName(ts::IP_SUBPROTO_TCP));
+    TSUNIT_EQUAL(u"UDP", ts::IPProtocolName(ts::IP_SUBPROTO_UDP));
 }
 
 TSUNIT_DEFINE_TEST(TCPPacket)
@@ -983,10 +983,10 @@ TSUNIT_DEFINE_TEST(TCPPacket)
         0x54, 0x54, 0x54, 0x54, 0x54, 0x54,
     };
 
-    ts::IPv4Packet ip(data, sizeof(data));
+    ts::IPPacket ip(data, sizeof(data));
 
     TSUNIT_ASSERT(ip.isValid());
-    TSUNIT_EQUAL(ts::IPv4_PROTO_TCP, ip.protocol());
+    TSUNIT_EQUAL(ts::IP_SUBPROTO_TCP, ip.protocol());
     TSUNIT_ASSERT(ip.isTCP());
     TSUNIT_ASSERT(!ip.isUDP());
     TSUNIT_ASSERT(ip.data() != nullptr);
@@ -998,8 +998,8 @@ TSUNIT_DEFINE_TEST(TCPPacket)
     TSUNIT_EQUAL(20, ip.protocolHeaderSize());
     TSUNIT_EQUAL(ip.data() + 40, ip.protocolData());
     TSUNIT_EQUAL(1102, ip.protocolDataSize());
-    TSUNIT_EQUAL(u"192.168.56.10:53226", ip.sourceSocketAddress().toString());
-    TSUNIT_EQUAL(u"192.168.56.1:5000", ip.destinationSocketAddress().toString());
+    TSUNIT_EQUAL(u"192.168.56.10:53226", ip.source().toString());
+    TSUNIT_EQUAL(u"192.168.56.1:5000", ip.destination().toString());
 }
 
 TSUNIT_DEFINE_TEST(UDPPacket)
@@ -1033,10 +1033,10 @@ TSUNIT_DEFINE_TEST(UDPPacket)
         0xFF, 0xFF, 0xFF, 0xFF,
     };
 
-    ts::IPv4Packet ip(data, sizeof(data));
+    ts::IPPacket ip(data, sizeof(data));
 
     TSUNIT_ASSERT(ip.isValid());
-    TSUNIT_EQUAL(ts::IPv4_PROTO_UDP, ip.protocol());
+    TSUNIT_EQUAL(ts::IP_SUBPROTO_UDP, ip.protocol());
     TSUNIT_ASSERT(!ip.isTCP());
     TSUNIT_ASSERT(ip.isUDP());
     TSUNIT_ASSERT(ip.data() != nullptr);
@@ -1048,8 +1048,8 @@ TSUNIT_DEFINE_TEST(UDPPacket)
     TSUNIT_EQUAL(8, ip.protocolHeaderSize());
     TSUNIT_EQUAL(ip.data() + 28, ip.protocolData());
     TSUNIT_EQUAL(376, ip.protocolDataSize());
-    TSUNIT_EQUAL(u"192.168.56.10:41876", ip.sourceSocketAddress().toString());
-    TSUNIT_EQUAL(u"192.168.56.1:5000", ip.destinationSocketAddress().toString());
+    TSUNIT_EQUAL(u"192.168.56.10:41876", ip.source().toString());
+    TSUNIT_EQUAL(u"192.168.56.1:5000", ip.destination().toString());
 
     ip.reset(data, sizeof(data) - 1);
     TSUNIT_ASSERT(!ip.isValid());

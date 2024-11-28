@@ -7,22 +7,21 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of a raw IPv4 packet.
+//!  Representation of a raw IPv4 or IPv6 packet.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIPAddress.h"
 #include "tsIPSocketAddress.h"
 #include "tsIPProtocols.h"
 #include "tsByteBlock.h"
 
 namespace ts {
     //!
-    //! Representation of a raw IPv4 packet.
+    //! Representation of a raw IPv4 or IPv6 packet.
     //! @ingroup net
     //!
-    class TSDUCKDLL IPv4Packet
+    class TSDUCKDLL IPPacket
     {
     public:
         //!
@@ -33,17 +32,17 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        IPv4Packet() = default;
+        IPPacket() = default;
 
         //!
         //! Constructor from raw content.
         //! @param [in] data Address of the IP packet data.
         //! @param [in] size Size of the IP packet data.
         //!
-        IPv4Packet(const void* data, size_t size);
+        IPPacket(const void* data, size_t size);
 
         //!
-        //! Reinitialize the IPv4 packet with new content.
+        //! Reinitialize the IP4 packet with new content.
         //! @param [in] data Address of the IP packet data.
         //! @param [in] size Size of the IP packet data.
         //! @return True on success, false if the packet is invalid.
@@ -62,6 +61,12 @@ namespace ts {
         bool isValid() const { return _valid; }
 
         //!
+        //! Get the current generation of IP addresses.
+        //! @return The IP generation of the packet. Return IP::Any if the packet is invalid.
+        //!
+        IP generation() const { return _valid ? _source.generation() : IP::Any; }
+
+        //!
         //! Get the sub-protocol type (TCP, UDP, etc).
         //! @return The sub-protocol type, as defined by constants IPv4_PROTO_*.
         //!
@@ -71,35 +76,35 @@ namespace ts {
         //! Check if the packet is a valid TCP packet.
         //! @return True if the packet is a valid TCP packet.
         //!
-        bool isTCP() const { return _valid && _proto_type == IPv4_PROTO_TCP; }
+        bool isTCP() const { return _valid && _proto_type == IP_SUBPROTO_TCP; }
 
         //!
         //! Check if the packet is a valid UDP packet.
         //! @return True if the packet is a valid UDP packet.
         //!
-        bool isUDP() const { return _valid && _proto_type == IPv4_PROTO_UDP; }
+        bool isUDP() const { return _valid && _proto_type == IP_SUBPROTO_UDP; }
 
         //!
-        //! Get the address of the IPv4 packet content.
-        //! @return The address of the IPv4 packet content or a null pointer if the packet is invalid.
+        //! Get the address of the IP packet content.
+        //! @return The address of the IP packet content or a null pointer if the packet is invalid.
         //!
         const uint8_t* data() const { return _valid ? _data.data() : nullptr; }
 
         //!
-        //! Get the size in bytes of the IPv4 packet content.
-        //! @return The size in bytes of the IPv4 packet content.
+        //! Get the size in bytes of the IP packet content.
+        //! @return The size in bytes of the IP packet content.
         //!
         size_t size() const { return _valid ? _data.size() : 0; }
 
         //!
-        //! Get the address of the IPv4 header.
-        //! @return The address of the IPv4 header or a null pointer if the packet is invalid.
+        //! Get the address of the IP header.
+        //! @return The address of the IP header or a null pointer if the packet is invalid.
         //!
         const uint8_t* ipHeader() const { return _valid ? _data.data() : nullptr; }
 
         //!
-        //! Get the size in bytes of the IPv4 header.
-        //! @return The size in bytes of the IPv4 header.
+        //! Get the size in bytes of the IP header.
+        //! @return The size in bytes of the IP header.
         //!
         size_t ipHeaderSize() const { return _valid ? _ip_header_size : 0; }
 
@@ -128,46 +133,25 @@ namespace ts {
         size_t protocolDataSize() const { return _valid ? _data.size() - _ip_header_size - _proto_header_size : 0; }
 
         //!
-        //! Check if the IPv4 packet is fragmented.
+        //! Check if the IP packet is fragmented.
         //! @return True if the packet is just a fragment of a larger packet.
+        //! Only IPv4 packets can be fragmented. Always false on IPv6 packets.
         //!
         bool fragmented() const;
 
         //!
-        //! Get the source IPv4 address.
-        //! @return The source IPv4 address.
+        //! Get the source IP socket address.
+        //! @return A constant reference to the source IP socket address.
+        //! The port is valid only in the case of UDP or TCP packet.
         //!
-        IPAddress sourceAddress() const;
+        const IPSocketAddress& source() const { return _source; }
 
         //!
-        //! Get the destination IPv4 address.
-        //! @return The destination IPv4 address.
+        //! Get the destination IP socket address.
+        //! @return A constant reference to the destination IP socket address.
+        //! The port is valid only in the case of UDP or TCP packet.
         //!
-        IPAddress destinationAddress() const;
-
-        //!
-        //! Get the TCP or UDP source port.
-        //! @return The TCP or UDP source port, zero for other protocols.
-        //!
-        Port sourcePort() const { return _valid ? _source_port : 0; }
-
-        //!
-        //! Get the TCP or UDP destination port.
-        //! @return The TCP or UDP destination port, zero for other protocols.
-        //!
-        Port destinationPort() const { return _valid ? _destination_port : 0; }
-
-        //!
-        //! Get the source IPv4 socket address.
-        //! @return The source IPv4 socket address.
-        //!
-        IPSocketAddress sourceSocketAddress() const;
-
-        //!
-        //! Get the destination IPv4 socket address.
-        //! @return The destination IPv4 socket address.
-        //!
-        IPSocketAddress destinationSocketAddress() const;
+        const IPSocketAddress& destination() const { return _destination; }
 
         //!
         //! Get the TCP sequence number in the packet.
@@ -200,18 +184,21 @@ namespace ts {
         bool tcpFIN() const;
 
         //!
-        //! Get the size in bytes of an IPv4 header from raw data.
+        //! Get the size in bytes of an IP header from raw data.
         //! @param [in] data Address of the IP packet.
         //! @param [in] size Size of the IP packet or header (must be larger than the header size).
+        //! @param [out] protocol If not null, receives the type of the next protocol layer (TCP, UDP, etc).
         //! @return The size in bytes of the IP header or zero on error.
         //!
-        static size_t IPHeaderSize(const void* data, size_t size);
+        static size_t IPHeaderSize(const void* data, size_t size, uint8_t* protocol = nullptr);
 
         //!
         //! Compute the checksum of an IPv4 header from raw data.
+        //! The concept of header checksum is specific to IPv4.
+        //! IPv6 headers do not have checksums.
         //! @param [in] data Address of the IP packet.
         //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-        //! @return The computed checksum of the header.
+        //! @return The computed checksum of the IPv4 header or zero for IPv6 header.
         //!
         static uint16_t IPHeaderChecksum(const void* data, size_t size);
 
@@ -220,6 +207,7 @@ namespace ts {
         //! @param [in] data Address of the IP packet.
         //! @param [in] size Size of the IP packet or header (must be larger than the header size).
         //! @return True if the checksum of the header if correct, false otherwise.
+        //! Always true for IPv6 headers (there is no header checksum in IPv6).
         //!
         static bool VerifyIPHeaderChecksum(const void* data, size_t size);
 
@@ -228,16 +216,17 @@ namespace ts {
         //! @param [in,out] data Address of the IP packet.
         //! @param [in] size Size of the IP packet or header (must be larger than the header size).
         //! @return True if the checksum was updated, false on incorrect buffer.
+        //! Always true for IPv6 headers (there is no header checksum in IPv6).
         //!
         static bool UpdateIPHeaderChecksum(void* data, size_t size);
 
     private:
-        bool      _valid = false;
-        uint8_t   _proto_type = 0;
-        size_t    _ip_header_size = 0;
-        size_t    _proto_header_size = 0;
-        Port      _source_port = 0;
-        Port      _destination_port = 0;
-        ByteBlock _data {};
+        bool            _valid = false;
+        uint8_t         _proto_type = 0;
+        size_t          _ip_header_size = 0;
+        size_t          _proto_header_size = 0;
+        IPSocketAddress _source {};
+        IPSocketAddress _destination {};
+        ByteBlock       _data {};
     };
 }

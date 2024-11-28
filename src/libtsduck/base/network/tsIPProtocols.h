@@ -33,21 +33,24 @@ namespace ts {
     //! @see https://en.wikipedia.org/wiki/EtherType
     //!
     enum : uint16_t {
-        ETHERTYPE_IPv4    = 0x0800,  //!< Protocol identifier for IPv4.
-        ETHERTYPE_ARP     = 0x0806,  //!< Protocol identifier for ARP.
-        ETHERTYPE_WOL     = 0x0842,  //!< Protocol identifier for Wake-on-LAN.
-        ETHERTYPE_RARP    = 0x8035,  //!< Protocol identifier for RARP.
-        ETHERTYPE_802_1Q  = 0x8100,  //!< Protocol identifier for a 2-byte IEEE 802.1Q tag (VLAN) after EtherType, then real EtherType.
-        ETHERTYPE_IPv6    = 0x86DD,  //!< Protocol identifier for IPv6.
-        ETHERTYPE_802_1AD = 0x88A8,  //!< Protocol identifier for IEEE 802.1ad nested VLAN.
-        ETHERTYPE_802_1AH = 0x88E7,  //!< Protocol identifier for IEEE 802.1ah, Provider Backbone Bridges (PBB), aka MAC-in-MAC (MIM).
-        ETHERTYPE_NULL    = 0xFFFF,  //!< Invalid protocol identifier, can be used as placeholder.
+        ETHERTYPE_IPv4    = 0x0800,  //!< Ethernet protocol: IPv4.
+        ETHERTYPE_ARP     = 0x0806,  //!< Ethernet protocol: ARP.
+        ETHERTYPE_WOL     = 0x0842,  //!< Ethernet protocol: Wake-on-LAN.
+        ETHERTYPE_RARP    = 0x8035,  //!< Ethernet protocol: RARP.
+        ETHERTYPE_802_1Q  = 0x8100,  //!< Ethernet protocol: a 2-byte IEEE 802.1Q tag (VLAN) after EtherType, then real EtherType.
+        ETHERTYPE_IPv6    = 0x86DD,  //!< Ethernet protocol: IPv6.
+        ETHERTYPE_802_1AD = 0x88A8,  //!< Ethernet protocol: IEEE 802.1ad nested VLAN.
+        ETHERTYPE_802_1AH = 0x88E7,  //!< Ethernet protocol: IEEE 802.1ah, Provider Backbone Bridges (PBB), aka MAC-in-MAC (MIM).
+        ETHERTYPE_NULL    = 0xFFFF,  //!< Invalid Ethernet protocol identifier, can be used as placeholder.
     };
 
     //------------------------------------------------------------------------
-    // IPv4 protocol.
+    // IP protocol.
     //------------------------------------------------------------------------
 
+    //
+    // IPv4 header.
+    //
     constexpr uint8_t IPv4_VERSION          =     4;   //!< Protocol version of IPv4 is ... 4 !
     constexpr size_t  IPv4_LENGTH_OFFSET    =     2;   //!< Offset of the total packet length in an IPv4 header.
     constexpr size_t  IPv4_FRAGMENT_OFFSET  =     6;   //!< Offset of the flags and fragments in an IPv4 header.
@@ -58,17 +61,31 @@ namespace ts {
     constexpr size_t  IPv4_MIN_HEADER_SIZE  =    20;   //!< Minimum size of an IPv4 header.
     constexpr size_t  IP_MAX_PACKET_SIZE    = 65536;   //!< Maximum size of an IP packet.
 
+    //
+    // IPv6 header.
+    //
+    constexpr uint8_t IPv6_VERSION          =  6;   //!< Protocol version of IPv6 is ... 6 !
+    constexpr size_t  IPv6_LENGTH_OFFSET    =  4;   //!< Offset of the 16-bit payload length in an IPv6 header.
+    constexpr size_t  IPv6_NEXTHEAD_OFFSET  =  6;   //!< Offset of the 8-bit "next header" field in an IPv6 header.
+    constexpr size_t  IPv6_SRC_ADDR_OFFSET  =  8;   //!< Offset of source IP address in an IPv6 header.
+    constexpr size_t  IPv6_DEST_ADDR_OFFSET = 24;   //!< Offset of destination IP address in an IPv6 header.
+    constexpr size_t  IPv6_MIN_HEADER_SIZE  = 40;   //!< Minimum size of an IPv6 header.
+    constexpr size_t  IPv6_EXT_HEADER_SIZE  =  8;   //!< Minimum size of an extended IPv6 header.
+
     //!
     //! Selected IP protocol identifiers.
     //!
     enum : uint8_t {
-        IPv4_PROTO_ICMP     =   1,  //!< IPv4 protocol identifier for Internet Control Message Protocol (ICMP).
-        IPv4_PROTO_IGMP     =   2,  //!< IPv4 protocol identifier for Internet Group Management Protocol (IGMP).
-        IPv4_PROTO_TCP      =   6,  //!< IPv4 protocol identifier for Transmission Control Protocol (TCP).
-        IPv4_PROTO_UDP      =  17,  //!< IPv4 protocol identifier for User Datagram Protocol (UDP).
-        IPv4_PROTO_V6_ENCAP =  41,  //!< IPv4 protocol identifier for IPv6 encapsulation.
-        IPv4_PROTO_OSPF     =  89,  //!< IPv4 protocol identifier for Open Shortest Path First (OSPF).
-        IPv4_PROTO_SCTP     = 132,  //!< IPv4 protocol identifier for Stream Control Transmission Protocol (SCTP).
+        IP_SUBPROTO_HOPxHOP  =   0,  //!< IP protocol: IPv6 extension header, Hop-by-Hop.
+        IP_SUBPROTO_ICMP     =   1,  //!< IP protocol: Internet Control Message Protocol (ICMP).
+        IP_SUBPROTO_IGMP     =   2,  //!< IP protocol: Internet Group Management Protocol (IGMP).
+        IP_SUBPROTO_TCP      =   6,  //!< IP protocol: Transmission Control Protocol (TCP).
+        IP_SUBPROTO_UDP      =  17,  //!< IP protocol: User Datagram Protocol (UDP).
+        IP_SUBPROTO_V6_ENCAP =  41,  //!< IP protocol: IPv6 encapsulation.
+        IP_SUBPROTO_ROUTING  =  43,  //!< IP protocol: IPv6 extension header, routing.
+        IP_SUBPROTO_FRAGMENT =  44,  //!< IP protocol: IPv6 extension header, fragmentation of datagrams.
+        IP_SUBPROTO_OSPF     =  89,  //!< IP protocol: Open Shortest Path First (OSPF).
+        IP_SUBPROTO_SCTP     = 132,  //!< IP protocol: Stream Control Transmission Protocol (SCTP).
     };
 
     //!
@@ -79,6 +96,7 @@ namespace ts {
     //! @return The protocol name with optional description.
     //!
     TSDUCKDLL UString IPProtocolName(uint8_t protocol, bool long_format = false);
+
 
     //------------------------------------------------------------------------
     // User Datagram Protocol (UDP)

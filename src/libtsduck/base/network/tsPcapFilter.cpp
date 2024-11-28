@@ -111,13 +111,13 @@ bool ts::PcapFilter::loadArgs(DuckContext& duck, Args& args)
 void ts::PcapFilter::setProtocolFilterTCP()
 {
     _protocols.clear();
-    _protocols.insert(IPv4_PROTO_TCP);
+    _protocols.insert(IP_SUBPROTO_TCP);
 }
 
 void ts::PcapFilter::setProtocolFilterUDP()
 {
     _protocols.clear();
-    _protocols.insert(IPv4_PROTO_UDP);
+    _protocols.insert(IP_SUBPROTO_UDP);
 }
 
 void ts::PcapFilter::setProtocolFilter(const std::set<uint8_t>& protocols)
@@ -161,7 +161,7 @@ void ts::PcapFilter::setWildcardFilter(bool on)
 
 bool ts::PcapFilter::addressFilterIsSet() const
 {
-    const bool use_port = _protocols.empty() || Contains(_protocols, IPv4_PROTO_TCP) || Contains(_protocols, IPv4_PROTO_UDP);
+    const bool use_port = _protocols.empty() || Contains(_protocols, IP_SUBPROTO_TCP) || Contains(_protocols, IP_SUBPROTO_UDP);
     return _source.hasAddress() &&
            (!use_port || _source.hasPort()) &&
            _destination.hasAddress() &&
@@ -212,12 +212,12 @@ bool ts::PcapFilter::open(const fs::path& filename, Report& report)
 // Read an IPv4 packet, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFilter::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report)
+bool ts::PcapFilter::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report)
 {
     // Read packets until one which matches all filters.
     for (;;) {
         // Invoke superclass to read next packet.
-        if (!PcapFile::readIPv4(packet, vlans, timestamp, report)) {
+        if (!PcapFile::readIP(packet, vlans, timestamp, report)) {
             return false;
         }
 
@@ -241,8 +241,8 @@ bool ts::PcapFilter::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::micros
         }
 
         // Is there any unspecified field in current stream addresses (act as wildcard)?
-        const IPSocketAddress src(packet.sourceSocketAddress());
-        const IPSocketAddress dst(packet.destinationSocketAddress());
+        const IPSocketAddress src(packet.source());
+        const IPSocketAddress dst(packet.destination());
         const bool unspecified = !_wildcard_filter && !addressFilterIsSet();
         bool display_filter = false;
 

@@ -143,7 +143,7 @@ namespace ts {
         {
         public:
             DataBlock() = default;
-            DataBlock(const IPv4Packet& pkt, cn::microseconds tstamp);
+            DataBlock(const IPPacket& pkt, cn::microseconds tstamp);
 
             ByteBlock        data {};         // TCP payload
             size_t           index = 0;       // index of next byte to read in data
@@ -169,7 +169,7 @@ namespace ts {
             bool dataAvailable() const;
 
             // Store the content of an IP packet at the right place in the queue.
-            void store(const IPv4Packet& pkt, cn::microseconds tstamp);
+            void store(const IPPacket& pkt, cn::microseconds tstamp);
         };
 
         // Maximum number of out-of-sequence TCP segments after a segment is declared missing.

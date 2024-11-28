@@ -13,7 +13,7 @@
 #include "tsMain.h"
 #include "tsDuckContext.h"
 #include "tsPcapStream.h"
-#include "tsIPv4Packet.h"
+#include "tsIPPacket.h"
 #include "tsTime.h"
 #include "tsTS.h"
 #include "tsBitRate.h"
@@ -80,7 +80,7 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"destination", 'd', IPSOCKADDR_OAP);
     help(u"destination",
-         u"Filter IPv4 packets based on the specified destination socket address. "
+         u"Filter IP packets based on the specified destination socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
 
     option(u"extract-tcp-stream", 'e');
@@ -110,7 +110,7 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"source", 's', IPSOCKADDR_OAP);
     help(u"source",
-         u"Filter IPv4 packets based on the specified source socket address. "
+         u"Filter IP packets based on the specified source socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
 
     option(u"tcp", 't');
@@ -140,14 +140,14 @@ Options::Options(int argc, char *argv[]) :
 
     // Default is to filter all protocols (empty protocol set).
     if (present(u"tcp")) {
-        protocols.insert(ts::IPv4_PROTO_TCP);
+        protocols.insert(ts::IP_SUBPROTO_TCP);
     }
     if (present(u"udp")) {
-        protocols.insert(ts::IPv4_PROTO_UDP);
+        protocols.insert(ts::IP_SUBPROTO_UDP);
     }
     if (present(u"others")) {
         for (int p = 0; p < 256; ++p) {
-            if (p != ts::IPv4_PROTO_TCP && p != ts::IPv4_PROTO_UDP) {
+            if (p != ts::IP_SUBPROTO_TCP && p != ts::IP_SUBPROTO_UDP) {
                 protocols.insert(uint8_t(p));
             }
         }
@@ -178,7 +178,7 @@ namespace {
         StatBlock() = default;
 
         // Add statistics from one packet.
-        void addPacket(const ts::IPv4Packet&, cn::microseconds);
+        void addPacket(const ts::IPPacket&, cn::microseconds);
 
         // Reset content, optionally set timestamps.
         void reset(cn::microseconds = cn::microseconds(-1));
@@ -193,7 +193,7 @@ void StatBlock::reset(cn::microseconds timestamps)
 }
 
 // Add statistics from one packet.
-void StatBlock::addPacket(const ts::IPv4Packet& ip, cn::microseconds timestamp)
+void StatBlock::addPacket(const ts::IPPacket& ip, cn::microseconds timestamp)
 {
     packet_count++;
     total_ip_size += ip.size();
@@ -254,8 +254,8 @@ namespace {
         // Constructor.
         DisplayInterval(Options& opt) : _opt(opt) {}
 
-        // Process one IPv4 packet.
-        void addPacket(std::ostream&, const ts::PcapFile&, const ts::IPv4Packet&, cn::microseconds);
+        // Process one IP packet.
+        void addPacket(std::ostream&, const ts::PcapFile&, const ts::IPPacket&, cn::microseconds);
 
         // Terminate output.
         void close(std::ostream&, const ts::PcapFile&);
@@ -282,8 +282,8 @@ void DisplayInterval::print(std::ostream& out, const ts::PcapFile& file)
     _stats.reset(_stats.first_timestamp + _opt.interval);
 }
 
-// Process one IPv4 packet.
-void DisplayInterval::addPacket(std::ostream& out, const ts::PcapFile& file, const ts::IPv4Packet& ip, cn::microseconds timestamp)
+// Process one IP packet.
+void DisplayInterval::addPacket(std::ostream& out, const ts::PcapFile& file, const ts::IPPacket& ip, cn::microseconds timestamp)
 {
     // Without timestamp, we cannot do anything.
     if (timestamp >= cn::microseconds::zero()) {
@@ -356,14 +356,14 @@ bool FileAnalysis::analyze(std::ostream& out)
     _file.setSourceFilter(_opt.source_filter);
     _file.setDestinationFilter(_opt.dest_filter);
 
-    // Read all IPv4 packets from the file.
-    ts::IPv4Packet ip;
+    // Read all IP packets from the file.
+    ts::IPPacket ip;
     ts::VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds::zero();
-    while (_file.readIPv4(ip, vlans, timestamp, _opt)) {
+    while (_file.readIP(ip, vlans, timestamp, _opt)) {
         _global_stats.addPacket(ip, timestamp);
         if (_opt.list_streams) {
-            _streams_stats[{vlans, ip.sourceSocketAddress(), ip.destinationSocketAddress(), ip.protocol()}].addPacket(ip, timestamp);
+            _streams_stats[{vlans, ip.source(), ip.destination(), ip.protocol()}].addPacket(ip, timestamp);
         }
         if (_opt.print_intervals) {
             _interval.addPacket(out, _file, ip, timestamp);
@@ -392,10 +392,10 @@ void FileAnalysis::displaySummary(std::ostream& out, const StatBlock& stats)
     out << std::endl;
     out << "File summary:" << std::endl;
     out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Total packets in file:", _file.packetCount()) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Total IPv4 packets:", _file.ipv4PacketCount()) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", hwidth, u"Total IP packets:", _file.ipPacketCount()) << std::endl;
     out << ts::UString::Format(u"  %-*s %'d bytes", hwidth, u"File size:", _file.fileSize()) << std::endl;
     out << ts::UString::Format(u"  %-*s %'d bytes", hwidth, u"Total packets size:", _file.totalPacketsSize()) << std::endl;
-    out << ts::UString::Format(u"  %-*s %'d bytes", hwidth, u"Total IPv4 size:", _file.totalIPv4PacketsSize()) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d bytes", hwidth, u"Total IP size:", _file.totalIPPacketsSize()) << std::endl;
     out << std::endl;
 
     out << "Filtered packets summary:" << std::endl;
@@ -576,12 +576,12 @@ bool UDPSimulCryptDump::dump(std::ostream& out)
     _file.setDestinationFilter(_opt.dest_filter);
 
     // Read all UDP packets matching the source and destination.
-    ts::IPv4Packet ip;
+    ts::IPPacket ip;
     ts::VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds::zero();
-    while (_file.readIPv4(ip, vlans, timestamp, _opt)) {
+    while (_file.readIP(ip, vlans, timestamp, _opt)) {
         // Dump the content of the UDP datagram as DVB SimulCrypt message.
-        dumpMessage(out, ip.protocolData(), ip.protocolDataSize(), ip.sourceSocketAddress(), ip.destinationSocketAddress(), timestamp);
+        dumpMessage(out, ip.protocolData(), ip.protocolDataSize(), ip.source(), ip.destination(), timestamp);
     }
     _file.close();
     return true;
@@ -827,7 +827,7 @@ int MainCode(int argc, char *argv[])
         FileAnalysis dfa(opt);
         status = dfa.analyze(out);
     }
-    else if (opt.protocols.find(ts::IPv4_PROTO_UDP) == opt.protocols.end()) {
+    else if (opt.protocols.find(ts::IP_SUBPROTO_UDP) == opt.protocols.end()) {
         // DVB SimulCrypt dump, TCP mode.
         TCPSimulCryptDump dvb(opt);
         status = dvb.dump(out);

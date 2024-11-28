@@ -13,7 +13,7 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PcapStream::DataBlock::DataBlock(const IPv4Packet& pkt, cn::microseconds tstamp) :
+ts::PcapStream::DataBlock::DataBlock(const IPPacket& pkt, cn::microseconds tstamp) :
     sequence(pkt.tcpSequenceNumber()),
     start(pkt.tcpSYN()),
     end(pkt.tcpFIN() || pkt.tcpRST()),
@@ -87,7 +87,7 @@ bool ts::PcapStream::Stream::dataAvailable() const
 // Store the content of an IP packet in a stream.
 //----------------------------------------------------------------------------
 
-void ts::PcapStream::Stream::store(const IPv4Packet& pkt, cn::microseconds tstamp)
+void ts::PcapStream::Stream::store(const IPPacket& pkt, cn::microseconds tstamp)
 {
     // Allocate a new data block.
     const DataBlockPtr ptr(new DataBlock(pkt, tstamp));
@@ -187,7 +187,7 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, cn::microseconds tstam
 
 bool ts::PcapStream::readStreams(size_t& source, Report& report)
 {
-    IPv4Packet pkt;
+    IPPacket pkt;
     VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds(-1);
     size_t pkt_source = NPOS;
@@ -196,7 +196,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
     for (;;) {
 
         // Get one IPv4 packet.
-        if (!readIPv4(pkt, vlans, timestamp, report)) {
+        if (!readIP(pkt, vlans, timestamp, report)) {
             return false;
         }
 
@@ -212,8 +212,8 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
         }
 
         // Check the direction of the IP packet in the filtered session.
-        const IPSocketAddress src(pkt.sourceSocketAddress());
-        const IPSocketAddress dst(pkt.destinationSocketAddress());
+        const IPSocketAddress src(pkt.source());
+        const IPSocketAddress dst(pkt.destination());
         if (src.match(sourceFilter()) && dst.match(destinationFilter())) {
             pkt_source = ISRC;
         }

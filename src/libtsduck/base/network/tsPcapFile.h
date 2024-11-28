@@ -15,7 +15,7 @@
 #include "tsReport.h"
 #include "tsMemory.h"
 #include "tsTime.h"
-#include "tsIPv4Packet.h"
+#include "tsIPPacket.h"
 #include "tsPcap.h"
 
 namespace ts {
@@ -24,7 +24,7 @@ namespace ts {
     //! @ingroup net
     //!
     //! This is the type of files which is created by Wireshark.
-    //! This class reads a pcap or pcapng file and extracts IPv4 frames.
+    //! This class reads a pcap or pcapng file and extracts IP frames (IPv4 or IPv6).
     //! All metadata and all other types of frames are ignored.
     //!
     //! @see https://tools.ietf.org/pdf/draft-gharris-opsawg-pcap-02.pdf (PCAP)
@@ -68,20 +68,20 @@ namespace ts {
         fs::path fileName() const { return _name; }
 
         //!
-        //! Read the next IPv4 packet (headers included).
+        //! Read the next IP packet, IPv4 or IPv6, headers included.
         //! Skip intermediate metadata and other types of packets.
         //!
-        //! @param [out] packet Received IPv4 packet.
+        //! @param [out] packet Received IP packet.
         //! @param [out] vlans Stack of VLAN encapsulation from which the packet is extracted.
         //! @param [out] timestamp Capture timestamp in microseconds since Unix epoch or -1 if none is available.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report);
+        virtual bool readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report);
 
         //!
         //! Get the number of captured packets so far.
-        //! This includes all packets, not only IPv4 packets.
+        //! This includes all packets, not only IP packets.
         //! This value is the number of the last returned packet, as seen in the left-most column in Wireshark interface.
         //! @return The number of captured packets so far.
         //!
@@ -94,10 +94,10 @@ namespace ts {
         bool endOfFile() const { return _error; }
 
         //!
-        //! Get the number of valid captured IPv4 packets so far.
-        //! @return The number of valid captured IPv4 packets so far.
+        //! Get the number of valid captured IP packets so far.
+        //! @return The number of valid captured IP packets so far.
         //!
-        uint64_t ipv4PacketCount() const { return _ipv4_packet_count; }
+        uint64_t ipPacketCount() const { return _ip_packet_count; }
 
         //!
         //! Get the total file size in bytes so far.
@@ -113,11 +113,11 @@ namespace ts {
         uint64_t totalPacketsSize() const { return _packets_size; }
 
         //!
-        //! Get the total size in bytes of valid captured IPv4 packets so far.
-        //! This includes all IPv4 headers but not link-layer headers when present.
-        //! @return The total size in bytes of valid captured IPv4 packets so far.
+        //! Get the total size in bytes of valid captured IP packets so far.
+        //! This includes all IP headers but not link-layer headers when present.
+        //! @return The total size in bytes of valid captured IP packets so far.
         //!
-        uint64_t totalIPv4PacketsSize() const { return _ipv4_packets_size; }
+        uint64_t totalIPPacketsSize() const { return _ip_packets_size; }
 
         //!
         //! Get the capture timestamp of the first packet in the file.
@@ -180,9 +180,9 @@ namespace ts {
         uint16_t         _minor = 0;              // File format minor version.
         uint64_t         _file_size = 0;          // Number of bytes read so far.
         uint64_t         _packet_count = 0;       // Count of captured packets.
-        uint64_t         _ipv4_packet_count = 0;  // Count of captured IPv4 packets.
+        uint64_t         _ip_packet_count = 0;    // Count of captured IP packets.
         uint64_t         _packets_size = 0;       // Total size in bytes of captured packets.
-        uint64_t         _ipv4_packets_size = 0;  // Total size in bytes of captured IPv4 packets.
+        uint64_t         _ip_packets_size = 0;    // Total size in bytes of captured IP packets.
         cn::microseconds _first_timestamp {-1};   // Timestamp of first packet in file.
         cn::microseconds _last_timestamp {-1};    // Timestamp of last packet in file.
         std::vector<InterfaceDesc> _if {};        // Capture interfaces by index, only one in pcap files.

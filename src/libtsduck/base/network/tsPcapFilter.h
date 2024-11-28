@@ -218,7 +218,7 @@ namespace ts {
 
         // Inherited methods.
         virtual bool open(const fs::path& filename, Report& report) override;
-        virtual bool readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report) override;
+        virtual bool readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report) override;
 
     private:
         std::set<uint8_t> _protocols {};

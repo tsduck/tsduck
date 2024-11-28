@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPcapFile.h"
-#include "tsIPv4Packet.h"
+#include "tsIPPacket.h"
 #include "tsByteBlock.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
@@ -38,9 +38,9 @@ bool ts::PcapFile::open(const fs::path& filename, Report& report)
     _error = false;
     _file_size = 0;
     _packet_count = 0;
-    _ipv4_packet_count = 0;
+    _ip_packet_count = 0;
     _packets_size = 0;
-    _ipv4_packets_size = 0;
+    _ip_packets_size = 0;
     _first_timestamp = cn::microseconds(-1);
     _last_timestamp = cn::microseconds(-1);
 
@@ -288,7 +288,7 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
 // Read the next IPv4 packet (headers included).
 //----------------------------------------------------------------------------
 
-bool ts::PcapFile::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report)
+bool ts::PcapFile::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report)
 {
     // Clear output values.
     packet.clear();
@@ -307,7 +307,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microsec
         return false;
     }
 
-    // Loop on file blocks until an IPv4 packet is found.
+    // Loop on file blocks until an IP packet is found.
     for (;;) {
 
         // The captured packet will go there.
@@ -431,19 +431,32 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microsec
         report.log(2, u"pcap data block: %d bytes, captured packet at offset %d, %d bytes (original: %d bytes), link type: %d",
                    buffer.size(), cap_start, cap_size, orig_size, ifd.link_type);
 
-        // Analyze the captured packet, trying to find an IPv4 datagram.
-        if (ifd.link_type == LINKTYPE_NULL && cap_size > 4 && get32(buffer.data() + cap_start) == 2) {
-            // BSD loopback encapsulation; the link layer header is a 4-byte field, in host byte order, containing 2 for IPv4 packets.
-            cap_start += 4;
-            cap_size -= 4;
+        // With LINKTYPE_NULL and LINKTYPE_LOOP, the standard says that there is a 4-byte header with a protocol type.
+        // However, in some pcap files (not pcap-ng), it has been noticed that LINKTYPE_NULL and LINKTYPE_LOOP can
+        // contain a raw Ethernet frame without the initial 4 bytes of encapsulation. So, first check if there is
+        // a valid IP protocol packet in such a packet. Otherwise, try later a raw Ethernet packet without the
+        // expected 4-byte header.
+        uint32_t bsd_proto = PCAPNG_BSD_UNKNOWN;
+        if (cap_size >= 4) {
+            if (ifd.link_type == LINKTYPE_NULL) {
+                // BSD loopback encapsulation; the link layer header is a 4-byte field, in host byte order.
+                bsd_proto = get32(buffer.data() + cap_start);
+            }
+            else if (ifd.link_type == LINKTYPE_LOOP) {
+                // OpenBSD loopback encapsulation; the link-layer header is a 4-byte field, in network byte order.
+                bsd_proto = GetUInt32BE(buffer.data() + cap_start);
+            }
         }
-        else if (ifd.link_type == LINKTYPE_LOOP && cap_size > 4 && GetUInt32BE(buffer.data() + cap_start) == 2) {
-            // OpenBSD loopback encapsulation; the link-layer header is a 4-byte field, in network byte order, containing 2 for IPv4 packets/
+
+        // Analyze the captured packet, trying to find an IP datagram.
+        if (bsd_proto == PCAPNG_BSD_IPv4 || bsd_proto == PCAPNG_BSD_IPv6_24 || bsd_proto == PCAPNG_BSD_IPv6_28 || bsd_proto == PCAPNG_BSD_IPv6_30) {
+            // BSD encapsulation with a valid 4-byte header and IP packet inside.
+            // Skip the 4-byte header.
             cap_start += 4;
             cap_size -= 4;
         }
         else if ((ifd.link_type == LINKTYPE_ETHERNET || ifd.link_type == LINKTYPE_NULL || ifd.link_type == LINKTYPE_LOOP) && cap_size > ETHER_HEADER_SIZE + ifd.fcs_size) {
-            // Ethernet frame: 14-byte header: destination MAC (6 bytes), source MAC (6 bytes), ether type (2 bytes, 0x0800 for IPv4).
+            // Ethernet frame: 14-byte header: destination MAC (6 bytes), source MAC (6 bytes), ether type (2 bytes).
             // This should apply to LINKTYPE_ETHERNET only. However, in some pcap files (not pcap-ng), it has been noticed that
             // LINKTYPE_NULL and LINKTYPE_LOOP can contain a raw Ethernet frame without the initial 4 bytes of encapsulation.
             // Get the EtherType, skip the Ethernet header, remove the trailing FCS byte.
@@ -451,7 +464,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microsec
             cap_start += ETHER_HEADER_SIZE;
             cap_size -= ETHER_HEADER_SIZE + ifd.fcs_size;
             // Loop on all forms of VLAN encapsulation, until we get the inner packet.
-            while (ether_type != ETHERTYPE_IPv4 && cap_size > 0) {
+            while (ether_type != ETHERTYPE_IPv4 && ether_type != ETHERTYPE_IPv6 && cap_size > 0) {
                 if ((ether_type == ETHERTYPE_802_1Q || ether_type == ETHERTYPE_802_1AD) && cap_size >= 4) {
                     // IEEE 802.1Q or IEEE 802.1ad VLAN encapsulation.
                     // Followed by 4 bytes: 2-byte flags and VLAN id, 2-byte next EtherType.
@@ -475,23 +488,28 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, VLANIdStack& vlans, cn::microsec
                 }
             }
         }
-        else if (ifd.link_type == LINKTYPE_RAW && cap_size >= IPv4_MIN_HEADER_SIZE && (buffer[cap_start] >> 4) == 4) {
+        else if (ifd.link_type == LINKTYPE_RAW && cap_size >= 1) {
             // Raw IPv4 or IPv6 header (version in first byte), no encopsulation.
+            const uint8_t version = buffer[cap_start];
+            if (version != IPv4_VERSION && version != IPv6_VERSION) {
+                // Neither IPv4 nor IPv6.
+                cap_size = 0;
+            }
         }
         else {
-            // Not an identified IPv4 packet.
+            // Not an identified IP packet.
             cap_size = 0;
         }
 
-        // A possible IPv4 datagram was found.
+        // A possible IP datagram was found.
         if (cap_size > 0) {
             if (packet.reset(buffer.data() + cap_start, cap_size)) {
-                _ipv4_packet_count++;
-                _ipv4_packets_size += cap_size;
+                _ip_packet_count++;
+                _ip_packets_size += cap_size;
                 return true;
             }
             else {
-                report.warning(u"invalid IPv4 datagram in pcap file, %d bytes (original: %d bytes), link type: %d", cap_size, orig_size, ifd.link_type);
+                report.warning(u"invalid IP datagram in pcap file, %d bytes (original: %d bytes), link type: %d", cap_size, orig_size, ifd.link_type);
             }
         }
     }

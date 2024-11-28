@@ -53,7 +53,7 @@ _file-name_
 
 [.optdoc]
 The optional parameter is the name of a `.pcap` or `.pcapng` capture file as produced by Wireshark for instance.
-This input plugin extracts IPv4 UDP datagrams which contain transport stream packets.
+This input plugin extracts IP/UDP datagrams which contain transport stream packets.
 
 [.optdoc]
 By default, when no file name is provided, use the standard input.
