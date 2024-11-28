@@ -56,10 +56,10 @@ namespace ts {
             TS_DEFAULT_COPY_MOVE(DVB_I_Info);
         public:
             // DVB_I_Info public members:
-            uint8_t                end_point_type = 0;              //!< type of list signalled by the URI
-            std::optional<UString> service_list_name {};            //!< name of the service list referenced by the uri
-            std::optional<UString> service_list_provider_name {};   //!< name of the provider of the service list referenced by the uri
-            ByteBlock              private_data {};                 //!< Private data.
+            uint8_t     end_point_type = 0;              //!< type of list signalled by the URI
+            UString     service_list_name {};            //!< name of the service list referenced by the uri
+            UString     service_list_provider_name {};   //!< name of the provider of the service list referenced by the uri
+            ByteBlock   private_data {};                 //!< Private data.
 
             //!
             //! Default constructor.

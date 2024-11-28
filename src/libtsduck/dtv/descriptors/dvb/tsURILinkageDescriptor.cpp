@@ -36,8 +36,8 @@ ts::URILinkageDescriptor::URILinkageDescriptor() :
 void ts::URILinkageDescriptor::DVB_I_Info::clearContent()
 {
     end_point_type = 0;
-    service_list_name.reset();
-    service_list_provider_name.reset();
+    service_list_name.clear();
+    service_list_provider_name.clear();
     private_data.clear();
 }
 
@@ -73,8 +73,10 @@ ts::DID ts::URILinkageDescriptor::extendedTag() const
 void ts::URILinkageDescriptor::DVB_I_Info::serialize(PSIBuffer& buf) const
 {
     buf.putUInt8(end_point_type);
-    buf.putStringWithByteLength(service_list_name.value_or(u""));
-    buf.putStringWithByteLength(service_list_provider_name.value_or(u""));
+    if (end_point_type == END_POINT_SERVICE_LIST_EXTENDED) {
+        buf.putStringWithByteLength(service_list_name);
+        buf.putStringWithByteLength(service_list_provider_name);
+    }
     buf.putBytes(private_data);
 }
 
@@ -88,9 +90,7 @@ void ts::URILinkageDescriptor::serializePayload(PSIBuffer& buf) const
     else if ((uri_linkage_type == URI_LINKAGE_DVB_I) && dvb_i_private_data.has_value()) {
         dvb_i_private_data.value().serialize(buf);
     }
-    if (uri_linkage_type != URI_LINKAGE_DVB_I) {
-        buf.putBytes(private_data);
-    }
+    buf.putBytes(private_data);
 }
 
 
@@ -101,14 +101,9 @@ void ts::URILinkageDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::URILinkageDescriptor::DVB_I_Info::deserialize(PSIBuffer& buf)
 {
     end_point_type = buf.getUInt8();
-    UString t;
-    buf.getStringWithByteLength(t);
-    if (!t.empty()) {
-        service_list_name = t;
-    }
-    buf.getStringWithByteLength(t);
-    if (!t.empty()) {
-        service_list_provider_name = t;
+    if (end_point_type == END_POINT_SERVICE_LIST_EXTENDED) {
+        buf.getStringWithByteLength(service_list_name);
+        buf.getStringWithByteLength(service_list_provider_name);
     }
     buf.getBytes(private_data);
 }
@@ -124,9 +119,7 @@ void ts::URILinkageDescriptor::deserializePayload(PSIBuffer& buf)
         DVB_I_Info inf(buf);
         dvb_i_private_data = inf;
     }
-    if (uri_linkage_type != URI_LINKAGE_DVB_I) {
-        buf.getBytes(private_data);
-    }
+    buf.getBytes(private_data);
 }
 
 
@@ -139,13 +132,15 @@ void ts::URILinkageDescriptor::DVB_I_Info::display(TablesDisplay& disp, PSIBuffe
 {
     const uint8_t ep_type = buf.getUInt8();
     disp << margin << "End point type: " << DataName(MY_XML_NAME, u"DVB_I_Endpoint_type", ep_type, NamesFlags::HEXA_FIRST) << std::endl;
-    UString sl_name = buf.getStringWithByteLength();
-    if (!sl_name.empty()) {
-        disp << margin << "Service list name: " << sl_name << std::endl;
-    }
-    UString provider_name = buf.getStringWithByteLength();
-    if (!provider_name.empty()) {
-        disp << margin << "Service list provider name: " << provider_name << std::endl;
+    if (ep_type == END_POINT_SERVICE_LIST_EXTENDED) {
+        UString sl_name = buf.getStringWithByteLength();
+        if (!sl_name.empty()) {
+            disp << margin << "Service list name: " << sl_name << std::endl;
+        }
+        UString provider_name = buf.getStringWithByteLength();
+        if (!provider_name.empty()) {
+            disp << margin << "Service list provider name: " << provider_name << std::endl;
+        }
     }
     disp.displayPrivateData(u"Private data", buf, NPOS, margin);
 }
@@ -178,11 +173,9 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 void ts::URILinkageDescriptor::DVB_I_Info::toXML(xml::Element* root) const
 {
     root->setIntAttribute(u"end_point_type", end_point_type, true);
-    if (service_list_name.has_value()) {
-        root->setAttribute(u"service_list_name", service_list_name.value());
-    }
-    if (service_list_provider_name.has_value()) {
-        root->setAttribute(u"service_list_provider_name", service_list_provider_name.value());
+    if (end_point_type == END_POINT_SERVICE_LIST_EXTENDED) {
+        root->setAttribute(u"service_list_name", service_list_name, true);
+        root->setAttribute(u"service_list_provider_name", service_list_provider_name, true);
     }
     if (!private_data.empty()) {
         root->addHexaTextChild(u"private_data", private_data);
@@ -215,16 +208,8 @@ bool ts::URILinkageDescriptor::DVB_I_Info::fromXML(const xml::Element* element)
     bool ok = element->getIntAttribute(end_point_type, u"end_point_type", true, END_POINT_SERVICE_LIST, END_POINT_MIN, END_POINT_MAX) &&
               element->getHexaTextChild(private_data, u"private_data", false);
     if (ok && (end_point_type == END_POINT_SERVICE_LIST_EXTENDED)) {
-        UString slName;
-        ok = element->getAttribute(slName, u"service_list_name", true) &&
-            element->getOptionalAttribute(service_list_provider_name, u"service_list_provider_name", false);
-        service_list_name = slName;
-    }
-    if (ok) {
-        if ((end_point_type != END_POINT_SERVICE_LIST_EXTENDED) && (service_list_name.has_value() || service_list_provider_name.has_value())) {
-            element->report().error(u"service_list_name and service_list_provider_name only permitted when end_point_type=0x%X in <%s>, line %d", END_POINT_SERVICE_LIST_EXTENDED, element->name(), element->lineNumber());
-            ok = false;
-        }
+        ok = element->getAttribute(service_list_name, u"service_list_name", true, u"", 0, 255) &&
+             element->getAttribute(service_list_provider_name, u"service_list_provider_name", false, u"", 0, 255);
     }
     return ok;
 }
@@ -235,13 +220,9 @@ bool ts::URILinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
               element->getAttribute(uri, u"uri", true) &&
               element->getIntAttribute(min_polling_interval, u"min_polling_interval", (uri_linkage_type == URI_LINKAGE_ONLINE_SDT || uri_linkage_type == URI_LINKAGE_IPTV_SDnS));
     bool p_ok = true;
-    if (uri_linkage_type == URI_LINKAGE_DVB_I) {
-        ts::xml::ElementVector el;
-        element->getChildren(el, u"private_data");
-        if (!el.empty()) {
-            element->report().error(u"private_data not permitted when uri_linkage_type=0x%X  in <%s>, line %d", URI_LINKAGE_DVB_I, element->name(), element->lineNumber());
-            p_ok = false;
-        }
+    if ((uri_linkage_type == URI_LINKAGE_DVB_I) && element->hasChildElement(u"private_data")) {
+        element->report().error(u"private_data not permitted when uri_linkage_type=0x%X in <%s>, line %d", URI_LINKAGE_DVB_I, element->name(), element->lineNumber());
+        p_ok = false;
     }
     if (ok && uri_linkage_type != URI_LINKAGE_DVB_I) {
         ok = element->getHexaTextChild(private_data, u"private_data", false);
