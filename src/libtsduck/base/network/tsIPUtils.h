@@ -168,7 +168,7 @@ namespace ts {
 #endif
 
     //!
-    //! Integer data type for the multicast loop socket option.
+    //! Integer data type for the IPv4 multicast loop socket option.
     //! Example:
     //! @code
     //! SysSocketMulticastLoopType mloop = 1;
@@ -183,6 +183,24 @@ namespace ts {
     using SysSocketMulticastLoopType = ::DWORD;
 #elif defined(TS_UNIX)
     using SysSocketMulticastLoopType = unsigned char;
+#endif
+
+    //!
+    //! Integer data type for the IPv6 multicast loop socket option.
+    //! Example:
+    //! @code
+    //! SysSocketMulticastLoopType6 mloop = 1;
+    //! if (setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) != 0) {
+    //!     ... error processing ...
+    //! }
+    //! @endcode
+    //!
+#if defined(DOXYGEN)
+    using SysSocketMulticastLoopType6 = platform_specific;
+#elif defined(TS_WINDOWS)
+    using SysSocketMulticastLoopType6 = ::DWORD;
+#elif defined(TS_UNIX)
+    using SysSocketMulticastLoopType6 = unsigned int;
 #endif
 
     //!

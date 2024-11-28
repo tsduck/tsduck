@@ -226,6 +226,30 @@ bool ts::NetworkInterface::GetAll(IPAddressVector& addresses, bool loopback, IP 
 
 
 //----------------------------------------------------------------------------
+// Get the list of all local network interfaces by index.
+//----------------------------------------------------------------------------
+
+bool ts::NetworkInterface::GetAll(std::set<int>& indexes, bool loopback, IP gen, bool force_reload, Report& report)
+{
+    // Lock the repo and make sure it is loaded.
+    auto& repo(InterfaceRepository::Instance());
+    std::lock_guard<std::mutex> lock(repo.mutex);
+    if (!repo.reload(force_reload, report)) {
+        return false;
+    }
+
+    // Get interface indexes.
+    indexes.clear();
+    for (const auto& it : repo.addresses) {
+        if (it.index >= 0 && (loopback || !it.loopback) && (gen == IP::Any || it.address.generation() == gen)) {
+            indexes.insert(it.index);
+        }
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Check if a local system interface has a specified IP address.
 //----------------------------------------------------------------------------
 
@@ -269,4 +293,35 @@ int ts::NetworkInterface::ToIndex(const IPAddress& address, bool force_reload, R
     }
     report.error(u"%s is not a local interface", address);
     return -1;
+}
+
+
+//----------------------------------------------------------------------------
+// Find the first IP address of a network interface identified by its index.
+//----------------------------------------------------------------------------
+
+bool ts::NetworkInterface::ToAddress(IPAddress& address, int index, IP gen, bool force_reload, Report& report)
+{
+    // Lock the repo and make sure it is loaded.
+    auto& repo(InterfaceRepository::Instance());
+    std::lock_guard<std::mutex> lock(repo.mutex);
+    if (!repo.reload(force_reload, report)) {
+        return false;
+    }
+
+    // Search the index.
+    for (const auto& it : repo.addresses) {
+        if (it.index == index && (gen == IP::Any || it.address.generation() == gen)) {
+            address.setAddress(it.address);
+            return true;
+        }
+    }
+    address.clearAddress();
+    if (gen == IP::Any) {
+        report.error(u"no local interface has index %d", index);
+    }
+    else {
+        report.error(u"no local interface with IPv%d address has index %d", int(gen), index);
+    }
+    return false;
 }

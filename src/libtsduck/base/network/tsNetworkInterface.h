@@ -73,6 +73,21 @@ namespace ts {
         static bool GetAll(IPAddressVector& addresses, bool loopback = true, IP gen = IP::Any, bool force_reload = false, Report& report = CERR);
 
         //!
+        //! Get the list of all local network interfaces by index.
+        //! @param [out] indexes Receives the set of indexes of all local IP interfaces.
+        //! If an interface has multiple IP addresses, the index is returned only once.
+        //! If interface indexes are meaningless for that operating system, the returned set is empty.
+        //! @param [in] loopback If false, the loopback addresses are skipped.
+        //! @param [in] gen Report addresses for the specified generations only.
+        //! @param [in] force_reload If true, force a reload of the list of interfaces.
+        //! By default, the list is loaded once and kept in cache. If no network interface
+        //! is dynamically added, there is no need to rebuild the list each time.
+        //! @param [in] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool GetAll(std::set<int>& indexes, bool loopback = true, IP gen = IP::Any, bool force_reload = false, Report& report = CERR);
+
+        //!
         //! Check if a local system interface has a specified IP address.
         //! @param [in] address The IP address to check.
         //! @param [in] force_reload If true, force a reload of the list of interfaces.
@@ -93,6 +108,19 @@ namespace ts {
         //! @return Interface index for @a address, -1 if @a address if not a local interface.
         //!
         static int ToIndex(const IPAddress& address, bool force_reload = false, Report& report = CERR);
+
+        //!
+        //! Find the first IP address of a network interface identified by its index.
+        //! @param [out] address The returned IP address.
+        //! @param [in] index The interface index to find.
+        //! @param [in] gen Report addresses for the specified generations only.
+        //! @param [in] force_reload If true, force a reload of the list of interfaces.
+        //! By default, the list is loaded once and kept in cache. If no network interface
+        //! is dynamically added, there is no need to rebuild the list each time.
+        //! @param [in] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        static bool ToAddress(IPAddress& address, int index, IP gen = IP::Any, bool force_reload = false, Report& report = CERR);
 
     private:
         // The shared repository of local network interfaces.

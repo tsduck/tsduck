@@ -216,8 +216,10 @@ bool ts::TSDatagramOutput::open(Report& report)
 
     // Initialize raw UDP socket
     if (_raw_udp) {
+        // IP generation selection
         const IPSocketAddress local(_local_addr, _local_port);
-        if (!_sock.open(local.generation(), report)) {
+        const IP gen = (local.hasAddress() && local.generation() != _destination.generation()) ? IP::v6 : _destination.generation();
+        if (!_sock.open(gen, report)) {
             return false;
         }
         if ((_local_port != IPAddress::AnyPort && !_sock.reusePort(true, report)) ||

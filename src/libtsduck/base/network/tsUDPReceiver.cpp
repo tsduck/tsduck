@@ -61,10 +61,21 @@ bool ts::UDPReceiver::open(IP gen, Report& report)
 #endif
     local_addr.setPort(_args.destination.port());
 
+    // Determine IP generation of the socket (ignore input value).
+    if (!local_addr.hasAddress()) {
+        gen = _args.destination.generation();
+    }
+    else if (_args.destination.hasAddress() && local_addr.generation() != _args.destination.generation()) {
+        gen = IP::v6;
+    }
+    else {
+        gen = local_addr.generation();
+    }
+
     // Create UDP socket from the superclass.
     // Note: On Windows, bind must be done *before* joining multicast groups.
     bool ok =
-        UDPSocket::open(local_addr.generation(), report) &&
+        UDPSocket::open(gen, report) &&
         reusePort(_args.reuse_port, report) &&
         setReceiveTimestamps(_args.receive_timestamps, report) &&
         setMulticastLoop(_args.mc_loopback, report) &&

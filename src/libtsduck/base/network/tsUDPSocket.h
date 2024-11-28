@@ -241,7 +241,30 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source = IPAddress(), Report& report = CERR);
+        bool addMembership(const IPAddress& multicast, const IPAddress& local, const IPAddress& source = IPAddress(), Report& report = CERR)
+        {
+            return addMembershipImpl(multicast, local, -1, source, report);
+        }
+
+        //!
+        //! Join a multicast group.
+        //!
+        //! This method indicates that the application wishes to receive multicast
+        //! packets which are sent to a specific multicast address. Specifying a
+        //! non-default @a source address, source-specific multicast (SSM) is used.
+        //! Note that source-specific multicast exists on IPv4 only.
+        //!
+        //! @param [in] multicast Multicast IP address to listen to.
+        //! @param [in] interface_index Index of a local interface on which to listen.
+        //! If set to zero, the application lets the system selects the appropriate local interface.
+        //! @param [in] source Source address for SSM. Ignored on IPv6 socket.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool addMembership(const IPAddress& multicast, int interface_index, const IPAddress& source = IPAddress(), Report& report = CERR)
+        {
+            return addMembershipImpl(multicast, IPAddress(), interface_index, source, report);
+        }
 
         //!
         //! Join a multicast group.
@@ -274,7 +297,10 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool addMembershipDefault(const IPAddress& multicast, const IPAddress& source = IPAddress(), Report& report = CERR);
+        bool addMembershipDefault(const IPAddress& multicast, const IPAddress& source = IPAddress(), Report& report = CERR)
+        {
+            return addMembershipImpl(multicast, IPAddress(), -1, source, report);
+        }
 
         //!
         //! Drop all multicast membership requests, including source-specific multicast.
@@ -411,6 +437,9 @@ namespace ts {
 
         // Perform one receive operation. Hide the system mud. Return a system socket error code.
         int receiveOne(void* data, size_t max_size, size_t& ret_size, IPSocketAddress& sender, IPSocketAddress& destination, Report& report, cn::microseconds* timestamp);
+
+        // Add multicast membership common code, local interface by index or by address.
+        bool addMembershipImpl(const IPAddress& multicast, const IPAddress& local, int interface_index, const IPAddress& source, Report& report);
 
         // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)

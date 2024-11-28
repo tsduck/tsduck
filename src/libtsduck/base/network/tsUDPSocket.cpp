@@ -10,6 +10,7 @@
 #include "tsNetworkInterface.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
+#include "tsAlgorithm.h"
 
 // Network timestampting feature in Linux.
 #if defined(TS_LINUX)
@@ -158,11 +159,13 @@ bool ts::UDPSocket::setOutgoingMulticast(const IPAddress& addr, Report& report)
         // With IPv4, the local interface is identified by its IPv4 address.
         ::in_addr iaddr;
         local.getAddress4(iaddr);
+        report.debug(u"setting socket IP_MULTICAST_IF to %s", local);
         ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_IF, SysSockOptPointer(&iaddr), sizeof(iaddr)) == 0;
     }
     else {
         // With IPv6, the local interface is identified by its system-defined interface index.
         int index = NetworkInterface::ToIndex(local, false, report);
+        report.debug(u"setting socket IPV6_MULTICAST_IF to %d", index);
         ok = index >= 0 && ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_IF, SysSockOptPointer(&index), sizeof(index)) == 0;
     }
     if (!ok) {
@@ -193,6 +196,7 @@ bool ts::UDPSocket::setDefaultDestination(const IPSocketAddress& addr, Report& r
         return false;
     }
     else {
+        report.debug(u"setting UDP socket default destination to %s", addr);
         _default_destination = addr;
         return true;
     }
@@ -209,20 +213,24 @@ bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
     if (generation() == IP::v4) {
         if (multicast) {
             SysSocketMulticastTTLType mttl = SysSocketMulticastTTLType(ttl);
+            report.debug(u"setting socket IP_MULTICAST_TTL to %d", int(mttl));
             ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_TTL, SysSockOptPointer(&mttl), sizeof(mttl)) == 0;
         }
         else {
             SysSocketTTLType uttl = SysSocketTTLType(ttl);
+            report.debug(u"setting socket IP_TTL to %d", int(uttl));
             ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_TTL, SysSockOptPointer(&uttl), sizeof(uttl)) == 0;
         }
     }
     else {
         if (multicast) {
             SysSocketMulticastTTLType mttl = SysSocketMulticastTTLType(ttl);
+            report.debug(u"setting socket IPV6_MULTICAST_HOPS to %d", int(mttl));
             ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_HOPS, SysSockOptPointer(&mttl), sizeof(mttl)) == 0;
         }
         else {
             SysSocketTTLType uttl = SysSocketTTLType(ttl);
+            report.debug(u"setting socket IPV6_UNICAST_HOPS to %d", int(uttl));
             ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_UNICAST_HOPS, SysSockOptPointer(&uttl), sizeof(uttl)) == 0;
         }
     }
@@ -242,6 +250,7 @@ bool ts::UDPSocket::setTOS(int tos, Report& report)
     // No IPv6 equivalent (?)
     if (generation() == IP::v4) {
         SysSocketTOSType utos = SysSocketTOSType(tos);
+        report.debug(u"setting socket IP_TOS to %d", int(utos));
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_TOS, SysSockOptPointer(&utos), sizeof(utos)) != 0) {
             report.error(u"socket option TOS: %s", SysErrorCodeMessage());
             return false;
@@ -258,12 +267,15 @@ bool ts::UDPSocket::setTOS(int tos, Report& report)
 bool ts::UDPSocket::setMulticastLoop(bool on, Report& report)
 {
     bool ok = true;
-    SysSocketMulticastLoopType mloop = SysSocketMulticastLoopType(on);
-    report.debug(u"setting socket IP_MULTICAST_LOOP to %d", mloop);
     if (generation() == IP::v4) {
+        SysSocketMulticastLoopType mloop = SysSocketMulticastLoopType(on);
+        report.debug(u"setting socket IP_MULTICAST_LOOP to %d", int(mloop));
         ok = ::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) == 0;
     }
     else {
+        // Warning: on Unix systems, the option type is not the same as IPv4.
+        SysSocketMulticastLoopType6 mloop = SysSocketMulticastLoopType6(on);
+        report.debug(u"setting socket IPV6_MULTICAST_LOOP to %d", int(mloop));
         ok = ::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) == 0;
     }
     if (!ok) {
@@ -283,6 +295,7 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
 #if defined(TS_LINUX)
     // Set SO_TIMESTAMPNS option which reports timestamps in nanoseconds (struct timespec).
     int enable = int(on);
+    report.debug(u"setting socket SO_TIMESTAMPNS to %d", enable);
     if (::setsockopt(getSocket(), SOL_SOCKET, SO_TIMESTAMPNS, &enable, sizeof(enable)) != 0) {
         report.error(u"socket option SO_TIMESTAMPNS: %s", SysErrorCodeMessage());
         return false;
@@ -299,6 +312,7 @@ bool ts::UDPSocket::setReceiveTimestamps(bool on, Report& report)
 bool ts::UDPSocket::setBroadcast(bool on, Report& report)
 {
     int enable = int(on);
+    report.debug(u"setting socket SO_BROADCAST to %d", enable);
     if (::setsockopt(getSocket(), SOL_SOCKET, SO_BROADCAST, SysSockOptPointer(&enable), sizeof(enable)) != 0) {
         report.error(u"socket option broadcast: %s", SysErrorCodeMessage());
         return false;
@@ -335,7 +349,7 @@ bool ts::UDPSocket::setBroadcastIfRequired(const IPAddress destination, Report& 
 // Join one multicast group on one local interface.
 //----------------------------------------------------------------------------
 
-bool ts::UDPSocket::addMembership(const IPAddress& multicast_in, const IPAddress& local_in, const IPAddress& source_in, Report& report)
+bool ts::UDPSocket::addMembershipImpl(const IPAddress& multicast_in, const IPAddress& local_in, int interface_index, const IPAddress& source_in, Report& report)
 {
     // Make sure the addresses have the same generation as the socket.
     // The multicast address cannot be converted and conversion will fail if not at the right generation.
@@ -355,12 +369,21 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast_in, const IPAddress
     if (local.hasAddress()) {
         report.verbose(u"joining multicast group %s from local address %s", group_string, local);
     }
+    else if (interface_index >= 0) {
+        report.verbose(u"joining multicast group %s from local interface %d", group_string, interface_index);
+    }
     else {
         report.verbose(u"joining multicast group %s from default interface", group_string);
     }
 
     // Now join the group.
     if (generation() == IP::v4) {
+        // With IPv4, the local interface must be identified by IP address.
+        // Find IP address of local interface if identified by index.
+        if (!local.hasAddress() && interface_index > 0 && !NetworkInterface::ToAddress(local, interface_index,IP::v4, false, report)) {
+            return false;
+        }
+        // SSM vs. standard multicast.
         if (source.hasAddress()) {
             // Source-specific multicast (SSM).
 #if defined(TS_NO_SSM)
@@ -392,18 +415,25 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast_in, const IPAddress
         }
     }
     else {
-        // IPv6: SSM does not exist.
+        // With IPv6, the local interface must be identified by index.
+        // Find index of local interface if identified by IP address.
+        if (interface_index < 0) {
+            if (!local.hasAddress()) {
+                interface_index = 0; // any interface
+            }
+            else if ((interface_index = NetworkInterface::ToIndex(local, false, report)) < 0) {
+                return false;
+            }
+        }
+        // SSM vs. standard multicast.
         if (source.hasAddress()) {
+            // IPv6: SSM does not exist.
             report.error(u"SSM is not available on IPv6 socket");
             return false;
         }
         else {
             // Standard IPv6 multicast.
-            const int index = NetworkInterface::ToIndex(local, false, report);
-            if (index < 0) {
-                return false;
-            }
-            MReq6 req(multicast, index);
+            MReq6 req(multicast, interface_index);
             if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
                 report.error(u"error adding multicast membership to %s from local address %s: %s", group_string, local, SysErrorCodeMessage());
                 return false;
@@ -418,16 +448,6 @@ bool ts::UDPSocket::addMembership(const IPAddress& multicast_in, const IPAddress
 
 
 //----------------------------------------------------------------------------
-// Join one multicast group, let the system select the local interface.
-//----------------------------------------------------------------------------
-
-bool ts::UDPSocket::addMembershipDefault(const IPAddress& multicast, const IPAddress& source, Report& report)
-{
-    return addMembership(multicast, IPAddress(), source, report);
-}
-
-
-//----------------------------------------------------------------------------
 // Join one multicast group on all local interfaces.
 //----------------------------------------------------------------------------
 
@@ -437,16 +457,27 @@ bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress
     // we must get the list of all local interfaces and send a multicast membership request on each of them.
 
     // Get all local interfaces.
-    IPAddressVector loc_if;
-    if (!NetworkInterface::GetAll(loc_if, false, multicast.generation(), false, report)) {
+    const IP gen = multicast.generation();
+    NetworkInterfaceVector locals;
+    if (!NetworkInterface::GetAll(locals, false, gen, false, report)) {
         return false;
     }
 
+    // When an interface has several IP addresses, we shall not send the request multiple times on the same
+    // interface when used by index. On macOS, at least, it generates an error "Address already in use".
+    std::set<int> indexes;
+
     // Add all memberships
     bool ok = true;
-    for (size_t i = 0; i < loc_if.size(); ++i) {
-        if (loc_if[i].hasAddress()) {
-            ok = addMembership(multicast, loc_if[i], source, report) && ok;
+    for (const auto& loc : locals) {
+        if (gen == IP::v4 || loc.index < 0) {
+            // On IPv4, use local IP address. Also on IPv6 if interface index is unknown.
+            ok = addMembershipImpl(multicast, loc.address, -1, source, report) && ok;
+        }
+        else if (!Contains(indexes, loc.index)) {
+            // On IPv6, use interface index. Keep track of indexes to send only one request per interface.
+            indexes.insert(loc.index);
+            ok = addMembershipImpl(multicast, IPAddress(), loc.index, source, report) && ok;
         }
     }
     return ok;
@@ -473,7 +504,7 @@ bool ts::UDPSocket::dropMembership(Report& report)
 
     // Drop all standard IPv6 multicast groups (none on IPv4 sockets).
     for (const auto& it : _mcast6) {
-        report.verbose(u"leaving multicast group %s from local interface %d", IPAddress(it.data.ipv6mr_multiaddr), IPAddress(it.data.ipv6mr_interface));
+        report.verbose(u"leaving multicast group %s from local interface %d", IPAddress(it.data.ipv6mr_multiaddr), it.data.ipv6mr_interface);
         if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
             report.error(u"error dropping multicast membership: %s", SysErrorCodeMessage());
             ok = false;
