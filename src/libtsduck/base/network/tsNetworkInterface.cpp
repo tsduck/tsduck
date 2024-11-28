@@ -59,19 +59,21 @@ ts::NetworkInterface::InterfaceRepository::InterfaceRepository()
 // Add a unique address in the repository.
 void ts::NetworkInterface::InterfaceRepository::add(const NetworkInterface& net)
 {
-    for (auto& it : addresses) {
-        if (IPAddress(it.address) == IPAddress(net.address)) {
-            // Found a duplicate.
-            if (it.name.empty()) {
-                it.name = net.name;
+    if (net.address.hasAddress()) {
+        for (auto& it : addresses) {
+            if (IPAddress(it.address) == IPAddress(net.address)) {
+                // Found a duplicate.
+                if (it.name.empty()) {
+                    it.name = net.name;
+                }
+                if (it.index < 0) {
+                    it.index = net.index;
+                }
+                return;
             }
-            if (it.index < 0) {
-                it.index = net.index;
-            }
-            return;
         }
+        addresses.push_back(net);
     }
-    addresses.push_back(net);
 }
 
 // Reload the repository. Must be called with mutex held.
