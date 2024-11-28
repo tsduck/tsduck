@@ -165,13 +165,16 @@ namespace ts {
         }
 
         //!
-        //! Set the Type Of Service (TOS) option.
+        //! Set the Type Of Service (TOS) or Traffic Class (IPv6) option.
+        //!
+        //! The interpretation of the @a tos parameter depends in the IP generation.
+        //! With IPv4, this is a "type of service" value.
+        //! With IPv6, this is a "traffic class" value.
         //!
         //! Note that correct support for this option depends on the operating
-        //! system. Typically, it never worked correctly on Windows. Additionally,
-        //! the TOS is only implemented on IPv4. It is ignored in IPv6.
+        //! system. Typically, it never worked correctly on Windows.
         //!
-        //! @param [in] tos The TOS value.
+        //! @param [in] tos The type of service (IPv4) or traffic class (IPv6) value.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!

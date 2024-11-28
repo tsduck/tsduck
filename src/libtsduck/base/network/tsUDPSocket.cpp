@@ -247,14 +247,26 @@ bool ts::UDPSocket::setTTL(int ttl, bool multicast, Report& report)
 
 bool ts::UDPSocket::setTOS(int tos, Report& report)
 {
-    // No IPv6 equivalent (?)
     if (generation() == IP::v4) {
+        // IPv4: this is a "type of service" value.
         SysSocketTOSType utos = SysSocketTOSType(tos);
         report.debug(u"setting socket IP_TOS to %d", int(utos));
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_TOS, SysSockOptPointer(&utos), sizeof(utos)) != 0) {
             report.error(u"socket option TOS: %s", SysErrorCodeMessage());
             return false;
         }
+    }
+    else {
+        // IPv6: this is a "traffic class" value.
+        // This is not supported on all systems.
+#if defined(IPV6_TCLASS)
+        SysSocketTClassType tclass = SysSocketTClassType(tos);
+        report.debug(u"setting socket IPV6_TCLASS to %d", int(tclass));
+        if (::setsockopt(getSocket(), IPPROTO_IPV6, IPV6_TCLASS, SysSockOptPointer(&tclass), sizeof(tclass)) != 0) {
+            report.error(u"socket option IPV6_TCLASS: %s", SysErrorCodeMessage());
+            return false;
+        }
+#endif
     }
     return true;
 }

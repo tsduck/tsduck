@@ -48,7 +48,7 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
     // Set the IPV6_V6ONLY option to zero on IPv6 sockets (can be used in IPv4 or IPv6 communications).
 #if defined(IPV6_V6ONLY)
     if (_gen == IP::v6) {
-        int opt = 0;
+        SysSocketV6OnlyType opt = 0;
         if (::setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
             // don't fail, just report a warning, will still work on IPv6.
             report.warning(u"error setting option IPV6_V6ONLY: %s", SysErrorCodeMessage());

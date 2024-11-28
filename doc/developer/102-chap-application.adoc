@@ -438,11 +438,13 @@ and can be used to pass an entire transport stream when necessary.
 [#networking]
 ===== Networking
 
-The classes classref:IPv4Address[] and classref:IPv4SocketAddress[] define an IPv4 address and
-a corresponding socket address (an IPv4 address and a port number).
+The classes classref:IPAddress[] and classref:IPSocketAddress[] define an IP address and
+a corresponding socket address (an IP address and a port number).
 Host name resolution and multicast are supported.
 
-Equivalent classes exist for IPv6 and MAC (Ethernet addresses).
+The class classref:IPAddress[] can hold IPv4 and IPv6 addresses.
+All network operations on name resolutions and TCP or UDP sockets
+are transparently supported for IPv4 and IPv6 addresses.
 
 The classes classref:TCPSocket[] and classref:UDPSocket[] implement TCP/IP and UDP/IP endpoints.
 

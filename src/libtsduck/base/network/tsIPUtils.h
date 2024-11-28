@@ -14,8 +14,7 @@
 
 #pragma once
 #include "tsCerrReport.h"
-#include "tsIPAddress.h"
-#include "tsIPAddressMask.h"
+#include "tsIP.h"
 
 namespace ts {
     //!
@@ -28,12 +27,17 @@ namespace ts {
     //!
     TSDUCKDLL bool IPInitialize(Report& = CERR);
 
-    //------------------------------------------------------------------------
-    // Portable definitions for system socket interface.
+    //!
+    //! Get the std::error_category for getaddrinfo() error code (Unix only).
+    //! @return A constant reference to a std::error_category instance.
+    //!
+    TSDUCKDLL const std::error_category& getaddrinfo_category();
+
+    //
+    // The rest of this file contains portable definitions for the system socket interface.
     // Most socket types and functions have identical API in UNIX and Windows.
-    // However, there are some slight incompatibilities which are solved by
-    // using the following definitions.
-    //------------------------------------------------------------------------
+    // However, there are some slight incompatibilities which are solved using the following definitions.
+    //
 
     //!
     //! Data type for socket descriptors as returned by the socket() system call.
@@ -157,7 +161,7 @@ namespace ts {
 #endif
 
     //!
-    //! Integer data type for the Type Of Service (TOS) socket option.
+    //! Integer data type for the Type Of Service (TOS) IPv4 socket option.
     //!
 #if defined(DOXYGEN)
     using SysSocketTOSType = platform_specific;
@@ -165,6 +169,28 @@ namespace ts {
     using SysSocketTOSType = ::DWORD;
 #elif defined(TS_UNIX)
     using SysSocketTOSType = int;
+#endif
+
+    //!
+    //! Integer data type for the Traffic Class (TCLASS) IPv6 socket option.
+    //!
+#if defined(DOXYGEN)
+    using SysSocketTClassType = platform_specific;
+#elif defined(TS_WINDOWS)
+    using SysSocketTClassType = ::DWORD;
+#elif defined(TS_UNIX)
+    using SysSocketTClassType = int;
+#endif
+
+    //!
+    //! Integer data type for the IPV6_V6ONLY socket option.
+    //!
+#if defined(DOXYGEN)
+    using SysSocketV6OnlyType = platform_specific;
+#elif defined(TS_WINDOWS)
+    using SysSocketV6OnlyType = ::DWORD;
+#elif defined(TS_UNIX)
+    using SysSocketV6OnlyType = int;
 #endif
 
     //!
@@ -361,10 +387,4 @@ namespace ts {
         #error "Unsupported operating system"
 #endif
     }
-
-    //!
-    //! Get the std::error_category for getaddrinfo() error code (Unix only).
-    //! @return A constant reference to a std::error_category instance.
-    //!
-    TSDUCKDLL const std::error_category& getaddrinfo_category();
 }
