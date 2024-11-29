@@ -154,34 +154,30 @@ bool ts::IPSocketAddress::match(const IPSocketAddress& other) const
 
 ts::UString ts::IPSocketAddress::toString() const
 {
-    UString str;
-    if (generation() == IP::v6) {
+    if (_port == AnyPort) {
+        return IPAddress::toString();
+    }
+    else if (generation() == IP::v6) {
         // IPv6 numeric addresses need square brackets around address because the address contains colons.
-        str.format(u"[%s]", IPAddress::toString());
+        return UString::Format(u"[%s]:%d", IPAddress::toString(), _port);
     }
     else {
-        str = IPAddress::toString();
+        return UString::Format(u"%s:%d", IPAddress::toString(), _port);
     }
-    if (_port != AnyPort) {
-        str.format(u":%d", _port);
-    }
-    return str;
 }
 
 ts::UString ts::IPSocketAddress::toFullString() const
 {
-    UString str;
-    if (generation() == IP::v6) {
+    if (_port == AnyPort) {
+        return IPAddress::toFullString();
+    }
+    else if (generation() == IP::v6) {
         // IPv6 numeric addresses need square brackets around address because the address contains colons.
-        str.format(u"[%s]", IPAddress::toFullString());
+        return UString::Format(u"[%s]:%d", IPAddress::toFullString(), _port);
     }
     else {
-        str = IPAddress::toFullString();
+        return UString::Format(u"%s:%d", IPAddress::toFullString(), _port);
     }
-    if (_port != AnyPort) {
-        str.format(u":%d", _port);
-    }
-    return str;
 }
 
 

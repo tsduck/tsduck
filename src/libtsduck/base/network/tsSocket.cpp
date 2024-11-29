@@ -39,7 +39,7 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
     _gen = gen == IP::v4 ? IP::v4 : IP::v6;
     report.debug(u"create IPv%d socket, type %d, protocol %d", int(_gen), type, protocol);
 
-    _sock = ::socket(gen == IP::v4 ? PF_INET : PF_INET6, type, protocol);
+    _sock = ::socket(gen == IP::v4 ? AF_INET : AF_INET6, type, protocol);
     if (_sock == SYS_SOCKET_INVALID) {
         report.error(u"error creating socket: %s", SysErrorCodeMessage());
         return false;

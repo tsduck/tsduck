@@ -127,7 +127,7 @@ bool ts::UDPSocket::bind(const IPSocketAddress& addr, Report& report)
 
     report.debug(u"binding socket to %s", addr2);
     if (::bind(getSocket(), reinterpret_cast<::sockaddr*>(&sock_addr), socklen_t(sock_size)) != 0) {
-        report.error(u"error binding socket to local address: %s", SysErrorCodeMessage());
+        report.error(u"error binding socket to local address %s: %s", addr2, SysErrorCodeMessage());
         return false;
     }
 

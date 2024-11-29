@@ -642,8 +642,16 @@ TSUNIT_DEFINE_TEST(IPv6SocketAddress)
     TSUNIT_ASSERT(!sa1.hasPort());
     TSUNIT_EQUAL(0xFE80000000000000, sa1.networkPrefix6());
     TSUNIT_EQUAL(0x93A3DEA02108B81E, sa1.interfaceIdentifier6());
-    TSUNIT_EQUAL(u"[fe80::93a3:dea0:2108:b81e]", sa1.toString());
-    TSUNIT_EQUAL(u"[fe80:0000:0000:0000:93a3:dea0:2108:b81e]", sa1.toFullString());
+    TSUNIT_EQUAL(u"fe80::93a3:dea0:2108:b81e", sa1.toString());
+    TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", sa1.toFullString());
+
+    TSUNIT_ASSERT(sa1.resolve(u"[fe80::93a3:dea0:2108:b82f]", CERR));
+    TSUNIT_ASSERT(sa1.hasAddress());
+    TSUNIT_ASSERT(!sa1.hasPort());
+    TSUNIT_EQUAL(0xFE80000000000000, sa1.networkPrefix6());
+    TSUNIT_EQUAL(0x93A3DEA02108B82F, sa1.interfaceIdentifier6());
+    TSUNIT_EQUAL(u"fe80::93a3:dea0:2108:b82f", sa1.toString());
+    TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b82f", sa1.toFullString());
 
     TSUNIT_ASSERT(sa2.resolve(u"[FE80::93A3:DEA0:2108:B81E]:1234", CERR));
     TSUNIT_ASSERT(sa2.hasAddress());
