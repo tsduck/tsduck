@@ -232,7 +232,7 @@ uint16_t ts::IPPacket::IPHeaderChecksum(const void* data, size_t size)
         // Take the complement.
         checksum = uint16_t(checksum ^ 0xFFFF);
     }
-    return checksum;
+    return uint16_t(checksum);
 }
 
 
