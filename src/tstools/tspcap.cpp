@@ -20,6 +20,7 @@
 #include "tsEMMGMUX.h"
 #include "tsECMGSCS.h"
 #include "tsPagerArgs.h"
+#include "tsTextTable.h"
 #include "tsSysUtils.h"
 #include "tstlvMessageFactory.h"
 TS_MAIN(MainCode);
@@ -421,38 +422,33 @@ void FileAnalysis::displaySummary(std::ostream& out, const StatBlock& stats)
 // Display list of streams.
 void FileAnalysis::listStreams(std::ostream& out, cn::microseconds duration)
 {
-    // In case of VLAN, get max width of VLAN field.
-    size_t vlan_width = 0;
-    for (const auto& it : _streams_stats) {
-        vlan_width = std::max(vlan_width, it.first.vlans.toString().width());
-    }
-    if (vlan_width > 0 && vlan_width < 4) {
-        // There are some VLAN, including "VLAN" title width.
-        vlan_width = 4;
-    }
+    using Align = ts::TextTable::Align;
+    enum Id {VLAN, SRC, DEST, PROTO, PKTS, BYTES, BITRATE};
 
-    // Title line.
-    out << std::endl;
-    if (vlan_width > 0) {
-        out << ts::UString::Format(u"%-*s  ", vlan_width, u"VLAN");
-    }
-    out << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate") << std::endl;
+    ts::TextTable table;
+    table.addColumn(VLAN, u"VLAN", Align::LEFT);
+    table.addColumn(SRC, u"Source", Align::LEFT);
+    table.addColumn(DEST, u"Destination", Align::LEFT);
+    table.addColumn(PROTO, u"Protocol", Align::LEFT);
+    table.addColumn(PKTS, u"Packets", Align::RIGHT);
+    table.addColumn(BYTES, u"Data bytes", Align::RIGHT);
+    table.addColumn(BITRATE, u"Bitrate", Align::RIGHT);
 
     for (const auto& it : _streams_stats) {
         const StreamId& id(it.first);
         const StatBlock& sb(it.second);
-        if (vlan_width > 0) {
-            out << ts::UString::Format(u"%-*s  ", vlan_width, id.vlans.toString());
-        }
-        out << ts::UString::Format(u"%-22s %-22s %-8s %11'd %15'd %12'd",
-                                   id.source,
-                                   id.destination,
-                                   ts::IPProtocolName(id.protocol),
-                                   sb.packet_count,
-                                   sb.total_data_size,
-                                   duration <= cn::microseconds::zero() ? 0 : ts::BytesBitRate(sb.total_data_size, duration))
-            << std::endl;
+        table.newLine();
+        table.setCell(VLAN, id.vlans.toString());
+        table.setCell(SRC, id.source);
+        table.setCell(DEST, id.destination);
+        table.setCell(PROTO, ts::IPProtocolName(id.protocol));
+        table.setCell(PKTS, ts::UString::Decimal(sb.packet_count));
+        table.setCell(BYTES, ts::UString::Decimal(sb.total_data_size));
+        table.setCell(BITRATE, ts::UString::Decimal(duration <= cn::microseconds::zero() ? 0 : ts::BytesBitRate(sb.total_data_size, duration).toInt()));
     }
+
+    out << std::endl;
+    table.output(out, ts::TextTable::Headers::TEXT, true, u"", u"  ");
     out << std::endl;
 }
 

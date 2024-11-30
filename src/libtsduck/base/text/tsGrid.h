@@ -18,6 +18,7 @@ namespace ts {
     //!
     //! This class produces a report in a grid format with tables and sections.
     //! @ingroup cpp
+    //! @see TextTable
     //!
     class TSDUCKDLL Grid
     {
@@ -138,12 +139,12 @@ namespace ts {
             bool isBorder() const { return _justif == BORDER; }
         private:
             friend class Grid;
-            enum Justif {LEFT, RIGHT, BOTH, BORDER};
-            ColumnLayout(Justif justif, size_t width, UChar pad, Justif truncation);
-            Justif _justif;
-            size_t _width;
-            UChar  _pad;
-            Justif _truncation;
+            enum Justification {LEFT, RIGHT, BOTH, BORDER};
+            ColumnLayout(Justification justif, size_t width, UChar pad, Justification truncation);
+            Justification _justif;
+            size_t        _width;
+            UChar         _pad;
+            Justification _truncation;
         };
 
         //!

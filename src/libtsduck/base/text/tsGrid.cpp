@@ -160,7 +160,7 @@ void ts::Grid::putLine(const UString& left, const UString& right, bool oneLine)
 // Column layout definition.
 //----------------------------------------------------------------------------
 
-ts::Grid::ColumnLayout::ColumnLayout(Justif justif, size_t width, UChar pad, Justif truncation) :
+ts::Grid::ColumnLayout::ColumnLayout(Justification justif, size_t width, UChar pad, Justification truncation) :
     _justif(justif),
     _width(width),
     _pad(pad),

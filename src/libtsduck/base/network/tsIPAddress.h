@@ -209,8 +209,7 @@ namespace ts {
         //!
         //! Check if this address "matches" another one.
         //! @param [in] other Another instance to compare.
-        //! @return False if this and @a other addresses are both specified and
-        //! are different. True otherwise.
+        //! @return False if this and @a other addresses are both specified and are different. True otherwise.
         //!
         bool match(const IPAddress& other) const;
 

@@ -72,7 +72,7 @@ bool ts::IPPacket::reset(const void* data, size_t size)
     }
 
     // Validate and filter by protocol.
-    switch (_proto_type = ip[IPv4_PROTOCOL_OFFSET]) {
+    switch (_proto_type) {
         case IP_SUBPROTO_TCP: {
             if (size < _ip_header_size + TCP_MIN_HEADER_SIZE) {
                 return false; // packet too short

@@ -431,14 +431,25 @@ bool ts::IPAddress::isSSM() const
 
 bool ts::IPAddress::match(const IPAddress& other) const
 {
-    if (_gen != other._gen) {
-        return false;
+    if (!hasAddress() || !other.hasAddress()) {
+        // If any has no address, then it matches the other, even with different IP generation.
+        return true;
     }
     else if (_gen == IP::v6) {
-        return IsZero6(_bytes6) || IsZero6(other._bytes6) || IsEqual6(_bytes6, other._bytes6);
+        if (other._gen == IP::v6) {
+            return IsEqual6(_bytes6, other._bytes6);
+        }
+        else {
+            return isIPv4Mapped() && GetUInt32BE(_bytes6 + 12) == other._addr4;
+        }
     }
     else {
-        return _addr4 == 0 || other._addr4 == 0 || _addr4 == other._addr4;
+        if (other._gen == IP::v4) {
+            return _addr4 == other._addr4;
+        }
+        else {
+            return other.isIPv4Mapped() && GetUInt32BE(other._bytes6 + 12) == _addr4;
+        }
     }
 }
 
