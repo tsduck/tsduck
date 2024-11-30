@@ -61,7 +61,7 @@ void ts::AVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(0xFF, 6);
     buf.putBit(info_present);
     if (info_present) {
-        buf.putBit(has_90kHz);
+        buf.putBit(!has_90kHz);  // inverted logic, note the '!'
         buf.putBits(0xFF, 7);
         if (has_90kHz) {
             buf.putUInt32(N_90khz.value());
@@ -86,7 +86,7 @@ void ts::AVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(6);
     const bool info_present = buf.getBool();
     if (info_present) {
-        const bool has_90kHz = buf.getBool();
+        const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
         buf.skipBits(7);
         if (has_90kHz) {
             N_90khz = buf.getUInt32();
@@ -113,7 +113,7 @@ void ts::AVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         const bool info_present = buf.getBool();
 
         if (info_present && buf.canReadBytes(1)) {
-            const bool has_90kHz = buf.getBool();
+            const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
             buf.skipBits(7);
             if (has_90kHz && buf.canReadBytes(8)) {
                 disp << margin << UString::Format(u"90 kHz: N = %'d", buf.getUInt32());

@@ -66,11 +66,11 @@ void ts::EVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
     const bool has_90kHz = N_90khz.has_value() && K_90khz.has_value();
     const bool info_present = num_units_in_tick.has_value();
     buf.putBit(hrd_management_valid);
-    buf.putBits(0xFF, 6);
+    buf.putReserved(6);
     buf.putBit(info_present);
     if (info_present) {
-        buf.putBit(has_90kHz);
-        buf.putBits(0xFF, 7);
+        buf.putBit(!has_90kHz);  // inverted logic, note the '!'
+        buf.putReserved(7);
         if (has_90kHz) {
             buf.putUInt32(N_90khz.value());
             buf.putUInt32(K_90khz.value());
@@ -87,11 +87,10 @@ void ts::EVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::EVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 {
     hrd_management_valid = buf.getBool();
-    buf.skipBits(6);
-    const bool info_present = buf.getBool();
-    if (info_present) {
-        const bool has_90kHz = buf.getBool();
-        buf.skipBits(7);
+    buf.skipReservedBits(6);
+    if (buf.getBool()) { // info_present
+        const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
+        buf.skipReservedBits(7);
         if (has_90kHz) {
             N_90khz = buf.getUInt32();
             K_90khz = buf.getUInt32();
@@ -111,7 +110,7 @@ void ts::EVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         disp << margin << "HRD management valid: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipReservedBits(6);
         if (buf.getBool()) { // info_present
-            const bool has_90kHz = buf.getBool();
+            const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
             buf.skipReservedBits(7);
             if (has_90kHz && buf.canReadBytes(8)) {
                 disp << margin << UString::Format(u"90 kHz: N = %'d", buf.getUInt32());
