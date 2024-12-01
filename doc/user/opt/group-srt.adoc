@@ -35,7 +35,7 @@ The default is Message API.
 
 [.optdoc]
 Use SRT in caller (or rendezvous) mode.
-The parameter specifies the IPv4 remote address (or host name) and UDP port.
+The parameter specifies the IP remote address (or host name) and UDP port.
 
 [.optdoc]
 If `--listener` is also specified, the SRT socket works in rendezvous mode.
@@ -167,7 +167,7 @@ Recommended value: 0
 
 [.optdoc]
 Use SRT in listener (or rendezvous) mode.
-The parameter specifies the IPv4 local address and UDP port on which the SRT socket listens.
+The parameter specifies the IP local address and UDP port on which the SRT socket listens.
 The address is optional, the port is mandatory.
 
 [.optdoc]

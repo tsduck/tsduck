@@ -831,10 +831,10 @@ $ tspcap test.pcapng
 
 File summary:
   Total packets in file: 704
-  Total IPv4 packets:    698
+  Total IP packets:      698
   File size:             707,960 bytes
   Total packets size:    684,150 bytes
-  Total IPv4 size:       674,018 bytes
+  Total IP size:         674,018 bytes
 
 Filtered packets summary:
   Packets:               698

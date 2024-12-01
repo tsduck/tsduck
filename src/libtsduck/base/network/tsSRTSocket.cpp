@@ -980,6 +980,15 @@ bool ts::SRTSocket::Guts::srtBind(const IPSocketAddress& addr, Report& report)
     ::sockaddr_storage sock_addr;
     const size_t sock_size = addr.get(sock_addr);
 
+    if (addr.generation() == IP::v6) {
+        // The SRT API doc says that "When you bind an IPv6 wildcard address, note that the SRTO_IPV6ONLY
+        // option must be set on the socket explicitly to 1 or 0 prior to calling this function."
+        int32_t opt = 0;
+        if (!setSockOpt(SRTO_IPV6ONLY, "SRTO_IPV6ONLY", &opt, sizeof(opt), report)) {
+            return false;
+        }
+    }
+
     report.debug(u"calling srt_bind(%s)", addr);
     if (::srt_bind(sock, reinterpret_cast<const ::sockaddr*>(&sock_addr), int(sock_size)) < 0) {
         report.error(u"error during srt_bind: %s", ::srt_getlasterror_str());
