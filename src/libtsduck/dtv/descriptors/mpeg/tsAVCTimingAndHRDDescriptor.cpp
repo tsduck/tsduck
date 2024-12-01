@@ -40,8 +40,8 @@ ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor(DuckContext& duck, cons
 void ts::AVCTimingAndHRDDescriptor::clearContent()
 {
     hrd_management_valid = false;
-    N_90khz.reset();
-    K_90khz.reset();
+    N.reset();
+    K.reset();
     num_units_in_tick.reset();
     fixed_frame_rate = false;
     temporal_poc = false;
@@ -55,17 +55,17 @@ void ts::AVCTimingAndHRDDescriptor::clearContent()
 
 void ts::AVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    const bool has_90kHz = N_90khz.has_value() && K_90khz.has_value();
+    const bool is_90kHz = !(N.has_value() && K.has_value()); // time_base is 90kHz unless N and K are specified
     const bool info_present = num_units_in_tick.has_value();
     buf.putBit(hrd_management_valid);
     buf.putBits(0xFF, 6);
     buf.putBit(info_present);
     if (info_present) {
-        buf.putBit(!has_90kHz);  // inverted logic, note the '!'
+        buf.putBit(is_90kHz); 
         buf.putBits(0xFF, 7);
-        if (has_90kHz) {
-            buf.putUInt32(N_90khz.value());
-            buf.putUInt32(K_90khz.value());
+        if (!is_90kHz) {
+            buf.putUInt32(N.value());
+            buf.putUInt32(K.value());
         }
         buf.putUInt32(num_units_in_tick.value());
     }
@@ -86,11 +86,11 @@ void ts::AVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(6);
     const bool info_present = buf.getBool();
     if (info_present) {
-        const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
+        const bool is_90kHz = !buf.getBool();
         buf.skipBits(7);
-        if (has_90kHz) {
-            N_90khz = buf.getUInt32();
-            K_90khz = buf.getUInt32();
+        if (!is_90kHz) {
+            N = buf.getUInt32();
+            K = buf.getUInt32();
         }
         num_units_in_tick = buf.getUInt32();
     }
@@ -113,10 +113,13 @@ void ts::AVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         const bool info_present = buf.getBool();
 
         if (info_present && buf.canReadBytes(1)) {
-            const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
+            const bool is_90kHz = buf.getBool();  // inverted logic, see serializePayload()
             buf.skipBits(7);
-            if (has_90kHz && buf.canReadBytes(8)) {
-                disp << margin << UString::Format(u"90 kHz: N = %'d", buf.getUInt32());
+            if (is_90kHz) {
+                disp << margin << "AVC time base is 90 kHz" << std::endl;
+            }
+            else if (buf.canReadBytes(8)) {
+                disp << margin << UString::Format(u"time_scale: N = %'d", buf.getUInt32());
                 disp << UString::Format(u", K = %'d", buf.getUInt32()) << std::endl;
             }
             if (buf.canReadBytes(4)) {
@@ -140,8 +143,8 @@ void ts::AVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 void ts::AVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"hrd_management_valid", hrd_management_valid);
-    root->setOptionalIntAttribute(u"N_90khz", N_90khz);
-    root->setOptionalIntAttribute(u"K_90khz", K_90khz);
+    root->setOptionalIntAttribute(u"N", N);
+    root->setOptionalIntAttribute(u"K", K);
     root->setOptionalIntAttribute(u"num_units_in_tick", num_units_in_tick);
     root->setBoolAttribute(u"fixed_frame_rate", fixed_frame_rate);
     root->setBoolAttribute(u"temporal_poc", temporal_poc);
@@ -155,11 +158,16 @@ void ts::AVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 
 bool ts::AVCTimingAndHRDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return  element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
-            element->getOptionalIntAttribute(N_90khz, u"N_90khz") &&
-            element->getOptionalIntAttribute(K_90khz, u"K_90khz") &&
-            element->getOptionalIntAttribute(num_units_in_tick, u"num_units_in_tick") &&
-            element->getBoolAttribute(fixed_frame_rate, u"fixed_frame_rate", true) &&
-            element->getBoolAttribute(temporal_poc, u"temporal_poc", true) &&
-            element->getBoolAttribute(picture_to_display_conversion, u"picture_to_display_conversion", true);
+    bool ok = element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
+              element->getOptionalIntAttribute(N, u"N") &&
+              element->getOptionalIntAttribute(K, u"K") &&
+              element->getOptionalIntAttribute(num_units_in_tick, u"num_units_in_tick") &&
+              element->getBoolAttribute(fixed_frame_rate, u"fixed_frame_rate", true) &&
+              element->getBoolAttribute(temporal_poc, u"temporal_poc", true) &&
+              element->getBoolAttribute(picture_to_display_conversion, u"picture_to_display_conversion", true);
+    if (ok && (N.has_value() + K.has_value() == 1)) {
+        element->report().error(u"neither or both of N and K must be specified in <%s>, line %d", element->name(), element->lineNumber());
+        ok = false;
+    }
+    return ok;
 }

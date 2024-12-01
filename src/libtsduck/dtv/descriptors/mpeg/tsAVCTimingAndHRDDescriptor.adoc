@@ -6,8 +6,8 @@ Defined by MPEG in <<ISO-13818-1>>.
 ----
 <AVC_timing_and_HRD_descriptor
     hrd_management_valid="bool, required"
-    N_90khz="uint32, optional"
-    K_90khz="uint32, optional"
+    N="uint32, optional"
+    K="uint32, optional"
     num_units_in_tick="uint32, optional"
     fixed_frame_rate="bool, required"
     temporal_poc="bool, required"
