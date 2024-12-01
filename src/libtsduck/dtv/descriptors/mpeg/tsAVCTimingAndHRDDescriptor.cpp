@@ -86,7 +86,7 @@ void ts::AVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(6);
     const bool info_present = buf.getBool();
     if (info_present) {
-        const bool is_90kHz = !buf.getBool();
+        const bool is_90kHz = buf.getBool();
         buf.skipBits(7);
         if (!is_90kHz) {
             N = buf.getUInt32();
