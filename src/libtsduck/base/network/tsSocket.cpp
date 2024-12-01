@@ -46,7 +46,9 @@ bool ts::Socket::createSocket(IP gen, int type, int protocol, Report& report)
     }
 
     // Set the IPV6_V6ONLY option to zero on IPv6 sockets (can be used in IPv4 or IPv6 communications).
-#if defined(IPV6_V6ONLY)
+    // Warning: With OpenBSD, IPv6 sockets are always IPv6-only, so the socket option IPV6_V6ONLY is read-only
+    // (see "man ip6"). As a consequence, it is impossible to use IPv4 clients on IPv6 sockets.
+#if defined(IPV6_V6ONLY) && !defined(TS_OPENBSD)
     if (_gen == IP::v6) {
         SysSocketV6OnlyType opt = 0;
         if (::setsockopt(_sock, IPPROTO_IPV6, IPV6_V6ONLY, SysSockOptPointer(&opt), sizeof(opt)) != 0) {

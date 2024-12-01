@@ -38,6 +38,10 @@
         #include <openssl/core_names.h>
         #include <openssl/provider.h>
         #include "tsAfterStandardHeaders.h"
+    #elif !defined(OPENSSL_atexit)
+        // OpenBSD uses LibreSSL 4.0.0 which says it is OpenSSL 2.0.0 but
+        // emulates OpenSSL v3, except that OPENSSL_atexit is not available.
+        #define OPENSSL_atexit atexit
     #endif
 #endif
 
