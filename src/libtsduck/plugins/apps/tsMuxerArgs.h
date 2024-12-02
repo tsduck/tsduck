@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsPluginOptions.h"
+#include "tsAbstractTable.h"
 
 namespace ts {
 

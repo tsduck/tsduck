@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTransportProtocolDescriptor.h"
+#include "tsDVB.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"

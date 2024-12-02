@@ -20,6 +20,23 @@
 
 namespace ts {
     //!
+    //! Define the scope of tables which can apply to actual or other TS.
+    //! Those tables are typically NIT, SDT and EIT.
+    //! This enum type can be used to select a subset of such tables.
+    //!
+    enum class TableScope {
+        NONE,    //!< Select no table at all.
+        ACTUAL,  //!< Select "actual" tables only, ignore "other" tables.
+        ALL,     //!< Select all tables, "actual" and "other".
+    };
+
+    //!
+    //! Enumeration description of TableScope values.
+    //! Typically used to implement command line options.
+    //!
+    TS_DECLARE_GLOBAL(const, Enumeration, TableScopeEnum);
+
+    //!
     //! Abstract base class for MPEG PSI/SI tables.
     //! @ingroup table
     //!

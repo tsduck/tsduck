@@ -14,6 +14,7 @@
 #include "tsMGT.h"
 #include "tsCVCT.h"
 #include "tsTVCT.h"
+#include "tsATSC.h"
 
 
 //----------------------------------------------------------------------------

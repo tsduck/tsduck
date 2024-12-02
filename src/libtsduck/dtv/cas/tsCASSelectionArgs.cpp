@@ -9,6 +9,7 @@
 #include "tsCASSelectionArgs.h"
 #include "tsPIDOperator.h"
 #include "tsArgs.h"
+#include "tsCAS.h"
 
 const std::vector<ts::CASSelectionArgs::PredefinedCAS> ts::CASSelectionArgs::_predefined_cas{
     {u"conax",       CASID_CONAX_MIN,      CASID_CONAX_MAX},

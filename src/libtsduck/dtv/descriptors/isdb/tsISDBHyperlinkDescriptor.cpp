@@ -21,7 +21,7 @@
 #define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::Standards::ISDB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 constexpr auto LINK_TO_SERVICE = 0x01;
 constexpr auto LINK_TO_EVENT = 0x02;

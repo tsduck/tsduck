@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsRST.h"
+#include "tsDVB.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
@@ -21,20 +22,6 @@
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection, nullptr, {MY_PID});
-
-
-//----------------------------------------------------------------------------
-// Definition of names for running status values.
-//----------------------------------------------------------------------------
-
-const ts::Enumeration ts::RST::RunningStatusNames({
-    {u"undefined",   RS_UNDEFINED},
-    {u"not-running", RS_NOT_RUNNING},
-    {u"starting",    RS_STARTING},
-    {u"pausing",     RS_PAUSING},
-    {u"running",     RS_RUNNING},
-    {u"off-air",     RS_OFF_AIR},
-});
 
 
 //----------------------------------------------------------------------------
@@ -122,7 +109,7 @@ void ts::RST::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << UString::Format(u", Service: %n", buf.getUInt16());
         disp << UString::Format(u", Event: %n", buf.getUInt16());
         buf.skipReservedBits(5);
-        disp << ", Status: " << RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
+        disp << ", Status: " << RunningStatusEnum->name(buf.getBits<uint8_t>(3)) << std::endl;
     }
 }
 
@@ -139,7 +126,7 @@ void ts::RST::buildXML(DuckContext& duck, xml::Element* root) const
         e->setIntAttribute(u"original_network_id", it.original_network_id, true);
         e->setIntAttribute(u"service_id", it.service_id, true);
         e->setIntAttribute(u"event_id", it.event_id, true);
-        e->setEnumAttribute(RunningStatusNames, u"running_status", it.running_status);
+        e->setEnumAttribute(*RunningStatusEnum, u"running_status", it.running_status);
     }
 }
 
@@ -159,7 +146,7 @@ bool ts::RST::analyzeXML(DuckContext& duck, const xml::Element* element)
              children[index]->getIntAttribute(event.original_network_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
              children[index]->getIntAttribute(event.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
              children[index]->getIntAttribute(event.event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-             children[index]->getIntEnumAttribute(event.running_status, RunningStatusNames, u"running_status", true);
+             children[index]->getIntEnumAttribute(event.running_status, *RunningStatusEnum, u"running_status", true);
         if (ok) {
             events.push_back(event);
         }

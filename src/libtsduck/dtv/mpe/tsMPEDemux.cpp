@@ -10,6 +10,7 @@
 #include "tsMPEPacket.h"
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
+#include "tsDVB.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsIPMACStreamLocationDescriptor.h"
 

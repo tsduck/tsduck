@@ -47,11 +47,6 @@ namespace ts {
         EventList events {};  //!< List of events with a running status.
 
         //!
-        //! Definition of names for running status values.
-        //!
-        static const Enumeration RunningStatusNames;
-
-        //!
         //! Default constructor.
         //!
         RST();

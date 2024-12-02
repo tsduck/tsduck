@@ -15,12 +15,12 @@
 #include "tsFileUtils.h"
 #include "tsErrCodeReport.h"
 #include "tsDuckContext.h"
-#include "tsCASFamily.h"
 #include "tsMPEG2.h"
 #include "tsAVC.h"
 #include "tsCodecType.h"
 #include "tsDVBAC3Descriptor.h"
 #include "tsComponentDescriptor.h"
+#include "tsCAS.h"
 #include "tsPES.h"
 #include "tsunit.h"
 

@@ -739,7 +739,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
     EDID edid;
     if (did >= 0x80) {
         // Private descriptor.
-        edid = EDID::Private(did, _duck.actualPDS(pds));
+        edid = EDID::PrivateDVB(did, _duck.actualPDS(pds));
     }
     else if (did == DID_MPEG_EXTENSION && size >= 1) {
         // MPEG extension descriptor, the extension id is in the first byte of the payload.

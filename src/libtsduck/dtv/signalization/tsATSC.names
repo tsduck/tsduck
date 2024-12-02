@@ -1,0 +1,31 @@
+[ATSCTableType]
+# table_type in ATSC MGT
+Bits = 16
+0x0000 = Terrestrial VCT with current_next_indicator=’1’
+0x0001 = Terrestrial VCT with current_next_indicator=’0’
+0x0002 = Cable VCT with current_next_indicator=’1’
+0x0003 = Cable VCT with current_next_indicator=’0’
+0x0004 = Channel ETT
+0x0005 = DCCSCT
+0x0100-0x017F = EIT-0 to EIT-127
+0x0200-0x027F = Event ETT-0 to event ETT-127
+0x0301-0x03FF = RRT with rating_region 1-255
+0x1400-0x14FF = DCCT with dcc_id 0x00 – 0xFF
+
+[ATSCModulationModes]
+# modulation_mode in ATSC VCT
+Bits = 8
+0x01 = Analog
+0x02 = SCTE mode 1 (64-QAM)
+0x03 = SCTE mode 2 (256-QAM)
+0x04 = ATSC 8-VSB
+0x05 = ATSC 16-VSB
+
+[ATSCServiceType]
+# service type in ATSC VCT
+Bits = 6
+0x01 = Analog Television
+0x02 = ATSC Digital Television
+0x03 = ATSC Audio
+0x04 = ATSC Data Only Service
+0x05 = ATSC Software Download Service

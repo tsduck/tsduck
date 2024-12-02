@@ -12,6 +12,7 @@
 #include "tsTSPacket.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
+#include "tsATSC.h"
 #include "tsLogicalChannelNumbers.h"
 
 #define BUFFER_PACKET_COUNT  10000 // packets

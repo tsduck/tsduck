@@ -21,7 +21,7 @@
 #define MY_PDS ts::PDS_AVSVideo
 #define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // T/AI 109.2 Table B.1
 const std::vector<uint8_t> ts::AVS3VideoDescriptor::valid_profile_ids {

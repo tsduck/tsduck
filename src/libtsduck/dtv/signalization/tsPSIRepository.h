@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsTS.h"
+#include "tsCAS.h"
 #include "tsEDID.h"
 #include "tsStandards.h"
 #include "tsTablesPtr.h"

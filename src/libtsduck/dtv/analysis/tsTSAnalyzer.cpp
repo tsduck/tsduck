@@ -10,6 +10,7 @@
 #include "tsT2MIPacket.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
+#include "tsATSC.h"
 #include "tsServiceDescriptor.h"
 #include "tsNetworkNameDescriptor.h"
 #include "tsAACDescriptor.h"
@@ -19,7 +20,7 @@
 #include "tsISDBTInformation.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
-#include "tsCASFamily.h"
+#include "tsCAS.h"
 #include "tsNames.h"
 #include "tsAlgorithm.h"
 

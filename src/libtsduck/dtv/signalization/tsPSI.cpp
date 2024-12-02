@@ -9,12 +9,6 @@
 #include "tsPSI.h"
 
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::TableScopeEnum, ({
-    {u"none",   ts::TableScope::NONE},
-    {u"actual", ts::TableScope::ACTUAL},
-    {u"all",    ts::TableScope::ALL},
-}));
-
 TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PrivateDataSpecifierEnum, ({
     {u"BskyB",     ts::PDS_BSKYB},
     {u"Nagra",     ts::PDS_NAGRA},
@@ -109,7 +103,7 @@ bool ts::StreamTypeIsHEVC(uint8_t st)
 
 bool ts::StreamTypeIsVVC(uint8_t st)
 {
-    return st == ST_VVC_VIDEO        ||
+    return st == ST_VVC_VIDEO ||
            st == ST_VVC_VIDEO_SUBSET;
 }
 

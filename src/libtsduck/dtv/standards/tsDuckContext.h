@@ -17,6 +17,7 @@
 #include "tsCharset.h"
 #include "tsStandards.h"
 #include "tsPSI.h"
+#include "tsCAS.h"
 
 namespace ts {
 

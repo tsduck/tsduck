@@ -68,7 +68,7 @@ ts::EDID ts::AbstractDescriptor::edid(TID tid) const
     }
     else if (_required_pds != 0) {
         // Private descriptor.
-        return EDID::Private(_tag, _required_pds);
+        return EDID::PrivateDVB(_tag, _required_pds);
     }
     else if (_tag == DID_DVB_EXTENSION) {
         // DVB extension descriptor.

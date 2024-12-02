@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsVCT.h"
+#include "tsATSC.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIBuffer.h"

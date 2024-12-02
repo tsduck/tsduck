@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNames.h"
-#include "tsCASFamily.h"
+#include "tsCAS.h"
 #include "tsDuckContext.h"
 
 

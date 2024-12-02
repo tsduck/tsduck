@@ -138,7 +138,7 @@ ts::EDID ts::Descriptor::edid(PDS pds, TID tid) const
     }
     else if (did >= 0x80) {
         // Private descriptor.
-        return EDID::Private(did, pds);
+        return EDID::PrivateDVB(did, pds);
     }
     else if (did == DID_DVB_EXTENSION && payloadSize() > 0) {
         // DVB extension descriptor.
