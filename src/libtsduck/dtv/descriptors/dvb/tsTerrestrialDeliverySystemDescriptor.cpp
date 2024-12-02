@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"terrestrial_delivery_system_descriptor"
 #define MY_CLASS ts::TerrestrialDeliverySystemDescriptor
-#define MY_DID ts::DID_TERREST_DELIVERY
+#define MY_DID ts::DID_DVB_TERREST_DELIVERY
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

@@ -458,7 +458,7 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // Update the network name.
     if (!_new_netw_name.empty()) {
         // Remove previous network_name_descriptor, if any.
-        nit.descs.removeByTag(DID_NETWORK_NAME);
+        nit.descs.removeByTag(DID_DVB_NETWORK_NAME);
         // Add a new network_name_descriptor
         nit.descs.add(duck, NetworkNameDescriptor(_new_netw_name));
     }
@@ -500,7 +500,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     }
 
     // Process all terrestrial_delivery_system_descriptors
-    for (size_t i = dlist.search(DID_TERREST_DELIVERY); i < dlist.count(); i = dlist.search(DID_TERREST_DELIVERY, i + 1)) {
+    for (size_t i = dlist.search(DID_DVB_TERREST_DELIVERY); i < dlist.count(); i = dlist.search(DID_DVB_TERREST_DELIVERY, i + 1)) {
 
         uint8_t* base = dlist[i]->payload();
         size_t size = dlist[i]->payloadSize();
@@ -516,7 +516,7 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     }
 
     // Process all linkage descriptors
-    for (size_t i = dlist.search(DID_LINKAGE); i < dlist.count(); i = dlist.search(DID_LINKAGE, i + 1)) {
+    for (size_t i = dlist.search(DID_DVB_LINKAGE); i < dlist.count(); i = dlist.search(DID_DVB_LINKAGE, i + 1)) {
 
         uint8_t* base = dlist[i]->payload();
         size_t size = dlist[i]->payloadSize();
@@ -531,11 +531,11 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     // Process all service_list_descriptors
     if (_sld_oper == LCN_REMOVE) {
         // Completely remove all service_list_descriptors
-        dlist.removeByTag(DID_SERVICE_LIST);
+        dlist.removeByTag(DID_DVB_SERVICE_LIST);
     }
     else {
         // Modify all service_list_descriptors
-        for (size_t i = dlist.search(DID_SERVICE_LIST); i < dlist.count(); i = dlist.search(DID_SERVICE_LIST, i + 1)) {
+        for (size_t i = dlist.search(DID_DVB_SERVICE_LIST); i < dlist.count(); i = dlist.search(DID_DVB_SERVICE_LIST, i + 1)) {
 
             uint8_t* base = dlist[i]->payload();
             size_t size = dlist[i]->payloadSize();
@@ -581,13 +581,13 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
     // Process all logical_channel_number_descriptors
     if (_lcn_oper == LCN_REMOVE) {
         // Completely remove all LCN descriptors
-        dlist.removeByTag(DID_LOGICAL_CHANNEL_NUM, PDS_EICTA);
+        dlist.removeByTag(DID_EACEM_LCN, PDS_EICTA);
     }
     else {
         // Modify all LCN descriptors
-        for (size_t i = dlist.search(DID_LOGICAL_CHANNEL_NUM, 0, PDS_EICTA);
+        for (size_t i = dlist.search(DID_EACEM_LCN, 0, PDS_EICTA);
              i < dlist.count();
-             i = dlist.search(DID_LOGICAL_CHANNEL_NUM, i + 1, PDS_EICTA)) {
+             i = dlist.search(DID_EACEM_LCN, i + 1, PDS_EICTA)) {
 
             uint8_t* base = dlist[i]->payload();
             size_t size = dlist[i]->payloadSize();
@@ -666,7 +666,7 @@ void ts::NITPlugin::updateServiceList(NIT& nit)
             NIT::Transport& ts(nit.transports[tsid]);
 
             // Search an existing service list descriptor in this description.
-            const size_t sld_index = ts.descs.search(DID_SERVICE_LIST);
+            const size_t sld_index = ts.descs.search(DID_DVB_SERVICE_LIST);
 
             if (sld_index >= ts.descs.size()) {
                 // No service list descriptor present, just add the collected one.
@@ -686,7 +686,7 @@ void ts::NITPlugin::updateServiceList(NIT& nit)
                     desc = sld;
                 }
                 // Remove all existing service list descriptors and add the merged one.
-                ts.descs.removeByTag(DID_SERVICE_LIST);
+                ts.descs.removeByTag(DID_DVB_SERVICE_LIST);
                 ts.descs.add(duck, desc);
             }
         }

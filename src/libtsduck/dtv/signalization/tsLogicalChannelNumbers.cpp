@@ -64,11 +64,11 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
             const PDS pds = _duck.actualPDS(descs.privateDataSpecifier(index));
 
             // Check all known forms of LCN descriptors.
-            if (pds == PDS_EACEM && tag == DID_LOGICAL_CHANNEL_NUM) {
+            if (pds == PDS_EACEM && tag == DID_EACEM_LCN) {
                 const EacemLogicalChannelNumberDescriptor desc(_duck, *ptr);
                 count += addFromAbstractLCN(desc, ts_id, onet_id);
             }
-            else if (pds == PDS_EACEM && tag == DID_HD_SIMULCAST_LCN) {
+            else if (pds == PDS_EACEM && tag == DID_EACEM_HD_SIMULCAST_LCN) {
                 const EacemHDSimulcastLogicalChannelDescriptor desc(_duck, *ptr);
                 count += addFromAbstractLCN(desc, ts_id, onet_id);
             }
@@ -80,7 +80,7 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
                 DTGHDSimulcastLogicalChannelDescriptor desc(_duck, *ptr);
                 count += addFromAbstractLCN(desc, ts_id, onet_id);
             }
-            else if (pds == PDS_BSKYB && tag == DID_LOGICAL_CHANNEL_SKY) {
+            else if (pds == PDS_BSKYB && tag == DID_SKY_LCN) {
                 SkyLogicalChannelNumberDescriptor desc(_duck, *ptr);
                 if (desc.isValid()) {
                     for (const auto& it : desc.entries) {

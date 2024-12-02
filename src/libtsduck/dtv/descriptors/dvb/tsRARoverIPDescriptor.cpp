@@ -17,7 +17,7 @@
 
 #define MY_XML_NAME u"RAR_over_IP_descriptor"
 #define MY_CLASS ts::RARoverIPDescriptor
-#define MY_DID ts::DVB_RNT_RAR_OVER_IP
+#define MY_DID ts::DID_RNT_RAR_OVER_IP
 #define MY_TID ts::TID_RNT
 #define MY_STD ts::Standards::MPEG
 

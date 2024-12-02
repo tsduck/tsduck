@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"deferred_association_tags_descriptor"
 #define MY_CLASS ts::DeferredAssociationTagsDescriptor
-#define MY_DID ts::DID_DEFERRED_ASSOC_TAGS
+#define MY_DID ts::DID_MPEG_DEFERRED_ASSOC_TAGS
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

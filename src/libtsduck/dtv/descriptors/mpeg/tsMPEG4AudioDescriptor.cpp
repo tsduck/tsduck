@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"MPEG4_audio_descriptor"
 #define MY_CLASS ts::MPEG4AudioDescriptor
-#define MY_DID ts::DID_MPEG4_AUDIO
+#define MY_DID ts::DID_MPEG_MPEG4_AUDIO
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"AV1_video_descriptor"
 #define MY_CLASS ts::AV1VideoDescriptor
-#define MY_DID ts::DID_AV1_VIDEO
+#define MY_DID ts::DID_AOM_AV1_VIDEO
 #define MY_PDS ts::PDS_AOM
 #define MY_STD ts::Standards::DVB
 

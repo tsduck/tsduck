@@ -676,12 +676,12 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
              << desc_length << " bytes" << std::endl;
 
         // If the descriptor contains a registration id, keep it in the TSDuck context.
-        if (desc_tag == DID_REGISTRATION && desc_length >= 4) {
+        if (desc_tag == DID_MPEG_REGISTRATION && desc_length >= 4) {
             _duck.addRegistrationId(GetUInt32(desc_start));
         }
 
         // If the descriptor contains a private_data_specifier, keep it to establish a private context.
-        if (desc_tag == DID_PRIV_DATA_SPECIF && desc_length >= 4) {
+        if (desc_tag == DID_DVB_PRIV_DATA_SPECIF && desc_length >= 4) {
             pds = GetUInt32(desc_start);
             // PDS zero means return to default value.
             if (pds == 0) {

@@ -93,7 +93,7 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
 {
     for (size_t i = 0; i < descs.count(); ++i) {
         const DescriptorPtr& desc(descs[i]);
-        if (desc != nullptr && desc->tag() == DID_CA) {
+        if (desc != nullptr && desc->tag() == DID_MPEG_CA) {
             const CADescriptorPtr cadesc(new CADescriptor(_duck, *desc));
             if (cadesc != nullptr && cadesc->isValid()) {
                 const std::string cas_name(names::CASId(_duck, cadesc->cas_id).toUTF8());

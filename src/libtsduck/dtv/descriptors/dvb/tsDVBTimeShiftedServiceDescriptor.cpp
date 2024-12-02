@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"DVB_time_shifted_service_descriptor"
 #define MY_XML_NAME_LEGACY u"time_shifted_service_descriptor"
 #define MY_CLASS ts::DVBTimeShiftedServiceDescriptor
-#define MY_DID ts::DID_TIME_SHIFT_SERVICE
+#define MY_DID ts::DID_DVB_TIME_SHIFT_SERVICE
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);

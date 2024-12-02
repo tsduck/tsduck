@@ -248,17 +248,17 @@ TSUNIT_DEFINE_TEST(Content)
 
 TSUNIT_DEFINE_TEST(DID)
 {
-    TSUNIT_EQUAL(u"CA", ts::names::DID(ts::DID_CA));
-    TSUNIT_EQUAL(u"ISO-639 Language", ts::names::DID(ts::DID_LANGUAGE));
-    TSUNIT_EQUAL(u"Data Broadcast Id", ts::names::DID(ts::DID_DATA_BROADCAST_ID));
-    TSUNIT_EQUAL(u"unknown (0x83)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM));
-    TSUNIT_EQUAL(u"Logical Channel Number", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM));
-    TSUNIT_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM, ts::TID_NULL, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"CA", ts::names::DID(ts::DID_MPEG_CA));
+    TSUNIT_EQUAL(u"ISO-639 Language", ts::names::DID(ts::DID_MPEG_LANGUAGE));
+    TSUNIT_EQUAL(u"Data Broadcast Id", ts::names::DID(ts::DID_DVB_DATA_BROADCAST_ID));
+    TSUNIT_EQUAL(u"unknown (0x83)", ts::names::DID(ts::DID_EACEM_LCN));
+    TSUNIT_EQUAL(u"Logical Channel Number", ts::names::DID(ts::DID_EACEM_LCN, ts::PDS_EACEM));
+    TSUNIT_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_EACEM_LCN, ts::PDS_EACEM, ts::TID_NULL, ts::NamesFlags::FIRST));
 }
 
 TSUNIT_DEFINE_TEST(EDID)
 {
-    TSUNIT_EQUAL(u"T2 Delivery System", ts::names::EDID(ts::EDID_T2_DELIVERY));
+    TSUNIT_EQUAL(u"T2 Delivery System", ts::names::EDID(ts::EDID_DVB_T2_DELIVERY));
 }
 
 TSUNIT_DEFINE_TEST(StreamType)

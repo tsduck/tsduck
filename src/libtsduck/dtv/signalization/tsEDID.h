@@ -42,7 +42,7 @@ namespace ts {
         // - 32-bit: PDS (or PDS_NULL)
         // - 8-bit: unused (0xFF)
         // - 8-bit: table-id for table-specific descriptors (or TID_NULL)
-        // - 8-bit: tag extension (or EDID_NULL)
+        // - 8-bit: tag extension (or EDID_DVB_NULL)
         // - 8-bit: descriptor tag (DID)
         uint64_t _edid = 0xFFFFFFFFFFFFFFFF;
 
@@ -132,19 +132,19 @@ namespace ts {
         //! Check if the descriptor is an MPEG extension descriptor.
         //! @return True if the descriptor is an MPEG extension descriptor.
         //!
-        bool isExtensionMPEG() const { return didExtMPEG() != MPEG_EDID_NULL; }
+        bool isExtensionMPEG() const { return didExtMPEG() != EDID_NULL; }
 
         //!
         //! Get the DVB descriptor tag extension.
-        //! @return The descriptor tag extension or EDID_NULL if this is not a DVB extension descriptor.
+        //! @return The descriptor tag extension or EDID_DVB_NULL if this is not a DVB extension descriptor.
         //!
         DID didExtDVB() const { return did() == DID_DVB_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
 
         //!
         //! Get the MPEG descriptor tag extension.
-        //! @return The descriptor tag extension or MPEG_EDID_NULL if this is not an MPEG extension descriptor.
+        //! @return The descriptor tag extension or EDID_MPEG_NULL if this is not an MPEG extension descriptor.
         //!
-        DID didExtMPEG() const { return did() == DID_MPEG_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(MPEG_EDID_NULL); }
+        DID didExtMPEG() const { return did() == DID_MPEG_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
 
         //!
         //! Check if the descriptor is table-specific.

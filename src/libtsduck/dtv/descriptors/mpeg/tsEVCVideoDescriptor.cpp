@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"EVC_video_descriptor"
 #define MY_CLASS ts::EVCVideoDescriptor
-#define MY_DID ts::DID_EVC_VIDEO
+#define MY_DID ts::DID_MPEG_EVC_VIDEO
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

@@ -593,7 +593,7 @@ void ts::PSIMerger::mergeCAT()
     cat.version = (cat.version + 1) & SVERSION_MASK;
 
     // Add all CA descriptors from merged stream into main CAT.
-    for (size_t index = _merge_cat.descs.search(DID_CA); index < _merge_cat.descs.count(); index = _merge_cat.descs.search(DID_CA, index + 1)) {
+    for (size_t index = _merge_cat.descs.search(DID_MPEG_CA); index < _merge_cat.descs.count(); index = _merge_cat.descs.search(DID_MPEG_CA, index + 1)) {
         const CADescriptor ca(_duck, *_merge_cat.descs[index]);
         // Check if the same EMM PID already exists in the main CAT.
         if (CADescriptor::SearchByPID(_main_cat.descs, ca.ca_pid) < _main_cat.descs.count()) {

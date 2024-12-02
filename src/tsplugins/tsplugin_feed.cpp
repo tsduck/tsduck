@@ -209,7 +209,7 @@ void ts::FeedPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 }
                 // Look for (incorrectly placed) service descriptor.
                 ServiceDescriptor sd;
-                if (pmt.descs.search(duck, DID_SERVICE, sd) < pmt.descs.size()) {
+                if (pmt.descs.search(duck, DID_DVB_SERVICE, sd) < pmt.descs.size()) {
                     debug(u"service %n has type %n", pmt.service_id, sd.service_type);
                     _service_types[pmt.service_id] = sd.service_type;
                 }

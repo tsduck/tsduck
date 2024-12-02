@@ -228,7 +228,7 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
             size_t size = dlist[index]->payloadSize();
 
             switch (dlist[index]->tag()) {
-                case DID_CA: {
+                case DID_MPEG_CA: {
                     // The fixed part of a CA descriptor is 4 bytes long.
                     // Ignore CA descriptors if we do not need ECM's.
                     if (_need_ecm && size >= 4) {
@@ -247,7 +247,7 @@ void ts::AbstractDescrambler::analyzeDescriptors(const DescriptorList& dlist, st
                     }
                     break;
                 }
-                case DID_SCRAMBLING: {
+                case DID_DVB_SCRAMBLING: {
                     // A scrambling descriptor contains one byte.
                     if (size >= 1) {
                         scrambling = desc[0];

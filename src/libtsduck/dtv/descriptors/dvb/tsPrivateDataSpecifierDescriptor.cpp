@@ -17,7 +17,7 @@
 
 #define MY_XML_NAME u"private_data_specifier_descriptor"
 #define MY_CLASS ts::PrivateDataSpecifierDescriptor
-#define MY_DID ts::DID_PRIV_DATA_SPECIF
+#define MY_DID ts::DID_DVB_PRIV_DATA_SPECIF
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

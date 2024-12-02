@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"MPEGH_3D_audio_descriptor"
 #define MY_CLASS ts::MPEGH3DAudioDescriptor
 #define MY_DID ts::DID_MPEG_EXTENSION
-#define MY_EDID ts::MPEG_EDID_MPH3D_AUDIO
+#define MY_EDID ts::EDID_MPEG_MPH3D_AUDIO
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

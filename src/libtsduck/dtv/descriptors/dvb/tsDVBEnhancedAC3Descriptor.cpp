@@ -18,7 +18,7 @@
 #define MY_XML_NAME u"DVB_enhanced_AC3_descriptor"
 #define MY_XML_NAME_LEGACY u"enhanced_AC3_descriptor"
 #define MY_CLASS ts::DVBEnhancedAC3Descriptor
-#define MY_DID ts::DID_ENHANCED_AC3
+#define MY_DID ts::DID_DVB_ENHANCED_AC3
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);

@@ -17,7 +17,7 @@
 
 #define MY_XML_NAME u"data_broadcast_id_descriptor"
 #define MY_CLASS ts::DataBroadcastIdDescriptor
-#define MY_DID ts::DID_DATA_BROADCAST_ID
+#define MY_DID ts::DID_DVB_DATA_BROADCAST_ID
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

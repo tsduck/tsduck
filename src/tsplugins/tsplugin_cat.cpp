@@ -132,7 +132,7 @@ void ts::CATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Remove descriptors
-    for (size_t index = cat.descs.search(DID_CA); index < cat.descs.count(); index = cat.descs.search(DID_CA, index)) {
+    for (size_t index = cat.descs.search(DID_MPEG_CA); index < cat.descs.count(); index = cat.descs.search(DID_MPEG_CA, index)) {
         bool remove_it = false;
         const CADescriptor desc(duck, *(cat.descs[index]));
         if (desc.isValid()) {

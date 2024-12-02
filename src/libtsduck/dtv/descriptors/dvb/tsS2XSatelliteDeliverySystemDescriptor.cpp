@@ -18,7 +18,7 @@
 #define MY_XML_NAME u"S2X_satellite_delivery_system_descriptor"
 #define MY_CLASS ts::S2XSatelliteDeliverySystemDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_S2X_DELIVERY
+#define MY_EDID ts::EDID_DVB_S2X_DELIVERY
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

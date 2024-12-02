@@ -11,7 +11,7 @@
 
 #define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
 #define MY_CLASS ts::EacemPreferredNameListDescriptor
-#define MY_DID ts::DID_PREF_NAME_LIST
+#define MY_DID ts::DID_EACEM_PREF_NAME_LIST
 #define MY_PDS ts::PDS_EACEM
 #define MY_STD ts::Standards::DVB
 

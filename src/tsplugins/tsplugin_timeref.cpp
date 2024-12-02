@@ -377,7 +377,7 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
             if (_update_local && desc_end <= section_end) {
                 while (desc + 2 <= desc_end) {
                     const size_t desc_len = desc[1];
-                    if (desc + 2 + desc_len <= desc_end && desc[0] == DID_LOCAL_TIME_OFFSET) {
+                    if (desc + 2 + desc_len <= desc_end && desc[0] == DID_DVB_LOCAL_TIME_OFFSET) {
                         processLocalTime(desc + 2, desc_len);
                     }
                     desc += 2 + desc_len;

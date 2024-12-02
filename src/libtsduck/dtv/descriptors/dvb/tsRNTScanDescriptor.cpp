@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"RNT_scan_descriptor"
 #define MY_CLASS ts::RNTScanDescriptor
-#define MY_DID ts::DVB_RNT_SCAN
+#define MY_DID ts::DID_RNT_SCAN
 #define MY_TID ts::TID_RNT
 #define MY_STD ts::Standards::MPEG
 

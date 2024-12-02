@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"supplementary_audio_descriptor"
 #define MY_CLASS ts::SupplementaryAudioDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_SUPPL_AUDIO
+#define MY_EDID ts::EDID_DVB_SUPPL_AUDIO
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

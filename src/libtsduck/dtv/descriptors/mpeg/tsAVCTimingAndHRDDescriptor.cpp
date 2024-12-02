@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"AVC_timing_and_HRD_descriptor"
 #define MY_CLASS ts::AVCTimingAndHRDDescriptor
-#define MY_DID ts::DID_AVC_TIMING_HRD
+#define MY_DID ts::DID_MPEG_AVC_TIMING_HRD
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

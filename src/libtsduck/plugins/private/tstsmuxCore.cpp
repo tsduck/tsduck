@@ -682,7 +682,7 @@ void ts::tsmux::Core::Input::handleCAT(const CAT& cat)
     bool modified = false;
 
     // Add all CA descriptors from input CAT into output CAT.
-    for (size_t index = cat.descs.search(DID_CA); index < cat.descs.count(); index = cat.descs.search(DID_CA, index + 1)) {
+    for (size_t index = cat.descs.search(DID_MPEG_CA); index < cat.descs.count(); index = cat.descs.search(DID_MPEG_CA, index + 1)) {
         const CADescriptor ca(_core._duck, *cat.descs[index]);
         if (ca.isValid()) {
             // Origin of the corresponding EMM PID.

@@ -18,7 +18,7 @@
 // syntax. It can be converted to XML, as a <linkage_descriptor>.
 
 #define MY_XML_NAME u"linkage_descriptor"
-#define MY_DID ts::DID_LINKAGE
+#define MY_DID ts::DID_DVB_LINKAGE
 #define MY_STD ts::Standards::DVB
 
 

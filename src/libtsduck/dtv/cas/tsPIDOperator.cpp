@@ -83,7 +83,7 @@ void ts::PIDOperatorSet::addAllOperators(const DescriptorList& dlist, bool is_ca
 void ts::PIDOperatorSet::addMediaGuardPMT(const DescriptorList& dlist)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
         const uint8_t* desc = dlist[index]->payload();
@@ -120,7 +120,7 @@ void ts::PIDOperatorSet::addMediaGuardPMT(const DescriptorList& dlist)
 void ts::PIDOperatorSet::addMediaGuardCAT(const DescriptorList& dlist)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
         const uint8_t* desc = dlist[index]->payload();
@@ -173,7 +173,7 @@ void ts::PIDOperatorSet::addMediaGuardCAT(const DescriptorList& dlist)
 void ts::PIDOperatorSet::addSafeAccessCAT(const DescriptorList& dlist)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
         const uint8_t* desc = dlist[index]->payload();
@@ -211,7 +211,7 @@ void ts::PIDOperatorSet::addSafeAccessCAT(const DescriptorList& dlist)
 void ts::PIDOperatorSet::addViaccess(const DescriptorList& dlist, bool is_cat)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
         const uint8_t* desc = dlist[index]->payload();

@@ -19,7 +19,7 @@
 // syntax. It can be converted to XML, as a <data_broadcast_id_descriptor>.
 
 #define MY_XML_NAME u"data_broadcast_id_descriptor"
-#define MY_DID ts::DID_DATA_BROADCAST_ID
+#define MY_DID ts::DID_DVB_DATA_BROADCAST_ID
 #define MY_STD ts::Standards::DVB
 
 

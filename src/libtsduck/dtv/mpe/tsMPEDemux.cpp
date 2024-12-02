@@ -184,7 +184,7 @@ void ts::MPEDemux::processPMT(const PMT& pmt)
         const PMT::Stream& stream(it.second);
 
         // Loop on all data_broadcast_id_descriptors for the component.
-        for (size_t i = stream.descs.search(DID_DATA_BROADCAST_ID); i < stream.descs.count(); i = stream.descs.search(DID_DATA_BROADCAST_ID, i + 1)) {
+        for (size_t i = stream.descs.search(DID_DVB_DATA_BROADCAST_ID); i < stream.descs.count(); i = stream.descs.search(DID_DVB_DATA_BROADCAST_ID, i + 1)) {
             if (stream.descs[i] != nullptr) {
                 const DataBroadcastIdDescriptor desc(_duck, *stream.descs[i]);
                 if (desc.isValid()) {

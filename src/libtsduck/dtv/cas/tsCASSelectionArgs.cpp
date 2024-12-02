@@ -170,7 +170,7 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList&
     }
     else {
         // No filtering by operator, loop on all CA descriptors.
-        for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+        for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
             const uint8_t* desc = dlist[index]->payload();
             const size_t size = dlist[index]->payloadSize();
             if (size >= 4) {

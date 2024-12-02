@@ -146,7 +146,7 @@ void ts::RMOrphanPlugin::passPredefinedPIDs(Standards standards, PID first, PID 
 void ts::RMOrphanPlugin::addCA(const DescriptorList& dlist, TID parent_table)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
         CADescriptor ca(duck, *dlist[index]);
         if (!ca.isValid()) {
             // Cannot deserialize a valid CA descriptor, ignore it

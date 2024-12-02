@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"country_availability_descriptor"
 #define MY_CLASS ts::CountryAvailabilityDescriptor
-#define MY_DID ts::DID_COUNTRY_AVAIL
+#define MY_DID ts::DID_DVB_COUNTRY_AVAIL
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

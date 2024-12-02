@@ -12,7 +12,7 @@
 #define MY_XML_NAME u"eacem_HD_simulcast_logical_channel_descriptor"
 #define MY_XML_NAME_LEGACY u"HD_simulcast_logical_channel_descriptor"
 #define MY_CLASS ts::EacemHDSimulcastLogicalChannelDescriptor
-#define MY_DID ts::DID_HD_SIMULCAST_LCN
+#define MY_DID ts::DID_EACEM_HD_SIMULCAST_LCN
 #define MY_PDS ts::PDS_EACEM
 #define MY_STD ts::Standards::DVB
 

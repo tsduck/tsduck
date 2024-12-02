@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"default_authority_descriptor"
 #define MY_CLASS ts::DefaultAuthorityDescriptor
-#define MY_DID ts::DID_DEFAULT_AUTHORITY
+#define MY_DID ts::DID_DVB_DEFAULT_AUTHORITY
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

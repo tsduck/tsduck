@@ -252,7 +252,7 @@ void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 bool ts::SDT::ServiceEntry::locateServiceDescriptor(DuckContext& duck, ServiceDescriptor& desc) const
 {
-    const size_t index = descs.search(DID_SERVICE);
+    const size_t index = descs.search(DID_DVB_SERVICE);
 
     if (index >= descs.count()) {
         desc.invalidate();
@@ -297,7 +297,7 @@ ts::UString ts::SDT::ServiceEntry::serviceName(DuckContext& duck) const
 void ts::SDT::ServiceEntry::setString(DuckContext& duck, UString ServiceDescriptor::* field, const UString& value, uint8_t service_type)
 {
     // Locate the service descriptor
-    const size_t index = descs.search(DID_SERVICE);
+    const size_t index = descs.search(DID_DVB_SERVICE);
 
     if (index >= descs.count()) {
         // No valid service_descriptor, add a new one.
@@ -330,12 +330,12 @@ void ts::SDT::ServiceEntry::setString(DuckContext& duck, UString ServiceDescript
 void ts::SDT::ServiceEntry::setType(uint8_t service_type)
 {
     // Locate the service descriptor
-    const size_t index(descs.search(DID_SERVICE));
+    const size_t index(descs.search(DID_DVB_SERVICE));
 
     if (index >= descs.count() || descs[index]->payloadSize() < 2) {
         // No valid service_descriptor, add a new one.
         ByteBlock data(5);
-        data[0] = DID_SERVICE;  // tag
+        data[0] = DID_DVB_SERVICE;  // tag
         data[1] = 3;            // descriptor length
         data[2] = service_type;
         data[3] = 0;            // provider name length

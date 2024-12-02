@@ -155,7 +155,7 @@ ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer(PID pid, bo
 void ts::RemapPlugin::processDescriptors(DescriptorList& dlist, TID table_id)
 {
     // Process all CA descriptors in the list
-    for (size_t i = dlist.search(DID_CA); i < dlist.count(); i = dlist.search(DID_CA, i + 1)) {
+    for (size_t i = dlist.search(DID_MPEG_CA); i < dlist.count(); i = dlist.search(DID_MPEG_CA, i + 1)) {
         const DescriptorPtr& desc(dlist[i]);
         CADescriptor cadesc(duck, *desc);
         if (cadesc.isValid()) {

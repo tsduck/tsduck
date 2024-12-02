@@ -1084,7 +1084,7 @@ void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID 
             const DID did = ptr->tag();
 
             // Extract descriptor-dependent information.
-            if (did == DID_CA) {
+            if (did == DID_MPEG_CA) {
                 const CADescriptor desc(_duck, *ptr);
                 if (desc.isValid()) {
                     getPIDContext(desc.ca_pid).setCAS(dlist.table(), desc.cas_id);

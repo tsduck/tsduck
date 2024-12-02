@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"partial_transport_stream_descriptor"
 #define MY_CLASS ts::PartialTransportStreamDescriptor
-#define MY_DID ts::DID_PARTIAL_TS
+#define MY_DID ts::DID_DVB_PARTIAL_TS
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

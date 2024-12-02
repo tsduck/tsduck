@@ -97,7 +97,7 @@ bool ts::DescriptorList::add(const DescriptorPtr& desc)
     }
 
     // Determine which PDS to associate with the descriptor
-    if (desc->tag() == DID_PRIV_DATA_SPECIF) {
+    if (desc->tag() == DID_DVB_PRIV_DATA_SPECIF) {
         // This descriptor defines a new "private data specifier".
         // The PDS is the only thing in the descriptor payload.
         pds = desc->payloadSize() < 4 ? 0 : GetUInt32(desc->payload());
@@ -290,7 +290,7 @@ ts::PDS ts::DescriptorList::privateDataSpecifier(size_t index) const
 bool ts::DescriptorList::prepareRemovePDS(ElementVector::iterator it)
 {
     // Eliminate invalid cases
-    if (it == _list.end() || it->desc->tag() != DID_PRIV_DATA_SPECIF) {
+    if (it == _list.end() || it->desc->tag() != DID_DVB_PRIV_DATA_SPECIF) {
         return false;
     }
 
@@ -303,7 +303,7 @@ bool ts::DescriptorList::prepareRemovePDS(ElementVector::iterator it)
             // is necessary and cannot be removed.
             return false;
         }
-        if (tag == DID_PRIV_DATA_SPECIF) {
+        if (tag == DID_DVB_PRIV_DATA_SPECIF) {
             // Found another private_data_specifier descriptor with no private
             // descriptor between the two => the first one can be removed.
             break;
@@ -329,7 +329,7 @@ void ts::DescriptorList::addPrivateDataSpecifier(PDS pds)
     if (pds != 0 && (_list.size() == 0 || _list[_list.size() - 1].pds != pds)) {
         // Build a private_data_specifier_descriptor
         uint8_t data[6];
-        data[0] = DID_PRIV_DATA_SPECIF;
+        data[0] = DID_DVB_PRIV_DATA_SPECIF;
         data[1] = 4;
         PutUInt32(data + 2, pds);
         add(std::make_shared<Descriptor>(data, sizeof(data)));
@@ -373,7 +373,7 @@ bool ts::DescriptorList::removeByIndex(size_t index)
     }
 
     // Private_data_specifier descriptor can be removed under certain conditions only
-    if (_list[index].desc->tag() == DID_PRIV_DATA_SPECIF && !prepareRemovePDS(_list.begin() + index)) {
+    if (_list[index].desc->tag() == DID_DVB_PRIV_DATA_SPECIF && !prepareRemovePDS(_list.begin() + index)) {
         return false;
     }
 
@@ -394,7 +394,7 @@ size_t ts::DescriptorList::removeByTag(DID tag, PDS pds)
 
     for (auto it = _list.begin(); it != _list.end(); ) {
         const DID itag = it->desc->tag();
-        if (itag == tag && (!check_pds || it->pds == pds) && (itag != DID_PRIV_DATA_SPECIF || prepareRemovePDS (it))) {
+        if (itag == tag && (!check_pds || it->pds == pds) && (itag != DID_DVB_PRIV_DATA_SPECIF || prepareRemovePDS (it))) {
             it = _list.erase (it);
             ++removed_count;
         }
@@ -566,7 +566,7 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
             const uint8_t* data = desc->payload();
             size_t size = desc->payloadSize();
 
-            if (tag == DID_LANGUAGE) {
+            if (tag == DID_MPEG_LANGUAGE) {
                 while (size >= 4) {
                     if (language.similar(data, 3)) {
                         return index;
@@ -574,10 +574,10 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
                     data += 4; size -= 4;
                 }
             }
-            else if (tag == DID_COMPONENT && size >= 6 && language.similar(data + 3, 3)) {
+            else if (tag == DID_DVB_COMPONENT && size >= 6 && language.similar(data + 3, 3)) {
                 return index;
             }
-            else if (tag == DID_SUBTITLING) {
+            else if (tag == DID_DVB_SUBTITLING) {
                 while (size >= 8) {
                     if (language.similar(data, 3)) {
                         return index;
@@ -585,7 +585,7 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
                     data += 8; size -= 8;
                 }
             }
-            else if (tag == DID_TELETEXT || tag == DID_VBI_TELETEXT) {
+            else if (tag == DID_DVB_TELETEXT || tag == DID_DVB_VBI_TELETEXT) {
                 while (size >= 5) {
                     if (language.similar(data, 3)) {
                         return index;
@@ -593,8 +593,8 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
                     data += 5; size -= 5;
                 }
             }
-            else if (tag == DID_MLINGUAL_COMPONENT || tag == DID_MLINGUAL_BOUQUET || tag == DID_MLINGUAL_NETWORK) {
-                if (tag == DID_MLINGUAL_COMPONENT && size > 0) {
+            else if (tag == DID_DVB_MLINGUAL_COMPONENT || tag == DID_DVB_MLINGUAL_BOUQUET || tag == DID_DVB_MLINGUAL_NETWORK) {
+                if (tag == DID_DVB_MLINGUAL_COMPONENT && size > 0) {
                     // Skip leading component_tag in multilingual_component_descriptor.
                     data++; size--;
                 }
@@ -606,7 +606,7 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
                     data += len; size -= len;
                 }
             }
-            else if (tag == DID_MLINGUAL_SERVICE) {
+            else if (tag == DID_DVB_MLINGUAL_SERVICE) {
                 while (size >= 4) {
                     if (language.similar(data, 3)) {
                         return index;
@@ -618,10 +618,10 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
                     data += len; size -= len;
                 }
             }
-            else if (tag == DID_SHORT_EVENT && size >= 3 && language.similar(data, 3)) {
+            else if (tag == DID_DVB_SHORT_EVENT && size >= 3 && language.similar(data, 3)) {
                 return index;
             }
-            else if (tag == DID_EXTENDED_EVENT && size >= 4 && language.similar(data + 1, 3)) {
+            else if (tag == DID_DVB_EXTENDED_EVENT && size >= 4 && language.similar(data + 1, 3)) {
                 return index;
             }
             else if ((atsc || pds == PDS_ATSC) && tag == DID_ATSC_CAPTION && size > 0) {
@@ -671,7 +671,7 @@ size_t ts::DescriptorList::searchSubtitle(const UString& language, size_t start_
         const uint8_t* desc = _list[index].desc->payload();
         size_t size = _list[index].desc->payloadSize();
 
-        if (tag == DID_SUBTITLING) {
+        if (tag == DID_DVB_SUBTITLING) {
             // DVB Subtitling Descriptor, always contain subtitles
             if (language.empty()) {
                 return index;
@@ -687,7 +687,7 @@ size_t ts::DescriptorList::searchSubtitle(const UString& language, size_t start_
                 }
             }
         }
-        else if (tag == DID_TELETEXT) {
+        else if (tag == DID_DVB_TELETEXT) {
             // DVB Teletext Descriptor, may contain subtitles
             while (size >= 5) {
                 // Get teletext type:

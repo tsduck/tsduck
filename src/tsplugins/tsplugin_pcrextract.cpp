@@ -586,7 +586,7 @@ void ts::PCRExtractPlugin::processPMT(const PMT& pmt)
     // SCTE 35 requests a registration descriptor in the program info loop.
     bool scte35_found = false;
     if (_scte35) {
-        for (size_t index = pmt.descs.search(DID_REGISTRATION); !scte35_found && index < pmt.descs.count(); index = pmt.descs.search(DID_REGISTRATION, index + 1)) {
+        for (size_t index = pmt.descs.search(DID_MPEG_REGISTRATION); !scte35_found && index < pmt.descs.count(); index = pmt.descs.search(DID_MPEG_REGISTRATION, index + 1)) {
             const RegistrationDescriptor reg(duck, *pmt.descs[index]);
             scte35_found = reg.isValid() && reg.format_identifier == SPLICE_ID_CUEI;
         }

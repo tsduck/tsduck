@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"Media_service_kind_descriptor"
 #define MY_CLASS ts::MediaServiceKindDescriptor
 #define MY_DID ts::DID_MPEG_EXTENSION
-#define MY_EDID ts::MPEG_EDID_MEDIA_SVC_KIND
+#define MY_EDID ts::EDID_MPEG_MEDIA_SVC_KIND
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

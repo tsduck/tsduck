@@ -79,20 +79,20 @@ TSUNIT_DEFINE_TEST(AssignPMT)
     TSUNIT_ASSERT(pmt2.descs.table() == &pmt2);
     TSUNIT_EQUAL(1, pmt2.descs.count());
     TSUNIT_ASSERT(pmt2.descs[0]->isValid());
-    TSUNIT_EQUAL(ts::DID_CA, pmt2.descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_CA, pmt2.descs[0]->tag());
 
     TSUNIT_EQUAL(2, pmt2.streams.size());
 
     TSUNIT_EQUAL(45, pmt2.streams[3003].stream_type);
     TSUNIT_EQUAL(1, pmt2.streams[3003].descs.count());
-    TSUNIT_EQUAL(ts::DID_AVC_VIDEO, pmt2.streams[3003].descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_AVC_VIDEO, pmt2.streams[3003].descs[0]->tag());
     TSUNIT_EQUAL(ts::TID_PMT, pmt2.streams[3003].descs.tableId());
     TSUNIT_ASSERT(pmt2.streams[3003].descs.table() == &pmt2);
 
     TSUNIT_EQUAL(149, pmt2.streams[4004].stream_type);
     TSUNIT_EQUAL(2, pmt2.streams[4004].descs.count());
-    TSUNIT_EQUAL(ts::DID_AC3, pmt2.streams[4004].descs[0]->tag());
-    TSUNIT_EQUAL(ts::DID_CA, pmt2.streams[4004].descs[1]->tag());
+    TSUNIT_EQUAL(ts::DID_DVB_AC3, pmt2.streams[4004].descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_CA, pmt2.streams[4004].descs[1]->tag());
     TSUNIT_EQUAL(ts::TID_PMT, pmt2.streams[4004].descs.tableId());
     TSUNIT_ASSERT(pmt2.streams[4004].descs.table() == &pmt2);
 }
@@ -122,20 +122,20 @@ TSUNIT_DEFINE_TEST(CopyPMT)
     TSUNIT_ASSERT(pmt2.descs.table() == &pmt2);
     TSUNIT_EQUAL(1, pmt2.descs.count());
     TSUNIT_ASSERT(pmt2.descs[0]->isValid());
-    TSUNIT_EQUAL(ts::DID_CA, pmt2.descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_CA, pmt2.descs[0]->tag());
 
     TSUNIT_EQUAL(2, pmt2.streams.size());
 
     TSUNIT_EQUAL(45, pmt2.streams[3003].stream_type);
     TSUNIT_EQUAL(1, pmt2.streams[3003].descs.count());
-    TSUNIT_EQUAL(ts::DID_AVC_VIDEO, pmt2.streams[3003].descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_AVC_VIDEO, pmt2.streams[3003].descs[0]->tag());
     TSUNIT_EQUAL(ts::TID_PMT, pmt2.streams[3003].descs.tableId());
     TSUNIT_ASSERT(pmt2.streams[3003].descs.table() == &pmt2);
 
     TSUNIT_EQUAL(149, pmt2.streams[4004].stream_type);
     TSUNIT_EQUAL(2, pmt2.streams[4004].descs.count());
-    TSUNIT_EQUAL(ts::DID_AC3, pmt2.streams[4004].descs[0]->tag());
-    TSUNIT_EQUAL(ts::DID_CA, pmt2.streams[4004].descs[1]->tag());
+    TSUNIT_EQUAL(ts::DID_DVB_AC3, pmt2.streams[4004].descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_CA, pmt2.streams[4004].descs[1]->tag());
     TSUNIT_EQUAL(ts::TID_PMT, pmt2.streams[4004].descs.tableId());
     TSUNIT_ASSERT(pmt2.streams[4004].descs.table() == &pmt2);
 }
@@ -272,18 +272,18 @@ TSUNIT_DEFINE_TEST(TOT)
     tot1.descs.add(duck, ts::CADescriptor());
     TSUNIT_ASSERT(tot1.descs.table() == &tot1);
     TSUNIT_EQUAL(1, tot1.descs.count());
-    TSUNIT_EQUAL(ts::DID_CA, tot1.descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_CA, tot1.descs[0]->tag());
 
     ts::TOT tot2(tot1);
     TSUNIT_ASSERT(tot2.descs.table() == &tot2);
     TSUNIT_EQUAL(1, tot2.descs.count());
-    TSUNIT_EQUAL(ts::DID_CA, tot2.descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_CA, tot2.descs[0]->tag());
 
     ts::TOT tot3;
     tot3 = tot1;
     TSUNIT_ASSERT(tot3.descs.table() == &tot3);
     TSUNIT_EQUAL(1, tot2.descs.count());
-    TSUNIT_EQUAL(ts::DID_CA, tot2.descs[0]->tag());
+    TSUNIT_EQUAL(ts::DID_MPEG_CA, tot2.descs[0]->tag());
 }
 
 TSUNIT_DEFINE_TEST(TSDT)
@@ -312,5 +312,5 @@ TSUNIT_DEFINE_TEST(CleanupPrivateDescriptors)
     TSUNIT_EQUAL(4, dlist.count());
     dlist.removeInvalidPrivateDescriptors();
     TSUNIT_EQUAL(1, dlist.count());
-    TSUNIT_EQUAL(ts::DID_SERVICE, dlist[0]->tag());
+    TSUNIT_EQUAL(ts::DID_DVB_SERVICE, dlist[0]->tag());
 }

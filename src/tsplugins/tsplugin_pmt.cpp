@@ -593,7 +593,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         for (auto& smi : pmt.streams) {
             if (smi.second.stream_type == ST_AC3_AUDIO) {
                 smi.second.stream_type = ST_PES_PRIV;
-                if (smi.second.descs.search(DID_AC3) == smi.second.descs.count()) {
+                if (smi.second.descs.search(DID_DVB_AC3) == smi.second.descs.count()) {
                     // No AC-3_descriptor present in this component, add one.
                     smi.second.descs.add(duck, DVBAC3Descriptor());
                 }
@@ -606,7 +606,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         for (auto& smi : pmt.streams) {
             if (smi.second.stream_type == ST_EAC3_AUDIO) {
                 smi.second.stream_type = ST_PES_PRIV;
-                if (smi.second.descs.search (DID_ENHANCED_AC3) == smi.second.descs.count()) {
+                if (smi.second.descs.search (DID_DVB_ENHANCED_AC3) == smi.second.descs.count()) {
                     // No enhanced_AC-3_descriptor present in this component, add one.
                     smi.second.descs.add(duck, DVBEnhancedAC3Descriptor());
                 }
@@ -622,7 +622,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         std::bitset<256> ctags;
         for (auto& smi : pmt.streams) {
             const DescriptorList& dlist(smi.second.descs);
-            for (size_t i = dlist.search(DID_STREAM_ID); i < dlist.count(); i = dlist.search(DID_STREAM_ID, i + 1)) {
+            for (size_t i = dlist.search(DID_DVB_STREAM_ID); i < dlist.count(); i = dlist.search(DID_DVB_STREAM_ID, i + 1)) {
                 const StreamIdentifierDescriptor sid(duck, *dlist[i]);
                 if (sid.isValid()) {
                     ctags.set(sid.component_tag);
@@ -634,7 +634,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         for (auto& smi : pmt.streams) {
             DescriptorList& dlist(smi.second.descs);
             // Skip components already containing a stream_identifier_descriptor
-            if (dlist.search(DID_STREAM_ID) < dlist.count()) {
+            if (dlist.search(DID_DVB_STREAM_ID) < dlist.count()) {
                 continue;
             }
             // Allocate a new component tag

@@ -222,7 +222,7 @@ void ts::TSAnalyzer::ServiceContext::update(DuckContext& duck, const DescriptorL
 {
     // Look for a service_descriptor and get service characteristics.
     ServiceDescriptor srv_desc;
-    if (descs.search(duck, DID_SERVICE, srv_desc) < descs.size()) {
+    if (descs.search(duck, DID_DVB_SERVICE, srv_desc) < descs.size()) {
         service_type = srv_desc.service_type;
         // Replace names only if they are not empty.
         if (!srv_desc.provider_name.empty()) {
@@ -647,7 +647,7 @@ void ts::TSAnalyzer::analyzeNIT(PID pid, const NIT& nit)
 
     // Search network name. If not present, desc.name is empty.
     NetworkNameDescriptor desc;
-    nit.descs.search(_duck, DID_NETWORK_NAME, desc);
+    nit.descs.search(_duck, DID_DVB_NETWORK_NAME, desc);
 
     // Format network description as attribute of PID.
     ps->addAttribute(UString::Format(u"Network: %n %s", nit.network_id, desc.name).toTrimmed());
@@ -859,7 +859,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
         size_t size = bindesc.payloadSize();
 
         switch (descs[di]->tag()) {
-            case DID_CA: {
+            case DID_MPEG_CA: {
                 // MPEG standard CA descriptor.
                 analyzeCADescriptor(bindesc, svp, ps);
                 break;
@@ -872,7 +872,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_LANGUAGE: {
+            case DID_MPEG_LANGUAGE: {
                 if (ps != nullptr) {
                     const ISO639LanguageDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
@@ -884,7 +884,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_AC3: {
+            case DID_DVB_AC3: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates an AC-3 audio track.
                     ps->description = u"AC-3 Audio";
@@ -892,7 +892,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_ENHANCED_AC3: {
+            case DID_DVB_ENHANCED_AC3: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates an Enhanced AC-3 audio track.
                     ps->description = u"E-AC-3 Audio";
@@ -900,7 +900,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_AAC: {
+            case DID_DVB_AAC: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates an AAC, E-AAC or HE-AAC audio track.
                     const AACDescriptor desc(_duck, bindesc);
@@ -912,7 +912,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_DTS: {
+            case DID_DVB_DTS: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates a DTS audio track.
                     ps->description = u"DTS Audio";
@@ -920,7 +920,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_VVC_VIDEO: {
+            case DID_MPEG_VVC_VIDEO: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates a VVC video track.
                     ps->description = u"VVC Video";
@@ -928,7 +928,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_EVC_VIDEO: {
+            case DID_MPEG_EVC_VIDEO: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates an EVC video track.
                     ps->description = u"EVC Video";
@@ -936,7 +936,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_SUBTITLING: {
+            case DID_DVB_SUBTITLING: {
                 if (ps != nullptr) {
                     ps->description = u"Subtitles";
                     const SubtitlingDescriptor desc(_duck, bindesc);
@@ -947,7 +947,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_TELETEXT: {
+            case DID_DVB_TELETEXT: {
                 if (ps != nullptr) {
                     ps->description = u"Teletext";
                     const TeletextDescriptor desc(_duck, bindesc);
@@ -958,7 +958,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_APPLI_SIGNALLING: {
+            case DID_DVB_APPLI_SIGNALLING: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates a PID carrying an AIT.
                     ps->comment = u"AIT";
@@ -969,7 +969,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 // MPEG extension descriptor: need to look at the descriptor_tag_extension.
                 if (size >= 1) {
                     switch (data[0]) {
-                        case MPEG_EDID_LCEVC_VIDEO: {
+                        case EDID_MPEG_LCEVC_VIDEO: {
                             // The presence of this descriptor indicates an LCEVC video track.
                             ps->description = u"LCEVC Video";
                             ps->carry_video = true;
@@ -986,19 +986,19 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 // Extension descriptor: need to look at the descriptor_tag_extension.
                 if (size >= 1) {
                     switch (data[0]) {
-                        case EDID_AC4: {
+                        case EDID_DVB_AC4: {
                             // The presence of this descriptor indicates an AC-4 audio track.
                             ps->description = u"AC-4 Audio";
                             ps->carry_audio = true;
                             break;
                         }
-                        case EDID_DTS_HD_AUDIO: {
+                        case EDID_DVB_DTS_HD_AUDIO: {
                             // The presence of this descriptor indicates an DTS-HD audio track.
                             ps->description = u"DTS-HD Audio";
                             ps->carry_audio = true;
                             break;
                         }
-                        case EDID_DTS_NEURAL: {
+                        case EDID_DVB_DTS_NEURAL: {
                             // The presence of this descriptor indicates an DTS-Neural audio track.
                             ps->description = u"DTS Neural Surround Audio";
                             ps->carry_audio = true;
@@ -1011,7 +1011,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
-            case DID_DATA_BROADCAST_ID: {
+            case DID_DVB_DATA_BROADCAST_ID: {
                 if (size >= 2) {
                     // Get the data broadcast id.
                     const uint16_t dbid = GetUInt16(data);

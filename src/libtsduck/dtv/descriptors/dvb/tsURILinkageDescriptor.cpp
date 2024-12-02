@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"URI_linkage_descriptor"
 #define MY_CLASS ts::URILinkageDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_URI_LINKAGE
+#define MY_EDID ts::EDID_DVB_URI_LINKAGE
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

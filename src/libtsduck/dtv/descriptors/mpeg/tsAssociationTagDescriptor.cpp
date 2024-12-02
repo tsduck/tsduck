@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"association_tag_descriptor"
 #define MY_CLASS ts::AssociationTagDescriptor
-#define MY_DID ts::DID_ASSOCIATION_TAG
+#define MY_DID ts::DID_MPEG_ASSOCIATION_TAG
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

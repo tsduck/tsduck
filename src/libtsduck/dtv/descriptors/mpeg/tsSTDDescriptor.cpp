@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"STD_descriptor"
 #define MY_CLASS ts::STDDescriptor
-#define MY_DID ts::DID_STD
+#define MY_DID ts::DID_MPEG_STD
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

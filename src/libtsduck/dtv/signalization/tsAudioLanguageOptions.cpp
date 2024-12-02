@@ -149,7 +149,7 @@ bool ts::AudioLanguageOptionsVector::apply(DuckContext& duck, PMT& pmt, int seve
         // Update audio stream in PMT
         if (smi != pmt.streams.end()) {
             // Remove any previous language descriptor
-            smi->second.descs.removeByTag(DID_LANGUAGE);
+            smi->second.descs.removeByTag(DID_MPEG_LANGUAGE);
             // Add a new one
             smi->second.descs.add(duck, ISO639LanguageDescriptor(*it));
         }

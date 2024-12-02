@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"multilingual_component_descriptor"
 #define MY_XML_ATTR u"description"
 #define MY_CLASS ts::MultilingualComponentDescriptor
-#define MY_DID ts::DID_MLINGUAL_COMPONENT
+#define MY_DID ts::DID_DVB_MLINGUAL_COMPONENT
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

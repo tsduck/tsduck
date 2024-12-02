@@ -429,7 +429,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
 void ts::HistoryPlugin::analyzeCADescriptors(const DescriptorList& dlist, uint16_t service_id)
 {
     // Loop on all CA descriptors
-    for (size_t index = dlist.search(DID_CA); index < dlist.count(); index = dlist.search(DID_CA, index + 1)) {
+    for (size_t index = dlist.search(DID_MPEG_CA); index < dlist.count(); index = dlist.search(DID_MPEG_CA, index + 1)) {
 
         // Descriptor payload
         const uint8_t* desc = dlist[index]->payload();

@@ -222,11 +222,11 @@ bool ts::PMT::Stream::isSubtitles(const DuckContext& duck) const
         const DescriptorPtr& dsc(descs[index]);
         if (dsc != nullptr && dsc->isValid()) {
             const DID did = dsc->tag();
-            if (did == DID_SUBTITLING || (atsc && did == DID_ATSC_CAPTION)) {
+            if (did == DID_DVB_SUBTITLING || (atsc && did == DID_ATSC_CAPTION)) {
                 // Always indicate a subtitle stream.
                 return true;
             }
-            if (did == DID_TELETEXT || did == DID_VBI_TELETEXT) {
+            if (did == DID_DVB_TELETEXT || did == DID_DVB_VBI_TELETEXT) {
                 // A teletext descriptor may indicate subtitles, need to check the teletext type.
                 const uint8_t* data = dsc->payload();
                 size_t size = dsc->payloadSize();
@@ -327,34 +327,34 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
         const DescriptorPtr& dsc(descs[index]);
         if (dsc != nullptr && dsc->isValid()) {
             switch (dsc->tag()) {
-                case DID_AVC_VIDEO:
+                case DID_MPEG_AVC_VIDEO:
                     return CodecType::AVC;
-                case DID_HEVC_VIDEO:
+                case DID_MPEG_HEVC_VIDEO:
                     return CodecType::HEVC;
-                case DID_VVC_VIDEO:
+                case DID_MPEG_VVC_VIDEO:
                     return CodecType::VVC;
-                case DID_EVC_VIDEO:
+                case DID_MPEG_EVC_VIDEO:
                     return CodecType::EVC;
-                case DID_MPEG4_VIDEO:
+                case DID_MPEG_MPEG4_VIDEO:
                     return CodecType::MPEG4_VIDEO;
-                case DID_J2K_VIDEO:
+                case DID_MPEG_J2K_VIDEO:
                     return CodecType::J2K;
-                case DID_DTS:
+                case DID_DVB_DTS:
                     return CodecType::DTS;
-                case DID_AC3:
+                case DID_DVB_AC3:
                     return CodecType::AC3;
-                case DID_ENHANCED_AC3:
+                case DID_DVB_ENHANCED_AC3:
                     return CodecType::EAC3;
-                case DID_AAC:
-                case DID_MPEG2_AAC_AUDIO:
+                case DID_DVB_AAC:
+                case DID_MPEG_MPEG2_AAC_AUDIO:
                     return CodecType::AAC;
-                case DID_MPEG4_AUDIO:
-                case DID_MPEG4_AUDIO_EXT:
+                case DID_MPEG_MPEG4_AUDIO:
+                case DID_MPEG_MPEG4_AUDIO_EXT:
                     return CodecType::HEAAC; // ISO 14496-3
-                case DID_SUBTITLING:
+                case DID_DVB_SUBTITLING:
                     return CodecType::DVB_SUBTITLES;
-                case DID_TELETEXT:
-                case DID_VBI_TELETEXT:
+                case DID_DVB_TELETEXT:
+                case DID_DVB_VBI_TELETEXT:
                     return CodecType::TELETEXT;
                 case DID_AVS3_VIDEO:
                     if (pds == PDS_AVSVideo) {
@@ -375,16 +375,16 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
                         switch (dsc->payload()[0]) {
-                            case MPEG_EDID_HEVC_TIM_HRD:
-                            case MPEG_EDID_HEVC_OP_POINT:
-                            case MPEG_EDID_HEVC_HIER_EXT:
+                            case EDID_MPEG_HEVC_TIM_HRD:
+                            case EDID_MPEG_HEVC_OP_POINT:
+                            case EDID_MPEG_HEVC_HIER_EXT:
                                 return CodecType::HEVC;
-                            case MPEG_EDID_VVC_TIM_HRD:
+                            case EDID_MPEG_VVC_TIM_HRD:
                                 return CodecType::VVC;
-                            case MPEG_EDID_EVC_TIM_HRD:
+                            case EDID_MPEG_EVC_TIM_HRD:
                                 return CodecType::EVC;
-                            case MPEG_EDID_LCEVC_VIDEO:
-                            case MPEG_EDID_LCEVC_LINKAGE:
+                            case EDID_MPEG_LCEVC_VIDEO:
+                            case EDID_MPEG_LCEVC_LINKAGE:
                                 return CodecType::LCEVC;
                             default:
                                 break;
@@ -396,13 +396,13 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
                         switch (dsc->payload()[0]) {
-                            case EDID_DTS_NEURAL:
+                            case EDID_DVB_DTS_NEURAL:
                                 return CodecType::DTS;
-                            case EDID_DTS_HD_AUDIO:
+                            case EDID_DVB_DTS_HD_AUDIO:
                                 return CodecType::DTSHD;
-                            case EDID_AC4:
+                            case EDID_DVB_AC4:
                                 return CodecType::AC4;
-                            case EDID_VVC_SUBPICTURES:
+                            case EDID_DVB_VVC_SUBPICTURES:
                                 return CodecType::VVC;
                             default:
                                 break;
@@ -428,7 +428,7 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
 bool ts::PMT::Stream::getComponentTag(uint8_t& tag) const
 {
     // Loop on all stream_identifier_descriptors until a valid one is found.
-    for (size_t i = descs.search(DID_STREAM_ID); i < descs.count(); i = descs.search(DID_STREAM_ID, i + 1)) {
+    for (size_t i = descs.search(DID_DVB_STREAM_ID); i < descs.count(); i = descs.search(DID_DVB_STREAM_ID, i + 1)) {
         if (descs[i] != nullptr && descs[i]->payloadSize() >= 1) {
             // The payload of the stream_identifier_descriptor contains only one byte, the component tag.
             tag = descs[i]->payload()[0];
@@ -450,7 +450,7 @@ ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
         const PID pid = it.first;
         const PMT::Stream& stream(it.second);
         // Loop on all stream_identifier_descriptors.
-        for (size_t i = stream.descs.search(DID_STREAM_ID); i < stream.descs.count(); i = stream.descs.search(DID_STREAM_ID, i + 1)) {
+        for (size_t i = stream.descs.search(DID_DVB_STREAM_ID); i < stream.descs.count(); i = stream.descs.search(DID_DVB_STREAM_ID, i + 1)) {
             // The payload of the stream_identifier_descriptor contains only one byte, the component tag.
             if (stream.descs[i] != nullptr && stream.descs[i]->payloadSize() >= 1 && stream.descs[i]->payload()[0] == tag) {
                 return pid;
@@ -486,12 +486,12 @@ uint32_t ts::PMT::registrationId(PID pid) const
 
     // Search in specified component.
     const auto it = streams.find(pid);
-    if (it != streams.end() && (index = it->second.descs.search(DID_REGISTRATION)) != it->second.descs.count() && it->second.descs[index]->payloadSize() >= 4) {
+    if (it != streams.end() && (index = it->second.descs.search(DID_MPEG_REGISTRATION)) != it->second.descs.count() && it->second.descs[index]->payloadSize() >= 4) {
         return GetUInt32(it->second.descs[index]->payload());
     }
 
     // Search at program level.
-    if ((index = descs.search(DID_REGISTRATION)) != descs.count() && descs[index]->payloadSize() >= 4) {
+    if ((index = descs.search(DID_MPEG_REGISTRATION)) != descs.count() && descs[index]->payloadSize() >= 4) {
         return GetUInt32(descs[index]->payload());
     }
 

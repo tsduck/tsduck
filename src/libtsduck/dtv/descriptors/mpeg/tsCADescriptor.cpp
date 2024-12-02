@@ -18,7 +18,7 @@
 
 #define MY_XML_NAME u"CA_descriptor"
 #define MY_CLASS ts::CADescriptor
-#define MY_DID ts::DID_CA
+#define MY_DID ts::DID_MPEG_CA
 #define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
@@ -208,7 +208,7 @@ size_t ts::CADescriptor::SearchByPID(const ts::DescriptorList& dlist, ts::PID pi
         const DescriptorPtr& desc(dlist[start_index]);
         found = desc != nullptr &&
             desc->isValid() &&
-            desc->tag() == DID_CA &&
+            desc->tag() == DID_MPEG_CA &&
             desc->payloadSize() >= 4 &&
             (GetUInt16(desc->payload() + 2) & 0x1FFF) == pid;
     }
@@ -227,7 +227,7 @@ size_t ts::CADescriptor::SearchByCAS(const ts::DescriptorList& dlist, uint16_t c
         const DescriptorPtr& desc(dlist[start_index]);
         found = desc != nullptr &&
             desc->isValid() &&
-            desc->tag() == DID_CA &&
+            desc->tag() == DID_MPEG_CA &&
             desc->payloadSize() >= 4 &&
             GetUInt16(desc->payload()) == casid;
     }

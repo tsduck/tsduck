@@ -135,7 +135,7 @@ void ts::TeletextPlugin::handlePMT(const PMT& pmt, PID)
         const PMT::Stream& stream(it->second);
 
         // Look for Teletext descriptors for this component.
-        for (size_t index = stream.descs.search(DID_TELETEXT); _pid == PID_NULL && index < stream.descs.count(); index = stream.descs.search(DID_TELETEXT, index + 1)) {
+        for (size_t index = stream.descs.search(DID_DVB_TELETEXT); _pid == PID_NULL && index < stream.descs.count(); index = stream.descs.search(DID_DVB_TELETEXT, index + 1)) {
             const TeletextDescriptor desc(duck, *stream.descs[index]);
             if (_page < 0 && _language.empty()) {
                 // If page and language are unspecified, keep the first Teletext PID.

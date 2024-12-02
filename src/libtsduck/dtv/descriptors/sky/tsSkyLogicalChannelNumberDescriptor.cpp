@@ -17,7 +17,7 @@
 
 #define MY_XML_NAME u"sky_logical_channel_number_descriptor"
 #define MY_CLASS ts::SkyLogicalChannelNumberDescriptor
-#define MY_DID ts::DID_LOGICAL_CHANNEL_SKY
+#define MY_DID ts::DID_SKY_LCN
 #define MY_PDS ts::PDS_BSKYB
 #define MY_STD ts::Standards::DVB
 

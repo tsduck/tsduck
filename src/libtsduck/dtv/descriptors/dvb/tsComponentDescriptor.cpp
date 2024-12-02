@@ -17,7 +17,7 @@
 
 #define MY_XML_NAME u"component_descriptor"
 #define MY_CLASS ts::ComponentDescriptor
-#define MY_DID ts::DID_COMPONENT
+#define MY_DID ts::DID_DVB_COMPONENT
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);

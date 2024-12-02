@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"DVB_stuffing_descriptor"
 #define MY_XML_NAME_LEGACY u"stuffing_descriptor"
 #define MY_CLASS ts::DVBStuffingDescriptor
-#define MY_DID ts::DID_STUFFING
+#define MY_DID ts::DID_DVB_STUFFING
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);

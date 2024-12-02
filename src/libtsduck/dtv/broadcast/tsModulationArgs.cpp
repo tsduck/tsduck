@@ -609,7 +609,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptors(DuckContext& duck, const Descri
 bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id, DeliverySystem delsys)
 {
     switch (desc.tag()) {
-        case DID_SAT_DELIVERY: {
+        case DID_DVB_SAT_DELIVERY: {
             // DVB or ISDB satellite delivery network.
             // The descriptor can be used in either DVB or ISDB context.
             // There is no way to distinguish a DVB and an ISDB version without the "duck" context.
@@ -635,7 +635,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
             }
             break;
         }
-        case DID_S2_SAT_DELIVERY: {
+        case DID_DVB_S2_SAT_DELIVERY: {
             // Usually comes in addition to a SatelliteDeliverySystemDescriptor.
             const S2SatelliteDeliverySystemDescriptor dd(duck, desc);
             if (dd.isValid()) {
@@ -651,7 +651,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
             }
             break;
         }
-        case DID_CABLE_DELIVERY: {
+        case DID_DVB_CABLE_DELIVERY: {
             const CableDeliverySystemDescriptor dd(duck, desc);
             if (dd.isValid()) {
                 // Scanning a NIT on DVB-C networks has a specific issue.
@@ -675,7 +675,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
             }
             break;
         }
-        case DID_TERREST_DELIVERY: {
+        case DID_DVB_TERREST_DELIVERY: {
             const TerrestrialDeliverySystemDescriptor dd(duck, desc);
             if (dd.isValid()) {
                 delivery_system = dd.deliverySystem(duck);

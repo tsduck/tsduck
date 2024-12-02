@@ -12,7 +12,7 @@
 #define MY_XML_NAME u"eacem_logical_channel_number_descriptor"
 #define MY_XML_NAME_LEGACY u"logical_channel_number_descriptor"
 #define MY_CLASS ts::EacemLogicalChannelNumberDescriptor
-#define MY_DID ts::DID_LOGICAL_CHANNEL_NUM
+#define MY_DID ts::DID_EACEM_LCN
 #define MY_PDS ts::PDS_EACEM
 #define MY_STD ts::Standards::DVB
 

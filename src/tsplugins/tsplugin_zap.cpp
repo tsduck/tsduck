@@ -745,7 +745,7 @@ void ts::ZapPlugin::processECM(ServiceContext& ctx, DescriptorList& descs)
 {
     if (_no_ecm) {
         // Remove all CA_descriptors
-        descs.removeByTag(DID_CA);
+        descs.removeByTag(DID_MPEG_CA);
         descs.removeByTag(DID_ISDB_CA);
     }
     else {
@@ -763,7 +763,7 @@ void ts::ZapPlugin::analyzeCADescriptors(std::set<PID>& pids, const DescriptorLi
 {
     // Loop on all CA descriptors (MPEG and ISDB).
     for (size_t index = 0; index < descs.size(); ++index) {
-        if (descs[index]->tag() == DID_CA || descs[index]->tag() == DID_ISDB_CA) {
+        if (descs[index]->tag() == DID_MPEG_CA || descs[index]->tag() == DID_ISDB_CA) {
             // The fixed part of a CA descriptor is 4 bytes long.
             if (descs[index]->payloadSize() >= 4) {
                 const uint16_t pid = GetUInt16(descs[index]->payload() + 2) & 0x1FFF;
