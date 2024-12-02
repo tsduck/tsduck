@@ -9,7 +9,7 @@
 #define MY_STD ts::Standards::NONE     // Not defined in any standard.
 
 // This is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, 0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, 0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
