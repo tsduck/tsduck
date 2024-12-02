@@ -86,6 +86,8 @@ namespace ts {
 
         // Inherited methods
         virtual uint16_t tableIdExtension() const override;
+        virtual DescriptorList* topLevelDescriptorList() override;
+        virtual const DescriptorList* topLevelDescriptorList() const override;
         DeclareDisplaySection();
 
         //!

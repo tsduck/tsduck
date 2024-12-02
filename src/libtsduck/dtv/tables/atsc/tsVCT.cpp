@@ -41,7 +41,7 @@ ts::VCT::Channel::Channel(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::VCT::tableIdExtension() const
@@ -49,15 +49,20 @@ uint16_t ts::VCT::tableIdExtension() const
     return transport_stream_id;
 }
 
-
-//----------------------------------------------------------------------------
-// Get the maximum size in bytes of the payload of sections of this table.
-//----------------------------------------------------------------------------
-
 size_t ts::VCT::maxPayloadSize() const
 {
     // Although a "private section" in the MPEG sense, the VCT section is limited to 1024 bytes in ATSC A/65.
     return MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
+}
+
+ts::DescriptorList* ts::VCT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::VCT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

@@ -62,7 +62,7 @@ ts::STT::STT(DuckContext& duck, const Section& section) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::STT::tableIdExtension() const
@@ -70,15 +70,20 @@ uint16_t ts::STT::tableIdExtension() const
     return 0x0000;
 }
 
-
-//----------------------------------------------------------------------------
-// Get the maximum size in bytes of the payload of sections of this table.
-//----------------------------------------------------------------------------
-
 size_t ts::STT::maxPayloadSize() const
 {
     // Although a "private section" in the MPEG sense, the STT section is limited to 1024 bytes in ATSC A/65.
     return MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
+}
+
+ts::DescriptorList* ts::STT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::STT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

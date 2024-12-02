@@ -56,12 +56,22 @@ ts::MGT::TableType::TableType(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::MGT::tableIdExtension() const
 {
     return 0;
+}
+
+ts::DescriptorList* ts::MGT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::MGT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

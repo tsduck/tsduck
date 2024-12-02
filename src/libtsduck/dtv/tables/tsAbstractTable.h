@@ -87,6 +87,34 @@ namespace ts {
         void setAttribute(const UString& attr) { _attribute = attr; }
 
         //!
+        //! Get the address of the "top-level descriptor list" of the table.
+        //!
+        //! Some tables have descriptor lists, and sometimes two levels of descriptor lists.
+        //! This is the case of the PMT, NIT, BAT, etc. The "top-level descriptor list"
+        //! is present once in the table. It describes the service (PMT), the network (NIT)
+        //! or the operator (BAT). At the second level, there is one descriptor list per component (PMT),
+        //! or per transport stream (NIT, BAT). Sometimes, when exploring a second-level descriptor
+        //! list, it is useful to also explore the top-level descriptor list. This virtual method
+        //! returns a pointer to the top-level descriptor list. Thus, when exploring a second-level
+        //! descriptor list, using the table pointer in that list, we can get a reference to the
+        //! higher-level list.
+        //!
+        //! The default implementation returns the null pointer.
+        //!
+        //! @return The address of the "top-level descriptor list" of the table, if there is one.
+        //! Return the null pointer  if there is no such descriptor list.
+        //!
+        virtual DescriptorList* topLevelDescriptorList();
+
+        //!
+        //! Get the address of the "top-level descriptor list" of the table (constant).
+        //! @return The address of the "top-level descriptor list" of the table, if there is one.
+        //! Return the null pointer  if there is no such descriptor list.
+        //! @see DescriptorList* topLevelDescriptorList()
+        //!
+        virtual const DescriptorList* topLevelDescriptorList() const;
+
+        //!
         //! Get the generic user-defined "attribute" string of the table.
         //! @return A constant reference to the attribute string in the object.
         //! @see setAttribute()

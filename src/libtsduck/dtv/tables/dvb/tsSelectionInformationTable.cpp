@@ -56,12 +56,22 @@ ts::SelectionInformationTable::Service::Service(const AbstractTable* table, uint
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::SelectionInformationTable::tableIdExtension() const
 {
     return 0xFFFF;
+}
+
+ts::DescriptorList* ts::SelectionInformationTable::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::SelectionInformationTable::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

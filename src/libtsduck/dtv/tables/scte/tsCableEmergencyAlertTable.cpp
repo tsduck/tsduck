@@ -100,6 +100,16 @@ size_t ts::CableEmergencyAlertTable::maxPayloadSize() const
     return MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE;
 }
 
+ts::DescriptorList* ts::CableEmergencyAlertTable::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::CableEmergencyAlertTable::topLevelDescriptorList() const
+{
+    return &descs;
+}
+
 
 //----------------------------------------------------------------------------
 // Clear all fields.

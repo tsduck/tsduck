@@ -42,12 +42,22 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(DuckContext& duck, TID ti
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::AbstractDescriptorsTable::tableIdExtension() const
 {
     return _tid_ext;
+}
+
+ts::DescriptorList* ts::AbstractDescriptorsTable::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::AbstractDescriptorsTable::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

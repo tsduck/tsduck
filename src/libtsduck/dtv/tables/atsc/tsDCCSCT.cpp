@@ -63,12 +63,22 @@ ts::DCCSCT::Update::Update(const AbstractTable* table, UpdateType type) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::DCCSCT::tableIdExtension() const
 {
     return dccsct_type;
+}
+
+ts::DescriptorList* ts::DCCSCT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::DCCSCT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

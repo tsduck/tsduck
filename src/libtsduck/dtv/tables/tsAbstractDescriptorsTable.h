@@ -71,6 +71,8 @@ namespace ts {
         AbstractDescriptorsTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table);
 
         // Inherited methods
+        virtual DescriptorList* topLevelDescriptorList() override;
+        virtual const DescriptorList* topLevelDescriptorList() const override;
         virtual void clearContent() override;
         virtual void serializePayload(BinaryTable&, PSIBuffer&) const override;
         virtual void deserializePayload(PSIBuffer&, const Section&) override;

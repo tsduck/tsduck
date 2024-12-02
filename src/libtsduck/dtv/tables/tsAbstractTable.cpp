@@ -45,6 +45,21 @@ void ts::AbstractTable::clear()
 
 
 //----------------------------------------------------------------------------
+// Get the address of the "top-level descriptor list" of the table.
+//----------------------------------------------------------------------------
+
+ts::DescriptorList* ts::AbstractTable::topLevelDescriptorList()
+{
+    return nullptr; // default implementation
+}
+
+const ts::DescriptorList* ts::AbstractTable::topLevelDescriptorList() const
+{
+    return nullptr; // default implementation
+}
+
+
+//----------------------------------------------------------------------------
 // Checks if a table id is valid for this object.
 //----------------------------------------------------------------------------
 

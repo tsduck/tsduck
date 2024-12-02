@@ -51,7 +51,7 @@ ts::RRT::RRT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::RRT::tableIdExtension() const
@@ -59,15 +59,20 @@ uint16_t ts::RRT::tableIdExtension() const
     return 0xFF00 | rating_region;
 }
 
-
-//----------------------------------------------------------------------------
-// Get the maximum size in bytes of the payload of sections of this table.
-//----------------------------------------------------------------------------
-
 size_t ts::RRT::maxPayloadSize() const
 {
     // Although a "private section" in the MPEG sense, the RRT section is limited to 1024 bytes in ATSC A/65.
     return MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
+}
+
+ts::DescriptorList* ts::RRT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::RRT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

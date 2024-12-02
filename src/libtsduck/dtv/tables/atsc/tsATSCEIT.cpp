@@ -55,7 +55,7 @@ ts::ATSCEIT::Event::Event(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::ATSCEIT::tableIdExtension() const

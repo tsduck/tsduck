@@ -102,7 +102,7 @@ ts::UNT::UNT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::UNT::tableIdExtension() const
@@ -110,6 +110,16 @@ uint16_t ts::UNT::tableIdExtension() const
     // The table id extension is made of action_type and OUI hash.
     return uint16_t(uint16_t(action_type) << 8) |
            uint16_t(((OUI >> 16) & 0xFF) ^ ((OUI >> 8) & 0xFF) ^ (OUI & 0xFF));
+}
+
+ts::DescriptorList* ts::UNT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::UNT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

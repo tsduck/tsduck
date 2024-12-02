@@ -72,6 +72,16 @@ uint16_t ts::PMT::tableIdExtension() const
     return service_id;
 }
 
+ts::DescriptorList* ts::PMT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::PMT::topLevelDescriptorList() const
+{
+    return &descs;
+}
+
 
 //----------------------------------------------------------------------------
 // Clear the content of the table.

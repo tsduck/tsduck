@@ -63,6 +63,8 @@ namespace ts {
 
         // Inherited methods
         virtual bool isPrivate() const override;
+        virtual DescriptorList* topLevelDescriptorList() override;
+        virtual const DescriptorList* topLevelDescriptorList() const override;
         DeclareDisplaySection();
 
         //!

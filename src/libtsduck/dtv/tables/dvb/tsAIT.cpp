@@ -56,9 +56,8 @@ ts::AIT::Application::Application(const AbstractTable* table) :
 }
 
 
-
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::AIT::tableIdExtension() const
@@ -66,15 +65,20 @@ uint16_t ts::AIT::tableIdExtension() const
     return (test_application_flag ? 0x8000 : 0x0000) | (application_type & 0x7FFF);
 }
 
-
-//----------------------------------------------------------------------------
-// Get the maximum size in bytes of the payload of sections of this table.
-//----------------------------------------------------------------------------
-
 size_t ts::AIT::maxPayloadSize() const
 {
     // Although a "private section" in the MPEG sense, the AIT section is limited to 1024 bytes in ETSI TS 101 812.
     return MAX_PSI_LONG_SECTION_PAYLOAD_SIZE;
+}
+
+ts::DescriptorList* ts::AIT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::AIT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

@@ -67,12 +67,22 @@ ts::RNT::CRIDAuthority::CRIDAuthority(const AbstractTable* table, const CRIDAuth
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::RNT::tableIdExtension() const
 {
     return context_id;
+}
+
+ts::DescriptorList* ts::RNT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::RNT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

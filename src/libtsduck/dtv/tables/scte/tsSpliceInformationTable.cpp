@@ -70,6 +70,16 @@ bool ts::SpliceInformationTable::useTrailingCRC32() const
     return true;
 }
 
+ts::DescriptorList* ts::SpliceInformationTable::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::SpliceInformationTable::topLevelDescriptorList() const
+{
+    return &descs;
+}
+
 
 //----------------------------------------------------------------------------
 // Clear all fields.

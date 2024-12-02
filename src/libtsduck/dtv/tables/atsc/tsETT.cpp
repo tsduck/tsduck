@@ -39,7 +39,7 @@ ts::ETT::ETT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::ETT::tableIdExtension() const

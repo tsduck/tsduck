@@ -56,7 +56,7 @@ ts::PCAT::ContentVersion::ContentVersion(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::PCAT::tableIdExtension() const

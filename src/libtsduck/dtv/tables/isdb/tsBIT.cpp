@@ -56,12 +56,22 @@ ts::BIT::Broadcaster::Broadcaster(const AbstractTable* table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::BIT::tableIdExtension() const
 {
     return original_network_id;
+}
+
+ts::DescriptorList* ts::BIT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::BIT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

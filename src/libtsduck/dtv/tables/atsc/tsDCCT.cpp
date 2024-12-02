@@ -77,12 +77,22 @@ ts::DCCT::Term::Term(const AbstractTable* table, uint8_t type, uint64_t id) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::DCCT::tableIdExtension() const
 {
     return uint16_t((uint16_t(dcc_subtype) << 8) | dcc_id);
+}
+
+ts::DescriptorList* ts::DCCT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::DCCT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

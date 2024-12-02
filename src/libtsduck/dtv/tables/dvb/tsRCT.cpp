@@ -63,6 +63,21 @@ uint16_t ts::RCT::tableIdExtension() const
 
 
 //----------------------------------------------------------------------------
+// This table has a "top-level descriptor list".
+//----------------------------------------------------------------------------
+
+ts::DescriptorList* ts::RCT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::RCT::topLevelDescriptorList() const
+{
+    return &descs;
+}
+
+
+//----------------------------------------------------------------------------
 // Clear the content of the table.
 //----------------------------------------------------------------------------
 

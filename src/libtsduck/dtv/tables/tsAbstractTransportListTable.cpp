@@ -56,12 +56,22 @@ ts::AbstractTransportListTable::Transport::Transport(const AbstractTable* table)
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::AbstractTransportListTable::tableIdExtension() const
 {
     return _tid_ext;
+}
+
+ts::DescriptorList* ts::AbstractTransportListTable::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::AbstractTransportListTable::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

@@ -51,12 +51,22 @@ ts::CDT::CDT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::CDT::tableIdExtension() const
 {
     return download_data_id;
+}
+
+ts::DescriptorList* ts::CDT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::CDT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

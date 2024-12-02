@@ -76,6 +76,8 @@ namespace ts {
         static UString timeOffsetFormat(cn::minutes minutes);
 
         // Inherited methods
+        virtual DescriptorList* topLevelDescriptorList() override;
+        virtual const DescriptorList* topLevelDescriptorList() const override;
         DeclareDisplaySection();
 
     protected:

@@ -47,12 +47,22 @@ ts::ITT::ITT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::ITT::tableIdExtension() const
 {
     return event_id;
+}
+
+ts::DescriptorList* ts::ITT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::ITT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 

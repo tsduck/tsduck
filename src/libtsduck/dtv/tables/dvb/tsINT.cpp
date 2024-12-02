@@ -78,7 +78,7 @@ ts::INT::INT(DuckContext& duck, const BinaryTable& table) :
 
 
 //----------------------------------------------------------------------------
-// Get the table id extension.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 uint16_t ts::INT::tableIdExtension() const
@@ -86,6 +86,16 @@ uint16_t ts::INT::tableIdExtension() const
     // The table id extension is made of action_type and platform_id_hash.
     return uint16_t(uint16_t(action_type) << 8) |
            uint16_t(((platform_id >> 16) & 0xFF) ^ ((platform_id >> 8) & 0xFF) ^ (platform_id& 0xFF));
+}
+
+ts::DescriptorList* ts::INT::topLevelDescriptorList()
+{
+    return &platform_descs;
+}
+
+const ts::DescriptorList* ts::INT::topLevelDescriptorList() const
+{
+    return &platform_descs;
 }
 
 

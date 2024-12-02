@@ -52,13 +52,23 @@ ts::TOT::TOT(const TOT& other) :
 
 
 //----------------------------------------------------------------------------
-// Check if the sections of this table have a trailing CRC32.
+// Inherited public methods
 //----------------------------------------------------------------------------
 
 bool ts::TOT::useTrailingCRC32() const
 {
     // A TOT is a short section with a CRC32.
     return true;
+}
+
+ts::DescriptorList* ts::TOT::topLevelDescriptorList()
+{
+    return &descs;
+}
+
+const ts::DescriptorList* ts::TOT::topLevelDescriptorList() const
+{
+    return &descs;
 }
 
 
