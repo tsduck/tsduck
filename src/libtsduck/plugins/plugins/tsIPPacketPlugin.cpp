@@ -44,7 +44,7 @@ bool ts::IPPacketPlugin::start()
 
 bool ts::IPPacketPlugin::stop()
 {
-    return _datagram.close(tsp->bitrate(), *this);
+    return _datagram.close(tsp->bitrate(), false, *this);
 }
 
 ts::ProcessorPlugin::Status ts::IPPacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)

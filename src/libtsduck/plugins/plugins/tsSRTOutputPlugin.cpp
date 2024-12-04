@@ -78,7 +78,7 @@ bool ts::SRTOutputPlugin::start()
     if (success) {
         success = _sock.open(_datagram.maxPayloadSize(), *this);
         if (!success) {
-            _datagram.close(0, *this);
+            _datagram.close(0, true, *this);
         }
     }
     return success;
@@ -91,7 +91,7 @@ bool ts::SRTOutputPlugin::start()
 
 bool ts::SRTOutputPlugin::stop()
 {
-    _datagram.close(tsp->bitrate(), *this);
+    _datagram.close(tsp->bitrate(), false, *this);
     _sock.close(*this);
     return true;
 }
@@ -130,7 +130,8 @@ bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size, Report&
             return false;
         }
         // Multiple sessions, close socket and re-open to acquire another receiver.
-        stop();
+        _datagram.close(tsp->bitrate(), true, *this);
+        _sock.close(*this);
         if (_restart_delay > cn::milliseconds::zero()) {
             std::this_thread::sleep_for(_restart_delay);
         }

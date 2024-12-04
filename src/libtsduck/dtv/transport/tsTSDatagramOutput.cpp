@@ -253,12 +253,12 @@ bool ts::TSDatagramOutput::open(Report& report)
 // Close the TS packet output.
 //----------------------------------------------------------------------------
 
-bool ts::TSDatagramOutput::close(const BitRate& bitrate, Report& report)
+bool ts::TSDatagramOutput::close(const BitRate& bitrate, bool abort, Report& report)
 {
     bool success = true;
     if (_is_open) {
         // Flush incomplete datagram, if any.
-        if (_out_count > 0) {
+        if (_out_count > 0 && !abort) {
             success = sendPackets(_out_buffer.data(), _out_buffer_rs.data(), _out_count, bitrate, report);
             _out_count = 0;
         }

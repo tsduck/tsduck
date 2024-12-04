@@ -123,21 +123,21 @@ bool ts::RISTOutputPlugin::start()
     debug(u"calling rist_sender_create, profile: %d", _guts->rist.profile);
     if (::rist_sender_create(&_guts->rist.ctx, _guts->rist.profile, 0, &_guts->rist.log) != 0) {
         error(u"error in rist_sender_create");
-        _guts->datagram.close(0, *this);
+        _guts->datagram.close(0, true, *this);
         return false;
     }
 
     // Add null packet deletion option if requested.
     if (_guts->npd && ::rist_sender_npd_enable(_guts->rist.ctx) < 0) {
         error(u"error setting null-packet deletion");
-        _guts->datagram.close(0, *this);
+        _guts->datagram.close(0, true, *this);
         _guts->rist.cleanup();
         return false;
     }
 
     // Add all peers to the RIST context.
     if (!_guts->rist.addPeers()) {
-        _guts->datagram.close(0, *this);
+        _guts->datagram.close(0, true, *this);
         return false;
     }
 
@@ -145,7 +145,7 @@ bool ts::RISTOutputPlugin::start()
     debug(u"calling rist_start");
     if (::rist_start(_guts->rist.ctx) != 0) {
         error(u"error starting RIST transmission");
-        _guts->datagram.close(0, *this);
+        _guts->datagram.close(0, true, *this);
         _guts->rist.cleanup();
         return false;
     }
@@ -160,7 +160,7 @@ bool ts::RISTOutputPlugin::start()
 
 bool ts::RISTOutputPlugin::stop()
 {
-    _guts->datagram.close(tsp->bitrate(), *this);
+    _guts->datagram.close(tsp->bitrate(), true, *this);
     _guts->rist.cleanup();
     return true;
 }

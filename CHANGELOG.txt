@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.40-3969 (Nov 2024)
+VERSION 3.40-4004 (Dec 2024)
 
 [NEW] New commands and plugins:
 
@@ -12,6 +12,11 @@ VERSION 3.40-3969 (Nov 2024)
 
   * In "tsfclean",  the audio of each service now starts at or after the PTS of
     the first intra-frame of the video of that service.
+
+[BUG] Bug fixes:
+
+  * Fixed issue #1560:  The "srt" output plugin with  option  --multiple  could
+    loop and/or fail after a client disconnection.
 
 -------------------------------------------------------------------------------
 

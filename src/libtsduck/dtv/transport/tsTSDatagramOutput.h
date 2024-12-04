@@ -93,10 +93,11 @@ namespace ts {
         //! Close the TS packet output.
         //! Flush pending packets, if any.
         //! @param [in] bitrate Current of last bitrate to compute timestamps for buffered packets. Ignored if zero.
+        //! @param [in] abort If true, do not flush pending packets.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool close(const BitRate& bitrate, Report& report);
+        bool close(const BitRate& bitrate, bool abort, Report& report);
 
         //!
         //! Send TS packets.
