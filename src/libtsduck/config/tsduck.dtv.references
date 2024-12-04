@@ -1,7 +1,0 @@
-# List of sections in tsduck.dtv.skeleton.names with files which reference them.
-# This is a temporary information file for remaining modularization of .names files.
-
-ServiceType : tsNames.cpp
-ContentId : tsNames.cpp
-ContentIdJapan : tsNames.cpp
-ContentIdABNT : tsNames.cpp

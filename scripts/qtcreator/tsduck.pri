@@ -149,7 +149,6 @@ config_files {
     QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dektec-names.py $$DTAPI_INPUT tsduck.dektec.names $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += $$PYTHON $$PROJROOT/scripts/build-dtv-names.py \
                        tsduck.dtv.names \
-                       $$SRCROOT/libtsduck/config/tsduck.dtv.skeleton.names \
                        $$SRCROOT/libtsduck/base \
                        $$SRCROOT/libtsduck/dtv \
                        $$escape_expand(\\n\\t)

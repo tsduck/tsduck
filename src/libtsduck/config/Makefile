@@ -8,7 +8,6 @@
 #
 #-----------------------------------------------------------------------------
 
-
 DONT_BUILD_DEPS := TRUE
 include ../../../Makefile.inc
 
@@ -17,7 +16,7 @@ CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
 TABLES_SRC   = tsduck.tables.skeleton.xml
 TABLES_SUBS  = $(wildcard ../dtv/tables/*/*.xml ../dtv/descriptors/*/*.xml)
 TABLES_DEST  = $(BINDIR)/tsduck.tables.model.xml
-NAMES_SRC    = tsduck.dtv.skeleton.names $(wildcard ../base/*/*.names ../dtv/*/*.names ../dtv/*/*/*.names)
+NAMES_SRC    = $(wildcard ../base/*/*.names ../dtv/*/*.names ../dtv/*/*/*.names)
 NAMES_DEST   = $(BINDIR)/tsduck.dtv.names
 DEKTEC_DEST  = $(BINDIR)/tsduck.dektec.names
 

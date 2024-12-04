@@ -1,12 +1,16 @@
+#----------------------------------------------------------------------------
 #
-# TSDuck - The MPEG Transport Stream Toolkit
-# Copyright (c) 2005-2024, Thierry Lelegard
-# BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2024, Thierry Lelegard
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
-# Configuration file containing names for all IEEE-assigned
-# Organizationally Unique Identifiers (OUI).
-# See: http://standards.ieee.org/regauth/oui/oui.txt
+#----------------------------------------------------------------------------
 #
+#  Configuration file containing names for all IEEE-assigned
+#  Organizationally Unique Identifiers (OUI).
+#  See: http://standards.ieee.org/regauth/oui/oui.txt
+#
+#----------------------------------------------------------------------------
 
 [OUI]
 Bits = 32

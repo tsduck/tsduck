@@ -4,8 +4,7 @@
   <!-- A target to build tsduck.dtv.names from all .names files -->
 
   <ItemGroup>
-    <DtvNamesFiles Include="$(TSDuckRootDir)src\libtsduck\config\tsduck.dtv.skeleton.names;
-                            $(TSDuckRootDir)src\libtsduck\base\**\*.names;
+    <DtvNamesFiles Include="$(TSDuckRootDir)src\libtsduck\base\**\*.names;
                             $(TSDuckRootDir)src\libtsduck\dtv\**\*.names"/>
   </ItemGroup>
 
@@ -13,7 +12,7 @@
     <Message Text="Building $(OutDir)tsduck.dtv.names" Importance="high"/>
     <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
     <Exec ConsoleToMSBuild='true'
-          Command='python "$(TSDuckRootDir)scripts\build-dtv-names.py" "$(OutDir)tsduck.dtv.names" "$(TSDuckRootDir)src\libtsduck\config\tsduck.dtv.skeleton.names" "$(TSDuckRootDir)src\libtsduck\base" "$(TSDuckRootDir)src\libtsduck\dtv"'>
+          Command='python "$(TSDuckRootDir)scripts\build-dtv-names.py" "$(OutDir)tsduck.dtv.names" "$(TSDuckRootDir)src\libtsduck\base" "$(TSDuckRootDir)src\libtsduck\dtv"'>
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
     </Exec>
   </Target>

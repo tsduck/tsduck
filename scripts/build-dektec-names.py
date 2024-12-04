@@ -21,7 +21,9 @@ output_file = sys.argv[2]
 
 with open(output_file, 'w') as output:
     tsbuild.write_source_header('#', 'Registered names for Dektec devices', file=output)
+    print('', file=output)
     print('[DtCaps]', file=output)
+    print('Bits = 32', file=output)
     if input_file != '':
         with open(input_file, 'r', encoding='utf-8') as input:
             for line in input:
