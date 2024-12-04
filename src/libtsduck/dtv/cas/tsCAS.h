@@ -19,7 +19,7 @@ namespace ts {
     //! Known Conditional Access Systems families.
     //! @ingroup mpeg
     //!
-    enum CASFamily {
+    enum CASFamily : uint8_t {
         CAS_OTHER       = 0,  //!< Unknown CAS.
         CAS_MEDIAGUARD  = 1,  //!< MediaGuard (Canal+ Technologies).
         CAS_NAGRA       = 2,  //!< Nagravision.

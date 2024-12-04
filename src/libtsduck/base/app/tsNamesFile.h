@@ -15,6 +15,7 @@
 #include "tsUString.h"
 #include "tsEnumUtils.h"
 #include "tsReport.h"
+#include "tsSingleton.h"
 #include "tsVersionInfo.h"
 
 namespace ts {
@@ -62,9 +63,9 @@ namespace ts {
         NamesFile(const UString& fileName, bool mergeExtensions = false);
 
         //!
-        //! Virtual destructor.
+        //! Shared pointer to a constant names file.
         //!
-        virtual ~NamesFile();
+        using NamesFilePtr = std::shared_ptr<const NamesFile>;
 
         //!
         //! Get a common instance of NamesFile for a given configuration file.
@@ -78,7 +79,10 @@ namespace ts {
         //! a null pointer. In case of error (non existent file for instance), an
         //! empty instance is returned for that file.
         //!
-        static const NamesFile* Instance(const UString& fileName, bool mergeExtensions = false);
+        static NamesFilePtr Instance(const UString& fileName, bool mergeExtensions = false)
+        {
+            return AllInstances::Instance().getFile(fileName, mergeExtensions);
+        }
 
         //!
         //! Identifiers for some predefined TSDuck names files.
@@ -89,7 +93,8 @@ namespace ts {
             IP     = 1,  //!< Internet protocols definitions.
             OUI    = 2,  //!< IEEE Organizationally Unique Identifiers.
             DEKTEC = 3,  //!< Dektec devices definitions.
-            HIDES  = 4   //!< HiDes modulators definitions.
+            HIDES  = 4,  //!< HiDes modulators definitions.
+            COUNT  = 5   //!< No a real value, just the number of values.
         };
 
         //!
@@ -101,7 +106,10 @@ namespace ts {
         //! a null pointer. In case of error (non existent file for instance), an
         //! empty instance is returned for that file.
         //!
-        static const NamesFile* Instance(Predefined index);
+        static NamesFilePtr Instance(Predefined index)
+        {
+            return AllInstances::Instance().getFile(index);
+        }
 
         //!
         //! Delete a common instance of NamesFile for a predefined configuration file.
@@ -110,7 +118,10 @@ namespace ts {
         //! This is useful in test programs only.
         //! @param [in] index Identifier of the predefined file to get.
         //!
-        static void DeleteInstance(Predefined index);
+        static void DeleteInstance(Predefined index)
+        {
+            AllInstances::Instance().unregister(index);
+        }
 
         //!
         //! Largest integer type we manage in the repository of names.
@@ -211,7 +222,8 @@ namespace ts {
         };
 
         // Map of configuration entries, indexed by first value of the range.
-        using ConfigEntryMap = std::map<Value, ConfigEntry*>;
+        using ConfigEntryPtr = std::shared_ptr<ConfigEntry>;
+        using ConfigEntryMap = std::map<Value, ConfigEntryPtr>;
 
         // Description of a configuration section.
         // The name of the section is the key in a map.
@@ -220,11 +232,12 @@ namespace ts {
             TS_NOCOPY(ConfigSection);
         public:
             size_t          bits = 0;     // Number of significant bits in values of the type.
+            Value           mask = 0;     // Mask to apply to extract the specified bits.
             ConfigEntryMap  entries {};   // All entries, indexed by names.
             UString         inherit {};   // Redirect to this section if value not found.
 
+            // Constructor.
             ConfigSection() = default;
-            ~ConfigSection();
 
             // Check if a range is free, ie no value is defined in the range.
             bool freeRange(Value first, Value last) const;
@@ -237,10 +250,11 @@ namespace ts {
         };
 
         // Map of configuration sections, indexed by name.
-        using ConfigSectionMap = std::map<UString, ConfigSection*>;
+        using ConfigSectionPtr = std::shared_ptr<ConfigSection>;
+        using ConfigSectionMap = std::map<UString, ConfigSectionPtr>;
 
         // Decode a line as "first[-last] = name". Return true on success, false on error.
-        bool decodeDefinition(const UString& line, ConfigSection* section);
+        bool decodeDefinition(const UString& section_name, const UString& line, ConfigSectionPtr section);
 
         // Compute a number of hexa digits.
         static int HexaDigits(size_t bits);
@@ -252,7 +266,7 @@ namespace ts {
         void loadFile(const UString& fileName);
 
         // Get the section and name from a value, empty if not found. Section can be null.
-        void getName(const UString& sectionName, Value value, ConfigSection*& section, UString& name) const;
+        void getName(const UString& sectionName, Value value, ConfigSectionPtr& section, UString& name) const;
 
         // Normalized section name.
         static UString NormalizedSectionName(const UString& sectionName) { return sectionName.toTrimmed().toLower(); }
@@ -262,6 +276,34 @@ namespace ts {
         const UString    _configFile;        // Configuration file path.
         size_t           _configErrors = 0;  // Number of errors in configuration file.
         ConfigSectionMap _sections {};       // Configuration sections.
+
+        // A singleton which manages all NamesFile instances (thread-safe).
+        class AllInstances
+        {
+            TS_DECLARE_SINGLETON(AllInstances);
+        public:
+            NamesFilePtr getFile(const UString& fileName, bool mergeExtensions);
+            NamesFilePtr getFile(Predefined index);
+            void unregister(Predefined index);
+            void addExtensionFile(const UString& fileName);
+            void removeExtensionFile(const UString& fileName);
+            void getExtensionFiles(UStringList& fileNames);
+
+        private:
+            std::recursive_mutex            _mutex {};     // Protected access to other fields.
+            std::map<UString, NamesFilePtr> _files {};     // Loaded instances by name.
+            UStringList                     _extFiles {};  // Additional names files.
+
+            // Array of predefined instances, in a direct lookup table.
+            class Predef
+            {
+            public:
+                NamesFilePtr instance {};
+                const ts::UChar* name = nullptr;
+                bool merge = false; // merge extension files
+            };
+            std::array <Predef, size_t(Predefined::COUNT)> _predef {};
+        };
     };
 
     //!
@@ -303,7 +345,10 @@ namespace ts {
     //! @param [in] flags Presentation flags.
     //! @return The corresponding name.
     //!
-    TSDUCKDLL UString NameFromOUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME);
+    TSDUCKDLL inline UString NameFromOUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME)
+    {
+        return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags, 24);
+    }
 }
 
 //!

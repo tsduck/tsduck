@@ -8,80 +8,30 @@
 
 #include "tsNamesFile.h"
 #include "tsFileUtils.h"
+#include "tsAlgorithm.h"
 #include "tsCerrReport.h"
 #include "tsFatal.h"
-#include "tsSingleton.h"
-
-
-//----------------------------------------------------------------------------
-// Predefined names files.
-//----------------------------------------------------------------------------
-
-namespace {
-    struct Predef {
-        // The instance is also registered in AllInstances, as any NamesFile.
-        // This is just a faster lookup table.
-        const ts::NamesFile* volatile instance;
-        const ts::UChar* name;
-        bool merge;
-    };
-    Predef PredefData[] = {
-        {nullptr, u"tsduck.dtv.names", true},      // DTV
-        {nullptr, u"tsduck.ip.names", false},      // IP
-        {nullptr, u"tsduck.oui.names", false},     // OUI
-        {nullptr, u"tsduck.dektec.names", false},  // DEKTEC
-        {nullptr, u"tsduck.hides.names", false},   // HIDES
-    };
-    constexpr size_t PredefDataCount = sizeof(PredefData) / sizeof(Predef);
-}
 
 
 //----------------------------------------------------------------------------
 // A singleton which manages all NamesFile instances (thread-safe).
 //----------------------------------------------------------------------------
 
-namespace {
-    class AllInstances
-    {
-        TS_DECLARE_SINGLETON(AllInstances);
-    public:
-        ~AllInstances();
-        const ts::NamesFile* getFile(const ts::UString& fileName, bool mergeExtensions);
-        void deleteInstance(const ts::NamesFile* instance);
-        void addExtensionFile(const ts::UString& fileName);
-        void removeExtensionFile(const ts::UString& fileName);
-        void getExtensionFiles(ts::UStringList& fileNames);
-    private:
-        std::recursive_mutex                        _mutex {};     // Protected access to other fields.
-        std::map<ts::UString, const ts::NamesFile*> _files {};     // Loaded instances by name.
-        ts::UStringList                             _extFiles {};  // Additional names files.
-    };
-}
-
-TS_DEFINE_SINGLETON(AllInstances);
+TS_DEFINE_SINGLETON(ts::NamesFile::AllInstances);
 
 // Constructor
-AllInstances::AllInstances()
+ts::NamesFile::AllInstances::AllInstances()
 {
-}
-
-// Destructor
-AllInstances::~AllInstances()
-{
-    // Forget all predefined load.
-    for (size_t i = 0; i < PredefDataCount; ++i) {
-        PredefData[i].instance = nullptr;
-    }
-    // Deallocate all loaded files.
-    for (auto& it : _files) {
-        delete it.second;
-        it.second = nullptr;
-    }
-    _files.clear();
+    _predef[size_t(Predefined::DTV)].merge = true;
+    _predef[size_t(Predefined::DTV)].name = u"tsduck.dtv.names";
+    _predef[size_t(Predefined::IP)].name = u"tsduck.ip.names";
+    _predef[size_t(Predefined::OUI)].name = u"tsduck.oui.names";
+    _predef[size_t(Predefined::DEKTEC)].name = u"tsduck.dektec.names";
+    _predef[size_t(Predefined::HIDES)].name = u"tsduck.hides.names";
 }
 
 // Lookup / load a names file.
-const ts::NamesFile* AllInstances::getFile(const ts::UString& fileName, bool mergeExtensions)
+ts::NamesFile::NamesFilePtr ts::NamesFile::AllInstances::getFile(const UString& fileName, bool mergeExtensions)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     auto it = _files.find(fileName);
@@ -89,100 +39,66 @@ const ts::NamesFile* AllInstances::getFile(const ts::UString& fileName, bool mer
         return it->second;
     }
     else {
-        return _files[fileName] = new ts::NamesFile(fileName, mergeExtensions);
+        return _files[fileName] = NamesFilePtr(new NamesFile(fileName, mergeExtensions));
+    }
+}
+
+// Lookup / load a predefined names file.
+ts::NamesFile::NamesFilePtr ts::NamesFile::AllInstances::getFile(Predefined index)
+{
+    if (size_t(index) >= _predef.size()) {
+        CERR.error(u"internal error, invalid predefined .names file index");
+        return nullptr; // and the application will likely crash...
+    }
+    else {
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        Predef& pr(_predef[size_t(index)]);
+        if (pr.instance == nullptr) {
+            pr.instance = getFile(pr.name, pr.merge);
+        }
+        return pr.instance;
     }
 }
 
 // Delete one instance.
-void AllInstances::deleteInstance(const ts::NamesFile* instance)
+void ts::NamesFile::AllInstances::unregister(Predefined index)
 {
-    if (instance != nullptr) {
-        // If this is a predefined data file, forget its instance.
-        for (size_t i = 0; i < PredefDataCount; ++i) {
-            if (instance == PredefData[i].instance) {
-                PredefData[i].instance = nullptr;
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    if (size_t(index) < _predef.size() && _predef[size_t(index)].instance != nullptr) {
+        for (auto it = _files.begin(); it != _files.end(); ++it) {
+            if (_predef[size_t(index)].instance == it->second) {
+                it = _files.erase(it);
                 break;
             }
         }
-        // Unregister the instance.
-        for (auto it = _files.begin(); it != _files.end(); ) {
-            if (instance == it->second) {
-                it = _files.erase(it);
-            }
-            else {
-                ++it;
-            }
-        }
-        // Deallocate the instance.
-        delete instance;
+        _predef[size_t(index)].instance = nullptr;
     }
 }
 
 // Add an extension file name (check that there is no duplicate).
-void AllInstances::addExtensionFile(const ts::UString& fileName)
+void ts::NamesFile::AllInstances::addExtensionFile(const UString& fileName)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    for (const auto& it : _extFiles) {
-        if (it == fileName) {
-            return;
-        }
-    }
-    _extFiles.push_back(fileName);
+    AppendUnique(_extFiles, fileName);
 }
 
 // Remove an extension file name.
-void AllInstances::removeExtensionFile(const ts::UString& fileName)
+void ts::NamesFile::AllInstances::removeExtensionFile(const UString& fileName)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    for (auto it = _extFiles.begin(); it != _extFiles.end(); ) {
+    for (auto it = _extFiles.begin(); it != _extFiles.end(); ++it) {
         if (*it == fileName) {
-            it = _extFiles.erase(it);
-        }
-        else {
-            ++it;
+            _extFiles.erase(it);
+            break;
         }
     }
 }
 
 // Get the list of all extension files.
-void AllInstances::getExtensionFiles(ts::UStringList& fileNames)
+void ts::NamesFile::AllInstances::getExtensionFiles(UStringList& fileNames)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     fileNames = _extFiles;
-}
-
-
-//----------------------------------------------------------------------------
-// Get a common instance of NamesFile for a given configuration file.
-//----------------------------------------------------------------------------
-
-const ts::NamesFile* ts::NamesFile::Instance(const UString& fileName, bool mergeExtensions)
-{
-    return AllInstances::Instance().getFile(fileName, mergeExtensions);
-}
-
-
-const ts::NamesFile* ts::NamesFile::Instance(Predefined index)
-{
-    // Using predefined indexes of file names saves string lookup and thread synchronization.
-    // The pointer is initially null and then always holds the same value. Even if the first
-    // two call are simultaneous, the instance field is overwritten with the same value.
-    if (size_t(index) >= PredefDataCount) {
-        CERR.error(u"internal error, invalid predefined .names file index");
-        return nullptr; // and the application will likely crash...
-    }
-    Predef* pr = PredefData + size_t(index);
-    if (pr->instance == nullptr) {
-        pr->instance = AllInstances::Instance().getFile(pr->name, pr->merge);
-    }
-    return pr->instance;
-}
-
-void ts::NamesFile::DeleteInstance(Predefined index)
-{
-    if (size_t(index) < PredefDataCount) {
-        AllInstances::Instance().deleteInstance(PredefData[size_t(index)].instance);
-    }
 }
 
 
@@ -254,7 +170,8 @@ void ts::NamesFile::loadFile(const UString& fileName)
         return;
     }
 
-    ConfigSection* section = nullptr;
+    ConfigSectionPtr section;
+    UString section_name;
     UString line;
 
     // Read configuration file line by line.
@@ -270,6 +187,7 @@ void ts::NamesFile::loadFile(const UString& fileName)
             // Handle beginning of section, get section name.
             line.erase(0, 1);
             line.pop_back();
+            section_name = line;
             line.convertToLower();
 
             // Get or create associated section.
@@ -279,12 +197,11 @@ void ts::NamesFile::loadFile(const UString& fileName)
             }
             else {
                 // Create new section.
-                section = new ConfigSection;
-                CheckNonNull(section);
+                section = std::make_shared<ConfigSection>();
                 _sections.insert(std::make_pair(line, section));
             }
         }
-        else if (!decodeDefinition(line, section)) {
+        else if (!decodeDefinition(section_name, line, section)) {
             // Invalid line.
             _log.error(u"%s: invalid line %d: %s", fileName, lineNumber, line);
             if (++_configErrors >= 20) {
@@ -295,6 +212,27 @@ void ts::NamesFile::loadFile(const UString& fileName)
         }
     }
     strm.close();
+
+    // Verify that all sections have bits size.
+    for (const auto& it : _sections) {
+        // Fetch bits value from "superclasses".
+        UString parent(it.second->inherit);
+        while (it.second->bits == 0 && !parent.empty()) {
+            auto next = _sections.find(parent.toLower());
+            if (next == _sections.end()) {
+                _log.error(u"%d: section %s inherits from non-existent section %s", _configFile, it.first, parent);
+                break;
+            }
+            it.second->bits = next->second->bits;
+            parent = next->second->inherit;
+        }
+        if (it.second->bits == 0) {
+            _log.error(u"%d: no specified bits size in section %s", _configFile, it.first);
+        }
+        else {
+            it.second->mask = ~Value(0) >> (8 * sizeof(Value) - it.second->bits);
+        }
+    }
 }
 
 
@@ -302,7 +240,7 @@ void ts::NamesFile::loadFile(const UString& fileName)
 // Decode a line as "first[-last] = name". Return true on success.
 //----------------------------------------------------------------------------
 
-bool ts::NamesFile::decodeDefinition(const UString& line, ConfigSection* section)
+bool ts::NamesFile::decodeDefinition(const UString& section_name, const UString& line, ConfigSectionPtr section)
 {
     // Check the presence of the '=' and in a valid section.
     const size_t equal = line.find(UChar('='));
@@ -323,12 +261,30 @@ bool ts::NamesFile::decodeDefinition(const UString& line, ConfigSection* section
     // Special cases (not values):
     if (range.similar(u"bits")) {
         // Specification of size in bits of values in this section.
-        return value.toInteger(section->bits, ignore, 0, UString());
+        size_t bits = 0;
+        if (section->bits > 0) {
+            _log.error(u"%s: section %s, duplicated bits clauses %d and %s", _configFile, section_name, section->bits, value);
+            return false;
+        }
+        else if (value.toInteger(bits, ignore, 0, UString()) && bits > 0 && bits <= 8 * sizeof(Value)) {
+            section->bits = bits;
+            return true;
+        }
+        else {
+            _log.error(u"%s: section %s, invalid bits value; %s", _configFile, section_name, value);
+            return false;
+        }
     }
     else if (range.similar(u"inherit")) {
         // Name of a section where to search unknown values here.
-        section->inherit = value;
-        return true;
+        if (section->inherit.empty()) {
+            section->inherit = value;
+            return true;
+        }
+        else {
+            _log.error(u"%s: section %s, duplicated inherit clauses %s and %s", _configFile, section_name, section->inherit, value);
+            return false;
+        }
     }
 
     // Decode "first[-last]"
@@ -351,39 +307,11 @@ bool ts::NamesFile::decodeDefinition(const UString& line, ConfigSection* section
             section->addEntry(first, last, value);
         }
         else {
-            _log.error(u"%s: range 0x%X-0x%X overlaps with an existing range", _configFile, first, last);
+            _log.error(u"%s: section %s, range 0x%X-0x%X overlaps with an existing range", _configFile, section_name, first, last);
             valid = false;
         }
     }
     return valid;
-}
-
-
-//----------------------------------------------------------------------------
-// Destructor: free all resources.
-//----------------------------------------------------------------------------
-
-ts::NamesFile::~NamesFile()
-{
-    // Deallocate all configuration sections.
-    for (const auto& it : _sections) {
-        delete it.second;
-    }
-    _sections.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// Configuration section.
-//----------------------------------------------------------------------------
-
-ts::NamesFile::ConfigSection::~ConfigSection()
-{
-    // Deallocate all configuration entries.
-    for (const auto& it : entries) {
-        delete it.second;
-    }
-    entries.clear();
 }
 
 
@@ -555,7 +483,7 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
 // Get the section and name from a value, empty if not found.
 //----------------------------------------------------------------------------
 
-void ts::NamesFile::getName(const UString& sectionName, Value value, ConfigSection*& section, UString& name) const
+void ts::NamesFile::getName(const UString& sectionName, Value value, ConfigSectionPtr& section, UString& name) const
 {
     // Normalized section name.
     UString sname(NormalizedSectionName(sectionName));
@@ -595,7 +523,7 @@ void ts::NamesFile::getName(const UString& sectionName, Value value, ConfigSecti
 
 bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 {
-    ConfigSection* section = nullptr;
+    ConfigSectionPtr section;
     UString name;
     getName(sectionName, value, section, name);
     return !name.empty();
@@ -608,7 +536,7 @@ bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 
 ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value value, NamesFlags flags, size_t bits, Value alternateValue) const
 {
-    ConfigSection* section = nullptr;
+    ConfigSectionPtr section;
     UString name;
     getName(sectionName, value, section, name);
 
@@ -628,7 +556,7 @@ ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value val
 
 ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags, size_t bits, Value alternateValue) const
 {
-    ConfigSection* section = nullptr;
+    ConfigSectionPtr section;
     UString name;
     getName(sectionName, value1, section, name);
 
@@ -644,14 +572,4 @@ ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionNam
         // value1 has no name, use value2, restart from the beginning in case of inheritance.
         return nameFromSection(sectionName, value2, flags, bits, alternateValue);
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Get the name of an OUI (IEEE-assigned Organizationally Unique Identifier).
-//----------------------------------------------------------------------------
-
-ts::UString ts::NameFromOUI(uint32_t oui, NamesFlags flags)
-{
-    return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags, 24);
 }

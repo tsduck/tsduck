@@ -68,6 +68,7 @@ Bits = 6
 
 [JPEG_XS_video_descriptor.sampling_structure]
 # Table A.10 of ISO/IEC 21122-3
+Bits = 4
 0 = 4:2:2 (YCbCr)
 1 = 4:4:4 (YCbCr)
 2 = 4:4:4 (RGB)

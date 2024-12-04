@@ -19,7 +19,7 @@
 ts::UString ts::names::TID(const DuckContext& duck, uint8_t tid, uint16_t cas, NamesFlags flags)
 {
     // Where to search table ids.
-    const NamesFile* const repo = NamesFile::Instance(NamesFile::Predefined::DTV);
+    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
     const UString section(u"TableId");
     const NamesFile::Value casValue = NamesFile::Value(CASFamilyOf(cas)) << 8;
     const NamesFile::Value tidValue = NamesFile::Value(tid);
@@ -82,7 +82,7 @@ ts::UString ts::names::TID(const DuckContext& duck, uint8_t tid, uint16_t cas, N
 
 bool ts::names::HasTableSpecificName(uint8_t did, uint8_t tid)
 {
-    const NamesFile* const repo = NamesFile::Instance(NamesFile::Predefined::DTV);
+    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
     return tid != TID_NULL &&
         did < 0x80 &&
         repo->nameExists(u"DescriptorId", (NamesFile::Value(tid) << 40) | 0x000000FFFFFFFF00 | NamesFile::Value(did));
@@ -116,7 +116,7 @@ ts::UString ts::names::EDID(uint8_t edid, NamesFlags flags)
 
 ts::UString ts::names::StreamType(uint8_t type, NamesFlags flags, uint32_t regid)
 {
-    const NamesFile* const repo = NamesFile::Instance(NamesFile::Predefined::DTV);
+    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
     NamesFile::Value fullValue = (NamesFile::Value(regid) << 8) | NamesFile::Value(type);
     if (regid == REGID_NULL || !repo->nameExists(u"StreamType", fullValue)) {
         // No value found with registration id, use the stream type alone.

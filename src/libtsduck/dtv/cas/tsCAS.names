@@ -1,6 +1,7 @@
 [CASFamily]
 # Name of Conditional Access Families.
 # Private to TSDuck, must match CASFamily values in file tsCAS.h.
+Bits = 8
 0x00 = Other
 0x01 = MediaGuard
 0x02 = Nagravision
