@@ -18,6 +18,8 @@
 #include "tsByteBlock.h"
 #include "tsCRC32.h"
 #include "tsETID.h"
+#include "tsTID.h"
+#include "tsPSI.h"
 #include "tsCAS.h"
 #include "tsTS.h"
 

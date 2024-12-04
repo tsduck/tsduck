@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPSI.h"
+#include "tsTID.h"
 
 namespace ts {
     //!

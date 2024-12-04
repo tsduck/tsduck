@@ -12,7 +12,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPSI.h"
+#include "tsTID.h"
+#include "tsDID.h"
 #include "tsTLVSyntax.h"
 #include "tsDuckContext.h"
 

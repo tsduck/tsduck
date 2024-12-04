@@ -17,6 +17,7 @@
 #include "tsDuckContext.h"
 #include "tsMPEG2.h"
 #include "tsAVC.h"
+#include "tsStreamType.h"
 #include "tsCodecType.h"
 #include "tsDVBAC3Descriptor.h"
 #include "tsComponentDescriptor.h"

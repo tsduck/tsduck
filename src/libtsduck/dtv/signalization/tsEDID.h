@@ -12,7 +12,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPSI.h"
+#include "tsTID.h"
+#include "tsDID.h"
+#include "tsPDS.h"
+#include "tsRegistration.h"
 
 namespace ts {
     //!
@@ -79,7 +82,7 @@ namespace ts {
         //! @param [in] regid Associated registration id.
         //! @return The corresponding EDID.
         //!
-        static EDID PrivateMPEG(DID did, PDS regid) { return EDID((uint64_t(regid) << 32) | (0x00000000FFFFFF00 & ~HAS_REGID) | (did & 0xFF)); }
+        static EDID PrivateMPEG(DID did, REGID regid) { return EDID((uint64_t(regid) << 32) | (0x00000000FFFFFF00 & ~HAS_REGID) | (did & 0xFF)); }
 
         //!
         //! Build the EDID for a private DVB descriptor.

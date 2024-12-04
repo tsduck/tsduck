@@ -19,6 +19,7 @@
 #include "tsContinuityAnalyzer.h"
 #include "tsFileNameGenerator.h"
 #include "tshlsPlayList.h"
+#include "tsStreamType.h"
 
 namespace ts {
     namespace hls {

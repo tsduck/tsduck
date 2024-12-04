@@ -14,6 +14,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
+#include "tsStreamType.h"
 #include "tsCodecType.h"
 #include "tsTS.h"
 

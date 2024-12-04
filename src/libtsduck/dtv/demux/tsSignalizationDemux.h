@@ -18,6 +18,7 @@
 #include "tsCodecType.h"
 #include "tsAlgorithm.h"
 #include "tsTime.h"
+#include "tsStreamType.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsNIT.h"

@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsCodecType.h"
-#include "tsPSI.h"
+#include "tsStreamType.h"
 #include "tsAVC.h"
 
 namespace ts {

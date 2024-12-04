@@ -6,32 +6,10 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPSI.h"
+#include "tsStreamType.h"
 
 
-TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PrivateDataSpecifierEnum, ({
-    {u"BskyB",     ts::PDS_BSKYB},
-    {u"Nagra",     ts::PDS_NAGRA},
-    {u"TPS",       ts::PDS_TPS},
-    {u"EACEM",     ts::PDS_EACEM},
-    {u"EICTA",     ts::PDS_EICTA},  // same value as EACEM
-    {u"NorDig",    ts::PDS_NORDIG},
-    {u"Logiways",  ts::PDS_LOGIWAYS},
-    {u"CanalPlus", ts::PDS_CANALPLUS},
-    {u"Eutelsat",  ts::PDS_EUTELSAT},
-    {u"OFCOM",     ts::PDS_OFCOM},
-    {u"Australia", ts::PDS_AUSTRALIA},
-    {u"AVSV",      ts::PDS_AVSVideo},
-    {u"AVSA",      ts::PDS_AVSAudio},
-    {u"AOM",       ts::PDS_AOM},
-    {u"cuvv",      ts::PDS_CUVV},
-}));
-
-
-//----------------------------------------------------------------------------
 // Check if a stream type value indicates a PES stream
-//----------------------------------------------------------------------------
-
 bool ts::StreamTypeIsPES(uint8_t st)
 {
     return StreamTypeIsVideo(st) ||
@@ -44,11 +22,7 @@ bool ts::StreamTypeIsPES(uint8_t st)
            st == ST_EXT_MEDIA;
 }
 
-
-//----------------------------------------------------------------------------
 // Check if a stream type value indicates a video stream
-//----------------------------------------------------------------------------
-
 bool ts::StreamTypeIsVideo(uint8_t st)
 {
     return st == ST_MPEG1_VIDEO   ||
@@ -66,11 +40,7 @@ bool ts::StreamTypeIsVideo(uint8_t st)
            st == ST_AVS3_VIDEO;
 }
 
-
-//----------------------------------------------------------------------------
 // Check if a stream type value indicates a video stream using AVC encoding.
-//----------------------------------------------------------------------------
-
 bool ts::StreamTypeIsAVC(uint8_t st)
 {
     return st == ST_AVC_VIDEO      ||
@@ -80,11 +50,7 @@ bool ts::StreamTypeIsAVC(uint8_t st)
            st == ST_AVC_3D_VIEW;
 }
 
-
-//----------------------------------------------------------------------------
 // Check if a stream type value indicates a video stream using HEVC encoding.
-//----------------------------------------------------------------------------
-
 bool ts::StreamTypeIsHEVC(uint8_t st)
 {
     return st == ST_HEVC_VIDEO       ||
@@ -96,22 +62,14 @@ bool ts::StreamTypeIsHEVC(uint8_t st)
            st == ST_HEVC_TILESET;
 }
 
-
-//----------------------------------------------------------------------------
 // Check if a stream type value indicates a video stream using VVC encoding.
-//----------------------------------------------------------------------------
-
 bool ts::StreamTypeIsVVC(uint8_t st)
 {
     return st == ST_VVC_VIDEO ||
            st == ST_VVC_VIDEO_SUBSET;
 }
 
-
-//----------------------------------------------------------------------------
 // Check if an ST value indicates an audio stream
-//----------------------------------------------------------------------------
-
 bool ts::StreamTypeIsAudio(uint8_t st, uint32_t regid)
 {
     bool audio = false;
@@ -146,11 +104,7 @@ bool ts::StreamTypeIsAudio(uint8_t st, uint32_t regid)
            st == ST_AVS3_AUDIO;
 }
 
-
-//----------------------------------------------------------------------------
 // Check if an ST value indicates a stream carrying sections
-//----------------------------------------------------------------------------
-
 bool ts::StreamTypeIsSection(uint8_t st)
 {
     return st == ST_PRIV_SECT     ||

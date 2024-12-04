@@ -16,7 +16,8 @@
 #include "tsByteBlock.h"
 #include "tsCharset.h"
 #include "tsStandards.h"
-#include "tsPSI.h"
+#include "tsRegistration.h"
+#include "tsPDS.h"
 #include "tsCAS.h"
 
 namespace ts {

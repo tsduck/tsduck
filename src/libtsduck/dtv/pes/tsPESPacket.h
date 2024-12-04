@@ -15,7 +15,7 @@
 #include "tsDemuxedData.h"
 #include "tsCodecType.h"
 #include "tsTS.h"
-#include "tsPSI.h"
+#include "tsStreamType.h"
 
 namespace ts {
 
