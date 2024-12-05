@@ -48,6 +48,7 @@ namespace ts {
     //! old subclasses which do not yet use the new scheme.
     //!
     //! A table subclass shall override the following methods:
+    //!
     //! - clearContent()
     //! - tableIdExtension() : for long tables only, see AbstractLongTable
     //! - serializePayload()
@@ -56,8 +57,12 @@ namespace ts {
     //! - analyzeXML()
     //!
     //! A table subclass may also override the following methods when necessary:
+    //!
     //! - isPrivate() : for non-private table, ie. MPEG-defined or SCTE-defined.
     //! - isValidTableId() : for table types accepting several table id values.
+    //! - topLevelDescriptorList() : for tables with a top-level descriptor list (two overloads).
+    //! - maxPayloadSize() : if the section uses a non-standard max size (1024 for MPEG-defined, 4096 for private sections).
+    //! - useTrailingCRC32() : for short sections using a trailing CRC32.
     //!
     class TSDUCKDLL AbstractTable: public AbstractSignalization
     {

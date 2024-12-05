@@ -207,7 +207,8 @@ namespace ts {
         public:
             //!
             //! Register a fully implemented table.
-            //! @param [in] factory Function which creates a table of this type.
+            //! @param [in] factory Function which creates a table object of this type.
+            //! @param [in] index Type index of the table object class.
             //! @param [in] tids List of table ids for this type. Usually there is only one (notable exception: EIT, SDT, NIT).
             //! @param [in] standards List of standards which define this table.
             //! @param [in] xmlName XML node name for this table type.
@@ -219,6 +220,7 @@ namespace ts {
             //! @see TS_REGISTER_TABLE
             //!
             RegisterTable(TableFactory factory,
+                          std::type_index index,
                           const std::vector<TID>& tids,
                           Standards standards,
                           const UString& xmlName,
@@ -259,7 +261,8 @@ namespace ts {
         public:
             //!
             //! Register a descriptor factory for a given descriptor tag.
-            //! @param [in] factory Function which creates a descriptor of this type.
+            //! @param [in] factory Function which creates a descriptor object of this type.
+            //! @param [in] index Type index of the descriptor object class.
             //! @param [in] edid Exended descriptor id.
             //! @param [in] xmlName XML node name for this descriptor type.
             //! @param [in] displayFunction Display function for the corresponding descriptors. Can be null.
@@ -267,6 +270,7 @@ namespace ts {
             //! @see TS_REGISTER_DESCRIPTOR
             //!
             RegisterDescriptor(DescriptorFactory factory,
+                               std::type_index index,
                                const EDID& edid,
                                const UString& xmlName,
                                DisplayDescriptorFunction displayFunction = nullptr,
@@ -309,7 +313,7 @@ namespace ts {
 
     private:
         // Description of a table id. Several descriptions can be used for the same table id,
-        // for instance for distinct DTV standards or disctinct CA systems.
+        // for instance for distinct DTV standards or distinct CA systems.
         // We use a fixed-size array for 'pids' instead of a PIDSet for storage efficiency.
         class TableDescription
         {
@@ -345,14 +349,18 @@ namespace ts {
             DescriptorDescription(DescriptorFactory fact = nullptr, DisplayDescriptorFunction disp = nullptr);
         };
 
-        // PSIRepository instance private members.
-        std::multimap<TID, TableDescription>            _tables {};                   // Description of all table ids, potential multiple entries per table idx
+        // PSIRepository instance private members: tables.
+        std::multimap<TID, TableDescription> _tables {};      // Description of all table ids, potential multiple entries per table idx
+        std::map<UString, TableFactory>      _tableNames {};  // XML table name to table factory
+
+        // PSIRepository instance private members: descriptors.
         std::map<EDID, DescriptorDescription>           _descriptors {};              // Description of all descriptors, by extended id.
-        std::map<UString, TableFactory>                 _tableNames {};               // XML table name to table factory
         std::map<UString, DescriptorFactory>            _descriptorNames {};          // XML descriptor name to descriptor factory
         std::multimap<UString, TID>                     _descriptorTablesIds {};      // XML descriptor name to table id for table-specific descriptors
         std::map<uint16_t, DisplayCADescriptorFunction> _casIdDescriptorDisplays {};  // CA_system_id to display function for CA_descriptor.
-        UStringList                                     _xmlModelFiles {};            // Additional XML model files for tables.
+
+        // PSIRepository instance private members: extensions.
+        UStringList _xmlModelFiles {};  // Additional XML model files for tables.
 
         // Common code to lookup a table function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
@@ -385,7 +393,7 @@ namespace ts {
 //!
 #define TS_REGISTER_TABLE(classname, ...) \
     TS_LIBCHECK(); \
-    _TS_TABLE_FACTORY(classname) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, __VA_ARGS__)
+    _TS_TABLE_FACTORY(classname) static ts::PSIRepository::RegisterTable _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, std::type_index(typeid(classname)), __VA_ARGS__)
 
 //!
 //! @hideinitializer
@@ -403,7 +411,7 @@ namespace ts {
 //!
 #define TS_REGISTER_DESCRIPTOR(classname, ...) \
     TS_LIBCHECK(); \
-    _TS_DESCRIPTOR_FACTORY(classname) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, __VA_ARGS__)
+    _TS_DESCRIPTOR_FACTORY(classname) static ts::PSIRepository::RegisterDescriptor _TS_REGISTRAR_NAME(_TS_FACTORY_NAME, std::type_index(typeid(classname)), __VA_ARGS__)
 
 //!
 //! @hideinitializer

@@ -309,13 +309,11 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
         AbstractDescriptorPtr desc = fac();
         if (desc != nullptr) {
             desc->fromXML(duck, node);
+            if (desc->isValid() && desc->serialize(duck, *this)) {
+                // The descriptor was successfully serialized.
+                return true;
+            }
         }
-        if (desc != nullptr && desc->isValid()) {
-            // Serialize the descriptor.
-            desc->serialize(duck, *this);
-        }
-        // The XML element name was valid.
-        return true;
     }
 
     // Try to decode a generic descriptor.
@@ -330,11 +328,9 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
             _data->append(payload);
             return true;
         }
-        else {
-            node->report().error(u"<%s>, line %d, is not a valid descriptor", node->name(), node->lineNumber());
-        }
     }
 
     // The XML element name was not valid.
+    node->report().error(u"<%s>, line %d, is not a valid descriptor", node->name(), node->lineNumber());
     return false;
 }

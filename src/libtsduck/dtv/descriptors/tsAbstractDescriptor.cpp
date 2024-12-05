@@ -59,6 +59,15 @@ ts::EDID ts::AbstractDescriptor::edid(const AbstractTable* table) const
 
 ts::EDID ts::AbstractDescriptor::edid(TID tid) const
 {
+    // PrivateMPEG(DID did, REGID regid)
+    // PrivateDVB(DID did, PDS pds)
+    // PrivateDual(DID did, PDS pds)
+    // ExtensionMPEG(DID ext)
+    // ExtensionDVB(DID ext)
+    // TableSpecific(DID did, TID tid, Standards std)
+
+
+
     if (!isValid()) {
         return EDID();  // invalid value.
     }
@@ -80,7 +89,7 @@ ts::EDID ts::AbstractDescriptor::edid(TID tid) const
     }
     else {
         // Standard descriptor.
-        return EDID::Standard(_tag);
+        return EDID::Regular(_tag, definingStandards());
     }
 }
 

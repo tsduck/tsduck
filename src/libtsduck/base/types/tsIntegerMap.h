@@ -128,7 +128,7 @@ ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE,N>::toStringKeys(V
             str.append(u" (");
         }
         if (file != nullptr) {
-            str.append(file->nameFromSection(KEY_NAMES_SECTION, NamesFile::Value(it.first), NamesFlags::NAME, 8 * sizeof(KEY)));
+            str.append(file->nameFromSection(KEY_NAMES_SECTION, NamesFile::Value(it.first), NamesFlags::NAME));
         }
         if (percent && file != nullptr) {
             str.append(u' ');

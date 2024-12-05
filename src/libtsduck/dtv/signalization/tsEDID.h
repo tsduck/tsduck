@@ -16,6 +16,7 @@
 #include "tsDID.h"
 #include "tsPDS.h"
 #include "tsRegistration.h"
+#include "tsStandards.h"
 
 namespace ts {
     //!
@@ -27,54 +28,91 @@ namespace ts {
     //! uniquely identify a descriptor.
     //!
     //! A descriptor usually falls into one of the following categories:
-    //! - Standard descriptor (tag in the range 0x00-0x3F for MPEG, 0x40-7F for DVB,
-    //!   unspecified for other standards).
+    //!
+    //! - Regular descriptor (tag in the range 0x00-0x3F for MPEG, 0x40-7F for DVB,
+    //!   unspecified for other standards). This descriptor is usually associated to
+    //!   a standard (MPEG, DVB, ATSC, ISDB, etc.)
     //! - Private MPEG descriptor (unofficial name). Must be associated with a 32-bit
     //!   registration id, or REGID, in a preceding MPEG registration_descriptor. This
     //!   descriptor can be in the same descriptor list or a higher descriptor list.
     //! - Private DVB descriptor (tag in the range 0x80-0xFF). Must be associated with
     //!   a 32-bit private data specifier or PDS, in a preceding private_data_specifier
     //!   descriptor in the same descriptor list.
+    //! - Dual private descriptor: Can be used either as private MPEG or private DVB
+    //!   descriptor. The same 32-bit value is used as MPEG registration id and DVB
+    //!   private data specifier.
     //! - MPEG or DVB extension descriptor (tag == 0x3F or 0x7F). Must be
     //!   associated with a 8-bit tag extension.
-    //! - DVB table-specific descriptor (tag in the MPEG-defined range 0x00-0x3F).
-    //!   Must be associated with an 8-bit table id. Such a descriptor uses a
-    //!   reserved standard tag but its meaning changes in the context of a
-    //!   specific table such as AIT, INT or UNT. Standard MPEG descriptors
-    //!   cannot be used in such tables.
+    //! - Table-specific descriptor. Its tag reuses a tag which is otherwise used by some
+    //!   regular descriptor, typically in the MPEG-defined range 0x00-0x3F. Such a descriptor
+    //!   can only be found in one or more specific tables such as AIT, INT or UNT (DVB). In
+    //!   these tables, the descriptor tag is interpreted as this table-specific descriptor.
+    //!   Of course, the regular descriptor which normally uses this tag value cannot be
+    //!   present in these tables. The descriptor tag must be associated with an 8-bit table id
+    //!   (and the associated standard).
+    //!
+    //! The "extended DID" or EDID is a 64-bit value as used in the file tsDID.names.
+    //! The C++ class EDID encapsulates this value, nothing more.
+    //!
+    //! The EDID 64-bit value is structured as follow: 0xSSSSTTRRRRRRRRDD.
+    //!
+    //! - 0xSSSS, 16 bits: Mask of associated standards. See enum class Standards.
+    //! - 0xTT, 8 bits: Descriptor type. The possible values are:
+    //!   - 0x00: Regular descriptor for the specified standard.
+    //!   - 0x01: Private descriptor, needs a registration id or private data specifier.
+    //!   - 0x02: Extension descriptor. The descriptor tag must be 0x3F (MPEG) or 0x7F (DVB).
+    //!   - 0x03: Table-specific descriptor.
+    //!   - 0xFF: Invalid.
+    //! - 0xRRRRRRRR, 32 bits: Registration value. It depends on the descriptor type.
+    //!   - 0x00: Unused, registration value = 0xFFFFFFFF.
+    //!   - 0x01: Registration value = 32-bit REGID and/or PDS.
+    //!   - 0x02: Registration value = 0xFFFFFFVV where 0xVV is the extended descriptor tag.
+    //!   - 0x03: Registration value = 0xFFFFFFVV where 0xVV is the parent table id.
+    //!   - other: Unused, registration value = 0xFFFFFFFF.
+    //! - 0xDD, 8 bits: Descriptor id or tag.
     //!
     class TSDUCKDLL EDID
     {
     private:
-        // For simplicity of implementation of operators, we pack everything in a 64-bit value:
-        // - 32 bits: context-id, PDS or REGID (or PDS_NULL)
-        // - 1 bit: 0 = context-id is a REGID (MPEG-private), 1 = not a REGID
-        // - 1 bit: 0 = context-id is a PDS (DVB-private), 1 = not a PDS
-        // - 6 bits: unused (0x3F)
-        // - 8 bits: table-id for table-specific descriptors (or TID_NULL)
-        // - 8 bits: tag extension (or EDID_NULL)
-        // - 8 bits: descriptor tag (DID)
-        static constexpr uint64_t HAS_REGID = 0x0000000080000000;
-        static constexpr uint64_t HAS_PDS   = 0x0000000040000000;
-
-        // The 64-bit extended id. This is the only instance field, an EDID is just an encapsulated uint64_t.
         uint64_t _edid = 0xFFFFFFFFFFFFFFFF;
-
-        // Private constructor from a 64-bit value.
-        EDID(uint64_t edid) : _edid(edid) {}
 
     public:
         //!
         //! Default constructor.
+        //! The initial value is invalid.
         //!
         EDID() = default;
 
         //!
-        //! Build the EDID for a standard MPEG or DVB descriptor.
+        //! Constructor from a 64-bit EDID value.
+        //! @param [in] edid 64-bit EDID value.
+        //!
+        EDID(uint64_t edid) : _edid(edid) {}
+
+        //!
+        //! Enumeration of descriptor types.
+        //!
+        enum class Type : uint8_t {
+            REGULAR    = 0x00,  //!< Regular descriptor for the specified standard.
+            PRIVATE    = 0x01,  //!< Private MPEG or DVB descriptor, needs a REGID or PDS.
+            EXTENDED   = 0x02,  //!< MPEG or DVB extension descriptor. The descriptor tag must be 0x3F or 0x7F.
+            TABLE_SPEC = 0x03,  //!< Table-specific descriptor.
+            INVALID    = 0xFF,  //!< Invalid.
+        };
+
+        //!
+        //! Build the EDID for a regular descriptor.
         //! @param [in] did Descriptor tag.
+        //! @param [in] std Relevant standards.
         //! @return The corresponding EDID.
         //!
-        static EDID Standard(DID did) { return EDID(0xFFFFFFFFFFFFFF00 | (did & 0xFF)); }
+        static EDID Regular(DID did, Standards std)
+        {
+            return EDID(0x000000FFFFFFFF00 |
+                        (uint64_t(Type::REGULAR) << 40) |
+                        (uint64_t(std) << 48) |
+                        (did & 0xFF));
+        }
 
         //!
         //! Build the EDID for a private MPEG descriptor.
@@ -82,7 +120,13 @@ namespace ts {
         //! @param [in] regid Associated registration id.
         //! @return The corresponding EDID.
         //!
-        static EDID PrivateMPEG(DID did, REGID regid) { return EDID((uint64_t(regid) << 32) | (0x00000000FFFFFF00 & ~HAS_REGID) | (did & 0xFF)); }
+        static EDID PrivateMPEG(DID did, REGID regid)
+        {
+            return EDID((uint64_t(Type::PRIVATE) << 40) |
+                        (uint64_t(Standards::MPEG) << 48) |
+                        (uint64_t(regid) << 8) |
+                        (did & 0xFF));
+        }
 
         //!
         //! Build the EDID for a private DVB descriptor.
@@ -90,7 +134,13 @@ namespace ts {
         //! @param [in] pds Associated private data specifier.
         //! @return The corresponding EDID.
         //!
-        static EDID PrivateDVB(DID did, PDS pds) { return EDID((uint64_t(pds) << 32) | (0x00000000FFFFFF00 & ~HAS_PDS) | (did & 0xFF)); }
+        static EDID PrivateDVB(DID did, PDS pds)
+        {
+            return EDID((uint64_t(Type::PRIVATE) << 40) |
+                        (uint64_t(Standards::DVB) << 48) |
+                        (uint64_t(pds) << 8) |
+                        (did & 0xFF));
+        }
 
         //!
         //! Build the EDID for a dual private descriptor.
@@ -101,29 +151,57 @@ namespace ts {
         //! @param [in] pds Associated registration id and private data specifier.
         //! @return The corresponding EDID.
         //!
-        static EDID PrivateDual(DID did, PDS pds) { return EDID((uint64_t(pds) << 32) | (0x00000000FFFFFF00 & ~(HAS_REGID | HAS_PDS)) | (did & 0xFF)); }
-
-        //!
-        //! Build the EDID for a DVB extension descriptor.
-        //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_DVB_EXTENSION.
-        //! @return The corresponding EDID.
-        //!
-        static EDID ExtensionDVB(DID ext) { return EDID(0xFFFFFFFFFFFF0000 | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_DVB_EXTENSION)); }
+        static EDID PrivateDual(DID did, PDS pds)
+        {
+            return EDID((uint64_t(Type::PRIVATE) << 40) |
+                        (uint64_t(Standards::MPEG | Standards::DVB) << 48) |
+                        (uint64_t(pds) << 8) |
+                        (did & 0xFF));
+        }
 
         //!
         //! Build the EDID for an MPEG extension descriptor.
         //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_MPEG_EXTENSION.
         //! @return The corresponding EDID.
         //!
-        static EDID ExtensionMPEG(DID ext) { return EDID(0xFFFFFFFFFFFF0000 | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_MPEG_EXTENSION)); }
+        static EDID ExtensionMPEG(DID ext)
+        {
+            return EDID(0x000000FFFFFF0000 |
+                        (uint64_t(Type::EXTENDED) << 40) |
+                        (uint64_t(Standards::MPEG) << 48) |
+                        (uint64_t(ext) << 8) |
+                        uint64_t(DID_MPEG_EXTENSION));
+        }
+
+        //!
+        //! Build the EDID for a DVB extension descriptor.
+        //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_DVB_EXTENSION.
+        //! @return The corresponding EDID.
+        //!
+        static EDID ExtensionDVB(DID ext)
+        {
+            return EDID(0x000000FFFFFF0000 |
+                        (uint64_t(Type::EXTENDED) << 40) |
+                        (uint64_t(Standards::DVB) << 48) |
+                        (uint64_t(ext) << 8) |
+                        uint64_t(DID_DVB_EXTENSION));
+        }
 
         //!
         //! Build the EDID for a table-specific descriptor.
         //! @param [in] did Descriptor tag.
         //! @param [in] tid Associated required table id.
+        //! @param [in] std Relevant standards for the table.
         //! @return The corresponding EDID.
         //!
-        static EDID TableSpecific(DID did, TID tid) { return EDID(0xFFFFFFFFFF00FF00 | (uint64_t(tid & 0xFF) << 16) | (did & 0xFF)); }
+        static EDID TableSpecific(DID did, TID tid, Standards std)
+        {
+            return EDID(0x000000FFFFFF0000 |
+                        (uint64_t(Type::TABLE_SPEC) << 40) |
+                        (uint64_t(std) << 48) |
+                        (uint64_t(tid & 0xFF) << 0) |
+                        (did & 0xFF));
+        }
 
         //!
         //! Check if the extended descriptor id is valid.
@@ -132,10 +210,22 @@ namespace ts {
         bool isValid() const { return did() != 0xFF; }
 
         //!
-        //! Check if the descriptor is a standard one.
+        //! Get the descriptor type.
+        //! @return The descriptor type.
+        //!
+        Type type() const { return Type((_edid >> 40) & 0xFF); }
+
+        //!
+        //! Get the associated standards.
+        //! @return The mask of associated standards.
+        //!
+        Standards standards() const { return Standards(_edid >> 48); }
+
+        //!
+        //! Check if the descriptor is a regular one.
         //! @return True if the descriptor is a standard one.
         //!
-        bool isStandard() const { return (_edid & 0xFFFFFFFFFFFFFF00) == 0xFFFFFFFFFFFFFF00; }
+        bool isRegular() const { return type() == Type::REGULAR; }
 
         //!
         //! Get the descriptor id (aka tag).
@@ -147,49 +237,43 @@ namespace ts {
         //! Check if the descriptor is a MPEG or dual private descriptor.
         //! @return True if the descriptor is a MPEG or dual private descriptor.
         //!
-        bool isPrivateMPEG() const { return (_edid & HAS_REGID) == 0; }
+        bool isPrivateMPEG() const { return type() == Type::PRIVATE && bool(standards() & Standards::MPEG); }
 
         //!
         //! Check if the descriptor is a DVB or dual private descriptor.
         //! @return True if the descriptor is a DVB or dual private descriptor.
         //!
-        bool isPrivateDVB() const { return (_edid & HAS_PDS) == 0; }
+        bool isPrivateDVB() const { return type() == Type::PRIVATE && bool(standards() & Standards::DVB); }
 
         //!
-        //! Check if the descriptor is a dual private descriptor (used as MPEG or DVB private descriptor).
+        //! Check if the descriptor is a dual private descriptor (can be used as MPEG or DVB private descriptor).
         //! @return True if the descriptor is a dual private descriptor.
         //!
-        bool isPrivateDual() const { return (_edid & (HAS_REGID | HAS_PDS)) == 0; }
+        bool isPrivateDual() const { return type() == Type::PRIVATE && (standards() & (Standards::MPEG | Standards::DVB)) == (Standards::MPEG | Standards::DVB); }
 
         //!
         //! Get the MPEG registration identifier.
         //! @return The MPEG registration identifier or REGID_NULL if this is not a private descriptor.
         //!
-        PDS regid() const { return (_edid & HAS_REGID) ? PDS(REGID_NULL) : PDS((_edid >> 32) & 0xFFFFFFFF); }
+        REGID regid() const { return isPrivateMPEG() ? REGID(_edid >> 8) : REGID(REGID_NULL); }
 
         //!
         //! Get the DVB private data specifier.
         //! @return The DVB private data specifier or PDS_NULL if this is not a private descriptor.
         //!
-        PDS pds() const { return (_edid & HAS_PDS) ? PDS(PDS_NULL) : PDS((_edid >> 32) & 0xFFFFFFFF); }
-
-        //!
-        //! Check if the descriptor is a DVB extension descriptor.
-        //! @return True if the descriptor is a DVB extension descriptor.
-        //!
-        bool isExtensionDVB() const { return didExtDVB() != EDID_NULL; }
+        PDS pds() const { return isPrivateDVB() ? PDS(_edid >> 8) : PDS(REGID_NULL); }
 
         //!
         //! Check if the descriptor is an MPEG extension descriptor.
         //! @return True if the descriptor is an MPEG extension descriptor.
         //!
-        bool isExtensionMPEG() const { return didExtMPEG() != EDID_NULL; }
+        bool isExtensionMPEG() const { return type() == Type::EXTENDED && bool(standards() & Standards::MPEG); }
 
         //!
-        //! Get the DVB descriptor tag extension.
-        //! @return The descriptor tag extension or EDID_NULL if this is not a DVB extension descriptor.
+        //! Check if the descriptor is a DVB extension descriptor.
+        //! @return True if the descriptor is a DVB extension descriptor.
         //!
-        DID didExtDVB() const { return did() == DID_DVB_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+        bool isExtensionDVB() const { return type() == Type::EXTENDED && bool(standards() & Standards::DVB); }
 
         //!
         //! Get the MPEG descriptor tag extension.
@@ -198,16 +282,22 @@ namespace ts {
         DID didExtMPEG() const { return did() == DID_MPEG_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
 
         //!
+        //! Get the DVB descriptor tag extension.
+        //! @return The descriptor tag extension or EDID_NULL if this is not a DVB extension descriptor.
+        //!
+        DID didExtDVB() const { return did() == DID_DVB_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+
+        //!
         //! Check if the descriptor is table-specific.
         //! @return True if the descriptor is table-specific.
         //!
-        bool isTableSpecific() const { return tableId() != TID_NULL; }
+        bool isTableSpecific() const { return type() == Type::TABLE_SPEC; }
 
         //!
         //! Get the required table-id for a table-specific descriptor.
         //! @return The table id or TID_NULL if this is not a table-specific descriptor.
         //!
-        TID tableId() const { return TID((_edid >> 16) & 0xFF); }
+        TID tableId() const { return isTableSpecific() ? TID((_edid >> 8) & 0xFF) : TID(TID_NULL); }
 
         //!
         //! Comparison operator.

@@ -553,7 +553,7 @@ bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 // Get a name from a specified section.
 //----------------------------------------------------------------------------
 
-ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value value, NamesFlags flags, size_t bits, Value alternateValue) const
+ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value value, NamesFlags flags, Value alternateValue) const
 {
     ConfigSectionPtr section;
     UString name;
@@ -561,10 +561,10 @@ ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value val
 
     if (section == nullptr) {
         // Non-existent section, no name.
-        return Formatted(value, UString(), flags, bits, alternateValue);
+        return Formatted(value, UString(), flags, 0, alternateValue);
     }
     else {
-        return Formatted(value, name, flags, bits != 0 ? bits : section->bits, alternateValue);
+        return Formatted(value, name, flags, section->bits, alternateValue);
     }
 }
 
@@ -573,7 +573,7 @@ ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value val
 // Get a name from a specified section, with alternate fallback value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags, size_t bits, Value alternateValue) const
+ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags, Value alternateValue) const
 {
     ConfigSectionPtr section;
     UString name;
@@ -585,10 +585,10 @@ ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionNam
     }
     else if (!name.empty()) {
         // value1 has a name
-        return Formatted(value1, name, flags, bits != 0 ? bits : section->bits, alternateValue);
+        return Formatted(value1, name, flags, section->bits, alternateValue);
     }
     else {
         // value1 has no name, use value2, restart from the beginning in case of inheritance.
-        return nameFromSection(sectionName, value2, flags, bits, alternateValue);
+        return nameFromSection(sectionName, value2, flags, alternateValue);
     }
 }

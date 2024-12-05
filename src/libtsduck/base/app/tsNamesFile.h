@@ -153,11 +153,10 @@ namespace ts {
         //! @param [in] sectionName Name of section to search. Not case-sensitive.
         //! @param [in] value Value to get the name for.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
         //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        UString nameFromSection(const UString& sectionName, Value value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, Value alternateValue = 0) const;
+        UString nameFromSection(const UString& sectionName, Value value, NamesFlags flags = NamesFlags::NAME, Value alternateValue = 0) const;
 
         //!
         //! Get a name from a specified section, with alternate fallback value.
@@ -165,18 +164,17 @@ namespace ts {
         //! @param [in] value1 Value to get the name for.
         //! @param [in] value2 Alternate value if no name is found for @a value1.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
         //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, Value alternateValue = 0) const;
+        UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags = NamesFlags::NAME, Value alternateValue = 0) const;
 
         //!
         //! Format a name using flags.
         //! @param [in] value Value for the name.
         //! @param [in] name Name for the value.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @param [in] bits Nominal size in bits of the data.
         //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
@@ -313,14 +311,13 @@ namespace ts {
     //! @param [in] sectionName Name of section to search. Not case-sensitive.
     //! @param [in] value Value to get the name for.
     //! @param [in] flags Presentation flags.
-    //! @param [in] bits Nominal size in bits of the data, optional.
     //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
-    UString NameFromDTV(const UString& sectionName, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = static_cast<INT>(0))
+    UString NameFromDTV(const UString& sectionName, INT value, NamesFlags flags = NamesFlags::NAME, INT alternateValue = static_cast<INT>(0))
     {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(sectionName, NamesFile::Value(value), flags, bits, NamesFile::Value(alternateValue));
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(sectionName, NamesFile::Value(value), flags, NamesFile::Value(alternateValue));
     }
 
     //!
@@ -330,14 +327,13 @@ namespace ts {
     //! @param [in] value1 Value to get the name for.
     //! @param [in] value2 Alternate value if no name is found for @a value1.
     //! @param [in] flags Presentation flags.
-    //! @param [in] bits Nominal size in bits of the data, optional.
     //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
-    UString NameFromDTVWithFallback(const UString& sectionName, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = static_cast<INT>(0))
+    UString NameFromDTVWithFallback(const UString& sectionName, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, INT alternateValue = static_cast<INT>(0))
     {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(sectionName, NamesFile::Value(value1), NamesFile::Value(value2), flags, bits, NamesFile::Value(alternateValue));
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(sectionName, NamesFile::Value(value1), NamesFile::Value(value2), flags, NamesFile::Value(alternateValue));
     }
 
     //!
@@ -348,7 +344,7 @@ namespace ts {
     //!
     TSDUCKDLL inline UString NameFromOUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME)
     {
-        return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags, 24);
+        return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags);
     }
 }
 

@@ -44,11 +44,9 @@ namespace ts {
         PDS_OFCOM     = 0x0000233A,  //!< Private data specifier for DTT UK (OFCOM, formerly ITC).
         PDS_AUSTRALIA = 0x00003200,  //!< Private data specifier for Free TV Australia.
         PDS_AOM       = 0x414F4D53,  //!< Private data specifier for the Alliance for Open Media (AOM) (value is "AOMS" in ASCII).
-        PDS_ATSC      = 0x41545343,  //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
         PDS_AVSAudio  = 0x41565341,  //!< Private data specifier for AVS Working Group of China (value is "AVSA" in ASCII).
         PDS_AVSVideo  = 0x41565356,  //!< Private data specifier for AVS Working Group of China (value is "AVSV" in ASCII).
-        PDS_ISDB      = 0x49534442,  //!< Fake private data specifier for ISDB descriptors (value is "ISDB" in ASCII).
-        PDS_CUVV      = 0x63757676,  //!< Private data specifier for UHD World Association (value is "cuvv" in ASCII).
+        PDS_CUVV      = 0x63757676,  //!< Unofficial private data specifier for UHD World Association (value is "cuvv" in ASCII).
         PDS_NULL      = 0xFFFFFFFF,  //!< An invalid private data specifier, can be used as placeholder.
     };
 

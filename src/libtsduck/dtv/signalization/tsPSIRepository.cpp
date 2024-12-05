@@ -128,7 +128,7 @@ FUNCTION ts::PSIRepository::getDescriptorFunction(const EDID& edid, TID tid, FUN
 {
     auto it(_descriptors.end());
 
-    if (edid.isStandard() && tid != TID_NULL) {
+    if (edid.isRegular() && tid != TID_NULL) {
         // For standard descriptors, first search a table-specific descriptor.
         it = _descriptors.find(EDID::TableSpecific(edid.did(), tid));
         // If not found and there is a table-specific name for the descriptor,
@@ -161,6 +161,7 @@ ts::PSIRepository::RegisterXML::RegisterXML(const UString& filename)
 //----------------------------------------------------------------------------
 
 ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
+                                                std::type_index index,
                                                 const std::vector<TID>& tids,
                                                 Standards standards,
                                                 const UString& xmlName,
@@ -204,7 +205,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
                                                 uint16_t maxCAS)
 {
     // Use the complete constructor for actual registration.
-    RegisterTable reg(nullptr, tids, standards, UString(), displayFunction, logFunction, pids, minCAS, maxCAS);
+    RegisterTable reg(nullptr, std::type_index(typeid(std::nullptr_t)), tids, standards, UString(), displayFunction, logFunction, pids, minCAS, maxCAS);
 }
 
 
@@ -213,6 +214,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
 //----------------------------------------------------------------------------
 
 ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory factory,
+                                                          std::type_index index,
                                                           const EDID& edid,
                                                           const UString& xmlName,
                                                           DisplayDescriptorFunction displayFunction,

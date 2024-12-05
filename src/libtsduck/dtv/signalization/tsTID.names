@@ -1,11 +1,15 @@
 [TableId]
-# MPEG table id: 0xsssscctt with
+#
+# MPEG table id: 0xssss_cc_tt with
 #  0xtt : table id
-#  0xcc : CAS family
-#  0xssss : standards which define this table (see tsStandards.names)
+#  0xcc : CAS family (see section [CASFamily] in tsCAS.names), zero if not applicable
+#  0xssss : standards which define this table (see section [Standards] in tsStandards.names)
+#
 Bits = 8
 Extended = true
-# DVB-defined tables:
+#
+# MPEG-defined tables:
+#
 0x0001_00_00 = PAT
 0x0001_00_01 = CAT
 0x0001_00_02 = PMT
@@ -25,7 +29,9 @@ Extended = true
 0x0001_00_3D = DSM-CC SD
 0x0001_00_3E = DSM-CC PD
 0x0001_00_3F = DSM-CC 0x3F
+#
 # DVB-defined tables:
+#
 0x0002_00_40 = NIT Actual
 0x0002_00_41 = NIT Other
 0x0002_00_42 = SDT Actual
@@ -61,9 +67,13 @@ Extended = true
 0x0002_00_AA = Transmission Mode Support Table (ETSI EN 301 790)
 0x0002_00_B0 = TIM (Terminal Information Message, ETSI EN 301 790)
 0x0002_00_B1 = LL_FEC_parity_data_table (ETSI EN 301 790)
+#
 # SCTE-defined tables:
+#
 0x0004_00_FC = SCTE 35 Splice Information
+#
 # ATSC-defined tables:
+#
 0x0008_00_C7 = MGT (ATSC)
 0x0008_00_C8 = TVCT (ATSC)
 0x0008_00_C9 = CVCT (ATSC)
@@ -74,7 +84,9 @@ Extended = true
 0x0008_00_D3 = DCCT (ATSC)
 0x0008_00_D4 = DCCSCT (ATSC)
 0x0008_00_D8 = Cable Emergency Alert (ATSC)
+#
 # ISDB-defined tables:
+#
 0x0010_00_C0 = DCT (ISDB)
 0x0010_00_C1 = DLT (ISDB)
 0x0010_00_C2 = PCAT (ISDB)
@@ -88,7 +100,9 @@ Extended = true
 0x0010_00_D1 = ERT (ISDB)
 0x0010_00_D2 = ITT (ISDB)
 0x0010_00_FE = AMT (ISDB)
+#
 # CAS-specific values
+#
 0x0000_00_80 = ECM (even)
 0x0000_00_81 = ECM (odd)
 0x0000_00_82-0x0000_00_8F = EMM
@@ -151,5 +165,7 @@ Extended = true
 0x0000_09_80 = Conax ECM (even)
 0x0000_09_81 = Conax ECM (odd)
 0x0000_09_82-0x0000_09_8F = Conax EMM
+#
 # End of table ids:
+#
 0x0000_00_FF = Forbidden TID 0xFF
