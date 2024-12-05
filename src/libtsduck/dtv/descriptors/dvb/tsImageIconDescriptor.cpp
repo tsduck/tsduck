@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"image_icon_descriptor"
-#define MY_CLASS ts::ImageIconDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_IMAGE_ICON
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::ImageIconDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_IMAGE_ICON)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::ImageIconDescriptor::ImageIconDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -51,16 +49,6 @@ void ts::ImageIconDescriptor::clearContent()
     icon_type.clear();
     url.clear();
     icon_data.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::ImageIconDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -146,15 +134,15 @@ void ts::ImageIconDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
-        const uint8_t desc = buf.getBits<uint8_t>(4);
-        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", desc, buf.getBits<uint8_t>(4)) << std::endl;
+        const uint8_t descnum = buf.getBits<uint8_t>(4);
+        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", descnum, buf.getBits<uint8_t>(4)) << std::endl;
         buf.skipBits(5);
         disp << margin << UString::Format(u"Icon id: %d", buf.getBits<uint8_t>(3)) << std::endl;
 
-        if (desc == 0) {
+        if (descnum == 0) {
             const uint8_t transport = buf.getBits<uint8_t>(2);
             disp << margin << "Transport mode: " << DataName(MY_XML_NAME, u"TransportMode", transport, NamesFlags::DECIMAL_FIRST) << std::endl;
             const bool has_position = buf.getBool();

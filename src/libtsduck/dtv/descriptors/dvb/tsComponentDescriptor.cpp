@@ -16,11 +16,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"component_descriptor"
-#define MY_CLASS ts::ComponentDescriptor
-#define MY_DID ts::DID_DVB_COMPONENT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::ComponentDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_COMPONENT, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ComponentDescriptor::ComponentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -83,7 +82,7 @@ void ts::ComponentDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(6)) {
         const uint8_t stream_content_ext = buf.getBits<uint8_t>(4);
@@ -196,13 +195,13 @@ ts::UString ts::ComponentDescriptor::ComponentTypeName(const DuckContext& duck, 
 
     if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
-        return DataName(MY_XML_NAME, u"component_type.japan", nType, flags | NamesFlags::ALTERNATE, bits, dType);
+        return DataName(MY_XML_NAME, u"component_type.japan", nType, flags | NamesFlags::ALTERNATE, dType, bits);
     }
     else if (stream_content == 4) {
         return NamesFile::Formatted(dType, AC3Descriptor::ComponentTypeName(uint8_t(nType)), flags, 16);
     }
     else {
-        return DataName(MY_XML_NAME, u"component_type", nType, flags | NamesFlags::ALTERNATE, bits, dType);
+        return DataName(MY_XML_NAME, u"component_type", nType, flags | NamesFlags::ALTERNATE, dType, bits);
     }
 }
 

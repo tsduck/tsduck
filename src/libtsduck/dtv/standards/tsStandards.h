@@ -21,14 +21,15 @@ namespace ts {
     //! @ingroup mpeg
     //!
     enum class Standards : uint16_t {
-        NONE  = 0x0000,  //!< No known standard
-        MPEG  = 0x0001,  //!< Defined by MPEG, common to all standards
-        DVB   = 0x0002,  //!< Defined by ETSI/DVB.
-        SCTE  = 0x0004,  //!< Defined by ANSI/SCTE.
-        ATSC  = 0x0008,  //!< Defined by ATSC.
-        ISDB  = 0x0010,  //!< Defined by ISDB.
-        JAPAN = 0x0020,  //!< Defined in Japan only (typically in addition to ISDB).
-        ABNT  = 0x0040,  //!< Defined by ABNT (Brazil, typically in addition to ISDB).
+        NONE    = 0x0000,  //!< No known standard
+        MPEG    = 0x0001,  //!< Defined by MPEG, common to all standards
+        DVB     = 0x0002,  //!< Defined by ETSI/DVB.
+        SCTE    = 0x0004,  //!< Defined by ANSI/SCTE.
+        ATSC    = 0x0008,  //!< Defined by ATSC.
+        ISDB    = 0x0010,  //!< Defined by ISDB.
+        JAPAN   = 0x0020,  //!< Defined in Japan only (typically in addition to ISDB).
+        ABNT    = 0x0040,  //!< Defined by ABNT (Brazil, typically in addition to ISDB).
+        DVBONLY = 0x8000   //!< Used with DVB. Means strict DVB, cannot be the DVB subset as used by ISDB.
     };
 
     //!
@@ -37,6 +38,15 @@ namespace ts {
     //! @return A string representing the standards.
     //!
     TSDUCKDLL UString StandardsNames(Standards standards);
+
+    //!
+    //! Check compatibility between standards.
+    //! Some standards are compatible, they can be used together. Example: MPEG and DVB.
+    //! Some standards are incompatible and cannot be used together. Example: DVB and ATSC.
+    //! @param [in] std Set of standards.
+    //! @return True if all standards in @a std are compatible with each other.
+    //!
+    TSDUCKDLL bool CompatibleStandards(Standards std);
 }
 
 TS_ENABLE_BITMASK_OPERATORS(ts::Standards);

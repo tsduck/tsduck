@@ -16,11 +16,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"parental_rating_descriptor"
-#define MY_CLASS ts::ParentalRatingDescriptor
-#define MY_DID ts::DID_DVB_PARENTAL_RATING
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::ParentalRatingDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_PARENTAL_RATING, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -40,7 +39,7 @@ ts::ParentalRatingDescriptor::Entry::Entry(const UString& code, uint8_t rate) :
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -94,7 +93,7 @@ void ts::ParentalRatingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(4)) {
         disp << margin << "Country code: " << buf.getLanguageCode();

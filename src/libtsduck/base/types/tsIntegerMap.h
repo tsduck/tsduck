@@ -86,7 +86,7 @@ namespace ts {
 // Name of the section which define names for the keys in the map.
 template<typename KEY, typename VALUE, const ts::UString* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE,
          typename std::enable_if<std::is_integral<KEY>::value && std::is_integral<VALUE>::value, int>::type* N>
-const ts::UString& ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE,N>::KEY_NAMES_SECTION(KEYNAMESECTION == nullptr ? UString::EMPTY : *KEYNAMESECTION);
+const ts::UString& ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE,N>::KEY_NAMES_SECTION(KEYNAMESECTION == nullptr ? *EMPTY_STRING : *KEYNAMESECTION);
 
 // Accumulate all values from another map.
 template<typename KEY, typename VALUE, const ts::UString* KEYNAMESECTION, ts::NamesFile::Predefined NAMESFILE,
@@ -128,7 +128,7 @@ ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE,N>::toStringKeys(V
             str.append(u" (");
         }
         if (file != nullptr) {
-            str.append(file->nameFromSection(KEY_NAMES_SECTION, NamesFile::Value(it.first), NamesFlags::NAME, 8 * sizeof(KEY)));
+            str.append(file->nameFromSection(KEY_NAMES_SECTION, NamesFile::Value(it.first), NamesFlags::NAME));
         }
         if (percent && file != nullptr) {
             str.append(u' ');

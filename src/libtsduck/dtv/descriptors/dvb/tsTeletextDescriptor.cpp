@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"teletext_descriptor"
-#define MY_CLASS ts::TeletextDescriptor
-#define MY_DID ts::DID_DVB_TELETEXT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::TeletextDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_TELETEXT, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -41,12 +40,12 @@ ts::TeletextDescriptor::Entry::Entry(const UString& code, uint8_t type, uint16_t
 }
 
 ts::TeletextDescriptor::TeletextDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
-ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds) :
-    AbstractDescriptor(tag, xml_name, standards, pds)
+ts::TeletextDescriptor::TeletextDescriptor(EDID edid, const UChar* xml_name) :
+    AbstractDescriptor(edid, xml_name)
 {
 }
 
@@ -89,7 +88,7 @@ uint8_t ts::TeletextDescriptor::Entry::magazineNumber() const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(5)) {
         disp << margin << "Language: " << buf.getLanguageCode();

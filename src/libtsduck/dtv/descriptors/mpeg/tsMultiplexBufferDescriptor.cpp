@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"multiplex_buffer_descriptor"
-#define MY_CLASS ts::MultiplexBufferDescriptor
-#define MY_DID ts::DID_MPEG_MUX_BUFFER
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::MultiplexBufferDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_MUX_BUFFER, ts::Standards::MPEG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::MultiplexBufferDescriptor::MultiplexBufferDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -65,7 +64,7 @@ void ts::MultiplexBufferDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(6)) {
         disp << margin << UString::Format(u"MB buffer size: %'d bytes", buf.getUInt24()) << std::endl;

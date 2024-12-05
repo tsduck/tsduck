@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"multilingual_service_name_descriptor"
-#define MY_CLASS ts::MultilingualServiceNameDescriptor
-#define MY_DID ts::DID_DVB_MLINGUAL_SERVICE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::MultilingualServiceNameDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_MLINGUAL_SERVICE, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::MultilingualServiceNameDescriptor::MultilingualServiceNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -84,7 +83,7 @@ void ts::MultilingualServiceNameDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();

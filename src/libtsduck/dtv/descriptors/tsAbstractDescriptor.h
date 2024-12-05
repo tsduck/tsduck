@@ -42,7 +42,6 @@ namespace ts {
     //! - analyzeXML()
     //!
     //! Important: With extension descriptors (MPEG or DVB), note the following:
-    //! - extendedTag() must be overriden and must return the expected extended descriptor tag.
     //! - serializePayload() does not need to add the extended descriptor tag, it has
     //!   already been added in the buffer by the AbstractDescriptor.
     //! - deserializePayload() must not read the extended descriptor tag, it has already
@@ -58,21 +57,13 @@ namespace ts {
         //! Get the descriptor tag.
         //! @return The descriptor tag.
         //!
-        DID tag() const { return _tag; }
+        DID tag() const { return _edid.did(); }
 
         //!
         //! Get the extended descriptor id.
-        //! @param [in] tid Check if the descriptor is table-specific for this table-id.
         //! @return The extended descriptor id.
         //!
-        EDID edid(TID tid = TID_NULL) const;
-
-        //!
-        //! Get the extended descriptor id.
-        //! @param [in] table Check if the descriptor is table-specific for this table.
-        //! @return The extended descriptor id.
-        //!
-        EDID edid(const AbstractTable* table) const;
+        EDID edid() const { return _edid; }
 
         //!
         //! What to do when a descriptor of the same type is added twice in a descriptor list.
@@ -95,24 +86,9 @@ namespace ts {
 
         //!
         //! For MPEG-defined and DVB-defined extension descriptors, get the extended descriptor tag (first byte in payload).
-        //! @return The extended descriptor tag or EDID_NULL if this is not an extended descriptor.
+        //! @return The extended descriptor tag or XDID_NULL if this is not an extended descriptor.
         //!
-        virtual DID extendedTag() const;
-
-        //!
-        //! Get the required private data specifier.
-        //! @return The private data specifier which is required to interpret correctly
-        //! this descriptor in a section. Return zero if this descriptor is a DVB-defined
-        //! or MPEG-defined descriptor, not a private specifier.
-        //!
-        PDS requiredPDS() const { return _required_pds; }
-
-        //!
-        //! Check if this descriptor is a private descriptor.
-        //! @return True if this descriptor is a private descriptor,
-        //! false if it is a DVB-defined or MPEG-defined descriptor.
-        //!
-        bool isPrivateDescriptor() const { return _required_pds != 0; }
+        DID extendedTag() const { return _edid.didExtension(); }
 
         //!
         //! This method serializes a descriptor.
@@ -143,16 +119,17 @@ namespace ts {
         //!
         bool deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index);
 
+        // Inherited methods.
+        virtual Standards definingStandards() const override;
+
     protected:
         //!
         //! Protected constructor for subclasses.
-        //! @param [in] tag Descriptor tag.
+        //! @param [in] edid Extended descriptor id.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
-        //! @param [in] standards A bit mask of standards which define this structure.
-        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
         //!
-        AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
+        AbstractDescriptor(EDID edid, const UChar* xml_name, const UChar* xml_legacy_name = nullptr);
 
         //!
         //! Serialize the payload of the descriptor.
@@ -190,8 +167,7 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer& buf) = 0;
 
     private:
-        DID _tag = DID_NULL;    // Descriptor tag.
-        PDS _required_pds = 0;  // Required private data specifier.
+        EDID _edid {};
 
         // Unreachable constructors and operators.
         AbstractDescriptor() = delete;

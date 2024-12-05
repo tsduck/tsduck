@@ -126,12 +126,13 @@ void ts::SelectionInformationTable::serializePayload(BinaryTable& table, PSIBuff
 
 void ts::SelectionInformationTable::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Global information:");
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Global information:");
     while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service id: %n", buf.getUInt16());
         buf.skipReservedBits(1);
         disp << ", Status: " << RunningStatusEnum->name(buf.getBits<uint8_t>(3)) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }
 }
 

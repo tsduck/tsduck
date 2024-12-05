@@ -360,6 +360,8 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp << margin << UString::Format(u"Original Network Id: %n", buf.getUInt16()) << std::endl;
     buf.skipReservedBits(8);
 
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+
     // Services description
     while (buf.canRead()) {
         disp << margin << UString::Format(u"Service Id: %n", buf.getUInt16());
@@ -369,7 +371,7 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         const uint8_t running_status = buf.getBits<uint8_t>(3);
         disp << ", CA mode: " << (buf.getBool() ? "controlled" : "free") << std::endl;
         disp << margin << "Running status: " << names::RunningStatus(running_status) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }
 }
 

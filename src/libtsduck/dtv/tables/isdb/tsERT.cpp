@@ -148,6 +148,7 @@ void ts::ERT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::ERT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     disp << margin << UString::Format(u"Event relation id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(3)) {
@@ -160,7 +161,7 @@ void ts::ERT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             buf.skipBits(4);
             disp << margin << UString::Format(u"  Parent node id: %n", buf.getUInt16()) << std::endl;
             disp << margin << UString::Format(u"  Reference number: %n", buf.getUInt8()) << std::endl;
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ");
         }
     }
 }

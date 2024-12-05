@@ -214,6 +214,7 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     disp << margin << UString::Format(u"Service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(9)) {
@@ -249,7 +250,7 @@ void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             buf.popState();
 
             // Display descriptor loop.
-            disp.displayDescriptorList(section, buf, margin + u"  ");
+            disp.displayDescriptorList(section, context, false, buf, margin + u"  ");
 
             // Close the content_descriptor_length sequence.
             disp.displayPrivateData(u"Extraneous version content bytes", buf);

@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"CP_descriptor"
-#define MY_CLASS ts::CPDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_CP
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::CPDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_CP)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::CPDescriptor::CPDescriptor(uint16_t cp_id_, PID cp_pid_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     cp_id(cp_id_),
     cp_pid(cp_pid_),
     private_data()
@@ -46,16 +44,6 @@ ts::CPDescriptor::CPDescriptor(DuckContext& duck, const Descriptor& desc) :
     CPDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::CPDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -101,7 +89,7 @@ bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::FIRST);

@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"C2_delivery_system_descriptor"
-#define MY_CLASS ts::C2DeliverySystemDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_C2_DELIVERY
+#define MY_CLASS    ts::C2DeliverySystemDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_C2_DELIVERY)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::C2DeliverySystemDescriptor::C2DeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C2, MY_XML_NAME)
+    AbstractDeliverySystemDescriptor(MY_EDID, DS_DVB_C2, MY_XML_NAME)
 {
 }
 
@@ -45,16 +44,6 @@ ts::C2DeliverySystemDescriptor::C2DeliverySystemDescriptor(DuckContext& duck, co
     C2DeliverySystemDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::C2DeliverySystemDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -102,7 +91,7 @@ const ts::Enumeration ts::C2DeliverySystemDescriptor::C2GuardIntervalNames({
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(7)) {
         disp << margin << UString::Format(u"PLP id: %n", buf.getUInt8());

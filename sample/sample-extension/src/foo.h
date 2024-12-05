@@ -19,18 +19,23 @@
 
 namespace foo {
 
-    // Specific table identifiers values for "foo".
+    // Specific table identifier values for "foo".
     enum : ts::TID {
         TID_FOOT = 0xF0,   // Table id for Foo Table (FOOT).
     };
 
-    // Specific descriptor tags values for "foo".
+    // Specific descriptor tag values for "foo".
     enum : ts::DID {
         DID_FOO = 0xE8,    // Descriptor id for foo_descriptor.
     };
 
+    // Specific private data specifier values for "foo".
+    enum : ts::PDS {
+        PDS_FOO = 0x464F4F20,  // Assuming that this PDS ("FOO " in ASCII) is officially allocated by DVB.
+    };
+
     // Specific CA_System_Id values for "foo".
-    enum : uint16_t {
+    enum : ts::CASID {
         CASID_FOO_MIN = 0xF001,  // Minimum CAS Id value for FooCAS.
         CASID_FOO_MAX = 0xF008,  // Maximum CAS Id value for FooCAS.
     };

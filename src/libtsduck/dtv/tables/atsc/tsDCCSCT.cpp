@@ -224,6 +224,7 @@ void ts::DCCSCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     uint16_t updates_defined = 0;
 
     if (!buf.canReadBytes(2)) {
@@ -284,11 +285,11 @@ void ts::DCCSCT::DisplaySection(TablesDisplay& disp, const ts::Section& section,
         buf.popState();
 
         // Display descriptor list for this update.
-        disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Descriptors for this update:", UString(), 10);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ", u"Descriptors for this update:", UString(), 10);
     }
 
     // Display descriptor list for the global table.
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
+    disp.displayDescriptorListWithLength(section, context, false, buf, margin, u"Additional descriptors:", UString(), 10);
 }
 
 

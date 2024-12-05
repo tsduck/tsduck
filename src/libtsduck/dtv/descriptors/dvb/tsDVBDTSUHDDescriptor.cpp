@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"DTS_UHD_descriptor"
-#define MY_CLASS ts::DVBDTSUHDDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_DTS_UHD
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DVBDTSUHDDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_DTS_UHD)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::DVBDTSUHDDescriptor::DVBDTSUHDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -45,16 +43,6 @@ ts::DVBDTSUHDDescriptor::DVBDTSUHDDescriptor(DuckContext& duck, const Descriptor
     DVBDTSUHDDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::DVBDTSUHDDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -92,7 +80,7 @@ void ts::DVBDTSUHDDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBDTSUHDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DVBDTSUHDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         uint8_t decoder_profile_code = buf.getBits<uint8_t>(6);

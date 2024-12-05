@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"VVC_timing_and_HRD_descriptor"
-#define MY_CLASS ts::VVCTimingAndHRDDescriptor
-#define MY_DID ts::DID_MPEG_EXTENSION
-#define MY_EDID ts::EDID_MPEG_VVC_TIM_HRD
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::VVCTimingAndHRDDescriptor
+#define MY_EDID     ts::EDID::ExtensionMPEG(ts::XDID_MPEG_VVC_TIM_HRD)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::VVCTimingAndHRDDescriptor::VVCTimingAndHRDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -44,16 +42,6 @@ ts::VVCTimingAndHRDDescriptor::VVCTimingAndHRDDescriptor(DuckContext& duck, cons
     VVCTimingAndHRDDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::VVCTimingAndHRDDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -105,7 +93,7 @@ void ts::VVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::VVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "HRD management valid: " << UString::TrueFalse(buf.getBool()) << std::endl;

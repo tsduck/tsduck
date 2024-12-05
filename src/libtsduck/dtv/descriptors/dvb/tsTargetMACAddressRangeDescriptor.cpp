@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"target_MAC_address_range_descriptor"
-#define MY_CLASS ts::TargetMACAddressRangeDescriptor
-#define MY_DID ts::DID_INT_MAC_ADDR_RANGE
-#define MY_TID ts::TID_INT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::TargetMACAddressRangeDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_INT_MAC_ADDR_RANGE, ts::Standards::DVB, ts::TID_INT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -76,7 +74,7 @@ void ts::TargetMACAddressRangeDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(12)) {
         disp << margin << "First address: " << MACAddress(buf.getUInt48());

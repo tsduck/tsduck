@@ -110,7 +110,7 @@ namespace ts {
             void deserializePayload(PSIBuffer&);
             void buildXML(DuckContext& duck, xml::Element* parent) const;
             bool analyzeXML(DuckContext& duck, const xml::Element* element);
-            static bool Display(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin, uint16_t year_offset);
+            static bool Display(TablesDisplay& disp, const ts::Section& section, DescriptorContext& context, PSIBuffer& buf, const UString& margin, uint16_t year_offset);
             //! @endcond
         };
 

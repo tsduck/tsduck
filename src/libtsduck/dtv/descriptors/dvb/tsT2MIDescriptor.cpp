@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"T2MI_descriptor"
-#define MY_CLASS ts::T2MIDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_T2MI
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::T2MIDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_T2MI)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::T2MIDescriptor::T2MIDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -44,16 +42,6 @@ ts::T2MIDescriptor::T2MIDescriptor(DuckContext& duck, const Descriptor& desc) :
     T2MIDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::T2MIDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -109,7 +97,7 @@ bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* eleme
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         buf.skipBits(5);

@@ -1,3 +1,4 @@
+
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
@@ -24,83 +25,91 @@ namespace ts {
     //! with the same TID but with different TIDext are considered as distinct
     //! tables. By convention, the TIDext is always zero with short sections.
     //!
-    class TSDUCKDLL ETID
+    class TSDUCKDLL XTID
     {
     private:
-        uint32_t _etid; // 7-bit: unused, 1-bit: long table, 8-bit: tid, 16-bit: tid-ext
+        uint32_t _xtid; // 7-bit: unused, 1-bit: long table, 8-bit: tid, 16-bit: tid-ext
     public:
         //!
         //! Constructor from a short table id.
         //! Short tables have no TIDext.
         //! @param [in] tid Table id.
         //!
-        explicit ETID(TID tid = 0xFF) : _etid((uint32_t(tid) & 0xFF) << 16) {}
+        explicit XTID(TID tid = 0xFF) : _xtid((uint32_t(tid) & 0xFF) << 16) {}
 
         //!
         //! Constructor from a long table id and tid-ext.
         //! @param [in] tid Table id.
         //! @param [in] tid_ext Table id extension.
         //!
-        ETID(TID tid, uint16_t tid_ext): _etid(0x01000000 | ((uint32_t(tid) & 0xFF) << 16) | (uint32_t(tid_ext) & 0xFFFF)) {}
+        XTID(TID tid, uint16_t tid_ext): _xtid(0x01000000 | ((uint32_t(tid) & 0xFF) << 16) | (uint32_t(tid_ext) & 0xFFFF)) {}
 
         //!
         //! Check if the table is a long one.
         //! @return True if the table is a long one.
         //!
-        bool isLongSection() const { return (_etid & 0x01000000) != 0; }
+        bool isLongSection() const { return (_xtid & 0x01000000) != 0; }
 
         //!
         //! Check if the table is a short one.
         //! @return True if the table is a short one.
         //!
-        bool isShortSection() const { return (_etid & 0x01000000) == 0; }
+        bool isShortSection() const { return (_xtid & 0x01000000) == 0; }
 
         //!
         //! Get the table id.
         //! @return The table id.
         //!
-        TID tid() const { return TID((_etid >> 16) & 0xFF); }
+        TID tid() const { return TID((_xtid >> 16) & 0xFF); }
 
         //!
         //! Get the table id extension.
         //! @return The table id extension.
         //!
-        uint16_t tidExt() const { return uint16_t(_etid & 0xFFFF); }
+        uint16_t tidExt() const { return uint16_t(_xtid & 0xFFFF); }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object == @a e.
         //!
-        bool operator==(const ETID& e) const { return _etid == e._etid; }
-        TS_UNEQUAL_OPERATOR(ETID)
+        bool operator==(const XTID& e) const { return _xtid == e._xtid; }
+        TS_UNEQUAL_OPERATOR(XTID)
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object < @a e.
         //!
-        bool operator<(const ETID& e) const { return _etid <  e._etid; }
+        bool operator<(const XTID& e) const { return _xtid <  e._xtid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object <= @a e.
         //!
-        bool operator<=(const ETID& e) const { return _etid <= e._etid; }
+        bool operator<=(const XTID& e) const { return _xtid <= e._xtid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object > @a e.
         //!
-        bool operator>(const ETID& e) const { return _etid >  e._etid; }
+        bool operator>(const XTID& e) const { return _xtid >  e._xtid; }
 
         //!
         //! Comparison operator.
         //! @param [in] e Other instance to compare.
         //! @return True is this object >= @a e.
         //!
-        bool operator>=(const ETID& e) const { return _etid >= e._etid; }
+        bool operator>=(const XTID& e) const { return _xtid >= e._xtid; }
+
+        //!
+        //! Convert to a string object.
+        //! Note: The XTID class does not implement StringifyInterface because we don't want to
+        //! make it virtual and keep the instance size small, without vtable pointer.
+        //! @return This object, converted as a string.
+        //!
+        UString toString() const;
     };
 }

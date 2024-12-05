@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"quality_extension_descriptor"
-#define MY_CLASS ts::QualityExtensionDescriptor
-#define MY_DID ts::DID_MPEG_EXTENSION
-#define MY_EDID ts::EDID_MPEG_QUALITY_EXT
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::QualityExtensionDescriptor
+#define MY_EDID     ts::EDID::ExtensionMPEG(ts::XDID_MPEG_QUALITY_EXT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::QualityExtensionDescriptor::QualityExtensionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -42,16 +40,6 @@ void ts::QualityExtensionDescriptor::clearContent()
 {
     field_size_bytes = 0;
     metric_codes.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::QualityExtensionDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -82,7 +70,7 @@ void ts::QualityExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::QualityExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::QualityExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << "Field size bytes: " << int(buf.getUInt8()) << std::endl;

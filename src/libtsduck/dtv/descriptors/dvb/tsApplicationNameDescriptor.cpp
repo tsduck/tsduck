@@ -13,11 +13,10 @@
 
 #define MY_XML_NAME u"application_name_descriptor"
 #define MY_XML_ATTR u"application_name"
-#define MY_CLASS ts::ApplicationNameDescriptor
-#define MY_DID ts::DID_AIT_APP_NAME
-#define MY_TID ts::TID_AIT
+#define MY_CLASS    ts::ApplicationNameDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_AIT_APP_NAME, ts::Standards::DVB, ts::TID_AIT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -25,7 +24,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::ApplicationNameDescriptor::ApplicationNameDescriptor() :
-    AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR)
+    AbstractMultilingualDescriptor(MY_EDID, MY_XML_NAME, MY_XML_ATTR)
 {
 }
 

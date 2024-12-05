@@ -13,6 +13,8 @@
 
 #pragma once
 #include "tsDescriptor.h"
+#include "tsEDID.h"
+#include "tsDescriptorContext.h"
 
 namespace ts {
 
@@ -26,6 +28,7 @@ namespace ts {
     //!
     class TSDUCKDLL DescriptorList
     {
+        TS_NO_DEFAULT_CONSTRUCTORS(DescriptorList);
     public:
         //!
         //! Basic constructor.
@@ -100,6 +103,12 @@ namespace ts {
         TID tableId() const;
 
         //!
+        //! Get the standards of the parent table.
+        //! @return The standards of the parent table or NONE if there is none.
+        //!
+        Standards tableStandards() const;
+
+        //!
         //! Get the parent table.
         //! @return The parent table or zero if there is none.
         //!
@@ -122,15 +131,23 @@ namespace ts {
 
         //!
         //! Get the extended descriptor id of a descriptor in the list.
+        //! @param [in] duck TSDuck execution context.
         //! @param [in] index Index of a descriptor in the list. Valid index are 0 to count()-1.
         //! @return The extended descriptor id at @a index.
         //!
-        EDID edid(size_t index) const;
+        EDID edid(const DuckContext& duck, size_t index) const;
+
+        //!
+        //! Return the MPEG "registration id" associated to a descriptor in the list.
+        //! @param [in] index Index of a descriptor in the list. Valid index are 0 to count()-1.
+        //! @return The "registration id" associated to the descriptor at @a index or REGID_NULL.
+        //!
+        REGID registrationId(size_t index) const;
 
         //!
         //! Return the "private data specifier" associated to a descriptor in the list.
         //! @param [in] index Index of a descriptor in the list. Valid index are 0 to count()-1.
-        //! @return The "private data specifier" associated to a descriptor at @a index.
+        //! @return The "private data specifier" associated to a descriptor at @a index or PDS_NULL.
         //!
         PDS privateDataSpecifier(size_t index) const;
 
@@ -180,13 +197,44 @@ namespace ts {
         }
 
         //!
-        //! Add a private_data_specifier descriptor if necessary at end of list.
+        //! Add a MPEG registration_descriptor if necessary at end of list.
+        //! If the current registration at end of list is not @a regid,
+        //! a registration_descriptor is added. If @a regid is already
+        //! the current registration id, the list is unchanged.
+        //! @param [in] regid A registration id.
+        //!
+        void addRegistration(REGID regid);
+
+        //!
+        //! Add a DVB private_data_specifier_descriptor if necessary at end of list.
         //! If the current private data specifier at end of list is not @a pds,
         //! a private_data_specifier descriptor is added. If @a pds is already
         //! the current private data specifier, the list is unchanged.
         //! @param [in] pds A private data specifier.
         //!
         void addPrivateDataSpecifier(PDS pds);
+
+        //!
+        //! Add a MPEG registration_descriptor or a DVB private_data_specifier_descriptor if necessary at end of list.
+        //! @param [in] edid Extended descriptor id of the descriptor to add and may need an preceding
+        //! MPEG registration_descriptor or a DVB private_data_specifier_descriptor.
+        //!
+        void addPrivateIdentifier(EDID edid);
+
+        //!
+        //! Check if the descriptor list contains a MPEG registration descriptor with the specified id.
+        //! @param [in] regid The registration id to check.
+        //! @return True if @a regid is present in a registration descriptor.
+        //!
+        bool containsRegistration(REGID regid) const;
+
+        //!
+        //! Get a list of all registration ids, in all MPEG registration descriptors.
+        //! @param [in] duck TSDuck execution context.
+        //! @param [out] regids A list of all registration ids, in their order of appearance.
+        //! The returned list can contain duplicates if the duplicates are present in the descriptor list.
+        //!
+        void getAllRegistrations(const DuckContext& duck, REGIDVector& regids) const;
 
         //!
         //! Merge one descriptor in the list.
@@ -196,8 +244,9 @@ namespace ts {
         //! at the end of the list.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc The descriptor to merge.
+        //! @return True in case of success, false if the descriptor is invalid.
         //!
-        void merge(DuckContext& duck, const AbstractDescriptor& desc);
+        bool merge(DuckContext& duck, const AbstractDescriptor& desc);
 
         //!
         //! Merge another descriptor list in this list.
@@ -230,7 +279,7 @@ namespace ts {
         size_t removeByTag(DID tag, PDS pds = 0);
 
         //!
-        //! Remove all private descriptors without preceding private_data_specifier_descriptor.
+        //! Remove all DVB private descriptors without preceding private_data_specifier_descriptor.
         //! @return The number of removed descriptors.
         //!
         size_t removeInvalidPrivateDescriptors();
@@ -271,6 +320,7 @@ namespace ts {
 
         //!
         //! Search any kind of subtitle descriptor.
+        //! @param [in] duck TSDuck execution context.
         //! @param [in] language The language name to search.
         //! If @a language is non-empty, look only for a subtitle
         //! descriptor matching the specified language. In this case, if some
@@ -279,7 +329,7 @@ namespace ts {
         //! @param [in] start_index Start searching at this index.
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
-        size_t searchSubtitle(const UString& language = UString(), size_t start_index = 0) const;
+        size_t searchSubtitle(const DuckContext& duck, const UString& language = UString(), size_t start_index = 0) const;
 
         //!
         //! Search a descriptor with the specified tag.
@@ -391,31 +441,20 @@ namespace ts {
         bool fromXML(DuckContext& duck, const xml::Element* parent);
 
     private:
-        // Each entry contains a descriptor and its corresponding private data specifier.
-        struct Element
-        {
-            // Public members:
-            DescriptorPtr desc;
-            PDS pds;
-
-            // Constructor:
-            Element(const DescriptorPtr& desc_ = DescriptorPtr(), PDS pds_ = 0) : desc(desc_), pds(pds_) {}
-        };
-        using ElementVector = std::vector <Element>;
-
         // Private members
-        const AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
-        ElementVector _list {};             // Vector of safe pointers to descriptors.
+        const AbstractTable* const _table;    // Parent table (zero for descriptor list object outside a table).
+        std::vector<DescriptorPtr> _list {};  // Vector of safe pointers to descriptors.
 
-        // Prepare removal of a private_data_specifier descriptor.
+        // Add a descriptor with a 32-bit payload at end of list.
+        void add32BitDescriptor(DID did, uint32_t payload);
+
+        // Update a REGID or PDS value if the descriptor contains one.
+        static void UpdateREGID(REGID& regid, const DescriptorPtr& desc);
+        static void UpdatePDS(PDS& pds, const DescriptorPtr& desc);
+
+        // Prepare removal of a private_data_specifier descriptor at the specified position, it any.
         // Return true if can be removed, false if it cannot (private descriptors ahead).
-        // When it can be removed, the current PDS of all subsequent descriptors is updated.
-        bool prepareRemovePDS(ElementVector::iterator);
-
-        // Inaccessible operations.
-        DescriptorList() = delete;
-        DescriptorList(DescriptorList&&) = delete;
-        DescriptorList(const DescriptorList&) = delete;
+        bool canRemovePDS(std::vector<DescriptorPtr>::iterator);
     };
 }
 
@@ -430,9 +469,11 @@ size_t ts::DescriptorList::search(DuckContext& duck, DID tag, DESC& desc, size_t
 {
     // Repeatedly search for a descriptor until one is successfully deserialized
     for (size_t index = search(tag, start_index, pds); index < _list.size(); index = search(tag, index + 1, pds)) {
-        desc.deserialize(duck, *(_list[index].desc));
-        if (desc.isValid()) {
-            return index;
+        if (_list[index] != nullptr) {
+            desc.deserialize(duck, *(_list[index]));
+            if (desc.isValid()) {
+                return index;
+            }
         }
     }
 

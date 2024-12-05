@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"URI_linkage_descriptor"
-#define MY_CLASS ts::URILinkageDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_URI_LINKAGE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::URILinkageDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_URI_LINKAGE)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::URILinkageDescriptor::URILinkageDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -53,16 +51,6 @@ ts::URILinkageDescriptor::URILinkageDescriptor(DuckContext& duck, const Descript
     URILinkageDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::URILinkageDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -145,7 +133,7 @@ void ts::URILinkageDescriptor::DVB_I_Info::display(TablesDisplay& disp, PSIBuffe
     disp.displayPrivateData(u"Private data", buf, NPOS, margin);
 }
 
-void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();

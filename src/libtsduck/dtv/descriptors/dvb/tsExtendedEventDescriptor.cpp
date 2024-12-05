@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"extended_event_descriptor"
-#define MY_CLASS ts::ExtendedEventDescriptor
-#define MY_DID ts::DID_DVB_EXTENDED_EVENT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::ExtendedEventDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_EXTENDED_EVENT, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ExtendedEventDescriptor::ExtendedEventDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -68,7 +67,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck, uint8_t*
         if (len > size) {
             len = uint8_t(size);
         }
-        if (tag == MY_DID && len >= 4) {
+        if (tag == DID_DVB_EXTENDED_EVENT && len >= 4) {
             UString lang;
             lang.assignFromUTF8(reinterpret_cast<const char*>(data + 1), 3);
             const auto it = desc_last.find(lang);
@@ -93,7 +92,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck, uint8_t*
         if (len > size) {
             len = uint8_t(size);
         }
-        if (tag == MY_DID && len >= 4) {
+        if (tag == DID_DVB_EXTENDED_EVENT && len >= 4) {
             UString lang;
             lang.assignFromUTF8(reinterpret_cast<const char*>(data + 1), 3);
             data[0] = uint8_t((desc_index[lang] & 0x0F) << 4) | (desc_last[lang] & 0x0F);
@@ -230,7 +229,7 @@ void ts::ExtendedEventDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ExtendedEventDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(5)) {
         disp << margin << "Descriptor number: " << buf.getBits<uint32_t>(4);

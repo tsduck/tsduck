@@ -95,6 +95,7 @@ uint16_t ts::SAT::tableIdExtension() const
     return uint16_t((satellite_table_id & 0x3f) << 10) | uint16_t(table_count & 0x3FF);
 }
 
+
 //----------------------------------------------------------------------------
 // Get the maximum size in bytes of the payload of sections of this table.
 //----------------------------------------------------------------------------
@@ -104,6 +105,7 @@ size_t ts::SAT::maxPayloadSize() const
     // Although a "private section" in the MPEG sense, the SAT section is limited to 4096 bytes in ETSI EN 300 468.
     return MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE;
 }
+
 
 //----------------------------------------------------------------------------
 // Geostationary satellite
@@ -354,6 +356,7 @@ bool ts::SAT::NCR_type::fromXML(const xml::Element* element)
         element->getIntAttribute(ext, u"ext", true, 0, 0, 0x1FF);
 }
 
+
 //----------------------------------------------------------------------------
 // New Delivery System
 //----------------------------------------------------------------------------
@@ -381,6 +384,7 @@ bool ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::fromXML(cons
     return root->getIntAttribute(new_delivery_system_id, u"id", true) &&
         time_of_application.fromXML(root, u"time_of_application");
 }
+
 
 //----------------------------------------------------------------------------
 // Obsolescent Delivery System

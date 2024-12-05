@@ -54,34 +54,49 @@ namespace ts {
         //!
         //! Constructor.
         //! Using this constructor directly is discouraged. Use Instance() instead.
-        //! @param [in] fileName Configuration file name. Typically without directory name.
+        //! @param [in] file_name Configuration file name. Typically without directory name.
         //! Without directory, the file is automatically searched in the TSDuck configuration directory.
-        //! @param [in] mergeExtensions If true, merge the content of names files from TSDuck extensions.
+        //! @param [in] merge_extensions If true, merge the content of names files from TSDuck extensions.
         //! @see Instance(const UString&, bool);
         //! @see Instance(Predefined, bool);
         //!
-        NamesFile(const UString& fileName, bool mergeExtensions = false);
+        NamesFile(const UString& file_name, bool merge_extensions = false);
 
         //!
-        //! Shared pointer to a constant names file.
+        //! Load a names file and merge its content into this instance.
+        //! @param [in] file_name Configuration file name.
+        //! @return True on success, false on error.
         //!
-        using NamesFilePtr = std::shared_ptr<const NamesFile>;
+        bool mergeFile(const UString& file_name);
+
+        //!
+        //! Load a configuration file and merge its content into this instance.
+        //! @param [in] file_name Configuration file name. Typically without directory name.
+        //! Without directory, the file is automatically searched in the TSDuck configuration directory.
+        //! @return True on success, false on error.
+        //!
+        bool mergeConfigurationFile(const UString& file_name);
+
+        //!
+        //! Shared pointer to a names file.
+        //!
+        using NamesFilePtr = std::shared_ptr<NamesFile>;
 
         //!
         //! Get a common instance of NamesFile for a given configuration file.
         //! The file is loaded once and the instance is created the first time.
         //! When the same file is requested again, the same instance is returned.
-        //! @param [in] fileName Configuration file name without directory name.
+        //! @param [in] file_name Configuration file name without directory name.
         //! The file is searched in the TSDuck configuration directory.
-        //! @param [in] mergeExtensions If true, merge the content of names files
+        //! @param [in] merge_extensions If true, merge the content of names files
         //! from TSDuck extensions when the file is loaded the first time.
         //! @return A pointer to the NamesFile instance for that file. Never return
         //! a null pointer. In case of error (non existent file for instance), an
         //! empty instance is returned for that file.
         //!
-        static NamesFilePtr Instance(const UString& fileName, bool mergeExtensions = false)
+        static NamesFilePtr Instance(const UString& file_name, bool merge_extensions = false)
         {
-            return AllInstances::Instance().getFile(fileName, mergeExtensions);
+            return AllInstances::Instance().getFile(file_name, merge_extensions);
         }
 
         //!
@@ -132,55 +147,111 @@ namespace ts {
         //! Get the complete path of the configuration file from which the names were loaded.
         //! @return The complete path of the configuration file. Empty if does not exist.
         //!
-        UString configurationFile() const { return _configFile; }
+        UString configurationFile() const { return _config_file; }
 
         //!
         //! Get the number of errors in the configuration file.
         //! @return The number of errors in the configuration file.
         //!
-        size_t errorCount() const { return _configErrors; }
+        size_t errorCount() const;
 
         //!
         //! Check if a name exists in a specified section.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
         //! @param [in] value Value to get the name for.
-        //! @return True if a name exists for @a value in @a sectionName.
+        //! @return True if a name exists for @a value in @a section_name.
         //!
-        bool nameExists(const UString& sectionName, Value value) const;
+        bool nameExists(const UString& section_name, Value value) const;
 
         //!
         //! Get a name from a specified section.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
         //! @param [in] value Value to get the name for.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
+        //! @param [in] bits Optional size in bits of the displayed data.
+        //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
-        UString nameFromSection(const UString& sectionName, Value value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, Value alternateValue = 0) const;
+        UString nameFromSection(const UString& section_name, Value value, NamesFlags flags = NamesFlags::NAME, Value alternate_value = 0, size_t bits = 0) const;
 
         //!
         //! Get a name from a specified section, with alternate fallback value.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
         //! @param [in] value1 Value to get the name for.
         //! @param [in] value2 Alternate value if no name is found for @a value1.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
+        //! @param [in] bits Optional size in bits of the displayed data.
+        //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
-        UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, Value alternateValue = 0) const;
+        UString nameFromSectionWithFallback(const UString& section_name, Value value1, Value value2, NamesFlags flags = NamesFlags::NAME, Value alternate_value = 0, size_t bits = 0) const;
+
+        //!
+        //! A visitor interface class to be implemented by applications needing ranges of values.
+        //!
+        class TSDUCKDLL Visitor
+        {
+            TS_INTERFACE(Visitor);
+        public:
+            //!
+            //! Called for each name/value pair to visit.
+            //! @param [in] section_name The name of the section containing the value.
+            //! @param [in] value The value.
+            //! @param [in] name The name of the value.
+            //! @return True to continue visiting other values, false to abort the visit.
+            //!
+            virtual bool handleNameValue(const UString& section_name, Value value, const UString& name) = 0;
+        };
+
+        //!
+        //! Get all values in a section.
+        //! @param [in,out] visitor An instance of a subclass of Visitor which receives all values.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
+        //! @return The number of visited values.
+        //!
+        size_t visitSection(Visitor* visitor, const UString& section_name) const;
+
+        //!
+        //! Get all extended values of a specified value in a section.
+        //! All sections shall have a nominal width, "Bits=8" for instance. However, when the section has "Extended=true",
+        //! "extended" values can be provided. With "Bits=8", the value 0x00AA, 0x01AA, or 0xFFAA, are all extended values
+        //! for the base 8-bit value 0xAA, as an example.
+        //! @param [in,out] visitor An instance of a subclass of Visitor which receives all extended values for @a value.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
+        //! @param [in] value The base value to get extended values for.
+        //! @return The number of visited values.
+        //!
+        size_t visitSection(Visitor* visitor, const UString& section_name, Value value) const;
+
+        //!
+        //! Subscribe to all new values which will be merged into the file.
+        //! @param [in,out] visitor An instance of a subclass of Visitor which will receive all new values in @a section_name.
+        //! @param [in] section_name Name of section to notify. Not case-sensitive. If empty, @a visitor will
+        //! be notified of all values in all sections.
+        //!
+        void subscribe(Visitor* visitor, const UString& section_name = UString());
+
+        //!
+        //! Unsubscribe from all new values which will be merged into the file.
+        //! @param [in,out] visitor An instance of a subclass of Visitor to unsubscribe.
+        //! If null, remove all visitors for @a section_name.
+        //! @param [in] section_name Name of section to remove. Not case-sensitive.
+        //! If empty, @a visitor will unsubscribed of everything.
+        //!
+        void unsubscribe(Visitor* visitor, const UString& section_name = UString());
 
         //!
         //! Format a name using flags.
         //! @param [in] value Value for the name.
         //! @param [in] name Name for the value.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+        //! @param [in] bits Nominal size in bits of the data.
+        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        static UString Formatted(Value value, const UString& name, NamesFlags flags, size_t bits, Value alternateValue = 0);
+        static UString Formatted(Value value, const UString& name, NamesFlags flags, size_t bits, Value alternate_value = 0);
 
         //!
         //! A class to register additional names files to merge with the TSDuck names file.
@@ -194,39 +265,33 @@ namespace ts {
             //!
             //! Register an additional names file.
             //! This file will be merged with the main names files.
-            //! @param [in] filename Name of the names file. This should be a simple file name,
+            //! @param [in] file_name Name of the names file. This should be a simple file name,
             //! without directory. This file will be searched in the same directory as the executable,
             //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
             //! then from $PATH.
             //! @see TS_REGISTER_NAMES_FILE
             //!
-            RegisterExtensionFile(const UString& filename);
+            RegisterExtensionFile(const UString& file_name);
         };
 
         //!
         //! Unregister a previously registered extension.
-        //! @param [in] filename Name of the names file to unregister,
+        //! @param [in] file_name Name of the names file to unregister,
         //!
-        static void UnregisterExtensionFile(const UString& filename);
+        static void UnregisterExtensionFile(const UString& file_name);
 
     private:
         // Description of a configuration entry.
-        // The first value of the range is the key in a map.
         class ConfigEntry
         {
         public:
+            Value   first = 0; // First value in the range.
             Value   last = 0;  // Last value in the range.
             UString name {};   // Associated name.
-
-            ConfigEntry(Value l = 0, const UString& n = UString()) : last(l), name(n) {}
         };
-
-        // Map of configuration entries, indexed by first value of the range.
         using ConfigEntryPtr = std::shared_ptr<ConfigEntry>;
-        using ConfigEntryMap = std::map<Value, ConfigEntryPtr>;
 
         // Description of a configuration section.
-        // The name of the section is the key in a map.
         class ConfigSection
         {
             TS_NOCOPY(ConfigSection);
@@ -234,8 +299,14 @@ namespace ts {
             size_t          bits = 0;          // Number of significant bits in values of the type.
             Value           mask = 0;          // Mask to apply to extract the specified bits.
             bool            extended = false;  // Contains extended values, larger than specified bit size.
-            ConfigEntryMap  entries {};        // All entries, indexed by names.
             UString         inherit {};        // Redirect to this section if value not found.
+
+            // All entries, indexed by full value (first value of the range).
+            std::map<Value, ConfigEntryPtr> entries {};
+
+            // All entries, indexed by shortened value ('bits' size) of the first value of the range.
+            // Unused when extended = false.
+            std::multimap<Value, ConfigEntryPtr> short_entries {};
 
             // Constructor.
             ConfigSection() = default;
@@ -246,16 +317,29 @@ namespace ts {
             // Add a new entry.
             void addEntry(Value first, Value last, const UString& name);
 
+            // Get the entry for a given value, nullptr if not found.
+            ConfigEntryPtr getEntry(Value val) const;
+
             // Get a name from a value, empty if not found.
             UString getName(Value val) const;
         };
-
-        // Map of configuration sections, indexed by name.
         using ConfigSectionPtr = std::shared_ptr<ConfigSection>;
+
         using ConfigSectionMap = std::map<UString, ConfigSectionPtr>;
+        using VisitorMap = std::multimap<UString, Visitor*>;
+        using VisitorBounds = std::pair<VisitorMap::iterator, VisitorMap::iterator>;
+
+        // Names private fields.
+        Report&            _log;                 // Error logger.
+        const UString      _config_file;         // Configuration file path.
+        mutable std::recursive_mutex _mutex {};  // Protect access to all subsequent fields.
+        size_t             _config_errors = 0;   // Number of errors in configuration file.
+        ConfigSectionMap   _sections {};         // Configuration sections, indexed by section names.
+        VisitorMap         _visitors {};         // Visitors, indexed by section names.
+        std::set<Visitor*> _full_visitors {};    // Visitors for all sections.
 
         // Decode a line as "first[-last] = name". Return true on success, false on error.
-        bool decodeDefinition(const UString& section_name, const UString& line, ConfigSectionPtr section);
+        bool decodeDefinition(const UString& section_name, const VisitorBounds& visitors, const UString& line, ConfigSectionPtr section);
 
         // Compute a number of hexa digits.
         static int HexaDigits(size_t bits);
@@ -263,20 +347,11 @@ namespace ts {
         // Compute the display mask
         static Value DisplayMask(size_t bits);
 
-        // Load a configuration file and merge its content into this instance.
-        void loadFile(const UString& fileName);
-
         // Get the section and name from a value, empty if not found. Section can be null.
-        void getName(const UString& sectionName, Value value, ConfigSectionPtr& section, UString& name) const;
+        void getName(const UString& section_name, Value value, ConfigSectionPtr& section, UString& name) const;
 
         // Normalized section name.
-        static UString NormalizedSectionName(const UString& sectionName) { return sectionName.toTrimmed().toLower(); }
-
-        // Names private fields.
-        Report&          _log;               // Error logger.
-        const UString    _configFile;        // Configuration file path.
-        size_t           _configErrors = 0;  // Number of errors in configuration file.
-        ConfigSectionMap _sections {};       // Configuration sections.
+        static UString NormalizedSectionName(const UString& section_name) { return section_name.toTrimmed().toLower(); }
 
         // A singleton which manages all NamesFile instances (thread-safe).
         class AllInstances
@@ -291,17 +366,17 @@ namespace ts {
             void getExtensionFiles(UStringList& fileNames);
 
         private:
-            std::recursive_mutex            _mutex {};     // Protected access to other fields.
-            std::map<UString, NamesFilePtr> _files {};     // Loaded instances by name.
-            UStringList                     _extFiles {};  // Additional names files.
+            std::recursive_mutex            _mutex {};           // Protected access to other fields.
+            std::map<UString, NamesFilePtr> _files {};           // Loaded instances by name.
+            UStringList                     _ext_file_names {};  // Additional names files.
 
             // Array of predefined instances, in a direct lookup table.
             class Predef
             {
             public:
-                NamesFilePtr instance {};
+                NamesFilePtr     instance {};
                 const ts::UChar* name = nullptr;
-                bool merge = false; // merge extension files
+                bool             merge = false; // merge extension files
             };
             std::array <Predef, size_t(Predefined::COUNT)> _predef {};
         };
@@ -310,34 +385,32 @@ namespace ts {
     //!
     //! Get a name from a specified section in the DTV names file.
     //! @tparam INT An integer or enum type.
-    //! @param [in] sectionName Name of section to search. Not case-sensitive.
+    //! @param [in] section_name Name of section to search. Not case-sensitive.
     //! @param [in] value Value to get the name for.
     //! @param [in] flags Presentation flags.
-    //! @param [in] bits Nominal size in bits of the data, optional.
-    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
-    UString NameFromDTV(const UString& sectionName, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = static_cast<INT>(0))
+    UString NameFromDTV(const UString& section_name, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
     {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(sectionName, NamesFile::Value(value), flags, bits, NamesFile::Value(alternateValue));
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(section_name, NamesFile::Value(value), flags, NamesFile::Value(alternate_value));
     }
 
     //!
     //! Get a name from a specified section in the DTV names file, with alternate fallback value.
     //! @tparam INT An integer or enum type.
-    //! @param [in] sectionName Name of section to search. Not case-sensitive.
+    //! @param [in] section_name Name of section to search. Not case-sensitive.
     //! @param [in] value1 Value to get the name for.
     //! @param [in] value2 Alternate value if no name is found for @a value1.
     //! @param [in] flags Presentation flags.
-    //! @param [in] bits Nominal size in bits of the data, optional.
-    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
-    UString NameFromDTVWithFallback(const UString& sectionName, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = static_cast<INT>(0))
+    UString NameFromDTVWithFallback(const UString& section_name, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
     {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(sectionName, NamesFile::Value(value1), NamesFile::Value(value2), flags, bits, NamesFile::Value(alternateValue));
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(section_name, NamesFile::Value(value1), NamesFile::Value(value2), flags, NamesFile::Value(alternate_value));
     }
 
     //!
@@ -348,7 +421,7 @@ namespace ts {
     //!
     TSDUCKDLL inline UString NameFromOUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME)
     {
-        return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags, 24);
+        return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags);
     }
 }
 

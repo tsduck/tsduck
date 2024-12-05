@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"eutelsat_channel_number_descriptor"
-#define MY_CLASS ts::EutelsatChannelNumberDescriptor
-#define MY_DID ts::DID_EUTELSAT_CHAN_NUM
-#define MY_PDS ts::PDS_EUTELSAT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::EutelsatChannelNumberDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_EUTELSAT_CHAN_NUM, ts::PDS_EUTELSAT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -90,7 +88,7 @@ void ts::EutelsatChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, const Descriptor& desc, PSIBuffer& buf, const UString& margin, const DescriptorContext& context)
 {
     while (buf.canReadBytes(8)) {
         const uint16_t onetw_id = buf.getUInt16();

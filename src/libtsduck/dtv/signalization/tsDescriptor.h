@@ -15,6 +15,8 @@
 #include "tsByteBlock.h"
 #include "tsTablesPtr.h"
 #include "tsEDID.h"
+#include "tsDescriptorContext.h"
+#include "tsPSIRepository.h"
 #include "tsxml.h"
 
 namespace ts {
@@ -129,20 +131,12 @@ namespace ts {
         DID tag() const { return _data == nullptr ? 0 : _data->at(0); }
 
         //!
-        //! Get the extended descriptor id.
-        //! @param [in] pds Associated private data specifier.
-        //! @param [in] tid Check if the descriptor is table-specific for this table-id.
-        //! @return The extended descriptor id.
+        //! Get the extension descriptor id.
+        //! @return The extension descriptor id. For MPEG or DVB extension descriptors, this is
+        //! a combination of the descriptor tag and the extension tag. For other descriptors,
+        //! this is the descriptor tag only.
         //!
-        EDID edid(PDS pds = 0, TID tid = TID_NULL) const;
-
-        //!
-        //! Get the extended descriptor id.
-        //! @param [in] pds Associated private data specifier.
-        //! @param [in] table Check if the descriptor is table-specific for this table.
-        //! @return The extended descriptor id.
-        //!
-        EDID edid(PDS pds, const AbstractTable* table) const;
+        XDID xdid() const;
 
         //!
         //! Access to the full binary content of the descriptor.
@@ -208,24 +202,22 @@ namespace ts {
         //!
         //! Deserialize the descriptor.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] pds Associated private data specifier.
-        //! @param [in] tid Optional table id of the table containing the descriptor.
+        //! @param [in] edid Extended descriptor id.
         //! @return A safe pointer to an instance of a concrete subclass of AbstractDescriptor
         //! representing this descriptor. Return the null pointer if the descriptor could not
         //! be deserialized.
         //!
-        AbstractDescriptorPtr deserialize(DuckContext& duck, PDS pds = 0, TID tid = TID_NULL) const;
+        AbstractDescriptorPtr deserialize(DuckContext& duck, EDID edid) const;
 
         //!
         //! Deserialize the descriptor.
         //! @param [in,out] duck TSDuck execution context.
-        //! @param [in] pds Associated private data specifier.
-        //! @param [in] table Table containing the descriptor (can be null).
+        //! @param [in,out] context Context of the descriptor. Used to understand its identity.
         //! @return A safe pointer to an instance of a concrete subclass of AbstractDescriptor
         //! representing this descriptor. Return the null pointer if the descriptor could not
         //! be deserialized.
         //!
-        AbstractDescriptorPtr deserialize(DuckContext& duck, PDS pds, const AbstractTable* table) const;
+        AbstractDescriptorPtr deserialize(DuckContext& duck, DescriptorContext& context) const;
 
         //!
         //! This method converts a descriptor to XML.
@@ -233,12 +225,11 @@ namespace ts {
         //! XML structure. Otherwise, generate a \<generic_descriptor> node.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] parent The parent node for the XML descriptor.
-        //! @param [in] pds Associated private data specifier.
-        //! @param [in] tid Optional table id of the table containing the descriptor.
-        //! @param [in] forceGeneric Force a \<generic_descriptor> node even if the descriptor can be specialized.
+        //! @param [in,out] context Context of the descriptor. Used to understand its identity.
+        //! @param [in] force_generic Force a \<generic_descriptor> node even if the descriptor can be specialized.
         //! @return The new XML element or zero if the descriptor is not valid.
         //!
-        xml::Element* toXML(DuckContext& duck, xml::Element* parent, PDS pds = 0, TID tid = TID_NULL, bool forceGeneric = false) const;
+        xml::Element* toXML(DuckContext& duck, xml::Element* parent, DescriptorContext& context, bool force_generic = false) const;
 
         //!
         //! This method converts an XML node as a binary descriptor.
@@ -251,8 +242,12 @@ namespace ts {
         bool fromXML(DuckContext& duck, const xml::Element* node, TID tid = TID_NULL);
 
     private:
-        Descriptor(const Descriptor&) = delete;
-
         ByteBlockPtr _data {}; // full binary content of the descriptor
+
+        // Common code for deserialize().
+        AbstractDescriptorPtr deserializeImpl(DuckContext& duck, PSIRepository::DescriptorFactory fac) const;
+
+        // The default copy destructor is deleted, we need a ShareMode parameter.
+        Descriptor(const Descriptor&) = delete;
     };
 }

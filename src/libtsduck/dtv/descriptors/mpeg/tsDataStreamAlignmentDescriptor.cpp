@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"data_stream_alignment_descriptor"
-#define MY_CLASS ts::DataStreamAlignmentDescriptor
-#define MY_DID ts::DID_MPEG_DATA_ALIGN
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DataStreamAlignmentDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_DATA_ALIGN, ts::Standards::MPEG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DataStreamAlignmentDescriptor::DataStreamAlignmentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -62,7 +61,7 @@ void ts::DataStreamAlignmentDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DataStreamAlignmentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "Alignment type: " << DataName(MY_XML_NAME, u"DataStreamAlignment", buf.getUInt8(), NamesFlags::BOTH_FIRST) << std::endl;

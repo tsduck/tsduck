@@ -30,9 +30,9 @@ const ts::UString ts::anc_data_block_type::ANC_Data_Block_Element_Name(u"anc_dat
 
 // this is a duplicate of the DataName function from AbstractSignalization so we can interrogate the defined names
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-static ts::UString DataName(const ts::UChar* xml_name, const ts::UChar* section, INT value, ts::NamesFlags flags = ts::NamesFlags::NAME, size_t bits = 0, INT alternate = 0)
+static ts::UString DataName(const ts::UChar* xml_name, const ts::UChar* section, INT value, ts::NamesFlags flags = ts::NamesFlags::NAME, INT alternate = 0)
 {
-    return ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV)->nameFromSection(ts::UString::Format(u"%s.%s", xml_name, section), ts::NamesFile::Value(value), flags, bits, ts::NamesFile::Value(alternate));
+    return ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV)->nameFromSection(ts::UString::Format(u"%s.%s", xml_name, section), ts::NamesFile::Value(value), flags, ts::NamesFile::Value(alternate));
 }
 
 size_t ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::BitsInValue(uint8_t loudnessValueType) const

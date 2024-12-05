@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"RNT_scan_descriptor"
-#define MY_CLASS ts::RNTScanDescriptor
-#define MY_DID ts::DID_RNT_SCAN
-#define MY_TID ts::TID_RNT
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::RNTScanDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_RNT_SCAN, ts::Standards::DVB, ts::TID_RNT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::RNTScanDescriptor::RNTScanDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -98,7 +96,7 @@ void ts::RNTScanDescriptor::ScanTriplet::deserialize(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RNTScanDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::RNTScanDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(5)) {
         ScanTriplet reference;

@@ -17,11 +17,10 @@
 #include "tsDescriptorList.h"
 
 #define MY_XML_NAME u"CA_descriptor"
-#define MY_CLASS ts::CADescriptor
-#define MY_DID ts::DID_MPEG_CA
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::CADescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_CA, ts::Standards::MPEG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     cas_id(cas_id_),
     ca_pid(ca_pid_)
 {
@@ -43,7 +42,7 @@ void ts::CADescriptor::clearContent()
 }
 
 ts::CADescriptor::CADescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     cas_id(0),
     ca_pid(PID_NULL),
     private_data()
@@ -90,12 +89,13 @@ void ts::CADescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         // Display common part
         const uint16_t casid = buf.getUInt16();
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, NamesFlags::FIRST);
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), casid, NamesFlags::FIRST);
+        const TID tid = context.getTableId();
         disp << ", " << (tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA"));
         disp << UString::Format(u" PID: %n", buf.getPID()) << std::endl;
 
@@ -105,7 +105,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, co
             DisplayCADescriptorFunction func = PSIRepository::Instance().getCADescriptorDisplay(casid);
             if (func != nullptr) {
                 // Use a CAS-specific display routine.
-                func(disp, buf, margin, tid);
+                func(disp, buf, margin, context.getTableId());
             }
             else {
                 disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);

@@ -18,12 +18,9 @@
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DID tag,
-                                                                       const UChar* xml_name,
-                                                                       Standards standards,
-                                                                       PDS pds,
-                                                                       const UChar* xml_legacy_name) :
-    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
+ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor
+    (EDID edid, const UChar* xml_name, const UChar* xml_legacy_name) :
+    AbstractDescriptor(edid, xml_name, xml_legacy_name)
 {
 }
 
@@ -32,14 +29,9 @@ void ts::AbstractLogicalChannelDescriptor::clearContent()
     entries.clear();
 }
 
-ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DuckContext& duck,
-                                                                       const Descriptor& desc,
-                                                                       DID tag,
-                                                                       const UChar* xml_name,
-                                                                       Standards standards,
-                                                                       PDS pds,
-                                                                       const UChar* xml_legacy_name) :
-    AbstractLogicalChannelDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
+ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor
+    (DuckContext& duck, const Descriptor& desc, EDID edid, const UChar* xml_name, const UChar* xml_legacy_name) :
+    AbstractLogicalChannelDescriptor(edid, xml_name, xml_legacy_name)
 {
     deserialize(duck, desc);
 }
@@ -81,7 +73,7 @@ void ts::AbstractLogicalChannelDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", buf.getUInt16());

@@ -66,11 +66,11 @@ namespace ts {
         using DeviceList = EntryWithDescriptorsList<Device>;
 
         // INT public members:
-        uint8_t        action_type = 0;       //!< Action type.
-        uint32_t       platform_id = 0;       //!< Platform id, 24 bits.
-        uint8_t        processing_order = 0;  //!< Processing order code.
-        DescriptorList platform_descs;        //!< Platforma descriptor loop.
-        DeviceList     devices;               //!< List of device descriptions.
+        uint8_t        action_type = 0;        //!< Action type.
+        uint32_t       platform_id = 0;        //!< Platform id, 24 bits.
+        uint8_t        processing_order = 0;   //!< Processing order code.
+        DescriptorList platform_descs {this};  //!< Platforma descriptor loop.
+        DeviceList     devices {this};         //!< List of device descriptions.
 
         //!
         //! Default constructor.

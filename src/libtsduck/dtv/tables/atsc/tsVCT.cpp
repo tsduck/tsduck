@@ -353,6 +353,7 @@ void ts::VCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     disp << margin << UString::Format(u"Transport stream id: %n", section.tableIdExtension()) << std::endl;
 
     uint16_t num_channels = 0;
@@ -398,11 +399,11 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << "  Service type: " << NameFromDTV(u"ATSCServiceType", buf.getBits<uint8_t>(6));
         disp << UString::Format(u", source id: %n", buf.getUInt16()) << std::endl;
 
-        disp.displayDescriptorListWithLength(section, buf, margin + u"  ", UString(), UString(), 10);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ", UString(), UString(), 10);
     }
 
     // Common descriptors.
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Additional descriptors:", UString(), 10);
 }
 
 
@@ -410,21 +411,21 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 // XML values for modulation mode and service_type.
 //----------------------------------------------------------------------------
 
-const ts::Enumeration ts::VCT::ModulationModeEnum({
+TS_STATIC_INSTANCE(const, ts::Enumeration, ModulationModeEnum, ({
     {u"analog",  0x01},
     {u"64-QAM",  0x02},
     {u"256-QAM", 0x03},
     {u"8-VSB",   0x04},
     {u"16-VSB",  0x05},
-});
+}));
 
-const ts::Enumeration ts::VCT::ServiceTypeEnum({
+TS_STATIC_INSTANCE(const, ts::Enumeration, ServiceTypeEnum, ({
     {u"analog",   0x01},
     {u"dtv",      0x02},
     {u"audio",    0x03},
     {u"data",     0x04},
     {u"software", 0x05},
-});
+}));
 
 
 //----------------------------------------------------------------------------
@@ -444,7 +445,7 @@ void ts::VCT::buildXML(DuckContext& duck, xml::Element* root) const
         e->setAttribute(u"short_name", it.second.short_name);
         e->setIntAttribute(u"major_channel_number", it.second.major_channel_number, false);
         e->setIntAttribute(u"minor_channel_number", it.second.minor_channel_number, false);
-        e->setEnumAttribute(ModulationModeEnum, u"modulation_mode", it.second.modulation_mode);
+        e->setEnumAttribute(*ModulationModeEnum, u"modulation_mode", it.second.modulation_mode);
         e->setIntAttribute(u"carrier_frequency", it.second.carrier_frequency, false);
         e->setIntAttribute(u"channel_TSID", it.second.channel_TSID, true);
         e->setIntAttribute(u"program_number", it.second.program_number, true);
@@ -457,7 +458,7 @@ void ts::VCT::buildXML(DuckContext& duck, xml::Element* root) const
             e->setBoolAttribute(u"out_of_band", it.second.out_of_band);
         }
         e->setBoolAttribute(u"hide_guide", it.second.hide_guide);
-        e->setEnumAttribute(ServiceTypeEnum, u"service_type", it.second.service_type);
+        e->setEnumAttribute(*ServiceTypeEnum, u"service_type", it.second.service_type);
         e->setIntAttribute(u"source_id", it.second.source_id, true);
         it.second.descs.toXML(duck, e);
     }
@@ -484,7 +485,7 @@ bool ts::VCT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = children[index]->getAttribute(ch.short_name, u"short_name", true, UString(), 0, 7) &&
              children[index]->getIntAttribute(ch.major_channel_number, u"major_channel_number", true, 0, 0, 0x03FF) &&
              children[index]->getIntAttribute(ch.minor_channel_number, u"minor_channel_number", true, 0, 0, 0x03FF) &&
-             children[index]->getIntEnumAttribute(ch.modulation_mode, ModulationModeEnum, u"modulation_mode", true) &&
+             children[index]->getIntEnumAttribute(ch.modulation_mode, *ModulationModeEnum, u"modulation_mode", true) &&
              children[index]->getIntAttribute(ch.carrier_frequency, u"carrier_frequency", false, 0) &&
              children[index]->getIntAttribute(ch.channel_TSID, u"channel_TSID", true) &&
              children[index]->getIntAttribute(ch.program_number, u"program_number", true) &&
@@ -492,7 +493,7 @@ bool ts::VCT::analyzeXML(DuckContext& duck, const xml::Element* element)
              children[index]->getBoolAttribute(ch.access_controlled, u"access_controlled", false, false) &&
              children[index]->getBoolAttribute(ch.hidden, u"hidden", false, false) &&
              children[index]->getBoolAttribute(ch.hide_guide, u"hide_guide", false, false) &&
-             children[index]->getIntEnumAttribute(ch.service_type, ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
+             children[index]->getIntEnumAttribute(ch.service_type, *ServiceTypeEnum, u"service_type", false, ATSC_STYPE_DTV) &&
              children[index]->getIntAttribute(ch.source_id, u"source_id", true) &&
              ch.descs.fromXML(duck, children[index]);
 

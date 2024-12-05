@@ -17,12 +17,10 @@
 #include "tsMJD.h"
 
 #define MY_XML_NAME u"SI_parameter_descriptor"
-#define MY_CLASS ts::SIParameterDescriptor
-#define MY_DID ts::DID_ISDB_SI_PARAMETER
-#define MY_PDS ts::PDS_ISDB
-#define MY_STD ts::Standards::ISDB
+#define MY_CLASS    ts::SIParameterDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_ISDB_SI_PARAMETER, ts::Standards::ISDB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -30,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::SIParameterDescriptor::SIParameterDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -86,13 +84,13 @@ void ts::SIParameterDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;
         disp << margin << "Update time: " << buf.getMJD(MJD_DATE).format(Time::DATE) << std::endl;
         while (buf.canReadBytes(2)) {
-            disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
+            disp << margin << "- Table id: " << TIDName(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
             disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");
         }
     }

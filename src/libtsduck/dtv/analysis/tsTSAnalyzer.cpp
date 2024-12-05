@@ -237,22 +237,22 @@ void ts::TSAnalyzer::ServiceContext::update(DuckContext& duck, const DescriptorL
 
 
 //----------------------------------------------------------------------------
-// Return an ETID context. Allocate a new entry if ETID not found.
+// Return an XTID context. Allocate a new entry if XTID is not found.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID(const Section& section)
+ts::TSAnalyzer::XTIDContextPtr ts::TSAnalyzer::getXTID(const Section& section)
 {
-    const ETID etid = section.etid();
+    const XTID xtid = section.xtid();
     const PIDContextPtr pc(getPID(section.sourcePID()));
-    const auto it = pc->sections.find(etid);
+    const auto it = pc->sections.find(xtid);
 
     if (it != pc->sections.end()) {
-        // ETID context found
+        // XTID context found
         return it->second;
     }
     else {
-        ETIDContextPtr result(new ETIDContext(etid));
-        pc->sections[etid] = result;
+        XTIDContextPtr result = std::make_shared<XTIDContext>(xtid);
+        pc->sections[xtid] = result;
         result->first_version = section.version();
         return result;
     }
@@ -359,7 +359,7 @@ void ts::TSAnalyzer::handleInvalidSection(SectionDemux&, const DemuxedData& data
 
 void ts::TSAnalyzer::handleSection(SectionDemux&, const Section& section)
 {
-    ETIDContextPtr etc(getETID(section));
+    XTIDContextPtr etc(getXTID(section));
     const uint8_t version = section.version();
 
     // Count one section
@@ -609,11 +609,10 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
     for (auto& it : pmt.streams) {
         const PID es_pid = it.first;
         const PMT::Stream& stream(it.second);
-        const uint32_t regid = pmt.registrationId(es_pid);
         ps = getPID(es_pid);
         ps->addService(pmt.service_id);
         ps->stream_type = stream.stream_type;
-        ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type, regid);
+        ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type, pmt.descs) || StreamTypeIsAudio(stream.stream_type, stream.descs);
         ps->carry_video = ps->carry_video || StreamTypeIsVideo(stream.stream_type);
         ps->carry_pes = ps->carry_pes || StreamTypeIsPES(stream.stream_type);
         if (!ps->carry_section && !ps->carry_t2mi && StreamTypeIsSection(stream.stream_type)) {
@@ -627,7 +626,10 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
             ps->addAttribute(ps->audio2.toString());
         }
 
-        ps->description = names::StreamType(stream.stream_type, NamesFlags::NAME, regid);
+        // If any registration id applies to the stream type, it shall come from the program-level descriptor list.
+        ps->description = StreamTypeName(stream.stream_type, _duck, pmt.descs);
+
+        // Process "elementary stream info" list of descriptors.
         analyzeDescriptors(stream.descs, svp.get(), ps.get());
     }
 }
@@ -868,7 +870,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_ISDB_CA:
             case DID_ISDB_COND_PLAYBACK: {
                 // ISDB specific CA descriptors.
-                if (_duck.actualPDS(descs.privateDataSpecifier(di)) == PDS_ISDB) {
+                if (bool(_duck.standards() & Standards::ISDB)) {
                     analyzeCADescriptor(bindesc, svp, ps, u" (ISDB)");
                 }
                 break;
@@ -970,7 +972,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 // MPEG extension descriptor: need to look at the descriptor_tag_extension.
                 if (size >= 1) {
                     switch (data[0]) {
-                        case EDID_MPEG_LCEVC_VIDEO: {
+                        case XDID_MPEG_LCEVC_VIDEO: {
                             // The presence of this descriptor indicates an LCEVC video track.
                             ps->description = u"LCEVC Video";
                             ps->carry_video = true;
@@ -987,19 +989,19 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 // Extension descriptor: need to look at the descriptor_tag_extension.
                 if (size >= 1) {
                     switch (data[0]) {
-                        case EDID_DVB_AC4: {
+                        case XDID_DVB_AC4: {
                             // The presence of this descriptor indicates an AC-4 audio track.
                             ps->description = u"AC-4 Audio";
                             ps->carry_audio = true;
                             break;
                         }
-                        case EDID_DVB_DTS_HD_AUDIO: {
+                        case XDID_DVB_DTS_HD_AUDIO: {
                             // The presence of this descriptor indicates an DTS-HD audio track.
                             ps->description = u"DTS-HD Audio";
                             ps->carry_audio = true;
                             break;
                         }
-                        case EDID_DVB_DTS_NEURAL: {
+                        case XDID_DVB_DTS_NEURAL: {
                             // The presence of this descriptor indicates an DTS-Neural audio track.
                             ps->description = u"DTS Neural Surround Audio";
                             ps->carry_audio = true;
@@ -1258,13 +1260,13 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
         if (svp == nullptr) {
             // No service, this is an EMM PID
             eps->carry_emm = true;
-            eps->description = names::CASId(_duck, ca_sysid) + u" EMM" + suffix;
+            eps->description = CASIdName(_duck, ca_sysid) + u" EMM" + suffix;
         }
         else {
             // Found an ECM PID for the service
             eps->carry_ecm = true;
             eps->addService(svp->service_id);
-            eps->description = names::CASId(_duck, ca_sysid) + u" ECM" + suffix;
+            eps->description = CASIdName(_duck, ca_sysid) + u" ECM" + suffix;
         }
     }
 }

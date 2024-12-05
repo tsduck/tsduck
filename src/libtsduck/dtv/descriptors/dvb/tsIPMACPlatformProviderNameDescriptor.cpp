@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"IPMAC_platform_provider_name_descriptor"
-#define MY_CLASS ts::IPMACPlatformProviderNameDescriptor
-#define MY_DID ts::DID_INT_PF_PROVIDER
-#define MY_TID ts::TID_INT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::IPMACPlatformProviderNameDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_INT_PF_PROVIDER, ts::Standards::DVB, ts::TID_INT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::IPMACPlatformProviderNameDescriptor::IPMACPlatformProviderNameDescriptor(const UString& lang, const UString& name) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     language_code(lang),
     text(name)
 {
@@ -68,7 +66,7 @@ void ts::IPMACPlatformProviderNameDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::IPMACPlatformProviderNameDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         disp << margin << "Language: " << buf.getLanguageCode() << std::endl;

@@ -16,12 +16,10 @@
 #include "tsTime.h"
 
 #define MY_XML_NAME u"cpcm_delivery_signalling_descriptor"
-#define MY_CLASS ts::CPCMDeliverySignallingDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_CPCM_DELIVERY_SIG
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::CPCMDeliverySignallingDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_CPCM_DELIVERY_SIG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::CPCMDeliverySignallingDescriptor::CPCMDeliverySignallingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -68,16 +66,6 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::clearContent()
     remote_access_delay.reset();
     remote_access_date.reset();
     cps_vector.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::CPCMDeliverySignallingDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -229,7 +217,7 @@ void ts::CPCMDeliverySignallingDescriptor::deserializePayload(PSIBuffer& buf)
   (byte & 0x02 ? '1' : '0'), \
   (byte & 0x01 ? '1' : '0')
 
-void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         uint8_t cpcm_version = buf.getUInt8();

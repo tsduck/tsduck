@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"stream_mode_descriptor"
-#define MY_CLASS ts::StreamModeDescriptor
-#define MY_DID ts::DID_MPEG_STREAM_MODE
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::StreamModeDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_STREAM_MODE, ts::Standards::MPEG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::StreamModeDescriptor::StreamModeDescriptor(uint8_t mode) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     stream_mode(mode)
 {
 }
@@ -65,7 +64,7 @@ void ts::StreamModeDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::StreamModeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::StreamModeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"Stream mode: %s", DataName(MY_XML_NAME, u"StreamMode", buf.getUInt8(), NamesFlags::HEXA_FIRST)) << std::endl;

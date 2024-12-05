@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"redistribution_control_descriptor"
-#define MY_CLASS ts::RedistributionControlDescriptor
-#define MY_DID ts::DID_ATSC_REDIST_CONTROL
-#define MY_PDS ts::PDS_ATSC
-#define MY_STD ts::Standards::ATSC
+#define MY_CLASS    ts::RedistributionControlDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_ATSC_REDIST_CONTROL, ts::Standards::ATSC)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::RedistributionControlDescriptor::RedistributionControlDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -63,7 +61,7 @@ void ts::RedistributionControlDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::RedistributionControlDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     disp.displayPrivateData(u"RC information", buf, NPOS, margin);
 }

@@ -16,11 +16,10 @@
 
 #define MY_XML_NAME u"DVB_stuffing_descriptor"
 #define MY_XML_NAME_LEGACY u"stuffing_descriptor"
-#define MY_CLASS ts::DVBStuffingDescriptor
-#define MY_DID ts::DID_DVB_STUFFING
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DVBStuffingDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_STUFFING, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DVBStuffingDescriptor::DVBStuffingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME, MY_XML_NAME_LEGACY)
 {
 }
 
@@ -63,7 +62,7 @@ void ts::DVBStuffingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBStuffingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DVBStuffingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     disp.displayPrivateData(u"Stuffing data", buf, NPOS, margin);
 }

@@ -453,5 +453,6 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
     }
 
     // Display descriptor list with 10-bit length field.
-    disp.displayDescriptorListWithLength(section, buf, margin, UString(), UString(), 10);
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, UString(), UString(), 10);
 }

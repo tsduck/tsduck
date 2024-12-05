@@ -443,6 +443,8 @@ void ts::EIT::Fix(BinaryTable& table, FixMode mode)
 
 void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+
     // The time reference is UTC as defined by DVB, but can be non-standard.
     const UString zone(disp.duck().timeReferenceName());
 
@@ -453,7 +455,7 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << UString::Format(u"Original Network Id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Segment last section: %n", buf.getUInt8()) << std::endl;
         const uint8_t last_tid = buf.getUInt8();
-        disp << margin << UString::Format(u"Last Table Id: %n, %s", last_tid, names::TID(disp.duck(), last_tid)) << std::endl;
+        disp << margin << UString::Format(u"Last Table Id: %n, %s", last_tid, TIDName(disp.duck(), last_tid)) << std::endl;
 
         while (buf.canReadBytes(12)) {
             disp << margin << UString::Format(u"- Event Id: %n", buf.getUInt16()) << std::endl;
@@ -463,7 +465,7 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             disp << UString::Format(u":%02d", buf.getBCD<int>(2)) << std::endl;
             disp << margin << "  Running status: " << names::RunningStatus(buf.getBits<uint8_t>(3)) << std::endl;
             disp << margin << "  CA mode: " << (buf.getBool() ? "controlled" : "free") << std::endl;
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ");
         }
     }
 }

@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"DTS_HD_descriptor"
-#define MY_CLASS ts::DTSHDDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_DTS_HD_AUDIO
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DTSHDDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_DTS_HD_AUDIO)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::DTSHDDescriptor::DTSHDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -46,16 +44,6 @@ void ts::DTSHDDescriptor::clearContent()
     substream_2.reset();
     substream_3.reset();
     additional_info.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::DTSHDDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -190,7 +178,7 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(std::optional<SubstreamInfo>&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     const bool substream_core_flag = buf.getBool();
     const bool substream_0_flag = buf.getBool();

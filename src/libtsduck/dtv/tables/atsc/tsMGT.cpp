@@ -198,6 +198,7 @@ ts::UString ts::MGT::TableTypeName(uint16_t table_type)
 
 void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     uint16_t table_count = 0;
 
     if (!buf.canReadBytes(2)) {
@@ -222,11 +223,11 @@ void ts::MGT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         buf.skipBits(3);
         disp << UString::Format(u", version: %d", buf.getBits<uint8_t>(5));
         disp << UString::Format(u", size: %d bytes", buf.getUInt32()) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ");
     }
 
     // Common descriptors.
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Global descriptors:");
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Global descriptors:");
 }
 
 

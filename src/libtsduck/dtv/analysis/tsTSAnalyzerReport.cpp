@@ -603,9 +603,9 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 
         // Loop on all tables on this PID
         for (const auto& sec_it : pc.sections) {
-            const ETIDContext& etc(*sec_it.second);
-            const TID tid = etc.etid.tid();
-            const bool isShort = etc.etid.isShortSection();
+            const XTIDContext& etc(*sec_it.second);
+            const TID tid = etc.xtid.tid();
+            const bool isShort = etc.xtid.isShortSection();
 
             // Repetition rates are displayed in ms if the TS bitrate is known, in packets otherwise.
             const UChar* unit = nullptr;
@@ -646,8 +646,8 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 
             // Header line: TID
             grid.subSection();
-            grid.putLine(names::TID(_duck, tid, pc.cas_id, NamesFlags::BOTH_FIRST) +
-                         (isShort ? u"" : UString::Format(u", TID ext: %n", etc.etid.tidExt())));
+            grid.putLine(TIDName(_duck, tid, pc.cas_id, NamesFlags::BOTH_FIRST) +
+                         (isShort ? u"" : UString::Format(u", TID ext: %n", etc.xtid.tidExt())));
 
             // 4-columns output, first column remains empty.
             grid.setLayout({grid.left(2), grid.bothTruncateLeft(25, u'.'), grid.bothTruncateLeft(23, u'.'), grid.bothTruncateLeft(17, u'.')});
@@ -1057,12 +1057,12 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
     for (const auto& pci : _pids) {
         const PIDContext& pc(*pci.second);
         for (const auto& it : pc.sections) {
-            const ETIDContext& etc(*it.second);
+            const XTIDContext& etc(*it.second);
             stm << "table:"
                 << "pid=" << pc.pid << ":"
-                << "tid=" << int(etc.etid.tid()) << ":";
-            if (etc.etid.isLongSection()) {
-                stm << "tidext=" << etc.etid.tidExt() << ":";
+                << "tid=" << int(etc.xtid.tid()) << ":";
+            if (etc.xtid.isLongSection()) {
+                stm << "tidext=" << etc.xtid.tidExt() << ":";
             }
             stm << "tables=" << etc.table_count << ":"
                 << "sections=" << etc.section_count << ":"
@@ -1332,12 +1332,12 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     for (const auto& pci : _pids) {
         const PIDContext& pc(*pci.second);
         for (const auto& it : pc.sections) {
-            const ETIDContext& etc(*it.second);
+            const XTIDContext& etc(*it.second);
             json::Value& jv(root.query(u"tables[]", true));
             jv.add(u"pid", pc.pid);
-            jv.add(u"tid", etc.etid.tid());
-            if (etc.etid.isLongSection()) {
-                jv.add(u"tid-ext", etc.etid.tidExt());
+            jv.add(u"tid", etc.xtid.tid());
+            if (etc.xtid.isLongSection()) {
+                jv.add(u"tid-ext", etc.xtid.tidExt());
             }
             jv.add(u"tables", etc.table_count);
             jv.add(u"sections", etc.section_count);

@@ -16,11 +16,10 @@
 #include "tsAlgorithm.h"
 
 #define MY_XML_NAME u"MPEG4_text_descriptor"
-#define MY_CLASS ts::MPEG4TextDescriptor
-#define MY_DID ts::DID_MPEG_MPEG4_TEXT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::MPEG4TextDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_MPEG4_TEXT, ts::Standards::MPEG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // ISO/IEC 14496-17 Table 1
 const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_textFormat_values{
@@ -45,7 +44,7 @@ const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_profileLevel_values 
 //----------------------------------------------------------------------------
 
 ts::MPEG4TextDescriptor::MPEG4TextDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -173,7 +172,7 @@ ts::UString ts::MPEG4TextDescriptor::TimedText_TS26245(ByteBlock formatSpecificT
     return UString::Dump(formatSpecificTextConfig, UString::SINGLE_LINE);
 }
 
-void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(8)) {
         disp << margin << "Text format: " << DataName(MY_XML_NAME, u"textFormat", buf.getUInt8(), NamesFlags::VALUE);

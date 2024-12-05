@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"SSU_subgroup_association_descriptor"
-#define MY_CLASS ts::SSUSubgroupAssociationDescriptor
-#define MY_DID ts::DID_UNT_SUBGROUP_ASSOC
-#define MY_TID ts::TID_UNT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::SSUSubgroupAssociationDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_UNT_SUBGROUP_ASSOC, ts::Standards::DVB, ts::TID_UNT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::SSUSubgroupAssociationDescriptor::SSUSubgroupAssociationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -63,7 +61,7 @@ void ts::SSUSubgroupAssociationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUSubgroupAssociationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SSUSubgroupAssociationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBits(40)) {
         disp << margin << UString::Format(u"Subgroup tag: 0x%010X (%<d)", buf.getUInt40()) << std::endl;

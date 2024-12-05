@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"MPEGH_3D_audio_descriptor"
-#define MY_CLASS ts::MPEGH3DAudioDescriptor
-#define MY_DID ts::DID_MPEG_EXTENSION
-#define MY_EDID ts::EDID_MPEG_MPH3D_AUDIO
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::MPEGH3DAudioDescriptor
+#define MY_EDID     ts::EDID::ExtensionMPEG(ts::XDID_MPEG_MPH3D_AUDIO)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::MPEGH3DAudioDescriptor::MPEGH3DAudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -45,16 +43,6 @@ ts::MPEGH3DAudioDescriptor::MPEGH3DAudioDescriptor(DuckContext& duck, const Desc
     MPEGH3DAudioDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MPEGH3DAudioDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -101,7 +89,7 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         disp << margin << "3D-audio profile level indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::VALUE) << std::endl;

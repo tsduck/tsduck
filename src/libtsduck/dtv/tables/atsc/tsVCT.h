@@ -167,9 +167,5 @@ namespace ts {
     private:
         // Internal version of find by Service class.
         ChannelList::const_iterator findServiceInternal(Service& service, bool exact_match, bool same_ts) const;
-
-        // XML values for modulation mode and service_type.
-        static const Enumeration ModulationModeEnum;
-        static const Enumeration ServiceTypeEnum;
     };
 }

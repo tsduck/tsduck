@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"linkage_descriptor"
-#define MY_CLASS ts::LinkageDescriptor
-#define MY_DID ts::DID_DVB_LINKAGE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::LinkageDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_LINKAGE, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -60,7 +59,7 @@ void ts::LinkageDescriptor::ExtendedEventLinkageInfo::clear()
 //----------------------------------------------------------------------------
 
 ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint8_t ltype) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
@@ -218,7 +217,7 @@ void ts::LinkageDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(7)) {
         disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;

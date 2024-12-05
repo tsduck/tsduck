@@ -7,10 +7,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDescriptor.h"
-#include "tsAbstractTable.h"
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
 #include "tsPSIBuffer.h"
+#include "tsPSIRepository.h"
 #include "tsNames.h"
 #include "tsFatal.h"
 
@@ -19,15 +19,24 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name) :
-    AbstractSignalization(xml_name, standards, xml_legacy_name),
-    _tag(tag),
-    _required_pds(pds)
+ts::AbstractDescriptor::AbstractDescriptor(EDID edid, const UChar* xml_name, const UChar* xml_legacy_name) :
+    AbstractSignalization(xml_name, edid.standards(), xml_legacy_name),
+    _edid(edid)
 {
 }
 
 ts::AbstractDescriptor::~AbstractDescriptor()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Inherited methods.
+//----------------------------------------------------------------------------
+
+ts::Standards ts::AbstractDescriptor::definingStandards() const
+{
+    return _edid.standards();
 }
 
 
@@ -45,55 +54,6 @@ bool ts::AbstractDescriptor::merge(const AbstractDescriptor& desc)
 {
     // By default, merging descriptors is not implemented.
     return false;
-}
-
-
-//----------------------------------------------------------------------------
-// Get the extended descriptor id.
-//----------------------------------------------------------------------------
-
-ts::EDID ts::AbstractDescriptor::edid(const AbstractTable* table) const
-{
-    return edid(table == nullptr ? TID(TID_NULL) : table->tableId());
-}
-
-ts::EDID ts::AbstractDescriptor::edid(TID tid) const
-{
-    if (!isValid()) {
-        return EDID();  // invalid value.
-    }
-    else if (tid != TID_NULL && names::HasTableSpecificName(_tag, tid)) {
-        // Table-specific descriptor.
-        return EDID::TableSpecific(_tag, tid);
-    }
-    else if (_required_pds != 0) {
-        // Private descriptor.
-        return EDID::PrivateDVB(_tag, _required_pds);
-    }
-    else if (_tag == DID_DVB_EXTENSION) {
-        // DVB extension descriptor.
-        return EDID::ExtensionDVB(extendedTag());
-    }
-    else if (_tag == DID_MPEG_EXTENSION) {
-        // MPEG extension descriptor.
-        return EDID::ExtensionMPEG(extendedTag());
-    }
-    else {
-        // Standard descriptor.
-        return EDID::Standard(_tag);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Get the extended descriptor tag (first byte in payload).
-//----------------------------------------------------------------------------
-
-ts::DID ts::AbstractDescriptor::extendedTag() const
-{
-    // By default, there no extended descriptor tag.
-    // MPEG-defined and DVB-defined extension descriptors must override this virtual method.
-    return EDID_NULL;
 }
 
 
@@ -118,7 +78,7 @@ bool ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
 
         // If this is an extension descriptor, add extended tag.
         const DID etag = extendedTag();
-        if (etag != EDID_NULL) {
+        if (etag != XDID_NULL) {
             buf.putUInt8(etag);
         }
 
@@ -133,7 +93,7 @@ bool ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
         else {
             // Update the actual descriptor size.
             const size_t size = buf.currentWriteByteOffset();
-            (*bbp)[0] = _tag;
+            (*bbp)[0] = tag();
             (*bbp)[1] = uint8_t(size);
 
             // Resize the byte block and store it into the descriptor.
@@ -154,7 +114,7 @@ bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
     // Make sure the object is cleared before analyzing the binary descriptor.
     clear();
 
-    if (!bin.isValid() || bin.tag() != _tag) {
+    if (!bin.isValid() || bin.tag() != tag()) {
         // If the binary descriptor is already invalid or has the wrong descriptor tag, this object is invalid too.
         invalidate();
         return false;
@@ -165,7 +125,7 @@ bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
 
         // If this is an extension descriptor, check that the expected extended tag is present in the payload.
         const DID etag = extendedTag();
-        if (etag != EDID_NULL && (buf.getUInt8() != etag || buf.error())) {
+        if (etag != XDID_NULL && (buf.getUInt8() != etag || buf.error())) {
             invalidate();
             return false;
         }

@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"NVOD_reference_descriptor"
-#define MY_CLASS ts::NVODReferenceDescriptor
-#define MY_DID ts::DID_DVB_NVOD_REFERENCE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::NVODReferenceDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_NVOD_REFERENCE, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -34,7 +33,7 @@ ts::NVODReferenceDescriptor::Entry::Entry(uint16_t ts, uint16_t net, uint16_t sr
 }
 
 ts::NVODReferenceDescriptor::NVODReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -84,7 +83,7 @@ void ts::NVODReferenceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(6)) {
         disp << margin << UString::Format(u"- Transport stream id: %n", buf.getUInt16()) << std::endl;

@@ -152,6 +152,7 @@ void ts::LDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::LDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     disp << margin << UString::Format(u"Original service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(4)) {
@@ -160,7 +161,7 @@ void ts::LDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         while (buf.canReadBytes(5)) {
             disp << margin << UString::Format(u"Description id: %n", buf.getUInt16()) << std::endl;
             buf.skipBits(12);
-            disp.displayDescriptorListWithLength(section, buf, margin);
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin);
         }
     }
 }

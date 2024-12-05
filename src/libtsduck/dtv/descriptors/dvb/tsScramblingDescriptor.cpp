@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"scrambling_descriptor"
-#define MY_CLASS ts::ScramblingDescriptor
-#define MY_DID ts::DID_DVB_SCRAMBLING
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::ScramblingDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_SCRAMBLING, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ScramblingDescriptor::ScramblingDescriptor(uint8_t mode) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     scrambling_mode(mode)
 {
 }
@@ -63,7 +62,7 @@ void ts::ScramblingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << UString::Format(u"Scrambling mode: %s", NameFromDTV(u"ScramblingMode", buf.getUInt8(), NamesFlags::HEXA_FIRST)) << std::endl;

@@ -313,7 +313,8 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     }
 
     // Display common descriptor loop.
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptors:", u"None");
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Common descriptors:", u"None");
 
     if (!buf.error()) {
         disp << margin << "Sets of devices:" << std::endl;
@@ -376,8 +377,8 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         // Get platform descriptions.
         for (size_t platform_index = 0; buf.canRead(); ++platform_index) {
             disp << margin << "  Platform " << platform_index << ":" << std::endl;
-            disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"Target descriptors:", u"None");
-            disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"Operational descriptors:", u"None");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"    ", u"Target descriptors:", u"None");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"    ", u"Operational descriptors:", u"None");
         }
 
         // Close platform loop.

@@ -54,9 +54,7 @@ ts::INT::Device& ts::INT::Device::operator=(const Device& other)
 //----------------------------------------------------------------------------
 
 ts::INT::INT(uint8_t version_, bool is_current_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
-    platform_descs(this),
-    devices(this)
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
 {
 }
 
@@ -210,13 +208,14 @@ void ts::INT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
              << UString::Format(u"Action type: 0x%X, processing order: 0x%X, id hash: 0x%X (%s)", action, order, id_hash, hash_status)
              << std::endl;
 
-        disp.displayDescriptorListWithLength(section, buf, margin, u"Platform descriptors:");
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+        disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Platform descriptors:");
 
         // Get device descriptions.
         for (int device_index = 0; buf.canRead(); device_index++) {
             disp << margin << "Device #" << device_index << std::endl;
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Target descriptors:", u"None");
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Operational descriptors:", u"None");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ", u"Target descriptors:", u"None");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ", u"Operational descriptors:", u"None");
         }
     }
 }

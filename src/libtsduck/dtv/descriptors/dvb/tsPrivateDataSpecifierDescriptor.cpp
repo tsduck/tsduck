@@ -16,11 +16,10 @@
 #include "tsNames.h"
 
 #define MY_XML_NAME u"private_data_specifier_descriptor"
-#define MY_CLASS ts::PrivateDataSpecifierDescriptor
-#define MY_DID ts::DID_DVB_PRIV_DATA_SPECIF
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::PrivateDataSpecifierDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_PRIV_DATA_SPECIF, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::PrivateDataSpecifierDescriptor::PrivateDataSpecifierDescriptor(PDS pds_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     pds(pds_)
 {
 }
@@ -64,10 +63,10 @@ void ts::PrivateDataSpecifierDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "Specifier: " << names::PrivateDataSpecifier(buf.getUInt32(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Specifier: " << PDSName(buf.getUInt32(), NamesFlags::FIRST) << std::endl;
     }
 }
 

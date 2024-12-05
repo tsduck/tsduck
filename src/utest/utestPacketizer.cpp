@@ -111,7 +111,7 @@ TSUNIT_DEFINE_TEST(Packetizer)
         TSUNIT_EQUAL(ts::SYNC_BYTE, pkt.b[0]);
         TSUNIT_EQUAL(0, pkt.b[4]); // pointer field
         ts::TID tid = pkt.b[5];
-        debug() << "PacketizerTest:   " << pi << ": " << ts::names::TID(duck, tid) << std::endl;
+        debug() << "PacketizerTest:   " << pi << ": " << ts::TIDName(duck, tid) << std::endl;
         switch (tid) {
             case ts::TID_PAT:
                 pat_count++;

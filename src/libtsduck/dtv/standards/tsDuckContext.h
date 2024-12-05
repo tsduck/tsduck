@@ -16,7 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsCharset.h"
 #include "tsStandards.h"
-#include "tsRegistration.h"
+#include "tsREGID.h"
 #include "tsPDS.h"
 #include "tsCAS.h"
 
@@ -266,20 +266,20 @@ namespace ts {
         //! Set the default CAS id to use.
         //! @param [in] cas Default CAS id to be used when the CAS is unknown.
         //!
-        void setDefaultCASId(uint16_t cas);
+        void setDefaultCASId(CASID cas) { _casId = cas; }
 
         //!
         //! The actual CAS id to use.
         //! @param [in] cas Proposed CAS id. If equal to CASID_NULL, then another value can be returned.
         //! @return The actual CAS id to use.
         //!
-        uint16_t casId(uint16_t cas = CASID_NULL) const;
+        CASID casId(CASID cas = CASID_NULL) const { return cas == CASID_NULL ? _casId : cas; }
 
         //!
         //! Set the default private data specifier to use in the absence of explicit private_data_specifier_descriptor.
         //! @param [in] pds Default PDS. Use zero to revert to no default.
         //!
-        void setDefaultPDS(PDS pds);
+        void setDefaultPDS(PDS pds) { _defaultPDS = pds; }
 
         //!
         //! The actual private data specifier to use.
@@ -289,33 +289,24 @@ namespace ts {
         PDS actualPDS(PDS pds) const;
 
         //!
-        //! Add a registration id, as found in an MPEG-defined registration descriptor.
-        //! @param [in] regid A new registration id.
+        //! Reset the list of default registration ids.
+        //! All registration ids, including those coming from @c --default-registration options, are deleted.
         //!
-        void addRegistrationId(uint32_t regid);
+        void resetDefaultREGIDs() { _defaultREGIDs.clear(); }
 
         //!
-        //! Get the set of all registration ids, as found in MPEG-defined registration descriptors.
-        //! @return A constant reference to the set of all registration ids.
+        //! Add a new id at the end of the list of default registration ids.
+        //! @param [in] regid A registration id to add.
         //!
-        const std::set<uint32_t>& registrationIds() const
-        {
-            return _registrationIds;
-        }
+        void addDefaultREGID(REGID regid) { _defaultREGIDs.push_back(regid); }
 
         //!
-        //! Get the last registration id, as found in MPEG-defined registration descriptors.
-        //! @return The last registration id or REGID_NULL if none was found.
+        //! Update a list of registration ids (typically from a descriptor list) with the default registration ids.
+        //! The default registration ids mostly come from @c --default-registration options.
+        //! They are inserted at the beginning of @a regids.
+        //! @param [in,out] regids The list of registration ids to update.
         //!
-        uint32_t lastRegistrationId() const
-        {
-            return _lastRegistrationId;
-        }
-
-        //!
-        //! Clear all accumulated registration ids, as found in MPEG-defined registration descriptors.
-        //!
-        void resetRegistrationIds();
+        void updateREGIDs(REGIDVector& regids) const { regids.insert(regids.begin(), _defaultREGIDs.begin(), _defaultREGIDs.end()); }
 
         //!
         //! Get the list of standards which are present in the transport stream or context.
@@ -339,7 +330,7 @@ namespace ts {
         //! Set the name of the default region for UVH and VHF band frequency layout.
         //! @param [in] region Name of the region. Use an empty string to revert to the default.
         //!
-        void setDefaultHFRegion(const UString& region);
+        void setDefaultHFRegion(const UString& region) { _hfDefaultRegion = region; }
 
         //!
         //! Get the name of the default region for UVH and VHF band frequency layout.
@@ -429,8 +420,8 @@ namespace ts {
         void defineArgsForCAS(Args& args) { defineOptions(args, CMD_CAS); }
 
         //!
-        //! Define Private Data Specifier command line options in an Args.
-        //! Defined options: @c -\-default-pds.
+        //! Define Private Data Specifier and Registration Id command line options in an Args.
+        //! Defined options: @c -\-default-pds and -\-default-registration.
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
         //! @param [in,out] args Command line arguments to update.
         //!
@@ -482,8 +473,9 @@ namespace ts {
             Standards   _cmdStandards = Standards::NONE;  // Forced standards from the command line.
             UString     _charsetInName {};       // Character set to interpret strings without prefix code.
             UString     _charsetOutName {};      // Preferred character set to generate strings.
-            uint16_t    _casId = CASID_NULL;     // Preferred CAS id.
+            CASID       _casId = CASID_NULL;     // Preferred CAS id.
             PDS         _defaultPDS = 0;         // Default PDS value if undefined.
+            REGIDVector _defaultREGIDs {};       // Default registration id to initially set.
             UString     _hfDefaultRegion {};     // Default region for UHF/VHF band.
             cn::milliseconds _timeReference{};   // Time reference in milli-seconds from UTC (used in ISDB variants).
         };
@@ -507,17 +499,16 @@ namespace ts {
         std::ofstream      _outFile {};    // Open stream when redirected to a file by name.
         const Charset*     _charsetIn;     // DVB character set to interpret strings without prefix code.
         const Charset*     _charsetOut;    // Preferred DVB character set to generate strings.
-        uint16_t           _casId {CASID_NULL};              // Preferred CAS id.
+        CASID              _casId = CASID_NULL;              // Preferred CAS id.
         PDS                _defaultPDS = 0;                  // Default PDS value if undefined.
+        REGIDVector        _defaultREGIDs {};                // Default registration id to initially set.
         bool               _useLeapSeconds = true;           // Explicit use of leap seconds.
-        Standards          _cmdStandards {Standards::NONE};  // Forced standards from the command line.
-        Standards          _accStandards {Standards::NONE};  // Accumulated list of standards in the context.
+        Standards          _cmdStandards = Standards::NONE;  // Forced standards from the command line.
+        Standards          _accStandards = Standards::NONE;  // Accumulated list of standards in the context.
         UString            _hfDefaultRegion {};              // Default region for UHF/VHF band.
         cn::milliseconds   _timeReference {};                // Time reference in milli-seconds from UTC (used in ISDB variants).
         UString            _timeRefConfig {};                // Time reference name from TSDuck configuration file.
         int                _definedCmdOptions = 0;           // Mask of defined command line options (CMD_xxx below).
-        uint32_t           _lastRegistrationId = REGID_NULL; // Last encountered registration id in a registration descriptor.
-        std::set<uint32_t> _registrationIds {};              // Set of all registration ids.
         const std::map<uint16_t, const UChar*> _predefined_cas {};  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.

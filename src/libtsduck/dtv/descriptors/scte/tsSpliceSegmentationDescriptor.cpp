@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"splice_segmentation_descriptor"
-#define MY_CLASS ts::SpliceSegmentationDescriptor
-#define MY_DID ts::DID_SPLICE_SEGMENT
-#define MY_TID ts::TID_SCTE35_SIT
-#define MY_STD ts::Standards::SCTE
+#define MY_CLASS    ts::SpliceSegmentationDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_SPLICE_SEGMENT,  ts::Standards::SCTE , ts::TID_SCTE35_SIT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -223,7 +221,7 @@ void ts::SpliceSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     bool cancel = false;
     bool program_segmentation = false;
