@@ -94,7 +94,7 @@ namespace ts {
             OUI    = 2,  //!< IEEE Organizationally Unique Identifiers.
             DEKTEC = 3,  //!< Dektec devices definitions.
             HIDES  = 4,  //!< HiDes modulators definitions.
-            COUNT  = 5   //!< No a real value, just the number of values.
+            COUNT  = 5   //!< Not a real value, just the number of values.
         };
 
         //!
@@ -231,10 +231,11 @@ namespace ts {
         {
             TS_NOCOPY(ConfigSection);
         public:
-            size_t          bits = 0;     // Number of significant bits in values of the type.
-            Value           mask = 0;     // Mask to apply to extract the specified bits.
-            ConfigEntryMap  entries {};   // All entries, indexed by names.
-            UString         inherit {};   // Redirect to this section if value not found.
+            size_t          bits = 0;          // Number of significant bits in values of the type.
+            Value           mask = 0;          // Mask to apply to extract the specified bits.
+            bool            extended = false;  // Contains extended values, larger than specified bit size.
+            ConfigEntryMap  entries {};        // All entries, indexed by names.
+            UString         inherit {};        // Redirect to this section if value not found.
 
             // Constructor.
             ConfigSection() = default;

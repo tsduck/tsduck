@@ -3,6 +3,7 @@
 # 0x00ppppppppdd : private descriptor (pppppppp = PDS, dd = descriptor tag)
 # 0xttFFFFFFFFdd : table-specific descriptor (tt = table id, dd = descriptor tag)
 Bits = 8
+Extended = true
 # MPEG-defined:
 0x01 = NPT Reference
 0x02 = Video Stream

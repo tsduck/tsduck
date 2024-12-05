@@ -3,6 +3,7 @@
 #  0xrrrrrrrr : registration id (in registration descriptor)
 #  0xtt : stream type
 Bits = 8
+Extended = true
 # MPEG values
 0x01 = MPEG-1 Video
 0x02 = MPEG-2 Video

@@ -214,23 +214,38 @@ void ts::NamesFile::loadFile(const UString& fileName)
     strm.close();
 
     // Verify that all sections have bits size.
-    for (const auto& it : _sections) {
+    for (const auto& sec : _sections) {
+
         // Fetch bits value from "superclasses".
-        UString parent(it.second->inherit);
-        while (it.second->bits == 0 && !parent.empty()) {
+        UString parent(sec.second->inherit);
+        while (sec.second->bits == 0 && !parent.empty()) {
             auto next = _sections.find(parent.toLower());
             if (next == _sections.end()) {
-                _log.error(u"%d: section %s inherits from non-existent section %s", _configFile, it.first, parent);
+                _log.error(u"%d: section %s inherits from non-existent section %s", _configFile, sec.first, parent);
                 break;
             }
-            it.second->bits = next->second->bits;
+            sec.second->bits = next->second->bits;
             parent = next->second->inherit;
         }
-        if (it.second->bits == 0) {
-            _log.error(u"%d: no specified bits size in section %s", _configFile, it.first);
+
+        // Verify the presence of bits size.
+        if (sec.second->bits == 0) {
+            _log.error(u"%d: no specified bits size in section %s", _configFile, sec.first);
         }
         else {
-            it.second->mask = ~Value(0) >> (8 * sizeof(Value) - it.second->bits);
+            const Value mask = sec.second->mask = ~Value(0) >> (8 * sizeof(Value) - sec.second->bits);
+
+            // Verify the presence of extended values in the section.
+            bool extended = false;
+            for (const auto& val : sec.second->entries) {
+                if ((val.first & ~mask) != 0 || (val.second->last & ~mask) != 0) {
+                    extended = true;
+                    break;
+                }
+            }
+            if (extended != sec.second->extended) {
+                _log.error(u"%d: section %s, extended is %s, found%s extended values", _configFile, sec.first, sec.second->extended, extended ? u"" : u" no");
+            }
         }
     }
 }
@@ -285,6 +300,10 @@ bool ts::NamesFile::decodeDefinition(const UString& section_name, const UString&
             _log.error(u"%s: section %s, duplicated inherit clauses %s and %s", _configFile, section_name, section->inherit, value);
             return false;
         }
+    }
+    else if (range.similar(u"extended")) {
+        // "extended = true|false" indicates the presence of extended values, larger than the specified bit size.
+        return value.toBool(section->extended);
     }
 
     // Decode "first[-last]"

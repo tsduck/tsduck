@@ -22,6 +22,7 @@ Bits = 4
 # In asset_info() of DTS-HD_descriptor()
 # MSB=0 for substream, MSB=1 for extensions substreams
 Bits = 5
+Extended = true
 0x0001 = Core
 0x0002 = Core, XCH
 0x0003 = Core, XXCH

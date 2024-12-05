@@ -4,6 +4,7 @@
 #  0xcc : CAS family
 #  0xssss : standards which define this table (see tsStandards.names)
 Bits = 8
+Extended = true
 # DVB-defined tables:
 0x0001_00_00 = PAT
 0x0001_00_01 = CAT
