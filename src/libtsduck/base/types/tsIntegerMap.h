@@ -114,7 +114,7 @@ ts::UString ts::IntegerMap<KEY,VALUE,KEYNAMESECTION,NAMESFILE,N>::toStringKeys(V
     const bool percent = total > 0 && (this->size() > 1 || (this->size() == 1 && this->begin()->second != total));
 
     // File names to use.
-    NamesFile::NamesFilePtr file;;
+    NamesFile::NamesFilePtr file;
     if (!KEY_NAMES_SECTION.empty()) {
         file = NamesFile::Instance(NAMESFILE);
     }
