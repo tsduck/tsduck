@@ -118,6 +118,7 @@ namespace ts {
             PacketCounter packets = 0;              // Input packet count in that PID.
             PacketCounter start_packet = INVALID_PACKET_COUNTER;  // Start writing packets after this one.
             uint64_t      start_pts = INVALID_PTS;  // Start writing packets after that PTS.
+            uint8_t       start_cc = INVALID_CC;    // Continuity counter in start_packet.
             PID           pmt_pid = PID_NULL;       // PID of service's PMT.
             PID           video_pid = PID_NULL;     // Associated video PID.
             bool          hold = true;              // Don't write packets of that PID yet.
@@ -214,10 +215,12 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
             // Start passing video PID at first intra-frame.
             vctx.start_packet = sig.intraFrameFirstIndex(vpid);
             vctx.start_pts = sig.intraFrameFirstPTS(vpid);
+            vctx.start_cc = sig.intraFrameFirstCC(vpid);
             if (vctx.start_packet == INVALID_PACKET_COUNTER) {
                 // No intra-frame detected (maybe an unknown codec), use first PUSI.
                 vctx.start_packet = sig.pusiFirstIndex(vpid);
                 vctx.start_pts = sig.pusiFirstPTS(vpid);
+                vctx.start_cc = sig.pusiFirstCC(vpid);
             }
 
             // Build context for all other component PID's.
@@ -330,6 +333,10 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
             MemSet(pkt.getPayload(), 0xFF, pkt.getPayloadSize());  // overwrite payload content
             pkt.b[3] &= ~0x10; // clear payload existence
             pkt.b[4] = 183; // extend adaptation field to end of packet
+            if (pctx.start_cc != INVALID_CC) {
+                // Set CC to previous value before start packet.
+                pkt.setCC(pctx.start_cc + CC_MAX - 1);
+            }
             writePacket(pkt);
             _opt.debug(u"passing PCR-only packet on %s PID %n, associated video PID %d", PIDClassEnum->name(pid_class), pid, pctx.video_pid);
         }

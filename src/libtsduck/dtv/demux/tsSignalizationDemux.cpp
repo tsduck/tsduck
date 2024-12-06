@@ -95,6 +95,7 @@ void ts::SignalizationDemux::feedPacket(const TSPacket& pkt)
         ctx.last_pusi.pcr = pkt.getPCR();
         ctx.last_pusi.pts = pkt.getPTS();
         ctx.last_pusi.dts = pkt.getDTS();
+        ctx.last_pusi.cc = pkt.getCC();
         if (ctx.first_pusi.pkt_index == INVALID_PACKET_COUNTER) {
             ctx.first_pusi = ctx.last_pusi;
         }

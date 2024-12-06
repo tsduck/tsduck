@@ -363,6 +363,16 @@ namespace ts {
         }
 
         //!
+        //! Get the continuity counter in a PID at its first payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The continuity counter in the PID at its first PUSI or INVALID_CC if there is none.
+        //!
+        uint8_t pusiFirstCC(PID pid) const
+        {
+            return getPIDPointField<uint8_t>(pid, INVALID_CC, &PIDContext::first_pusi, &PIDPoint::cc);
+        }
+
+        //!
         //! Get the number of TS packets in a PID before its last payload unit start indicator (PUSI).
         //! @param [in] pid The PID to check.
         //! @return The number of TS packets in the PID before its last payload unit start indicator (PUSI)
@@ -401,6 +411,16 @@ namespace ts {
         uint64_t pusiLastDTS(PID pid) const
         {
             return getPIDPointField<PacketCounter>(pid, INVALID_DTS, &PIDContext::last_pusi, &PIDPoint::dts);
+        }
+
+        //!
+        //! Get the continuity counter in a PID at its last payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The continuity counter in the PID at its last PUSI or INVALID_CC if there is none.
+        //!
+        uint8_t pusiLastCC(PID pid) const
+        {
+            return getPIDPointField<uint8_t>(pid, INVALID_CC, &PIDContext::last_pusi, &PIDPoint::cc);
         }
 
         //!
@@ -455,6 +475,16 @@ namespace ts {
         }
 
         //!
+        //! Get the continuity counter in a PID at its first video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The continuity counter in the PID at its first video intra-frame or INVALID_CC if there is none.
+        //!
+        uint8_t intraFrameFirstCC(PID pid) const
+        {
+            return getPIDPointField<uint8_t>(pid, INVALID_CC, &PIDContext::first_intra, &PIDPoint::cc);
+        }
+
+        //!
         //! Get the number of TS packets in a PID before its last video intra-frame.
         //! @param [in] pid The PID to check.
         //! @return The number of TS packets in the PID before its last video intra-frame
@@ -493,6 +523,16 @@ namespace ts {
         uint64_t intraFrameLastDTS(PID pid) const
         {
             return getPIDPointField<PacketCounter>(pid, INVALID_DTS, &PIDContext::last_intra, &PIDPoint::dts);
+        }
+
+        //!
+        //! Get the continuity counter in a PID at its last video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The continuity counter in the PID at its last video intra-frame or INVALID_CC if there is none.
+        //!
+        uint8_t intraFrameLastCC(PID pid) const
+        {
+            return getPIDPointField<uint8_t>(pid, INVALID_CC, &PIDContext::last_intra, &PIDPoint::cc);
         }
 
         //!
@@ -549,6 +589,7 @@ namespace ts {
             uint64_t      pcr = INVALID_PCR;                   // PCR value in this packet.
             uint64_t      pts = INVALID_PTS;                   // PTS value in this packet.
             uint64_t      dts = INVALID_DTS;                   // DTS value in this packet.
+            uint8_t       cc = INVALID_CC;                     // Continuity counter in this packet.
         };
 
         // Description of a PID.
