@@ -47,16 +47,6 @@ ts::MPEGH3DAudioTextLabelDescriptor::MPEGH3DAudioTextLabelDescriptor(DuckContext
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MPEGH3DAudioTextLabelDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -146,7 +136,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << "3D Audio Scene Id: " << int(buf.getUInt8()) << std::endl;

@@ -49,16 +49,6 @@ ts::MPEGH3DAudioDescriptor::MPEGH3DAudioDescriptor(DuckContext& duck, const Desc
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MPEGH3DAudioDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization.
 //----------------------------------------------------------------------------
 
@@ -101,7 +91,7 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         disp << margin << "3D-audio profile level indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::VALUE) << std::endl;

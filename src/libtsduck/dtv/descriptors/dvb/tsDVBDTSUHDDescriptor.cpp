@@ -49,16 +49,6 @@ ts::DVBDTSUHDDescriptor::DVBDTSUHDDescriptor(DuckContext& duck, const Descriptor
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::DVBDTSUHDDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -92,7 +82,7 @@ void ts::DVBDTSUHDDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBDTSUHDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DVBDTSUHDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         uint8_t decoder_profile_code = buf.getBits<uint8_t>(6);

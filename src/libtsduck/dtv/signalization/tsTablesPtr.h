@@ -15,8 +15,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsTID.h"
-#include "tsDID.h"
-#include "tsPDS.h"
+#include "tsDescriptorContext.h"
 
 namespace ts {
 
@@ -112,19 +111,17 @@ namespace ts {
     //! @e DisplayDescriptor which displays a descriptor of its type.
     //!
     //! @param [in,out] display Display engine.
+    //! @param [in] desc The descriptor to display.
     //! @param [in,out] payload A read-only PSIBuffer over the descriptor payload.
     //! For "extended descriptors", the buffer starts after the "extension tag".
     //! Everything that was not read from the buffer will be displayed by the
     //! caller as "extraneous data". Consequently, the descriptor subclasses do
     //! not have to worry about those extraneous data.
     //! @param [in] margin Left margin content.
-    //! @param [in] did Descriptor id.
-    //! @param [in] tid Table id of table containing the descriptors.
-    //! This is optional. Used by some descriptors the interpretation of which may
-    //! vary depending on the table that they are in.
-    //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
+    //! @param [in] context Context of the table and descriptor list containing the descriptor.
+    //! Used by some descriptors the interpretation of which may vary depending on the table that they are in.
     //!
-    using DisplayDescriptorFunction = void (*)(TablesDisplay& display, PSIBuffer& payload, const UString& margin, DID did, TID tid, PDS pds);
+    using DisplayDescriptorFunction = void (*)(TablesDisplay& display, const Descriptor& desc, PSIBuffer& payload, const UString& margin, const DescriptorContext& context);
 
     //!
     //! Profile of a function to display the private part of a CA_descriptor.
@@ -163,12 +160,11 @@ namespace ts {
 //! @hideinitializer
 //! Define a DisplayDescriptor static function.
 //!
-#define DeclareDisplayDescriptor()                                       \
-    /** Static method to display a descriptor.                        */ \
-    /** @param [in,out] display Display engine.                       */ \
-    /** @param [in,out] payload A PSIBuffer over the payload.         */ \
-    /** @param [in] margin Left margin content.                       */ \
-    /** @param [in] did Descriptor id.                                */ \
-    /** @param [in] tid Table id of table containing the descriptors. */ \
-    /** @param [in] pds Private Data Specifier.                       */ \
-    static void DisplayDescriptor(ts::TablesDisplay& display, ts::PSIBuffer& payload, const ts::UString& margin, ts::DID did, ts::TID tid, ts::PDS pds)
+#define DeclareDisplayDescriptor()                               \
+    /** Static method to display a descriptor.                */ \
+    /** @param [in,out] display Display engine.               */ \
+    /** @param [in] desc The descriptor to display.           */ \
+    /** @param [in,out] payload A PSIBuffer over the payload. */ \
+    /** @param [in] margin Left margin content.               */ \
+    /** @param [in] context Context of the descriptor.        */ \
+    static void DisplayDescriptor(ts::TablesDisplay& display, const ts::Descriptor& desc, ts::PSIBuffer& payload, const ts::UString& margin, const ts::DescriptorContext& context)

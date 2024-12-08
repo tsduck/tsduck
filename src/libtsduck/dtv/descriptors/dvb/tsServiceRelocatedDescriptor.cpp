@@ -47,16 +47,6 @@ void ts::ServiceRelocatedDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::ServiceRelocatedDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -79,7 +69,7 @@ void ts::ServiceRelocatedDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ServiceRelocatedDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(6)) {
         disp << margin << UString::Format(u"Old original network id: %n", buf.getUInt16()) << std::endl;

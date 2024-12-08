@@ -19,6 +19,7 @@
 #define MY_CLASS ts::C2BundleDeliverySystemDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_DVB_C2_BUNDLE_DELIVERY
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
@@ -28,7 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::C2BundleDeliverySystemDescriptor::C2BundleDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C2, MY_XML_NAME)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C2, MY_XML_NAME, MY_STD)
 {
 }
 
@@ -42,16 +43,6 @@ void ts::C2BundleDeliverySystemDescriptor::clearContent()
 {
 
     entries.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::C2BundleDeliverySystemDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -99,7 +90,7 @@ void ts::C2BundleDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(8)) {
         disp << margin << UString::Format(u"- PLP id: %n", buf.getUInt8());

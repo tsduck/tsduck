@@ -19,7 +19,7 @@
 #define MY_DID ts::DID_MPEG_SMOOTH_BUF
 #define MY_STD ts::Standards::MPEG
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ void ts::SmoothingBufferDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SmoothingBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(6)) {
         buf.skipBits(2);

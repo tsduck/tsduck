@@ -19,7 +19,7 @@
 #define MY_DID ts::DID_DVB_DEFAULT_AUTHORITY
 #define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ void ts::DefaultAuthorityDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DefaultAuthorityDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DefaultAuthorityDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     ByteBlock da;
     buf.getBytes(da);

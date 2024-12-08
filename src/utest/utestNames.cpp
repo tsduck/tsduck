@@ -264,7 +264,7 @@ TSUNIT_DEFINE_TEST(EDID)
 
 TSUNIT_DEFINE_TEST(StreamType)
 {
-    TSUNIT_EQUAL(u"MPEG-4 Video", ts::names::StreamType(ts::ST_MPEG4_VIDEO));
+    TSUNIT_EQUAL(u"MPEG-4 Video", ts::StreamTypeName(ts::ST_MPEG4_VIDEO));
 }
 
 TSUNIT_DEFINE_TEST(StreamId)

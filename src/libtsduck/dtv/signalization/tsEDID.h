@@ -14,6 +14,7 @@
 #pragma once
 #include "tsTID.h"
 #include "tsDID.h"
+#include "tsXDID.h"
 #include "tsPDS.h"
 #include "tsRegistration.h"
 #include "tsStandards.h"
@@ -75,7 +76,6 @@ namespace ts {
     {
     private:
         uint64_t _edid = 0xFFFFFFFFFFFFFFFF;
-
     public:
         //!
         //! Default constructor.
@@ -188,6 +188,14 @@ namespace ts {
         }
 
         //!
+        //! Build the EDID for an MPEG or DVB extension descriptor.
+        //! @param [in] xdid Extension descriptor id. If this is not an extension descriptor, create
+        //! a regular descriptor EDID without standard.
+        //! @return The corresponding EDID.
+        //!
+        static EDID Extension(XDID xdid);
+
+        //!
         //! Build the EDID for a table-specific descriptor.
         //! @param [in] did Descriptor tag.
         //! @param [in] tid Associated required table id.
@@ -276,6 +284,12 @@ namespace ts {
         bool isExtensionDVB() const { return type() == Type::EXTENDED && bool(standards() & Standards::DVB); }
 
         //!
+        //! Check if the descriptor is an MPEG or DVB extension descriptor.
+        //! @return True if the descriptor is an MPEG or DVB extension descriptor.
+        //!
+        bool isExtension() const { return type() == Type::EXTENDED; }
+
+        //!
         //! Get the MPEG descriptor tag extension.
         //! @return The descriptor tag extension or EDID_NULL if this is not an MPEG extension descriptor.
         //!
@@ -288,6 +302,12 @@ namespace ts {
         DID didExtDVB() const { return did() == DID_DVB_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
 
         //!
+        //! Get the MPEG or DVB descriptor tag extension.
+        //! @return The descriptor tag extension or EDID_NULL if this is not an extension descriptor.
+        //!
+        DID didExtension() const { return type() == Type::EXTENDED ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+
+        //!
         //! Check if the descriptor is table-specific.
         //! @return True if the descriptor is table-specific.
         //!
@@ -298,6 +318,28 @@ namespace ts {
         //! @return The table id or TID_NULL if this is not a table-specific descriptor.
         //!
         TID tableId() const { return isTableSpecific() ? TID((_edid >> 8) & 0xFF) : TID(TID_NULL); }
+
+        //!
+        //! Check if the descriptor is table-specific and matches a given table id.
+        //! @param [in] tid A table id to test.
+        //! @param [in] std Relevant standards.
+        //! @return True if the descriptor is table-specific for @a tid.
+        //!
+        bool matchTableSpecific(TID tid, Standards std) const;
+
+        //!
+        //! Check if the descriptor is a regular one and matches at least one standard.
+        //! @param [in] std Relevant standards to test.
+        //! @return True if the descriptor is a regular one and matches at least one standard in @a std.
+        //! If the regular descriptor has declared no standard, then it matches by default.
+        //!
+        bool matchRegularStandards(Standards std) const;
+
+        //!
+        //! Build an eXtension Descriptor Id from the EDID.
+        //! @return The corresponding eXtension Descriptor Id.
+        //!
+        XDID xdid() const;
 
         //!
         //! Comparison operator.

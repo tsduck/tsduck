@@ -72,16 +72,6 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::CPCMDeliverySignallingDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -229,7 +219,7 @@ void ts::CPCMDeliverySignallingDescriptor::deserializePayload(PSIBuffer& buf)
   (byte & 0x02 ? '1' : '0'), \
   (byte & 0x01 ? '1' : '0')
 
-void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         uint8_t cpcm_version = buf.getUInt8();

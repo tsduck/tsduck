@@ -20,7 +20,7 @@
 #define MY_DID ts::DID_MPEG_AUX_VIDEO
 #define MY_STD ts::Standards::MPEG
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -277,7 +277,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::display(TablesDisplay&
     }
 }
 
-void ts::AuxiliaryVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AuxiliaryVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << UString::Format(u"Auxiliary video coded stream type: 0x%x", buf.getUInt8()) << std::endl;

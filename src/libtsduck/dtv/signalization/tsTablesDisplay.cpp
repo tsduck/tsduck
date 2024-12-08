@@ -327,11 +327,9 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
 
 void ts::TablesDisplay::displaySectionData(const Section& section, const UString& margin, uint16_t cas)
 {
-    // Update CAS with default one if necessary.
-    cas = _duck.casId(cas);
-
     // Find the display handler for this table id (and maybe CAS).
-    DisplaySectionFunction handler = PSIRepository::Instance().getSectionDisplay(section.tableId(), _duck.standards(), section.sourcePID(), cas);
+    const SectionContext context(section.sourcePID(), _duck.standards(), _duck.casId(cas));
+    DisplaySectionFunction handler = PSIRepository::Instance().getSectionDisplay(section.tableId(), context);
 
     if (handler != nullptr) {
         PSIBuffer buf(_duck, section.payload(), section.payloadSize());
@@ -372,11 +370,9 @@ void ts::TablesDisplay::logLine(const UString& line)
 
 void ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, uint16_t cas)
 {
-    // Update CAS with default one if necessary.
-    cas = _duck.casId(cas);
-
     // Find the log handler for this table id (and maybe CAS).
-    LogSectionFunction handler = PSIRepository::Instance().getSectionLog(section.tableId(), _duck.standards(), section.sourcePID(), cas);
+    const SectionContext context(section.sourcePID(), _duck.standards(), _duck.casId(cas));
+    LogSectionFunction handler = PSIRepository::Instance().getSectionLog(section.tableId(), context);
     if (handler == nullptr) {
         handler = LogUnknownSectionData;
     }
@@ -445,7 +441,7 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
 // Display the content of an unknown descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload, size_t size, const UString& margin, TID tid, PDS pds)
+void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload, size_t size, const UString& margin)
 {
     _duck.out() << UString::Dump(payload, size, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size());
 }
@@ -584,10 +580,10 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayDescriptor(const Descriptor& desc, const UString& margin, TID tid, PDS pds, uint16_t cas)
+void ts::TablesDisplay::displayDescriptor(const Descriptor& desc, const UString& margin, const DescriptorContext& context)
 {
     if (desc.isValid()) {
-        displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), margin, tid, _duck.actualPDS(pds), cas);
+        displayDescriptorData(desc, margin, context);
     }
 }
 
@@ -651,46 +647,36 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
     std::ostream& strm(_duck.out());
     const uint8_t* desc_start = reinterpret_cast<const uint8_t*>(data);
     size_t desc_index = 0;
-    const TID tid = section.tableId();
-
-    // Compute default PDS. Use fake PDS for descriptors in ATSC context.
-    const PDS default_pds = _duck.actualPDS(0);
-    PDS pds = default_pds;
+    RawContext context(section, _duck.casId(cas));
 
     // Loop across all descriptors
     while (size >= 2) {  // descriptor header size
 
         // Get descriptor header
-        uint8_t desc_tag = *desc_start++;
-        size_t desc_length = *desc_start++;
-        size -= 2;
+        const uint8_t desc_tag = desc_start[0];
+        const size_t desc_length = desc_start[1];
 
-        if (desc_length > size) {
+        // Check that the descriptor is complete. Abort descriptor list if not.
+        if (size < 2 + desc_length) {
             strm << margin << "- Invalid descriptor length: " << desc_length << " (" << size << " bytes allocated)" << std::endl;
             break;
         }
 
+        // Build a descriptor object.
+        Descriptor desc(desc_start, 2 + desc_length);
+        desc_start += 2;
+        size -= 2;
+
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
-             << names::DID(desc_tag, pds, tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
+             << names::DID(desc_tag, context.pds(), section.tableId(), NamesFlags::VALUE | NamesFlags::BOTH) << ", "
              << desc_length << " bytes" << std::endl;
 
-        // If the descriptor contains a registration id, keep it in the TSDuck context.
-        if (desc_tag == DID_MPEG_REGISTRATION && desc_length >= 4) {
-            _duck.addRegistrationId(GetUInt32(desc_start));
-        }
-
-        // If the descriptor contains a private_data_specifier, keep it to establish a private context.
-        if (desc_tag == DID_DVB_PRIV_DATA_SPECIF && desc_length >= 4) {
-            pds = GetUInt32(desc_start);
-            // PDS zero means return to default value.
-            if (pds == 0) {
-                pds = default_pds;
-            }
-        }
+        // If the descriptor contains a registration id, keep it in the context.
+        context.updateIdentifiers(desc);
 
         // Display descriptor.
-        displayDescriptorData(desc_tag, desc_start, desc_length, margin + u"  ", tid, pds, cas);
+        displayDescriptorData(desc, margin + u"  ", context);
 
         // Move to next descriptor for next iteration
         desc_start += desc_length;
@@ -718,7 +704,7 @@ void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const 
             strm << margin << "- Descriptor " << i << ": "
                  << names::DID(desc->tag(), _duck.actualPDS(pds), tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
                  << desc->size() << " bytes" << std::endl;
-            displayDescriptor(*desc, margin + u"  ", tid, _duck.actualPDS(pds), cas);
+            displayDescriptor(*desc, margin + u"  ", list.lookupContext(_duck, i, cas));
         }
     }
 }
@@ -728,47 +714,36 @@ void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const 
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, const UString& margin, TID tid, PDS pds, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorData(const Descriptor& desc, const UString& margin, const DescriptorContext& context)
 {
     std::ostream& strm(_duck.out());
 
-    // Descriptor header size, before payload.
+    const uint8_t* payload = desc.payload();
+    size_t size = desc.payloadSize();
     size_t header_size = 2;
 
-    // Compute extended descriptor id.
-    EDID edid;
-    if (did >= 0x80) {
-        // Private descriptor.
-        edid = EDID::PrivateDVB(did, _duck.actualPDS(pds));
-    }
-    else if (did == DID_MPEG_EXTENSION && size >= 1) {
+    if (desc.tag() == DID_MPEG_EXTENSION && size >= 1) {
         // MPEG extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
-        edid = EDID::ExtensionMPEG(ext);
         header_size++;
         size--;
         // Display extended descriptor header
         strm << margin << "MPEG extended descriptor: " << NameFromDTV(u"MPEGExtendedDescriptorId", ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
-    else if (did == DID_DVB_EXTENSION && size >= 1) {
+    else if (desc.tag() == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
-        edid = EDID::ExtensionDVB(ext);
         header_size++;
         size--;
         // Display extended descriptor header
         strm << margin << "Extended descriptor: " << names::EDID(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
-    else {
-        // Simple descriptor.
-        edid = EDID::Standard(did);
-    }
 
     // Locate the display handler for this descriptor payload.
-    DisplayDescriptorFunction handler = PSIRepository::Instance().getDescriptorDisplay(edid, tid);
+    DisplayDescriptorFunction handler = PSIRepository::Instance().getDescriptorDisplay(desc.xdid(), context);
     if (handler != nullptr) {
         PSIBuffer buf(_duck, payload, size);
-        handler(*this, buf, margin, did, tid, _duck.actualPDS(pds));
+        handler(*this, desc, buf, margin, context.getTableId());
         displayExtraData(buf, margin);
         if (buf.reservedBitsError()) {
             strm << margin << "Reserved bits incorrectly set:" << std::endl;
@@ -776,7 +751,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         }
     }
     else {
-        displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
+        displayUnkownDescriptor(desc.tag(), payload, size, margin);
     }
 }
 
@@ -1012,4 +987,40 @@ void ts::TablesDisplay::displayVector(const UString& title, const UStringVector&
             strm << std::endl;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// A class implementing DescriptorContext in raw descriptor lists.
+//----------------------------------------------------------------------------
+
+// Constructor.
+ts::TablesDisplay::RawContext::RawContext(const Section& section, CASID cas) :
+    DescriptorContext(section.tableId(), section.definingStandards(), cas)
+{
+}
+
+// Update REGID and PDS from a descriptor.
+void ts::TablesDisplay::RawContext::updateIdentifiers(const Descriptor& desc)
+{
+    if (desc.tag() == DID_MPEG_REGISTRATION && desc.payloadSize() >= 4) {
+        _regid = GetUInt32(desc.payload());
+        _regid_is_last = true;
+    }
+    else if (desc.tag() == DID_DVB_PRIV_DATA_SPECIF && desc.payloadSize() >= 4) {
+        _pds = GetUInt32(desc.payload());
+        _regid_is_last = false;
+    }
+}
+
+// Implementation of DescriptorContext.
+bool ts::TablesDisplay::RawContext::getPrivateIds(REGID* regid, PDS* pds) const
+{
+    if (regid != nullptr) {
+        *regid = _regid;
+    }
+    if (pds != nullptr) {
+        *pds = _pds;
+    }
+    return _regid_is_last && regid != nullptr && _pds != PDS_NULL && pds != nullptr;
 }

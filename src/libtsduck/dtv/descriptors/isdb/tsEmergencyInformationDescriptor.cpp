@@ -17,10 +17,9 @@
 #define MY_XML_NAME u"emergency_information_descriptor"
 #define MY_CLASS ts::EmergencyInformationDescriptor
 #define MY_DID ts::DID_ISDB_EMERGENCY_INFO
-#define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::Standards::ISDB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -92,7 +91,7 @@ void ts::EmergencyInformationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"- Event service id: %n", buf.getUInt16()) << std::endl;

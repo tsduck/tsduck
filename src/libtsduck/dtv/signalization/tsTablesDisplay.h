@@ -12,10 +12,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTID.h"
 #include "tsDID.h"
 #include "tsTLVSyntax.h"
 #include "tsDuckContext.h"
+#include "tsDescriptorContext.h"
 
 namespace ts {
 
@@ -155,33 +155,17 @@ namespace ts {
         //! Display a descriptor on the output stream.
         //! @param [in] desc The descriptor to display.
         //! @param [in] margin Left margin content.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //! @param [in] cas CAS id of the table.
+        //! @param [in] context Interpretation context of the descriptor.
         //!
-        virtual void displayDescriptor(const Descriptor& desc, const UString& margin = UString(), TID tid = TID_NULL, PDS pds = 0, uint16_t cas = CASID_NULL);
+        virtual void displayDescriptor(const Descriptor& desc, const UString& margin = UString(), const DescriptorContext& context = DescriptorContext());
 
         //!
         //! Display the payload of a descriptor on the output stream.
-        //! @param [in] did Descriptor id.
-        //! @param [in] payload Address of the descriptor payload.
-        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] desc The descriptor to display.
         //! @param [in] margin Left margin content.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //! @param [in] cas CAS id of the table.
+        //! @param [in] context Interpretation context of the descriptor.
         //!
-        virtual void displayDescriptorData(DID did,
-                                           const uint8_t* payload,
-                                           size_t size,
-                                           const UString& margin = UString(),
-                                           TID tid = TID_NULL,
-                                           PDS pds = 0,
-                                           uint16_t cas = CASID_NULL);
+        virtual void displayDescriptorData(const Descriptor& desc, const UString& margin = UString(), const DescriptorContext& context = DescriptorContext());
 
         //!
         //! Display a list of descriptors from a memory area
@@ -335,10 +319,8 @@ namespace ts {
         //! @param [in] payload Address of the descriptor payload.
         //! @param [in] size Size in bytes of the descriptor payload.
         //! @param [in] margin Left margin content.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
-        void displayUnkownDescriptor(DID did, const uint8_t* payload, size_t size, const UString& margin, TID tid, PDS pds);
+        void displayUnkownDescriptor(DID did, const uint8_t* payload, size_t size, const UString& margin);
 
         //!
         //! Display a memory area containing a list of TLV records.
@@ -464,5 +446,27 @@ namespace ts {
         uint32_t        _raw_flags = UString::HEXA; // Dump flags in raw mode.
         TLVSyntaxVector _tlv_syntax {};             // TLV syntax to apply to unknown sections.
         size_t          _min_nested_tlv = 0;        // Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
+
+        // A class implementing DescriptorContext to search for private descriptors registration ids in raw descriptor lists.
+        class RawContext: public DescriptorContext
+        {
+            TS_DEFAULT_COPY_MOVE(RawContext);
+        private:
+            REGID _regid = REGID_NULL;
+            PDS   _pds = PDS_NULL;
+            bool  _regid_is_last = false;
+
+        public:
+            // Constructor.
+            RawContext(const Section&, CASID);
+
+            // Update REGID and PDS from a descriptor.
+            void updateIdentifiers(const Descriptor&);
+            REGID regid() const { return _regid; }
+            PDS pds() const { return _pds; }
+
+            // Implementation of DescriptorContext.
+            virtual bool getPrivateIds(REGID* regid, PDS* pds) const override;
+        };
     };
 }

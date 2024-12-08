@@ -19,7 +19,7 @@
 #define MY_DID ts::DID_MPEG_MUX_BUF_USE
 #define MY_STD ts::Standards::MPEG
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ void ts::MultiplexBufferUtilizationDescriptor::deserializePayload(PSIBuffer& buf
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MultiplexBufferUtilizationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         const bool valid = buf.getBool();

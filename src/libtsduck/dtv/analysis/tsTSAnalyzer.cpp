@@ -237,22 +237,22 @@ void ts::TSAnalyzer::ServiceContext::update(DuckContext& duck, const DescriptorL
 
 
 //----------------------------------------------------------------------------
-// Return an ETID context. Allocate a new entry if ETID not found.
+// Return an XTID context. Allocate a new entry if XTID is not found.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID(const Section& section)
+ts::TSAnalyzer::XTIDContextPtr ts::TSAnalyzer::getXTID(const Section& section)
 {
-    const ETID etid = section.etid();
+    const XTID xtid = section.xtid();
     const PIDContextPtr pc(getPID(section.sourcePID()));
-    const auto it = pc->sections.find(etid);
+    const auto it = pc->sections.find(xtid);
 
     if (it != pc->sections.end()) {
-        // ETID context found
+        // XTID context found
         return it->second;
     }
     else {
-        ETIDContextPtr result(new ETIDContext(etid));
-        pc->sections[etid] = result;
+        XTIDContextPtr result = std::make_shared<XTIDContext>(xtid);
+        pc->sections[xtid] = result;
         result->first_version = section.version();
         return result;
     }
@@ -359,7 +359,7 @@ void ts::TSAnalyzer::handleInvalidSection(SectionDemux&, const DemuxedData& data
 
 void ts::TSAnalyzer::handleSection(SectionDemux&, const Section& section)
 {
-    ETIDContextPtr etc(getETID(section));
+    XTIDContextPtr etc(getXTID(section));
     const uint8_t version = section.version();
 
     // Count one section
@@ -609,11 +609,10 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
     for (auto& it : pmt.streams) {
         const PID es_pid = it.first;
         const PMT::Stream& stream(it.second);
-        const uint32_t regid = pmt.registrationId(es_pid);
         ps = getPID(es_pid);
         ps->addService(pmt.service_id);
         ps->stream_type = stream.stream_type;
-        ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type, regid);
+        ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type, stream.descs);
         ps->carry_video = ps->carry_video || StreamTypeIsVideo(stream.stream_type);
         ps->carry_pes = ps->carry_pes || StreamTypeIsPES(stream.stream_type);
         if (!ps->carry_section && !ps->carry_t2mi && StreamTypeIsSection(stream.stream_type)) {
@@ -627,7 +626,7 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
             ps->addAttribute(ps->audio2.toString());
         }
 
-        ps->description = names::StreamType(stream.stream_type, NamesFlags::NAME, regid);
+        ps->description = StreamTypeName(stream.stream_type, NamesFlags::NAME, stream.descs);
         analyzeDescriptors(stream.descs, svp.get(), ps.get());
     }
 }
@@ -868,7 +867,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_ISDB_CA:
             case DID_ISDB_COND_PLAYBACK: {
                 // ISDB specific CA descriptors.
-                if (_duck.actualPDS(descs.privateDataSpecifier(di)) == PDS_ISDB) {
+                if (bool(_duck.standards() & Standards::ISDB)) {
                     analyzeCADescriptor(bindesc, svp, ps, u" (ISDB)");
                 }
                 break;

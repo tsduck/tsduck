@@ -64,7 +64,7 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ISDB, ts::PSIRepository::Instance().getTableStandards(ts::TID_MGT, ts::PID_LDT));
     TSUNIT_EQUAL(ts::Standards::ATSC, ts::PSIRepository::Instance().getTableStandards(ts::TID_CVCT));
 
-    ts::PSIRepository::TableFactory factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::ATSC);
+    ts::PSIRepository::TableFactory factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ATSC));
     TSUNIT_ASSERT(factory != nullptr);
     ts::AbstractTablePtr table(factory());
     TSUNIT_ASSERT(table != nullptr);
@@ -72,7 +72,7 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());
 
-    factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::ISDB);
+    factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ISDB));
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
     TSUNIT_ASSERT(table != nullptr);
@@ -80,7 +80,7 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ISDB, table->definingStandards());
     TSUNIT_EQUAL(u"LDT", table->xmlName());
 
-    factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::NONE, ts::PID_PSIP);
+    factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::SectionContext(ts::PID_PSIP, ts::Standards::NONE));
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
     TSUNIT_ASSERT(table != nullptr);
@@ -88,8 +88,8 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());
 
-    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::ATSC));
-    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::ISDB));
-    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::NONE, ts::PID_PSIP));
-    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::NONE, ts::PID_LDT));
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ATSC)));
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ISDB)));
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::SectionContext(ts::PID_PSIP, ts::Standards::NONE)));
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::SectionContext(ts::PID_LDT, ts::Standards::NONE)));
 }

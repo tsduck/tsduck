@@ -42,7 +42,6 @@ namespace ts {
     //! - analyzeXML()
     //!
     //! Important: With extension descriptors (MPEG or DVB), note the following:
-    //! - extendedTag() must be overriden and must return the expected extended descriptor tag.
     //! - serializePayload() does not need to add the extended descriptor tag, it has
     //!   already been added in the buffer by the AbstractDescriptor.
     //! - deserializePayload() must not read the extended descriptor tag, it has already
@@ -97,7 +96,7 @@ namespace ts {
         //! For MPEG-defined and DVB-defined extension descriptors, get the extended descriptor tag (first byte in payload).
         //! @return The extended descriptor tag or EDID_NULL if this is not an extended descriptor.
         //!
-        virtual DID extendedTag() const;
+        DID extendedTag() const;
 
         //!
         //! Get the required private data specifier.

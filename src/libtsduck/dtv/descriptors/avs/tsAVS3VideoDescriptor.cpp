@@ -17,11 +17,11 @@
 
 #define MY_XML_NAME u"AVS3_video_descriptor"
 #define MY_CLASS ts::AVS3VideoDescriptor
-#define MY_DID ts::DID_AVS3_VIDEO
-#define MY_PDS ts::PDS_AVSVideo
-#define MY_STD ts::Standards::DVB
+#define MY_DID   ts::DID_AVS3_VIDEO
+#define MY_PDS   ts::PDS_AVSVideo
+#define MY_STD   ts::Standards::NONE
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDual(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // T/AI 109.2 Table B.1
 const std::vector<uint8_t> ts::AVS3VideoDescriptor::valid_profile_ids {
@@ -122,7 +122,7 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(8)) {
         disp << margin << "Profile ID: " << DataName(MY_XML_NAME, u"profile", buf.getUInt8(), NamesFlags::VALUE);

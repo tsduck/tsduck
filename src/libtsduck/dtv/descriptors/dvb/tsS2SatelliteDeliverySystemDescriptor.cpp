@@ -17,8 +17,9 @@
 #define MY_XML_NAME u"S2_satellite_delivery_system_descriptor"
 #define MY_CLASS ts::S2SatelliteDeliverySystemDescriptor
 #define MY_DID ts::DID_DVB_S2_SAT_DELIVERY
+#define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -26,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::S2SatelliteDeliverySystemDescriptor::S2SatelliteDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME, MY_STD)
 {
 }
 
@@ -101,7 +102,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         const bool scrambling_sequence_selector = buf.getBool();

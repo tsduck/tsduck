@@ -48,16 +48,6 @@ ts::EVCTimingAndHRDDescriptor::EVCTimingAndHRDDescriptor(DuckContext& duck, cons
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::EVCTimingAndHRDDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -89,7 +79,7 @@ void ts::EVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
     hrd_management_valid = buf.getBool();
     buf.skipReservedBits(6);
     if (buf.getBool()) { // info_present
-        const bool is_90kHz = buf.getBool(); 
+        const bool is_90kHz = buf.getBool();
         buf.skipReservedBits(7);
         if (!is_90kHz) {
             N = buf.getUInt32();
@@ -104,7 +94,7 @@ void ts::EVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::EVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::EVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "HRD management valid: " << UString::TrueFalse(buf.getBool()) << std::endl;

@@ -70,15 +70,6 @@ namespace ts {
         TSDUCKDLL UString PrivateDataSpecifier(uint32_t pds, NamesFlags flags = NamesFlags::NAME);
 
         //!
-        //! Name of Stream type (in PMT).
-        //! @param [in] st Stream type (in PMT).
-        //! @param [in] flags Presentation flags.
-        //! @param [in] regid Previous registration id from a registration descriptor.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString StreamType(uint8_t st, NamesFlags flags = NamesFlags::NAME, uint32_t regid = REGID_NULL);
-
-        //!
         //! Name of service type (in Service Descriptor).
         //! @param [in] st Service type (in Service Descriptor).
         //! @param [in] flags Presentation flags.

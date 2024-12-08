@@ -144,46 +144,18 @@ void ts::DuckContext::setDefaultPDS(PDS pds)
 
 ts::PDS ts::DuckContext::actualPDS(PDS pds) const
 {
-    if (pds != 0) {
+    if (pds != 0 && pds != PDS_NULL) {
         // Explicit PDS already defined.
         return pds;
     }
-    else if (_defaultPDS != 0) {
+    else if (_defaultPDS != 0 && _defaultPDS != PDS_NULL) {
         // A default PDS was specified.
         return _defaultPDS;
-    }
-    else if (bool(_accStandards & Standards::ATSC)) {
-        // We have previously found ATSC signalization, use the fake PDS for ATSC.
-        // This allows interpretation of ATSC descriptors in MPEG-defined tables (eg. PMT).
-        return PDS_ATSC;
-    }
-    else if (bool(_accStandards & Standards::ISDB)) {
-        // Same principle for ISDB.
-        return PDS_ISDB;
     }
     else {
         // Really no PDS to use.
         return 0;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Registration ids (from MPEG-defined registration_descriptor).
-//----------------------------------------------------------------------------
-
-void ts::DuckContext::addRegistrationId(uint32_t regid)
-{
-    if (regid != REGID_NULL) {
-        _lastRegistrationId = regid;
-        _registrationIds.insert(regid);
-    }
-}
-
-void ts::DuckContext::resetRegistrationIds()
-{
-    _lastRegistrationId = REGID_NULL;
-    _registrationIds.clear();
 }
 
 

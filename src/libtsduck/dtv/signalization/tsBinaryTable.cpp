@@ -485,7 +485,7 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
     // Try to generate a specialized XML structure.
     if (!opt.forceGeneric) {
         // Do we know how to deserialize this table?
-        PSIRepository::TableFactory fac = PSIRepository::Instance().getTableFactory(_tid, duck.standards(), _source_pid);
+        PSIRepository::TableFactory fac = PSIRepository::Instance().getTableFactory(_tid, SectionContext(_source_pid, duck.standards()));
         if (fac != nullptr) {
             // We know how to deserialize this table.
             AbstractTablePtr tp = fac();

@@ -34,7 +34,6 @@
 #define MY_XML_NAME u"hybrid_information_descriptor"
 // #define MY_CLASS ts::HybridInformationDescriptor
 #define MY_DID ts::DID_ISDB_HYBRID_INFO
-// #define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::Standards::ISDB
 
 
@@ -114,7 +113,7 @@ void ts::HybridInformationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         const bool has_location = buf.getBool();

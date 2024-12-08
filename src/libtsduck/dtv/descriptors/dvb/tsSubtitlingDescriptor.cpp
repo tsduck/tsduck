@@ -20,7 +20,7 @@
 #define MY_DID ts::DID_DVB_SUBTITLING
 #define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ ts:: UString ts::SubtitlingDescriptor::Entry::subtitlingTypeName() const
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(8)) {
         disp << margin << "Language: " << buf.getLanguageCode();

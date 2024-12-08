@@ -48,16 +48,6 @@ void ts::SupplementaryAudioDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::SupplementaryAudioDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -123,7 +113,7 @@ bool ts::SupplementaryAudioDescriptor::analyzeXML(DuckContext& duck, const xml::
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "Mix type: " << DataName(MY_XML_NAME, u"MixType", buf.getBit()) << std::endl;

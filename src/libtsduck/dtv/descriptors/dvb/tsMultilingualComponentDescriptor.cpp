@@ -18,8 +18,9 @@
 #define MY_XML_ATTR u"description"
 #define MY_CLASS ts::MultilingualComponentDescriptor
 #define MY_DID ts::DID_DVB_MLINGUAL_COMPONENT
+#define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -63,11 +64,11 @@ void ts::MultilingualComponentDescriptor::deserializePayload(PSIBuffer& buf)
     AbstractMultilingualDescriptor::deserializePayload(buf);
 }
 
-void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MultilingualComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canRead()) {
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
-        AbstractMultilingualDescriptor::DisplayDescriptor(disp, buf, margin, did, tid, pds);
+        AbstractMultilingualDescriptor::DisplayDescriptor(disp, desc, buf, margin, context);
     }
 }
 

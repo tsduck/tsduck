@@ -48,16 +48,6 @@ ts::T2MIDescriptor::T2MIDescriptor(DuckContext& duck, const Descriptor& desc) :
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::T2MIDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization / deserialization.
 //----------------------------------------------------------------------------
 
@@ -109,7 +99,7 @@ bool ts::T2MIDescriptor::analyzeXML(DuckContext& duck, const xml::Element* eleme
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::T2MIDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         buf.skipBits(5);

@@ -21,7 +21,7 @@
 #define MY_DID ts::DID_MPEG_CA
 #define MY_STD ts::Standards::MPEG
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -90,12 +90,13 @@ void ts::CADescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         // Display common part
         const uint16_t casid = buf.getUInt16();
         disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, NamesFlags::FIRST);
+        const TID tid = context.getTableId();
         disp << ", " << (tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA"));
         disp << UString::Format(u" PID: %n", buf.getPID()) << std::endl;
 
@@ -105,7 +106,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, co
             DisplayCADescriptorFunction func = PSIRepository::Instance().getCADescriptorDisplay(casid);
             if (func != nullptr) {
                 // Use a CAS-specific display routine.
-                func(disp, buf, margin, tid);
+                func(disp, buf, margin, context.getTableId());
             }
             else {
                 disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);

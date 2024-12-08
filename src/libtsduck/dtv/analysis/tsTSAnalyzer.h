@@ -235,12 +235,12 @@ namespace ts {
         //!
         //! This protected inner class contains the analysis context for one TID/TIDext into one PID.
         //!
-        class TSDUCKDLL ETIDContext
+        class TSDUCKDLL XTIDContext
         {
-            TS_NOBUILD_NOCOPY(ETIDContext);
+            TS_NOBUILD_NOCOPY(XTIDContext);
         public:
-            // Public members - Synthetic data (do not modify outside ETIDContext methods)
-            const ETID etid;                       //!< ETID value.
+            // Public members - Synthetic data (do not modify outside XTIDContext methods)
+            const XTID xtid;                       //!< XTID value.
             uint64_t   table_count = 0;            //!< Number of occurences of this table (section# 0).
             uint64_t   section_count = 0;          //!< Number of occurences of sections in this table.
             uint64_t   repetition_ts = 0;          //!< Average number of TS packets between occurences of this table (section# 0).
@@ -258,26 +258,26 @@ namespace ts {
             //! Constructor.
             //! @param [in] ext Extended table id.
             //!
-            ETIDContext(const ETID& ext) : etid(ext) {}
+            XTIDContext(const XTID& ext) : xtid(ext) {}
         };
 
         //!
-        //! Safe pointer to an ETIDContext (not thread-safe).
+        //! Safe pointer to an XTIDContext (not thread-safe).
         //!
-        using ETIDContextPtr = std::shared_ptr<ETIDContext>;
+        using XTIDContextPtr = std::shared_ptr<XTIDContext>;
 
         //!
-        //! Map of ETIDContext, indexed by ETID.
+        //! Map of XTIDContext, indexed by XTID.
         //!
-        using ETIDContextMap = std::map<ETID, ETIDContextPtr>;
+        using XTIDContextMap = std::map<XTID, XTIDContextPtr>;
 
         //!
-        //! Get an ETID context.
-        //! Allocate a new entry if the ETID is not found.
-        //! @param [in] section A section containing the ETID to search.
-        //! @return A safe pointer to the ETID context.
+        //! Get an XTID context.
+        //! Allocate a new entry if the XTID is not found.
+        //! @param [in] section A section containing the XTID to search.
+        //! @return A safe pointer to the XTID context.
         //!
-        ETIDContextPtr getETID(const Section& section);
+        XTIDContextPtr getXTID(const Section& section);
 
     protected:
 
@@ -347,7 +347,7 @@ namespace ts {
             uint16_t      cas_id = 0;              //!< For EMM and ECM streams.
             ISDBTLayerCounter  isdb_layers {};     //!< For ISDB-T streams with 204-byte packets, map key = layer indicator (0-1) to value = number of TS packets.
             std::set<uint32_t> cas_operators {};   //!< Operators for EMM and ECM streams, when applicable.
-            ETIDContextMap     sections {};        //!< List of sections in this PID.
+            XTIDContextMap     sections {};        //!< List of sections in this PID.
             std::set<uint32_t> ssu_oui {};         //!< Set of applicable OUI's for SSU.
             IntegerMap<uint8_t,uint64_t> t2mi_plp_ts {}; //!< For T2-MI streams, map key = PLP (Physical Layer Pipe) to value = number of embedded TS packets.
 

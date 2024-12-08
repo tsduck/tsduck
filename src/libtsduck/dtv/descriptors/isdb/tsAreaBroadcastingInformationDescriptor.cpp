@@ -17,10 +17,9 @@
 #define MY_XML_NAME u"area_broadcasting_information_descriptor"
 #define MY_CLASS ts::AreaBroadcastingInformationDescriptor
 #define MY_DID ts::DID_ISDB_AREA_BCAST_INF
-#define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::Standards::ISDB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -84,7 +83,7 @@ void ts::AreaBroadcastingInformationDescriptor::deserializePayload(PSIBuffer& bu
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         size_t count = buf.getUInt8();

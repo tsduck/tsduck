@@ -191,7 +191,7 @@ bool ts::PMT::Stream::isVideo(const DuckContext& duck) const
 bool ts::PMT::Stream::isAudio(const DuckContext& duck) const
 {
     // Check obvious audio stream types.
-    if (StreamTypeIsAudio(stream_type)) {
+    if (StreamTypeIsAudio(stream_type, descs)) {
         return true;
     }
 
@@ -511,15 +511,14 @@ void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
          << (pcr_pid == PID_NULL ? u"none" : UString::Format(u"%n", pcr_pid))
          << std::endl;
 
-    // Process and display "program info" descriptors. Get registration id.
-    disp.duck().resetRegistrationIds();
+    // Process and display "program info" descriptors.
     disp.displayDescriptorListWithLength(section, buf, margin, u"Program information:");
 
     // Get elementary streams description
     while (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
-        disp << margin << "Elementary stream: type " << names::StreamType(type, NamesFlags::FIRST, disp.duck().lastRegistrationId())
+        disp << margin << "Elementary stream: type " << StreamTypeName(type, NamesFlags::FIRST)
              << UString::Format(u", PID: %n", pid) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }

@@ -55,16 +55,6 @@ void ts::MessageDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MessageDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -107,7 +97,7 @@ bool ts::MessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "Message id: " << int(buf.getUInt8());

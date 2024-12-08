@@ -14,34 +14,27 @@
 
 TS_DEFINE_SINGLETON(ts::PSIRepository);
 
+// Value of a "null" type index.
+const std::type_index ts::PSIRepository::null_index = std::type_index(typeid(std::nullptr_t));
+
+// Singleton empty constructor.
+ts::PSIRepository::PSIRepository() {}
+
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Table class description.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::PSIRepository()
-{
-}
-
-ts::PSIRepository::TableDescription::TableDescription()
+// Constructor.
+ts::PSIRepository::TableClass::TableClass()
 {
     for (size_t i = 0; i < pids.size(); ++i) {
         pids[i] = PID_NULL;
     }
 }
 
-ts::PSIRepository::DescriptorDescription::DescriptorDescription(DescriptorFactory fact, DisplayDescriptorFunction disp) :
-    factory(fact),
-    display(disp)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Check if a PID is present in a table description.
-//----------------------------------------------------------------------------
-
-bool ts::PSIRepository::TableDescription::hasPID(PID pid) const
+bool ts::PSIRepository::TableClass::hasPID(PID pid) const
 {
     if (pid != PID_NULL) {
         for (size_t i = 0; i < pids.size() && pids[i] != PID_NULL; ++i) {
@@ -53,14 +46,10 @@ bool ts::PSIRepository::TableDescription::hasPID(PID pid) const
     return false;
 }
 
-
-//----------------------------------------------------------------------------
 // Add more PIDs in a table description.
-//----------------------------------------------------------------------------
-
-void ts::PSIRepository::TableDescription::addPIDs(std::initializer_list<PID> morePIDs)
+void ts::PSIRepository::TableClass::addPIDs(std::initializer_list<PID> more_pids)
 {
-    for (auto it : morePIDs) {
+    for (auto it : more_pids) {
         if (it != PID_NULL) {
             size_t i = 0;
             while (i < pids.size() && pids[i] != PID_NULL && pids[i] != it) {
@@ -75,84 +64,13 @@ void ts::PSIRepository::TableDescription::addPIDs(std::initializer_list<PID> mor
 
 
 //----------------------------------------------------------------------------
-// Lookup a table function by table id, using standards and CAS id.
-//----------------------------------------------------------------------------
-
-template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
-FUNCTION ts::PSIRepository::getTableFunction(TID tid, Standards standards, PID pid, uint16_t cas, FUNCTION TableDescription::* member) const
-{
-    // Try to find an exact match with standard and CAS id.
-    // Otherwise, will use a fallback once for same tid.
-    FUNCTION fallbackFunc = nullptr;
-    size_t fallbackCount = 0;
-
-    // Look for an exact match.
-    for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
-        // Ignore entries for which the searched function is not present.
-        if (it->second.*member != nullptr) {
-
-            // If the table in a standard PID, this is an exact match.
-            if (it->second.hasPID(pid)) {
-                return it->second.*member;
-            }
-
-            // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
-            const bool casMatch = cas >= it->second.minCAS && cas <= it->second.maxCAS;
-
-            // Standard match: at least one standard of the table is current, or standard-agnostic table (Standards::NONE).
-            const bool stdMatch = bool(standards & it->second.standards) || it->second.standards == Standards::NONE;
-
-            if (stdMatch && casMatch) {
-                // Found an exact match, no need to search further.
-                return it->second.*member;
-            }
-            else if (it->second.minCAS == CASID_NULL) {
-                // Not the right standard but a CAS-agnostic table, use as potential fallback.
-                fallbackFunc = it->second.*member;
-                fallbackCount++;
-            }
-        }
-    }
-
-    // If no exact match was found, use a fallback if there is only one (no ambiguity).
-    return fallbackCount == 1 ? fallbackFunc : nullptr;
-}
-
-
-//----------------------------------------------------------------------------
-// Lookup a descriptor function by extended descriptor id.
-//----------------------------------------------------------------------------
-
-template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
-FUNCTION ts::PSIRepository::getDescriptorFunction(const EDID& edid, TID tid, FUNCTION DescriptorDescription::* member) const
-{
-    auto it(_descriptors.end());
-
-    if (edid.isRegular() && tid != TID_NULL) {
-        // For standard descriptors, first search a table-specific descriptor.
-        it = _descriptors.find(EDID::TableSpecific(edid.did(), tid));
-        // If not found and there is a table-specific name for the descriptor,
-        // do not fallback to non-table-specific function for this descriptor.
-        if (it == _descriptors.end() && (edid.isTableSpecific() || names::HasTableSpecificName(edid.did(), tid))) {
-            return nullptr;
-        }
-    }
-    if (it == _descriptors.end()) {
-        // If non-standard or no table-specific descriptor found, use direct lookup.
-        it = _descriptors.find(edid);
-    }
-    return it != _descriptors.end() ? it->second.*member : nullptr;
-}
-
-
-//----------------------------------------------------------------------------
 // Constructors to register extension files.
 //----------------------------------------------------------------------------
 
 ts::PSIRepository::RegisterXML::RegisterXML(const UString& filename)
 {
     CERR.debug(u"registering XML file %s", filename);
-    PSIRepository::Instance()._xmlModelFiles.push_back(filename);
+    PSIRepository::Instance()._xml_extension_files.push_back(filename);
 }
 
 
@@ -164,48 +82,47 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
                                                 std::type_index index,
                                                 const std::vector<TID>& tids,
                                                 Standards standards,
-                                                const UString& xmlName,
-                                                DisplaySectionFunction displayFunction,
-                                                LogSectionFunction logFunction,
+                                                const UString& xml_name,
+                                                DisplaySectionFunction display,
+                                                LogSectionFunction log,
                                                 std::initializer_list<PID> pids,
-                                                uint16_t minCAS,
-                                                uint16_t maxCAS)
+                                                uint16_t min_cas,
+                                                uint16_t max_cas)
 {
-    CERR.log(2, u"registering table <%s>", xmlName);
+    CERR.log(2, u"registering table <%s>", xml_name);
     PSIRepository& repo(PSIRepository::Instance());
 
-    // XML names are recorded independently.
-    if (!xmlName.empty()) {
-        repo._tableNames.insert(std::make_pair(xmlName, factory));
-    }
-
     // Build a table description for this table.
-    TableDescription desc;
-    desc.standards = standards;
-    desc.minCAS = minCAS;
-    desc.maxCAS = maxCAS;
-    desc.factory = factory;
-    desc.display = displayFunction;
-    desc.log = logFunction;
-    desc.addPIDs(pids);
+    TableClassPtr tc = std::make_shared<TableClass>();
+    tc->index = index;
+    tc->standards = standards;
+    tc->min_cas = min_cas;
+    tc->max_cas = max_cas;
+    tc->factory = factory;
+    tc->display = display;
+    tc->log = log;
+    tc->xml_name = xml_name;
+    tc->addPIDs(pids);
 
-    // Store a copy of the table description for each table id.
-    // This is a multimap, distinct definitions for the same table id accumulate.
+    // Store the table description for each table id and XML name.
     for (auto it : tids) {
-        repo._tables.insert(std::make_pair(it, desc));
+        repo._tables_by_tid.insert(std::make_pair(it, tc));
+    }
+    if (!xml_name.empty()) {
+        repo._tables_by_name.insert(std::make_pair(xml_name, tc));
     }
 }
 
 ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
                                                 Standards standards,
-                                                DisplaySectionFunction displayFunction,
-                                                LogSectionFunction logFunction,
+                                                DisplaySectionFunction display,
+                                                LogSectionFunction log,
                                                 std::initializer_list<PID> pids,
-                                                uint16_t minCAS,
-                                                uint16_t maxCAS)
+                                                uint16_t min_cas,
+                                                uint16_t max_cas)
 {
     // Use the complete constructor for actual registration.
-    RegisterTable reg(nullptr, std::type_index(typeid(std::nullptr_t)), tids, standards, UString(), displayFunction, logFunction, pids, minCAS, maxCAS);
+    RegisterTable reg(nullptr, null_index, tids, standards, UString(), display, log, pids, min_cas, max_cas);
 }
 
 
@@ -216,88 +133,305 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
 ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory factory,
                                                           std::type_index index,
                                                           const EDID& edid,
-                                                          const UString& xmlName,
-                                                          DisplayDescriptorFunction displayFunction,
-                                                          const UString& xmlNameLegacy)
+                                                          const UString& xml_name,
+                                                          DisplayDescriptorFunction display,
+                                                          const UString& legacy_xml_name)
 {
-    registerXML(factory, edid, xmlName, xmlNameLegacy);
-    PSIRepository::Instance()._descriptors.insert(std::make_pair(edid, DescriptorDescription(factory, displayFunction)));
-}
-
-void ts::PSIRepository::RegisterDescriptor::registerXML(DescriptorFactory factory, const EDID& edid, const UString& xmlName, const UString& xmlNameLegacy)
-{
+    CERR.log(2, u"registering descriptor <%s>", xml_name);
     PSIRepository& repo(PSIRepository::Instance());
 
-    if (!xmlName.empty()) {
-        repo._descriptorNames.insert(std::make_pair(xmlName, factory));
+    // Build a description for this descriptor.
+    DescriptorClassPtr dc = std::make_shared<DescriptorClass>();
+    dc->index = index;
+    dc->edid = edid;
+    dc->factory = factory;
+    dc->display = display;
+    dc->xml_name = xml_name;
+
+    // Store the descriptor description.
+    repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
+    repo._descriptors_by_index.insert(std::make_pair(index, dc));
+
+    // Associate XML names with descriptor classes and allowed table ids.
+    if (!xml_name.empty()) {
+        repo._descriptors_by_name.insert(std::make_pair(xml_name, dc));
         if (edid.isTableSpecific()) {
-            repo._descriptorTablesIds.insert(std::make_pair(xmlName, edid.tableId()));
+            repo._descriptor_tids.insert(std::make_pair(xml_name, edid.tableId()));
         }
     }
-    if (!xmlNameLegacy.empty()) {
-        repo._descriptorNames.insert(std::make_pair(xmlNameLegacy, factory));
+    if (!legacy_xml_name.empty()) {
+        repo._descriptors_by_name.insert(std::make_pair(legacy_xml_name, dc));
         if (edid.isTableSpecific()) {
-            repo._descriptorTablesIds.insert(std::make_pair(xmlNameLegacy, edid.tableId()));
+            repo._descriptor_tids.insert(std::make_pair(legacy_xml_name, edid.tableId()));
         }
     }
 }
 
-ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS)
+ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFunction display, uint16_t min_cas, uint16_t max_cas)
 {
-    if (displayFunction != nullptr) {
+    if (display != nullptr) {
         PSIRepository& repo(PSIRepository::Instance());
         do {
-            repo._casIdDescriptorDisplays.insert(std::make_pair(minCAS, displayFunction));
-        } while (minCAS++ < maxCAS);
+            repo._casid_descriptor_displays.insert(std::make_pair(min_cas, display));
+        } while (min_cas++ < max_cas);
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Get registered items.
+// Lookup a table function by table id, using standards and CAS id.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::TableFactory ts::PSIRepository::getTableFactory(TID id, Standards standards, PID pid, uint16_t cas) const
+template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
+FUNCTION ts::PSIRepository::getTableFunction(TID tid, const SectionContext& context, FUNCTION TableClass::* member) const
 {
-    return getTableFunction(id, standards, pid, cas, &TableDescription::factory);
+    // Try to find an exact match with standard and CAS id.
+    // Otherwise, will use a fallback once for same tid.
+    FUNCTION fallback_func = nullptr;
+    size_t fallback_count = 0;
+
+    const PID pid = context.getPID();
+    const CASID cas = context.getCAS();
+    const Standards standards = context.getStandards();
+
+    // Range of iterators for all table classes matching the table id.
+    const auto bounds(_tables_by_tid.equal_range(tid));
+
+    // Look for an exact match.
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        const auto& tc(*it->second);
+
+        // Ignore entries for which the searched function is not present.
+        if (tc.*member != nullptr) {
+
+            // If the table is in a standard PID, this is an exact match.
+            if (tc.hasPID(pid)) {
+                return tc.*member;
+            }
+
+            // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
+            const bool cas_match = cas >= tc.min_cas && cas <= tc.max_cas;
+
+            // Standard match: at least one standard of the table is current, or standard-agnostic table (Standards::NONE).
+            const bool std_match = bool(standards & tc.standards) || tc.standards == Standards::NONE;
+
+            if (std_match && cas_match) {
+                // Found an exact match, no need to search further.
+                return tc.*member;
+            }
+            else if (tc.min_cas == CASID_NULL) {
+                // Not the right standard but a CAS-agnostic table, use as potential fallback.
+                fallback_func = tc.*member;
+                fallback_count++;
+            }
+        }
+    }
+
+    // If no exact match was found, use a fallback if there is only one (no ambiguity).
+    return fallback_count == 1 ? fallback_func : nullptr;
 }
 
-ts::DisplaySectionFunction ts::PSIRepository::getSectionDisplay(TID id, Standards standards, PID pid, uint16_t cas) const
+
+//----------------------------------------------------------------------------
+// Search a descriptor class from its EDID.
+//----------------------------------------------------------------------------
+
+ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(EDID edid) const
 {
-    return getTableFunction(id, standards, pid, cas, &TableDescription::display);
+    // Get the range of XDID entries for this family of descriptors.
+    const auto bounds(_descriptors_by_xdid.equal_range(edid.xdid()));
+
+    // If the bounds are equal, no element matches, unknown descritor.
+    if (bounds.first == bounds.second) {
+        return nullptr;
+    }
+
+    // If there is only one descriptor, use it without further analysis.
+    auto next = bounds.first;
+    if (++next == bounds.second) {
+        return bounds.first->second;
+    }
+
+    // If there are several descriptor, search for an exact EDID match.
+    for (next = bounds.first; next != bounds.second; ++next) {
+        if (next->second->edid == edid) {
+            return next->second;
+        }
+    }
+    return nullptr; // ambiguous descriptor
 }
 
-ts::LogSectionFunction ts::PSIRepository::getSectionLog(TID id, Standards standards, PID pid, uint16_t cas) const
+
+//----------------------------------------------------------------------------
+// Search a descriptor class from the context.
+//----------------------------------------------------------------------------
+
+ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(XDID xdid, const DescriptorContext& context) const
 {
-    return getTableFunction(id, standards, pid, cas, &TableDescription::log);
+    // Get the range of XDID entries for this family of descriptors.
+    const auto bounds(_descriptors_by_xdid.equal_range(xdid));
+
+    // If the bounds are equal, no element matches, unknown descritor.
+    if (bounds.first == bounds.second) {
+        return nullptr;
+    }
+
+    // If there is only one descriptor, use it without further analysis.
+    auto next = bounds.first;
+    if (++next == bounds.second) {
+        return bounds.first->second;
+    }
+
+    const TID tid = context.getTableId();
+    const Standards standards = context.getStandards();
+    REGID regid = REGID_NULL;
+    PDS pds = PDS_NULL;
+    REGID* pregid = nullptr;   // will be set to &regid if we must search a MPEG registration id.
+    PDS* ppds = nullptr;       // will be set to &pds if we must search a DVB private data specifier.
+    DescriptorClassPtr match;  // possible but not exclusive match.
+    size_t match_count = 0;    // number of matches.
+
+    // There are several entries, must be a private descriptor or table-specific descriptor.
+    // First pass, look for a table match or which type of private identifier we need.
+    for (next = bounds.first; next != bounds.second; ++next) {
+        const auto& dc(next->second);
+        // If this is a table-specific descriptor for the table we use, we have a match.
+        if (dc->edid.matchTableSpecific(tid, standards)) {
+            return dc;
+        }
+        // If we match the standards for a regular descriptor, this is a possible match.
+        if (dc->edid.matchRegularStandards(standards)) {
+            match = dc;
+            match_count++;
+        }
+        // Check if we need to search for private identifiers.
+        // Note that a descriptor can be both MPEG private and DVB private.
+        if (dc->edid.isPrivateMPEG()) {
+            pregid = &regid;
+        }
+        if (dc->edid.isPrivateDVB()) {
+            ppds = &pds;
+        }
+    }
+
+    // Search private descriptor ids. If we also match regular descriptors but the
+    // corresponding private ids are found, the private descriptor takes precedence.
+    if (pregid != nullptr || ppds != nullptr) {
+
+        // Need to search the private identifiers.
+        const bool regid_first = context.getPrivateIds(pregid, ppds);
+
+        if (regid != REGID_NULL && (regid_first || pds == PDS_NULL)) {
+            // There is REGID and it is closer than the DVB PDS or there is no PDS.
+            for (next = bounds.first; next != bounds.second; ++next) {
+                if (next->second->edid.regid() == regid) {
+                    return next->second;
+                }
+            }
+        }
+        if (pds != PDS_NULL) {
+            for (next = bounds.first; next != bounds.second; ++next) {
+                if (next->second->edid.pds() == pds) {
+                    return next->second;
+                }
+            }
+            if (regid != REGID_NULL) {
+                // There is a PDS and a REGID but the PDS was first.
+                for (next = bounds.first; next != bounds.second; ++next) {
+                    if (next->second->edid.regid() == regid) {
+                        return next->second;
+                    }
+                }
+            }
+        }
+    }
+
+    // No private descriptor found. If there is exactly one regular match, we keep it.
+    // Otherwise, there is either nothing found or some ambiguity.
+    return match_count == 1 ? match : nullptr;
+}
+
+
+//----------------------------------------------------------------------------
+// Get simple registered items.
+//----------------------------------------------------------------------------
+
+template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
+FUNCTION ts::PSIRepository::getDescriptorFunction(XDID xdid, const DescriptorContext& context, FUNCTION DescriptorClass::* member) const
+{
+    const auto dc(getDescriptor(xdid, context));
+    return dc == nullptr ? nullptr : (*dc).*member;
+}
+
+ts::PSIRepository::TableFactory ts::PSIRepository::getTableFactory(TID id, const SectionContext& context) const
+{
+    return getTableFunction(id, context, &TableClass::factory);
+}
+
+ts::DisplaySectionFunction ts::PSIRepository::getSectionDisplay(TID id, const SectionContext& context) const
+{
+    return getTableFunction(id, context, &TableClass::display);
+}
+
+ts::LogSectionFunction ts::PSIRepository::getSectionLog(TID id, const SectionContext& context) const
+{
+    return getTableFunction(id, context, &TableClass::log);
 }
 
 ts::PSIRepository::TableFactory ts::PSIRepository::getTableFactory(const UString& node_name) const
 {
-    const auto it = node_name.findSimilar(_tableNames);
-    return it != _tableNames.end() ? it->second : nullptr;
+    const auto it = node_name.findSimilar(_tables_by_name);
+    return it != _tables_by_name.end() ? it->second->factory : nullptr;
 }
 
 ts::PSIRepository::DescriptorFactory ts::PSIRepository::getDescriptorFactory(const UString& node_name) const
 {
-    const auto it = node_name.findSimilar(_descriptorNames);
-    return it != _descriptorNames.end() ? it->second : nullptr;
+    const auto it = node_name.findSimilar(_descriptors_by_name);
+    return it != _descriptors_by_name.end() ? it->second->factory : nullptr;
 }
 
-ts::PSIRepository::DescriptorFactory ts::PSIRepository::getDescriptorFactory(const EDID& edid, TID tid) const
+ts::EDID ts::PSIRepository::getDescriptorEDID(std::type_index index, TID tid, Standards standards) const
 {
-    return getDescriptorFunction(edid, tid, &DescriptorDescription::factory);
+    const auto bounds(_descriptors_by_index.equal_range(index));
+    if (bounds.first == bounds.second) {
+        return EDID(); // not found
+    }
+    if (tid != TID_NULL) {
+        for (auto next = bounds.first; next != bounds.second; ++next) {
+            if (next->second->edid.matchTableSpecific(tid, standards)) {
+                return next->second->edid; // exact match for a table-specific descriptor
+            }
+        }
+    }
+    return bounds.first->second->edid;
 }
 
-ts::DisplayDescriptorFunction ts::PSIRepository::getDescriptorDisplay(const EDID& edid, TID tid) const
+ts::EDID ts::PSIRepository::getDescriptorEDID(XDID xdid, const DescriptorContext& context) const
 {
-    return getDescriptorFunction(edid, tid, &DescriptorDescription::display);
+    const auto dc(getDescriptor(xdid, context));
+    return dc != nullptr ? dc->edid : EDID();
+}
+
+ts::PSIRepository::DescriptorFactory ts::PSIRepository::getDescriptorFactory(EDID edid) const
+{
+    const auto dc(getDescriptor(edid));
+    return dc != nullptr ? dc->factory : nullptr;
+}
+
+ts::PSIRepository::DescriptorFactory ts::PSIRepository::getDescriptorFactory(XDID xdid, const DescriptorContext& context) const
+{
+    return getDescriptorFunction(xdid, context, &DescriptorClass::factory);
+}
+
+ts::DisplayDescriptorFunction ts::PSIRepository::getDescriptorDisplay(XDID xdid, const DescriptorContext& context) const
+{
+    return getDescriptorFunction(xdid, context, &DescriptorClass::display);
 }
 
 ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(uint16_t cas_id) const
 {
-    const auto it = _casIdDescriptorDisplays.find(cas_id);
-    return it != _casIdDescriptorDisplays.end() ? it->second : nullptr;
+    const auto it = _casid_descriptor_displays.find(cas_id);
+    return it != _casid_descriptor_displays.end() ? it->second : nullptr;
 }
 
 
@@ -309,21 +443,24 @@ ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid) const
 {
     // Accumulate the common subset of all standards for this table id.
     Standards standards = Standards::NONE;
-    for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
-        if (it->second.hasPID(pid)) {
+    const auto bounds(_tables_by_tid.equal_range(tid));
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        const auto& tc(*it->second);
+
+        if (tc.hasPID(pid)) {
             // We are in a standard PID for this table id, return the corresponding standards only.
-            return it->second.standards;
+            return tc.standards;
         }
-        else if (it->second.hasPID() && pid != PID_NULL) {
+        else if (tc.hasPID() && pid != PID_NULL) {
             // This is a table with dedicated PID's but we are not in one of them => ignore.
         }
         else if (standards == Standards::NONE) {
             // No standard found yet, use all standards from first definition.
-            standards = it->second.standards;
+            standards = tc.standards;
         }
         else {
             // Some standards were already found, keep only the common subset.
-            standards &= it->second.standards;
+            standards &= tc.standards;
         }
     }
     return standards;
@@ -336,8 +473,8 @@ ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid) const
 
 bool ts::PSIRepository::isDescriptorAllowed(const UString& desc_node_name, TID table_id) const
 {
-    auto it = desc_node_name.findSimilar(_descriptorTablesIds);
-    if (it == _descriptorTablesIds.end()) {
+    auto it = desc_node_name.findSimilar(_descriptor_tids);
+    if (it == _descriptor_tids.end()) {
         // Not a table-specific descriptor, allowed anywhere
         return true;
     }
@@ -348,7 +485,7 @@ bool ts::PSIRepository::isDescriptorAllowed(const UString& desc_node_name, TID t
                 // The table is explicitly allowed.
                 return true;
             }
-        } while (++it != _descriptorTablesIds.end() && desc_node_name.similar(it->first));
+        } while (++it != _descriptor_tids.end() && desc_node_name.similar(it->first));
         // The requested table if was not found.
         return false;
     }
@@ -361,10 +498,10 @@ bool ts::PSIRepository::isDescriptorAllowed(const UString& desc_node_name, TID t
 
 ts::UString ts::PSIRepository::descriptorTables(const DuckContext& duck, const UString& desc_node_name) const
 {
-    auto it = desc_node_name.findSimilar(_descriptorTablesIds);
+    auto it = desc_node_name.findSimilar(_descriptor_tids);
     UString result;
 
-    while (it != _descriptorTablesIds.end() && desc_node_name.similar(it->first)) {
+    while (it != _descriptor_tids.end() && desc_node_name.similar(it->first)) {
         if (!result.empty()) {
             result.append(u", ");
         }
@@ -384,7 +521,7 @@ void ts::PSIRepository::getRegisteredTableIds(std::vector<TID>& ids) const
 {
     ids.clear();
     TID previous = TID_NULL;
-    for (const auto& it : _tables) {
+    for (const auto& it : _tables_by_tid) {
         // This is a multimap, the same key can be reused, use it once only.
         if (it.first != previous) {
             ids.push_back(it.first);
@@ -396,22 +533,22 @@ void ts::PSIRepository::getRegisteredTableIds(std::vector<TID>& ids) const
 void ts::PSIRepository::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
 {
     ids.clear();
-    for (const auto& it : _descriptors) {
-        ids.push_back(it.first);
+    for (const auto& it : _descriptors_by_xdid) {
+        ids.push_back(it.second->edid);
     }
 }
 
 void ts::PSIRepository::getRegisteredTableNames(UStringList& names) const
 {
-    names = MapKeysList(_tableNames);
+    names = MapKeysList(_tables_by_name);
 }
 
 void ts::PSIRepository::getRegisteredDescriptorNames(UStringList& names) const
 {
-    names = MapKeysList(_descriptorNames);
+    names = MapKeysList(_descriptors_by_name);
 }
 
 void ts::PSIRepository::getRegisteredTablesModels(UStringList& names) const
 {
-    names = _xmlModelFiles;
+    names = _xml_extension_files;
 }

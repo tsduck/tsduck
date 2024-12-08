@@ -66,7 +66,7 @@ void ts::AbstractPreferredNameIdentifierDescriptor::deserializePayload(PSIBuffer
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AbstractPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "Name identifier: " << int(buf.getUInt8()) << std::endl;

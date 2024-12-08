@@ -186,7 +186,7 @@ TSUNIT_DEFINE_TEST(GenericDescriptor)
     ts::xml::Document doc(report());
     ts::xml::Element* root = doc.initialize(u"test");
     TSUNIT_ASSERT(root != nullptr);
-    TSUNIT_ASSERT(desc.toXML(duck, root, 0, ts::TID_NULL, true) != nullptr);
+    TSUNIT_ASSERT(desc.toXML(duck, root, ts::DescriptorContext(), true) != nullptr);
 
     ts::UString text(doc.toString());
     debug() << "SectionFileTest::testGenericDescriptor: " << text << std::endl;

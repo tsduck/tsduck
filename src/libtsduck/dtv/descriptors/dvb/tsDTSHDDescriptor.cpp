@@ -50,16 +50,6 @@ void ts::DTSHDDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::DTSHDDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -190,7 +180,7 @@ void ts::DTSHDDescriptor::DeserializeSubstreamInfo(std::optional<SubstreamInfo>&
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DTSHDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     const bool substream_core_flag = buf.getBool();
     const bool substream_0_flag = buf.getBool();

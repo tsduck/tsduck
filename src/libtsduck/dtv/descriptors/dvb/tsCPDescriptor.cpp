@@ -50,16 +50,6 @@ ts::CPDescriptor::CPDescriptor(DuckContext& duck, const Descriptor& desc) :
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::CPDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization / deserialization
 //----------------------------------------------------------------------------
 
@@ -101,7 +91,7 @@ bool ts::CPDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CPDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::FIRST);

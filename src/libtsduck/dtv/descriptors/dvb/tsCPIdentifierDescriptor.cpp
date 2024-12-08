@@ -45,16 +45,6 @@ ts::CPIdentifierDescriptor::CPIdentifierDescriptor(DuckContext& duck, const Desc
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::CPIdentifierDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -107,7 +97,7 @@ bool ts::CPIdentifierDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CPIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(2)) {
         disp << margin << "CP System Id: " << DataName(MY_XML_NAME, u"CPSystemId", buf.getUInt16(), NamesFlags::FIRST) << std::endl;

@@ -16,11 +16,13 @@
 
 #define MY_XML_NAME u"AV1_video_descriptor"
 #define MY_CLASS ts::AV1VideoDescriptor
-#define MY_DID ts::DID_AOM_AV1_VIDEO
-#define MY_PDS ts::PDS_AOM
-#define MY_STD ts::Standards::DVB
+#define MY_DID   ts::DID_AOM_AV1_VIDEO
+#define MY_REGID ts::REGID_AOM
+#define MY_PDS   ts::PDS_AOM
+#define MY_STD   ts::Standards::NONE
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateMPEG(MY_DID, MY_REGID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -141,7 +143,7 @@ ts::UString ts::AV1VideoDescriptor::SubsamplingFormat(bool subsampling_x, bool s
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         buf.skipReservedBits(1);

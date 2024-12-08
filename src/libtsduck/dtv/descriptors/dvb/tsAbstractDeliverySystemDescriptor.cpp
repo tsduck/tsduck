@@ -9,8 +9,8 @@
 #include "tsAbstractDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
 
-ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name, Standards standards, PDS pds) :
-    AbstractDescriptor(tag, xml_name, standards, pds),
+ts::AbstractDeliverySystemDescriptor::AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name, Standards standards) :
+    AbstractDescriptor(tag, xml_name, standards, 0),
     _system(sys)
 {
 }

@@ -7,7 +7,25 @@
 //----------------------------------------------------------------------------
 
 #include "tsStreamType.h"
+#include "tsDescriptorList.h"
 
+
+//----------------------------------------------------------------------------
+// Check stream types.
+//----------------------------------------------------------------------------
+
+// Check if an ST value indicates a stream carrying sections
+bool ts::StreamTypeIsSection(uint8_t st)
+{
+    return st == ST_PRIV_SECT     ||
+           st == ST_DSMCC_UN      ||
+           st == ST_DSMCC_SECT    ||
+           st == ST_MPEG4_SECT    ||
+           st == ST_MDATA_SECT    ||
+           st == ST_SCTE35_SPLICE ||
+           st == ST_GREEN         ||
+           st == ST_QUALITY;
+}
 
 // Check if a stream type value indicates a PES stream
 bool ts::StreamTypeIsPES(uint8_t st)
@@ -70,7 +88,7 @@ bool ts::StreamTypeIsVVC(uint8_t st)
 }
 
 // Check if an ST value indicates an audio stream
-bool ts::StreamTypeIsAudio(uint8_t st, uint32_t regid)
+bool ts::StreamTypeIsAudio(uint8_t st, REGID regid)
 {
     bool audio = false;
     if (regid == REGID_HDMV) {
@@ -104,15 +122,47 @@ bool ts::StreamTypeIsAudio(uint8_t st, uint32_t regid)
            st == ST_AVS3_AUDIO;
 }
 
-// Check if an ST value indicates a stream carrying sections
-bool ts::StreamTypeIsSection(uint8_t st)
+// Check if an ST value indicates an audio stream (with descriptor list).
+bool ts::StreamTypeIsAudio(uint8_t st, const DescriptorList& dlist)
 {
-    return st == ST_PRIV_SECT     ||
-           st == ST_DSMCC_UN      ||
-           st == ST_DSMCC_SECT    ||
-           st == ST_MPEG4_SECT    ||
-           st == ST_MDATA_SECT    ||
-           st == ST_SCTE35_SPLICE ||
-           st == ST_GREEN         ||
-           st == ST_QUALITY;
+    return StreamTypeIsAudio(st, dlist.containsRegistration(REGID_HDMV) ? REGID_HDMV : REGID_NULL);
+}
+
+
+//----------------------------------------------------------------------------
+// Name of a Stream type value.
+//----------------------------------------------------------------------------
+
+ts::UString ts::StreamTypeName(uint8_t st, NamesFlags flags, REGID regid)
+{
+    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
+    NamesFile::Value value = (NamesFile::Value(regid) << 8) | NamesFile::Value(st);
+    if (regid == REGID_NULL || !repo->nameExists(u"StreamType", value)) {
+        // No value found with registration id, use the stream type alone.
+        value = NamesFile::Value(st);
+    }
+    return repo->nameFromSection(u"StreamType", value, flags);
+}
+
+ts::UString ts::StreamTypeName(uint8_t st, NamesFlags flags, const DescriptorList& dlist)
+{
+    const NamesFile::NamesFilePtr repo = NamesFile::Instance(NamesFile::Predefined::DTV);
+
+    // Get all registration ids from the descriptor list.
+    std::vector<REGID> regids;
+    dlist.getAllRegistrations(regids);
+
+    // The default value is the stream type alone.
+    NamesFile::Value value = NamesFile::Value(st);
+
+    // Check all registration ids to see if there is one stream type with that id.
+    for (auto id : regids) {
+        const NamesFile::Value full = (NamesFile::Value(id) << 8) | NamesFile::Value(st);
+        if (repo->nameExists(u"StreamType", full)) {
+            value = full;
+            break;
+        }
+    }
+
+    return repo->nameFromSection(u"StreamType", value, flags);
 }

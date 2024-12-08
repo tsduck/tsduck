@@ -51,16 +51,6 @@ ts::TTMLSubtitlingDescriptor::TTMLSubtitlingDescriptor(DuckContext& duck, const 
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::TTMLSubtitlingDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -199,7 +189,7 @@ ts::UString ts::TTMLSubtitlingDescriptor::TTML_suitability(uint8_t suitability) 
     return res;
 }
 
-void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(5)) {
         disp << margin << "ISO 639 language code: " << buf.getLanguageCode() << std::endl;

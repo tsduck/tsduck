@@ -109,7 +109,7 @@ void ts::NorDigLogicalChannelDescriptorV2::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"- Channel list id: %n", buf.getUInt8());

@@ -70,7 +70,6 @@ namespace ts {
 
     protected:
         // Inherited methods
-        virtual DID extendedTag() const override;
         virtual void clearContent() override;
         virtual void serializePayload(PSIBuffer&) const override;
         virtual void deserializePayload(PSIBuffer&) override;

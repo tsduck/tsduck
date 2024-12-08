@@ -57,16 +57,6 @@ ts::URILinkageDescriptor::URILinkageDescriptor(DuckContext& duck, const Descript
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::URILinkageDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -145,7 +135,7 @@ void ts::URILinkageDescriptor::DVB_I_Info::display(TablesDisplay& disp, PSIBuffe
     disp.displayPrivateData(u"Private data", buf, NPOS, margin);
 }
 
-void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();

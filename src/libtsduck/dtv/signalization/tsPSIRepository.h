@@ -12,13 +12,12 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTS.h"
-#include "tsCAS.h"
 #include "tsEDID.h"
-#include "tsStandards.h"
 #include "tsTablesPtr.h"
 #include "tsSingleton.h"
 #include "tsVersionInfo.h"
+#include "tsSectionContext.h"
+#include "tsDescriptorContext.h"
 
 namespace ts {
 
@@ -55,18 +54,18 @@ namespace ts {
         using DescriptorFactory = AbstractDescriptorPtr (*)();
 
         //!
+        //! Value of a "null" type index.
+        //!
+        static const std::type_index null_index;
+
+        //!
         //! Get the table factory for a given table id.
         //! @param [in] id Table id.
-        //! @param [in] standards List of current active standards in the application.
-        //! If there are several factories for this table id, return only a factory for
-        //! which the standard is active. For instance, if the same table id is used by
-        //! ATSC and ISDB but the application runs in an ISDB context, return the factory
-        //! for the ISDB version of this table id.
-        //! @param [in] pid PID on which the section is found.
-        //! @param [in] cas Current CAS id.
+        //! @param [in] context Optional object to lookup the context of the section.
+        //! This may help disambiguate tables with distinct standards but identical table_id.
         //! @return Corresponding factory or zero if there is none.
         //!
-        TableFactory getTableFactory(TID id, Standards standards, PID pid = PID_NULL, uint16_t cas = CASID_NULL) const;
+        TableFactory getTableFactory(TID id, const SectionContext& context = SectionContext()) const;
 
         //!
         //! Get the list of standards which are defined for a given table id.
@@ -79,14 +78,40 @@ namespace ts {
         Standards getTableStandards(TID id, PID pid = PID_NULL) const;
 
         //!
-        //! Get the descriptor factory for a given descriptor tag.
+        //! Get the descriptor factory for a given EDID.
         //! @param [in] edid Extended descriptor id.
-        //! @param [in] tid Optional table id of the table containing the descriptor.
-        //! If @a edid is a standard descriptor and @a tid is specified, try first a
-        //! table-specific descriptor for this table. Fallback to the standard descriptor.
         //! @return Corresponding factory or zero if there is none.
         //!
-        DescriptorFactory getDescriptorFactory(const EDID& edid, TID tid = TID_NULL) const;
+        DescriptorFactory getDescriptorFactory(EDID edid) const;
+
+        //!
+        //! Get the descriptor factory for a given descriptor tag and its context.
+        //! @param [in] xdid Extension descriptor id. This value is extracted from the
+        //! descriptor itself.
+        //! @param [in] context Optional object to lookup the context of the descriptor.
+        //! @return Corresponding factory or zero if there is none.
+        //!
+        DescriptorFactory getDescriptorFactory(XDID xdid, const DescriptorContext& context = DescriptorContext()) const;
+
+        //!
+        //! Get the exact extended descriptor id from a descriptor closs RTTI index.
+        //! Useful for a descriptor class to get its own EDID.
+        //! @param [in] index RTTI index for the descriptor class.
+        //! @param [in] tid Optional TID. If the descriptor class is table-specific for
+        //! several tables, return the EDID for that table.
+        //! @param [in] standards Optional list of standards for the table.
+        //! @return EDID for the descriptor type, invalid value if not found.
+        //!
+        EDID getDescriptorEDID(std::type_index index, TID tid = TID_NULL, Standards standards = Standards::NONE) const;
+
+        //!
+        //! Get the exact extended descriptor id from a descriptor tag and its context.
+        //! @param [in] xdid Extension descriptor id. This value is extracted from the
+        //! descriptor itself.
+        //! @param [in] context Optional object to lookup the context of the descriptor.
+        //! @return EDID for the descriptor type, invalid value if not found.
+        //!
+        EDID getDescriptorEDID(XDID xdid, const DescriptorContext& context = DescriptorContext()) const;
 
         //!
         //! Get the table factory for a given XML node name.
@@ -113,7 +138,7 @@ namespace ts {
         bool isDescriptorAllowed(const UString& nodeName, TID tid) const;
 
         //!
-        //! Get the list of tables where a descriptor is allowed.
+        //! Get the list of tables where a descriptor is allowed, as a descriptive string.
         //! @param [in] duck TSDuck execution context to interpret table names.
         //! @param [in] nodeName Name of the XML node for the descriptor.
         //! @return Human-readable list of tables where the descriptor is allowed.
@@ -124,40 +149,29 @@ namespace ts {
         //!
         //! Get the display function for a given table id.
         //! @param [in] id Table id.
-        //! @param [in] standards List of current active standards in the application.
-        //! If there are several display functions for this table id, return only a
-        //! function for which the standard is active. For instance, if the same table
-        //! id is used by ATSC and ISDB but the application runs in an ISDB context,
-        //! return the display function for the ISDB version of this table id.
-        //! @param [in] pid PID on which the section is found.
-        //! @param [in] cas Current CAS id.
+        //! @param [in] context Optional object to lookup the context of the section.
+        //! This may help disambiguate tables with distinct standards but identical table_id.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplaySectionFunction getSectionDisplay(TID id, Standards standards, PID pid = PID_NULL, uint16_t cas = CASID_NULL) const;
+        DisplaySectionFunction getSectionDisplay(TID id, const SectionContext& context = SectionContext()) const;
 
         //!
         //! Get the log function for a given table id.
         //! @param [in] id Table id.
-        //! @param [in] standards List of current active standards in the application.
-        //! If there are several log functions for this table id, return only a
-        //! function for which the standard is active. For instance, if the same table
-        //! id is used by ATSC and ISDB but the application runs in an ISDB context,
-        //! return the log function for the ISDB version of this table id.
-        //! @param [in] pid PID on which the section is found.
-        //! @param [in] cas Current CAS id.
+        //! @param [in] context Optional object to lookup the context of the section.
+        //! This may help disambiguate tables with distinct standards but identical table_id.
         //! @return Corresponding log function or zero if there is none.
         //!
-        LogSectionFunction getSectionLog(TID id, Standards standards, PID pid = PID_NULL, uint16_t cas = CASID_NULL) const;
+        LogSectionFunction getSectionLog(TID id, const SectionContext& context = SectionContext()) const;
 
         //!
-        //! Get the display function for a given extended descriptor id.
-        //! @param [in] edid Extended descriptor id.
-        //! @param [in] tid Optional table id of the table containing the descriptor.
-        //! If @a edid is a standard descriptor and @a tid is specified, try first a
-        //! table-specific descriptor for this table. Fallback to the standard descriptor.
+        //! Get the display function for a given descriptor tag and its context.
+        //! @param [in] xdid Extension descriptor id. This value is extracted from the
+        //! descriptor itself. The other parameter describe the context of the descriptor.
+        //! @param [in] context Optional object to lookup the context of the descriptor.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplayDescriptorFunction getDescriptorDisplay(const EDID& edid, TID tid = TID_NULL) const;
+        DisplayDescriptorFunction getDescriptorDisplay(XDID xdid, const DescriptorContext& context = DescriptorContext()) const;
 
         //!
         //! Get the display function of the CA_descriptor for a given CA_system_id.
@@ -211,43 +225,43 @@ namespace ts {
             //! @param [in] index Type index of the table object class.
             //! @param [in] tids List of table ids for this type. Usually there is only one (notable exception: EIT, SDT, NIT).
             //! @param [in] standards List of standards which define this table.
-            //! @param [in] xmlName XML node name for this table type.
-            //! @param [in] displayFunction Display function for the corresponding sections. Can be null.
-            //! @param [in] logFunction Log function for the corresponding sections. Can be null.
+            //! @param [in] xml_name XML node name for this table type.
+            //! @param [in] display Display function for the corresponding sections. Can be null.
+            //! @param [in] log Log function for the corresponding sections. Can be null.
             //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
-            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
+            //! @param [in] min_cas First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] max_cas Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
             //! @see TS_REGISTER_TABLE
             //!
             RegisterTable(TableFactory factory,
                           std::type_index index,
                           const std::vector<TID>& tids,
                           Standards standards,
-                          const UString& xmlName,
-                          DisplaySectionFunction displayFunction = nullptr,
-                          LogSectionFunction logFunction = nullptr,
+                          const UString& xml_name,
+                          DisplaySectionFunction display = nullptr,
+                          LogSectionFunction log = nullptr,
                           std::initializer_list<PID> pids = {},
-                          uint16_t minCAS = CASID_NULL,
-                          uint16_t maxCAS = CASID_NULL);
+                          uint16_t min_cas = CASID_NULL,
+                          uint16_t max_cas = CASID_NULL);
 
             //!
             //! Register a known table with display functions but no full C++ class.
             //! @param [in] tids List of table ids for this type. Usually there is only one (notable exception: EIT, SDT, NIT).
             //! @param [in] standards List of standards which define this table.
-            //! @param [in] displayFunction Display function for the corresponding sections. Can be null.
-            //! @param [in] logFunction Log function for the corresponding sections. Can be null.
+            //! @param [in] display Display function for the corresponding sections. Can be null.
+            //! @param [in] log Log function for the corresponding sections. Can be null.
             //! @param [in] pids List of PID's which are defined by the standards for this table.
-            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
-            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
+            //! @param [in] min_cas First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] max_cas Last CA_system_id if the display function applies to one CAS only. Same as @a minCAS when set as CASID_NULL.
             //! @see TS_REGISTER_SECTION
             //!
             RegisterTable(const std::vector<TID>& tids,
                           Standards standards,
-                          DisplaySectionFunction displayFunction = nullptr,
-                          LogSectionFunction logFunction = nullptr,
+                          DisplaySectionFunction display = nullptr,
+                          LogSectionFunction log = nullptr,
                           std::initializer_list<PID> pids = {},
-                          uint16_t minCAS = CASID_NULL,
-                          uint16_t maxCAS = CASID_NULL);
+                          uint16_t min_cas = CASID_NULL,
+                          uint16_t max_cas = CASID_NULL);
         };
 
         //!
@@ -264,30 +278,27 @@ namespace ts {
             //! @param [in] factory Function which creates a descriptor object of this type.
             //! @param [in] index Type index of the descriptor object class.
             //! @param [in] edid Exended descriptor id.
-            //! @param [in] xmlName XML node name for this descriptor type.
-            //! @param [in] displayFunction Display function for the corresponding descriptors. Can be null.
-            //! @param [in] xmlNameLegacy Legacy XML node name for this descriptor type (optional).
+            //! @param [in] xml_name XML node name for this descriptor type.
+            //! @param [in] display Display function for the corresponding descriptors. Can be null.
+            //! @param [in] legacy_xml_name Legacy XML node name for this descriptor type (optional).
             //! @see TS_REGISTER_DESCRIPTOR
             //!
             RegisterDescriptor(DescriptorFactory factory,
                                std::type_index index,
                                const EDID& edid,
-                               const UString& xmlName,
-                               DisplayDescriptorFunction displayFunction = nullptr,
-                               const UString& xmlNameLegacy = UString());
+                               const UString& xml_name,
+                               DisplayDescriptorFunction display = nullptr,
+                               const UString& legacy_xml_name = UString());
 
             //!
             //! Registers a CA_descriptor display function for a given range of CA_system_id.
-            //! @param [in] displayFunction Display function for the corresponding descriptors.
-            //! @param [in] minCAS First CA_system_id if the display function applies to one CAS only.
-            //! @param [in] maxCAS Last CA_system_id if the display function applies to one CAS only.
+            //! @param [in] display Display function for the corresponding descriptors.
+            //! @param [in] min_cas First CA_system_id if the display function applies to one CAS only.
+            //! @param [in] max_cas Last CA_system_id if the display function applies to one CAS only.
             //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_REGISTER_CA_DESCRIPTOR
             //!
-            RegisterDescriptor(DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS = CASID_NULL);
-
-        private:
-            void registerXML(DescriptorFactory factory, const EDID& edid, const UString& xmlName, const UString& xmlNameLegacy);
+            RegisterDescriptor(DisplayCADescriptorFunction display, uint16_t min_cas, uint16_t max_cas = CASID_NULL);
         };
 
         //!
@@ -312,63 +323,74 @@ namespace ts {
         };
 
     private:
-        // Description of a table id. Several descriptions can be used for the same table id,
-        // for instance for distinct DTV standards or distinct CA systems.
-        // We use a fixed-size array for 'pids' instead of a PIDSet for storage efficiency.
-        class TableDescription
+        // Description of a table class.
+        // Note: We use a fixed-size array for 'pids' instead of a PIDSet for storage efficiency.
+        class TableClass
         {
         public:
+            std::type_index        index = null_index;           // RTTI type index for the table.
             Standards              standards = Standards::NONE;  // Standards for this table id.
-            uint16_t               minCAS = CASID_NULL;          // Minimum CAS id for this table id (CASID_NULL if none).
-            uint16_t               maxCAS = CASID_NULL;          // Maximum CAS id for this table id (CASID_NULL if none).
+            uint16_t               min_cas = CASID_NULL;         // Minimum CAS id for this table id (CASID_NULL if none).
+            uint16_t               max_cas = CASID_NULL;         // Maximum CAS id for this table id (CASID_NULL if none).
             TableFactory           factory = nullptr;            // Function to build an instance of the table.
             DisplaySectionFunction display = nullptr;            // Function to display a section.
             LogSectionFunction     log = nullptr;                // Function to log a section.
+            UString                xml_name {};                  // XML name for that table.
             std::array<PID,8>      pids {};                      // Standard PID's for the standard, stop at first PID_NULL.
 
             // Constructor.
-            TableDescription();
+            TableClass();
 
             // Add PIDs in the list.
-            void addPIDs(std::initializer_list<PID> morePIDs);
+            void addPIDs(std::initializer_list<PID> more_pids);
 
             // Check if the table has dedicated PID's and if a PID is present.
             bool hasPID() const { return pids[0] != PID_NULL; }
             bool hasPID(PID pid) const;
         };
+        using TableClassPtr = std::shared_ptr<TableClass>;
 
-        // Description of a descriptor extended id.
-        // Only one description can be used per extended descriptor id,
-        class DescriptorDescription
+        // Several table classes can be used for the same table id, for instance for distinct DTV standards or
+        // distinct CA systems. There is only one class per XML name.
+        std::multimap<TID, TableClassPtr> _tables_by_tid {};
+        std::map<UString, TableClassPtr>  _tables_by_name {};
+
+        // Description of a descriptor class.
+        class DescriptorClass
         {
         public:
-            DescriptorFactory         factory;  // Function to build an instance of the descriptor.
-            DisplayDescriptorFunction display;  // Function to display a descriptor.
-
-            // Constructor.
-            DescriptorDescription(DescriptorFactory fact = nullptr, DisplayDescriptorFunction disp = nullptr);
+            std::type_index           index = null_index;  // RTTI type index for the table.
+            EDID                      edid {};             // Extended descriptor id.
+            DescriptorFactory         factory = nullptr;   // Function to build an instance of the descriptor.
+            DisplayDescriptorFunction display = nullptr;   // Function to display a descriptor.
+            UString                   xml_name {};         // XML name for that descriptor.
+            UString                   legacy_xml_name {};  // Optional legacy XML name for that descriptor.
         };
+        using DescriptorClassPtr = std::shared_ptr<DescriptorClass>;
 
-        // PSIRepository instance private members: tables.
-        std::multimap<TID, TableDescription> _tables {};      // Description of all table ids, potential multiple entries per table idx
-        std::map<UString, TableFactory>      _tableNames {};  // XML table name to table factory
+        // Several descriptor classes can be used for the same descriptor id (private, extended, table-specific descriptors).
+        std::multimap<XDID, DescriptorClassPtr>            _descriptors_by_xdid {};   // Description of all descriptors, by XsDID (multiple entries per XDID).
+        std::map<UString, DescriptorClassPtr>              _descriptors_by_name {};   // Description of all descriptors, by XML name (including legacy names).
+        std::multimap<std::type_index, DescriptorClassPtr> _descriptors_by_index {};  // Description of all descriptors, by RTTI type index.
+        std::multimap<UString, TID>                        _descriptor_tids {};       // XML descriptor name to table id for table-specific descriptors
 
-        // PSIRepository instance private members: descriptors.
-        std::map<EDID, DescriptorDescription>           _descriptors {};              // Description of all descriptors, by extended id.
-        std::map<UString, DescriptorFactory>            _descriptorNames {};          // XML descriptor name to descriptor factory
-        std::multimap<UString, TID>                     _descriptorTablesIds {};      // XML descriptor name to table id for table-specific descriptors
-        std::map<uint16_t, DisplayCADescriptorFunction> _casIdDescriptorDisplays {};  // CA_system_id to display function for CA_descriptor.
+        // Display functions for CA_descriptor by CA_system_id.
+        std::map<uint16_t, DisplayCADescriptorFunction> _casid_descriptor_displays {};
 
-        // PSIRepository instance private members: extensions.
-        UStringList _xmlModelFiles {};  // Additional XML model files for tables.
+        // Additional XML model files for tables and descriptors.
+        UStringList _xml_extension_files {};
+
+        // Get a descriptor from its EDID or its XID and its context.
+        DescriptorClassPtr getDescriptor(EDID edit) const;
+        DescriptorClassPtr getDescriptor(XDID xdid, const DescriptorContext& context) const;
 
         // Common code to lookup a table function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
-        FUNCTION getTableFunction(TID tid, Standards standards, PID pid, uint16_t cas, FUNCTION TableDescription::* member) const;
+        FUNCTION getTableFunction(TID tid, const SectionContext& context, FUNCTION TableClass::* member) const;
 
         // Common code to lookup a descriptor function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
-        FUNCTION getDescriptorFunction(const EDID& edid, TID tid, FUNCTION DescriptorDescription::* member) const;
+        FUNCTION getDescriptorFunction(XDID xdid, const DescriptorContext& context, FUNCTION DescriptorClass::* member) const;
     };
 }
 

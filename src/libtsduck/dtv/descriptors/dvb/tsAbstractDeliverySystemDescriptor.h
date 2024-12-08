@@ -47,9 +47,8 @@ namespace ts {
         //! @param [in] sys The delivery system.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
         //! @param [in] standards A bit mask of standards which define this structure.
-        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //!
-        AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name, Standards standards = Standards::DVB, PDS pds = 0);
+        AbstractDeliverySystemDescriptor(DID tag, DeliverySystem sys, const UChar* xml_name, Standards standards);
 
         //!
         //! Generic tool to translate an integer value from a binary descriptor into a modulation parameter.

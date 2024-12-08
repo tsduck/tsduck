@@ -15,12 +15,12 @@
 // Useful to analyze CA descriptors.
 //----------------------------------------------------------------------------
 
-ts::CASFamily ts::CASFamilyOf(uint16_t casid)
+ts::CASFamily ts::CASFamilyOf(CASID casid)
 {
     struct CASDesc {
         CASFamily family;
-        uint16_t  min;
-        uint16_t  max;
+        CASID     min;
+        CASID     max;
     };
 
     static const CASDesc table[] = {

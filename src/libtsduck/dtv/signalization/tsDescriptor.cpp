@@ -118,39 +118,17 @@ ts::Descriptor& ts::Descriptor::copy(const Descriptor& desc)
 
 
 //----------------------------------------------------------------------------
-// Get the extended descriptor id.
+// Get the extension descriptor id.
 //----------------------------------------------------------------------------
 
-ts::EDID ts::Descriptor::edid(PDS pds, const AbstractTable* table) const
+ts::XDID ts::Descriptor::xdid() const
 {
-    return edid(pds, table == nullptr ? TID(TID_NULL) : table->tableId());
-}
-
-ts::EDID ts::Descriptor::edid(PDS pds, TID tid) const
-{
-    if (!isValid()) {
-        return EDID();  // invalid value.
-    }
     const DID did = tag();
-    if (tid != TID_NULL && names::HasTableSpecificName(did, tid)) {
-        // Table-specific descriptor.
-        return EDID::TableSpecific(did, tid);
-    }
-    else if (did >= 0x80) {
-        // Private descriptor.
-        return EDID::PrivateDVB(did, pds);
-    }
-    else if (did == DID_DVB_EXTENSION && payloadSize() > 0) {
-        // DVB extension descriptor.
-        return EDID::ExtensionDVB(payload()[0]);
-    }
-    else if (did == DID_MPEG_EXTENSION && payloadSize() > 0) {
-        // MPEG extension descriptor.
-        return EDID::ExtensionMPEG(payload()[0]);
+    if ((did == DID_MPEG_EXTENSION || did == DID_DVB_EXTENSION) && payloadSize() > 0) {
+        return XDID(did, payload()[0]);
     }
     else {
-        // Standard descriptor.
-        return EDID::Standard(did);
+        return XDID(did);
     }
 }
 
@@ -220,28 +198,32 @@ bool ts::Descriptor::operator== (const Descriptor& desc) const
 // Deserialize the descriptor.
 //----------------------------------------------------------------------------
 
-ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, PDS pds, const AbstractTable* table) const
-{
-    return deserialize(duck, pds, table == nullptr ? TID(TID_NULL) : table->tableId());
-}
-
-ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, PDS pds, TID tid) const
-{
-    // Do we know how to deserialize this descriptor?
-    PSIRepository::DescriptorFactory fac = PSIRepository::Instance().getDescriptorFactory(edid(pds), tid);
-    if (fac != nullptr) {
-        // We know how to deserialize it.
-        AbstractDescriptorPtr dp(fac());
-        if (dp != nullptr) {
-            // Deserialize from binary to object.
-            dp->deserialize(duck, *this);
-            if (dp->isValid()) {
-                // Successfully deserialized.
-                return dp;
+namespace {
+    ts::AbstractDescriptorPtr Deserialize(ts::DuckContext& duck, const ts::Descriptor& desc, ts::PSIRepository::DescriptorFactory fac)
+    {
+        if (fac != nullptr) {
+            ts::AbstractDescriptorPtr dp(fac());
+            if (dp != nullptr) {
+                // Deserialize from binary to object.
+                dp->deserialize(duck, desc);
+                if (dp->isValid()) {
+                    // Successfully deserialized.
+                    return dp;
+                }
             }
         }
+        return nullptr; // cannot deserialize
     }
-    return AbstractDescriptorPtr(); // null pointer
+}
+
+ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, EDID edid) const
+{
+    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptorFactory(edid));
+}
+
+ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, const DescriptorContext& context) const
+{
+    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptorFactory(xdid(), context));
 }
 
 
@@ -249,7 +231,7 @@ ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, PDS pds
 // This method converts a descriptor to XML.
 //----------------------------------------------------------------------------
 
-ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent, PDS pds, TID tid, bool forceGeneric) const
+ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent, const DescriptorContext& context, bool forceGeneric) const
 {
     // Filter invalid descriptors.
     if (!isValid()) {
@@ -261,7 +243,7 @@ ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent,
 
     // Try to generate a specialized XML structure.
     if (!forceGeneric) {
-        const AbstractDescriptorPtr dp(deserialize(duck, pds, tid));
+        const AbstractDescriptorPtr dp(deserialize(duck, context));
         if (dp != nullptr) {
             // Serialize from object to XML.
             node = dp->toXML(duck, parent);

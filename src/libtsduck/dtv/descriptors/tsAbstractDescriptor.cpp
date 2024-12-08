@@ -11,6 +11,7 @@
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
 #include "tsPSIBuffer.h"
+#include "tsPSIRepository.h"
 #include "tsNames.h"
 #include "tsFatal.h"
 
@@ -54,43 +55,14 @@ bool ts::AbstractDescriptor::merge(const AbstractDescriptor& desc)
 
 ts::EDID ts::AbstractDescriptor::edid(const AbstractTable* table) const
 {
-    return edid(table == nullptr ? TID(TID_NULL) : table->tableId());
+    const auto& repo(PSIRepository::Instance());
+    const auto index = std::type_index(typeid(*this));
+    return table == nullptr ? repo.getDescriptorEDID(index) : repo.getDescriptorEDID(index, table->tableId(), table->definingStandards());
 }
 
 ts::EDID ts::AbstractDescriptor::edid(TID tid) const
 {
-    // PrivateMPEG(DID did, REGID regid)
-    // PrivateDVB(DID did, PDS pds)
-    // PrivateDual(DID did, PDS pds)
-    // ExtensionMPEG(DID ext)
-    // ExtensionDVB(DID ext)
-    // TableSpecific(DID did, TID tid, Standards std)
-
-
-
-    if (!isValid()) {
-        return EDID();  // invalid value.
-    }
-    else if (tid != TID_NULL && names::HasTableSpecificName(_tag, tid)) {
-        // Table-specific descriptor.
-        return EDID::TableSpecific(_tag, tid);
-    }
-    else if (_required_pds != 0) {
-        // Private descriptor.
-        return EDID::PrivateDVB(_tag, _required_pds);
-    }
-    else if (_tag == DID_DVB_EXTENSION) {
-        // DVB extension descriptor.
-        return EDID::ExtensionDVB(extendedTag());
-    }
-    else if (_tag == DID_MPEG_EXTENSION) {
-        // MPEG extension descriptor.
-        return EDID::ExtensionMPEG(extendedTag());
-    }
-    else {
-        // Standard descriptor.
-        return EDID::Regular(_tag, definingStandards());
-    }
+    return PSIRepository::Instance().getDescriptorEDID(std::type_index(typeid(*this)), tid);
 }
 
 
@@ -100,9 +72,7 @@ ts::EDID ts::AbstractDescriptor::edid(TID tid) const
 
 ts::DID ts::AbstractDescriptor::extendedTag() const
 {
-    // By default, there no extended descriptor tag.
-    // MPEG-defined and DVB-defined extension descriptors must override this virtual method.
-    return EDID_NULL;
+    return PSIRepository::Instance().getDescriptorEDID(std::type_index(typeid(*this))).didExtension();
 }
 
 

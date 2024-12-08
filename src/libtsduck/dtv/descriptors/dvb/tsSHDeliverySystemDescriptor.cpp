@@ -46,16 +46,6 @@ void ts::SHDeliverySystemDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::SHDeliverySystemDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -202,7 +192,7 @@ const ts::Enumeration ts::SHDeliverySystemDescriptor::ModulationNames({
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         const uint8_t div = buf.getBits<uint8_t>(4);

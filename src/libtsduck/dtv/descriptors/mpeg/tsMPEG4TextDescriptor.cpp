@@ -20,7 +20,7 @@
 #define MY_DID ts::DID_MPEG_MPEG4_TEXT
 #define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // ISO/IEC 14496-17 Table 1
 const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_textFormat_values{
@@ -173,7 +173,7 @@ ts::UString ts::MPEG4TextDescriptor::TimedText_TS26245(ByteBlock formatSpecificT
     return UString::Dump(formatSpecificTextConfig, UString::SINGLE_LINE);
 }
 
-void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(8)) {
         disp << margin << "Text format: " << DataName(MY_XML_NAME, u"textFormat", buf.getUInt8(), NamesFlags::VALUE);

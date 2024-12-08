@@ -16,11 +16,11 @@
 
 #define MY_XML_NAME u"AVS3_audio_descriptor"
 #define MY_CLASS ts::AVS3AudioDescriptor
-#define MY_DID ts::DID_AVS3_AUDIO
-#define MY_PDS ts::PDS_AVSAudio
-#define MY_STD ts::Standards::DVB
+#define MY_DID   ts::DID_AVS3_AUDIO
+#define MY_PDS   ts::PDS_AVSAudio
+#define MY_STD   ts::Standards::NONE
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDual(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -291,7 +291,7 @@ void ts::AVS3AudioDescriptor::fullrate_coding_type::display(TablesDisplay& disp,
 }
 
 
-void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         const uint8_t _codec_id = buf.getBits<uint8_t>(4);

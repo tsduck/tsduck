@@ -17,7 +17,7 @@
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
 #include "tsCRC32.h"
-#include "tsETID.h"
+#include "tsXTID.h"
 #include "tsTID.h"
 #include "tsPSI.h"
 #include "tsCAS.h"
@@ -317,9 +317,9 @@ namespace ts {
 
         //!
         //! Get the table id and id extension (long section only).
-        //! @return The table id and id extension as an ETID.
+        //! @return The table id and id extension as an XTID.
         //!
-        ETID etid() const { return isLongSection() ? ETID(tableId(), tableIdExtension()) : ETID(tableId()); }
+        XTID xtid() const { return isLongSection() ? XTID(tableId(), tableIdExtension()) : XTID(tableId()); }
 
         //!
         //! Size of the section header.

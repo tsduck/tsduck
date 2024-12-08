@@ -48,16 +48,6 @@ ts::MPEGH3DAudioDRCLoudnessDescriptor::MPEGH3DAudioDRCLoudnessDescriptor(DuckCon
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MPEGH3DAudioDRCLoudnessDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -124,7 +114,7 @@ void ts::MPEGH3DAudioDRCLoudnessDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEGH3DAudioDRCLoudnessDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEGH3DAudioDRCLoudnessDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     buf.skipReservedBits(7);
     const bool mpegh3daDrcAndLoudnessInfoPresent = buf.getBool();

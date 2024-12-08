@@ -116,7 +116,7 @@ void ts::SectionDemux::Status::display(Report& report, int level, const UString&
 //----------------------------------------------------------------------------
 
 // Init for a new table.
-void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_section)
+void ts::SectionDemux::XTIDContext::init(uint8_t new_version, uint8_t last_section)
 {
     notified = false;
     version = new_version;
@@ -131,7 +131,7 @@ void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_secti
 }
 
 // Notify the application if the table is complete.
-void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool pack, bool fill_eit)
+void ts::SectionDemux::XTIDContext::notify(SectionDemux& demux, bool pack, bool fill_eit)
 {
     if (!notified && (sect_received == sect_expected || pack || fill_eit) && demux._table_handler != nullptr) {
 
@@ -355,7 +355,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         // Get section header.
         bool section_ok = true;
         const TID tid = ts_start[0];
-        ETID etid(tid);
+        XTID xtid(tid);
         const bool long_header = Section::StartLongSection(ts_start, ts_size);
         uint16_t section_length = (GetUInt16(ts_start + 1) & 0x0FFF) + SHORT_SECTION_HEADER_SIZE;
 
@@ -401,7 +401,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         uint8_t last_section_number = 0;
 
         if (section_ok && long_header) {
-            etid = ETID (etid.tid(), GetUInt16 (ts_start + 3));
+            xtid = XTID (xtid.tid(), GetUInt16 (ts_start + 3));
             version = (ts_start[5] >> 1) & 0x1F;
             is_next = (ts_start[5] & 0x01) == 0;
             section_number = ts_start[6];
@@ -427,12 +427,12 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         if (section_ok) {
 
             // Get the list of standards which define this table id and add them in context.
-            _duck.addStandards(PSIRepository::Instance().getTableStandards(etid.tid(), pid));
+            _duck.addStandards(PSIRepository::Instance().getTableStandards(xtid.tid(), pid));
 
-            // Get reference to the ETID context for this PID.
-            // The ETID context is created if did not exist.
+            // Get reference to the XTID context for this PID.
+            // The XTID context is created if did not exist.
             // Avoid accumulating partial sections when there is no table handler.
-            ETIDContext* tc = _table_handler == nullptr ? nullptr : &pc.tids[etid];
+            XTIDContext* tc = _table_handler == nullptr ? nullptr : &pc.tids[xtid];
 
             // If this is a new version of the table, reset the TID context.
             // Note that short sections do not have versions, so the version

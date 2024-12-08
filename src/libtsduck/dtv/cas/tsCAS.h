@@ -16,6 +16,16 @@
 
 namespace ts {
     //!
+    //! Conditional Access System Id..
+    //!
+    using CASID = uint16_t;
+
+    //!
+    //! Maximum number of CASID values.
+    //!
+    constexpr size_t CASID_MAX = 0x10000;
+
+    //!
     //! Known Conditional Access Systems families.
     //! @ingroup mpeg
     //!
@@ -38,7 +48,7 @@ namespace ts {
     //! @param [in] ca_system_id DVB-allocated CA system id.
     //! @return A CAS family enumeration value.
     //!
-    TSDUCKDLL CASFamily CASFamilyOf(uint16_t ca_system_id);
+    TSDUCKDLL CASFamily CASFamilyOf(CASID ca_system_id);
 
     //!
     //! Name of Conditional Access Families.
@@ -50,7 +60,7 @@ namespace ts {
     //!
     //! Selected DVB-assigned CA System Identifier values
     //!
-    enum : uint16_t {
+    enum : CASID {
         CASID_NULL            = 0x0000,  //!< Null/reserved/invalid CAS Id. Can be used to indicated "unspecified".
         CASID_MEDIAGUARD_MIN  = 0x0100,  //!< Minimum CAS Id value for MediaGuard.
         CASID_MEDIAGUARD_MAX  = 0x01FF,  //!< Maximum CAS Id value for MediaGuard.

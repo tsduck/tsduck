@@ -86,7 +86,7 @@ void ts::SkyLogicalChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"Region Id: %5d (0x%<X)", buf.getUInt16()) << std::endl;

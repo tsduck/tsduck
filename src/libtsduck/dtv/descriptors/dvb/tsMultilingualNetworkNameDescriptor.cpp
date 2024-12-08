@@ -15,8 +15,9 @@
 #define MY_XML_ATTR u"network_name"
 #define MY_CLASS ts::MultilingualNetworkNameDescriptor
 #define MY_DID ts::DID_DVB_MLINGUAL_NETWORK
+#define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------

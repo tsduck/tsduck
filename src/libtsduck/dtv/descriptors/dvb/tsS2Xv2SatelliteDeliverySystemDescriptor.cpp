@@ -20,6 +20,7 @@
 #define MY_CLASS ts::S2Xv2SatelliteDeliverySystemDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_DVB_S2XV2_DELIVERY
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
@@ -29,7 +30,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::S2Xv2SatelliteDeliverySystemDescriptor::S2Xv2SatelliteDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME, MY_STD)
 {
 }
 
@@ -67,15 +68,6 @@ ts::S2Xv2SatelliteDeliverySystemDescriptor::S2Xv2SatelliteDeliverySystemDescript
     S2Xv2SatelliteDeliverySystemDescriptor()
 {
     deserialize(duck, desc);
-}
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::S2Xv2SatelliteDeliverySystemDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -209,7 +201,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Delivery sytsem id: 0x%08X",  buf.getUInt32() );

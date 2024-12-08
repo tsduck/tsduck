@@ -46,16 +46,6 @@ ts::NetworkChangeNotifyDescriptor::NetworkChangeNotifyDescriptor(DuckContext& du
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::NetworkChangeNotifyDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -120,7 +110,7 @@ void ts::NetworkChangeNotifyDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"- Cell id: 0x%X", buf.getUInt16()) << std::endl;

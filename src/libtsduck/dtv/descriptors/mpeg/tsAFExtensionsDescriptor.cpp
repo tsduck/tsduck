@@ -44,16 +44,6 @@ ts::AFExtensionsDescriptor::AFExtensionsDescriptor(DuckContext& duck, const Desc
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::AFExtensionsDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization / deserialization / display (empty extended payload).
 //----------------------------------------------------------------------------
 
@@ -65,7 +55,7 @@ void ts::AFExtensionsDescriptor::deserializePayload(PSIBuffer& buf)
 {
 }
 
-void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
 }
 

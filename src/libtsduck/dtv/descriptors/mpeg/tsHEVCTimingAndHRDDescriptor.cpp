@@ -49,16 +49,6 @@ ts::HEVCTimingAndHRDDescriptor::HEVCTimingAndHRDDescriptor(DuckContext& duck, co
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::HEVCTimingAndHRDDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -71,7 +61,7 @@ void ts::HEVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(target_schedule_idx.value_or(0xFF), 5);
     buf.putBit(info_present);
     if (info_present) {
-        buf.putBit(is_90kHz); 
+        buf.putBit(is_90kHz);
         buf.putBits(0xFF, 7);
         if (!is_90kHz) {  // N and K only present with time_base is not 90kHz
             buf.putUInt32(N.value());
@@ -98,7 +88,7 @@ void ts::HEVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
     }
     const bool info_present = buf.getBool();
     if (info_present) {
-        const bool is_90kHz = buf.getBool();  
+        const bool is_90kHz = buf.getBool();
         buf.skipBits(7);
         if (!is_90kHz) {
             N = buf.getUInt32();
@@ -113,7 +103,7 @@ void ts::HEVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "HRD management valid: " << UString::TrueFalse(buf.getBool()) << std::endl;

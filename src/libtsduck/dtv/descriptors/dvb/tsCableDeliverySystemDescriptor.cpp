@@ -17,8 +17,9 @@
 #define MY_XML_NAME u"cable_delivery_system_descriptor"
 #define MY_CLASS ts::CableDeliverySystemDescriptor
 #define MY_DID ts::DID_DVB_CABLE_DELIVERY
+#define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -26,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C, MY_XML_NAME)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C, MY_XML_NAME, MY_STD)
 {
 }
 
@@ -176,7 +177,7 @@ bool ts::CableDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml:
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(11)) {
         disp << margin << UString::Format(u"Frequency: %d", buf.getBCD<uint32_t>(4));

@@ -55,16 +55,6 @@ void ts::ImageIconDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::ImageIconDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -146,15 +136,15 @@ void ts::ImageIconDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
-        const uint8_t desc = buf.getBits<uint8_t>(4);
-        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", desc, buf.getBits<uint8_t>(4)) << std::endl;
+        const uint8_t descnum = buf.getBits<uint8_t>(4);
+        disp << margin << UString::Format(u"Descriptor number: %d, last: %d", descnum, buf.getBits<uint8_t>(4)) << std::endl;
         buf.skipBits(5);
         disp << margin << UString::Format(u"Icon id: %d", buf.getBits<uint8_t>(3)) << std::endl;
 
-        if (desc == 0) {
+        if (descnum == 0) {
             const uint8_t transport = buf.getBits<uint8_t>(2);
             disp << margin << "Transport mode: " << DataName(MY_XML_NAME, u"TransportMode", transport, NamesFlags::DECIMAL_FIRST) << std::endl;
             const bool has_position = buf.getBool();

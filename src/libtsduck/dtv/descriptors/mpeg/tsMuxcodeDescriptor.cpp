@@ -19,7 +19,7 @@
 #define MY_DID ts::DID_MPEG_MUXCODE
 #define MY_STD ts::Standards::MPEG
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 auto constexpr MAX_SUBSTRUCTURES = 0xFF;    // 8 bits for the substructureCount
 auto constexpr MAX_SLOTS = 0x1F;            // 5 bits for the slotCount
@@ -110,7 +110,7 @@ void ts::MuxCodeDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     uint8_t MuxCodeIndex = 0;
     while (buf.canReadBytes(3)) {

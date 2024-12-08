@@ -19,10 +19,9 @@
 #define MY_XML_NAME u"SI_parameter_descriptor"
 #define MY_CLASS ts::SIParameterDescriptor
 #define MY_DID ts::DID_ISDB_SI_PARAMETER
-#define MY_PDS ts::PDS_ISDB
 #define MY_STD ts::Standards::ISDB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -86,7 +85,7 @@ void ts::SIParameterDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Parameter version: %n", buf.getUInt8()) << std::endl;

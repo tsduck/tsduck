@@ -18,6 +18,7 @@
 #define MY_CLASS ts::T2DeliverySystemDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_DVB_T2_DELIVERY
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
@@ -27,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::T2DeliverySystemDescriptor::T2DeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T2, MY_XML_NAME)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T2, MY_XML_NAME, MY_STD)
 {
 }
 
@@ -49,16 +50,6 @@ void ts::T2DeliverySystemDescriptor::clearContent()
     other_frequency = false;
     tfs = false;
     cells.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::T2DeliverySystemDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -187,7 +178,7 @@ namespace {
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::T2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"PLP id: %n", buf.getUInt8());

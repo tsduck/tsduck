@@ -45,16 +45,6 @@ void ts::CIAncillaryDataDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::CIAncillaryDataDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization / deserialization
 //----------------------------------------------------------------------------
 
@@ -88,7 +78,7 @@ bool ts::CIAncillaryDataDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CIAncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CIAncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     disp.displayPrivateData(u"Ancillary data", buf, NPOS, margin);
 }

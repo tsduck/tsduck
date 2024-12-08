@@ -49,16 +49,6 @@ ts::MPEGH3DAudioMultiStreamDescriptor::MPEGH3DAudioMultiStreamDescriptor(DuckCon
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MPEGH3DAudioMultiStreamDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization.
 //----------------------------------------------------------------------------
 
@@ -120,7 +110,7 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEGH3DAudioMultiStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEGH3DAudioMultiStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canRead()) {
         const bool main = buf.getBool();
