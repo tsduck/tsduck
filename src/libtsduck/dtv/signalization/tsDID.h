@@ -13,9 +13,15 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsTID.h"
+#include "tsPDS.h"
+#include "tsNamesFile.h"
+#include "tsDescriptorContext.h"
 
 namespace ts {
+
+    class DuckContext;
+
     //!
     //! Descriptor identifier.
     //!
@@ -464,7 +470,7 @@ namespace ts {
     };
 
     //!
-    //! Extended descriptor tag values (MPEG or DVB extension_descriptor)
+    //! Extension descriptor tag values (MPEG or DVB extension_descriptor)
     //!
     enum : DID {
 
@@ -530,4 +536,37 @@ namespace ts {
         EDID_DVB_VVC_SUBPICTURES     = 0x23,  //!< Ext.DID for vvc_subpictures_descriptor
         EDID_DVB_S2XV2_DELIVERY      = 0x24,  //!< Ext.DID for S2Xv2_satellite_delivery_system_descriptor
     };
+
+    //!
+    //! Name of a Descriptor ID.
+    //! @param [in] did Descriptor id.
+    //! @param [in] flags Presentation flags.
+    //! @param [in] context Interpretation context of the descriptor.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString DIDName(DID did, NamesFlags flags = NamesFlags::NAME, const DescriptorContext& context = DescriptorContext());
+
+    //!
+    //! Check if a descriptor id has a specific name for a given table.
+    //! @param [in] did Descriptor id.
+    //! @param [in] tid Table id of the enclosing table.
+    //! @return True if descriptor @a did has a specific name for table @a tid.
+    //!
+    TSDUCKDLL bool DIDHasTableSpecificName(DID did, TID tid);
+
+    //!
+    //! Name of an MPEG extension descriptor ID.
+    //! @param [in] xdid MPEG extension descriptor ID.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString XDIDNameMPEG(DID xdid, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of a DVB extension descriptor ID.
+    //! @param [in] xdid DVB extension descriptor ID.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString XDIDNameDVB(DID xdid, NamesFlags flags = NamesFlags::NAME);
 }

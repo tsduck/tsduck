@@ -142,32 +142,44 @@ namespace ts {
 
         //!
         //! Check if a name exists in a specified section.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
         //! @param [in] value Value to get the name for.
-        //! @return True if a name exists for @a value in @a sectionName.
+        //! @return True if a name exists for @a value in @a section_name.
         //!
-        bool nameExists(const UString& sectionName, Value value) const;
+        bool nameExists(const UString& section_name, Value value) const;
 
         //!
         //! Get a name from a specified section.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
         //! @param [in] value Value to get the name for.
         //! @param [in] flags Presentation flags.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        UString nameFromSection(const UString& sectionName, Value value, NamesFlags flags = NamesFlags::NAME, Value alternateValue = 0) const;
+        UString nameFromSection(const UString& section_name, Value value, NamesFlags flags = NamesFlags::NAME, Value alternate_value = 0) const;
 
         //!
         //! Get a name from a specified section, with alternate fallback value.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
         //! @param [in] value1 Value to get the name for.
         //! @param [in] value2 Alternate value if no name is found for @a value1.
         //! @param [in] flags Presentation flags.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags = NamesFlags::NAME, Value alternateValue = 0) const;
+        UString nameFromSectionWithFallback(const UString& section_name, Value value1, Value value2, NamesFlags flags = NamesFlags::NAME, Value alternate_value = 0) const;
+
+        //!
+        //! Get all extended values of a specified value in a section.
+        //! All sections shall have a nominal width, "Bits=8" for instance. However, when the section has "Extended=true",
+        //! "extended" values can be provided. With "Bits=8", the value 0x00AA, 0x01AA, or 0xFFAA, are all extended values
+        //! for the base 8-bit value 0xAA, as an example.
+        //! @param [out] all_values The set of all extended values for @a value.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
+        //! @param [in] value The base value to get extended values for.
+        //! @return True if @a value exists in the section, false otherwise.
+        //!
+        bool valuesFromSection(std::set<Value>& all_values, const UString& section_name, Value value) const;
 
         //!
         //! Format a name using flags.
@@ -175,10 +187,10 @@ namespace ts {
         //! @param [in] name Name for the value.
         //! @param [in] flags Presentation flags.
         //! @param [in] bits Nominal size in bits of the data.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+        //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
         //! @return The corresponding name.
         //!
-        static UString Formatted(Value value, const UString& name, NamesFlags flags, size_t bits, Value alternateValue = 0);
+        static UString Formatted(Value value, const UString& name, NamesFlags flags, size_t bits, Value alternate_value = 0);
 
         //!
         //! A class to register additional names files to merge with the TSDuck names file.
@@ -209,22 +221,16 @@ namespace ts {
 
     private:
         // Description of a configuration entry.
-        // The first value of the range is the key in a map.
         class ConfigEntry
         {
         public:
+            Value   first = 0; // First value in the range.
             Value   last = 0;  // Last value in the range.
             UString name {};   // Associated name.
-
-            ConfigEntry(Value l = 0, const UString& n = UString()) : last(l), name(n) {}
         };
-
-        // Map of configuration entries, indexed by first value of the range.
         using ConfigEntryPtr = std::shared_ptr<ConfigEntry>;
-        using ConfigEntryMap = std::map<Value, ConfigEntryPtr>;
 
         // Description of a configuration section.
-        // The name of the section is the key in a map.
         class ConfigSection
         {
             TS_NOCOPY(ConfigSection);
@@ -232,8 +238,14 @@ namespace ts {
             size_t          bits = 0;          // Number of significant bits in values of the type.
             Value           mask = 0;          // Mask to apply to extract the specified bits.
             bool            extended = false;  // Contains extended values, larger than specified bit size.
-            ConfigEntryMap  entries {};        // All entries, indexed by names.
             UString         inherit {};        // Redirect to this section if value not found.
+
+            // All entries, indexed by full value (first value of the range).
+            std::map<Value, ConfigEntryPtr> entries {};
+
+            // All entries, indexed by shortened value ('bits' size) of the first value of the range.
+            // Unused when extended = false.
+            std::multimap<Value, ConfigEntryPtr> short_entries {};
 
             // Constructor.
             ConfigSection() = default;
@@ -247,10 +259,13 @@ namespace ts {
             // Get a name from a value, empty if not found.
             UString getName(Value val) const;
         };
-
-        // Map of configuration sections, indexed by name.
         using ConfigSectionPtr = std::shared_ptr<ConfigSection>;
-        using ConfigSectionMap = std::map<UString, ConfigSectionPtr>;
+
+        // Names private fields.
+        Report&          _log;                             // Error logger.
+        const UString    _configFile;                      // Configuration file path.
+        size_t           _configErrors = 0;                // Number of errors in configuration file.
+        std::map<UString, ConfigSectionPtr> _sections {};  // Configuration sections, indexed by section names.
 
         // Decode a line as "first[-last] = name". Return true on success, false on error.
         bool decodeDefinition(const UString& section_name, const UString& line, ConfigSectionPtr section);
@@ -265,16 +280,10 @@ namespace ts {
         void loadFile(const UString& fileName);
 
         // Get the section and name from a value, empty if not found. Section can be null.
-        void getName(const UString& sectionName, Value value, ConfigSectionPtr& section, UString& name) const;
+        void getName(const UString& section_name, Value value, ConfigSectionPtr& section, UString& name) const;
 
         // Normalized section name.
-        static UString NormalizedSectionName(const UString& sectionName) { return sectionName.toTrimmed().toLower(); }
-
-        // Names private fields.
-        Report&          _log;               // Error logger.
-        const UString    _configFile;        // Configuration file path.
-        size_t           _configErrors = 0;  // Number of errors in configuration file.
-        ConfigSectionMap _sections {};       // Configuration sections.
+        static UString NormalizedSectionName(const UString& section_name) { return section_name.toTrimmed().toLower(); }
 
         // A singleton which manages all NamesFile instances (thread-safe).
         class AllInstances
@@ -308,32 +317,32 @@ namespace ts {
     //!
     //! Get a name from a specified section in the DTV names file.
     //! @tparam INT An integer or enum type.
-    //! @param [in] sectionName Name of section to search. Not case-sensitive.
+    //! @param [in] section_name Name of section to search. Not case-sensitive.
     //! @param [in] value Value to get the name for.
     //! @param [in] flags Presentation flags.
-    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
-    UString NameFromDTV(const UString& sectionName, INT value, NamesFlags flags = NamesFlags::NAME, INT alternateValue = static_cast<INT>(0))
+    UString NameFromDTV(const UString& section_name, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
     {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(sectionName, NamesFile::Value(value), flags, NamesFile::Value(alternateValue));
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(section_name, NamesFile::Value(value), flags, NamesFile::Value(alternate_value));
     }
 
     //!
     //! Get a name from a specified section in the DTV names file, with alternate fallback value.
     //! @tparam INT An integer or enum type.
-    //! @param [in] sectionName Name of section to search. Not case-sensitive.
+    //! @param [in] section_name Name of section to search. Not case-sensitive.
     //! @param [in] value1 Value to get the name for.
     //! @param [in] value2 Alternate value if no name is found for @a value1.
     //! @param [in] flags Presentation flags.
-    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+    //! @param [in] alternate_value Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
-    UString NameFromDTVWithFallback(const UString& sectionName, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, INT alternateValue = static_cast<INT>(0))
+    UString NameFromDTVWithFallback(const UString& section_name, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, INT alternate_value = static_cast<INT>(0))
     {
-        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(sectionName, NamesFile::Value(value1), NamesFile::Value(value2), flags, NamesFile::Value(alternateValue));
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(section_name, NamesFile::Value(value1), NamesFile::Value(value2), flags, NamesFile::Value(alternate_value));
     }
 
     //!

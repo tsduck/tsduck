@@ -13,9 +13,13 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsCAS.h"
+#include "tsNamesFile.h"
 
 namespace ts {
+
+    class DuckContext;
+
     //!
     //! Table identifier.
     //!
@@ -182,4 +186,14 @@ namespace ts {
         TID_ITT           = 0xD2, //!< Table id for Index Transmission Table (ISDB)
         TID_AMT           = 0xFE, //!< Table id for Address Map Table (ISDB)
     };
+
+    //!
+    //! Get the name of a Table ID.
+    //! @param [in] duck TSDuck execution context (used to select from conflicting standards).
+    //! @param [in] tid Table id.
+    //! @param [in] cas CAS id for EMM/ECM table ids.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString TIDName(const DuckContext& duck, TID tid, CASID cas = CASID_NULL, NamesFlags flags = NamesFlags::NAME);
 }

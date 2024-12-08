@@ -72,7 +72,7 @@ void ts::ConditionalPlaybackDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ConditionalPlaybackDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
         const TID tid = context.getTableId();
         const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
         disp << margin << UString::Format(u"%s PID: %n", dtype, buf.getPID()) << std::endl;

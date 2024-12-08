@@ -13,7 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsNamesFile.h"
 
 namespace ts {
     //!
@@ -42,4 +42,12 @@ namespace ts {
         REGID_CUVV     = 0x63757676,  //!< UHD World Association ("cuvv") registration identifier (registration procedure in progress).
         REGID_NULL     = 0xFFFFFFFF,  //!< Unassigned registration identifier.
     };
+
+    //!
+    //! Name of a Registration id from an MPEG registration_descriptor.
+    //! @param [in] regid Registration id.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString REGIDName(REGID regid, NamesFlags flags = NamesFlags::NAME);
 }

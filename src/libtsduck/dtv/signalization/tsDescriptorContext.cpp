@@ -31,14 +31,14 @@ ts::CASID ts::DescriptorContext::getCAS() const
     return _casid;
 }
 
-// The default implementation finds nothing.
+// The default implementation searches nothing and returns the REGID and PDS values which were given to the constructor.
 bool ts::DescriptorContext::getPrivateIds(REGID* regid, PDS* pds) const
 {
     if (regid != nullptr) {
-        *regid = REGID_NULL;
+        *regid = _regid;
     }
     if (pds != nullptr) {
-        *pds = PDS_NULL;
+        *pds = _pds;
     }
-    return false;
+    return false; // PDS takes precedence over REGID if both are returned.
 }

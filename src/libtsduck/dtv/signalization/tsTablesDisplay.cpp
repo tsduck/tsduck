@@ -209,7 +209,7 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     // Display common header lines.
-    strm << margin << UString::Format(u"* %s, TID %n", names::TID(_duck, tid, cas), table.tableId());
+    strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, cas), table.tableId());
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
         strm << UString::Format(u", PID %n", table.sourcePID());
@@ -261,7 +261,7 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << UString::Format(u"* %s, TID %n", names::TID(_duck, tid, cas), tid);
+        strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, cas), tid);
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
             strm << UString::Format(u", PID %n", section.sourcePID());
@@ -424,7 +424,7 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
         }
         strm << std::endl << margin << "  ";
         if (tid != TID_NULL) {
-            strm << UString::Format(u"%s, TID %n, ", names::TID(_duck, tid, cas), tid);
+            strm << UString::Format(u"%s, TID %n, ", TIDName(_duck, tid, cas), tid);
         }
         if (data.sourcePID() != PID_NULL) {
             strm << UString::Format(u"PID %n, ", data.sourcePID());
@@ -669,7 +669,7 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
 
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
-             << names::DID(desc_tag, context.pds(), section.tableId(), NamesFlags::VALUE | NamesFlags::BOTH) << ", "
+             << DIDName(desc_tag, NamesFlags::VALUE | NamesFlags::BOTH, context) << ", "
              << desc_length << " bytes" << std::endl;
 
         // If the descriptor contains a registration id, keep it in the context.
@@ -689,22 +689,20 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
 
 
 //----------------------------------------------------------------------------
-// Display a list of descriptors.
+// Display a dlist of descriptors.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const UString& margin, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorList(const DescriptorList& dlist, const UString& margin, uint16_t cas)
 {
     std::ostream& strm(_duck.out());
-    const TID tid = list.tableId();
 
-    for (size_t i = 0; i < list.count(); ++i) {
-        const DescriptorPtr& desc(list[i]);
+    for (size_t i = 0; i < dlist.count(); ++i) {
+        const DescriptorPtr& desc(dlist[i]);
         if (desc != nullptr) {
-            const PDS pds = list.privateDataSpecifier(i);
             strm << margin << "- Descriptor " << i << ": "
-                 << names::DID(desc->tag(), _duck.actualPDS(pds), tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
+                 << DIDName(desc->tag(), NamesFlags::VALUE | NamesFlags::BOTH, dlist.lookupContext(_duck, i, cas)) << ", "
                  << desc->size() << " bytes" << std::endl;
-            displayDescriptor(*desc, margin + u"  ", list.lookupContext(_duck, i, cas));
+            displayDescriptor(*desc, margin + u"  ", dlist.lookupContext(_duck, i, cas));
         }
     }
 }
@@ -728,7 +726,7 @@ void ts::TablesDisplay::displayDescriptorData(const Descriptor& desc, const UStr
         header_size++;
         size--;
         // Display extended descriptor header
-        strm << margin << "MPEG extended descriptor: " << NameFromDTV(u"MPEGExtendedDescriptorId", ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
+        strm << margin << "MPEG extended descriptor: " << XDIDNameMPEG(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
     else if (desc.tag() == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
@@ -736,7 +734,7 @@ void ts::TablesDisplay::displayDescriptorData(const Descriptor& desc, const UStr
         header_size++;
         size--;
         // Display extended descriptor header
-        strm << margin << "Extended descriptor: " << names::EDID(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
+        strm << margin << "Extended descriptor: " << XDIDNameDVB(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
 
     // Locate the display handler for this descriptor payload.

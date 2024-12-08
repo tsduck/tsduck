@@ -16,7 +16,7 @@
 #include "tsDID.h"
 #include "tsXDID.h"
 #include "tsPDS.h"
-#include "tsRegistration.h"
+#include "tsREGID.h"
 #include "tsStandards.h"
 
 namespace ts {
@@ -269,7 +269,7 @@ namespace ts {
         //! Get the DVB private data specifier.
         //! @return The DVB private data specifier or PDS_NULL if this is not a private descriptor.
         //!
-        PDS pds() const { return isPrivateDVB() ? PDS(_edid >> 8) : PDS(REGID_NULL); }
+        PDS pds() const { return isPrivateDVB() ? PDS(_edid >> 8) : PDS(PDS_NULL); }
 
         //!
         //! Check if the descriptor is an MPEG extension descriptor.
@@ -340,6 +340,13 @@ namespace ts {
         //! @return The corresponding eXtension Descriptor Id.
         //!
         XDID xdid() const;
+
+        //!
+        //! Get the 64-bit encoded EDID value.
+        //! There is not real usage for this in an application, except looking up names into the DTV names file.
+        //! @return The 64-bit encoded EDID value.
+        //!
+        uint64_t encoded() const { return _edid; }
 
         //!
         //! Comparison operator.

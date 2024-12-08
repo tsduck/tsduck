@@ -10,7 +10,9 @@
 #include "tsFileUtils.h"
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
-#include "tsFatal.h"
+
+// Limit the number of inheritance levels to avoid infinite loop.
+#define MAX_INHERIT 16
 
 
 //----------------------------------------------------------------------------
@@ -214,37 +216,59 @@ void ts::NamesFile::loadFile(const UString& fileName)
     strm.close();
 
     // Verify that all sections have bits size.
-    for (const auto& sec : _sections) {
+    for (const auto& sec_iter : _sections) {
+        const auto& sname(sec_iter.first);
+        auto& sec(*sec_iter.second);
 
         // Fetch bits value from "superclasses".
-        UString parent(sec.second->inherit);
-        while (sec.second->bits == 0 && !parent.empty()) {
+        UString parent(sec.inherit);
+        while (sec.bits == 0 && !parent.empty()) {
             auto next = _sections.find(parent.toLower());
             if (next == _sections.end()) {
-                _log.error(u"%d: section %s inherits from non-existent section %s", _configFile, sec.first, parent);
+                _log.error(u"%d: section %s inherits from non-existent section %s", _configFile, sname, parent);
                 break;
             }
-            sec.second->bits = next->second->bits;
+            sec.bits = next->second->bits;
             parent = next->second->inherit;
         }
 
         // Verify the presence of bits size.
-        if (sec.second->bits == 0) {
-            _log.error(u"%d: no specified bits size in section %s", _configFile, sec.first);
+        if (sec.bits == 0) {
+            _log.error(u"%d: no specified bits size in section %s", _configFile, sname);
         }
         else {
-            const Value mask = sec.second->mask = ~Value(0) >> (8 * sizeof(Value) - sec.second->bits);
+            // Mask to extract the basic value, without the potential extension.
+            sec.mask = ~Value(0) >> (8 * sizeof(Value) - sec.bits);
 
             // Verify the presence of extended values in the section.
             bool extended = false;
-            for (const auto& val : sec.second->entries) {
-                if ((val.first & ~mask) != 0 || (val.second->last & ~mask) != 0) {
+            for (const auto& val : sec.entries) {
+                // Only check the extension in 'last', it is greated than 'first'.
+                if ((val.second->last & ~sec.mask) != 0) {
                     extended = true;
                     break;
                 }
             }
-            if (extended != sec.second->extended) {
-                _log.error(u"%d: section %s, extended is %s, found%s extended values", _configFile, sec.first, sec.second->extended, extended ? u"" : u" no");
+            if (extended != sec.extended) {
+                _log.error(u"%d: section %s, extended is %s, found%s extended values", _configFile, sname, sec.extended, extended ? u"" : u" no");
+            }
+
+            // In the presence of extended values, build the 'short_entries' multimap, indexed by short values.
+            if (extended) {
+                assert(sec.bits < 8 * sizeof(Value));
+                // If there are more than one value in the range, it is possible that they span multiple short values.
+                const Value increment = Value(1) << sec.bits;
+                const Value max = std::numeric_limits<Value>::max() - increment;
+                for (const auto& val : sec.entries) {
+                    Value index = val.second->first;
+                    while (index <= val.second->last) {
+                        sec.short_entries.insert(std::make_pair(index & sec.mask, val.second));
+                        if (index > max) {
+                            break; // avoid integer overflow
+                        }
+                        index += increment;
+                    }
+                }
             }
         }
     }
@@ -366,8 +390,10 @@ bool ts::NamesFile::ConfigSection::freeRange(Value first, Value last) const
 
 void ts::NamesFile::ConfigSection::addEntry(Value first, Value last, const UString& name)
 {
-    ConfigEntry* entry = new ConfigEntry(last, name);
-    CheckNonNull(entry);
+    ConfigEntryPtr entry = std::make_shared<ConfigEntry>();
+    entry->first = first;
+    entry->last = last;
+    entry->name = name;
     entries.insert(std::make_pair(first, entry));
 }
 
@@ -396,7 +422,7 @@ ts::UString ts::NamesFile::ConfigSection::getName(Value val) const
     assert(it != entries.end());
     assert(it->second != nullptr);
 
-    return val >= it->first && val <= it->second->last ? it->second->name : UString();
+    return val >= it->second->first && val <= it->second->last ? it->second->name : UString();
 }
 
 
@@ -427,7 +453,7 @@ ts::NamesFile::Value ts::NamesFile::DisplayMask(size_t bits)
 // Format a name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlags flags, size_t bits, Value alternateValue)
+ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlags flags, size_t bits, Value alternate_value)
 {
     // If neither decimal nor hexa are specified, hexa is the default.
     if (!(flags & (NamesFlags::DECIMAL | NamesFlags::HEXA))) {
@@ -436,7 +462,7 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
 
     // Actual value to display.
     if (bool(flags & NamesFlags::ALTERNATE)) {
-        value = alternateValue;
+        value = alternate_value;
     }
 
     // Display meaningful bits only.
@@ -502,13 +528,13 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
 // Get the section and name from a value, empty if not found.
 //----------------------------------------------------------------------------
 
-void ts::NamesFile::getName(const UString& sectionName, Value value, ConfigSectionPtr& section, UString& name) const
+void ts::NamesFile::getName(const UString& section_name, Value value, ConfigSectionPtr& section, UString& name) const
 {
     // Normalized section name.
-    UString sname(NormalizedSectionName(sectionName));
+    UString sname(NormalizedSectionName(section_name));
 
     // Limit the number of inheritance levels to avoid infinite loop.
-    int levels = 16;
+    int levels = MAX_INHERIT;
 
     // Loop on inherited sections, until a name is found.
     for (;;) {
@@ -540,11 +566,11 @@ void ts::NamesFile::getName(const UString& sectionName, Value value, ConfigSecti
 // Check if a name exists in a specified section.
 //----------------------------------------------------------------------------
 
-bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
+bool ts::NamesFile::nameExists(const UString& section_name, Value value) const
 {
     ConfigSectionPtr section;
     UString name;
-    getName(sectionName, value, section, name);
+    getName(section_name, value, section, name);
     return !name.empty();
 }
 
@@ -553,18 +579,18 @@ bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 // Get a name from a specified section.
 //----------------------------------------------------------------------------
 
-ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value value, NamesFlags flags, Value alternateValue) const
+ts::UString ts::NamesFile::nameFromSection(const UString& section_name, Value value, NamesFlags flags, Value alternate_value) const
 {
     ConfigSectionPtr section;
     UString name;
-    getName(sectionName, value, section, name);
+    getName(section_name, value, section, name);
 
     if (section == nullptr) {
         // Non-existent section, no name.
-        return Formatted(value, UString(), flags, 0, alternateValue);
+        return Formatted(value, UString(), flags, 0, alternate_value);
     }
     else {
-        return Formatted(value, name, flags, section->bits, alternateValue);
+        return Formatted(value, name, flags, section->bits, alternate_value);
     }
 }
 
@@ -573,22 +599,78 @@ ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value val
 // Get a name from a specified section, with alternate fallback value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags, Value alternateValue) const
+ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& section_name, Value value1, Value value2, NamesFlags flags, Value alternate_value) const
 {
     ConfigSectionPtr section;
     UString name;
-    getName(sectionName, value1, section, name);
+    getName(section_name, value1, section, name);
 
     if (section == nullptr) {
         // Non-existent section, no name.
-        return Formatted(value1, UString(), flags, section->bits, alternateValue);
+        return Formatted(value1, UString(), flags, section->bits, alternate_value);
     }
     else if (!name.empty()) {
         // value1 has a name
-        return Formatted(value1, name, flags, section->bits, alternateValue);
+        return Formatted(value1, name, flags, section->bits, alternate_value);
     }
     else {
         // value1 has no name, use value2, restart from the beginning in case of inheritance.
-        return nameFromSection(sectionName, value2, flags, alternateValue);
+        return nameFromSection(section_name, value2, flags, alternate_value);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get all extended values of a specified value in a section.
+//----------------------------------------------------------------------------
+
+bool ts::NamesFile::valuesFromSection(std::set<Value>& all_values, const UString& section_name, Value value) const
+{
+    all_values.clear();
+
+    ConfigSectionPtr section;
+    UString name;
+    getName(section_name, value, section, name);
+
+    if (section == nullptr || name.empty()) {
+        // Non-existent section or no value.
+        return false;
+    }
+    else if (!section->extended) {
+        // Only one possible value.
+        all_values.insert(value);
+        return true;
+    }
+
+    // Possibly several values. Loop on inherited sections.
+    for (int levels = MAX_INHERIT; levels > 0 && section != nullptr; --levels) {
+
+        const Value increment = Value(1) << section->bits;
+        const Value max = std::numeric_limits<Value>::max() - increment;
+
+        // Get all values in the multimap for the base value.
+        const auto bounds(section->short_entries.equal_range(value));
+        for (auto next = bounds.first; next != bounds.second; ++next) {
+            const auto& val(*next->second);
+            Value i = (val.first & ~section->mask) | (value & section->mask);
+            while (i <= val.last) {
+                all_values.insert(i);
+                if (i > max) {
+                    break; // avoid integer overflow
+                }
+                i += increment;
+            }
+        }
+
+        // Loop on "superclass".
+        if (section->inherit.empty()) {
+            section = nullptr;
+        }
+        else {
+            const auto it = _sections.find(NormalizedSectionName(section->inherit));
+            section = it == _sections.end() ? nullptr : it->second;
+        }
+    }
+
+    return !all_values.empty();
 }

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsRegistration.h"
+#include "tsREGID.h"
 #include "tsTID.h"
 #include "tsPDS.h"
 #include "tsCAS.h"
@@ -40,15 +40,19 @@ namespace ts {
         TID _tid;
         CASID _casid;
         Standards _standards;
+        REGID _regid;
+        PDS _pds;
     public:
         //!
         //! Constructor.
         //! @param [in] tid Optional table id. This value is returned by the default implementation of getTableId().
         //! @param [in] standards Optional set of standards. This value is returned by the default implementation of getStandards().
         //! @param [in] casid Optional Conditional Access System id. This value is returned by the default implementation of getCAS().
+        //! @param [in] regid Optional registration id. This value is returned by the default implementation of getPrivateIds().
+        //! @param [in] pds Optional DVB private data specifier. This value is returned by the default implementation of getPrivateIds().
         //!
-        DescriptorContext(TID tid = TID_NULL, Standards standards = Standards::NONE, CASID casid = CASID_NULL) :
-            _tid(tid), _casid(casid), _standards(standards) {}
+        DescriptorContext(TID tid = TID_NULL, Standards standards = Standards::NONE, CASID casid = CASID_NULL, REGID regid = REGID_NULL, PDS pds = PDS_NULL) :
+            _tid(tid), _casid(casid), _standards(standards), _regid(regid), _pds(pds) {}
 
         //!
         //! Get the table id of the table where the descriptor is located.
@@ -80,7 +84,7 @@ namespace ts {
         //! The idea of this interface is to save time and perform the search for private identifiers when
         //! necessary only.
         //!
-        //! The default implementation searches nothing and finds nothing.
+        //! The default implementation searches nothing and returns the REGID and PDS values which were given to the constructor.
         //!
         //! @param [out] regid If non-null, the pointed REGID will receive the closest MPEG registration id
         //! or REGID_NULL when none if found. In the case of descriptor lists, registration ids are searched

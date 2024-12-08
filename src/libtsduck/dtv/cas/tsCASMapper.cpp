@@ -96,7 +96,7 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
         if (desc != nullptr && desc->tag() == DID_MPEG_CA) {
             const CADescriptorPtr cadesc(new CADescriptor(_duck, *desc));
             if (cadesc != nullptr && cadesc->isValid()) {
-                const std::string cas_name(names::CASId(_duck, cadesc->cas_id).toUTF8());
+                const std::string cas_name(CASIdName(_duck, cadesc->cas_id).toUTF8());
                 _pids[cadesc->ca_pid] = PIDDescription(cadesc->cas_id, is_ecm, cadesc);
                 _duck.report().debug(u"Found %s PID %n for CAS id 0x%X (%s)", is_ecm ? u"ECM" : u"EMM", cadesc->ca_pid, cadesc->cas_id, cas_name);
             }

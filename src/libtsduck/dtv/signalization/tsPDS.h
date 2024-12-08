@@ -15,6 +15,7 @@
 #pragma once
 #include "tsEnumeration.h"
 #include "tsSingleton.h"
+#include "tsNamesFile.h"
 
 namespace ts {
     //!
@@ -55,4 +56,12 @@ namespace ts {
     //! Typically used to implement PDS-related command line options.
     //!
     TS_DECLARE_GLOBAL(const, Enumeration, PrivateDataSpecifierEnum);
+
+    //!
+    //! Name of a Private Data Specifier.
+    //! @param [in] pds Private Data Specifier.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString PDSName(PDS pds, NamesFlags flags = NamesFlags::NAME);
 }

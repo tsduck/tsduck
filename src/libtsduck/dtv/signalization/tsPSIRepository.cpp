@@ -505,7 +505,7 @@ ts::UString ts::PSIRepository::descriptorTables(const DuckContext& duck, const U
         if (!result.empty()) {
             result.append(u", ");
         }
-        result.append(names::TID(duck, it->second, CASID_NULL, NamesFlags::NAME | NamesFlags::HEXA));
+        result.append(TIDName(duck, it->second, CASID_NULL, NamesFlags::NAME | NamesFlags::HEXA));
         ++it;
     }
 

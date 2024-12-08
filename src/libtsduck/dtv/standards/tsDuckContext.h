@@ -16,7 +16,7 @@
 #include "tsByteBlock.h"
 #include "tsCharset.h"
 #include "tsStandards.h"
-#include "tsRegistration.h"
+#include "tsREGID.h"
 #include "tsPDS.h"
 #include "tsCAS.h"
 

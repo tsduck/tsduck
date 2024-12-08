@@ -453,7 +453,7 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << UString::Format(u"Original Network Id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Segment last section: %n", buf.getUInt8()) << std::endl;
         const uint8_t last_tid = buf.getUInt8();
-        disp << margin << UString::Format(u"Last Table Id: %n, %s", last_tid, names::TID(disp.duck(), last_tid)) << std::endl;
+        disp << margin << UString::Format(u"Last Table Id: %n, %s", last_tid, TIDName(disp.duck(), last_tid)) << std::endl;
 
         while (buf.canReadBytes(12)) {
             disp << margin << UString::Format(u"- Event Id: %n", buf.getUInt16()) << std::endl;

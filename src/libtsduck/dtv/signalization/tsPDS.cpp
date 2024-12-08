@@ -9,6 +9,10 @@
 #include "tsPDS.h"
 
 
+//----------------------------------------------------------------------------
+// Enumeration description of PDS values.
+//----------------------------------------------------------------------------
+
 TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PrivateDataSpecifierEnum, ({
     {u"BskyB",     ts::PDS_BSKYB},
     {u"Nagra",     ts::PDS_NAGRA},
@@ -26,3 +30,13 @@ TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PrivateDataSpecifierEnum, ({
     {u"AOM",       ts::PDS_AOM},
     {u"cuvv",      ts::PDS_CUVV},
 }));
+
+
+//----------------------------------------------------------------------------
+// Name of a Private Data Specifier.
+//----------------------------------------------------------------------------
+
+ts::UString ts::PDSName(PDS pds, NamesFlags flags)
+{
+    return NameFromDTV(u"PrivateDataSpecifier", NamesFile::Value(pds), flags);
+}

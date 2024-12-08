@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCAS.h"
-#include "tsNamesFile.h"
+#include "tsDuckContext.h"
 
 
 //----------------------------------------------------------------------------
@@ -52,4 +52,23 @@ ts::CASFamily ts::CASFamilyOf(CASID casid)
 ts::UString ts::CASFamilyName(CASFamily cas)
 {
     return NameFromDTV(u"CASFamily", cas, NamesFlags::NAME | NamesFlags::DECIMAL);
+}
+
+
+//----------------------------------------------------------------------------
+// Name of a Conditional Access System Id (as in CA Descriptor).
+//----------------------------------------------------------------------------
+
+ts::UString ts::CASIdName(const DuckContext& duck, uint16_t casid, NamesFlags flags)
+{
+    // In the case of ISDB, look into another table (but only known names).
+    if (bool(duck.standards() & Standards::ISDB)) {
+        const UString name(NameFromDTV(u"ARIBCASystemId", NamesFile::Value(casid), flags | NamesFlags::NO_UNKNOWN));
+        if (!name.empty()) {
+            return name;
+        }
+    }
+
+    // Not ISDB or not found in ISDB, use standard CAS names.
+    return NameFromDTV(u"CASystemId", NamesFile::Value(casid), flags);
 }

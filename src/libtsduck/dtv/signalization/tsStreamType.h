@@ -13,7 +13,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsRegistration.h"
+#include "tsREGID.h"
 #include "tsNamesFile.h"
 
 namespace ts {

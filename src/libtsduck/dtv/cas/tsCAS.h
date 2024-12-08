@@ -12,9 +12,12 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
+#include "tsNamesFile.h"
 
 namespace ts {
+
+    class DuckContext;
+
     //!
     //! Conditional Access System Id..
     //!
@@ -82,4 +85,13 @@ namespace ts {
         CASID_WIDEVINE_MAX    = 0x4AD5,  //!< Maximum CAS Id value for Widevine CAS (Google).
         CASID_SAFEACCESS      = 0x4ADC,  //!< CAS Id value for SafeAccess.
     };
+
+    //!
+    //! Name of a Conditional Access System Id (as in CA Descriptor).
+    //! @param [in] duck TSDuck execution context (used to select from other standards).
+    //! @param [in] casid Conditional Access System Id.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString CASIdName(const DuckContext& duck, uint16_t casid, NamesFlags flags = NamesFlags::NAME);
 }
