@@ -399,14 +399,22 @@ void ts::NamesFile::ConfigSection::addEntry(Value first, Value last, const UStri
 
 
 //----------------------------------------------------------------------------
-// Get a name from a value, empty if not found.
+// Get an entry or name from a value.
 //----------------------------------------------------------------------------
 
+// Get a name from a value, empty if not found.
 ts::UString ts::NamesFile::ConfigSection::getName(Value val) const
+{
+    const auto entry(getEntry(val));
+    return entry != nullptr ? entry->name : UString();
+}
+
+// Get the entry for a given value, nullptr if not found.
+ts::NamesFile::ConfigEntryPtr ts::NamesFile::ConfigSection::getEntry(Value val) const
 {
     // Eliminate trivial cases which would cause issues with code below.
     if (entries.empty()) {
-        return UString();
+        return nullptr;
     }
 
     // The key in the 'entries' map is the _first_ value of a range.
@@ -422,7 +430,7 @@ ts::UString ts::NamesFile::ConfigSection::getName(Value val) const
     assert(it != entries.end());
     assert(it->second != nullptr);
 
-    return val >= it->second->first && val <= it->second->last ? it->second->name : UString();
+    return val >= it->second->first && val <= it->second->last ? it->second : nullptr;
 }
 
 
@@ -627,48 +635,49 @@ ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& section_na
 bool ts::NamesFile::valuesFromSection(std::set<Value>& all_values, const UString& section_name, Value value) const
 {
     all_values.clear();
+    const UString* secname = &section_name;
 
-    ConfigSectionPtr section;
-    UString name;
-    getName(section_name, value, section, name);
+    // Loop on inherited sections.
+    for (int levels = MAX_INHERIT; levels > 0; --levels) {
 
-    if (section == nullptr || name.empty()) {
-        // Non-existent section or no value.
-        return false;
-    }
-    else if (!section->extended) {
-        // Only one possible value.
-        all_values.insert(value);
-        return true;
-    }
+        // Get current section.
+        if (secname->empty()) {
+            break; // No more inherited section.
+        }
+        const auto it = _sections.find(NormalizedSectionName(*secname));
+        ConfigSectionPtr section(it == _sections.end() ? nullptr : it->second);
+        if (section == nullptr) {
+            break; // Non-existent section.
+        }
 
-    // Possibly several values. Loop on inherited sections.
-    for (int levels = MAX_INHERIT; levels > 0 && section != nullptr; --levels) {
+        // "Superclass" section name.
+        secname = &section->inherit;
 
-        const Value increment = Value(1) << section->bits;
-        const Value max = std::numeric_limits<Value>::max() - increment;
-
-        // Get all values in the multimap for the base value.
-        const auto bounds(section->short_entries.equal_range(value));
-        for (auto next = bounds.first; next != bounds.second; ++next) {
-            const auto& val(*next->second);
-            Value i = (val.first & ~section->mask) | (value & section->mask);
-            while (i <= val.last) {
-                all_values.insert(i);
-                if (i > max) {
-                    break; // avoid integer overflow
-                }
-                i += increment;
+        // When "Extended=false" (the default), there is only one value, the short_entries multimap is empty.
+        if (section->short_entries.empty()) {
+            // Add the target value alone if it is registered.
+            if (section->getEntry(value) != nullptr) {
+                all_values.insert(value);
             }
         }
-
-        // Loop on "superclass".
-        if (section->inherit.empty()) {
-            section = nullptr;
-        }
         else {
-            const auto it = _sections.find(NormalizedSectionName(section->inherit));
-            section = it == _sections.end() ? nullptr : it->second;
+            // There are extended values in short_entries.
+            const Value increment = Value(1) << section->bits;
+            const Value max = std::numeric_limits<Value>::max() - increment;
+
+            // Get all values in the multimap for the base value.
+            const auto bounds(section->short_entries.equal_range(value & section->mask));
+            for (auto next = bounds.first; next != bounds.second; ++next) {
+                const auto& val(*next->second);
+                Value i = (val.first & ~section->mask) | (value & section->mask);
+                while (i <= val.last) {
+                    all_values.insert(i);
+                    if (i > max) {
+                        break; // avoid integer overflow
+                    }
+                    i += increment;
+                }
+            }
         }
     }
 

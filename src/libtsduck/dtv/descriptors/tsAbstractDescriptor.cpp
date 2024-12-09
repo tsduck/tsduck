@@ -97,7 +97,7 @@ bool ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
 
         // If this is an extension descriptor, add extended tag.
         const DID etag = extendedTag();
-        if (etag != EDID_NULL) {
+        if (etag != XDID_NULL) {
             buf.putUInt8(etag);
         }
 
@@ -144,7 +144,7 @@ bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
 
         // If this is an extension descriptor, check that the expected extended tag is present in the payload.
         const DID etag = extendedTag();
-        if (etag != EDID_NULL && (buf.getUInt8() != etag || buf.error())) {
+        if (etag != XDID_NULL && (buf.getUInt8() != etag || buf.error())) {
             invalidate();
             return false;
         }

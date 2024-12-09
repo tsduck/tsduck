@@ -96,16 +96,16 @@ ts::UString ts::DIDName(DID did, NamesFlags flags, const DescriptorContext& cont
             const EDID edid(v);
             if (edid.isRegular()) {
                 const Standards edid_std = edid.standards();
-                if ((edid_std | standards) == Standards::NONE) {
-                    // No standard in the context, no standard in the EDID, any DID is a potential match.
-                    match = v;
-                    match_count++;
-                }
-                else if (bool(edid_std & standards)) {
-                    // There is an exact standard match.
+                if (bool(edid_std & standards)) {
+                    // There is one standard in common, an exact standard match.
                     final_edid = v;
                     found = true;
                     break;
+                }
+                else if (CompatibleStandards(edid_std | standards)) {
+                    // All standards are compatible, this is a potential match.
+                    match = v;
+                    match_count++;
                 }
             }
         }

@@ -256,6 +256,9 @@ namespace ts {
             // Add a new entry.
             void addEntry(Value first, Value last, const UString& name);
 
+            // Get the entry for a given value, nullptr if not found.
+            ConfigEntryPtr getEntry(Value val) const;
+
             // Get a name from a value, empty if not found.
             UString getName(Value val) const;
         };

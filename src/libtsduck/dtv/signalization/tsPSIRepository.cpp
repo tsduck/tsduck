@@ -552,3 +552,66 @@ void ts::PSIRepository::getRegisteredTablesModels(UStringList& names) const
 {
     names = _xml_extension_files;
 }
+
+
+//----------------------------------------------------------------------------
+// Dump the internal state of the PSI repository (for debug only).
+//----------------------------------------------------------------------------
+
+void ts::PSIRepository::dumpInternalState(std::ostream& out) const
+{
+    out << "TSDuck PSI Repository" << std::endl
+        << "=====================" << std::endl
+        << std::endl
+        << "TID to table class: " << _tables_by_tid.size() << std::endl;
+    for (const auto& it : _tables_by_tid) {
+        const auto& tc(*it.second);
+        out << UString::Format(u"  %X: %s, std: %s, index: %X", it.first, tc.xml_name, StandardsNames(tc.standards), tc.index.hash_code());
+        const char* sep = ", PIDS: ";
+        for (auto p : tc.pids) {
+            if (p == PID_NULL) {
+                break;
+            }
+            out << sep << UString::Format(u"%X", p);
+            sep = ", ";
+        }
+        if (tc.min_cas != CASID_NULL) {
+            out << UString::Format(u", CAS: %X-%X", tc.min_cas, tc.max_cas);
+        }
+        out << std::endl;
+    }
+    out << std::endl << "Table name to table class: " << _tables_by_name.size() << std::endl;
+    for (const auto& it : _tables_by_name) {
+        out << UString::Format(u"  %s index: %X", it.first, it.second->index.hash_code()) << std::endl;
+    }
+    out << std::endl << "XDID to descriptor class: " << _descriptors_by_xdid.size() << std::endl;
+    for (const auto& it : _descriptors_by_xdid) {
+        const auto& dc(*it.second);
+        out << UString::Format(u"  %s: %s, %s, index: %X", it.first.toString(), dc.xml_name, dc.edid.toString(), dc.index.hash_code());
+        if (!dc.legacy_xml_name.empty()) {
+            out << UString::Format(u", legacy: %s", dc.legacy_xml_name);
+        }
+        out << std::endl;
+    }
+    out << std::endl << "Descriptor name to descriptor class: " << _descriptors_by_name.size() << std::endl;
+    for (const auto& it : _descriptors_by_name) {
+        out << UString::Format(u"  %s index: %X", it.first, it.second->index.hash_code()) << std::endl;
+    }
+    out << std::endl << "Descriptor RTTI index to descriptor class: " << _descriptors_by_index.size() << std::endl;
+    for (const auto& it : _descriptors_by_index) {
+        out << UString::Format(u"  %X: %s", it.first.hash_code(), it.second->xml_name) << std::endl;
+    }
+    out << std::endl << "XML descriptor name to table id for table-specific descriptors: " << _descriptor_tids.size() << std::endl;
+    for (const auto& it : _descriptor_tids) {
+        out << UString::Format(u"  %s: %X", it.first, it.second) << std::endl;
+    }
+    out << std::endl << "Display CA Descriptor functions: " << _casid_descriptor_displays.size() << std::endl;
+    for (const auto& it : _casid_descriptor_displays) {
+        out << UString::Format(u"  CASID: %X", it.first) << std::endl;
+    }
+    out << std::endl << "XML extension files: " << _xml_extension_files.size() << std::endl;
+    for (const auto& it : _xml_extension_files) {
+        out << " - \"" << it << "\"" << std::endl;
+    }
+    out << std::endl;
+}

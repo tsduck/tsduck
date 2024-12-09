@@ -322,6 +322,12 @@ namespace ts {
             RegisterXML(const UString& filename);
         };
 
+        //!
+        //! Dump the internal state of the PSI repository (for debug only).
+        //! @param [in,out] out Output stream.
+        //!
+        void dumpInternalState(std::ostream& out) const;
+
     private:
         // Description of a table class.
         // Note: We use a fixed-size array for 'pids' instead of a PIDSet for storage efficiency.

@@ -642,6 +642,16 @@ endif::[]
 |===
 
 [.opt]
+*--dvb*
+
+[.optdoc]
+Assume that the transport stream is a DVB one.
+
+[.optdoc]
+DVB streams are normally automatically detected from their signalization.
+This option is only useful when possibly incorrect non-DVB stuff is found in the TS before the first DVB-specific table.
+
+[.opt]
 *--ignore-leap-seconds*
 
 [.optdoc]

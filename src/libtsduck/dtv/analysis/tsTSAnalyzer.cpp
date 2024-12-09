@@ -969,7 +969,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 // MPEG extension descriptor: need to look at the descriptor_tag_extension.
                 if (size >= 1) {
                     switch (data[0]) {
-                        case EDID_MPEG_LCEVC_VIDEO: {
+                        case XDID_MPEG_LCEVC_VIDEO: {
                             // The presence of this descriptor indicates an LCEVC video track.
                             ps->description = u"LCEVC Video";
                             ps->carry_video = true;
@@ -986,19 +986,19 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 // Extension descriptor: need to look at the descriptor_tag_extension.
                 if (size >= 1) {
                     switch (data[0]) {
-                        case EDID_DVB_AC4: {
+                        case XDID_DVB_AC4: {
                             // The presence of this descriptor indicates an AC-4 audio track.
                             ps->description = u"AC-4 Audio";
                             ps->carry_audio = true;
                             break;
                         }
-                        case EDID_DVB_DTS_HD_AUDIO: {
+                        case XDID_DVB_DTS_HD_AUDIO: {
                             // The presence of this descriptor indicates an DTS-HD audio track.
                             ps->description = u"DTS-HD Audio";
                             ps->carry_audio = true;
                             break;
                         }
-                        case EDID_DVB_DTS_NEURAL: {
+                        case XDID_DVB_DTS_NEURAL: {
                             // The presence of this descriptor indicates an DTS-Neural audio track.
                             ps->description = u"DTS Neural Surround Audio";
                             ps->carry_audio = true;

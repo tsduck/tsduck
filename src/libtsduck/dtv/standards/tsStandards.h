@@ -37,6 +37,15 @@ namespace ts {
     //! @return A string representing the standards.
     //!
     TSDUCKDLL UString StandardsNames(Standards standards);
+
+    //!
+    //! Check compatibility between standards.
+    //! Some standards are compatible, they can be used together. Example: MPEG and DVB.
+    //! Some standards are incompatible and cannot be used together. Example: DVB and ATSC.
+    //! @param [in] std Set of standards.
+    //! @return True if all standards in @a std are compatible with each other.
+    //!
+    TSDUCKDLL bool CompatibleStandards(Standards std);
 }
 
 TS_ENABLE_BITMASK_OPERATORS(ts::Standards);

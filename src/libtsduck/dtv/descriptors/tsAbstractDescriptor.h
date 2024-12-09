@@ -94,7 +94,7 @@ namespace ts {
 
         //!
         //! For MPEG-defined and DVB-defined extension descriptors, get the extended descriptor tag (first byte in payload).
-        //! @return The extended descriptor tag or EDID_NULL if this is not an extended descriptor.
+        //! @return The extended descriptor tag or XDID_NULL if this is not an extended descriptor.
         //!
         DID extendedTag() const;
 

@@ -12,7 +12,7 @@
 // Build the EDID for an MPEG or DVB extension descriptor.
 ts::EDID ts::EDID::Extension(XDID xdid)
 {
-    return xdid.isExtensionMPEG() ? ExtensionMPEG(xdid.edid()) : (xdid.isExtensionDVB() ? ExtensionDVB(xdid.edid()) : Regular(xdid.did(), Standards::NONE));
+    return xdid.isExtensionMPEG() ? ExtensionMPEG(xdid.xdid()) : (xdid.isExtensionDVB() ? ExtensionDVB(xdid.xdid()) : Regular(xdid.did(), Standards::NONE));
 }
 
 
@@ -35,5 +35,33 @@ bool ts::EDID::matchRegularStandards(Standards std) const
 // Build an eXtension Descriptor Id from the EDID.
 ts::XDID ts::EDID::xdid() const
 {
-    return XDID(DID(_edid & 0xFF), DID(type() == Type::EXTENDED ? ((_edid >> 8) & 0xFF) : EDID_NULL));
+    return XDID(DID(_edid & 0xFF), DID(type() == Type::EXTENDED ? ((_edid >> 8) & 0xFF) : XDID_NULL));
+}
+
+
+// Convert to a string object.
+ts::UString ts::EDID::toString() const
+{
+    UString s;
+    s.format(u"DID: %X", did());
+    switch (type()) {
+        case Type::REGULAR:
+            s.append(u", regular");
+            break;
+        case Type::PRIVATE:
+            s.format(u", private: %X", privateId());
+            break;
+        case Type::EXTENDED:
+            s.format(u", extension: %X", didExtension());
+            break;
+        case Type::TABLE_SPEC:
+            s.format(u", table-specific: %X", tableId());
+            break;
+        case Type::INVALID:
+        default:
+            s.format(u", invalid: ", _edid);
+            break;
+    }
+    s.format(u", std: %s", StandardsNames(standards()));
+    return s;
 }

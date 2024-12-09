@@ -375,16 +375,16 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
                         switch (dsc->payload()[0]) {
-                            case EDID_MPEG_HEVC_TIM_HRD:
-                            case EDID_MPEG_HEVC_OP_POINT:
-                            case EDID_MPEG_HEVC_HIER_EXT:
+                            case XDID_MPEG_HEVC_TIM_HRD:
+                            case XDID_MPEG_HEVC_OP_POINT:
+                            case XDID_MPEG_HEVC_HIER_EXT:
                                 return CodecType::HEVC;
-                            case EDID_MPEG_VVC_TIM_HRD:
+                            case XDID_MPEG_VVC_TIM_HRD:
                                 return CodecType::VVC;
-                            case EDID_MPEG_EVC_TIM_HRD:
+                            case XDID_MPEG_EVC_TIM_HRD:
                                 return CodecType::EVC;
-                            case EDID_MPEG_LCEVC_VIDEO:
-                            case EDID_MPEG_LCEVC_LINKAGE:
+                            case XDID_MPEG_LCEVC_VIDEO:
+                            case XDID_MPEG_LCEVC_LINKAGE:
                                 return CodecType::LCEVC;
                             default:
                                 break;
@@ -396,13 +396,13 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
                         switch (dsc->payload()[0]) {
-                            case EDID_DVB_DTS_NEURAL:
+                            case XDID_DVB_DTS_NEURAL:
                                 return CodecType::DTS;
-                            case EDID_DVB_DTS_HD_AUDIO:
+                            case XDID_DVB_DTS_HD_AUDIO:
                                 return CodecType::DTSHD;
-                            case EDID_DVB_AC4:
+                            case XDID_DVB_AC4:
                                 return CodecType::AC4;
-                            case EDID_DVB_VVC_SUBPICTURES:
+                            case XDID_DVB_VVC_SUBPICTURES:
                                 return CodecType::VVC;
                             default:
                                 break;

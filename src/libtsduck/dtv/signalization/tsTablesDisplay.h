@@ -450,15 +450,16 @@ namespace ts {
         // A class implementing DescriptorContext to search for private descriptors registration ids in raw descriptor lists.
         class RawContext: public DescriptorContext
         {
-            TS_DEFAULT_COPY_MOVE(RawContext);
+            TS_NOBUILD_NOCOPY(RawContext);
         private:
-            REGID _regid = REGID_NULL;
-            PDS   _pds = PDS_NULL;
-            bool  _regid_is_last = false;
+            const DuckContext& _duck;
+            REGID              _regid = REGID_NULL;
+            PDS                _pds = PDS_NULL;
+            bool               _regid_is_last = false;
 
         public:
             // Constructor.
-            RawContext(const Section&, CASID);
+            RawContext(const DuckContext&, const Section&, CASID);
 
             // Update REGID and PDS from a descriptor.
             void updateIdentifiers(const Descriptor&);

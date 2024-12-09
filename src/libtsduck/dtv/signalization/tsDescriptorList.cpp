@@ -940,35 +940,31 @@ bool ts::DescriptorList::fromXML(DuckContext& duck, xml::ElementVector& others, 
     clear();
     others.clear();
 
-    // Analyze all children nodes.
+    // Analyze all children nodes. Most of them are descriptors.
     for (const xml::Element* node = parent == nullptr ? nullptr : parent->firstChildElement(); node != nullptr; node = node->nextSiblingElement()) {
 
         DescriptorPtr bin = std::make_shared<Descriptor>();
 
-        // Try to analyze the XML element.
-        if (bin->fromXML(duck, node, tableId())) {
+        if (node->name().isContainedSimilarIn(allowedOthers)) {
+            // The tag is not a descriptor name, this is one of the allowed other node.
+            others.push_back(node);
+        }
+        else if (node->name().similar(u"metadata")) {
+            // Always ignore <metadata> nodes.
+        }
+        else if (!bin->fromXML(duck, node, tableId())) {
+            // Failed to analyze the node as a descriptor.
+            parent->report().error(u"Illegal <%s> at line %d", node->name(), node->lineNumber());
+            success = false;
+        }
+        else if (bin->isValid()) {
             // The XML tag is a valid descriptor name.
-            if (bin->isValid()) {
-                add(bin);
-            }
-            else {
-                // The XML name is correct but the XML structure failed to produce a valid descriptor.
-                parent->report().error(u"Error in descriptor <%s> at line %d", node->name(), node->lineNumber());
-                success = false;
-            }
+            add(bin);
         }
         else {
-            // The tag is not a descriptor name, check if this is one of the allowed node.
-            if (node->name().isContainedSimilarIn(allowedOthers)) {
-                others.push_back(node);
-            }
-            else if (node->name().similar(u"metadata")) {
-                // Always ignore <metadata> nodes.
-            }
-            else {
-                parent->report().error(u"Illegal <%s> at line %d", node->name(), node->lineNumber());
-                success = false;
-            }
+            // The XML name is correct but the XML structure failed to produce a valid descriptor.
+            parent->report().error(u"Error in descriptor <%s> at line %d", node->name(), node->lineNumber());
+            success = false;
         }
     }
     return success;

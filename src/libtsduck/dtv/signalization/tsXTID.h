@@ -1,3 +1,4 @@
+
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
@@ -102,5 +103,13 @@ namespace ts {
         //! @return True is this object >= @a e.
         //!
         bool operator>=(const XTID& e) const { return _xtid >= e._xtid; }
+
+        //!
+        //! Convert to a string object.
+        //! Note: The XTID class does not implement StringifyInterface because we don't want to
+        //! make it virtual and keep the instance size small, without vtable pointer.
+        //! @return This object, converted as a string.
+        //!
+        UString toString() const;
     };
 }

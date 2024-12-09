@@ -207,7 +207,7 @@ namespace ts {
             return EDID(0x000000FFFFFF0000 |
                         (uint64_t(Type::TABLE_SPEC) << 40) |
                         (uint64_t(std) << 48) |
-                        (uint64_t(tid & 0xFF) << 0) |
+                        (uint64_t(tid & 0xFF) << 8) |
                         (did & 0xFF));
         }
 
@@ -272,6 +272,12 @@ namespace ts {
         PDS pds() const { return isPrivateDVB() ? PDS(_edid >> 8) : PDS(PDS_NULL); }
 
         //!
+        //! Get the MPEG registration identifier or DVB private data specifier.
+        //! @return The REGID/PDS or REGID_NULL if this is not a private descriptor.
+        //!
+        REGID privateId() const { return type() == Type::PRIVATE ? REGID(_edid >> 8) : REGID(REGID_NULL); }
+
+        //!
         //! Check if the descriptor is an MPEG extension descriptor.
         //! @return True if the descriptor is an MPEG extension descriptor.
         //!
@@ -291,21 +297,21 @@ namespace ts {
 
         //!
         //! Get the MPEG descriptor tag extension.
-        //! @return The descriptor tag extension or EDID_NULL if this is not an MPEG extension descriptor.
+        //! @return The descriptor tag extension or XDID_NULL if this is not an MPEG extension descriptor.
         //!
-        DID didExtMPEG() const { return did() == DID_MPEG_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+        DID didExtMPEG() const { return did() == DID_MPEG_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(XDID_NULL); }
 
         //!
         //! Get the DVB descriptor tag extension.
-        //! @return The descriptor tag extension or EDID_NULL if this is not a DVB extension descriptor.
+        //! @return The descriptor tag extension or XDID_NULL if this is not a DVB extension descriptor.
         //!
-        DID didExtDVB() const { return did() == DID_DVB_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+        DID didExtDVB() const { return did() == DID_DVB_EXTENSION ? DID((_edid >> 8) & 0xFF) : DID(XDID_NULL); }
 
         //!
         //! Get the MPEG or DVB descriptor tag extension.
-        //! @return The descriptor tag extension or EDID_NULL if this is not an extension descriptor.
+        //! @return The descriptor tag extension or XDID_NULL if this is not an extension descriptor.
         //!
-        DID didExtension() const { return type() == Type::EXTENDED ? DID((_edid >> 8) & 0xFF) : DID(EDID_NULL); }
+        DID didExtension() const { return type() == Type::EXTENDED ? DID((_edid >> 8) & 0xFF) : DID(XDID_NULL); }
 
         //!
         //! Check if the descriptor is table-specific.
@@ -383,5 +389,13 @@ namespace ts {
         //! @return True is this object >= @a e.
         //!
         bool operator>=(const EDID& e) const { return _edid >= e._edid; }
+
+        //!
+        //! Convert to a string object.
+        //! Note: The EDID class does not implement StringifyInterface because we don't want to
+        //! make it virtual and keep the instance size small, without vtable pointer.
+        //! @return This object, converted as a string.
+        //!
+        UString toString() const;
     };
 }

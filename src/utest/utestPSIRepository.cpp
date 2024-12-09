@@ -22,6 +22,7 @@
 
 class PSIRepositoryTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(DataTypes);
     TSUNIT_DECLARE_TEST(Registrations);
     TSUNIT_DECLARE_TEST(SharedTID);
 };
@@ -32,6 +33,19 @@ TSUNIT_REGISTER(PSIRepositoryTest);
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
+
+TSUNIT_DEFINE_TEST(DataTypes)
+{
+    // These types are supposed to be compact.
+    TSUNIT_ASSUME(sizeof(ts::XTID) == 4);
+    TSUNIT_ASSUME(sizeof(ts::XDID) == 2);
+    TSUNIT_ASSUME(sizeof(ts::EDID) == 8);
+
+    // Dump PSI Repository internal state in debug mode.
+    if (debugMode()) {
+        ts::PSIRepository::Instance().dumpInternalState(debug());
+    }
+}
 
 TSUNIT_DEFINE_TEST(Registrations)
 {

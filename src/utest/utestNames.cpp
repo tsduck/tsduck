@@ -275,9 +275,9 @@ TSUNIT_DEFINE_TEST(DID)
 
 TSUNIT_DEFINE_TEST(XDID)
 {
-    TSUNIT_EQUAL(u"Green Extension", ts::XDIDNameMPEG(ts::EDID_MPEG_GREEN_EXT));
-    TSUNIT_EQUAL(u"0x08 (MPEG-H 3D Audio)", ts::XDIDNameMPEG(ts::EDID_MPEG_MPH3D_AUDIO, ts::NamesFlags::FIRST));
-    TSUNIT_EQUAL(u"T2 Delivery System", ts::XDIDNameDVB(ts::EDID_DVB_T2_DELIVERY));
+    TSUNIT_EQUAL(u"Green Extension", ts::XDIDNameMPEG(ts::XDID_MPEG_GREEN_EXT));
+    TSUNIT_EQUAL(u"0x08 (MPEG-H 3D Audio)", ts::XDIDNameMPEG(ts::XDID_MPEG_MPH3D_AUDIO, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"T2 Delivery System", ts::XDIDNameDVB(ts::XDID_DVB_T2_DELIVERY));
     TSUNIT_EQUAL(u"0xAA (unknown)", ts::XDIDNameDVB(0xAA, ts::NamesFlags::FIRST));
 }
 

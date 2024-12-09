@@ -356,17 +356,6 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"By default, DVB encoding using ISO-6937 as default table is used. "
                   u"The available table names are " +
                   UString::Join(DVBCharset::GetAllNames()) + u".");
-
-        args.option(u"europe");
-        args.help(u"europe",
-                  u"A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut "
-                  u"for commonly incorrect signalization on some European satellites. In that "
-                  u"signalization, the character encoding is ISO-8859-15, the most common "
-                  u"encoding for Latin & Western Europe languages. However, this is not the "
-                  u"default DVB character set and it should be properly specified in all "
-                  u"strings, which is not the case with some operators. Using this option, "
-                  u"all DVB strings without explicit table code are assumed to use ISO-8859-15 "
-                  u"instead of the standard ISO-6937 encoding.");
     }
 
     // Options relating to default standards.
@@ -386,6 +375,13 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"useful when ATSC-related stuff are found in the TS before the first "
                   u"ATSC-specific table. For instance, when a PMT with ATSC-specific "
                   u"descriptors is found before the first ATSC MGT or VCT.");
+
+        args.option(u"dvb");
+        args.help(u"dvb",
+                  u"Assume that the transport stream is a DVB one. "
+                  u"DVB streams are normally automatically detected from their signalization. "
+                  u"This option is only useful when possibly incorrect non-DVB stuff are found "
+                  u"in the TS before the first DVB-specific table.");
 
         args.option(u"isdb");
         args.help(u"isdb",
@@ -437,6 +433,31 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"This is typically used in ARIB ISDB and ABNT ISDB-Tb standards. "
                   u"The specified name can be either 'UTC', 'JST' (Japan Standard Time) or 'UTC+|-hh[:mm]'. "
                   u"Examples: 'UTC+9' (same as 'JST' for ARIB ISDB), 'UTC-3' (for ABNT ISDB-Tb in Brazil).");
+    }
+
+    // Option --europe triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
+
+        // Build help text for --europe option. It depends on which set of options is requested.
+        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        UStringList options;
+        UString other;
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            options.push_back(u"--dvb");
+        }
+        if (_definedCmdOptions & CMD_CHARSET) {
+            options.push_back(u"--default-charset ISO-8859-15");
+            other = u" This is a handy shortcut for commonly incorrect signalization on some European satellites. "
+                    u"In that signalization, the character encoding is ISO-8859-15, "
+                    u"the most common encoding for Latin & Western Europe languages. "
+                    u"However, this is not the default DVB character set and it should be properly specified in all strings, "
+                    u"which is not the case with some operators. "
+                    u"Using this option, all DVB strings without explicit table code are assumed to use ISO-8859-15 "
+                    u"instead of the standard ISO-6937 encoding.";
+        }
+        args.option(u"europe");
+        args.help(u"europe",
+                  u"A synonym for '" + UString::Join(options, u" ") + u"'." + other);
     }
 
     // Option --japan triggers different options in different sets of options.
@@ -592,6 +613,9 @@ bool ts::DuckContext::loadArgs(Args& args)
 
     // Options relating to default standards.
     if (_definedCmdOptions & CMD_STANDARDS) {
+        if (args.present(u"dvb")) {
+            _cmdStandards |= Standards::DVB;
+        }
         if (args.present(u"atsc") || args.present(u"usa")) {
             _cmdStandards |= Standards::ATSC;
         }

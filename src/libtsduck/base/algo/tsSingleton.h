@@ -188,8 +188,8 @@ namespace ts {
 //! @a ObjectArgs is a list of two parameters <code>(4, '=')</code>.
 //!
 //! @code
-//! TS_STATIC_INSTANCE(std::string, (), Foo1)
-//! TS_STATIC_INSTANCE(std::string, (4, '='), Foo2)
+//! TS_STATIC_INSTANCE(const, std::string, Foo1, ());
+//! TS_STATIC_INSTANCE(const, std::string, Foo2, (4, '='));
 //! ....
 //! std::cout << "Foo1: " << *Foo1 << std::endl;
 //! std::cout << "Foo2: " << *Foo2 << std::endl;

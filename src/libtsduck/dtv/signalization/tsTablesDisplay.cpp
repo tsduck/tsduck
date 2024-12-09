@@ -647,7 +647,7 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
     std::ostream& strm(_duck.out());
     const uint8_t* desc_start = reinterpret_cast<const uint8_t*>(data);
     size_t desc_index = 0;
-    RawContext context(section, _duck.casId(cas));
+    RawContext context(_duck, section, cas);
 
     // Loop across all descriptors
     while (size >= 2) {  // descriptor header size
@@ -655,17 +655,17 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
         // Get descriptor header
         const uint8_t desc_tag = desc_start[0];
         const size_t desc_length = desc_start[1];
+        desc_start += 2;
+        size -= 2;
 
         // Check that the descriptor is complete. Abort descriptor list if not.
-        if (size < 2 + desc_length) {
+        if (size < desc_length) {
             strm << margin << "- Invalid descriptor length: " << desc_length << " (" << size << " bytes allocated)" << std::endl;
             break;
         }
 
         // Build a descriptor object.
-        Descriptor desc(desc_start, 2 + desc_length);
-        desc_start += 2;
-        size -= 2;
+        Descriptor desc(desc_start - 2, 2 + desc_length);
 
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
@@ -993,8 +993,9 @@ void ts::TablesDisplay::displayVector(const UString& title, const UStringVector&
 //----------------------------------------------------------------------------
 
 // Constructor.
-ts::TablesDisplay::RawContext::RawContext(const Section& section, CASID cas) :
-    DescriptorContext(section.tableId(), section.definingStandards(), cas)
+ts::TablesDisplay::RawContext::RawContext(const DuckContext& duck, const Section& section, CASID cas) :
+    DescriptorContext(section.tableId(), duck.standards() | section.definingStandards(), duck.casId(cas)),
+    _duck(duck)
 {
 }
 
@@ -1018,7 +1019,7 @@ bool ts::TablesDisplay::RawContext::getPrivateIds(REGID* regid, PDS* pds) const
         *regid = _regid;
     }
     if (pds != nullptr) {
-        *pds = _pds;
+        *pds = _duck.actualPDS(_pds);
     }
     return _regid_is_last && regid != nullptr && _pds != PDS_NULL && pds != nullptr;
 }
