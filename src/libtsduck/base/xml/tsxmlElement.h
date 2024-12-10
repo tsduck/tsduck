@@ -71,7 +71,7 @@ namespace ts {
             //! This is the same as parent()->name() without error when there is not parent.
             //! @return A constant reference to the parent name or to an empty string if there is no parent.
             //!
-            const UString& parentName() const { return parent() == nullptr ? UString::EMPTY : parent()->value(); }
+            const UString& parentName() const;
 
             //!
             //! Check if two XML elements have the same name, case-insensitive.

@@ -28,9 +28,13 @@ TS_STATIC_INSTANCE(const, ts::PSIRepository::DescriptorClass, NullDescriptorClas
 ts::PSIRepository::PSIRepository()
 {
     // Load all table names from a names file.
+    std::cout << "=== @@@@@ PSIRepository() start" << std::endl; dumpInternalState(std::cout);
     const auto repo = NamesFile::Instance(NamesFile::Predefined::DTV);
-    repo->valuesFromSection(TableVisitor(), u"TableId");
-    repo->valuesFromSection(DescriptorVisitor(), u"DescriptorId");
+    std::cout << "=== @@@@@ PSIRepository() names loaded" << std::endl; dumpInternalState(std::cout);
+    repo->valuesFromSection(TableVisitor(*this), u"TableId");
+    std::cout << "=== @@@@@ PSIRepository() TID loaded" << std::endl; dumpInternalState(std::cout);
+    repo->valuesFromSection(DescriptorVisitor(*this), u"DescriptorId");
+    std::cout << "=== @@@@@ PSIRepository() DID loaded" << std::endl; dumpInternalState(std::cout);
 }
 
 
@@ -188,8 +192,6 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFun
 
 bool ts::PSIRepository::TableVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
 {
-    PSIRepository& repo(PSIRepository::Instance());
-
     // Decode the extended table id.
     const Standards std = Standards((value >> 16) & 0xFFFF);
     const CASFamily cas = CASFamily((value >> 8) & 0xFF);
@@ -200,7 +202,7 @@ bool ts::PSIRepository::TableVisitor::handleNameValue(NamesFile::Value value, co
 
     // Update existing entries.
     bool existed = false;
-    const auto bounds(repo._tables_by_tid.equal_range(tid));
+    const auto bounds(_repo._tables_by_tid.equal_range(tid));
     for (auto it = bounds.first; it != bounds.second; ++it) {
         const auto& tc(it->second);
         if ((std == tc->standards || bool(std & tc->standards)) && min_cas >= tc->min_cas && max_cas <= tc->max_cas) {
@@ -217,7 +219,7 @@ bool ts::PSIRepository::TableVisitor::handleNameValue(NamesFile::Value value, co
         tc->min_cas = min_cas;
         tc->max_cas = max_cas;
         tc->display_name = name;
-        repo._tables_by_tid.insert(std::make_pair(tid, tc));
+        _repo._tables_by_tid.insert(std::make_pair(tid, tc));
     }
 
     // Continue visting the table names.
@@ -231,14 +233,12 @@ bool ts::PSIRepository::TableVisitor::handleNameValue(NamesFile::Value value, co
 
 bool ts::PSIRepository::DescriptorVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
 {
-    PSIRepository& repo(PSIRepository::Instance());
-
     // The value is an EDID.
     const EDID edid(value);
 
     // Update existing entries.
     bool existed = false;
-    const auto bounds(repo._descriptors_by_xdid.equal_range(edid.xdid()));
+    const auto bounds(_repo._descriptors_by_xdid.equal_range(edid.xdid()));
     for (auto it = bounds.first; it != bounds.second; ++it) {
         if (it->second->edid == edid) {
             // Found a compatible entry.
@@ -252,7 +252,7 @@ bool ts::PSIRepository::DescriptorVisitor::handleNameValue(NamesFile::Value valu
         DescriptorClassPtr dc = std::make_shared<DescriptorClass>();
         dc->edid = edid;
         dc->display_name = name;
-        repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
+        _repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
     }
 
     // Continue visting the descriptor names.
@@ -604,7 +604,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         << "TID to table class: " << _tables_by_tid.size() << std::endl;
     for (const auto& it : _tables_by_tid) {
         const auto& tc(*it.second);
-        out << UString::Format(u"  %X: %s, std: %s, index: %X", it.first, tc.xml_name, StandardsNames(tc.standards), tc.index.hash_code());
+        out << UString::Format(u"  %X: '%s' <%s>, std: %s, index: %X", it.first, tc.display_name, tc.xml_name, StandardsNames(tc.standards), tc.index.hash_code());
         const char* sep = ", PIDS: ";
         for (auto p : tc.pids) {
             out << sep << UString::Format(u"%X", p);
@@ -622,7 +622,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
     out << std::endl << "XDID to descriptor class: " << _descriptors_by_xdid.size() << std::endl;
     for (const auto& it : _descriptors_by_xdid) {
         const auto& dc(*it.second);
-        out << UString::Format(u"  %s: %s, %s, index: %X", it.first.toString(), dc.xml_name, dc.edid.toString(), dc.index.hash_code());
+        out << UString::Format(u"  %s: '%s' <%s>, %s, index: %X", it.first.toString(), dc.display_name, dc.xml_name, dc.edid.toString(), dc.index.hash_code());
         if (!dc.legacy_xml_name.empty()) {
             out << UString::Format(u", legacy: %s", dc.legacy_xml_name);
         }

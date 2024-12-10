@@ -16,29 +16,10 @@
 #include "tsByteBlock.h"
 #include "tsEnvironment.h"
 #include "tsIntegerUtils.h"
-#include "tsSingleton.h"
 #include "tsEnumeration.h"
 
-// The UTF-8 Byte Order Mark
-const char* const ts::UString::UTF8_BOM = "\xEF\xBB\xBF";
-
-// End-of-line sequence for the operating system..
-const ts::UString ts::UString::EOL
-#if defined(TS_WINDOWS)
-    ("\r\n");
-#else
-    ("\n");
-#endif
-
-// Default separator string for groups of thousands, a comma.
-const ts::UString ts::UString::DEFAULT_THOUSANDS_SEPARATOR(1, u',');
-
-// A reference empty string.
-const ts::UString ts::UString::EMPTY;
-
-// The default list of characters to be protected by quoted().
-const ts::UString ts::UString::DEFAULT_SPECIAL_CHARACTERS(u"\"'`;$*?&(){}[]");
-const ts::UString ts::UString::DEFAULT_QUOTE_CHARACTERS(u"\"'");
+// A static empty string.
+TS_DEFINE_GLOBAL(const, ts::UString, ts::EMPTY_STRING, ());
 
 
 //----------------------------------------------------------------------------
@@ -1567,20 +1548,18 @@ bool ts::UString::getLine(std::istream& strm)
 // Convert a string into a bool value.
 //----------------------------------------------------------------------------
 
-namespace {
-    const ts::Enumeration BoolEnum({
-        {u"false",   0},
-        {u"true",    1},
-        {u"yes",     1},
-        {u"no",      0},
-        {u"on",      1},
-        {u"off",     0},
-    });
-}
+TS_STATIC_INSTANCE(const, ts::Enumeration, BoolEnum, ({
+    {u"false", 0},
+    {u"true",  1},
+    {u"yes",   1},
+    {u"no",    0},
+    {u"on",    1},
+    {u"off",   0},
+}));
 
 bool ts::UString::toBool(bool& value) const
 {
-    const int iValue = BoolEnum.value(*this, false);
+    const int iValue = BoolEnum->value(*this, false);
 
     if (iValue == Enumeration::UNKNOWN) {
         // Invalid string and invalid integer.
@@ -1612,26 +1591,26 @@ namespace {
         TSE_UNKNOWN,
         TSE_LAST  // Last predefined value
     };
-    const ts::Enumeration TristateEnum({
-        {u"false",   TSE_FALSE},
-        {u"true",    TSE_TRUE},
-        {u"yes",     TSE_YES},
-        {u"no",      TSE_NO},
-        {u"on",      TSE_ON},
-        {u"off",     TSE_OFF},
-        {u"maybe",   TSE_MAYBE},
-        {u"unknown", TSE_UNKNOWN},
-    });
 }
+TS_STATIC_INSTANCE(const, ts::Enumeration, TristateEnum, ({
+    {u"false",   TSE_FALSE},
+    {u"true",    TSE_TRUE},
+    {u"yes",     TSE_YES},
+    {u"no",      TSE_NO},
+    {u"on",      TSE_ON},
+    {u"off",     TSE_OFF},
+    {u"maybe",   TSE_MAYBE},
+    {u"unknown", TSE_UNKNOWN},
+}));
 
 ts::UString ts::UString::TristateNamesList()
 {
-    return TristateEnum.nameList();
+    return TristateEnum->nameList();
 }
 
 bool ts::UString::toTristate(Tristate& value) const
 {
-    const int iValue = TristateEnum.value(*this, false);
+    const int iValue = TristateEnum->value(*this, false);
 
     if (iValue == Enumeration::UNKNOWN) {
         // Invalid string and invalid integer.
@@ -2126,7 +2105,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
 
     // The thousands separator to use.
-    const UString& separator(useSeparator ? DEFAULT_THOUSANDS_SEPARATOR : EMPTY);
+    const UString separator(useSeparator ? DEFAULT_THOUSANDS_SEPARATOR : u"");
     const UChar separatorChar = useSeparator ? COMMA : CHAR_NULL;
 
     // The available '%' sequences are:

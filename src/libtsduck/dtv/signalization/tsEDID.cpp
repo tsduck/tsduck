@@ -35,7 +35,7 @@ bool ts::EDID::matchRegularStandards(Standards std) const
 // Build an eXtension Descriptor Id from the EDID.
 ts::XDID ts::EDID::xdid() const
 {
-    return XDID(DID(_edid & 0xFF), DID(type() == Type::EXTENDED ? ((_edid >> 8) & 0xFF) : XDID_NULL));
+    return XDID(DID(_edid & 0xFF), type() == Type::EXTENDED ? DID((_edid >> 8) & 0xFF) : DID(XDID_NULL));
 }
 
 

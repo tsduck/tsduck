@@ -15,6 +15,7 @@
 #include "tsUChar.h"
 #include "tsArgMix.h"
 #include "tsMemory.h"
+#include "tsSingleton.h"
 
 //!
 //! Do not declare legacy method as "deprecated".
@@ -144,7 +145,7 @@ namespace ts {
         //!
         //! The 3-byte so-called "UTF-8 Byte Order Mark".
         //!
-        static const char* const UTF8_BOM;
+        static constexpr const char* UTF8_BOM = "\xEF\xBB\xBF";
 
         //!
         //! Size in bytes of the so-called "UTF-8 Byte Order Mark".
@@ -159,17 +160,17 @@ namespace ts {
         //!
         //! End-of-line sequence for the operating system.
         //!
-        static const UString EOL;
+        static constexpr const UChar* EOL =
+#if defined(TS_WINDOWS)
+            u"\r\n";
+#else
+            u"\n";
+#endif
 
         //!
         //! Default separator string for groups of thousands, a comma.
         //!
-        static const UString DEFAULT_THOUSANDS_SEPARATOR;
-
-        //!
-        //! A reference empty string.
-        //!
-        static const UString EMPTY;
+        static constexpr const UChar* DEFAULT_THOUSANDS_SEPARATOR = u",";
 
         //!
         //! Default line width for the Hexa() family of methods.
@@ -1216,12 +1217,12 @@ namespace ts {
         //!
         //! The default list of characters to be protected by quoted().
         //!
-        static const UString DEFAULT_SPECIAL_CHARACTERS;
+        static constexpr const UChar* DEFAULT_SPECIAL_CHARACTERS = u"\"'`;$*?&(){}[]";
 
         //!
         //! The default list of acceptable quote characters.
         //!
-        static const UString DEFAULT_QUOTE_CHARACTERS;
+        static constexpr const UChar* DEFAULT_QUOTE_CHARACTERS = u"\"'";
 
         //!
         //! Replace the string with a "quoted" version of it.
@@ -2611,6 +2612,12 @@ namespace ts {
             bool processField();
         };
     };
+
+    //!
+    //! A static empty string.
+    //! Can be used when a reference to a static empty string is required.
+    //!
+    TS_DECLARE_GLOBAL(const, UString, EMPTY_STRING);
 }
 
 //!

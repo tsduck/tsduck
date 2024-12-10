@@ -355,14 +355,20 @@ namespace ts {
         // Load all table names from DTV names file.
         class TableVisitor : public NamesFile::Visitor
         {
+        private:
+            PSIRepository& _repo;
         public:
+            TableVisitor(PSIRepository& repo) : _repo(repo) {}
             virtual bool handleNameValue(NamesFile::Value value, const UString& name) const override;
         };
 
         // Load all descriptor names from DTV names file.
         class DescriptorVisitor : public NamesFile::Visitor
         {
+        private:
+            PSIRepository& _repo;
         public:
+            DescriptorVisitor(PSIRepository& repo) : _repo(repo) {}
             virtual bool handleNameValue(NamesFile::Value value, const UString& name) const override;
         };
     };

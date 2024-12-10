@@ -57,6 +57,16 @@ void ts::xml::Element::clear()
 
 
 //----------------------------------------------------------------------------
+// Get the parent name.
+//----------------------------------------------------------------------------
+
+const ts::UString& ts::xml::Element::parentName() const
+{
+    return parent() == nullptr ? *EMPTY_STRING : parent()->value();
+}
+
+
+//----------------------------------------------------------------------------
 // Find the first child element by name, case-insensitive.
 //----------------------------------------------------------------------------
 
