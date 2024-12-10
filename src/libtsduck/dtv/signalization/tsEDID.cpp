@@ -28,7 +28,7 @@ bool ts::EDID::matchTableSpecific(TID tid, Standards std) const
 // If the regular descriptor has declared no standard, then it matches by default.
 bool ts::EDID::matchRegularStandards(Standards std) const
 {
-    return isRegular() && (!std || !standards() || bool(std & standards()));
+    return isRegular() && CompatibleStandards(std | standards());
 }
 
 

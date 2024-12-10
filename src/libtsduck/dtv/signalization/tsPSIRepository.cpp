@@ -20,47 +20,8 @@ const std::type_index ts::PSIRepository::null_index = std::type_index(typeid(std
 // Singleton empty constructor.
 ts::PSIRepository::PSIRepository() {}
 
-
-//----------------------------------------------------------------------------
-// Table class description.
-//----------------------------------------------------------------------------
-
-// Constructor.
-ts::PSIRepository::TableClass::TableClass()
-{
-    for (size_t i = 0; i < pids.size(); ++i) {
-        pids[i] = PID_NULL;
-    }
-}
-
-// Check if a PID is present in a table description.
-bool ts::PSIRepository::TableClass::hasPID(PID pid) const
-{
-    if (pid != PID_NULL) {
-        for (size_t i = 0; i < pids.size() && pids[i] != PID_NULL; ++i) {
-            if (pid == pids[i]) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-// Add more PIDs in a table description.
-void ts::PSIRepository::TableClass::addPIDs(std::initializer_list<PID> more_pids)
-{
-    for (auto it : more_pids) {
-        if (it != PID_NULL) {
-            size_t i = 0;
-            while (i < pids.size() && pids[i] != PID_NULL && pids[i] != it) {
-                ++i;
-            }
-            if (i < pids.size()) {
-                pids[i] = it;
-            }
-        }
-    }
-}
+TS_STATIC_INSTANCE(const, ts::PSIRepository::TableClass, NullTableClass, ());
+TS_STATIC_INSTANCE(const, ts::PSIRepository::DescriptorClass, NullDescriptorClass, ());
 
 
 //----------------------------------------------------------------------------
@@ -102,7 +63,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
     tc->display = display;
     tc->log = log;
     tc->xml_name = xml_name;
-    tc->addPIDs(pids);
+    tc->pids.insert(pids);
 
     // Store the table description for each table id and XML name.
     for (auto it : tids) {
@@ -179,15 +140,13 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFun
 
 
 //----------------------------------------------------------------------------
-// Lookup a table function by table id, using standards and CAS id.
+// Get the description of a table class for a given table id and context.
 //----------------------------------------------------------------------------
 
-template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
-FUNCTION ts::PSIRepository::getTableFunction(TID tid, const SectionContext& context, FUNCTION TableClass::* member) const
+const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(TID tid, const SectionContext& context) const
 {
-    // Try to find an exact match with standard and CAS id.
-    // Otherwise, will use a fallback once for same tid.
-    FUNCTION fallback_func = nullptr;
+    // Try to find an exact match with standard and CAS id. Otherwise, will use a fallback once for same tid.
+    TableClassPtr fallback = nullptr;
     size_t fallback_count = 0;
 
     const PID pid = context.getPID();
@@ -199,36 +158,32 @@ FUNCTION ts::PSIRepository::getTableFunction(TID tid, const SectionContext& cont
 
     // Look for an exact match.
     for (auto it = bounds.first; it != bounds.second; ++it) {
-        const auto& tc(*it->second);
+        const auto& tc(it->second);
 
-        // Ignore entries for which the searched function is not present.
-        if (tc.*member != nullptr) {
+        // If the table is in a standard PID, this is an exact match.
+        if (Contains(tc->pids, pid)) {
+            return *tc;
+        }
 
-            // If the table is in a standard PID, this is an exact match.
-            if (tc.hasPID(pid)) {
-                return tc.*member;
-            }
+        // Standard match: at least one standard of the table is current, or standard-agnostic table (Standards::NONE).
+        const bool std_match = bool(standards & tc->standards) || tc->standards == Standards::NONE;
 
-            // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
-            const bool cas_match = cas >= tc.min_cas && cas <= tc.max_cas;
+        // CAS match: either a CAS is specified and is in range, or no CAS specified and CAS-agnostic table (all CASID_NULL).
+        const bool cas_match = cas >= tc->min_cas && cas <= tc->max_cas;
 
-            // Standard match: at least one standard of the table is current, or standard-agnostic table (Standards::NONE).
-            const bool std_match = bool(standards & tc.standards) || tc.standards == Standards::NONE;
-
-            if (std_match && cas_match) {
-                // Found an exact match, no need to search further.
-                return tc.*member;
-            }
-            else if (tc.min_cas == CASID_NULL) {
-                // Not the right standard but a CAS-agnostic table, use as potential fallback.
-                fallback_func = tc.*member;
-                fallback_count++;
-            }
+        if (std_match && cas_match) {
+            // Found an exact match, no need to search further.
+            return *tc;
+        }
+        else if (tc->min_cas == CASID_NULL) {
+            // Not the right standard but a CAS-agnostic table, use as potential fallback.
+            fallback = tc;
+            fallback_count++;
         }
     }
 
     // If no exact match was found, use a fallback if there is only one (no ambiguity).
-    return fallback_count == 1 ? fallback_func : nullptr;
+    return fallback_count == 1 ? *fallback : *NullTableClass;
 }
 
 
@@ -236,29 +191,29 @@ FUNCTION ts::PSIRepository::getTableFunction(TID tid, const SectionContext& cont
 // Search a descriptor class from its EDID.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(EDID edid) const
+const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(EDID edid) const
 {
     // Get the range of XDID entries for this family of descriptors.
     const auto bounds(_descriptors_by_xdid.equal_range(edid.xdid()));
 
     // If the bounds are equal, no element matches, unknown descritor.
     if (bounds.first == bounds.second) {
-        return nullptr;
+        return *NullDescriptorClass;
     }
 
     // If there is only one descriptor, use it without further analysis.
     auto next = bounds.first;
     if (++next == bounds.second) {
-        return bounds.first->second;
+        return *bounds.first->second;
     }
 
     // If there are several descriptor, search for an exact EDID match.
     for (next = bounds.first; next != bounds.second; ++next) {
         if (next->second->edid == edid) {
-            return next->second;
+            return *next->second;
         }
     }
-    return nullptr; // ambiguous descriptor
+    return *NullDescriptorClass; // ambiguous descriptor
 }
 
 
@@ -266,20 +221,20 @@ ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(EDID edid
 // Search a descriptor class from the context.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(XDID xdid, const DescriptorContext& context) const
+const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(XDID xdid, const DescriptorContext& context) const
 {
     // Get the range of XDID entries for this family of descriptors.
     const auto bounds(_descriptors_by_xdid.equal_range(xdid));
 
     // If the bounds are equal, no element matches, unknown descritor.
     if (bounds.first == bounds.second) {
-        return nullptr;
+        return *NullDescriptorClass;
     }
 
     // If there is only one descriptor, use it without further analysis.
     auto next = bounds.first;
     if (++next == bounds.second) {
-        return bounds.first->second;
+        return *bounds.first->second;
     }
 
     const TID tid = context.getTableId();
@@ -297,7 +252,7 @@ ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(XDID xdid
         const auto& dc(next->second);
         // If this is a table-specific descriptor for the table we use, we have a match.
         if (dc->edid.matchTableSpecific(tid, standards)) {
-            return dc;
+            return *dc;
         }
         // If we match the standards for a regular descriptor, this is a possible match.
         if (dc->edid.matchRegularStandards(standards)) {
@@ -325,21 +280,21 @@ ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(XDID xdid
             // There is REGID and it is closer than the DVB PDS or there is no PDS.
             for (next = bounds.first; next != bounds.second; ++next) {
                 if (next->second->edid.regid() == regid) {
-                    return next->second;
+                    return *next->second;
                 }
             }
         }
         if (pds != PDS_NULL) {
             for (next = bounds.first; next != bounds.second; ++next) {
                 if (next->second->edid.pds() == pds) {
-                    return next->second;
+                    return *next->second;
                 }
             }
             if (regid != REGID_NULL) {
                 // There is a PDS and a REGID but the PDS was first.
                 for (next = bounds.first; next != bounds.second; ++next) {
                     if (next->second->edid.regid() == regid) {
-                        return next->second;
+                        return *next->second;
                     }
                 }
             }
@@ -348,7 +303,29 @@ ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(XDID xdid
 
     // No private descriptor found. If there is exactly one regular match, we keep it.
     // Otherwise, there is either nothing found or some ambiguity.
-    return match_count == 1 ? match : nullptr;
+    return match_count == 1 ? *match : *NullDescriptorClass;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the description of a descriptor for a descriptor closs RTTI index.
+//----------------------------------------------------------------------------
+
+const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(std::type_index index, TID tid, Standards standards) const
+{
+    const auto bounds(_descriptors_by_index.equal_range(index));
+    if (bounds.first == bounds.second) {
+        return *NullDescriptorClass; // not found
+    }
+    if (tid != TID_NULL) {
+        for (auto next = bounds.first; next != bounds.second; ++next) {
+            if (next->second->edid.matchTableSpecific(tid, standards)) {
+                return *next->second; // exact match for a table-specific descriptor
+            }
+        }
+    }
+    // Return the first definition for the table (if there are more than one).
+    return *bounds.first->second;
 }
 
 
@@ -356,76 +333,16 @@ ts::PSIRepository::DescriptorClassPtr ts::PSIRepository::getDescriptor(XDID xdid
 // Get simple registered items.
 //----------------------------------------------------------------------------
 
-template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type*>
-FUNCTION ts::PSIRepository::getDescriptorFunction(XDID xdid, const DescriptorContext& context, FUNCTION DescriptorClass::* member) const
+const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(const UString& xml_name) const
 {
-    const auto dc(getDescriptor(xdid, context));
-    return dc == nullptr ? nullptr : (*dc).*member;
+    const auto it = xml_name.findSimilar(_tables_by_name);
+    return it != _tables_by_name.end() ? *it->second : *NullTableClass;
 }
 
-ts::PSIRepository::TableFactory ts::PSIRepository::getTableFactory(TID id, const SectionContext& context) const
+const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(const UString& xml_name) const
 {
-    return getTableFunction(id, context, &TableClass::factory);
-}
-
-ts::DisplaySectionFunction ts::PSIRepository::getSectionDisplay(TID id, const SectionContext& context) const
-{
-    return getTableFunction(id, context, &TableClass::display);
-}
-
-ts::LogSectionFunction ts::PSIRepository::getSectionLog(TID id, const SectionContext& context) const
-{
-    return getTableFunction(id, context, &TableClass::log);
-}
-
-ts::PSIRepository::TableFactory ts::PSIRepository::getTableFactory(const UString& node_name) const
-{
-    const auto it = node_name.findSimilar(_tables_by_name);
-    return it != _tables_by_name.end() ? it->second->factory : nullptr;
-}
-
-ts::PSIRepository::DescriptorFactory ts::PSIRepository::getDescriptorFactory(const UString& node_name) const
-{
-    const auto it = node_name.findSimilar(_descriptors_by_name);
-    return it != _descriptors_by_name.end() ? it->second->factory : nullptr;
-}
-
-ts::EDID ts::PSIRepository::getDescriptorEDID(std::type_index index, TID tid, Standards standards) const
-{
-    const auto bounds(_descriptors_by_index.equal_range(index));
-    if (bounds.first == bounds.second) {
-        return EDID(); // not found
-    }
-    if (tid != TID_NULL) {
-        for (auto next = bounds.first; next != bounds.second; ++next) {
-            if (next->second->edid.matchTableSpecific(tid, standards)) {
-                return next->second->edid; // exact match for a table-specific descriptor
-            }
-        }
-    }
-    return bounds.first->second->edid;
-}
-
-ts::EDID ts::PSIRepository::getDescriptorEDID(XDID xdid, const DescriptorContext& context) const
-{
-    const auto dc(getDescriptor(xdid, context));
-    return dc != nullptr ? dc->edid : EDID();
-}
-
-ts::PSIRepository::DescriptorFactory ts::PSIRepository::getDescriptorFactory(EDID edid) const
-{
-    const auto dc(getDescriptor(edid));
-    return dc != nullptr ? dc->factory : nullptr;
-}
-
-ts::PSIRepository::DescriptorFactory ts::PSIRepository::getDescriptorFactory(XDID xdid, const DescriptorContext& context) const
-{
-    return getDescriptorFunction(xdid, context, &DescriptorClass::factory);
-}
-
-ts::DisplayDescriptorFunction ts::PSIRepository::getDescriptorDisplay(XDID xdid, const DescriptorContext& context) const
-{
-    return getDescriptorFunction(xdid, context, &DescriptorClass::display);
+    const auto it = xml_name.findSimilar(_descriptors_by_name);
+    return it != _descriptors_by_name.end() ? *it->second : *NullDescriptorClass;
 }
 
 ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(uint16_t cas_id) const
@@ -447,11 +364,11 @@ ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid) const
     for (auto it = bounds.first; it != bounds.second; ++it) {
         const auto& tc(*it->second);
 
-        if (tc.hasPID(pid)) {
+        if (Contains(tc.pids, pid)) {
             // We are in a standard PID for this table id, return the corresponding standards only.
             return tc.standards;
         }
-        else if (tc.hasPID() && pid != PID_NULL) {
+        else if (!tc.pids.empty() && pid != PID_NULL) {
             // This is a table with dedicated PID's but we are not in one of them => ignore.
         }
         else if (standards == Standards::NONE) {
@@ -569,9 +486,6 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
         out << UString::Format(u"  %X: %s, std: %s, index: %X", it.first, tc.xml_name, StandardsNames(tc.standards), tc.index.hash_code());
         const char* sep = ", PIDS: ";
         for (auto p : tc.pids) {
-            if (p == PID_NULL) {
-                break;
-            }
             out << sep << UString::Format(u"%X", p);
             sep = ", ";
         }

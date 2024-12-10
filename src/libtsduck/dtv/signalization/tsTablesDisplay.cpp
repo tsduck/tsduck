@@ -329,7 +329,7 @@ void ts::TablesDisplay::displaySectionData(const Section& section, const UString
 {
     // Find the display handler for this table id (and maybe CAS).
     const SectionContext context(section.sourcePID(), _duck.standards(), _duck.casId(cas));
-    DisplaySectionFunction handler = PSIRepository::Instance().getSectionDisplay(section.tableId(), context);
+    DisplaySectionFunction handler = PSIRepository::Instance().getTable(section.tableId(), context).display;
 
     if (handler != nullptr) {
         PSIBuffer buf(_duck, section.payload(), section.payloadSize());
@@ -372,7 +372,7 @@ void ts::TablesDisplay::logSectionData(const Section& section, const UString& he
 {
     // Find the log handler for this table id (and maybe CAS).
     const SectionContext context(section.sourcePID(), _duck.standards(), _duck.casId(cas));
-    LogSectionFunction handler = PSIRepository::Instance().getSectionLog(section.tableId(), context);
+    LogSectionFunction handler = PSIRepository::Instance().getTable(section.tableId(), context).log;
     if (handler == nullptr) {
         handler = LogUnknownSectionData;
     }
@@ -738,7 +738,7 @@ void ts::TablesDisplay::displayDescriptorData(const Descriptor& desc, const UStr
     }
 
     // Locate the display handler for this descriptor payload.
-    DisplayDescriptorFunction handler = PSIRepository::Instance().getDescriptorDisplay(desc.xdid(), context);
+    DisplayDescriptorFunction handler = PSIRepository::Instance().getDescriptor(desc.xdid(), context).display;
     if (handler != nullptr) {
         PSIBuffer buf(_duck, payload, size);
         handler(*this, desc, buf, margin, context.getTableId());

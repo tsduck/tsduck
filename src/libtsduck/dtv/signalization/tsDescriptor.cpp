@@ -218,12 +218,12 @@ namespace {
 
 ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, EDID edid) const
 {
-    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptorFactory(edid));
+    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptor(edid).factory);
 }
 
 ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, const DescriptorContext& context) const
 {
-    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptorFactory(xdid(), context));
+    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptor(xdid(), context).factory);
 }
 
 
@@ -285,7 +285,7 @@ bool ts::Descriptor::fromXML(DuckContext& duck, const xml::Element* node, TID ti
     }
 
     // Try to get the descriptor factory for that kind of XML tag.
-    const PSIRepository::DescriptorFactory fac = PSIRepository::Instance().getDescriptorFactory(node->name());
+    const PSIRepository::DescriptorFactory fac = PSIRepository::Instance().getDescriptor(node->name()).factory;
     if (fac != nullptr) {
         // Create a descriptor instance of the right type.
         AbstractDescriptorPtr desc = fac();

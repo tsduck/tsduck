@@ -256,7 +256,7 @@ ts::EDID ts::DescriptorList::edid(const DuckContext& duck, size_t index) const
         return EDID(); // invalid value
     }
     else {
-        return PSIRepository::Instance().getDescriptorEDID(_list[index]->xdid(), lookupContext(duck, index));
+        return PSIRepository::Instance().getDescriptor(_list[index]->xdid(), lookupContext(duck, index)).edid;
     }
 }
 

@@ -59,13 +59,55 @@ namespace ts {
         static const std::type_index null_index;
 
         //!
-        //! Get the table factory for a given table id.
-        //! @param [in] id Table id.
-        //! @param [in] context Optional object to lookup the context of the section.
-        //! This may help disambiguate tables with distinct standards but identical table_id.
-        //! @return Corresponding factory or zero if there is none.
+        //! Description of a table class.
         //!
-        TableFactory getTableFactory(TID id, const SectionContext& context = SectionContext()) const;
+        class TableClass
+        {
+        public:
+            std::type_index        index = null_index;           //!< RTTI type index for the table.
+            Standards              standards = Standards::NONE;  //!< Standards for this table id.
+            uint16_t               min_cas = CASID_NULL;         //!< Minimum CAS id for this table id (CASID_NULL if none).
+            uint16_t               max_cas = CASID_NULL;         //!< Maximum CAS id for this table id (CASID_NULL if none).
+            TableFactory           factory = nullptr;            //!< Function to build an instance of the table.
+            DisplaySectionFunction display = nullptr;            //!< Function to display a section.
+            LogSectionFunction     log = nullptr;                //!< Function to log a section.
+            UString                display_name {};              //!< Name for that table.
+            UString                xml_name {};                  //!< XML name for that table.
+            std::set<PID>          pids {};                      //!< Standard PID's for the table.
+        };
+
+        //!
+        //! Description of a descriptor class.
+        //!
+        class DescriptorClass
+        {
+        public:
+            std::type_index           index = null_index;  //!< RTTI type index for the descriptor.
+            EDID                      edid {};             //!< Extended descriptor id.
+            DescriptorFactory         factory = nullptr;   //!< Function to build an instance of the descriptor.
+            DisplayDescriptorFunction display = nullptr;   //!< Function to display a descriptor.
+            UString                   display_name {};     //!< Name for that descriptor.
+            UString                   xml_name {};         //!< XML name for that descriptor.
+            UString                   legacy_xml_name {};  //!< Optional legacy XML name for that descriptor.
+        };
+
+        //!
+        //! Get the description of a table class for a given table id and context.
+        //! @param [in] tid Table id.
+        //! @param [in] context Optional object to lookup the context of the table.
+        //! This may help disambiguate tables with distinct standards but identical table_id.
+        //! @return A constant reference to the description of the class. If the class is not
+        //! found, the returned description is empty (same as initial state of a TableClass).
+        //!
+        const TableClass& getTable(TID tid, const SectionContext& context = SectionContext()) const;
+
+        //!
+        //! Get the description of a table class for a given XML node name.
+        //! @param [in] xml_name Name of XML node.
+        //! @return A constant reference to the description of the class. If the class is not
+        //! found, the returned description is empty (same as initial state of a TableClass).
+        //!
+        const TableClass& getTable(const UString& xml_name) const;
 
         //!
         //! Get the list of standards which are defined for a given table id.
@@ -78,64 +120,52 @@ namespace ts {
         Standards getTableStandards(TID id, PID pid = PID_NULL) const;
 
         //!
-        //! Get the descriptor factory for a given EDID.
+        //! Get the description of a descriptor class for a given EDID.
         //! @param [in] edid Extended descriptor id.
-        //! @return Corresponding factory or zero if there is none.
+        //! @return A constant reference to the description of the class. If the class is not
+        //! found, the returned description is empty (same as initial state of a DescriptorClass).
         //!
-        DescriptorFactory getDescriptorFactory(EDID edid) const;
+        const DescriptorClass& getDescriptor(EDID edid) const;
 
         //!
-        //! Get the descriptor factory for a given descriptor tag and its context.
-        //! @param [in] xdid Extension descriptor id. This value is extracted from the
-        //! descriptor itself.
+        //! Get the description of a descriptor class for a given descriptor tag and its context.
+        //! @param [in] xdid Extension descriptor id. This value is extracted from the descriptor itself.
         //! @param [in] context Optional object to lookup the context of the descriptor.
-        //! @return Corresponding factory or zero if there is none.
+        //! @return A constant reference to the description of the class. If the class is not
+        //! found, the returned description is empty (same as initial state of a DescriptorClass).
         //!
-        DescriptorFactory getDescriptorFactory(XDID xdid, const DescriptorContext& context = DescriptorContext()) const;
+        const DescriptorClass& getDescriptor(XDID xdid, const DescriptorContext& context = DescriptorContext()) const;
 
         //!
-        //! Get the exact extended descriptor id from a descriptor closs RTTI index.
-        //! Useful for a descriptor class to get its own EDID.
+        //! Get the description of a descriptor class for a given descriptor closs RTTI index.
+        //! Useful for a descriptor class to get its own description.
         //! @param [in] index RTTI index for the descriptor class.
         //! @param [in] tid Optional TID. If the descriptor class is table-specific for
-        //! several tables, return the EDID for that table.
+        //! several tables, return the EDID for that table. If @a tid is TID_NULL and there
+        //! are several specific tables for that descriptor, the first one is returned.
         //! @param [in] standards Optional list of standards for the table.
-        //! @return EDID for the descriptor type, invalid value if not found.
+        //! @return A constant reference to the description of the class. If the class is not
+        //! found, the returned description is empty (same as initial state of a DescriptorClass).
         //!
-        EDID getDescriptorEDID(std::type_index index, TID tid = TID_NULL, Standards standards = Standards::NONE) const;
+        const DescriptorClass& getDescriptor(std::type_index index, TID tid = TID_NULL, Standards standards = Standards::NONE) const;
 
         //!
-        //! Get the exact extended descriptor id from a descriptor tag and its context.
-        //! @param [in] xdid Extension descriptor id. This value is extracted from the
-        //! descriptor itself.
-        //! @param [in] context Optional object to lookup the context of the descriptor.
-        //! @return EDID for the descriptor type, invalid value if not found.
+        //! Get the description of a descriptor class for a given XML node name.
+        //! @param [in] xml_name Name of XML node.
+        //! @return A constant reference to the description of the class. If the class is not
+        //! found, the returned description is empty (same as initial state of a DescriptorClass).
         //!
-        EDID getDescriptorEDID(XDID xdid, const DescriptorContext& context = DescriptorContext()) const;
-
-        //!
-        //! Get the table factory for a given XML node name.
-        //! @param [in] nodeName Name of XML node.
-        //! @return Corresponding factory or zero if there is none.
-        //!
-        TableFactory getTableFactory(const UString& nodeName) const;
-
-        //!
-        //! Get the descriptor factory for a given XML node name.
-        //! @param [in] nodeName Name of XML node.
-        //! @return Corresponding factory or zero if there is none.
-        //!
-        DescriptorFactory getDescriptorFactory(const UString& nodeName) const;
+        const DescriptorClass& getDescriptor(const UString& xml_name) const;
 
         //!
         //! Check if a descriptor is allowed in a table.
-        //! @param [in] nodeName Name of the XML node for the descriptor.
+        //! @param [in] xml_name Name of the XML node for the descriptor.
         //! @param [in] tid Table id of the table to check.
         //! @return True if the descriptor is allowed, false otherwise.
         //! Non-table-specific descriptors are allowed everywhere.
         //! Table-specific descriptors are allowed only in a set of specific tables.
         //!
-        bool isDescriptorAllowed(const UString& nodeName, TID tid) const;
+        bool isDescriptorAllowed(const UString& xml_name, TID tid) const;
 
         //!
         //! Get the list of tables where a descriptor is allowed, as a descriptive string.
@@ -145,33 +175,6 @@ namespace ts {
         //! Empty string for non-table-specific descriptors.
         //!
         UString descriptorTables(const DuckContext& duck, const UString& nodeName) const;
-
-        //!
-        //! Get the display function for a given table id.
-        //! @param [in] id Table id.
-        //! @param [in] context Optional object to lookup the context of the section.
-        //! This may help disambiguate tables with distinct standards but identical table_id.
-        //! @return Corresponding display function or zero if there is none.
-        //!
-        DisplaySectionFunction getSectionDisplay(TID id, const SectionContext& context = SectionContext()) const;
-
-        //!
-        //! Get the log function for a given table id.
-        //! @param [in] id Table id.
-        //! @param [in] context Optional object to lookup the context of the section.
-        //! This may help disambiguate tables with distinct standards but identical table_id.
-        //! @return Corresponding log function or zero if there is none.
-        //!
-        LogSectionFunction getSectionLog(TID id, const SectionContext& context = SectionContext()) const;
-
-        //!
-        //! Get the display function for a given descriptor tag and its context.
-        //! @param [in] xdid Extension descriptor id. This value is extracted from the
-        //! descriptor itself. The other parameter describe the context of the descriptor.
-        //! @param [in] context Optional object to lookup the context of the descriptor.
-        //! @return Corresponding display function or zero if there is none.
-        //!
-        DisplayDescriptorFunction getDescriptorDisplay(XDID xdid, const DescriptorContext& context = DescriptorContext()) const;
 
         //!
         //! Get the display function of the CA_descriptor for a given CA_system_id.
@@ -329,50 +332,13 @@ namespace ts {
         void dumpInternalState(std::ostream& out) const;
 
     private:
-        // Description of a table class.
-        // Note: We use a fixed-size array for 'pids' instead of a PIDSet for storage efficiency.
-        class TableClass
-        {
-        public:
-            std::type_index        index = null_index;           // RTTI type index for the table.
-            Standards              standards = Standards::NONE;  // Standards for this table id.
-            uint16_t               min_cas = CASID_NULL;         // Minimum CAS id for this table id (CASID_NULL if none).
-            uint16_t               max_cas = CASID_NULL;         // Maximum CAS id for this table id (CASID_NULL if none).
-            TableFactory           factory = nullptr;            // Function to build an instance of the table.
-            DisplaySectionFunction display = nullptr;            // Function to display a section.
-            LogSectionFunction     log = nullptr;                // Function to log a section.
-            UString                xml_name {};                  // XML name for that table.
-            std::array<PID,8>      pids {};                      // Standard PID's for the standard, stop at first PID_NULL.
-
-            // Constructor.
-            TableClass();
-
-            // Add PIDs in the list.
-            void addPIDs(std::initializer_list<PID> more_pids);
-
-            // Check if the table has dedicated PID's and if a PID is present.
-            bool hasPID() const { return pids[0] != PID_NULL; }
-            bool hasPID(PID pid) const;
-        };
         using TableClassPtr = std::shared_ptr<TableClass>;
+        using DescriptorClassPtr = std::shared_ptr<DescriptorClass>;
 
         // Several table classes can be used for the same table id, for instance for distinct DTV standards or
         // distinct CA systems. There is only one class per XML name.
         std::multimap<TID, TableClassPtr> _tables_by_tid {};
         std::map<UString, TableClassPtr>  _tables_by_name {};
-
-        // Description of a descriptor class.
-        class DescriptorClass
-        {
-        public:
-            std::type_index           index = null_index;  // RTTI type index for the table.
-            EDID                      edid {};             // Extended descriptor id.
-            DescriptorFactory         factory = nullptr;   // Function to build an instance of the descriptor.
-            DisplayDescriptorFunction display = nullptr;   // Function to display a descriptor.
-            UString                   xml_name {};         // XML name for that descriptor.
-            UString                   legacy_xml_name {};  // Optional legacy XML name for that descriptor.
-        };
-        using DescriptorClassPtr = std::shared_ptr<DescriptorClass>;
 
         // Several descriptor classes can be used for the same descriptor id (private, extended, table-specific descriptors).
         std::multimap<XDID, DescriptorClassPtr>            _descriptors_by_xdid {};   // Description of all descriptors, by XsDID (multiple entries per XDID).
@@ -385,18 +351,6 @@ namespace ts {
 
         // Additional XML model files for tables and descriptors.
         UStringList _xml_extension_files {};
-
-        // Get a descriptor from its EDID or its XID and its context.
-        DescriptorClassPtr getDescriptor(EDID edit) const;
-        DescriptorClassPtr getDescriptor(XDID xdid, const DescriptorContext& context) const;
-
-        // Common code to lookup a table function.
-        template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
-        FUNCTION getTableFunction(TID tid, const SectionContext& context, FUNCTION TableClass::* member) const;
-
-        // Common code to lookup a descriptor function.
-        template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
-        FUNCTION getDescriptorFunction(XDID xdid, const DescriptorContext& context, FUNCTION DescriptorClass::* member) const;
     };
 }
 

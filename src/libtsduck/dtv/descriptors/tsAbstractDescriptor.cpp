@@ -57,12 +57,12 @@ ts::EDID ts::AbstractDescriptor::edid(const AbstractTable* table) const
 {
     const auto& repo(PSIRepository::Instance());
     const auto index = std::type_index(typeid(*this));
-    return table == nullptr ? repo.getDescriptorEDID(index) : repo.getDescriptorEDID(index, table->tableId(), table->definingStandards());
+    return table == nullptr ? repo.getDescriptor(index).edid : repo.getDescriptor(index, table->tableId(), table->definingStandards()).edid;
 }
 
 ts::EDID ts::AbstractDescriptor::edid(TID tid) const
 {
-    return PSIRepository::Instance().getDescriptorEDID(std::type_index(typeid(*this)), tid);
+    return PSIRepository::Instance().getDescriptor(std::type_index(typeid(*this)), tid).edid;
 }
 
 
@@ -72,7 +72,7 @@ ts::EDID ts::AbstractDescriptor::edid(TID tid) const
 
 ts::DID ts::AbstractDescriptor::extendedTag() const
 {
-    return PSIRepository::Instance().getDescriptorEDID(std::type_index(typeid(*this))).didExtension();
+    return PSIRepository::Instance().getDescriptor(std::type_index(typeid(*this))).edid.didExtension();
 }
 
 
