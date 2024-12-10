@@ -11,37 +11,62 @@
 
 
 //----------------------------------------------------------------------------
+// CAS families and ranges.
+//----------------------------------------------------------------------------
+
+namespace {
+
+    struct CASDesc {
+        ts::CASFamily family;
+        ts::CASID     min;
+        ts::CASID     max;
+    };
+
+    static const CASDesc table[] = {
+        {ts::CAS_MEDIAGUARD,  ts::CASID_MEDIAGUARD_MIN,  ts::CASID_MEDIAGUARD_MAX},
+        {ts::CAS_NAGRA,       ts::CASID_NAGRA_MIN,       ts::CASID_NAGRA_MAX},
+        {ts::CAS_VIACCESS,    ts::CASID_VIACCESS_MIN,    ts::CASID_VIACCESS_MAX},
+        {ts::CAS_THALESCRYPT, ts::CASID_THALESCRYPT_MIN, ts::CASID_THALESCRYPT_MAX},
+        {ts::CAS_SAFEACCESS,  ts::CASID_SAFEACCESS,      ts::CASID_SAFEACCESS},
+        {ts::CAS_WIDEVINE,    ts::CASID_WIDEVINE_MIN,    ts::CASID_WIDEVINE_MAX},
+        {ts::CAS_NDS,         ts::CASID_NDS_MIN,         ts::CASID_NDS_MAX},
+        {ts::CAS_IRDETO,      ts::CASID_IRDETO_MIN,      ts::CASID_IRDETO_MAX},
+        {ts::CAS_IRDETO,      ts::CASID_CRYPTOWORKS_MIN, ts::CASID_CRYPTOWORKS_MAX},
+        {ts::CAS_CONAX,       ts::CASID_CONAX_MIN,       ts::CASID_CONAX_MAX},
+        {ts::CAS_OTHER,       0x0000,                    0xFFFF},
+    };
+}
+
+
+//----------------------------------------------------------------------------
 // Return a CAS family from a CA system id.
-// Useful to analyze CA descriptors.
 //----------------------------------------------------------------------------
 
 ts::CASFamily ts::CASFamilyOf(CASID casid)
 {
-    struct CASDesc {
-        CASFamily family;
-        CASID     min;
-        CASID     max;
-    };
-
-    static const CASDesc table[] = {
-        {CAS_MEDIAGUARD,  CASID_MEDIAGUARD_MIN,  CASID_MEDIAGUARD_MAX},
-        {CAS_NAGRA,       CASID_NAGRA_MIN,       CASID_NAGRA_MAX},
-        {CAS_VIACCESS,    CASID_VIACCESS_MIN,    CASID_VIACCESS_MAX},
-        {CAS_THALESCRYPT, CASID_THALESCRYPT_MIN, CASID_THALESCRYPT_MAX},
-        {CAS_SAFEACCESS,  CASID_SAFEACCESS,      CASID_SAFEACCESS},
-        {CAS_WIDEVINE,    CASID_WIDEVINE_MIN,    CASID_WIDEVINE_MAX},
-        {CAS_NDS,         CASID_NDS_MIN,         CASID_NDS_MAX},
-        {CAS_IRDETO,      CASID_IRDETO_MIN,      CASID_IRDETO_MAX},
-        {CAS_IRDETO,      CASID_CRYPTOWORKS_MIN, CASID_CRYPTOWORKS_MAX},
-        {CAS_CONAX,       CASID_CONAX_MIN,       CASID_CONAX_MAX},
-        {CAS_OTHER,       0x0000,                0xFFFF},
-    };
-
     for (const CASDesc* it = table; ; ++it) {
         if (casid >= it->min && casid <= it->max) {
             return it->family;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the minimum and maximum CA system id in a CAS family.
+//----------------------------------------------------------------------------
+
+bool ts::GetCASIdRange(CASFamily cas, CASID& min, CASID& max)
+{
+    for (const CASDesc* it = table; it->family != CAS_OTHER; ++it) {
+        if (cas == it->family) {
+            min = it->min;
+            max = it->max;
+            return true;
+        }
+    }
+    min = max = CASID_NULL;
+    return false;
 }
 
 

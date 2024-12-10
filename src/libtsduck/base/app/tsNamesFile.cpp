@@ -14,6 +14,9 @@
 // Limit the number of inheritance levels to avoid infinite loop.
 #define MAX_INHERIT 16
 
+// Visitor virtual destructor.
+ts::NamesFile::Visitor::~Visitor() {}
+
 
 //----------------------------------------------------------------------------
 // A singleton which manages all NamesFile instances (thread-safe).
@@ -629,12 +632,52 @@ ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& section_na
 
 
 //----------------------------------------------------------------------------
+// Get all values in a section.
+//----------------------------------------------------------------------------
+
+size_t ts::NamesFile::valuesFromSection(const Visitor& visitor, const UString& section_name) const
+{
+    size_t visit_count = 0;
+    const UString* secname = &section_name;
+
+    // Loop on inherited sections.
+    for (int levels = MAX_INHERIT; levels > 0; --levels) {
+
+        // Get current section.
+        if (secname->empty()) {
+            break; // No more inherited section.
+        }
+        const auto it = _sections.find(NormalizedSectionName(*secname));
+        ConfigSectionPtr section(it == _sections.end() ? nullptr : it->second);
+        if (section == nullptr) {
+            break; // Non-existent section.
+        }
+
+        // "Superclass" section name.
+        secname = &section->inherit;
+
+        // Loop on all values in this section.
+        for (const auto& ent : section->entries) {
+            for (Value i = ent.second->first; i < ent.second->last; ++i) {
+                visit_count++;
+                if (!visitor.handleNameValue(i, ent.second->name)) {
+                    return visit_count;
+                }
+            }
+        }
+    }
+
+    return visit_count;
+}
+
+
+//----------------------------------------------------------------------------
 // Get all extended values of a specified value in a section.
 //----------------------------------------------------------------------------
 
-bool ts::NamesFile::valuesFromSection(std::set<Value>& all_values, const UString& section_name, Value value) const
+size_t ts::NamesFile::valuesFromSection(const Visitor& visitor, const UString& section_name, Value value) const
 {
-    all_values.clear();
+    size_t visit_count = 0;
     const UString* secname = &section_name;
 
     // Loop on inherited sections.
@@ -656,8 +699,12 @@ bool ts::NamesFile::valuesFromSection(std::set<Value>& all_values, const UString
         // When "Extended=false" (the default), there is only one value, the short_entries multimap is empty.
         if (section->short_entries.empty()) {
             // Add the target value alone if it is registered.
-            if (section->getEntry(value) != nullptr) {
-                all_values.insert(value);
+            const auto entry(section->getEntry(value));
+            if (entry != nullptr) {
+                visit_count++;
+                if (!visitor.handleNameValue(value, entry->name)) {
+                    return visit_count;
+                }
             }
         }
         else {
@@ -671,7 +718,10 @@ bool ts::NamesFile::valuesFromSection(std::set<Value>& all_values, const UString
                 const auto& val(*next->second);
                 Value i = (val.first & ~section->mask) | (value & section->mask);
                 while (i <= val.last) {
-                    all_values.insert(i);
+                    visit_count++;
+                    if (!visitor.handleNameValue(i, val.name)) {
+                        return visit_count;
+                    }
                     if (i > max) {
                         break; // avoid integer overflow
                     }
@@ -681,5 +731,5 @@ bool ts::NamesFile::valuesFromSection(std::set<Value>& all_values, const UString
         }
     }
 
-    return !all_values.empty();
+    return visit_count;
 }

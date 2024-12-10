@@ -16,6 +16,7 @@
 #include "tsTablesPtr.h"
 #include "tsEDID.h"
 #include "tsDescriptorContext.h"
+#include "tsPSIRepository.h"
 #include "tsxml.h"
 
 namespace ts {
@@ -241,8 +242,12 @@ namespace ts {
         bool fromXML(DuckContext& duck, const xml::Element* node, TID tid = TID_NULL);
 
     private:
-        Descriptor(const Descriptor&) = delete;
-
         ByteBlockPtr _data {}; // full binary content of the descriptor
+
+        // Common code for deserialize().
+        AbstractDescriptorPtr deserializeImpl(DuckContext& duck, PSIRepository::DescriptorFactory fac) const;
+
+        // The default copy destructor is deleted, we need a ShareMode parameter.
+        Descriptor(const Descriptor&) = delete;
     };
 }

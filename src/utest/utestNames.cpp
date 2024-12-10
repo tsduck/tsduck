@@ -259,10 +259,6 @@ TSUNIT_DEFINE_TEST(Content)
 
 TSUNIT_DEFINE_TEST(DID)
 {
-    TSUNIT_ASSERT(ts::DIDHasTableSpecificName(ts::DID_INT_IP_ADDR, ts::TID_UNT));
-    TSUNIT_ASSERT(ts::DIDHasTableSpecificName(ts::DID_INT_IP_ADDR, ts::TID_INT));
-    TSUNIT_ASSERT(!ts::DIDHasTableSpecificName(ts::DID_INT_IP_ADDR, ts::TID_PMT));
-
     TSUNIT_EQUAL(u"CA", ts::DIDName(ts::DID_MPEG_CA));
     TSUNIT_EQUAL(u"ISO-639 Language", ts::DIDName(ts::DID_MPEG_LANGUAGE));
     TSUNIT_EQUAL(u"Data Broadcast Id", ts::DIDName(ts::DID_DVB_DATA_BROADCAST_ID, ts::NamesFlags::NAME, ts::DescriptorContext(ts::TID_NULL, ts::Standards::DVB)));

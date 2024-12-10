@@ -10,7 +10,6 @@
 #include "tsMemory.h"
 #include "tsAbstractDescriptor.h"
 #include "tsAbstractTable.h"
-#include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
 
@@ -198,32 +197,30 @@ bool ts::Descriptor::operator== (const Descriptor& desc) const
 // Deserialize the descriptor.
 //----------------------------------------------------------------------------
 
-namespace {
-    ts::AbstractDescriptorPtr Deserialize(ts::DuckContext& duck, const ts::Descriptor& desc, ts::PSIRepository::DescriptorFactory fac)
-    {
-        if (fac != nullptr) {
-            ts::AbstractDescriptorPtr dp(fac());
-            if (dp != nullptr) {
-                // Deserialize from binary to object.
-                dp->deserialize(duck, desc);
-                if (dp->isValid()) {
-                    // Successfully deserialized.
-                    return dp;
-                }
+ts::AbstractDescriptorPtr ts::Descriptor::deserializeImpl(DuckContext& duck, PSIRepository::DescriptorFactory fac) const
+{
+    if (fac != nullptr) {
+        AbstractDescriptorPtr dp(fac());
+        if (dp != nullptr) {
+            // Deserialize from binary to object.
+            dp->deserialize(duck, *this);
+            if (dp->isValid()) {
+                // Successfully deserialized.
+                return dp;
             }
         }
-        return nullptr; // cannot deserialize
     }
+    return nullptr; // cannot deserialize
 }
 
 ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, EDID edid) const
 {
-    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptor(edid).factory);
+    return deserializeImpl(duck, PSIRepository::Instance().getDescriptor(edid).factory);
 }
 
 ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, const DescriptorContext& context) const
 {
-    return Deserialize(duck, *this, PSIRepository::Instance().getDescriptor(xdid(), context).factory);
+    return deserializeImpl(duck, PSIRepository::Instance().getDescriptor(xdid(), context).factory);
 }
 
 

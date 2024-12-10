@@ -66,8 +66,8 @@ namespace ts {
         public:
             std::type_index        index = null_index;           //!< RTTI type index for the table.
             Standards              standards = Standards::NONE;  //!< Standards for this table id.
-            uint16_t               min_cas = CASID_NULL;         //!< Minimum CAS id for this table id (CASID_NULL if none).
-            uint16_t               max_cas = CASID_NULL;         //!< Maximum CAS id for this table id (CASID_NULL if none).
+            CASID                  min_cas = CASID_NULL;         //!< Minimum CAS id for this table id (CASID_NULL if none).
+            CASID                  max_cas = CASID_NULL;         //!< Maximum CAS id for this table id (CASID_NULL if none).
             TableFactory           factory = nullptr;            //!< Function to build an instance of the table.
             DisplaySectionFunction display = nullptr;            //!< Function to display a section.
             LogSectionFunction     log = nullptr;                //!< Function to log a section.
@@ -341,9 +341,9 @@ namespace ts {
         std::map<UString, TableClassPtr>  _tables_by_name {};
 
         // Several descriptor classes can be used for the same descriptor id (private, extended, table-specific descriptors).
-        std::multimap<XDID, DescriptorClassPtr>            _descriptors_by_xdid {};   // Description of all descriptors, by XsDID (multiple entries per XDID).
+        std::multimap<XDID, DescriptorClassPtr>            _descriptors_by_xdid {};   // Description of all descriptors, by XDID (multiple entries per XDID).
         std::map<UString, DescriptorClassPtr>              _descriptors_by_name {};   // Description of all descriptors, by XML name (including legacy names).
-        std::multimap<std::type_index, DescriptorClassPtr> _descriptors_by_index {};  // Description of all descriptors, by RTTI type index.
+        std::multimap<std::type_index, DescriptorClassPtr> _descriptors_by_index {};  // Description of all descriptors, by RTTI type index (multiple entries if multiple EDID).
         std::multimap<UString, TID>                        _descriptor_tids {};       // XML descriptor name to table id for table-specific descriptors
 
         // Display functions for CA_descriptor by CA_system_id.
@@ -351,6 +351,20 @@ namespace ts {
 
         // Additional XML model files for tables and descriptors.
         UStringList _xml_extension_files {};
+
+        // Load all table names from DTV names file.
+        class TableVisitor : public NamesFile::Visitor
+        {
+        public:
+            virtual bool handleNameValue(NamesFile::Value value, const UString& name) const override;
+        };
+
+        // Load all descriptor names from DTV names file.
+        class DescriptorVisitor : public NamesFile::Visitor
+        {
+        public:
+            virtual bool handleNameValue(NamesFile::Value value, const UString& name) const override;
+        };
     };
 }
 

@@ -17,11 +17,21 @@ TS_DEFINE_SINGLETON(ts::PSIRepository);
 // Value of a "null" type index.
 const std::type_index ts::PSIRepository::null_index = std::type_index(typeid(std::nullptr_t));
 
-// Singleton empty constructor.
-ts::PSIRepository::PSIRepository() {}
-
 TS_STATIC_INSTANCE(const, ts::PSIRepository::TableClass, NullTableClass, ());
 TS_STATIC_INSTANCE(const, ts::PSIRepository::DescriptorClass, NullDescriptorClass, ());
+
+
+//----------------------------------------------------------------------------
+// Repository singleton constructor.
+//----------------------------------------------------------------------------
+
+ts::PSIRepository::PSIRepository()
+{
+    // Load all table names from a names file.
+    const auto repo = NamesFile::Instance(NamesFile::Predefined::DTV);
+    repo->valuesFromSection(TableVisitor(), u"TableId");
+    repo->valuesFromSection(DescriptorVisitor(), u"DescriptorId");
+}
 
 
 //----------------------------------------------------------------------------
@@ -52,25 +62,44 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
 {
     CERR.log(2, u"registering table <%s>", xml_name);
     PSIRepository& repo(PSIRepository::Instance());
+    bool xml_done = false;
 
-    // Build a table description for this table.
-    TableClassPtr tc = std::make_shared<TableClass>();
-    tc->index = index;
-    tc->standards = standards;
-    tc->min_cas = min_cas;
-    tc->max_cas = max_cas;
-    tc->factory = factory;
-    tc->display = display;
-    tc->log = log;
-    tc->xml_name = xml_name;
-    tc->pids.insert(pids);
+    // Separately store each TID. They may not hold the same content in the end (eg. distinct display names for EIT).
+    for (auto tid : tids) {
+        TableClassPtr tc;
 
-    // Store the table description for each table id and XML name.
-    for (auto it : tids) {
-        repo._tables_by_tid.insert(std::make_pair(it, tc));
-    }
-    if (!xml_name.empty()) {
-        repo._tables_by_name.insert(std::make_pair(xml_name, tc));
+        // Search an existing entry.
+        const auto bounds(repo._tables_by_tid.equal_range(tid));
+        for (auto it = bounds.first; tc != nullptr && it != bounds.second; ++it) {
+            const auto& tc1(it->second);
+            if ((standards == tc1->standards || bool(standards & tc1->standards)) && min_cas >= tc1->min_cas && max_cas <= tc1->max_cas) {
+                // Found a compatible entry.
+                tc = tc1;
+            }
+        }
+
+        // Build a new entry if none found.
+        if (tc == nullptr) {
+            tc = std::make_shared<TableClass>();
+            repo._tables_by_tid.insert(std::make_pair(tid, tc));
+        }
+
+        // Fill the entry with new data.
+        tc->index = index;
+        tc->standards = standards;
+        tc->min_cas = min_cas;
+        tc->max_cas = max_cas;
+        tc->factory = factory;
+        tc->display = display;
+        tc->log = log;
+        tc->xml_name = xml_name;
+        tc->pids.insert(pids);
+
+        // Store the first description as XML name.
+        if (!xml_done && !xml_name.empty()) {
+            xml_done = true;
+            repo._tables_by_name.insert(std::make_pair(xml_name, tc));
+        }
     }
 }
 
@@ -100,9 +129,24 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory fact
 {
     CERR.log(2, u"registering descriptor <%s>", xml_name);
     PSIRepository& repo(PSIRepository::Instance());
+    DescriptorClassPtr dc;
+
+    // Search an existing entry.
+    const auto bounds(repo._descriptors_by_xdid.equal_range(edid.xdid()));
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        if (it->second->edid == edid) {
+            // Found a compatible entry.
+            dc = it->second;
+        }
+    }
+
+    // Build a new entry if none found.
+    if (dc == nullptr) {
+        dc = std::make_shared<DescriptorClass>();
+        repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
+    }
 
     // Build a description for this descriptor.
-    DescriptorClassPtr dc = std::make_shared<DescriptorClass>();
     dc->index = index;
     dc->edid = edid;
     dc->factory = factory;
@@ -110,7 +154,6 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory fact
     dc->xml_name = xml_name;
 
     // Store the descriptor description.
-    repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
     repo._descriptors_by_index.insert(std::make_pair(index, dc));
 
     // Associate XML names with descriptor classes and allowed table ids.
@@ -136,6 +179,84 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFun
             repo._casid_descriptor_displays.insert(std::make_pair(min_cas, display));
         } while (min_cas++ < max_cas);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Load all table names from DTV names file.
+//----------------------------------------------------------------------------
+
+bool ts::PSIRepository::TableVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
+{
+    PSIRepository& repo(PSIRepository::Instance());
+
+    // Decode the extended table id.
+    const Standards std = Standards((value >> 16) & 0xFFFF);
+    const CASFamily cas = CASFamily((value >> 8) & 0xFF);
+    const TID tid = TID(value & 0xFF);
+    CASID min_cas = CASID_NULL;
+    CASID max_cas = CASID_NULL;
+    GetCASIdRange(cas, min_cas, max_cas);
+
+    // Update existing entries.
+    bool existed = false;
+    const auto bounds(repo._tables_by_tid.equal_range(tid));
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        const auto& tc(it->second);
+        if ((std == tc->standards || bool(std & tc->standards)) && min_cas >= tc->min_cas && max_cas <= tc->max_cas) {
+            // Found a compatible entry.
+            existed = true;
+            tc->display_name = name;
+        }
+    }
+
+    // Create one entry if not found.
+    if (!existed) {
+        TableClassPtr tc = std::make_shared<TableClass>();
+        tc->standards = std;
+        tc->min_cas = min_cas;
+        tc->max_cas = max_cas;
+        tc->display_name = name;
+        repo._tables_by_tid.insert(std::make_pair(tid, tc));
+    }
+
+    // Continue visting the table names.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Load all descriptor names from DTV names file.
+//----------------------------------------------------------------------------
+
+bool ts::PSIRepository::DescriptorVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
+{
+    PSIRepository& repo(PSIRepository::Instance());
+
+    // The value is an EDID.
+    const EDID edid(value);
+
+    // Update existing entries.
+    bool existed = false;
+    const auto bounds(repo._descriptors_by_xdid.equal_range(edid.xdid()));
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        if (it->second->edid == edid) {
+            // Found a compatible entry.
+            existed = true;
+            it->second->display_name = name;
+        }
+    }
+
+    // Create one entry if not found.
+    if (!existed) {
+        DescriptorClassPtr dc = std::make_shared<DescriptorClass>();
+        dc->edid = edid;
+        dc->display_name = name;
+        repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
+    }
+
+    // Continue visting the descriptor names.
+    return true;
 }
 
 

@@ -170,16 +170,40 @@ namespace ts {
         UString nameFromSectionWithFallback(const UString& section_name, Value value1, Value value2, NamesFlags flags = NamesFlags::NAME, Value alternate_value = 0) const;
 
         //!
+        //! A visitor interface class to be implemented by applications needing ranges of values.
+        //!
+        class TSDUCKDLL Visitor
+        {
+            TS_INTERFACE(Visitor);
+        public:
+            //!
+            //! Called for each name/value pair to visit.
+            //! @param [in] value The value.
+            //! @param [in] name The name of the value.
+            //! @return True to continue visiting other values, false to abort the visit.
+            //!
+            virtual bool handleNameValue(Value value, const UString& name) const = 0;
+        };
+
+        //!
+        //! Get all values in a section.
+        //! @param [in,out] visitor An instance of a subclass of Visitor which receives all values.
+        //! @param [in] section_name Name of section to search. Not case-sensitive.
+        //! @return The number of visited values.
+        //!
+        size_t valuesFromSection(const Visitor& visitor, const UString& section_name) const;
+
+        //!
         //! Get all extended values of a specified value in a section.
         //! All sections shall have a nominal width, "Bits=8" for instance. However, when the section has "Extended=true",
         //! "extended" values can be provided. With "Bits=8", the value 0x00AA, 0x01AA, or 0xFFAA, are all extended values
         //! for the base 8-bit value 0xAA, as an example.
-        //! @param [out] all_values The set of all extended values for @a value.
+        //! @param [in,out] visitor An instance of a subclass of Visitor which receives all extended values for @a value.
         //! @param [in] section_name Name of section to search. Not case-sensitive.
         //! @param [in] value The base value to get extended values for.
-        //! @return True if @a value exists in the section, false otherwise.
+        //! @return The number of visited values.
         //!
-        bool valuesFromSection(std::set<Value>& all_values, const UString& section_name, Value value) const;
+        size_t valuesFromSection(const Visitor& visitor, const UString& section_name, Value value) const;
 
         //!
         //! Format a name using flags.

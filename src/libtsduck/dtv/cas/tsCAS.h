@@ -54,6 +54,15 @@ namespace ts {
     TSDUCKDLL CASFamily CASFamilyOf(CASID ca_system_id);
 
     //!
+    //! Get the minimum and maximum CA system id in a CAS family.
+    //! @param [in] cas CAS family.
+    //! @param [out] min First DVB-allocated CA system id for @a cas or CASID_NULL if unknown.
+    //! @param [out] max Last DVB-allocated CA system id for @a cas or CASID_NULL if unknown.
+    //! @return True if @a cas was found, false otherwise.
+    //!
+    TSDUCKDLL bool GetCASIdRange(CASFamily cas, CASID& min, CASID& max);
+
+    //!
     //! Name of Conditional Access Families.
     //! @param [in] cas CAS family
     //! @return The corresponding name.

@@ -547,14 +547,6 @@ namespace ts {
     TSDUCKDLL UString DIDName(DID did, NamesFlags flags = NamesFlags::NAME, const DescriptorContext& context = DescriptorContext());
 
     //!
-    //! Check if a descriptor id has a specific name for a given table.
-    //! @param [in] did Descriptor id.
-    //! @param [in] tid Table id of the enclosing table.
-    //! @return True if descriptor @a did has a specific name for table @a tid.
-    //!
-    TSDUCKDLL bool DIDHasTableSpecificName(DID did, TID tid);
-
-    //!
     //! Name of an MPEG extension descriptor ID.
     //! @param [in] xdid MPEG extension descriptor ID.
     //! @param [in] flags Presentation flags.
