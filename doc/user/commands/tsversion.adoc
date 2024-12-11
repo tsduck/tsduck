@@ -86,6 +86,17 @@ Using `all` displays all features.
 With any other option, `tsversion` simply exits with a success or failure status, depending if the corresponding feature is implemented or not.
 
 [.usage]
+Debug options
+
+[.opt]
+*--xdump-psi-repository*
+
+[.optdoc]
+Dump the internal state of the PSI repository (tables and descriptors).
+This is a debug function which is useless to most users.
+It can be helpful to troubleshoot TSDuck extensions which fail to correctly declare their own tables or descriptors.
+
+[.usage]
 Upgrade options
 
 The following options are available in prebuilt binary packages of TSDuck from

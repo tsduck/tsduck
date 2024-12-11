@@ -23,7 +23,6 @@ namespace ts {
 
     class DuckContext;
     class TablesDisplay;
-    class DVBCharTable;
 
     //!
     //! A repository for known PSI/SI tables and descriptors.
@@ -338,13 +337,13 @@ namespace ts {
         // Several table classes can be used for the same table id, for instance for distinct DTV standards or
         // distinct CA systems. There is only one class per XML name.
         std::multimap<TID, TableClassPtr> _tables_by_tid {};
-        std::map<UString, TableClassPtr>  _tables_by_name {};
+        std::map<UString, TableClassPtr>  _tables_by_xml_name {};
 
         // Several descriptor classes can be used for the same descriptor id (private, extended, table-specific descriptors).
-        std::multimap<XDID, DescriptorClassPtr>            _descriptors_by_xdid {};   // Description of all descriptors, by XDID (multiple entries per XDID).
-        std::map<UString, DescriptorClassPtr>              _descriptors_by_name {};   // Description of all descriptors, by XML name (including legacy names).
-        std::multimap<std::type_index, DescriptorClassPtr> _descriptors_by_index {};  // Description of all descriptors, by RTTI type index (multiple entries if multiple EDID).
-        std::multimap<UString, TID>                        _descriptor_tids {};       // XML descriptor name to table id for table-specific descriptors
+        std::multimap<XDID, DescriptorClassPtr>            _descriptors_by_xdid {};        // Description of all descriptors, by XDID (multiple entries per XDID).
+        std::map<UString, DescriptorClassPtr>              _descriptors_by_xml_name {};    // Description of all descriptors, by XML name (including legacy names).
+        std::multimap<std::type_index, DescriptorClassPtr> _descriptors_by_type_index {};  // Description of all descriptors, by RTTI type index (multiple entries if multiple EDID).
+        std::multimap<UString, TID>                        _descriptor_tids {};            // XML descriptor name to table id for table-specific descriptors
 
         // Display functions for CA_descriptor by CA_system_id.
         std::map<uint16_t, DisplayCADescriptorFunction> _casid_descriptor_displays {};
@@ -371,6 +370,13 @@ namespace ts {
             DescriptorVisitor(PSIRepository& repo) : _repo(repo) {}
             virtual bool handleNameValue(NamesFile::Value value, const UString& name) const override;
         };
+
+        // Display utilities.
+        static UString NameToString(const UString& prefix, const UString& name, const UString& suffix);
+        static UString TypeIndexToString(std::type_index index);
+        static UString StandardsToString(Standards std);
+        static UString PIDsToString(const std::set<PID>& pids);
+        static UString CASToString(CASID min, CASID max);
     };
 }
 

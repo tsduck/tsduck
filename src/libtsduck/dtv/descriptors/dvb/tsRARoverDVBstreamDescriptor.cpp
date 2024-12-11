@@ -19,7 +19,7 @@
 #define MY_CLASS ts::RARoverDVBstreamDescriptor
 #define MY_DID ts::DID_RNT_RAR_OVER_DVB
 #define MY_TID ts::TID_RNT
-#define MY_STD ts::Standards::MPEG
+#define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

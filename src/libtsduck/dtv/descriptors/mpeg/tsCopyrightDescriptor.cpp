@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"copyright_descriptor"
 #define MY_CLASS ts::CopyrightDescriptor
 #define MY_DID ts::DID_MPEG_COPYRIGHT
-#define MY_STD ts::Standards::DVB
+#define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

@@ -72,7 +72,7 @@ namespace ts {
         //! @return True on success, false if the @a id column already exists.
         //!
         template<typename ID, typename std::enable_if<std::is_integral<ID>::value || std::is_enum<ID>::value>::type* = nullptr>
-        bool addColumn(ID id, const UString& header, Align align) { return addColumnImpl(ColId(id), header, align); }
+        bool addColumn(ID id, const UString& header, Align align = Align::LEFT) { return addColumnImpl(ColId(id), header, align); }
 
         //!
         //! Fill a table cell of the current line with text.

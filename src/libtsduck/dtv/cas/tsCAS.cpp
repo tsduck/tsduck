@@ -58,15 +58,41 @@ ts::CASFamily ts::CASFamilyOf(CASID casid)
 
 bool ts::GetCASIdRange(CASFamily cas, CASID& min, CASID& max)
 {
-    for (const CASDesc* it = table; it->family != CAS_OTHER; ++it) {
-        if (cas == it->family) {
-            min = it->min;
-            max = it->max;
-            return true;
+    if (cas != CAS_OTHER) {
+        for (const CASDesc* it = table; it->family != CAS_OTHER; ++it) {
+            if (cas == it->family) {
+                min = it->min;
+                max = it->max;
+                return true;
+            }
         }
     }
     min = max = CASID_NULL;
     return false;
+}
+
+ts::CASID ts::FirstCASId(CASFamily cas)
+{
+    if (cas != CAS_OTHER) {
+        for (const CASDesc* it = table; it->family != CAS_OTHER; ++it) {
+            if (cas == it->family) {
+                return it->min;
+            }
+        }
+    }
+    return CASID_NULL;
+}
+
+ts::CASID ts::LastCASId(CASFamily cas)
+{
+    if (cas != CAS_OTHER) {
+        for (const CASDesc* it = table; it->family != CAS_OTHER; ++it) {
+            if (cas == it->family) {
+                return it->max;
+            }
+        }
+    }
+    return CASID_NULL;
 }
 
 

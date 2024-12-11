@@ -11,6 +11,7 @@
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
 #include "tsNames.h"
+#include "tsTextTable.h"
 
 TS_DEFINE_SINGLETON(ts::PSIRepository);
 
@@ -28,13 +29,9 @@ TS_STATIC_INSTANCE(const, ts::PSIRepository::DescriptorClass, NullDescriptorClas
 ts::PSIRepository::PSIRepository()
 {
     // Load all table names from a names file.
-    std::cout << "=== @@@@@ PSIRepository() start" << std::endl; dumpInternalState(std::cout);
     const auto repo = NamesFile::Instance(NamesFile::Predefined::DTV);
-    std::cout << "=== @@@@@ PSIRepository() names loaded" << std::endl; dumpInternalState(std::cout);
     repo->valuesFromSection(TableVisitor(*this), u"TableId");
-    std::cout << "=== @@@@@ PSIRepository() TID loaded" << std::endl; dumpInternalState(std::cout);
     repo->valuesFromSection(DescriptorVisitor(*this), u"DescriptorId");
-    std::cout << "=== @@@@@ PSIRepository() DID loaded" << std::endl; dumpInternalState(std::cout);
 }
 
 
@@ -46,6 +43,47 @@ ts::PSIRepository::RegisterXML::RegisterXML(const UString& filename)
 {
     CERR.debug(u"registering XML file %s", filename);
     PSIRepository::Instance()._xml_extension_files.push_back(filename);
+}
+
+
+//----------------------------------------------------------------------------
+// Load all table names from DTV names file
+// (executed in PSIRepository constructor)
+//----------------------------------------------------------------------------
+
+bool ts::PSIRepository::TableVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
+{
+    // Decode the extended table id.
+    const Standards std = Standards((value >> 16) & 0xFFFF);
+    const CASFamily cas = CASFamily((value >> 8) & 0xFF);
+    const TID tid = TID(value & 0xFF);
+    const CASID min_cas = FirstCASId(cas);
+    const CASID max_cas = LastCASId(cas);
+
+    // Update existing entries.
+    bool existed = false;
+    const auto bounds(_repo._tables_by_tid.equal_range(tid));
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        const auto& tc(it->second);
+        if ((std == tc->standards || bool(std & tc->standards)) && min_cas >= tc->min_cas && max_cas <= tc->max_cas) {
+            // Found a compatible entry.
+            existed = true;
+            tc->display_name = name;
+        }
+    }
+
+    // Create one entry if not found.
+    if (!existed) {
+        TableClassPtr tc = std::make_shared<TableClass>();
+        tc->standards = std;
+        tc->min_cas = min_cas;
+        tc->max_cas = max_cas;
+        tc->display_name = name;
+        _repo._tables_by_tid.insert(std::make_pair(tid, tc));
+    }
+
+    // Continue visting the table names.
+    return true;
 }
 
 
@@ -74,7 +112,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
 
         // Search an existing entry.
         const auto bounds(repo._tables_by_tid.equal_range(tid));
-        for (auto it = bounds.first; tc != nullptr && it != bounds.second; ++it) {
+        for (auto it = bounds.first; tc == nullptr && it != bounds.second; ++it) {
             const auto& tc1(it->second);
             if ((standards == tc1->standards || bool(standards & tc1->standards)) && min_cas >= tc1->min_cas && max_cas <= tc1->max_cas) {
                 // Found a compatible entry.
@@ -102,7 +140,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
         // Store the first description as XML name.
         if (!xml_done && !xml_name.empty()) {
             xml_done = true;
-            repo._tables_by_name.insert(std::make_pair(xml_name, tc));
+            repo._tables_by_xml_name.insert(std::make_pair(xml_name, tc));
         }
     }
 }
@@ -117,6 +155,40 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
 {
     // Use the complete constructor for actual registration.
     RegisterTable reg(nullptr, null_index, tids, standards, UString(), display, log, pids, min_cas, max_cas);
+}
+
+
+//----------------------------------------------------------------------------
+// Load all descriptor names from DTV names file
+// (executed in PSIRepository constructor)
+//----------------------------------------------------------------------------
+
+bool ts::PSIRepository::DescriptorVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
+{
+    // The value is an EDID.
+    const EDID edid(value);
+
+    // Update existing entries.
+    bool existed = false;
+    const auto bounds(_repo._descriptors_by_xdid.equal_range(edid.xdid()));
+    for (auto it = bounds.first; it != bounds.second; ++it) {
+        if (it->second->edid == edid) {
+            // Found a compatible entry.
+            existed = true;
+            it->second->display_name = name;
+        }
+    }
+
+    // Create one entry if not found.
+    if (!existed) {
+        DescriptorClassPtr dc = std::make_shared<DescriptorClass>();
+        dc->edid = edid;
+        dc->display_name = name;
+        _repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
+    }
+
+    // Continue visting the descriptor names.
+    return true;
 }
 
 
@@ -158,17 +230,17 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory fact
     dc->xml_name = xml_name;
 
     // Store the descriptor description.
-    repo._descriptors_by_index.insert(std::make_pair(index, dc));
+    repo._descriptors_by_type_index.insert(std::make_pair(index, dc));
 
     // Associate XML names with descriptor classes and allowed table ids.
     if (!xml_name.empty()) {
-        repo._descriptors_by_name.insert(std::make_pair(xml_name, dc));
+        repo._descriptors_by_xml_name.insert(std::make_pair(xml_name, dc));
         if (edid.isTableSpecific()) {
             repo._descriptor_tids.insert(std::make_pair(xml_name, edid.tableId()));
         }
     }
     if (!legacy_xml_name.empty()) {
-        repo._descriptors_by_name.insert(std::make_pair(legacy_xml_name, dc));
+        repo._descriptors_by_xml_name.insert(std::make_pair(legacy_xml_name, dc));
         if (edid.isTableSpecific()) {
             repo._descriptor_tids.insert(std::make_pair(legacy_xml_name, edid.tableId()));
         }
@@ -183,80 +255,6 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFun
             repo._casid_descriptor_displays.insert(std::make_pair(min_cas, display));
         } while (min_cas++ < max_cas);
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Load all table names from DTV names file.
-//----------------------------------------------------------------------------
-
-bool ts::PSIRepository::TableVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
-{
-    // Decode the extended table id.
-    const Standards std = Standards((value >> 16) & 0xFFFF);
-    const CASFamily cas = CASFamily((value >> 8) & 0xFF);
-    const TID tid = TID(value & 0xFF);
-    CASID min_cas = CASID_NULL;
-    CASID max_cas = CASID_NULL;
-    GetCASIdRange(cas, min_cas, max_cas);
-
-    // Update existing entries.
-    bool existed = false;
-    const auto bounds(_repo._tables_by_tid.equal_range(tid));
-    for (auto it = bounds.first; it != bounds.second; ++it) {
-        const auto& tc(it->second);
-        if ((std == tc->standards || bool(std & tc->standards)) && min_cas >= tc->min_cas && max_cas <= tc->max_cas) {
-            // Found a compatible entry.
-            existed = true;
-            tc->display_name = name;
-        }
-    }
-
-    // Create one entry if not found.
-    if (!existed) {
-        TableClassPtr tc = std::make_shared<TableClass>();
-        tc->standards = std;
-        tc->min_cas = min_cas;
-        tc->max_cas = max_cas;
-        tc->display_name = name;
-        _repo._tables_by_tid.insert(std::make_pair(tid, tc));
-    }
-
-    // Continue visting the table names.
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Load all descriptor names from DTV names file.
-//----------------------------------------------------------------------------
-
-bool ts::PSIRepository::DescriptorVisitor::handleNameValue(NamesFile::Value value, const UString& name) const
-{
-    // The value is an EDID.
-    const EDID edid(value);
-
-    // Update existing entries.
-    bool existed = false;
-    const auto bounds(_repo._descriptors_by_xdid.equal_range(edid.xdid()));
-    for (auto it = bounds.first; it != bounds.second; ++it) {
-        if (it->second->edid == edid) {
-            // Found a compatible entry.
-            existed = true;
-            it->second->display_name = name;
-        }
-    }
-
-    // Create one entry if not found.
-    if (!existed) {
-        DescriptorClassPtr dc = std::make_shared<DescriptorClass>();
-        dc->edid = edid;
-        dc->display_name = name;
-        _repo._descriptors_by_xdid.insert(std::make_pair(edid.xdid(), dc));
-    }
-
-    // Continue visting the descriptor names.
-    return true;
 }
 
 
@@ -434,7 +432,7 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(XDID 
 
 const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(std::type_index index, TID tid, Standards standards) const
 {
-    const auto bounds(_descriptors_by_index.equal_range(index));
+    const auto bounds(_descriptors_by_type_index.equal_range(index));
     if (bounds.first == bounds.second) {
         return *NullDescriptorClass; // not found
     }
@@ -456,14 +454,14 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(std::
 
 const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(const UString& xml_name) const
 {
-    const auto it = xml_name.findSimilar(_tables_by_name);
-    return it != _tables_by_name.end() ? *it->second : *NullTableClass;
+    const auto it = xml_name.findSimilar(_tables_by_xml_name);
+    return it != _tables_by_xml_name.end() ? *it->second : *NullTableClass;
 }
 
 const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(const UString& xml_name) const
 {
-    const auto it = xml_name.findSimilar(_descriptors_by_name);
-    return it != _descriptors_by_name.end() ? *it->second : *NullDescriptorClass;
+    const auto it = xml_name.findSimilar(_descriptors_by_xml_name);
+    return it != _descriptors_by_xml_name.end() ? *it->second : *NullDescriptorClass;
 }
 
 ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(uint16_t cas_id) const
@@ -578,12 +576,12 @@ void ts::PSIRepository::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
 
 void ts::PSIRepository::getRegisteredTableNames(UStringList& names) const
 {
-    names = MapKeysList(_tables_by_name);
+    names = MapKeysList(_tables_by_xml_name);
 }
 
 void ts::PSIRepository::getRegisteredDescriptorNames(UStringList& names) const
 {
-    names = MapKeysList(_descriptors_by_name);
+    names = MapKeysList(_descriptors_by_xml_name);
 }
 
 void ts::PSIRepository::getRegisteredTablesModels(UStringList& names) const
@@ -601,52 +599,144 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
     out << "TSDuck PSI Repository" << std::endl
         << "=====================" << std::endl
         << std::endl
-        << "TID to table class: " << _tables_by_tid.size() << std::endl;
+        << "==== TID to table class: " << _tables_by_tid.size() << std::endl << std::endl;
+
+    TextTable table;
+    table.addColumn(1, u"TID");
+    table.addColumn(2, u"Name");
+    table.addColumn(3, u"XML");
+    table.addColumn(4, u"Standards");
+    table.addColumn(5, u"Type index");
+    table.addColumn(6, u"PID");
+    table.addColumn(7, u"CAS");
+
     for (const auto& it : _tables_by_tid) {
         const auto& tc(*it.second);
-        out << UString::Format(u"  %X: '%s' <%s>, std: %s, index: %X", it.first, tc.display_name, tc.xml_name, StandardsNames(tc.standards), tc.index.hash_code());
-        const char* sep = ", PIDS: ";
-        for (auto p : tc.pids) {
-            out << sep << UString::Format(u"%X", p);
-            sep = ", ";
-        }
-        if (tc.min_cas != CASID_NULL) {
-            out << UString::Format(u", CAS: %X-%X", tc.min_cas, tc.max_cas);
-        }
-        out << std::endl;
+        table.newLine();
+        table.setCell(1, UString::Format(u"%X", it.first));
+        table.setCell(2, NameToString(u"'", tc.display_name, u"'"));
+        table.setCell(3, NameToString(u"<", tc.xml_name, u">"));
+        table.setCell(4, StandardsToString(tc.standards));
+        table.setCell(5, TypeIndexToString(tc.index));
+        table.setCell(6, PIDsToString(tc.pids));
+        table.setCell(7, CASToString(tc.min_cas, tc.max_cas));
     }
-    out << std::endl << "Table name to table class: " << _tables_by_name.size() << std::endl;
-    for (const auto& it : _tables_by_name) {
-        out << UString::Format(u"  %s index: %X", it.first, it.second->index.hash_code()) << std::endl;
+    table.output(std::cout, TextTable::Headers::UNDERLINED);
+
+    out << std::endl << "==== Table XML name to table class: " << _tables_by_xml_name.size() << std::endl << std::endl;
+    table.clear();
+    table.addColumn(1, u"XML");
+    table.addColumn(2, u"Type index");
+
+    for (const auto& it : _tables_by_xml_name) {
+        table.newLine();
+        table.setCell(1, NameToString(u"<", it.first, u">"));
+        table.setCell(2, TypeIndexToString(it.second->index));
     }
-    out << std::endl << "XDID to descriptor class: " << _descriptors_by_xdid.size() << std::endl;
+    table.output(std::cout, TextTable::Headers::UNDERLINED);
+
+    out << std::endl << "==== XDID to descriptor class: " << _descriptors_by_xdid.size() << std::endl << std::endl;
+    table.clear();
+    table.addColumn(1, u"XDID");
+    table.addColumn(2, u"Name");
+    table.addColumn(3, u"XML");
+    table.addColumn(4, u"EDID");
+    table.addColumn(5, u"Type index");
+
     for (const auto& it : _descriptors_by_xdid) {
         const auto& dc(*it.second);
-        out << UString::Format(u"  %s: '%s' <%s>, %s, index: %X", it.first.toString(), dc.display_name, dc.xml_name, dc.edid.toString(), dc.index.hash_code());
-        if (!dc.legacy_xml_name.empty()) {
-            out << UString::Format(u", legacy: %s", dc.legacy_xml_name);
-        }
-        out << std::endl;
+        table.newLine();
+        table.setCell(1, it.first.toString());
+        table.setCell(2, NameToString(u"'", dc.display_name, u"'"));
+        table.setCell(3, NameToString(u"<", dc.xml_name, u">"));
+        table.setCell(4, dc.edid.toString());
+        table.setCell(5, TypeIndexToString(dc.index));
     }
-    out << std::endl << "Descriptor name to descriptor class: " << _descriptors_by_name.size() << std::endl;
-    for (const auto& it : _descriptors_by_name) {
-        out << UString::Format(u"  %s index: %X", it.first, it.second->index.hash_code()) << std::endl;
+    table.output(std::cout, TextTable::Headers::UNDERLINED);
+
+    out << std::endl << "==== Descriptor name to descriptor class: " << _descriptors_by_xml_name.size() << std::endl << std::endl;
+    table.clear();
+    table.addColumn(1, u"XML");
+    table.addColumn(2, u"Type index");
+
+    for (const auto& it : _descriptors_by_xml_name) {
+        table.newLine();
+        table.setCell(1, NameToString(u"<", it.first, u">"));
+        table.setCell(2, TypeIndexToString(it.second->index));
     }
-    out << std::endl << "Descriptor RTTI index to descriptor class: " << _descriptors_by_index.size() << std::endl;
-    for (const auto& it : _descriptors_by_index) {
-        out << UString::Format(u"  %X: %s", it.first.hash_code(), it.second->xml_name) << std::endl;
+    table.output(std::cout, TextTable::Headers::UNDERLINED);
+
+    out << std::endl << "==== Descriptor RTTI index to descriptor class: " << _descriptors_by_type_index.size() << std::endl << std::endl;
+    table.clear();
+    table.addColumn(1, u"Type index");
+    table.addColumn(2, u"Name");
+    table.addColumn(3, u"XML");
+
+    for (const auto& it : _descriptors_by_type_index) {
+        table.newLine();
+        table.setCell(1, TypeIndexToString(it.first));
+        table.setCell(2, NameToString(u"'", it.second->display_name, u"'"));
+        table.setCell(3, NameToString(u"<", it.second->xml_name, u">"));
     }
-    out << std::endl << "XML descriptor name to table id for table-specific descriptors: " << _descriptor_tids.size() << std::endl;
+    table.output(std::cout, TextTable::Headers::UNDERLINED);
+
+    out << std::endl << "==== XML descriptor name to table id for table-specific descriptors: " << _descriptor_tids.size() << std::endl << std::endl;
+    table.clear();
+    table.addColumn(1, u"XML");
+    table.addColumn(2, u"TID");
+
     for (const auto& it : _descriptor_tids) {
-        out << UString::Format(u"  %s: %X", it.first, it.second) << std::endl;
+        table.newLine();
+        table.setCell(1, NameToString(u"<", it.first, u">"));
+        table.setCell(2, UString::Format(u"%X", it.second));
     }
-    out << std::endl << "Display CA Descriptor functions: " << _casid_descriptor_displays.size() << std::endl;
+    table.output(std::cout, TextTable::Headers::UNDERLINED);
+
+    out << std::endl << "==== Display CA Descriptor functions: " << _casid_descriptor_displays.size() << std::endl;
     for (const auto& it : _casid_descriptor_displays) {
-        out << UString::Format(u"  CASID: %X", it.first) << std::endl;
+        out << UString::Format(u"CASID: %X", it.first) << std::endl;
     }
-    out << std::endl << "XML extension files: " << _xml_extension_files.size() << std::endl;
+
+    out << std::endl << "==== XML extension files: " << _xml_extension_files.size() << std::endl << std::endl;
     for (const auto& it : _xml_extension_files) {
-        out << " - \"" << it << "\"" << std::endl;
+        out << "\"" << it << "\"" << std::endl;
     }
     out << std::endl;
+}
+
+ts::UString ts::PSIRepository::NameToString(const UString& prefix, const UString& name, const UString& suffix)
+{
+    return name.empty() ? u"-" : prefix + name + suffix;
+}
+
+ts::UString ts::PSIRepository::TypeIndexToString(std::type_index index)
+{
+    return index == null_index ? u"-" : UString::Format(u"%X", index.hash_code());
+}
+
+ts::UString ts::PSIRepository::StandardsToString(Standards std)
+{
+    return std == Standards::NONE ? u"-" : StandardsNames(std);
+}
+
+ts::UString ts::PSIRepository::PIDsToString(const std::set<PID>& pids)
+{
+    if (pids.empty()) {
+        return u"-";
+    }
+    else {
+        UString s;
+        for (auto pid : pids) {
+            if (!s.empty()) {
+                s.append(u", ");
+            }
+            s.format(u"%X", pid);
+        }
+        return s;
+    }
+}
+
+ts::UString ts::PSIRepository::CASToString(CASID min, CASID max)
+{
+    return min == CASID_NULL ? u"-" : (min == max ? UString::Format(u"%X", min) : UString::Format(u"%X-%X", min, max));
 }

@@ -17,7 +17,7 @@
 #define MY_XML_NAME u"data_stream_alignment_descriptor"
 #define MY_CLASS ts::DataStreamAlignmentDescriptor
 #define MY_DID ts::DID_MPEG_DATA_ALIGN
-#define MY_STD ts::Standards::DVB
+#define MY_STD ts::Standards::MPEG
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Regular(MY_DID, MY_STD), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

@@ -658,7 +658,7 @@ size_t ts::NamesFile::valuesFromSection(const Visitor& visitor, const UString& s
 
         // Loop on all values in this section.
         for (const auto& ent : section->entries) {
-            for (Value i = ent.second->first; i < ent.second->last; ++i) {
+            for (Value i = ent.second->first; i <= ent.second->last; ++i) {
                 visit_count++;
                 if (!visitor.handleNameValue(i, ent.second->name)) {
                     return visit_count;
