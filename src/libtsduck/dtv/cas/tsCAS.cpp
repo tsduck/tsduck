@@ -20,6 +20,7 @@ namespace {
     // A repository of all CAS.
     class CASRepository : private ts::NamesFile::Visitor
     {
+        TS_NOCOPY(CASRepository);
     public:
         // Constructor.
         CASRepository();
