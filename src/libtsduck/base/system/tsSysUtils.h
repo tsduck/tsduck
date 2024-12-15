@@ -197,10 +197,21 @@ namespace ts {
     TSDUCKDLL bool SetBinaryModeStdout(Report& report = CERR);
 
     //!
+    //! Get the name of a class from the @c type_index of a class.
+    //! The result may be not portable.
+    //! @param [in] index The @c type_index of a class.
+    //! @return An implementation-specific name of the class.
+    //!
+    TSDUCKDLL UString ClassName(const std::type_index index);
+
+    //!
     //! Get the name of a class from the @c type_info of an object.
     //! The result may be not portable.
     //! @param [in] info The @c type_info of an object.
     //! @return An implementation-specific name of the object class.
     //!
-    TSDUCKDLL UString ClassName(const std::type_info& info);
+    inline TSDUCKDLL UString ClassName(const std::type_info& info)
+    {
+        return ClassName(std::type_index(info));
+    }
 }

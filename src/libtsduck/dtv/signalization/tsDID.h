@@ -13,8 +13,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTID.h"
-#include "tsPDS.h"
 #include "tsNamesFile.h"
 #include "tsDescriptorContext.h"
 
@@ -34,6 +32,8 @@ namespace ts {
 
     //!
     //! Descriptor tag values (descriptor identification, DID)
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.1.
+    //! @see ETSI EN 300 468, 6.1.
     //!
     enum : DID {
 

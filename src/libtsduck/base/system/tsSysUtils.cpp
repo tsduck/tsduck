@@ -567,10 +567,10 @@ bool ts::StdErrIsTerminal()
 #include <cxxabi.h>
 #endif
 
-ts::UString ts::ClassName(const std::type_info& info)
+ts::UString ts::ClassName(const std::type_index index)
 {
     UString name;
-    const char* const rtti = info.name();
+    const char* const rtti = index.name();
     if (rtti != nullptr) {
         // By default, use the plain RTTI name. Not always a pretty name.
         name.assignFromUTF8(rtti);

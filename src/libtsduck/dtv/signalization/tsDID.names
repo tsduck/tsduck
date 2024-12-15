@@ -70,7 +70,6 @@ Extended = true
 #
 # MPEG-defined regular descriptors
 #
-0x0001_00_FFFFFFFF_01 = NPT Reference
 0x0001_00_FFFFFFFF_02 = Video Stream
 0x0001_00_FFFFFFFF_03 = Audio Stream
 0x0001_00_FFFFFFFF_04 = Hierarchy

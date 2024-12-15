@@ -12,6 +12,7 @@
 #include "tsCerrReport.h"
 #include "tsNames.h"
 #include "tsTextTable.h"
+#include "tsSysUtils.h"
 
 TS_DEFINE_SINGLETON(ts::PSIRepository);
 
@@ -636,7 +637,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
     table.addColumn(2, u"Name");
     table.addColumn(3, u"XML");
     table.addColumn(4, u"Standards");
-    table.addColumn(5, u"Type index");
+    table.addColumn(5, u"Class");
     table.addColumn(6, u"PID");
     table.addColumn(7, u"CAS");
 
@@ -656,7 +657,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
     out << std::endl << "==== Table XML name to table class: " << _tables_by_xml_name.size() << std::endl << std::endl;
     table.clear();
     table.addColumn(1, u"XML");
-    table.addColumn(2, u"Type index");
+    table.addColumn(2, u"Class");
 
     for (const auto& it : _tables_by_xml_name) {
         table.newLine();
@@ -671,7 +672,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
     table.addColumn(2, u"Name");
     table.addColumn(3, u"XML");
     table.addColumn(4, u"EDID");
-    table.addColumn(5, u"Type index");
+    table.addColumn(5, u"Class");
 
     for (const auto& it : _descriptors_by_xdid) {
         const auto& dc(*it.second);
@@ -687,7 +688,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
     out << std::endl << "==== Descriptor name to descriptor class: " << _descriptors_by_xml_name.size() << std::endl << std::endl;
     table.clear();
     table.addColumn(1, u"XML");
-    table.addColumn(2, u"Type index");
+    table.addColumn(2, u"Class");
 
     for (const auto& it : _descriptors_by_xml_name) {
         table.newLine();
@@ -698,7 +699,7 @@ void ts::PSIRepository::dumpInternalState(std::ostream& out) const
 
     out << std::endl << "==== Descriptor RTTI index to descriptor class: " << _descriptors_by_type_index.size() << std::endl << std::endl;
     table.clear();
-    table.addColumn(1, u"Type index");
+    table.addColumn(1, u"Class");
     table.addColumn(2, u"Name");
     table.addColumn(3, u"XML");
 
@@ -748,7 +749,11 @@ ts::UString ts::PSIRepository::NameToString(const UString& prefix, const UString
 
 ts::UString ts::PSIRepository::TypeIndexToString(std::type_index index)
 {
-    return index == NullIndex() ? u"-" : UString::Format(u"%X", index.hash_code());
+    if (index == NullIndex()) {
+        return u"-";
+    }
+    const UString name(ClassName(index));
+    return name.empty() ? UString::Format(u"%X", index.hash_code()): name;
 }
 
 ts::UString ts::PSIRepository::StandardsToString(Standards std)

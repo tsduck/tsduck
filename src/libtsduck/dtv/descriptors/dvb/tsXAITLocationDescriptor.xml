@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <xait_location_descriptor
+        xait_original_network_id="uint16, required"
+        xait_service_id="uint16, required"
+        xait_version_number="uint5, required"
+        xait_update_policy="uint3, required"/>
+
+  </_descriptors>
+</tsduck>

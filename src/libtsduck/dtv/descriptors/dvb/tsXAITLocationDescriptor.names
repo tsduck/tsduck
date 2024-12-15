@@ -1,0 +1,5 @@
+[xait_location_descriptor.update_policy]
+Bits = 3
+0 = When the XAIT version changes, immediately re-load the XAIT
+1 = Ignore XAIT version changes until a reset or reinitialize
+2-7 = Reserved
