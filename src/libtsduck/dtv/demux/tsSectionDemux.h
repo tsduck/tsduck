@@ -17,7 +17,7 @@
 #include "tsTableHandlerInterface.h"
 #include "tsSectionHandlerInterface.h"
 #include "tsInvalidSectionHandlerInterface.h"
-#include "tsETID.h"
+#include "tsXTID.h"
 
 namespace ts {
     //!
@@ -231,7 +231,7 @@ namespace ts {
         void processPacket(const TSPacket&);
 
         // This internal structure contains the analysis context for one TID/TIDext into one PID.
-        struct ETIDContext
+        struct XTIDContext
         {
             bool    notified = false;   // The table was reported to application through a handler
             uint8_t version = 0;        // Version of this table
@@ -240,7 +240,7 @@ namespace ts {
             SectionPtrVector sects {};  // Array of sections
 
             // Default constructor.
-            ETIDContext() = default;
+            XTIDContext() = default;
 
             // Init for a new table.
             void init(uint8_t new_version, uint8_t last_section);
@@ -259,7 +259,7 @@ namespace ts {
             uint8_t       continuity = 0;        // Last continuity counter
             bool          sync = false;          // We are synchronous in this PID
             ByteBlock     ts {};                 // TS payload buffer
-            std::map<ETID,ETIDContext> tids {};  // TID analysis contexts
+            std::map<XTID,XTIDContext> tids {};  // TID analysis contexts
 
             // Default constructor.
             PIDContext() = default;

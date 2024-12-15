@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"message_descriptor"
-#define MY_CLASS ts::MessageDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_MESSAGE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::MessageDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_MESSAGE)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,12 +26,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::MessageDescriptor::MessageDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
 ts::MessageDescriptor::MessageDescriptor(uint8_t id, const UString& lang, const UString& text) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     message_id(id),
     language_code(lang),
     message(text)
@@ -51,16 +49,6 @@ void ts::MessageDescriptor::clearContent()
     message_id = 0;
     language_code.clear();
     message.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MessageDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -107,7 +95,7 @@ bool ts::MessageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MessageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "Message id: " << int(buf.getUInt8());

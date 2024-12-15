@@ -12,9 +12,22 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
+#include "tsNamesFile.h"
 
 namespace ts {
+
+    class DuckContext;
+
+    //!
+    //! Conditional Access System Id.
+    //!
+    using CASID = uint16_t;
+
+    //!
+    //! Maximum number of CASID values.
+    //!
+    constexpr size_t CASID_MAX = 0x10000;
+
     //!
     //! Known Conditional Access Systems families.
     //! @ingroup mpeg
@@ -38,7 +51,30 @@ namespace ts {
     //! @param [in] ca_system_id DVB-allocated CA system id.
     //! @return A CAS family enumeration value.
     //!
-    TSDUCKDLL CASFamily CASFamilyOf(uint16_t ca_system_id);
+    TSDUCKDLL CASFamily CASFamilyOf(CASID ca_system_id);
+
+    //!
+    //! Get the minimum and maximum CA system id in a CAS family.
+    //! @param [in] cas CAS family.
+    //! @param [out] min First DVB-allocated CA system id for @a cas or CASID_NULL if unknown.
+    //! @param [out] max Last DVB-allocated CA system id for @a cas or CASID_NULL if unknown.
+    //! @return True if @a cas was found, false otherwise.
+    //!
+    TSDUCKDLL bool GetCASIdRange(CASFamily cas, CASID& min, CASID& max);
+
+    //!
+    //! Get the lowest CA system id in a CAS family.
+    //! @param [in] cas CAS family.
+    //! @return First DVB-allocated CA system id for @a cas or CASID_NULL if unknown.
+    //!
+    TSDUCKDLL CASID FirstCASId(CASFamily cas);
+
+    //!
+    //! Get the highest CA system id in a CAS family.
+    //! @param [in] cas CAS family.
+    //! @return Last DVB-allocated CA system id for @a cas or CASID_NULL if unknown.
+    //!
+    TSDUCKDLL CASID LastCASId(CASFamily cas);
 
     //!
     //! Name of Conditional Access Families.
@@ -50,7 +86,7 @@ namespace ts {
     //!
     //! Selected DVB-assigned CA System Identifier values
     //!
-    enum : uint16_t {
+    enum : CASID {
         CASID_NULL            = 0x0000,  //!< Null/reserved/invalid CAS Id. Can be used to indicated "unspecified".
         CASID_MEDIAGUARD_MIN  = 0x0100,  //!< Minimum CAS Id value for MediaGuard.
         CASID_MEDIAGUARD_MAX  = 0x01FF,  //!< Maximum CAS Id value for MediaGuard.
@@ -72,4 +108,13 @@ namespace ts {
         CASID_WIDEVINE_MAX    = 0x4AD5,  //!< Maximum CAS Id value for Widevine CAS (Google).
         CASID_SAFEACCESS      = 0x4ADC,  //!< CAS Id value for SafeAccess.
     };
+
+    //!
+    //! Name of a Conditional Access System Id (as in CA Descriptor).
+    //! @param [in] duck TSDuck execution context (used to select from other standards).
+    //! @param [in] casid Conditional Access System Id.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString CASIdName(const DuckContext& duck, uint16_t casid, NamesFlags flags = NamesFlags::NAME);
 }

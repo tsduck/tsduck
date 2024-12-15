@@ -171,6 +171,7 @@ void ts::RRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     disp << margin << UString::Format(u"Rating region: %n", uint8_t(section.tableIdExtension())) << std::endl;
 
     if (!buf.canReadBytes(2)) {
@@ -200,7 +201,7 @@ void ts::RRT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     }
 
     // Common descriptors.
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Descriptors", UString(), 10);
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Descriptors", UString(), 10);
 }
 
 

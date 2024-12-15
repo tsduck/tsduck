@@ -642,6 +642,43 @@ endif::[]
 |===
 
 [.opt]
+*--default-registration* _value_
+
+[.optdoc]
+Specify a default _registration id_ (also know as _format identifier_).
+These identifiers are normally found in a MPEG-defined `registration_descriptor`.
+They are used to identify MPEG private descriptors, stream types and other signalization
+data which are defined by a specific organization.
+
+[.optdoc]
+This option is meaningful only when the signalization is incorrect,
+when MPEG private descriptors appear in tables without the correct preceding `registration_descriptor`.
+
+[.optdoc]
+Several options `--default-registration` can be specifed.
+Unlike DVB private data specifiers, several MPEG registration ids can be simultaneously defined.
+When several default registration ids are specified, they are used as if they were placed in
+as many `registration_descriptor`, in the same order as the options on the command line,
+before any actual `registration_descriptor` in descriptor lists.
+
+[.opt]
+*--dvb*
+
+[.optdoc]
+Assume that the transport stream is a DVB one.
+
+[.optdoc]
+DVB streams are normally automatically detected from their signalization.
+This option is useful when possibly incorrect non-DVB stuff is found in the TS before the first DVB-specific table.
+
+[.optdoc]
+Additionally, this option enforces a strictly DVB stream, not the subset which is used by ISDB.
+The use case is the following: A stream is initially recognized as DVB.
+This is not incompatible with ISDB.
+When a table or descriptor id is which is unused in DVB but valid with ISDB is found, the stream becomes an ISDB one.
+The option `--dvb` disables the switch to ISDB and such a table or descriptor is only reported as "unknown".
+
+[.opt]
 *--ignore-leap-seconds*
 
 [.optdoc]

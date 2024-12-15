@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"vvc_subpictures_descriptor"
-#define MY_CLASS ts::VVCSubpicturesDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_VVC_SUBPICTURES
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::VVCSubpicturesDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_VVC_SUBPICTURES)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::VVCSubpicturesDescriptor::VVCSubpicturesDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -45,16 +43,6 @@ ts::VVCSubpicturesDescriptor::VVCSubpicturesDescriptor(DuckContext& duck, const 
     VVCSubpicturesDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::VVCSubpicturesDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -108,7 +96,7 @@ void ts::VVCSubpicturesDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::VVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << "Default service mode: " << UString::TrueFalse(buf.getBool());

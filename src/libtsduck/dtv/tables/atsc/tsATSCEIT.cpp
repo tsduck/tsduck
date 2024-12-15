@@ -173,6 +173,7 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section
         disp << UString::Format(u", number of events: %d", event_count = buf.getUInt8()) << std::endl;
 
         // Loop on all event definitions.
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
         while (buf.canReadBytes(8) && event_count-- > 0) {
             buf.skipBits(2);
             disp << margin << UString::Format(u"- Event Id: %n", buf.getBits<uint16_t>(14)) << std::endl;
@@ -181,7 +182,7 @@ void ts::ATSCEIT::DisplaySection(TablesDisplay& disp, const ts::Section& section
             disp << margin << UString::Format(u"  ETM location: %d", buf.getBits<uint8_t>(2)) << std::endl;
             disp << margin << UString::Format(u"  Duration: %d seconds", buf.getBits<uint32_t>(20)) << std::endl;
             disp.displayATSCMultipleString(buf, 1, margin + u"  ", u"Title text: ");
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ");
         }
     }
 }

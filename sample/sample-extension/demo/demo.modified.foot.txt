@@ -1,11 +1,13 @@
 
-* FOOT, TID 240 (0xF0), PID 260 (0x0104)
-  Version: 0, sections: 1, total size: 66 bytes
+* FOOT, TID 0xF0 (240), PID 0x0104 (260)
+  Version: 0, sections: 1, total size: 72 bytes
   - Section 0:
     Foo id: 0x0008 (8), name: "modified-name"
-    - Descriptor 0: Foo (0xE8, 232), 18 bytes
+    - Descriptor 0: Private Data Specifier (0x5F, 95), 4 bytes
+      Specifier: 0x464F4F20 (Foo Demo)
+    - Descriptor 1: Foo (0xE8, 232), 18 bytes
       Name: "foolish-descriptor"
-    - Descriptor 1: Extension Descriptor (0x7F, 127), 16 bytes
+    - Descriptor 2: Extension Descriptor (0x7F, 127), 16 bytes
       Extended descriptor: Message (0x08, 8)
       Message id: 32, language: eng
       Message: "The message"

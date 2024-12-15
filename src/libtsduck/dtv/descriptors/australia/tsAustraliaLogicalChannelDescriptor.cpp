@@ -10,25 +10,23 @@
 #include "tsPSIRepository.h"
 
 #define MY_XML_NAME u"australia_logical_channel_descriptor"
-#define MY_CLASS ts::AustraliaLogicalChannelDescriptor
-#define MY_DID ts::DID_AUSTRALIA_LOGICAL_CHAN
-#define MY_PDS ts::PDS_AUSTRALIA
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::AustraliaLogicalChannelDescriptor
+#define MY_EDID(n)  ts::EDID::PrivateDVB(ts::DID_AUSTRALIA_LOGICAL_CHAN, ts::PDS_AUSTRALIA + (n))
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // Incorrect use of Free TV Australia private data for broadcasters.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 1), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 2), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 3), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 4), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 5), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 10), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 11), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 12), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 13), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 14), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 15), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(1), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(2), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(3), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(4), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(5), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(10), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(11), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(12), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(13), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(14), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID(15), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -36,12 +34,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS + 15), MY_X
 //----------------------------------------------------------------------------
 
 ts::AustraliaLogicalChannelDescriptor::AustraliaLogicalChannelDescriptor() :
-    AbstractLogicalChannelDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractLogicalChannelDescriptor(MY_EDID(0), MY_XML_NAME)
 {
 }
 
 ts::AustraliaLogicalChannelDescriptor::AustraliaLogicalChannelDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractLogicalChannelDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractLogicalChannelDescriptor(duck, desc, MY_EDID(0), MY_XML_NAME)
 {
 }
 

@@ -121,15 +121,16 @@ namespace ts {
         //! the names file is prefixed by the XML name, followed by a dot.
         //! @param [in] value Value to get the name for.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
         //! @param [in] alternate Display this integer value if flags ALTERNATE is set.
+        //! @param [in] bits Optional size in bits of the displayed data.
+        //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-        static UString DataName(const UChar* xml_name, const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternate = 0)
+        static UString DataName(const UChar* xml_name, const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate = 0, size_t bits = 0)
         {
             return NamesFile::Instance(NamesFile::Predefined::DTV)->
-                    nameFromSection(UString::Format(u"%s.%s", xml_name, section), NamesFile::Value(value), flags, bits, NamesFile::Value(alternate));
+                    nameFromSection(UString::Format(u"%s.%s", xml_name, section), NamesFile::Value(value), flags, NamesFile::Value(alternate), bits);
         }
 
         //!
@@ -139,14 +140,15 @@ namespace ts {
         //! the names file is prefixed by the XML name of the structure, followed by a dot.
         //! @param [in] value Value to get the name for.
         //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
         //! @param [in] alternate Display this integer value if flags ALTERNATE is set.
+        //! @param [in] bits Optional size in bits of the displayed data.
+        //! Used in replacement of the "Bits=XX" directive in the .names file.
         //! @return The corresponding name.
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-        UString dataName(const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternate = 0)
+        UString dataName(const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, INT alternate = 0, size_t bits = 0)
         {
-            return DataName<INT>(_xml_name, section, value, flags, bits, alternate);
+            return DataName<INT>(_xml_name, section, value, flags, alternate, bits);
         }
 
     protected:

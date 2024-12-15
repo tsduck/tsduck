@@ -10,12 +10,10 @@
 #include "tsPSIRepository.h"
 
 #define MY_XML_NAME u"dtg_preferred_name_identifier_descriptor"
-#define MY_CLASS ts::DTGPreferredNameIdentifierDescriptor
-#define MY_DID ts::DID_OFCOM_PREF_NAME_ID
-#define MY_PDS ts::PDS_OFCOM
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DTGPreferredNameIdentifierDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_OFCOM_PREF_NAME_ID, ts::PDS_OFCOM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -23,12 +21,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::DTGPreferredNameIdentifierDescriptor::DTGPreferredNameIdentifierDescriptor(uint8_t id) :
-    AbstractPreferredNameIdentifierDescriptor(id, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractPreferredNameIdentifierDescriptor(id, MY_EDID, MY_XML_NAME)
 {
 }
 
 ts::DTGPreferredNameIdentifierDescriptor::DTGPreferredNameIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractPreferredNameIdentifierDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractPreferredNameIdentifierDescriptor(duck, desc, MY_EDID, MY_XML_NAME)
 {
 }
 

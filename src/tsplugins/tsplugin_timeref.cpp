@@ -15,6 +15,7 @@
 #include "tsEITProcessor.h"
 #include "tsAlgorithm.h"
 #include "tsTime.h"
+#include "tsDID.h"
 #include "tsMJD.h"
 #include "tsBCD.h"
 #include "tsCRC32.h"

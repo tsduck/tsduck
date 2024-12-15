@@ -165,18 +165,20 @@ void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::BIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+
     disp << margin << UString::Format(u"Original network id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canRead()) {
         buf.skipBits(3);
         disp << margin << UString::Format(u"Broadcast view property: %s", buf.getBool()) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptors:");
+        disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Common descriptors:");
     }
 
     // Loop across all broadcasters
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Broadcaster id: %n", buf.getUInt8()) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }
 }
 

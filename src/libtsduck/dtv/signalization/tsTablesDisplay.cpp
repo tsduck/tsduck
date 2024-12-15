@@ -181,7 +181,7 @@ void ts::TablesDisplay::displayIntAndASCII(const UString& format, PSIBuffer& buf
 // Display a table on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& margin, uint16_t cas)
+void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& margin, CASID cas)
 {
     std::ostream& strm(_duck.out());
 
@@ -209,7 +209,7 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
     }
 
     // Display common header lines.
-    strm << margin << UString::Format(u"* %s, TID %n", names::TID(_duck, tid, cas), table.tableId());
+    strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, cas), table.tableId());
     if (table.sourcePID() != PID_NULL) {
         // If PID is the null PID, this means "unknown PID"
         strm << UString::Format(u", PID %n", table.sourcePID());
@@ -240,7 +240,7 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
 // Display a section on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displaySection(const Section& section, const UString& margin, uint16_t cas, bool no_header)
+void ts::TablesDisplay::displaySection(const Section& section, const UString& margin, CASID cas, bool no_header)
 {
     std::ostream& strm(_duck.out());
 
@@ -261,7 +261,7 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << UString::Format(u"* %s, TID %n", names::TID(_duck, tid, cas), tid);
+        strm << margin << UString::Format(u"* %s, TID %n", TIDName(_duck, tid, cas), tid);
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
             strm << UString::Format(u", PID %n", section.sourcePID());
@@ -325,13 +325,11 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
 // Display a section on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displaySectionData(const Section& section, const UString& margin, uint16_t cas)
+void ts::TablesDisplay::displaySectionData(const Section& section, const UString& margin, CASID cas)
 {
-    // Update CAS with default one if necessary.
-    cas = _duck.casId(cas);
-
     // Find the display handler for this table id (and maybe CAS).
-    DisplaySectionFunction handler = PSIRepository::Instance().getSectionDisplay(section.tableId(), _duck.standards(), section.sourcePID(), cas);
+    const SectionContext context(section.sourcePID(), _duck.standards(), _duck.casId(cas));
+    DisplaySectionFunction handler = PSIRepository::Instance().getTable(section.tableId(), context).display;
 
     if (handler != nullptr) {
         PSIBuffer buf(_duck, section.payload(), section.payloadSize());
@@ -370,13 +368,11 @@ void ts::TablesDisplay::logLine(const UString& line)
 // Display the payload of a section on the output stream as a one-line "log" message.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, uint16_t cas)
+void ts::TablesDisplay::logSectionData(const Section& section, const UString& header, size_t max_bytes, CASID cas)
 {
-    // Update CAS with default one if necessary.
-    cas = _duck.casId(cas);
-
     // Find the log handler for this table id (and maybe CAS).
-    LogSectionFunction handler = PSIRepository::Instance().getSectionLog(section.tableId(), _duck.standards(), section.sourcePID(), cas);
+    const SectionContext context(section.sourcePID(), _duck.standards(), _duck.casId(cas));
+    LogSectionFunction handler = PSIRepository::Instance().getTable(section.tableId(), context).log;
     if (handler == nullptr) {
         handler = LogUnknownSectionData;
     }
@@ -407,7 +403,7 @@ ts::UString ts::TablesDisplay::LogUnknownSectionData(const Section& section, siz
 // Display an invalid section on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const UString& reason, const UString& margin, uint16_t cas, bool no_header)
+void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const UString& reason, const UString& margin, CASID cas, bool no_header)
 {
     std::ostream& strm(_duck.out());
 
@@ -428,7 +424,7 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
         }
         strm << std::endl << margin << "  ";
         if (tid != TID_NULL) {
-            strm << UString::Format(u"%s, TID %n, ", names::TID(_duck, tid, cas), tid);
+            strm << UString::Format(u"%s, TID %n, ", TIDName(_duck, tid, cas), tid);
         }
         if (data.sourcePID() != PID_NULL) {
             strm << UString::Format(u"PID %n, ", data.sourcePID());
@@ -445,7 +441,7 @@ void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const USt
 // Display the content of an unknown descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload, size_t size, const UString& margin, TID tid, PDS pds)
+void ts::TablesDisplay::displayUnkownDescriptor(DID did, const uint8_t * payload, size_t size, const UString& margin)
 {
     _duck.out() << UString::Dump(payload, size, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size());
 }
@@ -584,10 +580,10 @@ void ts::TablesDisplay::displayTLV(const uint8_t* data,
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayDescriptor(const Descriptor& desc, const UString& margin, TID tid, PDS pds, uint16_t cas)
+void ts::TablesDisplay::displayDescriptor(const Descriptor& desc, DescriptorContext& context, const UString& margin)
 {
     if (desc.isValid()) {
-        displayDescriptorData(desc.tag(), desc.payload(), desc.payloadSize(), margin, tid, _duck.actualPDS(pds), cas);
+        displayDescriptorData(desc, context, margin);
     }
 }
 
@@ -597,12 +593,13 @@ void ts::TablesDisplay::displayDescriptor(const Descriptor& desc, const UString&
 //----------------------------------------------------------------------------
 
 void ts::TablesDisplay::displayDescriptorList(const Section& section,
+                                              DescriptorContext& context,
+                                              bool top_level,
                                               PSIBuffer& buf,
                                               const UString& margin,
                                               const UString& title,
                                               const UString& empty_text,
-                                              size_t length,
-                                              uint16_t cas)
+                                              size_t length)
 {
     if (length == NPOS) {
         length = buf.remainingReadBytes();
@@ -615,7 +612,7 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section,
             _duck.out() << margin << title << std::endl;
         }
         if (length > 0) {
-            displayDescriptorList(section, buf.currentReadAddress(), length, margin, cas);
+            displayDescriptorList(section, context, top_level, buf.currentReadAddress(), length, margin);
             buf.skipBytes(length);
         }
         else if (!empty_text.empty()) {
@@ -630,15 +627,16 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section,
 //----------------------------------------------------------------------------
 
 void ts::TablesDisplay::displayDescriptorListWithLength(const Section& section,
+                                                        DescriptorContext& context,
+                                                        bool top_level,
                                                         PSIBuffer& buf,
                                                         const UString& margin,
                                                         const UString& title,
                                                         const UString& empty_text,
-                                                        size_t length_bits,
-                                                        uint16_t cas)
+                                                        size_t length_bits)
 {
     const size_t length = buf.getUnalignedLength(length_bits);
-    displayDescriptorList(section, buf, margin, title, empty_text, length, cas);
+    displayDescriptorList(section, context, top_level, buf, margin, title, empty_text, length);
 }
 
 
@@ -646,51 +644,42 @@ void ts::TablesDisplay::displayDescriptorListWithLength(const Section& section,
 // Display a list of descriptors from a memory area
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayDescriptorList(const Section& section, const void* data, size_t size, const UString& margin, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorList(const Section& section, DescriptorContext& context, bool top_level, const void* data, size_t size, const UString& margin)
 {
     std::ostream& strm(_duck.out());
-    const uint8_t* desc_start = reinterpret_cast<const uint8_t*>(data);
+    const uint8_t* const initial_start = reinterpret_cast<const uint8_t*>(data);
+    const size_t initial_size = size;
+    const uint8_t* desc_start = initial_start;
     size_t desc_index = 0;
-    const TID tid = section.tableId();
-
-    // Compute default PDS. Use fake PDS for descriptors in ATSC context.
-    const PDS default_pds = _duck.actualPDS(0);
-    PDS pds = default_pds;
 
     // Loop across all descriptors
     while (size >= 2) {  // descriptor header size
 
+        // Set context analysis up to the current descriptor.
+        context.setCurrentRawDescriptorList(initial_start, desc_start - initial_start);
+
         // Get descriptor header
-        uint8_t desc_tag = *desc_start++;
-        size_t desc_length = *desc_start++;
+        const uint8_t desc_tag = desc_start[0];
+        const size_t desc_length = desc_start[1];
+        desc_start += 2;
         size -= 2;
 
-        if (desc_length > size) {
+        // Check that the descriptor is complete. Abort descriptor list if not.
+        if (size < desc_length) {
             strm << margin << "- Invalid descriptor length: " << desc_length << " (" << size << " bytes allocated)" << std::endl;
             break;
         }
 
+        // Build a descriptor object.
+        Descriptor desc(desc_start - 2, 2 + desc_length);
+
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
-             << names::DID(desc_tag, pds, tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
+             << DIDName(desc_tag, context, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
              << desc_length << " bytes" << std::endl;
 
-        // If the descriptor contains a registration id, keep it in the TSDuck context.
-        if (desc_tag == DID_MPEG_REGISTRATION && desc_length >= 4) {
-            _duck.addRegistrationId(GetUInt32(desc_start));
-        }
-
-        // If the descriptor contains a private_data_specifier, keep it to establish a private context.
-        if (desc_tag == DID_DVB_PRIV_DATA_SPECIF && desc_length >= 4) {
-            pds = GetUInt32(desc_start);
-            // PDS zero means return to default value.
-            if (pds == 0) {
-                pds = default_pds;
-            }
-        }
-
         // Display descriptor.
-        displayDescriptorData(desc_tag, desc_start, desc_length, margin + u"  ", tid, pds, cas);
+        displayDescriptorData(desc, context, margin + u"  ");
 
         // Move to next descriptor for next iteration
         desc_start += desc_length;
@@ -699,26 +688,32 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
 
     // Report extraneous bytes
     displayExtraData(desc_start, size, margin);
+
+    // If the descriptor list is the top level list of its table, declare it now in the context.
+    // It will be used to track REGID's in lower-level descriptor lists.
+    if (top_level) {
+        context.setTopLevelRawDescriptorList(initial_start, initial_size);
+        context.setCurrentRawDescriptorList(nullptr, 0);
+    }
 }
 
 
 //----------------------------------------------------------------------------
-// Display a list of descriptors.
+// Display a dlist of descriptors.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const UString& margin, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorList(const DescriptorList& dlist, DescriptorContext& context, const UString& margin)
 {
     std::ostream& strm(_duck.out());
-    const TID tid = list.tableId();
 
-    for (size_t i = 0; i < list.count(); ++i) {
-        const DescriptorPtr& desc(list[i]);
+    for (size_t i = 0; i < dlist.count(); ++i) {
+        const DescriptorPtr& desc(dlist[i]);
         if (desc != nullptr) {
-            const PDS pds = list.privateDataSpecifier(i);
+            context.setCurrentDescriptorList(&dlist, i);
             strm << margin << "- Descriptor " << i << ": "
-                 << names::DID(desc->tag(), _duck.actualPDS(pds), tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
+                 << DIDName(desc->tag(), context, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
                  << desc->size() << " bytes" << std::endl;
-            displayDescriptor(*desc, margin + u"  ", tid, _duck.actualPDS(pds), cas);
+            displayDescriptor(*desc, context, margin + u"  ");
         }
     }
 }
@@ -728,47 +723,36 @@ void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const 
 // Display a descriptor on the output stream.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, size_t size, const UString& margin, TID tid, PDS pds, uint16_t cas)
+void ts::TablesDisplay::displayDescriptorData(const Descriptor& desc, DescriptorContext& context, const UString& margin)
 {
     std::ostream& strm(_duck.out());
 
-    // Descriptor header size, before payload.
+    const uint8_t* payload = desc.payload();
+    size_t size = desc.payloadSize();
     size_t header_size = 2;
 
-    // Compute extended descriptor id.
-    EDID edid;
-    if (did >= 0x80) {
-        // Private descriptor.
-        edid = EDID::PrivateDVB(did, _duck.actualPDS(pds));
-    }
-    else if (did == DID_MPEG_EXTENSION && size >= 1) {
+    if (desc.tag() == DID_MPEG_EXTENSION && size >= 1) {
         // MPEG extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
-        edid = EDID::ExtensionMPEG(ext);
         header_size++;
         size--;
         // Display extended descriptor header
-        strm << margin << "MPEG extended descriptor: " << NameFromDTV(u"MPEGExtendedDescriptorId", ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
+        strm << margin << "MPEG extended descriptor: " << XDIDNameMPEG(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
-    else if (did == DID_DVB_EXTENSION && size >= 1) {
+    else if (desc.tag() == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
-        edid = EDID::ExtensionDVB(ext);
         header_size++;
         size--;
         // Display extended descriptor header
-        strm << margin << "Extended descriptor: " << names::EDID(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
-    }
-    else {
-        // Simple descriptor.
-        edid = EDID::Standard(did);
+        strm << margin << "Extended descriptor: " << XDIDNameDVB(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
 
     // Locate the display handler for this descriptor payload.
-    DisplayDescriptorFunction handler = PSIRepository::Instance().getDescriptorDisplay(edid, tid);
+    DisplayDescriptorFunction handler = PSIRepository::Instance().getDescriptor(desc.xdid(), context).display;
     if (handler != nullptr) {
         PSIBuffer buf(_duck, payload, size);
-        handler(*this, buf, margin, did, tid, _duck.actualPDS(pds));
+        handler(*this, desc, buf, margin, context);
         displayExtraData(buf, margin);
         if (buf.reservedBitsError()) {
             strm << margin << "Reserved bits incorrectly set:" << std::endl;
@@ -776,7 +760,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         }
     }
     else {
-        displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));
+        displayUnkownDescriptor(desc.tag(), payload, size, margin);
     }
 }
 

@@ -65,6 +65,7 @@ void ts::DuckContext::reset()
     _charsetIn = _charsetOut = &DVBCharTableSingleByte::DVB_ISO_6937;
     _casId = CASID_NULL;
     _defaultPDS = 0;
+    _defaultREGIDs.clear();
     _cmdStandards = _accStandards = Standards::NONE;
     _hfDefaultRegion.clear();
     _timeReference = cn::milliseconds::zero();
@@ -119,47 +120,18 @@ void ts::DuckContext::resetStandards(Standards mask)
 
 
 //----------------------------------------------------------------------------
-// The actual CAS id to use.
-//----------------------------------------------------------------------------
-
-void ts::DuckContext::setDefaultCASId(uint16_t cas)
-{
-    _casId = cas;
-}
-
-uint16_t ts::DuckContext::casId(uint16_t cas) const
-{
-    return cas == CASID_NULL ? _casId : cas;
-}
-
-
-//----------------------------------------------------------------------------
 // The actual private data specifier to use.
 //----------------------------------------------------------------------------
 
-void ts::DuckContext::setDefaultPDS(PDS pds)
-{
-    _defaultPDS = pds;
-}
-
 ts::PDS ts::DuckContext::actualPDS(PDS pds) const
 {
-    if (pds != 0) {
+    if (pds != 0 && pds != PDS_NULL) {
         // Explicit PDS already defined.
         return pds;
     }
-    else if (_defaultPDS != 0) {
+    else if (_defaultPDS != 0 && _defaultPDS != PDS_NULL) {
         // A default PDS was specified.
         return _defaultPDS;
-    }
-    else if (bool(_accStandards & Standards::ATSC)) {
-        // We have previously found ATSC signalization, use the fake PDS for ATSC.
-        // This allows interpretation of ATSC descriptors in MPEG-defined tables (eg. PMT).
-        return PDS_ATSC;
-    }
-    else if (bool(_accStandards & Standards::ISDB)) {
-        // Same principle for ISDB.
-        return PDS_ISDB;
     }
     else {
         // Really no PDS to use.
@@ -169,32 +141,8 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
 
 
 //----------------------------------------------------------------------------
-// Registration ids (from MPEG-defined registration_descriptor).
-//----------------------------------------------------------------------------
-
-void ts::DuckContext::addRegistrationId(uint32_t regid)
-{
-    if (regid != REGID_NULL) {
-        _lastRegistrationId = regid;
-        _registrationIds.insert(regid);
-    }
-}
-
-void ts::DuckContext::resetRegistrationIds()
-{
-    _lastRegistrationId = REGID_NULL;
-    _registrationIds.clear();
-}
-
-
-//----------------------------------------------------------------------------
 // Name of the default region for UVH and VHF band frequency layout.
 //----------------------------------------------------------------------------
-
-void ts::DuckContext::setDefaultHFRegion(const UString& region)
-{
-    _hfDefaultRegion = region;
-}
 
 ts::UString ts::DuckContext::defaultHFRegion() const
 {
@@ -368,11 +316,21 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
 
         args.option(u"default-pds", 0, *PrivateDataSpecifierEnum);
         args.help(u"default-pds",
-                  u"Default private data specifier. This option is meaningful only when the "
-                  u"signalization is incorrect, when private descriptors appear in tables "
-                  u"without a preceding private_data_specifier_descriptor. The specified "
-                  u"value is used as private data specifier to interpret private descriptors. "
+                  u"Default private data specifier. "
+                  u"This option is meaningful only when the signalization is incorrect, "
+                  u"when DVB private descriptors appear in tables without a preceding private_data_specifier_descriptor. "
+                  u"The specified value is used as private data specifier to interpret DVB private descriptors. "
                   u"The PDS value can be an integer or one of (not case-sensitive) names.");
+
+        args.option(u"default-registration", 0, Args::UINT32, 0, Args::UNLIMITED_COUNT);
+        args.help(u"default-registration",
+                  u"Default registration id. "
+                  u"This option is meaningful only when the signalization is incorrect, "
+                  u"when MPEG private descriptors appear in tables without a preceding registration_descriptor. "
+                  u"The specified value is used as registration id (also know as format identifier) "
+                  u"to interpret MPEG private descriptors or stream types.\n"
+                  u"Several options --default-registration can be specified. "
+                  u"Unlike DVB private data specifiers, several MPEG registration ids can be simultaneously defined.");
     }
 
     // Options relating to default character sets.
@@ -384,17 +342,6 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"By default, DVB encoding using ISO-6937 as default table is used. "
                   u"The available table names are " +
                   UString::Join(DVBCharset::GetAllNames()) + u".");
-
-        args.option(u"europe");
-        args.help(u"europe",
-                  u"A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut "
-                  u"for commonly incorrect signalization on some European satellites. In that "
-                  u"signalization, the character encoding is ISO-8859-15, the most common "
-                  u"encoding for Latin & Western Europe languages. However, this is not the "
-                  u"default DVB character set and it should be properly specified in all "
-                  u"strings, which is not the case with some operators. Using this option, "
-                  u"all DVB strings without explicit table code are assumed to use ISO-8859-15 "
-                  u"instead of the standard ISO-6937 encoding.");
     }
 
     // Options relating to default standards.
@@ -414,6 +361,13 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"useful when ATSC-related stuff are found in the TS before the first "
                   u"ATSC-specific table. For instance, when a PMT with ATSC-specific "
                   u"descriptors is found before the first ATSC MGT or VCT.");
+
+        args.option(u"dvb");
+        args.help(u"dvb",
+                  u"Assume that the transport stream is a DVB one. "
+                  u"DVB streams are normally automatically detected from their signalization. "
+                  u"This option is only useful when possibly incorrect non-DVB stuff are found "
+                  u"in the TS before the first DVB-specific table.");
 
         args.option(u"isdb");
         args.help(u"isdb",
@@ -465,6 +419,31 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"This is typically used in ARIB ISDB and ABNT ISDB-Tb standards. "
                   u"The specified name can be either 'UTC', 'JST' (Japan Standard Time) or 'UTC+|-hh[:mm]'. "
                   u"Examples: 'UTC+9' (same as 'JST' for ARIB ISDB), 'UTC-3' (for ABNT ISDB-Tb in Brazil).");
+    }
+
+    // Option --europe triggers different options in different sets of options.
+    if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS)) {
+
+        // Build help text for --europe option. It depends on which set of options is requested.
+        // Use _definedCmdOptions instead of cmdOptionsMask to include previous options.
+        UStringList options;
+        UString other;
+        if (_definedCmdOptions & CMD_STANDARDS) {
+            options.push_back(u"--dvb");
+        }
+        if (_definedCmdOptions & CMD_CHARSET) {
+            options.push_back(u"--default-charset ISO-8859-15");
+            other = u" This is a handy shortcut for commonly incorrect signalization on some European satellites. "
+                    u"In that signalization, the character encoding is ISO-8859-15, "
+                    u"the most common encoding for Latin & Western Europe languages. "
+                    u"However, this is not the default DVB character set and it should be properly specified in all strings, "
+                    u"which is not the case with some operators. "
+                    u"Using this option, all DVB strings without explicit table code are assumed to use ISO-8859-15 "
+                    u"instead of the standard ISO-6937 encoding.";
+        }
+        args.option(u"europe");
+        args.help(u"europe",
+                  u"A synonym for '" + UString::Join(options, u" ") + u"'." + other);
     }
 
     // Option --japan triggers different options in different sets of options.
@@ -571,6 +550,9 @@ bool ts::DuckContext::loadArgs(Args& args)
     if (_definedCmdOptions & CMD_PDS) {
         // Keep previous value unchanged if unspecified.
         args.getIntValue(_defaultPDS, u"default-pds", _defaultPDS);
+        if (args.present(u"default-registration")) {
+            args.getIntValues(_defaultREGIDs, u"default-registration");
+        }
     }
 
     // Options relating to default DVB character sets.
@@ -620,6 +602,10 @@ bool ts::DuckContext::loadArgs(Args& args)
 
     // Options relating to default standards.
     if (_definedCmdOptions & CMD_STANDARDS) {
+        if (args.present(u"dvb") || args.present(u"europe")) {
+            // The additional flags DVBONLY means pure DVB, not compatible with ISDB.
+            _cmdStandards |= Standards::DVB | Standards::DVBONLY;
+        }
         if (args.present(u"atsc") || args.present(u"usa")) {
             _cmdStandards |= Standards::ATSC;
         }
@@ -692,6 +678,7 @@ void ts::DuckContext::saveArgs(SavedArgs& args) const
     args._charsetOutName = _charsetOut->name();
     args._casId = _casId;
     args._defaultPDS = _defaultPDS;
+    args._defaultREGIDs = _defaultREGIDs;
     args._hfDefaultRegion = _hfDefaultRegion;
     args._timeReference = _timeReference;
 }
@@ -717,6 +704,7 @@ void ts::DuckContext::restoreArgs(const SavedArgs& args)
     }
     if (_definedCmdOptions & CMD_PDS) {
         _defaultPDS = args._defaultPDS;
+        _defaultREGIDs = args._defaultREGIDs;
     }
     if (_definedCmdOptions & CMD_HF_REGION) {
         _hfDefaultRegion = args._hfDefaultRegion;

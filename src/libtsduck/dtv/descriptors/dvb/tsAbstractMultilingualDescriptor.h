@@ -49,11 +49,11 @@ namespace ts {
     protected:
         //!
         //! Protected constructor for subclasses.
-        //! @param [in] tag Descriptor tag.
+        //! @param [in] edid Extended descriptor id.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
         //! @param [in] xml_attribute XML attribute name for the "name" fields.
         //!
-        AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute);
+        AbstractMultilingualDescriptor(EDID edid, const UChar* xml_name, const UChar* xml_attribute);
 
         // Use default assignment but declare it to make sure the compiler knows
         // that we have understood the consequences of a pointer member.

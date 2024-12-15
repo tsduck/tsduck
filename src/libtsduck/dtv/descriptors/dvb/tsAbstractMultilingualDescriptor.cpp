@@ -17,8 +17,8 @@
 // Protected constructor for subclasses.
 //----------------------------------------------------------------------------
 
-ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute) :
-    AbstractDescriptor(tag, xml_name, Standards::DVB, 0),
+ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(EDID edid, const UChar* xml_name, const UChar* xml_attribute) :
+    AbstractDescriptor(edid, xml_name),
     _xml_attribute(xml_attribute)
 {
 }
@@ -61,7 +61,7 @@ void ts::AbstractMultilingualDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();

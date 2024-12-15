@@ -15,13 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"target_serial_number_descriptor"
-#define MY_CLASS ts::TargetSerialNumberDescriptor
-#define MY_DID ts::DID_INT_SERIAL_NUM
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::TargetSerialNumberDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_INT_SERIAL_NUM, ts::Standards::DVB, ts::TID_INT, ts::TID_UNT)
 
-// Table-specific descriptor which is allowed in two distinct tables.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_INT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT), M
 //----------------------------------------------------------------------------
 
 ts::TargetSerialNumberDescriptor::TargetSerialNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -64,7 +61,7 @@ void ts::TargetSerialNumberDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::TargetSerialNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     disp.displayPrivateData(u"Serial number", buf, NPOS, margin);
 }

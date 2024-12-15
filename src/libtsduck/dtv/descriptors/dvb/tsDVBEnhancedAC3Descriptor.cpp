@@ -17,11 +17,10 @@
 
 #define MY_XML_NAME u"DVB_enhanced_AC3_descriptor"
 #define MY_XML_NAME_LEGACY u"enhanced_AC3_descriptor"
-#define MY_CLASS ts::DVBEnhancedAC3Descriptor
-#define MY_DID ts::DID_DVB_ENHANCED_AC3
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DVBEnhancedAC3Descriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_ENHANCED_AC3, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DVBEnhancedAC3Descriptor::DVBEnhancedAC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME, MY_XML_NAME_LEGACY)
 {
 }
 
@@ -136,7 +135,7 @@ void ts::DVBEnhancedAC3Descriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         const bool component_type_flag = buf.getBool();

@@ -18,8 +18,7 @@
 // syntax. It can be converted to XML, as a <linkage_descriptor>.
 
 #define MY_XML_NAME u"linkage_descriptor"
-#define MY_DID ts::DID_DVB_LINKAGE
-#define MY_STD ts::Standards::DVB
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_LINKAGE, ts::Standards::DVB)
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@
 //----------------------------------------------------------------------------
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service)
@@ -35,7 +34,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
 }
 
 ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t service, uint32_t oui) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     ts_id(ts),
     onetw_id(onetw),
     service_id(service)
@@ -175,7 +174,7 @@ bool ts::SSULinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element*
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSULinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SSULinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
-    LinkageDescriptor::DisplayDescriptor(disp, buf, margin, did, tid, pds);
+    LinkageDescriptor::DisplayDescriptor(disp, desc, buf, margin, context);
 }

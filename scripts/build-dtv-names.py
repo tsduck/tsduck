@@ -32,6 +32,13 @@ if __name__ == '__main__':
         print('Usage: %s out-file in-file-or-dir ...' % sys.argv[0], file=sys.stderr)
         exit(1)
     with open(sys.argv[1], 'w', encoding='utf-8') as output:
+        # Build list of input files. Make sure that file tsCAS.names comes first.
+        files = []
+        for f in sys.argv[2:]:
+            if os.path.basename(f) == 'tsCAS.names':
+                files.insert(0, f)
+            else:
+                files.append(f)
         tsbuild.write_source_header('#', 'Registered names for Digital TV', file=output)
-        for i in range(2, len(sys.argv)):
-            process_file_or_dir(sys.argv[i], output)
+        for f in files:
+            process_file_or_dir(f, output)

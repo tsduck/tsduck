@@ -14,6 +14,7 @@
 
 :!opt-notitle:
 :!opt-hf:
+:!opt-europe:
 :!opt-brazil:
 :!opt-japan:
 :!opt-philippines:
@@ -24,6 +25,7 @@
 // end::notitle[]
 
 // tag::charset[]
+:opt-europe: true
 :opt-brazil: true
 :opt-japan: true
 :opt-philippines: true
@@ -46,6 +48,7 @@
 // end::hf-short[]
 
 // tag::std[]
+:opt-europe: true
 :opt-brazil: true
 :opt-japan: true
 :opt-philippines: true
@@ -180,17 +183,51 @@ See xref:opt-default-std[xrefstyle=short] for more details.
 // end::pds[]
 
 //----------------------------------------------------------------------------
+// option --default-registration
+//----------------------------------------------------------------------------
+
+// tag::pds[]
+[.opt]
+*--default-registration* _value_
+
+[.optdoc]
+Default MPEG-defined _registration id_ (also known as _format identifier_).
+Several options `--default-registration` options can be specified.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::pds[]
+
+//----------------------------------------------------------------------------
+// option --dvb
+//----------------------------------------------------------------------------
+
+// tag::std[]
+[.opt]
+*--dvb*
+
+[.optdoc]
+Assume that the transport stream is a DVB one.
+See xref:opt-default-std[xrefstyle=short] for more details.
+// end::std[]
+
+//----------------------------------------------------------------------------
 // option --europe
 //----------------------------------------------------------------------------
 
-// tag::charset[]
+ifdef::opt-europe[]
 [.opt]
 *--europe*
 
 [.optdoc]
-A synonym for `--default-charset ISO-8859-15`.
-See xref:charsets[xrefstyle=short] for more details.
+A synonym for
+// tag::std[]
+`--dvb`
+// end::std[]
+// tag::charset[]
+`--default-charset ISO-8859-15`.
 // end::charset[]
+.
+See xref:opt-default-std[xrefstyle=short] and xref:opt-charsets[xrefstyle=short] for more details.
+endif::[]
 
 //----------------------------------------------------------------------------
 // option --hf-band-region (optionally -r)

@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"dtg_service_attribute_descriptor"
-#define MY_CLASS ts::DTGServiceAttributeDescriptor
-#define MY_DID ts::DID_OFCOM_SERVICE_ATTR
-#define MY_PDS ts::PDS_OFCOM
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DTGServiceAttributeDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_OFCOM_SERVICE_ATTR, ts::PDS_OFCOM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::DTGServiceAttributeDescriptor::DTGServiceAttributeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     entries()
 {
 }
@@ -88,7 +86,7 @@ void ts::DTGServiceAttributeDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", buf.getUInt16());

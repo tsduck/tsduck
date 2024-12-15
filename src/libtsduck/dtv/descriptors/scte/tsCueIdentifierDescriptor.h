@@ -28,11 +28,6 @@ namespace ts {
         uint8_t cue_stream_type = CUE_ALL_COMMANDS;   //!< Type of cue messages in the PID.
 
         //!
-        //! Definition of names for cue stream types.
-        //!
-        static const Enumeration CueStreamTypeNames;
-
-        //!
         //! Default constructor.
         //! @param [in] type Allowed command types.
         //!
@@ -44,6 +39,12 @@ namespace ts {
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         CueIdentifierDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        //!
+        //! Definition of names for cue stream types.
+        //! @return A constant reference to an Enumeration object for cue stream types.
+        //!
+        static const Enumeration& CueStreamTypeNames();
 
         // Inherited methods
         DeclareDisplayDescriptor();

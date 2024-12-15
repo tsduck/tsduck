@@ -133,14 +133,12 @@ namespace ts {
     protected:
         //!
         //! Protected constructor for subclasses.
-        //! @param [in] tag Descriptor tag.
+        //! @param [in] edid Extended descriptor id.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
-        //! @param [in] standards A bit mask of standards which define this structure.
-        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
         //!
-        AbstractDownloadContentDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr) :
-            AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
+        AbstractDownloadContentDescriptor(EDID edid, const UChar* xml_name, const UChar* xml_legacy_name = nullptr) :
+            AbstractDescriptor(edid, xml_name, xml_legacy_name)
         {
         }
     };

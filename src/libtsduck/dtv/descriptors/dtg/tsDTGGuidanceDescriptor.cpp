@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"dtg_guidance_descriptor"
-#define MY_CLASS ts::DTGGuidanceDescriptor
-#define MY_DID ts::DID_OFCOM_GUIDANCE
-#define MY_PDS ts::PDS_OFCOM
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DTGGuidanceDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_OFCOM_GUIDANCE, ts::PDS_OFCOM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::DTGGuidanceDescriptor::DTGGuidanceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -96,7 +94,7 @@ void ts::DTGGuidanceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DTGGuidanceDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         buf.skipBits(6);

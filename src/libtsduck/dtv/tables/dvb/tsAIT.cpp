@@ -230,7 +230,8 @@ void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     // Common information.
     const uint16_t tidext = section.tableIdExtension();
     disp << margin << UString::Format(u"Application type: %d (0x%<04X), Test application: %d", tidext & 0x7FFF, tidext >> 15) << std::endl;
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Common descriptor loop:");
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Common descriptor loop:");
 
     // Application loop
     buf.skipBits(4);
@@ -239,7 +240,7 @@ void ts::AIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << UString::Format(u"Application: Identifier: (Organization id: %n", buf.getUInt32());
         disp << UString::Format(u", Application id: %n)", buf.getUInt16());
         disp << UString::Format(u", Control code: %d", buf.getUInt8()) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }
     disp.displayPrivateData(u"Extraneous application data", buf, NPOS, margin);
     buf.popState();

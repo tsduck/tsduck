@@ -19,8 +19,10 @@
 #include "tsAVC.h"
 #include "tsStreamType.h"
 #include "tsCodecType.h"
+#include "tsDescriptorList.h"
 #include "tsDVBAC3Descriptor.h"
 #include "tsComponentDescriptor.h"
+#include "tsRegistrationDescriptor.h"
 #include "tsCAS.h"
 #include "tsPES.h"
 #include "tsunit.h"
@@ -36,11 +38,12 @@ class NamesTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(TID);
     TSUNIT_DECLARE_TEST(SharedTID);
     TSUNIT_DECLARE_TEST(DID);
-    TSUNIT_DECLARE_TEST(EDID);
+    TSUNIT_DECLARE_TEST(XDID);
     TSUNIT_DECLARE_TEST(StreamType);
     TSUNIT_DECLARE_TEST(StreamId);
     TSUNIT_DECLARE_TEST(PESStartCode);
-    TSUNIT_DECLARE_TEST(PrivateDataSpecifier);
+    TSUNIT_DECLARE_TEST(PDS);
+    TSUNIT_DECLARE_TEST(REGID);
     TSUNIT_DECLARE_TEST(CASFamily);
     TSUNIT_DECLARE_TEST(CASId);
     TSUNIT_DECLARE_TEST(BouquetId);
@@ -145,16 +148,16 @@ TSUNIT_DEFINE_TEST(ConfigFile)
 TSUNIT_DEFINE_TEST(TID)
 {
     ts::DuckContext duck;
-    TSUNIT_EQUAL(u"CAT", ts::names::TID(duck, ts::TID_CAT));
-    TSUNIT_EQUAL(u"CAT", ts::names::TID(duck, ts::TID_CAT, ts::CASID_NAGRA_MIN));
-    TSUNIT_EQUAL(u"PMT", ts::names::TID(duck, ts::TID_PMT, ts::CASID_VIACCESS_MIN));
-    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::names::TID(duck, ts::TID_VIA_EMM_U, ts::CASID_VIACCESS_MIN));
-    TSUNIT_EQUAL(u"EIT schedule Actual", ts::names::TID(duck, ts::TID_EIT_S_ACT_MIN + 4));
-    TSUNIT_EQUAL(u"ECM (odd)", ts::names::TID(duck, ts::TID_ECM_81));
-    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::names::TID(duck, ts::TID_ECM_81, ts::CASID_NAGRA_MIN));
-    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(duck, ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::NamesFlags::VALUE));
-    TSUNIT_EQUAL(u"Logiways DMT", ts::names::TID(duck, ts::TID_LW_DMT, ts::CASID_SAFEACCESS));
-    TSUNIT_EQUAL(u"unknown (0x90)", ts::names::TID(duck, ts::TID_LW_DMT));
+    TSUNIT_EQUAL(u"CAT", ts::TIDName(duck, ts::TID_CAT));
+    TSUNIT_EQUAL(u"CAT", ts::TIDName(duck, ts::TID_CAT, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"PMT", ts::TIDName(duck, ts::TID_PMT, ts::CASID_VIACCESS_MIN));
+    TSUNIT_EQUAL(u"Viaccess EMM-U", ts::TIDName(duck, ts::TID_VIA_EMM_U, ts::CASID_VIACCESS_MIN));
+    TSUNIT_EQUAL(u"EIT schedule Actual", ts::TIDName(duck, ts::TID_EIT_S_ACT_MIN + 4));
+    TSUNIT_EQUAL(u"ECM (odd)", ts::TIDName(duck, ts::TID_ECM_81));
+    TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::TIDName(duck, ts::TID_ECM_81, ts::CASID_NAGRA_MIN));
+    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::TIDName(duck, ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::NamesFlags::VALUE));
+    TSUNIT_EQUAL(u"Logiways DMT", ts::TIDName(duck, ts::TID_LW_DMT, ts::CASID_SAFEACCESS));
+    TSUNIT_EQUAL(u"unknown (0x90)", ts::TIDName(duck, ts::TID_LW_DMT));
 }
 
 TSUNIT_DEFINE_TEST(SharedTID)
@@ -166,32 +169,39 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::TID_TVCT, ts::TID_CDT);
 
     duck.addStandards(ts::Standards::ISDB);
-    TSUNIT_EQUAL(u"LDT (ISDB)", ts::names::TID(duck, ts::TID_MGT));
-    TSUNIT_EQUAL(u"CDT (ISDB)", ts::names::TID(duck, ts::TID_TVCT));
+    TSUNIT_EQUAL(u"LDT (ISDB)", ts::TIDName(duck, ts::TID_MGT));
+    TSUNIT_EQUAL(u"CDT (ISDB)", ts::TIDName(duck, ts::TID_TVCT));
 
     duck.resetStandards(ts::Standards::ATSC);
-    TSUNIT_EQUAL(u"MGT (ATSC)", ts::names::TID(duck, ts::TID_MGT));
-    TSUNIT_EQUAL(u"TVCT (ATSC)", ts::names::TID(duck, ts::TID_TVCT));
+    TSUNIT_EQUAL(u"MGT (ATSC)", ts::TIDName(duck, ts::TID_MGT));
+    TSUNIT_EQUAL(u"TVCT (ATSC)", ts::TIDName(duck, ts::TID_TVCT));
 }
 
-TSUNIT_DEFINE_TEST(PrivateDataSpecifier)
+TSUNIT_DEFINE_TEST(PDS)
 {
     const ts::UString tdfRef = ts::UString(u"T") + ts::LATIN_SMALL_LETTER_E_WITH_ACUTE + ts::UString(u"l") + ts::LATIN_SMALL_LETTER_E_WITH_ACUTE + ts::UString(u"diffusion de France (TDF)");
 
-    TSUNIT_EQUAL(u"EACEM/EICTA", ts::names::PrivateDataSpecifier(0x28));
-    TSUNIT_EQUAL(tdfRef, ts::names::PrivateDataSpecifier(0x1A));
+    TSUNIT_EQUAL(u"EACEM/EICTA", ts::PDSName(0x28));
+    TSUNIT_EQUAL(tdfRef, ts::PDSName(0x1A));
 
-    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::VALUE));
-    TSUNIT_EQUAL(u"0x00000028 (EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::FIRST));
-    TSUNIT_EQUAL(u"40 (EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::DECIMAL_FIRST));
-    TSUNIT_EQUAL(u"0x00000028 (40, EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::FIRST | ts::NamesFlags::BOTH));
-    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028, 40)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::VALUE | ts::NamesFlags::BOTH));
-    TSUNIT_EQUAL(u"EACEM/EICTA (40)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::VALUE | ts::NamesFlags::DECIMAL));
+    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028)", ts::PDSName(0x28, ts::NamesFlags::VALUE));
+    TSUNIT_EQUAL(u"0x00000028 (EACEM/EICTA)", ts::PDSName(0x28, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"40 (EACEM/EICTA)", ts::PDSName(0x28, ts::NamesFlags::DECIMAL_FIRST));
+    TSUNIT_EQUAL(u"0x00000028 (40, EACEM/EICTA)", ts::PDSName(0x28, ts::NamesFlags::FIRST | ts::NamesFlags::BOTH));
+    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028, 40)", ts::PDSName(0x28, ts::NamesFlags::VALUE | ts::NamesFlags::BOTH));
+    TSUNIT_EQUAL(u"EACEM/EICTA (40)", ts::PDSName(0x28, ts::NamesFlags::VALUE | ts::NamesFlags::DECIMAL));
 
-    TSUNIT_EQUAL(u"unknown (0x00008123)", ts::names::PrivateDataSpecifier(0x8123));
-    TSUNIT_EQUAL(u"unknown (33059)", ts::names::PrivateDataSpecifier(0x8123, ts::NamesFlags::DECIMAL));
-    TSUNIT_EQUAL(u"33059 (unknown)", ts::names::PrivateDataSpecifier(0x8123, ts::NamesFlags::DECIMAL_FIRST));
-    TSUNIT_EQUAL(u"unknown (0x00008123, 33059)", ts::names::PrivateDataSpecifier(0x8123, ts::NamesFlags::DECIMAL | ts::NamesFlags::HEXA));
+    TSUNIT_EQUAL(u"unknown (0x00008123)", ts::PDSName(0x8123));
+    TSUNIT_EQUAL(u"unknown (33059)", ts::PDSName(0x8123, ts::NamesFlags::DECIMAL));
+    TSUNIT_EQUAL(u"33059 (unknown)", ts::PDSName(0x8123, ts::NamesFlags::DECIMAL_FIRST));
+    TSUNIT_EQUAL(u"unknown (0x00008123, 33059)", ts::PDSName(0x8123, ts::NamesFlags::DECIMAL | ts::NamesFlags::HEXA));
+}
+
+TSUNIT_DEFINE_TEST(REGID)
+{
+    TSUNIT_EQUAL(u"\"SCTE\", Society of Cable Telecommunications Engineers", ts::REGIDName(0x53435445));
+    TSUNIT_EQUAL(u"\"ABCD\"", ts::REGIDName(0x41424344));
+    TSUNIT_EQUAL(u"unknown (0x41424302)", ts::REGIDName(0x41424302));
 }
 
 TSUNIT_DEFINE_TEST(CASFamily)
@@ -207,8 +217,8 @@ TSUNIT_DEFINE_TEST(CASFamily)
 TSUNIT_DEFINE_TEST(CASId)
 {
     ts::DuckContext duck;
-    TSUNIT_EQUAL(u"Viaccess", ts::names::CASId(duck, 0x500));
-    TSUNIT_EQUAL(u"Irdeto", ts::names::CASId(duck, 0x601));
+    TSUNIT_EQUAL(u"Viaccess", ts::CASIdName(duck, 0x500));
+    TSUNIT_EQUAL(u"Irdeto", ts::CASIdName(duck, 0x601));
 }
 
 TSUNIT_DEFINE_TEST(BouquetId)
@@ -249,22 +259,41 @@ TSUNIT_DEFINE_TEST(Content)
 
 TSUNIT_DEFINE_TEST(DID)
 {
-    TSUNIT_EQUAL(u"CA", ts::names::DID(ts::DID_MPEG_CA));
-    TSUNIT_EQUAL(u"ISO-639 Language", ts::names::DID(ts::DID_MPEG_LANGUAGE));
-    TSUNIT_EQUAL(u"Data Broadcast Id", ts::names::DID(ts::DID_DVB_DATA_BROADCAST_ID));
-    TSUNIT_EQUAL(u"unknown (0x83)", ts::names::DID(ts::DID_EACEM_LCN));
-    TSUNIT_EQUAL(u"Logical Channel Number", ts::names::DID(ts::DID_EACEM_LCN, ts::PDS_EACEM));
-    TSUNIT_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_EACEM_LCN, ts::PDS_EACEM, ts::TID_NULL, ts::NamesFlags::FIRST));
+    ts::DuckContext duck;
+    ts::DescriptorContext context1(duck);
+    TSUNIT_EQUAL(u"CA", ts::DIDName(ts::DID_MPEG_CA, context1));
+    TSUNIT_EQUAL(u"ISO-639 Language", ts::DIDName(ts::DID_MPEG_LANGUAGE, context1));
+
+    ts::DescriptorContext context_dvb(duck, ts::TID_NULL, ts::Standards::DVB);
+    TSUNIT_EQUAL(u"Data Broadcast Id", ts::DIDName(ts::DID_DVB_DATA_BROADCAST_ID, context_dvb));
+    TSUNIT_EQUAL(u"unknown (0x83)", ts::DIDName(ts::DID_EACEM_LCN, context_dvb));
+
+    ts::DescriptorContext context_eacem(duck, ts::TID_NULL, ts::Standards::DVB, ts::CASID_NULL, ts::REGIDVector(), ts::PDS_EACEM);
+    TSUNIT_EQUAL(u"Logical Channel Number", ts::DIDName(ts::DID_EACEM_LCN, context_eacem));
+    TSUNIT_EQUAL(u"0x83 (Logical Channel Number)", ts::DIDName(ts::DID_EACEM_LCN, context_eacem, ts::NamesFlags::FIRST));
 }
 
-TSUNIT_DEFINE_TEST(EDID)
+TSUNIT_DEFINE_TEST(XDID)
 {
-    TSUNIT_EQUAL(u"T2 Delivery System", ts::names::EDID(ts::EDID_DVB_T2_DELIVERY));
+    TSUNIT_EQUAL(u"Green Extension", ts::XDIDNameMPEG(ts::XDID_MPEG_GREEN_EXT));
+    TSUNIT_EQUAL(u"0x08 (MPEG-H 3D Audio)", ts::XDIDNameMPEG(ts::XDID_MPEG_MPH3D_AUDIO, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"T2 Delivery System", ts::XDIDNameDVB(ts::XDID_DVB_T2_DELIVERY));
+    TSUNIT_EQUAL(u"0xAA (unknown)", ts::XDIDNameDVB(0xAA, ts::NamesFlags::FIRST));
 }
 
 TSUNIT_DEFINE_TEST(StreamType)
 {
-    TSUNIT_EQUAL(u"MPEG-4 Video", ts::names::StreamType(ts::ST_MPEG4_VIDEO));
+    TSUNIT_EQUAL(u"MPEG-4 Video", ts::StreamTypeName(ts::ST_MPEG4_VIDEO));
+    TSUNIT_EQUAL(u"SCTE 35 Splice Info", ts::StreamTypeName(ts::ST_SCTE35_SPLICE));
+    TSUNIT_EQUAL(u"DTS-HD Master Audio", ts::StreamTypeName(ts::ST_SCTE35_SPLICE, {ts::REGID_HDMV}));
+
+    ts::DuckContext duck;
+    ts::DescriptorList dlist(nullptr);
+    dlist.add(duck, ts::RegistrationDescriptor(ts::REGID_CUEI));
+    TSUNIT_EQUAL(u"SCTE 35 Splice Info", ts::StreamTypeName(ts::ST_SCTE35_SPLICE, duck, dlist));
+
+    dlist.add(duck, ts::RegistrationDescriptor(ts::REGID_HDMV));
+    TSUNIT_EQUAL(u"DTS-HD Master Audio", ts::StreamTypeName(ts::ST_SCTE35_SPLICE, duck, dlist));
 }
 
 TSUNIT_DEFINE_TEST(StreamId)
@@ -424,7 +453,7 @@ TSUNIT_DEFINE_TEST(Extension)
     ts::DuckContext duck;
     ts::NamesFile::DeleteInstance(ts::NamesFile::Predefined::DTV);
     ts::NamesFile::RegisterExtensionFile reg(_tempFileName);
-    TSUNIT_EQUAL(u"test-cas", ts::names::CASId(duck, 0xF123));
+    TSUNIT_EQUAL(u"test-cas", ts::CASIdName(duck, 0xF123));
     ts::NamesFile::UnregisterExtensionFile(_tempFileName);
     ts::NamesFile::DeleteInstance(ts::NamesFile::Predefined::DTV);
 }

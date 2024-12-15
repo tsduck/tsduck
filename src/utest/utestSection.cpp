@@ -12,7 +12,6 @@
 
 #include "tsSection.h"
 #include "tsBinaryTable.h"
-#include "tsNames.h"
 #include "tsunit.h"
 
 #include "tables/psi_tot_tnt_sections.h"

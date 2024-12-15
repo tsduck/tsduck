@@ -17,12 +17,10 @@
 #include "tsDVBCharTableUTF16.h"
 
 #define MY_XML_NAME u"AVS2_audio_descriptor"
-#define MY_CLASS ts::AVS2AudioDescriptor
-#define MY_DID ts::DID_AVS2_AUDIO
-#define MY_PDS ts::PDS_AVSAudio
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::AVS2AudioDescriptor
+#define MY_EDID     ts::EDID::PrivateDual(ts::DID_AVS2_AUDIO, ts::PDS_AVSAudio)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -30,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::AVS2AudioDescriptor::AVS2AudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -153,7 +151,7 @@ void ts::AVS2AudioDescriptor::avs_version_info::display(TablesDisplay& disp, PSI
     }
 }
 
-void ts::AVS2AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AVS2AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         uint8_t _num_channels = buf.getUInt8();

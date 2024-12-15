@@ -10,15 +10,13 @@
 #include "tsPSIRepository.h"
 
 #define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
-#define MY_CLASS ts::EacemPreferredNameListDescriptor
-#define MY_DID ts::DID_EACEM_PREF_NAME_LIST
-#define MY_PDS ts::PDS_EACEM
-#define MY_STD ts::Standards::DVB
-
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+#define MY_CLASS    ts::EacemPreferredNameListDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_EACEM_PREF_NAME_LIST, ts::PDS_EACEM)
+#define MY_EDID_1   ts::EDID::PrivateDVB(ts::DID_EACEM_PREF_NAME_LIST, ts::PDS_TPS)
 
 // Incorrect use of TPS private data, TPS broadcasters should use EACEM/EICTA PDS instead.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, ts::PDS_TPS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID_1, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -26,12 +24,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, ts::PDS_TPS), MY_X
 //----------------------------------------------------------------------------
 
 ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor() :
-    AbstractPreferredNameListDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractPreferredNameListDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
 ts::EacemPreferredNameListDescriptor::EacemPreferredNameListDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractPreferredNameListDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractPreferredNameListDescriptor(duck, desc, MY_EDID, MY_XML_NAME)
 {
 }
 

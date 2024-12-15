@@ -22,6 +22,7 @@
 
 class PSIRepositoryTest: public tsunit::Test
 {
+    TSUNIT_DECLARE_TEST(DataTypes);
     TSUNIT_DECLARE_TEST(Registrations);
     TSUNIT_DECLARE_TEST(SharedTID);
 };
@@ -32,6 +33,19 @@ TSUNIT_REGISTER(PSIRepositoryTest);
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
+
+TSUNIT_DEFINE_TEST(DataTypes)
+{
+    // These types are supposed to be compact.
+    TSUNIT_ASSUME(sizeof(ts::XTID) == 4);
+    TSUNIT_ASSUME(sizeof(ts::XDID) == 2);
+    TSUNIT_ASSUME(sizeof(ts::EDID) == 8);
+
+    // Dump PSI Repository internal state in debug mode.
+    if (debugMode()) {
+        ts::PSIRepository::Instance().dumpInternalState(debug());
+    }
+}
 
 TSUNIT_DEFINE_TEST(Registrations)
 {
@@ -64,7 +78,7 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ISDB, ts::PSIRepository::Instance().getTableStandards(ts::TID_MGT, ts::PID_LDT));
     TSUNIT_EQUAL(ts::Standards::ATSC, ts::PSIRepository::Instance().getTableStandards(ts::TID_CVCT));
 
-    ts::PSIRepository::TableFactory factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::ATSC);
+    ts::PSIRepository::TableFactory factory = ts::PSIRepository::Instance().getTable(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ATSC)).factory;
     TSUNIT_ASSERT(factory != nullptr);
     ts::AbstractTablePtr table(factory());
     TSUNIT_ASSERT(table != nullptr);
@@ -72,7 +86,7 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());
 
-    factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::ISDB);
+    factory = ts::PSIRepository::Instance().getTable(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ISDB)).factory;
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
     TSUNIT_ASSERT(table != nullptr);
@@ -80,7 +94,7 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ISDB, table->definingStandards());
     TSUNIT_EQUAL(u"LDT", table->xmlName());
 
-    factory = ts::PSIRepository::Instance().getTableFactory(ts::TID_LDT, ts::Standards::NONE, ts::PID_PSIP);
+    factory = ts::PSIRepository::Instance().getTable(ts::TID_LDT, ts::SectionContext(ts::PID_PSIP, ts::Standards::NONE)).factory;
     TSUNIT_ASSERT(factory != nullptr);
     table = factory();
     TSUNIT_ASSERT(table != nullptr);
@@ -88,8 +102,8 @@ TSUNIT_DEFINE_TEST(SharedTID)
     TSUNIT_EQUAL(ts::Standards::ATSC, table->definingStandards());
     TSUNIT_EQUAL(u"MGT", table->xmlName());
 
-    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::ATSC));
-    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::ISDB));
-    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::NONE, ts::PID_PSIP));
-    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getSectionDisplay(ts::TID_LDT, ts::Standards::NONE, ts::PID_LDT));
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getTable(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ATSC)).display);
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getTable(ts::TID_LDT, ts::SectionContext(ts::PID_NULL, ts::Standards::ISDB)).display);
+    TSUNIT_ASSERT(ts::MGT::DisplaySection == ts::PSIRepository::Instance().getTable(ts::TID_LDT, ts::SectionContext(ts::PID_PSIP, ts::Standards::NONE)).display);
+    TSUNIT_ASSERT(ts::LDT::DisplaySection == ts::PSIRepository::Instance().getTable(ts::TID_LDT, ts::SectionContext(ts::PID_LDT, ts::Standards::NONE)).display);
 }

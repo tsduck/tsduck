@@ -10,12 +10,10 @@
 #include "tsPSIRepository.h"
 
 #define MY_XML_NAME u"dtg_logical_channel_descriptor"
-#define MY_CLASS ts::DTGLogicalChannelDescriptor
-#define MY_DID ts::DID_OFCOM_LOGICAL_CHAN
-#define MY_PDS ts::PDS_OFCOM
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DTGLogicalChannelDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_OFCOM_LOGICAL_CHAN, ts::PDS_OFCOM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -23,12 +21,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::DTGLogicalChannelDescriptor::DTGLogicalChannelDescriptor() :
-    AbstractLogicalChannelDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractLogicalChannelDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
 ts::DTGLogicalChannelDescriptor::DTGLogicalChannelDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractLogicalChannelDescriptor(duck, desc, MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractLogicalChannelDescriptor(duck, desc, MY_EDID, MY_XML_NAME)
 {
 }
 

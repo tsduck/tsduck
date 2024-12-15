@@ -16,12 +16,10 @@
 #include "tsIntegerUtils.h"
 
 #define MY_XML_NAME u"video_depth_range_descriptor"
-#define MY_CLASS ts::VideoDepthRangeDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_VIDEO_DEPTH_RANGE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::VideoDepthRangeDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_VIDEO_DEPTH_RANGE)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::VideoDepthRangeDescriptor::VideoDepthRangeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -42,16 +40,6 @@ ts::VideoDepthRangeDescriptor::VideoDepthRangeDescriptor(DuckContext& duck, cons
 void ts::VideoDepthRangeDescriptor::clearContent()
 {
     ranges.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::VideoDepthRangeDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -111,7 +99,7 @@ void ts::VideoDepthRangeDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();

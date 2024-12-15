@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"IPMAC_stream_location_descriptor"
-#define MY_CLASS ts::IPMACStreamLocationDescriptor
-#define MY_DID ts::DID_INT_STREAM_LOC
-#define MY_TID ts::TID_INT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::IPMACStreamLocationDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_INT_STREAM_LOC, ts::Standards::DVB, ts::TID_INT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::IPMACStreamLocationDescriptor::IPMACStreamLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -75,7 +73,7 @@ void ts::IPMACStreamLocationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::IPMACStreamLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(9)) {
         disp << margin << UString::Format(u"Network id: %n", buf.getUInt16()) << std::endl;

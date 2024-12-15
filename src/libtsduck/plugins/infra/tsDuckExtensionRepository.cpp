@@ -9,7 +9,6 @@
 #include "tsDuckExtensionRepository.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsFileUtils.h"
-#include "tsSysUtils.h"
 #include "tsCerrReport.h"
 
 // Define the singleton.
@@ -25,10 +24,13 @@ const ts::DuckExtensionRepository::Loader ts::DuckExtensionRepository::LoaderIns
 
 ts::DuckExtensionRepository::DuckExtensionRepository()
 {
+    CERR.debug(u"creating DuckExtensionRepository");
 }
 
 ts::DuckExtensionRepository::Loader::Loader()
 {
+    CERR.debug(u"starting DuckExtensionRepository::Loader");
+
     // Give up now when TSLIBEXT_NONE is defined.
     if (!GetEnvironment(u"TSLIBEXT_NONE").empty()) {
         CERR.debug(u"TSLIBEXT_NONE defined, no extension loaded");

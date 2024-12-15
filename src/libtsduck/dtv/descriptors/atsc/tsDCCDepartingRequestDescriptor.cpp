@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"dcc_departing_request_descriptor"
-#define MY_CLASS ts::DCCDepartingRequestDescriptor
-#define MY_DID ts::DID_ATSC_DCC_DEPARTING
-#define MY_PDS ts::PDS_ATSC
-#define MY_STD ts::Standards::ATSC
+#define MY_CLASS    ts::DCCDepartingRequestDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_ATSC_DCC_DEPARTING, ts::Standards::ATSC)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::DCCDepartingRequestDescriptor::DCCDepartingRequestDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -66,7 +64,7 @@ void ts::DCCDepartingRequestDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DCCDepartingRequestDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"DCC departing request type: %n", buf.getUInt8()) << std::endl;

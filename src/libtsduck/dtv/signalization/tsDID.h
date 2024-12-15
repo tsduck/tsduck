@@ -13,9 +13,15 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsTID.h"
+#include "tsPDS.h"
+#include "tsNamesFile.h"
+#include "tsDescriptorContext.h"
 
 namespace ts {
+
+    class DuckContext;
+
     //!
     //! Descriptor identifier.
     //!
@@ -464,70 +470,95 @@ namespace ts {
     };
 
     //!
-    //! Extended descriptor tag values (MPEG or DVB extension_descriptor)
+    //! Extension descriptor tag values (MPEG or DVB extension_descriptor)
     //!
     enum : DID {
 
-        EDID_NULL                    = 0xFF,  //!< Invalid EDID value, can be used as placeholder.
+        XDID_NULL                    = 0xFF,  //!< Invalid EDID value, can be used as placeholder.
 
         // In MPEG-defined extension_descriptor:
 
-        EDID_MPEG_OBJ_DESC_UPD       = 0x02,  //!< Ext.DID for ObjectDescriptorUpdate.
-        EDID_MPEG_HEVC_TIM_HRD       = 0x03,  //!< Ext.DID for HEVC_timing_and_HRD_descriptor.
-        EDID_MPEG_AF_EXT             = 0x04,  //!< Ext.DID for AF_extensions_descriptor
-        EDID_MPEG_HEVC_OP_POINT      = 0x05,  //!< Ext.DID for HEVC_operation_point_descriptor
-        EDID_MPEG_HEVC_HIER_EXT      = 0x06,  //!< Ext.DID for HEVC_hierarchy_extension_descriptor
-        EDID_MPEG_GREEN_EXT          = 0x07,  //!< Ext.DID for green_extension_descriptor
-        EDID_MPEG_MPH3D_AUDIO        = 0x08,  //!< Ext.DID for MPEGH_3D_audio_descriptor
-        EDID_MPEG_MPH3D_CONFIG       = 0x09,  //!< Ext.DID for MPEGH_3D_audio_config_descriptor
-        EDID_MPEG_MPH3D_SCENE        = 0x0A,  //!< Ext.DID for MPEGH_3D_audio_scene_descriptor
-        EDID_MPEG_MPH3D_TEXT         = 0x0B,  //!< Ext.DID for MPEGH_3D_audio_text_label_descriptor
-        EDID_MPEG_MPH3D_MULTI        = 0x0C,  //!< Ext.DID for MPEGH_3D_audio_multi_stream_descriptor
-        EDID_MPEG_MPH3D_DRCLOUD      = 0x0D,  //!< Ext.DID for MPEGH_3D_audio_DRC_loudness_descriptor
-        EDID_MPEG_MPH3D_COMMAND      = 0x0E,  //!< Ext.DID for MPEGH_3D_audio_command_descriptor
-        EDID_MPEG_QUALITY_EXT        = 0x0F,  //!< Ext.DID for quality_extension_descriptor
-        EDID_MPEG_VIRT_SEGMENT       = 0x10,  //!< Ext.DID for virtual_segmentation_descriptor
-        EDID_MPEG_TIMED_METADATA_EXT = 0x11,  //!< Ext.DID for timed_metadata_extension_descriptor
-        EDID_MPEG_HEVC_TILE_SSTRM    = 0x12,  //!< Ext.DID for HEVC_tile_substream_descriptor
-        EDID_MPEG_HEVC_SUBREGION     = 0x13,  //!< Ext.DID for HEVC_subregion_descriptor
-        EDID_MPEG_JXS_VIDEO          = 0x14,  //!< Ext.DID for JXS_video_descriptor
-        EDID_MPEG_VVC_TIM_HRD        = 0x15,  //!< Ext.DID for VVC_timing_and_HRD_descriptor.
-        EDID_MPEG_EVC_TIM_HRD        = 0x16,  //!< Ext.DID for EVC_timing_and_HRD_descriptor.
-        EDID_MPEG_LCEVC_VIDEO        = 0x17,  //!< Ext.DID for LCEVC_video_descriptor.
-        EDID_MPEG_LCEVC_LINKAGE      = 0x18,  //!< Ext.DID for LCEVC_linkage_descriptor.
-        EDID_MPEG_MEDIA_SVC_KIND     = 0x19,  //!< Ext.DID for Media_service_kind_descriptor
+        XDID_MPEG_OBJ_DESC_UPD       = 0x02,  //!< Ext.DID for ObjectDescriptorUpdate.
+        XDID_MPEG_HEVC_TIM_HRD       = 0x03,  //!< Ext.DID for HEVC_timing_and_HRD_descriptor.
+        XDID_MPEG_AF_EXT             = 0x04,  //!< Ext.DID for AF_extensions_descriptor
+        XDID_MPEG_HEVC_OP_POINT      = 0x05,  //!< Ext.DID for HEVC_operation_point_descriptor
+        XDID_MPEG_HEVC_HIER_EXT      = 0x06,  //!< Ext.DID for HEVC_hierarchy_extension_descriptor
+        XDID_MPEG_GREEN_EXT          = 0x07,  //!< Ext.DID for green_extension_descriptor
+        XDID_MPEG_MPH3D_AUDIO        = 0x08,  //!< Ext.DID for MPEGH_3D_audio_descriptor
+        XDID_MPEG_MPH3D_CONFIG       = 0x09,  //!< Ext.DID for MPEGH_3D_audio_config_descriptor
+        XDID_MPEG_MPH3D_SCENE        = 0x0A,  //!< Ext.DID for MPEGH_3D_audio_scene_descriptor
+        XDID_MPEG_MPH3D_TEXT         = 0x0B,  //!< Ext.DID for MPEGH_3D_audio_text_label_descriptor
+        XDID_MPEG_MPH3D_MULTI        = 0x0C,  //!< Ext.DID for MPEGH_3D_audio_multi_stream_descriptor
+        XDID_MPEG_MPH3D_DRCLOUD      = 0x0D,  //!< Ext.DID for MPEGH_3D_audio_DRC_loudness_descriptor
+        XDID_MPEG_MPH3D_COMMAND      = 0x0E,  //!< Ext.DID for MPEGH_3D_audio_command_descriptor
+        XDID_MPEG_QUALITY_EXT        = 0x0F,  //!< Ext.DID for quality_extension_descriptor
+        XDID_MPEG_VIRT_SEGMENT       = 0x10,  //!< Ext.DID for virtual_segmentation_descriptor
+        XDID_MPEG_TIMED_METADATA_EXT = 0x11,  //!< Ext.DID for timed_metadata_extension_descriptor
+        XDID_MPEG_HEVC_TILE_SSTRM    = 0x12,  //!< Ext.DID for HEVC_tile_substream_descriptor
+        XDID_MPEG_HEVC_SUBREGION     = 0x13,  //!< Ext.DID for HEVC_subregion_descriptor
+        XDID_MPEG_JXS_VIDEO          = 0x14,  //!< Ext.DID for JXS_video_descriptor
+        XDID_MPEG_VVC_TIM_HRD        = 0x15,  //!< Ext.DID for VVC_timing_and_HRD_descriptor.
+        XDID_MPEG_EVC_TIM_HRD        = 0x16,  //!< Ext.DID for EVC_timing_and_HRD_descriptor.
+        XDID_MPEG_LCEVC_VIDEO        = 0x17,  //!< Ext.DID for LCEVC_video_descriptor.
+        XDID_MPEG_LCEVC_LINKAGE      = 0x18,  //!< Ext.DID for LCEVC_linkage_descriptor.
+        XDID_MPEG_MEDIA_SVC_KIND     = 0x19,  //!< Ext.DID for Media_service_kind_descriptor
 
         // In DVB-defined extension_descriptor:
 
-        EDID_DVB_IMAGE_ICON          = 0x00,  //!< Ext.DID for image_icon_descriptor
-        EDID_DVB_CPCM_DELIVERY_SIG   = 0x01,  //!< Ext.DID for cpcm_delivery_signalling_descriptor
-        EDID_DVB_CP                  = 0x02,  //!< Ext.DID for CP_descriptor
-        EDID_DVB_CP_IDENTIFIER       = 0x03,  //!< Ext.DID for CP_identifier_descriptor
-        EDID_DVB_T2_DELIVERY         = 0x04,  //!< Ext.DID for T2_delivery_system_descriptor
-        EDID_DVB_SH_DELIVERY         = 0x05,  //!< Ext.DID for SH_delivery_system_descriptor
-        EDID_DVB_SUPPL_AUDIO         = 0x06,  //!< Ext.DID for supplementary_audio_descriptor
-        EDID_DVB_NETW_CHANGE_NOTIFY  = 0x07,  //!< Ext.DID for network_change_notify_descriptor
-        EDID_DVB_MESSAGE             = 0x08,  //!< Ext.DID for message_descriptor
-        EDID_DVB_TARGET_REGION       = 0x09,  //!< Ext.DID for target_region_descriptor
-        EDID_DVB_TARGET_REGION_NAME  = 0x0A,  //!< Ext.DID for target_region_name_descriptor
-        EDID_DVB_SERVICE_RELOCATED   = 0x0B,  //!< Ext.DID for service_relocated_descriptor
-        EDID_DVB_XAIT_PID            = 0x0C,  //!< Ext.DID for XAIT_PID_descriptor
-        EDID_DVB_C2_DELIVERY         = 0x0D,  //!< Ext.DID for C2_delivery_system_descriptor
-        EDID_DVB_DTS_HD_AUDIO        = 0x0E,  //!< Ext.DID for DTS_HD_audio_stream_descriptor
-        EDID_DVB_DTS_NEURAL          = 0x0F,  //!< Ext.DID for DTS_Neural_descriptor
-        EDID_DVB_VIDEO_DEPTH_RANGE   = 0x10,  //!< Ext.DID for video_depth_range_descriptor
-        EDID_DVB_T2MI                = 0x11,  //!< Ext.DID for T2MI_descriptor
-        EDID_DVB_URI_LINKAGE         = 0x13,  //!< Ext.DID for URI_linkage_descriptor
-        EDID_DVB_CI_ANCILLARY_DATA   = 0x14,  //!< Ext.DID for CI_ancillary_data_descriptor
-        EDID_DVB_AC4                 = 0x15,  //!< Ext.DID for AC4_descriptor
-        EDID_DVB_C2_BUNDLE_DELIVERY  = 0x16,  //!< Ext.DID for C2_bundle_system_delivery_descriptor
-        EDID_DVB_S2X_DELIVERY        = 0x17,  //!< Ext.DID for S2X_satellite_delivery_system_descriptor
-        EDID_DVB_PROTECTION_MSG      = 0x18,  //!< Ext.DID for protection_message_descriptor
-        EDID_DVB_AUDIO_PRESELECT     = 0x19,  //!< Ext.DID for audio_preselection_descriptor
-        EDID_DVB_TTML_SUBTITLING     = 0x20,  //!< Ext.DID for TTML_subtitling_descriptor
-        EDID_DVB_DTS_UHD             = 0x21,  //!< Ext.DID for DTS-UHD_descriptor
-        EDID_DVB_SERVICE_PROMINENCE  = 0x22,  //!< Ext.DID for service_prominence_descriptor
-        EDID_DVB_VVC_SUBPICTURES     = 0x23,  //!< Ext.DID for vvc_subpictures_descriptor
-        EDID_DVB_S2XV2_DELIVERY      = 0x24,  //!< Ext.DID for S2Xv2_satellite_delivery_system_descriptor
+        XDID_DVB_IMAGE_ICON          = 0x00,  //!< Ext.DID for image_icon_descriptor
+        XDID_DVB_CPCM_DELIVERY_SIG   = 0x01,  //!< Ext.DID for cpcm_delivery_signalling_descriptor
+        XDID_DVB_CP                  = 0x02,  //!< Ext.DID for CP_descriptor
+        XDID_DVB_CP_IDENTIFIER       = 0x03,  //!< Ext.DID for CP_identifier_descriptor
+        XDID_DVB_T2_DELIVERY         = 0x04,  //!< Ext.DID for T2_delivery_system_descriptor
+        XDID_DVB_SH_DELIVERY         = 0x05,  //!< Ext.DID for SH_delivery_system_descriptor
+        XDID_DVB_SUPPL_AUDIO         = 0x06,  //!< Ext.DID for supplementary_audio_descriptor
+        XDID_DVB_NETW_CHANGE_NOTIFY  = 0x07,  //!< Ext.DID for network_change_notify_descriptor
+        XDID_DVB_MESSAGE             = 0x08,  //!< Ext.DID for message_descriptor
+        XDID_DVB_TARGET_REGION       = 0x09,  //!< Ext.DID for target_region_descriptor
+        XDID_DVB_TARGET_REGION_NAME  = 0x0A,  //!< Ext.DID for target_region_name_descriptor
+        XDID_DVB_SERVICE_RELOCATED   = 0x0B,  //!< Ext.DID for service_relocated_descriptor
+        XDID_DVB_XAIT_PID            = 0x0C,  //!< Ext.DID for XAIT_PID_descriptor
+        XDID_DVB_C2_DELIVERY         = 0x0D,  //!< Ext.DID for C2_delivery_system_descriptor
+        XDID_DVB_DTS_HD_AUDIO        = 0x0E,  //!< Ext.DID for DTS_HD_audio_stream_descriptor
+        XDID_DVB_DTS_NEURAL          = 0x0F,  //!< Ext.DID for DTS_Neural_descriptor
+        XDID_DVB_VIDEO_DEPTH_RANGE   = 0x10,  //!< Ext.DID for video_depth_range_descriptor
+        XDID_DVB_T2MI                = 0x11,  //!< Ext.DID for T2MI_descriptor
+        XDID_DVB_URI_LINKAGE         = 0x13,  //!< Ext.DID for URI_linkage_descriptor
+        XDID_DVB_CI_ANCILLARY_DATA   = 0x14,  //!< Ext.DID for CI_ancillary_data_descriptor
+        XDID_DVB_AC4                 = 0x15,  //!< Ext.DID for AC4_descriptor
+        XDID_DVB_C2_BUNDLE_DELIVERY  = 0x16,  //!< Ext.DID for C2_bundle_system_delivery_descriptor
+        XDID_DVB_S2X_DELIVERY        = 0x17,  //!< Ext.DID for S2X_satellite_delivery_system_descriptor
+        XDID_DVB_PROTECTION_MSG      = 0x18,  //!< Ext.DID for protection_message_descriptor
+        XDID_DVB_AUDIO_PRESELECT     = 0x19,  //!< Ext.DID for audio_preselection_descriptor
+        XDID_DVB_TTML_SUBTITLING     = 0x20,  //!< Ext.DID for TTML_subtitling_descriptor
+        XDID_DVB_DTS_UHD             = 0x21,  //!< Ext.DID for DTS-UHD_descriptor
+        XDID_DVB_SERVICE_PROMINENCE  = 0x22,  //!< Ext.DID for service_prominence_descriptor
+        XDID_DVB_VVC_SUBPICTURES     = 0x23,  //!< Ext.DID for vvc_subpictures_descriptor
+        XDID_DVB_S2XV2_DELIVERY      = 0x24,  //!< Ext.DID for S2Xv2_satellite_delivery_system_descriptor
     };
+
+    //!
+    //! Name of a Descriptor ID.
+    //! @param [in] did Descriptor id.
+    //! @param [in] flags Presentation flags.
+    //! @param [in,out] context Interpretation context of the descriptor.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString DIDName(DID did, DescriptorContext& context, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of an MPEG extension descriptor ID.
+    //! @param [in] xdid MPEG extension descriptor ID.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString XDIDNameMPEG(DID xdid, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of a DVB extension descriptor ID.
+    //! @param [in] xdid DVB extension descriptor ID.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString XDIDNameDVB(DID xdid, NamesFlags flags = NamesFlags::NAME);
 }

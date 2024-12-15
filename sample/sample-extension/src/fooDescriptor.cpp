@@ -3,13 +3,11 @@
 
 #include "fooDescriptor.h"
 
-#define MY_XML_NAME u"foo_descriptor"  // XML name is <foo_descriptor>
-#define MY_CLASS foo::FooDescriptor    // Fully qualified class name
-#define MY_DID foo::DID_FOO            // Descriptor id
-#define MY_STD ts::Standards::NONE     // Not defined in any standard.
+#define MY_XML_NAME u"foo_descriptor"     // XML name is <foo_descriptor>
+#define MY_CLASS    foo::FooDescriptor    // Fully qualified class name
+#define MY_EDID     ts::EDID::PrivateDVB(foo::DID_FOO, foo::PDS_FOO)
 
-// This is a non-DVB descriptor with DID >= 0x80 => must set PDS to zero in EDID.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, 0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -17,14 +15,13 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, 0), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 foo::FooDescriptor::FooDescriptor(const ts::UString& name_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     name(name_)
 {
 }
 
 foo::FooDescriptor::FooDescriptor(ts::DuckContext& duck, const ts::Descriptor& desc) :
-    ts::AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    name()
+    FooDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -64,7 +61,7 @@ void foo::FooDescriptor::deserializePayload(ts::PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void foo::FooDescriptor::DisplayDescriptor(ts::TablesDisplay& disp, ts::PSIBuffer& buf, const ts::UString& margin, ts::DID did, ts::TID tid, ts::PDS pds)
+void foo::FooDescriptor::DisplayDescriptor(ts::TablesDisplay& disp, const ts::Descriptor& desc, ts::PSIBuffer& buf, const ts::UString& margin, const ts::DescriptorContext& context)
 {
     disp << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
 }

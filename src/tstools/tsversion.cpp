@@ -20,7 +20,7 @@
 #include "tsErrCodeReport.h"
 #include "tsNullReport.h"
 #include "tsForkPipe.h"
-#include "tsHFBand.h"
+#include "tsPSIRepository.h"
 #include "tsDuckExtensionRepository.h"
 #if defined(TS_WINDOWS)
 #include "tsWinUtils.h"
@@ -42,9 +42,10 @@ namespace {
         // The following options apply to the current instance of TSDuck.
         // They are always available.
 
-        bool current = false;     // Display current version of TSDuck, this executable.
-        bool integer = false;     // Display current version of TSDuck as integer value.
-        bool extensions = false;  // List extensions.
+        bool current = false;         // Display current version of TSDuck, this executable.
+        bool integer = false;         // Display current version of TSDuck as integer value.
+        bool extensions = false;      // List extensions.
+        bool xdump_psi_repo = false;  // Dump internal state of PSI repository.
 
         // The following options are used to detect, download and upgrade new versions of TSDuck.
         // They are disabled when TS_NO_GITHUB is defined. With this macro, TSDuck is unlinked
@@ -52,16 +53,16 @@ namespace {
         // repositories of a given Linux distro.
 
 #if !defined(TS_NO_GITHUB)
-        bool        latest = false;     // Display the latest version of TSDuck.
-        bool        check = false;      // Check if a new version of TSDuck is available.
-        bool        all = false;        // List all available versions of TSDuck.
-        bool        download = false;   // Download the latest version.
-        bool        force = false;      // Force downloads.
-        bool        binary = false;     // With --download, fetch the binaries.
-        bool        source = false;     // With --download, feth the source code instead of the binaries.
-        bool        upgrade = false;    // Upgrade TSDuck to the latest version.
-        ts::UString name {};            // Use the specified version, not the latest one.
-        ts::UString out_dir {};         // Output directory for downloaded files.
+        bool        latest = false;    // Display the latest version of TSDuck.
+        bool        check = false;     // Check if a new version of TSDuck is available.
+        bool        all = false;       // List all available versions of TSDuck.
+        bool        download = false;  // Download the latest version.
+        bool        force = false;     // Force downloads.
+        bool        binary = false;    // With --download, fetch the binaries.
+        bool        source = false;    // With --download, feth the source code instead of the binaries.
+        bool        upgrade = false;   // Upgrade TSDuck to the latest version.
+        ts::UString name {};           // Use the specified version, not the latest one.
+        ts::UString out_dir {};        // Output directory for downloaded files.
 #endif
     };
 }
@@ -83,6 +84,9 @@ Options::Options(int argc, char *argv[]) :
          u"suitable for comparison in a script. Example: " +
          ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) + u" for " +
          ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
+
+    option(u"xdump-psi-repository");
+    help(u"xdump-psi-repository", u"Dump the internal state of the PSI repository. This is a debug function.");
 
     // Enumeration of support options. The values are 0 or 1, indicating support.
     // Add a negative value meaning list all.
@@ -159,6 +163,7 @@ Options::Options(int argc, char *argv[]) :
 
     extensions = present(u"extensions");
     integer = present(u"integer");
+    xdump_psi_repo = present(u"xdump-psi-repository");
 
     // Option --support is fully handled inside the constructor.
     // It exits the application with a specific status.
@@ -634,6 +639,10 @@ int MainCode(int argc, char *argv[])
         // Display list of available extensions.
         // The returned string is either empty or ends with a new-line.
         std::cout << ts::DuckExtensionRepository::Instance().listExtensions(opt);
+    }
+    else if (opt.xdump_psi_repo) {
+        // Dump internal state of PSI repository.
+        ts::PSIRepository::Instance().dumpInternalState(std::cout);
     }
     else if (opt.integer) {
         // Display current version in integer format.

@@ -222,7 +222,8 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
     if (buf.canReadBytes(3)) {
         disp << margin << "Context id type: " << DataName(MY_XML_NAME, u"ContextIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin, u"RNT top-level descriptors:", u"None");
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+        disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"RNT top-level descriptors:", u"None");
 
         // Loop on resolution providers.
         while (buf.canReadBytes(3)) {
@@ -231,7 +232,7 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             buf.pushReadSizeFromLength(12);
 
             disp << margin << "- Resolution provider name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"Provider-level descriptors:", u"None");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ", u"Provider-level descriptors:", u"None");
 
             // Loop on CRID authorities.
             while (buf.canReadBytes(1)) {
@@ -239,7 +240,7 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
                 if (buf.canReadBytes(1)) {
                     buf.skipBits(2);
                     disp << margin << "    CRID authority policy: " << DataName(MY_XML_NAME, u"AuthorityPolicy", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
-                    disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"CRID authority-level descriptors:", u"None");
+                    disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"    ", u"CRID authority-level descriptors:", u"None");
                 }
             }
 

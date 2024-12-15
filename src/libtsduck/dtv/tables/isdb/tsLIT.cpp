@@ -142,6 +142,7 @@ void ts::LIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::LIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     disp << margin << UString::Format(u"Event id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(6)) {
@@ -150,7 +151,7 @@ void ts::LIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
         while (buf.canReadBytes(4)) {
             disp << margin << UString::Format(u"- Local event id: %n", buf.getUInt16()) << std::endl;
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ");
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ");
         }
     }
 }

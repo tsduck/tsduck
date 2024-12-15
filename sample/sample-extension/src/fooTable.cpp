@@ -4,10 +4,10 @@
 #include "fooTable.h"
 
 // Characteristics of a FOOT
-#define MY_XML_NAME u"FOOT"      // XML name is <FOOT>
-#define MY_CLASS foo::FooTable   // Fully qualified class name
-#define MY_TID foo::TID_FOOT     // Table id
-#define MY_STD foo::STD          // DTV standards for FOOT.
+#define MY_XML_NAME u"FOOT"        // XML name is <FOOT>
+#define MY_CLASS    foo::FooTable  // Fully qualified class name
+#define MY_TID      foo::TID_FOOT  // Table id
+#define MY_STD      foo::STD       // DTV standards for FOOT.
 
 // Registration of the table in TSDuck library
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
@@ -112,12 +112,13 @@ void foo::FooTable::serializePayload(ts::BinaryTable& table, ts::PSIBuffer& buf)
 
 void foo::FooTable::DisplaySection(ts::TablesDisplay& disp, const ts::Section& section, ts::PSIBuffer& buf, const ts::UString& margin)
 {
+    ts::DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+
     const uint16_t id = section.tableIdExtension();
     const ts::UString name(buf.getStringWithByteLength());
 
     disp << margin << ts::UString::Format(u"Foo id: 0x%X (%<d), name: \"%s\"", id, name) << std::endl;
-    disp.displayDescriptorListWithLength(section, buf, margin);
-    disp.displayExtraData(buf, margin);
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin);
 }
 
 

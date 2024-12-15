@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"af_extensions_descriptor"
-#define MY_CLASS ts::AFExtensionsDescriptor
-#define MY_DID ts::DID_MPEG_EXTENSION
-#define MY_EDID ts::EDID_MPEG_AF_EXT
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::AFExtensionsDescriptor
+#define MY_EDID     ts::EDID::ExtensionMPEG(ts::XDID_MPEG_AF_EXT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::AFExtensionsDescriptor::AFExtensionsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -44,16 +42,6 @@ ts::AFExtensionsDescriptor::AFExtensionsDescriptor(DuckContext& duck, const Desc
 
 
 //----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::AFExtensionsDescriptor::extendedTag() const
-{
-    return MY_EDID;
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization / deserialization / display (empty extended payload).
 //----------------------------------------------------------------------------
 
@@ -65,7 +53,7 @@ void ts::AFExtensionsDescriptor::deserializePayload(PSIBuffer& buf)
 {
 }
 
-void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AFExtensionsDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
 }
 

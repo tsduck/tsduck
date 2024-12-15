@@ -19,8 +19,7 @@
 // syntax. It can be converted to XML, as a <data_broadcast_id_descriptor>.
 
 #define MY_XML_NAME u"data_broadcast_id_descriptor"
-#define MY_DID ts::DID_DVB_DATA_BROADCAST_ID
-#define MY_STD ts::Standards::DVB
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_DATA_BROADCAST_ID, ts::Standards::DVB)
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -177,7 +176,7 @@ bool ts::SSUDataBroadcastIdDescriptor::analyzeXML(DuckContext& duck, const xml::
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SSUDataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SSUDataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
-    DataBroadcastIdDescriptor::DisplayDescriptor(disp, buf, margin, did, tid, pds);
+    DataBroadcastIdDescriptor::DisplayDescriptor(disp, desc, buf, margin, context);
 }

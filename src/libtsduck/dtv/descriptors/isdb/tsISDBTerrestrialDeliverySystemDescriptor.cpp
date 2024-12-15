@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"ISDB_terrestrial_delivery_system_descriptor"
-#define MY_CLASS ts::ISDBTerrestrialDeliverySystemDescriptor
-#define MY_DID ts::DID_ISDB_TERRES_DELIV
-#define MY_PDS ts::PDS_ISDB
-#define MY_STD ts::Standards::ISDB
+#define MY_CLASS    ts::ISDBTerrestrialDeliverySystemDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_ISDB_TERRES_DELIV, ts::Standards::ISDB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::ISDBTerrestrialDeliverySystemDescriptor::ISDBTerrestrialDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_ISDB_T, MY_XML_NAME, MY_STD, 0)
+    AbstractDeliverySystemDescriptor(MY_EDID, DS_ISDB_T, MY_XML_NAME)
 {
 }
 
@@ -124,7 +122,7 @@ namespace {
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ISDBTerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"Area code: 0x%3X (%<d)", buf.getBits<uint16_t>(12)) << std::endl;

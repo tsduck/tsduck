@@ -351,6 +351,7 @@ void ts::RCT::Link::serializePayload(PSIBuffer& buf) const
 
 void ts::RCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     disp << margin << UString::Format(u"Service id: %n", section.tableIdExtension()) << std::endl;
 
     if (buf.canReadBytes(3)) {
@@ -362,12 +363,12 @@ void ts::RCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             buf.skipReservedBits(4);
             buf.pushReadSizeFromLength(12);
             disp << margin << "- Link #" << i << std::endl;
-            ok = Link::Display(disp, section, buf, margin + u"  ", year_offset);
+            ok = Link::Display(disp, section, context, buf, margin + u"  ", year_offset);
             buf.popState();
             ok = buf.canReadBytes(2) && ok;
         }
         if (ok) {
-            disp.displayDescriptorListWithLength(section, buf, margin);
+            disp.displayDescriptorListWithLength(section, context, true, buf, margin);
         }
     }
 }
@@ -451,7 +452,7 @@ bool ts::RCT::PromotionalText::Display(TablesDisplay& disp, PSIBuffer& buf, cons
     return ok;
 }
 
-bool ts::RCT::Link::Display(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin, uint16_t year_offset)
+bool ts::RCT::Link::Display(TablesDisplay& disp, const ts::Section& section, DescriptorContext& context, PSIBuffer& buf, const UString& margin, uint16_t year_offset)
 {
     bool ok = buf.canReadBytes(5);
     if (ok) {
@@ -479,7 +480,7 @@ bool ts::RCT::Link::Display(TablesDisplay& disp, const ts::Section& section, PSI
         if (ok) {
             disp << margin << "Default icon flag: " << buf.getBool();
             disp << ", icon id: " << buf.getBits<uint16_t>(3) << std::endl;
-            disp.displayDescriptorListWithLength(section, buf, margin);
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin);
         }
     }
     return ok;

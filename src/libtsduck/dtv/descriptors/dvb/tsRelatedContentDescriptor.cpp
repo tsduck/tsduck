@@ -11,11 +11,10 @@
 #include "tsPSIRepository.h"
 
 #define MY_XML_NAME u"related_content_descriptor"
-#define MY_CLASS ts::RelatedContentDescriptor
-#define MY_DID ts::DID_DVB_RELATED_CONTENT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::RelatedContentDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_RELATED_CONTENT, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -23,7 +22,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::RelatedContentDescriptor::RelatedContentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -50,7 +49,7 @@ void ts::RelatedContentDescriptor::deserializePayload(PSIBuffer& buf)
 {
 }
 
-void ts::RelatedContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::RelatedContentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
 }
 

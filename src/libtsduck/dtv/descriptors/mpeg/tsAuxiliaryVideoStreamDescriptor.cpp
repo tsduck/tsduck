@@ -16,11 +16,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"auxiliary_video_stream_descriptor"
-#define MY_CLASS ts::AuxiliaryVideoStreamDescriptor
-#define MY_DID ts::DID_MPEG_AUX_VIDEO
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::AuxiliaryVideoStreamDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_AUX_VIDEO, ts::Standards::MPEG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::AuxiliaryVideoStreamDescriptor::AuxiliaryVideoStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -277,7 +276,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::display(TablesDisplay&
     }
 }
 
-void ts::AuxiliaryVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AuxiliaryVideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << UString::Format(u"Auxiliary video coded stream type: 0x%x", buf.getUInt8()) << std::endl;

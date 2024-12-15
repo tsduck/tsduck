@@ -395,7 +395,7 @@ bool ts::EnumerateCombinations(const std::set<T>& values,
 
 //----------------------------------------------------------------------------
 // Append an element into a container if not already present in the container.
-// Return true is appended, false if already present.
+// Return true if appended, false if already present.
 //----------------------------------------------------------------------------
 
 template <typename ELEMENT, class CONTAINER>

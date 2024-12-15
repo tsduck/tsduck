@@ -13,15 +13,14 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsStreamType.h"
 #include "tsNames.h"
 
 #define MY_XML_NAME u"audio_component_descriptor"
-#define MY_CLASS ts::AudioComponentDescriptor
-#define MY_DID ts::DID_ISDB_AUDIO_COMP
-#define MY_PDS ts::PDS_ISDB
-#define MY_STD ts::Standards::ISDB
+#define MY_CLASS    ts::AudioComponentDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_ISDB_AUDIO_COMP, ts::Standards::ISDB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::AudioComponentDescriptor::AudioComponentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -109,14 +108,14 @@ void ts::AudioComponentDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(9)) {
         buf.skipBits(4);
         disp << margin << UString::Format(u"Content type: %n", buf.getBits<uint8_t>(4)) << std::endl;
         disp << margin << "Component type: " << DataName(MY_XML_NAME, u"component_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
-        disp << margin << "Stream type: " << names::StreamType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Stream type: " << StreamTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         const uint8_t group = buf.getUInt8();
         disp << margin << UString::Format(u"Simulcast group: 0x%X (%<d%s)", group, group == 0xFF ? u", none" : u"") << std::endl;
         const bool multi = buf.getBool();

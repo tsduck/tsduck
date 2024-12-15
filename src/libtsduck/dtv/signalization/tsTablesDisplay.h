@@ -12,10 +12,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTID.h"
 #include "tsDID.h"
 #include "tsTLVSyntax.h"
 #include "tsDuckContext.h"
+#include "tsDescriptorContext.h"
 
 namespace ts {
 
@@ -111,7 +111,7 @@ namespace ts {
         //! @param [in] margin Left margin content.
         //! @param [in] cas CAS id of the table.
         //!
-        virtual void displayTable(const BinaryTable& table, const UString& margin = UString(), uint16_t cas = CASID_NULL);
+        virtual void displayTable(const BinaryTable& table, const UString& margin = UString(), CASID cas = CASID_NULL);
 
         //!
         //! Display a section on the output stream.
@@ -121,7 +121,7 @@ namespace ts {
         //! @param [in] cas CAS id of the table.
         //! @param [in] no_header If true, do not display the section header.
         //!
-        virtual void displaySection(const Section& section, const UString& margin = UString(), uint16_t cas = CASID_NULL, bool no_header = false);
+        virtual void displaySection(const Section& section, const UString& margin = UString(), CASID cas = CASID_NULL, bool no_header = false);
 
         //!
         //! Display the payload of a section on the output stream.
@@ -130,7 +130,7 @@ namespace ts {
         //! @param [in] margin Left margin content.
         //! @param [in] cas CAS id of the table.
         //!
-        virtual void displaySectionData(const Section& section, const UString& margin = UString(), uint16_t cas = CASID_NULL);
+        virtual void displaySectionData(const Section& section, const UString& margin = UString(), CASID cas = CASID_NULL);
 
         //!
         //! Display the payload of a section on the output stream as a one-line "log" message.
@@ -139,7 +139,7 @@ namespace ts {
         //! @param [in] max_bytes Maximum number of bytes to log from the section. 0 means unlimited.
         //! @param [in] cas CAS id of the table.
         //!
-        virtual void logSectionData(const Section& section, const UString& header = UString(), size_t max_bytes = 0, uint16_t cas = CASID_NULL);
+        virtual void logSectionData(const Section& section, const UString& header = UString(), size_t max_bytes = 0, CASID cas = CASID_NULL);
 
         //!
         //! Display an invalid section on the output stream.
@@ -149,93 +149,90 @@ namespace ts {
         //! @param [in] cas CAS id of the table.
         //! @param [in] no_header If true, do not display the section header.
         //!
-        virtual void displayInvalidSection(const DemuxedData& data, const UString& reason = UString(), const UString& margin = UString(), uint16_t cas = CASID_NULL, bool no_header = false);
+        virtual void displayInvalidSection(const DemuxedData& data, const UString& reason = UString(), const UString& margin = UString(), CASID cas = CASID_NULL, bool no_header = false);
 
         //!
         //! Display a descriptor on the output stream.
         //! @param [in] desc The descriptor to display.
+        //! @param [in,out] context Interpretation context of the descriptor.
         //! @param [in] margin Left margin content.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //! @param [in] cas CAS id of the table.
         //!
-        virtual void displayDescriptor(const Descriptor& desc, const UString& margin = UString(), TID tid = TID_NULL, PDS pds = 0, uint16_t cas = CASID_NULL);
+        virtual void displayDescriptor(const Descriptor& desc, DescriptorContext& context, const UString& margin = UString());
 
         //!
         //! Display the payload of a descriptor on the output stream.
-        //! @param [in] did Descriptor id.
-        //! @param [in] payload Address of the descriptor payload.
-        //! @param [in] size Size in bytes of the descriptor payload.
+        //! @param [in] desc The descriptor to display.
+        //! @param [in,out] context Interpretation context of the descriptor.
         //! @param [in] margin Left margin content.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! This is optional. Used by some descriptors the interpretation of which may
-        //! vary depending on the table that they are in.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
-        //! @param [in] cas CAS id of the table.
         //!
-        virtual void displayDescriptorData(DID did,
-                                           const uint8_t* payload,
-                                           size_t size,
-                                           const UString& margin = UString(),
-                                           TID tid = TID_NULL,
-                                           PDS pds = 0,
-                                           uint16_t cas = CASID_NULL);
+        virtual void displayDescriptorData(const Descriptor& desc, DescriptorContext& context, const UString& margin = UString());
 
         //!
         //! Display a list of descriptors from a memory area
         //! @param [in] section Section containing the descriptor list.
+        //! @param [in,out] context Interpretation context of the descriptors.
+        //! @param [in] top_level If true, the descriptor list is a top-level list in the table.
+        //! Upon return, the descriptor list is set as top-level list in the descriptor context.
         //! @param [in] data Address of the descriptor list.
         //! @param [in] size Size in bytes of the descriptor list.
         //! @param [in] margin Left margin content.
-        //! @param [in] cas CAS id of the table.
         //!
-        virtual void displayDescriptorList(const Section& section, const void* data, size_t size, const UString& margin = UString(), uint16_t cas = CASID_NULL);
+        virtual void displayDescriptorList(const Section& section,
+                                           DescriptorContext& context,
+                                           bool top_level,
+                                           const void* data,
+                                           size_t size,
+                                           const UString& margin = UString());
 
         //!
         //! Display a list of descriptors.
         //! @param [in] list Descriptor list.
+        //! @param [in,out] context Interpretation context of the descriptors.
         //! @param [in] margin Left margin content.
-        //! @param [in] cas CAS id of the table.
         //!
-        virtual void displayDescriptorList(const DescriptorList& list, const UString& margin = UString(), uint16_t cas = CASID_NULL);
+        virtual void displayDescriptorList(const DescriptorList& list, DescriptorContext& context, const UString& margin = UString());
 
         //!
         //! Display a list of descriptors from a PSI buffer.
         //! @param [in] section Section containing the descriptor list.
+        //! @param [in,out] context Interpretation context of the descriptors.
+        //! @param [in] top_level If true, the descriptor list is a top-level list in the table.
+        //! Upon return, the descriptor list is set as top-level list in the descriptor context.
         //! @param [in,out] buf Buffer containing the descriptor list to read
         //! @param [in] margin Left margin content.
         //! @param [in] title Optional title to display as preceding line.
         //! @param [in] empty_text Optional text to display when the descriptor list is empty.
         //! @param [in] length Number of bytes to read. If NPOS is specified (the default), read the rest of the buffer.
-        //! @param [in] cas CAS id of the table.
         //!
         virtual void displayDescriptorList(const Section& section,
+                                           DescriptorContext& context,
+                                           bool top_level,
                                            PSIBuffer& buf,
                                            const UString& margin = UString(),
                                            const UString& title = UString(),
                                            const UString& empty_text = UString(),
-                                           size_t length = NPOS,
-                                           uint16_t cas = CASID_NULL);
+                                           size_t length = NPOS);
 
         //!
         //! Display a list of descriptors (with its preceding length) from a PSI buffer.
         //! @param [in] section Section containing the descriptor list.
+        //! @param [in,out] context Interpretation context of the descriptors.
+        //! @param [in] top_level If true, the descriptor list is a top-level list in the table.
+        //! Upon return, the descriptor list is set as top-level list in the descriptor context.
         //! @param [in,out] buf Buffer containing the descriptor list to read
         //! @param [in] margin Left margin content.
         //! @param [in] title Optional title to display as preceding line.
         //! @param [in] empty_text Optional text to display when the descriptor list is empty.
         //! @param [in] length_bits Number of meaningful bits in the length field.
-        //! @param [in] cas CAS id of the table.
         //!
         virtual void displayDescriptorListWithLength(const Section& section,
+                                                     DescriptorContext& context,
+                                                     bool top_level,
                                                      PSIBuffer& buf,
                                                      const UString& margin = UString(),
                                                      const UString& title = UString(),
                                                      const UString& empty_text = UString(),
-                                                     size_t length_bits = 12,
-                                                     uint16_t cas = CASID_NULL);
+                                                     size_t length_bits = 12);
 
         //!
         //! Display an ATSC multiple_string_structure() as defined in ATSC A/65 from a PSI buffer.
@@ -335,10 +332,8 @@ namespace ts {
         //! @param [in] payload Address of the descriptor payload.
         //! @param [in] size Size in bytes of the descriptor payload.
         //! @param [in] margin Left margin content.
-        //! @param [in] tid Table id of table containing the descriptors.
-        //! @param [in] pds Private Data Specifier. Used to interpret private descriptors.
         //!
-        void displayUnkownDescriptor(DID did, const uint8_t* payload, size_t size, const UString& margin, TID tid, PDS pds);
+        void displayUnkownDescriptor(DID did, const uint8_t* payload, size_t size, const UString& margin);
 
         //!
         //! Display a memory area containing a list of TLV records.

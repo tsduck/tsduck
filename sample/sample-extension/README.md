@@ -24,3 +24,12 @@ TSDuck extensions:
 - Provide scripts to build standard installers (.exe on Windows, .rpm and .deb
   on Linux). The installers install the extension on top of a matching version
   of TSDuck.
+
+To test the extension, there are two options:
+
+- Use the installed TSDuck, build the installer for the extension and install it.
+
+- On UNIX systems (Linux, macOS, BSD), use the script `install.sh`. It builds
+  TSDuck and the "foo" extension. It install them in a temporary location in the
+  "bin" area of the project. This script is intentionally non-executable. Use it
+  with a bash "source" command to benefit from the PATH export.

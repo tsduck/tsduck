@@ -94,19 +94,19 @@ void Analyzer::handlePMT(const ts::PMT& pmt, ts::PID pid)
 
 void Analyzer::handleNIT(const ts::NIT& nit, ts::PID pid)
 {
-    std::cout << "-- Got " << ts::names::TID(_duck, nit.tableId())
+    std::cout << "-- Got " << ts::TIDName(_duck, nit.tableId())
               << ", network id " << nit.network_id << ", " << nit.transports.size() << " TS" << std::endl;
 }
 
 void Analyzer::handleSDT(const ts::SDT& sdt, ts::PID pid)
 {
-    std::cout << "-- Got " << ts::names::TID(_duck, sdt.tableId())
+    std::cout << "-- Got " << ts::TIDName(_duck, sdt.tableId())
               << ", TS id " << sdt.ts_id << ", " << sdt.services.size() << " services" << std::endl;
 }
 
 void Analyzer::handleVCT(const ts::VCT& vct, ts::PID pid)
 {
-    std::cout << "-- Got " << ts::names::TID(_duck, vct.tableId()) << ", " << vct.channels.size() << " channels" << std::endl;
+    std::cout << "-- Got " << ts::TIDName(_duck, vct.tableId()) << ", " << vct.channels.size() << " channels" << std::endl;
 }
 
 void Analyzer::handleService(uint16_t ts_id, const ts::Service& service, const ts::PMT& pmt, bool removed)

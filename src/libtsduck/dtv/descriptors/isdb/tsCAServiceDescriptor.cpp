@@ -16,12 +16,10 @@
 #include "tsNames.h"
 
 #define MY_XML_NAME u"CA_service_descriptor"
-#define MY_CLASS ts::CAServiceDescriptor
-#define MY_DID ts::DID_ISDB_CA_SERVICE
-#define MY_PDS ts::PDS_ISDB
-#define MY_STD ts::Standards::ISDB
+#define MY_CLASS    ts::CAServiceDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_ISDB_CA_SERVICE, ts::Standards::ISDB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::CAServiceDescriptor::CAServiceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -82,10 +80,10 @@ void ts::CAServiceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "CA System Id: " << CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
         disp << margin << UString::Format(u"CA broadcaster group id: %n", buf.getUInt8()) << std::endl;
         disp << margin << UString::Format(u"Delay time: %d days", buf.getUInt8()) << std::endl;
         while (buf.canReadBytes(2)) {

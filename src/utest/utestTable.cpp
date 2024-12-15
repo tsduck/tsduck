@@ -24,7 +24,12 @@
 #include "tsDVBAC3Descriptor.h"
 #include "tsEacemPreferredNameIdentifierDescriptor.h"
 #include "tsEacemLogicalChannelNumberDescriptor.h"
+#include "tsEacemStreamIdentifierDescriptor.h"
 #include "tsEutelsatChannelNumberDescriptor.h"
+#include "tsPrivateDataSpecifierDescriptor.h"
+#include "tsRegistrationDescriptor.h"
+#include "tsISO639LanguageDescriptor.h"
+#include "tsCueIdentifierDescriptor.h"
 #include "tsDuckContext.h"
 #include "tsunit.h"
 
@@ -46,6 +51,7 @@ class TableTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(TOT);
     TSUNIT_DECLARE_TEST(TSDT);
     TSUNIT_DECLARE_TEST(CleanupPrivateDescriptors);
+    TSUNIT_DECLARE_TEST(PrivateDescriptors);
 };
 
 TSUNIT_REGISTER(TableTest);
@@ -313,4 +319,89 @@ TSUNIT_DEFINE_TEST(CleanupPrivateDescriptors)
     dlist.removeInvalidPrivateDescriptors();
     TSUNIT_EQUAL(1, dlist.count());
     TSUNIT_EQUAL(ts::DID_DVB_SERVICE, dlist[0]->tag());
+}
+
+TSUNIT_DEFINE_TEST(PrivateDescriptors)
+{
+    ts::DuckContext duck;
+    duck.addStandards(ts::Standards::DVB);
+
+    ts::PMT pmt;
+    pmt.descs.add(duck, ts::ISO639LanguageDescriptor(u"foo", 0));
+    pmt.descs.add(duck, ts::PrivateDataSpecifierDescriptor(ts::PDS_OFCOM));
+    pmt.descs.add(duck, ts::RegistrationDescriptor(ts::REGID_HDMV));
+
+    // Program-level descriptor list:
+    //   0: ISO639LanguageDescriptor
+    //   1: PrivateDataSpecifierDescriptor (OFCOM)
+    //   2: RegistrationDescriptor (HDMV)
+
+    TSUNIT_EQUAL(3, pmt.descs.size());
+    TSUNIT_EQUAL(ts::REGID_NULL, pmt.descs.registrationId(0));
+    TSUNIT_EQUAL(ts::REGID_HDMV, pmt.descs.registrationId(10));
+    TSUNIT_EQUAL(ts::PDS_NULL, pmt.descs.privateDataSpecifier(0));
+    TSUNIT_EQUAL(ts::PDS_OFCOM, pmt.descs.privateDataSpecifier(10));
+
+    pmt.streams[100].descs.add(duck, ts::ISO639LanguageDescriptor(u"bar", 0));
+    pmt.streams[100].descs.add(duck, ts::CueIdentifierDescriptor(ts::CUE_SEGMENTATION));
+
+    // Component-level descriptor list:
+    //   0: ISO639LanguageDescriptor
+    //   1: CueIdentifierDescriptor
+
+    TSUNIT_EQUAL(2, pmt.streams[100].descs.size());
+    TSUNIT_EQUAL(ts::REGID_HDMV, pmt.streams[100].descs.registrationId(10));
+    TSUNIT_EQUAL(ts::PDS_NULL, pmt.streams[100].descs.privateDataSpecifier(10));
+
+    ts::DescriptorContext context1(duck, pmt.streams[100].descs, 1);
+    ts::AbstractDescriptorPtr desc = pmt.streams[100].descs[1]->deserialize(duck, context1);
+    TSUNIT_ASSERT(desc == nullptr);
+
+    pmt.descs.add(duck, ts::RegistrationDescriptor(ts::REGID_CUEI));
+
+    // Program-level descriptor list:
+    //   0: ISO639LanguageDescriptor
+    //   1: PrivateDataSpecifierDescriptor (OFCOM)
+    //   2: RegistrationDescriptor (HDMV)
+    //   3: RegistrationDescriptor (CUEI)
+
+    TSUNIT_EQUAL(ts::REGID_CUEI, pmt.descs.registrationId(10));
+    TSUNIT_EQUAL(ts::REGID_CUEI, pmt.streams[100].descs.registrationId(0));
+
+    ts::DescriptorContext context2(duck, pmt.streams[100].descs, 1);
+    desc = pmt.streams[100].descs[1]->deserialize(duck, context2);
+    TSUNIT_ASSERT(desc != nullptr);
+
+    ts::CueIdentifierDescriptor* cue_desc = dynamic_cast<ts::CueIdentifierDescriptor*>(desc.get());
+    TSUNIT_ASSERT(cue_desc != nullptr);
+    TSUNIT_EQUAL(ts::CUE_SEGMENTATION, cue_desc->cue_stream_type);
+
+    pmt.streams[100].descs.add(duck, ts::EacemStreamIdentifierDescriptor(7));
+    pmt.streams[100].descs.add(duck, ts::PrivateDataSpecifierDescriptor(ts::PDS_EACEM));
+    pmt.streams[100].descs.add(duck, ts::EacemStreamIdentifierDescriptor(9));
+
+    // Component-level descriptor list:
+    //   0: ISO639LanguageDescriptor
+    //   1: CueIdentifierDescriptor
+    //   2: EacemStreamIdentifierDescriptor
+    //   3: PrivateDataSpecifierDescriptor (EACEM)
+    //   4: EacemStreamIdentifierDescriptor
+
+    TSUNIT_EQUAL(4, pmt.descs.size());
+    TSUNIT_EQUAL(5, pmt.streams[100].descs.size());
+    TSUNIT_EQUAL(ts::DID_EACEM_STREAM_ID, pmt.streams[100].descs[2]->tag());
+    TSUNIT_EQUAL(ts::DID_DVB_PRIV_DATA_SPECIF, pmt.streams[100].descs[3]->tag());
+    TSUNIT_EQUAL(ts::DID_EACEM_STREAM_ID, pmt.streams[100].descs[4]->tag());
+
+    ts::DescriptorContext context3(duck, pmt.streams[100].descs, 2);
+    desc = pmt.streams[100].descs[2]->deserialize(duck, context3);
+    TSUNIT_ASSERT(desc == nullptr);
+
+    ts::DescriptorContext context4(duck, pmt.streams[100].descs, 4);
+    desc = pmt.streams[100].descs[4]->deserialize(duck, context4);
+    TSUNIT_ASSERT(desc != nullptr);
+
+    ts::EacemStreamIdentifierDescriptor* esi_desc = dynamic_cast<ts::EacemStreamIdentifierDescriptor*>(desc.get());
+    TSUNIT_ASSERT(esi_desc != nullptr);
+    TSUNIT_EQUAL(9, esi_desc->version);
 }

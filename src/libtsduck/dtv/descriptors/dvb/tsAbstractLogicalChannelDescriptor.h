@@ -54,25 +54,21 @@ namespace ts {
     protected:
         //!
         //! Protected constructor for subclasses.
-        //! @param [in] tag Descriptor tag.
+        //! @param [in] edid Extended descriptor id.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
-        //! @param [in] standards A bit mask of standards which define this structure.
-        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
         //!
-        AbstractLogicalChannelDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
+        AbstractLogicalChannelDescriptor(EDID edid, const UChar* xml_name, const UChar* xml_legacy_name = nullptr);
 
         //!
         //! Protected constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
+        //! @param [in] edid Extended descriptor id.
         //! @param [in] xml_name Descriptor name, as used in XML structures.
-        //! @param [in] tag Descriptor tag.
-        //! @param [in] standards A bit mask of standards which define this structure.
-        //! @param [in] pds Required private data specifier if this is a private descriptor.
         //! @param [in] xml_legacy_name Table or descriptor legacy XML name. Ignored if null pointer.
         //!
-        AbstractLogicalChannelDescriptor(DuckContext& duck, const Descriptor& bin, DID tag, const UChar* xml_name, Standards standards, PDS pds, const UChar* xml_legacy_name = nullptr);
+        AbstractLogicalChannelDescriptor(DuckContext& duck, const Descriptor& bin, EDID edid, const UChar* xml_name, const UChar* xml_legacy_name = nullptr);
 
         // Inherited methods
         virtual void clearContent() override;

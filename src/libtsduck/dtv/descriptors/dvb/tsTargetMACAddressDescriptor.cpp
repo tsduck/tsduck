@@ -15,13 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"target_MAC_address_descriptor"
-#define MY_CLASS ts::TargetMACAddressDescriptor
-#define MY_DID ts::DID_INT_MAC_ADDR
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::TargetMACAddressDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_INT_MAC_ADDR, ts::Standards::DVB, ts::TID_INT, ts::TID_UNT)
 
-// Table-specific descriptor which is allowed in two distinct tables.
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_INT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT), M
 //----------------------------------------------------------------------------
 
 ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -76,7 +73,7 @@ void ts::TargetMACAddressDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     const char* header = "Address mask: ";
     while (buf.canReadBytes(6)) {

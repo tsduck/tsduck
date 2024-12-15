@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"ip_signalling_descriptor"
-#define MY_CLASS ts::IPSignallingDescriptor
-#define MY_DID ts::DID_AIT_IP_SIGNALLING
-#define MY_TID ts::TID_AIT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::IPSignallingDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_AIT_IP_SIGNALLING, ts::Standards::DVB, ts::TID_AIT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::IPSignallingDescriptor::IPSignallingDescriptor(uint32_t id) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     platform_id(id)
 {
 }
@@ -64,7 +62,7 @@ void ts::IPSignallingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::IPSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::IPSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(3)) {
         disp << margin << "Platform id: " << DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::FIRST) << std::endl;

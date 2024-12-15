@@ -162,6 +162,7 @@ void ts::STT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PSIBuffer& buf, const UString& margin)
 {
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
     if (buf.canReadBytes(8)) {
         disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8()) << std::endl;
         const uint32_t time = buf.getUInt32();
@@ -173,7 +174,7 @@ void ts::STT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         buf.skipBits(2);
         disp << UString::Format(u", next switch day: %d", buf.getBits<uint8_t>(5));
         disp << UString::Format(u", hour: %d", buf.getUInt8()) << std::endl;
-        disp.displayDescriptorList(section, buf, margin);
+        disp.displayDescriptorList(section, context, false, buf, margin);
     }
 }
 

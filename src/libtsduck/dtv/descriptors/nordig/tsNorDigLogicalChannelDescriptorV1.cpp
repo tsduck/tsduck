@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"nordig_logical_channel_descriptor_v1"
-#define MY_CLASS ts::NorDigLogicalChannelDescriptorV1
-#define MY_DID ts::DID_NORDIG_CHAN_NUM_V1
-#define MY_PDS ts::PDS_NORDIG
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::NorDigLogicalChannelDescriptorV1
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_NORDIG_CHAN_NUM_V1, ts::PDS_NORDIG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::NorDigLogicalChannelDescriptorV1::NorDigLogicalChannelDescriptorV1() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -87,7 +85,7 @@ void ts::NorDigLogicalChannelDescriptorV1::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service Id: %5d (0x%<X)", buf.getUInt16());

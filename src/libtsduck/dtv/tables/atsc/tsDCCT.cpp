@@ -223,6 +223,8 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
         disp << margin << UString::Format(u"Protocol version: %d", buf.getUInt8());
         disp << UString::Format(u", number of DCC tests: %d", dcc_test_count = buf.getUInt8()) << std::endl;
 
+        DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+
         // Loop on all upper-level definitions.
         while (buf.canReadBytes(15) && dcc_test_count-- > 0) {
 
@@ -244,15 +246,15 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             while (dcc_term_count-- > 0 && buf.canReadBytes(9)) {
                 disp << margin << "  - DCC selection type: " << DataName(MY_XML_NAME, u"selection_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
                 disp << margin << UString::Format(u"    DCC selection id: 0x%X", buf.getUInt64()) << std::endl;
-                disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"DCC selection term descriptors:", UString(), 10);
+                disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"    ", u"DCC selection term descriptors:", UString(), 10);
             }
 
             // Display descriptor list for this DCC test.
-            disp.displayDescriptorListWithLength(section, buf, margin + u"  ", u"DCC test descriptors:", UString(), 10);
+            disp.displayDescriptorListWithLength(section, context, false, buf, margin + u"  ", u"DCC test descriptors:", UString(), 10);
         }
 
         // Display descriptor list for the global table.
-        disp.displayDescriptorListWithLength(section, buf, margin, u"Additional descriptors:", UString(), 10);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin, u"Additional descriptors:", UString(), 10);
     }
 }
 

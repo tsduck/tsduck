@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"ATSC_EAC3_audio_descriptor"
-#define MY_CLASS ts::ATSCEAC3AudioDescriptor
-#define MY_DID ts::DID_ATSC_ENHANCED_AC3
-#define MY_PDS ts::PDS_ATSC
-#define MY_STD ts::Standards::ATSC
+#define MY_CLASS    ts::ATSCEAC3AudioDescriptor
+#define MY_EDID    ts::EDID::Regular(ts::DID_ATSC_ENHANCED_AC3, ts::Standards::ATSC)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::ATSCEAC3AudioDescriptor::ATSCEAC3AudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -193,7 +191,7 @@ void ts::ATSCEAC3AudioDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ATSCEAC3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         // Fixed initial size: 2 bytes.

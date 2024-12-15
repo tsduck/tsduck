@@ -16,11 +16,10 @@
 #include "tsNames.h"
 
 #define MY_XML_NAME u"ECM_repetition_rate_descriptor"
-#define MY_CLASS ts::ECMRepetitionRateDescriptor
-#define MY_DID ts::DID_DVB_ECM_REPETITION_RATE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::ECMRepetitionRateDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_ECM_REPETITION_RATE, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ECMRepetitionRateDescriptor::ECMRepetitionRateDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -88,10 +87,10 @@ bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::E
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"CA System Id: %s", names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST)) << std::endl;
+        disp << margin << UString::Format(u"CA System Id: %s", CASIdName(disp.duck(), buf.getUInt16(), NamesFlags::FIRST)) << std::endl;
         disp << margin << UString::Format(u"ECM repetition rate: %d ms", buf.getUInt16()) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }

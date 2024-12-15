@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"target_region_name_descriptor"
-#define MY_CLASS ts::TargetRegionNameDescriptor
-#define MY_DID ts::DID_DVB_EXTENSION
-#define MY_EDID ts::EDID_DVB_TARGET_REGION_NAME
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::TargetRegionNameDescriptor
+#define MY_EDID     ts::EDID::ExtensionDVB(ts::XDID_DVB_TARGET_REGION_NAME)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::TargetRegionNameDescriptor::TargetRegionNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -43,16 +41,6 @@ ts::TargetRegionNameDescriptor::TargetRegionNameDescriptor(DuckContext& duck, co
     TargetRegionNameDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::TargetRegionNameDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -110,7 +98,7 @@ void ts::TargetRegionNameDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetRegionNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::TargetRegionNameDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(6)) {
         disp << margin << "Country code: \"" << buf.getLanguageCode() << "\"" << std::endl;

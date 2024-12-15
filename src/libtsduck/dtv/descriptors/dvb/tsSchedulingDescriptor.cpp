@@ -16,12 +16,10 @@
 #include "tsMJD.h"
 
 #define MY_XML_NAME u"scheduling_descriptor"
-#define MY_CLASS ts::SchedulingDescriptor
-#define MY_DID ts::DID_UNT_SCHEDULING
-#define MY_TID ts::TID_UNT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::SchedulingDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_UNT_SCHEDULING, ts::Standards::DVB, ts::TID_UNT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 const ts::Enumeration ts::SchedulingDescriptor::SchedulingUnitNames({
     {u"second", 0},
@@ -36,7 +34,7 @@ const ts::Enumeration ts::SchedulingDescriptor::SchedulingUnitNames({
 //----------------------------------------------------------------------------
 
 ts::SchedulingDescriptor::SchedulingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -106,7 +104,7 @@ void ts::SchedulingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SchedulingDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(14)) {
         disp << margin << "Start time: " << buf.getMJD(MJD_FULL).format(Time::DATETIME) << std::endl;

@@ -15,11 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"registration_descriptor"
-#define MY_CLASS ts::RegistrationDescriptor
-#define MY_DID ts::DID_MPEG_REGISTRATION
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::RegistrationDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_MPEG_REGISTRATION, ts::Standards::MPEG)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -27,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::RegistrationDescriptor::RegistrationDescriptor(uint32_t identifier, const ByteBlock& info) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     format_identifier(identifier),
     additional_identification_info(info)
 {
@@ -60,9 +59,6 @@ void ts::RegistrationDescriptor::deserializePayload(PSIBuffer& buf)
 {
     format_identifier = buf.getUInt32();
     buf.getBytes(additional_identification_info);
-
-    // Keep track of last registration id.
-    buf.duck().addRegistrationId(format_identifier);
 }
 
 
@@ -70,7 +66,7 @@ void ts::RegistrationDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::RegistrationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         // Sometimes, the registration format identifier is made of ASCII characters. Try to display them.
@@ -92,14 +88,6 @@ void ts::RegistrationDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::RegistrationDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    const bool ok =
-        element->getIntAttribute(format_identifier, u"format_identifier", true) &&
-        element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
-
-    // Keep track of last registration id.
-    if (ok) {
-        duck.addRegistrationId(format_identifier);
-    }
-
-    return ok;
+    return element->getIntAttribute(format_identifier, u"format_identifier", true) &&
+           element->getHexaTextChild(additional_identification_info, u"additional_identification_info", false, 0, MAX_DESCRIPTOR_SIZE - 6);
 }

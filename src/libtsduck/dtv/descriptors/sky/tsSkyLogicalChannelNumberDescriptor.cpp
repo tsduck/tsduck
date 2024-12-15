@@ -16,12 +16,10 @@
 #include "tsNames.h"
 
 #define MY_XML_NAME u"sky_logical_channel_number_descriptor"
-#define MY_CLASS ts::SkyLogicalChannelNumberDescriptor
-#define MY_DID ts::DID_SKY_LCN
-#define MY_PDS ts::PDS_BSKYB
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::SkyLogicalChannelNumberDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_SKY_LCN, ts::PDS_BSKYB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::SkyLogicalChannelNumberDescriptor::SkyLogicalChannelNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -86,7 +84,7 @@ void ts::SkyLogicalChannelNumberDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::SkyLogicalChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << UString::Format(u"Region Id: %5d (0x%<X)", buf.getUInt16()) << std::endl;

@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"MPEGH_3D_audio_text_label_descriptor"
-#define MY_CLASS ts::MPEGH3DAudioTextLabelDescriptor
-#define MY_DID ts::DID_MPEG_EXTENSION
-#define MY_EDID ts::EDID_MPEG_MPH3D_TEXT
-#define MY_STD ts::Standards::MPEG
+#define MY_CLASS    ts::MPEGH3DAudioTextLabelDescriptor
+#define MY_EDID     ts::EDID::ExtensionMPEG(ts::XDID_MPEG_MPH3D_TEXT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::MPEGH3DAudioTextLabelDescriptor::MPEGH3DAudioTextLabelDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -43,16 +41,6 @@ ts::MPEGH3DAudioTextLabelDescriptor::MPEGH3DAudioTextLabelDescriptor(DuckContext
     MPEGH3DAudioTextLabelDescriptor()
 {
     deserialize(duck, desc);
-}
-
-
-//----------------------------------------------------------------------------
-// This is an extension descriptor.
-//----------------------------------------------------------------------------
-
-ts::DID ts::MPEGH3DAudioTextLabelDescriptor::extendedTag() const
-{
-    return MY_EDID;
 }
 
 
@@ -146,7 +134,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << "3D Audio Scene Id: " << int(buf.getUInt8()) << std::endl;

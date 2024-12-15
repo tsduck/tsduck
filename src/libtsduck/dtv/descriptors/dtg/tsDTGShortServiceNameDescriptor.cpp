@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"dtg_short_service_name_descriptor"
-#define MY_CLASS ts::DTGShortServiceNameDescriptor
-#define MY_DID ts::DID_OFCOM_SHORT_SRV_NAM
-#define MY_PDS ts::PDS_OFCOM
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::DTGShortServiceNameDescriptor
+#define MY_EDID     ts::EDID::PrivateDVB(ts::DID_OFCOM_SHORT_SRV_NAM, ts::PDS_OFCOM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::PrivateDVB(MY_DID, MY_PDS), MY_XML_NA
 //----------------------------------------------------------------------------
 
 ts::DTGShortServiceNameDescriptor::DTGShortServiceNameDescriptor(const UString& name_) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     name(name_)
 {
 }
@@ -64,7 +62,7 @@ void ts::DTGShortServiceNameDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DTGShortServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DTGShortServiceNameDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     disp << margin << "Name: \"" << buf.getString() << "\"" << std::endl;
 }

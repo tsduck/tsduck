@@ -16,11 +16,10 @@
 #include "tsNames.h"
 
 #define MY_XML_NAME u"service_descriptor"
-#define MY_CLASS ts::ServiceDescriptor
-#define MY_DID ts::DID_DVB_SERVICE
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::ServiceDescriptor
+#define MY_EDID     ts::EDID::Regular(ts::DID_DVB_SERVICE, ts::Standards::DVB)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ServiceDescriptor::ServiceDescriptor(uint8_t type, const UString& provider, const UString& name) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     service_type(type),
     provider_name(provider),
     service_name(name)
@@ -77,7 +76,7 @@ void ts::ServiceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "Service type: " << names::ServiceType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;

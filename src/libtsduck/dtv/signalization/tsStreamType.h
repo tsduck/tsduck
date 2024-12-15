@@ -13,9 +13,14 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsRegistration.h"
+#include "tsREGID.h"
+#include "tsNamesFile.h"
 
 namespace ts {
+
+    class DuckContext;
+    class DescriptorList;
+
     //!
     //! Stream type values, as used in the PMT.
     //!
@@ -113,6 +118,13 @@ namespace ts {
     };
 
     //!
+    //! Check if a stream type value indicates a stream carrying sections.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @return True if @a st indicates a stream carrying sections.
+    //!
+    TSDUCKDLL bool StreamTypeIsSection(uint8_t st);
+
+    //!
     //! Check if a stream type value indicates a PES stream.
     //! @param [in] st Stream type as used in the PMT.
     //! @return True if @a st indicates a PES stream.
@@ -150,15 +162,50 @@ namespace ts {
     //!
     //! Check if a stream type value indicates an audio stream.
     //! @param [in] st Stream type as used in the PMT.
-    //! @param [in] regid Previous registration id from a registration descriptor.
     //! @return True if @a st indicates an audio stream.
     //!
-    TSDUCKDLL bool StreamTypeIsAudio(uint8_t st, uint32_t regid = REGID_NULL);
+    TSDUCKDLL bool StreamTypeIsAudio(uint8_t st);
 
     //!
-    //! Check if a stream type value indicates a stream carrying sections.
+    //! Check if a stream type value indicates an audio stream.
     //! @param [in] st Stream type as used in the PMT.
-    //! @return True if @a st indicates a stream carrying sections.
+    //! @param [in] regids Set of previous registration id from registration descriptors.
+    //! @return True if @a st indicates an audio stream.
     //!
-    TSDUCKDLL bool StreamTypeIsSection(uint8_t st);
+    TSDUCKDLL bool StreamTypeIsAudio(uint8_t st, const std::set<REGID>& regids);
+
+    //!
+    //! Check if a stream type value indicates an audio stream.
+    //! @param [in] st Stream type as used in the PMT.
+    //! @param [in] dlist A descriptor list where registration ids are searched.
+    //! @return True if @a st indicates an audio stream.
+    //!
+    TSDUCKDLL bool StreamTypeIsAudio(uint8_t st, const DescriptorList& dlist);
+
+    //!
+    //! Name of a Stream type value.
+    //! @param [in] st Stream type (in PMT).
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString StreamTypeName(uint8_t st, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of a Stream type value.
+    //! @param [in] st Stream type (in PMT).
+    //! @param [in] regids Set of previous registration id from registration descriptors.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString StreamTypeName(uint8_t st, const REGIDVector& regids, NamesFlags flags = NamesFlags::NAME);
+
+    //!
+    //! Name of a Stream type value.
+    //! @param [in] st Stream type (in PMT).
+    //! @param [in] duck TSDuck execution context.
+    //! @param [in] dlist A descriptor list where registration ids are searched.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString StreamTypeName(uint8_t st, const DuckContext& duck, const DescriptorList& dlist, NamesFlags flags = NamesFlags::NAME);
 }

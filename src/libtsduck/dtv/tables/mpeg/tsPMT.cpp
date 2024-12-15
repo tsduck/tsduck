@@ -191,7 +191,7 @@ bool ts::PMT::Stream::isVideo(const DuckContext& duck) const
 bool ts::PMT::Stream::isAudio(const DuckContext& duck) const
 {
     // Check obvious audio stream types.
-    if (StreamTypeIsAudio(stream_type)) {
+    if (StreamTypeIsAudio(stream_type, descs)) {
         return true;
     }
 
@@ -375,16 +375,16 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
                         switch (dsc->payload()[0]) {
-                            case EDID_MPEG_HEVC_TIM_HRD:
-                            case EDID_MPEG_HEVC_OP_POINT:
-                            case EDID_MPEG_HEVC_HIER_EXT:
+                            case XDID_MPEG_HEVC_TIM_HRD:
+                            case XDID_MPEG_HEVC_OP_POINT:
+                            case XDID_MPEG_HEVC_HIER_EXT:
                                 return CodecType::HEVC;
-                            case EDID_MPEG_VVC_TIM_HRD:
+                            case XDID_MPEG_VVC_TIM_HRD:
                                 return CodecType::VVC;
-                            case EDID_MPEG_EVC_TIM_HRD:
+                            case XDID_MPEG_EVC_TIM_HRD:
                                 return CodecType::EVC;
-                            case EDID_MPEG_LCEVC_VIDEO:
-                            case EDID_MPEG_LCEVC_LINKAGE:
+                            case XDID_MPEG_LCEVC_VIDEO:
+                            case XDID_MPEG_LCEVC_LINKAGE:
                                 return CodecType::LCEVC;
                             default:
                                 break;
@@ -396,13 +396,13 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
                         switch (dsc->payload()[0]) {
-                            case EDID_DVB_DTS_NEURAL:
+                            case XDID_DVB_DTS_NEURAL:
                                 return CodecType::DTS;
-                            case EDID_DVB_DTS_HD_AUDIO:
+                            case XDID_DVB_DTS_HD_AUDIO:
                                 return CodecType::DTSHD;
-                            case EDID_DVB_AC4:
+                            case XDID_DVB_AC4:
                                 return CodecType::AC4;
-                            case EDID_DVB_VVC_SUBPICTURES:
+                            case XDID_DVB_VVC_SUBPICTURES:
                                 return CodecType::VVC;
                             default:
                                 break;
@@ -511,17 +511,17 @@ void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
          << (pcr_pid == PID_NULL ? u"none" : UString::Format(u"%n", pcr_pid))
          << std::endl;
 
-    // Process and display "program info" descriptors. Get registration id.
-    disp.duck().resetRegistrationIds();
-    disp.displayDescriptorListWithLength(section, buf, margin, u"Program information:");
+    // Process and display "program info" descriptors.
+    DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+    disp.displayDescriptorListWithLength(section, context, true, buf, margin, u"Program information:");
 
     // Get elementary streams description
     while (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
-        disp << margin << "Elementary stream: type " << names::StreamType(type, NamesFlags::FIRST, disp.duck().lastRegistrationId())
+        disp << margin << "Elementary stream: type " << StreamTypeName(type, context.getREGIDs(), NamesFlags::FIRST)
              << UString::Format(u", PID: %n", pid) << std::endl;
-        disp.displayDescriptorListWithLength(section, buf, margin);
+        disp.displayDescriptorListWithLength(section, context, false, buf, margin);
     }
 }
 

@@ -18,13 +18,9 @@
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor(uint8_t id,
-                                                                                         DID tag,
-                                                                                         const UChar* xml_name,
-                                                                                         Standards standards,
-                                                                                         PDS pds,
-                                                                                         const UChar* xml_legacy_name) :
-    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
+ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor
+    (uint8_t id, EDID edid, const UChar* xml_name, const UChar* xml_legacy_name) :
+    AbstractDescriptor(edid, xml_name, xml_legacy_name),
     name_id(id)
 {
 }
@@ -34,14 +30,9 @@ void ts::AbstractPreferredNameIdentifierDescriptor::clearContent()
     name_id = 0;
 }
 
-ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor(DuckContext& duck,
-                                                                                         const Descriptor& desc,
-                                                                                         DID tag,
-                                                                                         const UChar* xml_name,
-                                                                                         Standards standards,
-                                                                                         PDS pds,
-                                                                                         const UChar* xml_legacy_name) :
-    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
+ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDescriptor
+    (DuckContext& duck, const Descriptor& desc, EDID edid, const UChar* xml_name, const UChar* xml_legacy_name) :
+    AbstractDescriptor(edid, xml_name, xml_legacy_name)
 {
     deserialize(duck, desc);
 }
@@ -66,7 +57,7 @@ void ts::AbstractPreferredNameIdentifierDescriptor::deserializePayload(PSIBuffer
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::AbstractPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::AbstractPreferredNameIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "Name identifier: " << int(buf.getUInt8()) << std::endl;

@@ -15,12 +15,10 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"target_IP_source_slash_descriptor"
-#define MY_CLASS ts::TargetIPSourceSlashDescriptor
-#define MY_DID ts::DID_INT_IP_SRC_SLASH
-#define MY_TID ts::TID_INT
-#define MY_STD ts::Standards::DVB
+#define MY_CLASS    ts::TargetIPSourceSlashDescriptor
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_INT_IP_SRC_SLASH, ts::Standards::DVB, ts::TID_INT)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,7 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::TargetIPSourceSlashDescriptor::TargetIPSourceSlashDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -85,7 +83,7 @@ void ts::TargetIPSourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::TargetIPSourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::TargetIPSourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     while (buf.canReadBytes(10)) {
         disp << margin << "- Source:      " << IPAddress(buf.getUInt32());

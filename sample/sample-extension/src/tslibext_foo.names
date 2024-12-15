@@ -1,10 +1,45 @@
 # Name definitions for the sample TSDuck "foo" extension.
+# Important: the CAS definitions (if any) must precede the [TableId] section.
 
-[TableId]
-0xF0 = FOOT
+[CASFamily]
+# Name of Conditional Access Families.
+# TSDuck internal concept, arbitrary value, avoid already used values.
+0xA0 = FooCAS
 
-[DescriptorId]
-0xE8 = Foo
+[CASFamilyRange]
+# Range of CAS id per CAS family
+0xA0 = 0xF001-0xF008  # FooCAS
 
 [CASystemId]
 0xF001-0xF008 = FooCAS
+
+[TableId]
+#
+# MPEG table id: 0xssss_cc_tt with
+#  0xtt : table id
+#  0xcc : CAS family (see section [CASFamily] below and in tsCAS.names), zero if not applicable
+#  0xssss : standards which define this table (see section [Standards] in tsStandards.names)
+#
+0x0000_00_F0 = FOOT
+0x0000_A0_80 = Foo ECM (even)
+0x0000_A0_81 = Foo ECM (odd)
+0x0000_A0_82 = Foo EMM-0
+0x0000_A0_83 = Foo EMM-1
+0x0000_A0_84 = Foo EMM-2
+0x0000_A0_85 = Foo EMM-3
+0x0000_A0_86 = Foo EMM-4
+0x0000_A0_87 = Foo EMM-5
+0x0000_A0_88 = Foo EMM-6
+
+[DescriptorId]
+# DVB private descriptors with PDS for Foo.
+# See guidelines in header file tsEDID.h.
+# The 64-bit value is structured as follow:
+#       0002 = bitmask of standards, 0002 is DVB
+#         01 = descriptor type, 01 = private descriptor
+#   464F4F20 = private data specifier (for private descriptors)
+#         E8 = descriptor tag
+0x0002_01_464F4F20_E8 = Foo
+
+[PrivateDataSpecifier]
+0x464F4F20 = Foo Demo
