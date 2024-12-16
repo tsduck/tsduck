@@ -16,7 +16,7 @@
 
 #define MY_XML_NAME u"CUVV_video_stream_descriptor"
 #define MY_CLASS    ts::UWAVideoStreamDescriptor
-#define MY_EDID     ts::EDID::PrivateDual(ts::DID_CUVV_HDR, ts::PDS_CUVV)
+#define MY_EDID     ts::EDID::PrivateMPEG(ts::DID_CUVV_HDR, ts::REGID_CUVV)
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
@@ -129,7 +129,7 @@ void ts::UWAVideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::UWAVideoStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(cuvv_tag, u"cuvv_tag", true, ts::PDS_CUVV, ts::PDS_CUVV, ts::PDS_CUVV) &&
+    return element->getIntAttribute(cuvv_tag, u"cuvv_tag", true, ts::REGID_CUVV, ts::REGID_CUVV, ts::REGID_CUVV) &&
            element->getIntAttribute(cuva_version_map, u"cuva_version_map", true) &&
            element->getIntAttribute(terminal_provide_code, u"terminal_provide_code", true, 0x0004, 0x0004, 0x0004) &&
            element->getEnumAttribute(terminal_provide_oriented_code, VersionNumbers, u"terminal_provide_oriented_code", true, 0x0005);

@@ -167,6 +167,16 @@ Extended = true
 # 
 0x0001_01_41563031_80 = AV1 Video
 #
+# MPEG pivate descriptor with "AVSA" registration is.
+# Descriptors are defined by the AVS Working Group of China.
+#
+0x0001_01_41565341_D3 = AVS2 Audio (T/AI 109.7)
+#
+# MPEG private descriptors with REGID/PDS for UHD World Association (UWA).
+# The registration process for the MPEG REGID is currently (2024) in progress.
+#
+0x0001_01_63757676_F3 = HDR Vivid Video
+#
 # DVB-defined regular descriptors.
 #
 0x0002_00_FFFFFFFF_40 = Network Name
@@ -527,18 +537,11 @@ Extended = true
 # Descriptors are defined by the AVS Working Group of China.
 #
 0x0003_01_41565341_D2 = AVS3 Audio (T/AI 109.7)
-0x0003_01_41565341_D3 = AVS2 Audio (T/AI 109.7)
 #
 # Dual private descriptors with REGID/PDS for AVS video.
 # Descriptors are defined by the AVS Working Group of China.
 #
 0x0003_01_41565356_D1 = AVS3 Video (T/AI 109.6)
-#
-# Dual private descriptors with REGID/PDS for UHD World Association (UWA).
-# The registration process for the MPEG REGID is currently (2024) in progress.
-# The DVB PDS is not officially allocated yet.
-#
-0x0003_01_63757676_F3 = HDR Vivid Video
 #
 # SCTE table-specific descriptors.
 # Valid in an AES (0xD8, Emergency Alert System, SCTE 18).

@@ -28,7 +28,7 @@ TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::PrivateDataSpecifierEnum, ({
     {u"AVSV",      ts::PDS_AVSVideo},
     {u"AVSA",      ts::PDS_AVSAudio},
     {u"AOM",       ts::PDS_AOM},
-    {u"cuvv",      ts::PDS_CUVV},
+    {u"none",      ts::PDS_NULL},
 }));
 
 

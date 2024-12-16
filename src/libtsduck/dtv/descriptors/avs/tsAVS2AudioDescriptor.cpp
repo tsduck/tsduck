@@ -18,7 +18,7 @@
 
 #define MY_XML_NAME u"AVS2_audio_descriptor"
 #define MY_CLASS    ts::AVS2AudioDescriptor
-#define MY_EDID     ts::EDID::PrivateDual(ts::DID_AVS2_AUDIO, ts::PDS_AVSAudio)
+#define MY_EDID     ts::EDID::PrivateMPEG(ts::DID_AVS2_AUDIO, ts::REGID_AVSAudio)
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 

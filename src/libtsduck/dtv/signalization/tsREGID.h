@@ -42,22 +42,28 @@ namespace ts {
     //!
     //! Registration id (a.k.a "format identifier") values in MPEG-defined registration_descriptor.
     //!
+    //! Should be found in the list maintained by the SMPTE Registration Authority, LLC
+    //! https://www.smpte-ra.org/registered-mpeg-ts-ids
+    //!
+    //!
+    constexpr REGID MakeREGID(const char id[5])
+    {
+        return ((id[0] << 24) + (id[1] << 16) + (id[2] << 8) + id[3]);
+    };
     enum : REGID {
-        REGID_AC3      = 0x41432D33,  //!< "AC-3" registration identifier.
-        REGID_AOM      = 0x41563031,  //!< "AV01", Alliance for Open Media
-        REGID_AVSAudio = 0x41565341,  //!< "AVSA", Audio Video Coding Standard Working Group of China
-        REGID_AVSVideo = 0x41565356,  //!< "AVSV", Audio Video Coding Standard Working Group of China
-        REGID_CUEI     = 0x43554549,  //!< "CUEI" registration identifier (SCTE-35 splice information).
-        REGID_DTG1     = 0x44544731,  //!< "DTG1" registration identifier.
-        REGID_EAC3     = 0x45414333,  //!< "EAC3" registration identifier.
-        REGID_GA94     = 0x47413934,  //!< "GA94" registration identifier (ATSC).
-        REGID_HDMV     = 0x48444D56,  //!< "HDMV" registration identifier (BluRay disks).
-        REGID_HEVC     = 0x48455643,  //!< "HEVC" registration identifier.
-        REGID_KLVA     = 0x4B4C5641,  //!< "KLVA" registration identifier.
-        REGID_SCTE     = 0x53435445,  //!< "SCTE" registration identifier.
-        REGID_AVSA     = 0x4A565341,  //!< AVS "AVSA" registration identifier.
-        REGID_AVSV     = 0x4A565356,  //!< AVS "AVSV" registration identifier.
-        REGID_CUVV     = 0x63757676,  //!< UHD World Association ("cuvv") registration identifier (registration procedure in progress).
+        REGID_AC3      = MakeREGID("AC-3"),  //!< Advanced Television Systems Committee.
+        REGID_AOM      = MakeREGID("AV01"),  //!< Alliance for Open Media.
+        REGID_AVSAudio = MakeREGID("AVSA"),  //!< Audio Video Coding Standard Working Group of China.
+        REGID_AVSVideo = MakeREGID("AVSV"),  //!< Audio Video Coding Standard Working Group of China.
+        REGID_CUEI     = MakeREGID("CUEI"),  //!< Society of Cable Telecommunications Engineers (SCTE-35 splice information).
+        REGID_DTG1     = MakeREGID("DTG1"),  //!< Digital TV Group.
+        REGID_EAC3     = MakeREGID("EAC3"),  //!< Dolby Laboratories, Inc.
+        REGID_GA94     = MakeREGID("GA94"),  //!< Advanced Television Systems Committee (ATSC).
+        REGID_HDMV     = MakeREGID("HDMV"),  //!< Sony Corporation (BluRay disks).
+        REGID_HEVC     = MakeREGID("HEVC"),  //!< "HEVC" registration identifier.
+        REGID_KLVA     = MakeREGID("KLVA"),  //!< Society of Motion Picture and Television Engineers.
+        REGID_SCTE     = MakeREGID("SCTE"),  //!< Society of Cable Telecommunications Engineers.
+        REGID_CUVV     = MakeREGID("cuvv"),  //!< UHD World Association ("cuvv") registration identifier (registration procedure in progress).
         REGID_NULL     = 0xFFFFFFFF,  //!< Unassigned registration identifier.
     };
 

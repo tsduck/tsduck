@@ -47,7 +47,6 @@ namespace ts {
         PDS_AOM       = 0x414F4D53,  //!< Private data specifier for the Alliance for Open Media (AOM) (value is "AOMS" in ASCII).
         PDS_AVSAudio  = 0x41565341,  //!< Private data specifier for AVS Working Group of China (value is "AVSA" in ASCII).
         PDS_AVSVideo  = 0x41565356,  //!< Private data specifier for AVS Working Group of China (value is "AVSV" in ASCII).
-        PDS_CUVV      = 0x63757676,  //!< Unofficial private data specifier for UHD World Association (value is "cuvv" in ASCII).
         PDS_NULL      = 0xFFFFFFFF,  //!< An invalid private data specifier, can be used as placeholder.
     };
 
