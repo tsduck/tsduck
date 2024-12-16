@@ -40,16 +40,21 @@ namespace ts {
     using REGIDVector = std::vector<REGID>;
 
     //!
-    //! Registration id (a.k.a "format identifier") values in MPEG-defined registration_descriptor.
-    //!
-    //! Should be found in the list maintained by the SMPTE Registration Authority, LLC
-    //! https://www.smpte-ra.org/registered-mpeg-ts-ids
-    //!
+    //! Statically build a 32-bit registration id from a 4-character string.
+    //! @param [in] id A 4-character string.
+    //! @return The corresponding 32-bit registration id.
     //!
     constexpr REGID MakeREGID(const char id[5])
     {
         return ((id[0] << 24) + (id[1] << 16) + (id[2] << 8) + id[3]);
     };
+
+    //!
+    //! Registration id (a.k.a "format identifier") values in MPEG-defined registration_descriptor.
+    //!
+    //! Should be found in the list maintained by the SMPTE Registration Authority, LLC
+    //! https://www.smpte-ra.org/registered-mpeg-ts-ids
+    //!
     enum : REGID {
         REGID_AC3      = MakeREGID("AC-3"),  //!< Advanced Television Systems Committee.
         REGID_AOM      = MakeREGID("AV01"),  //!< Alliance for Open Media.
@@ -60,11 +65,11 @@ namespace ts {
         REGID_EAC3     = MakeREGID("EAC3"),  //!< Dolby Laboratories, Inc.
         REGID_GA94     = MakeREGID("GA94"),  //!< Advanced Television Systems Committee (ATSC).
         REGID_HDMV     = MakeREGID("HDMV"),  //!< Sony Corporation (BluRay disks).
-        REGID_HEVC     = MakeREGID("HEVC"),  //!< "HEVC" registration identifier.
+        REGID_HEVC     = MakeREGID("HEVC"),  //!< "HEVC" registration identifier (unofficial, used in legacy streams).
         REGID_KLVA     = MakeREGID("KLVA"),  //!< Society of Motion Picture and Television Engineers.
         REGID_SCTE     = MakeREGID("SCTE"),  //!< Society of Cable Telecommunications Engineers.
         REGID_CUVV     = MakeREGID("cuvv"),  //!< UHD World Association ("cuvv") registration identifier (registration procedure in progress).
-        REGID_NULL     = 0xFFFFFFFF,  //!< Unassigned registration identifier.
+        REGID_NULL     = 0xFFFFFFFF,         //!< Unassigned registration identifier.
     };
 
     //!
