@@ -1,0 +1,12 @@
+==== xait_location_descriptor
+
+Defined by DVB in <<ETSI-102-727>>.
+
+[source,xml]
+----
+<xait_location_descriptor
+    xait_original_network_id="uint16, required"
+    xait_service_id="uint16, required"
+    xait_version_number="uint5, required"
+    xait_update_policy="uint3, required"/>
+----
