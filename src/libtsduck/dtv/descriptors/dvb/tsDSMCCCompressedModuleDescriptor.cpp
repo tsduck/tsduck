@@ -17,18 +17,17 @@
 
 #define MY_XML_NAME u"dsmcc_compressed_module_descriptor"
 #define MY_CLASS    ts::DSMCCCompressedModuleDescriptor
-#define MY_DID      ts::DID_DSMCC_COMPRESSED_MODULE
-#define MY_TID      ts::TID_DSMCC_UNM
-#define MY_STD      ts::Standards::DVB
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_DSMCC_COMPRESSED_MODULE, ts::Standards::DVB, ts::TID_DSMCC_UNM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+
 
 //----------------------------------------------------------------------------
 // Constructors.
 //----------------------------------------------------------------------------
 
 ts::DSMCCCompressedModuleDescriptor::DSMCCCompressedModuleDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -49,7 +48,7 @@ void ts::DSMCCCompressedModuleDescriptor::clearContent()
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCompressedModuleDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DSMCCCompressedModuleDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(5)) {
         const uint8_t  compression_method = buf.getUInt8();

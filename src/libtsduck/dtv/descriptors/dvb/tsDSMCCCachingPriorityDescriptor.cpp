@@ -17,18 +17,17 @@
 
 #define MY_XML_NAME u"dsmcc_caching_priority_descriptor"
 #define MY_CLASS    ts::DSMCCCachingPriorityDescriptor
-#define MY_DID      ts::DID_DSMCC_CACHING_PRIORITY
-#define MY_TID      ts::TID_DSMCC_UNM
-#define MY_STD      ts::Standards::DVB
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_DSMCC_CACHING_PRIORITY, ts::Standards::DVB, ts::TID_DSMCC_UNM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+
 
 //----------------------------------------------------------------------------
 // Constructors.
 //----------------------------------------------------------------------------
 
 ts::DSMCCCachingPriorityDescriptor::DSMCCCachingPriorityDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
@@ -49,7 +48,7 @@ void ts::DSMCCCachingPriorityDescriptor::clearContent()
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DSMCCCachingPriorityDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DSMCCCachingPriorityDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     if (buf.canReadBytes(2)) {
         const uint8_t priority_value = buf.getUInt8();

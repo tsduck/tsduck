@@ -562,7 +562,8 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
 
             uint8_t user_info_length = buf.getUInt8();
 
-            disp.displayDescriptorList(section, buf, margin, u"Descriptor List:", u"None", user_info_length);
+            DescriptorContext context(disp.duck(), section.tableId(), section.definingStandards());
+            disp.displayDescriptorList(section, context, false, buf, margin, u"Descriptor List:", u"None", user_info_length);
         }
 
         uint16_t private_data_length = buf.getUInt16();

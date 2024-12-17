@@ -16,11 +16,9 @@
 
 #define MY_XML_NAME u"dsmcc_name_descriptor"
 #define MY_CLASS    ts::DSMCCNameDescriptor
-#define MY_DID      ts::DID_DSMCC_NAME
-#define MY_TID      ts::TID_DSMCC_UNM
-#define MY_STD      ts::Standards::DVB
+#define MY_EDID     ts::EDID::TableSpecific(ts::DID_DSMCC_NAME, ts::Standards::DVB, ts::TID_DSMCC_UNM)
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -28,12 +26,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::DSMCCNameDescriptor::DSMCCNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
+    AbstractDescriptor(MY_EDID, MY_XML_NAME)
 {
 }
 
 ts::DSMCCNameDescriptor::DSMCCNameDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_EDID, MY_XML_NAME),
     name()
 {
     deserialize(duck, desc);
@@ -64,7 +62,7 @@ void ts::DSMCCNameDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DSMCCNameDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::DSMCCNameDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
     disp << margin << "Module or Group Name: \"" << buf.getString() << "\"" << std::endl;
 }
