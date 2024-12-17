@@ -124,35 +124,6 @@ namespace ts {
     size_t LargestSize(const CONTAINER& container);
 
     //!
-    //! Check if a value is present in a vector container.
-    //!
-    //! @tparam VALUE The type of element in the container.
-    //! @param [in] container A container of objects.
-    //! @param [in] value The value to search in the container.
-    //! @return True if @a value is present in @a container.
-    //!
-    template <class VALUE>
-    bool Contains(const std::vector<VALUE>& container, const VALUE& value)
-    {
-        return std::find(container.begin(), container.end(),value) != container.end();
-    }
-
-    //!
-    //! Check if a value is present in a container.
-    //!
-    //! @tparam CONTAINER A container class with @a find() and @a end() methods.
-    //! @tparam VALUE The type of element in the container.
-    //! @param [in] container A container of objects.
-    //! @param [in] value The value to search in the container.
-    //! @return True if @a value is present in @a container.
-    //!
-    template <class CONTAINER, class VALUE>
-    bool Contains(const CONTAINER& container, const VALUE& value)
-    {
-        return container.find(value) != container.end();
-    }
-
-    //!
     //! Get the list of all keys in a map.
     //!
     //! @tparam MAP A map container class as defined by the C++ Standard Template Library (STL).

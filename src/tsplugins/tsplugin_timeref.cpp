@@ -405,8 +405,8 @@ void ts::TimeRefPlugin::processLocalTime(uint8_t* data, size_t size)
         country.assignFromUTF8(reinterpret_cast<const char*>(data), 3);
         country.toLower();
         // Apply country and region filters.
-        if ((_only_countries.empty() || Contains(_only_countries, country)) &&
-            (_only_regions.empty() || Contains(_only_regions, data[3] >> 2)))
+        if ((_only_countries.empty() || _only_countries.contains(country)) &&
+            (_only_regions.empty() || _only_regions.contains(data[3] >> 2)))
         {
             if (_local_offset != INT_MAX) {
                 data[3] = (data[3] & 0xFE) | (_local_offset < 0 ? 0x01 : 0x00);

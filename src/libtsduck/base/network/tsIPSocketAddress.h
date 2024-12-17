@@ -279,7 +279,6 @@ namespace ts {
         //! @return True if both object contains the same address, false otherwise.
         //!
         bool operator==(const IPSocketAddress& other) const { return IPAddress::operator==(other) && _port == other._port; }
-        TS_UNEQUAL_OPERATOR(IPSocketAddress)
 
         //!
         //! Comparison "less than" operator.

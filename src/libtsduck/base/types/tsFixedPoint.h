@@ -168,7 +168,6 @@ namespace ts {
         FixedPoint& operator/=(const FixedPoint& x) { _value *= FACTOR; _value /= x._value; return *this; }
 
         bool operator==(const FixedPoint& x) const { return _value == x._value; }
-        TS_UNEQUAL_OPERATOR(FixedPoint)
 
         bool operator<=(const FixedPoint& x) const { return _value <= x._value; }
         bool operator>=(const FixedPoint& x) const { return _value >= x._value; }
@@ -201,11 +200,6 @@ namespace ts {
 
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         bool operator==(INT2 x) const { return _value == int_t(x) * FACTOR; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
-        bool operator!=(INT2 x) const { return _value != int_t(x) * FACTOR; }
-#endif
 
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         bool operator<=(INT2 x) const { return _value <= int_t(x) * FACTOR; }
@@ -250,13 +244,6 @@ template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
 inline bool operator==(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2.operator==(x1); }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-template <typename INT1, typename INT2, const size_t PREC,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-inline bool operator!=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return !x2.operator==(x1); }
-#endif
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,

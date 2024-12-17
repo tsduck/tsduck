@@ -304,7 +304,7 @@ void ts::SVRemovePlugin::processSDT(SDT& sdt)
     // Look for the service by name or by id
     if (_service.hasId()) {
         // Search service by id
-        found = Contains(sdt.services, _service.getId());
+        found = sdt.services.contains(_service.getId());
         if (!found) {
             // Informational only, SDT entry is not mandatory.
             info(u"service %n not found in SDT, ignoring it", _service.getId());

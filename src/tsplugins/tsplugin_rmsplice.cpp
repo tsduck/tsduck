@@ -232,7 +232,7 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
         }
         else {
             // Other component, possibly a PID to splice.
-            if (!Contains(_states, pid)) {
+            if (!_states.contains(pid)) {
                 // Enforce the creation of the state for this PID if non-existent.
                 PIDState& pidState(_states[pid]);
                 pidState.isAudio = stream.isAudio(duck);
@@ -275,7 +275,7 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     }
 
     // Filter events by ids if --event-id was specified.
-    if (!_eventIDs.empty() && !Contains(_eventIDs, cmd.event_id)) {
+    if (!_eventIDs.empty() && !_eventIDs.contains(cmd.event_id)) {
         return;
     }
 

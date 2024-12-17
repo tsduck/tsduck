@@ -75,7 +75,7 @@ namespace ts {
         //! @param [in] symbol The symbol to check.
         //! @return True if @a symbol is defined, false if it is not.
         //!
-        bool isDefined(const UString& symbol) const { return Contains(_symbols, symbol); }
+        bool isDefined(const UString& symbol) const { return _symbols.contains(symbol); }
 
         //!
         //! Check if a string is valid symbol name and report an error if not.

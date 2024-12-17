@@ -8,7 +8,6 @@
 
 #include "tsDVBCharTableSingleByte.h"
 #include "tsUString.h"
-#include "tsAlgorithm.h"
 
 // Static instances of corresponding DVB charsets.
 const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_6937(u"ISO-6937", &RAW_ISO_6937);
@@ -130,7 +129,7 @@ bool ts::DVBCharTableSingleByte::canEncode(const UString& str, size_t start, siz
 {
     for (size_t i = 0; i < str.length(); ++i) {
         const UChar cp = str[i];
-        if (!Contains(_bytesMap, cp) && cp != CARRIAGE_RETURN) {
+        if (!_bytesMap.contains(cp) && cp != CARRIAGE_RETURN) {
             // Untranslatable character.
             return false;
         }

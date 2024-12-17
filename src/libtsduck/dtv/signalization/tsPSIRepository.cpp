@@ -321,7 +321,7 @@ const ts::PSIRepository::TableClass& ts::PSIRepository::getTable(TID tid, const 
         const auto& tc(it->second);
 
         // If the table is in a standard PID, this is an exact match.
-        if (Contains(tc->pids, pid)) {
+        if (tc->pids.contains(pid)) {
             return *tc;
         }
 
@@ -514,7 +514,7 @@ ts::Standards ts::PSIRepository::getTableStandards(TID tid, PID pid) const
     for (auto it = bounds.first; it != bounds.second; ++it) {
         const auto& tc(*it->second);
 
-        if (Contains(tc.pids, pid)) {
+        if (tc.pids.contains(pid)) {
             // We are in a standard PID for this table id, return the corresponding standards only.
             return tc.standards;
         }

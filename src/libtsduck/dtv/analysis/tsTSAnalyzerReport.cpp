@@ -408,7 +408,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, wide);
         for (const auto& pid_it : _pids) {
             const PIDContext& pc(*pid_it.second);
-            if (Contains(pc.services, sv.service_id)) {
+            if (pc.services.contains(sv.service_id)) {
                 reportServicePID(grid, pc);
             }
         }

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsCodecType.h"
-#include "tsAlgorithm.h"
 
 TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::CodecTypeEnum, ({
     {u"undefined",     ts::CodecType::UNDEFINED},
@@ -77,42 +76,40 @@ TS_DEFINE_GLOBAL(const, ts::Enumeration, ts::CodecTypeArgEnum, ({
     {u"AVS3Audio",     ts::CodecType::AVS3_AUDIO},
 }));
 
-namespace {
-    const std::set<ts::CodecType> AudioCodecs {
-        ts::CodecType::MPEG1_AUDIO,
-        ts::CodecType::MPEG2_AUDIO,
-        ts::CodecType::MP3,
-        ts::CodecType::AAC,
-        ts::CodecType::AC3,
-        ts::CodecType::EAC3,
-        ts::CodecType::AC4,
-        ts::CodecType::HEAAC,
-        ts::CodecType::DTS,
-        ts::CodecType::DTSHD,
-        ts::CodecType::AVS2_AUDIO,
-        ts::CodecType::AVS3_AUDIO,
-    };
+TS_STATIC_INSTANCE(const, std::set<ts::CodecType>, AudioCodecs, ({
+    ts::CodecType::MPEG1_AUDIO,
+    ts::CodecType::MPEG2_AUDIO,
+    ts::CodecType::MP3,
+    ts::CodecType::AAC,
+    ts::CodecType::AC3,
+    ts::CodecType::EAC3,
+    ts::CodecType::AC4,
+    ts::CodecType::HEAAC,
+    ts::CodecType::DTS,
+    ts::CodecType::DTSHD,
+    ts::CodecType::AVS2_AUDIO,
+    ts::CodecType::AVS3_AUDIO,
+}));
 
-    const std::set<ts::CodecType> VideoCodecs {
-        ts::CodecType::MPEG1_VIDEO,
-        ts::CodecType::MPEG2_VIDEO,
-        ts::CodecType::MPEG4_VIDEO,
-        ts::CodecType::J2K,
-        ts::CodecType::AVC,
-        ts::CodecType::HEVC,
-        ts::CodecType::VVC,
-        ts::CodecType::EVC,
-        ts::CodecType::LCEVC,
-        ts::CodecType::VP9,
-        ts::CodecType::AV1,
-        ts::CodecType::AVS3_VIDEO,
-    };
+TS_STATIC_INSTANCE(const, std::set<ts::CodecType>, VideoCodecs, ({
+    ts::CodecType::MPEG1_VIDEO,
+    ts::CodecType::MPEG2_VIDEO,
+    ts::CodecType::MPEG4_VIDEO,
+    ts::CodecType::J2K,
+    ts::CodecType::AVC,
+    ts::CodecType::HEVC,
+    ts::CodecType::VVC,
+    ts::CodecType::EVC,
+    ts::CodecType::LCEVC,
+    ts::CodecType::VP9,
+    ts::CodecType::AV1,
+    ts::CodecType::AVS3_VIDEO,
+}));
 
-    const std::set<ts::CodecType> SubtitlingTypes {
-        ts::CodecType::TELETEXT,
-        ts::CodecType::DVB_SUBTITLES,
-    };
-}
+TS_STATIC_INSTANCE(const, std::set<ts::CodecType>, SubtitlingTypes, ({
+    ts::CodecType::TELETEXT,
+    ts::CodecType::DVB_SUBTITLES,
+}));
 
 
 //----------------------------------------------------------------------------
@@ -121,17 +118,17 @@ namespace {
 
 bool ts::CodecTypeIsAudio(CodecType ct)
 {
-    return Contains(AudioCodecs, ct);
+    return AudioCodecs->contains(ct);
 }
 
 bool ts::CodecTypeIsVideo(CodecType ct)
 {
-    return Contains(VideoCodecs, ct);
+    return VideoCodecs->contains(ct);
 }
 
 bool ts::CodecTypeIsSubtitles(CodecType ct)
 {
-    return Contains(SubtitlingTypes, ct);
+    return SubtitlingTypes->contains(ct);
 }
 
 

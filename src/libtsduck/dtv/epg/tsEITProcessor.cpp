@@ -291,7 +291,7 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
     const size_t pl_size = section.payloadSize();
 
     // Eliminate sections by table id.
-    if (Contains(_removed_tids, tid)) {
+    if (_removed_tids.contains(tid)) {
         // This table id is part of tables to be removed.
         return;
     }

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsLNB.h"
-#include "tsAlgorithm.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsDuckConfigFile.h"
@@ -288,7 +287,7 @@ bool ts::LNB::LNBRepository::getNameAttribute(const xml::Element* node, UString&
 
     // Check if the name is already known.
     const UString iname(ToIndex(name));
-    if (Contains(_lnbs, iname)) {
+    if (_lnbs.contains(iname)) {
         node->report().error(u"duplicate LNB name '%s' in <%s> line %d", name, node->name(), node->lineNumber());
         return false;
     }

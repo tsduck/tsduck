@@ -14,7 +14,6 @@
 #pragma once
 #include "tsSectionDemux.h"
 #include "tsCADescriptor.h"
-#include "tsAlgorithm.h"
 
 namespace ts {
     //!
@@ -67,7 +66,7 @@ namespace ts {
         //! @param [in] pid A PID to check.
         //! @return True if @ pid is a known ECM or EMM PID.
         //!
-        bool knownPID(PID pid) const { return Contains(_pids, pid); }
+        bool knownPID(PID pid) const { return _pids.contains(pid); }
 
         //!
         //! Get the CAS id of a CA PID (ECM or EMM).

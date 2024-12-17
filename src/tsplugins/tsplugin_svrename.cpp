@@ -314,7 +314,7 @@ void ts::SVRenamePlugin::processSDT(SDT& sdt)
     // Look for the service by name or by service
     if (_old_service.hasId()) {
         // Search service by id. If the service is not present, this is not an error.
-        found = Contains(sdt.services, _old_service.getId());
+        found = sdt.services.contains(_old_service.getId());
         if (!found) {
             // Informational only
             verbose(u"service %n not found in SDT", _old_service.getId());

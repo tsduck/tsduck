@@ -101,7 +101,6 @@ namespace ts {
         //! @return True if the two tables are identical. False otherwise.
         //!
         bool operator==(const BinaryTable& table) const;
-        TS_UNEQUAL_OPERATOR(BinaryTable)
 
         //!
         //! Add a section to a table.

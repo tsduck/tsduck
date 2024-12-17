@@ -290,7 +290,7 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const fs::path& infile_name)
             pctx.hold = false;
             writePacket(pkt);
         }
-        else if (pid_class == PIDClass::PSI && Contains(_pmts, pid)) {
+        else if (pid_class == PIDClass::PSI && _pmts.contains(pid)) {
             pctx.hold = false;
             writeFromPacketizer(_pmts[pid]->pzer);
         }

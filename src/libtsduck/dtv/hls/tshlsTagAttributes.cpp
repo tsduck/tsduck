@@ -88,7 +88,7 @@ void ts::hls::TagAttributes::reload(const UString& params)
 
 bool ts::hls::TagAttributes::present(const ts::UString& name) const
 {
-    return Contains(_map, name);
+    return _map.contains(name);
 }
 
 ts::UString ts::hls::TagAttributes::value(const UString& name, const UString& defValue) const

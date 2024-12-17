@@ -197,7 +197,6 @@ namespace ts {
         //! @return True is the two descriptors are identical.
         //!
         bool operator==(const Descriptor& desc) const;
-        TS_UNEQUAL_OPERATOR(Descriptor)
 
         //!
         //! Deserialize the descriptor.

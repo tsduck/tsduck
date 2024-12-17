@@ -14,7 +14,6 @@
 #include "tsArgs.h"
 #include "tsNullReport.h"
 #include "tsDektec.h"
-#include "tsAlgorithm.h"
 #include "tsjsonObject.h"
 #include "tsCableDeliverySystemDescriptor.h"
 #include "tsSatelliteDeliverySystemDescriptor.h"
@@ -264,7 +263,7 @@ void ts::ModulationArgs::setDefaultValues()
 bool ts::ModulationArgs::resolveDeliverySystem(const DeliverySystemSet& systems, Report& report)
 {
     if (delivery_system.has_value()) {
-        if (!Contains(systems, delivery_system.value())) {
+        if (!systems.contains(delivery_system.value())) {
             report.error(u"delivery system %s is not supported by this tuner", DeliverySystemEnum->name(delivery_system.value()));
             return false;
         }

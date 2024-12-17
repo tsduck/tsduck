@@ -50,7 +50,6 @@ namespace ts {
         {
             return MemEqual(b, p.b, PKT_SIZE);
         }
-        TS_UNEQUAL_OPERATOR(TSPacket)
 
         //!
         //! Initialize a TS packet.

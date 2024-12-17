@@ -23,8 +23,8 @@ namespace ts {
     {
     public:
         // Public members:
-        uint16_t transport_stream_id = 0;  //!< Transport stream id.
         uint16_t original_network_id = 0;  //!< Original network id.
+        uint16_t transport_stream_id = 0;  //!< Transport stream id.
 
         //!
         //! Default constructor.
@@ -36,7 +36,15 @@ namespace ts {
         //! @param [in] tsid Transport stream id.
         //! @param [in] onid Original network id.
         //!
-        TransportStreamId(uint16_t tsid, uint16_t onid);
+        TransportStreamId(uint16_t tsid, uint16_t onid) :
+            original_network_id(onid),
+            transport_stream_id(tsid)
+        {
+        }
+
+        //! @cond nodoxygen
+        auto operator<=>(const TransportStreamId&) const = default;
+        //! @endcond
 
         //!
         //! Clear the content of this object.
@@ -52,57 +60,6 @@ namespace ts {
         uint32_t normalized() const
         {
             return uint32_t(transport_stream_id) | (uint32_t(original_network_id) << 16);
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] tsid Another instance to compare.
-        //! @return True if this object == @a tsid.
-        //!
-        bool operator==(const TransportStreamId& tsid) const
-        {
-            return transport_stream_id == tsid.transport_stream_id && original_network_id == tsid.original_network_id;
-        }
-        TS_UNEQUAL_OPERATOR(TransportStreamId)
-
-        //!
-        //! Comparison operator.
-        //! @param [in] tsid Another instance to compare.
-        //! @return True if this object < @a tsid.
-        //!
-        bool operator<(const TransportStreamId& tsid) const
-        {
-            return normalized() < tsid.normalized();
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] tsid Another instance to compare.
-        //! @return True if this object <= @a tsid.
-        //!
-        bool operator<=(const TransportStreamId& tsid) const
-        {
-            return normalized() <= tsid.normalized();
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] tsid Another instance to compare.
-        //! @return True if this object > @a tsid.
-        //!
-        bool operator>(const TransportStreamId& tsid) const
-        {
-            return normalized() > tsid.normalized();
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] tsid Another instance to compare.
-        //! @return True if this object >= @a tsid.
-        //!
-        bool operator>=(const TransportStreamId& tsid) const
-        {
-            return normalized() >= tsid.normalized();
         }
 
         // Implementation of StringifyInterface.

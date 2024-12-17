@@ -655,7 +655,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     for (const auto& mpid : _moved_pids) {
         // Check if component exists
-        if (mpid.first != mpid.second && Contains(pmt.streams, mpid.first)) {
+        if (mpid.first != mpid.second && pmt.streams.contains(mpid.first)) {
             pmt.streams[mpid.second] = pmt.streams[mpid.first];
             pmt.streams.erase(mpid.first);
         }

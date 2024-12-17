@@ -122,16 +122,15 @@ TSDuck has been tested with the following compilers on at least one operating sy
 
 |Clang
 |Linux, macOS
-|5.0
+|16.0
 
 |MSVC
 |Windows
-|Visual Studio 2017 15.8
+|Visual Studio 2022
 
 |===
 
-The required minimum version of each compiler depends on a correct implementation of {cpp}17.
-Previous versions of each compiler have no or buggy {cpp}17 support.
+The required minimum version of each compiler depends on a correct implementation of {cpp}20.
 
 [#unixbuild]
 ==== Building on {unix}
@@ -190,12 +189,8 @@ Should this be possible, contributions from Slackware experts are welcome.
 [.usage]
 {cpp} language version
 
-TSDuck now requires a {cpp}17 compliant compiler.
-GCC is supposed to support {cpp}17 from version 8 onwards.
-Clang needs version 5 at least.
-
-However, building TSDuck with GCC versions 8 to 10 fails because of bugs in the compiler.
-{cpp}17 support in GCC really works starting with version 11.
+TSDuck now requires a {cpp}20 compliant compiler.
+{cpp}20 support in GCC starts with version 11.
 
 All recent Linux distros use GCC 11, 12 or 13.
 Some older distros which come with older GCC versions may propose alternative GCC packages with more recent versions.
@@ -220,12 +215,12 @@ However, when the installed GCC is really old (typically before GCC 8),
 using Clang may not work either because Clang uses the GCC C/{cpp} standard libraries and their header files.
 If the GCC issue is a compilation issue on GCC 8 to 10, using Clang may work.
 With older versions of GCC, using Clang probably does not work because
-the corresponding standard library does not contain the {cpp}17 features.
+the corresponding standard library does not contain the {cpp}20 features.
 
 [.usage]
 Red Hat 8.x example
 
-Starting with Red Hat Entreprise Linux 9, all GCC versions correctly support {cpp}17.
+Starting with Red Hat Entreprise Linux 9, all GCC versions correctly support {cpp}20.
 
 However, RedHat Entreprise Linux 8.8 comes with GCC 8.5.0.
 You can install and use GCC 11 using the following commands:
@@ -586,14 +581,14 @@ A file named `tsduck.pc` is installed in the appropriate directory.
 However, `pkgconfig` has its own limitations, specifically regarding the configured compilation options.
 
 TSDuck is a {cpp} library which requires a minimum revision of the language.
-Currently, the minimum revision is {cpp}17. All more recent revisions are supported.
+Currently, the minimum revision is {cpp}20. All more recent revisions are supported.
 By default, most {cpp} compilers are based on older revisions.
 Therefore, compiling an application using TSDuck with the default options fails.
-At least, `-std=c{pp}17` is required.
-To avoid compilation problems with most applications, `-std=c{pp}17` is enforced in `tsduck.pc`.
+At least, `-std=c{pp}20` is required.
+To avoid compilation problems with most applications, `-std=c{pp}20` is enforced in `tsduck.pc`.
 
 However, some applications may need to explicitly specify an even more recent revision,
-such as `-std=c{pp}20`, which conflicts with `-std=c{pp}17` in `tsduck.pc`.
+such as `-std=c{pp}20`, which conflicts with `-std=c{pp}20` in `tsduck.pc`.
 
 For that use case, you may install TSDuck without reference to the {cpp} revision using the following command:
 
@@ -602,7 +597,7 @@ For that use case, you may install TSDuck without reference to the {cpp} revisio
 $ make install NOPCSTD=1
 ----
 
-The counterpart is that the applications _must_ specify a `-std` option and the revision must be {cpp}17 or more recent.
+The counterpart is that the applications _must_ specify a `-std` option and the revision must be {cpp}20 or more recent.
 
 A generic solution would be that each library and the application all provide a _minimum_ revision of the {cpp} language
 and pkgconfig would provide a synthetic `-std` option which fulfills all requirements.
@@ -676,8 +671,8 @@ https://www.python.org/downloads/windows/[Python downloads],
 http://www.doxygen.org/download.html[Doxygen downloads],
 https://graphviz.gitlab.io/_pages/Download/Download_windows.html[Graphviz downloads].
 
-TSDuck now requires a {cpp}17 compliant compiler.
-{cpp}17 support started with Visual Studio 2017 15.8.
+TSDuck now requires a {cpp}20 compliant compiler.
+{cpp}20 support started with Visual Studio 2022, maybe 2019.
 We recommend to use Visual Studio 2022.
 
 [#buildwindows]

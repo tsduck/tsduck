@@ -198,7 +198,7 @@ uint8_t ts::ATSCMultipleString::EncodingMode(const UString& text)
     uint8_t mode = 0x00;
     for (size_t i = 0; i < text.size(); ++i) {
         const uint8_t msb = uint8_t(text[i] >> 8);
-        if (!Contains(_unicode_modes, msb)) {
+        if (!_unicode_modes.contains(msb)) {
             // The MSB of the character is not a supported mode.
             return MODE_UTF16;
         }
@@ -478,7 +478,7 @@ bool ts::ATSCMultipleString::DecodeSegment(UString& segment, const uint8_t*& dat
     // Decode segment.
     if (compression == 0) {
         // Uncompressed segment.
-        if (Contains(_unicode_modes, mode)) {
+        if (_unicode_modes.contains(mode)) {
             // One byte per char.
             const UChar base = UChar(uint16_t(mode) << 8);
             for (size_t i = 0; i < nbytes; ++i) {

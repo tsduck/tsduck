@@ -257,7 +257,7 @@ void ts::FeedPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             // Got the list of all declared service ids in the PAT.
             bool got_them_all = true;
             for (uint16_t srv : _all_services) {
-                if (!Contains(_service_types, srv) || !Contains(_service_pids, srv)) {
+                if (!_service_types.contains(srv) || !_service_pids.contains(srv)) {
                     got_them_all = false;
                     break;
                 }

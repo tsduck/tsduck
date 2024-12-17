@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPcapFilter.h"
-#include "tsAlgorithm.h"
 #include "tsArgs.h"
 
 
@@ -161,7 +160,7 @@ void ts::PcapFilter::setWildcardFilter(bool on)
 
 bool ts::PcapFilter::addressFilterIsSet() const
 {
-    const bool use_port = _protocols.empty() || Contains(_protocols, IP_SUBPROTO_TCP) || Contains(_protocols, IP_SUBPROTO_UDP);
+    const bool use_port = _protocols.empty() || _protocols.contains(IP_SUBPROTO_TCP) || _protocols.contains(IP_SUBPROTO_UDP);
     return _source.hasAddress() &&
            (!use_port || _source.hasPort()) &&
            _destination.hasAddress() &&
@@ -230,7 +229,7 @@ bool ts::PcapFilter::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microsecon
         }
 
         // Check if the packet matches all general filters.
-        if ((!_protocols.empty() && !Contains(_protocols, packet.protocol())) ||
+        if ((!_protocols.empty() && !_protocols.contains(packet.protocol())) ||
             packetCount() < _first_packet ||
             timestamp < _first_time ||
             timeOffset(timestamp) < _first_time_offset ||

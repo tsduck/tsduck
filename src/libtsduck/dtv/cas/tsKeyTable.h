@@ -65,7 +65,7 @@ namespace ts {
         //! @param [in] id The key id to search.
         //! @return True if the key is present, false otherwise.
         //!
-        bool hasKey(const ByteBlock& id) const;
+        bool hasKey(const ByteBlock& id) const { return _keys.contains(id); }
 
         //!
         //! Check the presence of a key in the table.

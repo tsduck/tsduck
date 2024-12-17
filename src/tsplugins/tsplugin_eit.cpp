@@ -114,7 +114,7 @@ ts::EITPlugin::ServiceDesc& ts::EITPlugin::getServiceDesc(uint16_t ts_id, uint16
 {
     uint32_t index = MakeIndex(ts_id, service_id);
 
-    if (!Contains(_services, index)) {
+    if (!_services.contains(index)) {
         verbose(u"new service %n, TS id %n", service_id, ts_id);
         ServiceDesc& serv(_services[index]);
         serv.setId(service_id);

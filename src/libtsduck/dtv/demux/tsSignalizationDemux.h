@@ -16,7 +16,6 @@
 #include "tsService.h"
 #include "tsSectionDemux.h"
 #include "tsCodecType.h"
-#include "tsAlgorithm.h"
 #include "tsTime.h"
 #include "tsStreamType.h"
 #include "tsPAT.h"
@@ -130,7 +129,7 @@ namespace ts {
         //! @param [in] tid The table id to check.
         //! @return True if @a tid is filtered, false otherwise.
         //!
-        bool isFilteredTableId(TID tid) const { return Contains(_filtered_tids, tid); }
+        bool isFilteredTableId(TID tid) const { return _filtered_tids.contains(tid); }
 
         //--------------------------------------------------------------------
         // Filtering services by id.
@@ -153,7 +152,7 @@ namespace ts {
         //! @param [in] sid The service id to check.
         //! @return True if @a sid is filtered, false otherwise.
         //!
-        bool isFilteredServiceId(uint16_t sid) const { return Contains(_filtered_srv_ids, sid); }
+        bool isFilteredServiceId(uint16_t sid) const { return _filtered_srv_ids.contains(sid); }
 
         //!
         //! Remove all services to filter.
@@ -658,7 +657,6 @@ namespace ts {
                 Service& operator*() const { return _iter->second->service; }
                 iterator& operator++() { ++_iter; return *this; }
                 bool operator==(const iterator& other) const { return _iter == other._iter; }
-                TS_UNEQUAL_OPERATOR(iterator)
             };
             //! @endcond
 

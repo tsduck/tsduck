@@ -40,6 +40,10 @@ namespace ts {
         //!
         explicit XDID(DID did = DID_NULL, DID edid = XDID_NULL) : _xdid(uint16_t(uint16_t(did) << 8) | edid) {}
 
+        //! @cond nodoxygen
+        auto operator<=>(const XDID&) const = default;
+        //! @endcond
+
         //!
         //! Get the descriptor id.
         //! @return The descriptor id.
@@ -69,42 +73,6 @@ namespace ts {
         //! @return True if the XDID is any form of extension descriptor.
         //!
         bool isExtension() const { return isExtensionMPEG() || isExtensionDVB(); }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object == @a e.
-        //!
-        bool operator==(const XDID& e) const { return _xdid == e._xdid; }
-        TS_UNEQUAL_OPERATOR(XDID)
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object < @a e.
-        //!
-        bool operator<(const XDID& e) const { return _xdid <  e._xdid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object <= @a e.
-        //!
-        bool operator<=(const XDID& e) const { return _xdid <= e._xdid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object > @a e.
-        //!
-        bool operator>(const XDID& e) const { return _xdid >  e._xdid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object >= @a e.
-        //!
-        bool operator>=(const XDID& e) const { return _xdid >= e._xdid; }
 
         //!
         //! Convert to a string object.

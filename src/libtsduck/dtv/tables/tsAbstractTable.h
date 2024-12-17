@@ -16,7 +16,6 @@
 #include "tsTablesPtr.h"
 #include "tsSection.h"
 #include "tsDescriptorList.h"
-#include "tsAlgorithm.h"
 
 namespace ts {
     //!
@@ -673,7 +672,7 @@ void ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::setOrder(const std
 
     // Third pass: reassign increasing ordering numbers for unspecified keys, same order as previously.
     for (const KEY& key : input) {
-        if (!Contains(order, key)) {
+        if (std::find(order.begin(), order.end(), key) == order.end()) {
             const auto it = this->find(key);
             if (it != this->end()) {
                 it->second.order_hint = count++;

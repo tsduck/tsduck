@@ -245,7 +245,6 @@ namespace ts {
         //! @return True if the two sections are identical. False otherwise.
         //!
         bool operator==(const Section& other) const;
-        TS_UNEQUAL_OPERATOR(Section)
 
         //!
         //! Get the table id.

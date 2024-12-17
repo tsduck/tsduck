@@ -222,7 +222,7 @@ bool ts::EITGenerator::deleteEvent(const ServiceIdTriplet& service, uint16_t eve
 
     // Locate the service.
     const auto isrv = _services.find(service);
-    if (isrv != _services.end() && Contains(isrv->second.event_ids, event_id)) {
+    if (isrv != _services.end() && isrv->second.event_ids.contains(event_id)) {
         // The event is known in the service.
         auto& srv(isrv->second);
 
@@ -328,7 +328,7 @@ bool ts::EITGenerator::loadEventsImpl(const ServiceIdTriplet& service_id, const 
         }
 
         // Check if the same event id already existed in the service.
-        if (Contains(srv->event_ids, ev->event_id)) {
+        if (srv->event_ids.contains(ev->event_id)) {
             // Look for existing event in this service with same id. Remove it if not an exact duplicate.
             bool found = false;
             bool duplicate = false;

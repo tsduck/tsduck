@@ -13,7 +13,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsAlgorithm.h"
+#include "tsSingleton.h"
 
 #define MY_XML_NAME u"MPEG4_text_descriptor"
 #define MY_CLASS    ts::MPEG4TextDescriptor
@@ -22,21 +22,21 @@
 TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 // ISO/IEC 14496-17 Table 1
-const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_textFormat_values{
+TS_STATIC_INSTANCE(const, std::set<uint8_t>, ALLOWED_TEXTFORMAT_VALUES, ({
     0x01,
     0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7 ,
     0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
-};
+}));
 
 // ISO/IEC 14496-17 Table 5
-const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_3GPPBaseFormat_values {
+TS_STATIC_INSTANCE(const, std::set<uint8_t>, ALLOWED_3GPPBASEFORMAT_VALUES, ({
     0x10
-};
+}));
 
 // ISO/IEC 14496-17 Table 6
-const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_profileLevel_values {
+TS_STATIC_INSTANCE(const, std::set<uint8_t>, ALLOWED_PROFILELEVEL_VALUES, ({
     0x10
-};
+}));
 
 
 //----------------------------------------------------------------------------
@@ -283,11 +283,11 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getChildren(Compatible_3GPPFormat_children, u"Compatible_3GPPFormat") &&
         element->getChildren(Sample_index_and_description_children, u"Sample_index_and_description");
 
-    if (!Contains(allowed_3GPPBaseFormat_values, ThreeGPPBaseFormat)) {
+    if (!ALLOWED_3GPPBASEFORMAT_VALUES->contains(ThreeGPPBaseFormat)) {
         element->report().error(u"line %d: in <%s>, attribute 'ThreeGPPBaseFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), ThreeGPPBaseFormat);
         ok = false;
     }
-    if (!Contains(allowed_profileLevel_values, profileLevel)) {
+    if (!ALLOWED_PROFILELEVEL_VALUES->contains(profileLevel)) {
         element->report().error(u"line %d: in <%s>, attribute 'profileLevel' has a reserved value (%d)", element->lineNumber(), element->name(), profileLevel);
         ok = false;
     }
@@ -299,7 +299,7 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
     for (auto it : Compatible_3GPPFormat_children) {
         uint8_t value = 0;
         ok &= it->getIntAttribute(value, u"value", true);
-        if (!Contains(allowed_3GPPBaseFormat_values, value)) {
+        if (!ALLOWED_3GPPBASEFORMAT_VALUES->contains(value)) {
             element->report().error(u"line %d: in <%s>, element 'Compatible_3GPPFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), value);
             ok = false;
         }
@@ -311,7 +311,7 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
              it->getIntAttribute(sample.sample_index, u"sample_index", true) &&
              it->getIntAttribute(sample.SampleDescription.textFormat, u"textFormat") &&
              it->getHexaText(sample.SampleDescription.formatSpecificTextConfig);
-        if (ok && !Contains(allowed_textFormat_values, sample.SampleDescription.textFormat)) {
+        if (ok && !ALLOWED_TEXTFORMAT_VALUES->contains(sample.SampleDescription.textFormat)) {
             element->report().error(u"line %d: in <%s>, attribute 'textFormat' has a reserved value (0x%X)", element->lineNumber(), element->name(), sample.SampleDescription.textFormat);
             ok = false;
         }

@@ -10,7 +10,6 @@
 #include "tsNetworkInterface.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
-#include "tsAlgorithm.h"
 
 // Network timestampting feature in Linux.
 #if defined(TS_LINUX)
@@ -486,7 +485,7 @@ bool ts::UDPSocket::addMembershipAll(const IPAddress& multicast, const IPAddress
             // On IPv4, use local IP address. Also on IPv6 if interface index is unknown.
             ok = addMembershipImpl(multicast, loc.address, -1, source, report) && ok;
         }
-        else if (!Contains(indexes, loc.index)) {
+        else if (!indexes.contains(loc.index)) {
             // On IPv6, use interface index. Keep track of indexes to send only one request per interface.
             indexes.insert(loc.index);
             ok = addMembershipImpl(multicast, IPAddress(), loc.index, source, report) && ok;

@@ -26,6 +26,7 @@ namespace ts {
     //!
     class TSDUCKDLL SectionProviderInterface
     {
+        TS_INTERFACE(SectionProviderInterface);
     public:
         //!
         //! This hook is invoked when a new section is required.
@@ -44,10 +45,5 @@ namespace ts {
         //! but some STB are known to have problems with that.
         //!
         virtual bool doStuffing() = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~SectionProviderInterface();
     };
 }

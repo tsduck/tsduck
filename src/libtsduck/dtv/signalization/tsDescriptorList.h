@@ -120,7 +120,6 @@ namespace ts {
         //! @return True if the two descriptor lists are identical.
         //!
         bool operator==(const DescriptorList& other) const;
-        TS_UNEQUAL_OPERATOR(DescriptorList)
 
         //!
         //! Get a reference to the descriptor at a specified index.

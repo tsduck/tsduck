@@ -77,7 +77,7 @@ void ts::tsswitch::CommandListener::main()
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, nullptr, error)) {
 
         // Filter out unauthorized remote systems.
-        if (!_opt.allowedRemote.empty() && !Contains(_opt.allowedRemote, sender)) {
+        if (!_opt.allowedRemote.empty() && !_opt.allowedRemote.contains(sender)) {
             _log.warning(u"rejected remote command from unauthorized host %s", sender);
             continue;
         }

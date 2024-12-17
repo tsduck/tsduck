@@ -183,6 +183,7 @@ CHMOD               # chmod (or GNU chmod if different).
 DATE                # date (or GNU date if different).
 REALPATH            # realpath (or GNU realpath if different).
 TAR                 # tar (or GNU tar if different).
+XDGOPEN             # open (or xdg-open is not set as alternative)
 SUDO                # sudo or empty if already running as root.
 PYTHON              # Python command, at least Python 3.
 PYTHON_VERSION      # Full Python version.

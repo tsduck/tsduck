@@ -94,7 +94,6 @@ namespace ts {
         //! false otherwise.
         //!
         bool operator==(const Enumeration& other) const { return _map == other._map; }
-        TS_UNEQUAL_OPERATOR(Enumeration)
 
         //!
         //! Get the number of entries in the enumeration.

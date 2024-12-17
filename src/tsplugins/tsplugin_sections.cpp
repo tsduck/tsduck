@@ -336,11 +336,11 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
 
     // Detect sections to be selected. This can be an "and" or an "or" on the conditions.
     const bool selected = _selections_present && _predicate({
-        condition(!_tids.empty(), Contains(_tids, tid)),
-        condition(is_long && !_exts.empty(), Contains(_exts, ext)),
-        condition(is_long && !_etids.empty(), Contains(_etids, etid)),
-        condition(is_long && !_versions.empty(), Contains(_versions, section.version())),
-        condition(is_long && !_section_numbers.empty(), Contains(_section_numbers, section.sectionNumber())),
+        condition(!_tids.empty(), _tids.contains(tid)),
+        condition(is_long && !_exts.empty(), _exts.contains(ext)),
+        condition(is_long && !_etids.empty(), _etids.contains(etid)),
+        condition(is_long && !_versions.empty(), _versions.contains(section.version())),
+        condition(is_long && !_section_numbers.empty(), _section_numbers.contains(section.sectionNumber())),
         condition(!_contents.empty(), matchContent(section)),
     });
 

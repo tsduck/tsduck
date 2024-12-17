@@ -10,7 +10,6 @@
 #include "tsDuckConfigFile.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -511,7 +510,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
                 const HFBandIndex index(hf->_band_name, *it);
                 // Build a set of unique entries for region names.
                 regionSet.insert(*it);
-                if (Contains(_objects, index)) {
+                if (_objects.contains(index)) {
                     report.error(u"duplicate definition for %s, line %d", index, node->lineNumber());
                     success = false;
                 }

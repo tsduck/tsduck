@@ -1925,7 +1925,7 @@ bool ts::IsLower(UChar c)
     }
     else {
         // Check if it is a known lowercase for us.
-        return Contains(LowerUpper::Instance(), c);
+        return LowerUpper::Instance().contains(c);
     }
 }
 
@@ -1937,7 +1937,7 @@ bool ts::IsUpper(UChar c)
     }
     else {
         // Check if it is a known uppercase for us.
-        return Contains(UpperLower::Instance(), c);
+        return UpperLower::Instance().contains(c);
     }
 }
 

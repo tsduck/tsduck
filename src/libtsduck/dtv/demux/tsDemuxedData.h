@@ -131,7 +131,6 @@ namespace ts {
         //! @return True if the two packets are identical. False otherwise.
         //!
         bool operator==(const DemuxedData& other) const;
-        TS_UNEQUAL_OPERATOR(DemuxedData)
 
         //!
         //! Get the source PID.

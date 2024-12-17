@@ -111,7 +111,7 @@ bool ts::DVBHTMLApplicationDescriptor::analyzeXML(DuckContext& duck, const xml::
     bool ok = element->getAttribute(parameter, u"parameter", false) && element->getChildren(children, u"application");
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
-        uint16_t id;
+        uint16_t id = 0;
         ok = children[i]->getIntAttribute(id, u"id", true);
         application_ids.push_back(id);
     }

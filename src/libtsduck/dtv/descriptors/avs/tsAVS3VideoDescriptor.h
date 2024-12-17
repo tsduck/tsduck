@@ -61,9 +61,5 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
-
-    private:
-        static const std::vector<uint8_t> valid_profile_ids;
-        static const std::vector<uint8_t> valid_level_ids;
     };
 }

@@ -179,6 +179,7 @@ export LOCAL_OS LOCAL_ARCH
 [[ -z $CHMOD ]] && CHMOD=$(getcmd gchmod chmod)
 [[ -z $DATE ]] && DATE=$(getcmd gdate date)
 [[ -z $REALPATH ]] && REALPATH=$(getcmd grealpath realpath)
+[[ -z $XDGOPEN ]] && XDGOPEN=$(getcmd xdg-open open)
 [[ -z $PYTHON ]] && PYTHON=$(getcmd python3 python)
 [[ -z $SUDO && $(id -u) -ne 0 ]] && SUDO=sudo
 
@@ -516,8 +517,8 @@ else
     [[ $MAIN_ARCH == arm* ]] && CXXFLAGS_NO_WARNINGS="$CXXFLAGS_NO_WARNINGS -Wno-psabi"
 fi
 
-# Language levels. Minimum level is C++17.
-[[ -z $CXXFLAGS_STANDARD ]] && CXXFLAGS_STANDARD="-std=c++17"
+# Language levels. Minimum level is C++20.
+[[ -z $CXXFLAGS_STANDARD ]] && CXXFLAGS_STANDARD="-std=c++20"
 
 # Compilation flags for security.
 [[ -z $CXXFLAGS_SECURITY ]] && CXXFLAGS_SECURITY="-fstack-protector-all"

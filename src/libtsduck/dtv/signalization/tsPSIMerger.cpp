@@ -463,7 +463,7 @@ void ts::PSIMerger::handleMainTable(const BinaryTable& table)
         case TID_BAT: {
             const BAT bat(_duck, table);
             if (bat.isValid() && table.sourcePID() == PID_BAT) {
-                if (!Contains(_main_bats, bat.bouquet_id)) {
+                if (!_main_bats.contains(bat.bouquet_id)) {
                     // No previous BAT for this bouquet.
                     _main_bats[bat.bouquet_id] = bat;
                 }
@@ -557,7 +557,7 @@ void ts::PSIMerger::mergePAT()
     // Add all services from merged stream into main PAT.
     for (const auto& merge : _merge_pat.pmts) {
         // Check if the service already exists in the main PAT.
-        if (Contains(pat.pmts, merge.first)) {
+        if (pat.pmts.contains(merge.first)) {
             _duck.report().error(u"service conflict, service %n exists in the two streams, dropping from merged stream", merge.first);
         }
         else {
@@ -634,7 +634,7 @@ void ts::PSIMerger::mergeSDT()
     // Add all services from merged stream into main SDT.
     for (const auto& merge : _merge_sdt.services) {
         // Check if the service already exists in the main SDT.
-        if (Contains(sdt.services, merge.first)) {
+        if (sdt.services.contains(merge.first)) {
             _duck.report().error(u"service conflict, service %n exists in the two streams, dropping from merged stream", merge.first);
         }
         else {

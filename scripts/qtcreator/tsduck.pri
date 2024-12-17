@@ -12,7 +12,7 @@
 # Do not use Qt, we just use Qt Creator as a general-purpose C++ IDE.
 CONFIG *= thread
 CONFIG *= largefile
-CONFIG *= c++17
+CONFIG += c++2a # should be c++20 but does not work
 CONFIG *= unversioned_libname
 CONFIG *= no_plugin_name_prefix
 CONFIG -= qt
@@ -31,9 +31,6 @@ SRCROOT  = $$PROJROOT/src
 # Enforce compilation warnings.
 CONFIG -= warn_off
 CONFIG *= warn_on
-
-# Required on macOS to get C++17 features (C++17 standard library no supported before 10.15).
-mac: QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15 # $$system(sw_vers --productVersion)
 
 # The other system-specific directories to exclude
 linux: NOSYSDIR = mac

@@ -110,7 +110,7 @@ bool ts::StreamTypeIsAudio(uint8_t st)
 // Check if an ST value indicates an audio stream (with registration ids).
 bool ts::StreamTypeIsAudio(uint8_t st, const std::set<REGID>& regids)
 {
-    return StreamTypeIsAudio(st) || (Contains(regids, REGID_HDMV) && (
+    return StreamTypeIsAudio(st) || (regids.contains(REGID_HDMV) && (
                st == ST_LPCM_AUDIO       ||
                st == ST_HDMV_AC3         ||
                st == ST_DTS_AUDIO        ||

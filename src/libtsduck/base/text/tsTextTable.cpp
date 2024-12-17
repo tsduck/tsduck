@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTextTable.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -29,7 +28,7 @@ void ts::TextTable::clear()
 
 bool ts::TextTable::addColumnImpl(ColId id, const UString& header, Align align)
 {
-    if (Contains(_colids, id)) {
+    if (_colids.contains(id)) {
         // Column already exist.
         return false;
     }
@@ -42,7 +41,7 @@ bool ts::TextTable::addColumnImpl(ColId id, const UString& header, Align align)
 
 bool ts::TextTable::setCellImpl(size_t line, ColId id, const UString& value)
 {
-    const bool ok = Contains(_colids, id);
+    const bool ok = _colids.contains(id);
     if (ok) {
         (_lines[line])[id] = value;
     }
@@ -79,7 +78,7 @@ void ts::TextTable::output(std::ostream& out, Headers headers, bool skip_empty, 
 
         // Include headers widths in max_width.
         for (const auto& col : _columns) {
-            if (Contains(colids, col.id)) {
+            if (colids.contains(col.id)) {
                 // The column was not removed.
                 max_width[col.id] = std::max(max_width[col.id], col.header.width());
             }
@@ -89,7 +88,7 @@ void ts::TextTable::output(std::ostream& out, Headers headers, bool skip_empty, 
         UString line;
         const UString* previous = &margin;
         for (const auto& col : _columns) {
-            if (Contains(colids, col.id)) {
+            if (colids.contains(col.id)) {
                 line.append(*previous);
                 previous = &separator;
                 if (col.align == Align::LEFT) {
@@ -107,7 +106,7 @@ void ts::TextTable::output(std::ostream& out, Headers headers, bool skip_empty, 
         UString line;
         const UString* previous = &margin;
         for (const auto& col : _columns) {
-            if (Contains(colids, col.id)) {
+            if (colids.contains(col.id)) {
                 line.append(*previous);
                 line.append(UString(max_width[col.id], u'-'));
                 previous = &separator;
@@ -127,7 +126,7 @@ void ts::TextTable::output(std::ostream& out, Headers headers, bool skip_empty, 
                 UString line;
                 const UString* previous = &margin;
                 for (const auto& col : _columns) {
-                    if (Contains(colids, col.id)) {
+                    if (colids.contains(col.id)) {
                         line.append(*previous);
                         line.append(UString(max_width[col.id], u' '));
                         previous = &separator;
@@ -145,7 +144,7 @@ void ts::TextTable::output(std::ostream& out, Headers headers, bool skip_empty, 
         bool not_empty = false;
         if (skip_empty) {
             for (const auto& cell : cline.second) {
-                if (Contains(colids, cell.first)) {
+                if (colids.contains(cell.first)) {
                     not_empty = not_empty || !cell.second.empty();
                 }
             }
@@ -156,7 +155,7 @@ void ts::TextTable::output(std::ostream& out, Headers headers, bool skip_empty, 
             UString line;
             const UString* previous = &margin;
             for (const auto& col : _columns) {
-                if (Contains(colids, col.id)) {
+                if (colids.contains(col.id)) {
                     line.append(*previous);
                     const auto it = cline.second.find(col.id);
                     if (it == cline.second.end()) {

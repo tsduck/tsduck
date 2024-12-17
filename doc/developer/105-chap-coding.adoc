@@ -318,7 +318,7 @@ Libraries with very few maintainers and not too many users may choose to priorit
 the maintainability of the code, at the expense of ascending compatibility.
 
 TSDuck belongs the latter category.
-TSDuck went through several code cleanup cycles, taking advantage of new standard features in {cpp}11 or {cpp}17.
+TSDuck went through several code cleanup cycles, taking advantage of new standard features in {cpp}11, {cpp}17, then {cpp}20.
 In these operations, old features were removed to simplify the code base.
 
 [.rule]
@@ -3957,24 +3957,6 @@ any instances `a` and `b` of the class:
 
 In practice, it is only necessary to provide a deep implementation for operators `==` and `<`.
 All other operators can be implemented using references to the first two.
-
-CAUTION: In {cpp}20, it is no longer possible to define the operator `!=` when you have defined `==`.
-The `!=` is automatically derived from `==`. To face the challenge of compiling the same code with {cpp}17
-and {cpp}20, TSDuck defines the macro `TS_UNEQUAL_OPERATOR` for `!=`.
-
-*Example:*
-----
-
-class C
-{
-public:
-    bool operator==(const C& other) const;
-    TS_UNEQUAL_OPERATOR(C)
-};
-----
-
-When compiled in {cpp}17 mode, the macro `TS_UNEQUAL_OPERATOR` declare an inline function
-which returns `!operator==(other)`. When compiled in {cpp}20 mode, the macro does nothing.
 
 [.rule]
 [Rule] When you do not use the final result of an expression using the increment (`{pp}`)

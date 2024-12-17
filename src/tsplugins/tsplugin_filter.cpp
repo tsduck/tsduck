@@ -487,7 +487,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
     // the payload of a TS packet containing the start of a PES packet.
     if (!_stream_ids.empty() && pkt.startPES() && pkt.getPayloadSize() >= 4) {
         const uint8_t id = pkt.getPayload()[3];
-        const bool selected = Contains(_stream_ids, id);
+        const bool selected = _stream_ids.contains(id);
         _stream_id_pid.set(pid, selected);
     }
 
@@ -528,7 +528,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
     if (!ok && !_isdb_layers.empty()) {
         // Do not check if ISDB is part of the standards, assume it if option --isdb-layer is present.
         const ISDBTInformation info(duck, pkt_data, false);
-        ok = info.is_valid && Contains(_isdb_layers, info.layer_indicator);
+        ok = info.is_valid && _isdb_layers.contains(info.layer_indicator);
     }
 
     // Search binary patterns in packets.

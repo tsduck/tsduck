@@ -51,7 +51,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <LanguageStandard Condition="'$(STDCPP)'==''">stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="'$(STDCPP)'==''">stdcpp20</LanguageStandard>
       <LanguageStandard Condition="'$(STDCPP)'!=''">$(STDCPP)</LanguageStandard>
       <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>

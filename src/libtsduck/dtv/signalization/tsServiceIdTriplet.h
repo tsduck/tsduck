@@ -58,6 +58,10 @@ namespace ts {
         {
         }
 
+        //! @cond nodoxygen
+        auto operator<=>(const ServiceIdTriplet&) const = default;
+        //! @endcond
+
         //!
         //! Get a "normalized" 64-bit identifier.
         //! This is a value containing the original network id, TS id, service id and version.
@@ -66,57 +70,6 @@ namespace ts {
         uint64_t normalized() const
         {
             return (uint64_t(original_network_id) << 40) | (uint64_t(transport_stream_id) << 24) | (uint64_t(service_id) << 8) | uint64_t(version);
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] svid Another instance to compare.
-        //! @return True if this object == @a svid.
-        //!
-        bool operator==(const ServiceIdTriplet& svid) const
-        {
-            return normalized() == svid.normalized();
-        }
-        TS_UNEQUAL_OPERATOR(ServiceIdTriplet)
-
-        //!
-        //! Comparison operator.
-        //! @param [in] svid Another instance to compare.
-        //! @return True if this object < @a svid.
-        //!
-        bool operator<(const ServiceIdTriplet& svid) const
-        {
-            return normalized() < svid.normalized();
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] svid Another instance to compare.
-        //! @return True if this object <= @a svid.
-        //!
-        bool operator<=(const ServiceIdTriplet& svid) const
-        {
-            return normalized() <= svid.normalized();
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] svid Another instance to compare.
-        //! @return True if this object > @a svid.
-        //!
-        bool operator>(const ServiceIdTriplet& svid) const
-        {
-            return normalized() > svid.normalized();
-        }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] svid Another instance to compare.
-        //! @return True if this object >= @a svid.
-        //!
-        bool operator>=(const ServiceIdTriplet& svid) const
-        {
-            return normalized() >= svid.normalized();
         }
 
         // Inherited methods.

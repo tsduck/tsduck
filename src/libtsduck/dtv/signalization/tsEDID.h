@@ -92,6 +92,10 @@ namespace ts {
         //!
         explicit EDID(uint64_t edid) : _edid(edid) {}
 
+        //! @cond nodoxygen
+        auto operator<=>(const EDID&) const = default;
+        //! @endcond
+
         //!
         //! Enumeration of descriptor types.
         //!
@@ -352,42 +356,6 @@ namespace ts {
         //! @return The 64-bit encoded EDID value.
         //!
         uint64_t encoded() const { return _edid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object == @a e.
-        //!
-        bool operator==(const EDID& e) const { return _edid == e._edid; }
-        TS_UNEQUAL_OPERATOR(EDID)
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object < @a e.
-        //!
-        bool operator<(const EDID& e) const { return _edid <  e._edid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object <= @a e.
-        //!
-        bool operator<=(const EDID& e) const { return _edid <= e._edid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object > @a e.
-        //!
-        bool operator>(const EDID& e) const { return _edid >  e._edid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object >= @a e.
-        //!
-        bool operator>=(const EDID& e) const { return _edid >= e._edid; }
 
         //!
         //! Convert to a string object.

@@ -114,13 +114,9 @@
     //! The Microsoft-specific symbol _MSVC_LANG is defined to describe a "good-enough"
     //! level of standard which is fine for us.
     //!
-    //! The current version of TSDuck requires C++17 at least (GCC 8, clang 5, Visual Studio 2017 15.8).
+    //! The current version of TSDuck requires C++20 at least (GCC 11, clang 5, Visual Studio 2017 15.8).
     //!
     #define TS_CPLUSPLUS
-    //!
-    //! Defined when the compiler is compliant with C++17.
-    //!
-    #define TS_CXX17
     //!
     //! Defined when the compiler is compliant with C++20.
     //!
@@ -142,9 +138,6 @@
         #undef TS_CPLUSPLUS
         #define TS_CPLUSPLUS _MSVC_LANG
     #endif
-    #if TS_CPLUSPLUS >= 201703L && !defined(TS_CXX17)
-        #define TS_CXX17 1
-    #endif
     #if TS_CPLUSPLUS >= 202002L && !defined(TS_CXX20)
         #define TS_CXX20 1
     #endif
@@ -153,26 +146,12 @@
     #endif
 #endif
 
-#if defined(DOXYGEN) || !defined(TS_CXX20)
-    //!
-    //! Defined when the != operator shall be defined in addition to ==.
-    //!
-    //! In C++20, != operators are implicitly derived from the corresponding == operators.
-    //! Defining the != operator when == is already defined is not only useless,
-    //! it also creates "ambiguous operator" errors because tests such as "a != b"
-    //! become ambiguous when a and b are not const (the exact profile of !=).
-    //! In that case, the compiler cannot choose between the explicitly defined
-    //! != and the implicit one which is derived from ==.
-    //!
-    #define TS_NEED_UNEQUAL_OPERATOR 1
-#endif
-
-// TSDuck now requests to use C++17 at least.
-#if !defined(TS_CXX17)
+// TSDuck now requests to use C++20 at least.
+#if !defined(TS_CXX20)
     #if defined(TS_MSC)
-        #error "TSDuck requires C++17 at least, use /std:c++17 or higher"
+        #error "TSDuck requires C++20 at least, use /std:c++20 or higher"
     #else
-        #error "TSDuck requires C++17 at least, use -std=c++17 or higher"
+        #error "TSDuck requires C++20 at least, use -std=c++20 or higher"
     #endif
 #endif
 
@@ -780,7 +759,7 @@ TS_LLVM_NOWARNING(sign-conversion)                // Too many occurences since p
 TS_LLVM_NOWARNING(padded)                         // Do not care if padding is required between class fields.
 TS_LLVM_NOWARNING(reserved-id-macro)              // We sometimes use underscores at the beginning of identifiers.
 TS_LLVM_NOWARNING(reserved-identifier)            // Identifier '_Xxx' is reserved because it starts with '_' followed by a capital letter.
-TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Require C++17, no need for C++98 compatibility.
+TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Now require C++20, no need for C++98 compatibility.
 TS_LLVM_NOWARNING(c++2a-compat)                   // Compatibility with C++2a is not yet a concern.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
 TS_LLVM_NOWARNING(unsafe-buffer-usage)            // "unsafe pointer arithmetic" (new with clang 16) => we know what we are doing here.
@@ -832,6 +811,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
+#include <compare>
 #include <limits>
 #include <locale>
 #include <istream>
@@ -1014,29 +994,17 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //! A macro to declare the basic operators in the declaration of an interface class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_INTERFACE(classname)                           \
-    public:                                               \
-        /** @cond nodoxygen */                            \
-        classname() = default;                            \
-        classname(classname&&) = default;                 \
-        classname(const classname&) = default;            \
-        classname& operator=(classname&&) = default;      \
-        classname& operator=(const classname&) = default; \
-        virtual ~classname()                              \
+#define TS_INTERFACE(classname)                            \
+    public:                                                \
+        /** @cond nodoxygen */                             \
+        classname() = default;                             \
+        classname(classname&&) = default;                  \
+        classname(const classname&) = default;             \
+        classname& operator=(classname&&) = default;       \
+        classname& operator=(const classname&) = default;  \
+        virtual ~classname();                              \
+        auto operator<=>(const classname&) const = default \
         /** @endcond */
-
-//!
-//! A macro to declare an unequal operator in the declaration of a class.
-//! Before C++20, define an inline != operator based on the == operator.
-//! In C++20 and beyond, != is implicitly derived from the corresponding ==
-//! and this macro does nothing.
-//! @param classname Name of the enclosing class.
-//!
-#if defined(TS_NEED_UNEQUAL_OPERATOR) && !defined(DOXYGEN)
-    #define TS_UNEQUAL_OPERATOR(classname) bool operator!=(const classname& other) const { return ! operator==(other); }
-#else
-    #define TS_UNEQUAL_OPERATOR(classname)
-#endif
 
 
 //----------------------------------------------------------------------------
@@ -1194,18 +1162,6 @@ namespace ts {
     //!
     using monotonic_time = cn::time_point<cn::steady_clock>;
 }
-
-// Define missing std::chrono::duration types in C++17.
-//! @cond nodoxygen
-#if !defined(TS_CXX20)
-namespace std::chrono {
-    using days   = duration<hours::rep, ratio_multiply<ratio<24>, hours::period>>;
-    using weeks  = duration<hours::rep, ratio_multiply<ratio<7>, days::period>>;
-    using years  = duration<hours::rep, ratio_multiply<ratio<146097, 400>, days::period>>;
-    using months = duration<hours::rep, ratio_divide<years::period, ratio<12>>>;
-}
-#endif
-//! @endcond
 
 
 //----------------------------------------------------------------------------

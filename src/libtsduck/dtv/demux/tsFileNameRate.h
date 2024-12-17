@@ -44,7 +44,6 @@ namespace ts {
         //! @return True if this instance is equal to @a other.
         //!
         bool operator==(const FileNameRate& other) const;
-        TS_UNEQUAL_OPERATOR(FileNameRate)
 
         //!
         //! Comparison "less than" operator.

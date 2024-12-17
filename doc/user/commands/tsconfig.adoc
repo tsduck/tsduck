@@ -110,11 +110,11 @@ In a makefile, this is used in `LDLIBS`.
 When present before `--cflags`, no {cpp} standard level is imposed in the compilation flags.
 
 [.optdoc]
-By default, the command `tsconfig --cflags` forces {cpp}17 as level of {cpp} language standard.
+By default, the command `tsconfig --cflags` forces {cpp}20 as level of {cpp} language standard.
 If your application requires a more recent level, define the environment variable `TS_NOSTDCPP` to any non-empty value.
 This disables the {cpp} standard option in `tsconfig`.
 The application shall then define its own {cpp} standard in its command line.
-This user-specified {cpp} standard cannot be lower than {cpp}17.
+This user-specified {cpp} standard cannot be lower than {cpp}20.
 
 [.optdoc]
 Alternatively, the command `tsconfig --nostdcpp --cflags` can be used to omit the {cpp} standard

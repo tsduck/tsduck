@@ -196,9 +196,9 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
     }
 
     // Is this a selected TID or TID-ext?
-    const bool tid_set = Contains(_tids, section.tableId());
-    const bool tidext_set = Contains(_tidexts, section.tableIdExtension());
-    const bool secnum_set = Contains(_secnums, section.sectionNumber());
+    const bool tid_set = _tids.contains(section.tableId());
+    const bool tidext_set = _tidexts.contains(section.tableIdExtension());
+    const bool secnum_set = _secnums.contains(section.sectionNumber());
 
     // Return final verdict. For each criteria (--pid, --tid, etc), either the criteria is
     // not specified or the corresponding value matches.

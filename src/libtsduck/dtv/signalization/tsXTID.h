@@ -44,6 +44,10 @@ namespace ts {
         //!
         XTID(TID tid, uint16_t tid_ext): _xtid(0x01000000 | ((uint32_t(tid) & 0xFF) << 16) | (uint32_t(tid_ext) & 0xFFFF)) {}
 
+        //! @cond nodoxygen
+        auto operator<=>(const XTID&) const = default;
+        //! @endcond
+
         //!
         //! Check if the table is a long one.
         //! @return True if the table is a long one.
@@ -67,42 +71,6 @@ namespace ts {
         //! @return The table id extension.
         //!
         uint16_t tidExt() const { return uint16_t(_xtid & 0xFFFF); }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object == @a e.
-        //!
-        bool operator==(const XTID& e) const { return _xtid == e._xtid; }
-        TS_UNEQUAL_OPERATOR(XTID)
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object < @a e.
-        //!
-        bool operator<(const XTID& e) const { return _xtid <  e._xtid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object <= @a e.
-        //!
-        bool operator<=(const XTID& e) const { return _xtid <= e._xtid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object > @a e.
-        //!
-        bool operator>(const XTID& e) const { return _xtid >  e._xtid; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object >= @a e.
-        //!
-        bool operator>=(const XTID& e) const { return _xtid >= e._xtid; }
 
         //!
         //! Convert to a string object.

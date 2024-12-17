@@ -195,9 +195,7 @@ namespace ts {
         Fraction& operator*=(const Fraction& x) { return *this = *this * x; }
         Fraction& operator/=(const Fraction& x) { return *this = *this / x; }
 
-        bool operator==(const Fraction& x) const { return _num == x._num && _den == x._den; }
-        TS_UNEQUAL_OPERATOR(Fraction)
-
+        bool operator==(const Fraction& x) const = default;
         bool operator<=(const Fraction& x) const;
         bool operator>=(const Fraction& x) const;
         bool operator<(const Fraction& x) const;
@@ -229,11 +227,6 @@ namespace ts {
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
         bool operator==(INT1 x) const { return _den == 1 && bound_check<int_t>(x) && _num == int_t(x); }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator!=(INT1 x) const { return _den != 1 || !bound_check<int_t>(x) || _num != int_t(x); }
-#endif
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
         bool operator<=(INT1 x) const;
@@ -278,13 +271,6 @@ template <typename INT1, typename INT2,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
 inline bool operator==(INT1 x1, const ts::Fraction<INT2>& x2) { return x2.operator==(x1); }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-template <typename INT1, typename INT2,
-          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
-          typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator!=(INT1 x1, const ts::Fraction<INT2>& x2) { return !x2.operator==(x1); }
-#endif
 
 template <typename INT1, typename INT2,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,

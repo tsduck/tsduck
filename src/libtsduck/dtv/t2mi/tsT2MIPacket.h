@@ -133,7 +133,6 @@ namespace ts {
         //! @return True if the two packets are identical. False otherwise.
         //!
         bool operator==(const T2MIPacket& other) const;
-        TS_UNEQUAL_OPERATOR(T2MIPacket)
 
         //!
         //! Access to the payload of the packet.

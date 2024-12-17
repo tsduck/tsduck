@@ -625,7 +625,7 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
         const uint16_t service_id = it.first;
         Origin& origin(_core._service_origin[service_id]);
 
-        if (!Contains(_core._output_pat.pmts, service_id)) {
+        if (!_core._output_pat.pmts.contains(service_id)) {
             // New service found.
             _core._log.verbose(u"adding service %n from input #%d in PAT", service_id, _plugin_index);
             _core._output_pat.pmts[service_id] = it.second;
@@ -652,7 +652,7 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
     // Check if previous services from this input have disappeared.
     for (auto it = _core._output_pat.pmts.begin(); it != _core._output_pat.pmts.end(); ) {
         const uint16_t service_id = it->first;
-        if (_core._service_origin[service_id].plugin_index == _plugin_index && !Contains(pat.pmts, service_id)) {
+        if (_core._service_origin[service_id].plugin_index == _plugin_index && !pat.pmts.contains(service_id)) {
             // This service was in the output PAT and identified as coming from this input plugin.
             // However, it is no longer in the PAT of this input.
             _core._log.verbose(u"service %n disappeared from input #%d, removing from PAT", service_id, _plugin_index);
@@ -784,7 +784,7 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
         const uint16_t service_id = it.first;
         Origin& origin(_core._service_origin[service_id]);
 
-        if (!Contains(_core._output_sdt.services, service_id)) {
+        if (!_core._output_sdt.services.contains(service_id)) {
             // New service found.
             _core._log.verbose(u"adding service %n from input #%d in SDT", service_id, _plugin_index);
             _core._output_sdt.services[service_id] = it.second;
@@ -811,7 +811,7 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
     // Check if previous services from this input have disappeared.
     for (auto it = _core._output_sdt.services.begin(); it != _core._output_sdt.services.end(); ) {
         const uint16_t service_id = it->first;
-        if (_core._service_origin[service_id].plugin_index == _plugin_index && !Contains(sdt.services, service_id)) {
+        if (_core._service_origin[service_id].plugin_index == _plugin_index && !sdt.services.contains(service_id)) {
             // This service was in the output SDT and identified as coming from this input plugin.
             // However, it is no longer in the SDT of this input.
             _core._log.verbose(u"service %n disappeared from input #%d, removing from SDT", service_id, _plugin_index);

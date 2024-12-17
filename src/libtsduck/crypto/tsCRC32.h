@@ -40,6 +40,10 @@ namespace ts {
             add(data, size);
         }
 
+        //! @cond nodoxygen
+        auto operator<=>(const CRC32&) const = default;
+        //! @endcond
+
         //!
         //! Continue the computation of a data area, following a previous CRC32.
         //! @param [in] data Address of area to analyze.
@@ -59,14 +63,6 @@ namespace ts {
         //! @return The value of the CRC32 as computed so far.
         //!
         operator uint32_t() const { return value(); }
-
-        //!
-        //! Comparison operator with another CRC32 instance.
-        //! @param [in] c Other instance to compare.
-        //! @return True if the two CRC32 are identical, false otherwise.
-        //!
-        bool operator==(const CRC32& c) const { return _fcs == c._fcs; }
-        TS_UNEQUAL_OPERATOR(CRC32)
 
         //!
         //! Reset the CRC32 computation, restart a new computation.

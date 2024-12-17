@@ -68,7 +68,6 @@ namespace ts {
         //! @return True if both object contains the same address, false otherwise.
         //!
         bool operator==(const MACAddress& a) const { return _addr == a._addr; }
-        TS_UNEQUAL_OPERATOR(MACAddress)
 
         //!
         //! Constructor from a string in "a:b:c:d:e:f" format.

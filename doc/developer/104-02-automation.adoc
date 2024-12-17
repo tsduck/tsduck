@@ -26,7 +26,7 @@ Each time a commit or a pull request is pushed to GitHub, the workflow
 that the project can be built on most supported platforms and contains no regression.
 
 * The workflow is run on Linux Ubuntu, macOS, and Windows (64 and 32 bits).
-* The compilation is done using two revisions of the {cpp} language: {cpp}17 and {cpp}20.
+* The compilation is done using two revisions of the {cpp} language: {cpp}20 and {cpp}23.
 * On Linux, the builds are repeated using two compilers, `gcc` and `clang`.
 * In each configuration of platform, compiler and language level:
 ** TSDuck is fully built.

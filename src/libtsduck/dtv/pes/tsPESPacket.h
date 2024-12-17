@@ -135,7 +135,6 @@ namespace ts {
         //! @return True if the two packets are identical. False otherwise.
         //!
         bool operator==(const PESPacket& other) const;
-        TS_UNEQUAL_OPERATOR(PESPacket)
 
         //!
         //! Get the optional PCR value which was associated to the PES packets.

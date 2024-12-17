@@ -138,7 +138,6 @@ namespace ts {
         //! @c false otherwise.
         //!
         bool operator==(const Time& other) const { return _value == other._value; }
-        TS_UNEQUAL_OPERATOR(Time)
 
         //!
         //! Lower operator.
@@ -206,7 +205,6 @@ namespace ts {
             //! @c false otherwise.
             //!
             bool operator==(const Fields& other) const;
-            TS_UNEQUAL_OPERATOR(Fields)
 
             //!
             //! Validation of the fields.

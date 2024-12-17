@@ -331,7 +331,7 @@ void ts::tsswitch::Core::execute(const Action& event)
 {
     // Set current event. Ignore flag in event.
     const Action eventNoFlag(event, false);
-    if (event.type != NONE && !Contains(_events, eventNoFlag)) {
+    if (event.type != NONE && !_events.contains(eventNoFlag)) {
         // The event was not present.
         _events.insert(eventNoFlag);
         _log.debug(u"setting event: %s", event);

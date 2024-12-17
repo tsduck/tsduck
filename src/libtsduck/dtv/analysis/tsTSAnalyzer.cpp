@@ -260,16 +260,6 @@ ts::TSAnalyzer::XTIDContextPtr ts::TSAnalyzer::getXTID(const Section& section)
 
 
 //----------------------------------------------------------------------------
-// Check if a PID context exists.
-//----------------------------------------------------------------------------
-
-bool ts::TSAnalyzer::pidExists(PID pid) const
-{
-    return Contains(_pids, pid);
-}
-
-
-//----------------------------------------------------------------------------
 //  Return a PID context. Allocate a new entry if PID not found.
 //----------------------------------------------------------------------------
 
@@ -317,7 +307,7 @@ void ts::TSAnalyzer::PIDContext::addService(uint16_t service_id)
     referenced = true;
 
     // Search the service in the list
-    if (!Contains(services, service_id)) {
+    if (!services.contains(service_id)) {
         // Service id not found, add it
         services.insert(service_id);
     }

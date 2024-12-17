@@ -9,7 +9,7 @@
 #  The workflow is triggered on push or pull request, for master branch only.
 #  Manual dispatch from the GitHub UI is also allowed.
 #
-#  TSDuck is built on Ubuntu, macOS and Windows, using C++17 and C++20 levels
+#  TSDuck is built on Ubuntu, macOS and Windows, using C++20 and C++23 levels
 #  of standards. The doxygen documentation is also generated to verify that
 #  no documentation is missing.
 #
@@ -49,7 +49,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-latest]
         compiler: [gcc, clang]
-        std: [17, 20]
+        std: [20, 23]
         include:
         - os: ubuntu-24.04
           make: make
@@ -130,7 +130,7 @@ jobs:
       matrix:
         target: [Win64, Win32]
         configuration: [Release]
-        std: [17, 20]
+        std: [20, 23]
         include:
         - target: Win64
           suffix: x64
@@ -140,7 +140,7 @@ jobs:
           testopt: --dev32
         exclude:
         - target: Win32
-          std: 20
+          std: 23
     name: Build on ${{ matrix.target }} with VC++, C++${{ matrix.std }}
     runs-on: windows-latest
     env:

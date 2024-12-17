@@ -384,7 +384,7 @@ void ts::ZapPlugin::forgetServiceComponents(ServiceContext& ctx)
         for (size_t i = 0; !shared && i < _services.size(); ++i) {
             // Do not test on the service itself.
             if (_services[i]->id_known && _services[i]->service_id != ctx.service_id) {
-                shared = Contains(_services[i]->pids, pid);
+                shared = _services[i]->pids.contains(pid);
             }
         }
 
@@ -787,7 +787,7 @@ bool ts::ZapPlugin::keepComponent(PID pid, const DescriptorList& descs, const US
     }
 
     // Keep explicitly selected PID's.
-    if (Contains(pids, pid)) {
+    if (pids.contains(pid)) {
         return true;
     }
 

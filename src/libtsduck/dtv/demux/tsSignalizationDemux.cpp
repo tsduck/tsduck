@@ -171,7 +171,7 @@ bool ts::SignalizationDemux::atIntraFrame(PID pid) const
 bool ts::SignalizationDemux::inService(PID pid, uint16_t service_id) const
 {
     auto ctx = _pids.find(pid);
-    return ctx != _pids.end() && Contains(ctx->second->services, service_id);
+    return ctx != _pids.end() && ctx->second->services.contains(service_id);
 }
 
 bool ts::SignalizationDemux::inAnyService(PID pid, std::set<uint16_t> service_ids) const
@@ -179,7 +179,7 @@ bool ts::SignalizationDemux::inAnyService(PID pid, std::set<uint16_t> service_id
     auto ctx = _pids.find(pid);
     if (ctx != _pids.end()) {
         for (auto it : service_ids) {
-            if (Contains(ctx->second->services, it)) {
+            if (ctx->second->services.contains(it)) {
                 return true;
             }
         }
@@ -1162,7 +1162,7 @@ ts::SignalizationDemux::ServiceContextPtr ts::SignalizationDemux::getServiceCont
     }
     else if (create == CreateService::ALWAYS ||
              (create == CreateService::IF_MAY_EXIST && !_last_pat.isValid()) ||
-             (create == CreateService::IF_MAY_EXIST && _last_pat.isValid() && Contains(_last_pat.pmts, service_id)))
+             (create == CreateService::IF_MAY_EXIST && _last_pat.isValid() && _last_pat.pmts.contains(service_id)))
     {
         return _services[service_id] = std::make_shared<ServiceContext>(service_id);
     }

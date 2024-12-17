@@ -64,11 +64,11 @@ $ make
 [.usage]
 {cpp} language level
 
-By default, the command `tsconfig --cflags` forces {cpp}17 as level of {cpp} language standard.
+By default, the command `tsconfig --cflags` forces {cpp}20 as level of {cpp} language standard.
 If your application requires a more recent level, define the environment variable `TS_NOSTDCPP` to any non-empty value.
 This disables the {cpp} standard option in `tsconfig`.
 The application shall then define its own {cpp} standard in its command line.
-This user-specified {cpp} standard cannot be lower than {cpp}17.
+This user-specified {cpp} standard cannot be lower than {cpp}20.
 
 Alternatively, the command `tsconfig --nostdcpp --cflags` can be used to omit the {cpp} standard
 from the compilation options without defining the environment variable `TS_NOSTDCPP`.
@@ -98,11 +98,11 @@ Then build your project normally.
 [.usage]
 {cpp} language level
 
-By default, the property file `tsduck.props` forces {cpp}17 as level of {cpp} language standard.
+By default, the property file `tsduck.props` forces {cpp}20 as level of {cpp} language standard.
 If your application requires a more recent level, define the environment variable `TS_NOSTDCPP` to any non-empty value.
 This disables the {cpp} standard option in `tsduck.props`.
 The application shall then define its own {cpp} standard in its project files.
-This user-specified {cpp} standard cannot be lower than {cpp}17.
+This user-specified {cpp} standard cannot be lower than {cpp}20.
 
 //----------------------------------------------------------------------------
 === Overview of the TSDuck library
@@ -121,9 +121,9 @@ Roughly, the TSDuck library provides two categories of features:
 * Handling of MPEG transport streams and signalization, including DVB, ATSC and ISDB features.
 
 NOTE: In early versions of TSDuck, the OS abstraction layer contained many more classes.
-Starting with {cpp}11 and {cpp}17, the standard library of the language was enriched with many more system features.
+Starting with {cpp}11 and {cpp}20, the standard library of the language was enriched with many more system features.
 Some low-level TSDuck classes became obsolete.
-The code was migrated to use standard {cpp}17 features and the corresponding low-level classes were removed from TSDuck.
+The code was migrated to use standard {cpp}20 features and the corresponding low-level classes were removed from TSDuck.
 
 All {cpp} declarations are located inside the namespace `ts`, either directly within `ts` or inside inner namespaces.
 All preprocessor's macros are named with prefix `TS_`.
@@ -358,7 +358,7 @@ It is typically used in fuzzing tools.
 The header files `tsSysUtils.h`, `tsFileUtils.h`, `tsEnvironment.h`,
 declare utility functions on top of the operating system.
 
-With the introduction of {cpp}17, many of these functions have been removed in favor of new standard functions.
+With the introduction of {cpp}20, many of these functions have been removed in favor of new standard functions.
 However, a number of additional features manipulate:
 
 [.compact-list]

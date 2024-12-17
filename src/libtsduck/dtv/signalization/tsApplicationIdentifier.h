@@ -19,8 +19,9 @@ namespace ts {
     //! Representation of an Application Identifier
     //! @ingroup mpeg
     //!
-    struct TSDUCKDLL ApplicationIdentifier
+    class TSDUCKDLL ApplicationIdentifier
     {
+    public:
         uint32_t organization_id; //!< The organization identifier
         uint16_t application_id;  //!< The application identifier
 
@@ -35,25 +36,8 @@ namespace ts {
         {
         }
 
-        //!
-        //! Equality operator.
-        //! @param[in] that Identifier to compare to.
-        //! @return True if both identifiers are equals, False otherwise.
-        //!
-        bool operator==(const ApplicationIdentifier& that) const
-        {
-            return organization_id == that.organization_id && application_id == that.application_id;
-        }
-        TS_UNEQUAL_OPERATOR(ApplicationIdentifier)
-
-        //!
-        //! Lower than operator. It compares first the organization id, then the application id.
-        //! @param[in] that Identifier to compare to.
-        //! @return True if the identifier is lower than the other one, False otherwise.
-        //!
-        bool operator<(const ApplicationIdentifier& that) const
-        {
-            return organization_id < that.organization_id || (organization_id == that.organization_id && application_id < that.application_id);
-        }
+        //! @cond nodoxygen
+        auto operator<=>(const ApplicationIdentifier&) const = default;
+        //! @endcond
     };
 }

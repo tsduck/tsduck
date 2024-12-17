@@ -178,7 +178,6 @@ namespace ts {
         // Comparison, for use in containers.
         bool operator<(const VLANId& other) const { return ((uint64_t(type) << 32) | id) < ((uint64_t(other.type) << 32) | other.id); }
         bool operator==(const VLANId& other) const { return type == other.type && id == other.id; }
-        TS_UNEQUAL_OPERATOR(VLANId)
         //! @endcond
     };
 

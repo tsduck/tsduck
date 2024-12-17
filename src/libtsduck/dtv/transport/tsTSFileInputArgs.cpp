@@ -249,7 +249,7 @@ size_t ts::TSFileInputArgs::read(TSPacket* buffer, TSPacketMetadata* pkt_data, s
         }
 
         // Check if current file was already at end of file.
-        const bool already_eof = Contains(_eof, _current_filename);
+        const bool already_eof = _eof.contains(_current_filename);
 
         // Read some packets from current file.
         if (_interleave && already_eof) {

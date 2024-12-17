@@ -71,7 +71,7 @@ void ts::InitCryptoLibrary::loadProvider(const char* provider)
     const std::string name(provider != nullptr ? provider : "");
     if (!name.empty()) {
         std::lock_guard<std::mutex> lock(_mutex);
-        if (!Contains(_providers, name)) {
+        if (!_providers.contains(name)) {
             OSSL_PROVIDER* prov = OSSL_PROVIDER_load(nullptr, provider);
             if (prov != nullptr) {
                 _providers[name] = prov;

@@ -193,6 +193,10 @@ namespace ts {
             COMPACT     = 0x0200,  //!< Same as SINGLE_LINE but use a compact display without space.
         };
 
+        //! @cond nodoxygen
+        auto operator<=>(const UString&) const = default;
+        //! @endcond
+
         //--------------------------------------------------------------------
         // Constructors
         //--------------------------------------------------------------------
@@ -614,9 +618,6 @@ namespace ts {
             return operator==(other.u16string());
 #endif
         }
-#if defined(TS_NEED_UNEQUAL_OPERATOR) && !defined(DOXYGEN)
-        bool operator!=(const fs::path& other) const { return ! operator==(other); }
-#endif
 
         //--------------------------------------------------------------------
         // Operations on string content
@@ -2354,12 +2355,6 @@ namespace ts {
         bool operator==(const UString& other) const { return static_cast<SuperClass>(*this) == other; }
         bool operator==(const UChar* other) const { return static_cast<SuperClass>(*this) == other; }
 
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        bool operator!=(const SuperClass& other) const { return static_cast<SuperClass>(*this) != other; }
-        bool operator!=(const UString& other) const { return static_cast<SuperClass>(*this) != other; }
-        bool operator!=(const UChar* other) const { return static_cast<SuperClass>(*this) != other; }
-#endif
-
         UString substr(size_type pos = 0, size_type count = NPOS) const { return SuperClass::substr(pos, count); }
 
         UString& erase(size_type index = 0, size_type count = NPOS) { SuperClass::erase(index, count); return *this; }
@@ -2427,10 +2422,6 @@ namespace ts {
 #if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION)
         bool operator==(const std::string& other) const { return operator==(FromUTF8(other)); }
         bool operator==(const char* other) const { return other != nullptr && operator==(FromUTF8(other)); }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        bool operator!=(const std::string& other) const { return !operator==(other); }
-        bool operator!=(const char* other) const { return !operator==(other); }
-#endif
 
         UString& append(const std::string& str) { return append(FromUTF8(str)); }
         UString& append(const std::string& str, size_type pos, size_type count = NPOS) { return append(FromUTF8(str.substr(pos, count))); }
@@ -2680,9 +2671,6 @@ TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Abstract
 //
 #if !defined(DOXYGEN)
 TSDUCKDLL inline bool operator==(const ts::UChar* s1, const ts::UString& s2) { return s2 == s1; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-TSDUCKDLL inline bool operator!=(const ts::UChar* s1, const ts::UString& s2) { return s2 != s1; }
-#endif
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const ts::UString& s2)
 {
     return *static_cast<const ts::UString::SuperClass*>(&s1) + *static_cast<const ts::UString::SuperClass*>(&s2);
@@ -2706,23 +2694,12 @@ TSDUCKDLL inline ts::UString operator+(const ts::UChar* s1, const ts::UString& s
 
 // Equivalence with std::filesystem::path
 TSDUCKDLL inline bool operator==(const fs::path& s1, const ts::UString& s2) { return s2 == s1; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-TSDUCKDLL inline bool operator!=(const fs::path& s1, const ts::UString& s2) { return s2 != s1; }
-#endif
 TSDUCKDLL inline bool operator==(const fs::path& s1, const ts::UChar* s2) { return ts::UString(s2) == s1; }
 TSDUCKDLL inline bool operator==(const ts::UChar* s1, const fs::path& s2) { return ts::UString(s1) == s2; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-TSDUCKDLL inline bool operator!=(const fs::path& s1, const ts::UChar* s2) { return !(s1 == s2); }
-TSDUCKDLL inline bool operator!=(const ts::UChar* s1, const fs::path& s2) { return !(s1 == s2); }
-#endif
 
 #if defined(TS_ALLOW_IMPLICIT_UTF8_CONVERSION)
 TSDUCKDLL inline bool operator==(const std::string& s1, const ts::UString& s2) { return s2 == s1; }
 TSDUCKDLL inline bool operator==(const char* s1, const ts::UString& s2) { return s2 == s1; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-TSDUCKDLL inline bool operator!=(const std::string& s1, const ts::UString& s2) { return s2 != s1; }
-TSDUCKDLL inline bool operator!=(const char* s1, const ts::UString& s2) { return s2 != s1; }
-#endif
 
 TSDUCKDLL inline ts::UString operator+(const ts::UString& s1, const std::string& s2)
 {

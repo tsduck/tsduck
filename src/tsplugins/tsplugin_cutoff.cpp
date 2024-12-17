@@ -218,7 +218,7 @@ void ts::CutoffPlugin::main()
     while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, tsp, error)) {
 
         // Filter out unauthorized remote systems.
-        if (!_allowedRemote.empty() && !Contains(_allowedRemote, sender)) {
+        if (!_allowedRemote.empty() && !_allowedRemote.contains(sender)) {
             warning(u"rejected remote command from unauthorized host %s", sender);
             continue;
         }

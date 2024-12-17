@@ -134,41 +134,9 @@ namespace ts {
         // Implementation of StringifyInterface.
         virtual UString toString() const override;
 
-        //!
-        //! Comparison operator.
-        //! @param [in] t A data to assign.
-        //! @return True if this object == @a t.
-        //!
-        bool operator==(const CASDate& t) const { return _value == t._value; }
-        TS_UNEQUAL_OPERATOR(CASDate)
-
-        //!
-        //! Comparison operator.
-        //! @param [in] t A data to assign.
-        //! @return True if this object < @a t.
-        //!
-        bool operator<(const CASDate& t) const { return _value < t._value; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] t A data to assign.
-        //! @return True if this object <= @a t.
-        //!
-        bool operator<=(const CASDate& t) const { return _value <= t._value; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] t A data to assign.
-        //! @return True if this object > @a t.
-        //!
-        bool operator>(const CASDate& t) const { return _value > t._value; }
-
-        //!
-        //! Comparison operator.
-        //! @param [in] t A data to assign.
-        //! @return True if this object >= @a t.
-        //!
-        bool operator>=(const CASDate& t) const { return _value >= t._value; }
+        //! @cond nodoxygen
+        auto operator<=>(const CASDate&) const = default;
+        //! @endcond
     };
 
     //!

@@ -196,7 +196,6 @@ namespace ts {
         //! @return True if both object contains the same address, false otherwise.
         //!
         bool operator==(const IPAddress& other) const;
-        TS_UNEQUAL_OPERATOR(IPAddress)
 
         //!
         //! Comparison "less than" operator.

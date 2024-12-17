@@ -9,17 +9,11 @@
 #include "tsKeyTable.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
-#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
 // Check the presence of a key in the table.
 //----------------------------------------------------------------------------
-
-bool ts::KeyTable::hasKey(const ByteBlock& id) const
-{
-    return Contains(_keys, id);
-}
 
 bool ts::KeyTable::hasKey(const UString& id) const
 {

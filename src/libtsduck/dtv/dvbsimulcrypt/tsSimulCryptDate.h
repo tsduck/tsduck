@@ -68,6 +68,10 @@ namespace ts {
         //!
         SimulCryptDate(int year, int month, int day, int hour, int minute, int second, int hundredth);
 
+        //! @cond nodoxygen
+        auto operator<=>(const SimulCryptDate&) const = default;
+        //! @endcond
+
         //!
         //! Get the number of years.
         //! @return The number of years.
@@ -189,57 +193,6 @@ namespace ts {
         //! @throw ts::tlv::DeserializationInternalError if not found.
         //!
         void get(const tlv::MessageFactory& factory, tlv::TAG tag);
-
-        //!
-        //! Equality operator.
-        //! @param [in] t Another date to compare with this object.
-        //! @return @c True is this object is equal to the @a t object, @c false otherwise.
-        //!
-        bool operator==(const SimulCryptDate& t) const
-        {
-            return MemEqual(_data, t._data, SIZE);
-        }
-        TS_UNEQUAL_OPERATOR(SimulCryptDate)
-
-        //!
-        //! Lower operator.
-        //! @param [in] t Another date to compare with this object.
-        //! @return @c True is this date is before the @a t object date, @c false otherwise.
-        //!
-        bool operator<(const SimulCryptDate& t) const
-        {
-            return MemCompare(_data, t._data, SIZE) < 0;
-        }
-
-        //!
-        //! Lower or equal operator.
-        //! @param [in] t Another date to compare with this object.
-        //! @return @c True is this date is before or equal to the @a t object date, @c false otherwise.
-        //!
-        bool operator<=(const SimulCryptDate& t) const
-        {
-            return MemCompare(_data, t._data, SIZE) <= 0;
-        }
-
-        //!
-        //! Greater operator.
-        //! @param [in] t Another date to compare with this object.
-        //! @return @c True is this date is after the @a t object date, @c false otherwise.
-        //!
-        bool operator>(const SimulCryptDate& t) const
-        {
-            return MemCompare(_data, t._data, SIZE) > 0;
-        }
-
-        //!
-        //! Greater or equal operator.
-        //! @param [in] t Another date to compare with this object.
-        //! @return @c True is this date is after or equal to the @a t object date, @c false otherwise.
-        //!
-        bool operator>=(const SimulCryptDate& t) const
-        {
-            return MemCompare(_data, t._data, SIZE) >= 0;
-        }
 
         //!
         //! Convert to a Time object
