@@ -579,6 +579,8 @@ bool ts::BinaryTable::fromXML(DuckContext& duck, const xml::Element* node)
             table->fromXML(duck, node);
         }
         if (table != nullptr && table->isValid()) {
+            // Accumulate standards in the context.
+            duck.addStandards(table->definingStandards());
             // Serialize the table.
             table->serialize(duck, *this);
             if (!isValid()) {

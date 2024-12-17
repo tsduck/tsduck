@@ -74,7 +74,7 @@ namespace ts {
         //! @param [in] pid A PID to check.
         //! @return The CAS id or zero if the PID is not known.
         //!
-        uint16_t casId(PID pid) const;
+        CASID casId(PID pid) const;
 
         //!
         //! Check if a PID carries ECM's.
@@ -103,11 +103,11 @@ namespace ts {
         class PIDDescription
         {
         public:
-            uint16_t        cas_id;  //!< CA system id.
+            CASID           cas_id;  //!< CA system id.
             bool            is_ecm;  //!< True for ECM, false for EMM.
             CADescriptorPtr ca_desc; //!< Corresponding CA descriptor.
 
-            PIDDescription(uint16_t cas_id_ = 0, bool is_ecm_ = false, const CADescriptorPtr& ca_desc_ = CADescriptorPtr()) :
+            PIDDescription(CASID cas_id_ = 0, bool is_ecm_ = false, const CADescriptorPtr& ca_desc_ = CADescriptorPtr()) :
                 cas_id(cas_id_),
                 is_ecm(is_ecm_),
                 ca_desc(ca_desc_)

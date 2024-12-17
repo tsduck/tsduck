@@ -580,6 +580,10 @@ endif::[]
 |===
 |Name |Value |Description
 
+|none
+|
+|Explicitly disable the default PDS.
+
 |AOM
 |0x414F4D53
 |Alliance for Open Media
@@ -603,10 +607,6 @@ endif::[]
 |CanalPlus
 |0x000000C0
 |Canal+ French TV operator
-
-|cuvv
-|0x63757676
-|UHD World Association (UWA)
 
 |EACEM
 |0x00000028

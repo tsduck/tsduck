@@ -14,7 +14,7 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::PIDOperator::PIDOperator(PID pid_, bool is_emm_, uint16_t cas_id_, uint32_t oper_) :
+ts::PIDOperator::PIDOperator(PID pid_, bool is_emm_, CASID cas_id_, uint32_t oper_) :
     pid(pid_),
     is_emm(is_emm_),
     cas_id(cas_id_),

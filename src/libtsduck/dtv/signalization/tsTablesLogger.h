@@ -250,7 +250,7 @@ namespace ts {
         void postDisplay();
 
         // Check if a specific section must be filtered and displayed.
-        bool isFiltered(const Section& section, uint16_t cas);
+        bool isFiltered(const Section& section, CASID cas);
 
         // Log a section (option --log).
         UString logHeader(const DemuxedData&);

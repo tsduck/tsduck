@@ -25,7 +25,7 @@ namespace ts {
         // Public members
         PID      pid;     //!< ECM/EMM PID
         bool     is_emm;  //!< True for EMM PID, false for ECM PID.
-        uint16_t cas_id;  //!< CAS identifier.
+        CASID    cas_id;  //!< CAS identifier.
         uint32_t oper;    //!< Operator id
 
         //!
@@ -35,7 +35,7 @@ namespace ts {
         //! @param [in] cas_id_ CAS identifier.
         //! @param [in] oper_ CAS-specific operator id.
         //!
-        PIDOperator(PID pid_ = 0, bool is_emm_ = false, uint16_t cas_id_ = 0, uint32_t oper_ = 0);
+        PIDOperator(PID pid_ = 0, bool is_emm_ = false, CASID cas_id_ = 0, uint32_t oper_ = 0);
 
         //!
         //! Comparison operator.

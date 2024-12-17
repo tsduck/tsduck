@@ -11,17 +11,6 @@
 #include "tsArgs.h"
 #include "tsCAS.h"
 
-const std::vector<ts::CASSelectionArgs::PredefinedCAS> ts::CASSelectionArgs::_predefined_cas{
-    {u"conax",       CASID_CONAX_MIN,      CASID_CONAX_MAX},
-    {u"irdeto",      CASID_IRDETO_MIN,     CASID_IRDETO_MAX},
-    {u"mediaguard",  CASID_MEDIAGUARD_MIN, CASID_MEDIAGUARD_MAX},
-    {u"nagravision", CASID_NAGRA_MIN,      CASID_NAGRA_MAX},
-    {u"nds",         CASID_NDS_MIN,        CASID_NDS_MAX},
-    {u"safeaccess",  CASID_SAFEACCESS,     CASID_SAFEACCESS},
-    {u"viaccess",    CASID_VIACCESS_MIN,   CASID_VIACCESS_MAX},
-    {u"widevine",    CASID_WIDEVINE_MIN,   CASID_WIDEVINE_MAX}
-};
-
 
 //----------------------------------------------------------------------------
 // Define command line options in an Args.
@@ -53,12 +42,40 @@ void ts::CASSelectionArgs::defineArgs(Args& args)
     args.option(u"operator", 0, Args::UINT32);
     args.help(u"operator", u"Restrict to the specified CAS operator (depends on the CAS).");
 
-    // Predefined CAS options:
-    for (const auto& cas : _predefined_cas) {
-        args.option(cas.name);
-        args.help(cas.name, cas.min == cas.max ?
-            UString::Format(u"Equivalent to --cas 0x%04X.", cas.min) :
-            UString::Format(u"Equivalent to --min-cas 0x%04X --max-cas 0x%04X.", cas.min, cas.max));
+    // The first time, get the list of predefined CAS options.
+    if (_cas_options.empty()) {
+        // Get all CAS families, get their name and CAS ids.
+        std::set<CASFamily> families;
+        GetAllCASFamilies(families);
+        for (CASFamily f : families) {
+            const CASID min = FirstCASId(f);
+            const CASID max = LastCASId(f);
+            if (min != CASID_NULL && max != CASID_NULL) {
+                // Get the CAS name and transform it into an acceptable option name.
+                UString name(CASFamilyName(f));
+                size_t out = 0;
+                for (size_t in = 0; in < name.size(); ++in) {
+                    if (IsAlphaNum(name[in])) {
+                        name[out++] = ToLower(name[in]);
+                    }
+                    else if (out > 0 && name[out-1] != u'-') {
+                        name[out++] = u'-';
+                    }
+                }
+                name.resize(out);
+                if (!name.empty()) {
+                    _cas_options.insert(std::make_pair(name, std::make_pair(min, max)));
+                }
+            }
+        }
+    }
+
+    // Declare the predefined CAS options.
+    for (const auto& cas : _cas_options) {
+        args.option(cas.first.c_str());
+        args.help(cas.first.c_str(), cas.second.first == cas.second.second ?
+            UString::Format(u"Equivalent to --cas 0x%04X.", cas.second.first) :
+            UString::Format(u"Equivalent to --min-cas 0x%04X --max-cas 0x%04X.", cas.second.first, cas.second.second));
     }
 }
 
@@ -74,19 +91,20 @@ bool ts::CASSelectionArgs::loadArgs(DuckContext& duck, Args& args)
     // CAS selection:
     int cas_count = (args.present(u"min-cas") || args.present(u"max-cas"));
     if (args.present(u"cas")) {
-        min_cas_id = max_cas_id = args.intValue<uint16_t>(u"cas");
+        args.getIntValue(min_cas_id, u"cas");
+        max_cas_id = min_cas_id;
         cas_count++;
     }
     else {
-        min_cas_id = args.intValue<uint16_t>(u"min-cas");
-        max_cas_id = args.intValue<uint16_t>(u"max-cas");
+        args.getIntValue(min_cas_id, u"min-cas");
+        args.getIntValue(max_cas_id, u"max-cas");
     }
 
     // Overridden by predefined CAS options:
-    for (const auto& cas : _predefined_cas) {
-        if (args.present(cas.name)) {
-            min_cas_id = cas.min;
-            max_cas_id = cas.max;
+    for (const auto& cas : _cas_options) {
+        if (args.present(cas.first.c_str())) {
+            min_cas_id = cas.second.first;
+            max_cas_id = cas.second.second;
             cas_count++;
         }
     }
@@ -98,7 +116,7 @@ bool ts::CASSelectionArgs::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Other options:
-    cas_oper = args.intValue<uint32_t>(u"operator");
+    args.getIntValue(cas_oper, u"operator");
     pass_ecm = args.present(u"ecm");
     pass_emm = args.present(u"emm");
     return success;
@@ -109,7 +127,7 @@ bool ts::CASSelectionArgs::loadArgs(DuckContext& duck, Args& args)
 // Check if the specified CAS or operator id matches the selection criteria.
 //----------------------------------------------------------------------------
 
-bool ts::CASSelectionArgs::casMatch(uint16_t cas) const
+bool ts::CASSelectionArgs::casMatch(CASID cas) const
 {
     // If min and max CAS ids are zero, this means all CAS.
     return (min_cas_id == 0 && max_cas_id == 0) || (cas >= min_cas_id && cas <= max_cas_id);

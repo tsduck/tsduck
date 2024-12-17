@@ -128,8 +128,8 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
                                                 DisplaySectionFunction display,
                                                 LogSectionFunction log,
                                                 std::initializer_list<PID> pids,
-                                                uint16_t min_cas,
-                                                uint16_t max_cas)
+                                                CASID min_cas,
+                                                CASID max_cas)
 {
     CERR.log(2, u"registering table <%s>", xml_name);
     PSIRepository& repo(PSIRepository::Instance());
@@ -179,8 +179,8 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
                                                 DisplaySectionFunction display,
                                                 LogSectionFunction log,
                                                 std::initializer_list<PID> pids,
-                                                uint16_t min_cas,
-                                                uint16_t max_cas)
+                                                CASID min_cas,
+                                                CASID max_cas)
 {
     // Use the complete constructor for actual registration.
     RegisterTable reg(nullptr, NullIndex(), tids, standards, UString(), display, log, pids, min_cas, max_cas);
@@ -246,7 +246,7 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory fact
     }
 }
 
-ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFunction display, uint16_t min_cas, uint16_t max_cas)
+ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFunction display, CASID min_cas, CASID max_cas)
 {
     if (display != nullptr) {
         PSIRepository& repo(PSIRepository::Instance());
@@ -366,7 +366,7 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(EDID 
         return *bounds.first->second;
     }
 
-    // If there are several descriptor, search for an exact EDID match.
+    // If there are several descriptors, search for an exact EDID match.
     for (next = bounds.first; next != bounds.second; ++next) {
         if (next->second->edid == edid) {
             return *next->second;
@@ -495,7 +495,7 @@ const ts::PSIRepository::DescriptorClass& ts::PSIRepository::getDescriptor(const
     return it != _descriptors_by_xml_name.end() ? *it->second : *NullDescriptorClass;
 }
 
-ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(uint16_t cas_id) const
+ts::DisplayCADescriptorFunction ts::PSIRepository::getCADescriptorDisplay(CASID cas_id) const
 {
     const auto it = _casid_descriptor_displays.find(cas_id);
     return it != _casid_descriptor_displays.end() ? it->second : nullptr;

@@ -209,7 +209,7 @@ namespace ts {
         //! @param [in] cas CA_system_id.
         //! @return Corresponding display function or zero if there is none.
         //!
-        DisplayCADescriptorFunction getCADescriptorDisplay(uint16_t cas) const;
+        DisplayCADescriptorFunction getCADescriptorDisplay(CASID cas) const;
 
         //!
         //! Get the list of all registered table ids.
@@ -272,8 +272,8 @@ namespace ts {
                           DisplaySectionFunction display = nullptr,
                           LogSectionFunction log = nullptr,
                           std::initializer_list<PID> pids = {},
-                          uint16_t min_cas = CASID_NULL,
-                          uint16_t max_cas = CASID_NULL);
+                          CASID min_cas = CASID_NULL,
+                          CASID max_cas = CASID_NULL);
 
             //!
             //! Register a known table with display functions but no full C++ class.
@@ -291,8 +291,8 @@ namespace ts {
                           DisplaySectionFunction display = nullptr,
                           LogSectionFunction log = nullptr,
                           std::initializer_list<PID> pids = {},
-                          uint16_t min_cas = CASID_NULL,
-                          uint16_t max_cas = CASID_NULL);
+                          CASID min_cas = CASID_NULL,
+                          CASID max_cas = CASID_NULL);
         };
 
         //!
@@ -329,7 +329,7 @@ namespace ts {
             //! Same @a minCAS when set as CASID_NULL.
             //! @see TS_REGISTER_CA_DESCRIPTOR
             //!
-            RegisterDescriptor(DisplayCADescriptorFunction display, uint16_t min_cas, uint16_t max_cas = CASID_NULL);
+            RegisterDescriptor(DisplayCADescriptorFunction display, CASID min_cas, CASID max_cas = CASID_NULL);
         };
 
         //!

@@ -498,7 +498,7 @@ namespace ts {
         //! @param [in] no_header If true, do not display the section header.
         //! @return A reference to the @a strm object.
         //!
-        std::ostream& dump(std::ostream& strm, int indent = 0, uint16_t cas = CASID_NULL, bool no_header = false) const;
+        std::ostream& dump(std::ostream& strm, int indent = 0, CASID cas = CASID_NULL, bool no_header = false) const;
 
         //!
         //! Static method to compute a section size.

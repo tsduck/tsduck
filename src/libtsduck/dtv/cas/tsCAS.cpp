@@ -26,8 +26,9 @@ namespace {
         CASRepository();
 
         // Proxy functions for public interface.
-        ts::CASFamily CASFamilyOf(ts::CASID casid) const;
-        bool GetCASIdRange(ts::CASFamily cas, ts::CASID& min, ts::CASID& max) const;
+        ts::CASFamily casFamilyOf(ts::CASID casid) const;
+        bool getCASIdRange(ts::CASFamily cas, ts::CASID& min, ts::CASID& max) const;
+        void getAllCASFamilies(std::set<ts::CASFamily>& cas) const;
 
         // Implementation of NamesFile::Visitor.
         virtual bool handleNameValue(const ts::UString& section_name, ts::NamesFile::Value value, const ts::UString& name) override;
@@ -60,7 +61,6 @@ CASRepository::CASRepository()
     const auto repo = ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV);
     repo->visitSection(this, u"CASFamilyRange");
     repo->subscribe(this, u"CASFamilyRange");
-
 }
 
 // Get a range of CAS ids.
@@ -94,10 +94,10 @@ bool CASRepository::handleNameValue(const ts::UString& section_name, ts::NamesFi
 
 ts::CASFamily ts::CASFamilyOf(CASID casid)
 {
-    return AllCAS->CASFamilyOf(casid);
+    return AllCAS->casFamilyOf(casid);
 }
 
-ts::CASFamily CASRepository::CASFamilyOf(ts::CASID casid) const
+ts::CASFamily CASRepository::casFamilyOf(ts::CASID casid) const
 {
     std::lock_guard<std::mutex> lock(_mutex);
     for (const auto& c : _cas) {
@@ -116,24 +116,24 @@ ts::CASFamily CASRepository::CASFamilyOf(ts::CASID casid) const
 
 bool ts::GetCASIdRange(CASFamily cas, CASID& min, CASID& max)
 {
-    return AllCAS->GetCASIdRange(cas, min, max);
+    return AllCAS->getCASIdRange(cas, min, max);
 }
 
 ts::CASID ts::FirstCASId(CASFamily cas)
 {
     CASID min, max;
-    AllCAS->GetCASIdRange(cas, min, max);
+    AllCAS->getCASIdRange(cas, min, max);
     return min;
 }
 
 ts::CASID ts::LastCASId(CASFamily cas)
 {
     CASID min, max;
-    AllCAS->GetCASIdRange(cas, min, max);
+    AllCAS->getCASIdRange(cas, min, max);
     return max;
 }
 
-bool CASRepository::GetCASIdRange(ts::CASFamily cas, ts::CASID& min, ts::CASID& max) const
+bool CASRepository::getCASIdRange(ts::CASFamily cas, ts::CASID& min, ts::CASID& max) const
 {
     std::lock_guard<std::mutex> lock(_mutex);
     for (const auto& c : _cas) {
@@ -162,7 +162,7 @@ ts::UString ts::CASFamilyName(CASFamily cas)
 // Name of a Conditional Access System Id (as in CA Descriptor).
 //----------------------------------------------------------------------------
 
-ts::UString ts::CASIdName(const DuckContext& duck, uint16_t casid, NamesFlags flags)
+ts::UString ts::CASIdName(const DuckContext& duck, CASID casid, NamesFlags flags)
 {
     // In the case of ISDB, look into another table (but only known names).
     if (bool(duck.standards() & Standards::ISDB)) {
@@ -174,4 +174,23 @@ ts::UString ts::CASIdName(const DuckContext& duck, uint16_t casid, NamesFlags fl
 
     // Not ISDB or not found in ISDB, use standard CAS names.
     return NameFromDTV(u"CASystemId", NamesFile::Value(casid), flags);
+}
+
+
+//----------------------------------------------------------------------------
+// Get the set of all defined Conditional Access Families.
+//----------------------------------------------------------------------------
+
+void ts::GetAllCASFamilies(std::set<CASFamily>& cas)
+{
+    AllCAS->getAllCASFamilies(cas);
+}
+
+void CASRepository::getAllCASFamilies(std::set<ts::CASFamily>& cas) const
+{
+    cas.clear();
+    std::lock_guard<std::mutex> lock(_mutex);
+    for (const auto& c : _cas) {
+        cas.insert(c.family);
+    }
 }

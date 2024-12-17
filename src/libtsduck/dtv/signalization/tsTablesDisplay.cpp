@@ -190,6 +190,9 @@ void ts::TablesDisplay::displayTable(const BinaryTable& table, const UString& ma
         return;
     }
 
+    // Accumulate standards.
+    _duck.addStandards(table.definingStandards());
+
     // Display hexa dump of each section in the table
     if (_raw_dump) {
         for (size_t i = 0; i < table.sectionCount(); ++i) {
@@ -248,6 +251,9 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
     if (!section.isValid()) {
         return;
     }
+
+    // Accumulate standards.
+    _duck.addStandards(section.definingStandards());
 
     // Display hexa dump of the section
     if (_raw_dump) {

@@ -32,7 +32,7 @@ namespace ts {
     {
     public:
         // CADescriptor public members:
-        uint16_t  cas_id = 0;       //!< CA system id.
+        CASID     cas_id = 0;       //!< CA system id.
         PID       ca_pid = 0;       //!< PID for CA tables (ECM or EMM).
         ByteBlock private_data {};  //!< CA-specific private data.
 
@@ -41,7 +41,7 @@ namespace ts {
         //! @param [in] cas_id CA system id.
         //! @param [in] ca_pid PID for CA tables (ECM or EMM).
         //!
-        CADescriptor(uint16_t cas_id = 0, PID ca_pid = PID_NULL);
+        CADescriptor(CASID cas_id = 0, PID ca_pid = PID_NULL);
 
         //!
         //! Constructor from a binary descriptor
@@ -86,7 +86,7 @@ namespace ts {
         //! @param [in] start_index Start searching at this index.
         //! @return The index of the descriptor in the list or its count() if no such descriptor is found.
         //!
-        static size_t SearchByCAS(const DescriptorList& dlist, uint16_t casid, size_t start_index = 0);
+        static size_t SearchByCAS(const DescriptorList& dlist, CASID casid, size_t start_index = 0);
 
         // Inherited methods
         DeclareDisplayDescriptor();

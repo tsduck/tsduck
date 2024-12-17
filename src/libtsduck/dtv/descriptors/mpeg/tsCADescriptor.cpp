@@ -27,7 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescript
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
+ts::CADescriptor::CADescriptor(CASID cas_id_, PID ca_pid_) :
     AbstractDescriptor(MY_EDID, MY_XML_NAME),
     cas_id(cas_id_),
     ca_pid(ca_pid_)
@@ -42,10 +42,7 @@ void ts::CADescriptor::clearContent()
 }
 
 ts::CADescriptor::CADescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_EDID, MY_XML_NAME),
-    cas_id(0),
-    ca_pid(PID_NULL),
-    private_data()
+    CADescriptor()
 {
     deserialize(duck, desc);
 }
@@ -89,11 +86,11 @@ void ts::CADescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
+void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, const Descriptor& desc, PSIBuffer& buf, const UString& margin, const DescriptorContext& context)
 {
     if (buf.canReadBytes(4)) {
         // Display common part
-        const uint16_t casid = buf.getUInt16();
+        const CASID casid = buf.getUInt16();
         disp << margin << "CA System Id: " << CASIdName(disp.duck(), casid, NamesFlags::FIRST);
         const TID tid = context.getTableId();
         disp << ", " << (tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA"));
@@ -201,7 +198,7 @@ bool ts::CADescriptor::AddFromCommandLine(DuckContext& duck, DescriptorList& dli
 // Static method to search a CA_descriptor by ECM/EMM PID.
 //----------------------------------------------------------------------------
 
-size_t ts::CADescriptor::SearchByPID(const ts::DescriptorList& dlist, ts::PID pid, size_t start_index)
+size_t ts::CADescriptor::SearchByPID(const DescriptorList& dlist, PID pid, size_t start_index)
 {
     bool found = false;
     for (; !found && start_index < dlist.count(); start_index++) {
@@ -220,7 +217,7 @@ size_t ts::CADescriptor::SearchByPID(const ts::DescriptorList& dlist, ts::PID pi
 // Static method to search a CA_descriptor by CA system id.
 //----------------------------------------------------------------------------
 
-size_t ts::CADescriptor::SearchByCAS(const ts::DescriptorList& dlist, uint16_t casid, size_t start_index)
+size_t ts::CADescriptor::SearchByCAS(const DescriptorList& dlist, CASID casid, size_t start_index)
 {
     bool found = false;
     for (; !found && start_index < dlist.count(); start_index++) {

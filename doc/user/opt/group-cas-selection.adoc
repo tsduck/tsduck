@@ -90,6 +90,12 @@ The _CAS operator_ is a non-standard vendor-dependent concept and is recognized 
 Equivalent to `--cas 0x4ADC`.
 
 [.opt]
+*--thalescrypt*
+
+[.optdoc]
+Equivalent to `--min-cas 0x4A80 --max-cas 0x4A8F`.
+
+[.opt]
 *--viaccess*
 
 [.optdoc]

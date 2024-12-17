@@ -80,7 +80,7 @@ namespace ts {
         //! @param [in] priv Private part of the CA_descriptor.
         //! @return True if the descrambler can manage the ECM from this PID.
         //!
-        virtual bool checkCADescriptor(uint16_t cas_id, const ByteBlock& priv) = 0;
+        virtual bool checkCADescriptor(CASID cas_id, const ByteBlock& priv) = 0;
 
         //!
         //! Check if the descrambler may decipher an ECM.

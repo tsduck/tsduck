@@ -344,7 +344,7 @@ namespace ts {
             uint64_t      dts_leap_cnt = 0;        //!< Number of leaps in DTS's (potential time discontinuities).
             BitRate       ts_pcr_bitrate = 0;      //!< Average TS bitrate in b/s (eval from PCR).
             BitRate       bitrate = 0;             //!< Average PID bitrate in b/s.
-            uint16_t      cas_id = 0;              //!< For EMM and ECM streams.
+            CASID         cas_id = 0;              //!< For EMM and ECM streams.
             ISDBTLayerCounter  isdb_layers {};     //!< For ISDB-T streams with 204-byte packets, map key = layer indicator (0-1) to value = number of TS packets.
             std::set<uint32_t> cas_operators {};   //!< Operators for EMM and ECM streams, when applicable.
             XTIDContextMap     sections {};        //!< List of sections in this PID.

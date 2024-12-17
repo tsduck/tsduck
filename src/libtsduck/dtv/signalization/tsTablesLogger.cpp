@@ -14,7 +14,6 @@
 #include "tsArgs.h"
 #include "tsDuckContext.h"
 #include "tsSimulCryptDate.h"
-#include "tsxmlElement.h"
 #include "tsjsonArray.h"
 #include "tsjsonObject.h"
 #include "tsMJD.h"
@@ -573,7 +572,10 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
 
     assert(table.sectionCount() > 0);
     const PID pid = table.sourcePID();
-    const uint16_t cas = _cas_mapper.casId(table.sourcePID());
+    const CASID cas = _cas_mapper.casId(table.sourcePID());
+
+    // Accumulate standards.
+    _duck.addStandards(table.definingStandards());
 
     // Ignore table if not to be filtered. Keep the table if at least one section shall be kept.
     bool keep = false;
@@ -705,20 +707,23 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
 // Only used with option --all-sections
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
+void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& section)
 {
-    const PID pid = sect.sourcePID();
-    const uint16_t cas = _cas_mapper.casId(sect.sourcePID());
+    const PID pid = section.sourcePID();
+    const CASID cas = _cas_mapper.casId(section.sourcePID());
+
+    // Accumulate standards.
+    _duck.addStandards(section.definingStandards());
 
     // With option --all-once, track duplicate PID/TID/TDIext/secnum/version.
     if (_all_once) {
         // Pack PID/TID/TDIext/secnum/version into one single 64-bit integer.
         const uint64_t id =
             (uint64_t(pid) << 40) |
-            (uint64_t(sect.tableId()) << 32) |
-            (uint64_t(sect.tableIdExtension()) << 16) |
-            (uint64_t(sect.sectionNumber()) << 8) |
-            uint64_t(sect.version());
+            (uint64_t(section.tableId()) << 32) |
+            (uint64_t(section.tableIdExtension()) << 16) |
+            (uint64_t(section.sectionNumber()) << 8) |
+            uint64_t(section.version());
         if (_sections_once.count(id) != 0) {
             // Already found this one, give up.
             return;
@@ -732,7 +737,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // With option --pack-all-sections, force the processing of a complete table.
     if (_pack_all_sections) {
         BinaryTable table;
-        table.addNewSection(sect, ShareMode::SHARE);
+        table.addNewSection(section, ShareMode::SHARE);
         table.packSections();
         if (table.isValid()) {
             handleTable(demux, table);
@@ -746,16 +751,16 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     }
 
     // Ignore section if not to be filtered
-    if (!isFiltered(sect, cas)) {
+    if (!isFiltered(section, cas)) {
         return;
     }
 
     // Ignore duplicate sections.
-    if (_no_duplicate && isDuplicate(pid, sect, &TablesLogger::_last_sections)) {
+    if (_no_duplicate && isDuplicate(pid, section, &TablesLogger::_last_sections)) {
         // Same section (same hash) as previously, ignore it.
         return;
     }
-    if (_no_deep_duplicate && isDeepDuplicate(pid, sect)) {
+    if (_no_deep_duplicate && isDeepDuplicate(pid, section)) {
         // Section alread seen on that PID, ignore it.
         return;
     }
@@ -764,14 +769,14 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // Note that no XML can be produced since valid XML structures contain complete tables only.
 
     if (_use_text && !_invalid_only) {
-        preDisplay(sect.firstTSPacketIndex(), sect.lastTSPacketIndex());
+        preDisplay(section.firstTSPacketIndex(), section.lastTSPacketIndex());
         if (_logger) {
             // Short log message
-            logSection(sect);
+            logSection(section);
         }
         else {
             // Full section formatting.
-            _display.displaySection(sect, u"", _cas_mapper.casId(pid));
+            _display.displaySection(section, u"", _cas_mapper.casId(pid));
             _display << std::endl;
         }
         postDisplay();
@@ -782,7 +787,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
         if (_rewrite_binary && !createBinaryFile(_bin_destination)) {
             return;
         }
-        saveBinarySection(sect);
+        saveBinarySection(section);
         if (_rewrite_binary && _bin_file.is_open()) {
             _bin_file.close();
         }
@@ -790,15 +795,15 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
 
     if (_log_hexa_line) {
         // Log section as a one-liner hexadecimal.
-        _report.info(_log_hexa_prefix + UString::Dump(sect.content(), sect.size(), UString::COMPACT));
+        _report.info(_log_hexa_prefix + UString::Dump(section.content(), section.size(), UString::COMPACT));
     }
 
     if (_use_udp) {
-        sendUDP(sect);
+        sendUDP(section);
     }
 
     if (_section_handler != nullptr) {
-        _section_handler->handleSection(demux, sect);
+        _section_handler->handleSection(demux, section);
     }
 
     // Check max table count (actually count sections with --all-sections)
@@ -1172,7 +1177,7 @@ void ts::TablesLogger::logInvalid(const DemuxedData& data, const UString& reason
 // Check if a specific section must be filtered
 //----------------------------------------------------------------------------
 
-bool ts::TablesLogger::isFiltered(const Section& sect, uint16_t cas)
+bool ts::TablesLogger::isFiltered(const Section& sect, CASID cas)
 {
     // By default, keep the section.
     bool status = true;

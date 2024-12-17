@@ -1131,7 +1131,7 @@ ts::SignalizationDemux::PIDContext::PIDContext(PID pid_) :
 }
 
 // Register a CAS type from a table.
-void ts::SignalizationDemux::PIDContext::setCAS(const AbstractTable* table, uint16_t cas)
+void ts::SignalizationDemux::PIDContext::setCAS(const AbstractTable* table, CASID cas)
 {
     cas_id = cas;
     if (table != nullptr) {

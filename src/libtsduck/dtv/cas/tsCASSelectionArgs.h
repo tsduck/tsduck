@@ -35,11 +35,11 @@ namespace ts {
         CASSelectionArgs() = default;
 
         // Public fields, by options.
-        bool      pass_ecm = false;  //!< Pass PIDs containing ECM.
-        bool      pass_emm = false;  //!< Pass PIDs containing EMM.
-        uint16_t  min_cas_id = 0;    //!< Minimum CA system id for ECM or EMM.
-        uint16_t  max_cas_id = 0;    //!< Maximum CA system id for ECM or EMM.
-        uint32_t  cas_oper = 0;      //!< CA operator id (depends on the CAS).
+        bool     pass_ecm = false;  //!< Pass PIDs containing ECM.
+        bool     pass_emm = false;  //!< Pass PIDs containing EMM.
+        CASID    min_cas_id = 0;    //!< Minimum CA system id for ECM or EMM.
+        CASID    max_cas_id = 0;    //!< Maximum CA system id for ECM or EMM.
+        uint32_t cas_oper = 0;      //!< CA operator id (depends on the CAS).
 
         //!
         //! Add command line option definitions in an Args.
@@ -61,7 +61,7 @@ namespace ts {
         //! @param [in] cas A CAS id.
         //! @return True if @a cas matches the selection criteria.
         //!
-        bool casMatch(uint16_t cas) const;
+        bool casMatch(CASID cas) const;
 
         //!
         //! Check if the specified operator id matches the selection criteria.
@@ -102,12 +102,6 @@ namespace ts {
         size_t addMatchingPIDs(PIDSet& pids, const PMT& pmt, Report& report = NULLREP) const;
 
     private:
-        // List of predefined known CAS:
-        struct PredefinedCAS {
-            const UChar* name;
-            uint16_t     min;
-            uint16_t     max;
-        };
-        static const std::vector<PredefinedCAS> _predefined_cas;
+        std::map<UString, std::pair<CASID,CASID>> _cas_options {}; // CAS option names to min/max CAS ids.
     };
 }

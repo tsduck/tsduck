@@ -30,6 +30,8 @@ namespace ts {
 
     //!
     //! Known Conditional Access Systems families.
+    //! These symbols be be used in the TSDuck C++ code.
+    //! More CAS families can be defined in '.names' files in extensions, in the [CASFamily] entry.
     //! @ingroup mpeg
     //!
     enum CASFamily : uint8_t {
@@ -84,6 +86,13 @@ namespace ts {
     TSDUCKDLL UString CASFamilyName(CASFamily cas);
 
     //!
+    //! Get the set of all defined Conditional Access Families.
+    //! This may include CAS families from extensions.
+    //! @param [out] cas Set of all CAS families.
+    //!
+    TSDUCKDLL void GetAllCASFamilies(std::set<CASFamily>& cas);
+
+    //!
     //! Selected DVB-assigned CA System Identifier values
     //!
     enum : CASID {
@@ -116,5 +125,5 @@ namespace ts {
     //! @param [in] flags Presentation flags.
     //! @return The corresponding name.
     //!
-    TSDUCKDLL UString CASIdName(const DuckContext& duck, uint16_t casid, NamesFlags flags = NamesFlags::NAME);
+    TSDUCKDLL UString CASIdName(const DuckContext& duck, CASID casid, NamesFlags flags = NamesFlags::NAME);
 }

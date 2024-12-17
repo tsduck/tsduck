@@ -602,7 +602,7 @@ namespace ts {
             PIDClass      pid_class = PIDClass::UNDEFINED;  // Class of PID.
             CodecType     codec = CodecType::UNDEFINED;     // Codec type (if any).
             uint8_t       stream_type = ST_NULL;            // Stream type from PMT or ST_NULL.
-            uint16_t      cas_id = CASID_NULL;              // CAS id for ECM or EMM PID's.
+            CASID         cas_id = CASID_NULL;              // CAS id for ECM or EMM PID's.
             PacketCounter packets = 0;                      // Number of packets in this PID.
             PacketCounter pusi_count = 0;                   // Number of packets with PUSI.
             PIDPoint      first_pusi {};                    // Packet with first PUSI.
@@ -616,7 +616,7 @@ namespace ts {
             PIDContext(PID);
 
             // Register a CAS type from a table.
-            void setCAS(const AbstractTable* table, uint16_t cas_id);
+            void setCAS(const AbstractTable* table, CASID cas_id);
         };
         using PIDContextPtr = std::shared_ptr<PIDContext>;
         using PIDContextMap = std::map<PID, PIDContextPtr>;

@@ -31,12 +31,12 @@ namespace ts {
 
     protected:
         // Implementation of AbstractDescrambler.
-        virtual bool checkCADescriptor(uint16_t pmt_cas_id, const ByteBlock& priv) override;
+        virtual bool checkCADescriptor(CASID pmt_cas_id, const ByteBlock& priv) override;
         virtual bool checkECM(const Section& ecm) override;
         virtual bool decipherECM(const Section& ecm, CWData& cw_even, CWData& cw_odd) override;
 
     private:
-        uint16_t       _cas_id = 0;
+        CASID          _cas_id = 0;
         duck::Protocol _protocol {};
     };
 }
@@ -81,7 +81,7 @@ bool ts::DescramblerPlugin::getOptions()
 // Check a CA_descriptor from a PMT.
 //----------------------------------------------------------------------------
 
-bool ts::DescramblerPlugin::checkCADescriptor(uint16_t pmt_cas_id, const ByteBlock& priv)
+bool ts::DescramblerPlugin::checkCADescriptor(CASID pmt_cas_id, const ByteBlock& priv)
 {
     // In this demo descrambler, we accept all CAS id, unless one is specified.
     return _cas_id == 0 || pmt_cas_id == _cas_id;

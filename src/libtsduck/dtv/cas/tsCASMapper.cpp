@@ -109,7 +109,7 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
 // Get the characteristics of CA PID's.
 //----------------------------------------------------------------------------
 
-uint16_t ts::CASMapper::casId(PID pid) const
+ts::CASID ts::CASMapper::casId(PID pid) const
 {
     // Get CAS id for this PID or get default CAS from context.
     const auto it = _pids.find(pid);
