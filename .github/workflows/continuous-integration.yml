@@ -49,7 +49,9 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-latest]
         compiler: [gcc, clang]
-        std: [20, 23]
+        # Currently disable C++23 compilation, general support in compilers is too poor.
+        # std: [20, 23]
+        std: [20]
         include:
         - os: ubuntu-24.04
           make: make
@@ -130,7 +132,9 @@ jobs:
       matrix:
         target: [Win64, Win32]
         configuration: [Release]
-        std: [20, 23]
+        # Currently disable C++23 compilation, general support in compilers is too poor.
+        # std: [20, 23]
+        std: [20]
         include:
         - target: Win64
           suffix: x64
@@ -138,9 +142,10 @@ jobs:
         - target: Win32
           suffix: Win32
           testopt: --dev32
-        exclude:
-        - target: Win32
-          std: 23
+        # Uncomment the following when C++23 is re-enabled.
+        # exclude:
+        # - target: Win32
+        #   std: 23
     name: Build on ${{ matrix.target }} with VC++, C++${{ matrix.std }}
     runs-on: windows-latest
     env:
