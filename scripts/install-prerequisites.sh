@@ -114,26 +114,36 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
 
-    if [[ -z $(which clang 2>/dev/null) ]]; then
-        # Build tools not installed
-        xcode-select --install
-    else
-        # We need clang 16.x at least.
-        CLANG_MAJOR=$(clang --version | head -1 | sed 's/.* \([0-9][0-9]*\)\.[0-9][0-9]*.*/\1/')
-        if [[ -z $CLANG_MAJOR || "$CLANG_MAJOR" -lt 16 ]]; then
-            echo "Current version of clang is $CLANG_MAJOR, need clang 16, trying to update..."
+    # We need clang 16.x at least.
+    CLANG_MAJOR=$(clang --version 2>/dev/null | head -1 | sed 's/.* \([0-9][0-9]*\)\.[0-9][0-9]*.*/\1/')
+    if [[ -z $CLANG_MAJOR || "$CLANG_MAJOR" -lt 16 || -n $FORCE_CLANG_REINSTALL ]]; then
+        if [[ -n $CLANG_MAJOR ]]; then
+            echo "==== Current version of clang is $CLANG_MAJOR, need clang 16, trying to update..."
             # There is no identified way of updating the Xcode command line tools.
             # We can only remove (or move) them and reinstall. Additionally, it has
             # been noted that when several versions are installed, removing one version
             # selects another one. Therefore, we move all versions until none is defined.
-            XCODE_PATH=$(xcode-select -print-path 2>/dev/null)
+            XCODE_PATH=$(xcode-select --print-path 2>/dev/null)
             while [[ -n $XCODE_PATH && -d "$XCODE_PATH" ]]; do
                 echo "Moving '$XCODE_PATH' to .old"
                 sudo mv "$XCODE_PATH" "$XCODE_PATH".old
-                XCODE_PATH=$(xcode-select -print-path 2>/dev/null)
+                XCODE_PATH=$(xcode-select --print-path 2>/dev/null)
             done
-            xcode-select --install
         fi
+        # Start installation of Xcode command line tools. This is asynchronous.
+        echo "Starting installation of Xcode command line tools..."
+        xcode-select --install
+        # Wait until installation has finished. Timeout is 10 minutes.
+        TIMEOUT=600
+        WAIT=5
+        until $(xcode-select --print-path &>/dev/null); do
+            if [[ $TIMEOUT -lt $WAIT ]]; then
+                echo "Xcode command line tools take too long to install, giving up"
+                break
+            fi
+            TIMEOUT=$(($TIMEOUT - $WAIT))
+            sleep $WAIT
+        done
     fi
     if [[ -z $(which brew 2>/dev/null) ]]; then
         # Homebrew not installed
